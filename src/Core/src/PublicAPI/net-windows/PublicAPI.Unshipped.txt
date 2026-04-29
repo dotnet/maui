@@ -1,2 +1,3 @@
 #nullable enable
+override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
 static Microsoft.Maui.Platform.PickerExtensions.UpdateTitleColor(this Microsoft.UI.Xaml.Controls.ComboBox! nativeComboBox, Microsoft.Maui.IPicker! picker) -> void

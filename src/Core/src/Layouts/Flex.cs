@@ -9,6 +9,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui.Layouts.Flex
 {
@@ -782,10 +783,15 @@ namespace Microsoft.Maui.Layouts.Flex
 				float flex_size = 0;
 				if (layout.flex_dim > 0)
 				{
+					// Only the free space is distributed proportionally,
+					// not the total container space. layout.flex_dim was inflated by extra_flex_dim
+					// (the sum of measured sizes of growing items), so we recover the actual free
+					// space by subtracting it back. The item's measured size is preserved and the
+					// proportional share of free space is added on top.
+					float freeSpace = Math.Max(0, layout.flex_dim - layout.extra_flex_dim);
 					if (child.Grow != 0)
 					{
-						child.Frame[layout.frame_size_i] = 0; // Ignore previous size when growing.
-						flex_size = (layout.flex_dim / layout.flex_grows) * child.Grow;
+						flex_size = (freeSpace / layout.flex_grows) * child.Grow;
 					}
 				}
 				else if (layout.flex_dim < 0)
@@ -990,28 +996,12 @@ namespace Microsoft.Maui.Layouts.Flex
 				ordered_indices = null;
 				if (item.ShouldOrderChildren && item.Count > 0)
 				{
-					var indices = new int[item.Count];
-					// Creating a list of item indices sorted using the children's `order'
-					// attribute values. We are using a simple insertion sort as we need
-					// stability (insertion order must be preserved) and cross-platform
-					// support. We should eventually switch to merge sort (or something
-					// else) if the number of items becomes significant enough.
-					for (int i = 0; i < item.Count; i++)
-					{
-						indices[i] = i;
-						for (int j = i; j > 0; j--)
-						{
-							int prev = indices[j - 1];
-							int curr = indices[j];
-							if (item[prev].Order <= item[curr].Order)
-							{
-								break;
-							}
-							indices[j - 1] = curr;
-							indices[j] = prev;
-						}
-					}
-					ordered_indices = indices;
+					// Sort original indices by each child's Order using a stable sort.
+					// OrderBy is guaranteed stable in .NET, preserving insertion order
+					// for children with equal Order values.
+					ordered_indices = Enumerable.Range(0, item.Count)
+						.OrderBy(i => item[i].Order)
+						.ToArray();
 				}
 
 				flex_dim = 0;

@@ -1,30 +1,31 @@
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace Maui.Controls.Sample.AI;
 
 /// <summary>
 /// Result from the Travel Planner Agent - raw extraction of user intent.
-/// These values should be extracted exactly as the user stated them, with no interpretation or expansion.
+/// Short JSON names (place/days/language) reduce misspelling by small language models.
 /// </summary>
 public record TravelPlanResult(
-	[property: DisplayName("destinationName")]
-	[property: Description("The exact place/location name as written in the user's request. Extract the raw text only - do NOT interpret, expand, or look up actual landmarks. Example: 'Maui' not 'Maui, Hawaii' or 'Haleakala National Park'.")]
+	[property: JsonPropertyName("place")]
+	[property: Description("The destination name mentioned by the user.")]
 	string DestinationName,
-	[property: DisplayName("dayCount")]
-	[property: Description("The exact number of days mentioned by the user. Use 3 as default only if no number is specified.")]
+	[property: JsonPropertyName("days")]
+	[property: Description("Number of days for the trip. Default is 3.")]
 	int DayCount,
-	[property: DisplayName("language")]
-	[property: Description("The exact output language mentioned by the user. Use 'English' as default only if no language is specified.")]
+	[property: JsonPropertyName("language")]
+	[property: Description("Output language for the itinerary. Default is English.")]
 	string Language);
 
 /// <summary>
 /// Result from the Researcher Agent - the best matching destination (for JSON schema).
 /// </summary>
 internal record DestinationMatchResult(
-	[property: DisplayName("matchedDestinationName")]
+	[property: JsonPropertyName("dest")]
 	[property: Description("The exact name of the best matching destination from the available list.")]
 	string MatchedDestinationName,
-	[property: DisplayName("matchedDestinationDescription")]
+	[property: JsonPropertyName("desc")]
 	[property: Description("A brief description of the matched destination, based on the information provided in the additional context.")]
 	string MatchedDestinationDescription);
 

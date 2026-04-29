@@ -22,12 +22,30 @@ parameters:
     values:
       - android
       - ios
+      - catalyst
+      - windows
 
-  - name: pool
+  - name: androidPool
     type: object
     default:
       name: Azure Pipelines
       vmImage: ubuntu-22.04
+
+  - name: iosPool
+    type: object
+    default:
+      name: AcesShared
+
+  - name: macPool
+    type: object
+    default:
+      name: AcesShared
+
+  - name: windowsPool
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: windows-2022
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -46,14 +64,24 @@ stages:
     jobs:
       - job: CopilotReview
         displayName: 'Run Copilot PR Reviewer Agent'
-        pool: ${{ parameters.pool }}
+        ${{ if eq(parameters.Platform, 'android') }}:
+          pool: ${{ parameters.androidPool }}
+        ${{ elseif eq(parameters.Platform, 'ios') }}:
+          pool: ${{ parameters.iosPool }}
+        ${{ elseif eq(parameters.Platform, 'catalyst') }}:
+          pool: ${{ parameters.macPool }}
+        ${{ elseif eq(parameters.Platform, 'windows') }}:
+          pool: ${{ parameters.windowsPool }}
+        ${{ else }}:
+          pool: ${{ parameters.windowsPool }}  # fallback — should not be reached; AzDO parameter validation prevents unknown values
         timeoutInMinutes: 360
         steps:
           - checkout: self
             fetchDepth: 0
             persistCredentials: true
 
-          - script: |
+          # Validate Parameters
+          - bash: |
               echo "Validating PR Number parameter..."
               if [ -z "${{ parameters.PRNumber }}" ]; then
                 echo "##vso[task.logissue type=error]PRNumber parameter is required"
@@ -62,7 +90,7 @@ stages:
               echo "PR Number: ${{ parameters.PRNumber }}"
             displayName: 'Validate Parameters'
 
-          - script: |
+          - bash: |
               echo "##vso[build.updatebuildnumber]PR ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
             displayName: 'Set Pipeline Run Title'
 
@@ -73,7 +101,7 @@ stages:
           # Provision SDKs (same parameters as ui-tests-steps.yml)
           - template: common/provision.yml
             parameters:
-              skipXcode: ${{ eq(parameters.Platform, 'android') }}
+              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows')) }}
               skipProvisionator: true
               skipJdk: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
@@ -82,7 +110,7 @@ stages:
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
-              skipSimulatorSetup: ${{ eq(parameters.Platform, 'android') }}
+              skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
 
           # Install .NET and workloads via build.ps1
@@ -105,8 +133,15 @@ stages:
               PRIVATE_BUILD: $(PrivateBuild)
             
           # Restore .NET tools (includes xharness)
-          - script: dotnet tool restore
+          - bash: dotnet tool restore
             displayName: 'Restore .NET Tools'
+
+          # Set screen resolution on Windows (same as ui-tests-steps.yml)
+          - ${{ if eq(parameters.Platform, 'windows') }}:
+            - pwsh: |
+                $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
+                & $scriptPath -Width 1920 -Height 1080
+              displayName: 'Set screen resolution'
 
           # Create AVD and boot Android Emulator
           - ${{ if eq(parameters.Platform, 'android') }}:
@@ -240,22 +275,30 @@ stages:
                 # Prepare emulator for CI use — keeps device responsive during idle period
                 echo "=== Preparing emulator for CI ==="
                 # Wait for device to stabilize after boot (transient offline state)
-                for i in $(seq 1 10); do
+                DEVICE_READY=false
+                for i in $(seq 1 20); do
                   if adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
+                    DEVICE_READY=true
                     break
                   fi
-                  echo "Device offline, retrying ($i/10)..."
-                  sleep 3
+                  echo "Device offline, retrying ($i/20)..."
+                  sleep 5
                 done
+
+                if [ "$DEVICE_READY" = false ]; then
+                  echo "##vso[task.logissue type=error]Emulator went offline after boot — device not responsive after 100s"
+                  exit 1
+                fi
+
                 # Disable all animations (reduces CPU load and flakiness)
-                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0
-                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0
-                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0
+                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
                 # Prevent screen from turning off (emulator simulates AC charging)
-                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647
-                adb -s $DEVICE_ID shell svc power stayon true
+                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                adb -s $DEVICE_ID shell svc power stayon true || true
                 # Wake screen and dismiss any lock screen
-                adb -s $DEVICE_ID shell input keyevent 82
+                adb -s $DEVICE_ID shell input keyevent 82 || true
                 sleep 1
                 # Dismiss any "System UI has stopped" or crash dialogs
                 adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
@@ -267,7 +310,7 @@ stages:
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
               displayName: 'Create AVD and Boot Android Emulator'
-              retryCountOnTaskFailure: 1
+              retryCountOnTaskFailure: 3
               timeoutInMinutes: 15
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
@@ -285,28 +328,31 @@ stages:
             env:
               APPIUM_HOME: $(APPIUM_HOME)
 
-          - script: |
+          - bash: |
               echo "Installing GitHub CLI..."
-              brew install gh
-              if ! gh --version; then
-                echo "##vso[task.logissue type=error]Failed to install GitHub CLI"
+              # gh is pre-installed on Azure Pipelines hosted images (ubuntu, macOS, windows)
+              # Attempt upgrade if available, otherwise install
+              if command -v gh &> /dev/null; then
+                echo "GitHub CLI already installed: $(gh --version | head -1)"
+              elif command -v brew &> /dev/null; then
+                brew install gh
+              else
+                echo "##vso[task.logissue type=error]GitHub CLI not found and no package manager available"
                 exit 1
               fi
-              echo "GitHub CLI installed successfully"
+              gh --version
+              echo "GitHub CLI ready"
             displayName: 'Install GitHub CLI'
 
-          - script: |
+          - bash: |
               echo "Authenticating with GitHub CLI..."
-              if [ -z "$(GH_CLI_TOKEN)" ]; then
-                echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set. Please configure the pipeline variable."
+              if [ -z "$GH_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]GH_TOKEN env var (from pipeline variable GH_COMMENT_TOKEN) is not set. Please configure the pipeline variable."
                 exit 1
               fi
-              # Use GH_TOKEN env var to avoid scope validation issues with newer gh versions
-              export GH_TOKEN="$(GH_CLI_TOKEN)"
               gh auth status
               if [ $? -ne 0 ]; then
-                # Fallback: try direct login
-                echo "$(GH_CLI_TOKEN)" | gh auth login --with-token 2>/dev/null || true
+                echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null || true
                 if ! gh auth status; then
                   echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
                   exit 1
@@ -315,9 +361,9 @@ stages:
               echo "GitHub CLI authenticated successfully"
             displayName: 'Authenticate GitHub CLI'
             env:
-              GH_CLI_TOKEN: $(GH_CLI_TOKEN)
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
-          - script: |
+          - bash: |
               echo "Installing GitHub Copilot CLI..."
               npm install -g @github/copilot
               # Ensure npm global bin is on PATH for subsequent steps (Linux UseNode installs to toolcache)
@@ -331,7 +377,7 @@ stages:
 
           # Boot iOS Simulator (only for iOS platform)
           # UI test baseline screenshots are captured on iPhone Xs - must use same device
-          - script: |
+          - bash: |
               echo "=== Booting iOS Simulator ==="
               
               # Find the latest stable iOS runtime (prefer 18.x, fallback to 17.x)
@@ -424,7 +470,7 @@ stages:
           # Warm up the emulator right before the agent runs.
           # The emulator may have been idle for 15-30 min while Appium/Node/CLI were installed.
           # Without this, SystemUI can ANR when the agent first touches it.
-          - script: |
+          - bash: |
               set -e
               DEVICE_ID="$(DEVICE_UDID)"
               if [ -z "$DEVICE_ID" ]; then
@@ -484,20 +530,37 @@ stages:
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
             timeoutInMinutes: 3
 
-          - script: |
+          - bash: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
               
               # Ensure copilot CLI is accessible to pwsh subprocess.
               # npm global install on Linux goes to UseNode@1 toolcache path which may not
               # be on PATH inside pwsh even when exported from bash. Create a symlink in
-              # /usr/local/bin which is universally on PATH for all shells.
-              COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
-              if [ -n "$COPILOT_PATH" ] && [ ! -f /usr/local/bin/copilot ]; then
-                sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
-                echo "Symlinked copilot to /usr/local/bin/copilot"
+              # /usr/local/bin (Unix) or verify PATH (Windows).
+              if [[ "$(uname -o 2>/dev/null || uname -s)" == *"Msys"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"Windows"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"MINGW"* ]]; then
+                # Windows (Git Bash): npm global bin is usually already on PATH
+                echo "Windows detected — verifying copilot is on PATH..."
+                COPILOT_PATH=$(which copilot 2>/dev/null || true)
+                echo "copilot location: ${COPILOT_PATH:-not found}"
+                if [ -z "$COPILOT_PATH" ]; then
+                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH. Failing early."
+                  exit 1
+                fi
+              else
+                # Linux/macOS: symlink to /usr/local/bin
+                COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
+                if [ -n "$COPILOT_PATH" ] && [ ! -f /usr/local/bin/copilot ]; then
+                  sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
+                  echo "Symlinked copilot to /usr/local/bin/copilot"
+                fi
+                COPILOT_PATH=$(which copilot 2>/dev/null || true)
+                echo "copilot location: ${COPILOT_PATH:-not found}"
+                if [ -z "$COPILOT_PATH" ]; then
+                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH. Failing early."
+                  exit 1
+                fi
               fi
-              echo "copilot location: $(which copilot 2>/dev/null || echo 'not found')"
               # Verify pwsh can find it
               pwsh -NoProfile -c 'Write-Host "pwsh sees copilot at: $(Get-Command copilot -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"'
               
@@ -506,15 +569,15 @@ stages:
               git config user.name "Copilot CI"
               echo "Git identity configured"
               
-              # Create Directory.Build.Override.props to skip Xcode version check
-              # AcesShared agents may have a newer Xcode than the .NET iOS SDK expects
+              # Create Directory.Build.Override.props to skip Xcode version check (not needed on Windows)
               cp Directory.Build.Override.props.in Directory.Build.Override.props
-              # Insert ValidateXcodeVersion before closing </Project> tag
-              # GNU sed (Linux) uses -i without suffix; BSD sed (macOS) uses -i ''
               if [[ "$(uname)" == "Linux" ]]; then
                 sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
-              else
+              elif [[ "$(uname)" == "Darwin" ]]; then
                 sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              else
+                # Windows (Git Bash) — GNU sed, same as Linux
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               fi
               
               # Create artifacts directory for Copilot outputs
@@ -606,7 +669,7 @@ stages:
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
           # Fail the pipeline if Copilot failed
-          - script: |
+          - bash: |
               if [ "$(CopilotFailed)" = "true" ]; then
                 echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
                 exit 1

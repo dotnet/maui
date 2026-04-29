@@ -1,6 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Maui.Controls.Sample.Models;
 using Maui.Controls.Sample.Services;
@@ -8,14 +5,18 @@ using Maui.Controls.Sample.Services;
 namespace Maui.Controls.Sample.ViewModels;
 
 [QueryProperty(nameof(Landmark), "Landmark")]
-public partial class TripPlanningViewModel(ItineraryService itineraryService, TaggingService taggingService, WeatherService weatherService, IDispatcher dispatcher) : ObservableObject
+[QueryProperty(nameof(Language), "Language")]
+public partial class TripPlanningViewModel(
+	ItineraryService itineraryService,
+	WeatherService weatherService,
+	IDispatcher dispatcher)
+	: ObservableObject
 {
 	public enum TripPlanningState
 	{
-		Initial,        // Show landmark description and generate button
-		Generating,     // Show planning view with status messages
-		Complete,       // Show full itinerary
-		Error           // Show error message
+		Generating,
+		Complete,
+		Error
 	}
 
 	private CancellationTokenSource _cancellationTokenSource = new();
@@ -24,17 +25,19 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 	public partial Landmark Landmark { get; set; }
 
 	[ObservableProperty]
+	public partial string Language { get; set; } = "English";
+
+	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(IsGeneratingState))]
 	[NotifyPropertyChangedFor(nameof(HasItinerary))]
 	public partial ItineraryViewModel? Itinerary { get; set; }
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(IsInitialState))]
 	[NotifyPropertyChangedFor(nameof(IsGeneratingState))]
 	[NotifyPropertyChangedFor(nameof(HasItinerary))]
 	[NotifyPropertyChangedFor(nameof(IsErrorState))]
 	[NotifyPropertyChangedFor(nameof(IsNotErrorState))]
-	public partial TripPlanningState CurrentState { get; set; } = TripPlanningState.Initial;
+	public partial TripPlanningState CurrentState { get; set; } = TripPlanningState.Generating;
 
 	[ObservableProperty]
 	public partial string? ErrorMessage { get; set; }
@@ -51,24 +54,17 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 	[ObservableProperty]
 	public partial string? Status3 { get; set; }
 
-	public bool IsInitialState => CurrentState == TripPlanningState.Initial;
 	public bool IsGeneratingState => CurrentState == TripPlanningState.Generating && Itinerary is null;
 	public bool HasItinerary => CurrentState == TripPlanningState.Complete || Itinerary is not null;
 	public bool IsErrorState => CurrentState == TripPlanningState.Error;
 	public bool IsNotErrorState => CurrentState != TripPlanningState.Error;
 
-	public ObservableCollection<string> GeneratedTags => field ??= [];
-
-	public ICommand GenerateItineraryCommand =>
-		field ??= new Command(async () => await RequestItineraryAsync(), () => Landmark is not null && CurrentState == TripPlanningState.Initial);
-
 	public async Task InitializeAsync()
 	{
-		if (Landmark is null || GeneratedTags.Count > 0)
+		if (Landmark is null)
 			return;
 
-		// Generate tags for the landmark description
-		await GenerateTagsAsync(_cancellationTokenSource.Token);
+		await RequestItineraryAsync();
 	}
 
 	public void Cancel()
@@ -76,34 +72,8 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 		_cancellationTokenSource.Cancel();
 	}
 
-	private async Task GenerateTagsAsync(CancellationToken cancellationToken)
-	{
-		try
-		{
-			var tags = await taggingService.GenerateTagsAsync(Landmark.Description, cancellationToken);
-			GeneratedTags.Clear();
-			foreach (var tag in tags)
-			{
-				if (cancellationToken.IsCancellationRequested)
-					break;
-				GeneratedTags.Add(tag);
-				await Task.Delay(100, cancellationToken); // Simulate slight delay for better UX
-			}
-		}
-		catch (OperationCanceledException)
-		{
-			// Ignore for cancellation
-		}
-		catch (Exception ex)
-		{
-			// Silently fail tag generation - it's not critical
-			Debug.WriteLine($"Tag generation failed: {ex.Message}");
-		}
-	}
-
 	private async Task RequestItineraryAsync()
 	{
-		// Cancel any pending operations
 		_cancellationTokenSource.Cancel();
 		_cancellationTokenSource = new CancellationTokenSource();
 		var cancellationToken = _cancellationTokenSource.Token;
@@ -117,10 +87,8 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 
 		try
 		{
-			// Build the itinerary
 			await Task.Run(() => BuildItineraryAsync(cancellationToken), cancellationToken);
 
-			// Fetch weather for each day
 			if (Itinerary is not null && !cancellationToken.IsCancellationRequested)
 			{
 				foreach (var dayVm in Itinerary.Days)
@@ -128,22 +96,19 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 					if (cancellationToken.IsCancellationRequested)
 						break;
 
-					dayVm.WeatherForecast = await weatherService.GetWeatherForecastAsync(
+					var (icon, text) = await weatherService.GetWeatherForecastAsync(
 						Landmark.Latitude,
 						Landmark.Longitude,
 						dayVm.Date);
+					dayVm.WeatherIcon = icon;
+					dayVm.WeatherForecast = text;
 				}
 			}
 
 			if (!cancellationToken.IsCancellationRequested)
-			{
 				CurrentState = TripPlanningState.Complete;
-			}
 		}
-		catch (OperationCanceledException)
-		{
-			// Ignore for cancellation
-		}
+		catch (OperationCanceledException) { }
 		catch (Exception ex)
 		{
 			CurrentState = TripPlanningState.Error;
@@ -153,34 +118,31 @@ public partial class TripPlanningViewModel(ItineraryService itineraryService, Ta
 
 	private async Task BuildItineraryAsync(CancellationToken cancellationToken)
 	{
-		// Generate itinerary with streaming updates
-		await foreach (var update in itineraryService.StreamItineraryAsync(Landmark, 3, cancellationToken))
+		var userRequest = Language.Equals("English", StringComparison.OrdinalIgnoreCase)
+			? $"Create a {3}-day itinerary for {Landmark.Name}"
+			: $"Create a {3}-day itinerary for {Landmark.Name} in {Language}";
+
+		await foreach (var update in itineraryService.StreamItineraryAsync(userRequest, cancellationToken))
 		{
 			if (cancellationToken.IsCancellationRequested)
 				break;
 
-			// Handle status updates - shift messages in fading trail
 			if (update.StatusMessage is not null)
 			{
 				dispatcher.Dispatch(() =>
 				{
-					if (cancellationToken.IsCancellationRequested)
-						return;
-
+					if (cancellationToken.IsCancellationRequested) return;
 					Status1 = Status2;
 					Status2 = Status3;
 					Status3 = update.StatusMessage;
 				});
 			}
 
-			// Handle partial itinerary updates
 			if (update.PartialItinerary is not null)
 			{
 				dispatcher.Dispatch(() =>
 				{
-					if (cancellationToken.IsCancellationRequested)
-						return;
-
+					if (cancellationToken.IsCancellationRequested) return;
 					Itinerary = new ItineraryViewModel(update.PartialItinerary, Landmark);
 				});
 			}

@@ -21,6 +21,27 @@ public partial class LandmarksPage : ContentPage
 		_chatOverlay = new ChatOverlayView();
 		_chatOverlay.Initialize(chatViewModel);
 
+		// Remove native border and focus ring from the search entry
+		SearchEntry.HandlerChanged += (s, _) =>
+		{
+#if MACCATALYST || IOS
+			if (SearchEntry.Handler?.PlatformView is UIKit.UITextField textField)
+			{
+				textField.BorderStyle = UIKit.UITextBorderStyle.None;
+				if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
+					textField.FocusEffect = null;
+			}
+#elif WINDOWS
+			if (SearchEntry.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.TextBox textBox)
+			{
+				textBox.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+				textBox.BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+				// Remove the focus underline
+				textBox.Resources["TextControlBorderThemeThicknessFocused"] = new Microsoft.UI.Xaml.Thickness(0);
+			}
+#endif
+		};
+
 		Loaded += async (_, _) => await viewModel.InitializeAsync();
 	}
 
@@ -32,6 +53,7 @@ public partial class LandmarksPage : ContentPage
 
 	protected override void OnDisappearing()
 	{
+		_viewModel.CancelPendingSearch();
 		_chatViewModel.ChatService.NavigateToTripRequested -= OnNavigateToTrip;
 		base.OnDisappearing();
 	}
@@ -50,26 +72,17 @@ public partial class LandmarksPage : ContentPage
 
 	private async void OnLandmarkTapped(object? sender, Landmark landmark)
 	{
-		var parameters = new Dictionary<string, object>
-		{
-			{ "Landmark", landmark }
-		};
-
-		await Shell.Current.GoToAsync(nameof(TripPlanningPage), parameters);
+		await NavigateToDetail(landmark);
 	}
 
-	private async void OnLanguageButtonClicked(object? sender, EventArgs e)
+	async Task NavigateToDetail(Landmark landmark)
 	{
-		string? action = await DisplayActionSheetAsync(
-			"Select Language for AI Responses",
-			"Cancel",
-			null,
-			_viewModel.AvailableLanguages);
-
-		if (!string.IsNullOrEmpty(action) && action != "Cancel")
+		var parameters = new Dictionary<string, object>
 		{
-			_viewModel.SelectedLanguage = action;
-		}
+			{ "Landmark", landmark },
+			{ "RecentSearches", _viewModel.RecentSearches }
+		};
+		await Shell.Current.GoToAsync(nameof(LandmarkDetailPage), parameters);
 	}
 
 	private async void OnChatButtonClicked(object? sender, EventArgs e)

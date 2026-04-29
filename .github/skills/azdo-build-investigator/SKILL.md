@@ -66,6 +66,26 @@ If available, use the `mcp-binlog-tool` MCP server to analyze downloaded `.binlo
 | `error CS####` | `maui-pr` | C# compiler error — check file/line |
 | `error XA####` | `maui-pr` | Android build error |
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
+| `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see below |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+
+### Gradle / Maven / CFSClean Failures
+
+**Error signatures:**
+```
+error XAGRDL0000: Could not resolve com.android.tools.build:gradle:8.11.1
+  > Received status code 401: Unauthorized - No local versions of package
+```
+```
+error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
+  > Unauthorized - Please provide authentication to save package from upstream
+```
+
+**Fix:** Tell the user to run `./eng/ingest-maven-deps.sh` locally to pre-ingest packages into the feed.
+
+**Do NOT:**
+- Remove CFSClean from `ci-official.yml` — security compliance requirement
+- Upgrade Gradle past 8.x — `dotnet/android#10738`
+- Add `mavenCentral()` or `google()` back — use the Azure Artifacts feed

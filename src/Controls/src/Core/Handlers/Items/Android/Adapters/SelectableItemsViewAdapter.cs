@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Android.Content;
+using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Object = Java.Lang.Object;
 
@@ -24,6 +25,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.OnBindViewHolder(holder, position);
 
 			if (!(holder is SelectableViewHolder selectable))
+			{
+				return;
+			}
+
+			// Header and footer view holders should not participate in selection tracking.
+			// They are not data items and calling GetItem() on their positions would cause
+			// an ArgumentOutOfRangeException due to the header index adjustment.
+			if (ItemsSource.IsHeader(position) || ItemsSource.IsFooter(position))
 			{
 				return;
 			}
@@ -55,6 +64,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			for (int i = 0; i < _currentViewHolders.Count; i++)
 			{
 				_currentViewHolders[i].IsSelected = false;
+			}
+		}
+
+		internal void UpdateSelectionMode()
+		{
+			// Update click listeners for all currently visible ViewHolders when SelectionMode changes
+			bool selectionEnabled = ItemsView.SelectionMode is not SelectionMode.None;
+			for (int i = 0; i < _currentViewHolders.Count; i++)
+			{
+				_currentViewHolders[i].UpdateClickListener(selectionEnabled);
 			}
 		}
 
@@ -144,6 +163,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return Array.Empty<int>();
+		}
+
+		protected override bool IsSelectionEnabled(ViewGroup parent, int viewType) 
+		{
+			if (ItemsView == null)
+			{
+				return false;
+			}
+			// Disable click listeners when SelectionMode is None to prevent TalkBack from announcing items as clickable
+			return ItemsView.SelectionMode != SelectionMode.None;
 		}
 
 		bool PositionIsSelected(int position)

@@ -229,5 +229,16 @@
         "span": 20.0,
         "description": "The South Shetland Islands consist of 11 major islands and several minor ones, making up more than 1,400 square miles of land area. The Antarctic island chain is located in the Drake Passage. Almost all of the land area is permanently covered by glaciers.  Active geothermal vents and hot springs provide balance the two contrasting extremes of fire and ice.\n\nVarious plants have adapted to the harsh conditions, including two flowering plants — the Antarctic hair grass and Antarctic pearlwort. Other examples of adapted plants include mosses, liverworts, lichens, and fungi. Notable penguin species include Adélie, Chinstrap, and Gentoo. Crabeater, Leopard, Weddell, and fur seals are some of the island’s other inhabitants.",
         "shortDescription": "The South Shetland Islands consist of 11 major islands and several minor ones, making up more than 1,400 square miles of land area."
+    },
+    {
+        "name": "Bunaken Marine Park",
+        "placeID": "ChIJP0dJ7GKZQDIR9EqKMHxe3Ws",
+        "span": 5.0,
+        "id": 1023,
+        "longitude": 124.75,
+        "latitude": 1.6167,
+        "description": "Bunaken Marine Park, located off the coast of Manado in North Sulawesi, Indonesia, is one of the world's premier marine biodiversity hotspots. Established in 1991, the park covers an area of approximately 890 square kilometers and encompasses five islands: Bunaken, Manado Tua, Siladen, Mantehage, and Nain. The park's crystal-clear waters and dramatic underwater walls make it a paradise for divers and snorkelers from around the globe.\n\nThe marine park is home to an extraordinary diversity of coral reef ecosystems, with over 390 species of coral documented within its boundaries. These vibrant reefs support more than 3,000 species of fish, including spectacular displays of clownfish, butterflyfish, Napoleon wrasse, and sea turtles. The underwater topography features steep coral walls that plunge to depths of over 1,000 meters, creating dramatic drop-offs that are among the most breathtaking dive sites in Southeast Asia.\n\nManado itself serves as the gateway to this underwater wonderland, offering a blend of Indonesian culture, spicy Minahasan cuisine, and warm hospitality. The city's proximity to the park means visitors can enjoy world-class diving just a short boat ride from the mainland. Conservation efforts have been central to the park's management, with local communities actively participating in protecting the delicate marine ecosystems that make Bunaken one of the most biodiverse marine environments on Earth.",
+        "continent": "Asia",
+        "shortDescription": "One of the world's premier marine biodiversity hotspots off the coast of Manado, Indonesia, featuring spectacular coral walls and over 3,000 species of fish."
     }
 ]

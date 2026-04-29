@@ -1,7 +1,7 @@
 ---
 description: "Design document for the maui CLI tool"
 date: 2026-01-07
-updated: 2026-02-26
+updated: 2026-02-27
 ---
 
 # `maui` CLI Design Document
@@ -197,6 +197,170 @@ All commands use consistent exit codes:
 | 4 | Network error (download failed) |
 | 5 | Resource not found |
 
+## Device Discovery
+
+### `maui device list`
+
+Lists connected devices, running emulators, and available simulators
+across all platforms from a single command.
+
+**Usage:**
+
+```bash
+maui device list [--platform <p>] [--json]
+```
+
+**Options:**
+
+- `--platform <PLATFORM>`: Filter by platform (`android`, `ios`,
+  `maccatalyst`). If omitted, lists all platforms.
+- `--json`: Structured JSON output for machine consumption.
+
+**Human-readable output:**
+
+```
+ID                                     Description              Type       Platform   Status
+emulator-5554                          Pixel 7 - API 35         Emulator   android    Online
+0A041FDD400327                         Pixel 7 Pro              Device     android    Online
+94E71AE5-8040-4DB2-8A9C-6CD24EF4E7DE  iPhone 16 - iOS 26.0     Simulator  ios        Shutdown
+FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7  iPhone 14 - iOS 26.0     Simulator  ios        Booted
+AF40CC64-2CDB-5F16-9651-86BCDF380881  My iPhone 15             Device     ios        Paired
+```
+
+**JSON output (`--json`):**
+
+```json
+{
+  "devices": [
+    {
+      "id": "emulator-5554",
+      "description": "Pixel 7 - API 35",
+      "type": "Emulator",
+      "platform": "android",
+      "status": "Online"
+    },
+    {
+      "id": "FBF5DCE8-EE2B-4215-8118-3A2190DE1AD7",
+      "description": "iPhone 14 - iOS 26.0",
+      "type": "Simulator",
+      "platform": "ios",
+      "status": "Booted"
+    }
+  ]
+}
+```
+
+The `id` field is the same identifier accepted by `dotnet run --device
+<id>`, so output from `maui device list` can be piped directly into a
+run command.
+
+### Two Approaches to Device Enumeration
+
+There are two ways to enumerate devices, each suited to different
+scenarios.
+
+#### Approach A: Via `dotnet run --list-devices` (project-based)
+
+The .NET SDK (≥ .NET 11) provides `dotnet run --list-devices`, which
+calls the [`ComputeAvailableDevices`][compute-android] MSBuild target
+defined by each platform workload ([spec][dotnet-run-spec]):
+
+- **Android** ([dotnet/android]): calls `adb devices`, returns
+  serial, description, type (Device/Emulator), status, model
+- **Apple** ([dotnet/macios]): calls `simctl list` and `devicectl
+  list`, returns UDID, description, type (Device/Simulator),
+  OS version, RuntimeIdentifier
+
+This approach **requires a project file** — MSBuild evaluates the
+`.csproj` to locate the correct workload targets. It also operates
+**per-framework**: you select a target framework first, then get
+devices for that platform only.
+
+[dotnet/android]: https://github.com/dotnet/android
+[dotnet/macios]: https://github.com/dotnet/macios
+
+#### Approach B: Direct native tool invocation (project-free)
+
+The `maui` CLI calls the same native tools directly — `adb devices`,
+`xcrun simctl list devices`, `xcrun devicectl list devices` — without
+evaluating any MSBuild project. This returns a unified, cross-platform
+device list in a single call.
+
+#### Comparison
+
+| | Approach A (MSBuild) | Approach B (Native CLI) |
+|---|---|---|
+| **Project required** | Yes — needs `.csproj` | No |
+| **Cross-platform** | One platform per call (per TFM) | All platforms in one call |
+| **Metadata** | Rich (RuntimeIdentifier, workload-specific fields) | Standard (id, description, type, status) |
+| **Speed** | Slower (MSBuild evaluation + restore) | Fast (<2s, direct process calls) |
+| **ID compatibility** | Source of truth for `dotnet run --device` | Same native IDs — compatible |
+| **Requires workloads** | Yes (platform workload must be installed) | Only native tools (`adb`, `simctl`) |
+| **Extensible** | Workloads add new device types automatically | Must add support per platform |
+
+#### Scenarios Without a Project
+
+Several real workflows need device enumeration **before** a project
+exists or **outside** any project context:
+
+1. **AI agent bootstrapping** — An agent starting a "vibe coding"
+   session needs to discover available targets before scaffolding a
+   project. It cannot call `dotnet run --list-devices` because there
+   is no `.csproj` yet.
+
+2. **IDE startup** — VS Code opens a workspace with no MAUI project
+   loaded. The extension needs to populate its device picker to show
+   the user what's available. A project-free query is the only option.
+
+3. **Environment validation** — A developer runs `maui device list`
+   to answer "can I see my phone?" without needing to be inside any
+   project directory. This is a diagnostic step, not a build step.
+
+4. **CI pipeline setup** — A CI script checks that the expected
+   emulator or simulator is running before invoking `dotnet run`.
+   The check should not depend on a specific project file.
+
+5. **Multi-project solutions** — A solution contains both Android and
+   iOS projects. The developer wants a single unified device list
+   rather than running `--list-devices` per project.
+
+6. **Cross-platform overview** — `dotnet run --list-devices` shows
+   devices for one TFM at a time. A developer switching between
+   Android and iOS wants to see everything at once.
+
+#### Recommended Approach
+
+`maui device list` uses **Approach B** (direct native tool invocation)
+as its primary implementation:
+
+- It works anywhere — no project, no workload targets, no MSBuild
+  evaluation overhead.
+- Device identifiers are the same native IDs used by
+  `ComputeAvailableDevices`, so they are fully compatible with
+  `dotnet run --device`.
+- The `maui` CLI already wraps these native tools for other commands
+  (environment setup, emulator management), so device listing is a
+  natural extension.
+
+When a project **is** available and the user wants framework-specific
+device filtering, `dotnet run --list-devices` remains the right tool —
+it provides richer metadata (RuntimeIdentifier) and benefits from
+workload-specific logic. The two approaches are complementary:
+
+```
+maui device list          →  "What devices exist on this machine?"
+dotnet run --list-devices →  "What devices can run this project?"
+```
+
+**Platform Implementation:**
+
+| Platform | Native tool | What is enumerated |
+|----------|------------|-------------------|
+| Android | `adb devices -l` | Physical devices and running emulators |
+| iOS (simulators) | `xcrun simctl list devices --json` | All simulators (booted + shutdown) |
+| iOS (physical) | `xcrun devicectl list devices` | Connected physical devices |
+| Mac Catalyst | (host machine) | The Mac itself |
+
 ## App Inspection Commands (Future)
 
 > **Note**: App inspection commands are planned for a future release. The initial release focuses on environment setup and device management.
@@ -268,7 +432,6 @@ Initial implementation targets Android and iOS/Mac Catalyst, with Windows and ma
 
 ### Future Commands
 
-- `maui device list` for unified device/emulator/simulator listing across platforms
 - `maui screenshot` for capturing screenshots of running apps
 - `maui logs` for streaming device logs
 - `maui tree` for inspecting the visual tree
@@ -292,6 +455,9 @@ maui tree --json                       # future
 ### AI Agent Workflow
 
 ```bash
+# 0. Discover available devices (no project needed)
+maui device list --json
+
 # 1. Make code changes
 # ... agent modifies MainPage.xaml ...
 
@@ -392,7 +558,7 @@ Visual Studio consumes the `Xamarin.Android.Tools.AndroidSdk` NuGet package from
 |----------|------------|--------------|
 | Workspace open | `maui apple check --json`, `maui android jdk check --json` | Show environment status in status bar / problems panel |
 | Environment fix | `maui android install --json` | Display progress bar, stream `type: "progress"` messages |
-| Device picker | `maui device list --json` (future) | Populate device dropdown / selection UI |
+| Device picker | `maui device list --json` | Populate device dropdown / selection UI |
 | Emulator launch | `maui android emulator start <name> --json` | Show notification, update device list on completion |
 
 ### Benefits
@@ -440,12 +606,11 @@ simulators) are now included above. These were inspired by:
 
 Future commands:
 
-- `maui device list` for unified device listing
 - `maui logs` for viewing console output
 - `maui tree` for displaying the visual tree
 - `maui screenshot` for capturing screenshots
 
-**Decision**: Environment setup ships first. Device listing and app inspection commands
+**Decision**: Environment setup and device listing ship first. App inspection commands
 follow in a future release.
 
 ## References
@@ -454,9 +619,13 @@ follow in a future release.
 - [dotnet run for .NET MAUI specification][dotnet-run-spec]
 - [Workload manifest specification][workload-spec]
 - [AppleDev.Tools][appledev-tools] - Wraps simctl and devicectl commands
+- [ComputeAvailableDevices (Android)][compute-android] - Android workload MSBuild target
+- [ComputeAvailableDevices (Apple)][compute-apple] - Apple workload MSBuild target
 - [System.CommandLine documentation](https://learn.microsoft.com/dotnet/standard/commandline/)
 - [Android Debug Bridge (ADB)](https://developer.android.com/studio/command-line/adb)
 - [simctl command-line tool](https://nshipster.com/simctl/)
 
 [vibe-wpf]: https://github.com/jonathanpeppers/vibe-wpf
 [appledev-tools]: https://github.com/Redth/AppleDev.Tools
+[compute-android]: https://github.com/dotnet/android/blob/main/Documentation/docs-mobile/building-apps/build-targets.md#computeavailabledevices
+[compute-apple]: https://github.com/dotnet/macios/blob/main/docs/building-apps/build-targets.md#computeavailabledevices

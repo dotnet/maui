@@ -1,11 +1,11 @@
 ---
 name: pr-review
-description: "End-to-end PR reviewer for dotnet/maui. Orchestrates 4 phases — Pre-Flight, Gate, Try-Fix, Report. Use when asked to 'review PR #XXXXX', 'work on PR #XXXXX', or 'fix issue #XXXXX'."
+description: "End-to-end PR reviewer for dotnet/maui. Orchestrates 3 phases — Pre-Flight, Try-Fix, Report. Gate runs separately before this skill. Use when asked to 'review PR #XXXXX', 'work on PR #XXXXX', or 'fix issue #XXXXX'."
 ---
 
-# PR Review — 4-Phase Orchestrator
+# PR Review — 3-Phase Orchestrator
 
-End-to-end PR review workflow that orchestrates phases to verify tests, explore independent fix alternatives, and produce a recommendation.
+End-to-end PR review workflow that orchestrates phases to explore independent fix alternatives and produce a recommendation.
 
 **Trigger phrases:** "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX"
 
@@ -17,15 +17,16 @@ End-to-end PR review workflow that orchestrates phases to verify tests, explore 
 ## Overview
 
 ```
-Phase 1: Pre-Flight   → Gather context, classify files                 → .github/pr-review/pr-preflight.md
-Phase 2: Gate         → ⛔ MUST PASS — verify tests FAIL/PASS          → .github/pr-review/pr-gate.md
-Phase 3: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×4 models)
-Phase 4: Report       → Write review recommendation                     → .github/pr-review/pr-report.md
+Gate (pre-run)    → Already completed by Review-PR.ps1 before this skill runs
+Phase 1: Pre-Flight   → Gather context, classify files, code review     → .github/pr-review/pr-preflight.md
+Phase 2: Try-Fix      → ⚠️ MANDATORY multi-model exploration           → invoke try-fix skill (×4 models)
+Phase 3: Report       → Write review recommendation                     → .github/pr-review/pr-report.md
 ```
 
-> **Branch setup** is handled by `Review-PR.ps1` before this skill is invoked. By the time this skill runs, the review branch already exists with the PR commits cherry-picked and squashed.
+> **Gate and Branch setup** are handled by `Review-PR.ps1` before this skill is invoked. The gate result is passed in the prompt. Do NOT re-run gate verification.
 
 **All phases write output to:** `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/{phase}/content.md`
+**Pre-Flight also writes:** `CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/pre-flight/code-review.md`
 
 ---
 
@@ -34,15 +35,17 @@ Phase 4: Report       → Write review recommendation                     → .g
 - ❌ Never run `git checkout` or `git switch` to change branches — stay on the review branch set up by the caller
 - ❌ Never stop and ask the user — use best judgment to skip blocked phases and continue
 - ❌ Never mark a phase complete with pending fields
-- ❌ **Never skip Phase 3 multi-model exploration — it is MANDATORY for every review, no exceptions**
+- ❌ **Never skip Phase 2 multi-model exploration — it is MANDATORY for every review, no exceptions**
 - ❌ Never run git commands that change branch state during Phases 2-3 (scripts handle file manipulation)
+- ❌ **Never duplicate phase content** — each phase writes ONLY to its own `content.md`. Do NOT copy gate results into try-fix or report content files.
 - ✅ Always create `CustomAgentLogsTmp/` output files for every phase
 - ✅ Always include `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` in any commits
 - ✅ Always use skills' scripts — don't bypass with manual commands
+- ✅ Each phase's `content.md` must use the **exact template** from the phase instruction doc — no extra prose
 
 ### Multi-Model Configuration
 
-Phase 3 uses these 4 AI models (run SEQUENTIALLY — they modify the same files):
+Phase 2 uses these 4 AI models (run SEQUENTIALLY — they modify the same files):
 
 | Order | Model |
 |-------|-------|
@@ -69,27 +72,23 @@ Phase 3 uses these 4 AI models (run SEQUENTIALLY — they modify the same files)
 
 > Read and follow `.github/pr-review/pr-preflight.md`
 
-Gather context from the issue, PR, comments, and classify changed files.
+Gather context from the issue, PR, comments, classify changed files, and **perform a deep code review** using the `code-review` skill.
+
+Pre-Flight now has two parts:
+- **Part A (Steps 1–6):** Context gathering — read issue, PR, comments, classify files
+- **Part B (Step 7):** Code review — independence-first code analysis using `.github/skills/code-review/SKILL.md` and `.github/skills/code-review/references/review-rules.md`
+
+**Outputs:**
+- `pre-flight/content.md` — Context + code review summary
+- `pre-flight/code-review.md` — Full code-review output (findings, blast radius, failure-mode probes, verdict)
 
 **Gate:** None — always runs.
 
----
-
-## Phase 2: Gate
-
-> Read and follow `.github/pr-review/pr-gate.md`
-
-Verify that the PR's tests actually catch the bug (FAIL without fix, PASS with fix).
-
-**Gate:** Pre-Flight must be ✅ COMPLETE.
-
-**If Gate fails:**
-- Tests PASS without fix → Tests don't catch the bug. Proceed to Try-Fix anyway.
-- Tests FAIL with fix → PR's fix doesn't work. Skip Try-Fix, proceed to Report.
+**Why code review runs here:** The code-review findings (❌ Errors, ⚠️ Warnings, failure-mode probes, blast radius) become **structured hints for Phase 2 (Try-Fix)**. Instead of each model starting from scratch, they receive concrete code concerns to address, leading to higher-quality fix exploration.
 
 ---
 
-## Phase 3: Try-Fix → Invoke `try-fix` Skill (×4 Models)
+## Phase 2: Try-Fix → Invoke `try-fix` Skill (×4 Models)
 
 > Read and follow `.github/skills/try-fix/SKILL.md`
 
@@ -98,6 +97,8 @@ Verify that the PR's tests actually catch the bug (FAIL without fix, PASS with f
 Even if the PR's fix looks correct and Gate passed, you MUST still run all 4 models to explore alternative approaches. The purpose is to find the BEST fix, not just validate one.
 
 ### 🚨 CRITICAL: try-fix is Independent of PR's Fix
+
+"Independent" means each model explores a **different fix approach** from the PR's fix — not that models are isolated from code-review context. Code-review findings are provided as advisory background to improve fix quality.
 
 The purpose is NOT to re-test the PR's fix, but to:
 1. **Generate independent fix ideas** — What would YOU do to fix this bug?
@@ -127,13 +128,30 @@ prompt: |
   Invoke the try-fix skill for PR #XXXXX:
   - problem: {bug description from Pre-Flight}
   - platform: {platform from Platform Selection}
-  - test_command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform {platform} -TestFilter "IssueXXXXX"
+  - test_command: {test command from detected test type — use BuildAndRunHostApp.ps1 for UITest, Run-DeviceTests.ps1 for DeviceTest, dotnet test for UnitTest}
   - target_files:
     - src/{area}/{file1}.cs
     - src/{area}/{file2}.cs
+  - hints: |
+      Code review found the following concerns (advisory — use to inform your approach, not as a checklist):
+      Errors:
+        - {❌ Error finding 1 with file:line reference}
+      # Include warnings ONLY if relevant to the root cause:
+      # Warnings:
+      #   - {⚠️ Warning — omit if unrelated to root cause}
+      Failure modes:
+        - {Failure mode 1}: {What happens in this scenario}
+      Blast radius: {Summary — e.g., "Runs for ALL toolbar items at startup, not just badged ones"}
+      Code review verdict: {LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION} (confidence: {high/medium/low})
 
   Generate ONE independent fix idea. Review the PR's fix first to ensure your approach is DIFFERENT.
+  "Independent" means exploring a different fix approach — the code review context above is background
+  information to help you make better decisions, not a constraint on your exploration.
 ```
+
+**Include code review context in the `hints` field** (try-fix's documented optional input). If Pre-Flight code review found no issues, use `hints: "Code review found no issues (verdict: LGTM)"`. If code review was SKIPPED, omit the `hints` field entirely.
+
+**Selectivity:** Only include ❌ Error findings and failure-mode probes that are relevant to the bug being fixed. Omit 💡 Suggestions. Include ⚠️ Warnings only if directly related to the root cause.
 
 **Wait for each to complete before starting the next.**
 
@@ -202,7 +220,7 @@ Write `content.md`:
 
 ---
 
-## Phase 4: Report
+## Phase 3: Report
 
 > Read and follow `.github/pr-review/pr-report.md`
 
@@ -210,7 +228,7 @@ Deliver the final review recommendation.
 
 > 🚨 **DO NOT post any comments.** All output goes to `CustomAgentLogsTmp/PRState/`.
 
-**Gate:** Phases 1-3 must be complete.
+**Gate:** Phases 1-2 must be complete.
 
 ---
 
@@ -219,18 +237,19 @@ Deliver the final review recommendation.
 ```
 CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 ├── pre-flight/
-│   └── content.md              # Phase 1 output (pr-preflight)
+│   ├── content.md              # Phase 1 output (context + code review summary)
+│   └── code-review.md          # Full code-review skill output (findings, blast radius, verdict)
 ├── gate/
-│   └── content.md              # Phase 2 output (pr-gate)
+│   └── content.md              # Gate output (pr-gate, run separately)
 ├── try-fix/
-│   ├── content.md              # Phase 3 summary
+│   ├── content.md              # Phase 2 summary
 │   └── attempt-{N}/            # Per-model attempt
 │       ├── approach.md         # What was tried
 │       ├── result.txt          # Pass / Fail / Blocked
 │       ├── fix.diff            # git diff of changes
 │       └── analysis.md         # Why it worked/failed
 └── report/
-    └── content.md              # Phase 4 output (pr-report)
+    └── content.md              # Phase 3 output (pr-report)
 ```
 
 ---
@@ -239,10 +258,10 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 
 | Phase | Instructions | Key Action | If Blocked |
 |-------|--------------|------------|------------|
-| 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context | Skip missing info, continue |
-| 2. Gate | `pr-gate.md` | Verify tests via task agent | Document, continue to Try-Fix |
-| 3. Try-Fix | `try-fix` skill (×4) | **4-model exploration (MANDATORY)** | Skip failing models, continue |
-| 4. Report | `pr-report.md` | Write review recommendation | Never skip |
+| Gate (pre-run) | `pr-gate.md` | Verify tests (run by Review-PR.ps1) | Result passed in prompt — if missing, document and continue |
+| 1. Pre-Flight | `pr-preflight.md` | Read issue + PR context + **code review** | Skip missing info; if code review fails, set verdict to SKIPPED |
+| 2. Try-Fix | `try-fix` skill (×4) | **4-model exploration with code-review hints (MANDATORY)** | Skip failing models, continue |
+| 3. Report | `pr-report.md` | Write review recommendation | Never skip |
 
 ---
 

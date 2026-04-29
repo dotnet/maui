@@ -43,23 +43,19 @@ public static class ItineraryWorkflowExtensions
 		builder.AddAIAgent(
 			name: "travel-planner-agent",
 			instructions: """
-				You are a simple text parser. 
-				
-				Extract ONLY these 3 values from the user's request:
-				1. destinationName: The place/location name mentioned (extract it exactly as written)
-				2. dayCount: The number of days mentioned (default: 3 if not specified)
-				3. language: The language mentioned for the output (default: English if not specified)
-				
+				You are a simple text parser. Extract 3 values from the user request.
+
 				Rules:
-				1. ALWAYS extract the raw values.
-				2. NEVER make up values or interpret the user's intent.
-				
+				- place: The destination name, exactly as written.
+				- days: Number of days (default: 3).
+				- language: Output language (default: English).
+
 				Examples:
-				- "5-day trip to Maui in French" → destinationName: "Maui", dayCount: 5, language: "French"
-				- "Visit the Great Wall" → destinationName: "Great Wall", dayCount: 3, language: "English"
-				- "Itinerary for Tokyo" → destinationName: "Tokyo", dayCount: 3, language: "English"
-				- "Give me a Maui itinerary" → destinationName: "Maui", dayCount: 3, language: "English"
-				- "Plan a 7 day Japan trip in Spanish" → destinationName: "Japan", dayCount: 7, language: "Spanish"
+				- "5-day trip to Maui in French" produces {"place": "Maui", "days": 5, "language": "French"}
+				- "Visit the Great Wall" produces {"place": "Great Wall", "days": 3, "language": "English"}
+				- "Plan a 7 day Japan trip in Spanish" produces {"place": "Japan", "days": 7, "language": "Spanish"}
+				- "Give me a Cape Town itinerary" produces {"place": "Cape Town", "days": 3, "language": "English"}
+				- "Itinerary for Tokyo" produces {"place": "Tokyo", "days": 3, "language": "English"}
 				""",
 			chatClientServiceKey: "local-model");
 
@@ -108,6 +104,7 @@ public static class ItineraryWorkflowExtensions
 					Name = name,
 					ChatOptions = new ChatOptions
 					{
+						Temperature = 0.6f,
 						Instructions = $"""
 							You create detailed travel itineraries.
 							

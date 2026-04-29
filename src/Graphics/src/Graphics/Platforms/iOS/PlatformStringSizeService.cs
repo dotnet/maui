@@ -1,5 +1,6 @@
 ﻿using System;
 using CoreGraphics;
+using CoreText;
 using Foundation;
 using UIKit;
 
@@ -10,19 +11,30 @@ namespace Microsoft.Maui.Graphics.Platform
 		public SizeF GetStringSize(string value, IFont font, float fontSize)
 		{
 			if (string.IsNullOrEmpty(value))
+			{
 				return new SizeF();
+			}
 
-			var nsString = new NSString(value);
-			var uiFont = font?.ToPlatformFont(fontSize) ?? FontExtensions.GetDefaultPlatformFont();
+			// ToCTFont creates a new CTFont instance that we own and must dispose.
+			// GetDefaultCTFont may return a shared instance, so we don't dispose it.
+			using var ownedFont = font?.ToCTFont(fontSize);
 
-			CGSize size = nsString.GetBoundingRect(
-				CGSize.Empty,
-				NSStringDrawingOptions.UsesLineFragmentOrigin,
-				new UIStringAttributes { Font = uiFont },
-				null).Size;
+			var attributes = new CTStringAttributes
+			{
+				Font = ownedFont ?? FontExtensions.GetDefaultCTFont(fontSize)
+			};
 
-			uiFont.Dispose();
-			return new SizeF((float)size.Width, (float)size.Height);
+			// Get suggested frame size with unlimited constraints
+			using var attributedString = new NSAttributedString(value, attributes);
+			using var framesetter = new CTFramesetter(attributedString);
+
+			var measuredSize = framesetter.SuggestFrameSize(
+				new NSRange(0, attributedString.Length),
+				null,
+				new CGSize(float.MaxValue, float.MaxValue),
+				out _);
+
+			return new SizeF((float)measuredSize.Width, (float)measuredSize.Height);
 		}
 	}
 }

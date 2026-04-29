@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
     xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Views.Itinerary.ActivityListView"
     x:DataType="viewModels:DayPlanViewModel">
 
@@ -17,8 +18,8 @@
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Column="0" WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" StrokeThickness="0"
-                            BackgroundColor="{StaticResource Primary}" VerticalOptions="Start">
-                        <Label Text="●" FontSize="16" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
+                            Background="{StaticResource Primary}" VerticalOptions="Start">
+                        <Label Text="{x:Static f:FluentUI.location_20_regular}" FontFamily="FluentUI" FontSize="16" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
                     
                     <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Start">

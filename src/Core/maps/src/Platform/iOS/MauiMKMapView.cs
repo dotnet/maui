@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using CoreLocation;
 using MapKit;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Maps.Platform
 		WeakReference<IMapHandler> _handlerRef;
 		object? _lastTouchedView;
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
+		List<IMapElement>? _trackedMapElements;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -139,6 +141,16 @@ namespace Microsoft.Maui.Maps.Platform
 			if (elements == null)
 				return;
 
+			// Clear MapElementId from tracked elements (not Handler.VirtualView.Elements,
+			// which returns an empty snapshot after ObservableCollection.Clear())
+			if (_trackedMapElements != null)
+			{
+				foreach (var element in _trackedMapElements)
+					element.MapElementId = null;
+
+				_trackedMapElements = null;
+			}
+
 			foreach (IMKOverlay overlay in elements)
 			{
 				RemoveOverlay(overlay);
@@ -147,8 +159,12 @@ namespace Microsoft.Maui.Maps.Platform
 
 		internal void AddElements(IList elements)
 		{
+			_trackedMapElements = new List<IMapElement>();
+
 			foreach (IMapElement element in elements)
 			{
+				_trackedMapElements.Add(element);
+
 				IMKOverlay? overlay = null;
 				switch (element)
 				{

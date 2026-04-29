@@ -76,6 +76,15 @@ namespace Microsoft.Maui.Controls
 				{
 					previousDetail.SendNavigatedFrom(
 						new NavigatedFromEventArgs(destinationPage: value, NavigationType.Replace));
+
+					if (previousDetail.IsLoaded)
+					{
+						previousDetail.OnUnloaded(previousDetail.DisconnectHandlers);
+					}
+					else
+					{
+						previousDetail.DisconnectHandlers();
+					}
 				}
 
 				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.Replace));
