@@ -70,6 +70,7 @@ echo "Token acquired."
 
 # Force Gradle to use the Azure Artifacts feed (same as CI) so that
 # dependency resolution goes through the feed and triggers ingestion.
+# Required because settings.gradle gates repo selection on TF_BUILD.
 export TF_BUILD=True
 
 # Step 2: Ingest platform-specific artifacts for all OS variants
