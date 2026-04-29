@@ -570,6 +570,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollHelper?.AdjustScroll();
 		}
 
+		protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
+		{
+			base.OnSizeChanged(w, h, oldw, oldh);
+
+			// When the RecyclerView's size changes (e.g., after an orientation change while
+			// the CollectionView was not visible), we need to invalidate all visible item views
+			// to ensure they are re-measured with the new dimensions.
+			if (oldw > 0 && oldh > 0 && (Math.Abs(w - oldw) > 1 || Math.Abs(h - oldh) > 1))
+			{
+				InvalidateItemMeasures();
+			}
+		}
+
+		void InvalidateItemMeasures()
+		{
+			// Clear the adapter's static size cache (used by MeasureFirstItem strategy)
+			ItemsViewAdapter?.ClearMeasureCache();
+
+			// Force all visible children to invalidate their cached sizes and re-measure
+			for (int i = 0; i < ChildCount; i++)
+			{
+				if (GetChildAt(i) is ItemContentView itemContentView)
+				{
+					itemContentView.InvalidateCachedSize();
+					itemContentView.ForceLayout();
+				}
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
