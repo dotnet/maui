@@ -3,10 +3,20 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Accessibility;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.ApplicationModel.Communication;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
+using MauiContacts = Microsoft.Maui.ApplicationModel.Communication.Contacts;
+using Microsoft.Maui.Authentication;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Media;
+using Microsoft.Maui.Networking;
+using Microsoft.Maui.Storage;
 #if ANDROID
 using Android.App;
 #endif
@@ -28,6 +38,12 @@ namespace Microsoft.Maui.Hosting
 	{
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
+			// Register the EssentialsInitializer unconditionally so DI-registered Essentials
+			// implementations are bridged to the static facades during app startup, even when
+			// ConfigureEssentials() is not called. The initializer's AppActions event handler
+			// is a no-op when no AppActionHandlers are configured.
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
+
 			builder.ConfigureLifecycleEvents(life =>
 			{
 #if ANDROID
@@ -83,9 +99,7 @@ namespace Microsoft.Maui.Hosting
 #endif
 			});
 
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
-#endif
 
 			return builder;
 		}
@@ -126,7 +140,6 @@ namespace Microsoft.Maui.Hosting
 		/// on custom platform backends / external TFMs where no native
 		/// MainThread implementation exists.
 		/// </summary>
-#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
 		class MainThreadBridgeInitializer : IMauiInitializeService
 		{
 			public void Initialize(IServiceProvider services)
@@ -140,7 +153,6 @@ namespace Microsoft.Maui.Hosting
 					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
 			}
 		}
-#endif
 
 		class EssentialsInitializer : IMauiInitializeService
 		{
@@ -163,6 +175,8 @@ namespace Microsoft.Maui.Hosting
 					}
 				}
 
+				BridgeEssentialsFromDI(services);
+
 #if WINDOWS
 				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
@@ -178,6 +192,75 @@ namespace Microsoft.Maui.Hosting
 
 				if (_essentialsBuilder.TrackVersions)
 					VersionTracking.Track();
+			}
+
+			/// <summary>
+			/// Bridges DI-registered Essentials implementations to the static facades.
+			/// If a service is registered in DI, it becomes the backing implementation for
+			/// the corresponding static API. If not registered, the existing lazy platform
+			/// default behavior is preserved.
+			/// </summary>
+			static void BridgeEssentialsFromDI(IServiceProvider services)
+			{
+				// SetDefault pattern types
+				BridgeIfRegistered<IAccelerometer>(services, Accelerometer.SetDefault);
+#if ANDROID
+				BridgeIfRegistered<IActivityStateManager>(services, ActivityStateManager.SetDefault);
+#endif
+				BridgeIfRegistered<IBarometer>(services, Barometer.SetDefault);
+				BridgeIfRegistered<IBattery>(services, Battery.SetDefault);
+				BridgeIfRegistered<IBrowser>(services, Browser.SetDefault);
+				BridgeIfRegistered<IClipboard>(services, Clipboard.SetDefault);
+				BridgeIfRegistered<ICompass>(services, Compass.SetDefault);
+				BridgeIfRegistered<IContacts>(services, MauiContacts.SetDefault);
+				BridgeIfRegistered<IEmail>(services, Email.SetDefault);
+				BridgeIfRegistered<IFilePicker>(services, FilePicker.SetDefault);
+				BridgeIfRegistered<IFlashlight>(services, Flashlight.SetDefault);
+				BridgeIfRegistered<IGeolocation>(services, Geolocation.SetDefault);
+				BridgeIfRegistered<IGyroscope>(services, Gyroscope.SetDefault);
+				BridgeIfRegistered<IHapticFeedback>(services, HapticFeedback.SetDefault);
+				BridgeIfRegistered<ILauncher>(services, Launcher.SetDefault);
+				BridgeIfRegistered<IMagnetometer>(services, Magnetometer.SetDefault);
+				BridgeIfRegistered<IMap>(services, Map.SetDefault);
+				BridgeIfRegistered<IMediaPicker>(services, MediaPicker.SetDefault);
+				BridgeIfRegistered<IOrientationSensor>(services, OrientationSensor.SetDefault);
+				BridgeIfRegistered<IPhoneDialer>(services, PhoneDialer.SetDefault);
+				BridgeIfRegistered<IPreferences>(services, Preferences.SetDefault);
+				BridgeIfRegistered<IScreenshot>(services, Screenshot.SetDefault);
+				BridgeIfRegistered<ISecureStorage>(services, SecureStorage.SetDefault);
+				BridgeIfRegistered<ISemanticScreenReader>(services, SemanticScreenReader.SetDefault);
+				BridgeIfRegistered<IShare>(services, Share.SetDefault);
+				BridgeIfRegistered<ISms>(services, Sms.SetDefault);
+				BridgeIfRegistered<ITextToSpeech>(services, TextToSpeech.SetDefault);
+				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.SetDefault);
+				BridgeIfRegistered<IVibration>(services, Vibration.SetDefault);
+				BridgeIfRegistered<IWebAuthenticator>(services, WebAuthenticator.SetDefault);
+#if WINDOWS || __IOS__ || MACCATALYST
+				BridgeIfRegistered<IWindowStateManager>(services, WindowStateManager.SetDefault);
+#endif
+				BridgeIfRegistered<IAppleSignInAuthenticator>(services, AppleSignInAuthenticator.SetDefault);
+
+				// SetCurrent pattern types
+				BridgeIfRegistered<IAppActions>(services, AppActions.SetCurrent);
+				BridgeIfRegistered<IAppInfo>(services, AppInfo.SetCurrent);
+				BridgeIfRegistered<IConnectivity>(services, Connectivity.SetCurrent);
+				BridgeIfRegistered<IDeviceDisplay>(services, DeviceDisplay.SetCurrent);
+				BridgeIfRegistered<IDeviceInfo>(services, DeviceInfo.SetCurrent);
+				BridgeIfRegistered<IFileSystem>(services, FileSystem.SetCurrent);
+				BridgeIfRegistered<IGeocoding>(services, Geocoding.SetCurrent);
+			}
+
+			/// <summary>
+			/// Resolves a DI-registered implementation and assigns it to the corresponding static facade.
+			/// Note: The resolved instance is stored in a static field for the app lifetime, effectively
+			/// promoting it to singleton scope regardless of its DI registration lifetime. Services bridged
+			/// here should be registered as Singleton for correct behavior.
+			/// </summary>
+			static void BridgeIfRegistered<T>(IServiceProvider services, Action<T?> setter) where T : class
+			{
+				var impl = services.GetService<T>();
+				if (impl is not null)
+					setter(impl);
 			}
 
 			private static async void SetAppActions(IServiceProvider services, List<AppAction> appActions)
