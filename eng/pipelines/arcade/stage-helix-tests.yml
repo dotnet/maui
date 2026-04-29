@@ -84,7 +84,7 @@ stages:
             - ${{ each pair in step }}:
                 ${{ pair.key }}: ${{ pair.value }}
 
-          - script: rm -rf .dotnet/sdk-manifests/11.0.100-preview.1 .dotnet/sdk-manifests/11.0.100-preview.2 .dotnet/sdk-manifests/11.0.100-preview.3
+          - pwsh: Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .dotnet/sdk-manifests/11.0.100-preview.1, .dotnet/sdk-manifests/11.0.100-preview.2, .dotnet/sdk-manifests/11.0.100-preview.3
             displayName: 🧹 Clean stale workload manifests
 
           - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks.binlog $(_OfficialBuildIdArgs)

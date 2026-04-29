@@ -122,7 +122,7 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - script: rm -rf .dotnet/sdk-manifests/11.0.100-preview.1 .dotnet/sdk-manifests/11.0.100-preview.2 .dotnet/sdk-manifests/11.0.100-preview.3
+        - pwsh: Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .dotnet/sdk-manifests/11.0.100-preview.1, .dotnet/sdk-manifests/11.0.100-preview.2, .dotnet/sdk-manifests/11.0.100-preview.3
           displayName: Clean stale workload manifests
 
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
@@ -338,7 +338,7 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - script: rm -rf .dotnet/sdk-manifests/11.0.100-preview.1 .dotnet/sdk-manifests/11.0.100-preview.2 .dotnet/sdk-manifests/11.0.100-preview.3
+        - pwsh: Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .dotnet/sdk-manifests/11.0.100-preview.1, .dotnet/sdk-manifests/11.0.100-preview.2, .dotnet/sdk-manifests/11.0.100-preview.3
           displayName: Clean stale workload manifests
 
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
@@ -567,7 +567,7 @@ stages:
             displayName: 'Add .NET to PATH'
 
           # Build BuildTasks first (need -restore to ensure SDK is available)
-          - script: if exist .dotnet\sdk-manifests\11.0.100-preview.1 rd /s /q .dotnet\sdk-manifests\11.0.100-preview.1
+          - pwsh: Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .dotnet/sdk-manifests/11.0.100-preview.1, .dotnet/sdk-manifests/11.0.100-preview.2, .dotnet/sdk-manifests/11.0.100-preview.3
             displayName: Clean stale workload manifests
 
           - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
