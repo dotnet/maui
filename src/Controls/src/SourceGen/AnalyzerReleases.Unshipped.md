@@ -32,3 +32,9 @@ MAUIX2012 | XamlParsing | Error | CSharpExpressionsRequirePreviewFeatures
 MAUIX2013 | XamlParsing | Error | AsyncLambdaNotSupported
 MAUIX2015 | XamlParsing | Error | XCodeNotChildOfRoot
 MAUIX2016 | XamlParsing | Error | XCodeRequiresXClass
+MAUI1200 | QueryPropertyGenerator | Warning | QueryPropertyClassMustBePartial
+MAUI1201 | QueryPropertyGenerator | Warning | QueryPropertyNotFound
+MAUI1202 | QueryPropertyGenerator | Warning | QueryPropertySetterNotPublic
+MAUI1203 | QueryPropertyGenerator | Warning | QueryPropertyAttributeInvalidArguments
+MAUI1204 | QueryPropertyGenerator | Error | QueryPropertyClassMustBePartialNoFallback
+MAUI1205 | QueryPropertyGenerator | Error | QueryPropertyContainingClassMustBePartial

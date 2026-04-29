@@ -32,5 +32,6 @@
     <CompilerVisibleProperty Include="Configuration" />
     <CompilerVisibleProperty Include="MauiXamlHotReload" />
     <CompilerVisibleProperty Include="EnablePreviewFeatures" />
+    <CompilerVisibleProperty Include="MauiQueryPropertyAttributeSupport" />
 	</ItemGroup>
 </Project>

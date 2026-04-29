@@ -385,14 +385,24 @@ namespace Microsoft.Maui.Controls
 
 			if (content is IQueryAttributable attributable)
 			{
-				attributable
-					.ApplyQueryAttributes(query.ToReadOnlyIfUsingShellNavigationQueryParameters());
+				// Merge removed keys as null entries so the implementation can detect
+				// "key was present before but is now absent" and clear properties.
+				var queryDict = query.ToReadOnlyIfUsingShellNavigationQueryParameters();
+				var merged = new Dictionary<string, object>(queryDict);
+				foreach (var key in oldQuery.Keys)
+				{
+					if (!merged.ContainsKey(key))
+						merged[key] = null;
+				}
+				attributable.ApplyQueryAttributes(merged);
 			}
 
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			if (RuntimeFeature.IsQueryPropertyAttributeSupported)
+			// If IQueryAttributable handled it (manually or via source generation),
+			// skip the reflection-based [QueryProperty] path.
+			if (RuntimeFeature.IsQueryPropertyAttributeSupported && content is not IQueryAttributable)
 			{
 				var type = content.GetType();
 				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
