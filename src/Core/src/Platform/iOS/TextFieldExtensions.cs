@@ -227,8 +227,6 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
 			{
-				UIImage? defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
-
 				if (entry.TextColor is null)
 				{
 					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
@@ -238,6 +236,7 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
+					UIImage? defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
 					clearButton.TintColor = entry.TextColor.ToPlatform();
 
 					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, entry.TextColor.ToPlatform());
