@@ -35,7 +35,7 @@ stages:
           base64Encode: true
           outputVariableName: dotnetbuilds-internal-container-read-token-base64
       
-      - script: ${{ job.buildScript }} -restore -configuration ${{ parameters.buildConfig }} /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/provision-workloads.binlog $(_OfficialBuildIdArgs)
+      - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig }} -projects "$(Build.SourcesDirectory)/src/DotNet/DotNet.csproj" /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/provision-workloads.binlog $(_OfficialBuildIdArgs)
         displayName: 🔧 Provision Workloads
 
       - script: ${{ job.buildScript }} -restore -build -configuration ${{ parameters.buildConfig }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ parameters.buildConfig }}/buildtasks.binlog $(_OfficialBuildIdArgs)
