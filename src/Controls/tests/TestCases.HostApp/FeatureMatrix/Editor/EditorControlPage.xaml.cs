@@ -28,17 +28,11 @@ public partial class EditorControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new EditorViewModel();
-		_viewModel.Text = "Test Editor";
-		_viewModel.Placeholder = "Enter text here";
-		_viewModel.VerticalTextAlignment = TextAlignment.End;
-		_viewModel.CursorPosition = 0;
-		_viewModel.SelectionLength = 0;
-		_viewModel.HeightRequest = -1;
+		_viewModel.Reset();
 		await Navigation.PushAsync(new EditorOptionsPage(_viewModel));
 	}
 
-	private void CursorPositionButton_Clicked(object sender, EventArgs e)
+	private void CursorPositionEntry_TextChanged(object sender, TextChangedEventArgs e)
 	{
 		if (int.TryParse(CursorPositionEntry.Text, out int cursorPosition))
 		{
@@ -46,7 +40,7 @@ public partial class EditorControlMainPage : ContentPage
 		}
 	}
 
-	private void SelectionLength_Clicked(object sender, EventArgs e)
+	private void SelectionLengthEntry_TextChanged(object sender, TextChangedEventArgs e)
 	{
 		if (int.TryParse(SelectionLengthEntry.Text, out int selectionLength))
 		{
@@ -130,3 +124,4 @@ public partial class EditorControlMainPage : ContentPage
 		EditorControl.Unfocus();
 	}
 }
+
