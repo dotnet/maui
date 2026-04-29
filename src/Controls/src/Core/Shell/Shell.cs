@@ -1332,7 +1332,7 @@ namespace Microsoft.Maui.Controls
 				Color light;
 				Color dark;
 
-				if (OperatingSystem.IsAndroid() && RuntimeFeature.IsMaterial3Enabled)
+				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
 				{
 					light = Color.FromArgb("#FEF7FF");
 					dark = Color.FromArgb("#141218");
