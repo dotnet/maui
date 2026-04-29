@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls
 				value = typeConverterTo.ConvertFromInvariantString(Convert.ToString(value, CultureInfo.InvariantCulture));
 				return true;
 			}
-			if (returnType.IsAssignableFrom(valueType))
+			if (returnType.IsAssignableFrom(valueType) && value is not IWrappedValue)
 				return true;
 
 			if (TypeConversionHelper.TryConvert(value, returnType, out var convertedValue))

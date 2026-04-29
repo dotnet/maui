@@ -18,7 +18,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	   XmlName.xArguments,
 		XmlName.xClass,
 		XmlName.xClassModifier,
-		XmlName.xCode,
 		XmlName.xDataType,
 		XmlName.xFactoryMethod,
 		XmlName.xFieldModifier,

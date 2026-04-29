@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				case DefaultCell2 defaultCell:
 					UpdateDefaultSupplementaryView(defaultCell, elementKind);
+					defaultCell.Label.UpdateFlowDirection(ItemsView);
 					break;
 				case TemplatedCell2 templatedCell:
 					UpdateTemplatedSupplementaryView(templatedCell, elementKind);
@@ -257,6 +258,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						return;
 					}
 				}
+			}
+		}
+
+		public override void UpdateFlowDirection()
+		{
+			base.UpdateFlowDirection();
+
+			// Update DefaultCell2 string-based header/footer flow direction via tag lookup
+			if (CollectionView.ViewWithTag(HeaderTag) is DefaultCell2 headerCell)
+			{
+				headerCell.Label.UpdateFlowDirection(ItemsView);
+			}
+
+			if (CollectionView.ViewWithTag(FooterTag) is DefaultCell2 footerCell)
+			{
+				footerCell.Label.UpdateFlowDirection(ItemsView);
 			}
 		}
 	}

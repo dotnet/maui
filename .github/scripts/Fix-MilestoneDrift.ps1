@@ -356,8 +356,10 @@ function ConvertBranchToMilestone([string]$BranchName) {
     return $null
 }
 
-function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Major) {
-    <# Finds the earliest release branch containing a commit.
+function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Major, [int]$PrNum = 0) {
+    <# Finds the earliest release branch containing a PR.
+       First checks git ancestry (commit SHA). If that fails (rebase/cherry-pick
+       changed the SHA), falls back to searching commit messages for the PR number.
        Checks in chronological order: previews → RCs → GA → SRs.
        Returns @{ Branch; Milestone } or $null. #>
 
@@ -380,15 +382,30 @@ function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Ma
         return 500  # GA (no suffix) — after previews/RCs, before SRs
     }
 
-    # Fetch branch tips and check ancestry
+    # Check each branch: first by ancestry, then by PR number in commit messages.
+    # The commit message approach handles rebases and cherry-picks where the SHA changes
+    # but the PR number "(#NNNNN)" is preserved in the squash-merge message.
     foreach ($branch in $sorted) {
-        # Make sure we have the branch ref locally
         $null = git -C $Repo fetch origin $branch --quiet 2>&1
+
+        # Try ancestry first (fastest, exact match)
         $null = git -C $Repo merge-base --is-ancestor $CommitSha "origin/$branch" 2>&1
         if ($LASTEXITCODE -eq 0) {
             $milestone = ConvertBranchToMilestone $branch
             if ($milestone) {
                 return @{ Branch = $branch; Milestone = $milestone }
+            }
+        }
+
+        # Fall back to commit message search (handles rebase/cherry-pick)
+        if ($PrNum -gt 0) {
+            $grepResult = git -C $Repo --no-pager log "origin/$branch" --oneline --grep="(#$PrNum)" -1 2>&1
+            if ($LASTEXITCODE -eq 0 -and $grepResult) {
+                $milestone = ConvertBranchToMilestone $branch
+                if ($milestone) {
+                    Write-Verbose "  PR #$PrNum found via commit message on $branch (rebased/cherry-picked)"
+                    return @{ Branch = $branch; Milestone = $milestone }
+                }
             }
         }
     }
@@ -581,35 +598,33 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         $versionInfo = Get-VersionFromGitRef $pr.MergeCommitSha $Repo
         $detectedMajor = if ($versionInfo -and $versionInfo.Tag -match '^(\d+)\.') { [int]$Matches[1] } else { Get-CurrentMajorVersion $Repo }
 
-        $releaseBranch = Find-ReleaseBranchForCommit $pr.MergeCommitSha $Repo $detectedMajor
+        $releaseBranch = Find-ReleaseBranchForCommit $pr.MergeCommitSha $Repo $detectedMajor $PrNum
         if ($releaseBranch) {
             $expectedMs = $releaseBranch.Milestone
             if ($versionInfo) { $ReleaseTag = $versionInfo.Tag }
             Write-Host "  Found in release branch: $($releaseBranch.Branch) → $expectedMs"
         } else {
-            # Step 2: Fall back to Versions.props on the target branch HEAD.
-            # The merge commit's Versions.props may be stale (e.g. inflight/current
-            # was at PatchVersion=60 when the PR merged, but has since moved to 70).
-            # Read from the branch the PR targeted — whatever it is.
-            if ($pr.BaseRef) {
-                $devBranch = "origin/$($pr.BaseRef)"
-                $branchVersionInfo = Get-VersionFromGitRef $devBranch $Repo
-                if ($branchVersionInfo) {
-                    $versionInfo = $branchVersionInfo
-                    $ReleaseTag = $branchVersionInfo.Tag
-                    $preLabel = $branchVersionInfo.PreLabel
-                    $preIter = if ($branchVersionInfo.PreIter) { $branchVersionInfo.PreIter } else { 0 }
-                    $preDisplay = if ($branchVersionInfo.PreLabel) { " ($($branchVersionInfo.PreLabel)$($branchVersionInfo.PreIter))" } else { "" }
-                    Write-Host "  Version from Versions.props on $devBranch`: $ReleaseTag$preDisplay"
-                } elseif ($versionInfo) {
-                    # Branch read failed; fall back to merge commit's version info
-                    Write-Verbose "  Could not read from $devBranch — using merge commit Versions.props"
-                    $ReleaseTag = $versionInfo.Tag
-                    $preLabel = $versionInfo.PreLabel
-                    $preIter = if ($versionInfo.PreIter) { $versionInfo.PreIter } else { 0 }
-                }
-            } else {
-                Write-Warning "PR #$PrNum has no BaseRef — cannot read Versions.props from target branch"
+            # Step 2: Fall back to Versions.props on the development branch HEAD.
+            # All branches ultimately feed into the main development branch for their
+            # .NET version (main for .NET 10, net11.0 for .NET 11). Read from there
+            # to get the current target version, regardless of which staging branch
+            # the PR was merged to (inflight/current, inflight/candidate, darc/*, etc.).
+            $mainBranch = Get-MainBranchForVersion $detectedMajor $Repo
+            $devBranch = "origin/$mainBranch"
+            $branchVersionInfo = Get-VersionFromGitRef $devBranch $Repo
+            if ($branchVersionInfo) {
+                $versionInfo = $branchVersionInfo
+                $ReleaseTag = $branchVersionInfo.Tag
+                $preLabel = $branchVersionInfo.PreLabel
+                $preIter = if ($branchVersionInfo.PreIter) { $branchVersionInfo.PreIter } else { 0 }
+                $preDisplay = if ($branchVersionInfo.PreLabel) { " ($($branchVersionInfo.PreLabel)$($branchVersionInfo.PreIter))" } else { "" }
+                Write-Host "  Version from Versions.props on $devBranch`: $ReleaseTag$preDisplay"
+            } elseif ($versionInfo) {
+                # Branch read failed; fall back to merge commit's version info
+                Write-Verbose "  Could not read from $devBranch — using merge commit Versions.props"
+                $ReleaseTag = $versionInfo.Tag
+                $preLabel = $versionInfo.PreLabel
+                $preIter = if ($versionInfo.PreIter) { $versionInfo.PreIter } else { 0 }
             }
         }
     }

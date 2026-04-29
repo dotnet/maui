@@ -6,9 +6,11 @@
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
+override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
 override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnAttachedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnVisibilityChanged(Android.Views.View changedView, Android.Views.ViewStates visibility) -> void
+override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void

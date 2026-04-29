@@ -8,6 +8,7 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
@@ -524,7 +525,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (DisplayedPage is null)
 				return;
 
-			_bottomView.Visibility = ShellItemController.ShowTabs ? ViewStates.Visible : ViewStates.Gone;
+			var showTabs = ShellItemController.ShowTabs;
+			var wasGone = _bottomView.Visibility == ViewStates.Gone;
+
+			_bottomView.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
+
+			// After a Gone → Visible TabBar transition Android does not automatically re-dispatch
+			// window insets to child views, leaving the displayed page with stale bottom padding
+			// that creates empty space above the TabBar. Re-request insets after the layout pass
+			// so safe-area padding is recalculated against the updated content bounds.
+			if (wasGone && showTabs && DisplayedPage.Handler is IPlatformViewHandler { PlatformView: { } platformView })
+			{
+				platformView.Post(() =>
+				{
+					if (platformView.IsAttachedToWindow)
+						ViewCompat.RequestApplyInsets(platformView);
+				});
+			}
 
 			if (_shellAppearance is not null && !_appearanceSet)
 			{

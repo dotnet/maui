@@ -18,7 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("AddButton");
 			App.Tap("AddButton");
+			App.WaitForElement("AddButton");
 			App.Tap("AddButton");
+			App.WaitForElement("AddButton");
 			App.Tap("AddButton");
 			// Here we check for Footer proper visibility with proper alignment in view.
 			VerifyScreenshot();
@@ -30,8 +32,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("AddButton");
 			App.Tap("RemoveButton");
+			App.WaitForElement("RemoveButton");
 			App.Tap("RemoveButton");
+			App.WaitForElement("RemoveButton");
 			App.Tap("RemoveButton");
+			App.WaitForElement("AddButton");
 			App.Tap("AddButton");
 			// Here we check for Header and Footer proper visibility with proper alignment in view.
 			VerifyScreenshot();

@@ -36,15 +36,6 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
-	/// <summary>
-	/// Returns true if the node is an x:Code element, which is handled by the x:Code pipeline
-	/// and should be ignored by IC visitors.
-	/// </summary>
-	internal static bool IsXCodeElement(INode node)
-		=> node is ElementNode en
-			&& en.XmlType.Name == "Code"
-			&& (en.NamespaceURI == XamlParser.X2006Uri || en.NamespaceURI == XamlParser.X2009Uri);
-
 	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
@@ -163,80 +154,6 @@ static class GeneratorHelpers
 		}
 
 		return new XamlProjectItemForCB(projectItem, root, nsmgr);
-	}
-
-	/// <summary>
-	/// Extracts x:Code blocks from a XAML file. Returns null if no x:Code elements are found
-	/// or if the XAML doesn't meet the requirements (x:Class, EnablePreviewFeatures).
-	/// </summary>
-	public static (ProjectItem ProjectItem, string Source, List<Diagnostic> Diagnostics)? ComputeXCodeSource(
-		(XamlProjectItemForCB?, AssemblyAttributes) input,
-		CancellationToken cancellationToken)
-	{
-		var (xamlItem, xmlnsCache) = input;
-		if (xamlItem?.Root == null || xamlItem.ProjectItem == null)
-			return null;
-
-		var root = xamlItem.Root;
-		var nsmgr = xamlItem.Nsmgr;
-		var projItem = xamlItem.ProjectItem;
-		var diagnostics = new List<Diagnostic>();
-
-		// Find all x:Code child elements of the root
-		var codeBlocks = new List<string>();
-
-		foreach (XmlNode child in root.ChildNodes)
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-
-			if (child.LocalName != "Code")
-				continue;
-			if (child.NamespaceURI != XamlParser.X2006Uri && child.NamespaceURI != XamlParser.X2009Uri)
-				continue;
-
-			codeBlocks.Add(child.InnerText);
-		}
-
-		if (codeBlocks.Count == 0)
-			return null;
-
-		// Gate: EnablePreviewFeatures required
-		if (!projItem.EnablePreviewFeatures)
-		{
-			if (projItem.RelativePath is string path)
-			{
-				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
-				diagnostics.Add(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
-			}
-			return (projItem, string.Empty, diagnostics);
-		}
-
-		// Gate: x:Class must be present
-		var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
-						?? root.Attributes["Class", XamlParser.X2009Uri];
-		if (rootClass == null)
-		{
-			if (projItem.RelativePath is string path)
-			{
-				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
-				diagnostics.Add(Diagnostic.Create(Descriptors.XCodeRequiresXClass, location));
-			}
-			return (projItem, string.Empty, diagnostics);
-		}
-
-		XmlnsHelper.ParseXmlns(rootClass.Value, out var rootType, out var rootClrNamespace, out _, out _);
-		if (rootType == null || rootClrNamespace == null)
-		{
-			if (projItem.RelativePath is string path)
-			{
-				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
-				diagnostics.Add(Diagnostic.Create(Descriptors.XCodeRequiresXClass, location));
-			}
-			return (projItem, string.Empty, diagnostics);
-		}
-
-		var source = XCodeCodeWriter.GenerateXCode(rootClrNamespace, rootType, codeBlocks.ToArray());
-		return (projItem, source, diagnostics);
 	}
 
 	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, AssemblyAttributes assemblyCaches, CancellationToken cancellationToken)

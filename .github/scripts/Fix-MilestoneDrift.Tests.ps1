@@ -26,9 +26,9 @@
 
     Dry-run validation commands (run from repo root with gh CLI authenticated):
 
-      # 1. PR merged to inflight/current — should read Versions.props from origin/inflight/current
+      # 1. PR merged to inflight/current — should read from origin/main (all branches feed into main)
       pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 34228 -RepoPath . -Verbose
-      # Expected: reads from origin/inflight/current, milestone matches current PatchVersion on that branch
+      # Expected: "Version from Versions.props on origin/main: 10.0.70", milestone = .NET 10 SR7
 
       # 2. PR merged to main, already on a release branch — should use release branch
       pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 34620 -RepoPath . -Verbose
@@ -55,11 +55,11 @@
       # Expected: finds 10.0.41 as previous tag, scans ~78 PRs, all .NET 10
 
     Key things to verify after changes:
-      - inflight/current PRs read from origin/inflight/current (not stale merge commit)
+      - inflight/* and darc/* PRs read from origin/main (they feed into main)
       - net11.0 PRs read from origin/net11.0 (never from origin/main)
       - PRs on release branches get the milestone from the branch name (not Versions.props)
       - Preview tags in tag mode find the correct previous tag (preview2 → preview3, not full history)
-      - No hardcoded branch names — base.ref drives the version lookup
+      - Rebased/cherry-picked PRs are found via commit message grep when ancestry fails
 #>
 
 BeforeAll {
