@@ -65,5 +65,11 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapCornerRadius(IRadioButtonHandler handler, IRadioButton radioButton) { }
+
+		// On iOS/MacCatalyst, RadioButton always uses a ControlTemplate whose Border
+		// element binds BackgroundColor and renders it inside the clipped area.
+		// Suppress the base handler's MapBackground to prevent the outer platform view's
+		// background from bleeding outside the Border's rounded corners.
+		public static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton) { }
 	}
 }

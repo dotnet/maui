@@ -15,6 +15,8 @@ using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
 using WSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType;
+using WSetter = Microsoft.UI.Xaml.Setter;
+using WStyle = Microsoft.UI.Xaml.Style;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -26,6 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
 		Size _currentSize;
 		bool _isCarouselViewReady;
+		bool _isInternalPositionUpdate;
 		int _gotoPosition = -1;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
@@ -165,7 +168,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				listView = new FormsListView()
 				{
 					Style = (UI.Xaml.Style)WApp.Current.Resources["HorizontalCarouselListStyle"],
-					ItemsPanel = (ItemsPanelTemplate)WApp.Current.Resources["HorizontalListItemsPanel"]
+					ItemsPanel = (ItemsPanelTemplate)WApp.Current.Resources["HorizontalListItemsPanel"],
+					ItemContainerStyle = GetItemContainerStyle(true)
 				};
 
 				ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
@@ -175,7 +179,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				listView = new FormsListView()
 				{
-					Style = (UI.Xaml.Style)WApp.Current.Resources["VerticalCarouselListStyle"]
+					Style = (UI.Xaml.Style)WApp.Current.Resources["VerticalCarouselListStyle"],
+					ItemContainerStyle = GetItemContainerStyle(false)
 				};
 
 				ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
@@ -289,7 +294,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 			{
-				itemWidth = ListViewBase.ActualWidth - ItemsView.PeekAreaInsets.Left - ItemsView.PeekAreaInsets.Right;
+				itemWidth = ListViewBase.ActualWidth - ItemsView.PeekAreaInsets.Left - ItemsView.PeekAreaInsets.Right - ItemsView.ItemsLayout.ItemSpacing;
 			}
 
 			return Math.Max(itemWidth, 0);
@@ -301,7 +306,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 			{
-				itemHeight = ListViewBase.ActualHeight - ItemsView.PeekAreaInsets.Top - ItemsView.PeekAreaInsets.Bottom;
+				itemHeight = ListViewBase.ActualHeight - ItemsView.PeekAreaInsets.Top - ItemsView.PeekAreaInsets.Bottom - ItemsView.ItemsLayout.ItemSpacing;
 			}
 
 			return Math.Max(itemHeight, 0);
@@ -334,9 +339,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void SetCarouselViewPosition(int position)
 		{
 			if (ItemCount == 0)
-			{
 				return;
-			}
 
 			if (!IsValidPosition(position))
 				return;
@@ -418,7 +421,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			// Disable animation during collection changes to prevent cascading scroll events
+			var animate = ItemsView.AnimateCurrentItemChanges && !_isInternalPositionUpdate;
+			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: animate);
 		}
 
 		void UpdatePosition()
@@ -566,34 +571,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnCollectionItemsSourceChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var carouselPosition = ItemsView.Position;
-			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
-			var count = (sender as IList).Count;
-
-			bool removingCurrentElement = currentItemPosition == -1;
-			bool removingLastElement = e.OldStartingIndex == count;
-			bool removingFirstElement = e.OldStartingIndex == 0;
-			bool removingCurrentElementButNotFirst = removingCurrentElement && removingLastElement && ItemsView.Position > 0;
-
-			if (removingCurrentElementButNotFirst)
+			// Set flag to disable animation during collection changes
+			_isInternalPositionUpdate = true;
+			
+			try
 			{
-				carouselPosition = ItemsView.Position - 1;
+				var carouselPosition = ItemsView.Position;
+				var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
+				var count = (sender as IList).Count;
 
+				bool removingCurrentElement = currentItemPosition == -1;
+				bool removingLastElement = e.OldStartingIndex == count;
+				bool removingFirstElement = e.OldStartingIndex == 0;
+				bool removingCurrentElementButNotFirst = removingCurrentElement && removingLastElement && ItemsView.Position > 0;
+
+				if (removingCurrentElementButNotFirst)
+				{
+					carouselPosition = ItemsView.Position - 1;
+				}
+				else if (removingFirstElement && !removingCurrentElement)
+				{
+					carouselPosition = currentItemPosition;
+				}
+
+				// If we are adding a new item make sure to maintain the CurrentItemPosition
+				else if (e.Action == NotifyCollectionChangedAction.Add
+					&& currentItemPosition != -1)
+				{
+					carouselPosition = currentItemPosition;
+				}
+
+				if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+				{
+					carouselPosition = count == 0 ? 0 : count - 1;
+				}
+				else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+				{
+					carouselPosition = 0;
+				}
+
+				SetCarouselViewCurrentItem(carouselPosition);
+				SetCarouselViewPosition(carouselPosition);
 			}
-			else if (removingFirstElement && !removingCurrentElement)
+			finally
 			{
-				carouselPosition = currentItemPosition;
+				// Reset flag after collection operations complete
+				_isInternalPositionUpdate = false;
 			}
-
-			// If we are adding a new item make sure to maintain the CurrentItemPosition
-			else if (e.Action == NotifyCollectionChangedAction.Add
-				&& currentItemPosition != -1)
-			{
-				carouselPosition = currentItemPosition;
-			}
-
-			SetCarouselViewCurrentItem(carouselPosition);
-			SetCarouselViewPosition(carouselPosition);
 		}
 
 		void OnListViewSizeChanged(object sender, SizeChangedEventArgs e) => Resize(e.NewSize);
@@ -638,6 +662,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				item.ItemHeight = itemHeight;
 				item.ItemWidth = itemWidth;
 			}
+		}
+
+		WStyle GetItemContainerStyle(bool isHorizontalLayout)
+		{
+			var h = CarouselItemsLayout?.ItemSpacing > 0 ? (CarouselItemsLayout.ItemSpacing) / 2 : 0;
+			var padding = isHorizontalLayout ? WinUIHelpers.CreateThickness(h, 0, h, 0) : WinUIHelpers.CreateThickness(0, h, 0, h);
+
+			var style = new WStyle(typeof(ListViewItem));
+			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
+			return style;
 		}
 	}
 }
