@@ -413,15 +413,19 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_control is ContentPanel contentPanel && contentPanel.CrossPlatformLayout is IBorderView)
 			{
-				if (canAllowTabStop && !contentPanel.IsTabStop)
+				bool isSubscribed = (_subscriptionFlags & SubscriptionFlags.ContentPanelKeyDownSubscribed) != 0;
+
+				if (canAllowTabStop && !isSubscribed)
 				{
 					contentPanel.IsTabStop = true;
 					contentPanel.KeyDown += ContentPanelOnKeyDown;
+					_subscriptionFlags |= SubscriptionFlags.ContentPanelKeyDownSubscribed;
 				}
-				else if (!canAllowTabStop && contentPanel.IsTabStop)
+				else if (!canAllowTabStop && isSubscribed)
 				{
 					contentPanel.IsTabStop = false;
 					contentPanel.KeyDown -= ContentPanelOnKeyDown;
+					_subscriptionFlags &= ~SubscriptionFlags.ContentPanelKeyDownSubscribed;
 				}
 			}
 		}
@@ -494,9 +498,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_control.DoubleTapped -= HandleDoubleTapped;
 				}
-
-				// Reset tab stop state when clearing gesture handlers for border layouts
-				UpdateContentPanelIsTapStop(false);
 			}
 
 			Control = null;
@@ -1035,7 +1036,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
 
-			bool hasSelfTapGestures = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1);
+			bool hasSelfTapGestures = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g =>
+				g.NumberOfTapsRequired == 1 &&
+				(g.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
 
 			if (hasSelfTapGestures
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
@@ -1182,7 +1185,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		[Flags]
-		enum SubscriptionFlags : byte
+		enum SubscriptionFlags : ushort
 		{
 			None = 0,
 			ContainerDragEventsSubscribed = 1,
@@ -1192,7 +1195,8 @@ namespace Microsoft.Maui.Controls.Platform
 			ContainerTapAndRightTabEventSubscribed = 1 << 4,
 			ContainerDoubleTapEventSubscribed = 1 << 5,
 			ControlTapEventSubscribed = 1 << 6,
-			ControlDoubleTapEventSubscribed = 1 << 7
+			ControlDoubleTapEventSubscribed = 1 << 7,
+			ContentPanelKeyDownSubscribed = 1 << 8
 		}
 	}
 }
