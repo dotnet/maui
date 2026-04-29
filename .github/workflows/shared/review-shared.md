@@ -50,14 +50,15 @@ steps:
       # workflow_dispatch is already write-gated — no fork/permission checks needed.
       gh pr checkout "$PR_NUMBER"
       # Restore trusted .github/ from base branch (defense-in-depth)
-      BASE_SHA=$(gh pr view "$PR_NUMBER" --json baseRefOid --jq '.baseRefOid')
-      git checkout "$BASE_SHA" -- .github/ 2>&1 \
-        && echo "✅ Restored .github/ from base ($BASE_SHA)" \
-        || { echo "⚠️ Could not restore .github/ from base — continuing with PR branch files"; }
+      PR_INFO=$(gh pr view "$PR_NUMBER" --json baseRefOid,isCrossRepository)
+      BASE_SHA=$(echo "$PR_INFO" | jq -r '.baseRefOid')
+      git checkout "$BASE_SHA" -- .github/ .agents/ 2>&1 \
+        && echo "✅ Restored .github/ and .agents/ from base ($BASE_SHA)" \
+        || { echo "❌ Could not restore trusted infra from base"; exit 1; }
       # Re-overlay skill/instruction files from PR branch so maintainers can
       # iterate on review criteria via workflow_dispatch without merging first.
       # Skip for fork PRs — their skill files are untrusted.
-      IS_FORK=$(gh pr view "$PR_NUMBER" --json isCrossRepository --jq '.isCrossRepository')
+      IS_FORK=$(echo "$PR_INFO" | jq -r '.isCrossRepository')
       if [ "$IS_FORK" != "true" ]; then
         PR_SHA=$(git rev-parse HEAD)
         git checkout "$PR_SHA" -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1 \
@@ -70,7 +71,7 @@ steps:
 
 # Expert Code Review
 
-Review pull request #${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }} using the code-review skill defined at `.github/skills/code-review/SKILL.md`.
+Review pull request #${{ github.event.issue.number || inputs.pr_number }} using the code-review skill defined at `.github/skills/code-review/SKILL.md`.
 
 > **🚨 No test messages.** Never call any safe-output tool with placeholder or test content. Every call posts permanently on the PR. This applies to you and all sub-agents.
 >

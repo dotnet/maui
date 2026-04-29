@@ -126,9 +126,9 @@ steps:
       gh pr checkout "$PR_NUMBER"
       # Restore trusted .github/ from base branch (defense-in-depth)
       BASE_SHA=$(gh pr view "$PR_NUMBER" --json baseRefOid --jq '.baseRefOid')
-      git checkout "$BASE_SHA" -- .github/ 2>&1 \
-        && echo "✅ Restored .github/ from base ($BASE_SHA)" \
-        || { echo "❌ Could not restore .github/ from base"; exit 1; }
+      git checkout "$BASE_SHA" -- .github/ .agents/ 2>&1 \
+        && echo "✅ Restored .github/ and .agents/ from base ($BASE_SHA)" \
+        || { echo "❌ Could not restore trusted infra from base"; exit 1; }
 ---
 
 # Evaluate PR Tests

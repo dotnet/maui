@@ -155,9 +155,9 @@ steps:
       set -euo pipefail
       gh pr checkout "$PR_NUMBER"
       BASE_SHA=$(gh pr view "$PR_NUMBER" --json baseRefOid --jq '.baseRefOid')
-      git checkout "$BASE_SHA" -- .github/ 2>&1 \
-        && echo "✅ Restored .github/ from base ($BASE_SHA)" \
-        || echo "⚠️ Could not restore .github/ from base"
+      git checkout "$BASE_SHA" -- .github/ .agents/ 2>&1 \
+        && echo "✅ Restored .github/ and .agents/ from base ($BASE_SHA)" \
+        || echo "⚠️ Could not restore trusted infra from base"
 ```
 
 The step:
