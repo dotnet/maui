@@ -42,6 +42,31 @@ safe-outputs:
 steps:
   - name: Record workflow start time
     run: date +%s > .workflow-start-time
+
+  - name: Fetch prior review thread IDs for resolution
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
+    run: |
+      if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "0" ]; then
+        echo "No PR number — skipping thread fetch"
+        touch .prior-review-thread-ids
+        exit 0
+      fi
+      OWNER="${GITHUB_REPOSITORY%%/*}"
+      REPO="${GITHUB_REPOSITORY##*/}"
+      gh api graphql -f query="
+        { repository(owner: \"$OWNER\", name: \"$REPO\") {
+            pullRequest(number: $PR_NUMBER) {
+              reviewThreads(last: 100) {
+                nodes { id isResolved comments(first:1) { nodes { author { login } } } }
+              }
+            }
+          }
+        }" --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | select(.comments.nodes[0].author.login == "github-actions") | .id' \
+        > .prior-review-thread-ids 2>/dev/null || touch .prior-review-thread-ids
+      COUNT=$(wc -l < .prior-review-thread-ids | tr -d ' ')
+      echo "Found $COUNT unresolved bot review thread(s) to resolve"
 ---
 
 # Expert Code Review
@@ -68,7 +93,7 @@ Fetch the PR diff, changed files, description, and existing reviews using the Gi
 
 > ⚠️ **Pre-flight**: Before dispatching sub-agents, verify `.github/skills/code-review/SKILL.md` exists using the `view` tool. If missing, call `add_comment` with: "❌ Expert Code Review: Cannot run — `.github/skills/code-review/SKILL.md` not found. For slash_command on fork PRs, rebase on main. For workflow_dispatch, verify the skill file exists in the PR branch." and exit.
 
-> ⚠️ **Resolve prior review threads**: After gathering context, check for existing review threads from previous runs by listing pull request reviews and review threads. Resolve ALL review threads authored by `github-actions[bot]` using `resolve_pull_request_review_thread` with each thread's `thread_id`. This prevents stale findings from previous runs cluttering the PR. Always pass `pull_request_number` explicitly.
+> ⚠️ **Resolve prior review threads**: After gathering context, resolve all existing review threads from previous bot runs. Read the file `.prior-review-thread-ids` (written by the pre-agent step). For each thread ID in that file, call `resolve_pull_request_review_thread` with that `thread_id` and `pull_request_number`. If the file is empty or missing, skip this step — there are no prior threads to resolve.
 
 ### Step 2: Dispatch 3 Parallel Expert Reviewers
 
