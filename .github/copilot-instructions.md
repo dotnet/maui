@@ -117,6 +117,14 @@ Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` p
 
 **Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines. The skills handle Helix work item details, known issue cross-referencing, and test result aggregation that manual approaches miss.
 
+### Gradle / Maven Dependency Failures (CFSClean)
+
+The official CI build uses CFSClean network isolation which blocks `repo.maven.apache.org`. All Gradle/Maven dependencies resolve through the `dotnet-public-maven` Azure Artifacts feed.
+
+**If CI fails with Gradle 401 errors** like `"No local versions of package"` or `"Please provide authentication to save package from upstream"`, it means a Maven package hasn't been ingested into the feed yet. **Fix:** run `./eng/ingest-maven-deps.sh` locally to pre-populate the feed. See `src/Core/AndroidNative/settings.gradle` for details.
+
+**Do NOT upgrade Gradle past 8.x** — the Android SDK's `net.android.init.gradle.kts` is incompatible with Gradle 9.x (`dotnet/android#10738`).
+
 ### Code Formatting
 
 Always format code before committing:
