@@ -105,6 +105,12 @@
                                                              GroupName="Colors"
                                                              AutomationId="BlueRadioButton"
                                                              IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
+
+                                                <RadioButton Content="Green"
+                                                             Value="Green"
+                                                             GroupName="Colors"
+                                                             AutomationId="GreenRadioButton"
+                                                             IsChecked="{Binding IsGreenChecked, Mode=TwoWay}"/>
                                         </VerticalStackLayout>
 
                                         <!-- Fill -->
@@ -130,19 +136,6 @@
                                                              IsChecked="{Binding IsRadialChecked, Mode=TwoWay}"/>
                                         </VerticalStackLayout>
                                 </HorizontalStackLayout>
-
-                                <RadioButton Content="Blue"
-                                             Value="Blue"
-                                             GroupName="Colors"
-                                             AutomationId="BlueRadioButton"
-                                             IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
-
-                                <RadioButton Content="Green"
-                                             Value="Green"
-                                             GroupName="Colors"
-                                             AutomationId="GreenRadioButton"
-                                             IsChecked="{Binding IsGreenChecked, Mode=TwoWay}"/>
-                                </VerticalStackLayout>
 
                                 <VerticalStackLayout Spacing="5">
                                         <HorizontalStackLayout

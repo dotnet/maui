@@ -23,8 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ResetButton");
 		}
 
-
 		// ── Color tests (Order 1–3) ──
+
 		[Test, Order(1)]
 		public void BoxView_Color()
 		{
@@ -205,8 +205,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ShadowCheckBox");
 			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
-		[Test]
-		[Category(UITestCategories.BoxView)]
+
+		[Test, Order(15)]
 		public void BoxView_FillWithSolidColor()
 		{
 			App.WaitForElement("SolidRadioButton");
@@ -215,8 +215,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(16)]
 		public void BoxView_FillWithLinearGradient()
 		{
 			App.WaitForElement("LinearRadioButton");
@@ -225,8 +224,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
-		[Category(UITestCategories.BoxView)]
+		[Test, Order(17)]
 		public void BoxView_FillWithRadialGradient()
 		{
 			App.WaitForElement("RadialRadioButton");
@@ -236,5 +234,4 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 	}
-#endif
 }

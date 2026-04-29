@@ -5,9 +5,28 @@ namespace Maui.Controls.Sample;
 
 public class BoxViewViewModel : INotifyPropertyChanged
 {
-	Color _color = Colors.Blue;
-	Brush _fill = null;
-	LinearGradientBrush _linearGradientBrush = new LinearGradientBrush()
+	private Color _color = Colors.Blue;
+	private double _width = 200;
+	private double _height = 100;
+	private bool _isVisible = true;
+	private double _opacity = 1.0;
+	private CornerRadius _cornerRadius;
+	private bool _isRedChecked = false;
+	private bool _isBlueChecked = true;
+
+	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	private bool _isRTL = false;
+
+
+	private bool _isGreenChecked = false;
+
+	private string _cornerRadiusEntryText = string.Empty;
+	private string _opacityEntryText = "1";
+	private string _widthEntryText = "200";
+	private string _heightEntryText = "100";
+
+	private Brush _fill = null;
+	private LinearGradientBrush _linearGradientBrush = new LinearGradientBrush()
 	{
 		StartPoint = new Point(0, 0),
 		EndPoint = new Point(1, 1),
@@ -31,21 +50,28 @@ public class BoxViewViewModel : INotifyPropertyChanged
 		]
 	};
 
-	double _width = 200;
-	double _height = 100;
-	bool _isVisible = true;
-	double _opacity = 1.0;
-	CornerRadius _cornerRadius;
-	bool _isRedChecked = false;
-	bool _isBlueChecked = true;
-	bool _isSolidChecked = false;
-	bool _isLinearChecked = false;
-	bool _isRadialChecked = false;
-	FlowDirection _flowDirection = FlowDirection.LeftToRight;
+	private bool _isSolidChecked = false;
+	private bool _isLinearChecked = false;
+	private bool _isRadialChecked = false;
 
-
-	string _cornerRadiusEntryText = null;
-	string _opacityEntryText = null;
+	public void Reset()
+	{
+		Color = Colors.Blue;
+		Width = 200;
+		Height = 100;
+		IsVisible = true;
+		Opacity = 1.0;
+		CornerRadius = default;
+		IsRedChecked = false;
+		IsBlueChecked = true;
+		IsGreenChecked = false;
+		IsRTL = false;
+		HasShadow = false;
+		CornerRadiusEntryText = string.Empty;
+		OpacityEntryText = "1";
+		WidthEntryText = "200";
+		HeightEntryText = "100";
+	}
 
 	public string CornerRadiusEntryText
 	{
@@ -55,11 +81,6 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_cornerRadiusEntryText != value)
 			{
 				_cornerRadiusEntryText = value;
-				if (double.TryParse(value, out double radius))
-				{
-					CornerRadius = radius;
-				}
-
 				OnPropertyChanged();
 			}
 		}
@@ -73,11 +94,6 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_opacityEntryText != value)
 			{
 				_opacityEntryText = value;
-				if (double.TryParse(value, out double opacity))
-				{
-					Opacity = opacity;
-				}
-
 				OnPropertyChanged();
 			}
 		}
@@ -91,9 +107,8 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_widthEntryText != value)
 			{
 				_widthEntryText = value;
+				OnPropertyChanged();
 			}
-
-			OnPropertyChanged();
 		}
 	}
 
@@ -105,61 +120,6 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			if (_heightEntryText != value)
 			{
 				_heightEntryText = value;
-			}
-
-			OnPropertyChanged();
-		}
-	}
-
-	public bool IsSolidChecked
-	{
-		get => _isSolidChecked;
-		set
-		{
-			if (_isSolidChecked != value)
-			{
-				_isSolidChecked = value;
-				if (value)
-				{
-					Fill = Colors.Red.AsPaint();
-				}
-
-				OnPropertyChanged();
-			}
-		}
-	}
-
-	public bool IsLinearChecked
-	{
-		get => _isLinearChecked;
-		set
-		{
-			if (_isLinearChecked != value)
-			{
-				_isLinearChecked = value;
-				if (value)
-				{
-					Fill = _linearGradientBrush;
-				}
-
-				OnPropertyChanged();
-			}
-		}
-	}
-
-	public bool IsRadialChecked
-	{
-		get => _isRadialChecked;
-		set
-		{
-			if (_isRadialChecked != value)
-			{
-				_isRadialChecked = value;
-				if (value)
-				{
-					Fill = _radialGradientBrush;
-				}
-
 				OnPropertyChanged();
 			}
 		}
@@ -174,10 +134,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isRedChecked = value;
 				if (value)
-				{
-					Color = Colors.Red;
-				}
-
+					SelectColor(Colors.Red, ref _isBlueChecked, nameof(IsBlueChecked), ref _isGreenChecked, nameof(IsGreenChecked));
 				OnPropertyChanged();
 			}
 		}
@@ -192,10 +149,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			{
 				_isBlueChecked = value;
 				if (value)
-				{
-					Color = Colors.Blue;
-				}
-
+					SelectColor(Colors.Blue, ref _isRedChecked, nameof(IsRedChecked), ref _isGreenChecked, nameof(IsGreenChecked));
 				OnPropertyChanged();
 			}
 		}
@@ -260,8 +214,8 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-	bool _hasShadow = false;
-	Shadow _boxShadow = null;
+	private bool _hasShadow = false;
+	private Shadow _boxShadow = null;
 
 	public bool HasShadow
 	{
@@ -288,7 +242,7 @@ public class BoxViewViewModel : INotifyPropertyChanged
 	public Shadow BoxShadow
 	{
 		get => _boxShadow;
-		set
+		private set
 		{
 			if (_boxShadow != value)
 			{
@@ -316,7 +270,6 @@ public class BoxViewViewModel : INotifyPropertyChanged
 		get => _fill;
 		set { _fill = value; OnPropertyChanged(); }
 	}
-
 	public double Width
 	{
 		get => _width;
@@ -369,6 +322,58 @@ public class BoxViewViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
+	public bool IsSolidChecked
+	{
+		get => _isSolidChecked;
+		set
+		{
+			if (_isSolidChecked != value)
+			{
+				_isSolidChecked = value;
+				if (value)
+				{
+					Fill = Colors.Red.AsPaint();
+					OnPropertyChanged();
+				}
+			}
+		}
+	}
+
+	public bool IsLinearChecked
+	{
+		get => _isLinearChecked;
+		set
+		{
+			if (_isLinearChecked != value)
+			{
+				_isLinearChecked = value;
+				if (value)
+				{
+					Fill = _linearGradientBrush;
+					OnPropertyChanged();
+				}
+			}
+		}
+	}
+
+	public bool IsRadialChecked
+	{
+		get => _isRadialChecked;
+		set
+		{
+			if (_isRadialChecked != value)
+			{
+				_isRadialChecked = value;
+				if (value)
+				{
+					Fill = _radialGradientBrush;
+					OnPropertyChanged();
+				}
+			}
+		}
+	}
+
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
