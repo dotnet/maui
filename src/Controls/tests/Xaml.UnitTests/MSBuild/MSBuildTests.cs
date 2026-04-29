@@ -15,7 +15,20 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
-	//This set of tests is for validating Microsoft.Maui.Controls.targets
+	// This set of tests is for validating Microsoft.Maui.Controls.targets.
+	//
+	// Contract under test: SourceGen is the net11.0 default XAML inflator, and the legacy
+	// `XamlC` MSBuild target must NOT run on a default, no-flag-passed build. Every
+	// surviving test here is a *negative* test that locks down that contract using one of
+	// two patterns:
+	//   1. AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"))
+	//      — proves the XamlC target was skipped (BuildAProject, LinkedFile, RandomXml,
+	//      RandomEmbeddedResource).
+	//   2. Diagnostic-verbosity log scrape asserting `Building target "XamlC"` is absent
+	//      — proves the target wasn't even scheduled (NoXamlFiles).
+	// Tests that forced `-p:MauiXamlInflator=XamlC` to exercise the legacy path were
+	// intentionally removed in dotnet/maui#34972 — do not reintroduce that opt-in.
+	// See ~/.copilot/lessons/dotnet/maui/xamlc-test-opt-in.md for rationale.
 	[Trait("Category", "LongRunning")]
 	public class MSBuildTests : IDisposable
 	{
@@ -277,7 +290,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Theory]
@@ -347,57 +361,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.Contains("MainPage.xaml(7,6): XamlC error XC0000: Cannot resolve type \"http://schemas.microsoft.com/dotnet/2021/maui:NotARealThing\".", log, StringComparison.Ordinal);
 		}
 
-		/// <summary>
-		/// Tests that XamlG and XamlC targets skip, as well as checking IncrementalClean doesn't delete generated files
-		/// </summary>
-		[Fact]
-		public void TargetsShouldSkip()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Build(projectFile);
-
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(xamlCStamp);
-
-			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-
-			//Build again
-			Build(projectFile);
-			AssertExists(xamlCStamp);
-
-			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.Equal(expectedXamlC, actualXamlC);
-		}
-
-		/// <summary>
-		/// Checks that XamlG and XamlC files are cleaned
-		/// </summary>
-		[Fact]
-		public void Clean()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Build(projectFile);
-
-			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
-			var fooCssG = IOPath.Combine(intermediateDirectory, "Foo.css.g.cs");
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(xamlCStamp);
-
-			//Clean
-			Build(projectFile, "Clean");
-			AssertDoesNotExist(mainPageXamlG);
-			AssertDoesNotExist(fooCssG);
-			AssertDoesNotExist(xamlCStamp);
-		}
-
 		[Fact]
 		public void LinkedFile()
 		{
@@ -417,91 +380,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
-		}
-
-		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
-		//https://daveaglick.com/posts/running-a-design-time-build-with-msbuild-apis
-		[Fact]
-		public void DesignTimeBuild()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile(@"Pages\MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-
-			if (File.Exists(xamlCStamp))
-				System.IO.File.Delete(xamlCStamp);
-			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
-
-			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
-
-
-			//The assembly should not be compiled
-			//AssertDoesNotExist(assembly);
-			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
-
-			//Build again, a full build
-			Build(projectFile);
-			AssertExists(assembly, nonEmpty: true);
-			AssertExists(xamlCStamp);
-
-		}
-
-		[Fact]
-		public void AddNewFile()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Build(projectFile);
-
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(xamlCStamp);
-
-			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-
-			//Build again, after adding a file, this triggers a full XamlG and XamlC -- *not* CssG
-			project.Add(AddFile("CustomView.xaml", "MauiXaml", Xaml.CustomView));
-			project.Save(projectFile);
-			Build(projectFile);
-			AssertExists(xamlCStamp);
-
-			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.NotEqual(expectedXamlC, actualXamlC);
-		}
-
-		[Fact(Skip = "source gen changes")]
-		public void TouchXamlFile()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			project.Add(AddFile("CustomView.xaml", "MauiXaml", Xaml.CustomView));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Build(projectFile);
-
-			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
-			var customViewXamlG = IOPath.Combine(intermediateDirectory, "CustomView.xaml.g.cs");
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(xamlCStamp);
-
-			var expectedCustomViewXamlG = new FileInfo(customViewXamlG).LastWriteTimeUtc;
-			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-
-			//Build again, after modifying the timestamp on a Xaml file, should trigger a partial XamlG and full XamlC
-			//https://github.com/xamarin/xamarin-android/blob/61851599fb1999964bd200ec1c373b6e395933f3/src/Microsoft.Maui.Controls.Android.Build.Tasks/Utilities/MonoAndroidHelper.cs#L342
-			Build(projectFile);
-			AssertExists(xamlCStamp);
-
-			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.NotEqual(expectedXamlC, actualXamlC);
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Fact]
@@ -515,7 +395,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		// [Fact]
@@ -542,7 +423,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
 			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "MainPage.txt.g.cs"));
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Fact]

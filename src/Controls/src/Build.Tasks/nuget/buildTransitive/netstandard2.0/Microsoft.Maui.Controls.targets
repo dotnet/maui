@@ -234,7 +234,7 @@
 		AfterTargets="AfterCompile"
 		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
 		Outputs="$(IntermediateOutputPath)XamlC.stamp"
-		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != ''">
+		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' AND ('@(_MauiXaml_XC)' != '' OR '@(_MauiXaml_RT)' != '') ">
 		<PropertyGroup>
 			<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
 			<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
