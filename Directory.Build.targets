@@ -2,6 +2,26 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <!--
+    Remove stale workload manifest band directories that the SDK installer
+    bundles from older preview bands (e.g. preview.1 manifests when we need
+    preview.4). The SDK resolver loads manifests from ALL band directories
+    under sdk-manifests/, so stale ones cause NETSDK1178 errors referencing
+    old pack versions like Microsoft.iOS.Sdk.net11.0_26.2.
+
+    This runs unconditionally before Restore so it works even when
+    DotNet.csproj provisioning is not invoked (e.g. Build BuildTasks jobs).
+  -->
+  <Target Name="_RemoveStaleWorkloadManifestBands"
+      BeforeTargets="Restore;CollectPackageReferences"
+      Condition=" '$(DotNetVersionBand)' != '' and Exists('$(DotNetDirectory)sdk-manifests') ">
+    <ItemGroup>
+      <_StaleManifestBands Include="$(DotNetDirectory)sdk-manifests/*"
+                           Exclude="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
+    </ItemGroup>
+    <RemoveDir Directories="@(_StaleManifestBands)" Condition="'@(_StaleManifestBands)' != ''" />
+  </Target>
+
   <ItemGroup>
     <!-- Upgrade xunit's transitive NETStandard.Library dependency to avoid .NET Standard 1.x dependencies. -->
     <!-- <PackageReference Include="NETStandard.Library"
