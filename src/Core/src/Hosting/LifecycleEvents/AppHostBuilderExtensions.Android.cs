@@ -58,11 +58,16 @@ namespace Microsoft.Maui.LifecycleEvents
 					// If we tried to call window.Destroying() before, GetWindow() should return null
 					activity.GetWindow()?.Destroying();
 				})
-				.OnBackPressed(activity =>
-				{
-					return activity.GetWindow()?.BackButtonClicked() ?? false;
-				});
+				.OnBackPressed(DefaultWindowBackHandler);
 		}
+
+		// Exposed as a static field so MauiAppCompatActivity can detect it by reference identity
+		// rather than fragile reflection-based string matching.
+		internal static readonly AndroidLifecycle.OnBackPressed DefaultWindowBackHandler =
+			HandleWindowBackButtonPressed;
+
+		internal static bool HandleWindowBackButtonPressed(global::Android.App.Activity activity) =>
+			activity.GetWindow()?.BackButtonClicked() ?? false;
 
 		static void OnConfigureWindow(IAndroidLifecycleBuilder android)
 		{
