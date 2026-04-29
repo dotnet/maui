@@ -1,7 +1,6 @@
 using System;
 using Android.OS;
 using Android.Views;
-using Android.Window;
 using AndroidX.Activity;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.Content.Resources;
@@ -35,27 +34,19 @@ namespace Microsoft.Maui
 				this.CreatePlatformWindow(IPlatformApplication.Current.Application, savedInstanceState);
 			}
 
-			// Register predictive back callback (Android 13+/API 33+) if available.
-			// This integrates MAUI lifecycle OnBackPressed events with the system back gesture animation.
-			// Guidance: route custom back handling through AndroidX OnBackPressedDispatcher so
-			// predictive back works correctly:
-			// https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture#update-custom
-			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is null)
-			{
-				_predictiveBackCallback = new PredictiveBackCallback(this);
-				// Priority 0 = PRIORITY_DEFAULT: callback invoked only when no higher-priority callback handles the event
-				OnBackInvokedDispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
-			}
+			// Use OnBackPressedCallback (AndroidX) so the system predictive back-to-home
+			// animation plays when the app has nothing to handle (IsEnabled = false).
+			// IOnBackInvokedCallback (Android 13+ API) was avoided here because registering
+			// one always suppresses the back-to-home animation regardless of IsEnabled.
+			_mauiOnBackPressedCallback = new MauiOnBackPressedCallback(this);
+			OnBackPressedDispatcher.AddCallback(this, _mauiOnBackPressedCallback);
+			UpdatePredictiveBackRegistration();
 		}
 
 		protected override void OnDestroy()
 		{
-			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is not null)
-			{
-				OnBackInvokedDispatcher?.UnregisterOnBackInvokedCallback(_predictiveBackCallback);
-				_predictiveBackCallback.Dispose();
-				_predictiveBackCallback = null;
-			}
+			_mauiOnBackPressedCallback?.Remove();
+			_mauiOnBackPressedCallback = null;
 			base.OnDestroy();
 		}
 
@@ -75,19 +66,54 @@ namespace Microsoft.Maui
 			return handled || implHandled;
 		}
 
-		PredictiveBackCallback? _predictiveBackCallback;
+		MauiOnBackPressedCallback? _mauiOnBackPressedCallback;
 
-		sealed class PredictiveBackCallback : Java.Lang.Object, IOnBackInvokedCallback
+		// Must be called at every navigation state change so that Enabled reflects the current back
+		// stack before the predictive back drag preview starts (Android reads Enabled before commit).
+		// Call sites: Page.SendAppearing, Shell.SendNavigated, NavigationPage, Window, BlazorWebViewHandler.
+		internal void UpdatePredictiveBackRegistration()
+		{
+			if (_mauiOnBackPressedCallback is null)
+				return;
+
+			_mauiOnBackPressedCallback.Enabled = ShouldRegisterPredictiveBackCallback();
+		}
+
+		bool ShouldRegisterPredictiveBackCallback()
+		{
+			var services = IPlatformApplication.Current?.Services;
+			if (services is null)
+				return false;
+
+			// Iterate with early exit to avoid per-navigation heap allocation from ToArray()/Any().
+			bool hasAnyHandler = false;
+			bool hasCustomBackHandler = false;
+			foreach (var handler in services.GetLifecycleEventDelegates<AndroidLifecycle.OnBackPressed>())
+			{
+				hasAnyHandler = true;
+				if (handler != AppHostBuilderExtensions.DefaultWindowBackHandler)
+				{
+					hasCustomBackHandler = true;
+					break;
+				}
+			}
+
+			if (!hasAnyHandler)
+				return false;
+
+			return hasCustomBackHandler || this.GetWindow() is IBackNavigationState { CanConsumeBackNavigation: true };
+		}
+
+		sealed class MauiOnBackPressedCallback : OnBackPressedCallback
 		{
 			readonly MauiAppCompatActivity _activity;
-			public PredictiveBackCallback(MauiAppCompatActivity activity)
+			public MauiOnBackPressedCallback(MauiAppCompatActivity activity) : base(false)
 			{
 				_activity = activity;
 			}
 
-			public void OnBackInvoked()
+			public override void HandleOnBackPressed()
 			{
-				// Reuse unified handling (will invoke lifecycle events and conditionally propagate).
 				_activity.HandleBackNavigation();
 			}
 		}

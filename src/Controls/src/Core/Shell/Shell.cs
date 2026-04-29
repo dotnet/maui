@@ -1703,6 +1703,7 @@ namespace Microsoft.Maui.Controls
 				try
 				{
 					await currentContent.Navigation.PopAsync();
+					(this.Window as Window)?.NotifyNavigationStateChanged();
 				}
 				catch (Exception exc)
 				{
@@ -1756,6 +1757,7 @@ namespace Microsoft.Maui.Controls
 				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			(this.Window as Window)?.NotifyNavigationStateChanged();
 		}
 
 		void OnCurrentPageLoaded(object sender, EventArgs e)
@@ -2212,7 +2214,11 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
+				// Refresh Enabled on the predictive back callback; flyout state affects whether back is consumed here.
+				(this.Window as Window)?.NotifyNavigationStateChanged();
+			}
 		}
 
 		#region Shell Flyout Content

@@ -148,7 +148,23 @@ namespace Microsoft.Maui
 			});
 
 			if (!preventBackPropagation)
-				base.OnBackPressed();
+			{
+				// Disable the callback before dispatching base.OnBackPressed() to prevent re-entry
+				// through OnBackPressedDispatcher, which would re-invoke this same enabled callback.
+				if (_mauiOnBackPressedCallback is not null)
+					_mauiOnBackPressedCallback.Enabled = false;
+
+				try
+				{
+					base.OnBackPressed();
+				}
+				finally
+				{
+					// Re-evaluate whether the callback should be enabled after propagation.
+					// Using finally ensures the callback isn't permanently disabled if OnBackPressed throws.
+					UpdatePredictiveBackRegistration();
+				}
+			}
 		}
 	}
 }
