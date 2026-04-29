@@ -40,9 +40,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					// Return null so the page loads with degraded styling instead of crashing.
 					// On iOS, throwing here propagates through UIKit lifecycle callbacks during
 					// Shell item setup, corrupting Shell state (#35018).
-					// Note: null clears reference-type properties (Style, ImageSource) and is
-					// silently ignored for value-type properties (FontSize, Thickness), which
-					// retain their previous value.
+					// Note: null clears reference-type properties (Style, ImageSource). For
+					// non-nullable value-type properties (FontSize, Thickness), the assignment
+					// is skipped and an additional diagnostic may be reported.
 					return null;
 				}
 				throw ex;
