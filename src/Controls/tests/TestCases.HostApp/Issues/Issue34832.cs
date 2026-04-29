@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34832, "SwipeItem.IsVisible doesn't properly refresh native swipe items when binding value changes dynamically", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 34832, "SwipeItem.IsVisible doesn't properly refresh native swipe items when binding value changes dynamically", PlatformAffected.Android | PlatformAffected.iOS)]
 public class Issue34832 : ContentPage
 {
 	readonly Issue34832ViewModel _viewModel = new() { IsDeleteVisible = true };
@@ -47,8 +47,6 @@ public class Issue34832 : ContentPage
 				}
 			}
 		};
-
-		_swipeView.Loaded += (s, e) => _swipeView = (SwipeView)s;
 
 		Button toggleButton = new Button
 		{
