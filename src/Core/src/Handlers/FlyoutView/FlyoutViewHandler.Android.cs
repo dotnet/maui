@@ -182,8 +182,6 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyoutBehavior()
 		{
 			var behavior = VirtualView.FlyoutBehavior;
-			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
-				return;
 
 			// Important to create the layout views before setting the lock mode
 			LayoutViews();

@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// Notify about the property change
 				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
-				
+
 				if (shell == null)
 				{
 					return;
@@ -1836,8 +1836,8 @@ namespace Microsoft.Maui.Controls
 				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
 			}
-      
-      // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+
+			// Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
 			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.Loaded -= OnCurrentPageLoaded;
