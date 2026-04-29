@@ -291,9 +291,11 @@ if (-not [string]::IsNullOrWhiteSpace($diff)) {
                 if ($rawValue -match 'nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)\)') {
                     $category = $Matches['name']
                 } else {
-                    $message = "Unrecognized category expression '$rawValue'. Expected formats: UITestCategories.<Name>, nameof(UITestCategories.<Name>), or a quoted string."
-                    Write-Host "##[error]$message"
-                    throw $message
+                    # Unrecognized format (e.g., a constant from another class, string concat, interpolation).
+                    # Log a warning and continue — Tier 2 (source paths) and Tier 3 (AI) can still fill in categories.
+                    # Throwing here would abort detection entirely and silently fall back to "run all".
+                    Write-Host "##[warning]Unrecognized category expression '$rawValue'. Expected formats: UITestCategories.<Name>, nameof(UITestCategories.<Name>), or a quoted string. Skipping this entry."
+                    continue
                 }
             }
 
@@ -365,8 +367,26 @@ if ($tier2Categories.Count -gt 0) {
 if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
     $aiCatList = @($AiCategories -split '[,\n]' | ForEach-Object { ($_ -replace '\s*[-—].*$', '').Trim() } | Where-Object { $_ -and $_ -ne 'NONE' })
     if ($aiCatList.Count -gt 0) {
+        # Build a set of valid categories from UITestCategories.cs so we can drop AI hallucinations.
+        # An invalid category would otherwise create a matrix job that runs zero tests.
+        $validCategories = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        $uiTestCategoriesFile = Join-Path $TestRoot 'UITestCategories.cs'
+        if (Test-Path $uiTestCategoriesFile) {
+            $uiTestCategoriesContent = Get-Content $uiTestCategoriesFile -Raw
+            $constMatches = [regex]::Matches($uiTestCategoriesContent, 'public\s+const\s+string\s+\w+\s*=\s*"(?<value>[^"]+)"')
+            foreach ($m in $constMatches) {
+                $validCategories.Add($m.Groups['value'].Value) | Out-Null
+            }
+        }
+
         Write-Host "Tier 3 (AI reasoning): $([string]::Join(', ', $aiCatList))" -ForegroundColor Green
-        foreach ($c in $aiCatList) { $addedCategories.Add($c) | Out-Null }
+        foreach ($c in $aiCatList) {
+            if ($validCategories.Count -gt 0 -and -not $validCategories.Contains($c)) {
+                Write-Host "##[warning]AI suggested category '$c' is not defined in UITestCategories.cs. Skipping to avoid creating an empty matrix job."
+                continue
+            }
+            $addedCategories.Add($c) | Out-Null
+        }
     }
 }
 
