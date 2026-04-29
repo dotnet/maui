@@ -166,6 +166,8 @@ The step:
 
 No fork/permission checks are needed because `workflow_dispatch` already requires write access.
 
+> **Note:** If maintainers need to iterate on skill/instruction files via `workflow_dispatch` without merging, add a re-overlay step that restores those files from the PR branch after the base restore — see `shared/review-shared.md` for the pattern. The re-overlay should be guarded with a same-repo check to avoid loading untrusted skill files from fork PRs.
+
 **Behavior by trigger:**
 - **`workflow_dispatch`**: Platform checkout is skipped, so the inline restore IS the final workspace state (trusted files from base branch)
 - **`slash_command`** (same-repo): Platform's `checkout_pr_branch.cjs` handles checkout. Skill files typically match main unless the PR modified them.

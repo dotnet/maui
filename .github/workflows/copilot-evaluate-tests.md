@@ -128,7 +128,7 @@ steps:
       BASE_SHA=$(gh pr view "$PR_NUMBER" --json baseRefOid --jq '.baseRefOid')
       git checkout "$BASE_SHA" -- .github/ 2>&1 \
         && echo "✅ Restored .github/ from base ($BASE_SHA)" \
-        || echo "⚠️ Could not restore .github/ from base — continuing with PR branch files"
+        || { echo "❌ Could not restore .github/ from base"; exit 1; }
 ---
 
 # Evaluate PR Tests

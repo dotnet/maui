@@ -30,7 +30,7 @@ safe-outputs:
     allowed-events: [COMMENT]
     target: "*"
   add-comment:
-    max: 2
+    max: 1
     hide-older-comments: true
     target: "*"
   noop:
@@ -56,10 +56,16 @@ steps:
         || { echo "⚠️ Could not restore .github/ from base — continuing with PR branch files"; }
       # Re-overlay skill/instruction files from PR branch so maintainers can
       # iterate on review criteria via workflow_dispatch without merging first.
-      PR_SHA=$(git rev-parse HEAD)
-      git checkout "$PR_SHA" -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1 \
-        && echo "✅ Restored skill/instruction files from PR branch ($PR_SHA)" \
-        || echo "ℹ️ No skill/instruction overrides in PR branch"
+      # Skip for fork PRs — their skill files are untrusted.
+      IS_FORK=$(gh pr view "$PR_NUMBER" --json isCrossRepository --jq '.isCrossRepository')
+      if [ "$IS_FORK" != "true" ]; then
+        PR_SHA=$(git rev-parse HEAD)
+        git checkout "$PR_SHA" -- .github/skills/ .github/instructions/ .github/copilot-instructions.md 2>&1 \
+          && echo "✅ Restored skill/instruction files from PR branch ($PR_SHA)" \
+          || echo "ℹ️ No skill/instruction overrides in PR branch"
+      else
+        echo "ℹ️ Fork PR — using base branch skills (no re-overlay)"
+      fi
 ---
 
 # Expert Code Review
@@ -127,7 +133,7 @@ Each sub-agent prompt must include:
 
 **Wait for all 3 to complete before proceeding.** If a sub-agent fails or returns no findings, proceed with consensus from the remaining reviewers. If fewer than 2 complete successfully, post a comment explaining the failure instead of a review.
 
-> ⚠️ **2-reviewer fallback**: If only 2 reviewers completed, adjust consensus thresholds: **2/2 agree** = full consensus (include immediately); **1/2 split** = discard the finding (no valid tiebreaker — the 3rd model failed and must NOT be retried).
+> ⚠️ **2-reviewer fallback**: If only 2 reviewers completed, adjust consensus thresholds: **2/2 agree** = full consensus (include immediately); **1/2 split** = discard the finding (no valid tiebreaker — the 3rd model failed and must NOT be retried). Discarded 1/2 findings must appear in the discarded-findings section of the Part B summary, annotated as "2-reviewer mode — discarded (no tiebreaker)".
 
 ### Step 3: Adversarial Consensus
 
