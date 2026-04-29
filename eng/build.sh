@@ -159,35 +159,6 @@ fi
 
 arguments="$arguments $extraargs"
 
-# Pre-install the SDK and clean stale workload manifest bands before MSBuild starts.
-# MSBuild caches workload resolver state at evaluation time, so stale manifests from
-# older preview bands (e.g. preview.1) must be removed before any MSBuild invocation.
-source "$scriptroot/common/tools.sh"
-InitializeDotNetCli true
-repo_root="$( cd -P "$( dirname "$scriptroot" )" && pwd )"
-dotnet_dir="$repo_root/.dotnet"
-if [[ -d "$dotnet_dir/sdk-manifests" ]]; then
-  sdk_version=$(python3 -c "import json; print(json.load(open('$repo_root/global.json'))['tools']['dotnet'])" 2>/dev/null || true)
-  if [[ -n "$sdk_version" ]]; then
-    version_band=$(python3 -c "
-import re
-v = '$sdk_version'
-m = re.match(r'(\d+\.\d+\.)(\d)(\d{2})(.*)', v)
-patch = m.group(2) + '00'
-pre = re.match(r'^(-(?:preview|rc|alpha)\.\d+)', m.group(4))
-band = m.group(1) + patch + (pre.group(1) if pre else '')
-print(band)
-" 2>/dev/null || true)
-    for band_dir in "$dotnet_dir/sdk-manifests"/*/; do
-      band_name=$(basename "$band_dir")
-      if [[ "$band_name" != "$version_band" && "$band_name" != "." ]]; then
-        echo "Removing stale workload manifest band: $band_name (current band: $version_band)"
-        rm -rf "$band_dir"
-      fi
-    done
-  fi
-fi
-
 "$scriptroot/common/build.sh" $arguments
 
 
