@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class ResizeImageInfo
 	{
+		public const ResizeQuality DefaultResizeQuality = ResizeQuality.Auto;
+
 		public string? ItemSpec { get; set; }
 
 		public string? Alias { get; set; }
@@ -53,6 +55,8 @@ namespace Microsoft.Maui.Resizetizer
 		public string? MonochromeFilename { get; set; }
 
 		public bool MonochromeIsVector => IsVectorFilename(MonochromeFilename);
+
+		public ResizeQuality Quality { get; set; } = DefaultResizeQuality;
 
 		private static bool IsVectorFilename(string? filename)
 			=> IsVectorExtension(Path.GetExtension(filename));
@@ -117,6 +121,9 @@ namespace Microsoft.Maui.Resizetizer
 
 			if (float.TryParse(image.GetMetadata("ForegroundScale"), NumberStyles.Number, CultureInfo.InvariantCulture, out var fsc))
 				info.ForegroundScale = fsc;
+
+			if (Enum.TryParse<ResizeQuality>(image.GetMetadata("ResizeQuality"), ignoreCase: true, out var quality))
+				info.Quality = quality;
 
 			var fgFile = image.GetMetadata("ForegroundFile");
 			if (!string.IsNullOrEmpty(fgFile))

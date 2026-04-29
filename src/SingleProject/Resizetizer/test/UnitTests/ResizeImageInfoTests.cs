@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Microsoft.Build.Utilities;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
@@ -53,6 +57,94 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				};
 
 				Assert.False(info.IsVector);
+			}
+		}
+
+		public class ResizeQualityTests
+		{
+			[Fact]
+			public void DefaultQualityIsAuto()
+			{
+				var info = new ResizeImageInfo();
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
+			}
+
+			[Fact]
+			public void DefaultQualityConstantIsAuto()
+			{
+				Assert.Equal(ResizeQuality.Auto, ResizeImageInfo.DefaultResizeQuality);
+			}
+
+			[Theory]
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void QualityCanBeSet(string qualityName)
+			{
+				var quality = Enum.Parse<ResizeQuality>(qualityName);
+				var info = new ResizeImageInfo
+				{
+					Quality = quality
+				};
+
+				Assert.Equal(quality, info.Quality);
+			}
+
+			[Theory]
+			[InlineData("Auto")]
+			[InlineData("Best")]
+			[InlineData("Fastest")]
+			public void QualityParsedFromTaskItem(string metadataValue)
+			{
+				var expected = Enum.Parse<ResizeQuality>(metadataValue);
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = metadataValue
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(expected, info.Quality);
+			}
+
+			[Fact]
+			public void QualityDefaultsToAutoWhenNotSpecified()
+			{
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path);
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
+			}
+
+			[Fact]
+			public void QualityDefaultsToAutoForInvalidValue()
+			{
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = "InvalidValue"
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(ResizeQuality.Auto, info.Quality);
+			}
+
+			[Theory]
+			[InlineData("auto")]
+			[InlineData("FASTEST")]
+			[InlineData("best")]
+			public void QualityParsingIsCaseInsensitive(string metadataValue)
+			{
+				var expected = Enum.Parse<ResizeQuality>(metadataValue, ignoreCase: true);
+				var path = Path.GetFullPath("images/camera.png");
+				var item = new TaskItem(path, new Dictionary<string, string>
+				{
+					["ResizeQuality"] = metadataValue
+				});
+
+				var info = ResizeImageInfo.Parse(item);
+				Assert.Equal(expected, info.Quality);
 			}
 		}
 	}

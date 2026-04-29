@@ -61,20 +61,20 @@ namespace Microsoft.Maui.Resizetizer
 			span[0] = new SKPoint();
 		}
 
-		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
+		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ResizeQuality quality, ILogger logger)
 			=> isVector
-				? new SkiaSharpSvgTools(filename, baseSize, backgroundColor, tintColor, logger) as SkiaSharpTools
-				: new SkiaSharpRasterTools(filename, baseSize, backgroundColor, tintColor, logger);
+				? new SkiaSharpSvgTools(filename, baseSize, backgroundColor, tintColor, quality, logger) as SkiaSharpTools
+				: new SkiaSharpRasterTools(filename, baseSize, backgroundColor, tintColor, quality, logger);
 
 		public static SkiaSharpTools CreateImaginary(SKColor? backgroundColor, ILogger logger)
 			=> new SkiaSharpImaginaryTools(backgroundColor, logger);
 
 		public SkiaSharpTools(ResizeImageInfo info, ILogger logger)
-			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, logger)
+			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, info.Quality, logger)
 		{
 		}
 
-		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
+		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ResizeQuality quality, ILogger logger)
 		{
 			Logger = logger;
 			Filename = filename;
@@ -83,9 +83,6 @@ namespace Microsoft.Maui.Resizetizer
 			Paint = new SKPaint
 			{
 				IsAntialias = true,
-#pragma warning disable CS0618 // Type or member is obsolete
-				FilterQuality = SKFilterQuality.High,
-#pragma warning restore CS0618 // Type or member is obsolete
 			};
 
 			if (tintColor is SKColor tint)
@@ -94,9 +91,15 @@ namespace Microsoft.Maui.Resizetizer
 				Paint.ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn);
 			}
 
-			// Typically the Mitchell cubic resampler is for upsampling
-			// and the bilinear with mipmaps is for downsampling.
-			SamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
+			// Map ResizeQuality to SKSamplingOptions which controls actual resampling.
+			// Auto preserves the original bilinear+mipmaps behavior for backward compatibility.
+			SamplingOptions = quality switch
+			{
+				ResizeQuality.Best => new SKSamplingOptions(SKCubicResampler.Mitchell),
+				ResizeQuality.Fastest => new SKSamplingOptions(SKFilterMode.Nearest, SKMipmapMode.None),
+				// Auto and default preserve the original hardcoded behavior
+				_ => new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+			};
 		}
 
 		public string Filename { get; }

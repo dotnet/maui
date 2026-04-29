@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Resizetizer
 		SKSvg svg;
 
 		public SkiaSharpSvgTools(ResizeImageInfo info, ILogger logger)
-			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, logger)
+			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, info.Quality, logger)
 		{
 		}
 
-		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
-			: base(filename, baseSize, backgroundColor, tintColor, logger)
+		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ResizeQuality quality, ILogger logger)
+			: base(filename, baseSize, backgroundColor, tintColor, quality, logger)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
