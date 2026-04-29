@@ -113,10 +113,6 @@ Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` p
 - "Is this PR safe to merge?" / "Any CI concerns?"
 - After any PR push to verify the build
 
-**When CI hasn't run:** Community PRs require a maintainer to trigger builds. Use `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`) in a PR comment, or trigger via Azure CLI. Not all pipelines run automatically — `maui-pr-devicetests` and `maui-pr-uitests` may need explicit triggers depending on the changed files.
-
-**Escalation:** For deep Helix log analysis (recurring failures, machine-specific issues, comparing passing vs. failing runs), escalate to the `helix-investigation` skill.
-
 **Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", query the **actual AzDO test results** — do NOT infer whether a test ran by inspecting code attributes. Class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
 
 **Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines. The skills handle Helix work item details, known issue cross-referencing, and test result aggregation that manual approaches miss.

@@ -32,6 +32,10 @@ The `ci-analysis` skill and its `Get-CIStatus.ps1` script are loaded automatical
 
 Most failures are in `maui-pr`. Device test failures appear in `maui-pr-devicetests`. Focus on the first failing pipeline before checking others.
 
+**When CI hasn't run:** Community PRs require a maintainer to trigger builds. Use `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`) in a PR comment, or trigger via Azure CLI. Not all pipelines run automatically — `maui-pr-devicetests` and `maui-pr-uitests` may need explicit triggers depending on the changed files.
+
+**Escalation:** For deep Helix log analysis (recurring failures, machine-specific issues, comparing passing vs. failing runs), escalate to the `helix-investigation` skill.
+
 ## MAUI-Specific Quirks
 
 ### XHarness Exit-0 Blind Spot
