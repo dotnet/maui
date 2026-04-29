@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if ((Owner as ContentPanel)?.IsTabStop == true)
 			{
+				// TODO: Route through a .resw resource file for localization when MAUI's localization infra supports it.
 				return "border";
 			}
 
