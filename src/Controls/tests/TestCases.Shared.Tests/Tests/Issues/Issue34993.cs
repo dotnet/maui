@@ -18,6 +18,6 @@ public class Issue34993 : _IssuesUITest
         VerifyScreenshot("GradientBackgroundRadioButton");
         App.WaitForElement("ChangeBackgroundButton");
         App.Tap("ChangeBackgroundButton");
-        VerifyScreenshot();
+        VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
     }
 }

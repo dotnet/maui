@@ -83,8 +83,10 @@ namespace Microsoft.Maui.Platform
 			_invalidatePath = true;
 
 			// Clear the gradient shader once at transition time, not on every OnDraw
-			if (_background != null)
+			if (_background is not null)
+			{
 				Paint?.SetShader(null);
+			}
 
 			_backgroundColor = null;
 			_background = null;
