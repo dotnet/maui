@@ -342,6 +342,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor StructIntermediateNotSettable = new DiagnosticDescriptor(
+			id: "MAUIX2017",
+			title: "Value type property in path has no setter",
+			messageFormat: "Expression '{0}' contains a value type property without a setter, so two-way binding to '{1}' will be one-way. To enable two-way binding through a struct, add a setter to the intermediate property.",
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
 		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");
 		// public static BuildExceptionCode MissingEventHandler = new BuildExceptionCode("XC", 0002, nameof(MissingEventHandler), "");

@@ -55,6 +55,13 @@ public class SimpleViewModel : INotifyPropertyChanged
 		set { _quantity = value; OnPropertyChanged(); }
 	}
 
+	private Thickness _margin;
+	public Thickness Margin
+	{
+		get => _margin;
+		set { _margin = value; OnPropertyChanged(); }
+	}
+
 	public string GetDisplayName() => $"Display: {Name}";
 
 	public event PropertyChangedEventHandler? PropertyChanged;
@@ -817,6 +824,29 @@ public partial class CSharpExpressions : ContentPage
 
 				vm.Price = 25.75m;
 				Assert.Equal(25.75m, decimal.Parse(page.twoWayDecimalEntry.Text, CultureInfo.InvariantCulture));
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
+		[Fact]
+		public void StructSubProperty_ThicknessTop_OneWayBinding()
+		{
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			try
+			{
+				var page = new CSharpExpressions(XamlInflator.SourceGen);
+				var vm = new SimpleViewModel { Margin = new Thickness(10, 47, 10, 34) };
+				page.BindingContext = vm;
+
+				// {Margin.Top} creates a one-way binding (no setter, since Thickness is a struct)
+				Assert.Equal(47, page.thicknessSubGrid.HeightRequest);
+
+				// Replacing the entire Thickness fires INPC, which re-evaluates the getter
+				vm.Margin = new Thickness(10, 20, 10, 34);
+				Assert.Equal(20, page.thicknessSubGrid.HeightRequest);
 			}
 			finally
 			{
