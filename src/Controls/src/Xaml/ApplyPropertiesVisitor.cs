@@ -285,11 +285,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					if (Context.ExceptionHandler != null)
 					{
-						// Defense-in-depth: StaticResourceExtension.ProvideValue already handles
-						// the Hot Reload case (returns null when ExceptionHandler2 is set), so
-						// this catch is not normally reached. But if a future change breaks that
-						// invariant, report the error and skip the property rather than crashing
-						// via iOS UIKit lifecycle callbacks (#35018).
+						// During Hot Reload (handler present), report the exception and skip the
+						// property rather than re-throwing.
+						// Re-throwing here propagates through iOS UIKit lifecycle callbacks during
+						// Shell item setup, corrupting Shell state and crashing the app (#35018).
 						Context.ExceptionHandler(e);
 						value = null;
 						return;
