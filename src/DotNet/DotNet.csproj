@@ -212,8 +212,11 @@
     <ItemGroup>
       <!-- Remove stale manifest directories from other preview bands that may
            have been left behind from previous SDK installs (e.g. preview.1).
-           The SDK resolver picks these up and references old pack versions. -->
-      <_StaleManifestBands Include="$(DotNetDirectory)sdk-manifests/*" Exclude="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
+           The SDK resolver picks these up and references old pack versions.
+           Note: Include="*" only matches files, so we use "*/*" to find entries
+           inside band dirs, then take the directory to get the band paths. -->
+      <_StaleBandEntries Include="$(DotNetDirectory)sdk-manifests/*/*" Exclude="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)/**" />
+      <_StaleManifestBands Include="@(_StaleBandEntries->'%(RootDir)%(Directory)'->Distinct())" />
       <_WorkloadDirectoriesToRemove Include="@(_StaleManifestBands)" />
       <!-- Only remove the specific manifests we are about to re-provision.
            Do NOT remove the entire sdk-manifests/<band>/ directory, as that
