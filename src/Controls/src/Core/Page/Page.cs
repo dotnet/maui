@@ -699,6 +699,9 @@ namespace Microsoft.Maui.Controls
 			OnAppearing();
 			Appearing?.Invoke(this, EventArgs.Empty);
 
+			// Refresh Enabled on the predictive back callback so the animation preview reflects the new state.
+			(this.Window as Window)?.NotifyNavigationStateChanged();
+
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendAppearing();
 

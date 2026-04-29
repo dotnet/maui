@@ -467,6 +467,10 @@ namespace Microsoft.Maui.Controls
 			ModalPopped?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 
+			// Refresh the predictive back callback — programmatic PopModalAsync doesn't go through
+			// BackButtonClicked, so we update here to keep Enabled in sync with the modal stack.
+			NotifyNavigationStateChanged();
+
 #if WINDOWS
 			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
 			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
@@ -487,6 +491,10 @@ namespace Microsoft.Maui.Controls
 			var args = new ModalPushedEventArgs(modalPage);
 			ModalPushed?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
+
+			// Refresh the predictive back callback — programmatic PushModalAsync doesn't go through
+			// BackButtonClicked, so we update here to keep Enabled in sync with the modal stack.
+			NotifyNavigationStateChanged();
 
 #if WINDOWS
 			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
@@ -751,12 +759,29 @@ namespace Microsoft.Maui.Controls
 
 		bool IWindow.BackButtonClicked()
 		{
+			bool handled;
+
 			if (Navigation.ModalStack.Count > 0)
 			{
-				return Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendBackButtonPressed();
+				handled = Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendBackButtonPressed();
+			}
+			else
+			{
+				handled = this.Page?.SendBackButtonPressed() ?? false;
 			}
 
-			return this.Page?.SendBackButtonPressed() ?? false;
+			// Refresh Enabled on the predictive back callback after a back press changes the navigation state.
+			NotifyNavigationStateChanged();
+			return handled;
+		}
+
+		// Notifies that navigation state has changed so the Android predictive back callback can be updated.
+		// No-op on non-Android platforms.
+		internal void NotifyNavigationStateChanged()
+		{
+#if ANDROID
+			RefreshPredictiveBackRegistration();
+#endif
 		}
 
 		static double ValidatePositive(double value, [CallerMemberName] string? name = null) =>
