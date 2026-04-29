@@ -38,4 +38,12 @@ for proc in "UserNotificationCenter" "CoreServicesUIAgent"; do
 done
 
 echo "=== System dialog suppression complete ==="
+
+# 5. Force system-wide Light appearance for consistent UI test screenshots.
+#    macOS 26 (Tahoe) CI VMs default to dark mode, which causes screenshot
+#    mismatches against light-mode baseline images.
+echo "=== Forcing Light appearance ==="
+defaults write -g AppleInterfaceStyle -string Light 2>/dev/null
+defaults delete -g AppleInterfaceStyle 2>/dev/null && echo "System appearance set to Light" || echo "Already using Light appearance"
+
 exit 0
