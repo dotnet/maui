@@ -5,7 +5,58 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class AlertManager
+	// TODO: Make this public in .NET 11
+	/// <summary>
+	/// Manages alert, action sheet, and prompt requests for a window.
+	/// </summary>
+	internal interface IAlertManager
+	{
+		/// <summary>
+		/// Gets the window associated with this alert manager.
+		/// </summary>
+		Window Window { get; }
+
+		/// <summary>
+		/// Subscribes the alert manager to handle alert requests.
+		/// </summary>
+		void Subscribe();
+
+		/// <summary>
+		/// Unsubscribes the alert manager from handling alert requests.
+		/// </summary>
+		void Unsubscribe();
+
+		/// <summary>
+		/// Requests an action sheet to be displayed.
+		/// </summary>
+		/// <param name="page">The page making the request.</param>
+		/// <param name="arguments">The action sheet arguments.</param>
+		void RequestActionSheet(Page page, ActionSheetArguments arguments);
+
+		/// <summary>
+		/// Requests an alert to be displayed.
+		/// </summary>
+		/// <param name="page">The page making the request.</param>
+		/// <param name="arguments">The alert arguments.</param>
+		void RequestAlert(Page page, AlertArguments arguments);
+
+		/// <summary>
+		/// Requests a prompt to be displayed.
+		/// </summary>
+		/// <param name="page">The page making the request.</param>
+		/// <param name="arguments">The prompt arguments.</param>
+		void RequestPrompt(Page page, PromptArguments arguments);
+
+		/// <summary>
+		/// Requests that a page's busy state be displayed.
+		/// </summary>
+		/// <param name="page">The page making the request.</param>
+		/// <param name="isBusy">Whether the page is busy.</param>
+		[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
+		void RequestPageBusy(Page page, bool isBusy);
+	}
+
+	internal partial class AlertManager : IAlertManager
 	{
 		readonly Window _window;
 
