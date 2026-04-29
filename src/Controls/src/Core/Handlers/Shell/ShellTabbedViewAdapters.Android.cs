@@ -86,8 +86,25 @@ namespace Microsoft.Maui.Controls.Handlers
             get => _shellSection.CurrentItem is not null ? new ShellContentTab(_shellSection.CurrentItem) : null;
             set
             {
-                if (value is ShellContentTab tab)
+                if (value is ShellContentTab tab && tab.Content != _shellSection.CurrentItem)
                 {
+                    // Use ProposeNavigation to fire Shell.Navigating event and support cancellation,
+                    // matching ShellSectionRenderer behavior for ShellContent changes.
+                    var shell = _shellSection.FindParentOfType<Shell>();
+                    if (shell is not null)
+                    {
+                        var shellItem = _shellSection.Parent as ShellItem;
+                        var stack = _shellSection.Stack.ToList();
+                        bool accepted = ((IShellController)shell).ProposeNavigation(
+                            ShellNavigationSource.ShellContentChanged,
+                            shellItem, _shellSection, tab.Content, stack, true);
+
+                        if (!accepted)
+                        {
+                            return;
+                        }
+                    }
+
                     _shellSection.CurrentItem = tab.Content;
                 }
             }

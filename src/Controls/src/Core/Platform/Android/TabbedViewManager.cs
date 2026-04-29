@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers;
 /// </summary>
 internal class TabbedViewManager
 {
+
     Fragment _tabLayoutFragment;
     ColorStateList _originalTabTextColors;
     ColorStateList _originalTabIconColors;
@@ -476,6 +477,7 @@ internal class TabbedViewManager
 #pragma warning restore CS0618 // Type or member is obsolete
             }
         }
+
     }
 
     internal void NotifyDataSetChanged()
@@ -896,6 +898,15 @@ internal class TabbedViewManager
         {
             newGradientBrush.Parent = Element.Owner;
             newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+
+            if (_bottomNavigationView is not null && _bottomNavigationView.Elevation > 0)
+            {
+                _bottomNavigationView.Elevation = 0;
+            }
+        }
+        else if (_currentBarBackground is SolidColorBrush && _bottomNavigationView is not null && _bottomNavigationView.Elevation == 0)
+        {
+            _bottomNavigationView.Elevation = _bottomNavigationView.Context.Resources.GetDimension(Resource.Dimension.design_bottom_navigation_elevation);
         }
 
         RefreshBarBackground();

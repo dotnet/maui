@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers
         Page? _displayedPage;
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
         bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
+        bool _pendingAdapterUpdate; // After adapter rebuild, suppress next smooth scroll to avoid VP2 overshoot
 
         // Shared toolbar components (moved from ShellSectionHandler)
         internal Toolbar? _shellToolbar; // Virtual Toolbar view
@@ -240,6 +241,15 @@ namespace Microsoft.Maui.Controls.Handlers
             if (index < 0)
             {
                 return;
+            }
+
+            // After an adapter rebuild (items added/removed), ViewPager2's smooth scroll
+            // can overshoot the target position ("Passed over target position"). Use instant
+            // jump instead to ensure we land on the correct section.
+            if (_pendingAdapterUpdate)
+            {
+                animate = false;
+                _pendingAdapterUpdate = false;
             }
 
             // Switch ViewPager2 to the new section
@@ -705,6 +715,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void OnShellItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
+            if (VirtualView is null)
+            {
+                return;
+            }
+
+            var shellItem = VirtualView;
+
+            var shellSections = ((IShellItemController)shellItem).GetItems();
+
             // The adapter's _sections reference may be a live ReadOnlyCollection,
             // but when items change visibility, positions shift and the position-based
             // renderer cache becomes stale. Use UpdateSections() to clear the cache,
@@ -713,7 +732,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // ViewPager2 from trying to bind positions beyond the new item count.
             if (_adapter is not null && _viewPager is not null)
             {
-                var shellSections = ((IShellItemController)VirtualView).GetItems();
+                shellSections = ((IShellItemController)shellItem).GetItems();
                 _viewPager.OffscreenPageLimit = Math.Max(shellSections.Count, 1);
                 _adapter.UpdateSections(shellSections);
             }
@@ -728,6 +747,10 @@ namespace Microsoft.Maui.Controls.Handlers
             // Rebuild the bottom navigation menu for the updated sections via TabbedViewManager
             _tabbedViewManager?.RefreshTabs();
             UpdateTabBarVisibility();
+
+            // Signal that the adapter was just rebuilt. The next SwitchToSection call
+            // (from a pending GoToAsync) should skip smooth scroll to avoid VP2 overshoot.
+            _pendingAdapterUpdate = true;
         }
 
         void UpdateBottomNavigationSelection()

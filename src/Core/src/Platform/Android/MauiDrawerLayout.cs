@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Platform
         /// <summary>
         /// Gets whether the flyout is currently open.
         /// </summary>
-        public bool IsFlyoutOpen => _flyoutView != null && IsDrawerOpen(_flyoutView);
+        public bool IsFlyoutOpen => _flyoutView != null && _flyoutView.Parent == this && IsDrawerOpen(_flyoutView);
 
         /// <summary>
         /// Gets or sets the flyout width. -1 for default width.
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Platform
         {
             bool result = base.OnInterceptTouchEvent(ev);
 
-            if (_flyoutView is not null && GetDrawerLockMode(_flyoutView) == LockModeLockedOpen)
+            if (_flyoutView is not null && _flyoutView.Parent == this && GetDrawerLockMode(_flyoutView) == LockModeLockedOpen)
                 return false;
 
             return result;
@@ -470,7 +470,7 @@ namespace Microsoft.Maui.Platform
 
         void OnDrawerStateChanged(object? sender, DrawerStateChangedEventArgs e)
         {
-            if (_flyoutView is null)
+            if (_flyoutView is null || _flyoutView.Parent != this)
             {
                 return;
             }

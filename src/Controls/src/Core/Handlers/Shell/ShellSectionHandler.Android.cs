@@ -791,6 +791,43 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             var newCurrentItem = visibleItems[position];
+
+            if (newCurrentItem == virtualView.CurrentItem)
+            {
+                return;
+            }
+
+            // Call ProposeNavigation before changing CurrentItem, matching ShellSectionRenderer behavior.
+            // This fires the Navigating event BEFORE the content switch so Shell.CurrentPage
+            // still reflects the old page. Without this, Navigating never fires for ShellContent changes.
+            var shell = virtualView.FindParentOfType<Shell>();
+            if (shell is not null)
+            {
+                var shellSection = virtualView;
+                var shellItem = shellSection.Parent as ShellItem;
+                var stack = shellSection.Stack.ToList();
+                bool accepted = ((IShellController)shell).ProposeNavigation(
+                    ShellNavigationSource.ShellContentChanged,
+                    shellItem, shellSection, newCurrentItem, stack, true);
+
+                if (!accepted)
+                {
+                    // Navigation was cancelled — revert ViewPager2 to the current position
+                    if (virtualView.CurrentItem is not null)
+                    {
+                        var currentPosition = visibleItems.IndexOf(virtualView.CurrentItem);
+                        if (currentPosition >= 0)
+                        {
+                            _handler.PlatformView?.Post(() =>
+                            {
+                                (_handler.PlatformView as ViewPager2)?.SetCurrentItem(currentPosition, false);
+                            });
+                        }
+                    }
+                    return;
+                }
+            }
+
             var page = ((IShellContentController)newCurrentItem).GetOrCreateContent();
 
             if (page is null)
@@ -803,13 +840,9 @@ namespace Microsoft.Maui.Controls.Handlers
             toolbarTracker?.Page = page;
 
             // Update CurrentItem
-            if (virtualView.CurrentItem != newCurrentItem)
-            {
-                virtualView.CurrentItem = newCurrentItem;
-            }
+            virtualView.CurrentItem = newCurrentItem;
 
             // Trigger appearance update
-            var shell = virtualView.FindParentOfType<Shell>();
             if (shell is not null)
             {
                 ((IShellController)shell).AppearanceChanged(page, false);
