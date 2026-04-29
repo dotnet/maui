@@ -8,7 +8,7 @@
 
 pluginManagement {
     repositories {
-        if (System.getenv('TF_BUILD') == 'True') {
+        if ((System.getenv('TF_BUILD') ?: '').equalsIgnoreCase('true')) {
             maven {
                 url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
                 name = 'dotnet-public-maven'
@@ -24,7 +24,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
-        if (System.getenv('TF_BUILD') == 'True') {
+        if ((System.getenv('TF_BUILD') ?: '').equalsIgnoreCase('true')) {
             maven {
                 url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
                 name = 'dotnet-public-maven'

@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
-        if (System.getenv('TF_BUILD') == 'True') {
+        if ((System.getenv('TF_BUILD') ?: '').equalsIgnoreCase('true')) {
             maven {
                 url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
                 name = 'dotnet-public-maven'
