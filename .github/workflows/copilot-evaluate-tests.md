@@ -111,7 +111,6 @@ steps:
   # We cannot restore trusted infra here because the platform checkout runs later.
   # Mitigation: agent is sandboxed (no credentials), max 1 comment via safe-outputs,
   # and the agent prompt includes a pre-flight check that catches missing SKILL.md.
-  # See: .github/instructions/gh-aw-workflows.instructions.md "The issue_comment + Fork Problem"
 
   # For workflow_dispatch, the platform skips checkout entirely — this step is the
   # only thing that gets the PR code onto disk and restores trusted infra from main.
