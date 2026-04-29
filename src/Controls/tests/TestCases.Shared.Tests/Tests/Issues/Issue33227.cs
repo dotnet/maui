@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Maui.Controls.TestCases.Tests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33227 : _IssuesUITest
 {
