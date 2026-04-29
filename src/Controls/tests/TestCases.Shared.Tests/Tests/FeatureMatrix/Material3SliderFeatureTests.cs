@@ -30,7 +30,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("IsEnabledFalseRadio");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -44,7 +44,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -58,7 +58,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("IsVisibleFalseRadio");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("Options");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -72,7 +72,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("ThumbColorGreenButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -86,7 +86,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MinTrackColorYellowButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -100,7 +100,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MaxTrackColorRedButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -114,7 +114,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("BackgroundColorLightBlueButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -128,7 +128,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("ThumbImageSourceButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -148,7 +148,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MinTrackColorYellowButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -164,7 +164,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MaxTrackColorRedButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -180,7 +180,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("ThumbImageSourceButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -196,7 +196,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -213,7 +213,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MaxTrackColorRedButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -228,7 +228,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MinTrackColorYellowButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -243,7 +243,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("BackgroundColorLightBlueButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -258,7 +258,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("ThumbImageSourceButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -275,7 +275,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MaxTrackColorRedButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -290,7 +290,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("BackgroundColorLightBlueButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -305,7 +305,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -322,7 +322,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("BackgroundColorLightBlueButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -337,7 +337,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -354,7 +354,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("ThumbColorGreenButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -369,7 +369,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MinTrackColorYellowButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -384,7 +384,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MaxTrackColorRedButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -399,7 +399,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("BackgroundColorLightBlueButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -416,7 +416,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("ThumbColorGreenButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -431,7 +431,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MinTrackColorYellowButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -446,7 +446,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("MaxTrackColorRedButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -460,7 +460,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("BackgroundColorLightBlueButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -478,7 +478,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("ThumbImageResetButton");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
@@ -496,7 +496,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
@@ -513,7 +513,7 @@ public class Material3SliderFeatureTests : _GalleryUITest
 		App.Tap("FlowDirectionRTL");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElementTillPageNavigationSettled("SliderControl");
+		App.WaitForElementTillPageNavigationSettled("MinimumValueLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
