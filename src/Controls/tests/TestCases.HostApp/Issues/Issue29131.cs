@@ -3,7 +3,7 @@ using Maui.Controls.Sample.Issues;
 
 namespace Controls.TestCases.HostApp.Issues;
 
-[Issue(IssueTracker.Github, 29131, "Android - KeepScrollOffset doesn't not works as expected when new items are added in CollectionView", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 29131, "Android - KeepScrollOffset does not work as expected when new items are added in CollectionView", PlatformAffected.Android)]
 public class Issue29131 : TestContentPage
 {
 	ObservableCollection<string> items;

@@ -370,10 +370,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateAdapter();
 
 			// Set up any properties which require observing data changes in the adapter
-			UpdateItemsUpdatingScrollMode();
-
 			UpdateEmptyView();
 			AddOrUpdateScrollListener();
+			UpdateItemsUpdatingScrollMode();
 			UpdateSnapBehavior();
 		}
 

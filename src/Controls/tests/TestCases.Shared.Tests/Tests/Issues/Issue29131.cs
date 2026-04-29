@@ -8,13 +8,13 @@ public class Issue29131 : _IssuesUITest
 {
 	public Issue29131(TestDevice device) : base(device) { }
 
-	public override string Issue => "Android - KeepScrollOffset doesn't not works as expected when new items are added in CollectionView";
+	public override string Issue => "Android - KeepScrollOffset does not work as expected when new items are added in CollectionView";
 	const string AddNewItem = "AddNewItem";
 	const string ScrollButton = "ScrollButton";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void KeepScrollOffSetShouldWork()
+	public void KeepScrollOffsetShouldWork()
 	{
 		App.WaitForElement("CollectionView");
 		App.Click("KeepScrollOffsetButton");
