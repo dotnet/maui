@@ -592,6 +592,36 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
                 $preIter = if ($versionInfo.PreIter) { $versionInfo.PreIter } else { 0 }
                 $preDisplay = if ($versionInfo.PreLabel) { " ($($versionInfo.PreLabel)$($versionInfo.PreIter))" } else { "" }
                 Write-Host "  Version from Versions.props at merge commit: $ReleaseTag$preDisplay"
+
+                # Step 2b: For PRs merged to inflight/* branches, verify the PR
+                # actually shipped in the detected version. Inflight PRs have merge
+                # commits on the inflight branch (not the release branch), so we check
+                # by PR number in the tag's commit range instead of commit ancestry.
+                if ($pr.BaseRef -match '^inflight/' -and $ReleaseTag) {
+                    $allTags = Get-AllTags $Repo
+                    if ($ReleaseTag -in $allTags) {
+                        $prev = Find-PreviousTag $ReleaseTag $allTags
+                        $prsInTag = if ($prev) {
+                            Get-PrNumbersBetweenTags $prev $ReleaseTag $Repo
+                        } else {
+                            Get-PrNumbersReachableFromTag $ReleaseTag $Repo
+                        }
+                        if ($PrNum -notin $prsInTag) {
+                            # PR number not found in the tag range — PR missed this release
+                            $patch = Get-PatchVersion $ReleaseTag
+                            $major = if ($ReleaseTag -match '^(\d+)\.') { [int]$Matches[1] } else { $detectedMajor }
+                            $nextPatch = $patch + 10
+                            $nextTag = "$major.0.$nextPatch"
+                            Write-Host "  ⚠️  PR #$PrNum merged to $($pr.BaseRef) but is NOT in tag $ReleaseTag — advancing to $nextTag"
+                            $ReleaseTag = $nextTag
+                            $versionInfo = $null  # Clear so downstream uses $ReleaseTag
+                            $preLabel = $null
+                            $preIter = 0
+                        } else {
+                            Write-Host "  ✅ PR #$PrNum merged to $($pr.BaseRef) and found in tag $ReleaseTag (via candidate)"
+                        }
+                    }
+                }
             }
         }
     }
