@@ -68,15 +68,15 @@
     <MicrosoftNETSdkAndroidManifest100100PackageVersion>36.1.53</MicrosoftNETSdkAndroidManifest100100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNetSdkAndroidManifest100100PackageVersion)</AndroidNetPreviousVersion>
     <!-- dotnet/macios -->
-    <MicrosoftMacCatalystSdknet110_264PackageVersion>26.4.11511-net11-p5</MicrosoftMacCatalystSdknet110_264PackageVersion>
-    <MicrosoftmacOSSdknet110_264PackageVersion>26.4.11511-net11-p5</MicrosoftmacOSSdknet110_264PackageVersion>
-    <MicrosoftiOSSdknet110_264PackageVersion>26.4.11511-net11-p5</MicrosoftiOSSdknet110_264PackageVersion>
-    <MicrosofttvOSSdknet110_264PackageVersion>26.4.11511-net11-p5</MicrosofttvOSSdknet110_264PackageVersion>
+    <MicrosoftMacCatalystSdknet110_264PackageVersion>26.4.11513-net11-p5</MicrosoftMacCatalystSdknet110_264PackageVersion>
+    <MicrosoftmacOSSdknet110_264PackageVersion>26.4.11513-net11-p5</MicrosoftmacOSSdknet110_264PackageVersion>
+    <MicrosoftiOSSdknet110_264PackageVersion>26.4.11513-net11-p5</MicrosoftiOSSdknet110_264PackageVersion>
+    <MicrosofttvOSSdknet110_264PackageVersion>26.4.11513-net11-p5</MicrosofttvOSSdknet110_264PackageVersion>
     <!-- This is a subscription of the .NET 10 latest stable versions of our packages -->
-    <MicrosoftMacCatalystSdknet100_264PackageVersion>26.4.10255</MicrosoftMacCatalystSdknet100_264PackageVersion>
-    <MicrosoftmacOSSdknet100_264PackageVersion>26.4.10255</MicrosoftmacOSSdknet100_264PackageVersion>
-    <MicrosoftiOSSdknet100_264PackageVersion>26.4.10255</MicrosoftiOSSdknet100_264PackageVersion>
-    <MicrosofttvOSSdknet100_264PackageVersion>26.4.10255</MicrosofttvOSSdknet100_264PackageVersion>
+    <MicrosoftMacCatalystSdknet100_264PackageVersion>26.4.10259</MicrosoftMacCatalystSdknet100_264PackageVersion>
+    <MicrosoftmacOSSdknet100_264PackageVersion>26.4.10259</MicrosoftmacOSSdknet100_264PackageVersion>
+    <MicrosoftiOSSdknet100_264PackageVersion>26.4.10259</MicrosoftiOSSdknet100_264PackageVersion>
+    <MicrosofttvOSSdknet100_264PackageVersion>26.4.10259</MicrosofttvOSSdknet100_264PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- wasdk -->
