@@ -1280,10 +1280,29 @@ function Write-MarkdownReport {
     }
 
     if ($failureLines.Count -gt 0) {
+        # Count actual failed tests (lines beginning with "- ❌" or "- ⚠️") to decide
+        # whether to collapse. Sub-bullets (FailureReason / FailureMessage) start with
+        # two leading spaces so they don't match.
+        $failedTestCount = @($failureLines | Where-Object { $_ -match '^- (❌|⚠️)' }).Count
+        # Threshold: if more than 5 tests failed, collapse the section so the gate
+        # summary stays visible above the fold in PR comments. Below the threshold,
+        # show details inline so reviewers don't need an extra click.
+        $collapseFailures = $failedTestCount -gt 5
+
         $lines += ""
-        $lines += "#### ⚠️ Failure Details"
-        $lines += ""
+        if ($collapseFailures) {
+            $lines += "<details>"
+            $lines += "<summary>⚠️ Failure Details ($failedTestCount tests)</summary>"
+            $lines += ""
+        } else {
+            $lines += "#### ⚠️ Failure Details"
+            $lines += ""
+        }
         $lines += ($failureLines -join "`n")
+        if ($collapseFailures) {
+            $lines += ""
+            $lines += "</details>"
+        }
     }
 
     # ── Fix files (collapsible) ──

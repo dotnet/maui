@@ -35,6 +35,14 @@ if ([string]::IsNullOrWhiteSpace($buildReason)) {
 
 $isManualPrTest = -not [string]::IsNullOrWhiteSpace($PrNumber)
 
+# Track manual-PR-mode git state mutations so they can be undone on exit.
+# This script is invoked as a separate `pwsh` process by Review-PR.ps1, but the
+# git working tree is shared on disk — so a stray detached HEAD or leftover
+# `_detect_base` / `_detect_head` remote will be visible to subsequent steps
+# (e.g., the gate's `git diff`). Always clean up before returning.
+$script:detectOriginalRef = $null
+$script:detectHeadMutated = $false
+
 # When categories are explicitly provided, skip auto-detection entirely.
 # This lets triage/maintainers run specific categories via manual queue.
 if (-not [string]::IsNullOrWhiteSpace($Categories)) {
@@ -107,29 +115,59 @@ if ($isManualPrTest) {
         $prUrl = "https://api.github.com/repos/$repoName/pulls/$PrNumber"
         Write-Host "##[section]Manual PR test mode (PrNumber=$PrNumber). Fetching PR metadata from $prUrl" -ForegroundColor Yellow
         $pr = Invoke-WithRetry -Uri $prUrl -Headers (Get-GitHubHeaders)
+
+        # Guard against fork-deletion / partial responses that would leave critical
+        # fields null and produce confusing `git remote add ""` errors below.
+        if ($null -eq $pr -or $null -eq $pr.head -or $null -eq $pr.head.repo -or $null -eq $pr.base -or $null -eq $pr.base.repo) {
+            Write-Host "##[warning]Incomplete PR API response (the source fork may have been deleted). Falling back to running ALL categories."
+            return
+        }
         $TargetBranch = $pr.base.ref
         $headRef = $pr.head.ref
         $headSha = $pr.head.sha
         $baseRepoCloneUrl = $pr.base.repo.clone_url
         $headRepoCloneUrl = $pr.head.repo.clone_url
+        if ([string]::IsNullOrWhiteSpace($headSha) -or [string]::IsNullOrWhiteSpace($headRepoCloneUrl) -or [string]::IsNullOrWhiteSpace($baseRepoCloneUrl)) {
+            Write-Host "##[warning]PR API response missing SHA or clone URL. Falling back to running ALL categories."
+            return
+        }
         Write-Host "PR #$PrNumber : $($pr.head.repo.full_name)/$headRef ($headSha) -> $($pr.base.repo.full_name)/$TargetBranch" -ForegroundColor Cyan
 
-        # Fetch base branch from the base repo.
-        git remote remove _detect_base 2>$null | Out-Null
-        git remote add _detect_base $baseRepoCloneUrl
-        git fetch _detect_base "$TargetBranch" --no-tags --prune --depth=200 | Out-Null
-        git update-ref refs/remotes/origin/$TargetBranch _detect_base/$TargetBranch | Out-Null
+        # Capture the original HEAD so we can restore it before exiting.
+        # symbolic-ref returns the branch name; if HEAD is already detached, fall back to the SHA.
+        $script:detectOriginalRef = (& git symbolic-ref --short HEAD 2>$null)
+        if ([string]::IsNullOrWhiteSpace($script:detectOriginalRef)) {
+            $script:detectOriginalRef = (& git rev-parse HEAD 2>$null)
+        }
 
-        # Fetch head commit (works for forks too) and check it out so the diff reflects the PR changes.
-        git remote remove _detect_head 2>$null | Out-Null
-        git remote add _detect_head $headRepoCloneUrl
-        git fetch _detect_head "$headSha" --no-tags --depth=200 | Out-Null
-        git checkout --quiet $headSha | Out-Null
+        try {
+            # Fetch base branch from the base repo.
+            git remote remove _detect_base 2>$null | Out-Null
+            git remote add _detect_base $baseRepoCloneUrl
+            git fetch _detect_base "$TargetBranch" --no-tags --prune --depth=200 | Out-Null
+            git update-ref refs/remotes/origin/$TargetBranch _detect_base/$TargetBranch | Out-Null
+
+            # Fetch head commit (works for forks too) and check it out so the diff reflects the PR changes.
+            git remote remove _detect_head 2>$null | Out-Null
+            git remote add _detect_head $headRepoCloneUrl
+            git fetch _detect_head "$headSha" --no-tags --depth=200 | Out-Null
+            git checkout --quiet $headSha | Out-Null
+            $script:detectHeadMutated = $true
+        } finally {
+            # Temp remotes were only needed for the fetch — drop them whether or not setup succeeded
+            # so we don't leave stray entries in `.git/config` for future runs.
+            git remote remove _detect_base 2>$null | Out-Null
+            git remote remove _detect_head 2>$null | Out-Null
+        }
     } catch {
         Write-Host "##[warning]Manual PR test setup failed: $($_.Exception.Message). Falling back to running ALL categories."
         return
     }
 }
+
+# Wrap the rest of the script so the manual-PR HEAD checkout is always reverted
+# before exit, regardless of which `return` path or unhandled error is taken.
+try {
 
 # Escape hatch: PR label "run-all-uitests" forces the full category matrix to run.
 if (-not [string]::IsNullOrWhiteSpace($prNumberForLookup)) {
@@ -422,3 +460,12 @@ $matrixJson = $matrix | ConvertTo-Json -Depth 5
 
 Write-Host "##vso[task.setvariable variable=UITestCategoryMatrix;isOutput=true]$matrixJson"
 Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]$([string]::Join(',', ($addedCategories | Sort-Object)))"
+
+} finally {
+    # Restore the working tree to its pre-detection state so subsequent steps
+    # in Review-PR.ps1 (e.g., the gate's `git diff`) don't see a detached HEAD.
+    if ($script:detectHeadMutated -and -not [string]::IsNullOrWhiteSpace($script:detectOriginalRef)) {
+        Write-Host "Restoring HEAD to '$script:detectOriginalRef' (was checked out for category detection)" -ForegroundColor DarkGray
+        git checkout --quiet $script:detectOriginalRef 2>$null | Out-Null
+    }
+}

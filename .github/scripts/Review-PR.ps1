@@ -461,8 +461,10 @@ if (Test-Path $detectScript) {
             }
         }
 
-        if ([string]::IsNullOrWhiteSpace($uitestCategories) -or $uitestCategories -eq 'NONE') {
-            Write-Host "  ℹ️ No UI test categories detected" -ForegroundColor DarkGray
+        if ($uitestCategories -eq 'NONE') {
+            Write-Host "  ℹ️ No UI test categories needed (no UI-relevant changes)" -ForegroundColor DarkGray
+        } elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) {
+            Write-Host "  ℹ️ Full UI test matrix (no specific categories detected)" -ForegroundColor DarkGray
         } else {
             Write-Host "  🎯 Detected categories: $uitestCategories" -ForegroundColor Green
         }
@@ -470,8 +472,10 @@ if (Test-Path $detectScript) {
         # Write detection result for AI summary
         $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
         New-Item -ItemType Directory -Force -Path $uitestOutputDir | Out-Null
-        if ([string]::IsNullOrWhiteSpace($uitestCategories) -or $uitestCategories -eq 'NONE') {
-            "No UI test categories detected for this PR." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+        if ($uitestCategories -eq 'NONE') {
+            "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+        } elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) {
+            "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
         } else {
             "**Detected UI test categories:** ``$uitestCategories``" | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
         }
@@ -496,12 +500,12 @@ New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 
 # Detect tests in PR
 Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
-$detectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
-if (Test-Path $detectScript) {
-    $detectScript = (Resolve-Path $detectScript).Path
-    & pwsh -NoProfile -File $detectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
+$testDetectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
+if (Test-Path $testDetectScript) {
+    $testDetectScript = (Resolve-Path $testDetectScript).Path
+    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
 } else {
-    Write-Host "    ⚠️ Detect-TestsInDiff.ps1 not found at $detectScript" -ForegroundColor Yellow
+    Write-Host "    ⚠️ Detect-TestsInDiff.ps1 not found at $testDetectScript" -ForegroundColor Yellow
 }
 
 # Determine platform for gate
@@ -511,7 +515,7 @@ Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cya
 $verifyScript = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
 if (-not (Test-Path $verifyScript)) {
     Write-Host "  ❌ verify-tests-fail.ps1 not found at: $verifyScript" -ForegroundColor Red
-    $gateResult = "FAILED"
+    # $gateExitCode = 1 ensures the switch at line ~561 produces $gateResult = "FAILED"
     $gateExitCode = 1
     $gateOutput = @("verify-tests-fail.ps1 not found at: $verifyScript")
 } else {
@@ -519,17 +523,21 @@ if (-not (Test-Path $verifyScript)) {
 $maxGateAttempts = 3
 $gateExitCode = 1
 $gateOutput = @()
+# Path is fixed across attempts — define once, then clear per-iteration so a stale
+# report from attempt N-1 can't be misclassified as the current attempt's output.
+$gateContentFile = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
 
 for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     if ($gateAttempt -gt 1) {
         Write-Host "  🔄 Retry $gateAttempt/$maxGateAttempts — previous attempt hit environment error" -ForegroundColor Yellow
     }
+    # Clear previous attempt's report so a crash mid-run doesn't leak its classification into this one.
+    Remove-Item $gateContentFile -Force -ErrorAction SilentlyContinue
     $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
 
     # Check if this was an ENV ERROR (emulator timeout, ADB failure, etc.)
-    $gateContentFile = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
     $isEnvError = $false
     if ($gateExitCode -ne 0 -and (Test-Path $gateContentFile)) {
         $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
