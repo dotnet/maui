@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		Size _currentSize;
 		bool _isCarouselViewReady;
 		int _gotoPosition = -1;
+		bool _isCollectionChanged;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -529,6 +530,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var position = e.CenterItemIndex;
+			if (_isCollectionChanged && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				position = ItemsView.Position;
+				_isCollectionChanged = false;
+			}
 
 			if (position == -1)
 			{
@@ -590,6 +596,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				&& currentItemPosition != -1)
 			{
 				carouselPosition = currentItemPosition;
+				_isCollectionChanged = true;
+			}
+
+			if (e.Action == NotifyCollectionChangedAction.Remove)
+			{
+				_isCollectionChanged = true;
 			}
 
 			SetCarouselViewCurrentItem(carouselPosition);
