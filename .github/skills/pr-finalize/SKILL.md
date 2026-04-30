@@ -311,9 +311,94 @@ Fixed the issue mentioned in #30897
 
 After verifying title/description, perform a **code review** to catch best practice violations and potential issues before merge.
 
-### Review Focus Areas
+### 🚨 STEP 1 (MANDATORY): Prior Fix Regression Check
 
-When reviewing code changes, focus on:
+**Run this check FIRST, before any other code review.** This is the highest-priority check because it catches the most dangerous class of bugs: silently reverting prior fixes.
+
+#### Background
+
+PRs that fix one bug sometimes inadvertently remove lines that were added to fix a *different* bug. These "reverted fix" regressions are dangerous because:
+- The PR author doesn't know the history of the removed line
+- The change looks intentional — the PR description only mentions the NEW issue being fixed
+- CI tests pass because the regressed bug often has no automated test
+- The regression ships silently alongside the fix
+
+**Real example:** PR #33908 ([Android/iOS] Fix CollectionView not respecting SafeAreaEdges) removed `|| parent is IMauiRecyclerView` from `FindListenerForView()`. This line was added by PR #32278 specifically to fix issue #32436 (gap at bottom while scrolling in RecyclerView). Removing it caused bug #32436 to reappear as regression #34634.
+
+#### How to Run the Check
+
+```bash
+# Step 1: Get all deleted lines from non-test implementation files
+gh pr diff XXXXX | grep "^-" | grep -v "^---" | grep -v "^-.*\(test\|Test\|spec\|Spec\)" > /tmp/deleted_lines.txt
+
+# Step 2: For each deleted non-trivial line (not blank, not comment-only, not brace-only),
+# find where it came from using git blame on the base branch
+# The script automates this:
+pwsh .github/skills/pr-finalize/scripts/Detect-Regressions.ps1 -PRNumber XXXXX
+```
+
+#### Manual Check (if script unavailable)
+
+For each **implementation file** (not test files) in the diff:
+
+```bash
+# See what was deleted from a specific file
+gh pr diff XXXXX -- src/path/to/file.cs | grep "^-" | grep -v "^---"
+
+# For suspicious deleted lines, check git blame to see what commit added them
+# First, find the line number in the base branch:
+git blame origin/main -- src/path/to/file.cs | grep -F "deleted line content"
+```
+
+#### What to Flag as 🔴 Critical
+
+Flag as **🔴 Critical — Prior Fix Regression** when ALL of the following are true:
+
+1. A line was **deleted** from an implementation file (not a test file)
+2. Git blame shows that line was added in a **specific prior commit** (not just "always been there")
+3. That prior commit's message references an **issue number** (e.g., "fixes #32436", "closes #1234") OR the commit message explicitly describes a bug fix
+4. The PR being reviewed does **not** explain why removing that line is intentional/safe
+
+**Special attention to:**
+- Condition guards: `if (x is SomeType)`, `|| condition`, `&& condition` — these are common guard patterns added to prevent bugs
+- Null checks added after null reference exceptions
+- Type checks like `parent is IMauiRecyclerView` that prevent specific views from receiving certain handling
+- Exception handlers added for specific error cases
+
+#### Output for Regression Check
+
+If regressions found:
+````
+### 🔴 Prior Fix Regression Detected
+
+**File:** `src/Core/src/Platform/Android/MauiWindowInsetListener.cs`
+
+**Removed line:**
+```diff
+- (parent is AppBarLayout || parent is MauiScrollView || parent is IMauiRecyclerView)
++ (parent is AppBarLayout || parent is MauiScrollView)
+```
+
+**Origin:** This line was added in commit `0b30658` (PR #32278) which states:
+> "Fix issue #32436 — increasing gap at bottom while scrolling"
+
+**Risk:** Removing this guard will cause RecyclerView/CollectionView scrolling to re-introduce the bottom gap regression (issue #32436).
+
+**Required action before merge:** Author must confirm this removal is intentional AND explain how the original bug #32436 is now prevented by other means.
+````
+
+If no regressions found:
+````
+### ✅ Prior Fix Regression Check: PASSED
+
+No deleted lines were identified as reversions of prior bug fixes.
+````
+
+---
+
+### STEP 2: General Code Review
+
+After completing the regression check, review code changes for:
 
 1. **Code quality and maintainability** - Clean code, good naming, appropriate abstractions
 2. **Error handling and edge cases** - Null checks, exception handling, boundary conditions
@@ -335,6 +420,9 @@ gh pr diff XXXXX -- path/to/file.cs
 
 ```markdown
 ## Code Review Findings
+
+### 🔴 Prior Fix Regression Check
+[Result from Step 1 above — always present]
 
 ### 🔴 Critical Issues
 

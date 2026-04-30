@@ -10,6 +10,25 @@ This document provides specific guidance for GitHub Copilot when working on the 
 
 When performing a code review on PRs that change functional code, run the pr-finalize skill to verify that the PR title and description accurately match the actual implementation. This ensures proper documentation and helps maintain high-quality commit messages.
 
+### 🚨 Prior Fix Regression Detection (Critical)
+
+When reviewing any PR that **removes or modifies lines** in implementation files, always check whether those lines were added to fix a prior bug:
+
+1. **Run the regression check first** — before any other code review work:
+   ```bash
+   pwsh .github/skills/pr-finalize/scripts/Detect-Regressions.ps1 -PRNumber XXXXX
+   ```
+
+2. **Manual check** — for any non-trivial deleted line (guard condition, type check, null check):
+   ```bash
+   git blame main -- src/path/to/file.cs | grep -F "deleted line"
+   git log --format="%s%n%b" -1 <commit-hash>  # check for issue refs
+   ```
+
+3. **Flag as 🔴 Critical** if the removed line was added in a commit that references an issue number (fixes #XXXX).
+
+See `.github/instructions/regression-detection.instructions.md` for detailed guidance and examples.
+
 ## Repository Overview
 
 **.NET MAUI** is a cross-platform framework for creating mobile and desktop applications with C# and XAML. This repository contains the core framework code that enables development for Android, iOS, iPadOS, macOS, and Windows from a single shared codebase.

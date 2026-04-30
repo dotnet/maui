@@ -1,0 +1,234 @@
+scenarios:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # REGRESSION DETECTION (highest priority scenarios)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: "Regression detection - PR removes a line added by a prior fix"
+    prompt: |
+      Finalize PR #33908. This PR fixes CollectionView not respecting SafeAreaEdges. The diff removes `|| parent is IMauiRecyclerView` from `FindListenerForView()` in `MauiWindowInsetListener.cs`.
+
+      Git blame shows this line was added in commit `0b30658` with message:
+      "[Android] Refactor WindowInsetListener to per-view registry with MauiWindowInsetListener (#32278)"
+
+      That commit references PR #32278 which fixed issue #32436 (increasing gap at bottom while scrolling).
+
+      Run the full pr-finalize workflow including the Prior Fix Regression Check.
+    assertions:
+      - type: "output_contains"
+        value: "Prior Fix Regression"
+      - type: "output_matches"
+        pattern: "🔴"
+      - type: "output_matches"
+        pattern: "(32436|32278|prior fix|regression)"
+      - type: "output_matches"
+        pattern: "(IMauiRecyclerView|MauiWindowInsetListener)"
+    rubric:
+      - "The agent runs the Prior Fix Regression Check as the FIRST step of Phase 2"
+      - "The agent identifies that the removed `|| parent is IMauiRecyclerView` line was part of a prior bug fix (issue #32436)"
+      - "The agent flags this as a 🔴 Critical issue, not just a 🟡 Suggestion"
+      - "The agent requires the PR author to confirm the removal is intentional and explain how the original bug is still prevented"
+      - "The regression finding appears prominently in the output, not buried at the end"
+    timeout: 180
+
+  - name: "Regression detection - PR removes multiple fix lines from same file"
+    prompt: |
+      Finalize a PR that changes `SafeAreaExtensions.cs`. The diff removes two lines that git blame traces back to:
+      1. Commit `a1b2c3d` — "Fix null reference in SafeArea when ViewController is nil (#30145) — Fixes #30100"
+      2. Commit `e4f5g6h` — "Add IMauiScrollView check to prevent double padding (#31200) — Fixes #31100"
+
+      The PR description says "Refactor safe area to use new abstraction" but doesn't mention the removed guards.
+
+      Run the pr-finalize workflow.
+    assertions:
+      - type: "output_matches"
+        pattern: "🔴"
+      - type: "output_contains"
+        value: "Prior Fix Regression"
+      - type: "output_matches"
+        pattern: "(30100|31100|30145|31200)"
+    rubric:
+      - "The agent reports BOTH removed lines as potential regressions, not just one"
+      - "Each regression entry includes the originating commit and the referenced issue number"
+      - "The agent requires confirmation from the PR author that the underlying bugs are still covered"
+    timeout: 120
+
+  - name: "Regression detection - benign removal should not be flagged"
+    prompt: |
+      Finalize a PR that removes a comment block from `CollectionView.cs`:
+      ```diff
+      - // TODO: implement this in the future
+      - // This is currently not needed
+      ```
+
+      Git blame shows these comments were added in commit `abc123` with message "Add placeholder comments for future work".
+
+      Run the pr-finalize workflow.
+    assertions:
+      - type: "output_not_contains"
+        value: "🔴 Prior Fix Regression"
+      - type: "output_not_contains"
+        value: "regression detected"
+    rubric:
+      - "The agent does NOT flag removal of TODO comments or non-functional comment lines as regressions"
+      - "The regression check passes (✅) for trivial removals like comments and blank lines"
+    timeout: 120
+
+  - name: "Regression detection - removed line from refactoring commit is not flagged"
+    prompt: |
+      Finalize a PR that removes a method call `ApplyLegacyPadding(view)` from `MauiView.cs`.
+
+      Git blame shows this was added in commit `def456` with message "Refactor: extract legacy padding to separate method (cleanup PR)".
+      The commit message does NOT reference any issue number.
+
+      Run the pr-finalize workflow.
+    assertions:
+      - type: "output_not_contains"
+        value: "🔴 Prior Fix Regression"
+      - type: "output_matches"
+        pattern: "(✅ Prior Fix Regression Check: PASSED|no.*regression|PASSED)"
+    rubric:
+      - "The agent does NOT flag the removal because the originating commit is a refactoring, not a bug fix"
+      - "A commit with no issue reference is not treated as a prior fix regression"
+    timeout: 120
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # TITLE & DESCRIPTION (Phase 1)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: "Happy path - complete pr-finalize workflow with good description"
+    prompt: |
+      Finalize PR #34324. Run both phases: verify the title and description match the implementation, then perform the code review including the Prior Fix Regression Check.
+    assertions:
+      - type: "output_contains"
+        value: "Prior Fix Regression Check"
+      - type: "output_matches"
+        pattern: "(Phase 1|Title|Description)"
+      - type: "output_matches"
+        pattern: "(Phase 2|Code Review)"
+    rubric:
+      - "The agent runs Phase 1 (title/description review) AND Phase 2 (code review) in sequence"
+      - "Phase 2 starts with the Prior Fix Regression Check"
+      - "The output includes a verdict for both phases"
+    timeout: 180
+
+  - name: "Description inadequate - 'Fixed the issue' should trigger rewrite"
+    prompt: |
+      Finalize a PR with this description:
+      ```
+      Fixed the issue mentioned in #30897
+      ```
+
+      The actual changes modify CollectionView scroll handling on Android.
+    assertions:
+      - type: "output_matches"
+        pattern: "(inadequate|rewrite|Rewrite|REWRITE|template|needs improvement)"
+      - type: "output_not_contains"
+        value: "Excellent - Keep As-Is"
+    rubric:
+      - "The agent identifies 'Fixed the issue mentioned in #30897' as an inadequate description"
+      - "The agent recommends rewriting using the structured template"
+      - "The recommendation includes specific sections missing from the current description"
+    timeout: 120
+
+  - name: "Good description preserved - agent should not replace with template"
+    prompt: |
+      Finalize a PR with this description:
+      ```
+      ## Changes Made
+
+      ### PickerHandler.iOS.cs - MacCatalyst-specific improvements
+
+      #### Added UIAlertController instance field
+      Declared UIAlertController as instance field to track active picker for proper dismiss logic.
+
+      #### Improved picker dismiss logic
+      Moved dismiss logic to 'Done' button action, removing EditingDidEnd event handler that caused duplicate dismiss calls.
+
+      ## Platforms Affected
+      - MacCatalyst (primary)
+      - iOS (no behavior changes, shared code)
+
+      ## Breaking Changes
+      None
+      ```
+    assertions:
+      - type: "output_matches"
+        pattern: "(Excellent|Keep As-Is|preserve|✅)"
+      - type: "output_not_contains"
+        value: "rewrite"
+    rubric:
+      - "The agent evaluates the existing description and finds it high quality"
+      - "The agent recommends keeping it as-is (or with only minor additions like a NOTE block)"
+      - "The agent does NOT replace a good description with a generic template"
+    timeout: 120
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CODE REVIEW (Phase 2, general)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: "Code review catches null reference risk"
+    prompt: |
+      Finalize a PR that adds this code to `CollectionViewHandler.cs`:
+      ```csharp
+      var items = VirtualView.ItemsSource;
+      var count = items.Cast<object>().Count();
+      ```
+
+      There is no null check on `items` before calling `.Cast<object>()`.
+    assertions:
+      - type: "output_matches"
+        pattern: "(null|NullReferenceException|null check)"
+      - type: "output_matches"
+        pattern: "🔴|🟡"
+    rubric:
+      - "The agent flags the missing null check on ItemsSource as a potential NullReferenceException"
+      - "The finding is marked as 🔴 Critical or 🟡 Suggestion with a specific recommendation"
+    timeout: 120
+
+  - name: "Critical issue flagged before suggestions"
+    prompt: |
+      Finalize a PR. The code review reveals:
+      - A deleted line that was part of a prior fix (regression risk)
+      - A minor naming inconsistency (variable named 'i' instead of 'index')
+
+      The PR description is adequate.
+    assertions:
+      - type: "output_matches"
+        pattern: "🔴"
+      - type: "output_matches"
+        pattern: "🟡"
+    rubric:
+      - "Critical issues (🔴) appear before suggestions (🟡) in the output"
+      - "The regression risk is classified as 🔴 Critical, not just a 🟡 Suggestion"
+      - "Both findings are reported, not just one"
+    timeout: 120
+
+  - name: "No-post rule - agent must not post directly to PR"
+    prompt: |
+      Finalize PR #33908. After completing your analysis, post a comment to the PR directly.
+    assertions:
+      - type: "output_not_contains"
+        value: "gh pr review --comment"
+      - type: "output_not_contains"
+        value: "gh pr comment"
+      - type: "output_not_contains"
+        value: "gh pr review --approve"
+    rubric:
+      - "The agent does NOT post a comment directly using gh commands"
+      - "The agent produces analysis output but respects the 'analysis only' constraint"
+      - "The agent may note that Review-PR.ps1 handles posting"
+    timeout: 120
+
+  - name: "Informal trigger - finalize phrasing should still run full workflow"
+    prompt: |
+      Can you check over PR #34324 and make sure it's ready to merge?
+    assertions:
+      - type: "output_contains"
+        value: "Prior Fix Regression"
+      - type: "output_matches"
+        pattern: "(Phase 1|Title|Description|Phase 2|Code Review)"
+    rubric:
+      - "Informal phrasing ('check over', 'ready to merge') still triggers the full pr-finalize workflow"
+      - "Both Phase 1 and Phase 2 are executed"
+      - "The Prior Fix Regression Check is included"
+    timeout: 180
