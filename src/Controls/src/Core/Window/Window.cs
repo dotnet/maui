@@ -648,6 +648,8 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is Page oldPage)
 			{
 #if ANDROID
+				// Covers the case where FlyoutPage is the direct Window.Page; nested
+				// FlyoutPage scenarios (e.g. NavigationPage containing a FlyoutPage) are not addressed.
 				(oldPage as FlyoutPage)?.ReleaseDrawerCallbackBeforePageChange();
 #endif
 				oldPage.SendDisappearing();

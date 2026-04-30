@@ -413,6 +413,7 @@ namespace Microsoft.Maui.Controls
 				handler.ReleaseDrawerCallbackBeforePageChange();
 		}
 #endif
+
 		private protected override string GetDebuggerDisplay()
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Detail), Detail, "FlyoutPage", Flyout, nameof(BindingContext), BindingContext);

@@ -347,12 +347,14 @@ namespace Microsoft.Maui.Handlers
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
 
+			// PlatformView may be null when the handler has not yet been connected;
+			// the is-pattern serves as a null guard here.
 			if (PlatformView is DrawerLayout dl)
 			{
 				if (_flyoutView is not null && _flyoutView.Parent == dl)
 					dl.CloseDrawer(_flyoutView, false);
-				else
-					dl.CloseDrawers();
+				// else: SetDrawerLockMode below is sufficient to release the back callback
+				// synchronously when _flyoutView is not a direct child of the DrawerLayout.
 
 				dl.SetDrawerLockMode(DrawerLayout.LockModeLockedClosed);
 			}
