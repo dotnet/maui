@@ -286,9 +286,20 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == WindowProperty.PropertyName)
 			{
 				if (_contentCache?.IsLoaded == true)
+				{
 					return;
+				}
 
 				EvaluateDisconnect();
+			}
+			else if (propertyName == TitleProperty.PropertyName)
+			{
+				// Propagate child Title change to parent ShellSection's handler
+				// so the mapper can update platform tab titles.
+				if (Parent is ShellSection section)
+				{
+					section.Handler?.UpdateValue(nameof(Title));
+				}
 			}
 		}
 

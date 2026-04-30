@@ -3,221 +3,114 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Android.Content;
+using System.Linq;
 using Android.Content.Res;
-using Android.Graphics;
 using Android.Graphics.Drawables;
-using Android.Views;
-using AndroidX.AppCompat.Widget;
-using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.Content;
-using AndroidX.Core.Graphics;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Widget;
-using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
-using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
-using Microsoft.Maui.Graphics;
-using AColor = Android.Graphics.Color;
-using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Handlers;
 
+/// <summary>
+/// Thin wrapper around <see cref="TabbedViewManager"/> for TabbedPage tab management on Android.
+/// Bridges TabbedPage-specific concerns (Page lifecycle, per-page PropertyChanged) while delegating
+/// all tab UI logic (BNV, TabLayout, fragment placement, colors, icons) to TabbedViewManager.
+/// </summary>
 public class TabbedPageManager
 {
-	Fragment _tabLayoutFragment;
-	ColorStateList _originalTabTextColors;
-	ColorStateList _orignalTabIconColors;
-	ColorStateList _newTabTextColors;
-	ColorStateList _newTabIconColors;
-	FragmentManager _fragmentManager;
-	TabLayout _tabLayout;
-	BottomNavigationView _bottomNavigationView;
-	ViewPager2 _viewPager;
-	protected Page previousPage;
-	int[] _checkedStateSet = null;
-	int[] _selectedStateSet = null;
-	int[] _emptyStateSet = null;
-	int _defaultARGBColor = Colors.Transparent.ToPlatform().ToArgb();
-	AColor _defaultAndroidColor = Colors.Transparent.ToPlatform();
-	readonly IMauiContext _context;
-	readonly Listeners _listeners;
-	protected TabbedPage Element { get; set; }
-	public TabLayout TabLayout => _tabLayout;
-	public BottomNavigationView BottomNavigationView => _bottomNavigationView;
-	public ViewPager2 ViewPager => _viewPager;
-	int _tabplacementId;
-	Brush _currentBarBackground;
-	Color _currentBarItemColor;
-	Color _currentBarTextColor;
-	Color _currentBarSelectedItemColor;
-	ColorStateList _currentBarTextColorStateList;
-	bool _tabItemStyleLoaded;
-	TabLayoutMediator _tabLayoutMediator;
-	IDisposable _pendingFragment;
+	#region Properties & Constructor
 
-	protected NavigationRootManager NavigationRootManager { get; }
+	readonly TabbedViewManager _tabbedViewManager;
+	readonly IMauiContext _context;
+	TabbedPageTabbedViewSourceAdapter _adapter;
+
+	protected TabbedPage Element { get; set; }
+	protected Page previousPage;
+
+	public TabLayout TabLayout => _tabbedViewManager.TabLayout;
+	public BottomNavigationView BottomNavigationView => _tabbedViewManager.BottomNavigationView;
+	public ViewPager2 ViewPager => _tabbedViewManager.ViewPager;
+	public bool IsBottomTabPlacement => _tabbedViewManager.IsBottomTabPlacement;
+	public Color BarItemColor => _tabbedViewManager.BarItemColor;
+	public Color BarSelectedItemColor => _tabbedViewManager.BarSelectedItemColor;
+	protected NavigationRootManager NavigationRootManager => _context.GetNavigationRootManager();
+	protected FragmentManager FragmentManager => _context.GetFragmentManager();
 	public static bool IsDarkTheme => (Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme) == AppTheme.Dark;
 
 	public TabbedPageManager(IMauiContext context)
 	{
 		_context = context;
-		_listeners = new Listeners(this);
-		_viewPager = new ViewPager2(context.Context)
+		_tabbedViewManager = new TabbedViewManager(context)
 		{
-			OverScrollMode = OverScrollMode.Never,
-			LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
-		};
+			// Wire TabbedViewManager callbacks to TabbedPageManager methods
+			OnPageSelected = OnPageSelectedInternal,
+			OnMoreItemSelected = OnMoreItemSelectedInternal,
 
-		_viewPager.RegisterOnPageChangeCallback(_listeners);
+			// Consumer provides the ViewPager2 adapter
+			CreateAdapter = (fm, ctx) =>
+					new MultiPageFragmentStateAdapter<Page>(Element, fm, ctx) { CountOverride = Element.Children.Count }
+		};
 	}
 
 	internal IMauiContext MauiContext => _context;
-	protected FragmentManager FragmentManager => _fragmentManager ??= _context.GetFragmentManager();
-	public bool IsBottomTabPlacement => (Element != null) ? Element.OnThisPlatform().GetToolbarPlacement() == ToolbarPlacement.Bottom : false;
 
-	public Color BarItemColor
-	{
-		get
-		{
-			if (Element != null)
-			{
-				if (Element.IsSet(TabbedPage.UnselectedTabColorProperty))
-					return Element.UnselectedTabColor;
-			}
+	#endregion
 
-			return null;
-		}
-	}
-
-	public Color BarSelectedItemColor
-	{
-		get
-		{
-			if (Element != null)
-			{
-				if (Element.IsSet(TabbedPage.SelectedTabColorProperty))
-					return Element.SelectedTabColor;
-			}
-
-			return null;
-		}
-	}
-
+	#region Element Lifecycle
 
 	public virtual void SetElement(TabbedPage tabbedPage)
 	{
-		var activity = _context.GetActivity();
-		var themeContext = activity;
-
 		if (Element is not null)
 		{
 			Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
 			Element.Disappearing -= OnTabbedPageDisappearing;
-
-			RemoveTabs();
-			
-			_viewPager.LayoutChange -= OnLayoutChanged;
-			_viewPager.Adapter = null;
+			ViewPager.LayoutChange -= OnLayoutChanged;
 		}
 
 		Element = tabbedPage;
-		
+
 		if (Element is not null)
 		{
-			_viewPager.LayoutChange += OnLayoutChanged;
+			ViewPager.LayoutChange += OnLayoutChanged;
 			Element.Appearing += OnTabbedPageAppearing;
 			Element.Disappearing += OnTabbedPageDisappearing;
 
-			_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
-
-			if (IsBottomTabPlacement)
+			// Wire per-page property tracking and collection change for page lifecycle
+			// Subscribe BEFORE SetElement so CountOverride is updated before NotifyDataSetChanged
+			foreach (var page in Element.Children)
 			{
-				_bottomNavigationView = new BottomNavigationView(_context.Context)
-				{
-					LayoutParameters = new CoordinatorLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
-					{
-						Gravity = (int)GravityFlags.Bottom
-					}
-				};
+				SetupPage(page);
 			}
-			else
-			{
-				if (_tabLayout == null)
-				{
-					var layoutInflater = Element.Handler.MauiContext.GetLayoutInflater();
-					_tabLayout = new TabLayout(_context.Context)
-					{
-						TabMode = TabLayout.ModeFixed,
-						TabGravity = TabLayout.GravityFill,
-						LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
-					};
-				}
-			}
-
-			OnChildrenCollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-
-			ScrollToCurrentPage();
-
-			previousPage = tabbedPage.CurrentPage;
 
 			((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
 
-			SetTabLayout();
+			// Create adapter and delegate to TabbedViewManager
+			_adapter = new TabbedPageTabbedViewSourceAdapter(Element);
+			_tabbedViewManager.SetElement(_adapter);
+
+			previousPage = tabbedPage.CurrentPage;
+		}
+		else
+		{
+			_tabbedViewManager.SetElement(null);
+			_adapter = null;
 		}
 	}
 
 	protected virtual void OnLayoutChanged(object sender, AView.LayoutChangeEventArgs e)
 	{
 		Element.Arrange(e);
-	}
-
-	void RemoveTabs()
-	{
-		_pendingFragment?.Dispose();
-		_pendingFragment = null;
-
-		if (_tabLayoutFragment != null)
-		{
-			var fragment = _tabLayoutFragment;
-			_tabLayoutFragment = null;
-
-			var fragmentManager =
-				_context
-					.GetNavigationRootManager()
-					.FragmentManager;
-
-			if (!fragmentManager.IsDestroyed(_context?.Context))
-			{
-				SetContentBottomMargin(0);
-
-				if (_context?.Context is Context c)
-				{
-					_pendingFragment =
-						fragmentManager
-							.RunOrWaitForResume(c, fm =>
-							{
-								fm
-									.BeginTransaction()
-									.Remove(fragment)
-									.SetReorderingAllowed(true)
-									.Commit();
-							});
-				}
-			}
-
-			_tabplacementId = 0;
-		}
 	}
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
@@ -229,12 +122,12 @@ public class TabbedPageManager
 		if (Element?.Navigation?.ModalStack?.Count > 0)
 			return;
 
-		RemoveTabs();
+		_tabbedViewManager.RemoveTabs();
 	}
 
 	protected virtual void OnTabbedPageAppearing(object sender, EventArgs e)
 	{
-		SetTabLayout();
+		_tabbedViewManager.SetTabLayout();
 	}
 
 	protected virtual void RootViewChanged(object sender, EventArgs e)
@@ -242,629 +135,208 @@ public class TabbedPageManager
 		if (sender is NavigationRootManager rootManager)
 		{
 			rootManager.RootViewChanged -= RootViewChanged;
-			SetTabLayout();
+			_tabbedViewManager.SetTabLayout();
 		}
 	}
 
-	internal void SetTabLayout()
-	{
-		_pendingFragment?.Dispose();
-		_pendingFragment = null;
+	#endregion
 
-		int id;
-		var rootManager =
-			_context.GetNavigationRootManager();
-
-		_tabItemStyleLoaded = false;
-		if (rootManager.RootView == null)
-		{
-			rootManager.RootViewChanged += RootViewChanged;
-			return;
-		}
-
-		if (IsBottomTabPlacement)
-		{
-			id = Resource.Id.navigationlayout_bottomtabs;
-			if (_tabplacementId == id)
-				return;
-
-			SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
-		}
-		else
-		{
-			id = Resource.Id.navigationlayout_toptabs;
-			if (_tabplacementId == id)
-				return;
-
-			SetContentBottomMargin(0);
-		}
-
-		if (_context?.Context is Context c)
-		{
-			_pendingFragment =
-				rootManager
-					.FragmentManager
-					.RunOrWaitForResume(c, fm =>
-					{
-						if (IsBottomTabPlacement)
-						{
-							_tabLayoutFragment = new ViewFragment(BottomNavigationView);
-						}
-						else
-						{
-							_tabLayoutFragment = new ViewFragment(TabLayout);
-						}
-
-						_tabplacementId = id;
-
-						fm
-							.BeginTransactionEx()
-							.ReplaceEx(id, _tabLayoutFragment)
-							.SetReorderingAllowed(true)
-							.Commit();
-					});
-		}
-	}
-
-	void SetContentBottomMargin(int bottomMargin)
-	{
-		var rootManager = _context.GetNavigationRootManager();
-		var layoutContent = rootManager.RootView?.FindViewById(Resource.Id.navigationlayout_content);
-		if (layoutContent != null && layoutContent.LayoutParameters is ViewGroup.MarginLayoutParams cl)
-		{
-			cl.BottomMargin = bottomMargin;
-		}
-	}
+	#region Collection & Page Lifecycle
 
 	protected virtual void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{
 		e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
-		ViewPager2 pager = _viewPager;
-
-		if (pager.Adapter is MultiPageFragmentStateAdapter<Page> adapter)
+		if (ViewPager.Adapter is MultiPageFragmentStateAdapter<Page> adapter)
 		{
 			adapter.CountOverride = Element.Children.Count;
 		}
 
-		if (IsBottomTabPlacement)
-		{
-			BottomNavigationView bottomNavigationView = _bottomNavigationView;
-
-			NotifyDataSetChanged();
-
-			if (Element.Children.Count == 0)
-			{
-				bottomNavigationView.Menu.Clear();
-			}
-			else
-			{
-				SetupBottomNavigationView();
-				bottomNavigationView.SetOnItemSelectedListener(_listeners);
-			}
-
-			UpdateIgnoreContainerAreas();
-		}
-		else
-		{
-			TabLayout tabs = _tabLayout;
-
-			NotifyDataSetChanged();
-			if (Element.Children.Count == 0)
-			{
-				tabs.RemoveAllTabs();
-				tabs.SetupWithViewPager(null);
-				_tabLayoutMediator?.Detach();
-				_tabLayoutMediator = null;
-			}
-			else
-			{
-				if (_tabLayoutMediator == null)
-				{
-					_tabLayoutMediator = new TabLayoutMediator(tabs, _viewPager, _listeners);
-					_tabLayoutMediator.Attach();
-				}
-
-				UpdateTabIcons();
-#pragma warning disable CS0618 // Type or member is obsolete
-				tabs.AddOnTabSelectedListener(_listeners);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
-
-			UpdateIgnoreContainerAreas();
-		}
+		// TabbedViewManager handles the tab UI refresh via TabsChanged event on the adapter
+		UpdateIgnoreContainerAreas();
 	}
 
 	protected void NotifyDataSetChanged()
 	{
-		var adapter = _viewPager?.Adapter;
-		if (adapter is not null)
-		{
-			var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
-
-			// If the modification to the backing collection has changed the position of the current item
-			// then we need to update the viewpager so it remains selected
-			if (_viewPager.CurrentItem != currentIndex && currentIndex < Element.Children.Count && currentIndex >= 0)
-				_viewPager.SetCurrentItem(currentIndex, false);
-
-			adapter.NotifyDataSetChanged();
-		}
+		_tabbedViewManager.NotifyDataSetChanged();
 	}
+
+	#endregion
+
+	#region Tab Selection & Navigation
 
 	protected virtual void TabSelected(TabLayout.Tab tab)
 	{
-		if (Element == null)
+		if (Element is null)
+		{
 			return;
+		}
 
 		int selectedIndex = tab.Position;
+
 		if (Element.Children.Count > selectedIndex && selectedIndex >= 0)
+		{
 			Element.CurrentPage = Element.Children[selectedIndex];
+		}
 
 		SetIconColorFilter(Element.CurrentPage, tab, true);
 	}
 
+	#endregion
+
+	#region Per-Page Lifecycle
+
 	void TeardownPage(Page page)
 	{
-		page.PropertyChanged -= OnPagePropertyChanged;
+		page.PropertyChanged -= OnPagePropertyChangedInternal;
 	}
 
 	void SetupPage(Page page)
 	{
-		page.PropertyChanged += OnPagePropertyChanged;
+		page.PropertyChanged += OnPagePropertyChangedInternal;
 	}
 
 	void Reset()
 	{
 		foreach (var page in Element.Children)
+		{
 			SetupPage(page);
+		}
 	}
 
 	protected virtual void OnPagePropertyChanged(Page page, PropertyChangedEventArgs e)
 	{
+		if (Element is null)
+		{
+			return;
+		}
+
+		var index = Element.Children.IndexOf(page);
+		if (index < 0)
+		{
+			return;
+		}
+
 		if (e.PropertyName == Page.TitleProperty.PropertyName)
 		{
-			var index = Element.Children.IndexOf(page);
-
-			if (IsBottomTabPlacement)
-			{
-				IMenuItem tab = _bottomNavigationView.Menu.GetItem(index);
-				tab.SetTitle(page.Title);
-			}
-			else
-			{
-				TabLayout.Tab tab = _tabLayout.GetTabAt(index);
-				tab.SetText(page.Title);
-			}
+			_tabbedViewManager.UpdateTabTitle(index, page.Title);
 		}
 		else if (e.PropertyName == Page.IconImageSourceProperty.PropertyName)
 		{
-			var index = Element.Children.IndexOf(page);
-			if (IsBottomTabPlacement)
-			{
-				var menuItem = _bottomNavigationView.Menu.GetItem(index);
-				page.IconImageSource.LoadImage(
-					_context,
-					result =>
-					{
-						menuItem.SetIcon(result.Value);
-					});
-				SetupBottomNavigationViewIconColor(page, menuItem, index);
-			}
-			else
-			{
-				TabLayout.Tab tab = _tabLayout.GetTabAt(index);
-				SetTabIconImageSource(page, tab);
-			}
+			_tabbedViewManager.UpdateTabIcon(index);
 		}
 	}
 
-	void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+	void OnPagePropertyChangedInternal(object sender, PropertyChangedEventArgs e)
 	{
 		OnPagePropertyChanged((Page)sender, e);
 	}
 
 	internal void ScrollToCurrentPage()
 	{
-		if (Element.CurrentPage == null)
-			return;
-
-		// TODO MAUI
-		//if (Platform != null)
-		//{
-		//	Platform.NavAnimationInProgress = true;
-		//}
-
-		_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), Element.OnThisPlatform().IsSmoothScrollEnabled());
-
-		//if (Platform != null)
-		//{
-		//	Platform.NavAnimationInProgress = false;
-		//}
+		_tabbedViewManager.ScrollToCurrentTab();
 	}
 
 	void UpdateIgnoreContainerAreas()
 	{
 		foreach (IPageController child in Element.Children)
+		{
 			child.IgnoresContainerArea = child is NavigationPage;
+		}
 	}
 
 	[Obsolete]
 	internal void UpdateOffscreenPageLimit()
 	{
-		_viewPager.OffscreenPageLimit = Element.OnThisPlatform().OffscreenPageLimit();
+		_tabbedViewManager.UpdateOffscreenPageLimit();
 	}
 
 	internal void UpdateSwipePaging()
 	{
-		_viewPager.UserInputEnabled = Element.OnThisPlatform().IsSwipePagingEnabled();
+		_tabbedViewManager.UpdateSwipePaging();
 	}
 
-	List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList()
-	{
-		var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
+	#endregion
 
-		for (int i = 0; i < Element.Children.Count; i++)
-		{
-			var item = Element.Children[i];
-			items.Add((item.Title, item.IconImageSource, item.IsEnabled));
-		}
-
-		return items;
-	}
+	#region Tab Appearance
 
 	protected virtual void SetupBottomNavigationView()
 	{
-		var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
-		var items = CreateTabList();
-
-		BottomNavigationViewUtils.SetupMenu(
-			_bottomNavigationView.Menu,
-			_bottomNavigationView.MaxItemCount,
-			items,
-			currentIndex,
-			_bottomNavigationView,
-			Element.FindMauiContext());
-
-		if (Element.CurrentPage == null && Element.Children.Count > 0)
-			Element.CurrentPage = Element.Children[0];
+		_tabbedViewManager.SetupBottomNavigationView();
 	}
 
 	protected virtual void UpdateTabIcons()
 	{
-		TabLayout tabs = _tabLayout;
-
-		if (tabs.TabCount != Element.Children.Count)
-			return;
-
-		for (var i = 0; i < Element.Children.Count; i++)
-		{
-			Page child = Element.Children[i];
-			TabLayout.Tab tab = tabs.GetTabAt(i);
-			SetTabIconImageSource(child, tab);
-		}
+		_tabbedViewManager.UpdateTabIcons();
 	}
 
 	protected virtual void SetTabIconImageSource(Page page, TabLayout.Tab tab, Drawable icon)
 	{
-		tab.SetIcon(icon);
-		SetIconColorFilter(page, tab);
-	}
+		var tabIndex = Element.Children.IndexOf(page);
+		var tabs = ((ITabbedView)Element).Tabs;
 
-	void SetTabIconImageSource(Page page, TabLayout.Tab tab)
-	{
-		page.IconImageSource.LoadImage(
-			_context,
-			result =>
-			{
-				SetTabIconImageSource(page, tab, result?.Value);
-			});
+		if (tabIndex >= 0 && tabIndex < tabs.Count)
+		{
+			_tabbedViewManager.SetTabIconImageSource(tabs[tabIndex], tab, icon);
+		}
 	}
 
 	public virtual void UpdateBarBackgroundColor()
 	{
-		if (Element.BarBackground != null)
-			return;
-
-		if (IsBottomTabPlacement)
-		{
-			Color tintColor = Element.BarBackgroundColor;
-
-			if (tintColor == null)
-				_bottomNavigationView.SetBackground(null);
-			else if (tintColor != null)
-				_bottomNavigationView.SetBackgroundColor(tintColor.ToPlatform());
-		}
-		else
-		{
-			Color tintColor = Element.BarBackgroundColor;
-
-			if (tintColor == null)
-				_tabLayout.BackgroundTintMode = null;
-			else
-			{
-				_tabLayout.BackgroundTintMode = PorterDuff.Mode.Src;
-				_tabLayout.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
-			}
-		}
+		_tabbedViewManager.UpdateBarBackgroundColor();
 	}
 
 	public virtual void UpdateBarBackground()
 	{
-		if (_currentBarBackground == Element.BarBackground)
-			return;
-
-		if (_currentBarBackground is GradientBrush oldGradientBrush)
-		{
-			oldGradientBrush.Parent = null;
-			oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
-		}
-
-		_currentBarBackground = Element.BarBackground;
-
-		if (_currentBarBackground is GradientBrush newGradientBrush)
-		{
-			newGradientBrush.Parent = Element;
-			newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
-			if (_bottomNavigationView is not null && _bottomNavigationView.Elevation > 0)
-			{
-				_bottomNavigationView.Elevation = 0;
-			}
-		}
-		else if (_currentBarBackground is SolidColorBrush && _bottomNavigationView is not null && _bottomNavigationView.Elevation == 0)
-		{
-			_bottomNavigationView.Elevation = _bottomNavigationView.Context.Resources.GetDimension(Resource.Dimension.design_bottom_navigation_elevation);
-		}
-
-		RefreshBarBackground();
-	}
-
-	void OnBarBackgroundChanged(object sender, EventArgs e)
-	{
-		RefreshBarBackground();
+		_tabbedViewManager.UpdateBarBackground();
 	}
 
 	protected virtual void RefreshBarBackground()
 	{
-		if (IsBottomTabPlacement)
-			_bottomNavigationView.UpdateBackground(_currentBarBackground);
-		else
-			_tabLayout.UpdateBackground(_currentBarBackground);
+		_tabbedViewManager.RefreshBarBackground();
 	}
 
 	protected virtual ColorStateList GetItemTextColorStates()
 	{
-		if (_originalTabTextColors is null)
-			_originalTabTextColors = IsBottomTabPlacement ? _bottomNavigationView.ItemTextColor : _tabLayout.TabTextColors;
-
-		Color barItemColor = BarItemColor;
-		Color barTextColor = Element.BarTextColor;
-		Color barSelectedItemColor = BarSelectedItemColor;
-
-		if (barItemColor is null && barTextColor is null && barSelectedItemColor is null)
-			return _originalTabTextColors;
-
-		if (_newTabTextColors is not null)
-			return _newTabTextColors;
-
-		int checkedColor;
-
-		// The new default color to use may have a color if BarItemColor is not null or the original colors for text
-		// are not null either. If it does not happens, this variable will be null and the ColorStateList of the
-		// original colors is used.
-		int? defaultColor = null;
-
-		if (barTextColor is not null)
-		{
-			checkedColor = barTextColor.ToPlatform().ToArgb();
-			defaultColor = checkedColor;
-		}
-		else
-		{
-			// UnSelected tabs TextColor
-			defaultColor = GetItemTextColor(barItemColor, _originalTabTextColors);
-
-			// Selected tabs TextColor
-			checkedColor = GetItemTextColor(barSelectedItemColor, _originalTabTextColors);
-		}
-
-		_newTabTextColors = GetColorStateList(defaultColor.Value, checkedColor);
-
-		return _newTabTextColors;
-	}
-
-	int GetItemTextColor(Color customColor, ColorStateList originalColors)
-	{
-		return customColor?.ToPlatform().ToArgb() ?? originalColors?.DefaultColor ?? 0;
+		return _tabbedViewManager.GetItemTextColorStates();
 	}
 
 	protected virtual ColorStateList GetItemIconTintColorState(Page page)
 	{
-		if (page.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is not null)
-		{
-			return null;
-		}
-
-		if (_orignalTabIconColors is null)
-		{
-			_orignalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
-		}
-
-		Color barItemColor = BarItemColor;
-		Color barSelectedItemColor = BarSelectedItemColor;
-
-		if (barItemColor is null && barSelectedItemColor is null)
-		{
-			return _orignalTabIconColors;
-		}
-
-		if (_newTabIconColors is not null)
-		{
-			return _newTabIconColors;
-		}
-
-		int defaultColor;
-		int checkedColor;
-
-		if (barItemColor is not null)
-		{
-			defaultColor = barItemColor.ToPlatform().ToArgb();
-		}
-		else
-		{
-			defaultColor = GetDefaultColor();
-		}
-
-		if (barSelectedItemColor is not null)
-		{
-			checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
-		}
-		else
-		{
-			checkedColor = GetDefaultColor();
-		}
-
-		_newTabIconColors = GetColorStateList(defaultColor, checkedColor);
-		return _newTabIconColors;
-	}
-
-	int GetDefaultColor()
-	{
-		int defaultColor;
-		var styledAttributes =
-			_context.Context.Theme.ObtainStyledAttributes(
-				null,
-				Resource.Styleable.NavigationBarView,
-				Resource.Attribute.bottomNavigationStyle,
-				0);
-
-		try
-		{
-			var defaultColors = styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
-			if (defaultColors is not null)
-			{
-				defaultColor = defaultColors.DefaultColor;
-			}
-			else
-			{
-				// These are the defaults currently set inside android
-				// It's very unlikely we'll hit this path because the 
-				// NavigationBarView_itemIconTint should always resolve
-				// But just in case, we'll just hard code to some defaults
-				// instead of leaving the application in a broken state
-				if (IsDarkTheme)
-				{
-					defaultColor = AndroidX.Core.Graphics.ColorUtils.SetAlphaComponent(
-						ContextCompat.GetColor(_context.Context, Resource.Color.primary_dark_material_light),
-						153); // 60% opacity
-				}
-				else
-				{
-					defaultColor = AndroidX.Core.Graphics.ColorUtils.SetAlphaComponent(
-						ContextCompat.GetColor(_context.Context, Resource.Color.primary_dark_material_dark),
-						153); // 60% opacity
-				}
-			}
-		}
-		finally
-		{
-			styledAttributes.Recycle();
-		}
-		return defaultColor;
+		var tabIndex = Element.Children.IndexOf(page);
+		return _tabbedViewManager.GetItemIconTintColorState(tabIndex);
 	}
 
 	protected virtual void OnMoreSheetDismissed(object sender, EventArgs e)
 	{
 		var index = Element.Children.IndexOf(Element.CurrentPage);
-		using (var menu = _bottomNavigationView.Menu)
+
+		if (BottomNavigationView is not null)
 		{
-			index = Math.Min(index, menu.Size() - 1);
-			if (index < 0)
-				return;
-			using (var menuItem = menu.GetItem(index))
-				menuItem.SetChecked(true);
+			_tabbedViewManager.SetSelectedTab(index);
 		}
 
 		if (sender is BottomSheetDialog bsd)
+		{
 			bsd.DismissEvent -= OnMoreSheetDismissed;
+		}
 	}
 
 	protected virtual void OnMoreItemSelected(int selectedIndex, BottomSheetDialog dialog)
 	{
-		if (selectedIndex >= 0 && _bottomNavigationView.SelectedItemId != selectedIndex && Element.Children.Count > selectedIndex)
+		if (selectedIndex >= 0 && BottomNavigationView?.SelectedItemId != selectedIndex && Element.Children.Count > selectedIndex)
+		{
 			Element.CurrentPage = Element.Children[selectedIndex];
+		}
 
 		dialog.Dismiss();
 		dialog.DismissEvent -= OnMoreSheetDismissed;
 		dialog.Dispose();
 	}
 
-	void UpdateItemIconColor()
-	{
-		_newTabIconColors = null;
-
-		if (IsBottomTabPlacement)
-		{
-			for (int i = 0; i < _bottomNavigationView.Menu.Size(); i++)
-			{
-				var menuItem = _bottomNavigationView.Menu.GetItem(i);
-				var page = Element.Children[i];
-				SetupBottomNavigationViewIconColor(page, menuItem, i);
-			}
-		}
-		else
-		{
-			for (int i = 0; i < _tabLayout.TabCount; i++)
-			{
-				TabLayout.Tab tab = _tabLayout.GetTabAt(i);
-				var page = Element.Children[i];
-				this.SetIconColorFilter(page, tab);
-			}
-		}
-	}
-
-	void SetupBottomNavigationViewIconColor(Page page, IMenuItem menuItem, int i)
-	{
-		// Updating the icon color of each BottomNavigationView item individually works correctly.
-		// This is necessary because `ItemIconTintList` applies the color globally to all items,
-		// which doesn't allow for per-item customization.
-		// Currently, there is no modern API that provides the desired behavior.
-		// Therefore, the obsolete `BottomNavigationItemView` approach is used.
-#pragma warning disable XAOBS001 // Type or member is obsolete
-		if (_bottomNavigationView.GetChildAt(0) is BottomNavigationMenuView menuView)
-		{
-			var itemView = menuView.GetChildAt(i) as BottomNavigationItemView;
-
-			if (itemView != null && itemView.Id == menuItem.ItemId)
-			{
-				ColorStateList colors = GetItemIconTintColorState(page);
-
-				itemView.SetIconTintList(colors);
-			}
-		}
-#pragma warning restore XAOBS001 // Type or member is obsolete
-	}
-
 	protected virtual void UpdateStyleForTabItem()
 	{
-		Color barItemColor = BarItemColor;
-		Color barTextColor = Element.BarTextColor;
-		Color barSelectedItemColor = BarSelectedItemColor;
-
-		if (_tabItemStyleLoaded &&
-			_currentBarItemColor == barItemColor &&
-			_currentBarTextColor == barTextColor &&
-			_currentBarSelectedItemColor == barSelectedItemColor)
-		{
-			return;
-		}
-
-		_tabItemStyleLoaded = true;
-		_currentBarItemColor = BarItemColor;
-		_currentBarTextColor = Element.BarTextColor;
-		_currentBarSelectedItemColor = BarSelectedItemColor;
-
-		UpdateBarTextColor();
-		UpdateItemIconColor();
+		_tabbedViewManager.UpdateStyleForTabItem();
 	}
 
 	internal void UpdateTabItemStyle()
@@ -872,212 +344,110 @@ public class TabbedPageManager
 		UpdateStyleForTabItem();
 	}
 
-	void UpdateBarTextColor()
-	{
-		_newTabTextColors = null;
-
-		_currentBarTextColorStateList = GetItemTextColorStates() ?? _originalTabTextColors;
-		if (IsBottomTabPlacement)
-			_bottomNavigationView.ItemTextColor = _currentBarTextColorStateList;
-		else
-			_tabLayout.TabTextColors = _currentBarTextColorStateList;
-	}
-
-	void SetIconColorFilter(Page page, TabLayout.Tab tab)
-	{
-		SetIconColorFilter(page, tab, _tabLayout.GetTabAt(_tabLayout.SelectedTabPosition) == tab);
-	}
-
 	protected virtual void SetIconColorFilter(Page page, TabLayout.Tab tab, bool selected)
 	{
-		var icon = tab.Icon;
-		if (icon == null)
+		var tabIndex = Element.Children.IndexOf(page);
+		_tabbedViewManager.SetIconColorFilter(tabIndex, tab, selected);
+	}
+
+	#endregion
+
+	#region VP2 Page Change Callbacks
+
+	void OnPageSelectedInternal(int position)
+	{
+		if (Element is null)
+		{
 			return;
+		}
 
-		ColorStateList colors = GetItemIconTintColorState(page);
-		if (colors == null)
-			ADrawableCompat.SetTintList(icon, null);
-		else
+		if (previousPage != Element.CurrentPage)
 		{
-			int[] _stateSet = null;
+			previousPage?.SendDisappearing();
+			previousPage = Element.CurrentPage;
+		}
 
-			if (selected)
-				_stateSet = GetSelectedStateSet();
-			else
-				_stateSet = GetEmptyStateSet();
+		if (Element.Children.Count > 0 && position < Element.Children.Count)
+		{
+			Element.CurrentPage = Element.Children[position];
+			Element.CurrentPage.SendAppearing();
+		}
+	}
 
-			if (colors.GetColorForState(_stateSet, _defaultAndroidColor) == _defaultARGBColor)
-				ADrawableCompat.SetTintList(icon, null);
-			else
+	void OnMoreItemSelectedInternal(int selectedIndex, BottomSheetDialog dialog)
+	{
+		OnMoreItemSelected(selectedIndex, dialog);
+	}
+
+	#endregion
+
+	#region TabbedPageTabbedViewSourceAdapter
+
+	/// <summary>
+	/// Adapter that bridges TabbedPage to ITabbedViewSource for TabbedViewManager consumption.
+	/// </summary>
+	sealed class TabbedPageTabbedViewSourceAdapter : ITabbedViewSource
+	{
+		readonly TabbedPage _tabbedPage;
+
+		public TabbedPageTabbedViewSourceAdapter(TabbedPage tabbedPage)
+		{
+			_tabbedPage = tabbedPage;
+		}
+
+		public IReadOnlyList<ITab> Tabs =>
+			_tabbedPage.Children.Select(p => (ITab)new TabbedPage.PageTabAdapter(p)).ToList();
+
+		public ITab CurrentTab
+		{
+			get => _tabbedPage.CurrentPage is not null ? new TabbedPage.PageTabAdapter(_tabbedPage.CurrentPage) : null;
+			set
 			{
-				var wrappedIcon = ADrawableCompat.Wrap(icon);
-				if (wrappedIcon != icon)
-				{
-					icon = wrappedIcon;
-					tab.SetIcon(wrappedIcon);
-				}
-
-				icon.Mutate();
-				icon.SetState(_stateSet);
-
-				// The FontImageSource has its own color, so we don't need to apply the tint list.
-				if (page.IconImageSource is not FontImageSource)
-				{
-					_tabLayout.TabIconTint = colors;
-				}
-
-				ADrawableCompat.SetTintList(icon, colors);
+				if (value is TabbedPage.PageTabAdapter adapter)
+					_tabbedPage.CurrentPage = adapter.Page;
 			}
 		}
-		icon.InvalidateSelf();
-	}
 
-	int[] GetSelectedStateSet()
-	{
-		if (IsBottomTabPlacement)
-		{
-			if (_checkedStateSet == null)
-				_checkedStateSet = new int[] { global::Android.Resource.Attribute.StateChecked };
+		public int CurrentTabIndex =>
+			_tabbedPage.CurrentPage is not null
+				? _tabbedPage.Children.IndexOf(_tabbedPage.CurrentPage)
+				: -1;
 
-			return _checkedStateSet;
-		}
-		else
-		{
-			if (_selectedStateSet == null)
-				_selectedStateSet = GetStateSet(new TempView(_context.Context).SelectedStateSet);
+		public Color BarBackgroundColor => _tabbedPage.BarBackgroundColor;
+		public object BarBackground => _tabbedPage.BarBackground;
+		public Color BarTextColor => _tabbedPage.BarTextColor;
 
-			return _selectedStateSet;
-		}
-	}
+		public Color UnselectedTabColor =>
+			_tabbedPage.IsSet(TabbedPage.UnselectedTabColorProperty)
+				? _tabbedPage.UnselectedTabColor
+				: null;
 
-	int[] GetEmptyStateSet()
-	{
-		if (_emptyStateSet == null)
-			_emptyStateSet = GetStateSet(new TempView(_context.Context).EmptyStateSet);
+		public Color SelectedTabColor =>
+			_tabbedPage.IsSet(TabbedPage.SelectedTabColorProperty)
+				? _tabbedPage.SelectedTabColor
+				: null;
 
-		return _emptyStateSet;
-	}
+		public TabBarPlacement TabBarPlacement =>
+			_tabbedPage.OnThisPlatform().GetToolbarPlacement() == ToolbarPlacement.Bottom
+				? TabBarPlacement.Bottom
+				: TabBarPlacement.Top;
 
-	class TempView : AView
-	{
-		// These are protected static so need to be inside a View Instance to retrieve these
-		public new IList<int> EmptyStateSet => AView.EmptyStateSet;
-		public new IList<int> SelectedStateSet => AView.SelectedStateSet;
-		public TempView(Context context) : base(context)
-		{
-		}
-	}
-
-	int[] GetStateSet(IList<int> stateSet)
-	{
-		var results = new int[stateSet.Count];
-		for (int i = 0; i < results.Length; i++)
-			results[i] = stateSet[i];
-
-		return results;
-	}
-
-	ColorStateList GetColorStateList(int defaultColor, int checkedColor)
-	{
-		int[][] states = new int[2][];
-		int[] colors = new int[2];
-
-		states[0] = GetSelectedStateSet();
-		colors[0] = checkedColor;
-		states[1] = GetEmptyStateSet();
-		colors[1] = defaultColor;
-
-#pragma warning disable RS0030
-		//TODO: port this usage to Java, if this becomes a performance concern
-		return new ColorStateList(states, colors);
-#pragma warning restore RS0030
-	}
-
-	class Listeners : ViewPager2.OnPageChangeCallback,
+		public int OffscreenPageLimit =>
 #pragma warning disable CS0618 // Type or member is obsolete
-		TabLayout.IOnTabSelectedListener,
-#pragma warning restore CS0618 // Type or member is obsolete
-		NavigationBarView.IOnItemSelectedListener,
-		TabLayoutMediator.ITabConfigurationStrategy
-	{
-		readonly TabbedPageManager _tabbedPageManager;
+			_tabbedPage.OnThisPlatform().OffscreenPageLimit();
+#pragma warning restore CS0618
 
-		public Listeners(TabbedPageManager tabbedPageManager)
+		public bool IsSwipePagingEnabled => _tabbedPage.OnThisPlatform().IsSwipePagingEnabled();
+		public bool IsSmoothScrollEnabled => _tabbedPage.OnThisPlatform().IsSmoothScrollEnabled();
+
+		public Element Owner => _tabbedPage;
+
+		public event NotifyCollectionChangedEventHandler TabsChanged
 		{
-			_tabbedPageManager = tabbedPageManager;
-		}
-
-		public override void OnPageSelected(int position)
-		{
-			base.OnPageSelected(position);
-
-			var Element = _tabbedPageManager.Element;
-
-			if (Element == null)
-				return;
-
-			var _previousPage = _tabbedPageManager.previousPage;
-			var IsBottomTabPlacement = _tabbedPageManager.IsBottomTabPlacement;
-			var _bottomNavigationView = _tabbedPageManager._bottomNavigationView;
-
-			if (_previousPage != Element.CurrentPage)
-			{
-				_previousPage?.SendDisappearing();
-				_previousPage = Element.CurrentPage;
-				_tabbedPageManager.previousPage = Element.CurrentPage;
-			}
-
-			// This only happens if all the pages have been removed
-			if (Element.Children.Count > 0)
-			{
-				Element.CurrentPage = Element.Children[position];
-				Element.CurrentPage.SendAppearing();
-			}
-
-			if (IsBottomTabPlacement)
-				_bottomNavigationView.SelectedItemId = position;
-		}
-
-		void TabLayoutMediator.ITabConfigurationStrategy.OnConfigureTab(TabLayout.Tab p0, int p1)
-		{
-			p0.SetText(_tabbedPageManager.Element.Children[p1].Title);
-		}
-
-		bool NavigationBarView.IOnItemSelectedListener.OnNavigationItemSelected(IMenuItem item)
-		{
-			if (_tabbedPageManager.Element == null)
-				return false;
-
-			var id = item.ItemId;
-			if (id == BottomNavigationViewUtils.MoreTabId)
-			{
-				var items = _tabbedPageManager.CreateTabList();
-				var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(_tabbedPageManager.OnMoreItemSelected, _tabbedPageManager.Element.FindMauiContext(), items, _tabbedPageManager._bottomNavigationView.MaxItemCount);
-				bottomSheetDialog.DismissEvent += _tabbedPageManager.OnMoreSheetDismissed;
-				bottomSheetDialog.Show();
-			}
-			else
-			{
-				if (_tabbedPageManager._bottomNavigationView.SelectedItemId != item.ItemId && _tabbedPageManager.Element.Children.Count > item.ItemId)
-					_tabbedPageManager.Element.CurrentPage = _tabbedPageManager.Element.Children[item.ItemId];
-			}
-
-			return true;
-		}
-
-
-		void TabLayout.IOnTabSelectedListener.OnTabReselected(TabLayout.Tab tab)
-		{
-		}
-
-		void TabLayout.IOnTabSelectedListener.OnTabSelected(TabLayout.Tab tab)
-		{
-			_tabbedPageManager.TabSelected(tab);
-		}
-
-		void TabLayout.IOnTabSelectedListener.OnTabUnselected(TabLayout.Tab tab)
-		{
-			_tabbedPageManager.SetIconColorFilter(_tabbedPageManager.Element.CurrentPage, tab, false);
+			add => ((IPageController)_tabbedPage).InternalChildren.CollectionChanged += value;
+			remove => ((IPageController)_tabbedPage).InternalChildren.CollectionChanged -= value;
 		}
 	}
+
+	#endregion
 }

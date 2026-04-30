@@ -1,5 +1,5 @@
 ﻿#nullable disable
-#if WINDOWS || TIZEN
+#if WINDOWS || TIZEN || ANDROID
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,30 +14,35 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<Shell, ShellHandler> Mapper =
 				new PropertyMapper<Shell, ShellHandler>(ElementMapper)
 				{
-					[nameof(IToolbarElement.Toolbar)] = (handler, view) => ViewHandler.MapToolbar(handler, view),
-					[nameof(IFlyoutView.Flyout)] = MapFlyout,
-					[nameof(IFlyoutView.IsPresented)] = MapIsPresented,
-					[nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
-					[nameof(IFlyoutView.FlyoutWidth)] = MapFlyoutWidth,
+					[nameof(Shell.CurrentItem)] = MapCurrentItem,
 					[nameof(Shell.FlyoutBackground)] = MapFlyoutBackground,
 					[nameof(Shell.FlyoutBackgroundColor)] = MapFlyoutBackground,
-					[nameof(Shell.FlyoutContent)] = MapFlyout,
-					[nameof(Shell.CurrentItem)] = MapCurrentItem,
 					[nameof(Shell.FlyoutBackdrop)] = MapFlyoutBackdrop,
-					[nameof(Shell.FlyoutFooter)] = MapFlyoutFooter,
-					[nameof(Shell.FlyoutFooterTemplate)] = MapFlyoutFooter,
 					[nameof(Shell.FlyoutHeader)] = MapFlyoutHeader,
 					[nameof(Shell.FlyoutHeaderTemplate)] = MapFlyoutHeader,
+					[nameof(Shell.FlyoutFooter)] = MapFlyoutFooter,
+					[nameof(Shell.FlyoutFooterTemplate)] = MapFlyoutFooter,
 					[nameof(Shell.FlyoutHeaderBehavior)] = MapFlyoutHeaderBehavior,
-					[nameof(Shell.Items)] = MapItems,
-					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
-#if WINDOWS
-					[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
+					[nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
+					[nameof(IFlyoutView.FlyoutWidth)] = MapFlyoutWidth,
+					[nameof(IFlyoutView.IsPresented)] = MapIsPresented,
+					[nameof(Shell.FlyoutContent)] = MapFlyout,
 					[nameof(Shell.FlyoutContentTemplate)] = MapFlyout,
 					[nameof(Shell.FlowDirection)] = MapFlowDirection,
 					[nameof(Shell.FlyoutBackgroundImage)] = MapFlyoutBackgroundImage,
 					[nameof(Shell.FlyoutBackgroundImageAspect)] = MapFlyoutBackgroundImage,
 					[nameof(Shell.FlyoutVerticalScrollMode)] = MapFlyoutVerticalScrollMode,
+
+#if WINDOWS || TIZEN
+					[nameof(IToolbarElement.Toolbar)] = (handler, view) => ViewHandler.MapToolbar(handler, view),
+					[nameof(IFlyoutView.Flyout)] = MapFlyout,
+					[nameof(Shell.Items)] = MapItems,
+					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
+					[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
+#endif
+
+#if ANDROID
+					[nameof(Shell.FlyoutHeight)] = MapFlyoutHeight,
 #endif
 				};
 

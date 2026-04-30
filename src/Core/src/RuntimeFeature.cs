@@ -28,6 +28,7 @@ namespace Microsoft.Maui
 		const bool IsMeterSupportedByDefault = true;
 		const bool EnableAspireByDefault = true;
 		const bool IsMaterial3EnabledByDefault = false;
+		const bool UseAndroidShellHandlersByDefault = false;
 		const bool IsCssEnabledByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
@@ -158,6 +159,14 @@ namespace Microsoft.Maui
 				: IsMaterial3EnabledByDefault;
 
 #pragma warning restore IL4000
+
+#if NET11_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(UseAndroidShellHandlers)}")]
+#endif
+		public static bool UseAndroidShellHandlers =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(UseAndroidShellHandlers)}", out bool isEnabled)
+				? isEnabled
+				: UseAndroidShellHandlersByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}")]

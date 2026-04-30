@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// Notify about the property change
 				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
-				
+
 				if (shell == null)
 				{
 					return;
@@ -822,8 +822,8 @@ namespace Microsoft.Maui.Controls
 
 #if ANDROID
 		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
-		static readonly Color DefaultForegroundColor = Colors.White;
-		static readonly Color DefaultTitleColor = Colors.White;
+		static Color DefaultForegroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
+		static Color DefaultTitleColor => Colors.White;
 
 		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
 
@@ -1820,8 +1820,8 @@ namespace Microsoft.Maui.Controls
 				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
 			}
-      
-      // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+
+			// Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
 			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.Loaded -= OnCurrentPageLoaded;
