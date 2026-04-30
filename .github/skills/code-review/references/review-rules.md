@@ -329,6 +329,25 @@ Use this table as a triage guide: PRs touching these components warrant a more t
 
 ---
 
+## 23. Trim / NativeAOT Safety
+
+Trim and NativeAOT warnings (IL2026, IL3050) indicate the linker/ILC cannot prove code
+is safe. Incorrect fixes (suppression) cause silent runtime failures in published apps.
+This section is sourced from the HybridWebViewHandler IL3050 incident (Issue #34867,
+PR #34958) where multiple AI agents recommended suppression instead of the correct
+structural fix.
+
+| Check | What to look for |
+|-------|-----------------|
+| **`[UnconditionalSuppressMessage]` for IL2026/IL3050 is almost always wrong** | If a PR adds `[UnconditionalSuppressMessage("AOT", "IL3050:...")]` or `[UnconditionalSuppressMessage("Trimming", "IL2026:...")]`, it is very likely hiding a real problem rather than fixing it. The correct response is to restructure the code so the analyzer can prove safety — typically via the extract-method pattern below. Only accept suppression if the PR includes proof that the code path is genuinely unconditionally safe (e.g., the type is explicitly preserved). (Issue #34867 — simonrozsival) |
+| **`[FeatureGuard]` does NOT suppress indirect annotation chains** | `[FeatureGuard(typeof(RequiresDynamicCodeAttribute))]` on a `RuntimeFeature` property suppresses IL3050 only for **direct** calls to `[RequiresDynamicCode]` methods inside the guarded block. It does **not** suppress warnings from indirect chains — e.g., generic type parameters with `[DynamicallyAccessedMembers]` that trace back to an annotated type. If a PR claims "the feature guard handles it" but the warning goes through a generic like `AddHandler<T, TRender>()`, the guard is NOT sufficient. (Issue #34867 — simonrozsival) |
+| **Extract-method pattern for feature-guarded annotated types** | When registering a type annotated with `[RequiresDynamicCode]` or `[RequiresUnreferencedCode]` inside a `[FeatureGuard]`-protected block, and the registration goes through a generic API with `[DynamicallyAccessedMembers]`, extract the call into a separate method annotated with the same attributes. This converts the indirect chain into a direct call that the `[FeatureGuard]` can suppress. Reference: `AppHostBuilderExtensions.AddHybridWebViewHandler()` in `src/Controls/src/Core/Hosting/AppHostBuilderExtensions.cs`. (PR #34958 — simonrozsival) |
+| **Don't reference annotated types from the extracted helper's attributes** | When creating the extracted helper method, use a local `const string` for the annotation message instead of referencing a const on the annotated type (e.g., `HybridWebViewHandler.DynamicFeatures`). Accessing a const on the type embeds the type reference in the caller's IL metadata, re-introducing the very problem the extraction was meant to solve. (PR #34958, commit 2 — simonrozsival) |
+| **Read the full annotation chain before proposing any fix** | For any IL2026/IL3050 issue, trace: (1) which method emits the warning, (2) what callee/generic causes it, (3) whether the chain is direct (method call) or indirect (generic constraint / `[DynamicallyAccessedMembers]`), (4) whether a `[FeatureGuard]` exists and whether it covers the chain type. Do not propose a fix until this chain is documented. (Issue #34867) |
+| **`#pragma warning disable` for ILxxxx is equally wrong** | Same reasoning as `[UnconditionalSuppressMessage]` — it hides the problem. `#pragma warning disable IL3050` in production code should be flagged with the same severity. |
+
+---
+
 ## What NOT to Flag
 
 Do not waste reviewer time on these:
