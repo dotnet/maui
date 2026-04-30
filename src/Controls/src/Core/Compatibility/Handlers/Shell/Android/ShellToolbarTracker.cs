@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			try
 			{
 				// Call OnBackButtonPressed to allow the page to intercept navigation
-				if (_shell?.SendBackButtonPressed() == true)
+				if (Page?.SendBackButtonPressed() == true)
 					return;
 
 				await Page.Navigation.PopAsync();

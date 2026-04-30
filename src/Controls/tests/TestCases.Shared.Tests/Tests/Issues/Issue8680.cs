@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_CATALYST // https://github.com/dotnet/maui/issues/8296
+#if ANDROID // Android-specific: OnBackButtonPressed uses onBackPressedDispatcher
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,7 +23,7 @@ public class Issue8680 : _IssuesUITest
 		App.WaitForElement("InterceptPageLabel");
 
 		// Press the device back button — should be intercepted (page stays)
-		App.TapBackArrow();
+		App.Back();
 
 		// The page should still be visible because OnBackButtonPressed returned true
 		App.WaitForElement("StatusLabel");

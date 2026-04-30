@@ -1,4 +1,3 @@
-using System;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -126,6 +125,9 @@ namespace Microsoft.Maui
 
 		/// <summary>
 		/// Central handler invoked by <see cref="MauiOnBackPressedCallback"/> when the back button is pressed.
+		/// This method only checks whether MAUI lifecycle handlers intercept the back press.
+		/// Callers are responsible for invoking <see cref="AndroidX.Activity.OnBackPressedDispatcher.OnBackPressed()"/> as a
+		/// fallback when this method returns <see langword="false"/>.
 		/// </summary>
 		/// <returns><see langword="true"/> if MAUI handled back navigation; <see langword="false"/> to allow
 		/// the system to proceed with default back behavior (e.g., close the activity).</returns>
