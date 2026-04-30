@@ -310,31 +310,40 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
 		{
-			double contentYOffset = 0;
+			var safeAreaInsets = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 
-			if (ShouldHonorSafeArea(HeaderView?.View) ||
-				(HeaderView is null && ShouldHonorSafeArea(Content)))
+			// Honor ISafeAreaView.IgnoreSafeArea and explicit margins (same as LayoutHeader)
+			nfloat safeAreaTop = 0;
+			if (ShouldHonorSafeArea(HeaderView?.View) || (HeaderView is null && ShouldHonorSafeArea(Content)))
 			{
-				// We add the safe area if margin is not explicitly set. This matches the header behavior.
-				contentYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+				safeAreaTop = safeAreaInsets.Top;
 			}
+			nfloat safeAreaBottom = safeAreaInsets.Bottom;
+
+			var contentY = parentBounds.Y + safeAreaTop;
+			var contentHeight = parentBounds.Height - safeAreaTop - safeAreaBottom - footerHeight;
 
 			if (HeaderView is not null)
 			{
 				if (ScrollView is null)
 				{
-					// The margin is already managed by MAUI's layout system, so we don't need to add it here and we just offset the content by the header's height.				
-					contentYOffset += HeaderView.Frame.Height;
+					// The margin is already managed by MAUI's layout system, so we don't need to add it here
+					// and we just offset the content by the header's height.
+					contentY += HeaderView.Frame.Height;
+					contentHeight -= HeaderView.Frame.Height;
 				}
 				else
 				{
-					// For ScrollView, we need to consider the margin, but we should not consider the header height, since it should overlap with the scroll view. 
-					// The content inset is already managed by SetHeaderContentInset.
-					contentYOffset += HeaderView.View.Margin.VerticalThickness;
+					// For ScrollView, we should not offset by the full header height since the scroll view
+					// overlaps with the header (FlyoutHeaderBehavior.Scroll / CollapseOnScroll parallax).
+					// The top content inset is managed by SetHeaderContentInset; only account for margin here.
+					var marginOffset = (nfloat)HeaderView.View.Margin.VerticalThickness;
+					contentY += marginOffset;
+					contentHeight -= marginOffset;
 				}
 			}
 
-			var contentFrame = new Rect(parentBounds.X, contentYOffset, parentBounds.Width, parentBounds.Height - contentYOffset - footerHeight);
+			var contentFrame = new Rect(parentBounds.X, contentY, parentBounds.Width, contentHeight);
 			if (Content is null)
 			{
 				ContentView.Frame = contentFrame.AsCGRect();
