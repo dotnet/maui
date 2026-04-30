@@ -93,7 +93,18 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var value = GetValue();
 			if (value == null && propertyType.IsValueType)
+			{
+				if(bp != null)
+				{
+					object targetObject = valueProvider.TargetObject;
+
+						if (targetObject is Setter)
+							return null;
+						else
+							return bp.GetDefaultValue(targetObject as BindableObject);
+				}
 				return Activator.CreateInstance(propertyType);
+			}
 
 			if (Converter != null)
 				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
