@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
@@ -389,10 +390,9 @@ namespace Microsoft.Maui.Controls
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
 
-			index = GetSelectedIndex();
+			index = GetSelectedIndexForCollectionMutation();
 			if (insertIndex <= index)
 			{
-				// When an item is inserted before the current selection, the selected item changes because the selected index is not properly updated.
 				ClampSelectedIndex(index);
 			}
 		}
@@ -400,18 +400,15 @@ namespace Microsoft.Maui.Controls
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
 		{
 			int removeStart;
-			// Items are removed in reverse order, so index starts at the index of the last item to remove
 			int index;
 
 			if (e.OldStartingIndex < Items.Count)
 			{
-				// Remove e.OldItems.Count items starting at e.OldStartingIndex
 				removeStart = e.OldStartingIndex;
 				index = e.OldStartingIndex + e.OldItems.Count - 1;
 			}
 			else
 			{
-				// Remove e.OldItems.Count items at the end when e.OldStartingIndex is past the end of the Items collection
 				removeStart = Items.Count - e.OldItems.Count;
 				index = Items.Count - 1;
 			}
@@ -419,34 +416,56 @@ namespace Microsoft.Maui.Controls
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
 
-			index = GetSelectedIndex();
-			if (removeStart <= index)
+			index = GetSelectedIndexForCollectionMutation();
+
+			bool selectedItemWasRemoved =
+				SelectedItem != null &&
+				e.OldItems != null &&
+				e.OldItems.Cast<object>().Contains(SelectedItem);
+
+			if (selectedItemWasRemoved)
+			{
+				ClampSelectedIndex(-1);
+			}
+			else if (removeStart <= index)
 			{
 				ClampSelectedIndex(index);
 			}
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
 		int GetSelectedIndex()
 		{
 			if (SelectedItem is null)
-			{
 				return SelectedIndex;
-			}
 
 			int newIndex = ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1;
+
 			return newIndex >= 0 ? newIndex : SelectedIndex;
+		}
+
+		int GetSelectedIndexForCollectionMutation()
+		{
+			if (SelectedItem is null)
+				return SelectedIndex;
+
+			return ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1;
 		}
 
 		void ResetItems()
 		{
 			if (ItemsSource == null)
 				return;
+
 			((LockableObservableListWrapper)Items).InternalClear();
+
 			foreach (object item in ItemsSource)
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
+
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			ClampSelectedIndex(SelectedIndex);
+			ClampSelectedIndex(GetSelectedIndexForCollectionMutation());
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
@@ -461,7 +480,6 @@ namespace Microsoft.Maui.Controls
 			var picker = (Picker)bindable;
 			picker.UpdateSelectedIndex(newValue);
 		}
-
 		void ClampSelectedIndex(int selectedIndex)
 		{
 			var oldIndex = selectedIndex;

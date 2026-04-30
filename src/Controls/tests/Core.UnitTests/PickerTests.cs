@@ -471,8 +471,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			items.RemoveRange(4 - removeCount, removeCount);
 
 			Assert.Equal(4 - removeCount, picker.Items.Count);
-			Assert.Equal(items.Count - 1, picker.SelectedIndex);
-			Assert.Equal(items[^1], picker.SelectedItem);
+			// When the selected item is removed, selection should be cleared
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
 		}
 
 		[Fact]
@@ -850,6 +851,82 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Assert: SelectedItem should still be "Dog", and index should now be 2
 			Assert.Equal("Dog", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerClearsSelectionWhenSelectedItemIsRemovedFromItemsSource()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "A", "B", "C" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "B"
+			};
+
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Remove the selected item
+			items.Remove("B");
+
+			// Assert: Selection should be cleared
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerRetainsSelectionWhenUnselectedItemIsRemovedFromItemsSource()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "A", "B", "C" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "C"
+			};
+
+			Assert.Equal("C", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+
+			// Act: Remove an item that is not selected
+			items.Remove("A");
+
+			// Assert: SelectedItem should still be "C", index adjusted
+			Assert.Equal("C", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerRetainsSelectionAfterInsertReorderingItemsSource()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "X", "Y", "Z" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "Y"
+			};
+
+			Assert.Equal("Y", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Insert an item before the selected item
+			items.Insert(0, "W");
+
+			// Assert: SelectedItem should still be "Y", index shifted
+			Assert.Equal("Y", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+
+			// Act: Insert an item after the selected item
+			items.Insert(4, "V");
+
+			// Assert: SelectedItem and index remain unchanged
+			Assert.Equal("Y", picker.SelectedItem);
 			Assert.Equal(2, picker.SelectedIndex);
 		}
 	}
