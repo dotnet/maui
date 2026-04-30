@@ -28,7 +28,23 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) =>
 			handler.PlatformView.UpdateBackground(view.Background);
 
-		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
+		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
+		{
+			// WinUI SwipeItem does not support a Visibility property, so we need to
+			// rebuild the parent SwipeView's swipe items to reflect the visibility change.
+			var swipeView = view.Parent?.Parent as ISwipeView;
+			if (swipeView?.Handler is ISwipeViewHandler swipeViewHandler)
+			{
+				if (swipeView.LeftItems?.Contains(view) == true)
+					swipeViewHandler.UpdateValue(nameof(ISwipeView.LeftItems));
+				else if (swipeView.RightItems?.Contains(view) == true)
+					swipeViewHandler.UpdateValue(nameof(ISwipeView.RightItems));
+				else if (swipeView.TopItems?.Contains(view) == true)
+					swipeViewHandler.UpdateValue(nameof(ISwipeView.TopItems));
+				else if (swipeView.BottomItems?.Contains(view) == true)
+					swipeViewHandler.UpdateValue(nameof(ISwipeView.BottomItems));
+			}
+		}
 
 		protected override void ConnectHandler(WSwipeItem platformView)
 		{

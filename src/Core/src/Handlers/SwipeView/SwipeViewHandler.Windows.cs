@@ -180,7 +180,8 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var item in items)
 			{
-				if (CanAddSwipeItems(swipeItems) && item is ISwipeItemMenuItem &&
+				if (CanAddSwipeItems(swipeItems) && item is ISwipeItemMenuItem menuItem &&
+					menuItem.Visibility != Visibility.Collapsed &&
 					item.ToHandler(handler.MauiContext!).PlatformView is WSwipeItem swipeItem)
 				{
 					swipeItem.BehaviorOnInvoked = items.SwipeBehaviorOnInvoked.ToPlatform();
