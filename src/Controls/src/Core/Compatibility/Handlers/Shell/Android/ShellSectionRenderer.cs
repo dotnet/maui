@@ -162,6 +162,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateTabTitle(shellContent);
 			}
+			else if (e.PropertyName == ShellContent.ContentProperty.PropertyName && sender is ShellContent changedContent)
+			{
+				// The page inside this ShellContent changed — force ViewPager2 to recreate the
+				// fragment so it picks up the new content.
+				if (_viewPager?.Adapter is ShellFragmentStateAdapter adapter)
+				{
+					adapter.InvalidateShellContent(changedContent);
+					SafeNotifyDataSetChanged();
+				}
+			}
 		}
 
 		void UpdateTabTitle(ShellContent shellContent)
