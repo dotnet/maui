@@ -253,9 +253,9 @@ steps:
 
 # DevDiv Review Trigger
 
-You are a review results processor. The DevDiv `maui-copilot` AzDO pipeline has been triggered
-for PR #${{ inputs.pr_number }} on platform **${{ inputs.platform || 'android' }}** and the
-results are ready for you to analyze and post.
+You are a review results processor. The DevDiv `maui-copilot` AzDO pipeline was triggered
+for PR #${{ inputs.pr_number }} on platform **${{ inputs.platform || 'android' }}** and
+results are in `/tmp/pipeline-results/`.
 
 ## Context
 
@@ -264,67 +264,107 @@ results are ready for you to analyze and post.
 - **Platform**: ${{ inputs.platform || 'android' }}
 - **Triggered by**: ${{ github.actor }}
 
-## Your Task
+## Step 1: Read pipeline metadata
 
-1. **Read the pipeline results** from `/tmp/pipeline-results/`:
-   - `run-id.txt` — the AzDO build run ID
-   - `pipeline-url.txt` — link to the AzDO build
-   - `result.txt` — pipeline result (succeeded/failed/etc.)
-   - `platform.txt` — target platform
-   - `copilot-logs/` — extracted CopilotLogs artifact containing:
-     - `copilot_review_output.md` — main review output from the Copilot agent
-     - `Review_Feedback_*.md` — review feedback files
-     - `agent-pr-session/` — agent session data (may contain structured review data)
-     - `copilot-session-state/` — Copilot CLI session state
-   - `available-artifacts.json` — list of available artifacts (if CopilotLogs wasn't found)
+Read these files from `/tmp/pipeline-results/`:
+- `result.txt` — pipeline result (succeeded/failed/canceled)
+- `pipeline-url.txt` — link to the AzDO build
+- `platform.txt` — target platform
 
-2. **Check the pipeline result**:
-   - If `result.txt` says "succeeded", process the review artifacts
-   - If it says "failed", report the failure with the pipeline URL
+If `result.txt` says "failed" or is missing, skip to **Step 4 (failure)**.
 
-3. **Process the review artifacts** (when available):
-   - Read `copilot_review_output.md` — this is the main review output
-   - Read any `Review_Feedback_*.md` files for additional findings
-   - Look in `agent-pr-session/` for structured review data (JSON files with inline comments)
-   - Synthesize all findings into a coherent review
+## Step 2: Find the review phase content
 
-4. **Post the results**:
-   - Use `submit-pull-request-review` to post inline review comments if you found specific
-     file/line-level findings in the artifacts
-   - Use `add-comment` to post a summary of the review with the pipeline link
+The `CopilotLogs` artifact is extracted to `/tmp/pipeline-results/copilot-logs/`.
+Inside, look for the phase content files at this path:
 
-5. **If no artifact was found**:
-   - Check `available-artifacts.json` for what artifacts exist
-   - Post a comment explaining the pipeline completed but no review artifact was found
-   - Include the pipeline URL so maintainers can check manually
+```
+copilot-logs/CopilotLogs/CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/
+```
 
-6. **If the pipeline failed**:
-   - Post a comment with the failure status and pipeline URL
+The PR number is ${{ inputs.pr_number }}. The phase files are:
 
-## Output Format
+| Phase | File | Description |
+|-------|------|-------------|
+| 🛡️ Gate | `gate/content.md` | Test verification results |
+| 🧪 UI Tests | `uitests/content.md` | UI test category detection |
+| 🔍 Pre-Flight | `pre-flight/content.md` | Context gathering & validation |
+| 🔬 Code Review | `pre-flight/code-review.md` | Deep code analysis |
+| 🔧 Try-Fix | `try-fix/content.md` | Fix exploration & comparison |
+| 📋 Report | `report/content.md` | Final recommendation |
 
-When posting the review summary via `add-comment`, use this format:
+**Not all phases will exist** — some may be skipped depending on the PR.
+Use `find /tmp/pipeline-results/copilot-logs/ -name "content.md" -o -name "code-review.md"` to discover what's available.
+
+Also check for:
+- `copilot-logs/CopilotLogs/Review_Feedback_*.md` — additional feedback files
+- `copilot-logs/CopilotLogs/copilot_review_output.md` — full transcript log (long; only read if phases are missing)
+
+## Step 3: Post results via safe-outputs
+
+Use `add-comment` to post ONE comment on the PR. Assemble the comment from the phase
+content files using this format:
 
 ```markdown
-## 🔍 DevDiv Pipeline Review — PR #<number> (<platform>)
+## 🤖 AI Review — PR #<number> (<platform>)
 
-**Pipeline Result:** ✅ Succeeded / ❌ Failed
-**Pipeline Run:** [View in AzDO](<pipeline-url>)
+**Pipeline:** [View run](<pipeline-url>) | **Platform:** <platform> | **Triggered by:** @<actor>
+
+---
+
+### 🛡️ Gate — Test Verification
+<content from gate/content.md>
+
+### 🧪 UI Test Categories
+<content from uitests/content.md>
+
+### 🔍 Pre-Flight
+<content from pre-flight/content.md>
+
+### 🔬 Code Review
+<content from pre-flight/code-review.md>
+
+### 🔧 Fix Analysis
+<content from try-fix/content.md>
+
+### 📋 Final Recommendation
+<content from report/content.md>
+
+---
+> 🤖 *Review generated by DevDiv `maui-copilot` pipeline.*
+```
+
+**Rules:**
+- Only include sections for phases that have content files
+- Include the phase content **verbatim** — do NOT summarize or rewrite it
+- If a phase file is empty, skip that section
+- Keep the comment under 65000 characters (GitHub limit). If content is too long,
+  truncate the transcript log first, then truncate fix analysis details
+
+## Step 4: Handle failures
+
+If the pipeline **failed**:
+- Post a comment with this format:
+
+```markdown
+## ❌ AI Review Failed — PR #<number> (<platform>)
+
+The DevDiv `maui-copilot` pipeline failed for this PR.
+
+**Pipeline:** [View run](<pipeline-url>)
 **Platform:** <platform>
 **Triggered by:** @<actor>
 
-### Review Summary
-<summary of findings from the review artifacts>
-
-### Key Findings
-<bullet list of important findings>
-
-> 🔍 Review generated from DevDiv `maui-copilot` pipeline.
+Check the pipeline logs for details.
 ```
+
+If **no artifact** was found (`available-artifacts.json` exists instead):
+- Post a comment explaining the pipeline completed but produced no review artifact
+- Include the pipeline URL
 
 ## When No Action Is Needed
 
-If there is truly nothing to report (e.g., pipeline result file is missing), call the `noop` tool:
+If `/tmp/pipeline-results/` is empty or doesn't exist, call noop:
 
 ```json
 {"noop": {"message": "No pipeline results found to process"}}
