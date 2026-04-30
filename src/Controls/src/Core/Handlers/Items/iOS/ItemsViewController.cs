@@ -448,6 +448,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					foreach (var child in ItemsView.LogicalChildrenInternal)
 					{
+						// Skip the empty view element — its flow direction is handled
+						// separately in AlignEmptyView to avoid double application
+						if (child == _emptyViewFormsElement)
+						{
+							continue;
+						}
+
 						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
 						{
 							view.UpdateFlowDirection(ve);
@@ -775,35 +782,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			bool isRtl;
-
-			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
-				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
-			else
-				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
-
-			if (isRtl)
+			if (_emptyViewFormsElement is not null)
 			{
-				if (_emptyUIView.Transform.A == -1)
+				// Update FlowDirection for View-based or DataTemplate-based EmptyView
+				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
-					return;
-				}
-
-				FlipEmptyView();
-			}
-			else
-			{
-				if (_emptyUIView.Transform.A == -1)
-				{
-					FlipEmptyView();
+					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
 				}
 			}
-		}
-
-		void FlipEmptyView()
-		{
-			// Flip the empty view 180 degrees around the X axis 
-			_emptyUIView.Transform = CGAffineTransform.Scale(_emptyUIView.Transform, -1, 1);
+			else if (_emptyUIView is UILabel label)
+			{
+				// For UILabel, set the text alignment to center to ensure consistent behavior with Windows and Android
+				label.TextAlignment = UITextAlignment.Center;
+				label.SemanticContentAttribute = ItemsView.FlowDirection == FlowDirection.RightToLeft
+					? UISemanticContentAttribute.ForceRightToLeft
+					: UISemanticContentAttribute.ForceLeftToRight;
+			}
 		}
 
 		void ShowEmptyView()
