@@ -300,7 +300,7 @@ stages:
       timeout: 240
       testCategory: AOT
 
-    - name: mac_runandroid_tests
+    - name: linux_runandroid_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.AndroidPoolLinux }}
       ${{ else }}:  
