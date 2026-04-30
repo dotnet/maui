@@ -256,6 +256,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			PlatformView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
+
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
 		}
 
