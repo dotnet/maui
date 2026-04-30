@@ -11,3 +11,5 @@ override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
 Microsoft.Maui.Handlers.PickerHandler._dialog -> AndroidX.AppCompat.App.AlertDialog?
+*REMOVED*override Microsoft.Maui.MauiAppCompatActivity.OnBackPressed() -> void
+*REMOVED*override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
