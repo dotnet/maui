@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 					if (shell.FlyoutIsPresented && shell.GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
 						return true;
 
-					return shell.CurrentItem?.CurrentItem.Stack.Count > 1;
+					return shell.CurrentItem?.CurrentItem?.Stack.Count > 1;
 
 				case NavigationPage navigationPage:
 					if (CanConsumeBackNavigation(navigationPage.CurrentPage))
@@ -51,16 +51,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static bool CanPageDefaultConsumeBackNavigation(Page page)
-		{
-			if (page.RealParent is BaseShellItem or Shell)
-				return false;
-
-			return page.RealParent is Window window && page != window.Page;
-		}
+		static bool CanPageDefaultConsumeBackNavigation(Page page) =>
+			page.RealParent is not null &&
+			page.RealParent is not (BaseShellItem or Shell or Window or NavigationPage or FlyoutPage or MultiPage<Page>);
 
 		void RefreshPredictiveBackRegistration() =>
-			(Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as MauiAppCompatActivity)
+			(Handler?.PlatformView as MauiAppCompatActivity)
 				?.UpdatePredictiveBackRegistration();
 		internal Activity PlatformActivity =>
 			(Handler?.PlatformView as Activity) ?? throw new InvalidOperationException("Window should have an Activity set.");
