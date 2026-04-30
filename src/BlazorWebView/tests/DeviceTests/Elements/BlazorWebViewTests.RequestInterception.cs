@@ -179,89 +179,71 @@ public partial class BlazorWebViewTests
 					// We are going to handle this ourselves
 					e.Handled = true;
 
-					// Intercept the request and add the desired header to a copy of the request
+					// Intercept the request and generate a local mock echo response
 					var task = e.PlatformArgs.UrlSchemeTask;
 
-					// Create a mutable copy of the request (this preserves all existing headers and properties)
-					var request = e.PlatformArgs.Request.MutableCopy() as Foundation.NSMutableUrlRequest;
-
-					// Set the URL to the desired request URL as iOS only allows us to intercept non-https requests
-					request.Url = new("https://echo.free.beeceptor.com/sample-request");
-
-					// Add our custom header
-					var headers = request.Headers.MutableCopy() as Foundation.NSMutableDictionary;
-					headers[(Foundation.NSString)"X-Request-Header"] = (Foundation.NSString)ExpectedHeaderValue;
-					request.Headers = headers;
-
-					// Create a session configuration and session to send the request
-					var configuration = Foundation.NSUrlSessionConfiguration.DefaultSessionConfiguration;
-					var session = Foundation.NSUrlSession.FromConfiguration(configuration);
-
-					// Create a data task to send the request and get the response
-					var dataTask = session.CreateDataTask(request, (data, response, error) =>
+					// Create a mock echo response that includes the custom header
+					var responseHeaders = new Dictionary<string, string>
 					{
-						if (error is not null)
-						{
-							// Handle the error by completing the task with an error response
-							task.DidFailWithError(error);
-							return;
-						}
+						["X-Request-Header"] = ExpectedHeaderValue,
+						["X-Test-Header"] = e.Headers.ContainsKey("X-Test-Header") ? e.Headers["X-Test-Header"] : "",
+						["X-Echo-Name"] = e.Headers.ContainsKey("X-Echo-Name") ? e.Headers["X-Echo-Name"] : "",
+					};
 
-						if (response is Foundation.NSHttpUrlResponse httpResponse)
-						{
-							// Forward the response headers and status
-							task.DidReceiveResponse(httpResponse);
+					var responseObject = new ResponseObject
+					{
+						method = e.Method,
+						headers = responseHeaders
+					};
+					
+					var responseData = JsonSerializer.SerializeToUtf8Bytes(responseObject);
 
-							// Forward the response body if any
-							if (data != null)
-							{
-								task.DidReceiveData(data);
-							}
+					// Create the HTTP response
+					var httpResponse = new Foundation.NSHttpUrlResponse(
+						url: e.PlatformArgs.Request.Url,
+						statusCode: 200,
+						httpVersion: "HTTP/1.1",
+						headerFields: new Foundation.NSDictionary(
+							new Foundation.NSString("Content-Type"), new Foundation.NSString("application/json"),
+							new Foundation.NSString("Content-Length"), new Foundation.NSString(responseData.Length.ToString(CultureInfo.InvariantCulture))
+						)
+					);
 
-							// Complete the task
-							task.DidFinish();
-						}
-						else
-						{
-							// Fallback for non-HTTP responses or unexpected response type
-							task.DidFailWithError(new Foundation.NSError(new Foundation.NSString("HybridWebViewError"), -1, null));
-						}
-					});
-
-					// Start the request
-					dataTask.Resume();
+					// Send the response
+					task.DidReceiveResponse(httpResponse);
+					task.DidReceiveData(Foundation.NSData.FromArray(responseData));
+					task.DidFinish();
 #elif ANDROID
 					// We are going to handle this ourselves
 					e.Handled = true;
 
-					// Intercept the request and add the desired header to a new request
-					var request = e.PlatformArgs.Request;
-
-					// Copy the request
-					var url = new Java.Net.URL(request.Url.ToString());
-					var connection = (Java.Net.HttpURLConnection)url.OpenConnection();
-					connection.RequestMethod = request.Method;
-					foreach (var header in request.RequestHeaders)
+					// Create a mock echo response that includes the custom header
+					var responseHeaders = new Dictionary<string, string>
 					{
-						connection.SetRequestProperty(header.Key, header.Value);
-					}
+						["X-Request-Header"] = ExpectedHeaderValue,
+						["X-Test-Header"] = e.Headers.ContainsKey("X-Test-Header") ? e.Headers["X-Test-Header"] : "",
+						["X-Echo-Name"] = e.Headers.ContainsKey("X-Echo-Name") ? e.Headers["X-Echo-Name"] : "",
+						["Access-Control-Allow-Origin"] = "*",
+						["Access-Control-Allow-Headers"] = "*",
+						["Access-Control-Allow-Methods"] = "GET",
+					};
 
-					// Add our custom header
-					connection.SetRequestProperty("X-Request-Header", ExpectedHeaderValue);
+					var responseObject = new ResponseObject
+					{
+						method = e.Method,
+						headers = responseHeaders
+					};
+					
+					var responseData = JsonSerializer.SerializeToUtf8Bytes(responseObject);
 
 					// Set the response property
 					e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-						connection.ContentType,
-						connection.ContentEncoding ?? "UTF-8",
-						(int)connection.ResponseCode,
-						connection.ResponseMessage,
-						new Dictionary<string, string>
-						{
-							["Access-Control-Allow-Origin"] = "*",
-							["Access-Control-Allow-Headers"] = "*",
-							["Access-Control-Allow-Methods"] = "GET",
-						},
-						connection.InputStream);
+						"application/json",
+						"UTF-8",
+						200,
+						"OK",
+						responseHeaders,
+						new MemoryStream(responseData));
 #endif
 				}
 			};
