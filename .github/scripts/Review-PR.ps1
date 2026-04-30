@@ -553,11 +553,20 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
 
     # Check if this was an ENV ERROR (emulator timeout, ADB failure, etc.)
     $isEnvError = $false
-    if ($gateExitCode -ne 0 -and (Test-Path $gateContentFile)) {
-        $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
-        if ($gateContent -match 'ENV ERROR') {
+    if ($gateExitCode -ne 0) {
+        if (Test-Path $gateContentFile) {
+            $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
+            if ($gateContent -match 'ENV ERROR') {
+                $isEnvError = $true
+                Write-Host "  ⚠️ Environment error detected (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
+            }
+        } else {
+            # Verify script crashed BEFORE writing the report (e.g., emulator failed to
+            # start, ADB crash during setup, OOM kill). The most severe infra failures
+            # never reach the report-writing path, so a missing report alongside a
+            # non-zero exit is itself a strong signal we should retry rather than break.
             $isEnvError = $true
-            Write-Host "  ⚠️ Environment error detected (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
+            Write-Host "  ⚠️ Verification report missing after non-zero exit — treating as infra failure (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
         }
     }
 

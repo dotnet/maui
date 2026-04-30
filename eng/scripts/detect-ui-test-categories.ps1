@@ -342,7 +342,10 @@ if ([string]::IsNullOrWhiteSpace($diff)) {
     Write-Host "Test file changes detected under '$TestRoot'." -ForegroundColor Green
 }
 
-$categoryPattern = '^\+\s*\[Category\((?<value>[^\)]*)\)'
+# Capture up to `]` (not `)`) so `nameof(UITestCategories.Foo)` is captured WITH
+# its closing paren intact — otherwise the inner nameof check has to be anchored
+# without the `)`, which is fragile and easy to break in future edits.
+$categoryPattern = '^\+\s*\[Category\((?<value>[^\]]*)\)'
 $addedCategories = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 
 # ============================================================================
@@ -369,11 +372,10 @@ if (-not [string]::IsNullOrWhiteSpace($diff)) {
             } elseif ($rawValue -match '^["''](?<name>[A-Za-z0-9_ -]+)["'']$') {
                 $category = $Matches['name']
             } else {
-                # The outer regex captures up to the first `)`, so for
-                # `[Category(nameof(UITestCategories.Foo))]` the rawValue is
-                # `nameof(UITestCategories.Foo` (no trailing paren) — anchor
-                # the check accordingly so the nameof branch isn't dead code.
-                if ($rawValue -match '^nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)$') {
+                # The outer regex captures up to the first `]`, so for
+                # `[Category(nameof(UITestCategories.Foo))]` the rawValue is the
+                # full `nameof(UITestCategories.Foo)` including its closing paren.
+                if ($rawValue -match '^nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)\)$') {
                     $category = $Matches['name']
                 } else {
                     # Unrecognized format (e.g., a constant from another class, string concat, interpolation).
@@ -398,7 +400,8 @@ if (-not [string]::IsNullOrWhiteSpace($diff)) {
         foreach ($file in $modifiedFiles) {
             if (-not (Test-Path $file)) { continue }
             $content = Get-Content $file -Raw
-            $fileMatches = [regex]::Matches($content, '\[Category\(([^\)]*)\)')
+            # Same `[^\]]*` capture as the diff-scan branch above so nameof(...) is captured intact.
+            $fileMatches = [regex]::Matches($content, '\[Category\(([^\]]*)\)')
             foreach ($m in $fileMatches) {
                 $rawValue = $m.Groups[1].Value.Trim()
                 if ([string]::IsNullOrWhiteSpace($rawValue)) { continue }
@@ -406,10 +409,9 @@ if (-not [string]::IsNullOrWhiteSpace($diff)) {
                     $cat = $Matches['name']
                 } elseif ($rawValue -match '^["''](?<name>[A-Za-z0-9_ -]+)["'']$') {
                     $cat = $Matches['name']
-                } elseif ($rawValue -match '^nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)$') {
-                    # Same anchoring as the diff-scan branch above: rawValue is
-                    # captured up to the first `)`, so the nameof close-paren
-                    # is not part of it.
+                } elseif ($rawValue -match '^nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)\)$') {
+                    # Same `[^\]]*` capture as the diff-scan branch above keeps the
+                    # nameof(...) closing paren intact, so we anchor with `\)$`.
                     $cat = $Matches['name']
                 } else { continue }
                 $cat = $cat.Trim()
