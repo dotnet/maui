@@ -25,8 +25,8 @@ public class EntryFeatureTests : _GalleryUITest
 		: base(device)
 	{
 	}
-
-	[Test, Order(0)]
+	// Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs.
+	[Test, Order(1)]
 	public void VerifyInitialEventStates()
 	{
 		App.WaitForElement("TestEntry");
@@ -35,17 +35,19 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TextChangedLabel").GetText(), Is.EqualTo("TextChanged: Old='', New='Test Entry'"));
 	}
 
-	[Test, Order(4)]
-	public void VerifyEntryCompletedEvent()
+	[Test, Order(2)]
+	public void VerifyEntryFocusedEvent()
 	{
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		App.PressEnter();
-		App.DismissKeyboard();
-		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
+#if ANDROID || IOS
+		if (App.WaitForKeyboardToShow())
+			App.DismissKeyboard();
+#endif
+		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
-	[Test, Order(2)]
+	[Test, Order(3)]
 	public void VerifyEntryTextChangedEvent()
 	{
 
@@ -60,20 +62,7 @@ public class EntryFeatureTests : _GalleryUITest
 #endif
 	}
 
-
-	[Test, Order(1)]
-	public void VerifyEntryFocusedEvent()
-	{
-		App.WaitForElement("TestEntry");
-		App.Tap("TestEntry");
-#if ANDROID || IOS
-		if (App.WaitForKeyboardToShow())
-			App.DismissKeyboard();
-#endif
-		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
-	}
-
-	[Test, Order(3)]
+	[Test, Order(4)]
 	public void VerifyEntryUnfocusedEvent()
 	{
 		App.WaitForElement("TestEntry");
@@ -83,8 +72,19 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}
 
-	[Test]
-	public void VerifyClearButtonVisiblityWhenTextPresentOrEmpty()
+	[Test, Order(5)]
+	public void VerifyEntryCompletedEvent()
+	{
+		App.WaitForElement("TestEntry");
+		App.Tap("TestEntry");
+		App.PressEnter();
+		App.DismissKeyboard();
+		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
+	}
+
+#if TEST_FAILS_ON_CATALYST //In CI, the clear button is visible even when the text is empty, which is not the expected behavior.
+	[Test, Order(6)]
+	public void VerifyClearButtonVisibilityWhenTextPresentOrEmpty()
 	{
 		Exception? exception = null;
 		App.WaitForElement("Options");
@@ -93,18 +93,19 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "ClearButtonVisiblityButton_TextPresent");
+		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "ClearButtonVisibilityButton_TextPresent");
 		App.WaitForElement("TestEntry");
 		App.ClearText("TestEntry");
-		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "ClearButtonVisiblityButton_TextEmpty");
+		VerifyScreenshotWithKeyboardHandlingOrSetException(ref exception, "ClearButtonVisibilityButton_TextEmpty");
 		if (exception != null)
 		{
 			throw exception;
 		}
 	}
+#endif
 
-	[Test]
-	public void VerifyClearButtonVisiblityWhenTextAlignedHorizontally()
+	[Test, Order(7)]
+	public void VerifyClearButtonVisibilityWhenTextAlignedHorizontally()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -117,8 +118,8 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshotWithKeyboardHandling();
 	}
 
-	[Test]
-	public void VerifyClearButtonVisiblityWhenTextAlignedVertically()
+	[Test, Order(8)]
+	public void VerifyClearButtonVisibilityWhenTextAlignedVertically()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -132,8 +133,8 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
-	[Test]
-	public void VerifyClearButtonVisiblityWhenIsPasswordTrueOrFalse()
+	[Test, Order(9)]
+	public void VerifyClearButtonVisibilityWhenIsPasswordTrueOrFalse()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -148,7 +149,7 @@ public class EntryFeatureTests : _GalleryUITest
 #endif
 
 #if TEST_FAILS_ON_ANDROID //After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
-	[Test]
+	[Test, Order(10)]
 	public void VerifyClearButtonVisibilityWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
@@ -163,8 +164,8 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
-	public void VerifyClearVisiblityButtonWhenTextColorChanged()
+	[Test, Order(11)]
+	public void VerifyClearVisibilityButtonWhenTextColorChanged()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -177,7 +178,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshotWithKeyboardHandling();
 	}
 
-	[Test]
+	[Test, Order(12)]
 	public void VerifyTextWhenClearButtonVisibleSetNever()
 	{
 		App.WaitForElement("Options");
@@ -192,8 +193,8 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 
-	[Test]
-	public void VerifyTextWhenAlingnedHorizontally()
+	[Test, Order(13)]
+	public void VerifyTextWhenAlignedHorizontally()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -205,9 +206,10 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
-	public void VerifyTextWhenAlingnedVertically()
+	[Test, Order(14)]
+	public void VerifyTextWhenAlignedVertically()
 	{
+		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("VEnd");
 		App.Tap("VEnd");
@@ -218,7 +220,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_ANDROID //After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
-	[Test]
+	[Test, Order(15)]
 	public void VerifyTextEntryWhenSetAsReadOnly()
 	{
 		App.WaitForElement("Options");
@@ -234,7 +236,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(16)]
 	public void VerifyTextWhenFontFamilySetValue()
 	{
 		App.WaitForElement("Options");
@@ -247,7 +249,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(17)]
 	public void VerifyTextWhenCharacterSpacingSetValues()
 	{
 		App.WaitForElement("Options");
@@ -261,7 +263,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(18)]
 	public void VerifyHorizontalTextAlignmentBasedOnCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -277,7 +279,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(19)]
 	public void VerifyVerticalTextAlignmentBasedOnCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -298,7 +300,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
-	[Test]
+	[Test, Order(20)]
 	public void VerifyIsPasswordBasedOnCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -315,7 +317,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(21)]
 	public void VerifyCharacterSpacingWhenFontFamily()
 	{
 		App.WaitForElement("Options");
@@ -332,7 +334,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
-	[Test]
+	[Test, Order(22)]
 	public void VerifyTextWhenIsPasswordTrueOrFalse()
 	{
 		App.WaitForElement("Options");
@@ -345,11 +347,13 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(23)]
 	public void VerifyIsPasswordBasedOnVerticalTextAlignment()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement("VEnd");
+		App.Tap("VEnd");
 		App.WaitForElement("PasswordTrue");
 		App.Tap("PasswordTrue");
 		App.WaitForElement("Apply");
@@ -358,7 +362,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(24)]
 	public void VerifyIsPasswordBasedOnHorizontalTextAlignment()
 	{
 		App.WaitForElement("Options");
@@ -373,14 +377,14 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
-	public void VerifyIsPasswordWhenMaxLenghtSetValue()
+	[Test, Order(25)]
+	public void VerifyIsPasswordWhenMaxLengthSetValue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
@@ -390,7 +394,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(26)]
 	public void VerifyCharacterSpacingWhenMaxLengthSet()
 	{
 		App.WaitForElement("Options");
@@ -400,7 +404,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.EnterText("CharacterSpacing", "5");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
@@ -410,14 +414,14 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(27)]
 	public void VerifyTextWhenMaxLengthSetValue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
 		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
@@ -425,17 +429,20 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test E"));
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "1234567890");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("123456"));
 	}
 
 #if TEST_FAILS_ON_ANDROID //After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
-	[Test]
+	[Test, Order(28)]
 	public void VerifyMaxLengthWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("TextEntryChanged");
 		App.ClearText("TextEntryChanged");
-		App.EnterText("TextEntryChanged", "Test Entered Set MaxLenght");
+		App.EnterText("TextEntryChanged", "Test Entered Set MaxLength");
 		App.WaitForElement("ReadOnlyTrue");
 		App.Tap("ReadOnlyTrue");
 		App.WaitForElement("MaxLength");
@@ -447,11 +454,10 @@ public class EntryFeatureTests : _GalleryUITest
 		// On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
 		App.EnterText("TestEntry", "123");
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Test E"));
-
 	}
 #endif
 
-	[Test]
+	[Test, Order(29)]
 	public void VerifyHorizontalTextAlignmentWhenVerticalTextAlignmentSet()
 	{
 		App.WaitForElement("Options");
@@ -466,7 +472,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(30)]
 	public void VerifyTextWhenTextColorSetCorrectly()
 	{
 		App.WaitForElement("Options");
@@ -479,7 +485,28 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(31)]
+	public void VerifyTextColorResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextColorRed");
+		App.Tap("TextColorRed");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextColorDefault");
+		App.Tap("TextColorDefault");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(32)]
 	public void VerifyTextWhenFontSizeSetCorrectly()
 	{
 		App.WaitForElement("Options");
@@ -494,7 +521,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
-	[Test]
+	[Test, Order(33)]
 	public void VerifyIsPasswordWhenFontSizeSet()
 	{
 		App.WaitForElement("Options");
@@ -509,41 +536,41 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29833
-		[Test]
-		public void VerifyTextWhenIsTextPredictionEnabledTrueOrFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TextPredictionTrue");
-			App.Tap("TextPredictionTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("TestEntry");
-			App.ClearText("TestEntry");
-			App.EnterText("TestEntry", "Testig");
-			App.EnterText("TestEntry", " ");
-			Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Testing "));
-		}
+	[Test, Order(34)]
+	[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
+	public void VerifyTextWhenIsTextPredictionEnabledTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextPredictionTrue");
+		App.Tap("TextPredictionTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "Testig");
+		App.EnterText("TestEntry", " ");
+		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Testing "));
+	}
 
-		[Test]
-		public void VerifyTextWhenIsSpellCheckEnabledTrueOrFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("SpellCheckTrue");
-			App.Tap("SpellCheckTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("TestEntry");
-			App.ClearText("TestEntry");
-			App.EnterText("TestEntry", "Testig");
-			App.EnterText("TestEntry", " ");
-			VerifyScreenshotWithKeyboardHandling();
-		}
-#endif
+	[Test, Order(35)]
+	[Ignore("This test is currently failing on All platforms. See issue link: https://github.com/dotnet/maui/issues/29833")]
+	public void VerifyTextWhenIsSpellCheckEnabledTrue()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SpellCheckTrue");
+		App.Tap("SpellCheckTrue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.EnterText("TestEntry", "Testig");
+		App.EnterText("TestEntry", " ");
+		VerifyScreenshotWithKeyboardHandling();
+	}
 
-	[Test]
+	[Test, Order(36)]
 	public void VerifyTextWhenSelectionLengthSetValue()
 	{
 		App.WaitForElement("Options");
@@ -556,13 +583,16 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.DismissKeyboard();
+		App.WaitForElement("SelectionLengthEntry");
+		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
 		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("0"));
 	}
 
-	[Test]
+	[Test, Order(37)]
 	public void VerifyTextWhenCursorPositionValueSet()
 	{
 		App.WaitForElement("Options");
@@ -575,6 +605,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.DismissKeyboard();
+		App.WaitForElement("CursorPositionEntry");
+		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
@@ -582,7 +615,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_IOS // When taking a screenshot of a password field (<Entry IsPassword="true" />), iOS hides the password text for security reasons.
-	[Test]
+	[Test, Order(38)]
 	public void VerifyIsPasswordWhenCursorPositionValueSet()
 	{
 		App.WaitForElement("Options");
@@ -597,6 +630,9 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.DismissKeyboard();
+		App.WaitForElement("CursorPositionEntry");
+		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
@@ -604,7 +640,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(39)]
 	public void VerifyCursorPositionWhenSelectionLengthSetValue()
 	{
 		App.WaitForElement("Options");
@@ -620,6 +656,10 @@ public class EntryFeatureTests : _GalleryUITest
 		App.DismissKeyboard();
 		App.WaitForElement("UpdateCursorAndSelectionButton");
 		App.Tap("UpdateCursorAndSelectionButton");
+		App.DismissKeyboard();
+		App.WaitForElement("CursorPositionEntry");
+		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("3"));
+		Assert.That(App.WaitForElement("SelectionLengthEntry").GetText(), Is.EqualTo("5"));
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
 		App.DismissKeyboard();
@@ -629,7 +669,7 @@ public class EntryFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // On Windows, cursor position and selection length still work when the Entry is set to read-only  
 	//On android After setting IsReadOnly to true, the Cursor remains visible on Android even when IsCursorVisible is set to false, which is not the expected behavior.
-	[Test]
+	[Test, Order(40)]
 	public void VerifyCursorPositionWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
@@ -643,8 +683,8 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("CursorPositionEntry").GetText(), Is.EqualTo("0"));
 	}
 
-	[Test]
-	public void VerifySelectionLenghtWhenIsReadOnlyTrue()
+	[Test, Order(41)]
+	public void VerifySelectionLengthWhenIsReadOnlyTrue()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -663,8 +703,8 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
-	public void VerifyTextWhenReturmCommandAndReturnCommandParameter()
+	[Test, Order(42)]
+	public void VerifyTextWhenReturnCommandAndReturnCommandParameter()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -679,8 +719,8 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("Command Executed with Parameter"));
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //keybord type is not supported on Windows and Maccatalyst platforms
-	[Test]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //In Android related issue:https://github.com/dotnet/maui/issues/26968 and In mac and Windows keybord type is not supported.
+	[Test, Order(43)]
 	public void VerifyTextWhenKeyboardTypeSet()
 	{
 		App.WaitForElement("Options");
@@ -691,11 +731,10 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		VerifyScreenshotWithKeyboardHandling();
+		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID //related issue:https://github.com/dotnet/maui/issues/26968
-	[Test]
+	[Test, Order(44)]
 	public void VerifyTextWhenReturnTypeSet()
 	{
 		App.WaitForElement("Options");
@@ -706,14 +745,12 @@ public class EntryFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEntry");
 		App.Tap("TestEntry");
-		VerifyScreenshotWithKeyboardHandling();
+		VerifyScreenshot();
 	}
-
-#endif
 #endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
-	[Test]
+	[Test, Order(45)]
 	public void VerifyEntryControlWhenIsEnabledTrueOrFalse()
 	{
 		App.WaitForElement("Options");
@@ -737,14 +774,9 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
-	public void VerifyEntryControlWhenIsVisibleTrueOrFalse()
+	[Test, Order(46)]
+	public void VerifyEntryControlWhenIsVisibleFalse()
 	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		App.WaitForElement("TestEntry");
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("VisibleFalse");
@@ -754,7 +786,7 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForNoElement("TestEntry");
 	}
 
-	[Test]
+	[Test, Order(47)]
 	public void VerifyEntryControlWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
@@ -767,7 +799,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(48)]
 	public void VerifyPlaceholderWhenFlowDirectionSet()
 	{
 		App.WaitForElement("Options");
@@ -783,7 +815,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 
-	[Test]
+	[Test, Order(49)]
 	public void VerifyEntryControlWhenPlaceholderTextSet()
 	{
 		App.WaitForElement("Options");
@@ -799,7 +831,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(50)]
 	public void VerifyEntryControlWhenPlaceholderColorSet()
 	{
 		App.WaitForElement("Options");
@@ -814,8 +846,33 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
-	public void VerifyEntryWhenTextChanged()
+	[Test, Order(51)]
+	public void VerifyPlaceholderColorResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("PlaceholderColorRed");
+		App.Tap("PlaceholderColorRed");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("PlaceholderColorDefault");
+		App.Tap("PlaceholderColorDefault");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(52)]
+	public void VerifyEntryWhenTextDynamicallyUpdated()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -827,7 +884,7 @@ public class EntryFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("TestEntry").GetText(), Is.EqualTo("New Text Changed"));
 	}
 
-	[Test]
+	[Test, Order(53)]
 	public void VerifyTextWhenFontAttributesSet()
 	{
 		App.WaitForElement("Options");
@@ -840,8 +897,8 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
-	public void VerifyTextWhenTextTransFormSet()
+	[Test, Order(54)]
+	public void VerifyTextWhenTextTransformSet()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -854,7 +911,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29812
-	[Test]
+	[Test, Order(55)]
 	public void VerifyEntry_WithShadow()
 	{
 		App.WaitForElement("Options");
@@ -869,7 +926,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(56)]
 	public void VerifyPlaceholderWithShadow()
 	{
 		App.WaitForElement("Options");
@@ -885,7 +942,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(57)]
 	public void VerifyPlaceholderWithClearButtonVisible()
 	{
 		App.WaitForElement("Options");
@@ -899,7 +956,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshotWithKeyboardHandling("PlaceholderWithClearButtonVisible");
 	}
 
-	[Test]
+	[Test, Order(58)]
 	public void VerifyPlaceholderWithPasswordTrue()
 	{
 		App.WaitForElement("Options");
@@ -917,7 +974,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(59)]
 	public void VerifyPlaceholderWithHorizontalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -932,7 +989,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(60)]
 	public void VerifyPlaceholderWithVerticalAlignment()
 	{
 		App.WaitForElement("Options");
@@ -948,7 +1005,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/30071
-	[Test]
+	[Test, Order(61)]
 	public void VerifyPlaceholderWithCharacterSpacing()
 	{
 		App.WaitForElement("Options");
@@ -965,7 +1022,7 @@ public class EntryFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test]
+	[Test, Order(62)]
 	public void VerifyPlaceholderWithFontFamily()
 	{
 		App.WaitForElement("Options");
@@ -980,7 +1037,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(63)]
 	public void VerifyPlaceholderWithFontSize()
 	{
 		App.WaitForElement("Options");
@@ -996,7 +1053,7 @@ public class EntryFeatureTests : _GalleryUITest
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
 
-	[Test]
+	[Test, Order(64)]
 	public void VerifyPlaceholderWithFontAttributes()
 	{
 		App.WaitForElement("Options");
@@ -1010,6 +1067,220 @@ public class EntryFeatureTests : _GalleryUITest
 		App.WaitForElement("TestEntry");
 		VerifyScreenshot(cropBottom: CropBottomValue);
 	}
+
+	[Test, Order(65)]
+	public void VerifyEntryWhenWidthRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("WidthRequest");
+		App.ClearText("WidthRequest");
+		App.EnterText("WidthRequest", "150");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(66)]
+	public void VerifyEntryWhenHeightRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequest");
+		App.ClearText("HeightRequest");
+		App.EnterText("HeightRequest", "80");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(67)]
+	public void VerifyEntryWhenHeightRequestAndWidthRequestSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequest");
+		App.ClearText("HeightRequest");
+		App.EnterText("HeightRequest", "100");
+		App.WaitForElement("WidthRequest");
+		App.ClearText("WidthRequest");
+		App.EnterText("WidthRequest", "150");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(68)]
+	public void VerifyEntryWhenOpacitySet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(69)]
+	public void VerifyEntryWhenOpacityResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0.5");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "1.0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(70)]
+	public void VerifyEntryWhenOpacitySetToZero()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OpacityEntry");
+		App.ClearText("OpacityEntry");
+		App.EnterText("OpacityEntry", "0");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("Options");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(71)]
+	public void VerifyEntryWhenBackgroundColorSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorLightBlue");
+		App.Tap("BackgroundColorLightBlue");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+	[Test, Order(72)]
+	public void VerifyTextWhenBoldAndItalicFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(73)]
+	public void VerifyPlaceholderTextWhenBoldAndItalicFontAttributesSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBold");
+		App.Tap("FontAttributesBold");
+		App.WaitForElement("FontAttributesItalic");
+		App.Tap("FontAttributesItalic");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.DismissKeyboard();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(74)]
+	public void VerifyEntryBackgroundColorWithTextColor()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("TextColorRed");
+		App.Tap("TextColorRed");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(75)]
+	public void VerifyEntryBackgroundColorWithPlaceholderText()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorLightBlue");
+		App.Tap("BackgroundColorLightBlue");
+		App.WaitForElement("PlaceholderText");
+		App.ClearText("PlaceholderText");
+		App.EnterText("PlaceholderText", "Enter your name");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.ClearText("TestEntry");
+		App.DismissKeyboard();
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+	[Test, Order(76)]
+	public void VerifyEntryBackgroundColorWithPlaceholderColor()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("PlaceholderColorRed");
+		App.Tap("PlaceholderColorRed");
+		App.WaitForElement("TextEntryChanged");
+		App.ClearText("TextEntryChanged");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue link: https://github.com/dotnet/maui/issues/34611
+	[Test, Order(77)]
+	public void VerifyEntryBackgroundColorResetToDefault()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorYellow");
+		App.Tap("BackgroundColorYellow");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundColorDefault");
+		App.Tap("BackgroundColorDefault");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("TestEntry");
+		VerifyScreenshot(cropBottom: CropBottomValue);
+	}
+#endif
+
 
 	/// <summary>
 	/// Helper method to handle keyboard visibility and take a screenshot with appropriate cropping

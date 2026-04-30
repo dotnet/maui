@@ -23,7 +23,12 @@ public partial class EntryOptionsPage : ContentPage
 	{
 		if (sender is Button button)
 		{
-			_viewModel.TextColor = button.BackgroundColor;
+			_viewModel.TextColor = button.AutomationId switch
+			{
+				"TextColorRed" => Colors.Red,
+				"TextColorBlue" => Colors.Blue,
+				_ => null
+			};
 		}
 	}
 
@@ -47,7 +52,12 @@ public partial class EntryOptionsPage : ContentPage
 	{
 		if (sender is Button button)
 		{
-			_viewModel.PlaceholderColor = button.BackgroundColor;
+			_viewModel.PlaceholderColor = button.AutomationId switch
+			{
+				"PlaceholderColorRed" => Colors.Red,
+				"PlaceholderColorBlue" => Colors.Blue,
+				_ => null
+			};
 		}
 	}
 
@@ -121,7 +131,7 @@ public partial class EntryOptionsPage : ContentPage
 		}
 	}
 
-	private void MaxLengthButton_Clicked(object sender, EventArgs e)
+	private void MaxLengthEntry_TextChanged(object sender, TextChangedEventArgs e)
 	{
 		if (int.TryParse(MaxLengthEntry.Text, out int maxLength))
 		{
@@ -256,19 +266,54 @@ public partial class EntryOptionsPage : ContentPage
 		}
 	}
 
-	private void FontAttributes_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void BackgroundColorButton_Clicked(object sender, EventArgs e)
 	{
-		if (sender == FontAttributesBold)
+		if (sender is Button button)
 		{
-			_viewModel.FontAttributes = FontAttributes.Bold;
+			_viewModel.BackgroundColor = button.AutomationId switch
+			{
+				"BackgroundColorYellow" => Colors.Yellow,
+				"BackgroundColorLightBlue" => Colors.LightBlue,
+				_ => null
+			};
 		}
-		else if (sender == FontAttributesNone)
+	}
+
+	private void WidthRequestEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double widthRequest))
 		{
-			_viewModel.FontAttributes = FontAttributes.None;
+			_viewModel.WidthRequest = widthRequest < 0 ? -1 : widthRequest;
 		}
-		else if (sender == FontAttributesItalic)
+	}
+
+	private void OpacityEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double opacity))
 		{
-			_viewModel.FontAttributes = FontAttributes.Italic;
+			opacity = Math.Clamp(opacity, 0.0, 1.0);
+			_viewModel.Opacity = opacity;
 		}
+	}
+
+	private void HeightRequestEntry_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (double.TryParse(e.NewTextValue, out double heightRequest))
+		{
+			_viewModel.HeightRequest = heightRequest < 0 ? -1 : heightRequest;
+		}
+	}
+
+	private void FontAttributesCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var attributes = FontAttributes.None;
+
+		if (FontAttributesBoldCheckBox.IsChecked)
+			attributes |= FontAttributes.Bold;
+
+		if (FontAttributesItalicCheckBox.IsChecked)
+			attributes |= FontAttributes.Italic;
+
+		_viewModel.FontAttributes = attributes;
 	}
 }
