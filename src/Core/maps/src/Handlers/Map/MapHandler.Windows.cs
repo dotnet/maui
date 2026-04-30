@@ -83,7 +83,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_mapControl == null)
 				return;
 
-<<<<<<< HEAD
 			_mapControl.Loaded -= OnMapControlLoaded;
 
 			if (!TryDiscoverWebView())
