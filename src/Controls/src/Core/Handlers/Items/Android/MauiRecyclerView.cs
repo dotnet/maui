@@ -8,8 +8,10 @@ using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
+using AView = Android.Views.View;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -47,6 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
+		AppBarLiftTargetHelper _appBarLiftTargetHelper;
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -57,6 +60,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
+				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
+			}
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				_appBarLiftTargetHelper?.Clear();
+			}
+		}
+
+		protected override void OnVisibilityChanged(AView changedView, ViewStates visibility)
+		{
+			base.OnVisibilityChanged(changedView, visibility);
+
+			if (!RuntimeFeature.IsMaterial3Enabled)
+			{
+				return;
+			}
+
+			if (visibility == ViewStates.Visible)
+			{
+				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
+				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
+			}
+			else
+			{
+				_appBarLiftTargetHelper?.Clear();
+			}
 		}
 
 		public virtual void TearDownOldElement(TItemsView oldElement)

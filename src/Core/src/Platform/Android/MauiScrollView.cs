@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
+		AppBarLiftTargetHelper? _appBarLiftTargetHelper;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -62,6 +63,21 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnAttachedToWindow();
 			_isInsetListenerSet = MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(this, _context);
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				// Pin the MAUI navigation AppBarLayout's lift-on-scroll target to this NestedScrollView.
+				// Otherwise AppBarLayout auto-detects the outer FragmentContainerView as the scrolling target,
+				// and its ViewTreeObserver-driven shouldLift() check evaluates canScrollVertically() on the
+				// container (which is always 0), causing the lifted state to flip on every layout pass
+				// triggered by sibling views (e.g. CheckBox/Switch state animations) and producing a
+				// visible scrolledContainerColor flicker.
+				// Use Post() to defer until layout is complete — when this ScrollView is inside
+				// a CarouselView, adjacent off-screen pages also attach and we need to verify
+				// the view is actually on-screen before claiming the lift target.
+				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
+				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
+			}
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -72,6 +88,30 @@ namespace Microsoft.Maui.Platform
 
 			_isInsetListenerSet = false;
 			_didSafeAreaEdgeConfigurationChange = true;
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				_appBarLiftTargetHelper?.Clear();
+			}
+		}
+
+		protected override void OnVisibilityChanged(View changedView, ViewStates visibility)
+		{
+			base.OnVisibilityChanged(changedView, visibility);
+
+			if (!RuntimeFeature.IsMaterial3Enabled)
+			{
+				return;
+			}
+
+			if (visibility == ViewStates.Visible)
+			{
+				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
+				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
+			}
+			else
+			{
+				_appBarLiftTargetHelper?.Clear();
+			}
 		}
 
 		#region IHandleWindowInsets Implementation
