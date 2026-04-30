@@ -126,9 +126,20 @@ namespace Microsoft.Maui.DeviceTests
 				entry.TextColor = null;
 				handler.UpdateValue(nameof(IEntry.TextColor));
 
+				// UIKit restores the original AlwaysOriginal system image when SetImage(null) is called
+				// on this private clearButton — ImageForState(.Highlighted) must return non-null for re-tinting to work.
 				var resetImage = clearButton.ImageForState(UIControlState.Normal);
 				Assert.NotNull(resetImage);
 				Assert.Equal(UIImageRenderingMode.AlwaysOriginal, resetImage.RenderingMode);
+
+				entry.TextColor = Colors.Blue;
+				handler.UpdateValue(nameof(IEntry.TextColor));
+
+				// Verify re-tinting works after reset (null→color→null→color)
+				// Confirms ImageForState(.Highlighted) returns the original after SetImage(null)
+				var retintedImage = clearButton.ImageForState(UIControlState.Normal);
+				Assert.NotNull(retintedImage);
+				Assert.Equal(UIImageRenderingMode.Automatic, retintedImage.RenderingMode);
 			});
 		}
 
