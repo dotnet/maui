@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
     "msExtensionsLoggingDebugVersion": {
@@ -6,6 +6,9 @@
     },
     "Framework": {
       "longName": "framework"
+    },
+    "UI": {
+      "longName": "ui"
     },
     "IncludeSampleContent": {
       "longName": "sample-content",
@@ -17,6 +20,7 @@
     }
   },
   "usageExamples": [
-    "--framework DOTNET_TFM_VALUE"
+    "--framework DOTNET_TFM_VALUE",
+    "--framework DOTNET_TFM_VALUE --ui csharp"
   ]
 }

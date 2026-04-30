@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit">
 <!--#endif -->
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 <!--#endif -->
 
@@ -29,19 +29,19 @@
     </Style>
 
     <Style TargetType="Button">
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource White}}" />
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
 <!--#endif -->
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
         <Setter Property="FontSize" Value="14"/>
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="FontSize" Value="18"/>
 <!--#endif -->
         <Setter Property="BorderWidth" Value="0"/>
@@ -127,18 +127,18 @@
     </Style>
 
     <Style TargetType="Entry">
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
 <!--#endif -->
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
         <Setter Property="FontSize" Value="14" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=24}" />
 <!--#endif -->
         <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
@@ -165,7 +165,7 @@
         <Setter Property="CornerRadius" Value="0"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
         <Setter Property="MinimumWidthRequest" Value="44"/>
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"/>
 <!--#endif -->
         <Setter Property="VisualStateManager.VisualStateGroups">
@@ -221,10 +221,10 @@
         <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
         <Setter Property="FontSize" Value="14" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="FontSize" Value="{OnIdiom 18, Desktop=24}" />
 <!--#endif -->
         <Setter Property="MinimumHeightRequest" Value="44"/>
@@ -416,19 +416,19 @@
 
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
 <!--#endif -->
     </Style>
 
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
         <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
 <!--#endif -->
         <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource SecondaryDarkText}}" />
@@ -436,12 +436,12 @@
         <Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
         <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray200}}" />
         <Setter Property="Shell.NavBarHasShadow" Value="False" />
-<!--#if (!IncludeSampleContent) -->
+<!--#if (!EnableSampleContent) -->
         <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
         <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource Magenta}, Dark={StaticResource White}}" />
         <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource Magenta}, Dark={StaticResource White}}" />
 <!--#endif -->
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
         <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
         <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
         <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
@@ -462,7 +462,7 @@
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
 
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
     <Style TargetType="shimmer:SfShimmer">
         <Setter Property="Fill" Value="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}" />
         <Setter Property="WaveColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />

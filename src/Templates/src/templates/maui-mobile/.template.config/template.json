@@ -1,7 +1,15 @@
-{
+﻿{
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Mobile" ],
+    "classifications": [
+        "MAUI",
+        "Android",
+        "iOS",
+        "macOS",
+        "Mac Catalyst",
+        "Windows",
+        "Mobile"
+    ],
     "identity": "Microsoft.Maui.MauiApp.CSharp.DOTNET_TFM_VERSION_VALUE",
     "groupIdentity": "Microsoft.Maui.App",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
@@ -9,27 +17,39 @@
     "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI",
     "shortName": "maui",
     "tags": {
-      "language": "C#",
-      "type": "project"
+        "language": "C#",
+        "type": "project"
     },
     "sourceName": "MauiApp.1",
     "primaryOutputs": [
-      {
-        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-        "path": "MainPage.xaml.cs"
-      },
-      {
-        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-        "path": "MainPage.xaml"
-      },
-      {
-        "path": "MauiApp.1.csproj"
-      }
+        {
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && !EnableSampleContent)",
+            "path": "MainPage.xaml.cs"
+        },
+        {
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && !EnableSampleContent)",
+            "path": "MainPage.xaml"
+        },
+        {
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && EnableSampleContent)",
+            "path": "Pages/MainPage.xaml.cs"
+        },
+        {
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && EnableSampleContent)",
+            "path": "Pages/MainPage.xaml"
+        },
+        {
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && UseCSharpUI)",
+            "path": "MainPage.cs"
+        },
+        {
+            "path": "MauiApp.1.csproj"
+        }
     ],
     "postActions": [
         {
             "id": "openInEditor",
-            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\")",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && !UseCSharpUI && !EnableSampleContent)",
             "description": "Opens MainPage.xaml in the editor.",
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
@@ -39,162 +59,244 @@
             "continueOnError": true
         },
         {
-          "id": "restore",
-          "condition": "(!skipRestore)",
-          "description": "Restore NuGet packages required by this project.",
-          "manualInstructions": [
-            {
-              "text": "Run 'dotnet restore'"
-            }
-          ],
-          "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
-          "continueOnError": true
+            "id": "openInEditorSampleXaml",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && !UseCSharpUI && EnableSampleContent)",
+            "description": "Opens Pages/MainPage.xaml in the editor.",
+            "manualInstructions": [],
+            "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+            "args": {
+                "files": "2;3"
+            },
+            "continueOnError": true
+        },
+        {
+            "id": "openInEditorCSharp",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && UseCSharpUI)",
+            "description": "Opens MainPage.cs in the editor.",
+            "manualInstructions": [],
+            "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+            "args": {
+                "files": "4"
+            },
+            "continueOnError": true
+        },
+        {
+            "id": "restore",
+            "condition": "(!skipRestore)",
+            "description": "Restore NuGet packages required by this project.",
+            "manualInstructions": [
+                {
+                    "text": "Run 'dotnet restore'"
+                }
+            ],
+            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+            "continueOnError": true
         }
     ],
     "sources": [
-      {
-        "source": "./",
-        "target": "./",
-        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
-        "modifiers": [
         {
-          "condition": "(!IncludeSampleContent)",
-          "exclude": [
-            "Converter/**",
-            "Data/**",
-            "GlobalUsings.cs",
-            "Messages/**",
-            "Models/**",
-            "PageModels/**",
-            "Pages/**",
-            "Resources/Raw/SeedData.json",
-            "Resources/Fonts/FluentSystemIcons-Regular.ttf",
-            "Resources/Fonts/SegoeUI-Semibold.ttf",
-            "Resources/Fonts/FluentUI.cs",
-            "Services/**",
-            "Resources/Styles/AppStyles.xaml",
-            "Utilities/**",
-          ]
-        },
-        {
-          "condition": "(IncludeSampleContent)",
-          "exclude": [
-            "MainPage.xaml",
-            "MainPage.xaml.cs",
-            "Resources/Images/dotnet_bot.png"
-          ]
-        }]
-      }
+            "source": "./",
+            "target": "./",
+            "copyOnly": [
+                "**/*.svg",
+                "**/*.ttf"
+            ],
+            "modifiers": [
+                {
+                    "condition": "(!EnableSampleContent)",
+                    "exclude": [
+                        "Converter/**",
+                        "Data/**",
+                        "GlobalUsings.cs",
+                        "Messages/**",
+                        "Models/**",
+                        "PageModels/**",
+                        "Pages/**",
+                        "Resources/Raw/SeedData.json",
+                        "Resources/Fonts/FluentSystemIcons-Regular.ttf",
+                        "Resources/Fonts/SegoeUI-Semibold.ttf",
+                        "Resources/Fonts/FluentUI.cs",
+                        "Services/**",
+                        "Resources/Styles/AppStyles.xaml",
+                        "Utilities/**"
+                    ]
+                },
+                {
+                    "condition": "(EnableSampleContent)",
+                    "exclude": [
+                        "MainPage.xaml",
+                        "MainPage.xaml.cs",
+                        "Resources/Images/dotnet_bot.png"
+                    ]
+                },
+                {
+                    "condition": "(UseCSharpUI)",
+                    "exclude": [
+                        "App.xaml",
+                        "App.xaml.cs",
+                        "AppShell.xaml",
+                        "AppShell.xaml.cs",
+                        "MainPage.xaml",
+                        "MainPage.xaml.cs",
+                        "Resources/Styles/Colors.xaml",
+                        "Resources/Styles/Styles.xaml"
+                    ],
+                    "rename": {
+                        "App-CSharp.cs": "App.cs",
+                        "AppShell-CSharp.cs": "AppShell.cs",
+                        "MainPage-CSharp.cs": "MainPage.cs",
+                        "Resources/Styles/Colors-CSharp.cs": "Resources/Styles/Colors.cs",
+                        "Resources/Styles/Styles-CSharp.cs": "Resources/Styles/Styles.cs"
+                    }
+                },
+                {
+                    "condition": "(!UseCSharpUI)",
+                    "exclude": [
+                        "App-CSharp.cs",
+                        "AppShell-CSharp.cs",
+                        "MainPage-CSharp.cs",
+                        "Resources/Styles/Colors-CSharp.cs",
+                        "Resources/Styles/Styles-CSharp.cs"
+                    ]
+                }
+            ]
+        }
     ],
     "preferNameDirectory": true,
     "guids": [
-      "07CD65EF-6238-4365-AF5D-F6D433967F48"
+        "07CD65EF-6238-4365-AF5D-F6D433967F48"
     ],
     "symbols": {
-      "applicationId": {
-        "type": "parameter",
-        "description": "Overrides the $(ApplicationId) in the project",
-        "datatype": "string"
-      },
-      "msExtensionsLoggingDebugVersion": {
-        "type": "parameter",
-        "dataType": "string",
-        "replaces": "MS_EXT_LOG_DEBUG_VERSION",
-        "defaultValue": "MS_EXT_LOG_DEBUG_VERSION_VALUE"
-      },
-      "Framework": {
-        "type": "parameter",
-        "description": "The target framework for the project.",
-        "datatype": "choice",
-        "choices": [
-          {
-            "choice": "DOTNET_TFM_VALUE",
-            "description": "Target DOTNET_TFM_VALUE"
-          }
-        ],
-        "replaces": "DOTNET_TFM",
-        "defaultValue": "DOTNET_TFM_VALUE"
-      },
-      "HostIdentifier": {
-        "type": "bind",
-        "binding": "HostIdentifier"
-      },
-      "PhoneProductId": {
-        "type": "generated",
-        "generator": "guid",
-        "replaces": "$guid9$"
-      },
-      "nameToLower":{
-        "type": "generated",
-        "generator": "casing",
-        "parameters": {
-          "source" : "name",
-          "toLower": true
-        }
-      },
-      "nameToAppId": {
-        "type": "generated",
-        "generator": "regex",
-        "dataType": "string",
-        "parameters": {
-          "source": "nameToLower",
-          "steps": [
-            {
-              "regex": "[^a-z0-9_\\.]",
-              "replacement": ""
-            }
-          ]
-        }
-      },
-      "XmlEncodedAppNameParam": {
-        "type": "derived",
-        "valueSource": "name",
-        "valueTransform": "encode",
-        "replaces": "XmlEncodedAppName"
-      },
-      "defaultAppId":{
-        "type": "generated",
-        "generator": "join",
-        "parameters": {
-          "symbols": [
-            {
-              "type": "const",
-              "value": "com.companyname."
-            },
-            {
-              "type": "ref",
-              "value": "nameToAppId"
-            }
-          ]
-        }
-      },
-      "finalAppId":{
-        "type":"generated",
-        "generator": "coalesce",
-        "parameters": {
-          "sourceVariableName": "applicationId",
-          "fallbackVariableName": "defaultAppId"
+        "applicationId": {
+            "type": "parameter",
+            "description": "Overrides the $(ApplicationId) in the project",
+            "datatype": "string"
         },
-        "replaces": "com.companyname.mauiapp"
-      },
-      "IncludeSampleContent": {
-        "type": "parameter",
-        "datatype": "bool",
-        "defaultValue": "false",
-        "displayName": "_Include sample content",
-        "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
-      },
-      "skipRestore": {
-        "type": "parameter",
-        "datatype": "bool",
-        "description": "If specified, skips the automatic restore of the project on create.",
-        "defaultValue": "false"
-      }
+        "msExtensionsLoggingDebugVersion": {
+            "type": "parameter",
+            "dataType": "string",
+            "replaces": "MS_EXT_LOG_DEBUG_VERSION",
+            "defaultValue": "MS_EXT_LOG_DEBUG_VERSION_VALUE"
+        },
+        "Framework": {
+            "type": "parameter",
+            "description": "The target framework for the project.",
+            "datatype": "choice",
+            "choices": [
+                {
+                    "choice": "DOTNET_TFM_VALUE",
+                    "description": "Target DOTNET_TFM_VALUE"
+                }
+            ],
+            "replaces": "DOTNET_TFM",
+            "defaultValue": "DOTNET_TFM_VALUE"
+        },
+        "UI": {
+            "type": "parameter",
+            "datatype": "choice",
+            "displayName": "_UI",
+            "description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code.",
+            "choices": [
+                {
+                    "choice": "xaml",
+                    "description": "Create the app UI with XAML."
+                },
+                {
+                    "choice": "csharp",
+                    "description": "Create App, AppShell, and MainPage in C#."
+                }
+            ],
+            "defaultValue": "xaml"
+        },
+        "HostIdentifier": {
+            "type": "bind",
+            "binding": "HostIdentifier"
+        },
+        "UseCSharpUI": {
+            "type": "computed",
+            "value": "(UI == \"csharp\")"
+        },
+        "PhoneProductId": {
+            "type": "generated",
+            "generator": "guid",
+            "replaces": "$guid9$"
+        },
+        "nameToLower": {
+            "type": "generated",
+            "generator": "casing",
+            "parameters": {
+                "source": "name",
+                "toLower": true
+            }
+        },
+        "nameToAppId": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "nameToLower",
+                "steps": [
+                    {
+                        "regex": "[^a-z0-9_\\.]",
+                        "replacement": ""
+                    }
+                ]
+            }
+        },
+        "XmlEncodedAppNameParam": {
+            "type": "derived",
+            "valueSource": "name",
+            "valueTransform": "encode",
+            "replaces": "XmlEncodedAppName"
+        },
+        "defaultAppId": {
+            "type": "generated",
+            "generator": "join",
+            "parameters": {
+                "symbols": [
+                    {
+                        "type": "const",
+                        "value": "com.companyname."
+                    },
+                    {
+                        "type": "ref",
+                        "value": "nameToAppId"
+                    }
+                ]
+            }
+        },
+        "finalAppId": {
+            "type": "generated",
+            "generator": "coalesce",
+            "parameters": {
+                "sourceVariableName": "applicationId",
+                "fallbackVariableName": "defaultAppId"
+            },
+            "replaces": "com.companyname.mauiapp"
+        },
+        "IncludeSampleContent": {
+            "type": "parameter",
+            "datatype": "bool",
+            "isEnabled": "(UI == \"xaml\")",
+            "defaultValue": "false",
+            "displayName": "_Include sample content",
+            "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience."
+        },
+        "EnableSampleContent": {
+            "type": "computed",
+            "value": "(IncludeSampleContent && !UseCSharpUI)"
+        },
+        "skipRestore": {
+            "type": "parameter",
+            "datatype": "bool",
+            "description": "If specified, skips the automatic restore of the project on create.",
+            "defaultValue": "false"
+        }
     },
     "forms": {
-      "encode": {
-        "identifier": "xmlEncode"
-      }
+        "encode": {
+            "identifier": "xmlEncode"
+        }
     },
     "defaultName": "MauiApp1"
-  }
+}

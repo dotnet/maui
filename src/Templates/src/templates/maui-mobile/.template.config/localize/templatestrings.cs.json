@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "aplikace .NET MAUI",
   "description": "Projekt pro vytvoření .NET MAUI aplikace pro iOS, Android, Mac Catalyst a WinUI",
@@ -10,5 +10,11 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Cílový DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Zahrnout ukázkový obsah",
   "symbols/IncludeSampleContent/description": "Umožňuje nakonfigurovat, jestli se mají přidat ukázkové stránky a funkce pro předvedení základních vzorů použití.",
-  "symbols/skipRestore/description": "Je-li zadáno, přeskočí automatické obnovení projektu při vytvoření."
+  "symbols/skipRestore/description": "Je-li zadáno, přeskočí automatické obnovení projektu při vytvoření.",
+  "postActions/openInEditorSampleXaml/description": "Opens Pages/MainPage.xaml in the editor.",
+  "postActions/openInEditorCSharp/description": "Opens MainPage.cs in the editor.",
+  "symbols/UI/displayName": "_UI",
+  "symbols/UI/description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code.",
+  "symbols/UI/choices/xaml/description": "Create the app UI with XAML.",
+  "symbols/UI/choices/csharp/description": "Create App, AppShell, and MainPage in C#."
 }

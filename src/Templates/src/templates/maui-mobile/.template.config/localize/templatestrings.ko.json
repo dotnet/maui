@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI 앱",
   "description": "iOS, Android, Mac Catalyst 및 WinUI용 .NET MAUI 애플리케이션을 만들기 위한 프로젝트",
@@ -10,5 +10,11 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "대상 DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_샘플 콘텐츠 포함",
   "symbols/IncludeSampleContent/description": "기본 사용 패턴을 보여 주는 샘플 페이지 및 기능을 추가할지 여부를 구성합니다.",
-  "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다."
+  "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
+  "postActions/openInEditorSampleXaml/description": "Opens Pages/MainPage.xaml in the editor.",
+  "postActions/openInEditorCSharp/description": "Opens MainPage.cs in the editor.",
+  "symbols/UI/displayName": "_UI",
+  "symbols/UI/description": "Choose the app UI style. XAML remains the default experience, while C# creates App, AppShell, and MainPage in code.",
+  "symbols/UI/choices/xaml/description": "Create the app UI with XAML.",
+  "symbols/UI/choices/csharp/description": "Create App, AppShell, and MainPage in C#."
 }
