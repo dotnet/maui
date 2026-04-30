@@ -646,7 +646,14 @@ namespace Microsoft.Maui.Controls
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is Page oldPage)
+			{
+#if ANDROID
+				// Covers the case where FlyoutPage is the direct Window.Page; nested
+				// FlyoutPage scenarios (e.g. NavigationPage containing a FlyoutPage) are not addressed.
+				(oldPage as FlyoutPage)?.ReleaseDrawerCallbackBeforePageChange();
+#endif
 				oldPage.SendDisappearing();
+			}
 		}
 
 		static void OnIsActivatedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
