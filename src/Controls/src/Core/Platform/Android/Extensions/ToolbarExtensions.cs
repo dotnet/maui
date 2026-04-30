@@ -122,10 +122,16 @@ namespace Microsoft.Maui.Controls.Platform
 				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
 					iconDrawable.Progress = 1;
 
+				var backButtonAccessibilityLabel = toolbar.BackButtonAccessibilityLabel;
 				var backButtonTitle = toolbar.BackButtonTitle;
 				ImageSource image = toolbar.TitleIcon;
 
-				if (!string.IsNullOrEmpty(backButtonTitle))
+				if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
+				{
+					// Accessibility label takes priority — TalkBack reads this instead of the title.
+					nativeToolbar.NavigationContentDescription = backButtonAccessibilityLabel;
+				}
+				else if (!string.IsNullOrEmpty(backButtonTitle))
 				{
 					nativeToolbar.NavigationContentDescription = backButtonTitle;
 				}

@@ -64,3 +64,11 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
+~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
+~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
+~static readonly Microsoft.Maui.Controls.NavigationPage.BackButtonAccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.get -> string
+~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.set -> void
+~static readonly Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.get -> string
+~Microsoft.Maui.Controls.Toolbar.BackButtonAccessibilityLabel.set -> void

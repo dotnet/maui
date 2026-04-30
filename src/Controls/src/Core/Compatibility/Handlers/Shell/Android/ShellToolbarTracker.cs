@@ -558,6 +558,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var backButtonHandler = Shell.GetEffectiveBackButtonBehavior(Page);
 			var image = GetFlyoutIcon(backButtonHandler, Page);
 			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
+
+			var accessibilityLabel = backButtonHandler.GetPropertyIfSet<string>(
+				BackButtonBehavior.AccessibilityLabelProperty, null);
+
 			var automationId = image?.AutomationId ?? text;
 
 			//if AutomationId was specified the user wants to use UITests and interact with FlyoutIcon
@@ -572,6 +576,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
 				else
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
+			}
+
+			// Custom accessibility label takes final priority over all other descriptions
+			if (!string.IsNullOrEmpty(accessibilityLabel))
+			{
+				toolbar.NavigationContentDescription = accessibilityLabel;
 			}
 		}
 
