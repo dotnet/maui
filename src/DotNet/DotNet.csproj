@@ -192,6 +192,23 @@
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
+  <!-- Remove stale workload manifest bands left by the SDK installer.
+       Some SDK versions bundle manifests from older preview bands that reference
+       non-existent packs, causing NETSDK1178 errors. We remove any band
+       that doesn't match the current DotNetSdkManifestsFolder. -->
+  <Target Name="_CleanStaleWorkloadManifestBands"
+      AfterTargets="_InstallDotNet"
+      BeforeTargets="_AcquireWorkloadManifests"
+      Condition=" Exists('$(DotNetDirectory)sdk-manifests') ">
+    <ItemGroup>
+      <_AllManifestBands Include="$([System.IO.Directory]::GetDirectories('$(DotNetDirectory)sdk-manifests'))" />
+      <_StaleManifestBands Include="@(_AllManifestBands)" Condition="'%(Filename)' != '$(DotNetSdkManifestsFolder)'" />
+    </ItemGroup>
+    <Message Text="Removing stale workload manifest band: %(Filename)" Importance="High"
+        Condition="'@(_StaleManifestBands)' != ''" />
+    <RemoveDir Directories="@(_StaleManifestBands)" />
+  </Target>
+
   <Target Name="_AcquireWorkloadManifests"
       Inputs="$(_Inputs);Dependencies/Workloads.csproj"
       Outputs="$(DotNetSdkManifestsDirectory).stamp">
