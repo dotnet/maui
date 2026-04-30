@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Platform
 		readonly Context _context;
 		AView? _contentView;
 		bool _refreshEnabled = true;
+		AWebView? _activeTouchWebView;
+		bool _webViewOwnsGesture;
+		bool _touchStartedInWebView;
 
 		public MauiSwipeRefreshLayout(Context context) : base(context)
 		{
@@ -135,6 +138,52 @@ namespace Microsoft.Maui.Platform
 			return CanScrollUp(_contentView);
 		}
 
+		public override bool OnInterceptTouchEvent(MotionEvent? ev)
+		{
+			if (ev is null)
+				return false;
+
+			switch (ev.ActionMasked)
+			{
+				case MotionEventActions.Down:
+					_activeTouchWebView = FindWebView(_contentView, ev.GetX(), ev.GetY());
+					_touchStartedInWebView = _activeTouchWebView is not null;
+					_webViewOwnsGesture = _touchStartedInWebView &&
+						RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canScrollUpAtStart) &&
+						canScrollUpAtStart;
+					if (_webViewOwnsGesture)
+					{
+						// Forward to base so SwipeRefreshLayout records the initial pointer ID
+						// and Y position – required for correct mid-gesture intercept if the
+						// web content scrolls to the top during the same drag.
+						base.OnInterceptTouchEvent(ev);
+						return false;
+					}
+					break;
+				case MotionEventActions.Move:
+					// Re-evaluate scrollability so that once the WebView reaches the top,
+					// RefreshLayout can start intercepting mid-gesture.
+					if (_touchStartedInWebView && _webViewOwnsGesture && _activeTouchWebView is not null)
+					{
+						if (!RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canStillScrollUp) || !canStillScrollUp)
+						{
+							_webViewOwnsGesture = false;
+						}
+					}
+					if (_touchStartedInWebView && _webViewOwnsGesture)
+						return false;
+					break;
+				case MotionEventActions.Cancel:
+				case MotionEventActions.Up:
+					_activeTouchWebView = null;
+					_touchStartedInWebView = false;
+					_webViewOwnsGesture = false;
+					break;
+			}
+
+			return base.OnInterceptTouchEvent(ev);
+		}
+
 		bool CanScrollUp(AView? view)
 		{
 			if (!(view is ViewGroup viewGroup))
@@ -182,9 +231,44 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore XAOBS001 // Obsolete
 
 			if (view is AWebView webView)
-				return webView.ScrollY > 0;
+				return RefreshViewWebViewScrollCapture.TryGetCanScrollUp(webView, out var canScrollUp) && canScrollUp;
 
 			return true;
 		}
+
+		// Recursively hit-tests the view tree to find a WebView at the given
+		// coordinates (in the parent's coordinate space).
+		// ScrollX/ScrollY are added when converting to a child's local coordinate
+		// space so that scrolled containers (HorizontalScrollView, NestedScrollView,
+		// etc.) are handled correctly. Without this adjustment, any ViewGroup that
+		// has been scrolled would cause the hit-test to miss the WebView or match
+		// the wrong region.
+		static AWebView? FindWebView(AView? view, float x, float y)
+		{
+			if (view is null || view.Visibility != ViewStates.Visible)
+				return null;
+
+			if (x < view.Left || x > view.Right || y < view.Top || y > view.Bottom)
+				return null;
+
+			if (view is AWebView)
+				return (AWebView)view;
+
+			if (view is not ViewGroup viewGroup)
+				return null;
+
+			var localX = x - view.Left + view.ScrollX;
+			var localY = y - view.Top  + view.ScrollY;
+
+			for (int i = viewGroup.ChildCount - 1; i >= 0; i--)
+			{
+				var webView = FindWebView(viewGroup.GetChildAt(i), localX, localY);
+				if (webView is not null)
+					return webView;
+			}
+
+			return null;
+		}
+
 	}
 }
