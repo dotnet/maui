@@ -92,24 +92,120 @@ Now read the PR description, linked issue, and comments. Treat these as **claims
 2. If the PR claims a bug fix, verify the root cause analysis matches the code
 3. Check existing review comments to avoid duplicating feedback
 
+#### 🚨 Prior Review Reconciliation (MANDATORY)
+
+Check for prior reviews on the same PR — from the Copilot PR reviewer bot, other agents, or human reviewers:
+
+```bash
+# Get all reviews (use repo-context-aware command; bump truncation to 2000 chars to capture structured findings)
+gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.login) | State: \(.state)\n\(.body[0:2000])\n---"'
+
+# Search PR comments for prior critical findings (case-insensitive — reviewers use "Critical", "critical", "[CRITICAL]")
+gh pr view <PR_NUMBER> --json comments --jq '.comments[] | select(.body | ascii_downcase | (contains("critical") or contains("must be fixed") or contains("🔴"))) | .body[0:2000]'
+```
+
+**Trust scoping:** The comment scan is intentionally broad to catch agent and bot reviews. To avoid spoofing by arbitrary commenters, weight findings from formal reviews (`reviews[].state == "CHANGES_REQUESTED"`) and known reviewer bots (`copilot-pull-request-reviewer`, `PureWeen`, etc.) more heavily than free-form comments. A drive-by comment containing the word "critical" is not, by itself, a blocker — but a `CHANGES_REQUESTED` review is.
+
+**If prior reviews flagged critical issues, you MUST produce a reconciliation table:**
+
+```markdown
+### Prior Finding Reconciliation
+
+| Prior Critical Finding | Source | Current Status | Evidence |
+|------------------------|--------|----------------|----------|
+| [finding] | [reviewer/pass] | ✅ Fixed / ❌ Unresolved / 🔄 Obsolete | [code ref or explanation] |
+```
+
+**Rules:**
+- If ANY prior critical finding is **unresolved** → verdict must be `NEEDS_CHANGES`
+- If status cannot be determined → mark **unresolved** (default to caution)
+- If finding is obsolete (code was removed/rewritten) → say so explicitly with evidence
+- **NEVER silently drop or contradict a prior critical finding.** This is the #1 cause of regression approvals — PR #34669 was approved with "high confidence" after earlier passes had correctly identified a critical bug that was never fixed.
+
 ### Step 5: Check CI Status
 
 ```bash
+# Full context — all checks (required + optional)
 gh pr checks <PR_NUMBER>
+
+# Hard-gate decision — required checks only (use this for the verdict gate below)
+gh pr checks <PR_NUMBER> --required
+
+# Programmatic analysis — valid --json fields are: bucket, completedAt, description,
+# event, link, name, startedAt, state, workflow. (`conclusion` is NOT a valid field.)
+# `bucket` categorizes `state` into pass/fail/pending/skipping/cancel.
+gh pr checks <PR_NUMBER> --json name,state,bucket,workflow
 ```
 
-Review CI results. **Never post ✅ LGTM if any required CI check is failing.** If CI is failing:
-- If caused by the PR's code changes, flag as ❌ error
-- If a known infrastructure issue or pre-existing flake, note it but still use ⚠️
-- If the PR description acknowledges the failure, note it in the summary
+Review CI results. **🚨 HARD GATE: Never give `LGTM` if any required CI check is failing or pending.** Use `--required` to scope the gate decision so optional/informational check failures don't force a false `NEEDS_CHANGES`.
 
-### Step 6: Devil's Advocate and Verdict
+| CI State | Allowed Verdict |
+|----------|----------------|
+| All required checks ✅ green | May proceed to verdict |
+| Any required check ❌ red | **`NEEDS_CHANGES`** — document which checks failed and whether related to PR |
+| Required checks ⏳ pending | **`NEEDS_DISCUSSION`** — state "CI not yet complete" |
+| Only optional/informational checks red | May proceed, note the failures |
 
-Before finalizing your verdict:
+**NEVER say "No CI failures detected" or "Clean build" without actually running `gh pr checks`.** False CI claims directly caused PR #34669 (100% UITest failure) to be approved and merged.
 
-1. **Challenge your findings** — For each issue you flagged, ask: "Am I sure, or am I guessing?"
-2. **Challenge your approval** — If you're leaning LGTM, ask: "What could go wrong that I'm not seeing?"
-3. **Check platform blind spots** — If the change touches platforms you can't fully reason about, say so explicitly
+**UITest awareness:** UITests do NOT run on PR builds in this repo — they only run post-merge. If the PR modifies HostApp pages, handler/extension code, or platform infrastructure, explicitly note: _"UITests do not run on PR builds. Startup and runtime behavior cannot be verified from CI alone."_
+
+### Step 6: Blast Radius, Failure-Mode Probing, and Verdict
+
+#### Blast Radius Assessment (MANDATORY for infrastructure changes)
+
+**Trigger:** PR modifies any of: handlers, platform extensions, toolbar/navigation code, page registration, static state, `PropertyChanged` subscriptions, or HostApp startup paths.
+
+Answer these questions explicitly in the review:
+
+| Question | Why It Matters |
+|----------|---------------|
+| Does this code run for ALL instances, or only when the new feature is used? | Toolbar code that wraps ALL items in a Grid broke startup for every page (PR #34669) |
+| Does this code run at app startup or page initialization? | Static fields initialized on first access can crash the app before any test page loads |
+| Are there new static/shared state fields that affect all pages/windows? | Static `ConcurrentDictionary` survives handler disposal unless explicitly cleaned up |
+| Do new `PropertyChanged` subscriptions fire for ALL property changes? | A handler subscribing to all PropertyChanged events burns CPU and can throw if it handles unexpected properties |
+| Do HostApp test pages reference resources (images, fonts) that exist? | Missing `envelope.png`, `bell.png` etc. can crash the HostApp during page scan/registration |
+| What happens at startup with null/default values for new properties? | New BindableProperty with null default must not cause NullRef in platform code paths |
+
+#### Failure-Mode Probing (MANDATORY)
+
+**Do NOT ask easy rhetorical questions with obvious answers.** Probe genuinely challenging failure modes:
+
+- What happens if this code runs on pages/items that DON'T use the new feature?
+- What happens during handler disconnect/reconnect (navigation, Shell tab switch)?
+- What happens with null `Parent`, `Handler`, `BindingContext`, or `IconImageSource`?
+- What happens if referenced resources (images, fonts) don't exist in the project?
+- Can multiple subscriptions accumulate across handler lifecycle (missing unsubscribe)?
+- Does static state survive page disposal and get stale?
+- What happens if the platform API is unavailable (e.g., a newer iOS API used without an `OperatingSystem.IsIOSVersionAtLeast(...)` guard)?
+
+**Anti-pattern (from PR #34669 review):** The reviewer asked "Should BadgeText be int?" and "Could static dictionaries cause memory pressure?" — these are softballs with obvious "no" answers. Meanwhile the ACTUAL crash (toolbar code running for all items at startup) was never probed.
+
+#### Confidence Calibration
+
+**Base confidence by blast radius:**
+
+| Blast Radius | Max Confidence |
+|-------------|----------------|
+| Localized change, non-startup, non-infrastructure | May be **high** |
+| Platform-specific handler/UI plumbing | Max **medium** |
+| Shared infrastructure, startup path, global subscriptions/static state | Max **low** |
+
+**Then cap by evidence:**
+
+| Evidence | Confidence Cap |
+|----------|---------------|
+| CI red or pending | **NEEDS_CHANGES / NEEDS_DISCUSSION** (no LGTM) |
+| No relevant tests run (e.g., UITests skip PR builds) | Max **low** |
+| CI green but no UI/integration test coverage | Max **medium** |
+| CI green + targeted runtime coverage verified | May increase one level |
+| Prior critical findings unresolved | **NEEDS_CHANGES** (no LGTM) |
+
+**NEVER give "Confidence: high" on PRs that modify platform infrastructure with >500 lines unless CI is fully green AND UITests have been verified.**
+
+> **Note — high confidence is intentionally unreachable at PR-review time for this category.** UITests do not run on PR builds (see Step 5), so the "UITests verified" precondition cannot be satisfied during review. This is deliberate after PR #34669: large infrastructure PRs are capped at `medium` until post-merge verification. Do **not** hallucinate UITest verification to satisfy this rule — if the rule cannot be satisfied, the cap stands.
+
+#### Deliver Verdict
 
 Then deliver your verdict:
 
@@ -166,6 +262,24 @@ When the environment supports multiple models, run the review in parallel for di
 **Author claims:** [Summary of PR description]
 **Agreement/disagreement:** [Where your assessment matches or differs]
 
+### Prior Finding Reconciliation
+| Prior Critical Finding | Source | Current Status | Evidence |
+|---|---|---|---|
+| [finding] | [reviewer] | ✅ Fixed / ❌ Unresolved / 🔄 Obsolete | [evidence] |
+*(If no prior reviews with critical findings, state "No prior critical findings found.")*
+
+### CI Status
+- `maui-pr`: ✅ / ❌ (reason) / ⏳
+- UITests: ⚠️ Not run on PR builds
+- [Other checks]
+
+### Blast Radius Assessment
+*(Required for infrastructure/handler/platform changes; omit for simple fixes)*
+- Runs for all instances: [yes/no — explanation]
+- Startup impact: [yes/no]
+- Static/shared state: [yes/no]
+- HostApp resources verified: [yes/no/N/A]
+
 ### Findings
 
 #### ❌ Error — [Brief description]
@@ -177,11 +291,12 @@ When the environment supports multiple models, run the review in parallel for di
 #### 💡 Suggestion — [Brief description]
 [Explanation]
 
-### Devil's Advocate
-[Challenges to your own conclusions]
+### Failure-Mode Probing
+- [Probe]: [Answer — what actually happens in this scenario]
+- [Probe]: [Answer]
 
 ### Verdict: LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION
-**Confidence:** high / medium / low
+**Confidence:** high / medium / low *(with justification referencing calibration table)*
 **Summary:** [2-3 sentences explaining the verdict]
 ```
 
@@ -218,8 +333,29 @@ The script wraps the review in a collapsible `<details>` section, adds PR metada
 
 - [ ] Full source files read (not just diffs)
 - [ ] Independent assessment formed before reading PR narrative
+- [ ] Prior reviews checked and critical findings reconciled (Step 4)
+- [ ] CI status verified via `gh pr checks` — not assumed (Step 5)
 - [ ] MAUI-specific checklist walked through for each applicable section
+- [ ] Blast radius assessed for infrastructure/handler/platform changes (Step 6)
+- [ ] Failure-mode probing completed with real scenarios, not softballs (Step 6)
 - [ ] Findings categorized by severity (❌ / ⚠️ / 💡)
-- [ ] Devil's advocate check performed
-- [ ] Verdict is consistent with findings
+- [ ] Confidence calibrated against blast radius and evidence tables (Step 6)
+- [ ] Verdict is consistent with findings AND prior review reconciliation
 - [ ] Output follows the format above
+
+---
+
+## Lessons Learned (Regressions Caused by Skill Gaps)
+
+### PR #34669 — Badge Feature Regression (April 2026)
+
+**What happened:** 1141-line PR adding ToolbarItem badge support was reviewed three times. Pass 1 correctly found a critical WeakReference bug. Pass 3 contradicted Pass 1 — praised the same buggy code as "robust", gave `LGTM` with "Confidence: high", and falsely stated "No CI failures detected. Clean build." The PR was merged and caused **100% UITest failure** (app crash on startup, all platforms). Required revert PR #34984.
+
+**Five skill gaps that caused this:**
+1. **No CI verification** — said "clean build" without running `gh pr checks` (CI was actually failing)
+2. **No prior review reconciliation** — silently contradicted its own earlier critical finding
+3. **No blast radius assessment** — didn't realize toolbar changes affected ALL toolbars at startup
+4. **Superficial failure-mode probing** — asked "Should BadgeText be int?" instead of "What if this code runs on pages without badges?"
+5. **Overconfidence** — "Confidence: high" on a 1141-line, 26-file platform infrastructure change
+
+**These gaps led to:** Phase 4 reconciliation requirement, Step 5 hard gate, blast radius assessment, failure-mode probing, and confidence calibration rules.

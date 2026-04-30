@@ -15,6 +15,40 @@ scenarios:
       - "The agent never posts an approval or request-changes action via the GitHub API"
     timeout: 300
 
+  - name: "CI verification - agent must check CI status"
+    prompt: "code review PR #34669 in dotnet/maui"
+    assertions:
+      - type: "output_matches"
+        pattern: "(gh pr checks|maui-pr.*(pass|fail|success|failure|pending|cancelled|red|green|❌|✅|⏳))"
+    rubric:
+      - "The agent runs 'gh pr checks' or equivalent to verify CI status before delivering a verdict"
+      - "The agent does NOT claim 'clean build' or 'no CI failures' without evidence from gh pr checks"
+      - "If CI is failing, the verdict reflects this (not LGTM with 'high confidence')"
+      - "The agent produces a CI Status section in its output"
+    timeout: 300
+
+  - name: "Prior review reconciliation - don't contradict earlier findings"
+    prompt: "code review PR #34669 in dotnet/maui - note there were prior reviews on this PR"
+    assertions:
+      - type: "output_matches"
+        pattern: "(gh pr view .*--json reviews|gh api .*/reviews|Reviewer:\\s*@?[A-Za-z0-9_.-]+|No prior critical findings)"
+    rubric:
+      - "The agent checks for prior reviews on the PR and acknowledges any critical findings"
+      - "The agent does NOT silently contradict prior critical findings without explicit reconciliation"
+      - "If prior reviews flagged critical bugs, the agent verifies whether they were fixed"
+    timeout: 300
+
+  - name: "Blast radius - infrastructure changes flagged"
+    prompt: "code review PR #34669 in dotnet/maui — this PR adds new BindableProperties to ToolbarItem and modifies platform toolbar extensions"
+    assertions:
+      - type: "output_matches"
+        pattern: "(?is)Blast Radius Assessment.*Runs for all instances:\\s*(yes|no)"
+    rubric:
+      - "The agent assesses whether the code changes affect ALL toolbar items or only badge-enabled items"
+      - "The agent asks failure-mode questions about startup behavior and null/default property values"
+      - "The confidence is NOT 'high' for a 1100+ line infrastructure change"
+    timeout: 300
+
   - name: "Negative trigger - informational query about a PR"
     prompt: "What does PR #34727 change in dotnet/maui? Just give me a summary."
     assertions:
@@ -24,6 +58,8 @@ scenarios:
         value: "NEEDS_DISCUSSION"
       - type: "output_not_contains"
         value: "Devil's Advocate"
+      - type: "output_not_contains"
+        value: "Failure-Mode Probing"
     rubric:
       - "The agent provides a plain summary without launching a structured multi-step review workflow"
       - "The agent does NOT load review-rules.md or walk through MAUI-specific review checklists"

@@ -294,6 +294,8 @@ Rules distilled from 30 reverted PRs and 50 candidate-branch failures. When a PR
 
 | Check | What to look for |
 |-------|-----------------|
+| **🚨 New feature code must not execute for non-feature users** | The #1 cause of startup crashes: feature code that runs unconditionally for ALL instances, not just instances using the new feature. PR #34669 (badge support) wrapped ALL toolbar items in a Grid + InfoBadge overlay, causing 100% app startup crash across all platforms. **Always ask:** "If I never set `BadgeText`, does this code still execute? If yes, what happens with null/default values?" Flag any handler/extension code that modifies the rendering path for ALL items without a feature-usage guard. |
+| **HostApp test pages must not crash the app** | Test pages in `TestCases.HostApp/Issues/` are registered at startup. A page that references missing images (e.g., `IconImageSource = "envelope.png"` when `envelope.png` doesn't exist in the project) or uses APIs that throw on initialization will crash the ENTIRE HostApp, causing 100% UITest failure. Verify that referenced resources exist: `find src/Controls/tests/TestCases.HostApp -name "resourcename.png"`. (PR #34669 — 188 test failures from app crash) |
 | **CollectionView changes need broad scenario coverage** | CV is the single highest-regression component (15 candidate failures). Any change to layout, scroll, spacing, cell alignment, Header/Footer, or `KeepLastItemInView` must be tested across all four: empty collection, single item, many items, and with grouping. A fix for one layout scenario routinely breaks another. (CollectionView candidate failures, multiple PRs) |
 | **Style/theme changes have cascading effects** | `ApplyToDerivedTypes`, implicit styles, and `AppThemeBinding` interact in non-obvious ways. A fix to one style propagation path often breaks another — this pattern caused two separate reverts for PR #9648 and broke source gen in PR #32728. When touching style resolution or `AppThemeColor`, test: explicit style, implicit style, derived-type style, and dark/light theme switching. |
 | **Test the fix scenario AND adjacent scenarios** | Most reverts happen because the fix works for the reported issue but breaks a neighboring case. ToolbarItem image fix (PR #28833, reverted twice) fixed one image mode while breaking others. Entry `SelectionLength` (PR #26213) fixed selection but broke focus. Require authors to enumerate what adjacent behaviors they checked. |
@@ -307,6 +309,7 @@ Rules distilled from 30 reverted PRs and 50 candidate-branch failures. When a PR
 | **Arithmetic in index/position calculations needs explicit parentheses** | mattleibow on PR #23369: "This line of code is a bit ambiguous for a quick read." Silent operator-precedence bugs in scroll offset, index math, or spacing calculations are hard to spot and have caused gesture/tap regressions. Flag expressions like `a + b * c` or `offset - padding / 2` without explicit parentheses when they appear in position or size computations. |
 | **Major dependency upgrades need broad platform validation** | WindowsAppSDK upgrade (PR #32174) was reverted because it broke too many things simultaneously. Flag PRs that bump `WindowsAppSDK`, `Microsoft.Maui.*` NuGet versions, or other platform SDK dependencies, and ask whether CI was green on all platforms (Android, iOS, MacCatalyst, Windows) before merge, not just the changed platform. |
 | **ContentPresenter BindingContext propagation breaks explicit TemplateBindings** | Propagating `BindingContext` through `ContentPresenter` overwrites `{TemplateBinding}` values that were set explicitly. This was a reverted PR. Flag any handler or renderer change that sets or propagates `BindingContext` on a `ContentPresenter` or control template root without verifying that `TemplateBinding` expressions still resolve correctly. |
+| **Static dictionaries in extension methods survive handler disposal** | Static `ConcurrentDictionary` fields in extension methods (e.g., `ToolbarExtensions._badgeDrawables`) persist across handler connect/disconnect cycles. If `DisposeMenuItems` clears ALL entries globally instead of scoping to the current toolbar, it removes badges from other active toolbars during navigation transitions. Always scope static cleanup to the specific instance being disposed. (PR #34669) |
 
 ---
 
@@ -322,7 +325,7 @@ Components ranked by regression frequency from 366 analyzed PRs (reverts + candi
 | CarouselView | 7 | ScrollTo, CurrentItem, ItemSpacing, loop mode |
 | Gesture/Tap | 7 | TapGestureRecognizer, SwipeView, outside-tap dismiss |
 | Button/Entry | 7 | Dynamic resize, focus/selection, AppThemeBinding colors |
-| Toolbar | 5 | Icon color, back button, BarTextColor across modes |
+| Toolbar | 6 | Icon color, back button, BarTextColor, **badge feature startup crash (PR #34669)** |
 | Shell/TabBar | 4 | TabBarIsVisible, Shell crashes, section rendering |
 
 Use this table as a triage guide: PRs touching these components warrant a more thorough pass through sections 1–21 above, with particular attention to the adjacent-scenario rule (§21 row 3) and the component-specific rows in this section.
