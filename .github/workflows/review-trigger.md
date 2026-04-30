@@ -139,7 +139,7 @@ steps:
           \"resources\": {
             \"repositories\": {
               \"self\": {
-                \"refName\": \"refs/heads/main\"
+                \"refName\": \"refs/heads/feature/expert-reviewer-extraction\"
               }
             }
           }
@@ -241,7 +241,9 @@ steps:
         cd /tmp/pipeline-results
         unzip -o copilot-logs.zip -d copilot-logs/ 2>/dev/null || true
         echo "✅ Artifact downloaded and extracted"
-        find copilot-logs/ -type f | head -30
+        # The artifact extracts flat (no CopilotLogs/ prefix)
+        # Phase files at: copilot-logs/CustomAgentLogsTmp/PRState/<PR>/PRAgent/
+        find copilot-logs/ -type f \( -name "*.json" -o -name "content.md" -o -name "code-review.md" -o -name "*.diff" \) | head -30
       else
         echo "⚠️ Artifact '${ARTIFACT_NAME}' not found. Available artifacts:"
         echo "${ARTIFACTS_JSON}" | jq -r '.value[].name' 2>/dev/null || echo "(none)"
@@ -271,39 +273,55 @@ Read these files from `/tmp/pipeline-results/`:
 - `pipeline-url.txt` — link to the AzDO build
 - `platform.txt` — target platform
 
-If `result.txt` says "failed" or is missing, skip to **Step 4 (failure)**.
+If `result.txt` says "failed" or is missing, skip to **Step 5 (failure)**.
 
-## Step 2: Find the review phase content
+## Step 2: Find the review artifacts
 
 The `CopilotLogs` artifact is extracted to `/tmp/pipeline-results/copilot-logs/`.
-Inside, look for the phase content files at this path:
+The artifact extracts **flat** (no `CopilotLogs/` prefix wrapper).
 
+Phase content files are at:
 ```
-copilot-logs/CopilotLogs/CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/
+copilot-logs/CustomAgentLogsTmp/PRState/${{ inputs.pr_number }}/PRAgent/
 ```
 
-The PR number is ${{ inputs.pr_number }}. The phase files are:
+Use `find /tmp/pipeline-results/copilot-logs/ -type f \( -name "*.json" -o -name "content.md" -o -name "code-review.md" \)` to discover what's available.
 
-| Phase | File | Description |
-|-------|------|-------------|
-| 🛡️ Gate | `gate/content.md` | Test verification results |
-| 🧪 UI Tests | `uitests/content.md` | UI test category detection |
-| 🔍 Pre-Flight | `pre-flight/content.md` | Context gathering & validation |
-| 🔬 Code Review | `pre-flight/code-review.md` | Deep code analysis |
-| 🔧 Try-Fix | `try-fix/content.md` | Fix exploration & comparison |
-| 📋 Report | `report/content.md` | Final recommendation |
+### Key files
 
-**Not all phases will exist** — some may be skipped depending on the PR.
-Use `find /tmp/pipeline-results/copilot-logs/ -name "content.md" -o -name "code-review.md"` to discover what's available.
+| File | Purpose |
+|------|---------|
+| `inline-findings.json` | **Structured inline review comments** — array of `{path, line, body}` objects for posting as inline PR review comments |
+| `winner.json` | **Final recommendation** — `{schemaVersion, winner, isPRFix, summary, candidateDiff}` |
+| `gate/content.md` | Test verification (gate) results |
+| `pre-flight/content.md` | Context gathering & validation |
+| `pre-flight/code-review.md` | Deep code analysis |
+| `expert-pr-eval/content.md` | Expert PR evaluation |
+| `try-fix/content.md` | Fix exploration summary |
+| `try-fix/attempt-N/approach.md` | Individual fix attempt approaches |
+| `try-fix/attempt-N/fix.diff` | Individual fix attempt diffs |
+| `try-fix/attempt-N/analysis.md` | Individual fix attempt analysis |
+| `report/content.md` | Final recommendation report |
 
-Also check for:
-- `copilot-logs/CopilotLogs/Review_Feedback_*.md` — additional feedback files
-- `copilot-logs/CopilotLogs/copilot_review_output.md` — full transcript log (long; only read if phases are missing)
+**Not all files will exist** — phases may be skipped depending on the PR.
 
-## Step 3: Post results via safe-outputs
+## Step 3: Post inline review comments
 
-Use `add-comment` to post ONE comment on the PR. Assemble the comment from the phase
-content files using this format:
+If `inline-findings.json` exists and contains entries, use `submit-pull-request-review` to
+post them as inline PR review comments. The JSON format is:
+
+```json
+[
+  {"path": "src/File.cs", "line": 42, "body": "**[severity] Category** — Description..."},
+  ...
+]
+```
+
+Post these as a **COMMENT** review (not approve or request changes).
+
+## Step 4: Post summary comment
+
+Use `add-comment` to post ONE summary comment on the PR. Build it from the phase files:
 
 ```markdown
 ## 🤖 AI Review — PR #<number> (<platform>)
@@ -312,23 +330,28 @@ content files using this format:
 
 ---
 
-### 🛡️ Gate — Test Verification
-<content from gate/content.md>
+### 📋 Recommendation
 
-### 🧪 UI Test Categories
-<content from uitests/content.md>
+<Read winner.json — include the `summary` field verbatim>
+<If `isPRFix` is false and `candidateDiff` exists, include the diff in a collapsed details block>
+
+### 🛡️ Gate — Test Verification
+<content from gate/content.md — verbatim>
 
 ### 🔍 Pre-Flight
-<content from pre-flight/content.md>
+<content from pre-flight/content.md — verbatim>
 
 ### 🔬 Code Review
-<content from pre-flight/code-review.md>
+<content from pre-flight/code-review.md — verbatim>
+
+### 🧪 Expert Evaluation
+<content from expert-pr-eval/content.md — verbatim>
 
 ### 🔧 Fix Analysis
-<content from try-fix/content.md>
+<content from try-fix/content.md — verbatim>
 
-### 📋 Final Recommendation
-<content from report/content.md>
+### 📋 Final Report
+<content from report/content.md — verbatim>
 
 ---
 > 🤖 *Review generated by DevDiv `maui-copilot` pipeline.*
@@ -337,14 +360,13 @@ content files using this format:
 **Rules:**
 - Only include sections for phases that have content files
 - Include the phase content **verbatim** — do NOT summarize or rewrite it
-- If a phase file is empty, skip that section
-- Keep the comment under 65000 characters (GitHub limit). If content is too long,
-  truncate the transcript log first, then truncate fix analysis details
+- If a phase file is empty or missing, skip that section
+- Keep the comment under 65000 characters (GitHub limit). If too long,
+  truncate try-fix attempt details first, then the transcript log
 
-## Step 4: Handle failures
+## Step 5: Handle failures
 
-If the pipeline **failed**:
-- Post a comment with this format:
+If the pipeline **failed**, post a comment:
 
 ```markdown
 ## ❌ AI Review Failed — PR #<number> (<platform>)
@@ -358,7 +380,7 @@ The DevDiv `maui-copilot` pipeline failed for this PR.
 Check the pipeline logs for details.
 ```
 
-If **no artifact** was found (`available-artifacts.json` exists instead):
+If **no artifact** was found (`available-artifacts.json` exists):
 - Post a comment explaining the pipeline completed but produced no review artifact
 - Include the pipeline URL
 
