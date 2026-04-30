@@ -255,8 +255,19 @@ namespace Microsoft.Maui.Platform
 				control.UpdateBackground(view.Background);
 			else if (platformView is Border border)
 				border.UpdateBackground(view.Background);
+			else if (platformView is ContentPanel contentPanel)
+			{
+				contentPanel.UpdateBackground(view.Background);
+
+				if (view.Background == null && contentPanel.Background == null)
+				{
+					contentPanel.Background = new SolidColorBrush(UI.Colors.Transparent);
+				}
+			}
 			else if (platformView is Panel panel)
+			{
 				panel.UpdateBackground(view.Background);
+			}
 		}
 
 		internal static void UpdatePlatformViewBackground(this FrameworkElement platformView, IView view, Brush? defaultBrush = null)
