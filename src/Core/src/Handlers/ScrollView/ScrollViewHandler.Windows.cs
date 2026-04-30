@@ -15,10 +15,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		const string ContentPanelTag = "MAUIScrollViewContentPanel";
 
-		// Stores a scroll request that arrived before the content was laid out.
-		// Replayed in OnScrollViewLayoutUpdated once ScrollableHeight/Width > 0.
-		ScrollToRequest? _pendingScrollToRequest;
-
 		protected override ScrollViewer CreatePlatformView()
 		{
 			return new ScrollViewer();
@@ -38,28 +34,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			platformView.ViewChanged += ViewChanged;
-			platformView.LayoutUpdated += OnScrollViewLayoutUpdated;
 		}
 
 		protected override void DisconnectHandler(ScrollViewer platformView)
 		{
 			base.DisconnectHandler(platformView);
 			platformView.ViewChanged -= ViewChanged;
-			platformView.LayoutUpdated -= OnScrollViewLayoutUpdated;
-			_pendingScrollToRequest = null;
-		}
-
-		void OnScrollViewLayoutUpdated(object? sender, object e)
-		{
-			if (_pendingScrollToRequest is not { } pending)
-				return;
-
-			// Wait until the content has been measured (ScrollableHeight/Width reflects real content size).
-			if (PlatformView.ScrollableHeight > 0 || PlatformView.ScrollableWidth > 0)
-			{
-				_pendingScrollToRequest = null;
-				MapRequestScrollTo(this, VirtualView, pending);
-			}
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -96,21 +76,31 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
+			MapRequestScrollTo(handler, scrollView, args, retryCount: 0);
+		}
+
+		static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args, int retryCount)
+		{
 			if (args is ScrollToRequest request)
 			{
-				// If the content hasn't been measured yet, ScrollableHeight/Width will be 0 and
-				// ChangeView will clamp the target to 0 (silently failing). Defer the scroll until
-				// LayoutUpdated fires after the content is measured.
-				// Inspired by Xamarin.Forms UWP ScrollViewRenderer pending scroll pattern.
-				if (handler is ScrollViewHandler scrollViewHandler)
+				// Defer if the content panel exists but hasn't been measured yet (ActualHeight/Width == 0),
+				// which happens when ScrollToAsync is called from OnAppearing before the first layout pass.
+				// Cap at 10 retries (matching Xamarin.Forms) so genuinely zero-sized content doesn't loop forever.
+				bool contentNotMeasured = handler.PlatformView.Content is FrameworkElement contentEl
+				                          && contentEl.ActualHeight == 0 && contentEl.ActualWidth == 0;
+
+				bool needsDefer = retryCount < 10 && contentNotMeasured &&
+				                  ((request.VerticalOffset > 0 && handler.PlatformView.ScrollableHeight == 0) ||
+				                   (request.HorizontalOffset > 0 && handler.PlatformView.ScrollableWidth == 0));
+
+				if (needsDefer)
 				{
-					bool needsDefer = (request.VerticalOffset > 0 && handler.PlatformView.ScrollableHeight == 0) ||
-					                  (request.HorizontalOffset > 0 && handler.PlatformView.ScrollableWidth == 0);
-					if (needsDefer)
+					handler.PlatformView.DispatcherQueue.TryEnqueue(() =>
 					{
-						scrollViewHandler._pendingScrollToRequest = request;
-						return;
-					}
+						if (handler.IsConnected())
+							MapRequestScrollTo(handler, scrollView, args, retryCount + 1);
+					});
+					return;
 				}
 
 				var targetHorizontalOffset = Math.Clamp(request.HorizontalOffset, 0, handler.PlatformView.ScrollableWidth);
@@ -118,8 +108,8 @@ namespace Microsoft.Maui.Handlers
 
 				if (targetVerticalOffset == handler.PlatformView.VerticalOffset && targetHorizontalOffset == handler.PlatformView.HorizontalOffset)
 				{
-				   handler.VirtualView.ScrollFinished();
-				   return;
+					handler.VirtualView.ScrollFinished();
+					return;
 				}
 
 				handler.PlatformView.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, request.Instant);
@@ -184,7 +174,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					currentPaddingLayer.CachedChildren.Clear();
 				}
-				
+
 				return;
 			}
 
