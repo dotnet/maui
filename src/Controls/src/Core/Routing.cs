@@ -14,6 +14,12 @@ namespace Microsoft.Maui.Controls
 		static Dictionary<string, Page> s_implicitPageRoutes = new(StringComparer.Ordinal);
 		static HashSet<string> s_routeKeys;
 
+		// Parsed templates for routes that contain "{param}" segments. The key
+		// here is the same key used in <see cref="s_routes"/> (e.g.
+		// "product/{sku}"); routes without templated segments are absent from
+		// this dictionary so the literal fast paths remain unaffected.
+		static Dictionary<string, RouteTemplate> s_routeTemplates = new(StringComparer.Ordinal);
+
 		const string ImplicitPrefix = "IMPL_";
 		const string DefaultPrefix = "D_FAULT_";
 		internal const string PathSeparator = "/";
@@ -114,11 +120,47 @@ namespace Microsoft.Maui.Controls
 		{
 			s_implicitPageRoutes.Clear();
 			s_routes.Clear();
+			s_routeTemplates.Clear();
 			s_routeKeys = null;
+		}
+
+		// Returns true when the supplied route key was registered with a
+		// template segment such as "product/{sku}". Used by the URI matcher
+		// to decide whether to capture path parameters for the route.
+		internal static bool IsTemplateRoute(string route)
+		{
+			if (string.IsNullOrEmpty(route))
+				return false;
+
+			return s_routeTemplates.ContainsKey(route);
+		}
+
+		internal static bool TryGetRouteTemplate(string route, out RouteTemplate template)
+		{
+			return s_routeTemplates.TryGetValue(route, out template);
 		}
 
 		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
 		public static readonly BindableProperty RouteProperty = CreateRouteProperty();
+
+		// Internal attached property storing the resolved route URI for pages
+		// created from template routes (e.g. "product/seed-tomato" for a page
+		// whose Route is "product/{sku}"). Used by GetNavigationState to build
+		// Shell.CurrentState.Location without leaking template tokens. The
+		// page's Route property always keeps the registered template key so
+		// that factory lookups and stack comparisons work correctly.
+		internal static readonly BindableProperty ResolvedRouteProperty = CreateResolvedRouteProperty();
+
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:ReflectionToDynamicallyAccessedMembers",
+			Justification = "Same as RouteProperty — BindableProperty only needs Get* methods, not RegisterRoute.")]
+		private static BindableProperty CreateResolvedRouteProperty()
+			=> BindableProperty.CreateAttached("ResolvedRoute", typeof(string), typeof(Routing), null);
+
+		internal static string GetResolvedRoute(BindableObject obj)
+			=> (string)obj.GetValue(ResolvedRouteProperty);
+
+		internal static void SetResolvedRoute(Element obj, string value)
+			=> obj.SetValue(ResolvedRouteProperty, value);
 
 		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:ReflectionToDynamicallyAccessedMembers",
 			Justification = "The CreateAttached method has a DynamicallyAccessedMembers annotation for all public methods"
@@ -218,6 +260,21 @@ namespace Microsoft.Maui.Controls
 			ValidateRoute(route, factory);
 
 			s_routes[route] = factory;
+
+			// Templates are an additive opt-in: any route that contains a
+			// "{param}" segment is parsed and remembered alongside the literal
+			// registration. Routes without templated segments never enter
+			// s_routeTemplates so existing literal fast paths are unaffected.
+			if (RouteTemplate.ContainsTemplateSyntax(route))
+			{
+				var template = RouteTemplate.Parse(route, out var error);
+				if (template == null)
+					throw new ArgumentException(error, nameof(route));
+
+				if (template.HasParameters)
+					s_routeTemplates[route] = template;
+			}
+
 			s_routeKeys = null;
 		}
 
@@ -227,6 +284,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (s_routes.Remove(route))
 			{
+				s_routeTemplates.Remove(route);
 				s_routeKeys = null;
 			}
 		}
