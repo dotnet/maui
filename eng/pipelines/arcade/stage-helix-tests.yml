@@ -91,7 +91,7 @@ stages:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
 
-          - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
+          - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
             displayName: Run Helix Tests
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken) # We need to set this env var to publish helix results to Azure Dev Ops
