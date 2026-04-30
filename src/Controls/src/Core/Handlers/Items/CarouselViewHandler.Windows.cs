@@ -70,6 +70,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void UpdateItemsSource()
 		{
+			var itemsSource = ItemsView?.ItemsSource;
+
+            if (itemsSource == null)
+                return;
+				
 			var itemTemplate = ItemsView?.ItemTemplate;
 
 			if (itemTemplate == null)
