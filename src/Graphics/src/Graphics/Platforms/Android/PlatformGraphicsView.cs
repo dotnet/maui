@@ -1,3 +1,4 @@
+using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Text;
@@ -14,10 +15,16 @@ namespace Microsoft.Maui.Graphics.Platform
 		private IDrawable _drawable;
 		private float _scale;
 		private Color _backgroundColor;
+		float _logicalWidth;
+		float _logicalHeight;
+		float _adjustedScaleX;
+		float _adjustedScaleY;
 
 		public PlatformGraphicsView(Context context, IAttributeSet attrs, IDrawable drawable = null) : base(context, attrs)
 		{
 			_scale = Resources.DisplayMetrics.Density;
+			_adjustedScaleX = _scale;
+			_adjustedScaleY = _scale;
 			_canvas = new PlatformCanvas(context);
 			_scalingCanvas = new ScalingCanvas(_canvas);
 			Drawable = drawable;
@@ -26,6 +33,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		public PlatformGraphicsView(Context context, IDrawable drawable = null) : base(context)
 		{
 			_scale = Resources.DisplayMetrics.Density;
+			_adjustedScaleX = _scale;
+			_adjustedScaleY = _scale;
 			_canvas = new PlatformCanvas(context);
 			_scalingCanvas = new ScalingCanvas(_canvas);
 			Drawable = drawable;
@@ -74,10 +83,12 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			_scalingCanvas.ResetState();
-			_scalingCanvas.Scale(_scale, _scale);
-			//Since we are using a scaling canvas, we need to scale the rectangle
-			dirtyRect.Height /= _scale;
-			dirtyRect.Width /= _scale;
+			// Use adjusted scale factors that map rounded logical dp dimensions
+			// back to exact pixel dimensions, avoiding both fractional dp values
+			// and sub-pixel gaps at view edges.
+			_scalingCanvas.Scale(_adjustedScaleX, _adjustedScaleY);
+			dirtyRect.Width = _logicalWidth;
+			dirtyRect.Height = _logicalHeight;
 			_drawable.Draw(_scalingCanvas, dirtyRect);
 
 			androidCanvas.Restore();
@@ -90,6 +101,33 @@ namespace Microsoft.Maui.Graphics.Platform
 			_scale = GetDisplayDensity();
 			_width = width;
 			_height = height;
+			UpdateLogicalDimensions();
+		}
+
+		/// <summary>
+		/// Precomputes logical (dp) dimensions and adjusted scale factors.
+		/// Rounding pixel÷density back to integer dp loses precision (e.g. 263/2.625 = 100.19).
+		/// We round to the nearest integer dp, then derive an adjusted scale so that
+		/// logicalDp × adjustedScale == exact pixel allocation — no fractional dp, no pixel gap.
+		/// </summary>
+		void UpdateLogicalDimensions()
+		{
+			_logicalWidth = MathF.Round(_width / _scale);
+			_logicalHeight = MathF.Round(_height / _scale);
+
+			if (_logicalWidth > 0 && _logicalHeight > 0)
+			{
+				_adjustedScaleX = _width / _logicalWidth;
+				_adjustedScaleY = _height / _logicalHeight;
+			}
+			else
+			{
+				// Zero-size fallback: use device density as-is
+				_adjustedScaleX = _scale;
+				_adjustedScaleY = _scale;
+				_logicalWidth = _width / _scale;
+				_logicalHeight = _height / _scale;
+			}
 		}
 	}
 }
