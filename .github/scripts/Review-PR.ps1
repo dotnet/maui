@@ -438,6 +438,55 @@ function Invoke-CopilotStep {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+#  STEP 0.5: DETECT UI Test Categories (detection only — no pipeline trigger)
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║  STEP 0.5: DETECT UI TEST CATEGORIES                       ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+$uitestCategories = ""
+
+$detectScript = Join-Path $RepoRoot "eng/scripts/detect-ui-test-categories.ps1"
+if (Test-Path $detectScript) {
+    try {
+        $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" 2>&1
+        $detectOutput | ForEach-Object { Write-Host "  $_" }
+
+        foreach ($line in $detectOutput) {
+            $lineStr = $line.ToString()
+            if ($lineStr -match 'UITestCategoryList;isOutput=true\](.+)$') {
+                $uitestCategories = $Matches[1]
+            }
+        }
+
+        if ($uitestCategories -eq 'NONE') {
+            Write-Host "  ℹ️ No UI test categories needed (no UI-relevant changes)" -ForegroundColor DarkGray
+        } elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) {
+            Write-Host "  ℹ️ Full UI test matrix (no specific categories detected)" -ForegroundColor DarkGray
+        } else {
+            Write-Host "  🎯 Detected categories: $uitestCategories" -ForegroundColor Green
+        }
+
+        # Write detection result for AI summary
+        $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
+        New-Item -ItemType Directory -Force -Path $uitestOutputDir | Out-Null
+        if ($uitestCategories -eq 'NONE') {
+            "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+        } elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) {
+            "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+        } else {
+            "**Detected UI test categories:** ``$uitestCategories``" | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+        }
+    } catch {
+        Write-Host "  ⚠️ Category detection failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ detect-ui-test-categories.ps1 not found" -ForegroundColor Yellow
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 #  STEP 1: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
@@ -451,17 +500,66 @@ New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 
 # Detect tests in PR
 Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
-$detectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
-& pwsh -NoProfile -Command "& '$detectScript' -PRNumber $PRNumber" 2>&1 | ForEach-Object { Write-Host "    $_" }
+$testDetectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
+if (Test-Path $testDetectScript) {
+    $testDetectScript = (Resolve-Path $testDetectScript).Path
+    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
+} else {
+    Write-Host "    ⚠️ Detect-TestsInDiff.ps1 not found at $testDetectScript" -ForegroundColor Yellow
+}
 
 # Determine platform for gate
 $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
-$verifyScript = Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
-$gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
-$gateExitCode = $LASTEXITCODE
-$gateOutput | ForEach-Object { Write-Host "    $_" }
+$verifyScript = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
+if (-not (Test-Path $verifyScript)) {
+    Write-Host "  ❌ verify-tests-fail.ps1 not found at: $verifyScript" -ForegroundColor Red
+    # $gateExitCode = 1 ensures the switch at line ~561 produces $gateResult = "FAILED"
+    $gateExitCode = 1
+    $gateOutput = @("verify-tests-fail.ps1 not found at: $verifyScript")
+} else {
+
+$maxGateAttempts = 3
+$gateExitCode = 1
+$gateOutput = @()
+# Path is fixed across attempts — define once, then clear per-iteration so a stale
+# report from attempt N-1 can't be misclassified as the current attempt's output.
+$gateContentFile = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
+
+for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
+    if ($gateAttempt -gt 1) {
+        Write-Host "  🔄 Retry $gateAttempt/$maxGateAttempts — previous attempt hit environment error" -ForegroundColor Yellow
+    }
+    # Clear previous attempt's report so a crash mid-run doesn't leak its classification into this one.
+    Remove-Item $gateContentFile -Force -ErrorAction SilentlyContinue
+    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
+    $gateExitCode = $LASTEXITCODE
+    $gateOutput | ForEach-Object { Write-Host "    $_" }
+
+    # Check if this was an ENV ERROR (emulator timeout, ADB failure, etc.)
+    $isEnvError = $false
+    if ($gateExitCode -ne 0 -and (Test-Path $gateContentFile)) {
+        $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
+        if ($gateContent -match 'ENV ERROR') {
+            $isEnvError = $true
+            Write-Host "  ⚠️ Environment error detected (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
+        }
+    }
+
+    if ($gateExitCode -eq 0 -or -not $isEnvError) {
+        break  # Real pass or real failure — don't retry
+    }
+    if ($gateAttempt -lt $maxGateAttempts) {
+        Write-Host "  ⏳ Waiting 30s before retry..." -ForegroundColor DarkGray
+        Start-Sleep -Seconds 30
+    }
+}
+if ($isEnvError) {
+    Write-Host "  ⚠️ All $maxGateAttempts gate attempts hit environment errors" -ForegroundColor Yellow
+}
+
+} # end else (verify script exists)
 
 # Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
 $gateResult = switch ($gateExitCode) {
@@ -472,30 +570,61 @@ $gateResult = switch ($gateExitCode) {
 $gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } default { "Red" } }
 Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
 
-# Copy the verification report to gate/content.md if it exists
+# Copy the verification report to gate/content.md (always overwrite — the report is the source of truth)
 $verificationReport = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
+# Capture last meaningful lines from gate output for fallback diagnostics
+$gateLogTail = @($gateOutput | ForEach-Object { $_.ToString() } | Where-Object { $_ -match '\S' } | Select-Object -Last 20) -join "`n"
+
 if (Test-Path $verificationReport) {
-    Copy-Item $verificationReport (Join-Path $gateOutputDir "content.md") -Force
+    $reportContent = Get-Content $verificationReport -Raw -ErrorAction SilentlyContinue
+    if ($reportContent) {
+        # Strip broken "Test Summary" blocks with empty values (from old verify script format)
+        $reportContent = $reportContent -replace '(?s)\*\*Test Summary:\*\*\s*\n- Total:\s*\n- Passed:\s*(True|False)\s*\n- Failed:\s*\n- Skipped:\s*\n?', ''
+        $reportContent | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
+    } else {
+        # Report exists but has bad format — generate fallback with logs
+        Write-Host "  ⚠️ Verification report has invalid format — using fallback" -ForegroundColor Yellow
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } default { "❌" } }
+        @"
+### Gate Result: $resultIcon $gateResult
+
+**Platform:** $($gatePlatform.ToUpper())
+
+<details>
+<summary>Gate output log</summary>
+
+``````
+$gateLogTail
+``````
+
+</details>
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
+    }
 } elseif (-not (Test-Path (Join-Path $gateOutputDir "content.md"))) {
-    # Create gate content based on result
     if ($gateResult -eq "SKIPPED") {
-        $skipContent = @"
+        @"
 ### Gate Result: ⚠️ SKIPPED
 
 No tests were detected in this PR.
 
-**Recommendation:** Add tests to verify the fix using the ``write-tests-agent``:
-
-``````
-@copilot write tests for this PR
-``````
-
-The agent will analyze the issue, determine the appropriate test type (UI test, device test, unit test, or XAML test), and create tests that verify the fix.
-"@
-        $skipContent | Set-Content (Join-Path $gateOutputDir "content.md")
+**Recommendation:** Add tests to verify the fix using the ``write-tests-agent``.
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     } else {
-        "### Gate Result: $(if ($gateExitCode -eq 0) { '✅ PASSED' } else { '❌ FAILED' })`n`n**Platform:** $gatePlatform" |
-            Set-Content (Join-Path $gateOutputDir "content.md")
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } default { "❌" } }
+        @"
+### Gate Result: $resultIcon $gateResult
+
+**Platform:** $($gatePlatform.ToUpper())
+
+<details>
+<summary>Gate output log</summary>
+
+``````
+$gateLogTail
+``````
+
+</details>
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     }
 }
 
@@ -566,8 +695,10 @@ $autonomousRules
 
 **Gate result (already completed in a prior step):** $gateStatusForPrompt
 Do NOT re-run gate verification. The gate phase is handled separately.
+⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
 
 📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
+(phases: pre-flight, try-fix, report — NOT gate)
 "@
 
 Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
