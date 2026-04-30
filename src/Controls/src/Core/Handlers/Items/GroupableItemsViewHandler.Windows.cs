@@ -1,7 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
@@ -40,6 +38,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void UpdateItemTemplate()
 		{
 			base.UpdateItemTemplate();
+
+			// When a GroupFooterTemplate is set but no ItemTemplate, the fake footer item
+			// (GroupFooterItemTemplateContext) appended to each group's Items list needs a
+			// template to render correctly.  Without a selector WinUI calls ToString() on it,
+			// displaying the class name instead of the bound footer content.
+			if (Element.ItemTemplate is null && ItemsView.IsGrouped && ItemsView.GroupFooterTemplate is not null)
+			{
+				ListViewBase.ItemTemplateSelector = new GroupFooterDataTemplateSelector();
+			}
+			else
+			{
+				ListViewBase.ItemTemplateSelector = null;
+			}
 
 			ListViewBase.GroupStyleSelector = new GroupHeaderStyleSelector();
 		}

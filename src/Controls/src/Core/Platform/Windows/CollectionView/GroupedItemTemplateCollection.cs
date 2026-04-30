@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -67,13 +68,33 @@ namespace Microsoft.Maui.Controls.Platform
 		GroupTemplateContext CreateGroupTemplateContext(object group)
 		{
 			var groupHeaderTemplateContext = _groupHeaderTemplate != null
-					? new ItemTemplateContext(_groupHeaderTemplate, group, _container, mauiContext: _mauiContext) : null;
+				? new ItemTemplateContext(_groupHeaderTemplate, group, _container, mauiContext: _mauiContext) : null;
 
 			var groupFooterTemplateContext = _groupFooterTemplate != null
 				? new GroupFooterItemTemplateContext(_groupFooterTemplate, group, _container, mauiContext: _mauiContext) : null;
 
 			// This is where we'll eventually look at GroupItemPropertyName
-			var groupItemsList = TemplatedItemSourceFactory.Create(group as IEnumerable, _itemTemplate, _container, mauiContext: _mauiContext);
+			object groupItemsList;
+			if (_itemTemplate is not null)
+			{
+				groupItemsList = TemplatedItemSourceFactory.Create(group as IEnumerable, _itemTemplate, _container, mauiContext: _mauiContext);
+			}
+			else
+			{
+				// When no ItemTemplate is set, copy the raw group items into a new list so that:
+				// WinUI calls ToString() on the actual data objects (not on ItemTemplateContext wrappers).
+				var rawItems = new List<object>();
+				var groupEnumerable = group as IEnumerable;
+				if (groupEnumerable is not null)
+				{
+					foreach (var item in groupEnumerable)
+					{
+						rawItems.Add(item);
+					}
+				}
+				
+				groupItemsList = rawItems;
+			}
 
 			return new GroupTemplateContext(groupHeaderTemplateContext, groupFooterTemplateContext, groupItemsList);
 		}
