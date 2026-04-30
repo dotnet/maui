@@ -122,8 +122,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_defaultTintColor = searchBar.BarTintColor;
 
+			var textField = searchBar.FindDescendantView<UITextField>();
+			if (textField is not null)
+			{
+				_defaultBackgroundColor = textField.BackgroundColor;
+			}
+
 			var cancelButton = searchBar.FindDescendantView<UIButton>();
-			if (cancelButton != null)
+			if (cancelButton is not null)
 			{
 				_cancelButtonTextColorDefaultNormal = cancelButton.TitleColor(UIControlState.Normal);
 				_cancelButtonTextColorDefaultHighlighted = cancelButton.TitleColor(UIControlState.Highlighted);
@@ -163,10 +169,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_hasCustomBackground = true;
 				textField.Layer.CornerRadius = 10;
 				textField.ClipsToBounds = true;
-				if (_defaultBackgroundColor is null)
-				{
-					_defaultBackgroundColor = backGroundColor.ToPlatform();
-				}
 				textField.BackgroundColor = backGroundColor.ToPlatform();
 			}
 		}

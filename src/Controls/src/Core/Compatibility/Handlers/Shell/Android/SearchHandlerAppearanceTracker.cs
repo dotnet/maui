@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		SearchHandler _searchHandler;
 		bool _disposed;
+		bool _hasCustomBackground;
 		AView _control;
 		InputTypes _inputType;
 
@@ -148,11 +149,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateBackgroundColor()
 		{
-			if (_searchHandler.BackgroundColor == null)
+			var linearLayout = (_control as ViewGroup)?.GetFirstChildOfType<LinearLayout>();
+			if (linearLayout is null)
+			{
 				return;
+			}
 
-			var linearLayout = (_control as ViewGroup).GetChildrenOfType<LinearLayout>().FirstOrDefault();
-			linearLayout.SetBackgroundColor(_searchHandler.BackgroundColor.ToPlatform());
+			var backgroundColor = _searchHandler.BackgroundColor;
+
+			if (!_hasCustomBackground && backgroundColor is null)
+			{
+				return;
+			}
+
+			if (backgroundColor is null)
+			{
+				linearLayout.Background = null;
+				_hasCustomBackground = false;
+			}
+			else
+			{
+				_hasCustomBackground = true;
+				linearLayout.SetBackgroundColor(backgroundColor.ToPlatform());
+			}
 		}
 
 		void UpdateCancelButtonColor()
