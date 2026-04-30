@@ -26,10 +26,10 @@ public class Issue8680MainPage : ContentPage
 		Content = new VerticalStackLayout
 		{
 			Children =
-   {
-	new Label { Text = "Main Page", AutomationId = "MainPageLabel" },
-	navigateButton,
-   }
+			{
+				new Label { Text = "Main Page", AutomationId = "MainPageLabel" },
+				navigateButton,
+			}
 		};
 	}
 }
@@ -50,10 +50,10 @@ public class Issue8680InterceptPage : ContentPage
 		Content = new VerticalStackLayout
 		{
 			Children =
-   {
-	_statusLabel,
-	new Label { Text = "Press device back button — it should be intercepted", AutomationId = "InterceptPageLabel" },
-   }
+			{
+				_statusLabel,
+				new Label { Text = "Press device back button — it should be intercepted", AutomationId = "InterceptPageLabel" },
+			}
 		};
 	}
 
