@@ -10,6 +10,51 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ContextFlyoutTests : ControlsHandlerTestBase
 	{
+		[Fact(DisplayName = "MenuFlyoutItem MapSource sets ShowAsMonochrome to false for FileImageSource")]
+		public async Task MenuFlyoutItemMapSourceSetsShowAsMonochromeToFalse()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				MenuFlyoutItem menuFlyoutItem = new MenuFlyoutItem()
+				{
+					Text = "TestItem",
+					IconImageSource = new FileImageSource { File = "red.png" }
+				};
+
+				var handler = CreateHandler<MenuFlyoutItemHandler>(menuFlyoutItem);
+				var platformItem = handler.PlatformView;
+
+				Assert.NotNull(platformItem.Icon);
+				var bitmapIcon = Assert.IsType<Microsoft.UI.Xaml.Controls.BitmapIcon>(platformItem.Icon);
+				Assert.False(bitmapIcon.ShowAsMonochrome);
+			});
+		}
+
+		[Fact(DisplayName = "MenuFlyoutSubItem MapSource sets ShowAsMonochrome to false for FileImageSource")]
+		public async Task MenuFlyoutSubItemMapSourceSetsShowAsMonochromeToFalse()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				MenuFlyoutSubItem menuFlyoutSubItem = new MenuFlyoutSubItem()
+				{
+					Text = "SubMenu",
+					IconImageSource = new FileImageSource { File = "red.png" }
+				};
+				menuFlyoutSubItem.Add(new MenuFlyoutItem() { Text = "ChildItem" });
+
+				var handler = CreateHandler<MenuFlyoutSubItemHandler>(menuFlyoutSubItem);
+				var platformItem = handler.PlatformView;
+
+				Assert.NotNull(platformItem.Icon);
+				var bitmapIcon = Assert.IsType<Microsoft.UI.Xaml.Controls.BitmapIcon>(platformItem.Icon);
+				Assert.False(bitmapIcon.ShowAsMonochrome);
+			});
+		}
+
 		[Fact(DisplayName = "Context flyout creates expected WinUI elements")]
 		public async Task ContextFlyoutCreatesExpectedWinUIElements()
 		{
