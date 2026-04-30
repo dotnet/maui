@@ -180,33 +180,41 @@ namespace Microsoft.Maui.Handlers
 				{
 					logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
 
-					// 2.a. Check if the request is for a local resource
-					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
-
-					// 2.b. Return the response header
-					using var dic = new NSMutableDictionary<NSString, NSString>();
-					if (contentType is not null)
+					try
 					{
-						dic[(NSString)"Content-Type"] = (NSString)contentType;
+						// 2.a. Check if the request is for a local resource
+						var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, urlSchemeTask.Request, logger);
+
+						// 2.b. Return the response header
+						using var dic = new NSMutableDictionary<NSString, NSString>();
+						if (contentType is not null)
+						{
+							dic[(NSString)"Content-Type"] = (NSString)contentType;
+						}
+						if (bytes?.Length > 0)
+						{
+							// Disable local caching which would otherwise prevent user scripts from executing correctly.
+							dic[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store";
+							dic[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture);
+						}
+
+						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+						urlSchemeTask.DidReceiveResponse(response);
+
+						// 2.c. Return the body
+						if (bytes?.Length > 0)
+						{
+							urlSchemeTask.DidReceiveData(bytes);
+						}
+
+						// 2.d. Finish the task
+						urlSchemeTask.DidFinish();
 					}
-					if (bytes?.Length > 0)
+					catch (Exception ex)
 					{
-						// Disable local caching which would otherwise prevent user scripts from executing correctly.
-						dic[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store";
-						dic[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture);
+						logger?.LogError(ex, "Error handling URL scheme task for {Url}.", url);
+						urlSchemeTask.DidFailWithError(new NSError(new NSString("HybridWebViewError"), -1, null));
 					}
-
-					using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-					urlSchemeTask.DidReceiveResponse(response);
-
-					// 2.c. Return the body
-					if (bytes?.Length > 0)
-					{
-						urlSchemeTask.DidReceiveData(bytes);
-					}
-
-					// 2.d. Finish the task
-					urlSchemeTask.DidFinish();
 				}
 
 				// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
