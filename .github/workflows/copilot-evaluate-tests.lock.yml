@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"18ac0fc73ac2f3ea2dc854e26fc1d17f58d181eeb5b5538f00957f2f6e12aead","compiler_version":"v0.68.3","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
-# gh-aw-manifest: {"version":1,"secrets":["AZDO_TRIGGER_CLIENT_ID","AZDO_TRIGGER_TENANT_ID","COPILOT_GITHUB_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"373c709c69115d41ff229c7e5df9f8788daa9553","version":"v9"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ba90f2186d7ad780ec640f364005fa24e797b360","version":"v0.68.3"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.20"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.20"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.20"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.2.19"},{"image":"ghcr.io/github/github-mcp-server:v0.32.0"},{"image":"node:lts-alpine"}]}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"32ad3f4846c0118346527d524f038ef115a7d55f8f8ff51b2addc3ca18734b82","compiler_version":"v0.68.3","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"373c709c69115d41ff229c7e5df9f8788daa9553","version":"v9"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ba90f2186d7ad780ec640f364005fa24e797b360","version":"v0.68.3"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.20"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.20"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.20"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.2.19"},{"image":"ghcr.io/github/github-mcp-server:v0.32.0"},{"image":"node:lts-alpine"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
 #  | |_| | __ _  ___ _ __ | |_ _  ___ 
@@ -22,11 +22,9 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Triggers the DevDiv maui-copilot AzDO pipeline for a PR, waits for completion, downloads the review JSON artifact, and posts inline review comments. Uses OIDC federated credentials (no PAT). See .github/docs/trigger-azdo-pipeline-setup.md.
+# Demo: pulls down a markdown review file and posts it as a PR comment via safe-outputs. Proves the gh-aw posting pipeline works end-to-end.
 #
 # Secrets used:
-#   - AZDO_TRIGGER_CLIENT_ID
-#   - AZDO_TRIGGER_TENANT_ID
 #   - COPILOT_GITHUB_TOKEN
 #   - GH_AW_GITHUB_MCP_SERVER_TOKEN
 #   - GH_AW_GITHUB_TOKEN
@@ -48,7 +46,7 @@
 #   - ghcr.io/github/github-mcp-server:v0.32.0
 #   - node:lts-alpine
 
-name: "DevDiv Review Trigger"
+name: "Write metadata"
 "on":
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
@@ -61,18 +59,8 @@ name: "DevDiv Review Trigger"
         description: Agent caller context (used internally by Agentic Workflows).
         required: false
         type: string
-      platform:
-        default: android
-        description: Target platform for review
-        options:
-        - android
-        - ios
-        - catalyst
-        - windows
-        required: false
-        type: choice
       pr_number:
-        description: PR number to review
+        description: PR number to post the review comment on
         required: true
         type: number
 
@@ -80,9 +68,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: review-trigger-${{ inputs.pr_number || github.run_id }}-${{ inputs.platform || 'android' }}
+  group: review-post-demo-${{ inputs.pr_number || github.run_id }}
 
-run-name: "DevDiv Review Trigger"
+run-name: "Write metadata"
 
 jobs:
   activation:
@@ -114,7 +102,7 @@ jobs:
           GH_AW_INFO_VERSION: "1.0.21"
           GH_AW_INFO_AGENT_VERSION: "1.0.21"
           GH_AW_INFO_CLI_VERSION: "v0.68.3"
-          GH_AW_INFO_WORKFLOW_NAME: "DevDiv Review Trigger"
+          GH_AW_INFO_WORKFLOW_NAME: "Write metadata"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
           GH_AW_INFO_STAGED: "false"
@@ -171,7 +159,6 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ runner.temp }}/gh-aw/safeoutputs/outputs.jsonl
-          GH_AW_EXPR_5D6FB87C: ${{ inputs.platform || 'android' }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -185,16 +172,16 @@ jobs:
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh"
           {
-          cat << 'GH_AW_PROMPT_02c65de582c713b6_EOF'
+          cat << 'GH_AW_PROMPT_8585dc045e894a8c_EOF'
           <system>
-          GH_AW_PROMPT_02c65de582c713b6_EOF
+          GH_AW_PROMPT_8585dc045e894a8c_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_02c65de582c713b6_EOF'
+          cat << 'GH_AW_PROMPT_8585dc045e894a8c_EOF'
           <safe-output-tools>
-          Tools: add_comment, submit_pull_request_review, missing_tool, missing_data, noop
+          Tools: add_comment, missing_tool, missing_data, noop
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -224,12 +211,12 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_02c65de582c713b6_EOF
+          GH_AW_PROMPT_8585dc045e894a8c_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
-          cat << 'GH_AW_PROMPT_02c65de582c713b6_EOF'
+          cat << 'GH_AW_PROMPT_8585dc045e894a8c_EOF'
           </system>
           {{#runtime-import .github/workflows/copilot-evaluate-tests.md}}
-          GH_AW_PROMPT_02c65de582c713b6_EOF
+          GH_AW_PROMPT_8585dc045e894a8c_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
@@ -237,7 +224,6 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_AW_EXPR_5D6FB87C: ${{ inputs.platform || 'android' }}
           GH_AW_INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
         with:
           script: |
@@ -249,7 +235,6 @@ jobs:
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_5D6FB87C: ${{ inputs.platform || 'android' }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -270,7 +255,6 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
-                GH_AW_EXPR_5D6FB87C: process.env.GH_AW_EXPR_5D6FB87C,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -309,7 +293,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
       issues: read
       pull-requests: read
     env:
@@ -358,18 +341,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - env:
-          AZDO_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
-          AZDO_ORG: DevDiv
-          AZDO_PIPELINE_ID: "27723"
-          AZDO_PROJECT: DevDiv
-          AZDO_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
           GH_TOKEN: ${{ github.token }}
-          MAX_POLL_MINUTES: "100"
-          PLATFORM: ${{ inputs.platform || 'android' }}
-          POLL_INTERVAL: "60"
           PR_NUMBER: ${{ inputs.pr_number }}
-        name: Trigger AzDO pipeline and wait for results
-        run: "set -euo pipefail\n\n# --- Validate PR ---\nPR_STATE=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json state --jq .state 2>&1) || {\n  echo \"::error::Failed to fetch PR #$PR_NUMBER: $PR_STATE\"\n  exit 1\n}\nif [ \"$PR_STATE\" != \"OPEN\" ]; then\n  echo \"::error::PR #$PR_NUMBER is $PR_STATE — must be open\"\n  exit 1\nfi\necho \"✅ PR #$PR_NUMBER is open\"\n\n# --- Helper: get a fresh AzDO bearer token via OIDC ---\n# All tokens stay in local variables; nothing written to GITHUB_OUTPUT\nget_azdo_token() {\n  local oidc_token\n  oidc_token=$(curl -sf \\\n    -H \"Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}\" \\\n    \"${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange\" \\\n    | jq -r '.value')\n  if [ -z \"$oidc_token\" ] || [ \"$oidc_token\" = \"null\" ]; then\n    echo \"::error::Failed to get OIDC token\" >&2\n    return 1\n  fi\n  echo \"::add-mask::${oidc_token}\"\n\n  local bearer\n  bearer=$(curl -sf -X POST \\\n    \"https://login.microsoftonline.com/${AZDO_TENANT_ID}/oauth2/v2.0/token\" \\\n    -d \"grant_type=client_credentials\" \\\n    -d \"client_id=${AZDO_CLIENT_ID}\" \\\n    -d \"client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer\" \\\n    -d \"client_assertion=${oidc_token}\" \\\n    -d \"scope=499b84ac-1321-427f-aa17-267ca6975798/.default\" \\\n    | jq -r '.access_token')\n  if [ -z \"$bearer\" ] || [ \"$bearer\" = \"null\" ]; then\n    echo \"::error::Failed to exchange OIDC token for AzDO bearer\" >&2\n    return 1\n  fi\n  echo \"::add-mask::${bearer}\"\n  echo \"$bearer\"\n}\n\n# --- Trigger pipeline ---\nAZDO_TOKEN=$(get_azdo_token)\necho \"🔑 OIDC exchange successful\"\n\nTRIGGER_RESPONSE=$(curl -sf -w \"\\n%{http_code}\" \\\n  -X POST \"https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_apis/pipelines/${AZDO_PIPELINE_ID}/runs?api-version=7.1\" \\\n  -H \"Authorization: Bearer ${AZDO_TOKEN}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\n    \\\"templateParameters\\\": {\n      \\\"PRNumber\\\": \\\"${PR_NUMBER}\\\",\n      \\\"Platform\\\": \\\"${PLATFORM}\\\"\n    },\n    \\\"resources\\\": {\n      \\\"repositories\\\": {\n        \\\"self\\\": {\n          \\\"refName\\\": \\\"refs/heads/feature/expert-reviewer-extraction\\\"\n        }\n      }\n    }\n  }\")\n\nHTTP_CODE=$(echo \"${TRIGGER_RESPONSE}\" | tail -1)\nTRIGGER_BODY=$(echo \"${TRIGGER_RESPONSE}\" | head -n -1)\n\nif [ \"${HTTP_CODE}\" -lt 200 ] || [ \"${HTTP_CODE}\" -ge 300 ]; then\n  echo \"::error::Failed to trigger pipeline (HTTP ${HTTP_CODE})\"\n  # Redact any token-like values from error output\n  echo \"${TRIGGER_BODY}\" | jq 'del(.access_token, .token)' 2>/dev/null || true\n  exit 1\nfi\n\nRUN_ID=$(echo \"${TRIGGER_BODY}\" | jq -r '.id')\nPIPELINE_URL=\"https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${RUN_ID}\"\necho \"🚀 Pipeline triggered — Run ID: ${RUN_ID}\"\necho \"   ${PIPELINE_URL}\"\n\n# Write metadata for the agent (no tokens!)\nmkdir -p /tmp/pipeline-results\necho \"${RUN_ID}\" > /tmp/pipeline-results/run-id.txt\necho \"${PIPELINE_URL}\" > /tmp/pipeline-results/pipeline-url.txt\necho \"${PR_NUMBER}\" > /tmp/pipeline-results/pr-number.txt\n\n# --- Poll until pipeline completes ---\nMAX_SECONDS=$((MAX_POLL_MINUTES * 60))\nELAPSED=0\nTOKEN_AGE=0\nTOKEN_REFRESH_INTERVAL=2700  # refresh AzDO token every 45 min\nRESULT=\"unknown\"\n\nwhile [ $ELAPSED -lt $MAX_SECONDS ]; do\n  sleep \"${POLL_INTERVAL}\"\n  ELAPSED=$((ELAPSED + POLL_INTERVAL))\n  TOKEN_AGE=$((TOKEN_AGE + POLL_INTERVAL))\n\n  # Refresh AzDO token before it expires\n  if [ $TOKEN_AGE -ge $TOKEN_REFRESH_INTERVAL ]; then\n    echo \"🔄 Refreshing AzDO token…\"\n    AZDO_TOKEN=$(get_azdo_token)\n    TOKEN_AGE=0\n  fi\n\n  RUN_STATUS=$(curl -sf \\\n    \"https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_apis/pipelines/${AZDO_PIPELINE_ID}/runs/${RUN_ID}?api-version=7.1\" \\\n    -H \"Authorization: Bearer ${AZDO_TOKEN}\" \\\n    | jq -r '.state')\n\n  echo \"⏳ [$((ELAPSED/60))m] Pipeline state: ${RUN_STATUS}\"\n\n  if [ \"$RUN_STATUS\" = \"completed\" ]; then\n    RESULT=$(curl -sf \\\n      \"https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_apis/pipelines/${AZDO_PIPELINE_ID}/runs/${RUN_ID}?api-version=7.1\" \\\n      -H \"Authorization: Bearer ${AZDO_TOKEN}\" \\\n      | jq -r '.result')\n    echo \"✅ Pipeline completed with result: ${RESULT}\"\n    break\n  fi\n\n  if [ \"$RUN_STATUS\" = \"canceling\" ] || [ \"$RUN_STATUS\" = \"canceled\" ]; then\n    echo \"::error::Pipeline was canceled\"\n    echo \"canceled\" > /tmp/pipeline-results/result.txt\n    exit 1\n  fi\ndone\n\nif [ \"$RUN_STATUS\" != \"completed\" ]; then\n  echo \"::error::Pipeline timed out after ${MAX_POLL_MINUTES} minutes (state: ${RUN_STATUS})\"\n  exit 1\nfi\n\necho \"${RESULT}\" > /tmp/pipeline-results/result.txt\necho \"${PLATFORM}\" > /tmp/pipeline-results/platform.txt\n\n# --- Download review artifacts ---\n# The pipeline publishes a 'CopilotLogs' artifact containing:\n#   - copilot_review_output.md (main review output)\n#   - Review_Feedback_*.md files\n#   - agent-pr-session/ directory with session data\n#   - copilot-session-state/ directory\nARTIFACT_NAME=\"CopilotLogs\"\n\n# AzDO build artifacts API uses the build ID (same as run ID for pipelines)\nARTIFACTS_JSON=$(curl -sf \\\n  \"https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_apis/build/builds/${RUN_ID}/artifacts?api-version=7.1\" \\\n  -H \"Authorization: Bearer ${AZDO_TOKEN}\")\n\nARTIFACT_URL=$(echo \"${ARTIFACTS_JSON}\" | jq -r \\\n  --arg name \"$ARTIFACT_NAME\" \\\n  '.value[] | select(.name == $name) | .resource.downloadUrl // empty')\n\nif [ -n \"$ARTIFACT_URL\" ]; then\n  echo \"📦 Downloading artifact: ${ARTIFACT_NAME}\"\n  curl -sf -o /tmp/pipeline-results/copilot-logs.zip \\\n    -H \"Authorization: Bearer ${AZDO_TOKEN}\" \\\n    \"${ARTIFACT_URL}\"\n  cd /tmp/pipeline-results\n  unzip -o copilot-logs.zip -d copilot-logs/ 2>/dev/null || true\n  echo \"✅ Artifact downloaded and extracted\"\n  # The artifact extracts flat (no CopilotLogs/ prefix)\n  # Phase files at: copilot-logs/CustomAgentLogsTmp/PRState/<PR>/PRAgent/\n  find copilot-logs/ -type f \\( -name \"*.json\" -o -name \"content.md\" -o -name \"code-review.md\" -o -name \"*.diff\" \\) | head -30\nelse\n  echo \"⚠️ Artifact '${ARTIFACT_NAME}' not found. Available artifacts:\"\n  echo \"${ARTIFACTS_JSON}\" | jq -r '.value[].name' 2>/dev/null || echo \"(none)\"\n  echo \"${ARTIFACTS_JSON}\" > /tmp/pipeline-results/available-artifacts.json\nfi\n\necho \"📋 Pipeline results ready for agent analysis\""
+        name: Create sample review content
+        run: "set -euo pipefail\n\n# Validate PR exists and is open\nPR_STATE=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json state --jq .state 2>&1) || {\n  echo \"::error::Failed to fetch PR #$PR_NUMBER: $PR_STATE\"\n  exit 1\n}\nif [ \"$PR_STATE\" != \"OPEN\" ]; then\n  echo \"::error::PR #$PR_NUMBER is $PR_STATE — must be open\"\n  exit 1\nfi\n\n# Get PR metadata for realistic content\nPR_TITLE=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json title --jq .title)\nPR_AUTHOR=$(gh pr view \"$PR_NUMBER\" --repo \"$GITHUB_REPOSITORY\" --json author --jq .author.login)\n\necho \"✅ PR #$PR_NUMBER is open — title: $PR_TITLE\"\n\n# Write sample review markdown to a file the agent can read\nmkdir -p /tmp/review-output\ncat > /tmp/review-output/review.md << 'INNER_EOF'\n## 🤖 AI Review — Demo\n\n> ⚠️ **This is a demo comment** posted by the `review-post-demo` gh-aw workflow to validate the safe-outputs posting pipeline.\n\n### 📋 Recommendation\n\n**Verdict:** ✅ This PR looks good (demo placeholder)\n\nThe PR introduces changes that appear reasonable. This is sample content demonstrating that the gh-aw workflow can:\n1. Run pre-agent `steps:` to prepare data\n2. Hand off files to the sandboxed agent\n3. Post the content verbatim as a PR comment via `safe-outputs`\n\n### 🛡️ Gate — Test Verification\n\n| Check | Result |\n|-------|--------|\n| Tests pass on main | ✅ Passed |\n| Tests fail without fix | ✅ Confirmed |\n| No regressions | ✅ Clean |\n\n### 🔍 Pre-Flight\n\n- PR targets `main` branch\n- No public API changes detected\n- No breaking changes to existing handlers\n\n### 🔬 Code Review\n\nCode follows MAUI conventions. Handler lifecycle is correctly implemented.\nPlatform-specific files use proper naming conventions.\n\n### 📋 Final Report\n\nThis demo proves the end-to-end gh-aw → safe-outputs pipeline works correctly.\nWhen wired to the real DevDiv `maui-copilot` pipeline, this same mechanism will\npost actual review results.\n"
 
       - name: Configure Git credentials
         env:
@@ -421,16 +396,15 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_3e8aa0cb8f506b5d_EOF'
-          {"add_comment":{"hide_older_comments":true,"max":1,"target":"*"},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"report_incomplete":{},"submit_pull_request_review":{"allowed_events":["COMMENT"],"max":1}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_3e8aa0cb8f506b5d_EOF
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_1f835c133b196620_EOF'
+          {"add_comment":{"hide_older_comments":true,"max":1,"target":"*"},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"report_incomplete":{}}
+          GH_AW_SAFE_OUTPUTS_CONFIG_1f835c133b196620_EOF
       - name: Write Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
             {
               "description_suffixes": {
-                "add_comment": " CONSTRAINTS: Maximum 1 comment(s) can be added. Target: *. Supports reply_to_id for discussion threading.",
-                "submit_pull_request_review": " CONSTRAINTS: Maximum 1 review(s) can be submitted."
+                "add_comment": " CONSTRAINTS: Maximum 1 comment(s) can be added. Target: *. Supports reply_to_id for discussion threading."
               },
               "repo_params": {},
               "dynamic_tools": []
@@ -531,24 +505,6 @@ jobs:
                     "maxLength": 1024
                   }
                 }
-              },
-              "submit_pull_request_review": {
-                "defaultMax": 1,
-                "fields": {
-                  "body": {
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 65000
-                  },
-                  "event": {
-                    "type": "string",
-                    "enum": [
-                      "APPROVE",
-                      "REQUEST_CHANGES",
-                      "COMMENT"
-                    ]
-                  }
-                }
               }
             }
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
@@ -626,7 +582,7 @@ jobs:
           export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.19'
           
           mkdir -p /home/runner/.copilot
-          cat << GH_AW_MCP_CONFIG_ba9ac1163e5efcb1_EOF | bash "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh"
+          cat << GH_AW_MCP_CONFIG_6bd585307bdc32a8_EOF | bash "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh"
           {
             "mcpServers": {
               "github": {
@@ -667,7 +623,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_ba9ac1163e5efcb1_EOF
+          GH_AW_MCP_CONFIG_6bd585307bdc32a8_EOF
       - name: Download activation artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -679,7 +635,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 150
+        timeout-minutes: 10
         run: |
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
@@ -750,9 +706,7 @@ jobs:
             const { main } = require('${{ runner.temp }}/gh-aw/actions/redact_secrets.cjs');
             await main();
         env:
-          GH_AW_SECRET_NAMES: 'AZDO_TRIGGER_CLIENT_ID,AZDO_TRIGGER_TENANT_ID,COPILOT_GITHUB_TOKEN,GH_AW_GITHUB_MCP_SERVER_TOKEN,GH_AW_GITHUB_TOKEN,GITHUB_TOKEN'
-          SECRET_AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
-          SECRET_AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          GH_AW_SECRET_NAMES: 'COPILOT_GITHUB_TOKEN,GH_AW_GITHUB_MCP_SERVER_TOKEN,GH_AW_GITHUB_TOKEN,GITHUB_TOKEN'
           SECRET_COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           SECRET_GH_AW_GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN }}
           SECRET_GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
@@ -908,7 +862,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "DevDiv Review Trigger"
+          GH_AW_WORKFLOW_NAME: "Write metadata"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_REPORT_AS_ISSUE: "false"
@@ -924,7 +878,7 @@ jobs:
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "DevDiv Review Trigger"
+          GH_AW_WORKFLOW_NAME: "Write metadata"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
           GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
@@ -941,7 +895,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_MISSING_TOOL_CREATE_ISSUE: "true"
-          GH_AW_WORKFLOW_NAME: "DevDiv Review Trigger"
+          GH_AW_WORKFLOW_NAME: "Write metadata"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -955,7 +909,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_REPORT_INCOMPLETE_CREATE_ISSUE: "true"
-          GH_AW_WORKFLOW_NAME: "DevDiv Review Trigger"
+          GH_AW_WORKFLOW_NAME: "Write metadata"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -969,7 +923,7 @@ jobs:
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "DevDiv Review Trigger"
+          GH_AW_WORKFLOW_NAME: "Write metadata"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "copilot-evaluate-tests"
@@ -982,10 +936,10 @@ jobs:
           GH_AW_MODEL_NOT_SUPPORTED_ERROR: ${{ needs.agent.outputs.model_not_supported_error }}
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
           GH_AW_STALE_LOCK_FILE_FAILED: ${{ needs.activation.outputs.stale_lock_file_failed }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🔍 *DevDiv review by [{workflow_name}]({run_url})*\",\"runStarted\":\"🚀 Triggering DevDiv review pipeline for this PR… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ DevDiv review complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ DevDiv review failed. [{workflow_name}]({run_url}) {status}\"}"
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🔍 *Review posted by [{workflow_name}]({run_url})*\",\"runStarted\":\"🚀 Preparing review comment… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Review posted! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Review posting failed. [{workflow_name}]({run_url}) {status}\"}"
           GH_AW_GROUP_REPORTS: "false"
           GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
-          GH_AW_TIMEOUT_MINUTES: "150"
+          GH_AW_TIMEOUT_MINUTES: "10"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1079,8 +1033,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         env:
-          WORKFLOW_NAME: "DevDiv Review Trigger"
-          WORKFLOW_DESCRIPTION: "Triggers the DevDiv maui-copilot AzDO pipeline for a PR, waits for completion, downloads the review JSON artifact, and posts inline review comments. Uses OIDC federated credentials (no PAT). See .github/docs/trigger-azdo-pipeline-setup.md."
+          WORKFLOW_NAME: "Write metadata"
+          WORKFLOW_DESCRIPTION: "Demo: pulls down a markdown review file and posts it as a PR comment via safe-outputs. Proves the gh-aw posting pipeline works end-to-end."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1171,9 +1125,9 @@ jobs:
       GH_AW_EFFECTIVE_TOKENS: ${{ needs.agent.outputs.effective_tokens }}
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "claude-sonnet-4.6"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🔍 *DevDiv review by [{workflow_name}]({run_url})*\",\"runStarted\":\"🚀 Triggering DevDiv review pipeline for this PR… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ DevDiv review complete! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ DevDiv review failed. [{workflow_name}]({run_url}) {status}\"}"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"\\u003e 🔍 *Review posted by [{workflow_name}]({run_url})*\",\"runStarted\":\"🚀 Preparing review comment… [{workflow_name}]({run_url})\",\"runSuccess\":\"✅ Review posted! [{workflow_name}]({run_url})\",\"runFailure\":\"❌ Review posting failed. [{workflow_name}]({run_url}) {status}\"}"
       GH_AW_WORKFLOW_ID: "copilot-evaluate-tests"
-      GH_AW_WORKFLOW_NAME: "DevDiv Review Trigger"
+      GH_AW_WORKFLOW_NAME: "Write metadata"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
@@ -1222,7 +1176,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"hide_older_comments\":true,\"max\":1,\"target\":\"*\"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{},\"submit_pull_request_review\":{\"allowed_events\":[\"COMMENT\"],\"max\":1}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"hide_older_comments\":true,\"max\":1,\"target\":\"*\"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
