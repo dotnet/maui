@@ -23,6 +23,7 @@
       "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample.csproj",
       "src\\Controls\\samples\\Controls.Sample.Embedding\\Maui.Controls.Sample.Embedding.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
+      "src\\Controls\\src\\Build.Tasks.Windows.Run\\Controls.Build.Tasks.Windows.Run.csproj",
       "src\\Controls\\src\\Core.Design\\Controls.Core.Design.csproj",
       "src\\Controls\\src\\Core\\Controls.Core.csproj",
       "src\\Controls\\src\\NuGet\\Controls.NuGet.csproj",
