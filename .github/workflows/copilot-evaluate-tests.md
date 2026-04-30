@@ -99,6 +99,21 @@ steps:
       fi
       echo "✅ Secrets available (client_id length: ${#AZDO_CLIENT_ID}, tenant_id length: ${#AZDO_TENANT_ID})"
 
+      # --- DEBUG: Decode OIDC claims to diagnose Azure AD rejection ---
+      DEBUG_TOKEN=$(curl -sf \
+        -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+        "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
+        | jq -r '.value')
+      if [ -n "$DEBUG_TOKEN" ] && [ "$DEBUG_TOKEN" != "null" ]; then
+        echo "::add-mask::${DEBUG_TOKEN}"
+        # Decode JWT payload (part 2) — contains only metadata claims, no secrets
+        PAYLOAD=$(echo "$DEBUG_TOKEN" | cut -d. -f2 | tr '_-' '/+' | base64 -d 2>/dev/null || true)
+        echo "📋 OIDC token claims (non-sensitive metadata):"
+        echo "$PAYLOAD" | jq '{sub, aud, iss, repository, repository_owner, workflow, job_workflow_ref, event_name, ref, enterprise}' 2>/dev/null || echo "$PAYLOAD"
+      else
+        echo "::warning::Could not obtain OIDC token for debug inspection"
+      fi
+
       # --- Helper: get a fresh AzDO bearer token via OIDC ---
       # All tokens stay in local variables; nothing written to GITHUB_OUTPUT
       get_azdo_token() {
@@ -114,23 +129,27 @@ steps:
         echo "::add-mask::${oidc_token}"
         echo "✅ OIDC token obtained (length: ${#oidc_token})" >&2
 
-        # Exchange OIDC token for AzDO bearer — capture full response for diagnostics
-        local azure_response
-        azure_response=$(curl -s -X POST \
+        # Exchange OIDC token for AzDO bearer — capture full response + HTTP status
+        local azure_full_response azure_response azure_http_code
+        azure_full_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
           "https://login.microsoftonline.com/${AZDO_TENANT_ID}/oauth2/v2.0/token" \
           -d "grant_type=client_credentials" \
           -d "client_id=${AZDO_CLIENT_ID}" \
           -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
           -d "client_assertion=${oidc_token}" \
           -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
+        azure_http_code=$(echo "$azure_full_response" | grep "HTTP_STATUS:" | sed 's/HTTP_STATUS://')
+        azure_response=$(echo "$azure_full_response" | grep -v "HTTP_STATUS:")
+
+        echo "Azure AD HTTP status: ${azure_http_code}" >&2
 
         local bearer
         bearer=$(echo "$azure_response" | jq -r '.access_token // empty')
         if [ -z "$bearer" ]; then
-          echo "::error::Azure AD token exchange failed" >&2
-          # Log error details (strip any token values for safety)
-          echo "Azure AD response (tokens redacted):" >&2
-          echo "$azure_response" | jq 'del(.access_token, .token, .client_assertion) | .' 2>/dev/null >&2 || echo "$azure_response" >&2
+          echo "::error::Azure AD token exchange failed (HTTP ${azure_http_code})" >&2
+          # Log error details — strip token values, keep error codes/descriptions
+          echo "Azure AD error response:" >&2
+          echo "$azure_response" | jq 'del(.access_token, .token, .client_assertion)' 2>/dev/null >&2 || echo "$azure_response" >&2
           return 1
         fi
         echo "::add-mask::${bearer}"
