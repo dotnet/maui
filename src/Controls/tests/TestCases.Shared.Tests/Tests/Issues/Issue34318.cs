@@ -20,13 +20,16 @@ public class Issue34318 : _IssuesUITest
 		// Tap the button to change the current ShellContent
 		App.Tap("ChangeContentButton");
 
-		// Wait for label to be present
-		App.WaitForElement("ResultLabel");
+		// Wait for navigation to complete
+		App.WaitForElement("PageBLabel");
 
-		// Small delay to allow UI update (common in these tests)
-		Thread.Sleep(1000);
+		// Verify Navigating event updated the label
+		App.WaitForTextToBePresentInElement("ResultLabel", "Navigating");
 
-		var text = App.FindElement("ResultLabel").GetText();
+		var element = App.FindElement("ResultLabel");
+		Assert.That(element, Is.Not.Null);
+
+		var text = element.GetText();
 
 		Assert.That(text, Is.EqualTo("Navigating"));
 	}

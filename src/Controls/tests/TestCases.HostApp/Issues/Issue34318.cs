@@ -7,11 +7,26 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 34318, "Shell Navigating event should fire on ShellContent change", PlatformAffected.All)]
 public class Issue34318 : Shell
 {
+	Label labelA;
+	Label labelB;
+
 	public Issue34318()
 	{
+		labelA = new Label
+		{
+			Text = "Waiting",
+			AutomationId = "ResultLabel"
+		};
+
+		labelB = new Label
+		{
+			Text = "Waiting",
+			AutomationId = "ResultLabel"
+		};
+
 		var section = new ShellSection();
 
-		var pageA = new Issue34318_PageA(this);
+		var pageA = new Issue34318_PageA(this, labelA);
 
 		var contentA = new ShellContent
 		{
@@ -23,10 +38,17 @@ public class Issue34318 : Shell
 			Content = new ContentPage
 			{
 				Title = "PageB",
-				Content = new Label
+				Content = new VerticalStackLayout
 				{
-					Text = "Page B",
-					AutomationId = "PageBLabel"
+					Children =
+					{
+						new Label
+						{
+							Text = "Page B",
+							AutomationId = "PageBLabel"
+						},
+						labelB
+					}
 				}
 			}
 		};
@@ -39,26 +61,21 @@ public class Issue34318 : Shell
 
 		Items.Add(item);
 
-		// 🔥 Evento directo, sin MessagingCenter
 		Navigating += (_, __) =>
 		{
-			pageA.SetNavigatingFired();
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				labelA.Text = "Navigating";
+				labelB.Text = "Navigating";
+			});
 		};
 	}
 
 	public class Issue34318_PageA : ContentPage
 	{
-		Label resultLabel;
-
-		public Issue34318_PageA(Shell shell)
+		public Issue34318_PageA(Shell shell, Label label)
 		{
 			Title = "PageA";
-
-			resultLabel = new Label
-			{
-				Text = "Waiting",
-				AutomationId = "ResultLabel"
-			};
 
 			var button = new Button
 			{
@@ -81,16 +98,8 @@ public class Issue34318 : Shell
 
 			Content = new VerticalStackLayout
 			{
-				Children = { button, resultLabel }
+				Children = { button, label }
 			};
-		}
-
-		public void SetNavigatingFired()
-		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				resultLabel.Text = "Navigating";
-			});
 		}
 	}
 }

@@ -1019,24 +1019,22 @@ namespace Microsoft.Maui.Controls
 		{
 			var shellSection = (ShellSection)bindable;
 
-			if (oldValue is ShellContent oldShellItem)
-				oldShellItem.SendDisappearing();
-
 			if (newValue == null)
 				return;
-
-			shellSection.PresentedPageAppearing();
 
 			if (shellSection.Parent?.Parent is Shell parentShell && shellSection.IsVisibleSection)
 			{
 				var navigationManager = parentShell.NavigationManager;
 
+				var sectionStack = shellSection.Stack;
+				var modalStack = shellSection.Navigation.ModalStack;
+
 				var proposedState = ShellNavigationManager.GetNavigationState(
 					parentShell.CurrentItem,
 					shellSection,
 					(ShellContent)newValue,
-					null,
-					null);
+					sectionStack,
+					modalStack);
 
 				var navArgs = new ShellNavigatingEventArgs(
 					parentShell.CurrentState,
@@ -1049,7 +1047,19 @@ namespace Microsoft.Maui.Controls
 				if (navArgs.Cancelled)
 					return;
 
+				if (oldValue is ShellContent oldShellItem)
+					oldShellItem.SendDisappearing();
+
+				shellSection.PresentedPageAppearing();
+
 				((IShellController)parentShell).UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
+			}
+			else
+			{
+				if (oldValue is ShellContent oldShellItem)
+					oldShellItem.SendDisappearing();
+
+				shellSection.PresentedPageAppearing();
 			}
 
 			shellSection.SendStructureChanged();
