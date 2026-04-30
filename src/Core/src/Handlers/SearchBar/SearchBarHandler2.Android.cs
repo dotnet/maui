@@ -252,7 +252,7 @@ internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBar
         {
             var actionId = e.ActionId;
             var evt = e.Event;
-            ImeAction currentInputImeFlag = PlatformView.EditText.ImeOptions;
+            ImeAction currentInputImeFlag = (ImeAction)((int)PlatformView.EditText.ImeOptions & (int)ImeAction.ImeMaskAction);
 
             // On API 34 the issue where actionId is ImeAction.ImeNull when using a hardware keyboard was fixed.
             // Normalize it here so the rest of the logic is consistent across API levels.

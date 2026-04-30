@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateReturnType(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.SetInputType(searchBar);
-			searchView.ImeOptions = (int)searchBar.ReturnType.ToPlatform();
+			searchView.ImeOptions = (int)((ImeAction)searchBar.ReturnType.ToPlatform() | (ImeAction)(int)ImeFlags.NoFullscreen);
 		}
 
 		internal static void SetInputType(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
@@ -394,7 +394,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateReturnType(this EditText editText, ISearchBar searchBar)
 		{
-			editText.ImeOptions = searchBar.ReturnType.ToPlatform();
+			editText.ImeOptions = (ImeAction)((int)searchBar.ReturnType.ToPlatform() | (int)ImeFlags.NoFullscreen);
 
 			// Restart the input on the current focused EditText
 			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
