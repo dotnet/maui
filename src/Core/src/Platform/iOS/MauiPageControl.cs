@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 
 		WeakReference<IIndicatorView>? _indicatorView;
 		bool _updatingPosition;
-		double _lastAppliedIndicatorSize = -1;
+		double _lastAppliedIndicatorSize = DefaultIndicatorSize;
 
 		public MauiPageControl()
 		{
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIndicatorSize()
 		{
-			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
+			if (IndicatorSize == 0 || IndicatorSize == _lastAppliedIndicatorSize)
 				return;
 
 			if (Math.Abs(IndicatorSize - _lastAppliedIndicatorSize) < IndicatorSizeTolerance)
