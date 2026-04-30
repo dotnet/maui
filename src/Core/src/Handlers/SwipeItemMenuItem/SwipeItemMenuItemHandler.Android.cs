@@ -72,10 +72,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
+			// Set visibility before UpdateIsVisibleSwipeItem so LayoutSwipeItems
+			// reads the correct visibility when recalculating item positions.
+			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
+
 			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			swipeView?.UpdateIsVisibleSwipeItem(view);
-
-			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
 		}
 
 		protected override AView CreatePlatformElement()
