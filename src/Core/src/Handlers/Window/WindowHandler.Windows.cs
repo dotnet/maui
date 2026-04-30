@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
+using WinRT.Interop;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -199,11 +200,22 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateVirtualViewFrame(sender);
 		}
-
 		void UpdateVirtualViewFrame(AppWindow appWindow)
 		{
+			var hwnd = WindowNative.GetWindowHandle(PlatformView);
+			if (hwnd == IntPtr.Zero)
+				return;
+
 			var size = appWindow.Size;
 			var pos = appWindow.Position;
+
+			if (appWindow.Presenter is OverlappedPresenter presenter &&
+				presenter.State == OverlappedPresenterState.Maximized &&
+				PlatformMethods.TryGetExtendedFrameBounds(hwnd, out var dwmRect))
+			{
+				size = new SizeInt32(dwmRect.Right - dwmRect.Left, dwmRect.Bottom - dwmRect.Top);
+				pos = new PointInt32(dwmRect.Left, dwmRect.Top);
+			}
 
 			var density = PlatformView.GetDisplayDensity();
 
