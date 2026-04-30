@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		protected override bool ResetAfterEachTest => true;
 
-#if TEST_FAILS_ON_WINDOWS // For more information, see :https://github.com/dotnet/maui/issues/28006
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -27,12 +26,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			for (int n = 0; n < 25; n++)
 			{
-				App.Click("AddItemAbove");
+				App.WaitForElement("AddItemAbove");
+				App.Tap("AddItemAbove");
 			}
 
-			App.WaitForElement("Vegetables.jpg, 10");
+			App.WaitForNoElement("Vegetables.jpg, 10");
 		}
-#endif
+
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // The test fails on iOS and macOS because Appium is unable to locate the Picker control elements resulting in a TimeoutException. For more information, see: https://github.com/dotnet/maui/issues/28024
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)

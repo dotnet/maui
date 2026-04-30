@@ -500,6 +500,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				ForceScrollToLastItem(CollectionView, _itemsLayout);
 			}
+			else if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				CollectionView.SetContentOffset(CGPoint.Empty, true);
+			}
 		}
 
 		void TrackOffsetAdjustment()
