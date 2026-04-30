@@ -6,6 +6,7 @@ using AFrameLayout = Android.Widget.FrameLayout;
 using UIKit;
 #elif WINDOWS
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using WGrid = Microsoft.UI.Xaml.Controls.Grid;
 #endif
 #nullable enable
