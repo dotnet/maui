@@ -18,10 +18,21 @@ public class Issue35088 : _IssuesUITest
 	public void SearchHandlerBackgroundColorResetsToDefault()
 	{
 		App.WaitForElement("ResetColorButton");
+
+		Exception? exception = null;
+
+		// Verify the custom YellowGreen background is applied
+		VerifyScreenshotOrSetException(ref exception, "SearchHandlerBackgroundColorApplied");
+
 		App.Tap("ResetColorButton");
 
-		// Take screenshot verifying the background returned to default
-		VerifyScreenshot();
+		// Verify the background returned to default
+		VerifyScreenshotOrSetException(ref exception);
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
 	}
 }
 #endif

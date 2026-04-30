@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		SearchHandler _searchHandler;
 		bool _disposed;
+		bool _hasCustomBackground;
 		AView _control;
 		InputTypes _inputType;
 
@@ -154,13 +155,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			if (_searchHandler.BackgroundColor is null)
+			var backgroundColor = _searchHandler.BackgroundColor;
+
+			if (!_hasCustomBackground && backgroundColor is null)
+			{
+				return;
+			}
+
+			if (backgroundColor is null)
 			{
 				linearLayout.Background = null;
+				_hasCustomBackground = false;
 			}
 			else
 			{
-				linearLayout.SetBackgroundColor(_searchHandler.BackgroundColor.ToPlatform());
+				_hasCustomBackground = true;
+				linearLayout.SetBackgroundColor(backgroundColor.ToPlatform());
 			}
 		}
 
