@@ -56,8 +56,29 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateBackground(editor);
 
-		public static void MapText(IEditorHandler handler, IEditor editor) =>
-			handler.PlatformView?.UpdateText(editor);
+		public static void MapText(IEditorHandler handler, IEditor editor)
+		{
+			if (handler.PlatformView == null)
+				return;
+
+			// If we're in the middle of processing a text change from the platform,
+			// we need to be careful about how we update the text to avoid re-entering
+			// TextWatcher callbacks while EmojiCompat is processing.
+			// This prevents "end should be < than charSequence length" crash.
+			if (handler is EditorHandler editorHandler && editorHandler.DataFlowDirection == DataFlowDirection.FromPlatform)
+			{
+				// When updating from platform, defer the update to avoid re-entrance
+				handler.PlatformView.PostDelayed(() =>
+				{
+					if (handler.PlatformView != null)
+						handler.PlatformView.UpdateText(editor);
+				}, 10);
+			}
+			else
+			{
+				handler.PlatformView.UpdateText(editor);
+			}
+		}
 
 		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateTextColor(editor);
