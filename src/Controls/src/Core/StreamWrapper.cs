@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.IO;
 using System.Net.Http;
@@ -92,6 +92,16 @@ namespace Microsoft.Maui.Controls
 
 		public static async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken, HttpClient client)
 		{
+#if WINDOWS
+			if (client.DefaultRequestHeaders.UserAgent.Count == 0)
+			{
+				var userAgent = Platform.Extensions.GetDefaultWindowsUserAgent();
+				if (!string.IsNullOrEmpty(userAgent))
+				{
+					client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+				}
+			}
+#endif
 			var response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
 			if (!response.IsSuccessStatusCode)
 			{
