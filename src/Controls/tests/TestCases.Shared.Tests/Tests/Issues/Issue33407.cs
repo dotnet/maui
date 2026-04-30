@@ -42,7 +42,7 @@ public class Issue33407 : _IssuesUITest
 #if ANDROID
 		VerifyScreenshot(cropLeft:125, retryTimeout: TimeSpan.FromSeconds(2));
 #else
-		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot(cropBottom:400, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 }
