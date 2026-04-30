@@ -122,8 +122,12 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
-          displayName: Build BuildTasks
+        - script: dotnet cake --target=dotnet-buildtasks --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Build BuildTasks
+          retryCountOnTaskFailure: 3
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
 
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /bl:BuildDeviceTests.binlog
           displayName: Build DeviceTests
@@ -335,8 +339,12 @@ stages:
               ${{ pair.key }}: ${{ pair.value }}
 
         # Run on public pipeline
-        - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) -projects '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf' /bl:BuildBuildTasks.binlog $(_OfficialBuildIdArgs)
-          displayName: Build BuildTasks
+        - script: dotnet cake --target=dotnet-buildtasks --configuration="$(_BuildConfig)" --verbosity=diagnostic
+          displayName: Provision SDK & Build BuildTasks
+          retryCountOnTaskFailure: 3
+          env:
+            DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+            PRIVATE_BUILD: $(PrivateBuild)
 
         - script: $(_buildScriptMacOS) -restore -build -configuration $(_BuildConfig) /p:BuildDeviceTests=true /p:UseMonoRuntime=false /bl:BuildDeviceTests.binlog
           displayName: Build DeviceTests (CoreCLR)
@@ -549,9 +557,9 @@ stages:
             displayName: 'Restore .NET tools'
             retryCountOnTaskFailure: 3
 
-          # Install .NET SDK and workloads using Arcade build script
-          - script: ./build.cmd -restore -configuration Release
-            displayName: 'Install .NET'
+          # Build BuildTasks using Cake (provisions SDK, cleans stale manifests, builds)
+          - script: dotnet cake --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+            displayName: Provision SDK & Build BuildTasks
             retryCountOnTaskFailure: 3
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
@@ -559,10 +567,6 @@ stages:
 
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
-
-          # Build BuildTasks first (need -restore to ensure SDK is available)
-          - script: ./build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf
-            displayName: Build the MSBuild Tasks
 
           # Build Unpackaged tests FIRST (self-contained .exe for direct execution)
           # Must build unpackaged BEFORE packaged so we can save the publish output
