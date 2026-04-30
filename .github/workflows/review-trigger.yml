@@ -1,0 +1,135 @@
+# Trigger the maui-copilot DevDiv pipeline when a maintainer comments '/review' on a PR.
+# Uses OIDC (no PAT) — see .github/docs/trigger-azdo-pipeline-setup.md for identity setup.
+
+name: Review Trigger
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+
+jobs:
+  trigger-review:
+    # For issue_comment: only run on PR comments that start with '/review'
+    # For workflow_dispatch: always run
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.issue.pull_request && startsWith(github.event.comment.body, '/review'))
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check actor permission
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
+          echo "User ${{ github.actor }} has permission: ${PERMISSION}"
+          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "write" ]]; then
+            echo "::error::User ${{ github.actor }} does not have write access. Only maintainers can trigger /review."
+            exit 1
+          fi
+
+      - name: Resolve PR number
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUMBER="${{ inputs.pr_number }}"
+          else
+            PR_NUMBER="${{ github.event.issue.number }}"
+          fi
+          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "Resolved PR number: ${PR_NUMBER}"
+
+          # Validate the PR exists and fetch its head ref
+          PR_DATA=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER} --jq '{head_ref: .head.ref, head_sha: .head.sha, title: .title, state: .state}')
+          echo "PR data: ${PR_DATA}"
+          PR_STATE=$(echo "${PR_DATA}" | jq -r '.state')
+          if [ "${PR_STATE}" != "open" ]; then
+            echo "::error::PR #${PR_NUMBER} is not open (state: ${PR_STATE})"
+            exit 1
+          fi
+          PR_TITLE=$(echo "${PR_DATA}" | jq -r '.title')
+          echo "pr_title=${PR_TITLE}" >> "$GITHUB_OUTPUT"
+
+      - name: Get OIDC Token
+        id: oidc
+        run: |
+          OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
+            | jq -r '.value')
+          if [ -z "$OIDC_TOKEN" ] || [ "$OIDC_TOKEN" = "null" ]; then
+            echo "::error::Failed to get OIDC token"
+            exit 1
+          fi
+          echo "::add-mask::${OIDC_TOKEN}"
+          echo "oidc_token=${OIDC_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Exchange for AzDO Token
+        id: token
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
+        run: |
+          AZURE_RESPONSE=$(curl -s -X POST \
+            "https://login.microsoftonline.com/${{ secrets.AZDO_TRIGGER_TENANT_ID }}/oauth2/v2.0/token" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" \
+            -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
+            -d "client_assertion=${OIDC_TOKEN}" \
+            -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
+
+          AZDO_TOKEN=$(echo "$AZURE_RESPONSE" | jq -r '.access_token')
+          if [ -z "$AZDO_TOKEN" ] || [ "$AZDO_TOKEN" = "null" ]; then
+            echo "::error::Failed to get Azure AD token"
+            echo "$AZURE_RESPONSE" | jq 'del(.access_token)' 2>/dev/null || echo "$AZURE_RESPONSE"
+            exit 1
+          fi
+          echo "::add-mask::${AZDO_TOKEN}"
+          echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger maui-copilot pipeline
+        env:
+          AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+        run: |
+          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER}..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
+            -H "Authorization: Bearer ${AZDO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"templateParameters\": {
+                \"prNumber\": \"${PR_NUMBER}\"
+              },
+              \"resources\": {
+                \"repositories\": {
+                  \"self\": {
+                    \"refName\": \"refs/heads/main\"
+                  }
+                }
+              }
+            }")
+
+          HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
+          RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
+          echo "HTTP Status: ${HTTP_CODE}"
+
+          if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
+            RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
+            PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
+            echo "Pipeline '${PIPELINE_NAME}' triggered! Run ID: ${RUN_ID}"
+            echo "View: https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}"
+          else
+            echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
+            echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
+            exit 1
+          fi
