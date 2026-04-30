@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateTitle(picker);
+			handler.PlatformView?.UpdateTitleColor(picker);
 		}
 
 		public static void MapBackground(IPickerHandler handler, IPicker picker)
