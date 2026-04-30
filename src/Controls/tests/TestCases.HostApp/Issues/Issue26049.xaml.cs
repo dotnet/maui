@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 26049, "[iOS] Fix ShellContent Title Does Not Update at Runtime", PlatformAffected.iOS | PlatformAffected.macOS)]
+[Issue(IssueTracker.Github, 26049, "Fix ShellContent Title Does Not Update at Runtime", PlatformAffected.All)]
 public partial class Issue26049 : Shell
 {
 	ShellContent _dynamicShellContent;
