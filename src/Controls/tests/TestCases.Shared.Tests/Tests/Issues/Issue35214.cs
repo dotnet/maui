@@ -16,8 +16,9 @@ public class Issue35214 : _IssuesUITest
     [Category(UITestCategories.IndicatorView)]
     public void IndicatorSizeResetsToDefault()
     {
-        App.WaitForElement("SetDefaultSizeButton");
+        App.WaitForElement("TestIndicatorView");
+        VerifyScreenshot("IndicatorSizeBeforeReset");
         App.Tap("SetDefaultSizeButton");
-        VerifyScreenshot();
+        VerifyScreenshot("IndicatorSizeAfterReset");
     }
 }
