@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -340,6 +341,13 @@ namespace Microsoft.Maui.Platform
 					// but when the content size changes, we need to invalidate the ancestors
 					// in case the ScrollView is configured to grow/shrink with its content.
 					this.InvalidateAncestorsMeasures();
+				}
+
+				// Now that layout is complete and ContentSize is set, process any pending scroll request
+				// that was deferred because ContentSize was empty when the request arrived.
+				if (ContentSize != CGSize.Empty && CrossPlatformLayout is ScrollViewHandler scrollViewHandler)
+				{
+					scrollViewHandler.ProcessPendingScrollRequest();
 				}
 			}
 

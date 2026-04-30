@@ -161,6 +161,23 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			// Inspired by Xamarin.Forms: if the view hasn't been laid out yet, or a layout pass is
+			// still pending (e.g. content was added via MapContent and triggered RequestLayout),
+			// defer the scroll to the next message loop iteration so layout completes first.
+			// Without this, instant (non-animated) scrolls are clamped to 0 because the content
+			// has zero measured height before the layout pass completes.
+			// - !IsLaidOut: covers the very first layout pass before the view is drawn
+			// - IsLayoutRequested: covers re-layouts triggered by content being added/changed
+			if (!handler.PlatformView.IsLaidOut || handler.PlatformView.IsLayoutRequested)
+			{
+				handler.PlatformView.Post(() =>
+				{
+					if (handler.IsConnected())
+						MapRequestScrollTo(handler, scrollView, args);
+				});
+				return;
+			}
+
 			var horizontalOffsetDevice = (int)context.ToPixels(request.HorizontalOffset);
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 
