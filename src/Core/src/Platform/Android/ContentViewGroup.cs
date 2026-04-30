@@ -12,7 +12,7 @@ using Rectangle = Microsoft.Maui.Graphics.Rect;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IHandleWindowInsets
 	{
 		// When alpha < 1 and HasOverlappingRendering is true, Android renders into an
 		// offscreen buffer bounded by the view's own dimensions, clipping overflowing
@@ -210,17 +210,6 @@ namespace Microsoft.Maui.Platform
 
 			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, density, true);
 			return platformPath;
-		}
-
-		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
-		{
-			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
-				layoutElement.IsThisMyPlatformView(this))
-			{
-				return layoutElement;
-			}
-
-			return null;
 		}
 
 		#region IHandleWindowInsets Implementation

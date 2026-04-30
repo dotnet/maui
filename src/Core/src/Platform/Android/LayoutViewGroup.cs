@@ -13,7 +13,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutViewGroup : PlatformViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets
+	public class LayoutViewGroup : PlatformViewGroup, ICrossPlatformLayoutBacking, IHandleWindowInsets
 	{
 		// When alpha < 1 and HasOverlappingRendering is true, Android renders into an
 		// offscreen buffer bounded by the view's own dimensions, clipping overflowing
@@ -233,17 +233,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return base.OnTouchEvent(e);
-		}
-
-		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
-		{
-			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
-				layoutElement.IsThisMyPlatformView(this))
-			{
-				return layoutElement;
-			}
-
-			return null;
 		}
 	}
 }
