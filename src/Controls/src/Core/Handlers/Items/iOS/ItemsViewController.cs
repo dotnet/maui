@@ -427,6 +427,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
+			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
+			// ResetScrollTracking must run before the assignment so the UIKit-triggered
+			// scrollViewDidScroll callback computes delta from zero, not the stale previous offset.
+			if (CollectionView.ContentOffset != CoreGraphics.CGPoint.Empty)
+			{
+				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
+				CollectionView.ContentOffset = CoreGraphics.CGPoint.Empty;
+			}
+
 			(ItemsView as IView)?.InvalidateMeasure();
 		}
 

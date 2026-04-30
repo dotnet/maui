@@ -7,6 +7,29 @@ namespace Microsoft.Maui.Storage
 	static partial class FileSystemUtils
 	{
 		/// <summary>
+		/// Normalizes a display name from a content provider by stripping directory components
+		/// and appending the given extension when the name has none.
+		/// </summary>
+		internal static string EnsureFileName(string? displayName, string? extension)
+		{
+			var filename = displayName ?? Guid.NewGuid().ToString("N");
+
+			// strip any directory components — some providers return full paths
+			filename = Path.GetFileName(filename);
+
+			// if we ended up with nothing useful, or with a reserved directory name,
+			// fall back to a generated name
+			if (string.IsNullOrWhiteSpace(filename) || filename == "." || filename == "..")
+				filename = Guid.NewGuid().ToString("N");
+
+			// add the best/known extension
+			if (!Path.HasExtension(filename) && !string.IsNullOrEmpty(extension))
+				filename = Path.ChangeExtension(filename, extension);
+
+			return filename;
+		}
+
+		/// <summary>
 		/// Normalizes the given file path for the current platform.
 		/// </summary>
 		/// <param name="filename">The file path to normalize.</param>
