@@ -104,6 +104,7 @@ extends:
             onlyAndroidPlatformDefaultApis: true
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
+            skipSimulatorSetup: true
             skipProvisioning: true
             skipXcode: false
             base64Encode: true
