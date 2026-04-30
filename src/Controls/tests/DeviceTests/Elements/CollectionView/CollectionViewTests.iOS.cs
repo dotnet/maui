@@ -251,6 +251,56 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(source.IsIndexPathValid(invalidSection));
 		}
 
+		[Fact]
+		public async Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var labels = new List<Label>();
+			var items = new ObservableCollection<string>
+			{
+				"one",
+				"two",
+				"three",
+				"four"
+			};
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label
+					{
+						LineBreakMode = LineBreakMode.WordWrap
+					};
+
+					label.SetBinding(Label.TextProperty, ".");
+					labels.Add(label);
+
+					return label;
+				})
+			};
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+
+				Assert.NotEmpty(labels);
+
+				labels[0].Text = "one with enough extra text to invalidate the measured cell size";
+				items.Add("five");
+				collectionView.ItemsSource = null;
+
+				await Task.Delay(100);
+				handler.PlatformView.LayoutIfNeeded();
+			});
+		}
+
 		[Fact(DisplayName = "CollectionView Does Not Leak With Default ItemsLayout")]
 		public async Task CollectionViewDoesNotLeakWithDefaultItemsLayout()
 		{

@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_isEmpty)
 			{
-				_measurementCells?.Clear();
+				ClearMeasurementCells();
 				ItemsViewLayout?.ClearCellSizeCache();
 			}
 
@@ -257,19 +257,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
 			var visibleCells = CollectionView.VisibleCells;
-			List<TemplatedCell> invalidatedCells = null;
+			List<NSIndexPath> invalidatedIndexPaths = null;
 
 			var visibleCellsLength = visibleCells.Length;
 			for (int n = 0; n < visibleCellsLength; n++)
 			{
 				if (visibleCells[n] is TemplatedCell { MeasureInvalidated: true } cell)
 				{
-					invalidatedCells ??= [];
-					invalidatedCells.Add(cell);
+					var indexPath = CollectionView.IndexPathForCell(cell);
+					if (ItemsSource.IsIndexPathValid(indexPath))
+					{
+						invalidatedIndexPaths ??= [];
+						invalidatedIndexPaths.Add(indexPath);
+					}
 				}
 			}
 
-			if (invalidatedCells is not null)
+			if (invalidatedIndexPaths is not null)
 			{
 				// GridLayout has a special positioning override when there's only one item
 				// so we have to invalidate the layout entirely to trigger that special case.
@@ -280,7 +284,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				else
 				{
 					var layoutInvalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
-					layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
+					layoutInvalidationContext.InvalidateItems(invalidatedIndexPaths.ToArray());
 					CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 				}
 			}
@@ -419,7 +423,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateItemsSource()
 		{
-			_measurementCells?.Clear();
+			ClearMeasurementCells();
 			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
@@ -432,7 +436,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void DisposeItemsSource()
 		{
-			_measurementCells?.Clear();
+			ClearMeasurementCells();
 			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource?.Dispose();
 			ItemsSource = new EmptySource();
@@ -512,6 +516,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			cell.LayoutAttributesChanged += CellLayoutAttributesChanged;
 
 			ItemsViewLayout.PrepareCellForLayout(cell);
+		}
+
+		void ClearMeasurementCells()
+		{
+			if (_measurementCells is not null)
+			{
+				foreach (var measurementCell in _measurementCells.Values)
+				{
+					measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
+					measurementCell.Unbind();
+				}
+
+				_measurementCells.Clear();
+			}
 		}
 
 		public virtual NSIndexPath GetIndexForItem(object item)
