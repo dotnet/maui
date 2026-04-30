@@ -148,7 +148,30 @@ namespace Microsoft.Maui
 			});
 
 			if (!preventBackPropagation)
-				base.OnBackPressed();
+			{
+				// Disable the callback before dispatching base.OnBackPressed() to prevent re-entry
+				// through OnBackPressedDispatcher, which would re-invoke this same enabled callback.
+				// Track whether it was already disabled (e.g. invoked via the legacy OnBackPressed path
+				// rather than the callback path) — if so, skip the finally re-enable to avoid transiently
+				// toggling Enabled during an in-flight navigation.
+				bool callbackWasEnabled = _mauiOnBackPressedCallback?.Enabled == true;
+				if (_mauiOnBackPressedCallback is not null)
+					_mauiOnBackPressedCallback.Enabled = false;
+
+				try
+				{
+					base.OnBackPressed();
+				}
+				finally
+				{
+					// Re-evaluate whether the callback should be enabled after propagation.
+					// Using finally ensures the callback isn't permanently disabled if OnBackPressed throws.
+					// Only re-enable when the callback was active on entry; if it was already disabled
+					// (legacy-path entry), leave the state for the next UpdatePredictiveBackRegistration call.
+					if (callbackWasEnabled)
+						UpdatePredictiveBackRegistration();
+				}
+			}
 		}
 	}
 }
