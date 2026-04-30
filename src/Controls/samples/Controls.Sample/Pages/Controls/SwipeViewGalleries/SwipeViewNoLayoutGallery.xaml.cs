@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			InitializeComponent();
 		}
 
-		async void OnInvoked(object sender, EventArgs e)
+		async void OnInvoked(object? sender, EventArgs e)
 		{
 			await DisplayAlertAsync("SwipeView", "SwipeItem Invoked", "OK");
 		}

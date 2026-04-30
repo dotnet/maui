@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_mapControl == null)
 				return;
 
+<<<<<<< HEAD
 			_mapControl.Loaded -= OnMapControlLoaded;
 
 			if (!TryDiscoverWebView())
@@ -456,5 +457,25 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			// No-op: shape rendering is not supported by the WinUI 3 MapControl.
 		}
+
+		/// <summary>
+		/// Maps the <see cref="IMap.MapStyle"/> property. No-op on Windows — use MapMapType instead.
+		/// </summary>
+		public static void MapMapStyle(IMapHandler handler, IMap map)
+		{
+			// No-op: MapStyle is not directly supported; use MapMapType for style changes.
+		}
+
+		/// <summary>
+		/// Maps <see cref="IMap.IsClusteringEnabled"/>. No-op on Windows: WinUI 3 MapControl does not support clustering.
+		/// </summary>
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map)
+		{
+			// No-op: clustering is not supported by the WinUI 3 MapControl.
+		}
+
+		void ShowInfoWindow(IMapPin pin) { }
+
+		void HideInfoWindow(IMapPin pin) { }
 	}
 }

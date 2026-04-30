@@ -126,7 +126,7 @@ namespace Microsoft.Maui.ApplicationModel
 			var schemes = new List<string>();
 
 			NSObject nsobj = null;
-			if (!NSBundle.MainBundle.InfoDictionary.TryGetValue((NSString)"CFBundleURLTypes", out nsobj))
+			if (NSBundle.MainBundle.InfoDictionary is null || !NSBundle.MainBundle.InfoDictionary.TryGetValue((NSString)"CFBundleURLTypes", out nsobj))
 				return schemes;
 
 			var array = nsobj as NSArray;

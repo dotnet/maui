@@ -78,5 +78,29 @@ namespace Microsoft.Maui.Maps.Handlers
 			// Fill is not directly supported on MapIcon
 			// Would need custom shape implementation for polygons/circles
 		}
+
+		/// <summary>
+		/// Maps the <see cref="IMapElement.IsVisible"/> property to the platform element.
+		/// </summary>
+		/// <remarks>
+		/// <b>Windows Limitation:</b> IsVisible is not directly supported on MapIcon.
+		/// This method is a no-op on Windows.
+		/// </remarks>
+		public static void MapIsVisible(IMapElementHandler handler, IMapElement mapElement)
+		{
+			// IsVisible is not directly supported on MapIcon
+		}
+
+		/// <summary>
+		/// Maps the <see cref="IMapElement.ZIndex"/> property to the platform element.
+		/// </summary>
+		/// <remarks>
+		/// <b>Windows Limitation:</b> ZIndex is not directly supported on MapIcon in MapElementsLayer.
+		/// This method is a no-op on Windows.
+		/// </remarks>
+		public static void MapZIndex(IMapElementHandler handler, IMapElement mapElement)
+		{
+			// ZIndex is not directly supported on MapIcon
+		}
 	}
 }

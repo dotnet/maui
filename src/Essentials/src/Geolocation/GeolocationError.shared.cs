@@ -9,22 +9,18 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		/// <summary>
 		/// The provider was unable to retrieve any position data.
+		/// On Android this is sent when no location provider is available that satisfies the requested geolocation accuracy.
+		/// On iOS this means getting location data has failed.
+		/// On Windows this means no location data is available from any source.
 		/// </summary>
-		/// <remarks>
-		/// Android: Sent when no location provider is available that satisfies the requested geolocation accuracy.
-		/// iOS: Getting location data has failed.
-		/// Windows: No location data is available from any source.
-		/// </remarks>
 		PositionUnavailable,
 
 		/// <summary>
 		/// The app is not, or no longer, authorized to receive location data.
+		/// On Android this is not used.
+		/// On iOS this means authorization for getting locations has changed.
+		/// On Windows this means location sources are turned off.
 		/// </summary>
-		/// <remarks>
-		/// Android: Not used.
-		/// iOS: Authorization for getting locations has changed.
-		/// Windows: Location sources are turned off.
-		/// </remarks>
 		Unauthorized,
 	}
 }
