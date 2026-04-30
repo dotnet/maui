@@ -6,5 +6,5 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023</WarningsNotAsErrors>
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
-  <Import Project="../../../Directory.Build.props" />
+  <Import Project="../Directory.Build.props" />
 </Project>

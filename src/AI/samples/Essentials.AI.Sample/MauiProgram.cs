@@ -41,6 +41,8 @@ public static class MauiProgram
 		// Register AI agents and workflow
 #if IOS || MACCATALYST
 		builder.AddAppleIntelligenceServices();
+#elif WINDOWS
+		builder.AddPhiSilicaServices();
 #else
 		builder.AddOpenAIServices();
 #endif
@@ -149,6 +151,58 @@ public static class MauiProgram
 
 		// Semantic search backed by NL embeddings (also registered in common services above,
 		// but this line is kept in case the common registration is removed in the future)
+
+		return builder;
+	}
+#pragma warning restore CA1416
+#endif
+
+#if WINDOWS
+#pragma warning disable CA1416 // Validate platform compatibility - this sample requires Windows 10.0.26100.0+
+	private static MauiAppBuilder AddPhiSilicaServices(this MauiAppBuilder builder)
+	{
+		// Register the base Phi Silica client
+		builder.Services.AddSingleton<PhiSilicaChatClient>();
+
+		// Register the Phi Silica client as IChatClient to allow direct use
+		builder.Services.AddSingleton<IChatClient>(sp =>
+		{
+			var phiClient = sp.GetRequiredService<PhiSilicaChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return phiClient
+				.AsBuilder()
+				.Use(cc => new PhiSilicaToolsAndSchemaClient(cc))
+				.UseLogging(loggerFactory)
+				.Build();
+		});
+
+		// Register the Agent Framework wrapper as "local-model"
+		builder.Services.AddKeyedSingleton<IChatClient>("local-model", (sp, _) =>
+		{
+			var phiClient = sp.GetRequiredService<PhiSilicaChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return phiClient
+				.AsBuilder()
+				.Use(cc => new PhiSilicaToolsAndSchemaClient(cc))
+				.UseLogging(loggerFactory)
+				.Build();
+		});
+
+		// Register "cloud-model" with buffering
+		builder.Services.AddKeyedSingleton<IChatClient>("cloud-model", (sp, _) =>
+		{
+			var phiClient = sp.GetRequiredService<PhiSilicaChatClient>();
+			var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+			return phiClient
+				.AsBuilder()
+				.Use(cc => new PhiSilicaToolsAndSchemaClient(cc))
+				.Use(cc => new BufferedChatClient(cc))
+				.UseLogging(loggerFactory)
+				.Build();
+		});
+
+		// Semantic search using AppContentIndexer — OS handles embeddings internally.
+		builder.Services.AddSingleton<ISemanticSearchService, AppContentIndexerSearchService>();
 
 		return builder;
 	}

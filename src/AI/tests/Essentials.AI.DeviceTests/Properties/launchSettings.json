@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Windows Machine": {
-      "commandName": "MsixPackage"
+      "commandName": "MsixPackage",
+      "nativeDebugging": false
     }
   }
 }

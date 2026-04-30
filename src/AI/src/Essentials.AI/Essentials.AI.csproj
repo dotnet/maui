@@ -46,6 +46,7 @@
     <ObjcBindingCoreSource Include="..\AppleNative\StructsAndEnums.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
   <Import Project="$(MauiSrcDirectory)AppleBindings.targets" />

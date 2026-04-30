@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+		<!-- Allow this project to be loaded and restored on macOS/Linux -->
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>Microsoft.Maui.Windows.Run</RootNamespace>
+		<AssemblyName>Microsoft.Maui.Windows.Run</AssemblyName>
+		<IsPackable>false</IsPackable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<EnableMsixTooling>false</EnableMsixTooling>
+		<WindowsPackageType>None</WindowsPackageType>
+	</PropertyGroup>
+
+	<!--
+		Copy the tool output alongside the Windows .targets in .buildtasks/
+		so that $(MSBuildThisFileDirectory)Microsoft.Maui.Windows.Run.dll resolves correctly.
+	-->
+	<Target Name="_CopyRunToolToBuildTasksDir" AfterTargets="Build">
+		<PropertyGroup>
+			<_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory)..\..\..\..\..\.buildtasks\</_MauiBuildTasksLocation>
+			<_RunToolDestination>$(_MauiBuildTasksLocation)net6.0-windows10.0.17763.0\</_RunToolDestination>
+		</PropertyGroup>
+		<ItemGroup>
+			<_RunToolFiles Include="$(TargetDir)Microsoft.Maui.Windows.Run.*" />
+			<_RunToolFiles Include="$(TargetDir)Microsoft.Windows.SDK.NET.dll" />
+			<_RunToolFiles Include="$(TargetDir)WinRT.Runtime.dll" />
+		</ItemGroup>
+		<Copy SourceFiles="@(_RunToolFiles)"
+			  DestinationFolder="$(_RunToolDestination)"
+			  ContinueOnError="true" Retries="3" RetryDelayMilliseconds="1000" />
+	</Target>
+
+</Project>
