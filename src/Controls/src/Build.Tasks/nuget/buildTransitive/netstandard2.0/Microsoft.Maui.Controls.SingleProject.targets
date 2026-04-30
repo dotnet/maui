@@ -35,6 +35,17 @@
     </Compile>
   </ItemGroup>
 
+  <Target Name="_MauiCollectPlatformSpecificCompileItems"
+          DependsOnTargets="_MauiNormalizePlatformSpecificFolders"
+          BeforeTargets="_MauiRemovePlatformCompileItems"
+          Condition=" '$(SingleProject)' == 'true' and '@(MauiPlatformSpecificFolder)' != '' ">
+    <ItemGroup>
+      <_MauiPlatformSpecificCompileItems
+          Include="%(MauiPlatformSpecificFolder.Identity)**/*$(DefaultLanguageSourceExtension)"
+          Condition=" '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' or ('$(TargetPlatformIdentifier)' != '' and $([System.String]::new(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);').Replace(' ', '').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());')) )" />
+    </ItemGroup>
+  </Target>
+
   <!--
     Run before both _MauiInjectXamlCssAdditionalFiles and GenerateMSBuildEditorConfigFileShouldRun because
     if for some reason the _MauiInjectXamlCssAdditionalFiles target is not run, we still get in at the
@@ -46,10 +57,12 @@
 
   <!-- Removals -->
     <ItemGroup>
-      <!-- Remove everything that isn't part of this platform -->
-      <Compile
+      <!-- Remove everything that isn't part of this platform. -->
+      <_MauiPlatformCompileToRemove
           Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' "
-          Remove="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)" />
+          Include="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)"
+          Exclude="@(_MauiPlatformSpecificCompileItems)" />
+      <Compile Remove="@(_MauiPlatformCompileToRemove)" />
 
       <!-- Remove all Windows (WinUI) XAML Files from the Windows folder -->
       <_MauiXamlToRemove
