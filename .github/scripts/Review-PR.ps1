@@ -7,7 +7,8 @@
     
     Step 0: Branch setup        - Create review branch from main, merge PR squashed
     Step 1: Gate                - Run test verification directly (verify-tests-fail.ps1)
-    Step 2: pr-review skill     - 3-phase review (Pre-Flight, Try-Fix, Report)
+    Step 2: Multi-candidate review - Pre-Flight, then PARALLEL (expert-reviewer eval of PR + Try-Fix×4),
+                                    then Report compares all candidates and writes winner.json
     Step 3: Post AI Summary     - Directly runs posting scripts
     Step 4: Apply labels        - Apply agent labels based on review results
 
@@ -499,11 +500,8 @@ The agent will analyze the issue, determine the appropriate test type (UI test, 
     }
 }
 
-# Post gate result by updating (or creating) the unified AI Summary comment.
-# The same script is called again in STEP 3 once the review phases finish; here
-# it runs early so the PR author sees the gate outcome without waiting for the
-# full review.
-$postGateScript = Join-Path $PSScriptRoot "post-ai-summary-comment.ps1"
+# Post gate result as a separate PR comment
+$postGateScript = Join-Path $PSScriptRoot "post-gate-comment.ps1"
 if (Test-Path $postGateScript) {
     try {
         if ($DryRun) {
@@ -512,10 +510,10 @@ if (Test-Path $postGateScript) {
             & $postGateScript -PRNumber $PRNumber
         }
     } catch {
-        Write-Host "  ⚠️ Failed to post gate section (non-fatal): $_" -ForegroundColor Yellow
+        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found" -ForegroundColor Yellow
+    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
 }
 
 # Apply gate result label
@@ -559,15 +557,55 @@ $gateStatusForPrompt = switch ($gateResult) {
 }
 
 $step2Prompt = @"
-Use a skill to review PR #$PRNumber.
+Run a multi-candidate PR review for PR #$PRNumber using the following flow.
+
+## Phase 1 — Pre-Flight (context only)
+Use the pr-review skill's pre-flight phase to gather context. Do NOT modify code.
+Write summary to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``.
+
+## Phase 2 — Candidate generation (run BOTH branches; do not skip either)
+Generate the following candidates. Each candidate is an alternative diff against the PR's base branch. Do this work in isolated worktrees / scratch copies so artifacts do NOT clobber each other.
+
+### Branch A — Expert reviewer evaluation of the current PR fix (in sandbox)
+Use the code-review skill with the maui-expert-reviewer agent to evaluate the PR's existing fix. Apply the reviewer's actionable feedback in a sandbox copy and treat the result as a candidate named ``pr-plus-reviewer``.
+- Always also write the raw inline findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json`` (these are file:line findings against the PR's diff and feed the inline-comment posting step).
+- Write candidate output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/expert-pr-eval/content.md``.
+
+### Branch B — Try-Fix ×4 (ALWAYS runs — do NOT skip)
+Use the pr-review skill's try-fix phase to generate FOUR independent candidate fixes (``try-fix-1`` through ``try-fix-4``). Each candidate must load domain knowledge from a different maui-expert-reviewer dimension so the candidates are diverse.
+- 🚨 You MUST generate all four candidates. Do not short-circuit even if Pre-Flight or the expert eval suggests the PR is already correct.
+- Write each candidate's output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix-{N}/content.md`` (N = 1..4).
+- Aggregate try-fix narrative for the AI summary comment to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``.
+
+## Phase 3 — Report
+The expert reviewer evaluates ALL candidates against each other:
+- ``pr`` (the raw PR fix as submitted)
+- ``pr-plus-reviewer`` (PR fix + reviewer feedback applied in sandbox)
+- ``try-fix-1``..``try-fix-4``
+Pick the single winning candidate.
+Write the comparative analysis to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md``.
+
+## Phase 4 — Winner manifest (REQUIRED)
+Write ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json`` with this exact schema:
+``````json
+{
+  "schemaVersion": 1,
+  "winner": "pr" | "pr-plus-reviewer" | "try-fix-1" | "try-fix-2" | "try-fix-3" | "try-fix-4",
+  "isPRFix": true | false,
+  "summary": "1-3 sentence rationale for why this candidate won",
+  "candidateDiff": "<unified diff against PR base — REQUIRED iff isPRFix is false; OMIT or empty string when isPRFix is true>"
+}
+``````
+Rules:
+- ``isPRFix`` MUST be ``true`` when ``winner`` is ``pr`` or ``pr-plus-reviewer``.
+- ``isPRFix`` MUST be ``false`` when ``winner`` is any ``try-fix-*``.
+- When ``isPRFix`` is ``false``, ``candidateDiff`` MUST be a non-empty unified diff. Truncate at 55 KB if larger and end with a ``... [truncated]`` marker line.
 
 $platformInstruction
 $autonomousRules
 
 **Gate result (already completed in a prior step):** $gateStatusForPrompt
 Do NOT re-run gate verification. The gate phase is handled separately.
-
-📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
 "@
 
 Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
@@ -610,6 +648,119 @@ if (Test-Path $reviewScript) {
     }
 } else {
     Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
+}
+
+# Determine winning candidate (winner.json) — drives whether we post inline findings or request changes
+$winnerFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json"
+$winner = $null
+if (Test-Path $winnerFile) {
+    try {
+        $winner = Get-Content -Raw -LiteralPath $winnerFile | ConvertFrom-Json
+        # Validation
+        $allowed = @('pr','pr-plus-reviewer','try-fix-1','try-fix-2','try-fix-3','try-fix-4')
+        if (-not $winner.winner -or $allowed -notcontains $winner.winner) {
+            Write-Host "  ⚠️ winner.json has invalid 'winner' value: $($winner.winner) — falling back to PR-fix path" -ForegroundColor Yellow
+            $winner = $null
+        } elseif ($winner.winner -in @('pr','pr-plus-reviewer') -and $winner.isPRFix -ne $true) {
+            Write-Host "  ⚠️ winner.json: '$($winner.winner)' must have isPRFix=true — overriding" -ForegroundColor Yellow
+            $winner.isPRFix = $true
+        } elseif ($winner.winner -like 'try-fix-*' -and $winner.isPRFix -ne $false) {
+            Write-Host "  ⚠️ winner.json: '$($winner.winner)' must have isPRFix=false — overriding" -ForegroundColor Yellow
+            $winner.isPRFix = $false
+        }
+        if ($winner -and $winner.isPRFix -eq $false -and [string]::IsNullOrWhiteSpace($winner.candidateDiff)) {
+            Write-Host "  ⚠️ winner.json: non-PR winner has empty candidateDiff — falling back to PR-fix path" -ForegroundColor Yellow
+            $winner = $null
+        }
+        if ($winner) {
+            Write-Host "  🏆 Winning candidate: $($winner.winner) (isPRFix=$($winner.isPRFix))" -ForegroundColor Cyan
+        }
+    } catch {
+        Write-Host "  ⚠️ Failed to parse winner.json (non-fatal): $_ — falling back to PR-fix path" -ForegroundColor Yellow
+        $winner = $null
+    }
+} else {
+    Write-Host "  ℹ️ No winner.json — defaulting to PR-fix posting path" -ForegroundColor Gray
+}
+
+$isPRWinner = (-not $winner) -or ($winner.isPRFix -eq $true)
+
+if ($isPRWinner) {
+    # Post inline review comments (file:line findings from expert-reviewer agent)
+    $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
+    $findingsFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json"
+    if ((Test-Path $inlineScript) -and (Test-Path $findingsFile)) {
+        try {
+            Write-Host "  📝 Posting inline review comments..." -ForegroundColor Cyan
+            if ($DryRun) {
+                & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -DryRun
+            } else {
+                & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile
+            }
+            Write-Host "  ✅ Inline review comments posted" -ForegroundColor Green
+        } catch {
+            Write-Host "  ⚠️ Inline review posting failed (non-fatal): $_" -ForegroundColor Yellow
+        }
+    } else {
+        if (-not (Test-Path $findingsFile)) {
+            Write-Host "  ℹ️ No inline findings file — agent may not have produced findings" -ForegroundColor Gray
+        }
+    }
+} else {
+    # Non-PR candidate won — submit a REQUEST_CHANGES review with the candidate diff in the body
+    Write-Host "  📝 Non-PR candidate won — submitting REQUEST_CHANGES review with candidate diff..." -ForegroundColor Cyan
+
+    $maxDiffBytes = 55KB
+    $diff = [string]$winner.candidateDiff
+    $truncated = $false
+    if ([System.Text.Encoding]::UTF8.GetByteCount($diff) -gt $maxDiffBytes) {
+        # Trim by characters until under the byte cap, then add marker
+        while ([System.Text.Encoding]::UTF8.GetByteCount($diff) -gt ($maxDiffBytes - 64)) {
+            $diff = $diff.Substring(0, [Math]::Max(0, $diff.Length - 512))
+        }
+        $diff += "`n... [truncated]"
+        $truncated = $true
+    }
+
+    $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
+    $reviewBody = @"
+🤖 **Automated review — alternative fix proposed**
+
+The expert-reviewer evaluation compared the PR fix against $($winner.winner -replace 'try-fix-','#') automatically generated candidates and selected ``$($winner.winner)`` as the strongest fix.
+
+**Why:** $rationale
+
+Please consider applying the candidate diff below (or use it as guidance). Once you push an update, this workflow will re-trigger and re-evaluate.
+
+<details><summary>Candidate diff (``$($winner.winner)``)</summary>
+
+``````diff
+$diff
+``````
+
+</details>
+$( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limit._" } )
+"@
+
+    if ($DryRun) {
+        Write-Host "  [DryRun] Would POST review state=REQUEST_CHANGES with body length $($reviewBody.Length)" -ForegroundColor Yellow
+    } else {
+        try {
+            $bodyJson = @{ body = $reviewBody; event = 'REQUEST_CHANGES' } | ConvertTo-Json -Compress -Depth 5
+            $tmp = New-TemporaryFile
+            Set-Content -LiteralPath $tmp -Value $bodyJson -Encoding utf8 -NoNewline
+            $resp = & gh api -X POST "repos/dotnet/maui/pulls/$PRNumber/reviews" --input $tmp 2>&1
+            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "  ✅ REQUEST_CHANGES review submitted" -ForegroundColor Green
+            } else {
+                Write-Host "  ⚠️ Failed to submit REQUEST_CHANGES review (non-fatal): $resp" -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host "  ⚠️ REQUEST_CHANGES submission threw (non-fatal): $_" -ForegroundColor Yellow
+        }
+    }
+    Write-Host "  ⏭️ Skipping inline findings (winner is not the PR fix)" -ForegroundColor Gray
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
