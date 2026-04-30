@@ -391,3 +391,6 @@ temp
 
 # Gradle build reports
 src/Core/AndroidNative/build/reports/
+
+# Agentic workflow debug logs
+.github/aw/logs/
