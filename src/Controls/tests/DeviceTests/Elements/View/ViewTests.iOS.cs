@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Empty(gestures.ContainerView);
 			Assert.NotEmpty(gestures.PlatformView);
 
-			Assert.Contains(typeof(UITapGestureRecognizer), gestures.PlatformView);
+			Assert.Contains(typeof(GesturePlatformManager.MauiUITapGestureRecognizer), gestures.PlatformView);
 		}
 
 		[Fact]
@@ -71,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEmpty(gestures.ContainerView);
 			Assert.Empty(gestures.PlatformView);
 
-			Assert.Contains(typeof(UITapGestureRecognizer), gestures.ContainerView);
+			Assert.Contains(typeof(GesturePlatformManager.MauiUITapGestureRecognizer), gestures.ContainerView);	
 		}
 
 		static Type[] GetGestureRecognizerTypes(UIView view) =>
