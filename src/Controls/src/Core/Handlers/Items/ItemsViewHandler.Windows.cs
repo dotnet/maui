@@ -493,7 +493,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void ScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
-			HandleScroll(_scrollViewer);
+			if (Element is CarouselView)
+			{
+				if (!e.IsIntermediate)
+				{
+					HandleScroll(_scrollViewer);
+				}
+			}
+			else
+			{
+				HandleScroll(_scrollViewer);
+			}
 		}
 
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
