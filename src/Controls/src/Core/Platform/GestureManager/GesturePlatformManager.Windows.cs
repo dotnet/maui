@@ -15,7 +15,7 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	class GesturePlatformManager : IGesturePlatformManager
 	{
 		readonly IPlatformViewHandler _handler;
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
@@ -304,6 +304,11 @@ namespace Microsoft.Maui.Controls.Platform
 					gestureRecognizersAfter.CollectionChanged += _collectionChangedHandler;
 				}
 			}
+		}
+
+		public void SetupHandler(IViewHandler handler)
+		{
+			// Handler is already set via constructor on locally-created instances
 		}
 
 		public void Dispose()

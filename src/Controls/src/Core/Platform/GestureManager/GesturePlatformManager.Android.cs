@@ -15,7 +15,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	class GesturePlatformManager : IGesturePlatformManager
 	{
 		IViewHandler? _handler;
 		Lazy<ScaleGestureDetector> _scaleDetector;
@@ -88,6 +88,11 @@ namespace Microsoft.Maui.Controls.Platform
 				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
 
 			return eventConsumed;
+		}
+
+		public void SetupHandler(IViewHandler handler)
+		{
+			// Handler is already set via constructor on locally-created instances
 		}
 
 		public void Dispose()

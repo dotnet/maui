@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	class GesturePlatformManager : IGesturePlatformManager
 	{
 		IViewHandler? _handler;
 		Lazy<GestureDetector> _gestureDetector;
@@ -56,6 +56,11 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateInputTransparent();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled();
+		}
+
+		public void SetupHandler(IViewHandler handler)
+		{
+			// Handler is already set via constructor on locally-created instances
 		}
 
 		public void Dispose()

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -17,9 +18,10 @@ namespace Microsoft.Maui.Controls.Platform
 		object? _platformView;
 		object? _handler;
 		bool _didHaveWindow;
+		bool _gestureManagerFromDI;
 
 		public bool IsConnected => GesturePlatformManager != null;
-		public GesturePlatformManager? GesturePlatformManager { get; private set; }
+		public IGesturePlatformManager? GesturePlatformManager { get; private set; }
 
 		public GestureManager(IControlsView view)
 		{
@@ -46,8 +48,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void DisconnectGestures()
 		{
-			GesturePlatformManager?.Dispose();
+			// Only dispose if we own the instance (not DI-provided — the container manages its lifetime)
+			if (!_gestureManagerFromDI)
+				GesturePlatformManager?.Dispose();
 			GesturePlatformManager = null;
+			_gestureManagerFromDI = false;
 			_handler = null;
 			_didHaveWindow = false;
 			_containerView = null;
@@ -76,7 +81,20 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			GesturePlatformManager = new GesturePlatformManager(handler);
+			// Try to get IGesturePlatformManager from services first, fallback to default implementation
+			var context = handler.MauiContext;
+			var customManager = context?.Services.GetService<IGesturePlatformManager>();
+			if (customManager is not null)
+			{
+				GesturePlatformManager = customManager;
+				_gestureManagerFromDI = true; // Set before SetupHandler so DisconnectGestures won't dispose the singleton on exception
+				GesturePlatformManager.SetupHandler(handler);
+			}
+			else
+			{
+				GesturePlatformManager = new GesturePlatformManager(handler);
+				_gestureManagerFromDI = false;
+			}
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
