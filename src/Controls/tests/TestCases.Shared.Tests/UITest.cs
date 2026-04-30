@@ -654,8 +654,32 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 #if MACUITEST
+		/// <summary>
+		/// Dismiss any macOS system dialogs (e.g., Setup Assistant "Sign In to Apple Account")
+		/// that may be covering the app and interfering with screenshots or tap interactions.
+		/// </summary>
+		static void DismissSystemDialogs()
+		{
+			try
+			{
+				// Kill Setup Assistant which shows Apple Sign-In dialogs
+				ShellHelper.ExecuteShellCommand("killall 'Setup Assistant' 2>/dev/null || true");
+				// Kill other common system dialog processes
+				ShellHelper.ExecuteShellCommand("killall 'UserNotificationCenter' 2>/dev/null || true");
+				ShellHelper.ExecuteShellCommand("killall 'CoreServicesUIAgent' 2>/dev/null || true");
+			}
+			catch
+			{
+				// Best effort — don't fail the test if dismissal doesn't work
+			}
+		}
+
 		byte[] TakeScreenshot()
 		{
+			// Dismiss any system dialogs that may be covering the app window,
+			// since Mac screenshots capture the entire screen.
+			DismissSystemDialogs();
+
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.
 			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
@@ -672,16 +696,43 @@ namespace Microsoft.Maui.TestCases.Tests
 			if (width <= 0 || height <= 0)
 				return bytes;
 
-			// Draw a rounded rectangle with the app window bounds as mask
-			using var surface = new MagickImage(MagickColors.Transparent, (uint)width, (uint)height);
+			 using var image = new MagickImage(bytes);
+
+			// Detect display scale factor: GetRect() returns logical points, but
+			// App.Screenshot() returns pixels at the display's native resolution
+			// (1x on non-Retina, 2x on Retina displays).
+			// Strategy: Compare screenshot pixel dimensions to screen logical dimensions.
+			var screenSize = ((AppiumApp)App).Driver.Manage().Window.Size;
+
+			double scaleX = (double)image.Width / screenSize.Width;
+			double scaleY = (double)image.Height / screenSize.Height;
+
+			// Use the minimum scale to handle edge cases where width/height might differ slightly
+			int scaleFactor = (int)Math.Round(Math.Min(scaleX, scaleY));
+
+			// Scale all coordinates from logical points to pixels
+			int pxX = x * scaleFactor;
+			int pxY = y * scaleFactor;
+			int pxWidth = width * scaleFactor;
+			int pxHeight = height * scaleFactor;
+			int pxCornerRadius = cornerRadius * scaleFactor;
+
+			// Draw a rounded rectangle mask at pixel resolution
+			using var surface = new MagickImage(MagickColors.Transparent, (uint)pxWidth, (uint)pxHeight);
 			new Drawables()
-				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
+				.RoundRectangle(0, 0, pxWidth, pxHeight, pxCornerRadius, pxCornerRadius)
 				.FillColor(MagickColors.Black)
 				.Draw(surface);
 
-			// Composite the screenshot with the mask
-			using var image = new MagickImage(bytes);
-			surface.Composite(image, -x, -y, CompositeOperator.SrcAtop);
+			// Composite the full-screen screenshot onto the mask, offset to extract the window area
+			surface.Composite(image, -pxX, -pxY, CompositeOperator.SrcAtop);
+
+			// Normalize to logical point dimensions so downstream crop values
+			// (e.g., cropFromTop = 29) remain correct regardless of pixel density
+			if (scaleFactor > 1)
+			{
+				surface.Resize((uint)width, (uint)height);
+			}
 
 			return surface.ToByteArray(MagickFormat.Png);
 		}

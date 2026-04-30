@@ -1,21 +1,16 @@
-#!/bin/sh 
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin 
+#!/bin/sh
 
-currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ { print $3 }' ) 
+# Re-enable macOS notifications after UI tests complete.
+# Counterpart to disable-notification-center.sh.
 
-if [ -z "$currentUser" -o "$currentUser" = "loginwindow" ]; then 
-  echo "no user logged in, cannot proceed" 
-  exit 1  
-fi 
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-uid=$(id -u "$currentUser")  
+set +e
 
-runAsUser() {   
-  if [ "$currentUser" != "loginwindow" ]; then 
-    launchctl asuser "$uid" sudo -u "$currentUser" "$@" 
-  else 
-    echo "no user logged in" 
-  fi 
-} 
+echo "=== Re-enabling macOS notifications ==="
 
-runAsUser launchctl load -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist 
+# Disable Do Not Disturb
+defaults delete com.apple.ncprefs dnd_prefs 2>/dev/null && echo "Do Not Disturb disabled" || echo "Do Not Disturb: already disabled or not supported"
+
+echo "=== Notifications re-enabled ==="
+exit 0
