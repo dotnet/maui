@@ -28,6 +28,30 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
     $AiCategories = $null
 }
 
+# ----------------------------------------------------------------------------
+# Helpers
+# ----------------------------------------------------------------------------
+
+# `task.setvariable` lines (or their absence) are the contract with both AzDO
+# pipelines (#35136) and Review-PR.ps1's Step 0.5 parser. Centralize emission
+# so every "run all" / "skip all" / "specific" exit goes through one path and
+# we don't accidentally drop the marker on a future fallback branch.
+function Write-CategoryListOutput {
+    param([string]$Value)
+    Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]$Value"
+}
+
+# Native git commands don't throw on non-zero exit — and `try/catch` won't
+# catch them either. Wrap every git invocation in manual-PR mode so a silent
+# fetch/checkout failure can't leave us reading a stale/wrong worktree.
+function Invoke-Git {
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
+    & git @Args | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "git $($Args -join ' ') failed with exit code $LASTEXITCODE"
+    }
+}
+
 $buildReason = $env:BUILD_REASON
 if ([string]::IsNullOrWhiteSpace($buildReason)) {
     $buildReason = $env:SYSTEM_REASON
@@ -56,12 +80,14 @@ if (-not [string]::IsNullOrWhiteSpace($Categories)) {
     }
     $matrixJson = $matrix | ConvertTo-Json -Depth 5
     Write-Host "##vso[task.setvariable variable=UITestCategoryMatrix;isOutput=true]$matrixJson"
-    Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]$($catList -join ',')"
+    Write-CategoryListOutput ($catList -join ',')
     return
 }
 
 if ($buildReason -ne 'PullRequest' -and -not $isManualPrTest) {
     Write-Host "Build reason '$buildReason' is not PullRequest and no -PrNumber override was provided. Running all categories." -ForegroundColor Cyan
+    # Empty list = "run all" per ui-tests.yml `eq(...UITestCategoryList, '')` checks.
+    Write-CategoryListOutput ''
     return
 }
 
@@ -120,6 +146,7 @@ if ($isManualPrTest) {
         # fields null and produce confusing `git remote add ""` errors below.
         if ($null -eq $pr -or $null -eq $pr.head -or $null -eq $pr.head.repo -or $null -eq $pr.base -or $null -eq $pr.base.repo) {
             Write-Host "##[warning]Incomplete PR API response (the source fork may have been deleted). Falling back to running ALL categories."
+            Write-CategoryListOutput ''
             return
         }
         $TargetBranch = $pr.base.ref
@@ -129,6 +156,7 @@ if ($isManualPrTest) {
         $headRepoCloneUrl = $pr.head.repo.clone_url
         if ([string]::IsNullOrWhiteSpace($headSha) -or [string]::IsNullOrWhiteSpace($headRepoCloneUrl) -or [string]::IsNullOrWhiteSpace($baseRepoCloneUrl)) {
             Write-Host "##[warning]PR API response missing SHA or clone URL. Falling back to running ALL categories."
+            Write-CategoryListOutput ''
             return
         }
         Write-Host "PR #$PrNumber : $($pr.head.repo.full_name)/$headRef ($headSha) -> $($pr.base.repo.full_name)/$TargetBranch" -ForegroundColor Cyan
@@ -141,17 +169,19 @@ if ($isManualPrTest) {
         }
 
         try {
+            # Use Invoke-Git so a silent non-zero exit (network drop, bad URL, missing
+            # ref) raises an exception instead of letting us proceed with stale state.
             # Fetch base branch from the base repo.
             git remote remove _detect_base 2>$null | Out-Null
-            git remote add _detect_base $baseRepoCloneUrl
-            git fetch _detect_base "$TargetBranch" --no-tags --prune --depth=200 | Out-Null
-            git update-ref refs/remotes/origin/$TargetBranch _detect_base/$TargetBranch | Out-Null
+            Invoke-Git remote add _detect_base $baseRepoCloneUrl
+            Invoke-Git fetch _detect_base "$TargetBranch" --no-tags --prune --depth=200
+            Invoke-Git update-ref refs/remotes/origin/$TargetBranch _detect_base/$TargetBranch
 
             # Fetch head commit (works for forks too) and check it out so the diff reflects the PR changes.
             git remote remove _detect_head 2>$null | Out-Null
-            git remote add _detect_head $headRepoCloneUrl
-            git fetch _detect_head "$headSha" --no-tags --depth=200 | Out-Null
-            git checkout --quiet $headSha | Out-Null
+            Invoke-Git remote add _detect_head $headRepoCloneUrl
+            Invoke-Git fetch _detect_head "$headSha" --no-tags --depth=200
+            Invoke-Git checkout --quiet $headSha
             $script:detectHeadMutated = $true
         } finally {
             # Temp remotes were only needed for the fetch — drop them whether or not setup succeeded
@@ -161,6 +191,7 @@ if ($isManualPrTest) {
         }
     } catch {
         Write-Host "##[warning]Manual PR test setup failed: $($_.Exception.Message). Falling back to running ALL categories."
+        Write-CategoryListOutput ''
         return
     }
 }
@@ -179,6 +210,7 @@ if (-not [string]::IsNullOrWhiteSpace($prNumberForLookup)) {
         Write-Host "PR labels: $([string]::Join(', ', $labelNames))" -ForegroundColor Cyan
         if ($labelNames -contains 'run-all-uitests') {
             Write-Host "##[section]Label 'run-all-uitests' present. Running ALL UI test categories (detection bypassed)." -ForegroundColor Yellow
+            Write-CategoryListOutput ''
             return
         }
     } catch {
@@ -189,6 +221,7 @@ if (-not [string]::IsNullOrWhiteSpace($prNumberForLookup)) {
 if ([string]::IsNullOrWhiteSpace($TargetBranch)) {
     Write-Host "##[warning]Unable to determine target branch for comparison."
     Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."
+    Write-CategoryListOutput ''
     return
 }
 
@@ -200,6 +233,7 @@ try {
 } catch {
     Write-Host "##[warning]Failed to fetch origin/${targetBranch}: $($_.Exception.Message)"
     Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."
+    Write-CategoryListOutput ''
     return
 }
 
@@ -209,12 +243,14 @@ try {
 } catch {
     Write-Host "##[warning]Could not determine merge base with origin/${targetBranch}: $($_.Exception.Message)"
     Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."
+    Write-CategoryListOutput ''
     return
 }
 
 if ([string]::IsNullOrWhiteSpace($mergeBase)) {
     Write-Host "##[warning]Merge base calculation returned empty result."
     Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."
+    Write-CategoryListOutput ''
     return
 }
 
@@ -311,6 +347,13 @@ $addedCategories = [System.Collections.Generic.HashSet[string]]::new([System.Str
 
 # ============================================================================
 # TIER 1: Scan test file diffs for [Category] attributes
+#
+# Note: this scan splits the diff on `\n` and applies the regex per-line.
+# That assumes single-line `[Category(...)]` attributes, which matches the
+# current codebase convention. A multi-line attribute would be silently
+# missed here — and that's intentionally OK: under-detection just falls
+# through to Tier 2 (path mapping) / Tier 3 (AI) instead of producing a
+# wrong category.
 # ============================================================================
 
 if (-not [string]::IsNullOrWhiteSpace($diff)) {
@@ -326,7 +369,11 @@ if (-not [string]::IsNullOrWhiteSpace($diff)) {
             } elseif ($rawValue -match '^["''](?<name>[A-Za-z0-9_ -]+)["'']$') {
                 $category = $Matches['name']
             } else {
-                if ($rawValue -match 'nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)\)') {
+                # The outer regex captures up to the first `)`, so for
+                # `[Category(nameof(UITestCategories.Foo))]` the rawValue is
+                # `nameof(UITestCategories.Foo` (no trailing paren) — anchor
+                # the check accordingly so the nameof branch isn't dead code.
+                if ($rawValue -match '^nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)$') {
                     $category = $Matches['name']
                 } else {
                     # Unrecognized format (e.g., a constant from another class, string concat, interpolation).
@@ -359,7 +406,10 @@ if (-not [string]::IsNullOrWhiteSpace($diff)) {
                     $cat = $Matches['name']
                 } elseif ($rawValue -match '^["''](?<name>[A-Za-z0-9_ -]+)["'']$') {
                     $cat = $Matches['name']
-                } elseif ($rawValue -match 'nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)\)') {
+                } elseif ($rawValue -match '^nameof\(UITestCategories\.(?<name>[A-Za-z0-9_]+)$') {
+                    # Same anchoring as the diff-scan branch above: rawValue is
+                    # captured up to the first `)`, so the nameof close-paren
+                    # is not part of it.
                     $cat = $Matches['name']
                 } else { continue }
                 $cat = $cat.Trim()
@@ -400,6 +450,11 @@ if ($tier2Categories.Count -gt 0) {
 
 # ============================================================================
 # TIER 3: AI-provided categories (from pre-flight reasoning)
+#
+# `-AiCategories` is populated either by the AzDO pipeline (#35136) or by
+# Review-PR.ps1, which re-invokes this script after pre-flight has written
+# `ai-categories.md`. When run from Step 0.5 of Review-PR.ps1 the parameter
+# is empty (Tier 3 is a no-op); the second invocation provides the AI list.
 # ============================================================================
 
 if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
@@ -436,11 +491,12 @@ if ($addedCategories.Count -eq 0) {
     if ($touchesControls) {
         # Changed files under src/Controls/ but couldn't map to specific categories — run all
         Write-Host "Changed files touch Controls/Core/Essentials but no specific categories identified. Running all." -ForegroundColor Yellow
+        Write-CategoryListOutput ''
         return
     } else {
         # No UI-relevant changes at all
         Write-Host "No UI-relevant changes detected. No UI test categories to run." -ForegroundColor Cyan
-        Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]NONE"
+        Write-CategoryListOutput 'NONE'
         return
     }
 }
@@ -459,7 +515,7 @@ foreach ($category in ($addedCategories | Sort-Object)) {
 $matrixJson = $matrix | ConvertTo-Json -Depth 5
 
 Write-Host "##vso[task.setvariable variable=UITestCategoryMatrix;isOutput=true]$matrixJson"
-Write-Host "##vso[task.setvariable variable=UITestCategoryList;isOutput=true]$([string]::Join(',', ($addedCategories | Sort-Object)))"
+Write-CategoryListOutput ([string]::Join(',', ($addedCategories | Sort-Object)))
 
 } finally {
     # Restore the working tree to its pre-detection state so subsequent steps

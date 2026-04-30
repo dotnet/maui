@@ -456,7 +456,11 @@ if (Test-Path $detectScript) {
 
         foreach ($line in $detectOutput) {
             $lineStr = $line.ToString()
-            if ($lineStr -match 'UITestCategoryList;isOutput=true\](.+)$') {
+            # Match even when the marker is followed by an empty value — `''` is
+            # the explicit "run all" sentinel emitted by the run-all returns in
+            # detect-ui-test-categories.ps1; treating it as "marker not seen"
+            # would lose that distinction.
+            if ($lineStr -match 'UITestCategoryList;isOutput=true\](.*)$') {
                 $uitestCategories = $Matches[1]
             }
         }
@@ -484,6 +488,16 @@ if (Test-Path $detectScript) {
     }
 } else {
     Write-Host "  ⚠️ detect-ui-test-categories.ps1 not found" -ForegroundColor Yellow
+}
+
+# Belt-and-suspenders: the detect script's manual-PR mode does
+# `git checkout $headSha`, leaving HEAD detached. Its own try/finally restores
+# the previous ref, but if that finally is skipped (process killed, scripting
+# error before the outer try opens) we'd run Step 1's gate against the wrong
+# tree. Force HEAD back to the review branch and fail loudly if we can't.
+git checkout $reviewBranch 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ⚠️ Failed to restore review branch '$reviewBranch' after Step 0.5 — Step 1 may run against the wrong tree" -ForegroundColor Red
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -556,6 +570,10 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     }
 }
 if ($isEnvError) {
+    # Reachable only if EVERY iteration was an env error: real pass/fail
+    # iterations `break` out of the loop (so $isEnvError would be reset to $false
+    # at the top of the next iteration but we'd never get here). $isEnvError
+    # here means "all $maxGateAttempts attempts hit env errors" — not "any".
     Write-Host "  ⚠️ All $maxGateAttempts gate attempts hit environment errors" -ForegroundColor Yellow
 }
 
@@ -705,6 +723,42 @@ Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
+
+# ─── Tier 3 refresh: feed AI categories back into category detection ───
+# Step 0.5 ran detection without the AI tier (-AiCategories was empty).
+# Pre-flight (Step 2) wrote `ai-categories.md`; re-run detection now so the
+# unified comment reflects all three tiers before Step 3 posts.
+$aiCategoriesFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests/ai-categories.md"
+if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
+    try {
+        # Pass as a single string (the script declares [string]$AiCategories);
+        # an array would not bind correctly across the pwsh -File boundary.
+        $aiCategoriesArg = (Get-Content $aiCategoriesFile -Raw).Trim()
+        if (-not [string]::IsNullOrWhiteSpace($aiCategoriesArg)) {
+            Write-Host "  🔁 Refreshing UI category detection with AI tier..." -ForegroundColor Cyan
+            $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -AiCategories $aiCategoriesArg 2>&1
+            $refreshOutput | ForEach-Object { Write-Host "    $_" }
+
+            $refreshedCategories = $uitestCategories
+            foreach ($line in $refreshOutput) {
+                if ($line.ToString() -match 'UITestCategoryList;isOutput=true\](.*)$') {
+                    $refreshedCategories = $Matches[1]
+                }
+            }
+
+            $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
+            if ($refreshedCategories -eq 'NONE') {
+                "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+            } elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) {
+                "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+            } else {
+                "**Detected UI test categories:** ``$refreshedCategories``" | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+            }
+        }
+    } catch {
+        Write-Host "  ⚠️ AI-tier category refresh failed (non-fatal, keeping Step 0.5 result): $_" -ForegroundColor Yellow
+    }
+}
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 3: Post AI Summary Comment (direct script invocation)

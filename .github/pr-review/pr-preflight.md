@@ -46,8 +46,8 @@ After classifying files, determine which UI test categories could be affected by
 3. Check the **issue description** for mentions of specific controls
 4. Consider **platform-specific impacts** (e.g., iOS SafeArea changes → `SafeAreaEdges`)
 
-**Available categories** (from `UITestCategories.cs`):
-`Accessibility`, `ActionSheet`, `ActivityIndicator`, `Animation`, `Border`, `BoxView`, `Brush`, `Button`, `CarouselView`, `Cells`, `CheckBox`, `CollectionView`, `ContextActions`, `DatePicker`, `Dispatcher`, `DisplayAlert`, `DragAndDrop`, `Editor`, `Effects`, `Entry`, `Essentials`, `FlyoutPage`, `Focus`, `Fonts`, `Frame`, `Gestures`, `GraphicsView`, `Image`, `ImageButton`, `IndicatorView`, `InputTransparent`, `IsEnabled`, `IsVisible`, `Label`, `Layout`, `Lifecycle`, `ListView`, `ManualReview`, `Maps`, `Navigation`, `Page`, `Performance`, `Picker`, `ProgressBar`, `RadioButton`, `RefreshView`, `SafeAreaEdges`, `ScrollView`, `SearchBar`, `Shadow`, `Shape`, `Shell`, `Slider`, `SoftInput`, `Stepper`, `Switch`, `SwipeView`, `TabbedPage`, `TableView`, `TimePicker`, `TitleView`, `ToolbarItem`, `Triggers`, `ViewBaseTests`, `VisualStateManager`, `WebView`, `Window`
+**Available categories:**
+Read the canonical list from [`src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs`](../../src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs) — every `public const string` value in that file is a valid category. Only use category names defined there; AI-suggested names that aren't in the file will be filtered out by `detect-ui-test-categories.ps1` to avoid creating empty matrix jobs.
 
 **Output file:**
 ```bash
