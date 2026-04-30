@@ -1703,7 +1703,6 @@ namespace Microsoft.Maui.Controls
 				try
 				{
 					await currentContent.Navigation.PopAsync();
-					(this.Window as Window)?.NotifyNavigationStateChanged();
 				}
 				catch (Exception exc)
 				{
