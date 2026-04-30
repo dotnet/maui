@@ -11,6 +11,16 @@ on:
         description: 'PR number to review'
         required: true
         type: number
+      platform:
+        description: 'Target platform for review'
+        required: false
+        type: choice
+        options:
+          - android
+          - ios
+          - catalyst
+          - windows
+        default: android
   # TODO: Add slash_command trigger once workflow_dispatch is validated
   # slash_command:
   #   name: review
@@ -50,7 +60,7 @@ tools:
 network: defaults
 
 concurrency:
-  group: "review-trigger-${{ inputs.pr_number || github.run_id }}"
+  group: "review-trigger-${{ inputs.pr_number || github.run_id }}-${{ inputs.platform || 'android' }}"
   cancel-in-progress: false
 
 timeout-minutes: 150
@@ -60,6 +70,7 @@ steps:
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ inputs.pr_number }}
+      PLATFORM: ${{ inputs.platform || 'android' }}
       AZDO_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
       AZDO_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
       AZDO_ORG: DevDiv
@@ -122,7 +133,8 @@ steps:
         -H "Content-Type: application/json" \
         -d "{
           \"templateParameters\": {
-            \"prNumber\": \"${PR_NUMBER}\"
+            \"PRNumber\": \"${PR_NUMBER}\",
+            \"Platform\": \"${PLATFORM}\"
           },
           \"resources\": {
             \"repositories\": {
@@ -202,12 +214,17 @@ steps:
       fi
 
       echo "${RESULT}" > /tmp/pipeline-results/result.txt
+      echo "${PLATFORM}" > /tmp/pipeline-results/platform.txt
 
-      # --- Download review artifact ---
-      # The pipeline produces a JSON artifact with review comments.
-      # TODO: Update ARTIFACT_NAME to match the actual artifact name from the pipeline
-      ARTIFACT_NAME="review-results"
+      # --- Download review artifacts ---
+      # The pipeline publishes a 'CopilotLogs' artifact containing:
+      #   - copilot_review_output.md (main review output)
+      #   - Review_Feedback_*.md files
+      #   - agent-pr-session/ directory with session data
+      #   - copilot-session-state/ directory
+      ARTIFACT_NAME="CopilotLogs"
 
+      # AzDO build artifacts API uses the build ID (same as run ID for pipelines)
       ARTIFACTS_JSON=$(curl -sf \
         "https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_apis/build/builds/${RUN_ID}/artifacts?api-version=7.1" \
         -H "Authorization: Bearer ${AZDO_TOKEN}")
@@ -218,18 +235,16 @@ steps:
 
       if [ -n "$ARTIFACT_URL" ]; then
         echo "📦 Downloading artifact: ${ARTIFACT_NAME}"
-        curl -sf -o /tmp/pipeline-results/review-artifact.zip \
+        curl -sf -o /tmp/pipeline-results/copilot-logs.zip \
           -H "Authorization: Bearer ${AZDO_TOKEN}" \
           "${ARTIFACT_URL}"
-        # Unzip to get the JSON
         cd /tmp/pipeline-results
-        unzip -o review-artifact.zip -d artifact/ 2>/dev/null || true
+        unzip -o copilot-logs.zip -d copilot-logs/ 2>/dev/null || true
         echo "✅ Artifact downloaded and extracted"
-        ls -la artifact/ 2>/dev/null || true
+        find copilot-logs/ -type f | head -30
       else
         echo "⚠️ Artifact '${ARTIFACT_NAME}' not found. Available artifacts:"
         echo "${ARTIFACTS_JSON}" | jq -r '.value[].name' 2>/dev/null || echo "(none)"
-        # Still continue — the agent can report what's available
         echo "${ARTIFACTS_JSON}" > /tmp/pipeline-results/available-artifacts.json
       fi
 
@@ -238,13 +253,15 @@ steps:
 
 # DevDiv Review Trigger
 
-You are a review results processor. A DevDiv AzDO pipeline has been triggered for
-PR #${{ inputs.pr_number }} and the results are ready for you to analyze and post.
+You are a review results processor. The DevDiv `maui-copilot` AzDO pipeline has been triggered
+for PR #${{ inputs.pr_number }} on platform **${{ inputs.platform || 'android' }}** and the
+results are ready for you to analyze and post.
 
 ## Context
 
 - **Repository**: ${{ github.repository }}
 - **PR Number**: ${{ inputs.pr_number }}
+- **Platform**: ${{ inputs.platform || 'android' }}
 - **Triggered by**: ${{ github.actor }}
 
 ## Your Task
@@ -253,25 +270,35 @@ PR #${{ inputs.pr_number }} and the results are ready for you to analyze and pos
    - `run-id.txt` — the AzDO build run ID
    - `pipeline-url.txt` — link to the AzDO build
    - `result.txt` — pipeline result (succeeded/failed/etc.)
-   - `artifact/` — extracted review artifact (JSON with inline comments)
-   - `available-artifacts.json` — list of available artifacts (if expected artifact wasn't found)
+   - `platform.txt` — target platform
+   - `copilot-logs/` — extracted CopilotLogs artifact containing:
+     - `copilot_review_output.md` — main review output from the Copilot agent
+     - `Review_Feedback_*.md` — review feedback files
+     - `agent-pr-session/` — agent session data (may contain structured review data)
+     - `copilot-session-state/` — Copilot CLI session state
+   - `available-artifacts.json` — list of available artifacts (if CopilotLogs wasn't found)
 
 2. **Check the pipeline result**:
-   - If `result.txt` says "succeeded", process the review artifact
+   - If `result.txt` says "succeeded", process the review artifacts
    - If it says "failed", report the failure with the pipeline URL
 
-3. **Process the review artifact** (when available):
-   - Read the JSON file from `artifact/`
-   - Parse the inline comments and review notes
-   - Post a PR review using `submit-pull-request-review` with the inline comments
-   - Post a summary comment using `add-comment` with an overview
+3. **Process the review artifacts** (when available):
+   - Read `copilot_review_output.md` — this is the main review output
+   - Read any `Review_Feedback_*.md` files for additional findings
+   - Look in `agent-pr-session/` for structured review data (JSON files with inline comments)
+   - Synthesize all findings into a coherent review
 
-4. **If no artifact was found**:
+4. **Post the results**:
+   - Use `submit-pull-request-review` to post inline review comments if you found specific
+     file/line-level findings in the artifacts
+   - Use `add-comment` to post a summary of the review with the pipeline link
+
+5. **If no artifact was found**:
    - Check `available-artifacts.json` for what artifacts exist
    - Post a comment explaining the pipeline completed but no review artifact was found
    - Include the pipeline URL so maintainers can check manually
 
-5. **If the pipeline failed**:
+6. **If the pipeline failed**:
    - Post a comment with the failure status and pipeline URL
 
 ## Output Format
@@ -279,19 +306,20 @@ PR #${{ inputs.pr_number }} and the results are ready for you to analyze and pos
 When posting the review summary via `add-comment`, use this format:
 
 ```markdown
-## 🔍 DevDiv Pipeline Review — PR #<number>
+## 🔍 DevDiv Pipeline Review — PR #<number> (<platform>)
 
 **Pipeline Result:** ✅ Succeeded / ❌ Failed
 **Pipeline Run:** [View in AzDO](<pipeline-url>)
+**Platform:** <platform>
 **Triggered by:** @<actor>
 
 ### Review Summary
-<summary of findings from the JSON artifact>
+<summary of findings from the review artifacts>
 
-### Inline Comments
-<count> inline comments posted as a PR review.
+### Key Findings
+<bullet list of important findings>
 
-> 🔍 Review generated from DevDiv pipeline run.
+> 🔍 Review generated from DevDiv `maui-copilot` pipeline.
 ```
 
 ## When No Action Is Needed
