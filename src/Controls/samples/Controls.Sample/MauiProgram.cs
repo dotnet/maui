@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
@@ -29,6 +30,8 @@ using Microsoft.Maui.Controls.Compatibility.Hosting;
 #if ANDROID
 using Android.Gms.Common;
 using Android.Gms.Maps;
+#elif WINDOWS
+using Microsoft.Windows.AppLifecycle;
 #endif
 
 namespace Maui.Controls.Sample
@@ -286,6 +289,7 @@ namespace Maui.Controls.Sample
 					events.AddWindows(windows => windows
 						// .OnPlatformMessage((a, b) => 
 						//	LogEvent(nameof(WindowsLifecycle.OnPlatformMessage)))
+						.OnAppInstanceActivated((application, args) => HandleWindowsAppInstanceActivated(application, args))
 						.OnActivated((a, b) => LogEvent(nameof(WindowsLifecycle.OnActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(WindowsLifecycle.OnClosed)))
 						.OnLaunched((a, b) => LogEvent(nameof(WindowsLifecycle.OnLaunched)))
@@ -310,6 +314,46 @@ namespace Maui.Controls.Sample
 						Debug.WriteLine($"Lifecycle event: {eventName}{(type == null ? "" : $" ({type})")}");
 						return true;
 					}
+
+#if WINDOWS
+					static bool HandleWindowsAppInstanceActivated(Microsoft.UI.Xaml.Application application, AppActivationArguments args)
+					{
+						LogEvent(nameof(WindowsLifecycle.OnAppInstanceActivated), args.Kind.ToString());
+
+						// This sample opts into single-instancing from the MAUI lifecycle callback
+						// instead of a custom Program.cs entry point.
+						var keyInstance = AppInstance.FindOrRegisterForKey("Maui.Controls.Sample");
+
+						if (!keyInstance.IsCurrent)
+						{
+							// The WinAppSDK single-instance guidance redirects the activation and then
+							// terminates the losing instance immediately. Using Kill here avoids leaving
+							// a headless process around that can continue to hold build outputs open.
+							keyInstance.RedirectActivationToAsync(args).AsTask().GetAwaiter().GetResult();
+							Process.GetCurrentProcess().Kill();
+							return true;
+						}
+
+						if (Application.Current?.Windows.FirstOrDefault() is Window window)
+						{
+							// Redirected activations can arrive off the UI thread, so hop through the
+							// MAUI window dispatcher before re-activating the existing window.
+							window.Dispatcher.Dispatch(() =>
+							{
+								Application.Current.ActivateWindow(window);
+
+								if (window.Page is Page page)
+								{
+									_ = page.DisplayAlertAsync("App Activated",
+										$"This window was brought to the foreground because the app was re-launched. " +
+										$"Activation kind: {args.Kind}", "OK");
+								}
+							});
+						}
+
+						return false;
+					}
+#endif
 				});
 
 			// Adapt to dual-screen and foldable Android devices like Surface Duo, includes TwoPaneView layout control

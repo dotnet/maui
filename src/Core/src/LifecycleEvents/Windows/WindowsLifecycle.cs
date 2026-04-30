@@ -1,7 +1,10 @@
-﻿namespace Microsoft.Maui.LifecycleEvents
+using Microsoft.Windows.AppLifecycle;
+
+namespace Microsoft.Maui.LifecycleEvents
 {
 	public static class WindowsLifecycle
 	{
+		public delegate bool OnAppInstanceActivated(UI.Xaml.Application application, AppActivationArguments args);
 		public delegate void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs args);
 		public delegate void OnClosed(UI.Xaml.Window window, UI.Xaml.WindowEventArgs args);
 		public delegate void OnLaunched(UI.Xaml.Application application, UI.Xaml.LaunchActivatedEventArgs args);
