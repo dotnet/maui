@@ -251,6 +251,81 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(source.IsIndexPathValid(invalidSection));
 		}
 
+		private async Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<THandler>()
+			where THandler : class, IElementHandler
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, THandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var labels = new List<Label>();
+			var items = new ObservableCollection<string>
+			{
+				"one",
+				"two",
+				"three",
+				"four"
+			};
+
+			var collectionView = new CollectionView
+			{
+				HeightRequest = 200,
+				WidthRequest = 300,
+				ItemsSource = items,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label
+					{
+						LineBreakMode = LineBreakMode.WordWrap
+					};
+
+					label.SetBinding(Label.TextProperty, ".");
+					labels.Add(label);
+
+					return label;
+				})
+			};
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<THandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+
+				Assert.NotEmpty(labels);
+
+				// Change text of all the labels to force a relayout, including those that were
+				// only used for measurement cell. Now we should be sure that all visible cells
+				// have their MeasureInvalidated == true.
+				foreach (var label in labels)
+					label.Text = label.Text + " with enough extra text to invalidate the measured cell size";
+				// Add another item to force an animation
+				items.Add("five");
+				// Reset the data source to force another animation and a layout pass
+				collectionView.ItemsSource = null;
+
+				await Task.Delay(100);
+				((UIView)handler.PlatformView).LayoutIfNeeded();
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView Does Not Crash After Resetting Source With Running Animation")]
+		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash()
+		{
+			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler>();
+		}
+
+		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Resetting Source With Running Animation")]
+		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash2()
+		{
+			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler2>();
+		}
+
 		[Fact(DisplayName = "CollectionView Does Not Leak With Default ItemsLayout")]
 		public async Task CollectionViewDoesNotLeakWithDefaultItemsLayout()
 		{

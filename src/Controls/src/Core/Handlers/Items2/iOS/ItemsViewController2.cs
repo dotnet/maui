@@ -211,22 +211,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var collectionView = CollectionView;
 			var visibleCells = collectionView.VisibleCells;
-			List<TemplatedCell2> invalidatedCells = null;
+			List<NSIndexPath> invalidatedIndexPaths = null;
 
 			var visibleCellsLength = visibleCells.Length;
 			for (int n = 0; n < visibleCellsLength; n++)
 			{
 				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
 				{
-					invalidatedCells ??= [];
-					invalidatedCells.Add(cell);
+					var indexPath = CollectionView.IndexPathForCell(cell);
+					if (indexPath is not null && Items.IndexPathHelpers.IsIndexPathValid(ItemsSource, indexPath))
+					{
+						invalidatedIndexPaths ??= [];
+						invalidatedIndexPaths.Add(indexPath);
+					}
 				}
 			}
 
-			if (invalidatedCells is not null)
+			if (invalidatedIndexPaths is not null)
 			{
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
+				layoutInvalidationContext.InvalidateItems(invalidatedIndexPaths.ToArray());
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
 		}
