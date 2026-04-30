@@ -301,7 +301,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Change text of all the labels to force a relayout, including those that were
 				// only used for measurement cell. Now we should be sure that all visible cells
-				// have their MeasureInvalidate == true.
+				// have their MeasureInvalidated == true.
 				foreach (var label in labels)
 					label.Text = label.Text + " with enough extra text to invalidate the measured cell size";
 				// Add another item to force an animation
@@ -314,13 +314,13 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "CollectionView Does Not Crash After Reseting Source With Running Animation")]
+		[Fact(DisplayName = "CollectionView Does Not Crash After Resetting Source With Running Animation")]
 		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash()
 		{
 			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler>();
 		}
 
-		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Reseting Source With Running Animation")]
+		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Resetting Source With Running Animation")]
 		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash2()
 		{
 			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler2>();
