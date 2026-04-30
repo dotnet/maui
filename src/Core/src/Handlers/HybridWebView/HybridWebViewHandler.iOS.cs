@@ -127,6 +127,7 @@ namespace Microsoft.Maui.Handlers
 #if !NETSTANDARD
 		[RequiresDynamicCode(DynamicFeatures)]
 #endif
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The iOS Managed Registrar references this NSObject subclass in <Module>..cctor(). The RequiresUnreferencedCode is for callers instantiating this type, not for the registrar's type registration.")]
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -149,6 +150,7 @@ namespace Microsoft.Maui.Handlers
 #if !NETSTANDARD
 		[RequiresDynamicCode(DynamicFeatures)]
 #endif
+		[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The iOS Managed Registrar references this NSObject subclass in <Module>..cctor(). The RequiresUnreferencedCode is for callers instantiating this type, not for the registrar's type registration.")]
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
