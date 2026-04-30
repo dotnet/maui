@@ -163,7 +163,7 @@ In **dotnet/maui** → **Settings** → **Secrets and variables** → **Actions*
 
 ## Step 5: Create the GitHub Actions Workflow
 
-See [`.github/workflows/trigger-azdo-pipeline.yml`](../workflows/trigger-azdo-pipeline.yml) for a ready-to-use workflow.
+See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) for a ready-to-use workflow.
 
 ## How It Works (Token Flow)
 
