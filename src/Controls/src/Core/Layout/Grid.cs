@@ -406,6 +406,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is Grid grid)
 			{
 				grid.InvalidateMeasure();
+				if (grid.Parent is Layout parentLayout)
+				{
+					parentLayout.InvalidateMeasure();
+				}
 			}
 			else if (bindable is Element element && element.Parent is Grid parentGrid)
 			{
