@@ -79,7 +79,9 @@ internal static class RefreshViewWebViewScrollCapture
 	internal static void Attach(WebView webView)
 	{
 		if (GetState(webView) is not null)
+		{
 			return;
+		}
 
 		var state = new ScrollCaptureState();
 		webView.SetTag(ScrollCaptureStateKey, state);
@@ -89,26 +91,41 @@ internal static class RefreshViewWebViewScrollCapture
 	internal static void Detach(WebView? webView)
 	{
 		if (webView is null)
+		{
 			return;
+		}
 
 		if (GetState(webView) is not ScrollCaptureState state)
+		{
 			return;
+		}
 
+		// Mark detached BEFORE removing the interface so any in-flight JNI
+		// callbacks to SetCanScrollUp become no-ops instead of accessing a
+		// disposed object.  RemoveJavascriptInterface is async from V8's
+		// perspective — the JS bridge can still fire after this call returns.
+		state.MarkDetached();
 		webView.RemoveJavascriptInterface(JavaScriptInterfaceName);
 		webView.SetTag(ScrollCaptureStateKey, null);
-		state.Dispose();
+		// Do NOT call state.Dispose() here — V8 may still hold a reference to
+		// the state object via the JS bridge.  The GC will collect it once V8
+		// releases its last reference.
 	}
 
 	internal static void Reset(WebView? webView)
 	{
 		if (GetState(webView) is ScrollCaptureState state)
+		{
 			state.Reset();
+		}
 	}
 
 	internal static void InjectObserver(WebView? webView)
 	{
 		if (webView is null)
+		{
 			return;
+		}
 
 		webView.EvaluateJavascript(ObserverScript, null);
 	}
@@ -150,6 +167,9 @@ internal static class RefreshViewWebViewScrollCapture
 		// and read from the UI thread, so they must be volatile to ensure visibility on ARM.
 		volatile bool _canScrollUp;
 		volatile bool _hasReportedState;
+		// Set before RemoveJavascriptInterface so any in-flight JNI callbacks become
+		// no-ops rather than accessing a disposed object.
+		volatile bool _detached;
 
 		internal bool CanScrollUp => _canScrollUp;
 
@@ -160,9 +180,15 @@ internal static class RefreshViewWebViewScrollCapture
 		[Export("setCanScrollUp")]
 		public void SetCanScrollUp(bool canScrollUp)
 		{
+			if (_detached)
+			{
+				return;
+			}
 			_canScrollUp = canScrollUp;
 			_hasReportedState = true;
 		}
+
+		internal void MarkDetached() => _detached = true;
 
 		internal void Reset()
 		{
