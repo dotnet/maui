@@ -12,6 +12,14 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : PlatformWrapperView
 	{
+		// When alpha < 1 and HasOverlappingRendering is true, Android renders into an
+		// offscreen buffer bounded by the view's own dimensions, clipping overflowing
+		// children. Return false only when semi-transparent so Android applies alpha
+		// per-child instead, avoiding the implicit clip.
+		// When fully opaque (Alpha >= 1), preserve the base class behavior so any
+		// future or subclass override is respected rather than hardcoding true.
+		public override bool HasOverlappingRendering => Alpha >= 1.0f && base.HasOverlappingRendering;
+
 		APath _currentPath;
 		SizeF _lastPathSize;
 		bool _invalidateClip;
@@ -67,45 +75,32 @@ namespace Microsoft.Maui.Platform
 				float radius = context.ToPixels(Shadow.Radius);
 				float offsetX = context.ToPixels(Shadow.Offset.X);
 				float offsetY = context.ToPixels(Shadow.Offset.Y);
-				int paintType;
-				int[] colors;
-				float[] positions;
-				float[] bounds;
 
 				switch (shadowPaint)
 				{
-					case LinearGradientPaint linearGradientPaint:
-						var linearGradientData = linearGradientPaint.GetGradientData(shadowOpacity);
-						paintType = PlatformPaintType.Linear;
-						colors = linearGradientData.Colors;
-						positions = linearGradientData.Offsets;
-						bounds = [linearGradientData.X1, linearGradientData.Y1, linearGradientData.X2, linearGradientData.Y2];
-						break;
-					case RadialGradientPaint radialGradientPaint:
-						var radialGradientData = radialGradientPaint.GetGradientData(shadowOpacity);
-						paintType = PlatformPaintType.Radial;
-						colors = radialGradientData.Colors;
-						positions = radialGradientData.Offsets;
-						bounds = [radialGradientData.CenterX, radialGradientData.CenterY, radialGradientData.Radius];
-						break;
 					case SolidPaint solidPaint:
-						paintType = PlatformPaintType.Solid;
 						// If the alpha is set in the color value, the shadow transparency is applied based on that alpha. 
 						// If the Opacity property is set directly, the shadow transparency is applied based on the Opacity. 
 						// If both values are provided, the color alpha is combined with the Opacity to apply a unified transparency effect to the shadow, ensuring consistent behavior across platforms.
-						colors = [solidPaint.Color.WithAlpha(solidPaint.Color.Alpha * shadowOpacity).ToPlatform().ToArgb()];
-						positions = null;
-						bounds = null;
+						SetSolidShadow(radius, offsetX, offsetY, solidPaint.Color.WithAlpha(solidPaint.Color.Alpha * shadowOpacity)
+							.ToPlatform()
+							.ToArgb());
+						break;
+					case LinearGradientPaint linearGradientPaint:
+						var linearGradientData = linearGradientPaint.GetGradientData(shadowOpacity);
+						SetLinearGradientShadow(radius, offsetX, offsetY, linearGradientData.X1, linearGradientData.Y1, linearGradientData.X2, linearGradientData.Y2, linearGradientData.Colors, linearGradientData.Offsets);
+						break;
+					case RadialGradientPaint radialGradientPaint:
+						var radialGradientData = radialGradientPaint.GetGradientData(shadowOpacity);
+						SetRadialGradientShadow(radius, offsetX, offsetY, radialGradientData.CenterX, radialGradientData.CenterY, radialGradientData.Radius, radialGradientData.Colors, radialGradientData.Offsets);
 						break;
 					default:
 						throw new NotSupportedException("Unsupported shadow paint type.");
 				}
-
-				UpdateShadow(paintType, radius, offsetX, offsetY, colors, positions, bounds);
 			}
 			else
 			{
-				UpdateShadow(PlatformPaintType.None, 0, 0, 0, null, null, null);
+				SetNoShadow();
 			}
 		}
 
@@ -213,6 +208,11 @@ namespace Microsoft.Maui.Platform
 
 				clearWrapperView.Invoke();
 			}
+		}
+
+		internal void ScheduleInvalidate()
+		{
+			Post(() => Invalidate());
 		}
 	}
 }

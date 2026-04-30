@@ -1,0 +1,84 @@
+name: Milestone Management
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [main, net*.0, inflight/*, release/*]
+
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Single PR number to check/fix (leave empty for tag-based mode)'
+        required: false
+        type: string
+      tag:
+        description: 'Release tag to audit (e.g., "10.0.50")'
+        required: false
+        type: string
+      apply:
+        description: 'Apply milestone changes (default: dry-run only)'
+        required: false
+        type: boolean
+        default: false
+      create_issue:
+        description: 'Create a GitHub issue with the drift report'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  manage-milestones:
+    # For PR merges: only run when actually merged (not just closed)
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Run milestone management
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_APPLY: ${{ inputs.apply }}
+          INPUT_CREATE_ISSUE: ${{ inputs.create_issue }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          ARGS=()
+
+          if [ "$EVENT_NAME" = "pull_request_target" ]; then
+            # Auto-trigger: set milestone on the merged PR
+            ARGS+=('-PrNumber' "$INPUT_PR_NUMBER" '-Apply')
+          else
+            # Manual trigger: use provided inputs
+            if [ -n "$INPUT_PR_NUMBER" ]; then
+              ARGS+=('-PrNumber' "$INPUT_PR_NUMBER")
+            fi
+
+            if [ -n "$INPUT_TAG" ]; then
+              ARGS+=('-Tag' "$INPUT_TAG")
+            fi
+
+            if [ "$INPUT_APPLY" = "true" ]; then
+              ARGS+=('-Apply')
+            fi
+
+            if [ "$INPUT_CREATE_ISSUE" = "true" ]; then
+              ARGS+=('-CreateIssue')
+            fi
+          fi
+
+          ARGS+=('-RepoPath' '.' '-Verbose')
+
+          printf 'Running: pwsh -File .github/scripts/Fix-MilestoneDrift.ps1'
+          printf ' %q' "${ARGS[@]}"
+          echo
+          pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 "${ARGS[@]}"

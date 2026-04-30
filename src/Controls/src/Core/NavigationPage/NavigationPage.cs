@@ -838,7 +838,6 @@ namespace Microsoft.Maui.Controls
 						Owner.FireDisappearing(currentPage);
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
-						Owner.RemoveFromInnerChildren(currentPage);
 						if (currentPage.TitleView != null)
 						{
 							currentPage.RemoveLogicalChild(currentPage.TitleView);
