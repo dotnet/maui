@@ -1123,6 +1123,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
+			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
+			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
+			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
+			// causing a UIKit VC / MAUI navigation stack desync.
+			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			{
+				_uiRequestedPop = false;
+				return false;
+			}
 			_uiRequestedPop = true;
 			return true;
 		}
