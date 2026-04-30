@@ -64,6 +64,16 @@ parameters:
     type: boolean
     default: false
 
+  - name: prNumber
+    displayName: 'PR number (run UI tests for a specific PR)'
+    type: string
+    default: ' '
+
+  - name: categories
+    displayName: 'UI test categories to run (comma-separated, e.g. "Button,Label"). Leave empty for all.'
+    type: string
+    default: ' '
+
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
@@ -168,6 +178,8 @@ stages:
       # BuildNativeAOT is false by default, but true in devdiv environment
       BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
       RunNativeAOT: ${{ parameters.RunNativeAOT }}
+      prNumber: ${{ parameters.prNumber }}
+      categories: ${{ parameters.categories }}
       ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.5', 'latest' ]
