@@ -236,6 +236,13 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
+		// Recursively hit-tests the view tree to find a WebView at the given
+		// coordinates (in the parent's coordinate space).
+		// ScrollX/ScrollY are added when converting to a child's local coordinate
+		// space so that scrolled containers (HorizontalScrollView, NestedScrollView,
+		// etc.) are handled correctly. Without this adjustment, any ViewGroup that
+		// has been scrolled would cause the hit-test to miss the WebView or match
+		// the wrong region.
 		static AWebView? FindWebView(AView? view, float x, float y)
 		{
 			if (view is null || view.Visibility != ViewStates.Visible)
@@ -250,8 +257,8 @@ namespace Microsoft.Maui.Platform
 			if (view is not ViewGroup viewGroup)
 				return null;
 
-			var localX = x - view.Left;
-			var localY = y - view.Top;
+			var localX = x - view.Left + view.ScrollX;
+			var localY = y - view.Top  + view.ScrollY;
 
 			for (int i = viewGroup.ChildCount - 1; i >= 0; i--)
 			{
@@ -262,5 +269,6 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+
 	}
 }

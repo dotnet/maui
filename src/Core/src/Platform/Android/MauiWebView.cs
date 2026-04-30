@@ -37,7 +37,15 @@ namespace Microsoft.Maui.Platform
 			UpdateClipBounds(Width, Height);
 
 			if (IsInsideSwipeRefreshLayout())
+			{
 				RefreshViewWebViewScrollCapture.Attach(this);
+				// If a page has already loaded before this WebView was placed inside a
+				// RefreshView (late-attach), OnPageFinished already fired with IsAttached=false
+				// and the observer was never injected. Re-inject it now so inner-scroll can
+				// correctly prevent pull-to-refresh.
+				if (!string.IsNullOrEmpty(Url))
+					RefreshViewWebViewScrollCapture.InjectObserver(this);
+			}
 		}
 
 		protected override void OnDetachedFromWindow()
