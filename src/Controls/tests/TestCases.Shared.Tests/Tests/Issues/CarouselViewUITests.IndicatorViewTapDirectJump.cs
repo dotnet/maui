@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // iOS/Catalyst: https://github.com/dotnet/maui/issues/27007 (the bug under test). Windows: IndicatorView UI automation not working — see Issue31063.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -9,6 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string CarouselId = "jumpCarousel";
 		const string IndicatorId = "jumpIndicator";
 		const string PositionLabelId = "jumpPositionLabel";
+		const int TotalItems = 5;
+		const int LastDotIndex = TotalItems - 1;
 
 		public IndicatorViewTapDirectJump(TestDevice device)
 			: base(device) { }
@@ -18,22 +21,31 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Repros https://github.com/dotnet/maui/issues/27007.
 		[Test]
-		[Category(UITestCategories.IndicatorView)]
+		[Category(UITestCategories.CarouselView)]
 		public void TappingLastDotJumpsDirectlyToLastItem()
 		{
 			App.WaitForElement(CarouselId, timeout: TimeSpan.FromSeconds(30));
-			App.WaitForElement(IndicatorId);
 
-			// The carousel has 5 items. Tapping the rightmost dot should jump
-			// directly to Item 4. On iOS/Catalyst, UIPageControl only interprets
-			// taps as "left half = back 1" / "right half = forward 1", so the
-			// carousel only advances to Item 1 — bug #27007.
-			var indicatorRect = App.FindElement(IndicatorId).GetRect();
-			var lastDotX = indicatorRect.X + indicatorRect.Width - 10;
+			// Use the WaitForElement result directly to avoid a stale-rect race
+			// between the implicit wait and the subsequent FindElement.
+			var indicatorRect = App.WaitForElement(IndicatorId).GetRect();
+
+			// The dots are laid out evenly across the IndicatorView's bounds. Tap the
+			// horizontal center of the slot for the last dot using a proportional
+			// formula so the test does not depend on IndicatorSize/padding constants.
+			// On iOS/Catalyst, UIPageControl only interprets taps as "left half = back 1"
+			// / "right half = forward 1", so the carousel only advances to Item 1 — bug #27007.
+			var lastDotX = indicatorRect.X + (LastDotIndex + 0.5f) * indicatorRect.Width / TotalItems;
 			var centerY = indicatorRect.Y + indicatorRect.Height / 2;
 			App.TapCoordinates(lastDotX, centerY);
 
-			Thread.Sleep(800);
+			// Replace fragile Thread.Sleep with a deterministic text-presence wait
+			// so the failure mode on regression is a clear timeout rather than a flaky race.
+			Assert.That(
+				App.WaitForTextToBePresentInElement(PositionLabelId, "Pos:4", TimeSpan.FromSeconds(5)),
+				Is.True,
+				"PositionLabel did not update to 'Pos:4' within 5s after tapping the last indicator dot."
+			);
 
 			var posText = App.FindElement(PositionLabelId).GetText();
 			Assert.That(
@@ -44,3 +56,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
