@@ -1153,11 +1153,49 @@ function Write-MarkdownReport {
     $status = if ($hasEnvError) { "⚠️ ENV ERROR" } elseif ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
+    # ─── Improvement #2: classify the failure mode so the headline matches the cause ───
+    # Without this, every non-PASSED gate just says "tests did not behave as expected".
+    # Map the without/with-fix outcomes per test into a concrete diagnosis the
+    # downstream Try-Fix×4 stage and the human reader can act on.
+    $failureClassification = $null
+    if (-not $hasEnvError -and -not $VerificationPassed -and $WithoutFixResultsList -and $WithFixResultsList) {
+        $woStates = @($WithoutFixResultsList | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
+        $wStates  = @($WithFixResultsList    | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
+
+        $allWoPass   = ($woStates | Where-Object { $_ -ne "PASS" }).Count -eq 0
+        $allWoFail   = ($woStates | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $allWFail    = ($wStates  | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $hasRegression = $false
+        # Regression: at least one test fixes (FAIL→PASS) AND at least one regresses (FAIL→FAIL)
+        for ($i = 0; $i -lt $woStates.Count -and $i -lt $wStates.Count; $i++) {
+            if ($woStates[$i] -eq "FAIL" -and $wStates[$i] -eq "FAIL") { $hasRegression = $true }
+        }
+        $hasFixedTest = $false
+        for ($i = 0; $i -lt $woStates.Count -and $i -lt $wStates.Count; $i++) {
+            if ($woStates[$i] -eq "FAIL" -and $wStates[$i] -eq "PASS") { $hasFixedTest = $true }
+        }
+
+        if ($allWoPass) {
+            $failureClassification = "🩺 **Test does not reproduce the bug** — ran the same in both states (PASS without fix, PASS with fix). The repro test is not exercising the issue. Strengthen the test before reviewing the fix."
+        } elseif ($allWoFail -and $allWFail) {
+            $failureClassification = "🩺 **Fix does not pass the tests** — every test still fails after applying the fix. The PR's change does not resolve the failure(s)."
+        } elseif ($hasFixedTest -and $hasRegression) {
+            $failureClassification = "🩺 **Regression in another test** — at least one test goes FAIL→PASS (fix works there), but another test FAILs both with and without the fix. The fix breaks a pre-existing or sibling test."
+        } elseif ($hasRegression -and -not $hasFixedTest) {
+            $failureClassification = "🩺 **Fix breaks tests** — one or more tests fail with the fix applied, and none of the failures are resolved by the fix."
+        }
+        # else: leave $failureClassification unset; the per-test table + Failure Details below tell the story.
+    }
+
     $lines = @()
     $lines += "### Gate Result: $status"
     $lines += ""
     $platformDisplay = if ($ReportPlatform) { $ReportPlatform.ToUpper() } else { "N/A" }
     $lines += "**Platform:** $platformDisplay · **Base:** $ReportBaseBranch · **Merge base:** ``$mergeBaseShort``"
+    if ($failureClassification) {
+        $lines += ""
+        $lines += $failureClassification
+    }
     $lines += ""
 
     # ── Side-by-side per-test comparison table ──

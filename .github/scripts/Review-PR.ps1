@@ -548,7 +548,12 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     }
     # Clear previous attempt's report so a crash mid-run doesn't leak its classification into this one.
     Remove-Item $gateContentFile -Force -ErrorAction SilentlyContinue
-    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
+    # Note: -RequireFullVerification is intentionally OMITTED. The verify script
+    # auto-detects fix files from the diff; if there are none (e.g., a test-only
+    # PR like a regression repro), it falls back to "verify failure only" mode
+    # and reports whether the new tests fail without any fix. Passing the flag
+    # would force the script to error out for those PRs.
+    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
 
@@ -601,7 +606,71 @@ Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
 # Copy the verification report to gate/content.md (always overwrite — the report is the source of truth)
 $verificationReport = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
 # Capture last meaningful lines from gate output for fallback diagnostics
-$gateLogTail = @($gateOutput | ForEach-Object { $_.ToString() } | Where-Object { $_ -match '\S' } | Select-Object -Last 20) -join "`n"
+$gateLogTail = @($gateOutput | ForEach-Object { $_.ToString() } | Where-Object { $_ -match '\S' } | Select-Object -Last 60) -join "`n"
+
+# ─── Improvement #1: build rich fallback diagnostics for the silent-failure case ───
+# When verify-tests-fail.ps1 aborts before writing its report, the original fallback
+# emitted just "Gate Result: FAILED" + an empty <details> block. Capture extra signal
+# so reviewers and downstream agents can act on it.
+function Get-GateFallbackDetails {
+    param([string]$Tail, [int]$ExitCode, [string]$VerifyDir, [string]$ReviewedPlatform)
+
+    $sections = @()
+
+    $sections += "**Exit code:** ``$ExitCode``"
+
+    # Surface auto-detected tests / fix files from the verify script's stdout
+    # so reviewers can tell whether detection failed vs. the test run itself.
+    $detected = @{}
+    foreach ($line in ($Tail -split "`n")) {
+        if ($line -match '^\s*Detected test type:\s*(\S+)') { $detected['type'] = $Matches[1] }
+        elseif ($line -match '^\s*Test filter:\s*(\S+)')      { $detected['filter'] = $Matches[1] }
+        elseif ($line -match '^\s*Fix files \((\d+)\):')      { $detected['fixCount'] = $Matches[1] }
+        elseif ($line -match '^\s*Merge base:\s*(\S+)')       { $detected['mergeBase'] = $Matches[1] }
+    }
+    if ($detected.Count -gt 0) {
+        $items = @()
+        if ($detected.ContainsKey('type'))      { $items += "- Test type: ``$($detected['type'])``" }
+        if ($detected.ContainsKey('filter'))    { $items += "- Test filter: ``$($detected['filter'])``" }
+        if ($detected.ContainsKey('fixCount')) { $items += "- Fix files detected: $($detected['fixCount'])" }
+        if ($detected.ContainsKey('mergeBase')) { $items += "- Merge base: ``$($detected['mergeBase'])``" }
+        $sections += "**Auto-detected:**`n" + ($items -join "`n")
+    }
+
+    # Heuristic classification — make the cause actionable instead of leaving the
+    # reader to grep stderr.
+    $likely = @()
+    if ($Tail -match '(?i)Could not auto-detect PR number|no tests detected|0 test\(s\) detected') {
+        $likely += "Test detection failed — no runnable tests were found in the PR diff."
+    }
+    if ($Tail -match '(?i)build failed|MSBUILD.*error|error CS\d+|error MAUI\d+') {
+        $likely += "Build error before any test could run."
+    }
+    if ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)') {
+        $likely += "Device/emulator setup failed (env error class)."
+    }
+    if ($Tail -match '(?i)merge.conflict|conflict.*merge.base') {
+        $likely += "Merge conflict prevented running the gate."
+    }
+    if ($Tail -match '(?i)NO FIX FILES DETECTED') {
+        $likely += "No fix files detected in the diff (PR may be test-only — should now run in failure-only mode)."
+    }
+    if ($likely.Count -gt 0) {
+        $sections += "**Likely cause:**`n" + (($likely | ForEach-Object { "- $_" }) -join "`n")
+    }
+
+    # List artifacts under gate/verify-tests-fail/ — partial logs sometimes survive
+    # even when the report itself was not written.
+    if (Test-Path $VerifyDir) {
+        $files = Get-ChildItem -Path $VerifyDir -File -ErrorAction SilentlyContinue |
+            Sort-Object Name | ForEach-Object { "- ``$($_.Name)`` ($([math]::Round($_.Length / 1KB, 1)) KB)" }
+        if ($files) {
+            $sections += "**Artifacts written before exit:**`n" + ($files -join "`n")
+        }
+    }
+
+    return ($sections -join "`n`n")
+}
 
 if (Test-Path $verificationReport) {
     $reportContent = Get-Content $verificationReport -Raw -ErrorAction SilentlyContinue
@@ -613,13 +682,18 @@ if (Test-Path $verificationReport) {
         # Report exists but has bad format — generate fallback with logs
         Write-Host "  ⚠️ Verification report has invalid format — using fallback" -ForegroundColor Yellow
         $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } default { "❌" } }
+        $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
         @"
 ### Gate Result: $resultIcon $gateResult
 
 **Platform:** $($gatePlatform.ToUpper())
 
+> ⚠️ ``verify-tests-fail.ps1`` produced an empty report. Diagnostics below.
+
+$fallbackDetails
+
 <details>
-<summary>Gate output log</summary>
+<summary>Gate output log (last 60 lines)</summary>
 
 ``````
 $gateLogTail
@@ -639,13 +713,18 @@ No tests were detected in this PR.
 "@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     } else {
         $resultIcon = switch ($gateResult) { "PASSED" { "✅" } default { "❌" } }
+        $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
         @"
 ### Gate Result: $resultIcon $gateResult
 
 **Platform:** $($gatePlatform.ToUpper())
 
+> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report. Diagnostics below.
+
+$fallbackDetails
+
 <details>
-<summary>Gate output log</summary>
+<summary>Gate output log (last 60 lines)</summary>
 
 ``````
 $gateLogTail
