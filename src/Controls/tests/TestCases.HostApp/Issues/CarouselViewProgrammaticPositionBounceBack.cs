@@ -80,6 +80,9 @@ namespace Maui.Controls.Sample.Issues
 				Text = "Set Position to 3",
 				AutomationId = SetPositionBtnId,
 			};
+			// Repros https://github.com/dotnet/maui/issues/21480: programmatic Position
+			// assignment should fire PositionChanged/CurrentItemChanged exactly once and
+			// must not be clobbered by intermediate animated-scroll callbacks.
 			setPositionBtn.Clicked += (s, e) =>
 			{
 				_positionChangedCount = 0;
@@ -90,6 +93,9 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			var reloadBtn = new Button { Text = "Reload + SetPos2", AutomationId = ReloadBtnId };
+			// Repros https://github.com/dotnet/maui/issues/23023 ("Critical Issue"): assigning
+			// a fresh ItemsSource together with an explicit Position in the same operation
+			// must not snap back to Position 0 inside UpdateAdapter.
 			reloadBtn.Clicked += (s, e) =>
 			{
 				_positionChangedCount = 0;
