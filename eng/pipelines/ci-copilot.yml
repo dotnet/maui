@@ -275,22 +275,30 @@ stages:
                 # Prepare emulator for CI use — keeps device responsive during idle period
                 echo "=== Preparing emulator for CI ==="
                 # Wait for device to stabilize after boot (transient offline state)
-                for i in $(seq 1 10); do
+                DEVICE_READY=false
+                for i in $(seq 1 20); do
                   if adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
+                    DEVICE_READY=true
                     break
                   fi
-                  echo "Device offline, retrying ($i/10)..."
-                  sleep 3
+                  echo "Device offline, retrying ($i/20)..."
+                  sleep 5
                 done
+
+                if [ "$DEVICE_READY" = false ]; then
+                  echo "##vso[task.logissue type=error]Emulator went offline after boot — device not responsive after 100s"
+                  exit 1
+                fi
+
                 # Disable all animations (reduces CPU load and flakiness)
-                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0
-                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0
-                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0
+                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
                 # Prevent screen from turning off (emulator simulates AC charging)
-                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647
-                adb -s $DEVICE_ID shell svc power stayon true
+                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                adb -s $DEVICE_ID shell svc power stayon true || true
                 # Wake screen and dismiss any lock screen
-                adb -s $DEVICE_ID shell input keyevent 82
+                adb -s $DEVICE_ID shell input keyevent 82 || true
                 sleep 1
                 # Dismiss any "System UI has stopped" or crash dialogs
                 adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
@@ -302,7 +310,7 @@ stages:
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
               displayName: 'Create AVD and Boot Android Emulator'
-              retryCountOnTaskFailure: 1
+              retryCountOnTaskFailure: 3
               timeoutInMinutes: 15
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
@@ -338,16 +346,13 @@ stages:
 
           - bash: |
               echo "Authenticating with GitHub CLI..."
-              if [ -z "$(GH_CLI_TOKEN)" ]; then
-                echo "##vso[task.logissue type=error]GH_CLI_TOKEN is not set. Please configure the pipeline variable."
+              if [ -z "$GH_TOKEN" ]; then
+                echo "##vso[task.logissue type=error]GH_TOKEN env var (from pipeline variable GH_COMMENT_TOKEN) is not set. Please configure the pipeline variable."
                 exit 1
               fi
-              # Use GH_TOKEN env var to avoid scope validation issues with newer gh versions
-              export GH_TOKEN="$(GH_CLI_TOKEN)"
               gh auth status
               if [ $? -ne 0 ]; then
-                # Fallback: try direct login
-                echo "$(GH_CLI_TOKEN)" | gh auth login --with-token 2>/dev/null || true
+                echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null || true
                 if ! gh auth status; then
                   echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
                   exit 1
@@ -356,7 +361,7 @@ stages:
               echo "GitHub CLI authenticated successfully"
             displayName: 'Authenticate GitHub CLI'
             env:
-              GH_CLI_TOKEN: $(GH_CLI_TOKEN)
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           - bash: |
               echo "Installing GitHub Copilot CLI..."

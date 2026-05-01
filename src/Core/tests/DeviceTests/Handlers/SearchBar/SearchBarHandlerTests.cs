@@ -498,6 +498,33 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position) =>
 				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
+
+			// Regression test for https://github.com/dotnet/maui/issues/30779
+			// SearchBar.CursorPosition was not updated when the user typed (native text changed)
+			[Fact(DisplayName = "CursorPosition Updates After Typing Via Native Input")]
+			public async Task CursorPositionUpdatesAfterTypingViaNativeInput()
+			{
+				var searchBar = new SearchBarStub();
+
+				await AttachAndRun(searchBar, async (handler) =>
+				{
+#if IOS || MACCATALYST
+					// On iOS/Mac, CursorPosition only updates when the SearchBar is focused
+					// (IsFirstResponder = true). Focus the QueryEditor before setting text
+					// to simulate the real user flow: tap → type.
+					handler.QueryEditor.BecomeFirstResponder();
+#endif
+					// Simulate user typing by setting text via the native platform method
+					SetNativeText(handler, "Hello");
+
+					// On Android the fix uses Post() to defer cursor reads; wait for it.
+					// On iOS/Windows the update fires via DidChangeSelection on the focused field.
+					await AssertEventually(() => searchBar.CursorPosition == 5);
+				});
+
+				// After typing "Hello" (5 chars), the cursor should be at the end
+				Assert.Equal(5, searchBar.CursorPosition);
+			}
 		}
 
 		// TODO: only iOS is working with the search bar focus tests
