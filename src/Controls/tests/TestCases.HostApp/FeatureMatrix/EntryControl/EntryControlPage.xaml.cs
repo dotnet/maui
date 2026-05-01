@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample;
 
@@ -129,5 +130,38 @@ public partial class EntryControlMainPage : ContentPage
 		{
 			vm.UnfocusedText = eventInfo;
 		}
+	}
+
+	void MainLabel_Tapped(object sender, TappedEventArgs e)
+	{
+		// Recreate the page to verify initial mappers
+		ToolbarItems.Clear();
+		Content = new ContentView();
+		INameScope scope = this;
+		scope.UnregisterName("EntryControl");
+		scope.UnregisterName("TextChangedLabel");
+		scope.UnregisterName("SelectionLengthEntry");
+		scope.UnregisterName("CursorPositionEntry");
+		scope.UnregisterName("CompletedLabel");
+		scope.UnregisterName("FocusedLabel");
+		scope.UnregisterName("UnfocusedLabel");
+		scope.UnregisterName("grid");
+		InitializeComponent();
+
+		if (OperatingSystem.IsIOSVersionAtLeast(26))
+		{
+			grid.HeightRequest = 100;
+		}
+		else
+		{
+			grid.HeightRequest = 130;
+		}
+
+		// Reattach the PropertyChanged event handler after reinitialization
+		EntryControl.PropertyChanged += UpdateEntryControl;
+
+		// Update the entry fields to reflect current values
+		CursorPositionEntry.Text = EntryControl.CursorPosition.ToString();
+		SelectionLengthEntry.Text = EntryControl.SelectionLength.ToString();
 	}
 }

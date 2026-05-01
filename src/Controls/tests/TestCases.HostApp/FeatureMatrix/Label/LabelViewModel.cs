@@ -7,16 +7,7 @@ public class LabelViewModel : INotifyPropertyChanged
 {
 
 	public LabelViewModel()
-	{
-
-		FormattedText = new FormattedString
-		{
-			Spans =
-		   {
-			   new Span { Text = "This is a Basic Label"},
-		   }
-		};
-	}
+	{ }
 	private string _text;
 	public string Text
 	{
@@ -59,7 +50,7 @@ public class LabelViewModel : INotifyPropertyChanged
 		set { characterSpacing = value; OnPropertyChanged(); }
 	}
 
-	private double lineHeight;
+	private double lineHeight = -1;
 	public double LineHeight
 	{
 		get => lineHeight;

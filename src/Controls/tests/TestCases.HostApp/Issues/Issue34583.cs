@@ -262,7 +262,7 @@ public class Issue34583 : ContentPage
 	}
 }
 
-static class Issue34583ViewExtensions
+file static class Issue34583ViewExtensions
 {
 	public static TView Row<TView>(this TView view, int row)
 		where TView : View
