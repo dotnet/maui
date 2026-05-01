@@ -1,5 +1,22 @@
 ﻿#nullable enable
+*REMOVED*Microsoft.Maui.Handlers.IPickerHandler.PlatformView.get -> Microsoft.Maui.Platform.MauiPicker!
+Microsoft.Maui.Handlers.IPickerHandler.PlatformView.get -> UIKit.UIButton!
+*REMOVED*Microsoft.Maui.Handlers.PickerSource
+*REMOVED*Microsoft.Maui.Handlers.PickerSource.Handler.get -> Microsoft.Maui.Handlers.PickerHandler?
+*REMOVED*Microsoft.Maui.Handlers.PickerSource.Handler.set -> void
+*REMOVED*Microsoft.Maui.Handlers.PickerSource.PickerSource(Microsoft.Maui.Handlers.PickerHandler? handler) -> void
+*REMOVED*Microsoft.Maui.Handlers.PickerSource.SelectedIndex.get -> int
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*override Microsoft.Maui.Handlers.PickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiPicker! platformView) -> void
+override Microsoft.Maui.Handlers.PickerHandler.ConnectHandler(UIKit.UIButton! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.PickerHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiPicker!
+override Microsoft.Maui.Handlers.PickerHandler.CreatePlatformView() -> UIKit.UIButton!
+*REMOVED*override Microsoft.Maui.Handlers.PickerHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiPicker! platformView) -> void
+override Microsoft.Maui.Handlers.PickerHandler.DisconnectHandler(UIKit.UIButton! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.PickerSource.GetComponentCount(UIKit.UIPickerView! picker) -> nint
+*REMOVED*override Microsoft.Maui.Handlers.PickerSource.GetRowsInComponent(UIKit.UIPickerView! pickerView, nint component) -> nint
+*REMOVED*override Microsoft.Maui.Handlers.PickerSource.GetTitle(UIKit.UIPickerView! picker, nint row, nint component) -> string!
+*REMOVED*override Microsoft.Maui.Handlers.PickerSource.Selected(UIKit.UIPickerView! picker, nint row, nint component) -> void
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
