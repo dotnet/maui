@@ -1,11 +1,13 @@
 ﻿using System;
 using UIKit;
+using UIStringAttributes = UIKit.UIStringAttributes;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, UIButton>
 	{
 		internal bool UpdateImmediately { get; set; }
+		IFontManager? _fontManager;
 
 		protected override UIButton CreatePlatformView()
 		{
@@ -30,7 +32,6 @@ namespace Microsoft.Maui.Handlers
 			if (PlatformView == null || VirtualView == null)
 				return;
 
-			var items = VirtualView.Items;
 			var count = VirtualView.GetCount();
 
 			if (count == 0)
@@ -72,19 +73,47 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var selectedIndex = VirtualView.SelectedIndex;
+			bool isTitle = selectedIndex < 0 || selectedIndex >= VirtualView.GetCount();
+			var text = isTitle ? (VirtualView.Title ?? string.Empty) : VirtualView.GetItem(selectedIndex);
 
-			if (selectedIndex >= 0 && selectedIndex < VirtualView.GetCount())
+			PlatformView.SetAttributedTitle(CreateAttributedString(text, isTitle), UIControlState.Normal);
+		}
+
+		NSAttributedString CreateAttributedString(string text, bool isTitle)
+		{
+			if (string.IsNullOrEmpty(text))
+				return new NSAttributedString(string.Empty);
+
+			var attributes = new UIStringAttributes();
+
+			if (VirtualView != null)
 			{
-				PlatformView.SetTitle(VirtualView.GetItem(selectedIndex), UIControlState.Normal);
+				var font = VirtualView.Font;
+				var fontManager = _fontManager ?? ((IElementHandler)this).GetRequiredService<IFontManager>();
+				if (font.Size > 0)
+				{
+					attributes.Font = fontManager.GetFont(font);
+				}
+
+				var textColor = isTitle ? VirtualView.TitleColor : VirtualView.TextColor;
+				if (textColor != null)
+				{
+					attributes.ForegroundColor = textColor.ToPlatform();
+				}
+
+				var characterSpacing = VirtualView.CharacterSpacing;
+				if (characterSpacing != 0)
+				{
+					attributes.KerningAdjustment = (float)characterSpacing;
+				}
 			}
-			else
-			{
-				PlatformView.SetTitle(VirtualView.Title ?? string.Empty, UIControlState.Normal);
-			}
+
+			return new NSAttributedString(text, attributes);
 		}
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
+			_fontManager = ((IElementHandler)this).GetRequiredService<IFontManager>();
 			UpdateMenu();
 			UpdateSelectedText();
 
@@ -93,6 +122,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UIButton platformView)
 		{
+			_fontManager = null;
 			base.DisconnectHandler(platformView);
 		}
 
@@ -119,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTitleColor(IPickerHandler handler, IPicker picker)
 		{
 			if (handler is PickerHandler pickerHandler)
-				pickerHandler.UpdateTitleColor();
+				pickerHandler.UpdateSelectedText();
 		}
 
 		public static void MapSelectedIndex(IPickerHandler handler, IPicker picker)
@@ -130,15 +160,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCharacterSpacing(IPickerHandler handler, IPicker picker)
 		{
+			if (handler is PickerHandler pickerHandler)
+				pickerHandler.UpdateSelectedText();
 		}
 
 		public static void MapFont(IPickerHandler handler, IPicker picker)
 		{
 			if (handler is PickerHandler pickerHandler)
-			{
-				var fontManager = handler.GetRequiredService<IFontManager>();
-				pickerHandler.UpdateFont(picker, fontManager);
-			}
+				pickerHandler.UpdateSelectedText();
 		}
 
 		public static void MapHorizontalTextAlignment(IPickerHandler handler, IPicker picker)
@@ -148,7 +177,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(IPickerHandler handler, IPicker picker)
 		{
 			if (handler is PickerHandler pickerHandler)
-				pickerHandler.UpdateTextColor();
+				pickerHandler.UpdateSelectedText();
 		}
 
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
@@ -157,48 +186,6 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapIsOpen(IPickerHandler handler, IPicker picker)
 		{
-		}
-
-		void UpdateTitleColor()
-		{
-			if (PlatformView == null || VirtualView == null)
-				return;
-
-			var titleColor = VirtualView.TitleColor;
-			if (titleColor != null)
-			{
-				PlatformView.SetTitleColor(titleColor.ToPlatform(), UIControlState.Normal);
-			}
-			else
-			{
-				PlatformView.SetTitleColor(UIColor.Label, UIControlState.Normal);
-			}
-		}
-
-		void UpdateTextColor()
-		{
-			if (PlatformView == null || VirtualView == null)
-				return;
-
-			var textColor = VirtualView.TextColor;
-			if (textColor != null)
-			{
-				PlatformView.SetTitleColor(textColor.ToPlatform(), UIControlState.Normal);
-			}
-			else
-			{
-				PlatformView.SetTitleColor(UIColor.Label, UIControlState.Normal);
-			}
-		}
-
-		void UpdateFont(IPicker picker, IFontManager fontManager)
-		{
-			if (PlatformView == null)
-				return;
-
-			var font = picker.Font;
-			var uiFont = fontManager.GetFont(font);
-			PlatformView.TitleLabel.Font = uiFont;
 		}
 	}
 }
