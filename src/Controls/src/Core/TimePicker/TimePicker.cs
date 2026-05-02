@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[TimePicker.Handler]
+	[TimePickerHandler]
 #else
 	[ElementHandler(typeof(TimePickerHandler))]
 #endif

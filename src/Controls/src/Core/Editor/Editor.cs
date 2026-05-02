@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A control that can edit multiple lines of text.</summary>
 #if ANDROID
-	[Editor.Handler]
+	[EditorHandler]
 #else
 	[ElementHandler(typeof(EditorHandler))]
 #endif

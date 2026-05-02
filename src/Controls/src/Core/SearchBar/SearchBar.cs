@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[SearchBar.Handler]
+	[SearchBarHandler]
 #else
 	[ElementHandler(typeof(SearchBarHandler))]
 #endif
