@@ -319,9 +319,37 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Same(registeredHandler, handler);
 		}
 
+		[Fact]
+		public void HostBuilderUsesOverriddenElementHandlerAttributeHandlerType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(OverrideAttributedViewStub));
+			var handlerType = mauiHandlersFactory.GetHandlerType(typeof(OverrideAttributedViewStub));
+
+			Assert.IsType<AlternateAttributedViewHandlerStub>(handler);
+			Assert.Same(typeof(AlternateAttributedViewHandlerStub), handlerType);
+		}
+
 		[ElementHandler(typeof(AttributedViewHandlerStub))]
 		class AttributedViewStub : ViewStub { }
 		class DerivedAttributedViewStub : AttributedViewStub { }
 		class AttributedViewHandlerStub : ViewHandlerStub { }
+
+		[OverrideElementHandler]
+		class OverrideAttributedViewStub : ViewStub { }
+		class AlternateAttributedViewHandlerStub : ViewHandlerStub { }
+		class OverrideElementHandlerAttribute : ElementHandlerAttribute
+		{
+			public OverrideElementHandlerAttribute()
+				: base(typeof(AttributedViewHandlerStub))
+			{
+			}
+
+			public override Type GetHandlerType() => typeof(AlternateAttributedViewHandlerStub);
+		}
 	}
 }

@@ -12,6 +12,7 @@ override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstra
 Microsoft.Maui.Handlers.ElementHandlerAttribute
 Microsoft.Maui.Handlers.ElementHandlerAttribute.ElementHandlerAttribute(System.Type! handlerType) -> void
 Microsoft.Maui.Handlers.ElementHandlerAttribute.HandlerType.get -> System.Type!
+virtual Microsoft.Maui.Handlers.ElementHandlerAttribute.GetHandlerType() -> System.Type!
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
 Microsoft.Maui.Handlers.PickerHandler._dialog -> AndroidX.AppCompat.App.AlertDialog?
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
