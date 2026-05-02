@@ -10,8 +10,7 @@ internal static class RemappingHelper
 	/// <summary>
 	/// Ensures the static constructor of <paramref name="baseType"/> has run before the
 	/// caller's static constructor continues, so that base-level mapper remappings are
-	/// applied first. In DEBUG builds, also validates that no intermediate type in the
-	/// hierarchy is accidentally skipped.
+	/// applied first.
 	/// </summary>
 	[UnconditionalSuppressMessage("Trimming", "IL2059",
 		Justification = "We intentionally trigger the static constructor of the base type to ensure mapper remappings are applied in order.")]

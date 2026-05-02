@@ -498,5 +498,49 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			public IMauiContext MauiContext { get; }
 		}
+
+		[Fact]
+		public void HostBuilderResolvesHandlerDeclaredWithElementHandlerAttribute()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+
+			Assert.IsType<AttributedViewHandlerStub>(handler);
+		}
+
+		[Fact]
+		public void HostBuilderResolvesBaseElementHandlerAttribute()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			var handler = mauiHandlersFactory.GetHandler(typeof(DerivedAttributedViewStub));
+
+			Assert.IsType<AttributedViewHandlerStub>(handler);
+		}
+
+		[Fact]
+		public void HostBuilderPrefersRegisteredHandlerOverElementHandlerAttribute()
+		{
+			var registeredHandler = new ViewHandlerStub();
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<AttributedViewStub>(_ => registeredHandler))
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+
+			Assert.Same(registeredHandler, handler);
+		}
+
+		[ElementHandler(typeof(AttributedViewHandlerStub))]
+		class AttributedViewStub : ViewStub { }
+		class DerivedAttributedViewStub : AttributedViewStub { }
+		class AttributedViewHandlerStub : ViewHandlerStub { }
 	}
 }
