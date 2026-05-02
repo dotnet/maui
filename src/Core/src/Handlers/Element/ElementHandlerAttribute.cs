@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Maui.Handlers;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class ElementHandlerAttribute : Attribute
+internal class ElementHandlerAttribute : Attribute
 {
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 	readonly Type _handlerType;
