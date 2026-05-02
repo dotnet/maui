@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Handlers;
@@ -18,6 +19,20 @@ namespace Microsoft.Maui.Controls
 #endif
 	public partial class Entry : InputView, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>, IEntry
 	{
+#if ANDROID
+		internal sealed class EntryHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(EntryHandler2);
+
+				return typeof(EntryHandler);
+			}
+		}
+#endif
+
 		/// <summary>
 		/// Backing store for the <see cref="ReturnType"/> property.
 		/// </summary>

@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -24,6 +25,20 @@ namespace Microsoft.Maui.Controls
 #endif
 	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>, IProgress
 	{
+#if ANDROID
+		internal sealed class ProgressBarHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(ProgressBarHandler2);
+
+				return typeof(ProgressBarHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="ProgressColor"/>.</summary>
 		public static readonly BindableProperty ProgressColorProperty = BindableProperty.Create(nameof(ProgressColor), typeof(Color), typeof(ProgressBar), null);
 
