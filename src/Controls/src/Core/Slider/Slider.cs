@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -23,6 +24,20 @@ namespace Microsoft.Maui.Controls
 #endif
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>, ISlider
 	{
+#if ANDROID
+		internal sealed class SliderHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(SliderHandler2);
+
+				return typeof(SliderHandler);
+			}
+		}
+#endif
+
 		// Stores the value that was requested by the user, before clamping
 		double _requestedValue = 0d;
 		// Tracks if the user explicitly set Value (vs it being set by recoercion)
