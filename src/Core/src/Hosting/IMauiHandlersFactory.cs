@@ -14,7 +14,6 @@ namespace Microsoft.Maui
 
 		IElementHandler? GetHandler<T>() where T : IElement;
 
-		[Obsolete("The handlers collection no longer contains all registered handlers. Use GetHandlerType instead.")]
 		IMauiHandlersCollection GetCollection();
 	}
 }
