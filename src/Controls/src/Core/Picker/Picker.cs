@@ -24,7 +24,11 @@ namespace Microsoft.Maui.Controls
 	/// The visual representation is similar to an <see cref="Entry"/>, but displays a picker interface instead of a keyboard.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[PickerHandler]
+#if ANDROID
+	[Picker.Handler]
+#else
+	[ElementHandler(typeof(PickerHandler))]
+#endif
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>

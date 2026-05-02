@@ -6,173 +6,198 @@ namespace Microsoft.Maui.Controls;
 
 // Keep these manual attributes small; https://github.com/dotnet/maui/issues/35285 tracks source-generating them.
 #if ANDROID
-sealed class ActivityIndicatorHandlerAttribute() : ElementHandlerAttribute(typeof(ActivityIndicatorHandler))
+public partial class ActivityIndicator
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(ActivityIndicatorHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(ActivityIndicatorHandler2);
 
-		return typeof(ActivityIndicatorHandler);
+			return typeof(ActivityIndicatorHandler);
+		}
 	}
 }
 
-sealed class DatePickerHandlerAttribute() : ElementHandlerAttribute(typeof(DatePickerHandler))
+public partial class DatePicker
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(DatePickerHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(DatePickerHandler2);
 
-		return typeof(DatePickerHandler);
+			return typeof(DatePickerHandler);
+		}
 	}
 }
 
-sealed class EditorHandlerAttribute() : ElementHandlerAttribute(typeof(EditorHandler))
+public partial class Editor
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(EditorHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(EditorHandler2);
 
-		return typeof(EditorHandler);
+			return typeof(EditorHandler);
+		}
 	}
 }
 
-sealed class EntryHandlerAttribute() : ElementHandlerAttribute(typeof(EntryHandler))
+public partial class Entry
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(EntryHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(EntryHandler2);
 
-		return typeof(EntryHandler);
+			return typeof(EntryHandler);
+		}
 	}
 }
 
-sealed class ImageHandlerAttribute() : ElementHandlerAttribute(typeof(ImageHandler))
+public partial class Image
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(ImageHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(ImageHandler2);
 
-		return typeof(ImageHandler);
+			return typeof(ImageHandler);
+		}
 	}
 }
 
-sealed class LabelHandlerAttribute() : ElementHandlerAttribute(typeof(LabelHandler))
+public partial class Label
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(LabelHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(LabelHandler2);
 
-		return typeof(LabelHandler);
+			return typeof(LabelHandler);
+		}
 	}
 }
 
-sealed class PickerHandlerAttribute() : ElementHandlerAttribute(typeof(PickerHandler))
+public partial class Picker
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(PickerHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(PickerHandler2);
 
-		return typeof(PickerHandler);
+			return typeof(PickerHandler);
+		}
 	}
 }
 
-sealed class ProgressBarHandlerAttribute() : ElementHandlerAttribute(typeof(ProgressBarHandler))
+public partial class ProgressBar
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(ProgressBarHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(ProgressBarHandler2);
 
-		return typeof(ProgressBarHandler);
+			return typeof(ProgressBarHandler);
+		}
 	}
 }
 
-sealed class RadioButtonHandlerAttribute() : ElementHandlerAttribute(typeof(RadioButtonHandler))
+public partial class RadioButton
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(RadioButtonHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(RadioButtonHandler2);
 
-		return typeof(RadioButtonHandler);
+			return typeof(RadioButtonHandler);
+		}
 	}
 }
 
-sealed class SearchBarHandlerAttribute() : ElementHandlerAttribute(typeof(SearchBarHandler))
+public partial class SearchBar
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(SearchBarHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(SearchBarHandler2);
 
-		return typeof(SearchBarHandler);
+			return typeof(SearchBarHandler);
+		}
 	}
 }
 
-sealed class SliderHandlerAttribute() : ElementHandlerAttribute(typeof(SliderHandler))
+public partial class Slider
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(SliderHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(SliderHandler2);
 
-		return typeof(SliderHandler);
+			return typeof(SliderHandler);
+		}
 	}
 }
 
-sealed class SwitchHandlerAttribute() : ElementHandlerAttribute(typeof(SwitchHandler))
+public partial class Switch
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(SwitchHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(SwitchHandler2);
 
-		return typeof(SwitchHandler);
+			return typeof(SwitchHandler);
+		}
 	}
 }
 
-sealed class TimePickerHandlerAttribute() : ElementHandlerAttribute(typeof(TimePickerHandler))
+public partial class TimePicker
 {
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public override Type GetHandlerType()
+	internal sealed class HandlerAttribute : ElementHandlerAttribute
 	{
-		if (RuntimeFeature.IsMaterial3Enabled)
-			return typeof(TimePickerHandler2);
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		public override Type GetHandlerType()
+		{
+			if (RuntimeFeature.IsMaterial3Enabled)
+				return typeof(TimePickerHandler2);
 
-		return typeof(TimePickerHandler);
+			return typeof(TimePickerHandler);
+		}
 	}
 }
-#else
-sealed class ActivityIndicatorHandlerAttribute() : ElementHandlerAttribute(typeof(ActivityIndicatorHandler));
-sealed class DatePickerHandlerAttribute() : ElementHandlerAttribute(typeof(DatePickerHandler));
-sealed class EditorHandlerAttribute() : ElementHandlerAttribute(typeof(EditorHandler));
-sealed class EntryHandlerAttribute() : ElementHandlerAttribute(typeof(EntryHandler));
-sealed class ImageHandlerAttribute() : ElementHandlerAttribute(typeof(ImageHandler));
-sealed class LabelHandlerAttribute() : ElementHandlerAttribute(typeof(LabelHandler));
-sealed class PickerHandlerAttribute() : ElementHandlerAttribute(typeof(PickerHandler));
-sealed class ProgressBarHandlerAttribute() : ElementHandlerAttribute(typeof(ProgressBarHandler));
-sealed class RadioButtonHandlerAttribute() : ElementHandlerAttribute(typeof(RadioButtonHandler));
-sealed class SearchBarHandlerAttribute() : ElementHandlerAttribute(typeof(SearchBarHandler));
-sealed class SliderHandlerAttribute() : ElementHandlerAttribute(typeof(SliderHandler));
-sealed class SwitchHandlerAttribute() : ElementHandlerAttribute(typeof(SwitchHandler));
-sealed class TimePickerHandlerAttribute() : ElementHandlerAttribute(typeof(TimePickerHandler));
 #endif
