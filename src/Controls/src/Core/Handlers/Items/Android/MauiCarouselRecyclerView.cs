@@ -132,7 +132,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			if (oldItemViewAdapter != null && _initialized)
 			{
-				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
+				// Only reset CurrentItem — old item references are invalid for the new source.
+				// Do NOT reset Position here; the user may set an explicit Position right after
+				// assigning ItemsSource, and forcing it to 0 would clobber that value (#23023).
 				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 			}
 
@@ -348,9 +350,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				position = Carousel.Position;
+
+				// Clamp position to valid range after ItemsSource change (#23023).
+				var sourceCount = ItemsViewAdapter.ItemsSource.Count;
+				if (position >= sourceCount)
+				{
+					position = 0;
+					Carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
+				}
+
 				if (Carousel.Loop && position == 0)
 				{
-					itemCount = ItemsViewAdapter.ItemsSource.Count;
+					itemCount = sourceCount;
 				}
 			}
 
@@ -483,13 +494,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdatePosition(int position)
 		{
+			// During a programmatic scroll, suppress ALL position updates from
+			// scroll events. The _gotoPosition flag is only cleared when the
+			// scroll settles to IDLE (via OnProgrammaticScrollIdle) or when a
+			// new programmatic position change starts (via UpdateFromPosition).
+			// This prevents animation bounce/settle events from firing spurious
+			// PositionChanged callbacks (#21480).
+			if (_gotoPosition != -1)
+				return;
+
 			var carouselPosition = Carousel.Position;
 
-			// We arrived center
-			if (position == _gotoPosition)
-				_gotoPosition = -1;
-
-			if (_gotoPosition == -1 && carouselPosition != position)
+			if (carouselPosition != position)
 				Carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
 		}
 
@@ -500,6 +516,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var item = ItemsViewAdapter.ItemsSource.GetItem(carouselPosition);
 			Carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, item);
+		}
+
+		// Called from CarouselViewOnScrollListener when the scroll state becomes
+		// IDLE, meaning any programmatic scroll animation has fully settled.
+		internal void OnProgrammaticScrollIdle()
+		{
+			_gotoPosition = -1;
+		}
+
+		// Called from CarouselViewOnScrollListener when the user starts dragging,
+		// so that a user gesture takes over from any in-flight programmatic scroll.
+		internal void OnUserDragStarted()
+		{
+			_gotoPosition = -1;
 		}
 
 		void IMauiCarouselRecyclerView.UpdateFromCurrentItem()
@@ -535,8 +565,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (carouselPosition >= itemCount || carouselPosition < 0)
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
 
-			if (carouselPosition == _gotoPosition)
-				_gotoPosition = -1;
+			// Always clear _gotoPosition when a new programmatic position change
+			// arrives, so that a previous in-flight scroll cannot block this one.
+			_gotoPosition = -1;
 
 			if (_noNeedForScroll)
 			{
@@ -545,7 +576,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var centerPosition = GetCarouselViewCurrentIndex(carouselPosition);
-			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
+			if (!Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
 			{
 				if (_initialized)
 				{

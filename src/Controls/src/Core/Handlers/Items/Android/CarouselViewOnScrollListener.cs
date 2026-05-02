@@ -21,12 +21,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_carouselView.IsSwipeEnabled)
 			{
 				if (state == RecyclerView.ScrollStateDragging)
+				{
 					_carouselView.SetIsDragging(true);
+					// Let user gesture take over from any in-flight programmatic scroll
+					(recyclerView as MauiCarouselRecyclerView)?.OnUserDragStarted();
+				}
 				else
 					_carouselView.SetIsDragging(false);
 			}
 
 			_carouselView.IsScrolling = state != RecyclerView.ScrollStateIdle;
+
+			if (state == RecyclerView.ScrollStateIdle)
+			{
+				// Programmatic scroll animation has fully settled — clear the guard
+				(recyclerView as MauiCarouselRecyclerView)?.OnProgrammaticScrollIdle();
+			}
 		}
 
 		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)

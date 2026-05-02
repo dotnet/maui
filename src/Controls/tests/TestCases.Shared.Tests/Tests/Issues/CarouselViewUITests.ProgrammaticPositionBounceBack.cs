@@ -22,9 +22,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Repros https://github.com/dotnet/maui/issues/21480
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[Ignore(
-			"Pending fix for https://github.com/dotnet/maui/issues/21480 (affects Android and iOS, per the linked issue). On origin/main this assertion observes PosChanged:4 instead of the expected PosChanged:1 because intermediate animated-scroll callbacks each fire CarouselView.PositionChanged, clobbering the user's Position assignment. Verified red on Android (API 35); not independently verified on iOS but expected to reproduce based on upstream issue reports."
-		)]
 		public void SettingPositionProgrammaticallyDoesNotBounceBack()
 		{
 			App.WaitForElement("Item 0", timeout: TimeSpan.FromSeconds(30));
@@ -63,9 +60,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Repros the "Critical Issue" in https://github.com/dotnet/maui/issues/23023
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[Ignore(
-			"Pending fix for https://github.com/dotnet/maui/issues/23023 (affects Android and iOS, per the linked issue). On origin/main, after assigning a new ItemsSource reference and Position=2 in the same operation, the carousel stays on Item 0 because UpdateAdapter synchronously forces Position=0 and CurrentItem=null, clobbering the user's explicit Position value. Verified red on Android (API 35); not independently verified on iOS but expected to reproduce based on upstream issue reports."
-		)]
 		public void ItemsSourceReloadHonorsExplicitPosition()
 		{
 			App.WaitForElement("Item 0", timeout: TimeSpan.FromSeconds(30));
