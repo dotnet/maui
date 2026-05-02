@@ -10,7 +10,9 @@ namespace Microsoft.Maui.Controls
 	/// Represents a swipe item that displays custom content in a <see cref="SwipeView"/>.
 	/// </summary>
 	[ContentProperty(nameof(Content))]
+#if ANDROID || IOS || MACCATALYST || TIZEN
 	[ElementHandler(typeof(SwipeItemViewHandler))]
+#endif
 	public partial class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>

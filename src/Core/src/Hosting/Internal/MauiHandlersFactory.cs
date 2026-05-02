@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Hosting.Internal
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
 		readonly ConcurrentDictionary<Type, Type?> _serviceCache = new();
+		readonly ConcurrentDictionary<Type, ElementHandlerAttribute?> _elementHandlerAttributeCache = new();
 
 		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
 
@@ -95,26 +96,30 @@ namespace Microsoft.Maui.Hosting.Internal
 			return false;
 		}
 
-		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
+		private bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
 		{
-			elementHandlerAttribute = null;
+			elementHandlerAttribute = _elementHandlerAttributeCache.GetOrAdd(viewType, static type => FindElementHandlerAttribute(type));
+			return elementHandlerAttribute is not null;
+		}
+
+		private static ElementHandlerAttribute? FindElementHandlerAttribute(Type viewType)
+		{
 			Type? type = viewType;
 
 			while (type is not null)
 			{
-				elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>();
+				var elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>();
 				if (elementHandlerAttribute is not null)
 				{
-					return true;
+					return elementHandlerAttribute;
 				}
 
 				type = type.BaseType;
 			}
 
-			return false;
+			return null;
 		}
 
-		[Obsolete("The handlers collection no longer contains all registered handlers. Use GetHandlerType instead.")]
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)

@@ -80,13 +80,37 @@ public static partial class AppHostBuilderExtensions
 		// All built-in handlers are resolved via [ElementHandler] attributes on the view types.
 		builder.ConfigureMauiHandlers(configureDelegate: null);
 
+#if ANDROID
+		if (RuntimeFeature.IsMaterial3Enabled)
+		{
+			builder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<Label, LabelHandler2>();
+				handlers.AddHandler<Editor, EditorHandler2>();
+				handlers.AddHandler<Picker, PickerHandler2>();
+				handlers.AddHandler<RadioButton, RadioButtonHandler2>();
+				handlers.AddHandler<TimePicker, TimePickerHandler2>();
+				handlers.AddHandler<Switch, SwitchHandler2>();
+				handlers.AddHandler<ProgressBar, ProgressBarHandler2>();
+				handlers.AddHandler<ActivityIndicator, ActivityIndicatorHandler2>();
+				handlers.AddHandler<Image, ImageHandler2>();
+				handlers.AddHandler<SearchBar, SearchBarHandler2>();
+				handlers.AddHandler<Slider, SliderHandler2>();
+				handlers.AddHandler<DatePicker, DatePickerHandler2>();
+				handlers.AddHandler<Entry, EntryHandler2>();
+			});
+		}
+#endif
+
 		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios.
 		// HybridWebViewHandler uses dynamic System.Text.Json features and cannot be referenced
 		// via [ElementHandler] attribute because that would create a hard type reference that
 		// ILC cannot eliminate based on the feature switch.
 		if (RuntimeFeature.IsHybridWebViewSupported)
 		{
+#pragma warning disable IL2026 // Guarded by RuntimeFeature.IsHybridWebViewSupported.
 			builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<HybridWebView, HybridWebViewHandler>());
+#pragma warning restore IL2026
 			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
 		}
 
