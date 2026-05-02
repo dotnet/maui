@@ -438,6 +438,69 @@ function Invoke-CopilotStep {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+#  STEP 0.5: DETECT UI Test Categories (detection only — no pipeline trigger)
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║  STEP 0.5: DETECT UI TEST CATEGORIES                       ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+$uitestCategories = ""
+
+$detectScript = Join-Path $RepoRoot "eng/scripts/detect-ui-test-categories.ps1"
+if (Test-Path $detectScript) {
+    try {
+        $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" 2>&1
+        $detectOutput | ForEach-Object { Write-Host "  $_" }
+
+        foreach ($line in $detectOutput) {
+            $lineStr = $line.ToString()
+            # Match even when the marker is followed by an empty value — `''` is
+            # the explicit "run all" sentinel emitted by the run-all returns in
+            # detect-ui-test-categories.ps1; treating it as "marker not seen"
+            # would lose that distinction.
+            if ($lineStr -match 'UITestCategoryList;isOutput=true\](.*)$') {
+                $uitestCategories = $Matches[1]
+            }
+        }
+
+        if ($uitestCategories -eq 'NONE') {
+            Write-Host "  ℹ️ No UI test categories needed (no UI-relevant changes)" -ForegroundColor DarkGray
+        } elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) {
+            Write-Host "  ℹ️ Full UI test matrix (no specific categories detected)" -ForegroundColor DarkGray
+        } else {
+            Write-Host "  🎯 Detected categories: $uitestCategories" -ForegroundColor Green
+        }
+
+        # Write detection result for AI summary
+        $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
+        New-Item -ItemType Directory -Force -Path $uitestOutputDir | Out-Null
+        if ($uitestCategories -eq 'NONE') {
+            "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+        } elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) {
+            "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+        } else {
+            "**Detected UI test categories:** ``$uitestCategories``" | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+        }
+    } catch {
+        Write-Host "  ⚠️ Category detection failed (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ detect-ui-test-categories.ps1 not found" -ForegroundColor Yellow
+}
+
+# Belt-and-suspenders: the detect script's manual-PR mode does
+# `git checkout $headSha`, leaving HEAD detached. Its own try/finally restores
+# the previous ref, but if that finally is skipped (process killed, scripting
+# error before the outer try opens) we'd run Step 1's gate against the wrong
+# tree. Force HEAD back to the review branch and fail loudly if we can't.
+git checkout $reviewBranch 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ⚠️ Failed to restore review branch '$reviewBranch' after Step 0.5 — Step 1 may run against the wrong tree" -ForegroundColor Red
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 #  STEP 1: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
@@ -451,17 +514,79 @@ New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 
 # Detect tests in PR
 Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
-$detectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
-& pwsh -NoProfile -Command "& '$detectScript' -PRNumber $PRNumber" 2>&1 | ForEach-Object { Write-Host "    $_" }
+$testDetectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
+if (Test-Path $testDetectScript) {
+    $testDetectScript = (Resolve-Path $testDetectScript).Path
+    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
+} else {
+    Write-Host "    ⚠️ Detect-TestsInDiff.ps1 not found at $testDetectScript" -ForegroundColor Yellow
+}
 
 # Determine platform for gate
 $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
-$verifyScript = Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
-$gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
-$gateExitCode = $LASTEXITCODE
-$gateOutput | ForEach-Object { Write-Host "    $_" }
+$verifyScript = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
+if (-not (Test-Path $verifyScript)) {
+    Write-Host "  ❌ verify-tests-fail.ps1 not found at: $verifyScript" -ForegroundColor Red
+    # $gateExitCode = 1 ensures the switch at line ~561 produces $gateResult = "FAILED"
+    $gateExitCode = 1
+    $gateOutput = @("verify-tests-fail.ps1 not found at: $verifyScript")
+} else {
+
+$maxGateAttempts = 3
+$gateExitCode = 1
+$gateOutput = @()
+# Path is fixed across attempts — define once, then clear per-iteration so a stale
+# report from attempt N-1 can't be misclassified as the current attempt's output.
+$gateContentFile = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
+
+for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
+    if ($gateAttempt -gt 1) {
+        Write-Host "  🔄 Retry $gateAttempt/$maxGateAttempts — previous attempt hit environment error" -ForegroundColor Yellow
+    }
+    # Clear previous attempt's report so a crash mid-run doesn't leak its classification into this one.
+    Remove-Item $gateContentFile -Force -ErrorAction SilentlyContinue
+    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
+    $gateExitCode = $LASTEXITCODE
+    $gateOutput | ForEach-Object { Write-Host "    $_" }
+
+    # Check if this was an ENV ERROR (emulator timeout, ADB failure, etc.)
+    $isEnvError = $false
+    if ($gateExitCode -ne 0) {
+        if (Test-Path $gateContentFile) {
+            $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
+            if ($gateContent -match 'ENV ERROR') {
+                $isEnvError = $true
+                Write-Host "  ⚠️ Environment error detected (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
+            }
+        } else {
+            # Verify script crashed BEFORE writing the report (e.g., emulator failed to
+            # start, ADB crash during setup, OOM kill). The most severe infra failures
+            # never reach the report-writing path, so a missing report alongside a
+            # non-zero exit is itself a strong signal we should retry rather than break.
+            $isEnvError = $true
+            Write-Host "  ⚠️ Verification report missing after non-zero exit — treating as infra failure (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
+        }
+    }
+
+    if ($gateExitCode -eq 0 -or -not $isEnvError) {
+        break  # Real pass or real failure — don't retry
+    }
+    if ($gateAttempt -lt $maxGateAttempts) {
+        Write-Host "  ⏳ Waiting 30s before retry..." -ForegroundColor DarkGray
+        Start-Sleep -Seconds 30
+    }
+}
+if ($isEnvError) {
+    # Reachable only if EVERY iteration was an env error: real pass/fail
+    # iterations `break` out of the loop (so $isEnvError would be reset to $false
+    # at the top of the next iteration but we'd never get here). $isEnvError
+    # here means "all $maxGateAttempts attempts hit env errors" — not "any".
+    Write-Host "  ⚠️ All $maxGateAttempts gate attempts hit environment errors" -ForegroundColor Yellow
+}
+
+} # end else (verify script exists)
 
 # Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
 $gateResult = switch ($gateExitCode) {
@@ -472,30 +597,61 @@ $gateResult = switch ($gateExitCode) {
 $gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } default { "Red" } }
 Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
 
-# Copy the verification report to gate/content.md if it exists
+# Copy the verification report to gate/content.md (always overwrite — the report is the source of truth)
 $verificationReport = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
+# Capture last meaningful lines from gate output for fallback diagnostics
+$gateLogTail = @($gateOutput | ForEach-Object { $_.ToString() } | Where-Object { $_ -match '\S' } | Select-Object -Last 20) -join "`n"
+
 if (Test-Path $verificationReport) {
-    Copy-Item $verificationReport (Join-Path $gateOutputDir "content.md") -Force
+    $reportContent = Get-Content $verificationReport -Raw -ErrorAction SilentlyContinue
+    if ($reportContent) {
+        # Strip broken "Test Summary" blocks with empty values (from old verify script format)
+        $reportContent = $reportContent -replace '(?s)\*\*Test Summary:\*\*\s*\n- Total:\s*\n- Passed:\s*(True|False)\s*\n- Failed:\s*\n- Skipped:\s*\n?', ''
+        $reportContent | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
+    } else {
+        # Report exists but has bad format — generate fallback with logs
+        Write-Host "  ⚠️ Verification report has invalid format — using fallback" -ForegroundColor Yellow
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } default { "❌" } }
+        @"
+### Gate Result: $resultIcon $gateResult
+
+**Platform:** $($gatePlatform.ToUpper())
+
+<details>
+<summary>Gate output log</summary>
+
+``````
+$gateLogTail
+``````
+
+</details>
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
+    }
 } elseif (-not (Test-Path (Join-Path $gateOutputDir "content.md"))) {
-    # Create gate content based on result
     if ($gateResult -eq "SKIPPED") {
-        $skipContent = @"
+        @"
 ### Gate Result: ⚠️ SKIPPED
 
 No tests were detected in this PR.
 
-**Recommendation:** Add tests to verify the fix using the ``write-tests-agent``:
-
-``````
-@copilot write tests for this PR
-``````
-
-The agent will analyze the issue, determine the appropriate test type (UI test, device test, unit test, or XAML test), and create tests that verify the fix.
-"@
-        $skipContent | Set-Content (Join-Path $gateOutputDir "content.md")
+**Recommendation:** Add tests to verify the fix using the ``write-tests-agent``.
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     } else {
-        "### Gate Result: $(if ($gateExitCode -eq 0) { '✅ PASSED' } else { '❌ FAILED' })`n`n**Platform:** $gatePlatform" |
-            Set-Content (Join-Path $gateOutputDir "content.md")
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } default { "❌" } }
+        @"
+### Gate Result: $resultIcon $gateResult
+
+**Platform:** $($gatePlatform.ToUpper())
+
+<details>
+<summary>Gate output log</summary>
+
+``````
+$gateLogTail
+``````
+
+</details>
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     }
 }
 
@@ -566,14 +722,52 @@ $autonomousRules
 
 **Gate result (already completed in a prior step):** $gateStatusForPrompt
 Do NOT re-run gate verification. The gate phase is handled separately.
+⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
 
 📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
+(phases: pre-flight, try-fix, report — NOT gate)
 "@
 
 Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
+
+# ─── Tier 3 refresh: feed AI categories back into category detection ───
+# Step 0.5 ran detection without the AI tier (-AiCategories was empty).
+# Pre-flight (Step 2) wrote `ai-categories.md`; re-run detection now so the
+# unified comment reflects all three tiers before Step 3 posts.
+$aiCategoriesFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests/ai-categories.md"
+if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
+    try {
+        # Pass as a single string (the script declares [string]$AiCategories);
+        # an array would not bind correctly across the pwsh -File boundary.
+        $aiCategoriesArg = (Get-Content $aiCategoriesFile -Raw).Trim()
+        if (-not [string]::IsNullOrWhiteSpace($aiCategoriesArg)) {
+            Write-Host "  🔁 Refreshing UI category detection with AI tier..." -ForegroundColor Cyan
+            $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -AiCategories $aiCategoriesArg 2>&1
+            $refreshOutput | ForEach-Object { Write-Host "    $_" }
+
+            $refreshedCategories = $uitestCategories
+            foreach ($line in $refreshOutput) {
+                if ($line.ToString() -match 'UITestCategoryList;isOutput=true\](.*)$') {
+                    $refreshedCategories = $Matches[1]
+                }
+            }
+
+            $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
+            if ($refreshedCategories -eq 'NONE') {
+                "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+            } elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) {
+                "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+            } else {
+                "**Detected UI test categories:** ``$refreshedCategories``" | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+            }
+        }
+    } catch {
+        Write-Host "  ⚠️ AI-tier category refresh failed (non-fatal, keeping Step 0.5 result): $_" -ForegroundColor Yellow
+    }
+}
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 3: Post AI Summary Comment (direct script invocation)

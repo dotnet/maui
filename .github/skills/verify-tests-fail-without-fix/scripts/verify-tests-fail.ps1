@@ -1259,7 +1259,7 @@ function Write-MarkdownReport {
         $lines += "</details>"
     }
 
-    # ── Failure details (only if something went wrong) ──
+    # ── Failure details (shown directly — not collapsed) ──
     $failureLines = @()
     foreach ($r in $WithoutFixResultsList) {
         if ($r.Passed) {
@@ -1272,7 +1272,7 @@ function Write-MarkdownReport {
             $failureLines += "- ❌ **$($r.TestName)** FAILED with fix (should pass)"
             if ($r.FailureReason) { $failureLines += "  - ``$($r.FailureReason)``" }
             if ($r.FailureMessage) {
-                $msg = if ($r.FailureMessage.Length -gt 200) { $r.FailureMessage.Substring(0, 200) + "..." } else { $r.FailureMessage }
+                $msg = if ($r.FailureMessage.Length -gt 300) { $r.FailureMessage.Substring(0, 300) + "..." } else { $r.FailureMessage }
                 $failureLines += "  - ``$msg``"
             }
         }
@@ -1280,13 +1280,29 @@ function Write-MarkdownReport {
     }
 
     if ($failureLines.Count -gt 0) {
+        # Count actual failed tests (lines beginning with "- ❌" or "- ⚠️") to decide
+        # whether to collapse. Sub-bullets (FailureReason / FailureMessage) start with
+        # two leading spaces so they don't match.
+        $failedTestCount = @($failureLines | Where-Object { $_ -match '^- (❌|⚠️)' }).Count
+        # Threshold: if more than 5 tests failed, collapse the section so the gate
+        # summary stays visible above the fold in PR comments. Below the threshold,
+        # show details inline so reviewers don't need an extra click.
+        $collapseFailures = $failedTestCount -gt 5
+
         $lines += ""
-        $lines += "<details>"
-        $lines += "<summary>⚠️ Issues found</summary>"
-        $lines += ""
+        if ($collapseFailures) {
+            $lines += "<details>"
+            $lines += "<summary>⚠️ Failure Details ($failedTestCount tests)</summary>"
+            $lines += ""
+        } else {
+            $lines += "#### ⚠️ Failure Details"
+            $lines += ""
+        }
         $lines += ($failureLines -join "`n")
-        $lines += ""
-        $lines += "</details>"
+        if ($collapseFailures) {
+            $lines += ""
+            $lines += "</details>"
+        }
     }
 
     # ── Fix files (collapsible) ──
