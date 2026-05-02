@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[DatePicker.Handler]
+	[DatePickerHandler]
 #else
 	[ElementHandler(typeof(DatePickerHandler))]
 #endif

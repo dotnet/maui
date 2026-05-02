@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[RadioButton.Handler]
+	[RadioButtonHandler]
 #else
 	[ElementHandler(typeof(RadioButtonHandler))]
 #endif

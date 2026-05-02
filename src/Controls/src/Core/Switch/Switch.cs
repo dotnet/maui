@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[Switch.Handler]
+	[SwitchHandler]
 #else
 	[ElementHandler(typeof(SwitchHandler))]
 #endif

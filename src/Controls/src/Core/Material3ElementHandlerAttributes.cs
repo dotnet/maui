@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls;
 #if ANDROID
 public partial class ActivityIndicator
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class ActivityIndicatorHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -23,7 +23,7 @@ public partial class ActivityIndicator
 
 public partial class DatePicker
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class DatePickerHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -38,7 +38,7 @@ public partial class DatePicker
 
 public partial class Editor
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class EditorHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -53,7 +53,7 @@ public partial class Editor
 
 public partial class Entry
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class EntryHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -68,7 +68,7 @@ public partial class Entry
 
 public partial class Image
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class ImageHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -83,7 +83,7 @@ public partial class Image
 
 public partial class Label
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class LabelHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -98,7 +98,7 @@ public partial class Label
 
 public partial class Picker
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class PickerHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -113,7 +113,7 @@ public partial class Picker
 
 public partial class ProgressBar
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class ProgressBarHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -128,7 +128,7 @@ public partial class ProgressBar
 
 public partial class RadioButton
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class RadioButtonHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -143,7 +143,7 @@ public partial class RadioButton
 
 public partial class SearchBar
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class SearchBarHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -158,7 +158,7 @@ public partial class SearchBar
 
 public partial class Slider
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class SliderHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -173,7 +173,7 @@ public partial class Slider
 
 public partial class Switch
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class SwitchHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()
@@ -188,7 +188,7 @@ public partial class Switch
 
 public partial class TimePicker
 {
-	internal sealed class HandlerAttribute : ElementHandlerAttribute
+	internal sealed class TimePickerHandlerAttribute : ElementHandlerAttribute
 	{
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public override Type GetHandlerType()

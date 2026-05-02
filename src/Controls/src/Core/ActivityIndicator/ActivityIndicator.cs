@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[ActivityIndicator.Handler]
+	[ActivityIndicatorHandler]
 #else
 	[ElementHandler(typeof(ActivityIndicatorHandler))]
 #endif

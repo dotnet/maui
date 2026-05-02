@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Text))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[Label.Handler]
+	[LabelHandler]
 #else
 	[ElementHandler(typeof(LabelHandler))]
 #endif
