@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			// 2. ElementHandler attribute (no DI, just Activator.CreateInstance)
 			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
 			{
-				return (IElementHandler?)Activator.CreateInstance(elementHandlerAttribute.HandlerType);
+				return (IElementHandler?)Activator.CreateInstance(elementHandlerAttribute.GetHandlerType());
 			}
 
 			// 3. Interface-based DI registration (e.g., handler registered for IScrollView)
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
 			{
-				return elementHandlerAttribute.HandlerType;
+				return elementHandlerAttribute.GetHandlerType();
 			}
 
 			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType

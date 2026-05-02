@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="ProgressTo"/> method to animate the progress bar.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler(typeof(ProgressBarHandler))]
+	[ProgressBarHandler]
 	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>, IProgress
 	{
 		/// <summary>Bindable property for <see cref="ProgressColor"/>.</summary>
