@@ -51,6 +51,11 @@ When `-OutputDir` is specified:
 
 The script runs as **STEP 0.6** in `Review-PR.ps1` (between UI test detection and the Gate step). Its `content.md` is assembled into the AI summary comment by `post-ai-summary-comment.ps1`.
 
+When REVERT risks are detected, **STEP 1.5** (after Gate) runs the regression tests from the reverted fix PRs:
+- **UI tests** → `BuildAndRunHostApp.ps1 -Platform <plat> -TestFilter <filter>`
+- **Device tests** → `Run-DeviceTests.ps1 -Project <proj> -Platform <plat> -TestFilter <filter>`
+- **Unit/XAML tests** → `dotnet test <project> --filter <filter>`
+
 The expert reviewer agent (`maui-expert-reviewer.md`, dimension #6) reads `risks.json` to check for REVERT entries.
 
 ## Known Limitations
