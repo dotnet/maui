@@ -505,6 +505,40 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+#  STEP 0.6: REGRESSION CROSS-REFERENCE (script, no copilot agent)
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║  STEP 0.6: REGRESSION CROSS-REFERENCE                      ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+$regressionOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/regression-check"
+$regressionScript = Join-Path $PSScriptRoot "Find-RegressionRisks.ps1"
+if (Test-Path $regressionScript) {
+    try {
+        & $regressionScript -PRNumber $PRNumber -OutputDir $regressionOutputDir
+        $regressionResult = if (Test-Path (Join-Path $regressionOutputDir "result.txt")) {
+            (Get-Content (Join-Path $regressionOutputDir "result.txt") -Raw).Trim()
+        } else { 'UNKNOWN' }
+
+        switch ($regressionResult) {
+            'REVERT'  { Write-Host "  🔴 Regression risks detected — see regression-check/content.md" -ForegroundColor Red }
+            'OVERLAP' { Write-Host "  🟡 Overlaps with prior bug-fix PRs (lower risk)" -ForegroundColor Yellow }
+            'CLEAN'   { Write-Host "  🟢 No regression risk detected" -ForegroundColor Green }
+            default   { Write-Host "  ⚠️ Unexpected regression-check result: $regressionResult" -ForegroundColor Yellow }
+        }
+    } catch {
+        Write-Host "  ⚠️ Regression check failed (non-fatal): $_" -ForegroundColor Yellow
+        # Write a fallback content.md so downstream steps don't break
+        New-Item -ItemType Directory -Force -Path $regressionOutputDir | Out-Null
+        "⚠️ Regression cross-reference failed: $_" | Set-Content (Join-Path $regressionOutputDir "content.md") -Encoding UTF8
+    }
+} else {
+    Write-Host "  ⚠️ Find-RegressionRisks.ps1 not found" -ForegroundColor Yellow
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 #  STEP 1: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
