@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -23,6 +24,20 @@ namespace Microsoft.Maui.Controls
 #endif
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>, IDatePicker
 	{
+#if ANDROID
+		internal sealed class DatePickerHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(DatePickerHandler2);
+
+				return typeof(DatePickerHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 

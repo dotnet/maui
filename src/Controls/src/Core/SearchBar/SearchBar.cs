@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
@@ -26,6 +27,20 @@ namespace Microsoft.Maui.Controls
 #endif
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
+#if ANDROID
+		internal sealed class SearchBarHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(SearchBarHandler2);
+
+				return typeof(SearchBarHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="ReturnType"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty ReturnTypeProperty = BindableProperty.Create(nameof(ReturnType), typeof(ReturnType), typeof(SearchBar), ReturnType.Search);
 

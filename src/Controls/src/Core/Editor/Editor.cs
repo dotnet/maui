@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
@@ -18,6 +19,20 @@ namespace Microsoft.Maui.Controls
 #endif
 	public partial class Editor : InputView, IEditorController, ITextAlignmentElement, IElementConfiguration<Editor>, IEditor
 	{
+#if ANDROID
+		internal sealed class EditorHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(EditorHandler2);
+
+				return typeof(EditorHandler);
+			}
+		}
+#endif
+
 		/// <summary>Identifies the Text bindable property.</summary>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 

@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -22,6 +23,20 @@ namespace Microsoft.Maui.Controls
 #endif
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>, IActivityIndicator
 	{
+#if ANDROID
+		internal sealed class ActivityIndicatorHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(ActivityIndicatorHandler2);
+
+				return typeof(ActivityIndicatorHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="IsRunning"/>.</summary>
 		public static readonly BindableProperty IsRunningProperty = BindableProperty.Create(nameof(IsRunning), typeof(bool), typeof(ActivityIndicator), BooleanBoxes.FalseBox);
 

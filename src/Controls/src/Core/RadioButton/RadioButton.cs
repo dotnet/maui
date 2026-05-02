@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
@@ -28,6 +29,20 @@ namespace Microsoft.Maui.Controls
 #endif
 	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement, IRadioButton
 	{
+#if ANDROID
+		internal sealed class RadioButtonHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(RadioButtonHandler2);
+
+				return typeof(RadioButtonHandler);
+			}
+		}
+#endif
+
 		/// <summary>
 		/// The visual state name for when the radio button is checked.
 		/// </summary>
