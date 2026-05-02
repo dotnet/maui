@@ -822,6 +822,166 @@ if (-not $DryRun) {
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
+#  STEP 1.5: RUN REGRESSION TESTS (if REVERT risks detected)
+# ═════════════════════════════════════════════════════════════════════════════
+
+$regressionTestResult = "SKIPPED"
+$regressionRisksJson = Join-Path $regressionOutputDir "risks.json"
+if (Test-Path $regressionRisksJson) {
+    try {
+        $risksData = Get-Content $regressionRisksJson -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $risksData = $null
+    }
+}
+
+if ($risksData -and $risksData.result -eq 'REVERT') {
+    # Collect all regression tests from REVERT entries
+    $regressionTests = @()
+    foreach ($risk in @($risksData.risks | Where-Object { $_.risk -eq 'REVERT' -and $_.regression_tests.Count -gt 0 })) {
+        foreach ($test in $risk.regression_tests) {
+            $regressionTests += [PSCustomObject]@{
+                FixPR       = $risk.recent_pr
+                Type        = $test.type
+                TestName    = $test.test_name
+                Filter      = $test.filter
+                ProjectPath = $test.project_path
+                Runner      = $test.runner
+            }
+        }
+    }
+
+    if ($regressionTests.Count -gt 0) {
+        Write-Host ""
+        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+        Write-Host "║  STEP 1.5: REGRESSION TEST VERIFICATION                    ║" -ForegroundColor Red
+        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        Write-Host "  Running $($regressionTests.Count) test(s) from reverted fix PRs…" -ForegroundColor Cyan
+
+        $regrTestOutputDir = Join-Path $regressionOutputDir "test-results"
+        New-Item -ItemType Directory -Force -Path $regrTestOutputDir | Out-Null
+
+        $regrTestPassed = 0
+        $regrTestFailed = 0
+        $regrTestSkipped = 0
+        $regrTestDetails = @()
+
+        # Group by project path to batch test runs
+        $byProject = @{}
+        foreach ($t in $regressionTests) {
+            if ($t.ProjectPath) {
+                $key = $t.ProjectPath
+            } elseif ($t.Type -eq 'UITest') {
+                $key = '_UITest_'
+            } else {
+                $key = '_unknown_'
+            }
+            if (-not $byProject.ContainsKey($key)) { $byProject[$key] = @() }
+            $byProject[$key] += $t
+        }
+
+        foreach ($projPath in $byProject.Keys) {
+            $tests = $byProject[$projPath]
+
+            # UI tests and device tests can't be run here — report as skipped
+            $nonRunnable = @($tests | Where-Object { $_.Type -eq 'UITest' -or $_.Type -eq 'DeviceTest' })
+            if ($nonRunnable.Count -gt 0) {
+                foreach ($t in $nonRunnable) {
+                    Write-Host "  ⏭️  [$($t.Type)] $($t.TestName) — requires CI infrastructure" -ForegroundColor DarkGray
+                    $regrTestSkipped++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'SKIPPED'; reason = 'Requires CI infrastructure' }
+                }
+            }
+
+            # Unit tests and XAML tests can be run with dotnet test
+            $runnable = @($tests | Where-Object { $_.Type -eq 'UnitTest' -or $_.Type -eq 'XamlUnitTest' })
+            if ($runnable.Count -eq 0) { continue }
+            if ($projPath -eq '_unknown_') {
+                foreach ($t in $runnable) {
+                    Write-Host "  ⏭️  [$($t.Type)] $($t.TestName) — no project path resolved" -ForegroundColor DarkYellow
+                    $regrTestSkipped++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'SKIPPED'; reason = 'No project path' }
+                }
+                continue
+            }
+
+            # Combine filters for the same project: (filter1) | (filter2)
+            $combinedFilter = ($runnable | ForEach-Object { "($($_.Filter))" }) -join ' | '
+            $resolvedProj = Join-Path $RepoRoot $projPath
+            Write-Host "  🧪 Running: dotnet test $projPath --filter `"$combinedFilter`"" -ForegroundColor Cyan
+
+            try {
+                $testOutput = dotnet test $resolvedProj --filter $combinedFilter --no-restore --logger "console;verbosity=minimal" 2>&1
+                $testExitCode = $LASTEXITCODE
+                $testOutput | ForEach-Object { Write-Host "    $_" }
+
+                if ($testExitCode -eq 0) {
+                    Write-Host "  ✅ All regression tests passed for $projPath" -ForegroundColor Green
+                    foreach ($t in $runnable) {
+                        $regrTestPassed++
+                        $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'PASSED' }
+                    }
+                } else {
+                    Write-Host "  ❌ Regression tests FAILED for $projPath" -ForegroundColor Red
+                    foreach ($t in $runnable) {
+                        $regrTestFailed++
+                        $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'FAILED' }
+                    }
+                }
+            } catch {
+                Write-Host "  ⚠️ dotnet test failed: $_" -ForegroundColor Yellow
+                foreach ($t in $runnable) {
+                    $regrTestSkipped++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'ERROR'; reason = "$_" }
+                }
+            }
+        }
+
+        # Determine overall result
+        if ($regrTestFailed -gt 0) {
+            $regressionTestResult = "FAILED"
+            Write-Host "  🔴 Regression test result: $regrTestPassed passed, $regrTestFailed FAILED, $regrTestSkipped skipped" -ForegroundColor Red
+        } elseif ($regrTestPassed -gt 0) {
+            $regressionTestResult = "PASSED"
+            Write-Host "  ✅ Regression test result: $regrTestPassed passed, $regrTestSkipped skipped" -ForegroundColor Green
+        } else {
+            $regressionTestResult = "SKIPPED"
+            Write-Host "  ⏭️  All regression tests skipped ($regrTestSkipped total)" -ForegroundColor DarkGray
+        }
+
+        # Append results to regression-check content.md
+        $regrContentFile = Join-Path $regressionOutputDir "content.md"
+        if (Test-Path $regrContentFile) {
+            $appendMd = New-Object System.Text.StringBuilder
+            [void]$appendMd.AppendLine()
+            [void]$appendMd.AppendLine("### 🧪 Regression Test Results")
+            [void]$appendMd.AppendLine()
+            $resultIcon = switch ($regressionTestResult) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
+            [void]$appendMd.AppendLine("$resultIcon **$regressionTestResult** — $regrTestPassed passed, $regrTestFailed failed, $regrTestSkipped skipped")
+            [void]$appendMd.AppendLine()
+            if ($regrTestDetails.Count -gt 0) {
+                [void]$appendMd.AppendLine("| Fix PR | Test | Type | Result |")
+                [void]$appendMd.AppendLine("|---|---|---|---|")
+                foreach ($d in $regrTestDetails) {
+                    $icon = switch ($d.result) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
+                    [void]$appendMd.AppendLine("| #$($d.fix_pr) | $($d.test) | $($d.type) | $icon $($d.result) |")
+                }
+            }
+            Add-Content $regrContentFile $appendMd.ToString() -Encoding UTF8
+        }
+
+        # Write test results JSON
+        @{
+            result  = $regressionTestResult
+            passed  = $regrTestPassed
+            failed  = $regrTestFailed
+            skipped = $regrTestSkipped
+            details = $regrTestDetails
+        } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $regrTestOutputDir "test-results.json") -Encoding UTF8
+    }
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 #  STEP 2: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
 # ═════════════════════════════════════════════════════════════════════════════
 
