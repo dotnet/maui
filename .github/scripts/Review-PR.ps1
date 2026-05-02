@@ -866,74 +866,74 @@ if ($risksData -and $risksData.result -eq 'REVERT') {
         $regrTestSkipped = 0
         $regrTestDetails = @()
 
-        # Group by project path to batch test runs
-        $byProject = @{}
+        $regrPlatform = if ($Platform) { $Platform } else { $gatePlatform }
+        $uiTestRunner = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+        $deviceTestRunner = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+
         foreach ($t in $regressionTests) {
-            if ($t.ProjectPath) {
-                $key = $t.ProjectPath
-            } elseif ($t.Type -eq 'UITest') {
-                $key = '_UITest_'
-            } else {
-                $key = '_unknown_'
-            }
-            if (-not $byProject.ContainsKey($key)) { $byProject[$key] = @() }
-            $byProject[$key] += $t
-        }
-
-        foreach ($projPath in $byProject.Keys) {
-            $tests = $byProject[$projPath]
-
-            # UI tests and device tests can't be run here — report as skipped
-            $nonRunnable = @($tests | Where-Object { $_.Type -eq 'UITest' -or $_.Type -eq 'DeviceTest' })
-            if ($nonRunnable.Count -gt 0) {
-                foreach ($t in $nonRunnable) {
-                    Write-Host "  ⏭️  [$($t.Type)] $($t.TestName) — requires CI infrastructure" -ForegroundColor DarkGray
-                    $regrTestSkipped++
-                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'SKIPPED'; reason = 'Requires CI infrastructure' }
-                }
-            }
-
-            # Unit tests and XAML tests can be run with dotnet test
-            $runnable = @($tests | Where-Object { $_.Type -eq 'UnitTest' -or $_.Type -eq 'XamlUnitTest' })
-            if ($runnable.Count -eq 0) { continue }
-            if ($projPath -eq '_unknown_') {
-                foreach ($t in $runnable) {
-                    Write-Host "  ⏭️  [$($t.Type)] $($t.TestName) — no project path resolved" -ForegroundColor DarkYellow
-                    $regrTestSkipped++
-                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'SKIPPED'; reason = 'No project path' }
-                }
-                continue
-            }
-
-            # Combine filters for the same project: (filter1) | (filter2)
-            $combinedFilter = ($runnable | ForEach-Object { "($($_.Filter))" }) -join ' | '
-            $resolvedProj = Join-Path $RepoRoot $projPath
-            Write-Host "  🧪 Running: dotnet test $projPath --filter `"$combinedFilter`"" -ForegroundColor Cyan
+            Write-Host ""
+            Write-Host "  📋 [$($t.Type)] $($t.TestName) (from fix PR #$($t.FixPR))" -ForegroundColor Cyan
 
             try {
-                $testOutput = dotnet test $resolvedProj --filter $combinedFilter --no-restore --logger "console;verbosity=minimal" 2>&1
-                $testExitCode = $LASTEXITCODE
-                $testOutput | ForEach-Object { Write-Host "    $_" }
+                switch ($t.Type) {
+                    'UITest' {
+                        if (Test-Path $uiTestRunner) {
+                            Write-Host "    🖥️ Running UI test via BuildAndRunHostApp.ps1 -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
+                            $testOutput = & $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1
+                            $testExitCode = $LASTEXITCODE
+                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                        } else {
+                            Write-Host "    ⚠️ BuildAndRunHostApp.ps1 not found" -ForegroundColor Yellow
+                            $testExitCode = -1
+                        }
+                    }
+                    'DeviceTest' {
+                        if (Test-Path $deviceTestRunner) {
+                            $dtProject = if ($t.Project) { $t.Project } else { 'Controls' }
+                            Write-Host "    📱 Running device test via Run-DeviceTests.ps1 -Project $dtProject -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
+                            $testOutput = & $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1
+                            $testExitCode = $LASTEXITCODE
+                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                        } else {
+                            Write-Host "    ⚠️ Run-DeviceTests.ps1 not found" -ForegroundColor Yellow
+                            $testExitCode = -1
+                        }
+                    }
+                    { $_ -eq 'UnitTest' -or $_ -eq 'XamlUnitTest' } {
+                        if ($t.ProjectPath) {
+                            $resolvedProj = Join-Path $RepoRoot $t.ProjectPath
+                            Write-Host "    🧪 Running: dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"" -ForegroundColor Cyan
+                            $testOutput = dotnet test $resolvedProj --filter $t.Filter --no-restore --logger "console;verbosity=minimal" 2>&1
+                            $testExitCode = $LASTEXITCODE
+                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                        } else {
+                            Write-Host "    ⚠️ No project path for unit test" -ForegroundColor Yellow
+                            $testExitCode = -1
+                        }
+                    }
+                    default {
+                        Write-Host "    ⚠️ Unknown test type: $($t.Type)" -ForegroundColor Yellow
+                        $testExitCode = -1
+                    }
+                }
 
                 if ($testExitCode -eq 0) {
-                    Write-Host "  ✅ All regression tests passed for $projPath" -ForegroundColor Green
-                    foreach ($t in $runnable) {
-                        $regrTestPassed++
-                        $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'PASSED' }
-                    }
+                    Write-Host "    ✅ PASSED" -ForegroundColor Green
+                    $regrTestPassed++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'PASSED' }
+                } elseif ($testExitCode -eq -1) {
+                    Write-Host "    ⏭️ SKIPPED" -ForegroundColor DarkGray
+                    $regrTestSkipped++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'SKIPPED'; reason = 'Runner not available' }
                 } else {
-                    Write-Host "  ❌ Regression tests FAILED for $projPath" -ForegroundColor Red
-                    foreach ($t in $runnable) {
-                        $regrTestFailed++
-                        $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'FAILED' }
-                    }
+                    Write-Host "    ❌ FAILED (exit code: $testExitCode)" -ForegroundColor Red
+                    $regrTestFailed++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'FAILED' }
                 }
             } catch {
-                Write-Host "  ⚠️ dotnet test failed: $_" -ForegroundColor Yellow
-                foreach ($t in $runnable) {
-                    $regrTestSkipped++
-                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'ERROR'; reason = "$_" }
-                }
+                Write-Host "    ⚠️ Error: $_" -ForegroundColor Yellow
+                $regrTestSkipped++
+                $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'ERROR'; reason = "$_" }
             }
         }
 
