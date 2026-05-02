@@ -14,7 +14,11 @@ namespace Microsoft.Maui.Controls
 	/// This control gives a visual clue to the user that something is happening, without information about its progress.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ActivityIndicatorHandler]
+#if ANDROID
+	[ActivityIndicator.Handler]
+#else
+	[ElementHandler(typeof(ActivityIndicatorHandler))]
+#endif
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>, IActivityIndicator
 	{
 		/// <summary>Bindable property for <see cref="IsRunning"/>.</summary>

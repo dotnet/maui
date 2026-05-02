@@ -19,7 +19,11 @@ namespace Microsoft.Maui.Controls
 	/// placeholder text, and optionally a cancel button. Use the <see cref="SearchCommand"/> to respond to search requests.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[SearchBarHandler]
+#if ANDROID
+	[SearchBar.Handler]
+#else
+	[ElementHandler(typeof(SearchBarHandler))]
+#endif
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
 		/// <summary>Bindable property for <see cref="ReturnType"/>. This is a bindable property.</summary>

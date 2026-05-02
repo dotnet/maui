@@ -11,7 +11,11 @@ using static Microsoft.Maui.Primitives.Dimension;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>A control that can edit multiple lines of text.</summary>
-	[EditorHandler]
+#if ANDROID
+	[Editor.Handler]
+#else
+	[ElementHandler(typeof(EditorHandler))]
+#endif
 	public partial class Editor : InputView, IEditorController, ITextAlignmentElement, IElementConfiguration<Editor>, IEditor
 	{
 		/// <summary>Identifies the Text bindable property.</summary>

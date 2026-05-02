@@ -334,6 +334,17 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Same(typeof(AlternateAttributedViewHandlerStub), handlerType);
 		}
 
+		[Fact]
+		public void HostBuilderThrowsForElementHandlerAttributeWithoutHandlerType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.Throws<InvalidOperationException>(() => mauiHandlersFactory.GetHandler(typeof(MissingHandlerTypeAttributedViewStub)));
+		}
+
 		[ElementHandler(typeof(AttributedViewHandlerStub))]
 		class AttributedViewStub : ViewStub { }
 		class DerivedAttributedViewStub : AttributedViewStub { }
@@ -345,11 +356,14 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		class OverrideElementHandlerAttribute : ElementHandlerAttribute
 		{
 			public OverrideElementHandlerAttribute()
-				: base(typeof(AttributedViewHandlerStub))
 			{
 			}
 
 			public override Type GetHandlerType() => typeof(AlternateAttributedViewHandlerStub);
 		}
+
+		[MissingHandlerTypeElementHandler]
+		class MissingHandlerTypeAttributedViewStub : ViewStub { }
+		class MissingHandlerTypeElementHandlerAttribute : ElementHandlerAttribute { }
 	}
 }

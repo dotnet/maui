@@ -4,13 +4,18 @@ using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
 	/// Entry is a single line text entry. It is best used for collecting small discrete pieces of information, like usernames and passwords.
 	/// </summary>
-	[EntryHandler]
+#if ANDROID
+	[Entry.Handler]
+#else
+	[ElementHandler(typeof(EntryHandler))]
+#endif
 	public partial class Entry : InputView, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>, IEntry
 	{
 		/// <summary>

@@ -7,7 +7,11 @@ namespace Microsoft.Maui.Handlers;
 internal class ElementHandlerAttribute : Attribute
 {
 	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	readonly Type _handlerType;
+	readonly Type? _handlerType;
+
+	public ElementHandlerAttribute()
+	{
+	}
 
 	public ElementHandlerAttribute([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
 	{
@@ -18,5 +22,6 @@ internal class ElementHandlerAttribute : Attribute
 	public Type HandlerType => GetHandlerType();
 
 	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-	public virtual Type GetHandlerType() => _handlerType;
+	public virtual Type GetHandlerType()
+		=> _handlerType ?? throw new InvalidOperationException($"{GetType().FullName} must provide a handler type or override {nameof(GetHandlerType)}.");
 }

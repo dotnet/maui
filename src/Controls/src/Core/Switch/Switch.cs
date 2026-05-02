@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,7 +15,11 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="IsToggled"/> property to determine or set the current state.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[SwitchHandler]
+#if ANDROID
+	[Switch.Handler]
+#else
+	[ElementHandler(typeof(SwitchHandler))]
+#endif
 	public partial class Switch : View, IElementConfiguration<Switch>, ISwitch
 	{
 		/// <summary>
