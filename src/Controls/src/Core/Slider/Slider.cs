@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[Slider.Handler]
+	[SliderHandler]
 #else
 	[ElementHandler(typeof(SliderHandler))]
 #endif

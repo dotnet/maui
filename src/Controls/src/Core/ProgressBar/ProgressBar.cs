@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[ProgressBar.Handler]
+	[ProgressBarHandler]
 #else
 	[ElementHandler(typeof(ProgressBarHandler))]
 #endif

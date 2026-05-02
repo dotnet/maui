@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// Entry is a single line text entry. It is best used for collecting small discrete pieces of information, like usernames and passwords.
 	/// </summary>
 #if ANDROID
-	[Entry.Handler]
+	[EntryHandler]
 #else
 	[ElementHandler(typeof(EntryHandler))]
 #endif

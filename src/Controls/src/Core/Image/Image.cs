@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[Image.Handler]
+	[ImageHandler]
 #else
 	[ElementHandler(typeof(ImageHandler))]
 #endif

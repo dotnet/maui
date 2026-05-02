@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if ANDROID
-	[Picker.Handler]
+	[PickerHandler]
 #else
 	[ElementHandler(typeof(PickerHandler))]
 #endif
