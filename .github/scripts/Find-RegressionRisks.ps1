@@ -105,6 +105,13 @@ function Test-IsImplementationFile {
     return $true
 }
 
+function Test-IsTestFile {
+    param([string]$Path)
+    if ($Path -notmatch '\.cs$') { return $false }
+    if ($Path -match '(?i)(Tests|TestCases)/') { return $true }
+    return $false
+}
+
 function Get-PRDiffText {
     param(
         [int]$Number,
@@ -516,7 +523,62 @@ foreach ($filePath in $FilePaths) {
     }
 }
 
-# ─── Summary ──────────────────────────────────────────────────────────────────
+# ─── Extract test files from fix PRs that triggered REVERT ─────────────────────
+# For each REVERT, find test files the fix PR added/modified and classify them
+# via Detect-TestsInDiff.ps1 (if available). This enables downstream test execution.
+
+$detectTestsScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
+$hasTestDetector = Test-Path $detectTestsScript
+
+$revertPRsWithTests = @{}   # fixPR -> array of test metadata
+
+if ($hasTestDetector) {
+    $revertFixPRs = @($risks | Where-Object { $_.Risk -eq 'REVERT' } |
+        Select-Object -ExpandProperty RecentPR -Unique)
+
+    foreach ($fixPR in $revertFixPRs) {
+        if ($revertPRsWithTests.ContainsKey($fixPR)) { continue }
+
+        # Get all file paths from the fix PR diff (already cached)
+        $fixFiles = @()
+        if ($fixDiffCache.ContainsKey($fixPR)) {
+            $fixFiles = @($fixDiffCache[$fixPR].Keys | Where-Object { Test-IsTestFile $_ })
+        }
+
+        if ($fixFiles.Count -eq 0) {
+            Write-Host "  [info] Fix PR #$fixPR`: no test files in diff" -ForegroundColor DarkGray
+            $revertPRsWithTests[$fixPR] = @()
+            continue
+        }
+
+        Write-Host "  🧪 Fix PR #$fixPR`: detecting tests from $($fixFiles.Count) test file(s)…" -ForegroundColor Cyan
+        try {
+            $detected = & $detectTestsScript -ChangedFiles $fixFiles 2>&1
+            # Filter out Write-Host output — only keep returned objects
+            $testEntries = @($detected | Where-Object { $_ -is [hashtable] -or ($_ -is [PSCustomObject]) })
+            if ($testEntries.Count -gt 0) {
+                Write-Host "    Found $($testEntries.Count) test(s)" -ForegroundColor Green
+                $revertPRsWithTests[$fixPR] = $testEntries
+            } else {
+                Write-Host "    No classifiable tests found" -ForegroundColor DarkGray
+                $revertPRsWithTests[$fixPR] = @()
+            }
+        } catch {
+            Write-Host "    ⚠️ Test detection failed: $_" -ForegroundColor Yellow
+            $revertPRsWithTests[$fixPR] = @()
+        }
+    }
+} else {
+    Write-Host "  ℹ️ Detect-TestsInDiff.ps1 not found — skipping test extraction" -ForegroundColor DarkGray
+}
+
+# Attach test metadata to each REVERT risk entry
+foreach ($r in @($risks | Where-Object { $_.Risk -eq 'REVERT' })) {
+    $r | Add-Member -NotePropertyName TestsFromFixPR -NotePropertyValue @() -Force
+    if ($revertPRsWithTests.ContainsKey($r.RecentPR)) {
+        $r.TestsFromFixPR = $revertPRsWithTests[$r.RecentPR]
+    }
+}
 
 Write-Banner "Results"
 
@@ -567,7 +629,7 @@ if ($OutputDir) {
 
     # risks.json — structured output for agent consumption
     $jsonRisks = @($risks | ForEach-Object {
-        @{
+        $entry = @{
             file           = $_.File
             recent_pr      = $_.RecentPR
             pr_title       = $_.PRTitle
@@ -577,6 +639,23 @@ if ($OutputDir) {
             details        = $_.Details
             reverted_lines = @(@($_.RevertedLines) | ForEach-Object { @{ text = $_.Text; line = $_.Line } })
         }
+        # Include test metadata for REVERT entries
+        if ($_.Risk -eq 'REVERT' -and $_.TestsFromFixPR -and $_.TestsFromFixPR.Count -gt 0) {
+            $entry['regression_tests'] = @($_.TestsFromFixPR | ForEach-Object {
+                @{
+                    type         = $_.Type
+                    test_name    = $_.TestName
+                    filter       = $_.Filter
+                    project_path = $_.ProjectPath
+                    project      = $_.Project
+                    runner       = $_.Runner
+                    files        = @($_.Files)
+                }
+            })
+        } else {
+            $entry['regression_tests'] = @()
+        }
+        $entry
     })
     $payload = @{
         pr_number    = $PRNumber
@@ -607,6 +686,24 @@ if ($OutputDir) {
             if ($allIssues.Count -gt 0) {
                 [void]$md.AppendLine()
                 [void]$md.AppendLine("**Action required:** Verify that issues $($allIssues -join ', ') do not re-regress before merging.")
+            }
+
+            # List regression tests that should be run
+            $allRegressionTests = @($reverts | Where-Object { $_.TestsFromFixPR.Count -gt 0 } |
+                ForEach-Object { $pr = $_.RecentPR; $_.TestsFromFixPR | ForEach-Object {
+                    [PSCustomObject]@{ FixPR = $pr; Type = $_.Type; TestName = $_.TestName; Filter = $_.Filter; Runner = $_.Runner }
+                }})
+            if ($allRegressionTests.Count -gt 0) {
+                [void]$md.AppendLine()
+                [void]$md.AppendLine("### 🧪 Regression Tests to Verify")
+                [void]$md.AppendLine()
+                [void]$md.AppendLine("These tests were added by the fix PRs being reverted. They must still pass:")
+                [void]$md.AppendLine()
+                [void]$md.AppendLine("| Fix PR | Type | Test | Filter |")
+                [void]$md.AppendLine("|---|---|---|---|")
+                foreach ($t in $allRegressionTests) {
+                    [void]$md.AppendLine("| #$($t.FixPR) | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
+                }
             }
         }
         'OVERLAP' {
