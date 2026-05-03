@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
@@ -142,6 +143,60 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(Colors.Red, placeholderBrush.Color.ToColor());
 			});
 		}
+
+		[Fact(DisplayName = "Null TitleColor clears local PlaceholderForeground")]
+		public async Task NullTitleColorClearsPlaceholderForegroundLocalValue()
+		{
+			var picker = new Picker()
+			{
+				Title = "Select Option",
+				TitleColor = Colors.Red,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.IsType<WSolidColorBrush>(handler.PlatformView.PlaceholderForeground);
+
+				picker.ClearValue(Picker.TitleColorProperty);
+
+				Assert.Equal(DependencyProperty.UnsetValue, handler.PlatformView.ReadLocalValue(ComboBox.PlaceholderForegroundProperty));
+			});
+		}
+
+		[Fact(DisplayName = "Title and TitleColor update after handler creation")]
+		public async Task TitleAndTitleColorUpdateAfterHandlerCreation()
+		{
+			var picker = new Picker()
+			{
+				Title = "First",
+				TitleColor = Colors.Red,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				picker.Title = "Second";
+				Assert.Equal("Second", handler.PlatformView.PlaceholderText);
+
+				picker.TitleColor = Colors.Blue;
+				var brush = Assert.IsType<WSolidColorBrush>(handler.PlatformView.PlaceholderForeground);
+				Assert.Equal(Colors.Blue, brush.Color.ToColor());
+			});
+		}
+
 		protected Task<string> GetPlatformControlText(ComboBox platformView)
 		{
 			return InvokeOnMainThreadAsync(() =>
