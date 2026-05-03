@@ -530,14 +530,14 @@ foreach ($filePath in $FilePaths) {
 $detectTestsScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
 $hasTestDetector = Test-Path $detectTestsScript
 
-$revertPRsWithTests = @{}   # fixPR -> array of test metadata
+$fixPRsWithTests = @{}   # fixPR -> array of test metadata
 
 if ($hasTestDetector) {
-    $revertFixPRs = @($risks | Where-Object { $_.Risk -eq 'REVERT' } |
-        Select-Object -ExpandProperty RecentPR -Unique)
+    # Extract tests for ALL risk entries (REVERT and OVERLAP) for maximum confidence
+    $allFixPRs = @($risks | Select-Object -ExpandProperty RecentPR -Unique)
 
-    foreach ($fixPR in $revertFixPRs) {
-        if ($revertPRsWithTests.ContainsKey($fixPR)) { continue }
+    foreach ($fixPR in $allFixPRs) {
+        if ($fixPRsWithTests.ContainsKey($fixPR)) { continue }
 
         # Get all file paths from the fix PR diff (already cached)
         $fixFiles = @()
@@ -547,7 +547,7 @@ if ($hasTestDetector) {
 
         if ($fixFiles.Count -eq 0) {
             Write-Host "  [info] Fix PR #$fixPR`: no test files in diff" -ForegroundColor DarkGray
-            $revertPRsWithTests[$fixPR] = @()
+            $fixPRsWithTests[$fixPR] = @()
             continue
         }
 
@@ -558,25 +558,25 @@ if ($hasTestDetector) {
             $testEntries = @($detected | Where-Object { $_ -is [hashtable] -or ($_ -is [PSCustomObject]) })
             if ($testEntries.Count -gt 0) {
                 Write-Host "    Found $($testEntries.Count) test(s)" -ForegroundColor Green
-                $revertPRsWithTests[$fixPR] = $testEntries
+                $fixPRsWithTests[$fixPR] = $testEntries
             } else {
                 Write-Host "    No classifiable tests found" -ForegroundColor DarkGray
-                $revertPRsWithTests[$fixPR] = @()
+                $fixPRsWithTests[$fixPR] = @()
             }
         } catch {
             Write-Host "    ⚠️ Test detection failed: $_" -ForegroundColor Yellow
-            $revertPRsWithTests[$fixPR] = @()
+            $fixPRsWithTests[$fixPR] = @()
         }
     }
 } else {
     Write-Host "  ℹ️ Detect-TestsInDiff.ps1 not found — skipping test extraction" -ForegroundColor DarkGray
 }
 
-# Attach test metadata to each REVERT risk entry
-foreach ($r in @($risks | Where-Object { $_.Risk -eq 'REVERT' })) {
+# Attach test metadata to ALL risk entries (REVERT and OVERLAP)
+foreach ($r in $risks) {
     $r | Add-Member -NotePropertyName TestsFromFixPR -NotePropertyValue @() -Force
-    if ($revertPRsWithTests.ContainsKey($r.RecentPR)) {
-        $r.TestsFromFixPR = $revertPRsWithTests[$r.RecentPR]
+    if ($fixPRsWithTests.ContainsKey($r.RecentPR)) {
+        $r.TestsFromFixPR = $fixPRsWithTests[$r.RecentPR]
     }
 }
 
@@ -639,8 +639,8 @@ if ($OutputDir) {
             details        = $_.Details
             reverted_lines = @(@($_.RevertedLines) | ForEach-Object { @{ text = $_.Text; line = $_.Line } })
         }
-        # Include test metadata for REVERT entries
-        if ($_.Risk -eq 'REVERT' -and $_.TestsFromFixPR -and $_.TestsFromFixPR.Count -gt 0) {
+        # Include test metadata for all risk entries (REVERT and OVERLAP)
+        if ($_.TestsFromFixPR -and $_.TestsFromFixPR.Count -gt 0) {
             $entry['regression_tests'] = @($_.TestsFromFixPR | ForEach-Object {
                 @{
                     type         = $_.Type
@@ -713,6 +713,24 @@ if ($OutputDir) {
             [void]$md.AppendLine("|---|---|---|")
             foreach ($o in $overlaps) {
                 [void]$md.AppendLine("| ``$($o.File)`` | #$($o.RecentPR) | $($o.FixedIssues) |")
+            }
+
+            # List regression tests from overlapping fix PRs
+            $overlapTests = @($overlaps | Where-Object { $_.TestsFromFixPR.Count -gt 0 } |
+                ForEach-Object { $pr = $_.RecentPR; $_.TestsFromFixPR | ForEach-Object {
+                    [PSCustomObject]@{ FixPR = $pr; Type = $_.Type; TestName = $_.TestName; Filter = $_.Filter; Runner = $_.Runner }
+                }})
+            if ($overlapTests.Count -gt 0) {
+                [void]$md.AppendLine()
+                [void]$md.AppendLine("### 🧪 Regression Tests to Verify")
+                [void]$md.AppendLine()
+                [void]$md.AppendLine("These tests were added by the overlapping fix PRs. Running them to verify no side-effect regressions:")
+                [void]$md.AppendLine()
+                [void]$md.AppendLine("| Fix PR | Type | Test | Filter |")
+                [void]$md.AppendLine("|---|---|---|---|")
+                foreach ($t in $overlapTests) {
+                    [void]$md.AppendLine("| #$($t.FixPR) | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
+                }
             }
         }
         'CLEAN' {
