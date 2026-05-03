@@ -835,10 +835,10 @@ if (Test-Path $regressionRisksJson) {
     }
 }
 
-if ($risksData -and $risksData.result -eq 'REVERT') {
-    # Collect all regression tests from REVERT entries
+if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'OVERLAP')) {
+    # Collect regression tests from ALL risk entries (REVERT + OVERLAP)
     $regressionTests = @()
-    foreach ($risk in @($risksData.risks | Where-Object { $_.risk -eq 'REVERT' -and $_.regression_tests.Count -gt 0 })) {
+    foreach ($risk in @($risksData.risks | Where-Object { $_.regression_tests.Count -gt 0 })) {
         foreach ($test in $risk.regression_tests) {
             $regressionTests += [PSCustomObject]@{
                 FixPR       = $risk.recent_pr
