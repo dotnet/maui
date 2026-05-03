@@ -117,12 +117,12 @@ $autonomousRules = @"
 "@
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 0: Branch Setup (Create Review Branch & Cherry-Pick PR)
+#  STEP 1: Branch Setup (Create Review Branch & Cherry-Pick PR)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-Write-Host "║  STEP 0: BRANCH SETUP                                     ║" -ForegroundColor Yellow
+Write-Host "║  STEP 1: BRANCH SETUP                                     ║" -ForegroundColor Yellow
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
 
 $reviewBranch = "pr-review-$PRNumber"
@@ -442,12 +442,12 @@ function Invoke-CopilotStep {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 0.5: DETECT UI Test Categories (detection only — no pipeline trigger)
+#  STEP 2: DETECT UI Test Categories (detection only — no pipeline trigger)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  STEP 0.5: DETECT UI TEST CATEGORIES                       ║" -ForegroundColor Cyan
+Write-Host "║  STEP 2: DETECT UI TEST CATEGORIES                       ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
 $uitestCategories = ""
@@ -501,16 +501,16 @@ if (Test-Path $detectScript) {
 # tree. Force HEAD back to the review branch and fail loudly if we can't.
 git checkout $reviewBranch 2>$null | Out-Null
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ⚠️ Failed to restore review branch '$reviewBranch' after Step 0.5 — Step 1 may run against the wrong tree" -ForegroundColor Red
+    Write-Host "  ⚠️ Failed to restore review branch '$reviewBranch' after Step 2 — Step 1 may run against the wrong tree" -ForegroundColor Red
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 0.6: REGRESSION CROSS-REFERENCE (script, no copilot agent)
+#  STEP 3: REGRESSION CROSS-REFERENCE (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  STEP 0.6: REGRESSION CROSS-REFERENCE                      ║" -ForegroundColor Cyan
+Write-Host "║  STEP 3: REGRESSION CROSS-REFERENCE                      ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
 $regressionOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/regression-check"
@@ -539,12 +539,12 @@ if (Test-Path $regressionScript) {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 1: Gate - Test Before and After Fix (script, no copilot agent)
+#  STEP 4: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-Write-Host "║  STEP 1: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
+Write-Host "║  STEP 4: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
 
 $gateOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
@@ -822,7 +822,7 @@ if (-not $DryRun) {
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 1.5: RUN REGRESSION TESTS (if REVERT risks detected)
+#  STEP 5: RUN REGRESSION TESTS (if REVERT risks detected)
 # ═════════════════════════════════════════════════════════════════════════════
 
 $regressionTestResult = "SKIPPED"
@@ -854,7 +854,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
     if ($regressionTests.Count -gt 0) {
         Write-Host ""
         Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║  STEP 1.5: REGRESSION TEST VERIFICATION                    ║" -ForegroundColor Red
+        Write-Host "║  STEP 5: REGRESSION TEST VERIFICATION                    ║" -ForegroundColor Red
         Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
         Write-Host "  Running $($regressionTests.Count) test(s) from reverted fix PRs…" -ForegroundColor Cyan
 
@@ -982,7 +982,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 2: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
+#  STEP 6: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
 # ═════════════════════════════════════════════════════════════════════════════
 
 $gateStatusForPrompt = switch ($gateResult) {
@@ -1071,13 +1071,13 @@ Do NOT re-run gate verification. The gate phase is handled separately.
 ⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
 "@
 
-Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 6: PR REVIEW" -Prompt $step2Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ─── Tier 3 refresh: feed AI categories back into category detection ───
-# Step 0.5 ran detection without the AI tier (-AiCategories was empty).
+# Step 2 ran detection without the AI tier (-AiCategories was empty).
 # Pre-flight (Step 2) wrote `ai-categories.md`; re-run detection now so the
 # unified comment reflects all three tiers before Step 3 posts.
 $aiCategoriesFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests/ai-categories.md"
@@ -1108,17 +1108,17 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
             }
         }
     } catch {
-        Write-Host "  ⚠️ AI-tier category refresh failed (non-fatal, keeping Step 0.5 result): $_" -ForegroundColor Yellow
+        Write-Host "  ⚠️ AI-tier category refresh failed (non-fatal, keeping Step 2 result): $_" -ForegroundColor Yellow
     }
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 3: Post AI Summary Comment (direct script invocation)
+#  STEP 7: Post AI Summary Comment (direct script invocation)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║  STEP 3: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "║  STEP 7: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
 $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
@@ -1282,12 +1282,12 @@ $( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limi
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 4: Apply Labels
+#  STEP 8: Apply Labels
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║  STEP 4: APPLY LABELS                                     ║" -ForegroundColor Blue
+Write-Host "║  STEP 8: APPLY LABELS                                     ║" -ForegroundColor Blue
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
 $labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
