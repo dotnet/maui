@@ -538,6 +538,161 @@ if (Test-Path $regressionScript) {
     Write-Host "  ⚠️ Find-RegressionRisks.ps1 not found" -ForegroundColor Yellow
 }
 
+# --- Regression Test Execution (part of STEP 3) ---
+$regressionTestResult = "SKIPPED"
+$regressionRisksJson = Join-Path $regressionOutputDir "risks.json"
+if (Test-Path $regressionRisksJson) {
+    try {
+        $risksData = Get-Content $regressionRisksJson -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        $risksData = $null
+    }
+}
+
+if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'OVERLAP')) {
+    # Collect regression tests from ALL risk entries (REVERT + OVERLAP)
+    $regressionTests = @()
+    foreach ($risk in @($risksData.risks | Where-Object { $_.regression_tests.Count -gt 0 })) {
+        foreach ($test in $risk.regression_tests) {
+            $regressionTests += [PSCustomObject]@{
+                FixPR       = $risk.recent_pr
+                Type        = $test.type
+                TestName    = $test.test_name
+                Filter      = $test.filter
+                ProjectPath = $test.project_path
+                Project     = $test.project
+                Runner      = $test.runner
+            }
+        }
+    }
+
+    if ($regressionTests.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  🧪 Running $($regressionTests.Count) regression test(s) from fix PRs…" -ForegroundColor Cyan
+
+        $regrTestOutputDir = Join-Path $regressionOutputDir "test-results"
+        New-Item -ItemType Directory -Force -Path $regrTestOutputDir | Out-Null
+
+        $regrTestPassed = 0
+        $regrTestFailed = 0
+        $regrTestSkipped = 0
+        $regrTestDetails = @()
+
+        $regrPlatform = if ($Platform) { $Platform } else { "android" }
+        $uiTestRunner = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+        $deviceTestRunner = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+
+        foreach ($t in $regressionTests) {
+            Write-Host ""
+            Write-Host "  📋 [$($t.Type)] $($t.TestName) (from fix PR #$($t.FixPR))" -ForegroundColor Cyan
+
+            try {
+                switch ($t.Type) {
+                    'UITest' {
+                        if (Test-Path $uiTestRunner) {
+                            Write-Host "    🖥️ Running UI test via BuildAndRunHostApp.ps1 -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
+                            $testOutput = & $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1
+                            $testExitCode = $LASTEXITCODE
+                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                        } else {
+                            Write-Host "    ⚠️ BuildAndRunHostApp.ps1 not found" -ForegroundColor Yellow
+                            $testExitCode = -1
+                        }
+                    }
+                    'DeviceTest' {
+                        if (Test-Path $deviceTestRunner) {
+                            $dtProject = if ($t.Project) { $t.Project } else { 'Controls' }
+                            Write-Host "    📱 Running device test via Run-DeviceTests.ps1 -Project $dtProject -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
+                            $testOutput = & $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1
+                            $testExitCode = $LASTEXITCODE
+                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                        } else {
+                            Write-Host "    ⚠️ Run-DeviceTests.ps1 not found" -ForegroundColor Yellow
+                            $testExitCode = -1
+                        }
+                    }
+                    { $_ -eq 'UnitTest' -or $_ -eq 'XamlUnitTest' } {
+                        if ($t.ProjectPath) {
+                            $resolvedProj = Join-Path $RepoRoot $t.ProjectPath
+                            Write-Host "    🧪 Running: dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"" -ForegroundColor Cyan
+                            $testOutput = dotnet test $resolvedProj --filter $t.Filter --logger "console;verbosity=minimal" 2>&1
+                            $testExitCode = $LASTEXITCODE
+                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                        } else {
+                            Write-Host "    ⚠️ No project path for unit test" -ForegroundColor Yellow
+                            $testExitCode = -1
+                        }
+                    }
+                    default {
+                        Write-Host "    ⚠️ Unknown test type: $($t.Type)" -ForegroundColor Yellow
+                        $testExitCode = -1
+                    }
+                }
+
+                if ($testExitCode -eq 0) {
+                    Write-Host "    ✅ PASSED" -ForegroundColor Green
+                    $regrTestPassed++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'PASSED' }
+                } elseif ($testExitCode -eq -1) {
+                    Write-Host "    ⏭️ SKIPPED" -ForegroundColor DarkGray
+                    $regrTestSkipped++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'SKIPPED'; reason = 'Runner not available' }
+                } else {
+                    Write-Host "    ❌ FAILED (exit code: $testExitCode)" -ForegroundColor Red
+                    $regrTestFailed++
+                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'FAILED' }
+                }
+            } catch {
+                Write-Host "    ⚠️ Error: $_" -ForegroundColor Yellow
+                $regrTestSkipped++
+                $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'ERROR'; reason = "$_" }
+            }
+        }
+
+        # Determine overall result
+        if ($regrTestFailed -gt 0) {
+            $regressionTestResult = "FAILED"
+            Write-Host "  🔴 Regression test result: $regrTestPassed passed, $regrTestFailed FAILED, $regrTestSkipped skipped" -ForegroundColor Red
+        } elseif ($regrTestPassed -gt 0) {
+            $regressionTestResult = "PASSED"
+            Write-Host "  ✅ Regression test result: $regrTestPassed passed, $regrTestSkipped skipped" -ForegroundColor Green
+        } else {
+            $regressionTestResult = "SKIPPED"
+            Write-Host "  ⏭️  All regression tests skipped ($regrTestSkipped total)" -ForegroundColor DarkGray
+        }
+
+        # Append results to regression-check content.md
+        $regrContentFile = Join-Path $regressionOutputDir "content.md"
+        if (Test-Path $regrContentFile) {
+            $appendMd = New-Object System.Text.StringBuilder
+            [void]$appendMd.AppendLine()
+            [void]$appendMd.AppendLine("### 🧪 Regression Test Results")
+            [void]$appendMd.AppendLine()
+            $resultIcon = switch ($regressionTestResult) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
+            [void]$appendMd.AppendLine("$resultIcon **$regressionTestResult** — $regrTestPassed passed, $regrTestFailed failed, $regrTestSkipped skipped")
+            [void]$appendMd.AppendLine()
+            if ($regrTestDetails.Count -gt 0) {
+                [void]$appendMd.AppendLine("| Fix PR | Test | Type | Result |")
+                [void]$appendMd.AppendLine("|---|---|---|---|")
+                foreach ($d in $regrTestDetails) {
+                    $icon = switch ($d.result) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
+                    [void]$appendMd.AppendLine("| #$($d.fix_pr) | $($d.test) | $($d.type) | $icon $($d.result) |")
+                }
+            }
+            Add-Content $regrContentFile $appendMd.ToString() -Encoding UTF8
+        }
+
+        # Write test results JSON
+        @{
+            result  = $regressionTestResult
+            passed  = $regrTestPassed
+            failed  = $regrTestFailed
+            skipped = $regrTestSkipped
+            details = $regrTestDetails
+        } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $regrTestOutputDir "test-results.json") -Encoding UTF8
+    }
+}
+
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 4: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
@@ -822,167 +977,7 @@ if (-not $DryRun) {
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 5: RUN REGRESSION TESTS (if REVERT risks detected)
-# ═════════════════════════════════════════════════════════════════════════════
-
-$regressionTestResult = "SKIPPED"
-$regressionRisksJson = Join-Path $regressionOutputDir "risks.json"
-if (Test-Path $regressionRisksJson) {
-    try {
-        $risksData = Get-Content $regressionRisksJson -Raw -Encoding UTF8 | ConvertFrom-Json
-    } catch {
-        $risksData = $null
-    }
-}
-
-if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'OVERLAP')) {
-    # Collect regression tests from ALL risk entries (REVERT + OVERLAP)
-    $regressionTests = @()
-    foreach ($risk in @($risksData.risks | Where-Object { $_.regression_tests.Count -gt 0 })) {
-        foreach ($test in $risk.regression_tests) {
-            $regressionTests += [PSCustomObject]@{
-                FixPR       = $risk.recent_pr
-                Type        = $test.type
-                TestName    = $test.test_name
-                Filter      = $test.filter
-                ProjectPath = $test.project_path
-                Runner      = $test.runner
-            }
-        }
-    }
-
-    if ($regressionTests.Count -gt 0) {
-        Write-Host ""
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║  STEP 5: REGRESSION TEST VERIFICATION                    ║" -ForegroundColor Red
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
-        Write-Host "  Running $($regressionTests.Count) test(s) from reverted fix PRs…" -ForegroundColor Cyan
-
-        $regrTestOutputDir = Join-Path $regressionOutputDir "test-results"
-        New-Item -ItemType Directory -Force -Path $regrTestOutputDir | Out-Null
-
-        $regrTestPassed = 0
-        $regrTestFailed = 0
-        $regrTestSkipped = 0
-        $regrTestDetails = @()
-
-        $regrPlatform = if ($Platform) { $Platform } else { $gatePlatform }
-        $uiTestRunner = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-        $deviceTestRunner = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
-
-        foreach ($t in $regressionTests) {
-            Write-Host ""
-            Write-Host "  📋 [$($t.Type)] $($t.TestName) (from fix PR #$($t.FixPR))" -ForegroundColor Cyan
-
-            try {
-                switch ($t.Type) {
-                    'UITest' {
-                        if (Test-Path $uiTestRunner) {
-                            Write-Host "    🖥️ Running UI test via BuildAndRunHostApp.ps1 -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = & $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1
-                            $testExitCode = $LASTEXITCODE
-                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
-                        } else {
-                            Write-Host "    ⚠️ BuildAndRunHostApp.ps1 not found" -ForegroundColor Yellow
-                            $testExitCode = -1
-                        }
-                    }
-                    'DeviceTest' {
-                        if (Test-Path $deviceTestRunner) {
-                            $dtProject = if ($t.Project) { $t.Project } else { 'Controls' }
-                            Write-Host "    📱 Running device test via Run-DeviceTests.ps1 -Project $dtProject -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = & $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1
-                            $testExitCode = $LASTEXITCODE
-                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
-                        } else {
-                            Write-Host "    ⚠️ Run-DeviceTests.ps1 not found" -ForegroundColor Yellow
-                            $testExitCode = -1
-                        }
-                    }
-                    { $_ -eq 'UnitTest' -or $_ -eq 'XamlUnitTest' } {
-                        if ($t.ProjectPath) {
-                            $resolvedProj = Join-Path $RepoRoot $t.ProjectPath
-                            Write-Host "    🧪 Running: dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = dotnet test $resolvedProj --filter $t.Filter --no-restore --logger "console;verbosity=minimal" 2>&1
-                            $testExitCode = $LASTEXITCODE
-                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
-                        } else {
-                            Write-Host "    ⚠️ No project path for unit test" -ForegroundColor Yellow
-                            $testExitCode = -1
-                        }
-                    }
-                    default {
-                        Write-Host "    ⚠️ Unknown test type: $($t.Type)" -ForegroundColor Yellow
-                        $testExitCode = -1
-                    }
-                }
-
-                if ($testExitCode -eq 0) {
-                    Write-Host "    ✅ PASSED" -ForegroundColor Green
-                    $regrTestPassed++
-                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'PASSED' }
-                } elseif ($testExitCode -eq -1) {
-                    Write-Host "    ⏭️ SKIPPED" -ForegroundColor DarkGray
-                    $regrTestSkipped++
-                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'SKIPPED'; reason = 'Runner not available' }
-                } else {
-                    Write-Host "    ❌ FAILED (exit code: $testExitCode)" -ForegroundColor Red
-                    $regrTestFailed++
-                    $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'FAILED' }
-                }
-            } catch {
-                Write-Host "    ⚠️ Error: $_" -ForegroundColor Yellow
-                $regrTestSkipped++
-                $regrTestDetails += @{ test = $t.TestName; fix_pr = $t.FixPR; type = $t.Type; result = 'ERROR'; reason = "$_" }
-            }
-        }
-
-        # Determine overall result
-        if ($regrTestFailed -gt 0) {
-            $regressionTestResult = "FAILED"
-            Write-Host "  🔴 Regression test result: $regrTestPassed passed, $regrTestFailed FAILED, $regrTestSkipped skipped" -ForegroundColor Red
-        } elseif ($regrTestPassed -gt 0) {
-            $regressionTestResult = "PASSED"
-            Write-Host "  ✅ Regression test result: $regrTestPassed passed, $regrTestSkipped skipped" -ForegroundColor Green
-        } else {
-            $regressionTestResult = "SKIPPED"
-            Write-Host "  ⏭️  All regression tests skipped ($regrTestSkipped total)" -ForegroundColor DarkGray
-        }
-
-        # Append results to regression-check content.md
-        $regrContentFile = Join-Path $regressionOutputDir "content.md"
-        if (Test-Path $regrContentFile) {
-            $appendMd = New-Object System.Text.StringBuilder
-            [void]$appendMd.AppendLine()
-            [void]$appendMd.AppendLine("### 🧪 Regression Test Results")
-            [void]$appendMd.AppendLine()
-            $resultIcon = switch ($regressionTestResult) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
-            [void]$appendMd.AppendLine("$resultIcon **$regressionTestResult** — $regrTestPassed passed, $regrTestFailed failed, $regrTestSkipped skipped")
-            [void]$appendMd.AppendLine()
-            if ($regrTestDetails.Count -gt 0) {
-                [void]$appendMd.AppendLine("| Fix PR | Test | Type | Result |")
-                [void]$appendMd.AppendLine("|---|---|---|---|")
-                foreach ($d in $regrTestDetails) {
-                    $icon = switch ($d.result) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
-                    [void]$appendMd.AppendLine("| #$($d.fix_pr) | $($d.test) | $($d.type) | $icon $($d.result) |")
-                }
-            }
-            Add-Content $regrContentFile $appendMd.ToString() -Encoding UTF8
-        }
-
-        # Write test results JSON
-        @{
-            result  = $regressionTestResult
-            passed  = $regrTestPassed
-            failed  = $regrTestFailed
-            skipped = $regrTestSkipped
-            details = $regrTestDetails
-        } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $regrTestOutputDir "test-results.json") -Encoding UTF8
-    }
-}
-
-# ═════════════════════════════════════════════════════════════════════════════
-#  STEP 6: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
+#  STEP 5: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
 # ═════════════════════════════════════════════════════════════════════════════
 
 $gateStatusForPrompt = switch ($gateResult) {
@@ -1071,7 +1066,7 @@ Do NOT re-run gate verification. The gate phase is handled separately.
 ⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
 "@
 
-Invoke-CopilotStep -StepName "STEP 6: PR REVIEW" -Prompt $step2Prompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 5: PR REVIEW" -Prompt $step2Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
@@ -1113,12 +1108,12 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 7: Post AI Summary Comment (direct script invocation)
+#  STEP 6: Post AI Summary Comment (direct script invocation)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║  STEP 7: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "║  STEP 6: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
 $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
@@ -1282,12 +1277,12 @@ $( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limi
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 8: Apply Labels
+#  STEP 7: Apply Labels
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║  STEP 8: APPLY LABELS                                     ║" -ForegroundColor Blue
+Write-Host "║  STEP 7: APPLY LABELS                                     ║" -ForegroundColor Blue
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
 $labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
