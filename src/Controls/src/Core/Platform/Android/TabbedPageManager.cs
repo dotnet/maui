@@ -158,7 +158,7 @@ public class TabbedPageManager
 					var layoutInflater = Element.Handler.MauiContext.GetLayoutInflater();
 					_tabLayout = new TabLayout(_context.Context)
 					{
-						TabMode = TabLayout.ModeFixed,
+						TabMode = TabLayout.ModeAuto,
 						TabGravity = TabLayout.GravityFill,
 						LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 					};
