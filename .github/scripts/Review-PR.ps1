@@ -991,6 +991,32 @@ $gateStatusForPrompt = switch ($gateResult) {
     default { "Gate ❌ FAILED — tests did NOT behave as expected." }
 }
 
+# Build regression test instruction for try-fix candidates
+$regressionTestInstruction = ""
+if ($risksData -and $regressionTests -and $regressionTests.Count -gt 0) {
+    $testLines = @()
+    foreach ($t in $regressionTests) {
+        switch ($t.Type) {
+            'UITest'       { $testLines += "  - ``BuildAndRunHostApp.ps1 -Platform $regrPlatform -TestFilter `"$($t.Filter)`"`` (UITest from fix PR #$($t.FixPR))" }
+            'DeviceTest'   { $proj = if ($t.Project) { $t.Project } else { 'Controls' }; $testLines += "  - ``Run-DeviceTests.ps1 -Project $proj -Platform $regrPlatform -TestFilter `"$($t.Filter)`"`` (DeviceTest from fix PR #$($t.FixPR))" }
+            'UnitTest'     { if ($t.ProjectPath) { $testLines += "  - ``dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"`` (UnitTest from fix PR #$($t.FixPR))" } }
+            'XamlUnitTest' { if ($t.ProjectPath) { $testLines += "  - ``dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"`` (XamlUnitTest from fix PR #$($t.FixPR))" } }
+        }
+    }
+    if ($testLines.Count -gt 0) {
+        $regressionTestInstruction = @"
+
+## 🔴 REGRESSION TESTS (MANDATORY for every candidate)
+
+The regression cross-reference detected that this PR modifies files touched by prior bug-fix PRs. **Every try-fix candidate MUST run these additional tests** after its own test command passes. A candidate that passes its own tests but FAILS a regression test should be marked as ``Fail``.
+
+$($testLines -join "`n")
+
+Run these AFTER your primary test command succeeds. If any regression test fails, your candidate is ``Fail`` — the fix re-introduces a previously fixed bug.
+"@
+    }
+}
+
 $step2Prompt = @"
 Run a multi-candidate PR review for PR #$PRNumber using the following flow.
 
@@ -1011,13 +1037,14 @@ Use the pr-review skill's try-fix phase to generate FOUR independent candidate f
 - 🚨 You MUST generate all four candidates. Do not short-circuit even if Pre-Flight or the expert eval suggests the PR is already correct.
 - Write each candidate's output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix-{N}/content.md`` (N = 1..4).
 - Aggregate try-fix narrative for the AI summary comment to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``.
+$regressionTestInstruction
 
 ## Phase 3 — Report
 The expert reviewer evaluates ALL candidates against each other:
 - ``pr`` (the raw PR fix as submitted)
 - ``pr-plus-reviewer`` (PR fix + reviewer feedback applied in sandbox)
 - ``try-fix-1``..``try-fix-4``
-Pick the single winning candidate.
+Pick the single winning candidate. **Candidates that failed regression tests MUST be ranked lower than candidates that passed them.**
 Write the comparative analysis to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md``.
 
 ## Phase 4 — Winner manifest (REQUIRED)
