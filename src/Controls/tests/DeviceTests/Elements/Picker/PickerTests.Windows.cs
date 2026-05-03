@@ -197,6 +197,40 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "CharacterSpacing propagates to placeholder TextBlock when Title is set")]
+		public async Task CharacterSpacingPropagatesToPlaceholderWithTitle()
+		{
+			const string title = "Select Option";
+			const double characterSpacingPt = 8d;
+			var expectedEm = characterSpacingPt.ToEm();
+
+			var picker = new Picker()
+			{
+				Title = title,
+				CharacterSpacing = characterSpacingPt,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				},
+				WidthRequest = 200,
+				HeightRequest = 48
+			};
+
+			await CreateHandlerAndAddToWindow<PickerHandler>(picker, handler =>
+			{
+				var platformView = handler.PlatformView;
+
+				Assert.Equal(title, platformView.PlaceholderText);
+				Assert.Equal(expectedEm, platformView.CharacterSpacing);
+
+				var placeholderTextBlock = platformView.GetDescendantByName<TextBlock>("PlaceholderTextBlock");
+				Assert.NotNull(placeholderTextBlock);
+				Assert.Equal(title, placeholderTextBlock.Text);
+				Assert.Equal(expectedEm, placeholderTextBlock.CharacterSpacing);
+			});
+		}
+
 		protected Task<string> GetPlatformControlText(ComboBox platformView)
 		{
 			return InvokeOnMainThreadAsync(() =>
