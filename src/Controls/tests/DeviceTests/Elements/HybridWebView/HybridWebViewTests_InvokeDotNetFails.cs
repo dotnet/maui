@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Xunit;
 
@@ -125,6 +126,7 @@ public class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 
 		public string? TestResult { get; set; }
 
+        [HybridJSInvokable]
         public void TestMethod(string param)
         {
 			ParamValues.Add(param);

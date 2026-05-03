@@ -1,2 +1,4 @@
 #nullable enable
 override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
+Microsoft.Maui.HybridJSInvokableAttribute
+Microsoft.Maui.HybridJSInvokableAttribute.HybridJSInvokableAttribute() -> void

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests;
@@ -40,23 +41,27 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 
 		public string? LastMethodCalled { get; private set; }
 
+		[HybridJSInvokable]
 		public void Invoke_NoParam_NoReturn()
 		{
 			UpdateLastMethodCalled();
 		}
 
+		[HybridJSInvokable]
 		public object? Invoke_NoParam_ReturnNull()
 		{
 			UpdateLastMethodCalled();
 			return null;
 		}
 
+		[HybridJSInvokable]
 		public async Task Invoke_NoParam_ReturnTask()
 		{
 			await Task.Delay(1);
 			UpdateLastMethodCalled();
 		}
 
+		[HybridJSInvokable]
 		public async Task<object?> Invoke_NoParam_ReturnTaskNull()
 		{
 			await Task.Delay(1);
@@ -64,6 +69,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			return null;
 		}
 
+		[HybridJSInvokable]
 		public async Task<int> Invoke_NoParam_ReturnTaskValueType()
 		{
 			await Task.Delay(1);
@@ -71,6 +77,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			return 2;
 		}
 
+		[HybridJSInvokable]
 		public async Task<ComputationResult> Invoke_NoParam_ReturnTaskComplex()
 		{
 			await Task.Delay(1);
@@ -78,6 +85,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			return NewComplexResult;
 		}
 
+		[HybridJSInvokable]
 		public int Invoke_OneParam_ReturnValueType(Dictionary<string, int> dict)
 		{
 			Assert.NotNull(dict);
@@ -88,6 +96,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			return dict.Count;
 		}
 
+		[HybridJSInvokable]
 		public Dictionary<string, int> Invoke_OneParam_ReturnDictionary(Dictionary<string, int> dict)
 		{
 			Assert.NotNull(dict);
@@ -99,6 +108,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			return dict;
 		}
 
+		[HybridJSInvokable]
 		public ComputationResult Invoke_NullParam_ReturnComplex(object obj)
 		{
 			Assert.Null(obj);
@@ -106,6 +116,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			return NewComplexResult;
 		}
 
+		[HybridJSInvokable]
 		public void Invoke_ManyParams_NoReturn(Dictionary<string, int> dict, string str, object obj, ComputationResult computationResult, int[] arr)
 		{
 			Assert.NotNull(dict);

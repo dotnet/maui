@@ -272,9 +272,9 @@ namespace Microsoft.Maui.Handlers
 
 			// get the method and its parameters from the .NET object instance
 			var dotnetMethod = targetType.GetMethod(requestMethodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
-			if (dotnetMethod is null)
+			if (dotnetMethod is null || dotnetMethod.GetCustomAttribute<HybridJSInvokableAttribute>() is null)
 			{
-				throw new InvalidOperationException($"The method {requestMethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
+				throw new InvalidOperationException($"The method '{requestMethodName}' is not available for invocation from JavaScript.");
 			}
 			var dotnetParams = dotnetMethod.GetParameters();
 			if (requestParams is not null && dotnetParams.Length != requestParams.Length)

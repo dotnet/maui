@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests;
@@ -100,18 +101,21 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 	{
 		public string? LastMethodCalled { get; private set; }
 
+		[HybridJSInvokable]
 		public void ThrowException()
 		{
 			LastMethodCalled = nameof(ThrowException);
 			throw new InvalidOperationException("Test exception message");
 		}
 
+		[HybridJSInvokable]
 		public void ThrowCustomException()
 		{
 			LastMethodCalled = nameof(ThrowCustomException);
 			throw new ArgumentException("Custom argument exception");
 		}
 
+		[HybridJSInvokable]
 		public async Task ThrowExceptionAsync()
 		{
 			LastMethodCalled = nameof(ThrowExceptionAsync);
@@ -119,6 +123,7 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 			throw new InvalidOperationException("Async test exception");
 		}
 
+		[HybridJSInvokable]
 		public string SuccessMethod()
 		{
 			LastMethodCalled = nameof(SuccessMethod);

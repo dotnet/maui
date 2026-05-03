@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
@@ -144,23 +145,27 @@ namespace Maui.Controls.Sample.Pages
 				_hybridWebViewPage = hybridWebViewPage;
 			}
 
-			public void DoSyncWork()
+			[HybridJSInvokable]
+		public void DoSyncWork()
 			{
 				Debug.WriteLine("DoSyncWork");
 			}
 
-			public void DoSyncWorkParams(int i, string s)
+			[HybridJSInvokable]
+		public void DoSyncWorkParams(int i, string s)
 			{
 				Debug.WriteLine($"DoSyncWorkParams: {i}, {s}");
 			}
 
-			public string DoSyncWorkReturn()
+			[HybridJSInvokable]
+		public string DoSyncWorkReturn()
 			{
 				Debug.WriteLine("DoSyncWorkReturn");
 				return "Hello from C#!";
 			}
 
-			public SyncReturn DoSyncWorkParamsReturn(int i, string s)
+			[HybridJSInvokable]
+		public SyncReturn DoSyncWorkParamsReturn(int i, string s)
 			{
 				Debug.WriteLine($"DoSyncWorkParamsReturn: {i}, {s}");
 				return new SyncReturn
@@ -170,51 +175,57 @@ namespace Maui.Controls.Sample.Pages
 				};
 			}
 
-			public async Task DoAsyncWork()
+			[HybridJSInvokable]
+		public async Task DoAsyncWork()
 			{
 				await Task.Delay(1000);
 				Debug.WriteLine("DoAsyncWork");
 			}
 
-			public async Task DoAsyncWorkParams(int i, string s)
+			[HybridJSInvokable]
+		public async Task DoAsyncWorkParams(int i, string s)
 			{
 				await Task.Delay(1000);
 				Debug.WriteLine($"DoAsyncWorkParams: {i}, {s}");
 			}
 
-			public async Task<string> DoAsyncWorkReturn()
+			[HybridJSInvokable]
+		public async Task<string> DoAsyncWorkReturn()
 			{
 				await Task.Delay(1000);
 				Debug.WriteLine("DoAsyncWorkReturn");
 				return "Hello from C#!";
 			}
 
-			public async Task<SyncReturn> DoAsyncWorkParamsReturn(int i, string s)
+			[HybridJSInvokable]
+		public async Task<SyncReturn> DoAsyncWorkParamsReturn(int i, string s)
+		{
+			await Task.Delay(1000);
+			Debug.WriteLine($"DoAsyncWorkParamsReturn: {i}, {s}");
+			return new SyncReturn
 			{
-				await Task.Delay(1000);
-				Debug.WriteLine($"DoAsyncWorkParamsReturn: {i}, {s}");
-				return new SyncReturn
-				{
-					Message = "Hello from C#! " + s,
-					Value = i,
-				};
-			}
-
-			// Demo method that throws an exception to showcase error handling
-			public void ThrowException()
-			{
-				Debug.WriteLine("ThrowException called - about to throw");
-				throw new InvalidOperationException("This is a test exception thrown from C# code!");
-			}
-
-			// Demo async method that throws an exception
-			public async Task<string> ThrowExceptionAsync()
-			{
-				Debug.WriteLine("ThrowExceptionAsync called - about to throw");
-				await Task.Delay(100);
-				throw new ArgumentException("This is an async test exception thrown from C# code!");
-			}
+				Message = "Hello from C#! " + s,
+				Value = i,
+			};
 		}
+
+		// Demo method that throws an exception to showcase error handling
+		[HybridJSInvokable]
+		public void ThrowException()
+		{
+			Debug.WriteLine("ThrowException called - about to throw");
+			throw new InvalidOperationException("This is a test exception thrown from C# code!");
+		}
+
+		// Demo async method that throws an exception
+		[HybridJSInvokable]
+		public async Task<string> ThrowExceptionAsync()
+		{
+			Debug.WriteLine("ThrowExceptionAsync called - about to throw");
+			await Task.Delay(100);
+			throw new ArgumentException("This is an async test exception thrown from C# code!");
+		}
+	}
 
 		public class SyncReturn
 		{
