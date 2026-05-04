@@ -28,22 +28,12 @@ public class Issue34491 : _IssuesUITest
 		App.WaitForElement("Item 1");
 		App.Tap("Item 1");
 
-		// Wait until UI reflects selection (no Thread.Sleep, no invalid APIs)
-		string finalText = string.Empty;
+		App.WaitForTextToBePresentInElement("StatusLabel", "Selected: Item 1");
 
-		for (int i = 0; i < 5; i++)
-		{
-			finalText = App.FindElement("StatusLabel").GetText() ?? string.Empty;
-
-			if (finalText == "Selected: Item 1")
-				break;
-
-			// Sync with UI instead of sleeping
-			App.WaitForElement("StatusLabel");
-		}
+		var finalText = App.FindElement("StatusLabel").GetText() ?? string.Empty;
 
 		Assert.That(finalText, Is.EqualTo("Selected: Item 1"),
 			"SelectionChanged should fire when tapping a CollectionView item that has a PointerGestureRecognizer");
-	}
+		}
 }
 #endif
