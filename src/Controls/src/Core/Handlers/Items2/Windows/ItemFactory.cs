@@ -155,6 +155,17 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 					{
 						container.Template = _defaultItemContainerTemplate;
 					}
+
+					// When in multi-select mode, push content right so it doesn't
+					// overlap the WinUI ItemContainer checkbox.
+					if (_view is SelectableItemsView selectable && selectable.SelectionMode == SelectionMode.Multiple)
+					{
+						wrapper.Margin = CollectionViewHandler2.MultiSelectContentMargin;
+					}
+					else
+					{
+						wrapper.Margin = new Microsoft.UI.Xaml.Thickness(0);
+					}
 				}
 			}
 			return container;
