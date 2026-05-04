@@ -248,8 +248,8 @@ function Get-LinkedIssueNumbers {
 function Get-PRMetadataIfBugFix {
     param([int]$Number, [string]$Repo)
 
-    # Single gh call for labels + title + body (was 3 separate calls before).
-    $json = gh pr view $Number --repo $Repo --json labels,title,body 2>$null
+    # Single gh call for labels + title + body + merge commit (was 3 separate calls before).
+    $json = gh pr view $Number --repo $Repo --json labels,title,body,mergeCommit 2>$null
     if (-not $json) { return $null }
     if ($json -is [array]) { $json = $json -join "`n" }
 
@@ -284,11 +284,17 @@ function Get-PRMetadataIfBugFix {
 
     if ($matched.Count -eq 0) { return $null }
 
+    $mergeOid = $null
+    if ($data.mergeCommit -and $data.mergeCommit.oid) {
+        $mergeOid = $data.mergeCommit.oid
+    }
+
     return [PSCustomObject]@{
         Number       = $Number
         Title        = $title
         Labels       = $matched
         LinkedIssues = $linkedIssues
+        MergeCommit  = $mergeOid
     }
 }
 
@@ -363,6 +369,25 @@ if (-not $gitLogRef) {
     Write-Host "  ⚠️  Base ref '$BaseBranch' not found locally — falling back to --all (may include unrelated history)." -ForegroundColor Yellow
 }
 
+# Resolve the PR's base branch so we can verify that fix PRs were actually merged
+# into it. A fix merged to inflight/current won't be reachable from main.
+$prBaseRef = $null
+$prBaseJson = gh pr view $PRNumber --repo $Repo --json baseRefName --jq '.baseRefName' 2>$null
+if ($prBaseJson) {
+    foreach ($candidate in @($prBaseJson, "origin/$prBaseJson", "upstream/$prBaseJson")) {
+        git rev-parse --verify --quiet $candidate 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            $prBaseRef = $candidate
+            break
+        }
+    }
+}
+if ($prBaseRef) {
+    Write-Host "  📌 PR targets '$prBaseJson' — verifying fix PRs are reachable from $prBaseRef" -ForegroundColor Gray
+} else {
+    Write-Host "  ⚠️ Could not resolve PR base branch — skipping ancestry verification" -ForegroundColor Yellow
+}
+
 # Steps 2-5: per file
 $risks = New-Object System.Collections.Generic.List[object]
 $inspectedPRs = @{}
@@ -427,6 +452,16 @@ foreach ($filePath in $FilePaths) {
             continue
         }
         Write-Host " bug-fix [$($meta.Labels -join ', ')]" -ForegroundColor Yellow
+
+        # Verify fix PR was actually merged into the PR's base branch. A fix merged
+        # to inflight/current (or another branch) won't be in a PR targeting main.
+        if ($prBaseRef -and $meta.MergeCommit) {
+            git merge-base --is-ancestor $meta.MergeCommit $prBaseRef 2>$null
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "    ⏭️ fix not in PR's base branch (merged to different branch)" -ForegroundColor DarkGray
+                continue
+            }
+        }
 
         # Step 4: parsed fix-PR diff (cache the *parsed* output, not just raw text).
         if ($fixDiffCache.ContainsKey($recentPR)) {
