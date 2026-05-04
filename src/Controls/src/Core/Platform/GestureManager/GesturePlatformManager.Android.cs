@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (!hasPinchGestures || !_scaleDetector.Value.IsInProgress)
 			{
-				var detectorHandled = _tapAndPanAndSwipeDetector?.Value.OnTouchEvent(e) ?? false;
+				var detectorHandled = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e);
 
 				// If only pointer gestures → do not consume the event
 				if (hasOnlyPointer)
