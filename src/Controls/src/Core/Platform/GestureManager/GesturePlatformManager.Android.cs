@@ -457,6 +457,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return false;
 		}
+		
 		void ClearRecyclerViewTouchListener(AView platformView)
 		{
 			if (_recyclerViewTouchListener is not null && platformView is RecyclerView recyclerView)
