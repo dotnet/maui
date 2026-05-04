@@ -2,6 +2,7 @@
 using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -42,8 +43,15 @@ namespace Microsoft.Maui.Handlers
 			{
 				PlatformView.SizeToFit();
 
+				double intrinsicHeight = PlatformView.Frame.Height;
 				double constrainedWidth = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Width, VirtualView.Width, VirtualView.MinimumWidth, VirtualView.MaximumWidth);
-				double constrainedHeight = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Height, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
+				double constrainedHeight = ViewHandlerExtensions.ResolveConstraints(intrinsicHeight, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
+
+				if (IsExplicitSet(VirtualView.Height) && constrainedHeight < intrinsicHeight)
+				{
+					constrainedHeight = intrinsicHeight;
+				}
+
 				return new Size(constrainedWidth, constrainedHeight);
 			}
 
