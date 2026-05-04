@@ -24,9 +24,10 @@ public class Issue34318 : _IssuesUITest
 		App.WaitForElement("PageBLabel");
 
 		// Verify Navigating event updated the label
-		App.WaitForTextToBePresentInElement("ResultLabel", "Navigating");
+		App.WaitForTextToBePresentInElement("ResultLabelB", "Navigating");
 
-		var element = App.FindElement("ResultLabel");
+		var element = App.FindElement("ResultLabelB");
+
 		Assert.That(element, Is.Not.Null);
 
 		var text = element.GetText();

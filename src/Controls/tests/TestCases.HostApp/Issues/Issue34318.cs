@@ -15,13 +15,13 @@ public class Issue34318 : Shell
 		labelA = new Label
 		{
 			Text = "Waiting",
-			AutomationId = "ResultLabel"
+			AutomationId = "ResultLabelA"
 		};
 
 		labelB = new Label
 		{
 			Text = "Waiting",
-			AutomationId = "ResultLabel"
+			AutomationId = "ResultLabelB"
 		};
 
 		var section = new ShellSection();
