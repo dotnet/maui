@@ -219,11 +219,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
-			var rootView = _flyoutView?.AndroidView;
-
-			if (rootView != null && rootView.IsSoftInputShowing())
+			if (animate)
 			{
-				rootView.HideSoftInput();
+				var shellContent = newItem?.CurrentItem?.CurrentItem as IShellContentController;
+				var destinationPage = shellContent?.GetOrCreateContent();
+
+				if (destinationPage != null && !Shell.GetNavBarIsVisible(destinationPage))
+				{
+					var rootView = _flyoutView?.AndroidView;
+
+					if (rootView != null && rootView.IsSoftInputShowing())
+					{
+						rootView.HideSoftInput();
+					}
+				}
 			}
 
 			var previousView = _currentView;
