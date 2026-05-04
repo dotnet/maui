@@ -449,9 +449,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (recognizers is null || recognizers.Count == 0)
 				return false;
 
-			foreach (var recognizer in recognizers)
+			int count = recognizers.Count;
+			for (int i = 0; i < count; i++)
 			{
-				if (recognizer is not PointerGestureRecognizer)
+				if (recognizers[i] is not PointerGestureRecognizer)
 					return true;
 			}
 

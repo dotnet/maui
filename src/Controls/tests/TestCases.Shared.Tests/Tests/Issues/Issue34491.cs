@@ -34,6 +34,6 @@ public class Issue34491 : _IssuesUITest
 
 		Assert.That(finalText, Is.EqualTo("Selected: Item 1"),
 			"SelectionChanged should fire when tapping a CollectionView item that has a PointerGestureRecognizer");
-		}
+	}
 }
 #endif
