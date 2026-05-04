@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 34832, "SwipeItem.IsVisible doesn't properly refresh native swipe items when binding value changes dynamically", PlatformAffected.Android | PlatformAffected.iOS)]
 public class Issue34832 : ContentPage
 {
-	readonly Issue34832ViewModel _viewModel = new() { IsDeleteVisible = true };
+	readonly Issue34832ViewModel _viewModel = new() { IsDeleteVisible = false };
 	SwipeView _swipeView;
 
 	public Issue34832()
@@ -62,12 +62,12 @@ public class Issue34832 : ContentPage
 		};
 		openSwipeButton.Clicked += (s, e) => _swipeView?.Open(OpenSwipeItem.LeftItems);
 
-		Button closeSwipeButton = new Button
+		Button resetButton = new Button
 		{
-			Text = "Close Swipe",
-			AutomationId = "CloseSwipeButton"
+			Text = "Reset",
+			AutomationId = "ResetButton"
 		};
-		closeSwipeButton.Clicked += (s, e) => _swipeView?.Close();
+		resetButton.Clicked += (s, e) => _viewModel.IsDeleteVisible = false;
 
 		Content = new VerticalStackLayout
 		{
@@ -78,7 +78,7 @@ public class Issue34832 : ContentPage
 				_swipeView,
 				toggleButton,
 				openSwipeButton,
-				closeSwipeButton
+				resetButton,
 			}
 		};
 	}

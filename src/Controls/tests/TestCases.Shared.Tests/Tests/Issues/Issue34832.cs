@@ -14,20 +14,48 @@ public class Issue34832 : _IssuesUITest
 	}
 
 	[Test]
+	[Order(1)]
 	[Category(UITestCategories.SwipeView)]
-	public void SwipeItemBecomesHiddenAfterBindingChanges()
+	public void SwipeItemInitiallyHiddenBecomesVisibleAfterBindingChanges()
 	{
 		Exception? exception = null;
 		App.WaitForElement("OpenSwipeButton");
 		App.Tap("OpenSwipeButton");
 
-		VerifyScreenshotOrSetException(ref exception, "SwipeOpen_DeleteVisible");
+		VerifyScreenshotOrSetException(ref exception, "SwipeOpen_InitiallyHidden");
 
-		App.Tap("CloseSwipeButton");
+		App.Tap("ToggleVisibilityButton");
+
+		VerifyScreenshotOrSetException(ref exception, "SwipeOpen_BecomeVisible");
+
+		App.Tap("TestSwipeView");
+		App.Tap("ResetButton");
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
+	}
+
+	[Test]
+	[Order(2)]
+	[Category(UITestCategories.SwipeView)]
+	public void SwipeItemBecomesHiddenAfterBindingChanges()
+	{
+		Exception? exception = null;
+		App.WaitForElement("ToggleVisibilityButton");
 		App.Tap("ToggleVisibilityButton");
 		App.Tap("OpenSwipeButton");
-		
+
+		VerifyScreenshotOrSetException(ref exception, "SwipeOpen_DeleteVisible");
+
+		App.Tap("ToggleVisibilityButton");
+
 		VerifyScreenshotOrSetException(ref exception, "SwipeOpen_DeleteHidden");
+
+		App.Tap("TestSwipeView");
+		App.Tap("ResetButton");
+
 		if (exception is not null)
 		{
 			throw exception;

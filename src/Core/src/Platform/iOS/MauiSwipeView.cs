@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Platform
 			double swipeItemsWidth;
 
 			if (_swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Right)
-				swipeItemsWidth = items.Count * SwipeViewExtensions.SwipeItemWidth;
+				swipeItemsWidth = items.Count(GetIsVisible) * SwipeViewExtensions.SwipeItemWidth;
 			else
 				swipeItemsWidth = _contentView.Frame.Width;
 
