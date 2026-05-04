@@ -74,6 +74,7 @@ public class Issue32404 : ContentPage
         {
             BackgroundColor = Colors.LightGreen,
             FlowDirection = FlowDirection.LeftToRight,
+            AutomationId = "CollectionView3"
         };
 
         emptyViewTemplateCollectionView.EmptyViewTemplate = new DataTemplate(() =>

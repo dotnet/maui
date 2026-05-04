@@ -538,7 +538,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewFormsElement is not null)
 			{
-				// Update FlowDirection for View-based or DataTemplate-based EmptyView
+				// The empty view's FlowDirection is handled here instead of in UpdateFlowDirection()
+				// to ensure proper alignment independent of the CollectionView's layout flip behavior.
 				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
 					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
