@@ -73,27 +73,6 @@ public class Issue9095 : TestShell
 				AutomationId = "ContentPageReturnFalseStatusLabel"
 			};
 
-			var navigateReturnFalseButton = new Button
-			{
-				Text = "Go to Return False Page",
-				AutomationId = "NavigateReturnFalseButton"
-			};
-
-			navigateReturnFalseButton.Clicked += async (s, e) =>
-				await Shell.Current.GoToAsync(nameof(Issue9095ReturnFalsePage));
-
-			_returnFalseStatusLabel = new Label
-			{
-				Text = "Waiting",
-				AutomationId = "ReturnFalseStatusLabel"
-			};
-
-			_contentPageReturnFalseStatusLabel = new Label
-			{
-				Text = "Waiting",
-				AutomationId = "ContentPageReturnFalseStatusLabel"
-			};
-
 			Content = new VerticalStackLayout
 			{
 				Children = { navigateButton, navigateReturnFalseButton, _returnFalseStatusLabel, _contentPageReturnFalseStatusLabel }

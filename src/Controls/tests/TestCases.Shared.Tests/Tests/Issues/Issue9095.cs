@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_ANDROID // PR link: https://github.com/dotnet/maui/pull/35150
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -32,10 +31,6 @@ public class Issue9095 : _IssuesUITest
 		var initialContentPageText = App.FindElement("ContentPageBackButtonLabel").GetText();
 		Assert.That(initialContentPageText, Is.EqualTo("ContentPage OnBackButtonPressed Not Called"),
 		 "ContentPage label should show 'Not Called' before pressing back.");
-
-		var initialContentPageText = App.FindElement("ContentPageBackButtonLabel").GetText();
-		Assert.That(initialContentPageText, Is.EqualTo("ContentPage OnBackButtonPressed Not Called"),
-			"ContentPage label should show 'Not Called' before pressing back.");
 
 		// Tap the Shell toolbar back button
 		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
@@ -84,4 +79,3 @@ public class Issue9095 : _IssuesUITest
 		 "ContentPage.OnBackButtonPressed should have been called even when returning false.");
 	}
 }
-#endif
