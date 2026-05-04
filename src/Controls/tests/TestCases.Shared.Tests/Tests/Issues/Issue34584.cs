@@ -22,13 +22,13 @@ public class Issue34584 : _IssuesUITest
 		App.Tap("Entry");
 		App.EnterText("Entry", "test");
 
-		App.PressEnter();
+		App.Tap("NavigateButton");
 
 		App.WaitForElement("TargetLabel");
 
 		var rect = App.FindElement("TargetLabel").GetRect();
 
-		Assert.That(rect.Y, Is.GreaterThan(5),
+		Assert.That(rect.Y, Is.GreaterThan(50),
 			"TargetLabel should not render under the status bar");
 	}
 }

@@ -29,6 +29,11 @@ public class Issue34584_MainPage : ContentPage
 			AutomationId = "NavigateButton"
 		};
 
+		navigateButton.Clicked += async (s, e) =>
+		{
+			await Shell.Current.GoToAsync("//DestinationPage", false);
+		};
+
 		entry.Completed += async (s, e) =>
 		{
 			await Shell.Current.GoToAsync("//DestinationPage", false);

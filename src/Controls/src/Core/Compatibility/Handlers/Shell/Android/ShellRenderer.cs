@@ -219,12 +219,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
-			if (animate)
+			if (animate && newItem?.CurrentItem?.CurrentItem is IShellContentController shellContent)
 			{
-				var shellContent = newItem?.CurrentItem?.CurrentItem as IShellContentController;
-				var destinationPage = shellContent?.GetOrCreateContent();
+				bool? isNavBarVisible = null;
 
-				if (destinationPage != null && !Shell.GetNavBarIsVisible(destinationPage))
+				if (shellContent is BindableObject bindable &&
+					bindable.IsSet(Shell.NavBarIsVisibleProperty))
+				{
+					isNavBarVisible = Shell.GetNavBarIsVisible(bindable);
+				}
+
+				if (isNavBarVisible == null)
+				{
+					var destinationPage = shellContent.GetOrCreateContent();
+
+					if (destinationPage != null)
+						isNavBarVisible = Shell.GetNavBarIsVisible(destinationPage);
+				}
+
+				if (isNavBarVisible == false)
 				{
 					var rootView = _flyoutView?.AndroidView;
 
