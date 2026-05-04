@@ -312,6 +312,18 @@ namespace Microsoft.Maui.Platform
 				UIKeyboard.WillHideNotification,
 				OnKeyboardWillHide);
 			_keyboardWillHideObserver = new WeakReference<NSObject>(hideObserver);
+
+			// When switching to SoftInput while keyboard is already open, iOS may not
+			// emit a new WillShow. Rehydrate from global keyboard tracking.
+			if (!_isKeyboardShowing
+				&& KeyboardAutoManagerScroll.IsKeyboardShowing
+				&& !KeyboardAutoManagerScroll.KeyboardFrame.IsEmpty)
+			{
+				_keyboardFrame = KeyboardAutoManagerScroll.KeyboardFrame;
+				_isKeyboardShowing = true;
+				_safeAreaInvalidated = true;
+				SetNeedsLayout();
+			}
 		}
 
 		void UnsubscribeFromKeyboardNotifications()
