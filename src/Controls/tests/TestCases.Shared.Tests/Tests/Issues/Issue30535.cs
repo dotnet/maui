@@ -22,6 +22,6 @@ public class Issue30535 : _IssuesUITest
 		App.Tap("SetIsRefreshingTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-        VerifyScreenshot();
+		VerifyScreenshot();
 	}
 }

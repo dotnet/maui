@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 30535, "[Windows] RefreshView IsRefreshing property not working while binding", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 30535, "[Windows] RefreshView IsRefreshing property not working while binding", PlatformAffected.All)]
 public class Issue30535 : NavigationPage
 {
     public Issue30535()
