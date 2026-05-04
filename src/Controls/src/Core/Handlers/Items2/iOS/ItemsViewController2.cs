@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
 				{
-					var indexPath = CollectionView.IndexPathForCell(cell);
+					var indexPath = collectionView.IndexPathForCell(cell);
 					if (indexPath is not null && Items.IndexPathHelpers.IsIndexPathValid(ItemsSource, indexPath))
 					{
 						invalidatedIndexPaths ??= [];

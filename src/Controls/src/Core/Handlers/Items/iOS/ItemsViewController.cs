@@ -520,16 +520,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void ClearMeasurementCells()
 		{
-			if (_measurementCells is not null)
+			foreach (var measurementCell in _measurementCells.Values)
 			{
-				foreach (var measurementCell in _measurementCells.Values)
-				{
-					measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
-					measurementCell.Unbind();
-				}
-
-				_measurementCells.Clear();
+				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
+				measurementCell.Unbind();
 			}
+
+			_measurementCells.Clear();
 		}
 
 		public virtual NSIndexPath GetIndexForItem(object item)

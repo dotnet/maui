@@ -309,8 +309,13 @@ namespace Microsoft.Maui.DeviceTests
 				// Reset the data source to force another animation and a layout pass
 				collectionView.ItemsSource = null;
 
-				await Task.Delay(100);
-				((UIView)handler.PlatformView).LayoutIfNeeded();
+				var platformView = (UIView)handler.PlatformView;
+				var uiCollectionView = platformView as UICollectionView ?? platformView.Subviews.OfType<UICollectionView>().FirstOrDefault();
+				Assert.NotNull(uiCollectionView);
+				// Force synchronous flush of the ItemsSource reloading
+				await uiCollectionView.PerformBatchUpdatesAsync(() => { });
+				// Force a layout
+				platformView.LayoutIfNeeded();
 			});
 		}
 
