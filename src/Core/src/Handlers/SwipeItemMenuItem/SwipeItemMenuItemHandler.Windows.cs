@@ -36,13 +36,21 @@ namespace Microsoft.Maui.Handlers
 			if (swipeView?.Handler is ISwipeViewHandler swipeViewHandler)
 			{
 				if (swipeView.LeftItems?.Contains(view) == true)
+				{
 					swipeViewHandler.UpdateValue(nameof(ISwipeView.LeftItems));
+				}
 				else if (swipeView.RightItems?.Contains(view) == true)
+				{
 					swipeViewHandler.UpdateValue(nameof(ISwipeView.RightItems));
+				}
 				else if (swipeView.TopItems?.Contains(view) == true)
+				{
 					swipeViewHandler.UpdateValue(nameof(ISwipeView.TopItems));
+				}
 				else if (swipeView.BottomItems?.Contains(view) == true)
+				{
 					swipeViewHandler.UpdateValue(nameof(ISwipeView.BottomItems));
+				}
 			}
 		}
 
