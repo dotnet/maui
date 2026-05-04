@@ -186,9 +186,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			PackContainers();
 			UpdateFlyoutPageContainers();
+			UpdateFlowDirection();
 
 			UpdateBackground();
-			UpdateFlowDirection();
 			UpdatePanGesture();
 			UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
 			UpdatePageSpecifics();
