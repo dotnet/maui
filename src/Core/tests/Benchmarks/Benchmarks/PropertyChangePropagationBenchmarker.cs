@@ -154,12 +154,6 @@ namespace Microsoft.Maui.Benchmarks
 				_button.Background = _colorB;
 				_button.IsEnabled = true;
 				_button.Opacity = 1.0;
-				
-				#if DEBUG
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				GC.Collect();
-				#endif
 			}
 		}
 
