@@ -105,6 +105,11 @@ static class PropertyChangesEventArgsFactory
 	/// </returns>
 	internal static PropertyChangedEventArgs GetOrCreatePropertyChangedEventArgs(string name)
 	{
+		if (string.IsNullOrEmpty(name))
+		{
+			return new(name);
+		}
+
 		if (propertyChangedCache.TryGetValue(name, out var args))
 		{
 			return args;
@@ -123,6 +128,11 @@ static class PropertyChangesEventArgsFactory
 	/// </returns>
 	internal static PropertyChangingEventArgs GetOrCreatePropertyChangingEventArgs(string name)
 	{
+		if (string.IsNullOrEmpty(name))
+		{
+			return new(name);
+		}
+
 		if (propertyChangingCache.TryGetValue(name, out var args))
 		{
 			return args;
