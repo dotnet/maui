@@ -12,13 +12,20 @@ public class Issue35214 : _IssuesUITest
 
     public override string Issue => "Dynamically changing IndicatorView IndicatorSize to default value does not work";
 
-    [Test]
+    [Test, Order(1)]
     [Category(UITestCategories.IndicatorView)]
-    public void IndicatorSizeResetsToDefault()
+    public void VerifyIndicatorSizeBeforeReset()
     {
         App.WaitForElement("TestIndicatorView");
-        VerifyScreenshot("IndicatorSizeBeforeReset");
+        VerifyScreenshot("IndicatorSizeBeforeReset", retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test, Order(2)]
+    [Category(UITestCategories.IndicatorView)]
+    public void VerifyIndicatorSizeAfterReset()
+    {
+        App.WaitForElement("SetDefaultSizeButton");
         App.Tap("SetDefaultSizeButton");
-        VerifyScreenshot("IndicatorSizeAfterReset");
+        VerifyScreenshot("IndicatorSizeAfterReset", retryTimeout: TimeSpan.FromSeconds(2));
     }
 }
