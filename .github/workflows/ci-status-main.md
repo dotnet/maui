@@ -18,12 +18,33 @@ engine:
   id: copilot
   model: claude-sonnet-4.6
 
-network: defaults
+runtimes:
+  dotnet:
+    version: "9.0"
+
+network:
+  allowed:
+    - defaults
+    - mihubot.xyz
+    - dotnet
 
 tools:
   web-fetch:
   github:
     toolsets: [default, actions]
+
+mcp-servers:
+  mihubot:
+    url: "https://mihubot.xyz/mcp"
+    allowed: ["*"]
+  hlx:
+    command: "dotnet"
+    args: ["dnx", "--yes", "lewing.helix.mcp"]
+    allowed: ["*"]
+  maestro:
+    command: "dotnet"
+    args: ["dnx", "--yes", "lewing.maestro.mcp"]
+    allowed: ["*"]
 
 safe-outputs:
   create-issue:
@@ -45,7 +66,7 @@ concurrency:
 timeout-minutes: 15
 
 steps:
-  - name: Verify CI skill and plugin availability
+  - name: Verify CI skill and MCP server availability
     env:
       GH_TOKEN: ${{ github.token }}
     run: |
@@ -54,20 +75,7 @@ steps:
       if [ -f ".github/skills/azdo-build-investigator/SKILL.md" ]; then
         echo "✅ azdo-build-investigator SKILL.md found"
       else
-        echo "⚠️ azdo-build-investigator SKILL.md not found — agent will use direct API queries"
-      fi
-
-      echo ""
-      echo "=== Plugin configuration check ==="
-      if [ -f ".github/copilot/settings.json" ]; then
-        echo "✅ .github/copilot/settings.json exists"
-        if grep -q '"dotnet-dnceng@dotnet-arcade-skills"' .github/copilot/settings.json; then
-          echo "✅ dotnet-arcade-skills plugin is enabled"
-        else
-          echo "⚠️ dotnet-arcade-skills plugin not configured"
-        fi
-      else
-        echo "ℹ️ .github/copilot/settings.json not found"
+        echo "⚠️ azdo-build-investigator SKILL.md not found"
       fi
 
       echo ""
@@ -77,7 +85,7 @@ steps:
       if [ "$HTTP_CODE" = "200" ]; then
         echo "✅ AzDO API reachable (HTTP $HTTP_CODE)"
       else
-        echo "⚠️ AzDO API returned HTTP $HTTP_CODE — agent may have limited data"
+        echo "⚠️ AzDO API returned HTTP $HTTP_CODE"
       fi
 ---
 
@@ -92,20 +100,20 @@ state of CI on the **main** branch and produce a clear status report as a GitHub
 - **Upstream**: dotnet/maui
 - **Branch**: main
 
-## Skills & Scripts
+## Skills & Tools
 
 1. **Read the azdo-build-investigator skill** for MAUI-specific CI context:
    ```bash
    cat .github/skills/azdo-build-investigator/SKILL.md
    ```
 
-2. **Check for arcade-skills scripts** — the `ci-analysis` skill from the
-   `dotnet-dnceng@dotnet-arcade-skills` plugin may provide `Get-CIStatus.ps1`.
-   Check for it at `~/.copilot/installed-plugins/dotnet-arcade-skills/`:
-   ```bash
-   find ~/.copilot/installed-plugins/ -name "Get-CIStatus.ps1" 2>/dev/null || echo "Not found"
-   ```
-   If available, run it. If not, proceed with direct AzDO API queries below.
+2. **Arcade-skills MCP servers are configured** — the following MCP tools from the
+   `dotnet/arcade-skills` plugin are available directly via `mcp-servers:` frontmatter:
+   - **mihubot** — search dotnet repos for issues, PRs, and discussions
+   - **hlx** — query Helix test infrastructure (work items, logs, results)
+   - **maestro** — query Maestro/BAR dependency flow data
+   Use these MCP tools when available for richer CI analysis. Fall back to
+   direct AzDO REST API queries via web-fetch if MCP servers are unavailable.
 
 ## MAUI CI Pipelines
 
