@@ -22,6 +22,7 @@ network:
   allowed:
     - defaults
     - mihubot.xyz
+    - dev.azure.com
 
 tools:
   web-fetch:
