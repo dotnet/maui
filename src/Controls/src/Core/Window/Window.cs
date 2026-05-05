@@ -776,12 +776,58 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// Notifies that navigation state has changed so the Android predictive back callback can be updated.
+		// Dispatches to the main thread when called post-await on a thread-pool thread.
 		// No-op on non-Android platforms.
 		internal void NotifyNavigationStateChanged()
 		{
 #if ANDROID
-			RefreshPredictiveBackRegistration();
+			if (MainThread.IsMainThread)
+				RefreshPredictiveBackRegistration();
+			else
+				MainThread.BeginInvokeOnMainThread(RefreshPredictiveBackRegistration);
 #endif
+		}
+
+		// Returns true when there is in-app back navigation to consume, so the system should not
+		// play the back-to-home animation. Kept in the shared file so it can be unit-tested
+		// without a device (the Android-specific entry point in Window.Android.cs calls this).
+		internal static bool CanConsumeBackNavigation(Page? page)
+		{
+			if (page is null)
+				return false;
+
+			switch (page)
+			{
+				case Shell shell:
+					if (CanConsumeBackNavigation(shell.CurrentPage))
+						return true;
+
+					if (shell.FlyoutIsPresented && shell.GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+						return true;
+
+					return shell.CurrentItem?.CurrentItem?.Stack.Count > 1;
+
+				case NavigationPage navigationPage:
+					if (CanConsumeBackNavigation(navigationPage.CurrentPage))
+						return true;
+
+					return navigationPage.Navigation.NavigationStack.Count > 1;
+
+				case FlyoutPage flyoutPage:
+					if (flyoutPage.IsPresented)
+						return true;
+
+					return CanConsumeBackNavigation(flyoutPage.Detail);
+
+				case MultiPage<Page> multiPage:
+					return CanConsumeBackNavigation(multiPage.CurrentPage);
+
+				default:
+					// Conservative default: return false for unknown page types.
+					// We cannot know whether a custom container's OnBackButtonPressed() returns true,
+					// so we avoid suppressing the back-to-home animation speculatively.
+					return false;
+			}
 		}
 
 		static double ValidatePositive(double value, [CallerMemberName] string? name = null) =>

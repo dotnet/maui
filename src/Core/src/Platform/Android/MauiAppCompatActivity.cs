@@ -46,6 +46,7 @@ namespace Microsoft.Maui
 		protected override void OnDestroy()
 		{
 			_mauiOnBackPressedCallback?.Remove();
+			_mauiOnBackPressedCallback?.Dispose();
 			_mauiOnBackPressedCallback = null;
 			base.OnDestroy();
 		}
