@@ -947,4 +947,113 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public string TestProperty { get; set; } = "test";
 		}
 	}
+
+	/// <summary>
+	/// Unit tests for <see cref="Window.CanConsumeBackNavigation"/> — pure C# logic,
+	/// no Android platform dependencies required.
+	/// </summary>
+	public class CanConsumeBackNavigationTests : BaseTestFixture
+	{
+		[Fact]
+		public void NullPage_ReturnsFalse()
+		{
+			Assert.False(Window.CanConsumeBackNavigation(null));
+		}
+
+		[Fact]
+		public void ContentPage_ReturnsFalse()
+		{
+			// A plain ContentPage with no navigation stack → cannot consume back.
+			var page = new ContentPage();
+			Assert.False(Window.CanConsumeBackNavigation(page));
+		}
+
+		[Fact]
+		public void NavigationPage_SinglePage_ReturnsFalse()
+		{
+			// NavigationPage with only the root page — nothing to pop.
+			var nav = new TestNavigationPage(true, new ContentPage());
+			Assert.False(Window.CanConsumeBackNavigation(nav));
+		}
+
+		[Fact]
+		public async Task NavigationPage_MultiplePagesInStack_ReturnsTrue()
+		{
+			// After pushing a second page the stack has > 1 entry — back can be consumed.
+			var nav = new TestNavigationPage(true, new ContentPage());
+			_ = new TestWindow(nav);
+			await nav.PushAsync(new ContentPage());
+			Assert.True(Window.CanConsumeBackNavigation(nav));
+		}
+
+		[Fact]
+		public void FlyoutPage_IsPresented_ReturnsTrue()
+		{
+			// FlyoutPage with flyout open → back closes the flyout.
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage(),
+				IsPresented = true,
+				IsPlatformEnabled = true,
+			};
+			Assert.True(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public void FlyoutPage_NotPresented_NoNavigation_ReturnsFalse()
+		{
+			// FlyoutPage with flyout closed and plain ContentPage detail → cannot consume back.
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage(),
+				IsPresented = false,
+				IsPlatformEnabled = true,
+			};
+			Assert.False(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public void FlyoutPage_BackButtonPressedSubscriber_DoesNotSuppressAnimation()
+		{
+			// Regression: HasBackButtonPressedSubscribers was a false positive.
+			// A subscriber that doesn't set Handled=true must NOT suppress the animation.
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage(),
+				IsPresented = false,
+				IsPlatformEnabled = true,
+			};
+			flyout.BackButtonPressed += (s, e) => { /* does not set e.Handled = true */ };
+			Assert.False(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public async Task FlyoutPage_DetailIsNavigationPageWithStack_ReturnsTrue()
+		{
+			// FlyoutPage whose detail is a NavigationPage with multiple pages → back navigates.
+			var nav = new TestNavigationPage(true, new ContentPage());
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = nav,
+				IsPresented = false,
+				IsPlatformEnabled = true,
+			};
+			_ = new TestWindow(flyout);
+			await nav.PushAsync(new ContentPage());
+			Assert.True(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public void UnknownPageType_ReturnsFalse()
+		{
+			// Custom/unknown page types must conservatively return false to avoid blocking
+			// the back-to-home animation for containers that don't override OnBackButtonPressed.
+			var page = new ContentPage();
+			Assert.False(Window.CanConsumeBackNavigation(page));
+		}
+	}
 }

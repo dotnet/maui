@@ -271,11 +271,6 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<BackButtonPressedEventArgs> BackButtonPressed;
 
-#if ANDROID
-		// Used by Window.Android.cs to check for BackButtonPressed subscribers without dispatching the event.
-		internal bool HasBackButtonPressedSubscribers => BackButtonPressed is not null;
-#endif
-
 		/// <summary>Updates the layout behavior of the flyout page based on the current device orientation.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void UpdateFlyoutLayoutBehavior()
