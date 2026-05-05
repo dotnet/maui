@@ -3,6 +3,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Editor
 	{
+		// TODO: Make this public in .NET 11
 		internal static void MapAutoSize(IEditorHandler handler, Editor editor)
 		{
 			if (handler.PlatformView is Microsoft.Maui.Platform.MauiTextView textView)
