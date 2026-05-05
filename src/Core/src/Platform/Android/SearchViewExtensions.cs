@@ -239,7 +239,15 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateReturnType(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.SetInputType(searchBar);
-			searchView.ImeOptions = (int)((ImeAction)searchBar.ReturnType.ToPlatform() | (ImeAction)(int)ImeFlags.NoFullscreen);
+			// Set ImeOptions directly on the inner EditText so NoFullscreen is guaranteed
+			// to be applied — SearchView.ImeOptions propagates to the EditText but doesn't
+			// accept ImeFlags values reliably across all API levels.
+			var editText = searchView.GetFirstChildOfType<EditText>();
+			if (editText is not null)
+			{
+				editText.ImeOptions = searchBar.ReturnType.ToPlatform();
+				editText.EnsureNoFullscreenFlag();
+			}
 		}
 
 		internal static void SetInputType(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
@@ -394,11 +402,20 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateReturnType(this EditText editText, ISearchBar searchBar)
 		{
-			editText.ImeOptions = (ImeAction)((int)searchBar.ReturnType.ToPlatform() | (int)ImeFlags.NoFullscreen);
+			editText.ImeOptions = searchBar.ReturnType.ToPlatform();
+			editText.EnsureNoFullscreenFlag();
 
 			// Restart the input on the current focused EditText
 			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
 			imm?.RestartInput(editText);
+		}
+
+		internal static void EnsureNoFullscreenFlag(this EditText editText)
+		{
+			// ImeOptions is typed as ImeAction in the Android binding, but it actually
+			// holds combined ImeAction + ImeFlags bits. NoFullscreen is an ImeFlags value
+			// (0x02000000) that prevents IME extract mode in landscape orientation.
+			editText.ImeOptions = (ImeAction)((int)editText.ImeOptions | (int)ImeFlags.NoFullscreen);
 		}
 	}
 }

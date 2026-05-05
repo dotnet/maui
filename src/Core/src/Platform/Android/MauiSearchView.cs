@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 			if (_queryEditor is not null)
 			{
 				_queryEditor.SaveEnabled = false;
-				_queryEditor.ImeOptions = (ImeAction)((int)_queryEditor.ImeOptions | (int)ImeFlags.NoFullscreen);
+				_queryEditor.EnsureNoFullscreenFlag();
 			}
 
 			if (_queryEditor?.LayoutParameters is LinearLayout.LayoutParams layoutParams)

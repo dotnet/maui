@@ -1,4 +1,4 @@
-#if ANDROID || iOS // Orientation changes and IME behavior are only relevant on mobile platforms
+#if ANDROID || IOS // Orientation changes and IME behavior are only relevant on mobile platforms
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -28,9 +28,6 @@ public class Issue14708 : _IssuesUITest
 
 		// Tap the primary SearchBar to open the keyboard
 		App.Tap("SearchBarControl");
-
-		// Wait a moment for keyboard to appear
-		Thread.Sleep(1000);
 
 		// In the unfixed state, Android enters IME extract mode in landscape:
 		// a full-screen black overlay replaces the inline keyboard and covers all
