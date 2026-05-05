@@ -43,6 +43,39 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void UpdateValueIsSkippedWhileHandlerIsDisconnecting()
+		{
+			// Regression test for https://github.com/dotnet/maui/issues/27101
+			// While the handler is being disconnected the platform view has already been released.
+			// Property changes that fan out from the virtual view during teardown (e.g. IsFocused
+			// -> ChangeVisualState -> VSM Setters) must not invoke mappers, otherwise the strongly
+			// typed PlatformView accessor throws "PlatformView cannot be null here".
+
+			DisconnectingTrackingHandlerStub handlerStub = null;
+			handlerStub = new DisconnectingTrackingHandlerStub(() =>
+			{
+				// Simulate a property change that fans into the mapper while the platform handler
+				// is still tearing down (this mirrors what UpdateIsFocused(false) triggers on Windows).
+				handlerStub.UpdateValue(nameof(IView.Background));
+			});
+
+			handlerStub.SetVirtualView(new Maui.Controls.Button());
+
+			// Sanity check: outside of disconnect, UpdateValue routes through the mapper.
+			handlerStub.MapBackgroundCallCount = 0;
+			handlerStub.UpdateValue(nameof(IView.Background));
+			Assert.Equal(1, handlerStub.MapBackgroundCallCount);
+
+			// Reset so we can detect any mapper invocations that happen during DisconnectHandler.
+			handlerStub.MapBackgroundCallCount = 0;
+
+			(handlerStub as IViewHandler).DisconnectHandler();
+
+			// The mapper-routed UpdateValue inside DisconnectHandler must have been a no-op.
+			Assert.Equal(0, handlerStub.MapBackgroundCallCount);
+		}
+
+		[Fact]
 		public void GetRequiredServiceThrowsOnNoContext()
 		{
 			HandlerStub handlerStub = new HandlerStub();

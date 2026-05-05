@@ -27,6 +27,15 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// The handler is connected to an element.
 		/// </summary>
-		Connected = 0x8
+		Connected = 0x8,
+		/// <summary>
+		/// The handler is in the process of disconnecting from its element.
+		/// While in this state the platform view has already been released
+		/// (and is no longer accessible via <see cref="IElementHandler.PlatformView"/>),
+		/// but the handler is still wired to the virtual view to allow platform
+		/// teardown to complete. Property mappers are short-circuited during this
+		/// window to avoid touching the released platform view.
+		/// </summary>
+		Disconnecting = 0x10
 	}
 }
