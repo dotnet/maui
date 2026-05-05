@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 
@@ -89,9 +90,43 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 		handler.UpdatePlatformSelection();
 	}
 
+	/// <summary>
+	/// Left margin applied to item content when in multi-select mode to avoid overlapping
+	/// the WinUI ItemContainer checkbox. Matches WinUI's ListViewItemMultiselectCheckBoxMargin.
+	/// </summary>
+	internal static readonly WThickness MultiSelectContentMargin = new WThickness(32, 0, 0, 0);
+	static readonly WThickness ZeroMargin = new WThickness(0);
+
 	public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
 		handler.UpdatePlatformSelection();
+		handler.UpdateMultiSelectContentMargin();
+		// The margin change affects item sizes, so invalidate the MeasureFirstItem cache
+		// to avoid stale sizes being applied to items realized after the mode switch.
+		handler.InvalidateFirstItemSize();
+	}
+
+	/// <summary>
+	/// When in multi-select mode the WinUI ItemContainer renders a checkbox overlay
+	/// on the left. Add left margin to the content (ElementWrapper) so that user
+	/// content is not hidden behind the checkbox.
+	/// </summary>
+	void UpdateMultiSelectContentMargin()
+	{
+		if (PlatformView is null || ItemsView is null)
+			return;
+
+		var margin = ItemsView.SelectionMode == SelectionMode.Multiple
+			? MultiSelectContentMargin
+			: ZeroMargin;
+
+		foreach (var container in PlatformView.GetChildren<ItemContainer>())
+		{
+			if (container?.Child is ElementWrapper wrapper && !wrapper.IsHeaderOrFooter)
+			{
+				wrapper.Margin = margin;
+			}
+		}
 	}
 
 	/// <summary>
@@ -250,9 +285,9 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 
 				// When the item template defines a "Selected" visual state, MAUI
 				// handles the selection appearance. Suppress the native WinUI
-				// selection border (PART_SelectionVisual) on that container so
-				// the two don't overlap. Items without a Selected visual state
-				// keep the default WinUI selection border.
+				// selection border (PART_SelectionVisual) and selected background
+				// fill on that container so the two don't overlap. Items without
+				// a Selected visual state keep the default WinUI selection visuals.
 				if (visualElement.HasVisualState(VisualStateManager.CommonStates.Selected))
 				{
 					itemContainer.Resources["ItemContainerSelectedBorderBrush"] = transparent;
@@ -262,6 +297,11 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 					itemContainer.Resources["ItemContainerSelectionVisualPointerOverBackground"] = transparent;
 					itemContainer.Resources["ItemContainerSelectionVisualPressedBackground"] = transparent;
 					itemContainer.Resources["ItemContainerSelectedInnerBorderBrush"] = transparent;
+					// Also suppress the selected background fill so MAUI's VSM
+					// is the only thing painting the selection appearance.
+					itemContainer.Resources["ItemContainerSelectedBackground"] = transparent;
+					itemContainer.Resources["ItemContainerSelectedPointerOverBackground"] = transparent;
+					itemContainer.Resources["ItemContainerSelectedPressedBackground"] = transparent;
 				}
 			}
 		}
