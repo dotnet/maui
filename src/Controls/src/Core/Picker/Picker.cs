@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls
 					return;
 
 				OnPropertyChanging();
-				var oldValue = value;
+				var oldValue = _itemDisplayBinding;
 				_itemDisplayBinding = value;
 				OnItemDisplayBindingChanged(oldValue, _itemDisplayBinding);
 				OnPropertyChanged();
