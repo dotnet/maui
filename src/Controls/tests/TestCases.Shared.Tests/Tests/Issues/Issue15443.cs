@@ -17,10 +17,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void CarouselShouldWorkProperOnBinding()
 		{
 			App.WaitForElement("15443Button3");
-			App.Click("15443Button3");
-			App.Click("15443Button2");
-			App.Click("15443Button1");
-			VerifyScreenshot();
+			App.Tap("15443Button3");
+			App.WaitForTextToBePresentInElement("15443CurrentItemLabel", "Current: Three");
+			Assert.That(App.FindElement("15443CurrentItemLabel").GetText(), Is.EqualTo("Current: Three"),
+			"Tapping button 3 should navigate to item Three");
+			Assert.That(App.FindElement("15443PositionLabel").GetText(), Is.EqualTo("Position: 2"),
+			"Tapping button 3 should navigate to position 2");
+			App.Tap("15443Button2");
+			App.WaitForTextToBePresentInElement("15443CurrentItemLabel", "Current: Two");
+			Assert.That(App.FindElement("15443CurrentItemLabel").GetText(), Is.EqualTo("Current: Two"),
+			"Tapping button 2 should navigate to item Two");
+			Assert.That(App.FindElement("15443PositionLabel").GetText(), Is.EqualTo("Position: 1"),
+			"Tapping button 2 should navigate to position 1");
+			App.Tap("15443Button1");
+			App.WaitForTextToBePresentInElement("15443CurrentItemLabel", "Current: One");
+			Assert.That(App.FindElement("15443CurrentItemLabel").GetText(), Is.EqualTo("Current: One"),
+			"Tapping button 1 should navigate to item One");
+			Assert.That(App.FindElement("15443PositionLabel").GetText(), Is.EqualTo("Position: 0"),
+			"Tapping button 1 should navigate to position 0");
 		}
 	}
 }
