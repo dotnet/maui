@@ -7,20 +7,19 @@ namespace Microsoft.Maui.Benchmarks
 {
 	/// <summary>
 	/// Benchmarks that measure the time and allocations caused by property-change
-	/// propagation on the three most commonly used text-based controls: Label, Button
-	/// and Entry.  Only properties that exist on all three controls are exercised so
-	/// the numbers are directly comparable.
+	/// propagation on the three most commonly used controls: Label, Button and Entry.
+	/// All benchmarks attach a PropertyChanged subscriber to simulate real-world scenarios
+	/// where the UI or bindings listen to property changes.
 	///
-	/// Common properties tested:
-	///   - Text          (string)
-	///   - TextColor     (Color)
-	///   - FontSize      (double – triggers InvalidateMeasure internally)
-	///   - FontAttributes (enum)
-	///   - IsEnabled     (bool – coerced through the visual tree)
+	/// Properties tested:
+	///   - HeightRequest (double)
+	///   - Background    (Brush – exercises color-to-brush conversion and caching)
+	///   - IsEnabled     (bool – coerced through the visual tree, uses boxed value caching)
 	///   - Opacity       (double – coerced to [0,1])
+	///   - FontSize      (double – Button only)
 	///
-	/// Each benchmark group is run both without and with a PropertyChanged subscriber
-	/// so you can isolate the cost of the notification-dispatch leg.
+	/// The Background property is particularly interesting as it exercises implicit Color-to-Brush
+	/// conversion, which can benefit from brush instance caching. IsEnabled tests boxed bool reuse.
 	/// </summary>
 	[MemoryDiagnoser]
 	public class PropertyChangePropagationBenchmarker
