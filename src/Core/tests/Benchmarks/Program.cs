@@ -1,5 +1,4 @@
 using BenchmarkDotNet.Running;
-using Microsoft.Maui.Benchmarks;
 
 namespace Microsoft.Maui.Handlers.Benchmarks
 {
