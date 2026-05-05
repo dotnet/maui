@@ -1,8 +1,8 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 35279,
-	"MenuBarItem named 'Edit' (or any system menu title) should merge its items into the existing system menu on Mac Catalyst",
-	PlatformAffected.MacCatalyst)]
+	"KeyboardAccelerator with Cmd+Shift modifiers breaks entire MenuBarItem on Mac Catalyst",
+	PlatformAffected.macOS)]
 public class Issue35279 : TestShell
 {
 	protected override void Init()
@@ -13,19 +13,40 @@ public class Issue35279 : TestShell
 			AutomationId = "ResultLabel"
 		};
 
-		// A MenuBarItem whose title matches the system "Edit" menu.
-		// On Mac Catalyst the items inside should be merged into (and visible in)
-		// the existing system Edit menu, not silently dropped because a duplicate
-		// menu was created.
-		var editMenu = new MenuBarItem { Text = "Edit" };
-		var copyItem = new MenuFlyoutItem
+		// File menu with a Cmd+Shift+S accelerator on "Save As".
+		// Before the fix, passing uppercase "S" with UIKeyModifierFlags.Shift to
+		// UIKeyCommand caused Mac Catalyst to silently reject the command and make
+		// the entire File menu non-functional (it would not open at all).
+		var fileMenu = new MenuBarItem { Text = "File" };
+
+		var saveItem = new MenuFlyoutItem
 		{
-			Text = "Copy",
-			AutomationId = "CopyMenuItem",
-			Command = new Command(() => resultLabel.Text = "Copy executed")
+			Text = "Save",
+			AutomationId = "SaveMenuItem",
+			Command = new Command(() => resultLabel.Text = "Save executed")
 		};
-		editMenu.Add(copyItem);
-		MenuBarItems.Add(editMenu);
+		saveItem.KeyboardAccelerators.Add(new KeyboardAccelerator
+		{
+			Modifiers = KeyboardAcceleratorModifiers.Cmd,
+			Key = "s"
+		});
+		fileMenu.Add(saveItem);
+
+		var saveAsItem = new MenuFlyoutItem
+		{
+			Text = "Save As",
+			AutomationId = "SaveAsMenuItem",
+			Command = new Command(() => resultLabel.Text = "Save As executed")
+		};
+		// Cmd+Shift+S — the uppercase "S" is the root cause of issue #35279
+		saveAsItem.KeyboardAccelerators.Add(new KeyboardAccelerator
+		{
+			Modifiers = KeyboardAcceleratorModifiers.Cmd | KeyboardAcceleratorModifiers.Shift,
+			Key = "S"
+		});
+		fileMenu.Add(saveAsItem);
+
+		MenuBarItems.Add(fileMenu);
 
 		AddContentPage(new ContentPage
 		{
@@ -38,7 +59,7 @@ public class Issue35279 : TestShell
 				{
 					new Label
 					{
-						Text = "Open the Edit menu in the Mac menu bar and tap 'Copy'.",
+						Text = "Open the File menu and tap 'Save As'.",
 						HorizontalTextAlignment = TextAlignment.Center
 					},
 					resultLabel
