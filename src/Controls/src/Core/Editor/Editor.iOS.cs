@@ -3,17 +3,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Editor
 	{
-		static Editor()
-		{
-			EditorHandler.Mapper.AppendToMapping<Editor, IEditorHandler>(nameof(AutoSize), (handler, editor) =>
-			{
-				if (handler.PlatformView is Microsoft.Maui.Platform.MauiTextView textView)
-				{
-					textView.AllowAutoGrowth = editor.AutoSize == EditorAutoSizeOption.TextChanges;
-				}
-			});
-		}
-
 		public static void MapText(EditorHandler handler, Editor editor) =>
 			MapText((IEditorHandler)handler, editor);
 
