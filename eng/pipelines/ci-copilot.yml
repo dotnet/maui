@@ -12,8 +12,7 @@ pr: none  # Not triggered by PRs
 parameters:
   - name: PRNumber
     displayName: 'Pull Request Number'
-    type: string
-    default: ''
+    type: number
 
   - name: Platform
     displayName: 'Target Platform'
@@ -78,7 +77,7 @@ stages:
         steps:
           - checkout: self
             fetchDepth: 0
-            persistCredentials: true
+            persistCredentials: false
 
           # Validate Parameters
           - bash: |
@@ -344,24 +343,13 @@ stages:
               echo "GitHub CLI ready"
             displayName: 'Install GitHub CLI'
 
-          - bash: |
-              echo "Authenticating with GitHub CLI..."
-              if [ -z "$GH_TOKEN" ]; then
-                echo "##vso[task.logissue type=error]GH_TOKEN env var (from pipeline variable GH_COMMENT_TOKEN) is not set. Please configure the pipeline variable."
-                exit 1
-              fi
-              gh auth status
-              if [ $? -ne 0 ]; then
-                echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null || true
-                if ! gh auth status; then
-                  echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
-                  exit 1
-                fi
-              fi
-              echo "GitHub CLI authenticated successfully"
-            displayName: 'Authenticate GitHub CLI'
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
+          # ═══════════════════════════════════════════════════════════════
+          # gh auth login is deliberately removed.
+          # GH_COMMENT_TOKEN is scoped to Task 1 (Setup) and Task 4 (Post)
+          # only, via env: blocks. No credential file is written to disk.
+          # This prevents dotnet subprocesses from reading the token from
+          # ~/.config/gh/hosts.yml during Tasks 2-3.
+          # ═══════════════════════════════════════════════════════════════
 
           - bash: |
               echo "Installing GitHub Copilot CLI..."
@@ -530,125 +518,191 @@ stages:
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
             timeoutInMinutes: 3
 
+          # Create artifacts directory early (before any task can fail)
+          - bash: mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
+            displayName: 'Create artifact directories'
+
+          # ═══════════════════════════════════════════════════════════════
+          # TASK 1: SETUP (trusted — GH_TOKEN for prereqs, no PR code execution)
+          # ═══════════════════════════════════════════════════════════════
           - bash: |
-              echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
-              echo "Reviewing PR #${{ parameters.PRNumber }}..."
-              
-              # Ensure copilot CLI is accessible to pwsh subprocess.
-              # npm global install on Linux goes to UseNode@1 toolcache path which may not
-              # be on PATH inside pwsh even when exported from bash. Create a symlink in
-              # /usr/local/bin (Unix) or verify PATH (Windows).
+              set -euo pipefail
+              echo "=== Task 1: Setup ==="
+
+              # Ensure copilot CLI is accessible to pwsh subprocess
               if [[ "$(uname -o 2>/dev/null || uname -s)" == *"Msys"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"Windows"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"MINGW"* ]]; then
-                # Windows (Git Bash): npm global bin is usually already on PATH
-                echo "Windows detected — verifying copilot is on PATH..."
                 COPILOT_PATH=$(which copilot 2>/dev/null || true)
-                echo "copilot location: ${COPILOT_PATH:-not found}"
                 if [ -z "$COPILOT_PATH" ]; then
-                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH. Failing early."
+                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH."
                   exit 1
                 fi
               else
-                # Linux/macOS: symlink to /usr/local/bin
                 COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
                 if [ -n "$COPILOT_PATH" ] && [ ! -f /usr/local/bin/copilot ]; then
                   sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
-                  echo "Symlinked copilot to /usr/local/bin/copilot"
                 fi
                 COPILOT_PATH=$(which copilot 2>/dev/null || true)
-                echo "copilot location: ${COPILOT_PATH:-not found}"
                 if [ -z "$COPILOT_PATH" ]; then
-                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH. Failing early."
+                  echo "##vso[task.logissue type=error]copilot CLI not found on PATH."
                   exit 1
                 fi
               fi
-              # Verify pwsh can find it
               pwsh -NoProfile -c 'Write-Host "pwsh sees copilot at: $(Get-Command copilot -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"'
-              
-              # Configure git identity (required for merge operations on self-hosted agents)
+
+              # Configure git identity
               git config user.email "copilot-ci@microsoft.com"
               git config user.name "Copilot CI"
-              echo "Git identity configured"
-              
-              # Create Directory.Build.Override.props to skip Xcode version check (not needed on Windows)
+
+              # Create Directory.Build.Override.props
               cp Directory.Build.Override.props.in Directory.Build.Override.props
               if [[ "$(uname)" == "Linux" ]]; then
                 sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               elif [[ "$(uname)" == "Darwin" ]]; then
                 sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               else
-                # Windows (Git Bash) — GNU sed, same as Linux
                 sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               fi
-              
-              # Create artifacts directory for Copilot outputs
-              mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
-              
-              # Invoke the PR reviewer using our PowerShell script
-              # The script will merge the PR into the current branch
-              # -PostSummaryComment and -RunFinalize handle posting comments
+
+              # Copy trusted scripts BEFORE any PR code merge
+              TRUSTED="$(Agent.TempDirectory)/trusted-scripts"
+              mkdir -p "$TRUSTED"
+              cp -r .github/scripts "$TRUSTED/scripts"
+              cp -r .github/skills "$TRUSTED/skills"
+              cp -r eng/scripts "$TRUSTED/eng-scripts"
+              echo "Trusted scripts copied to $TRUSTED"
+
+              # Invoke Setup phase (prereqs, branch setup, test detection)
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -Phase Setup \
+                -PRNumber ${{ parameters.PRNumber }} \
+                -Platform ${{ parameters.Platform }} \
+                -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+
+              # Remove any gh credential files from disk (belt-and-suspenders)
+              rm -f ~/.config/gh/hosts.yml ~/.config/gh/config.yml 2>/dev/null || true
+              echo "Credential files cleaned"
+            displayName: 'Task 1: Setup (prereqs, merge PR, copy trusted scripts)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          # ═══════════════════════════════════════════════════════════════
+          # TASK 2: GATE (untrusted — PR code runs here, ZERO tokens)
+          # ═══════════════════════════════════════════════════════════════
+          - bash: |
+              set -euo pipefail
+              echo "=== Task 2: Gate (no tokens) ==="
+
+              # Filter ##vso[] logging commands from stdout to prevent
+              # unintended PATH modifications via ##vso[task.prependpath]
+              TRUSTED="$(Agent.TempDirectory)/trusted-scripts"
+
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
-              COPILOT_EXIT_CODE=$?
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -Phase Gate \
+                -PRNumber ${{ parameters.PRNumber }} \
+                -Platform ${{ parameters.Platform }} \
+                -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md" \
+                2>&1 | sed 's/^##vso\[/##_vso[/'
+              GATE_EXIT=${PIPESTATUS[0]}
               set -e
-              
-              echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
-              
-              # Terminate any orphaned copilot CLI processes that could hold this step's
-              # stdout fd open and prevent the bash step from exiting.
-              # Only target processes whose command line includes the copilot CLI path.
-              echo "Cleaning up orphaned copilot processes..."
-              SELF_PID=$$
-              for proc in $(pgrep -f "[c]opilot" 2>/dev/null || true); do
-                if [ -n "$proc" ] && [ "$proc" != "$SELF_PID" ]; then
-                  PROC_CMD=$(ps -p "$proc" -o args= 2>/dev/null || true)
-                  if echo "$PROC_CMD" | grep -q "copilot"; then
-                    echo "  Stopping copilot process $proc: $PROC_CMD"
-                    kill "$proc" 2>/dev/null || true
-                  fi
-                fi
-              done
-              
-              # Copy any Copilot session files
-              if [ -d "$HOME/.copilot" ]; then
-                echo "Copying Copilot session state..."
-                cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state || true
+
+              echo "Gate exit code: $GATE_EXIT"
+              if [ $GATE_EXIT -ne 0 ] && [ $GATE_EXIT -ne 2 ]; then
+                echo "##vso[task.setvariable variable=GateFailed]true"
               fi
-              
-              # Copy CustomAgentLogsTmp if it exists
-              if [ -d "CustomAgentLogsTmp" ]; then
-                echo "Copying CustomAgentLogsTmp..."
-                cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+            displayName: 'Task 2: Gate — verify-tests-fail (NO TOKENS)'
+            # env: deliberately empty — no secrets. PR code cannot read any token.
+
+          # ═══════════════════════════════════════════════════════════════
+          # TASK 3: COPILOT REVIEW (copilot token only, stripped from children)
+          # ═══════════════════════════════════════════════════════════════
+          - bash: |
+              set -euo pipefail
+              echo "=== Task 3: Copilot Review ==="
+
+              TRUSTED="$(Agent.TempDirectory)/trusted-scripts"
+
+              # Verify trusted-scripts exist (Setup must have succeeded)
+              if [ ! -f "$TRUSTED/scripts/Review-PR.ps1" ]; then
+                echo "##vso[task.logissue type=warning]trusted-scripts not found — Setup may have failed. Skipping copilot review."
+                exit 0
               fi
-              
-              # Copy any Review_Feedback files
-              find . -name "Review_Feedback_*.md" -type f -exec cp {} $(Build.ArtifactStagingDirectory)/copilot-logs/ \; 2>/dev/null || true
-              
-              # Copy any .github/agent-pr-session files
-              if [ -d ".github/agent-pr-session" ]; then
-                echo "Copying agent-pr-session..."
-                cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+
+              # Verify Setup completed successfully (PR was merged)
+              if [ ! -f "$(Agent.TempDirectory)/setup-complete" ]; then
+                echo "##vso[task.logissue type=warning]Setup did not complete (merge conflict?). Skipping copilot review."
+                exit 0
               fi
-              
-              # Check for failure indicators in output
-              if [ $COPILOT_EXIT_CODE -ne 0 ]; then
-                echo "##vso[task.logissue type=error]Review-PR.ps1 exited with code $COPILOT_EXIT_CODE"
-                # Don't exit yet - let artifacts be published first
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -Phase CopilotReview \
+                -PRNumber ${{ parameters.PRNumber }} \
+                -Platform ${{ parameters.Platform }} \
+                -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md" \
+                2>&1 | sed 's/^##vso\[/##_vso[/'
+              COPILOT_EXIT=${PIPESTATUS[0]}
+              set -e
+
+              echo "Copilot exit code: $COPILOT_EXIT"
+              if [ $COPILOT_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=warning]Copilot review exited with code $COPILOT_EXIT"
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
               fi
-              
-              # Check output for common failure patterns
-              if grep -qi "error\|failed\|exception" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
-                if grep -qi "simulator.*not\|emulator.*not\|workload.*not\|sdk.*not found" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
-                  echo "##vso[task.logissue type=warning]Copilot encountered environment issues. Check artifacts for details."
-                fi
-              fi
-              
-              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
-            displayName: 'Run PR Reviewer Agent'
+            displayName: 'Task 3: Copilot Review (COPILOT_GITHUB_TOKEN only)'
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
+              COMMENTS_VIA_FILE: "true"
+            condition: succeededOrFailed()
+            timeoutInMinutes: 240
+
+          # ═══════════════════════════════════════════════════════════════
+          # TASK 4: POST RESULTS (trusted — GH_TOKEN, no PR code execution)
+          # Scripts run from trusted-scripts/ (copied BEFORE PR merge).
+          # gh resolved before invocation to avoid PATH ordering issues.
+          # ═══════════════════════════════════════════════════════════════
+          - bash: |
+              set -euo pipefail
+              echo "=== Task 4: Post Results ==="
+
+              TRUSTED="$(Agent.TempDirectory)/trusted-scripts"
+
+              # Verify trusted-scripts exist (Setup must have succeeded)
+              if [ ! -f "$TRUSTED/scripts/Review-PR.ps1" ]; then
+                echo "##vso[task.logissue type=warning]trusted-scripts not found — Setup may have failed. Skipping post."
+                exit 0
+              fi
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -Phase Post \
+                -PRNumber ${{ parameters.PRNumber }} \
+                -TrustedScriptsDir "$TRUSTED" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              POST_EXIT=$?
+              set -e
+
+              echo "Post exit code: $POST_EXIT"
+              if [ $POST_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=warning]Post phase failed with exit $POST_EXIT — PR comment may not have been posted."
+              fi
+
+              # Copy artifacts for publishing (exclude .copilot session state — may contain auth metadata)
+              if [ -d "CustomAgentLogsTmp" ]; then
+                cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+              fi
+              find . -name "Review_Feedback_*.md" -type f -exec cp {} $(Build.ArtifactStagingDirectory)/copilot-logs/ \; 2>/dev/null || true
+              if [ -d ".github/agent-pr-session" ]; then
+                cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
+              fi
+            displayName: 'Task 4: Post Results (GH_TOKEN, trusted scripts only)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+            condition: succeededOrFailed()
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
@@ -670,9 +724,16 @@ stages:
 
           # Fail the pipeline if Copilot failed
           - bash: |
+              FAILED=false
               if [ "$(CopilotFailed)" = "true" ]; then
                 echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
+                FAILED=true
+              fi
+              if [ "$(GateFailed)" = "true" ]; then
+                echo "##vso[task.logissue type=warning]Gate verification failed."
+              fi
+              if [ "$FAILED" = "true" ]; then
                 exit 1
               fi
-            displayName: 'Check Copilot Result'
+            displayName: 'Check Review Result'
             condition: succeededOrFailed()
