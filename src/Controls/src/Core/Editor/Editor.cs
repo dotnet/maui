@@ -93,8 +93,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (AutoSize == EditorAutoSizeOption.TextChanges && this.IsShimmed())
 				InvalidateMeasure();
-
-			Handler?.UpdateValue(nameof(AutoSize));
 		}
 
 		/// <summary>
