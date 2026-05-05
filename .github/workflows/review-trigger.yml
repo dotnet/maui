@@ -11,6 +11,10 @@ on:
       pr_number:
         description: 'PR number to review'
         required: true
+      pipeline_ref:
+        description: 'AzDO pipeline branch/tag (default: main)'
+        required: false
+        default: 'main'
 
 jobs:
   trigger-review:
@@ -37,18 +41,32 @@ jobs:
             exit 1
           fi
 
-      - name: Resolve PR number
+      - name: Resolve PR number and pipeline ref
         id: pr
         env:
           GH_TOKEN: ${{ github.token }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${{ inputs.pr_number }}"
+            PIPELINE_REF="${{ inputs.pipeline_ref || 'main' }}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
+            # Parse optional branch from '/review <branch>' comment
+            PIPELINE_REF=$(echo "${COMMENT_BODY}" | sed -n 's|^/review[[:space:]]\+\([^[:space:]]\+\).*|\1|p')
+            if [ -z "${PIPELINE_REF}" ]; then
+              PIPELINE_REF="main"
+            fi
+          fi
+          # Sanitize ref to valid git ref characters only
+          PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
+          if [ -z "${PIPELINE_REF}" ]; then
+            PIPELINE_REF="main"
           fi
           echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "pipeline_ref=${PIPELINE_REF}" >> "$GITHUB_OUTPUT"
           echo "Resolved PR number: ${PR_NUMBER}"
+          echo "Pipeline ref: ${PIPELINE_REF}"
 
           # Validate the PR exists and fetch its head ref
           PR_DATA=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER} --jq '{head_ref: .head.ref, head_sha: .head.sha, title: .title, state: .state}')
@@ -100,8 +118,9 @@ jobs:
         env:
           AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
           PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          PIPELINE_REF: ${{ steps.pr.outputs.pipeline_ref }}
         run: |
-          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER}..."
+          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (ref: ${PIPELINE_REF})..."
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
             -H "Authorization: Bearer ${AZDO_TOKEN}" \
@@ -113,7 +132,7 @@ jobs:
               \"resources\": {
                 \"repositories\": {
                   \"self\": {
-                    \"refName\": \"refs/heads/main\"
+                    \"refName\": \"refs/heads/${PIPELINE_REF}\"
                   }
                 }
               }
