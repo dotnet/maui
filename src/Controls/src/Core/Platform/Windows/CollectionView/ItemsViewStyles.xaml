@@ -383,6 +383,37 @@
                           VerticalAlignment="Stretch" />
   </ControlTemplate>
 
+        <!-- CV2 ItemContainer theme resource overrides:
+             * multi-select checkbox sits on the LEFT (centered, no margin)
+               instead of overlaying the top-right of the user's content
+             * WinUI accent selection border (PART_SelectionVisual) and
+               inner stroke (PART_CommonVisual selected) are hidden, giving
+               a flat fill-only selected appearance similar to CV1's ListView.
+             ThemeResource keys come from ItemContainer's default style. -->
+        <!-- Move multi-select checkbox to the left -->
+        <HorizontalAlignment x:Key="ItemContainerCheckboxHorizontalAlignment">Left</HorizontalAlignment>
+        <VerticalAlignment x:Key="ItemContainerCheckboxVerticalAlignment">Center</VerticalAlignment>
+        <!-- Hide the 3px accent selection border (PART_SelectionVisual) -->
+        <SolidColorBrush x:Key="ItemContainerSelectionVisualBackground"
+                         Color="Transparent"/>
+        <SolidColorBrush x:Key="ItemContainerSelectionVisualPointerOverBackground"
+                         Color="Transparent"/>
+        <SolidColorBrush x:Key="ItemContainerSelectionVisualPressedBackground"
+                         Color="Transparent"/>
+        <!-- Hide the inner border stroke shown when selected -->
+        <SolidColorBrush x:Key="ItemContainerSelectedInnerBorderBrush"
+                         Color="Transparent"/>
+        <!-- Selected-state background fill (matches CV1's ListView "highlighted" appearance).
+                             These keys feed PART_CommonVisual.Fill in the SelectedNormal /
+                             SelectedPointerOver / SelectedPressed visual states. -->
+        <StaticResource x:Key="ItemContainerSelectedBackground"
+                        ResourceKey="SubtleFillColorSecondaryBrush"/>
+        <StaticResource x:Key="ItemContainerSelectedPointerOverBackground"
+                        ResourceKey="SubtleFillColorTertiaryBrush"/>
+        <StaticResource x:Key="ItemContainerSelectedPressedBackground"
+                        ResourceKey="SubtleFillColorSecondaryBrush"/>
+        <!-- Don't inset the background when selected (no margin) -->
+        <Thickness x:Key="ItemContainerSelectedInnerMargin">0</Thickness>
 
 </ResourceDictionary>
 
