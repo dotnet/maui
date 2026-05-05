@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls.Internals;
 /// <remarks>
 /// For known property names, a single shared instance is returned from an internal cache.
 /// For unknown property names, a new instance is created and returned (and is not cached).
+/// Null or empty property names (which indicate "all properties changed") always return a new uncached instance.
 /// </remarks>
 static class PropertyChangesEventArgsFactory
 {
@@ -99,9 +100,10 @@ static class PropertyChangesEventArgsFactory
 	/// Returns a cached <see cref="PropertyChangedEventArgs"/> instance for the specified property name when available;
 	/// otherwise creates and returns a new instance.
 	/// </summary>
-	/// <param name="name">The property name associated with the change notification.</param>
+	/// <param name="name">The property name associated with the change notification. Null or empty indicates all properties changed.</param>
 	/// <returns>
 	/// A cached <see cref="PropertyChangedEventArgs"/> for commonly-used property names; otherwise a new instance.
+	/// Null or empty names always return a new uncached instance.
 	/// </returns>
 	internal static PropertyChangedEventArgs GetOrCreatePropertyChangedEventArgs(string name)
 	{
@@ -122,9 +124,10 @@ static class PropertyChangesEventArgsFactory
 	/// Returns a cached <see cref="PropertyChangingEventArgs"/> instance for the specified property name when available;
 	/// otherwise creates and returns a new instance.
 	/// </summary>
-	/// <param name="name">The property name associated with the changing notification.</param>
+	/// <param name="name">The property name associated with the changing notification. Null or empty indicates all properties changing.</param>
 	/// <returns>
 	/// A cached <see cref="PropertyChangingEventArgs"/> for commonly-used property names; otherwise a new instance.
+	/// Null or empty names always return a new uncached instance.
 	/// </returns>
 	internal static PropertyChangingEventArgs GetOrCreatePropertyChangingEventArgs(string name)
 	{
