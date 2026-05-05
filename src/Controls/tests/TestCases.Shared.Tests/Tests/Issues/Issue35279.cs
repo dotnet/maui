@@ -27,7 +27,9 @@ public class Issue35279 : _IssuesUITest
 		App.WaitForElement("File");
 		App.Tap("File");
 
-		// Both items must be visible inside the now-working File menu
+		// Verify the Save item (Cmd+S) and Save As item (Cmd+Shift+S) are both
+		// reachable inside the now-working File menu
+		App.WaitForElement("Save");
 		App.WaitForElement("Save As");
 		App.Tap("Save As");
 
