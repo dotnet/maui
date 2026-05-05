@@ -2,6 +2,7 @@
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
+=======
 Microsoft.Maui.Handlers.PickerHandler._dialog -> AndroidX.AppCompat.App.AlertDialog?
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
@@ -18,3 +19,4 @@ override Microsoft.Maui.PlatformDrawable.JniPeerMembers.get -> Java.Interop.JniP
 override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
 override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
+static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges

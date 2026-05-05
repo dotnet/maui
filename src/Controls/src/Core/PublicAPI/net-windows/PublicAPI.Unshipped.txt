@@ -1,7 +1,9 @@
 #nullable enable
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+=======
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
+Microsoft.Maui.Controls.BoxView.~BoxView() -> void
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer
 Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.get -> double
@@ -53,6 +55,8 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.BaseShellItem.BadgeText.set -> void
 ~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.BaseShellItem.BadgeTextColor.set -> void
+~Microsoft.Maui.Controls.BoxView.Fill.get -> Microsoft.Maui.Controls.Brush
+~Microsoft.Maui.Controls.BoxView.Fill.set -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommand.get -> System.Windows.Input.ICommand
 ~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
@@ -80,6 +84,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.BoxView.FillProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.NavigationPage.BackButtonAccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
