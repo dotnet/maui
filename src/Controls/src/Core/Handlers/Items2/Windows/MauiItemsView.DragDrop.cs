@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
@@ -17,9 +18,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		// Drag and drop fields
 		object? _draggedItem;
+		FrameworkElement? _draggedContainer;
 		int _insertionIndex = -1;
 		bool _insertAfter = false;
 		bool _canReorderItems = true;
+
+		// Drag visual-feedback fields
+		Popup? _insertionIndicatorPopup;
+		Border? _insertionIndicator;
 
 		// Auto-scroll fields
 		Microsoft.UI.Dispatching.DispatcherQueueTimer? _autoScrollTimer;
@@ -143,6 +149,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				itemContainer.CanDrag = false;
 				itemContainer.DragStarting -= ItemContainer_DragStarting;
+				itemContainer.DropCompleted -= ItemContainer_DropCompleted;
+				itemContainer.Opacity = 1.0;
+				itemContainer.RenderTransform = null;
 				itemContainer.Tag = null;
 			}
 		}
@@ -170,8 +179,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_draggedItem = item;
+			_draggedContainer = itemContainer;
 			args.Data.Properties.Add("DragSource", "MauiItemsView");
 			args.Data.RequestedOperation = WDataTransfer.DataPackageOperation.Move;
+
+			// Visually dim the source item so it looks "lifted" out of the list.
+			itemContainer.Opacity = 0.4;
+			var scale = new ScaleTransform
+			{
+				ScaleX = 0.97,
+				ScaleY = 0.97,
+				CenterX = itemContainer.ActualWidth / 2,
+				CenterY = itemContainer.ActualHeight / 2
+			};
+			itemContainer.RenderTransform = scale;
+
+			// Restore visuals once the drag gesture ends (drop or cancel).
+			itemContainer.DropCompleted -= ItemContainer_DropCompleted;
+			itemContainer.DropCompleted += ItemContainer_DropCompleted;
+		}
+
+		void ItemContainer_DropCompleted(UIElement sender, UI.Xaml.DropCompletedEventArgs args)
+		{
+			if (sender is ItemContainer container)
+			{
+				container.Opacity = 1.0;
+				container.RenderTransform = null;
+				container.DropCompleted -= ItemContainer_DropCompleted;
+			}
+
+			HideInsertionIndicator();
 		}
 
 		void ScrollView_DragEnter(object sender, UI.Xaml.DragEventArgs e)
@@ -206,6 +243,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (targetContainer is null)
 			{
 				System.Diagnostics.Debug.WriteLine($"DragOver: No container under pointer");
+				HideInsertionIndicator();
 				return;
 			}
 
@@ -216,6 +254,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (targetIndex < 0)
 			{
+				HideInsertionIndicator();
 				return;
 			}
 
@@ -234,6 +273,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			System.Diagnostics.Debug.WriteLine($"DragOver: insertAfter={_insertAfter}, _insertionIndex={_insertionIndex}");
 
+			ShowInsertionIndicator(targetContainer, _insertAfter);
+
 			e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 			e.Handled = true;
 
@@ -241,6 +282,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void ScrollView_DragLeave(object sender, UI.Xaml.DragEventArgs e)
 		{
+			HideInsertionIndicator();
 			StopAutoScroll();
 		}
 
@@ -711,10 +753,97 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void CleanupDragState()
 		{
+			HideInsertionIndicator();
+
+			// Ensure the dragged container's visuals are always restored,
+			// even if DropCompleted fires before CleanupDragState does.
+			if (_draggedContainer is not null)
+			{
+				_draggedContainer.Opacity = 1.0;
+				_draggedContainer.RenderTransform = null;
+				_draggedContainer = null;
+			}
+
 			_draggedItem = null;
 			_insertionIndex = -1;
 			_insertAfter = false;
 			StopAutoScroll();
+		}
+
+		#endregion
+
+		#region Drag Visual Feedback
+
+		void EnsureInsertionIndicator()
+		{
+			if (_insertionIndicator is not null)
+				return;
+
+			_insertionIndicator = new Border
+			{
+				Background = new SolidColorBrush(Microsoft.UI.Colors.DodgerBlue),
+				Opacity = 0.9,
+				IsHitTestVisible = false,
+				CornerRadius = new CornerRadius(2)
+			};
+
+			_insertionIndicatorPopup = new Popup
+			{
+				Child = _insertionIndicator,
+				IsHitTestVisible = false
+			};
+		}
+
+		void ShowInsertionIndicator(FrameworkElement targetContainer, bool insertAfter)
+		{
+			EnsureInsertionIndicator();
+
+			if (_insertionIndicator is null || _insertionIndicatorPopup is null || XamlRoot is null)
+				return;
+
+			try
+			{
+				var transform = targetContainer.TransformToVisual(null);
+				var containerOrigin = transform.TransformPoint(new global::Windows.Foundation.Point(0, 0));
+
+				const double IndicatorThickness = 3.0;
+
+				if (_isHorizontalLayout)
+				{
+					double x = insertAfter
+						? containerOrigin.X + targetContainer.ActualWidth - IndicatorThickness / 2
+						: containerOrigin.X - IndicatorThickness / 2;
+
+					_insertionIndicator.Width = IndicatorThickness;
+					_insertionIndicator.Height = Math.Max(targetContainer.ActualHeight, 0);
+					_insertionIndicatorPopup.HorizontalOffset = x;
+					_insertionIndicatorPopup.VerticalOffset = containerOrigin.Y;
+				}
+				else
+				{
+					double y = insertAfter
+						? containerOrigin.Y + targetContainer.ActualHeight - IndicatorThickness / 2
+						: containerOrigin.Y - IndicatorThickness / 2;
+
+					_insertionIndicator.Width = Math.Max(targetContainer.ActualWidth, 0);
+					_insertionIndicator.Height = IndicatorThickness;
+					_insertionIndicatorPopup.HorizontalOffset = containerOrigin.X;
+					_insertionIndicatorPopup.VerticalOffset = y;
+				}
+
+				_insertionIndicatorPopup.XamlRoot = XamlRoot;
+				_insertionIndicatorPopup.IsOpen = true;
+			}
+			catch
+			{
+				// Silently ignore layout errors during drag
+			}
+		}
+
+		void HideInsertionIndicator()
+		{
+			if (_insertionIndicatorPopup is not null)
+				_insertionIndicatorPopup.IsOpen = false;
 		}
 
 		#endregion
