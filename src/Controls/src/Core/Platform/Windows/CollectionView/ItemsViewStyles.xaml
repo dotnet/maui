@@ -361,7 +361,13 @@
                                                         XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
 
 
+                                <!-- EmptyView sits between the items and the footer in the StackPanel
+                                     so the natural Header → Items → EmptyView → Footer order is preserved.
+                                     Its MinHeight/MinWidth is set in code-behind so it fills the remaining
+                                     viewport space (matching CV1's "fill available space" behavior). -->
                                 <ContentControl x:Name="EmptyViewContentControl"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
                                                 HorizontalContentAlignment="Stretch"
                                                 VerticalContentAlignment="Stretch"/>
 
