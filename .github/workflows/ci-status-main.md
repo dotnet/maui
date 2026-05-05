@@ -18,15 +18,10 @@ engine:
   id: copilot
   model: claude-sonnet-4.6
 
-runtimes:
-  dotnet:
-    version: "9.0"
-
 network:
   allowed:
     - defaults
     - mihubot.xyz
-    - dotnet
 
 tools:
   web-fetch:
@@ -36,14 +31,6 @@ tools:
 mcp-servers:
   mihubot:
     url: "https://mihubot.xyz/mcp"
-    allowed: ["*"]
-  hlx:
-    command: "dotnet"
-    args: ["dnx", "--yes", "lewing.helix.mcp"]
-    allowed: ["*"]
-  maestro:
-    command: "dotnet"
-    args: ["dnx", "--yes", "lewing.maestro.mcp"]
     allowed: ["*"]
 
 safe-outputs:
@@ -107,13 +94,12 @@ state of CI on the **main** branch and produce a clear status report as a GitHub
    cat .github/skills/azdo-build-investigator/SKILL.md
    ```
 
-2. **Arcade-skills MCP servers are configured** — the following MCP tools from the
-   `dotnet/arcade-skills` plugin are available directly via `mcp-servers:` frontmatter:
+2. **MCP servers configured** — the following MCP tools are available via `mcp-servers:`:
    - **mihubot** — search dotnet repos for issues, PRs, and discussions
-   - **hlx** — query Helix test infrastructure (work items, logs, results)
-   - **maestro** — query Maestro/BAR dependency flow data
-   Use these MCP tools when available for richer CI analysis. Fall back to
-   direct AzDO REST API queries via web-fetch if MCP servers are unavailable.
+   
+   Note: The Helix (`hlx`) and Maestro MCP servers from arcade-skills use stdio
+   transport which the MCP Gateway doesn't support (it requires HTTP or container).
+   Fall back to direct AzDO REST API queries via web-fetch for build data.
 
 ## MAUI CI Pipelines
 
