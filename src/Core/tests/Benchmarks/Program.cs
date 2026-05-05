@@ -7,11 +7,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 	{
 		static void Main(string[] args)
 		{
-			//BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
-			var x = new PropertyChangePropagationBenchmarker();
-			x.Setup();
-
-			x.Button_SetCommonProperties_WithSubscriber();
+			BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 		}
 	}
 }
