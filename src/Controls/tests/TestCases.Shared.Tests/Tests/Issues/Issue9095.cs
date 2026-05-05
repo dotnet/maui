@@ -1,4 +1,3 @@
-#if ANDROID // iOS/Mac fix pending in https://github.com/dotnet/maui/pull/35072
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -80,4 +79,3 @@ public class Issue9095 : _IssuesUITest
 		 "ContentPage.OnBackButtonPressed should have been called even when returning false.");
 	}
 }
-#endif
