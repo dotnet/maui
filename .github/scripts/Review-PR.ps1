@@ -643,7 +643,10 @@ function Get-GateFallbackDetails {
     if ($Tail -match '(?i)Could not auto-detect PR number|no tests detected|0 test\(s\) detected') {
         $likely += "Test detection failed — no runnable tests were found in the PR diff."
     }
-    if ($Tail -match '(?i)build failed|MSBUILD.*error|error CS\d+|error MAUI\d+') {
+    # Match coded build errors (CS, MSB, NU, MAUI, NETSDK, XA, etc.) without false-positiving
+    # on lines like "MSBUILD output: 0 error(s)". The general form `error <ABBR><NNNN>` covers
+    # compiler, MSBuild, NuGet restore, MAUI analyzer, .NET SDK, Android packaging diagnostics.
+    if ($Tail -match '(?i)build failed|\berror\s+[A-Z]{2,}\d+\b') {
         $likely += "Build error before any test could run."
     }
     if ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)') {
@@ -985,14 +988,33 @@ if ($isPRWinner) {
     $maxDiffBytes = 55KB
     $diff = [string]$winner.candidateDiff
     $truncated = $false
+    # Truncate by binary-searching the largest character count whose UTF-8
+    # encoding fits within the byte budget (reserving room for the marker line).
+    # O(log n) and much cheaper than the previous O(n²) trim-512-and-recount loop.
+    $marker = "`n... [truncated]"
+    $markerBytes = [System.Text.Encoding]::UTF8.GetByteCount($marker)
+    $budget = $maxDiffBytes - $markerBytes
     if ([System.Text.Encoding]::UTF8.GetByteCount($diff) -gt $maxDiffBytes) {
-        # Trim by characters until under the byte cap, then add marker
-        while ([System.Text.Encoding]::UTF8.GetByteCount($diff) -gt ($maxDiffBytes - 64)) {
-            $diff = $diff.Substring(0, [Math]::Max(0, $diff.Length - 512))
+        $lo = 0
+        $hi = $diff.Length
+        while ($lo -lt $hi) {
+            $mid = [int](($lo + $hi + 1) / 2)
+            $bytes = [System.Text.Encoding]::UTF8.GetByteCount($diff.Substring(0, $mid))
+            if ($bytes -le $budget) { $lo = $mid } else { $hi = $mid - 1 }
         }
-        $diff += "`n... [truncated]"
+        $diff = $diff.Substring(0, $lo) + $marker
         $truncated = $true
     }
+
+    # Compute an outer code fence longer than any backtick run inside the diff
+    # (minimum 4) so the diff content cannot accidentally close the fence and
+    # leak into the surrounding markdown. Preserves the diff text exactly.
+    $maxBacktickRun = 0
+    foreach ($m in [regex]::Matches($diff, '`+')) {
+        if ($m.Length -gt $maxBacktickRun) { $maxBacktickRun = $m.Length }
+    }
+    $fenceLen = [Math]::Max(4, $maxBacktickRun + 1)
+    $fence = '`' * $fenceLen
 
     $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
     $reviewBody = @"
@@ -1006,9 +1028,9 @@ Please consider applying the candidate diff below (or use it as guidance). Once 
 
 <details><summary>Candidate diff (``$($winner.winner)``)</summary>
 
-``````diff
+${fence}diff
 $diff
-``````
+$fence
 
 </details>
 $( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limit._" } )

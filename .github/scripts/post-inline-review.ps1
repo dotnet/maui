@@ -117,8 +117,23 @@ Write-Host "  HEAD: $commitSha" -ForegroundColor Gray
 
 $comments = @()
 foreach ($f in $findings) {
+    # Defense-in-depth: reject suspicious paths so a malformed/hostile finding
+    # cannot poison the whole review post (especially in the fallback branch
+    # below where the GitHub diff fetch failed and we can't cross-validate).
+    $p = [string]$f.path
+    if ([string]::IsNullOrWhiteSpace($p) -or
+        $p.Contains('..') -or
+        $p.StartsWith('/') -or
+        $p.StartsWith('\') -or
+        $p.Contains('\') -or
+        $p -match '[\x00-\x1F]' -or
+        $p -match '^[A-Za-z]:') {
+        Write-Host "  ⚠️ Skipping finding with suspicious path: '$p'" -ForegroundColor Yellow
+        continue
+    }
+
     $comment = @{
-        path = $f.path
+        path = $p
         line = [int]$f.line
         body = $f.body
     }

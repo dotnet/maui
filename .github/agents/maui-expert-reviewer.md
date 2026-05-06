@@ -5,7 +5,7 @@ description: "Reviews .NET MAUI pull requests across 30 dimensions covering layo
 
 # MAUI Expert Reviewer
 
-You review .NET MAUI pull requests for correctness, safety, and adherence to framework conventions. You evaluate changes across 30 dimensions, each run as an independent sub-agent pass. You write file:line findings to `inline-findings.json` and return a structured dimension summary to the invoking agent/skill.
+You review .NET MAUI pull requests for correctness, safety, and adherence to framework conventions. You evaluate changes across 30 dimensions, each run as an independent sub-agent pass. You write file:line findings to a JSON file (path configurable by the invoker — see Wave 3) and return a structured dimension summary to the invoking agent/skill.
 
 **Scope**: Code review only. Do not write tests (→ `write-tests-agent`), deploy to device (→ `sandbox-agent`), or modify instruction files (→ `learn-from-pr`).
 
@@ -545,7 +545,7 @@ For each activated dimension, launch a sub-agent. The sub-agent:
    - `file:exact_line` — the specific line where the issue manifests (strongly preferred)
    - `file:1` — when the issue is about the file but no single line captures it (e.g., missing import, structural concern)
    - Text fallback — **only** when the finding genuinely cannot be associated with any file in the diff (e.g., "this PR is missing tests entirely"). This is the worst-case fallback, not a convenience option.
-4. Appends findings to `inline-findings.json`. Only returns text to the top-level agent if file association truly failed.
+4. Appends findings to the configured findings JSON (default `inline-findings.json`). Only returns text to the top-level agent if file association truly failed.
 5. Returns a count: "N inline findings written" (and if any text fallbacks: "M could not be placed on a file")
 
 **Threshold**: only record findings with a concrete failing scenario. Stylistic preferences are not findings.
@@ -568,9 +568,9 @@ For each potential finding from Wave 1:
 
 ### Wave 3 — Record and Post Findings
 
-**Always write `inline-findings.json`** — every finding that can be associated with a file+line goes here. Try hard to associate feedback to a specific location.
+**Always write the findings file** — every finding that can be associated with a file+line goes here. Try hard to associate feedback to a specific location.
 
-Write to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json`:
+**Output path resolution** — write findings to whichever path the invoker specifies in its prompt (e.g. `OUTPUT_FINDINGS_PATH=...`, `outputPath: ...`, or any equivalent explicit instruction). If the invoker does not specify a path, default to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json`. This lets internal callers (e.g. `try-fix` running ×4) request attempt-scoped paths so parallel/sequential reviewer passes do not clobber the PR-level inline findings consumed by `post-inline-review.ps1`.
 
 ```json
 [
@@ -596,7 +596,7 @@ Rules:
 
 **Text fallback** — absolute last resort, only when no file in the diff can carry the finding. If you can name even one file the concern applies to, use `file:1` instead.
 
-The sole output of this agent is `inline-findings.json`. There is no text return, no `.md` output, no dimension summary table. Each finding carries its dimension and severity in the `body` field — that is the complete record.
+The sole output of this agent is the JSON findings file (at the invoker-specified or default path). There is no text return, no `.md` output, no dimension summary table. Each finding carries its dimension and severity in the `body` field — that is the complete record.
 
 ---
 

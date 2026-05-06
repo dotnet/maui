@@ -1,9 +1,19 @@
 ---
 applyTo:
   - "src/Core/src/Layouts/**"
-  - "src/Controls/src/Core/Handlers/**"
+  - "src/Core/src/Platform/**"
+  - "src/Controls/src/Core/Handlers/Items/**"
+  - "src/Controls/src/Core/Handlers/Items2/**"
+  - "src/Controls/src/Core/ScrollView/**"
 ---
 # Performance-Critical Path Rules
+
+> **Scope rationale**: globs target the actual hot paths — layout measure/arrange,
+> platform scroll/touch callbacks, CollectionView/CarouselView (Items + Items2)
+> recycling, and ScrollView. The full handler tree is intentionally NOT included;
+> most handlers (Button, DatePicker, CheckBox, …) are not hot paths and don't need
+> these constraints. If you're working on a handler that IS allocation-sensitive
+> (image decoding, animation tick, etc.), apply these rules anyway.
 
 ## Hot Paths in MAUI
 Measure/arrange cycles, scrolling callbacks, binding propagation, and property change notifications are called at high frequency. All rules below apply to code on these paths.

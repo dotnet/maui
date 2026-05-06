@@ -26,7 +26,9 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
 
-**Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Invoke @maui-expert-reviewer and ask it to return all findings to you (do not post or write to .json). Fix every violation it reports, then re-run your tests to confirm build and tests still pass → Report results
+**Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Invoke `@maui-expert-reviewer` with `OUTPUT_FINDINGS_PATH=CustomAgentLogsTmp/PRState/{PR}/PRAgent/try-fix-{N}/reviewer-findings.json` (attempt-scoped path so the PR-level `inline-findings.json` is not clobbered) and read the JSON it writes. Fix every violation it reports, then re-run your tests to confirm build and tests still pass → Report results
+
+> **Why an attempt-scoped path?** The expert reviewer's standard PR-level output (`inline-findings.json`) feeds `post-inline-review.ps1`, which posts inline comments on the original PR diff. Each try-fix candidate is a different diff against a different code state — its findings are not valid against the PR diff and would either be silently dropped (best case) or overwrite the PR-level findings (worst case). Always pass an attempt-scoped path so parallel try-fix runs and the PR-level review remain isolated.
 
 ## ⚠️ CRITICAL: Sequential Execution Only
 

@@ -1,8 +1,19 @@
 ---
 applyTo:
   - "**/PublicAPI.Unshipped.txt"
+  - "src/Core/src/**/*.cs"
+  - "src/Controls/src/**/*.cs"
+  - "src/Essentials/src/**/*.cs"
 ---
 # Public API Surface Design
+
+> **Activation guard**: only apply this guidance when the diff actually changes
+> public API surface — `public`/`protected` types or members, interface
+> definitions, builder/extension methods on public types, `[Obsolete]` markers,
+> or `PublicAPI.*.txt` entries. The broad `.cs` globs exist so this guidance
+> loads at the moment of API design (writing `public class Foo` in `Button.cs`),
+> not just when the analyzer-generated `Unshipped.txt` is updated afterward.
+> If the diff only changes internals or implementation details, ignore.
 
 ## API Addition Rules
 - New public APIs must have clear, demonstrated use cases — no speculative additions

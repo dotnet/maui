@@ -209,8 +209,10 @@ function Get-ClassNameFromFile {
                 $content = Get-Content $p -Raw -ErrorAction Stop
             } catch { continue }
             # Match the first non-static, non-abstract `public class XXX` or
-            # `public partial class XXX` declaration. Strip generics.
-            $m = [regex]::Match($content, '(?m)^\s*public(?:\s+(?:partial|abstract|sealed|static))*\s+class\s+(\w+)')
+            # `public partial class XXX` declaration — only concrete classes (skip
+            # `abstract`/`static`) so a base test class declared above the concrete
+            # test class isn't picked up and turned into a non-matching test filter.
+            $m = [regex]::Match($content, '(?m)^\s*public(?:\s+(?:partial|sealed))*\s+class\s+(\w+)')
             if ($m.Success) { return $m.Groups[1].Value }
         }
     }
