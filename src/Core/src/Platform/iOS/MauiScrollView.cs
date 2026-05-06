@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using UIKit;
 
 namespace Microsoft.Maui.Platform

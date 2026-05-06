@@ -21,10 +21,10 @@ namespace Microsoft.Maui.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-
+			
 			if (PlatformView is MauiScrollView mauiScrollView)
 				mauiScrollView.View = view;
-
+				
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
@@ -121,12 +121,12 @@ namespace Microsoft.Maui.Handlers
 				var availableScrollWidth = Math.Max(uiScrollView.ContentSize.Width - uiScrollView.Frame.Width, 0);
 				var minScrollHorizontal = Math.Clamp(request.HorizontalOffset, 0, availableScrollWidth);
 				var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
-
+				
 				bool alreadyAtTarget = uiScrollView.ContentOffset.Y == minScrollVertical && uiScrollView.ContentOffset.X == minScrollHorizontal;
 
 				if (!alreadyAtTarget)
 				{
-					uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+    				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
 				}
 
 				if (request.Instant || alreadyAtTarget)
