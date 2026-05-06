@@ -28,11 +28,13 @@ on:
 
 jobs:
   trigger-review:
-    # For issue_comment: only run on PR comments that start with '/review'
+    # For issue_comment: only run on PR comments that are exactly '/review' or start with '/review '
     # For workflow_dispatch: always run
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.issue.pull_request && startsWith(github.event.comment.body, '/review'))
+      (github.event.issue.pull_request &&
+       (github.event.comment.body == '/review' ||
+        startsWith(github.event.comment.body, '/review ')))
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -46,8 +48,9 @@ jobs:
         run: |
           PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
           echo "User ${{ github.actor }} has permission: ${PERMISSION}"
-          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "write" ]]; then
-            echo "::error::User ${{ github.actor }} does not have write access. Only maintainers can trigger /review."
+          # write, maintain, and admin can all trigger /review
+          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
+            echo "::error::User ${{ github.actor }} does not have sufficient access. Only write/maintain/admin can trigger /review."
             exit 1
           fi
 
@@ -71,6 +74,8 @@ jobs:
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
+            # Disable globbing so user input like '*.cs' doesn't expand
+            set -f
             set -- ${ARGS}
             while [ $# -gt 0 ]; do
               case "$1" in
@@ -108,6 +113,10 @@ jobs:
 
           # Sanitize ref to valid git ref characters only
           PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
+          # Reject path traversal and empty segments
+          case "${PIPELINE_REF}" in
+            *..*|//*|*//*|*/) PIPELINE_REF="main" ;;
+          esac
           if [ -z "${PIPELINE_REF}" ]; then
             PIPELINE_REF="main"
           fi
@@ -131,6 +140,70 @@ jobs:
           fi
           PR_TITLE=$(echo "${PR_JSON}" | jq -r '.title')
           echo "PR #${PR_NUMBER}: ${PR_TITLE}"
+          echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
+          echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Infer platform
+        id: infer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PLATFORM="${{ steps.params.outputs.platform }}"
+          PR_NUMBER="${{ steps.params.outputs.pr_number }}"
+
+          # If platform was explicitly set, use it as-is
+          if [ -n "${PLATFORM}" ]; then
+            echo "Platform explicitly set to: ${PLATFORM}"
+            echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "No platform specified — inferring from PR #${PR_NUMBER}..."
+
+          # Check PR labels
+          LABELS=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
+          LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
+          echo "PR labels: ${LABELS_LOWER:-<none>}"
+
+          if echo "${LABELS_LOWER}" | grep -qE '^(a/ios|platform/ios)$'; then
+            PLATFORM="ios"
+          elif echo "${LABELS_LOWER}" | grep -qE '^(a/maccatalyst|platform/macos)$'; then
+            PLATFORM="catalyst"
+          elif echo "${LABELS_LOWER}" | grep -qE '^(a/android|platform/android)$'; then
+            PLATFORM="android"
+          elif echo "${LABELS_LOWER}" | grep -qE '^(a/windows|platform/windows)$'; then
+            PLATFORM="windows"
+          fi
+
+          # Check changed files (only if labels were inconclusive)
+          if [ -z "${PLATFORM}" ]; then
+            FILES=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" --jq '.[].filename' 2>/dev/null || true)
+
+            HAS_ANDROID=$(echo "${FILES}" | grep -ciE '(/Android/|\.android\.cs)' || true)
+            HAS_IOS=$(echo "${FILES}" | grep -ciE '(/iOS/|\.ios\.cs)' || true)
+            HAS_CATALYST=$(echo "${FILES}" | grep -ciE '(/MacCatalyst/|\.maccatalyst\.cs)' || true)
+            HAS_WINDOWS=$(echo "${FILES}" | grep -ciE '(/Windows/|\.windows\.cs)' || true)
+
+            # Only assign if a single platform dominates
+            if [ "${HAS_IOS}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
+              PLATFORM="ios"
+            elif [ "${HAS_CATALYST}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
+              PLATFORM="catalyst"
+            elif [ "${HAS_WINDOWS}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ]; then
+              PLATFORM="windows"
+            elif [ "${HAS_ANDROID}" -gt 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
+              PLATFORM="android"
+            fi
+          fi
+
+          # Default to android when deterministic checks are inconclusive
+          if [ -z "${PLATFORM}" ]; then
+            echo "Deterministic checks inconclusive — defaulting to android. Use --platform to specify explicitly."
+            PLATFORM="android"
+          fi
+
+          echo "Inferred platform: ${PLATFORM}"
+          echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
 
       - name: Get OIDC Token
         id: oidc
@@ -161,7 +234,8 @@ jobs:
           AZDO_TOKEN=$(echo "$AZURE_RESPONSE" | jq -r '.access_token')
           if [ -z "$AZDO_TOKEN" ] || [ "$AZDO_TOKEN" = "null" ]; then
             echo "::error::Failed to get Azure AD token"
-            echo "$AZURE_RESPONSE" | jq 'del(.access_token)' 2>/dev/null || echo "$AZURE_RESPONSE"
+            echo "$AZURE_RESPONSE" | jq '{error, error_description, error_codes, timestamp, trace_id}' 2>/dev/null \
+              || echo "(failed to parse AAD response — check job permissions)"
             exit 1
           fi
           echo "::add-mask::${AZDO_TOKEN}"
@@ -172,16 +246,12 @@ jobs:
           AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
           PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
-          PLATFORM: ${{ steps.params.outputs.platform }}
+          PLATFORM: ${{ steps.infer.outputs.platform }}
         run: |
-          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM:-<pipeline will infer>}, ref: ${PIPELINE_REF})..."
+          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
 
-          # Build templateParameters JSON — only include Platform if explicitly set
-          if [ -n "${PLATFORM}" ]; then
-            TEMPLATE_PARAMS="\"PRNumber\": \"${PR_NUMBER}\", \"Platform\": \"${PLATFORM}\""
-          else
-            TEMPLATE_PARAMS="\"PRNumber\": \"${PR_NUMBER}\""
-          fi
+          # Platform is always resolved at this point (inferred or explicit)
+          TEMPLATE_PARAMS="\"PRNumber\": \"${PR_NUMBER}\", \"Platform\": \"${PLATFORM}\""
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \

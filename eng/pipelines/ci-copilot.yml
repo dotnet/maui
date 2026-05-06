@@ -18,9 +18,8 @@ parameters:
   - name: Platform
     displayName: 'Target Platform'
     type: string
-    default: 'auto'
+    default: 'android'
     values:
-      - auto
       - android
       - ios
       - catalyst
@@ -65,7 +64,7 @@ stages:
     jobs:
       - job: CopilotReview
         displayName: 'Run Copilot PR Reviewer Agent'
-        ${{ if or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'auto')) }}:
+        ${{ if eq(parameters.Platform, 'android') }}:
           pool: ${{ parameters.androidPool }}
         ${{ elseif eq(parameters.Platform, 'ios') }}:
           pool: ${{ parameters.iosPool }}
@@ -96,22 +95,22 @@ stages:
             displayName: 'Set Pipeline Run Title'
 
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
-          - ${{ if or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'auto')) }}:
+          - ${{ if eq(parameters.Platform, 'android') }}:
             - template: common/enable-kvm.yml
 
           # Provision SDKs (same parameters as ui-tests-steps.yml)
           - template: common/provision.yml
             parameters:
-              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'auto'), eq(parameters.Platform, 'windows')) }}
+              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows')) }}
               skipProvisionator: true
-              skipJdk: ${{ and(ne(parameters.Platform, 'android'), ne(parameters.Platform, 'auto')) }}
-              skipAndroidCommonSdks: ${{ and(ne(parameters.Platform, 'android'), ne(parameters.Platform, 'auto')) }}
+              skipJdk: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
-              skipAndroidEmulatorImages: ${{ and(ne(parameters.Platform, 'android'), ne(parameters.Platform, 'auto')) }}
+              skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
-              skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'auto'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
+              skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
 
           # Install .NET and workloads via build.ps1
@@ -145,7 +144,7 @@ stages:
               displayName: 'Set screen resolution'
 
           # Create AVD and boot Android Emulator
-          - ${{ if or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'auto')) }}:
+          - ${{ if eq(parameters.Platform, 'android') }}:
             # Free disk space on hosted agents (emulator needs ~7GB for userdata partition)
             - script: |
                 echo "=== Disk space before cleanup ==="
@@ -375,102 +374,6 @@ stages:
               echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
-          # Infer platform from PR when not explicitly provided.
-          # First tries deterministic checks (PR labels, changed file paths).
-          # If inconclusive, falls back to Copilot CLI to analyze the PR context.
-          # NOTE: This step runs at runtime and sets InferredPlatform variable.
-          # Compile-time ${{ parameters.Platform }} expressions (pool, provisioning,
-          # device setup) use the parameter value directly — when 'auto' is the
-          # parameter, those resolve to the android defaults. Only the runtime
-          # InferredPlatform (passed to Review-PR.ps1) reflects the actual inference.
-          - bash: |
-              echo "=== Platform Inference ==="
-              PLATFORM="${{ parameters.Platform }}"
-              PR_NUMBER="${{ parameters.PRNumber }}"
-
-              # If platform was explicitly set (not 'auto'), use it as-is
-              if [ "${PLATFORM}" != "auto" ]; then
-                echo "Platform explicitly set to: ${PLATFORM}"
-                echo "##vso[task.setvariable variable=InferredPlatform]${PLATFORM}"
-                exit 0
-              fi
-
-              echo "Platform is 'auto' — inferring from PR #${PR_NUMBER}..."
-              PLATFORM=""
-
-              # --- Step 1: Deterministic checks ---
-
-              # 1a. Check PR labels
-              LABELS=$(gh api "repos/dotnet/maui/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
-              LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
-              echo "PR labels: ${LABELS_LOWER:-<none>}"
-
-              if echo "${LABELS_LOWER}" | grep -qE '^(a/ios|platform/ios)$'; then
-                PLATFORM="ios"
-              elif echo "${LABELS_LOWER}" | grep -qE '^(a/maccatalyst|platform/macos)$'; then
-                PLATFORM="catalyst"
-              elif echo "${LABELS_LOWER}" | grep -qE '^(a/android|platform/android)$'; then
-                PLATFORM="android"
-              elif echo "${LABELS_LOWER}" | grep -qE '^(a/windows|platform/windows)$'; then
-                PLATFORM="windows"
-              fi
-
-              # 1b. Check changed files (only if labels were inconclusive)
-              if [ -z "${PLATFORM}" ]; then
-                FILES=$(gh api "repos/dotnet/maui/pulls/${PR_NUMBER}/files" --jq '.[].filename' 2>/dev/null || true)
-
-                HAS_ANDROID=$(echo "${FILES}" | grep -ciE '(/Android/|\.android\.cs)' || true)
-                HAS_IOS=$(echo "${FILES}" | grep -ciE '(/iOS/|\.ios\.cs)' || true)
-                HAS_CATALYST=$(echo "${FILES}" | grep -ciE '(/MacCatalyst/|\.maccatalyst\.cs)' || true)
-                HAS_WINDOWS=$(echo "${FILES}" | grep -ciE '(/Windows/|\.windows\.cs)' || true)
-
-                # Only assign if a single platform dominates
-                if [ "${HAS_IOS}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
-                  PLATFORM="ios"
-                elif [ "${HAS_CATALYST}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
-                  PLATFORM="catalyst"
-                elif [ "${HAS_WINDOWS}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ]; then
-                  PLATFORM="windows"
-                elif [ "${HAS_ANDROID}" -gt 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
-                  PLATFORM="android"
-                fi
-              fi
-
-              # --- Step 2: Copilot CLI fallback ---
-              if [ -z "${PLATFORM}" ]; then
-                echo "Deterministic checks inconclusive — asking Copilot CLI..."
-                COPILOT_PROMPT="Analyze PR #${PR_NUMBER} in dotnet/maui. Based on the PR title, description, labels, and changed files, determine which single platform is most relevant for testing. Respond with EXACTLY one word: android, ios, catalyst, or windows. If unsure, respond with: android"
-                COPILOT_RAW=$(copilot -p "${COPILOT_PROMPT}" 2>/dev/null || true)
-                # Copilot CLI may return verbose output (MCP tool calls, etc.)
-                # Extract the last occurrence of a valid platform word
-                COPILOT_RESULT=$(echo "${COPILOT_RAW}" | tr '[:upper:]' '[:lower:]' | grep -oE '\b(android|ios|catalyst|windows)\b' | tail -1)
-                echo "Copilot raw output (last 200 chars): ...$(echo "${COPILOT_RAW}" | tail -c 200)"
-                echo "Copilot extracted platform: '${COPILOT_RESULT}'"
-
-                case "${COPILOT_RESULT}" in
-                  android|ios|catalyst|windows)
-                    PLATFORM="${COPILOT_RESULT}"
-                    echo "Copilot inferred: ${PLATFORM}"
-                    ;;
-                  *)
-                    echo "Copilot did not return a clear platform — defaulting to android"
-                    PLATFORM="android"
-                    ;;
-                esac
-              fi
-
-              # Final fallback
-              if [ -z "${PLATFORM}" ]; then
-                PLATFORM="android"
-              fi
-
-              echo "Inferred platform: ${PLATFORM}"
-              echo "##vso[task.setvariable variable=InferredPlatform]${PLATFORM}"
-            displayName: 'Infer Platform from PR'
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
-              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
-
           # Boot iOS Simulator (only for iOS platform)
           # UI test baseline screenshots are captured on iPhone Xs - must use same device
           - bash: |
@@ -623,7 +526,7 @@ stages:
 
               echo "✅ Emulator warmed up and responsive"
             displayName: 'Warm Up Android Emulator'
-            condition: and(succeeded(), or(eq('${{ parameters.Platform }}', 'android'), eq('${{ parameters.Platform }}', 'auto')))
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
             timeoutInMinutes: 3
 
           - bash: |
@@ -682,12 +585,10 @@ stages:
               # Invoke the PR reviewer using our PowerShell script
               # The script will merge the PR into the current branch
               # -PostSummaryComment and -RunFinalize handle posting comments
-              # Use InferredPlatform (from inference step) if available, otherwise fall back to parameter
-              REVIEW_PLATFORM="${INFERRED_PLATFORM:-${{ parameters.Platform }}}"
-              echo "Review platform: ${REVIEW_PLATFORM}"
+              echo "Review platform: ${{ parameters.Platform }}"
               
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform "${REVIEW_PLATFORM}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform "${{ parameters.Platform }}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
               
@@ -749,7 +650,6 @@ stages:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
-              INFERRED_PLATFORM: $(InferredPlatform)
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1

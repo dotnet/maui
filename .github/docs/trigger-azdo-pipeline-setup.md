@@ -79,6 +79,13 @@ az identity federated-credential create \
   --audiences "api://AzureADTokenExchange"
 ```
 
+> **Subject claim mapping:** The OIDC token's `sub` claim is what Azure AD matches
+> against the `--subject` parameter. For `issue_comment` events (like the `/review`
+> command), the workflow runs from the default branch, so the subject is
+> `repo:dotnet/maui:ref:refs/heads/main`. For `pull_request` events, the subject
+> would be `repo:dotnet/maui:pull_request`. This is why the case-sensitivity
+> warning above is critical — the `sub` claim value must match exactly.
+
 Add more federated credentials for other branches or trigger types as needed:
 
 ```bash
