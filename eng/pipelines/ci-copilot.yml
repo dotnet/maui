@@ -401,7 +401,10 @@ stages:
               # --- Step 1: Deterministic checks ---
 
               # 1a. Check PR labels
-              LABELS=$(gh api repos/dotnet/maui/pulls/${PR_NUMBER} --jq '.labels[].name' 2>/dev/null || true)
+              echo "Checking gh auth status..."
+              gh auth status 2>&1 || true
+              echo "Fetching PR labels..."
+              LABELS=$(gh api repos/dotnet/maui/pulls/${PR_NUMBER} --jq '.labels[].name' 2>&1) || echo "gh api labels failed: ${LABELS}"
               LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
               echo "PR labels: ${LABELS_LOWER:-<none>}"
 
@@ -417,7 +420,9 @@ stages:
 
               # 1b. Check changed files (only if labels were inconclusive)
               if [ -z "${PLATFORM}" ]; then
-                FILES=$(gh api repos/dotnet/maui/pulls/${PR_NUMBER}/files --jq '.[].filename' 2>/dev/null || true)
+                echo "Fetching PR changed files..."
+                FILES=$(gh api repos/dotnet/maui/pulls/${PR_NUMBER}/files --jq '.[].filename' 2>&1) || echo "gh api files failed: ${FILES}"
+                echo "Changed files (first 10): $(echo "${FILES}" | head -10)"
 
                 HAS_ANDROID=$(echo "${FILES}" | grep -ciE '(/Android/|\.android\.cs)' || true)
                 HAS_IOS=$(echo "${FILES}" | grep -ciE '(/iOS/|\.ios\.cs)' || true)
