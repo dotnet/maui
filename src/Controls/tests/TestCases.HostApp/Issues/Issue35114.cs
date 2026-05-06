@@ -5,7 +5,7 @@ public class Issue35114 : ContentPage
 {
 	public Issue35114()
 	{
-		Title = "D2";
+		Title = "Issue 35114";
 
 		var slider = new Slider
 		{

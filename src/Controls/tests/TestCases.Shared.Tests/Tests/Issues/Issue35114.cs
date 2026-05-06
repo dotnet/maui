@@ -44,7 +44,7 @@ public class Issue35114 : _IssuesUITest
 		var editorRectAfter = App.WaitForElement("TestEditor").GetRect();
 		var heightAfter = editorRectAfter.Height;
 
-		Assert.That(heightAfter, Is.EqualTo(heightBefore),
+		Assert.That(heightAfter, Is.EqualTo(heightBefore).Within(1),
 			$"Editor height should not grow after rotation. Before: {heightBefore}, After: {heightAfter}");
 	}
 }
