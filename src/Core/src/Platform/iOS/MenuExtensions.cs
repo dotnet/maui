@@ -26,6 +26,17 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateMenuElementAttributes(this UIMenuElement uiMenuElement, bool isEnabled)
 		{
+			if (uiMenuElement is UIMenu menu)
+			{
+				// Only cascade downward when disabling the parent.
+				// When re-enabling, children retain their own individual IsEnabled state.
+				if (!isEnabled)
+				{
+					foreach (var child in menu.Children)
+						child.UpdateMenuElementAttributes(isEnabled);
+				}
+			}
+
 			if (uiMenuElement is UIAction action)
 				action.Attributes = isEnabled.ToUIMenuElementAttributes();
 
