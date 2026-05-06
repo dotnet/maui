@@ -36,12 +36,46 @@ namespace Microsoft.Maui.Platform
 			UpdateClipBounds(width, height);
 		}
 
+		// OnAttachedToWindow — calls Attach(this) when inside a SwipeRefreshLayout.
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
 
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
 			UpdateClipBounds(Width, Height);
+
+			if (IsInsideSwipeRefreshLayout())
+			{
+				RefreshViewWebViewScrollCapture.Attach(this);
+				// If a page has already loaded before this HybridWebView was placed inside a
+				// RefreshView (late-attach), the observer was never injected. Re-inject now.
+				if (!string.IsNullOrEmpty(Url))
+				{
+					RefreshViewWebViewScrollCapture.InjectObserver(this);
+				}
+			}
+		}
+
+		// OnDetachedFromWindow — calls Detach().
+		protected override void OnDetachedFromWindow()
+		{
+			RefreshViewWebViewScrollCapture.Detach(this);
+			base.OnDetachedFromWindow();
+		}
+
+		// IsInsideSwipeRefreshLayout — walks parent view tree.
+		bool IsInsideSwipeRefreshLayout()
+		{
+			var parent = Parent;
+			while (parent is not null)
+			{
+				if (parent is MauiSwipeRefreshLayout)
+				{
+					return true;
+				}
+				parent = parent.Parent;
+			}
+			return false;
 		}
 
 		void UpdateClipBounds(int width, int height)
@@ -76,6 +110,17 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CA1416 // Validate platform compatibility
 			PostWebMessage(new WebMessage(rawMessage), AndroidAppOriginUri);
 #pragma warning restore CA1416 // Validate platform compatibility
+		}
+
+		// Dispose(bool) — calls Detach() on cleanup.
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				RefreshViewWebViewScrollCapture.Detach(this);
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

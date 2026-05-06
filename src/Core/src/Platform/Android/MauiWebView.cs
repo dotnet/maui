@@ -44,7 +44,9 @@ namespace Microsoft.Maui.Platform
 				// and the observer was never injected. Re-inject it now so inner-scroll can
 				// correctly prevent pull-to-refresh.
 				if (!string.IsNullOrEmpty(Url))
+				{
 					RefreshViewWebViewScrollCapture.InjectObserver(this);
+				}
 			}
 		}
 
@@ -60,7 +62,9 @@ namespace Microsoft.Maui.Platform
 			while (parent is not null)
 			{
 				if (parent is MauiSwipeRefreshLayout)
+				{
 					return true;
+				}
 				parent = parent.Parent;
 			}
 			return false;
@@ -119,7 +123,9 @@ namespace Microsoft.Maui.Platform
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				RefreshViewWebViewScrollCapture.Detach(this);
+			}
 
 			base.Dispose(disposing);
 		}

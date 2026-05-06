@@ -9,20 +9,19 @@ internal static class RefreshViewWebViewScrollCapture
 	const string JavaScriptInterfaceName = "mauiRefreshViewHost";
 	const int ScrollCaptureStateKey = 0x4D415549;
 
+	// Observer JS script — replaces static boolean guard (__mauiRefreshViewObserverInstalled) with
+	// dynamic window.mauiRefreshViewHost lookup inside report(). Fixes scroll tracking after Shell tab-switch.
+	//
+	// After a Shell tab-switch the WebView is detached (Detach removes the old bridge) then re-attached
+	// (Attach adds a fresh ScrollCaptureState, InjectObserver re-runs this script). A static guard would
+	// prevent re-injection, so the new bridge object would never receive callbacks, silently breaking
+	// pull-to-refresh protection until the next full page reload.
+	//
+	// Named global JS listener vars (window.__mauiTouchStartHandler/MoveHandler) so removeEventListener
+	// works on re-inject, preventing listener stacking across Detach/re-Attach cycles.
 	const string ObserverScript =
 		"""
 		(function () {
-			if (window.__mauiRefreshViewObserverInstalled) {
-				return;
-			}
-
-			var host = window.mauiRefreshViewHost;
-			if (!host || typeof host.setCanScrollUp !== 'function') {
-				return;
-			}
-
-			window.__mauiRefreshViewObserverInstalled = true;
-
 			function isScrollableElement(node) {
 				if (!node || node.nodeType !== Node.ELEMENT_NODE) {
 					return false;
@@ -58,19 +57,30 @@ internal static class RefreshViewWebViewScrollCapture
 
 			function report(target) {
 				try {
+					var host = window.mauiRefreshViewHost;
+					if (!host || typeof host.setCanScrollUp !== 'function') {
+						return;
+					}
 					var scrollable = getScrollableElement(target);
 					host.setCanScrollUp(getScrollTopForElement(scrollable) > 0);
 				} catch (e) {
 				}
 			}
 
-			document.addEventListener('touchstart', function (event) {
-				report(event.target);
-			}, true);
+			// Remove any previously installed listeners to prevent accumulation
+			// after Shell tab-switch (detach + re-attach without page reload).
+			if (window.__mauiTouchStartHandler) {
+				document.removeEventListener('touchstart', window.__mauiTouchStartHandler, true);
+				document.removeEventListener('touchmove',  window.__mauiTouchMoveHandler,  true);
+			}
 
-			document.addEventListener('touchmove', function (event) {
-				report(event.target);
-			}, true);
+			var touchStartHandler = function (event) { report(event.target); };
+			var touchMoveHandler  = function (event) { report(event.target); };
+			window.__mauiTouchStartHandler = touchStartHandler;
+			window.__mauiTouchMoveHandler  = touchMoveHandler;
+
+			document.addEventListener('touchstart', touchStartHandler, true);
+			document.addEventListener('touchmove',  touchMoveHandler,  true);
 
 			report(document.body);
 		})();
@@ -161,7 +171,12 @@ internal static class RefreshViewWebViewScrollCapture
 	static ScrollCaptureState? GetState(WebView? webView) =>
 		webView?.GetTag(ScrollCaptureStateKey) as ScrollCaptureState;
 
-	sealed class ScrollCaptureState : Java.Lang.Object
+	// Returns the cached ScrollCaptureState for the given WebView so callers on the
+	// UI thread can read CanScrollUp (a volatile bool) directly without any JNI overhead.
+	// Returns null when the WebView is not inside a RefreshView.
+	internal static ScrollCaptureState? GetAttachedState(WebView? webView) => GetState(webView);
+
+	internal sealed class ScrollCaptureState : Java.Lang.Object
 	{
 		// These fields are written from the JavaBridge thread (via [JavascriptInterface])
 		// and read from the UI thread, so they must be volatile to ensure visibility on ARM.

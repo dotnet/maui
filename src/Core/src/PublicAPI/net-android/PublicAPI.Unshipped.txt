@@ -13,7 +13,11 @@ override Microsoft.Maui.Platform.ContentViewGroup.HasOverlappingRendering.get ->
 override Microsoft.Maui.Platform.LayoutViewGroup.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.MauiHybridWebView.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.MauiHybridWebView.OnDetachedFromWindow() -> void
+override Microsoft.Maui.Platform.MauiHybridWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageFinished(Android.Webkit.WebView? view, string? url) -> void
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.OnPageStarted(Android.Webkit.WebView? view, string? url, Android.Graphics.Bitmap? favicon) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool

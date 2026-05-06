@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Platform
 		AView? _contentView;
 		bool _refreshEnabled = true;
 		AWebView? _activeTouchWebView;
+		RefreshViewWebViewScrollCapture.ScrollCaptureState? _activeTouchScrollState;
 		bool _webViewOwnsGesture;
 		bool _touchStartedInWebView;
 
@@ -148,6 +149,8 @@ namespace Microsoft.Maui.Platform
 				case MotionEventActions.Down:
 					_activeTouchWebView = FindWebView(_contentView, ev.GetX(), ev.GetY());
 					_touchStartedInWebView = _activeTouchWebView is not null;
+					// ACTION_DOWN — caches ScrollCaptureState via GetAttachedState().
+					_activeTouchScrollState = RefreshViewWebViewScrollCapture.GetAttachedState(_activeTouchWebView);
 					_webViewOwnsGesture = _touchStartedInWebView &&
 						RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canScrollUpAtStart) &&
 						canScrollUpAtStart;
@@ -160,22 +163,34 @@ namespace Microsoft.Maui.Platform
 						return false;
 					}
 					break;
+				case MotionEventActions.PointerDown:
+					// Reset WebView gesture ownership when a second finger is placed –
+					// multi-touch cancels the pending single-finger pull-to-refresh guard.
+					_activeTouchWebView = null;
+					_activeTouchScrollState = null;
+					_touchStartedInWebView = false;
+					_webViewOwnsGesture = false;
+					break;
 				case MotionEventActions.Move:
-					// Re-evaluate scrollability so that once the WebView reaches the top,
-					// RefreshLayout can start intercepting mid-gesture.
-					if (_touchStartedInWebView && _webViewOwnsGesture && _activeTouchWebView is not null)
+					// ACTION_MOVE — reads CanScrollUp (volatile bool, zero JNI) from cached state
+					// instead of calling TryGetCanScrollUp every frame.
+					if (_touchStartedInWebView && _webViewOwnsGesture && _activeTouchScrollState is not null)
 					{
-						if (!RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canStillScrollUp) || !canStillScrollUp)
+						if (!_activeTouchScrollState.CanScrollUp)
 						{
 							_webViewOwnsGesture = false;
 						}
 					}
 					if (_touchStartedInWebView && _webViewOwnsGesture)
+					{
 						return false;
+					}
 					break;
 				case MotionEventActions.Cancel:
 				case MotionEventActions.Up:
+					// ACTION_UP/CANCEL — clears cached state.
 					_activeTouchWebView = null;
+					_activeTouchScrollState = null;
 					_touchStartedInWebView = false;
 					_webViewOwnsGesture = false;
 					break;
