@@ -19,7 +19,7 @@ public class Issue35280 : _IssuesUITest
 
 		// The gradient has transparent/semi-transparent stops.
 		// With the bug (GetGradientData(1.0f)), all stops are forced fully opaque → solid black box.
-		// With the fix (GetGradientData(null)), per-stop alpha is preserved → red background shows through.
+		// With the fix (GetGradientData(null)), per-stop alpha is preserved → the dotnet_bot.png image shows through.
 		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
