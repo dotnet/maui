@@ -153,9 +153,18 @@ namespace Microsoft.Maui.Handlers
 
 					await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
 
-					if (VirtualView is ISwitch view && view.ThumbColor is not null)
+					if (VirtualView is ISwitch view)
 					{
-						platformView.UpdateThumbColor(view);
+						// iOS 26+ "Liquid Glass" resets all Switch colors during post-connect layout. Re-apply both.
+						if (view.TrackColor is not null)
+						{
+							platformView.UpdateTrackColor(view);
+						}
+
+						if (view.ThumbColor is not null)
+						{
+							platformView.UpdateThumbColor(view);
+						}
 					}
 				});
 			}
