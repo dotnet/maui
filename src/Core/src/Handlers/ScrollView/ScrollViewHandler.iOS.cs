@@ -56,8 +56,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (PendingScrollToRequest is { } pending)
 			{
-				PendingScrollToRequest = null;
 				MapRequestScrollTo(this, VirtualView, pending);
+				PendingScrollToRequest = null;
 			}
 		}
 
