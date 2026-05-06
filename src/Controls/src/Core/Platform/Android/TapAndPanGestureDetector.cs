@@ -42,18 +42,20 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			bool baseHandled = base.OnTouchEvent(ev);
 
-			bool pointerHandled = false;
+			bool shouldConsumeForPointer = false;
 			if (_pointerGestureHandler != null && ev?.Action is
 				MotionEventActions.Up or MotionEventActions.Down or MotionEventActions.Move or MotionEventActions.Cancel)
 			{
 				_pointerGestureHandler.OnTouch(ev);
-				pointerHandled = _pointerGestureHandler.HasAnyPointerGestures();
+
+				shouldConsumeForPointer =
+					_pointerGestureHandler.HasAnyPointerGestures() && baseHandled;
 			}
 
 			if (_listener != null && ev?.Action == MotionEventActions.Up)
 				_listener.EndScrolling();
 
-			return baseHandled || pointerHandled;
+			return baseHandled || shouldConsumeForPointer;
 		}
 
 		protected override void Dispose(bool disposing)
