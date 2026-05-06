@@ -357,7 +357,7 @@ configuration:
       then:
       - addReply:
           reply: >-
-            Thanks for the issue report ${issueAuthor}! This issue appears to be a problem with Visual Studio (Code), so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS (Code).
+            Thanks for the issue report ${issueAuthor}! This issue appears to be a problem with Visual Studio (Code), so we ask that you use the VS feedback tool to report the issue. That way it will get routed to the team that owns this experience in VS (Code).
 
 
             If you encounter a problem with Visual Studio or the .NET MAUI VS Code Extension, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.
@@ -546,7 +546,7 @@ configuration:
           label: s/pr-needs-author-input
       then:
       - addReply:
-          reply: Hi ${issueAuthor}. We have added the "s/pr-needs-author-input" label to this issue, which indicates that we have an open question/action for you before we can take further action. This PRwill be closed automatically in 14 days if we do not hear back from you by then - please feel free to re-open it if you come back to this PR after that time.
+          reply: Hi ${issueAuthor}. We have added the "s/pr-needs-author-input" label to this PR, which indicates that we have an open question/action for you before we can take further action. This PR will be closed automatically in 14 days if we do not hear back from you by then - please feel free to re-open it if you come back to this PR after that time.
       description: Add comment when 's/pr-needs-author-input' is applied to PR
     - if:
       - payloadType: Issues
