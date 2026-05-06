@@ -23,4 +23,4 @@ hints: |
   - Focus on the Disconnect/Cleanup methods
 ```
 
-**Skill execution:** Reads context → Analyzes target files → Designs fix (add IsDisposed check) → Applies fix → Runs test (PASS) → Reports result → Reverts changes
+**Skill execution:** Reads context → Analyzes target files → Designs fix (add IsDisposed check) → Applies fix → Runs test (PASS) → Performs inline expert self-review against `.github/agents/maui-expert-reviewer.md` rules and writes `reviewer-findings.json` (`[]` if clean) → Captures artifacts → Reports result → Reverts changes

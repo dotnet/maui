@@ -244,10 +244,13 @@ CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/
 ├── try-fix/
 │   ├── content.md              # Phase 2 summary
 │   └── attempt-{N}/            # Per-model attempt
-│       ├── approach.md         # What was tried
-│       ├── result.txt          # Pass / Fail / Blocked
-│       ├── fix.diff            # git diff of changes
-│       └── analysis.md         # Why it worked/failed
+│       ├── baseline.log         # Baseline establishment proof
+│       ├── approach.md          # What was tried
+│       ├── result.txt           # Pass / Fail / Blocked
+│       ├── fix.diff             # git diff of changes
+│       ├── test-output.log      # Full test command output
+│       ├── reviewer-findings.json  # Inline expert self-review (`[]` if clean)
+│       └── analysis.md          # Why it worked/failed + self-review summary
 └── report/
     └── content.md              # Phase 3 output (pr-report)
 ```
