@@ -27,8 +27,9 @@ public class Issue35114 : ContentPage
 		{
 			Children =
 			{
-				new Label { Text = "1. Play with the value of the slider below and observe as the space between characters widens." },
-				new Label { Text = "2. The tests fails if the space between characters does not change." },
+				new Label { Text = "1. Drag the slider to the right to increase character spacing on the Editor." },
+				new Label { Text = "2. Rotate the device to landscape and back to portrait." },
+				new Label { Text = "3. The test fails if the Editor grows to full content height after rotation (it should remain scrollable)." },
 				slider,
 				editor
 			}

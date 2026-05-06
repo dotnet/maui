@@ -13,6 +13,12 @@ public class Issue35114 : _IssuesUITest
 
 	public override string Issue => "Editor can not be scrolled after rotating simulator";
 
+	[TearDown]
+	public void TearDown()
+	{
+		App.SetOrientationPortrait();
+	}
+
 	[Test]
 	[Category(UITestCategories.Editor)]
 	public void EditorCanBeScrolledAfterRotation()
