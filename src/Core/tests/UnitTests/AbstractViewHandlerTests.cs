@@ -73,8 +73,40 @@ namespace Microsoft.Maui.UnitTests
 			(handlerStub as IViewHandler).DisconnectHandler();
 
 			// The mapper-routed UpdateValue inside DisconnectHandler must have been a no-op,
-			// because PlatformView has already been nulled by IElementHandler.DisconnectHandler.
+			// because the handler is in the Disconnecting state (PlatformView has already been
+			// nulled by IElementHandler.DisconnectHandler).
 			Assert.Equal(0, handlerStub.MapBackgroundCallCount);
+		}
+
+		[Fact]
+		public void InvokeIsSkippedWhenPlatformViewHasBeenReleased()
+		{
+			// Companion regression test for https://github.com/dotnet/maui/issues/27101 covering
+			// command mappers — the same disconnect-window crash window applies if a command fans
+			// out from the virtual view during platform teardown (e.g. focus changes that trigger
+			// commands on Windows).
+
+			DisconnectingTrackingHandlerStub handlerStub = null;
+			handlerStub = new DisconnectingTrackingHandlerStub(() =>
+			{
+				handlerStub.InvokeTestCommand();
+			});
+
+			handlerStub.SetVirtualView(new Maui.Controls.Button());
+
+			// Sanity check: with a live PlatformView, Invoke routes through the command mapper.
+			handlerStub.InvokeCommandCallCount = 0;
+			handlerStub.InvokeTestCommand();
+			Assert.Equal(1, handlerStub.InvokeCommandCallCount);
+
+			// Reset so we can detect any command mapper invocations during DisconnectHandler.
+			handlerStub.InvokeCommandCallCount = 0;
+
+			(handlerStub as IViewHandler).DisconnectHandler();
+
+			// The command-mapper-routed Invoke inside DisconnectHandler must have been a no-op
+			// because the handler is in the Disconnecting state.
+			Assert.Equal(0, handlerStub.InvokeCommandCallCount);
 		}
 
 		[Fact]

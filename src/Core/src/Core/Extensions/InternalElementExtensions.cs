@@ -28,5 +28,15 @@ namespace Microsoft.Maui
 		/// <returns></returns>
 		internal static bool IsReconnectingHandler(this IElement element) =>
 			(element.Handler as IElementHandlerStateExhibitor)?.State.HasFlag(ElementHandlerState.Reconnecting) ?? false;
+
+		/// <summary>
+		/// Indicates whether the element's handler is currently being disconnected.
+		/// While disconnecting, the platform view has already been released so property and command
+		/// mappers must not be invoked.
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
+		internal static bool IsDisconnectingHandler(this IElement element) =>
+			(element.Handler as IElementHandlerStateExhibitor)?.State.HasFlag(ElementHandlerState.Disconnecting) ?? false;
 	}
 }

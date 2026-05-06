@@ -103,15 +103,6 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null)
 				return;
 
-			// If the platform view has already been released (e.g. mid-disconnect, where
-			// IElementHandler.DisconnectHandler nulls PlatformView before running the platform
-			// teardown chain) there is nothing for the mapper to update. This avoids strongly-typed
-			// PlatformView accessors throwing "PlatformView cannot be null here" when a property
-			// change fans out from VirtualView during teardown
-			// (e.g. on Windows: UpdateIsFocused(false) -> ChangeVisualState -> VSM Setter).
-			if (PlatformView == null)
-				return;
-
 			_mapper?.UpdateProperty(this, VirtualView, property);
 		}
 
@@ -155,10 +146,26 @@ namespace Microsoft.Maui.Handlers
 				// DisconnectHandler
 				var oldPlatformView = PlatformView;
 				PlatformView = null;
-				DisconnectHandler(oldPlatformView);
+				try
+				{
+					// Mark the handler as disconnecting so property/command changes that fan out from
+					// the virtual view during platform teardown (e.g. on Windows:
+					// UpdateIsFocused(false) -> ChangeVisualState -> VSM Setters) skip the mapper
+					// (see ElementHandlerExtensions.CanInvokeMappers).
+					_handlerState = ElementHandlerState.Disconnecting;
+					DisconnectHandler(oldPlatformView);
+				}
+				finally
+				{
+					// Reset in finally so a throwing platform disconnect does not leave the handler
+					// permanently marked as disconnecting.
+					_handlerState = ElementHandlerState.Disconnected;
+				}
 			}
-
-			_handlerState = ElementHandlerState.Disconnected;
+			else
+			{
+				_handlerState = ElementHandlerState.Disconnected;
+			}
 		}
 	}
 }
