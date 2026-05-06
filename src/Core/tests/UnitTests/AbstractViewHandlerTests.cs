@@ -43,13 +43,14 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void UpdateValueIsSkippedWhileHandlerIsDisconnecting()
+		public void UpdateValueIsSkippedWhenPlatformViewHasBeenReleased()
 		{
 			// Regression test for https://github.com/dotnet/maui/issues/27101
-			// While the handler is being disconnected the platform view has already been released.
-			// Property changes that fan out from the virtual view during teardown (e.g. IsFocused
-			// -> ChangeVisualState -> VSM Setters) must not invoke mappers, otherwise the strongly
-			// typed PlatformView accessor throws "PlatformView cannot be null here".
+			// IElementHandler.DisconnectHandler nulls PlatformView BEFORE running the platform
+			// teardown chain. Property changes that fan out from the virtual view during teardown
+			// (e.g. on Windows: UpdateIsFocused(false) -> ChangeVisualState -> VSM Setters)
+			// must not invoke mappers, otherwise the strongly-typed PlatformView accessor throws
+			// "PlatformView cannot be null here".
 
 			DisconnectingTrackingHandlerStub handlerStub = null;
 			handlerStub = new DisconnectingTrackingHandlerStub(() =>
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.UnitTests
 
 			handlerStub.SetVirtualView(new Maui.Controls.Button());
 
-			// Sanity check: outside of disconnect, UpdateValue routes through the mapper.
+			// Sanity check: with a live PlatformView, UpdateValue routes through the mapper.
 			handlerStub.MapBackgroundCallCount = 0;
 			handlerStub.UpdateValue(nameof(IView.Background));
 			Assert.Equal(1, handlerStub.MapBackgroundCallCount);
@@ -71,7 +72,8 @@ namespace Microsoft.Maui.UnitTests
 
 			(handlerStub as IViewHandler).DisconnectHandler();
 
-			// The mapper-routed UpdateValue inside DisconnectHandler must have been a no-op.
+			// The mapper-routed UpdateValue inside DisconnectHandler must have been a no-op,
+			// because PlatformView has already been nulled by IElementHandler.DisconnectHandler.
 			Assert.Equal(0, handlerStub.MapBackgroundCallCount);
 		}
 

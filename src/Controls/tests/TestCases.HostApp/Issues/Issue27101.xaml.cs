@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 27101, "PlatformView cannot be null here Exception in Windows")]
+	[Issue(IssueTracker.Github, 27101, "PlatformView cannot be null here Exception in Windows", PlatformAffected.UWP)]
 	public class Issue27101 : NavigationPage
 	{
 		public Issue27101() : base(new Issue27101MainPage())
