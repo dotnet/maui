@@ -26,7 +26,7 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
 
-**Every invocation runs all 10 Workflow steps below.** Step 7 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`.
+**Every invocation runs all 10 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`.
 
 ## ⚠️ CRITICAL: Sequential Execution Only
 
@@ -97,10 +97,10 @@ Write-Host "Output directory: $OUTPUT_DIR"
 |------|----------------|---------|
 | `baseline.log` | After Step 2 (Baseline) | Output from EstablishBrokenBaseline.ps1 proving baseline was established |
 | `approach.md` | After Step 4 (Design) | What fix you're attempting and why it's different from existing fixes |
-| `result.txt` | After Step 6 (Test) | Single word: `Pass`, `Fail`, or `Blocked` |
-| `fix.diff` | After Step 6 (Test) | Output of `git diff` showing your changes |
-| `test-output.log` | After Step 6 (Test) | Full output from test command |
-| `reviewer-findings.json` | After Step 7 (Self-Review) | JSON array of self-review findings — `[]` when clean. **MUST exist.** |
+| `reviewer-findings.json` | After Step 6 (Self-Review) | JSON array of self-review findings — `[]` when clean. **MUST exist.** |
+| `result.txt` | After Step 7 (Test) | Single word: `Pass`, `Fail`, or `Blocked` |
+| `fix.diff` | After Step 7 (Test) | Output of `git diff` showing your changes |
+| `test-output.log` | After Step 7 (Test) | Full output from test command |
 | `analysis.md` | After Step 8 (Capture) | Why it worked/failed, insights learned, and a one-line self-review summary |
 
 **Example approach.md:**
@@ -127,7 +127,7 @@ The skill is complete when:
 - [ ] ONE fix approach designed and implemented
 - [ ] Fix tested with provided test command (iterated up to 3 times if errors/failures)
 - [ ] Either: Tests PASS ✅, or exhausted attempts and documented why approach won't work ❌
-- [ ] **Expert self-review performed inline (Step 7) and `reviewer-findings.json` written** — `[]` if clean
+- [ ] **Expert self-review performed inline (Step 6) and `reviewer-findings.json` written** — `[]` if clean
 - [ ] Analysis provided (success explanation or failure reasoning with evidence)
 - [ ] Artifacts saved to output directory (verified by Step 8 file-existence gate)
 - [ ] Baseline restored (working directory clean)
@@ -264,51 +264,11 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 Implement your fix. Use `git status --short` and `git diff` to track changes.
 
-### Step 6: Test and Iterate (MANDATORY)
-
-🚨 **CRITICAL: ALWAYS use the provided test command script - NEVER manually build/compile.**
-
-**For .NET MAUI repository:** Use the test script matching the test type:
-
-| Test Type | Command |
-|-----------|---------|
-| UITest | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>"` |
-| DeviceTest | `pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <project> -Platform <platform> -TestFilter "<filter>"` |
-| UnitTest | `dotnet test <project.csproj> --filter "<filter>"` |
-
-```powershell
-# Capture output to test-output.log while also displaying it
-# Example for UI tests:
-pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>" *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
-
-# Example for device tests:
-pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <project> -Platform <platform> -TestFilter "<filter>" *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
-```
-
-**Testing Loop (Iterate until SUCCESS or exhausted):**
-
-1. **Run the test command** - It will build, deploy, and test automatically
-2. **Check the result:**
-   - ✅ **Tests PASS** → Move to Step 7 (Self-Review)
-   - ❌ **Compile errors** → Fix compilation issues (see below), go to step 1
-   - ❌ **Tests FAIL (runtime)** → Analyze failure, fix code, go to step 1
-3. **Maximum 3 iterations** - If still failing after 3 attempts, analyze if approach is fundamentally flawed
-4. **Document why** - If exhausted, explain what you learned and why the approach won't work
-
-🚨 **Step 7 (Self-Review) runs for ALL outcomes — Pass, Fail, AND Blocked.** When tests fail or you're blocked, still proceed to Step 7 with whatever code changes you made (or `[]` if no changes were applied). Step 8's file gate enforces this. Only then should you Capture (Step 8), Restore (Step 9), and Report (Step 10).
-
-**Behavioral constraints:**
-- ⚠️ **NEVER blame "test infrastructure"** - assume YOUR fix has a bug
-- Compile errors mean "work harder" - not "give up"
-- DO NOT manually build - always rerun the test command script
-
-See [references/compile-errors.md](references/compile-errors.md) for error patterns and iteration examples.
-
-### Step 7: Expert Self-Review (MANDATORY)
+### Step 6: Expert Self-Review (MANDATORY — runs BEFORE testing)
 
 🚨 **You perform this self-review yourself. Do NOT spawn the `@maui-expert-reviewer` sub-agent.** Step 8's file-existence gate enforces that `reviewer-findings.json` is written every attempt.
 
-This step runs for every outcome — Pass, Fail, or Blocked.
+This step runs BEFORE testing so you can catch design flaws before spending time on build+test cycles.
 
 **Procedure:**
 
@@ -369,14 +329,52 @@ This step runs for every outcome — Pass, Fail, or Blocked.
 
    **Remember `$findingsCount`** — you will report it as `findings_count` in Step 10 and summarize it in `analysis.md` (Step 8).
 
-6. **At most ONE self-review correction round (total, not per-finding):**
-   - Triage findings by severity. If there are any `[critical]` or `[major]` findings → apply fixes for them in a single batch, re-run the test command (Step 6), and rewrite `reviewer-findings.json` to reflect the new diff.
+6. **Fix critical/major findings BEFORE testing:**
+   - If there are any `[critical]` or `[major]` findings → apply fixes for them in a single batch and rewrite `reviewer-findings.json` to reflect the new diff.
    - All `[moderate]` and `[minor]` findings → note in `analysis.md` (Step 8); do NOT iterate.
-   - After this single correction round, advisory findings stay in `reviewer-findings.json` and `analysis.md`. Do not loop.
+   - Only ONE correction round. Then proceed to Step 7 (Test).
 
 **Threshold guidance.** Only record findings with a concrete failing scenario. Stylistic preferences and bikeshedding (see the **`## What NOT to Flag`** table in `maui-expert-reviewer.md`) are not findings. An empty `[]` is the correct output for a clean fix — do not invent findings to fill the file.
 
-> **Why inline, not the sub-agent?** The full `@maui-expert-reviewer` agent (Wave 0–3, parallel sub-agents across 30 dimensions) is the right tool for the orchestrator-level PR review (`Review-PR.ps1`). For per-attempt try-fix reviews, the inline self-check is the same checklist content as a single straightforward operation — enforced by the artifact gate.
+> **Why before testing?** Self-review catches design flaws (wrong null check, missing platform guard, thread safety issue) before you spend 5-15 minutes on a build+test cycle. It also runs when context is lightest — before test output floods the context window.
+
+### Step 7: Test and Iterate (MANDATORY)
+
+🚨 **CRITICAL: ALWAYS use the provided test command script - NEVER manually build/compile.**
+
+**For .NET MAUI repository:** Use the test script matching the test type:
+
+| Test Type | Command |
+|-----------|---------|
+| UITest | `pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>"` |
+| DeviceTest | `pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <project> -Platform <platform> -TestFilter "<filter>"` |
+| UnitTest | `dotnet test <project.csproj> --filter "<filter>"` |
+
+```powershell
+# Capture output to test-output.log while also displaying it
+# Example for UI tests:
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform <platform> -TestFilter "<filter>" *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
+
+# Example for device tests:
+pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <project> -Platform <platform> -TestFilter "<filter>" *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/test-output.log"
+```
+
+**Testing Loop (Iterate until SUCCESS or exhausted):**
+
+1. **Run the test command** - It will build, deploy, and test automatically
+2. **Check the result:**
+   - ✅ **Tests PASS** → Move to Step 8 (Capture)
+   - ❌ **Compile errors** → Fix compilation issues (see below), go to step 1
+   - ❌ **Tests FAIL (runtime)** → Analyze failure, fix code, go to step 1
+3. **Maximum 3 iterations** - If still failing after 3 attempts, analyze if approach is fundamentally flawed
+4. **Document why** - If exhausted, explain what you learned and why the approach won't work
+
+**Behavioral constraints:**
+- ⚠️ **NEVER blame "test infrastructure"** - assume YOUR fix has a bug
+- Compile errors mean "work harder" - not "give up"
+- DO NOT manually build - always rerun the test command script
+
+See [references/compile-errors.md](references/compile-errors.md) for error patterns and iteration examples.
 
 ### Step 8: Capture Artifacts (MANDATORY)
 
@@ -389,10 +387,10 @@ This step runs for every outcome — Pass, Fail, or Blocked.
 # 2. Save the diff
 git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 
-# 3. Save test output (should already exist from Step 6)
+# 3. Save test output (should already exist from Step 7)
 # Copy-Item "path/to/test-output.log" "$OUTPUT_DIR/test-output.log"
 
-# 4. reviewer-findings.json should already exist from Step 7
+# 4. reviewer-findings.json should already exist from Step 6
 
 # 5. Save analysis (include a one-line summary of self-review findings)
 @"
