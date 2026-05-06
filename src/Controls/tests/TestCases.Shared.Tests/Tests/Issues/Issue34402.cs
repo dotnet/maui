@@ -14,22 +14,34 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.BoxView)]
 		public void BoxViewFlowDirectionShouldMirrorOnRTL()
 		{
+			Exception? exception = null;
 			App.WaitForElement("Issue34402Label");
-			VerifyScreenshot("BoxView_LTR_Initial");
+			VerifyScreenshotOrSetException(ref exception, "BoxView_LTR_Initial");
 
 			App.Tap("BoxViewRtlButton");
-			VerifyScreenshot("BoxView_RTL_AfterButton");
+			VerifyScreenshotOrSetException(ref exception, "BoxView_RTL_AfterButton");
+
+			if (exception != null)
+			{
+				throw exception;
+			}
 		}
 
 		[Test]
 		[Category(UITestCategories.GraphicsView)]
 		public void GraphicsViewFlowDirectionShouldMirrorOnRTL()
 		{
+			Exception? exception = null;
 			App.WaitForElement("Issue34402GraphicsViewLabel");
-			VerifyScreenshot("GraphicsView_LTR_Initial");
+			VerifyScreenshotOrSetException(ref exception, "GraphicsView_LTR_Initial");
 
 			App.Tap("GraphicsViewRtlButton");
-			VerifyScreenshot("GraphicsView_RTL_AfterButton");
+			VerifyScreenshotOrSetException(ref exception, "GraphicsView_RTL_AfterButton");
+
+			if (exception != null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
