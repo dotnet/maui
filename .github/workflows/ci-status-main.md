@@ -19,6 +19,10 @@ engine:
   id: copilot
   model: claude-sonnet-4.6
 
+runtimes:
+  dotnet:
+    version: "9.0"
+
 concurrency:
   group: "ci-failure-scan"
   cancel-in-progress: true
@@ -57,17 +61,41 @@ timeout-minutes: 60
 network:
   allowed:
     - defaults
+    - dotnet
     - dev.azure.com
     - helix.dot.net
     - "*.blob.core.windows.net"
 
 steps:
-  - name: Verify AzDO and Helix connectivity
+  - name: Install arcade-skills CLI tools and verify connectivity
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
     run: |
       set -euo pipefail
+
+      echo "=== Installing arcade-skills CLI tools ==="
+      dotnet tool install --global lewing.helix.mcp --version "*" 2>&1 || echo "⚠️ Failed to install helix MCP tool"
+      dotnet tool install --global lewing.maestro.mcp --version "*" 2>&1 || echo "⚠️ Failed to install maestro MCP tool"
+      dotnet tool install --global baronfel.binlog.mcp --version "*" 2>&1 || echo "⚠️ Failed to install binlog MCP tool"
+
+      echo ""
+      echo "=== Installed tools ==="
+      dotnet tool list --global 2>&1 || true
+
+      echo ""
       echo "=== AzDO API check ==="
       url='https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302&branchName=refs/heads/main&%24top=1&api-version=7.1'
       HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+      echo "AzDO: HTTP $HTTP_CODE"
+
+      echo "=== Helix API check ==="
+      url='https://helix.dot.net/api/2019-06-17/jobs?count=1'
+      HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+      echo "Helix: HTTP $HTTP_CODE"
+
+      echo "=== Skill files ==="
+      test -f .github/skills/azdo-build-investigator/SKILL.md && echo "✅ azdo-build-investigator" || echo "⚠️ azdo-build-investigator missing"
       echo "AzDO: HTTP $HTTP_CODE"
 
       echo "=== Helix API check ==="
@@ -97,7 +125,7 @@ Process pipelines in this order. For each, fetch recent completed builds on `mai
 
 If a pipeline has no completed build in the last 7 days, skip it silently.
 
-## Skills to consult
+## Skills and tools to consult
 
 Read the azdo-build-investigator skill before classifying failures:
 ```bash
@@ -108,6 +136,21 @@ Key points from that skill:
 - **XHarness exit-0 blind spot**: XHarness (device tests) exits 0 even when tests fail. A green AzDO job does NOT mean all tests passed. Check Helix work items for hidden failures.
 - **Pipeline priority**: `maui-pr` → `maui-pr-devicetests` → `maui-pr-uitests`
 - **Container artifacts**: MAUI build artifacts are Container type, not PipelineArtifact
+
+### Arcade-skills CLI tools (installed in pre-agent steps)
+
+The following .NET tools from `dotnet/arcade-skills` are installed as global tools in the pre-agent step. Use them as CLI tools via bash when they provide richer data than raw REST APIs:
+
+- **`lewing.helix.mcp`** — Helix test infrastructure queries (work items, logs, results). Run as: `dotnet tool run lewing.helix.mcp -- <args>` or invoke directly if on PATH.
+- **`lewing.maestro.mcp`** — Maestro/BAR dependency flow data.
+- **`baronfel.binlog.mcp`** — MSBuild binlog analysis.
+
+Check if they installed successfully:
+```bash
+dotnet tool list --global 2>/dev/null
+```
+
+If a tool is not available, fall back to direct `curl` + `jq` calls to the AzDO/Helix REST APIs (see Data sources below). The tools are a convenience, not a hard requirement.
 
 ## MAUI-specific failure patterns
 
