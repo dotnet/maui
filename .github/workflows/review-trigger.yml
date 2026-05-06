@@ -22,7 +22,7 @@ on:
           - catalyst
           - windows
       pipeline_ref:
-        description: 'AzDO pipeline branch/tag (default: main)'
+        description: 'AzDO pipeline branch (default: main)'
         required: false
         default: 'main'
 
@@ -59,14 +59,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           COMMENT_BODY: ${{ github.event.comment.body }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          INPUT_PLATFORM: ${{ inputs.platform }}
+          INPUT_PIPELINE_REF: ${{ inputs.pipeline_ref }}
         run: |
           # Valid platforms (from AzDO pipeline definition)
           VALID_PLATFORMS="android ios catalyst windows"
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            PR_NUMBER="${{ inputs.pr_number }}"
-            PLATFORM="${{ inputs.platform }}"
-            PIPELINE_REF="${{ inputs.pipeline_ref || 'main' }}"
+            PR_NUMBER="${INPUT_PR_NUMBER}"
+            PLATFORM="${INPUT_PLATFORM}"
+            PIPELINE_REF="${INPUT_PIPELINE_REF:-main}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
             # Strip the '/review' prefix and parse remaining args
@@ -81,13 +84,13 @@ jobs:
               case "$1" in
                 --branch|-b)
                   shift
-                  if [ $# -gt 0 ]; then
+                  if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
                     PIPELINE_REF="$1"
                   fi
                   ;;
                 --platform|-p)
                   shift
-                  if [ $# -gt 0 ]; then
+                  if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
                     CANDIDATE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
                     for p in ${VALID_PLATFORMS}; do
                       if [ "${CANDIDATE}" = "${p}" ]; then
@@ -113,12 +116,18 @@ jobs:
 
           # Sanitize ref to valid git ref characters only
           PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
-          # Reject path traversal and empty segments
+          # Reject path traversal, empty segments, and leading /
           case "${PIPELINE_REF}" in
-            *..*|//*|*//*|*/) PIPELINE_REF="main" ;;
+            *..*|//*|*//*|*/|/*) PIPELINE_REF="main" ;;
           esac
           if [ -z "${PIPELINE_REF}" ]; then
             PIPELINE_REF="main"
+          fi
+
+          # Validate PR number is a positive integer
+          if ! [[ "${PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::pr_number must be a positive integer, got: '${PR_NUMBER}'"
+            exit 1
           fi
 
           echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
@@ -130,8 +139,8 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
-          PR_NUMBER="${{ steps.params.outputs.pr_number }}"
           PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
           PR_STATE=$(echo "${PR_JSON}" | jq -r '.state')
           if [ "${PR_STATE}" != "open" ]; then
@@ -147,9 +156,9 @@ jobs:
         id: infer
         env:
           GH_TOKEN: ${{ github.token }}
+          PLATFORM: ${{ steps.params.outputs.platform }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
-          PLATFORM="${{ steps.params.outputs.platform }}"
-          PR_NUMBER="${{ steps.params.outputs.pr_number }}"
 
           # If platform was explicitly set, use it as-is
           if [ -n "${PLATFORM}" ]; then
@@ -232,24 +241,21 @@ jobs:
           echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
 
           # Platform is always resolved at this point (inferred or explicit)
-          TEMPLATE_PARAMS="\"PRNumber\": \"${PR_NUMBER}\", \"Platform\": \"${PLATFORM}\""
+          # Build JSON payload safely with jq to avoid injection
+          PAYLOAD=$(jq -n \
+            --arg pr "${PR_NUMBER}" \
+            --arg plat "${PLATFORM}" \
+            --arg ref "refs/heads/${PIPELINE_REF}" \
+            '{
+              templateParameters: { PRNumber: $pr, Platform: $plat },
+              resources: { repositories: { self: { refName: $ref } } }
+            }')
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
             -H "Authorization: Bearer ${AZDO_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"templateParameters\": {
-                ${TEMPLATE_PARAMS}
-              },
-              \"resources\": {
-                \"repositories\": {
-                  \"self\": {
-                    \"refName\": \"refs/heads/${PIPELINE_REF}\"
-                  }
-                }
-              }
-            }")
+            -d "${PAYLOAD}")
 
           HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
           RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
