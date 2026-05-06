@@ -795,9 +795,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				// For UILabel, set the text alignment to center to ensure consistent behavior with Windows and Android
 				label.TextAlignment = UITextAlignment.Center;
-				label.SemanticContentAttribute = ItemsView.FlowDirection == FlowDirection.RightToLeft
-					? UISemanticContentAttribute.ForceRightToLeft
-					: UISemanticContentAttribute.ForceLeftToRight;
+				label.SemanticContentAttribute = ItemsView.FlowDirection switch
+				{
+					FlowDirection.RightToLeft => UISemanticContentAttribute.ForceRightToLeft,
+					FlowDirection.LeftToRight => UISemanticContentAttribute.ForceLeftToRight,
+					_ => CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+						? UISemanticContentAttribute.ForceRightToLeft
+						: UISemanticContentAttribute.ForceLeftToRight
+				};
 			}
 		}
 

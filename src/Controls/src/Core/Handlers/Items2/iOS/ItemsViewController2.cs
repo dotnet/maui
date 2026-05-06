@@ -549,9 +549,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				// For UILabel, set the text alignment to center to ensure consistent behavior with Windows and Android
 				label.TextAlignment = UITextAlignment.Center;
-				label.SemanticContentAttribute = ItemsView.FlowDirection == FlowDirection.RightToLeft
-					? UISemanticContentAttribute.ForceRightToLeft
-					: UISemanticContentAttribute.ForceLeftToRight;
+				label.SemanticContentAttribute = ItemsView.FlowDirection switch
+				{
+					FlowDirection.RightToLeft => UISemanticContentAttribute.ForceRightToLeft,
+					FlowDirection.LeftToRight => UISemanticContentAttribute.ForceLeftToRight,
+					_ => CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+						? UISemanticContentAttribute.ForceRightToLeft
+						: UISemanticContentAttribute.ForceLeftToRight
+				};
 			}
 		}
 
@@ -577,6 +582,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			else
 			{
+				// TODO: DetermineEmptyViewFrame() returns superview-coordinate-space values (CollectionView.Frame.X/Y),
+				// which are incorrect when the empty view is a child of CollectionView. This fallback is unlikely
+				// to execute in practice since Superview is expected to be non-null by the time ShowEmptyView() is called.
 				CollectionView.AddSubview(_emptyUIView);
 			}
 
