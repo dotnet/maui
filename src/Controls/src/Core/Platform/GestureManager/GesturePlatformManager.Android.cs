@@ -81,11 +81,6 @@ namespace Microsoft.Maui.Controls.Platform
 			var eventConsumed = false;
 
 			bool hasPinchGestures = ViewHasPinchGestures();
-			bool hasNonPointerTouchGestures = ViewHasNonPointerTouchGestures();
-
-			bool hasOnlyPointer =
-				!hasPinchGestures &&
-				!hasNonPointerTouchGestures;
 
 			if (hasPinchGestures)
 			{
@@ -94,13 +89,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (!hasPinchGestures || !_scaleDetector.Value.IsInProgress)
 			{
-				var detectorHandled = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e);
-
-				// If only pointer gestures → do not consume the event
-				if (hasOnlyPointer)
-					eventConsumed = false;
-				else
-					eventConsumed = detectorHandled || eventConsumed;
+				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
 			}
 
 			return eventConsumed;
@@ -208,29 +197,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool shouldAddTouchEvent = false;
 
-			// This change is probably not 100 percent correct.
-			// The main purpose right now is to maintain the behavior of this code
-			// prior to this change
-			// https://github.com/dotnet/maui/commit/2c301d7988a06c3b41c2992bbee557aca04c9388#diff-2d78f02242798d0f2863f679e4dfdee230944be37db5e1a1446bfa4c6c43a5c6R183
-			// If the only CompositeGestureRecognizers is a PointerGestureRecognizer
-			//
-			// Most likely we should just not subscribe to Touch at all if the only gesture is a PGR
-			// But that will be re-evaluated for preview6
-			if (View.GestureRecognizers.Count == 0)
+			// Only subscribe to touch events if there are gestures that require touch handling
+			var recognizers = View?.GestureController?.CompositeGestureRecognizers;
+
+			if (recognizers != null)
 			{
-				var recognizers = View.GestureController.CompositeGestureRecognizers;
-				foreach (var recognizer in recognizers)
+				int count = recognizers.Count;
+				for (int i = 0; i < count; i++)
 				{
-					if (recognizer is not PointerGestureRecognizer)
+					if (recognizers[i] is not PointerGestureRecognizer)
 					{
 						shouldAddTouchEvent = true;
 						break;
 					}
 				}
-			}
-			else
-			{
-				shouldAddTouchEvent = true;
 			}
 
 			// Always unsubscribe first to avoid duplicates
@@ -440,24 +420,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_isEnabled = Element.IsEnabled;
 		}
 
-		bool ViewHasNonPointerTouchGestures()
-		{
-			if (View is null)
-				return false;
-
-			var recognizers = View.GetCompositeGestureRecognizers();
-			if (recognizers is null || recognizers.Count == 0)
-				return false;
-
-			int count = recognizers.Count;
-			for (int i = 0; i < count; i++)
-			{
-				if (recognizers[i] is not PointerGestureRecognizer)
-					return true;
-			}
-
-			return false;
-		}
+		
 		
 		void ClearRecyclerViewTouchListener(AView platformView)
 		{
