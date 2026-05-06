@@ -1,4 +1,4 @@
-#if ANDROID
+#if ANDROID // Open Issue For iOS, MacCatalyst and Windows : https://github.com/dotnet/maui/issues/35326
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
