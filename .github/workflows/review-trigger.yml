@@ -158,9 +158,11 @@ jobs:
             exit 0
           fi
 
-          echo "No platform specified — inferring from PR #${PR_NUMBER}..."
+          echo "No platform specified — inferring from PR #${PR_NUMBER} labels..."
+          echo "(File-based detection is handled by the 'Platform Label' workflow on PR open.)"
 
-          # Check PR labels
+          # Check PR labels (platform/android, platform/ios, platform/macos, platform/windows,
+          # or legacy area labels a/android, a/ios, a/maccatalyst, a/windows)
           LABELS=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
           LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
           echo "PR labels: ${LABELS_LOWER:-<none>}"
@@ -175,30 +177,9 @@ jobs:
             PLATFORM="windows"
           fi
 
-          # Check changed files (only if labels were inconclusive)
+          # Default to android when labels are inconclusive
           if [ -z "${PLATFORM}" ]; then
-            FILES=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" --jq '.[].filename' 2>/dev/null || true)
-
-            HAS_ANDROID=$(echo "${FILES}" | grep -ciE '(/Android/|\.android\.cs)' || true)
-            HAS_IOS=$(echo "${FILES}" | grep -ciE '(/iOS/|\.ios\.cs)' || true)
-            HAS_CATALYST=$(echo "${FILES}" | grep -ciE '(/MacCatalyst/|\.maccatalyst\.cs)' || true)
-            HAS_WINDOWS=$(echo "${FILES}" | grep -ciE '(/Windows/|\.windows\.cs)' || true)
-
-            # Only assign if a single platform dominates
-            if [ "${HAS_IOS}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
-              PLATFORM="ios"
-            elif [ "${HAS_CATALYST}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
-              PLATFORM="catalyst"
-            elif [ "${HAS_WINDOWS}" -gt 0 ] && [ "${HAS_ANDROID}" -eq 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ]; then
-              PLATFORM="windows"
-            elif [ "${HAS_ANDROID}" -gt 0 ] && [ "${HAS_IOS}" -eq 0 ] && [ "${HAS_CATALYST}" -eq 0 ] && [ "${HAS_WINDOWS}" -eq 0 ]; then
-              PLATFORM="android"
-            fi
-          fi
-
-          # Default to android when deterministic checks are inconclusive
-          if [ -z "${PLATFORM}" ]; then
-            echo "Deterministic checks inconclusive — defaulting to android. Use --platform to specify explicitly."
+            echo "No platform label found — defaulting to android. Use --platform to specify explicitly."
             PLATFORM="android"
           fi
 
