@@ -11,6 +11,16 @@ on:
       pr_number:
         description: 'PR number to review'
         required: true
+      platform:
+        description: 'Target platform (android, ios, catalyst, windows, or empty for pipeline default)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - android
+          - ios
+          - catalyst
+          - windows
       pipeline_ref:
         description: 'AzDO pipeline branch/tag (default: main)'
         required: false
@@ -41,43 +51,86 @@ jobs:
             exit 1
           fi
 
-      - name: Resolve PR number and pipeline ref
-        id: pr
+      - name: Parse parameters
+        id: params
         env:
           GH_TOKEN: ${{ github.token }}
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
+          # Valid platforms (from AzDO pipeline definition)
+          VALID_PLATFORMS="android ios catalyst windows"
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${{ inputs.pr_number }}"
+            PLATFORM="${{ inputs.platform }}"
             PIPELINE_REF="${{ inputs.pipeline_ref || 'main' }}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
-            # Parse optional branch from '/review <branch>' comment
-            PIPELINE_REF=$(echo "${COMMENT_BODY}" | sed -n 's|^/review[[:space:]]\+\([^[:space:]]\+\).*|\1|p')
-            if [ -z "${PIPELINE_REF}" ]; then
-              PIPELINE_REF="main"
-            fi
+            # Strip the '/review' prefix and parse remaining args
+            ARGS=$(echo "${COMMENT_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+            PLATFORM=""
+            PIPELINE_REF="main"
+            # Parse args: positional platform, --branch <ref>, --platform <name>
+            set -- ${ARGS}
+            while [ $# -gt 0 ]; do
+              case "$1" in
+                --branch|-b)
+                  shift
+                  if [ $# -gt 0 ]; then
+                    PIPELINE_REF="$1"
+                  fi
+                  ;;
+                --platform|-p)
+                  shift
+                  if [ $# -gt 0 ]; then
+                    CANDIDATE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+                    for p in ${VALID_PLATFORMS}; do
+                      if [ "${CANDIDATE}" = "${p}" ]; then
+                        PLATFORM="${p}"
+                        break
+                      fi
+                    done
+                  fi
+                  ;;
+                *)
+                  # Check if it's a valid platform name
+                  for p in ${VALID_PLATFORMS}; do
+                    if [ "$(echo "$1" | tr '[:upper:]' '[:lower:]')" = "${p}" ]; then
+                      PLATFORM="${p}"
+                      break
+                    fi
+                  done
+                  ;;
+              esac
+              shift
+            done
           fi
+
           # Sanitize ref to valid git ref characters only
           PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
           if [ -z "${PIPELINE_REF}" ]; then
             PIPELINE_REF="main"
           fi
-          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
-          echo "pipeline_ref=${PIPELINE_REF}" >> "$GITHUB_OUTPUT"
-          echo "Resolved PR number: ${PR_NUMBER}"
-          echo "Pipeline ref: ${PIPELINE_REF}"
 
-          # Validate the PR exists and fetch its head ref
-          PR_DATA=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER} --jq '{head_ref: .head.ref, head_sha: .head.sha, title: .title, state: .state}')
-          echo "PR data: ${PR_DATA}"
-          PR_STATE=$(echo "${PR_DATA}" | jq -r '.state')
+          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
+          echo "pipeline_ref=${PIPELINE_REF}" >> "$GITHUB_OUTPUT"
+          echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}"
+
+      - name: Validate PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER="${{ steps.params.outputs.pr_number }}"
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
+          PR_STATE=$(echo "${PR_JSON}" | jq -r '.state')
           if [ "${PR_STATE}" != "open" ]; then
             echo "::error::PR #${PR_NUMBER} is not open (state: ${PR_STATE})"
             exit 1
           fi
-          PR_TITLE=$(echo "${PR_DATA}" | jq -r '.title')
-          echo "pr_title=${PR_TITLE}" >> "$GITHUB_OUTPUT"
+          PR_TITLE=$(echo "${PR_JSON}" | jq -r '.title')
+          echo "PR #${PR_NUMBER}: ${PR_TITLE}"
 
       - name: Get OIDC Token
         id: oidc
@@ -117,17 +170,26 @@ jobs:
       - name: Trigger maui-copilot pipeline
         env:
           AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
-          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
-          PIPELINE_REF: ${{ steps.pr.outputs.pipeline_ref }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
+          PLATFORM: ${{ steps.params.outputs.platform }}
         run: |
-          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (ref: ${PIPELINE_REF})..."
+          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM:-<pipeline will infer>}, ref: ${PIPELINE_REF})..."
+
+          # Build templateParameters JSON — only include Platform if explicitly set
+          if [ -n "${PLATFORM}" ]; then
+            TEMPLATE_PARAMS="\"PRNumber\": \"${PR_NUMBER}\", \"Platform\": \"${PLATFORM}\""
+          else
+            TEMPLATE_PARAMS="\"PRNumber\": \"${PR_NUMBER}\""
+          fi
+
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
             -H "Authorization: Bearer ${AZDO_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
               \"templateParameters\": {
-                \"prNumber\": \"${PR_NUMBER}\"
+                ${TEMPLATE_PARAMS}
               },
               \"resources\": {
                 \"repositories\": {
