@@ -403,10 +403,11 @@ stages:
               # 1a. Check PR labels
               LABELS=$(gh api repos/dotnet/maui/pulls/${PR_NUMBER} --jq '.labels[].name' 2>/dev/null || true)
               LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
+              echo "PR labels: ${LABELS_LOWER:-<none>}"
 
-              if echo "${LABELS_LOWER}" | grep -qE '^a/ios$'; then
+              if echo "${LABELS_LOWER}" | grep -qE '^(a/ios|platform/ios)$'; then
                 PLATFORM="ios"
-              elif echo "${LABELS_LOWER}" | grep -qE '^a/maccatalyst$'; then
+              elif echo "${LABELS_LOWER}" | grep -qE '^(a/maccatalyst|platform/macos)$'; then
                 PLATFORM="catalyst"
               elif echo "${LABELS_LOWER}" | grep -qE '^(a/android|platform/android)$'; then
                 PLATFORM="android"
@@ -439,7 +440,12 @@ stages:
               if [ -z "${PLATFORM}" ]; then
                 echo "Deterministic checks inconclusive — asking Copilot CLI..."
                 COPILOT_PROMPT="Analyze PR #${PR_NUMBER} in dotnet/maui. Based on the PR title, description, labels, and changed files, determine which single platform is most relevant for testing. Respond with EXACTLY one word: android, ios, catalyst, or windows. If unsure, respond with: android"
-                COPILOT_RESULT=$(copilot -p "${COPILOT_PROMPT}" 2>/dev/null | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]' || true)
+                COPILOT_RAW=$(copilot -p "${COPILOT_PROMPT}" 2>/dev/null || true)
+                # Copilot CLI may return verbose output (MCP tool calls, etc.)
+                # Extract the last occurrence of a valid platform word
+                COPILOT_RESULT=$(echo "${COPILOT_RAW}" | tr '[:upper:]' '[:lower:]' | grep -oE '\b(android|ios|catalyst|windows)\b' | tail -1)
+                echo "Copilot raw output (last 200 chars): ...$(echo "${COPILOT_RAW}" | tail -c 200)"
+                echo "Copilot extracted platform: '${COPILOT_RESULT}'"
 
                 case "${COPILOT_RESULT}" in
                   android|ios|catalyst|windows)
@@ -447,7 +453,7 @@ stages:
                     echo "Copilot inferred: ${PLATFORM}"
                     ;;
                   *)
-                    echo "Copilot returned unexpected value: '${COPILOT_RESULT}' — defaulting to android"
+                    echo "Copilot did not return a clear platform — defaulting to android"
                     PLATFORM="android"
                     ;;
                 esac
@@ -462,7 +468,7 @@ stages:
               echo "##vso[task.setvariable variable=InferredPlatform]${PLATFORM}"
             displayName: 'Infer Platform from PR'
             env:
-              GH_TOKEN: $(COPILOT_GITHUB_TOKEN)
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
 
           # Boot iOS Simulator (only for iOS platform)
