@@ -26,17 +26,17 @@ namespace Microsoft.Maui.Platform
 
 		// On iOS/macOS 26+, UITextField with BorderStyle = RoundedRect renders with a
 		// pill/capsule-shaped focus ring due to the new "Liquid Glass" design language.
-		// Override FocusEffect to return a UIFocusHaloEffect with a traditional 10pt
-		// rounded rect shape so the focus ring matches the visible border shape.
-		public override UIFocusEffect? FocusEffect
+		// We set FocusEffect in LayoutSubviews (not via property getter) so that Bounds
+		// is guaranteed to be non-zero when the path is created.
+		public override void LayoutSubviews()
 		{
-			get
+			base.LayoutSubviews();
+
+			if ((OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26))
+				&& Bounds.Width > 0 && Bounds.Height > 0)
 			{
-				if (OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26))
-					return UIFocusHaloEffect.Create(UIBezierPath.FromRoundedRect(Bounds, 8.0f));
-				return base.FocusEffect;
+				base.FocusEffect = UIFocusHaloEffect.Create(UIBezierPath.FromRoundedRect(Bounds, 8.0f));
 			}
-			set => base.FocusEffect = value;
 		}
 
 		public override string? Text
