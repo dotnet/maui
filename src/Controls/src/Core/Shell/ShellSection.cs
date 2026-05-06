@@ -208,7 +208,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellContent), typeof(ShellSection), null, BindingMode.TwoWay,
-				propertyChanged: OnCurrentItemChanged);
+				propertyChanged: OnCurrentItemChanged,
+				propertyChanging: OnCurrentItemChanging);
 
 		/// <summary>Bindable property for <see cref="Items"/>.</summary>
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
@@ -1012,6 +1013,28 @@ namespace Microsoft.Maui.Controls
 						this.FindParentOfType<Shell>().SendPageAppearing(presentedPage);
 					}
 				}
+			}
+		}
+
+		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shellSection = (ShellSection)bindable;
+
+			if (newValue is not ShellContent newContent)
+				return;
+
+			if (shellSection.Parent?.Parent is Shell parentShell && shellSection.IsVisibleSection)
+			{
+				// canCancel: false because propertyChanging cannot veto a property commit.
+				// Mirrors Shell.OnCurrentItemChanging which uses the same pattern.
+				parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
+					ShellNavigationSource.ShellContentChanged,
+					parentShell.CurrentItem,
+					shellSection,
+					newContent,
+					shellSection.Stack,
+					canCancel: false,
+					isAnimated: true);
 			}
 		}
 

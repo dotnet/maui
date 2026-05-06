@@ -14,24 +14,19 @@ public class Issue34318 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void NavigatingFiresWhenShellContentChanges()
 	{
-		// Wait for the page and button
 		App.WaitForElement("ChangeContentButton");
 
-		// Tap the button to change the current ShellContent
+		App.WaitForElement("ResultLabelB");
+
+		var initialText = App.FindElement("ResultLabelB").GetText() ?? string.Empty;
+		Assert.That(initialText, Is.EqualTo("Waiting"));
+
 		App.Tap("ChangeContentButton");
 
-		// Wait for navigation to complete
 		App.WaitForElement("PageBLabel");
 
-		// Verify Navigating event updated the label
-		App.WaitForTextToBePresentInElement("ResultLabelB", "Navigating");
+		var result = App.WaitForTextToBePresentInElement("ResultLabelB", "Navigating");
 
-		var element = App.FindElement("ResultLabelB");
-
-		Assert.That(element, Is.Not.Null);
-
-		var text = element.GetText();
-
-		Assert.That(text, Is.EqualTo("Navigating"));
+		Assert.That(result, Is.True, "Navigating event should have fired and updated the label text");
 	}
 }
