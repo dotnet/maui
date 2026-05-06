@@ -510,5 +510,12 @@ namespace Microsoft.Maui.Platform
 				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 		}
+		internal static void EnsureNoFullscreenFlag(this EditText editText)
+		{
+			// ImeOptions is typed as ImeAction in the Android binding, but it actually
+			// holds combined ImeAction + ImeFlags bits. NoFullscreen is an ImeFlags value
+			// (0x02000000) that prevents IME extract mode in landscape orientation.
+			editText.ImeOptions = (ImeAction)((int)editText.ImeOptions | (int)ImeFlags.NoFullscreen);
+		}
 	}
 }

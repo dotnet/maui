@@ -41,7 +41,7 @@ public class Issue14708 : ContentPage
 
 		Content = new ScrollView
 		{
-			VerticalOptions = LayoutOptions.FillAndExpand,
+			VerticalOptions = LayoutOptions.Fill,
 			Content = new VerticalStackLayout
 			{
 				Padding = new Thickness(16),
