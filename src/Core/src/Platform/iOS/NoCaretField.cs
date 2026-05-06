@@ -20,18 +20,24 @@ namespace Microsoft.Maui.Platform
 			return RectangleF.Empty;
 		}
 
-		// On iOS/macOS 26+, UITextField with BorderStyle = RoundedRect renders with a
-		// pill/capsule-shaped focus ring due to the new "Liquid Glass" design language.
-		// We set FocusEffect in LayoutSubviews (not via property getter) so that Bounds
-		// is guaranteed to be non-zero when the path is created.
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
 
-			if ((OperatingSystem.IsMacCatalystVersionAtLeast(26) || OperatingSystem.IsIOSVersionAtLeast(26))
-				&& Bounds.Width > 0 && Bounds.Height > 0)
+			// On iOS/MacCatalyst 26+, the system's default keyboard focus halo around a
+			// UITextField with BorderStyle == RoundedRect renders as a fully rounded
+			// (pill-shaped) outline that doesn't match the field's actual corner radius.
+			// Provide a custom UIFocusHaloEffect whose path follows the field's
+			// rounded-rect bounds so the halo aligns with the border.
+			// See: https://developer.apple.com/documentation/uikit/uifocushaloeffect
+			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			 && BorderStyle == UITextBorderStyle.RoundedRect
+			 && Bounds.Width > 0 && Bounds.Height > 0)
 			{
-				base.FocusEffect = UIFocusHaloEffect.Create(UIBezierPath.FromRoundedRect(Bounds, 8.0f));
+				// UITextField's RoundedRect border uses an approximately 5pt corner radius.
+				const float roundedRectCornerRadius = 5f;
+				var path = UIBezierPath.FromRoundedRect(Bounds, roundedRectCornerRadius);
+				FocusEffect = UIFocusHaloEffect.Create(path);
 			}
 		}
 
