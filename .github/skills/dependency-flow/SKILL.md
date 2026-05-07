@@ -29,7 +29,27 @@ The `maestro-cli` skill and its `mstro` CLI are loaded automatically from the `d
 
 ## MAUI Channel Naming
 
-MAUI channels follow the pattern `.NET X.0.Yxx SDK` (e.g., `.NET 10.0.1xx SDK`).
+MAUI uses two types of channels:
+
+### SDK Channels (automatic)
+Pattern: `.NET X.0.Yxx SDK` (e.g., `.NET 10.0.1xx SDK`)
+
+These are configured via default channel mappings — builds are **automatically** added when they complete on a mapped branch. Preview releases use `.NET X.0.Yxx SDK Preview N`.
+
+### Workload Release Channels (manual promotion)
+Pattern: `.NET X Workload Release` (e.g., `.NET 10 Workload Release`)
+
+These are **NOT** in default channel mappings. A build must be **manually promoted** to a workload release channel to publish MAUI packages to NuGet.org. This can be done two ways:
+1. **BAR UI checkbox** — in the official build's "Promote to channel" UI (preferred by release managers)
+2. **CLI** — `darc add-build-to-channel --id <BAR_BUILD_ID> --channel ".NET X Workload Release"`
+
+Current workload release channels:
+- `.NET 11 Workload Release` (channel ID: 8299)
+- `.NET 10 Workload Release` (channel ID: 5174)
+- `.NET 9 Workload Release` (channel ID: 4611)
+- `.NET 8 Workload Release` (channel ID: 4610)
+
+**To choose the right one**: match the .NET major version of the build's branch (e.g., `release/10.0.1xx-sr6` → `.NET 10 Workload Release`).
 
 ## Natural Language Translation
 
@@ -67,7 +87,7 @@ MAUI channels follow the pattern `.NET X.0.Yxx SDK` (e.g., `.NET 10.0.1xx SDK`).
 - **BAR build IDs**: Must be integers only
 - **Channel names**: Must match output from `maestro_default_channels` — never accept arbitrary names
 
-## Common MAUI Workflow: Feed Lookup
+## Common MAUI Workflows
 
 ### "Get me the feed for MAUI X.Y.Z"
 
@@ -96,6 +116,18 @@ darc add-build-to-channel --id <BAR_BUILD_ID> --channel "<channel>"
 # 6. Wait for promotion build (can take several minutes), then re-check
 darc get-asset --name Microsoft.Maui.Controls --version X.Y.Z
 ```
+
+### "Promote a build to NuGet.org"
+
+This means adding the build to the **Workload Release** channel:
+
+1. Find the build's BAR ID (from `get-asset` output or AzDO build logs)
+2. Determine the .NET major version from the branch (e.g., `release/10.0.1xx-sr6` → 10)
+3. **Show the user** the command and wait for confirmation:
+   ```bash
+   darc add-build-to-channel --id <BAR_BUILD_ID> --channel ".NET 10 Workload Release"
+   ```
+4. Alternative: the user can use the BAR UI checkbox instead — both do the same thing
 
 ### Feed Availability Notes
 - A NuGet feed location only appears on an asset **after** the build is added to a channel
