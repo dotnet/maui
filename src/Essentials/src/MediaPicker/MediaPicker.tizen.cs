@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Media
 
 			AppControl.SendLaunchRequest(appControl, (request, reply, result) =>
 			{
-				if (result == AppControlReplyResult.Succeeded && reply.ExtraData.Count() > 0)
+				if (result == AppControlReplyResult.Succeeded && reply.ExtraData.Any())
 				{
 					var file = reply.ExtraData.Get<IEnumerable<string>>(AppControlData.Selected)?.FirstOrDefault();
 					tcs.TrySetResult(new FileResult(file));
