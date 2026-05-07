@@ -39,7 +39,7 @@ These are configured via default channel mappings — builds are **automatically
 ### Workload Release Channels (manual promotion)
 Pattern: `.NET X Workload Release` (e.g., `.NET 10 Workload Release`)
 
-These are **NOT** in default channel mappings. A build must be **manually promoted** to a workload release channel to publish MAUI packages to NuGet.org. This can be done two ways:
+These are **NOT** in default channel mappings. A build must be **manually promoted** to a workload release channel to make assets available on the public dotnet feeds. This can be done two ways:
 1. **BAR UI checkbox** — in the official build's "Promote to channel" UI (preferred by release managers)
 2. **CLI** — `darc add-build-to-channel --id <BAR_BUILD_ID> --channel ".NET X Workload Release"`
 
@@ -117,9 +117,9 @@ darc add-build-to-channel --id <BAR_BUILD_ID> --channel "<channel>"
 darc get-asset --name Microsoft.Maui.Controls --version X.Y.Z
 ```
 
-### "Promote a build to NuGet.org"
+### "Promote a build to the public feed"
 
-This means adding the build to the **Workload Release** channel:
+This means adding the build to the **Workload Release** channel, which makes assets available on the public dotnet feeds:
 
 1. Find the build's BAR ID (from `get-asset` output or AzDO build logs)
 2. Determine the .NET major version from the branch (e.g., `release/10.0.1xx-sr6` → 10)
