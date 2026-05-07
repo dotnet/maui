@@ -660,11 +660,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (args.Mode == ScrollToMode.Position)
 			{
-				if (args.Index >= ItemCount)
-				{
-					return null;
-				}
-
 				if (CollectionViewSource.IsSourceGrouped && args.GroupIndex >= 0)
 				{
 					if (args.GroupIndex >= CollectionViewSource.View.CollectionGroups.Count)
@@ -679,6 +674,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						return itemGroup.GroupItems[args.Index];
 					}
+				}
+
+				if (CollectionViewSource.IsSourceGrouped && args.GroupIndex < 0)
+				{
+					// Flat index mode with a grouped source: View.Count is the number of groups, not total items,
+					// so we must walk the groups to find the item at the given flat index.
+					return FindGroupedItemByFlatIndex(args.Index);
+				}
+
+				if (args.Index >= ItemCount)
+				{
+					return null;
 				}
 
 				return GetItem(args.Index);
@@ -708,6 +715,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual object GetItem(int index)
 		{
 			return CollectionViewSource.View[index];
+		}
+
+		object FindGroupedItemByFlatIndex(int flatIndex)
+		{
+			var groups = CollectionViewSource.View.CollectionGroups;
+			if (groups == null)
+			{
+				return null;
+			}
+
+			int remaining = flatIndex;
+			foreach (var group in groups)
+			{
+				if (group is ICollectionViewGroup itemGroup)
+				{
+					int itemCount = itemGroup.GroupItems.Count;
+					if (remaining < itemCount)
+					{
+						return itemGroup.GroupItems[remaining];
+					}
+					remaining -= itemCount;
+				}
+			}
+
+			return null;
 		}
 	}
 }
