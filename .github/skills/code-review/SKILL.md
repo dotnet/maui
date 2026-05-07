@@ -2,7 +2,7 @@
 name: code-review
 description: >-
   Deep code review of PR changes for correctness, safety, and MAUI conventions.
-  Uses independence-first assessment (code before narrative) with 345 lines of
+  Uses independence-first assessment (code before narrative) with 364 lines of
   maintainer-sourced review rules. Triggers on: "review code for PR", "code review PR",
   "analyze code changes", "check PR code quality". Do NOT use for: summarizing PRs,
   describing what changed, general PR questions, running tests, or fixing code.
@@ -127,6 +127,7 @@ Apply the rules in `references/review-rules.md` to each changed file. The rules 
 **Architecture:** Memory management, threading, safe area, layout, navigation, CollectionView
 **Code Quality:** Error handling, null safety, performance, XAML & bindings, API design
 **Ecosystem:** Testing, build & MSBuild, image handling, gestures, accessibility
+**Safety:** Trim / NativeAOT annotation chains (IL2026/IL3050)
 
 The rules file also includes a **"What NOT to Flag"** section — respect it to avoid noise.
 
