@@ -42,7 +42,7 @@ parameters:
     - 'ViewBaseTests,VisualStateManager,Window'
     - 'WebView'
 
-  # Windows-specific category groups — WebView is excluded because it runs too long on Windows CI
+  # Windows-specific category groups — WebView is excluded because it runs too long on Windows CI. Issue - https://github.com/dotnet/maui/issues/35334
   windowsCategoryGroupsToTest:
     - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
     - 'Border,BoxView,Brush,Button'
