@@ -328,7 +328,9 @@ This step runs BEFORE testing so you can catch design flaws before spending time
    }
 
    # Snapshot the diff that was reviewed — Step 7.5 uses this to detect whether the test loop mutated code.
-   git diff | Set-Content "$OUTPUT_DIR/reviewer-findings.diff"
+   # Use Set-Content -Value with Out-String so the file is created even when the diff is empty
+   # (a bare `git diff | Set-Content` does NOT create the file when the pipe is empty).
+   Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value (git diff | Out-String) -NoNewline
    ```
 
    **Remember `$findingsCount`** — you will report it as `findings_count` in Step 10 and summarize it in `analysis.md` (Step 8).
@@ -384,30 +386,61 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
 
 🚨 **The test loop in Step 7 may modify code (compile-error fixes, runtime-error fixes). When that happens, the `reviewer-findings.json` written in Step 6 describes a stale diff — not the diff that will be captured in Step 8 and shipped to the reviewer.** This step re-runs the self-review against the *final* diff so the recorded findings always correspond to the actual fix.
 
-```powershell
-# Compare the current diff against the diff Step 6 reviewed
-$currentDiff = git diff
-$reviewedDiff = if (Test-Path "$OUTPUT_DIR/reviewer-findings.diff") {
-    Get-Content "$OUTPUT_DIR/reviewer-findings.diff" -Raw
-} else { $null }
+**Procedure:**
 
-if ($currentDiff -ne $reviewedDiff) {
-    Write-Host "🔁 Code changed during Step 7 — refreshing self-review against final diff..."
-    # Re-run the procedure from Step 6 against the final diff:
-    #   - walk the same Overarching Principles + routed dimensions
-    #   - OVERWRITE $OUTPUT_DIR/reviewer-findings.json with the new findings
-    #   - update $findingsCount
-    # Then re-snapshot the diff:
-    git diff | Set-Content "$OUTPUT_DIR/reviewer-findings.diff"
+1. **Detect drift.** Compare the current working-tree diff against the diff Step 6 reviewed.
 
-    # Validate again:
-    $findings = @(Get-Content "$OUTPUT_DIR/reviewer-findings.json" -Raw | ConvertFrom-Json)
-    $findingsCount = $findings.Count
-    Write-Host "✅ reviewer-findings.json refreshed: $findingsCount findings"
-} else {
-    Write-Host "✅ Diff unchanged since Step 6 — self-review still current."
-}
-```
+   ```powershell
+   # Force both sides to a single string. `git diff` assigned to a variable is a string[]
+   # (one element per line); `-ne` between an array and a scalar is element-wise filtering,
+   # not equality. Both must be normalized to the same shape before comparison.
+   $currentDiff  = (git diff | Out-String)
+   $reviewedDiff = if (Test-Path "$OUTPUT_DIR/reviewer-findings.diff") {
+       Get-Content "$OUTPUT_DIR/reviewer-findings.diff" -Raw
+   } else { '' }
+
+   # Snapshot the JSON's content hash BEFORE you do any rewriting in sub-step 2.
+   # Sub-step 3 below uses this to assert that the JSON was actually overwritten,
+   # and isn't stale Step 6 content shipped to the gate.
+   $preRewriteJsonHash = (Get-FileHash "$OUTPUT_DIR/reviewer-findings.json" -Algorithm SHA256).Hash
+
+   $diffChanged = ($currentDiff -ne $reviewedDiff)
+   if (-not $diffChanged) {
+       Write-Host "✅ Diff unchanged since Step 6 — self-review still current. Skip sub-steps 2 and 3."
+   } else {
+       Write-Host "🔁 Code changed during Step 7 — refreshing self-review against final diff..."
+   }
+   ```
+
+2. **If `$diffChanged` is `$true`, re-do the Step 6 self-review against the new diff.** This is YOU walking the rules again — it is *not* something the script does. Repeat the same procedure from Step 6:
+
+   1. **Re-list changed files:** `git diff --name-only HEAD`
+   2. **Re-walk the rules** in `.github/agents/maui-expert-reviewer.md` — every Overarching Principle, the always-active dimensions, and any routed dimensions whose file paths now match.
+   3. **Rewrite `$OUTPUT_DIR/reviewer-findings.json`** with the new findings (or `'[]'` if clean). The file MUST be overwritten — appending or leaving the old content is a bug. Use the same JSON schema documented in Step 6.
+
+3. **Re-snapshot and re-validate.** Only after rewriting the JSON in sub-step 2, run:
+
+   ```powershell
+   # Prove the JSON was actually overwritten in sub-step 2 (vs. stale Step 6 content).
+   # Hash comparison sidesteps any filesystem mtime granularity issues.
+   $postRewriteJsonHash = (Get-FileHash "$OUTPUT_DIR/reviewer-findings.json" -Algorithm SHA256).Hash
+   if ($postRewriteJsonHash -eq $preRewriteJsonHash) {
+       throw "❌ reviewer-findings.json was not rewritten in Step 7.5 sub-step 2 (content hash unchanged: $preRewriteJsonHash). Go back and overwrite it with refreshed findings before re-snapshotting. (If the refreshed findings are byte-identical to the Step 6 findings — extremely rare — touch the file with a trailing whitespace inside a string body to bypass this check.)"
+   }
+
+   # Re-snapshot the diff (matches Step 6's snapshot logic — works for empty diffs too).
+   Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value (git diff | Out-String) -NoNewline
+
+   # Re-validate the JSON parses and capture the new count.
+   try {
+       $findings = @(Get-Content "$OUTPUT_DIR/reviewer-findings.json" -Raw | ConvertFrom-Json)
+       $findingsCount = $findings.Count
+       Write-Host "✅ reviewer-findings.json refreshed: $findingsCount findings"
+   } catch {
+       Write-Host "❌ reviewer-findings.json is invalid JSON: $_"
+       throw
+   }
+   ```
 
 **Severity handling is the same as Step 6.** If the refresh surfaces new `[critical]` or `[major]` findings, you may apply ONE more fix batch and re-run the test loop, then re-refresh. Do not loop indefinitely — if a fix introduces critical findings on the third pass, mark the attempt `Blocked` and explain in `analysis.md`.
 
@@ -419,8 +452,10 @@ if ($currentDiff -ne $reviewedDiff) {
 # 1. Save result (MUST be exactly "Pass", "Fail", or "Blocked")
 "Pass" | Set-Content "$OUTPUT_DIR/result.txt"  # or "Fail"
 
-# 2. Save the diff
-git diff | Set-Content "$OUTPUT_DIR/fix.diff"
+# 2. Save the diff (use Set-Content -Value with Out-String so the file is created
+#    even when the diff is empty — a bare `git diff | Set-Content` does not create
+#    the file when the pipe is empty, which would fail the artifact gate.)
+Set-Content -Path "$OUTPUT_DIR/fix.diff" -Value (git diff | Out-String) -NoNewline
 
 # 3. Save test output (should already exist from Step 7)
 # Copy-Item "path/to/test-output.log" "$OUTPUT_DIR/test-output.log"
