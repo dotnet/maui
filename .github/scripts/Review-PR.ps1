@@ -299,7 +299,7 @@ function Invoke-CopilotStep {
     }
 
     # Use JSON output format to stream live progress of agent activity.
-    & copilot -p $Prompt --allow-all --output-format json 2>&1 | ForEach-Object {
+    & copilot -p $Prompt --allow-all --output-format json --model claude-opus-4.7-1m-internal 2>&1 | ForEach-Object {
         $line = $_.ToString()
         try {
             $event = $line | ConvertFrom-Json -ErrorAction Stop
