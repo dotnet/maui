@@ -87,15 +87,6 @@ namespace Microsoft.Maui
 
 		internal static bool CanInvokeMappers(this IElementHandler viewHandler)
 		{
-			// While the handler is being disconnected the platform view has already been released
-			// (see ElementHandler.IElementHandler.DisconnectHandler). Property changes that fan out
-			// from the virtual view during teardown (e.g. on Windows: UpdateIsFocused(false) ->
-			// ChangeVisualState -> VSM Setters) must not invoke mappers that touch the released
-			// platform view, otherwise strongly-typed PlatformView accessors throw
-			// "PlatformView cannot be null here".
-			if (viewHandler.IsDisconnectingHandler())
-				return false;
-
 #if ANDROID
 			var platformView = viewHandler?.PlatformView;
 

@@ -146,26 +146,10 @@ namespace Microsoft.Maui.Handlers
 				// DisconnectHandler
 				var oldPlatformView = PlatformView;
 				PlatformView = null;
-				try
-				{
-					// Mark the handler as disconnecting so property/command changes that fan out from
-					// the virtual view during platform teardown (e.g. on Windows:
-					// UpdateIsFocused(false) -> ChangeVisualState -> VSM Setters) skip the mapper
-					// (see ElementHandlerExtensions.CanInvokeMappers).
-					_handlerState = ElementHandlerState.Disconnecting;
-					DisconnectHandler(oldPlatformView);
-				}
-				finally
-				{
-					// Reset in finally so a throwing platform disconnect does not leave the handler
-					// permanently marked as disconnecting.
-					_handlerState = ElementHandlerState.Disconnected;
-				}
+				DisconnectHandler(oldPlatformView);
 			}
-			else
-			{
-				_handlerState = ElementHandlerState.Disconnected;
-			}
+
+			_handlerState = ElementHandlerState.Disconnected;
 		}
 	}
 }
