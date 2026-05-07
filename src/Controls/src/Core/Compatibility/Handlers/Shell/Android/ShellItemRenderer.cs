@@ -154,9 +154,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual bool ChangeSection(ShellSection shellSection)
 		{
-			// Update shell appearance based on the new shell section when switching between tabs
-			((IShellController)ShellContext.Shell).AppearanceChanged(shellSection, false);
-			return ((IShellItemController)ShellItem).ProposeSection(shellSection);
+			var result = ((IShellItemController)ShellItem).ProposeSection(shellSection);
+			if (result)
+			{
+				((IShellController)ShellContext.Shell).AppearanceChanged(shellSection, false);
+			}
+			return result;
 		}
 
 		protected virtual Drawable CreateItemBackgroundDrawable()
