@@ -3,12 +3,12 @@
     Runs a PR review using Copilot CLI with skill-based prompts.
 
 .DESCRIPTION
-    Orchestrates a 5-step PR review by invoking Copilot CLI with skill prompts:
+    Orchestrates a PR review by invoking scripts and Copilot CLI:
     
     Step 0: Branch setup        - Create review branch from main, merge PR squashed
-    Step 1: pr-review skill     - 4-phase review (Pre-Flight, Gate, Try-Fix, Report)
-    Step 2: pr-finalize skill   - Verify PR title/description match implementation
-    Step 3: Post AI Summary     - Directly runs posting scripts (review + finalize)
+    Step 1: Gate                - Run test verification directly (verify-tests-fail.ps1)
+    Step 2: pr-review skill     - 3-phase review (Pre-Flight, Try-Fix, Report)
+    Step 3: Post AI Summary     - Directly runs posting scripts
     Step 4: Apply labels        - Apply agent labels based on review results
 
     By default, the script checks out main and creates a review branch from it.
@@ -438,33 +438,136 @@ function Invoke-CopilotStep {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 1: PR Review (4-phase skill)
+#  STEP 1: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
-$step1Prompt = @"
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+Write-Host "║  STEP 1: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+
+$gateOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
+
+# Detect tests in PR
+Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
+$detectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
+& pwsh -NoProfile -Command "& '$detectScript' -PRNumber $PRNumber" 2>&1 | ForEach-Object { Write-Host "    $_" }
+
+# Determine platform for gate
+$gatePlatform = if ($Platform) { $Platform } else { "android" }
+Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
+
+$verifyScript = Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"
+$gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
+$gateExitCode = $LASTEXITCODE
+$gateOutput | ForEach-Object { Write-Host "    $_" }
+
+# Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
+$gateResult = switch ($gateExitCode) {
+    0 { "PASSED" }
+    2 { "SKIPPED" }
+    default { "FAILED" }
+}
+$gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } default { "Red" } }
+Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
+
+# Copy the verification report to gate/content.md if it exists
+$verificationReport = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
+if (Test-Path $verificationReport) {
+    Copy-Item $verificationReport (Join-Path $gateOutputDir "content.md") -Force
+} elseif (-not (Test-Path (Join-Path $gateOutputDir "content.md"))) {
+    # Create gate content based on result
+    if ($gateResult -eq "SKIPPED") {
+        $skipContent = @"
+### Gate Result: ⚠️ SKIPPED
+
+No tests were detected in this PR.
+
+**Recommendation:** Add tests to verify the fix using the ``write-tests-agent``:
+
+``````
+@copilot write tests for this PR
+``````
+
+The agent will analyze the issue, determine the appropriate test type (UI test, device test, unit test, or XAML test), and create tests that verify the fix.
+"@
+        $skipContent | Set-Content (Join-Path $gateOutputDir "content.md")
+    } else {
+        "### Gate Result: $(if ($gateExitCode -eq 0) { '✅ PASSED' } else { '❌ FAILED' })`n`n**Platform:** $gatePlatform" |
+            Set-Content (Join-Path $gateOutputDir "content.md")
+    }
+}
+
+# Post gate result as a separate PR comment
+$postGateScript = Join-Path $PSScriptRoot "post-gate-comment.ps1"
+if (Test-Path $postGateScript) {
+    try {
+        if ($DryRun) {
+            & $postGateScript -PRNumber $PRNumber -DryRun
+        } else {
+            & $postGateScript -PRNumber $PRNumber
+        }
+    } catch {
+        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
+}
+
+# Apply gate result label
+$gatePassLabel = "s/agent-gate-passed"
+$gateFaillabel = "s/agent-gate-failed"
+$gateSkipLabel = "s/agent-gate-skipped"
+$allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
+
+$addLabel = switch ($gateResult) {
+    "PASSED"  { $gatePassLabel }
+    "SKIPPED" { $gateSkipLabel }
+    default   { $gateFaillabel }
+}
+$removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
+
+if (-not $DryRun) {
+    foreach ($lbl in $removeLabels) {
+        gh pr edit $PRNumber --remove-label $lbl --repo dotnet/maui 2>$null | Out-Null
+    }
+    gh pr edit $PRNumber --add-label $addLabel --repo dotnet/maui 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
+    } else {
+        Write-Host "  ⚠️ Failed to apply label $addLabel" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
+}
+
+# Restore review branch
+git checkout $reviewBranch 2>$null | Out-Null
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 2: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
+# ═════════════════════════════════════════════════════════════════════════════
+
+$gateStatusForPrompt = switch ($gateResult) {
+    "PASSED" { "Gate ✅ PASSED — tests FAIL without fix, PASS with fix." }
+    "SKIPPED" { "Gate ⚠️ SKIPPED — no tests detected in this PR. Consider suggesting the author add tests." }
+    default { "Gate ❌ FAILED — tests did NOT behave as expected." }
+}
+
+$step2Prompt = @"
 Use a skill to review PR #$PRNumber.
 
 $platformInstruction
 $autonomousRules
 
+**Gate result (already completed in a prior step):** $gateStatusForPrompt
+Do NOT re-run gate verification. The gate phase is handled separately.
+
 📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
 "@
 
-Invoke-CopilotStep -StepName "STEP 1: PR REVIEW" -Prompt $step1Prompt | Out-Null
-
-# Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
-git checkout $reviewBranch 2>$null | Out-Null
-
-# ═════════════════════════════════════════════════════════════════════════════
-#  STEP 2: PR Finalize
-# ═════════════════════════════════════════════════════════════════════════════
-
-$step2Prompt = @"
-Use a skill to finalize PR #$PRNumber. Write findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/pr-finalize-summary.md``.
-$autonomousRules
-"@
-
-Invoke-CopilotStep -StepName "STEP 2: PR FINALIZE" -Prompt $step2Prompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
@@ -479,15 +582,18 @@ Write-Host "║  STEP 3: POST AI SUMMARY                                  ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
 $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
-$dryRunFlag = if ($DryRun) { @('-DryRun') } else { @() }
 
-# 3a: Post PR review phases (pre-flight, gate, try-fix, report)
+# Post PR review phases (pre-flight, try-fix, report)
 $aiSummaryCommentId = $null
 $reviewScript = Join-Path $summaryScriptsDir "post-ai-summary-comment.ps1"
 if (Test-Path $reviewScript) {
     try {
         Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
-        $reviewOutput = & $reviewScript -PRNumber $PRNumber @dryRunFlag
+        if ($DryRun) {
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -DryRun
+        } else {
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber
+        }
         # Capture comment ID from script output (format: COMMENT_ID=<id>)
         $idLine = $reviewOutput | Where-Object { $_ -match '^COMMENT_ID=' } | Select-Object -Last 1
         if ($idLine -match '^COMMENT_ID=(\d+)$') {
@@ -501,24 +607,6 @@ if (Test-Path $reviewScript) {
     }
 } else {
     Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
-}
-
-# 3b: Post PR finalize section (title, description, code review)
-$finalizeScript = Join-Path $summaryScriptsDir "post-pr-finalize-comment.ps1"
-if (Test-Path $finalizeScript) {
-    try {
-        Write-Host "  📝 Posting PR finalize summary..." -ForegroundColor Cyan
-        $finalizeArgs = @('-PRNumber', $PRNumber) + $dryRunFlag
-        if ($aiSummaryCommentId) {
-            $finalizeArgs += @('-ExistingCommentId', $aiSummaryCommentId)
-        }
-        & $finalizeScript @finalizeArgs
-        Write-Host "  ✅ PR finalize summary posted" -ForegroundColor Green
-    } catch {
-        Write-Host "  ⚠️ PR finalize summary posting failed (non-fatal): $_" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "  ⚠️ post-pr-finalize-comment.ps1 not found — skipping finalize summary" -ForegroundColor Yellow
 }
 
 # ═════════════════════════════════════════════════════════════════════════════

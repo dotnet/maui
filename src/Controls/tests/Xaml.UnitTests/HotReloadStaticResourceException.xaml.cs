@@ -47,10 +47,14 @@ public partial class HotReloadStaticResourceException : ContentPage
 					handled = true;
 					Assert.Equal(13, xpe.XmlInfo.LinePosition);
 				}
-
 			};
-			var page = new HotReloadStaticResourceException(inflator);
-			Assert.True(handled, "Exception was not handled");
+			
+			// Now expect the exception to be thrown (after handler is invoked)
+			var exception = Assert.Throws<XamlParseException>(() => new HotReloadStaticResourceException(inflator));
+			
+			// Verify handler was invoked and exception details are correct
+			Assert.True(handled, "Exception handler was not invoked");
+			Assert.Contains("StaticResource not found for key MissingResource", exception.Message, System.StringComparison.Ordinal);
 		}
 #else
 		[Fact(Skip = "This test runs only in debug")]

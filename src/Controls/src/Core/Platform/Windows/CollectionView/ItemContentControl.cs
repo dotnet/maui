@@ -3,6 +3,7 @@ using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WSize = Windows.Foundation.Size;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement _visualElement;
 		IViewHandler _handler;
 		DataTemplate _currentTemplate;
+		bool _isMeasureInvalidationPending;
 
 		public ItemContentControl()
 		{
@@ -98,7 +100,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static readonly DependencyProperty ItemHeightProperty = DependencyProperty.Register(
 			nameof(ItemHeight), typeof(double), typeof(ItemContentControl),
-			new PropertyMetadata(default(double)));
+			new PropertyMetadata(default(double), OnItemDimensionChanged));
 
 		public double ItemHeight
 		{
@@ -108,12 +110,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static readonly DependencyProperty ItemWidthProperty = DependencyProperty.Register(
 			nameof(ItemWidth), typeof(double), typeof(ItemContentControl),
-			new PropertyMetadata(default(double)));
+			new PropertyMetadata(default(double), OnItemDimensionChanged));
 
 		public double ItemWidth
 		{
 			get => (double)GetValue(ItemWidthProperty);
 			set => SetValue(ItemWidthProperty, value);
+		}
+
+		static void OnItemDimensionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			if (Equals(e.OldValue, e.NewValue))
+			{
+				return;
+			}
+
+			((ItemContentControl)d).InvalidateItemDimensionMeasure();
 		}
 
 		public static readonly DependencyProperty ItemSpacingProperty = DependencyProperty.Register(
@@ -254,6 +266,34 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnViewMeasureInvalidated(object sender, EventArgs e)
 		{
 			InvalidateMeasure();
+		}
+
+		void InvalidateItemDimensionMeasure()
+		{
+			if (_isMeasureInvalidationPending)
+			{
+				return;
+			}
+
+			var dispatcherQueue = DispatcherQueue ?? DispatcherQueue.GetForCurrentThread();
+
+			if (dispatcherQueue is null)
+			{
+				InvalidateMeasure();
+				return;
+			}
+
+			_isMeasureInvalidationPending = true;
+
+			if (!dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+				{
+					_isMeasureInvalidationPending = false;
+					InvalidateMeasure();
+				}))
+			{
+				_isMeasureInvalidationPending = false;
+				InvalidateMeasure();
+			}
 		}
 
 		void OnViewPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
