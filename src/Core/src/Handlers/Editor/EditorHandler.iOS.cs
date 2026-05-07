@@ -97,6 +97,10 @@ namespace Microsoft.Maui.Handlers
 			}
 			else if (editor.Background.IsNullOrEmpty())
 			{
+				// Skip resetting during initial setup to preserve shadow rendering and native default appearance.
+				if (handler.IsConnectingHandler())
+					return;
+
 				platformView.RemoveBackgroundLayer();
 				platformView.BackgroundColor = null;
 			}
