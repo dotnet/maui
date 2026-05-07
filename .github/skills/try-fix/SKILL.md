@@ -394,15 +394,14 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
    # Force both sides to a single string. `git diff` assigned to a variable is a string[]
    # (one element per line); `-ne` between an array and a scalar is element-wise filtering,
    # not equality. Both must be normalized to the same shape before comparison.
+   #
+   # Also: `Get-Content -Raw` on a 0-byte file returns $null, not "". The Step 6 snapshot
+   # creates a 0-byte file when the diff is empty (the documented Blocked-with-no-diff path),
+   # so coalesce $null to "" via `?? ''` to avoid a false-positive "" -ne $null drift detection.
    $currentDiff  = (git diff | Out-String)
    $reviewedDiff = if (Test-Path "$OUTPUT_DIR/reviewer-findings.diff") {
-       Get-Content "$OUTPUT_DIR/reviewer-findings.diff" -Raw
+       (Get-Content "$OUTPUT_DIR/reviewer-findings.diff" -Raw) ?? ''
    } else { '' }
-
-   # Snapshot the JSON's content hash BEFORE you do any rewriting in sub-step 2.
-   # Sub-step 3 below uses this to assert that the JSON was actually overwritten,
-   # and isn't stale Step 6 content shipped to the gate.
-   $preRewriteJsonHash = (Get-FileHash "$OUTPUT_DIR/reviewer-findings.json" -Algorithm SHA256).Hash
 
    $diffChanged = ($currentDiff -ne $reviewedDiff)
    if (-not $diffChanged) {
@@ -421,13 +420,6 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
 3. **Re-snapshot and re-validate.** Only after rewriting the JSON in sub-step 2, run:
 
    ```powershell
-   # Prove the JSON was actually overwritten in sub-step 2 (vs. stale Step 6 content).
-   # Hash comparison sidesteps any filesystem mtime granularity issues.
-   $postRewriteJsonHash = (Get-FileHash "$OUTPUT_DIR/reviewer-findings.json" -Algorithm SHA256).Hash
-   if ($postRewriteJsonHash -eq $preRewriteJsonHash) {
-       throw "❌ reviewer-findings.json was not rewritten in Step 7.5 sub-step 2 (content hash unchanged: $preRewriteJsonHash). Go back and overwrite it with refreshed findings before re-snapshotting. (If the refreshed findings are byte-identical to the Step 6 findings — extremely rare — touch the file with a trailing whitespace inside a string body to bypass this check.)"
-   }
-
    # Re-snapshot the diff (matches Step 6's snapshot logic — works for empty diffs too).
    Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value (git diff | Out-String) -NoNewline
 
@@ -441,6 +433,8 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
        throw
    }
    ```
+
+   > **Why no programmatic "did you actually rewrite the JSON" check?** A SHA256 hash sentinel rejects the legitimate byte-identical case (e.g., `[]` → `[]` after a small compile fix that introduces no new violations), and that case is common. The procedural enforcement is sub-step 2's explicit numbered list above, plus the example-invocation chain that walks the dimensions explicitly. If sub-step 2 is skipped, the JSON validates but ships a stale review — accept that risk in exchange for not blocking valid clean fixes.
 
 **Severity handling is the same as Step 6.** If the refresh surfaces new `[critical]` or `[major]` findings, you may apply ONE more fix batch and re-run the test loop, then re-refresh. Do not loop indefinitely — if a fix introduces critical findings on the third pass, mark the attempt `Blocked` and explain in `analysis.md`.
 
