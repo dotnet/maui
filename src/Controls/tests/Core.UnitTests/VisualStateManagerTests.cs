@@ -645,6 +645,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Transition to the custom state — custom state is NOT promoted, so ManualValueSetter still wins
 			VisualStateManager.GoToState(button, customStateName);
 			Assert.Equal(localColor, button.BackgroundColor);
+		}
+
+		[Fact]
 		public void InvalidateVisualStatesReappliesMutatedSetter()
 		{
 			var label = new Label();
