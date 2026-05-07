@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using OpenQA.Selenium.Internal;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,9 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Windows] ScrollView is not scrolling to the bottom if in grid with *,auto Width";
 
 		[Test]
-		[Category(UITestCategories.Cells)]
 		[Category(UITestCategories.ScrollView)]
-		[Category(UITestCategories.Border)]
 		public void GridAutosStarsScollToEndDisplaysLastItem()
 		{
 			TestWindows();

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Maui.Graphics;
@@ -142,25 +143,27 @@ namespace Microsoft.Maui.Layouts
 
 				InitializeCells();
 
-				// Some _childrenToLayout may have an absolute Height/Width, while our columns/rows are set to auto or *.  
-				// In this case, we adjust the column/row size to match the child's size.  
-				foreach (var cell in _cells)
+				// Some children may have an explicit Width/Height set. Pre-seed Auto row/column sizes
+				// from those values using Update() (max semantics) so that ResolveStarColumns/Rows
+				// accounts for the Auto size before computing the star allocation.
+				for (int n = 0; n < _cells.Length; n++)
 				{
+					var cell = _cells[n];
 					var view = _childrenToLayOut[cell.ViewIndex];
-					if (view.Height > 0)
+					if (cell.RowSpan == 1 && Dimension.IsExplicitSet(view.Height))
 					{
 						var row = _rows[cell.Row];
 						if (row.IsAuto)
 						{
-							row.Size = view.Height;
+							row.Update(view.Height + view.Margin.VerticalThickness);
 						}
 					}
-					if (view.Width > 0)
+					if (cell.ColumnSpan == 1 && Dimension.IsExplicitSet(view.Width))
 					{
 						var column = _columns[cell.Column];
 						if (column.IsAuto)
 						{
-							column.Size = view.Width;
+							column.Update(view.Width + view.Margin.HorizontalThickness);
 						}
 					}
 				}
@@ -534,24 +537,38 @@ namespace Microsoft.Maui.Layouts
 
 			void AdjustDefinitions()
 			{
-				AdjustDefinitions(_rows, _gridHeightConstraint);
-				AdjustDefinitions(_columns, _gridWidthConstraint);
+				AdjustDefinitions(_rows, _gridHeightConstraint, _rowSpacing, _padding.VerticalThickness);
+				AdjustDefinitions(_columns, _gridWidthConstraint, _columnSpacing, _padding.HorizontalThickness);
 			}
 
-			static void AdjustDefinitions(Definition[] definitions, double gridConstrain)
+			static void AdjustDefinitions(Definition[] definitions, double constraint, double spacing, double paddingThickness)
 			{
-				var definitionsTempMax = definitions.Sum(d => d.Size);
-				if (definitionsTempMax > gridConstrain)
+				var total = SumDefinitions(definitions, spacing);
+				if (total <= constraint - paddingThickness)
 				{
-					var overflow = definitionsTempMax - gridConstrain;
-					var biggestDefinition = definitions.Where(d => d.IsAuto || d.IsStar).OrderByDescending(d => d.Size).FirstOrDefault();
-					if (biggestDefinition != null)
+					return;
+				}
+				
+				var overflow = total - (constraint - paddingThickness);
+				
+				// Find the largest Auto or Star definition to absorb the overflow.
+				int biggestIndex = -1;
+				double biggestSize = 0;
+				for (int n = 0; n < definitions.Length; n++)
+				{
+					var def = definitions[n];
+					if ((def.IsAuto || def.IsStar) && def.Size > biggestSize)
 					{
-						biggestDefinition.Size -= overflow;
+						biggestSize = def.Size;
+						biggestIndex = n;
 					}
 				}
+				
+				if (biggestIndex >= 0)
+				{
+					definitions[biggestIndex].Size = Math.Max(0, definitions[biggestIndex].Size - overflow);
+				}
 			}
-
 
 			void TrackSpan(Span span)
 			{
