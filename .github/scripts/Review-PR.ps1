@@ -392,13 +392,13 @@ function Invoke-CopilotStep {
                     }
                 }
                 'result' {
-                    # Final stats
-                    $usage = $event.data.usage
+                    # Final stats — note: 'result' is a top-level event with no 'data' wrapper.
+                    $usage = $event.usage
                     if ($usage) {
                         $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
                         $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
                         $changes = $usage.codeChanges
-                        $filesChanged = if ($changes -and $changes.filesModified) { $changes.filesModified.Count } else { 0 }
+                        $filesChanged = if ($changes -and $changes.filesModified) { @($changes.filesModified).Count } else { 0 }
                         $linesAdded = if ($changes) { $changes.linesAdded } else { 0 }
                         $linesRemoved = if ($changes) { $changes.linesRemoved } else { 0 }
 
