@@ -38,10 +38,22 @@ namespace Microsoft.Maui.Hosting
 	{
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
+			// Register MainThreadBridgeInitializer FIRST so MainThread.SetCustomImplementation
+			// runs before EssentialsInitializer resolves DI-registered services. Order matters:
+			// IMauiInitializeService instances are executed in DI registration order
+			// (MauiContextExtensions.InitializeAppServices iterates GetServices<IMauiInitializeService>()),
+			// and on netstandard / external TFMs MainThread throws NotImplementedInReferenceAssemblyException
+			// until the bridge is installed. If EssentialsInitializer ran first, any DI-registered
+			// Essentials implementation whose constructor touched MainThread would fail during
+			// the very bridge call meant to enable it.
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
+
 			// Register the EssentialsInitializer unconditionally so DI-registered Essentials
 			// implementations are bridged to the static facades during app startup, even when
 			// ConfigureEssentials() is not called. The initializer's AppActions event handler
-			// is a no-op when no AppActionHandlers are configured.
+			// is only attached when at least one AppAction handler is configured, to avoid
+			// retaining the initializer instance via the static AppActions.OnAppAction event
+			// for apps that never opt into AppActions.
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 
 			builder.ConfigureLifecycleEvents(life =>
@@ -98,8 +110,6 @@ namespace Microsoft.Maui.Hosting
 
 #endif
 			});
-
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
 
 			return builder;
 		}
@@ -178,11 +188,22 @@ namespace Microsoft.Maui.Hosting
 				BridgeEssentialsFromDI(services);
 
 #if WINDOWS
-				ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
+				// Only forward MapServiceToken when ConfigureEssentials(e => e.UseMapServiceToken(...))
+				// supplied a value. Without this null guard, EssentialsInitializer (now registered
+				// unconditionally) would overwrite any token a caller had set directly via
+				// ApplicationModel.Platform.MapServiceToken before MauiApp.Build().
+				if (_essentialsBuilder.MapServiceToken is not null)
+					ApplicationModel.Platform.MapServiceToken = _essentialsBuilder.MapServiceToken;
 #endif
 
 #if !TIZEN
-				AppActions.OnAppAction += HandleOnAppAction;
+				// Only subscribe to the static AppActions.OnAppAction event when at least one
+				// handler was actually registered via IEssentialsBuilder.OnAppAction. The static
+				// event subscription would otherwise pin this initializer instance for the app's
+				// lifetime (and across repeated MauiApp.Build() calls in tests / hosting scenarios)
+				// even when the handler is a no-op.
+				if (_essentialsBuilder.AppActionHandlers is not null)
+					AppActions.OnAppAction += HandleOnAppAction;
 
 				if (_essentialsBuilder.AppActions is not null)
 				{
