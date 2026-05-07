@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// handler factory's service provider, not the application's root <see cref="IServiceProvider"/>.
 		/// It can resolve services that were registered on the handler collection (via
 		/// <c>ConfigureMauiHandlers</c>); it cannot resolve arbitrary services from the app's
-		/// <see cref="IServiceCollection"/>. The same call-ordering rule as
+		/// <see cref="Microsoft.Extensions.DependencyInjection.IServiceCollection"/>. The same call-ordering rule as
 		/// <see cref="UsePlatformHandler{THandler}(IMauiBlazorWebViewBuilder)"/> applies — call this
 		/// method after <c>AddMauiBlazorWebView()</c> (and after any later re-invocations from
 		/// downstream libraries) so the custom handler is the last registration to win.
