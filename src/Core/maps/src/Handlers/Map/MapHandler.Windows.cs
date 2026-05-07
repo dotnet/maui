@@ -74,6 +74,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_mapElementsLayer = new MapElementsLayer();
 			_mapControl.Layers.Add(_mapElementsLayer);
+		public static void MapMapStyle(IMapHandler handler, IMap map) => throw new NotImplementedException();
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
 			return _mapControl;
 		}
@@ -456,5 +458,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			// No-op: shape rendering is not supported by the WinUI 3 MapControl.
 		}
+		void ShowInfoWindow(IMapPin pin) { }
+		void HideInfoWindow(IMapPin pin) { }
 	}
 }

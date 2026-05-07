@@ -238,10 +238,6 @@ $"""
 
 [assembly: global::Microsoft.Maui.Controls.XmlnsDefinition("{XamlParser.MauiGlobalUri}", "{XamlParser.MauiUri}")]
 [assembly: global::Microsoft.Maui.Controls.XmlnsPrefix("{XamlParser.MauiGlobalUri}", "global")]
-
-#if MauiAllowImplicitXmlnsDeclaration
-[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]
-#endif
 """
 			, Encoding.UTF8));
 		});

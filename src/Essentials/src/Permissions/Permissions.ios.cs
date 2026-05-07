@@ -7,6 +7,7 @@ using AVFoundation;
 using CoreBluetooth;
 using MediaPlayer;
 using Speech;
+using UserNotifications;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -290,6 +291,51 @@ namespace Microsoft.Maui.ApplicationModel
 				EnsureMainThread();
 
 				return AVPermissions.RequestPermissionAsync(AVAuthorizationMediaType.Audio);
+			}
+		}
+
+		public partial class PostNotifications : BasePlatformPermission
+		{
+			/// <inheritdoc/>
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				var tcs = new TaskCompletionSource<PermissionStatus>();
+
+				UNUserNotificationCenter.Current.GetNotificationSettings(settings =>
+				{
+					switch (settings.AuthorizationStatus)
+					{
+						case UNAuthorizationStatus.Authorized:
+						case UNAuthorizationStatus.Provisional:
+						case UNAuthorizationStatus.Ephemeral:
+							tcs.TrySetResult(PermissionStatus.Granted);
+							break;
+						case UNAuthorizationStatus.Denied:
+							tcs.TrySetResult(PermissionStatus.Denied);
+							break;
+						default:
+							tcs.TrySetResult(PermissionStatus.Unknown);
+							break;
+					}
+				});
+
+				return tcs.Task;
+			}
+
+			/// <inheritdoc/>
+			public override async Task<PermissionStatus> RequestAsync()
+			{
+				var status = await CheckStatusAsync();
+				if (status == PermissionStatus.Granted)
+					return status;
+
+				var (granted, error) = await UNUserNotificationCenter.Current.RequestAuthorizationAsync(
+					UNAuthorizationOptions.Alert | UNAuthorizationOptions.Badge | UNAuthorizationOptions.Sound);
+
+				if (error is not null)
+					return PermissionStatus.Unknown;
+
+				return granted ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
 

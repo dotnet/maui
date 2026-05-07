@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Graphics
 	/// <summary>
 	/// Represents a font with a name, weight, and style.
 	/// </summary>
-	public struct Font : IFont, IEquatable<IFont>
+	public readonly struct Font : IFont, IEquatable<IFont>
 	{
 		/// <summary>
 		/// Gets the default font.
@@ -131,17 +131,17 @@ namespace Microsoft.Maui.Graphics
 		/// <summary>
 		/// Gets the font name or family.
 		/// </summary>
-		public string Name { get; private set; }
+		public string Name { get; }
 
 		/// <summary>
 		/// Gets the font weight.
 		/// </summary>
-		public int Weight { get; private set; }
+		public int Weight { get; }
 
 		/// <summary>
 		/// Gets the font style type.
 		/// </summary>
-		public FontStyleType StyleType { get; private set; }
+		public FontStyleType StyleType { get; }
 
 		/// <summary>
 		/// Determines whether the specified font is equal to the current font.

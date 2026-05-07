@@ -77,5 +77,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			// The WinUI 3 MapIcon doesn't have an address property
 			// Address display would need custom implementation
 		}
+
+		public static void MapImageSource(IMapPinHandler handler, IMapPin mapPin) { }
 	}
 }
