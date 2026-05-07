@@ -47,9 +47,15 @@ namespace Microsoft.Maui.Handlers
 				double constrainedWidth = ViewHandlerExtensions.ResolveConstraints(PlatformView.Frame.Width, VirtualView.Width, VirtualView.MinimumWidth, VirtualView.MaximumWidth);
 				double constrainedHeight = ViewHandlerExtensions.ResolveConstraints(intrinsicHeight, VirtualView.Height, VirtualView.MinimumHeight, VirtualView.MaximumHeight);
 
-				if (IsExplicitSet(VirtualView.Height) && constrainedHeight < intrinsicHeight)
+				// On iOS/MacCatalyst 26, setting SearchBar height below 44 can shrink only the background
+				// while the internal UITextField keeps its native size (platform limitation). Enforce a
+				// minimum height of 44 for explicitly-set smaller values; larger explicit heights still apply.
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				{
-					constrainedHeight = intrinsicHeight;
+					if (IsExplicitSet(VirtualView.Height) && constrainedHeight < intrinsicHeight)
+					{
+						constrainedHeight = intrinsicHeight;
+					}
 				}
 
 				return new Size(constrainedWidth, constrainedHeight);
