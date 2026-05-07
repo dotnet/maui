@@ -128,7 +128,7 @@ public class CarouselViewFeatureTests : _GalleryUITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 7");
-		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("No previous position"));
 	}
 #endif
 #endif
@@ -791,7 +791,7 @@ public class CarouselViewFeatureTests : _GalleryUITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 6");
-		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("No previous position"));
 	}
 #endif
 #endif
