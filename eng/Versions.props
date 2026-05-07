@@ -33,7 +33,6 @@
     <!-- dotnet/sdk -->
     <MicrosoftNETSdkPackageVersion>11.0.100-preview.5.26256.105</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
-    <MonoPackageVersion>10.0.100</MonoPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>11.0.0-preview.5.26256.105</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
