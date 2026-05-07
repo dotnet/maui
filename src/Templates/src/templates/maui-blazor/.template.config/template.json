@@ -52,7 +52,8 @@
       "copyOnly": [
         "**/wwwroot/lib/bootstrap/**",
         "**/*.svg",
-        "**/*.ttf"
+        "**/*.ttf",
+        "**/*.razor.js"
       ],
       "modifiers": [
         {

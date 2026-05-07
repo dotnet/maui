@@ -65,7 +65,8 @@
       "copyOnly": [
         "**/wwwroot/lib/bootstrap/**",
         "**/*.svg",
-        "**/*.ttf"
+        "**/*.ttf",
+        "**/*.razor.js"
       ],
       "modifiers": [
         {
@@ -289,7 +290,10 @@
         "sourceVariableName": "kestrelHttpPort",
         "fallbackVariableName": "kestrelHttpPortGenerated"
       },
-      "replaces": "5500"
+      "replaces": "5500",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
     },
     "kestrelHttpsPort": {
       "type": "parameter",
@@ -311,7 +315,10 @@
         "sourceVariableName": "kestrelHttpsPort",
         "fallbackVariableName": "kestrelHttpsPortGenerated"
       },
-      "replaces": "5501"
+      "replaces": "5501",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
     },
     "iisHttpPort": {
       "type": "parameter",

@@ -14,7 +14,7 @@ builder.Services.AddSingleton<IFormFactor, FormFactor>();
 #if (IndividualLocalAuth)
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
+builder.Services.AddAuthenticationStateDeserialization();
 
 #endif
 await builder.Build().RunAsync();
