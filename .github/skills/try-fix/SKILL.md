@@ -26,7 +26,7 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
 
-**Every invocation runs all 10 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`.
+**Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`.
 
 ## ⚠️ CRITICAL: Sequential Execution Only
 
@@ -97,7 +97,8 @@ Write-Host "Output directory: $OUTPUT_DIR"
 |------|----------------|---------|
 | `baseline.log` | After Step 2 (Baseline) | Output from EstablishBrokenBaseline.ps1 proving baseline was established |
 | `approach.md` | After Step 4 (Design) | What fix you're attempting and why it's different from existing fixes |
-| `reviewer-findings.json` | After Step 6 (Self-Review) | JSON array of self-review findings — `[]` when clean. **MUST exist.** |
+| `reviewer-findings.json` | After Step 6 (Self-Review), refreshed by Step 7.5 | JSON array of self-review findings — `[]` when clean. **MUST reflect the final diff.** |
+| `reviewer-findings.diff` | After Step 6 (Self-Review), refreshed by Step 7.5 | Snapshot of `git diff` at the time the self-review was written. Step 7.5 compares this to the post-test-loop diff to detect drift. |
 | `result.txt` | After Step 7 (Test) | Single word: `Pass`, `Fail`, or `Blocked` |
 | `fix.diff` | After Step 7 (Test) | Output of `git diff` showing your changes |
 | `test-output.log` | After Step 7 (Test) | Full output from test command |
@@ -127,7 +128,7 @@ The skill is complete when:
 - [ ] ONE fix approach designed and implemented
 - [ ] Fix tested with provided test command (iterated up to 3 times if errors/failures)
 - [ ] Either: Tests PASS ✅, or exhausted attempts and documented why approach won't work ❌
-- [ ] **Expert self-review performed inline (Step 6) and `reviewer-findings.json` written** — `[]` if clean
+- [ ] **Expert self-review performed inline (Step 6) and `reviewer-findings.json` written** — `[]` if clean. **Refreshed by Step 7.5 if the test loop modified code, so the saved findings reflect the final diff.**
 - [ ] Analysis provided (success explanation or failure reasoning with evidence)
 - [ ] Artifacts saved to output directory (verified by Step 8 file-existence gate)
 - [ ] Baseline restored (working directory clean)
@@ -325,6 +326,9 @@ This step runs BEFORE testing so you can catch design flaws before spending time
        Write-Host "❌ reviewer-findings.json is invalid JSON: $_"
        throw
    }
+
+   # Snapshot the diff that was reviewed — Step 7.5 uses this to detect whether the test loop mutated code.
+   git diff | Set-Content "$OUTPUT_DIR/reviewer-findings.diff"
    ```
 
    **Remember `$findingsCount`** — you will report it as `findings_count` in Step 10 and summarize it in `analysis.md` (Step 8).
@@ -363,7 +367,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <proje
 
 1. **Run the test command** - It will build, deploy, and test automatically
 2. **Check the result:**
-   - ✅ **Tests PASS** → Move to Step 8 (Capture)
+   - ✅ **Tests PASS** → Move to Step 7.5 (Refresh self-review if needed)
    - ❌ **Compile errors** → Fix compilation issues (see below), go to step 1
    - ❌ **Tests FAIL (runtime)** → Analyze failure, fix code, go to step 1
 3. **Maximum 3 iterations** - If still failing after 3 attempts, analyze if approach is fundamentally flawed
@@ -375,6 +379,37 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <proje
 - DO NOT manually build - always rerun the test command script
 
 See [references/compile-errors.md](references/compile-errors.md) for error patterns and iteration examples.
+
+### Step 7.5: Refresh Self-Review If Code Changed (MANDATORY)
+
+🚨 **The test loop in Step 7 may modify code (compile-error fixes, runtime-error fixes). When that happens, the `reviewer-findings.json` written in Step 6 describes a stale diff — not the diff that will be captured in Step 8 and shipped to the reviewer.** This step re-runs the self-review against the *final* diff so the recorded findings always correspond to the actual fix.
+
+```powershell
+# Compare the current diff against the diff Step 6 reviewed
+$currentDiff = git diff
+$reviewedDiff = if (Test-Path "$OUTPUT_DIR/reviewer-findings.diff") {
+    Get-Content "$OUTPUT_DIR/reviewer-findings.diff" -Raw
+} else { $null }
+
+if ($currentDiff -ne $reviewedDiff) {
+    Write-Host "🔁 Code changed during Step 7 — refreshing self-review against final diff..."
+    # Re-run the procedure from Step 6 against the final diff:
+    #   - walk the same Overarching Principles + routed dimensions
+    #   - OVERWRITE $OUTPUT_DIR/reviewer-findings.json with the new findings
+    #   - update $findingsCount
+    # Then re-snapshot the diff:
+    git diff | Set-Content "$OUTPUT_DIR/reviewer-findings.diff"
+
+    # Validate again:
+    $findings = @(Get-Content "$OUTPUT_DIR/reviewer-findings.json" -Raw | ConvertFrom-Json)
+    $findingsCount = $findings.Count
+    Write-Host "✅ reviewer-findings.json refreshed: $findingsCount findings"
+} else {
+    Write-Host "✅ Diff unchanged since Step 6 — self-review still current."
+}
+```
+
+**Severity handling is the same as Step 6.** If the refresh surfaces new `[critical]` or `[major]` findings, you may apply ONE more fix batch and re-run the test loop, then re-refresh. Do not loop indefinitely — if a fix introduces critical findings on the third pass, mark the attempt `Blocked` and explain in `analysis.md`.
 
 ### Step 8: Capture Artifacts (MANDATORY)
 
@@ -390,7 +425,8 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 # 3. Save test output (should already exist from Step 7)
 # Copy-Item "path/to/test-output.log" "$OUTPUT_DIR/test-output.log"
 
-# 4. reviewer-findings.json should already exist from Step 6
+# 4. reviewer-findings.json should already exist from Step 6 (and may have been refreshed by Step 7.5)
+# 4b. reviewer-findings.diff snapshot (used by Step 7.5 to detect drift)
 
 # 5. Save analysis (include a one-line summary of self-review findings)
 @"
@@ -408,14 +444,14 @@ git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 "@ | Set-Content "$OUTPUT_DIR/analysis.md"
 ```
 
-**Verify all required files exist (this is the enforcement gate for Step 7):**
+**Verify all required files exist (this is the enforcement gate for Steps 6 and 7 — primarily `reviewer-findings.json` from Step 6, refreshed by Step 7.5 if needed):**
 
 🚨 **The artifact check below MUST be wrapped so that Step 9 (Restore) ALWAYS runs even if the check fails.** A failed gate that skips restore would leave the worktree dirty and corrupt the next sequential try-fix attempt.
 
 ```powershell
 # Run the file-existence check, but DEFER any throw until after Step 9 has restored the worktree.
 $missing = @()
-@("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md", "test-output.log", "reviewer-findings.json") | ForEach-Object {
+@("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md", "test-output.log", "reviewer-findings.json", "reviewer-findings.diff") | ForEach-Object {
     if (Test-Path "$OUTPUT_DIR/$_") {
         Write-Host "✅ $_"
     } else {
@@ -426,7 +462,7 @@ $missing = @()
 
 # Record the gate result for use after Step 9 — DO NOT throw here.
 if ($missing.Count -gt 0) {
-    $gateFailureMessage = "Required artifacts missing: $($missing -join ', '). If 'reviewer-findings.json' is missing, Step 7 (Expert Self-Review) was not performed — it is mandatory and must contain at least '[]'."
+    $gateFailureMessage = "Required artifacts missing: $($missing -join ', '). If 'reviewer-findings.json' is missing, Step 6 (Expert Self-Review) was not performed (or Step 7.5 did not refresh it after the test loop) — it is mandatory and must contain at least '[]' that reflects the final diff."
     Write-Host "⚠️  ARTIFACT GATE FAILED — proceeding to Step 9 restore before reporting failure."
     Write-Host $gateFailureMessage
     "Blocked" | Set-Content "$OUTPUT_DIR/result.txt" -Force
