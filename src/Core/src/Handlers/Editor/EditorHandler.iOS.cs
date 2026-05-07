@@ -3,6 +3,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 			else if (editor.Background.IsNullOrEmpty())
 			{
 				platformView.RemoveBackgroundLayer();
-				platformView.BackgroundColor = null;
+				platformView.BackgroundColor = ColorExtensions.BackgroundColor;
 			}
 			else
 			{
