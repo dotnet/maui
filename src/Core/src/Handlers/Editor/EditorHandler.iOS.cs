@@ -3,6 +3,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -97,12 +98,8 @@ namespace Microsoft.Maui.Handlers
 			}
 			else if (editor.Background.IsNullOrEmpty())
 			{
-				// Skip resetting during initial setup to preserve shadow rendering and native default appearance.
-				if (handler.IsConnectingHandler())
-					return;
-
 				platformView.RemoveBackgroundLayer();
-				platformView.BackgroundColor = null;
+				platformView.BackgroundColor = ColorExtensions.BackgroundColor;
 			}
 			else
 			{
