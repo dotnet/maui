@@ -1,6 +1,6 @@
 ---
-name: darc
-description: Run darc commands for managing .NET Core ecosystem dependencies, builds, and assets. Use this skill when querying the Build Asset Registry (BAR), looking up package versions, finding builds, managing subscriptions/channels, updating dependencies, or any darc CLI operation. Triggers include "darc", "get-asset", "get-build", "dependency flow", "BAR", "Maestro", "arcade-services", "feeds for .NET MAUI".
+name: dependency-flow
+description: "MAUI-specific dependency flow rules, channel conventions, and feed lookup workflows. Use when asked about darc, BAR, Maestro, feeds for .NET MAUI, build promotion, asset lookup, channel mappings, or dependency flow for dotnet/maui. Wraps the maestro-cli skill and maestro MCP tools with MAUI-specific guardrails."
 ---
 
 # dotnet/maui Dependency Flow Context
