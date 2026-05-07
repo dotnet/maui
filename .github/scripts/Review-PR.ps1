@@ -5,12 +5,15 @@
 .DESCRIPTION
     Orchestrates a PR review by invoking scripts and Copilot CLI:
     
-    Step 0: Branch setup        - Create review branch from main, merge PR squashed
-    Step 1: Gate                - Run test verification directly (verify-tests-fail.ps1)
-    Step 2: Multi-candidate review - Pre-Flight, then PARALLEL (expert-reviewer eval of PR + Try-Fix×4),
-                                    then Report compares all candidates and writes winner.json
-    Step 3: Post AI Summary     - Directly runs posting scripts
-    Step 4: Apply labels        - Apply agent labels based on review results
+    Step 1: Branch setup           - Create review branch from main, merge PR squashed
+    Step 2: Detect UI categories   - Run eng/scripts/detect-ui-test-categories.ps1 (info only)
+    Step 3: Run detected UI tests  - Execute BuildAndRunHostApp.ps1 per detected category (informational)
+    Step 4: Regression cross-ref   - Run Find-RegressionRisks.ps1 + run any tests from prior fix PRs
+    Step 5: Gate                   - Run test verification directly (verify-tests-fail.ps1)
+    Step 6: Multi-candidate review - Pre-Flight, then PARALLEL (expert-reviewer eval of PR + Try-Fix×4),
+                                     then Report compares all candidates and writes winner.json
+    Step 7: Post AI Summary        - Directly runs posting scripts
+    Step 8: Apply labels           - Apply agent labels based on review results
 
     By default, the script checks out main and creates a review branch from it.
     If squash-merge conflicts, the script posts a comment on the PR and exits.
@@ -497,20 +500,148 @@ if (Test-Path $detectScript) {
 # Belt-and-suspenders: the detect script's manual-PR mode does
 # `git checkout $headSha`, leaving HEAD detached. Its own try/finally restores
 # the previous ref, but if that finally is skipped (process killed, scripting
-# error before the outer try opens) we'd run Step 1's gate against the wrong
-# tree. Force HEAD back to the review branch and fail loudly if we can't.
+# error before the outer try opens) we'd run subsequent steps against the
+# wrong tree. Force HEAD back to the review branch and fail loudly if we can't.
 git checkout $reviewBranch 2>$null | Out-Null
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ⚠️ Failed to restore review branch '$reviewBranch' after Step 2 — Step 1 may run against the wrong tree" -ForegroundColor Red
+    Write-Host "  ⚠️ Failed to restore review branch '$reviewBranch' after Step 2 — subsequent steps may run against the wrong tree" -ForegroundColor Red
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 3: REGRESSION CROSS-REFERENCE (script, no copilot agent)
+#  STEP 3: RUN DETECTED UI TEST CATEGORIES (script, no copilot agent)
+# ═════════════════════════════════════════════════════════════════════════════
+# Runs the UI test categories that Step 2 detected. Skipped when:
+#   - $uitestCategories is 'NONE'        (no UI-relevant changes)
+#   - $uitestCategories is empty/blank    (run-all matrix — too expensive locally)
+# Results are appended to the existing uitests/content.md so they show up in
+# the same collapsible section of the AI summary comment.
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║  STEP 3: RUN DETECTED UI TESTS                            ║" -ForegroundColor Cyan
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+
+$uitestRunResult = "SKIPPED"
+$uitestRunnerScript = Join-Path $PSScriptRoot "BuildAndRunHostApp.ps1"
+
+if ($uitestCategories -eq 'NONE') {
+    Write-Host "  ⏭️  Skipped — detection returned NONE (no UI-relevant changes)" -ForegroundColor DarkGray
+} elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) {
+    Write-Host "  ⏭️  Skipped — detection returned the run-all matrix (too expensive to run all categories locally)" -ForegroundColor DarkGray
+} elseif (-not (Test-Path $uitestRunnerScript)) {
+    Write-Host "  ⚠️ BuildAndRunHostApp.ps1 not found — cannot run UI tests" -ForegroundColor Yellow
+} else {
+    # Mirror the regression-test platform fallback so a $Platform-less invocation
+    # still has a concrete target instead of silently picking nothing.
+    $uitestPlatform = if ($Platform) { $Platform } else { "android" }
+
+    $categoryList = @($uitestCategories -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    Write-Host "  🧪 Running $($categoryList.Count) detected UI category(ies) on '$uitestPlatform'…" -ForegroundColor Cyan
+
+    $uitestRunOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
+    New-Item -ItemType Directory -Force -Path $uitestRunOutputDir | Out-Null
+
+    $uitestPassed = 0
+    $uitestFailed = 0
+    $uitestSkipped = 0
+    $uitestDetails = @()
+
+    foreach ($cat in $categoryList) {
+        Write-Host ""
+        Write-Host "  📋 [$cat] BuildAndRunHostApp.ps1 -Platform $uitestPlatform -Category $cat" -ForegroundColor Cyan
+
+        $catStart = Get-Date
+        try {
+            $testOutput = & $uitestRunnerScript -Platform $uitestPlatform -Category $cat 2>&1
+            $testExitCode = $LASTEXITCODE
+            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+        } catch {
+            Write-Host "    ⚠️ Error: $_" -ForegroundColor Yellow
+            $testExitCode = -1
+        }
+        $catDuration = [math]::Round(((Get-Date) - $catStart).TotalSeconds, 1)
+
+        if ($testExitCode -eq 0) {
+            Write-Host "    ✅ PASSED ($catDuration s)" -ForegroundColor Green
+            $uitestPassed++
+            $uitestDetails += @{ category = $cat; result = 'PASSED'; duration_s = $catDuration }
+        } elseif ($testExitCode -eq -1) {
+            Write-Host "    ⏭️ SKIPPED" -ForegroundColor DarkGray
+            $uitestSkipped++
+            $uitestDetails += @{ category = $cat; result = 'SKIPPED'; duration_s = $catDuration; reason = 'Runner threw an exception' }
+        } else {
+            Write-Host "    ❌ FAILED (exit code: $testExitCode, $catDuration s)" -ForegroundColor Red
+            $uitestFailed++
+            $uitestDetails += @{ category = $cat; result = 'FAILED'; duration_s = $catDuration; exit_code = $testExitCode }
+        }
+    }
+
+    if ($uitestFailed -gt 0) {
+        $uitestRunResult = "FAILED"
+        Write-Host ""
+        Write-Host "  🔴 UI test result: $uitestPassed passed, $uitestFailed FAILED, $uitestSkipped skipped" -ForegroundColor Red
+    } elseif ($uitestPassed -gt 0) {
+        $uitestRunResult = "PASSED"
+        Write-Host ""
+        Write-Host "  ✅ UI test result: $uitestPassed passed, $uitestSkipped skipped" -ForegroundColor Green
+    } else {
+        $uitestRunResult = "SKIPPED"
+        Write-Host ""
+        Write-Host "  ⏭️  All UI categories skipped ($uitestSkipped total)" -ForegroundColor DarkGray
+    }
+
+    # Append a results table to the existing uitests/content.md so the same
+    # collapsible "UI Tests — Category Detection" section in the AI summary
+    # comment now contains both the detected list and the run results.
+    $uitestContentFile = Join-Path $uitestRunOutputDir "content.md"
+    $appendMd = New-Object System.Text.StringBuilder
+    [void]$appendMd.AppendLine()
+    [void]$appendMd.AppendLine("### 🧪 UI Test Execution Results")
+    [void]$appendMd.AppendLine()
+    $resultIcon = switch ($uitestRunResult) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
+    [void]$appendMd.AppendLine("$resultIcon **$uitestRunResult** — $uitestPassed passed, $uitestFailed failed, $uitestSkipped skipped (platform: ``$uitestPlatform``)")
+    [void]$appendMd.AppendLine()
+    if ($uitestDetails.Count -gt 0) {
+        [void]$appendMd.AppendLine("| Category | Result | Duration | Notes |")
+        [void]$appendMd.AppendLine("|---|---|---|---|")
+        foreach ($d in $uitestDetails) {
+            $icon = switch ($d.result) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
+            $notes = if ($d.exit_code) { "exit code $($d.exit_code)" } elseif ($d.reason) { $d.reason } else { "" }
+            [void]$appendMd.AppendLine("| ``$($d.category)`` | $icon $($d.result) | $($d.duration_s)s | $notes |")
+        }
+    }
+    [void]$appendMd.AppendLine()
+    [void]$appendMd.AppendLine("_Failures here are informational only — they do not block the gate or affect try-fix candidate scoring._")
+    Add-Content $uitestContentFile $appendMd.ToString() -Encoding UTF8
+
+    # JSON summary for downstream consumers / debugging.
+    @{
+        result   = $uitestRunResult
+        platform = $uitestPlatform
+        passed   = $uitestPassed
+        failed   = $uitestFailed
+        skipped  = $uitestSkipped
+        details  = $uitestDetails
+    } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $uitestRunOutputDir "test-results.json") -Encoding UTF8
+
+    # result.txt — one-line traceability marker (PASSED / FAILED / SKIPPED).
+    $uitestRunResult | Set-Content (Join-Path $uitestRunOutputDir "result.txt") -Encoding UTF8
+}
+
+# Restore the review branch in case BuildAndRunHostApp.ps1 (or any of its
+# child invocations) detached HEAD or switched branches.
+git checkout $reviewBranch 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  ⚠️ Failed to restore review branch '$reviewBranch' after Step 3 — subsequent steps may run against the wrong tree" -ForegroundColor Red
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 4: REGRESSION CROSS-REFERENCE (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  STEP 3: REGRESSION CROSS-REFERENCE                      ║" -ForegroundColor Cyan
+Write-Host "║  STEP 4: REGRESSION CROSS-REFERENCE                      ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
 $regressionOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/regression-check"
@@ -538,7 +669,7 @@ if (Test-Path $regressionScript) {
     Write-Host "  ⚠️ Find-RegressionRisks.ps1 not found" -ForegroundColor Yellow
 }
 
-# --- Regression Test Execution (part of STEP 3) ---
+# --- Regression Test Execution (part of STEP 4) ---
 $regressionTestResult = "SKIPPED"
 $regressionRisksJson = Join-Path $regressionOutputDir "risks.json"
 if (Test-Path $regressionRisksJson) {
@@ -694,12 +825,12 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 4: Gate - Test Before and After Fix (script, no copilot agent)
+#  STEP 5: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-Write-Host "║  STEP 4: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
+Write-Host "║  STEP 5: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
 
 $gateOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
@@ -977,7 +1108,7 @@ if (-not $DryRun) {
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 5: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
+#  STEP 6: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
 # ═════════════════════════════════════════════════════════════════════════════
 
 $gateStatusForPrompt = switch ($gateResult) {
@@ -1066,15 +1197,15 @@ Do NOT re-run gate verification. The gate phase is handled separately.
 ⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
 "@
 
-Invoke-CopilotStep -StepName "STEP 5: PR REVIEW" -Prompt $step2Prompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 6: PR REVIEW" -Prompt $step2Prompt | Out-Null
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ─── Tier 3 refresh: feed AI categories back into category detection ───
 # Step 2 ran detection without the AI tier (-AiCategories was empty).
-# Pre-flight (Step 2) wrote `ai-categories.md`; re-run detection now so the
-# unified comment reflects all three tiers before Step 3 posts.
+# Pre-flight (Step 6) wrote `ai-categories.md`; re-run detection now so the
+# unified comment reflects all three tiers before Step 7 posts.
 $aiCategoriesFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests/ai-categories.md"
 if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
     try {
@@ -1108,12 +1239,12 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 6: Post AI Summary Comment (direct script invocation)
+#  STEP 7: Post AI Summary Comment (direct script invocation)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║  STEP 6: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "║  STEP 7: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
 $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
@@ -1277,12 +1408,12 @@ $( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limi
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 7: Apply Labels
+#  STEP 8: Apply Labels
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║  STEP 7: APPLY LABELS                                     ║" -ForegroundColor Blue
+Write-Host "║  STEP 8: APPLY LABELS                                     ║" -ForegroundColor Blue
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
 $labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
