@@ -162,13 +162,13 @@
     <TvosTargetFrameworkVersionSdkDefault>26.4</TvosTargetFrameworkVersionSdkDefault>
     <MacCatalystTargetFrameworkVersionSdkDefault>26.4</MacCatalystTargetFrameworkVersionSdkDefault>
     <MacosTargetFrameworkVersionSdkDefault>26.4</MacosTargetFrameworkVersionSdkDefault>
-    <AndroidTargetFrameworkVersionSdkDefault>36.1</AndroidTargetFrameworkVersionSdkDefault>
+    <AndroidTargetFrameworkVersionSdkDefault>37.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
     <IosTargetFrameworkVersion>26.4</IosTargetFrameworkVersion>
     <TvosTargetFrameworkVersion>26.4</TvosTargetFrameworkVersion>
     <MacCatalystTargetFrameworkVersion>26.4</MacCatalystTargetFrameworkVersion>
     <MacosTargetFrameworkVersion>26.4</MacosTargetFrameworkVersion>
-    <AndroidTargetFrameworkVersion>36.1</AndroidTargetFrameworkVersion>
+    <AndroidTargetFrameworkVersion>37.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>7.0</TizenTargetFrameworkVersion>
