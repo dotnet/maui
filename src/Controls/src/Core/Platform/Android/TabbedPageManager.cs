@@ -222,12 +222,20 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		// Don't remove tabs during modal navigation — tabs should remain visible so they
-		// restore properly when the modal is dismissed.
-		// For non-modal navigation (e.g. NavigationPage.PushAsync), tabs must be removed so that
-		// the newly pushed page can use the full available height.
-		if (Element?.Navigation?.ModalStack?.Count > 0)
+		// If a page has been pushed onto the NavigationPage that hosts this TabbedPage,
+		// tabs must be removed so the pushed page gets full height.
+		var parentNav = Element?.Parent as NavigationPage;
+		if (parentNav?.CurrentPage != Element)
+		{
+			RemoveTabs();
 			return;
+		}
+
+		// For modal navigation (popup/dialog over TabbedPage), keep tabs visible
+		if (Element?.Navigation?.ModalStack?.Count > 0)
+		{
+			return;
+		}
 
 		RemoveTabs();
 	}
