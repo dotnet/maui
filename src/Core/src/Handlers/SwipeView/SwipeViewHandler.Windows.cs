@@ -180,12 +180,19 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (var item in items)
 			{
-				if (CanAddSwipeItems(swipeItems) && item is ISwipeItemMenuItem menuItem &&
-					menuItem.Visibility != Visibility.Collapsed &&
-					item.ToHandler(handler.MauiContext!).PlatformView is WSwipeItem swipeItem)
+				if (item is ISwipeItemMenuItem menuItem)
 				{
-					swipeItem.BehaviorOnInvoked = items.SwipeBehaviorOnInvoked.ToPlatform();
-					swipeItems.Add(swipeItem);
+					// Always create the handler regardless of visibility so that subsequent
+					// visibility changes can propagate via the handler's UpdateValue mechanism.
+					var itemElementHandler = item.ToHandler(handler.MauiContext!);
+
+					if (CanAddSwipeItems(swipeItems) &&
+						menuItem.Visibility != Visibility.Collapsed &&
+						itemElementHandler.PlatformView is WSwipeItem swipeItem)
+					{
+						swipeItem.BehaviorOnInvoked = items.SwipeBehaviorOnInvoked.ToPlatform();
+						swipeItems.Add(swipeItem);
+					}
 				}
 			}
 
