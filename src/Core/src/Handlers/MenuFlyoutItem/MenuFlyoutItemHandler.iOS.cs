@@ -37,13 +37,10 @@ namespace Microsoft.Maui.Handlers
 					identifier: null,
 					handler: (_) => VirtualView?.Clicked());
 
-				uiAction.UpdateIsEnabled(VirtualView);
 				return uiAction;
 			}
 
-			var menuItem = VirtualView.CreateMenuItem(MauiContext!);
-			menuItem.UpdateIsEnabled(VirtualView);
-			return menuItem;
+			return VirtualView.CreateMenuItem(MauiContext!);
 		}
 
 		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
