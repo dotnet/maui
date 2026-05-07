@@ -39,3 +39,14 @@ steps:
       "gradle" | "v1" | "$(Agent.OS)" | ${{ parameters.checkoutDirectory }}/src/Core/AndroidNative/gradle/wrapper/gradle-wrapper.properties
       "gradle" | "v1" | "$(Agent.OS)"
     path: $(GRADLE_USER_HOME)
+
+# Copy init.gradle AFTER cache restore so it is not overwritten by a stale cached copy
+- script: |
+    cp "${{ parameters.checkoutDirectory }}/eng/init.gradle" "$(GRADLE_USER_HOME)/init.gradle"
+  displayName: install Gradle init script (Linux/macOS)
+  condition: ne(variables['Agent.OS'], 'Windows_NT')
+
+- pwsh: |
+    Copy-Item "${{ parameters.checkoutDirectory }}/eng/init.gradle" (Join-Path "$(GRADLE_USER_HOME)" "init.gradle")
+  displayName: install Gradle init script (Windows)
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
