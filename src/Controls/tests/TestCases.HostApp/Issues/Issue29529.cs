@@ -21,7 +21,7 @@ public class Issue29529 : ContentPage
 			"Item 6",
 		};
 
-		CarouselView carouselView = new CarouselView
+		CarouselView carouselView = new CarouselView2
 		{
 			ItemsSource = carouselItems,
 			AutomationId = "carouselview",
