@@ -618,6 +618,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		[InlineData("ios", "ios; maccatalyst", true)]
 		[InlineData("maccatalyst", "ios; maccatalyst", true)]
 		[InlineData("android", "ios; maccatalyst", false)]
+		// Tab and mixed whitespace in the list — see Regex.Replace(\s+, '') in
+		// _MauiCollectPlatformSpecificCompileItems. ASCII-space-only stripping
+		// (.Replace(' ', '')) would silently miss these and break shared folders.
+		[InlineData("ios", "ios;\tmaccatalyst", true)]
+		[InlineData("maccatalyst", "ios;\tmaccatalyst", true)]
+		[InlineData("ios", "ios; \t maccatalyst", true)]
+		[InlineData("maccatalyst", "ios; \t maccatalyst", true)]
 		public void SingleProject_SharedPlatformFolderMappingsAreRespected(string targetPlatformIdentifier, string targetPlatformIdentifiers, bool shouldIncludeAppleSharedFile)
 		{
 			SetUp();
@@ -707,12 +714,24 @@ public static class AppleSharedMarker
 			AddMauiReferences(project);
 			AddSingleProjectBeforeTargetsImport(project);
 
-			var customMappings = NewElement("ItemGroup");
+			// Real users author this as a Target rather than an inline ItemGroup.
+			// In a normal SDK-style csproj, the user's project body is evaluated
+			// before NuGet imports the SingleProject SDK targets, so an inline
+			// <MauiPlatformSpecificFolder Update="$(iOSProjectFolder)" .../> would
+			// silently no-op: $(iOSProjectFolder) is empty at evaluation time and
+			// the built-in items don't exist yet. Hooking _MauiNormalizePlatformSpecificFolders
+			// guarantees the Update runs after the SDK has populated both the
+			// built-in items and $(iOSProjectFolder).
+			var extendTarget = NewElement("Target")
+				.WithAttribute("Name", "MauiExtendIosToMacCatalyst")
+				.WithAttribute("BeforeTargets", "_MauiNormalizePlatformSpecificFolders");
+			var extendItemGroup = NewElement("ItemGroup");
 			var update = NewElement("MauiPlatformSpecificFolder")
 				.WithAttribute("Update", "$(iOSProjectFolder)");
 			update.Add(NewElement("TargetPlatformIdentifiers").WithValue("ios;maccatalyst"));
-			customMappings.Add(update);
-			project.Add(customMappings);
+			extendItemGroup.Add(update);
+			extendTarget.Add(extendItemGroup);
+			project.Add(extendTarget);
 
 			WriteFile("Entry.cs", @"
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -740,6 +759,133 @@ public static class ExtendedIosMarker
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
 			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExtendedIosMarker");
+		}
+
+		// Regression test: a user-supplied folder declared without a trailing slash
+		// must NOT match sibling folders sharing a common prefix. Without
+		// EnsureTrailingSlash() in _MauiCollectPlatformSpecificCompileItems, the
+		// glob "Platforms\Apple**/*.cs" would silently include AppleX/AppleLegacy.
+		[Theory]
+		[InlineData("Platforms\\Apple")]
+		[InlineData("Platforms\\Apple\\")]
+		public void SingleProject_PlatformFolderWithoutTrailingSlashDoesNotMatchSiblingFolders(string includePath)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", includePath)
+				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AppleSharedMarker
+{
+	public static string Value => ""Apple"";
+}");
+
+			// Sibling folder with a common prefix — must NOT be picked up by the
+			// "Apple" mapping regardless of trailing-slash authoring.
+			WriteFile("Platforms\\AppleX\\AppleXMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AppleXMarker
+{
+	public static string Value => ""AppleX"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: "-p:TargetPlatformIdentifier=ios");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleXMarker");
+		}
+
+		// Non-platform builds (TargetPlatformIdentifier empty, e.g. design-time
+		// or netstandard TFM) must keep removing platform folders that declare a
+		// non-empty TargetPlatformIdentifiers. Condition-gated folders with empty
+		// TargetPlatformIdentifiers must still participate when their condition
+		// evaluates to true — locks in the "empty TPI = always include" branch.
+		[Fact]
+		public void SingleProject_NonPlatformBuildExcludesPlatformSpecificFoldersButKeepsConditionGated()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Apple\\")
+				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Shared\\"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AppleSharedMarker
+{
+	public static string Value => ""Apple"";
+}");
+
+			WriteFile("Platforms\\Shared\\SharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class SharedMarker
+{
+	public static string Value => ""Shared"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// No -p:TargetPlatformIdentifier — simulates the non-platform TFM /
+			// design-time evaluation scenario.
+			Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
 		}
 
 		[Theory]

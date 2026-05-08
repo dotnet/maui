@@ -35,14 +35,61 @@
     </Compile>
   </ItemGroup>
 
+  <!--
+    Build the per-platform allow-list of Compile items that should survive the
+    blanket Platforms/** removal performed by _MauiRemovePlatformCompileItems.
+
+    Identity normalization: EnsureTrailingSlash() guards against the
+    foot-gun where a user-supplied item like
+        <MauiPlatformSpecificFolder Include="Platforms\Apple" .../>
+    (no trailing separator) would expand to the glob "Platforms\Apple**/*.cs"
+    and silently match sibling folders such as "Platforms\AppleX\" or
+    "Platforms\AppleLegacy\".
+
+    TPI matching contract: TargetPlatformIdentifiers is a ';'-delimited list.
+    Comparison is case-insensitive and tolerates any whitespace (ASCII space,
+    tab, CR, LF) around each entry; the Regex.Replace(\s+, '') strip is
+    deliberate, not Replace(' ', ''), so values formatted across multiple lines
+    or copy-pasted with tabs continue to match.
+
+    Empty TargetPlatformIdentifiers means "always include" (condition-gated
+    folder). The '$(TargetPlatformIdentifier)' != '' guard prevents non-empty
+    lists from accidentally matching during non-platform (e.g. netstandard /
+    design-time) builds where $(TargetPlatformIdentifier) is empty.
+  -->
   <Target Name="_MauiCollectPlatformSpecificCompileItems"
           DependsOnTargets="_MauiNormalizePlatformSpecificFolders"
           BeforeTargets="_MauiRemovePlatformCompileItems"
           Condition=" '$(SingleProject)' == 'true' and '@(MauiPlatformSpecificFolder)' != '' ">
     <ItemGroup>
       <_MauiPlatformSpecificCompileItems
-          Include="%(MauiPlatformSpecificFolder.Identity)**/*$(DefaultLanguageSourceExtension)"
-          Condition=" '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' or ('$(TargetPlatformIdentifier)' != '' and $([System.String]::new(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);').Replace(' ', '').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());')) )" />
+          Include="$([MSBuild]::EnsureTrailingSlash('%(MauiPlatformSpecificFolder.Identity)'))**/*$(DefaultLanguageSourceExtension)"
+          Condition=" '%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers)' == '' or ('$(TargetPlatformIdentifier)' != '' and $([System.Text.RegularExpressions.Regex]::Replace(';%(MauiPlatformSpecificFolder.TargetPlatformIdentifiers);', '\s+', '').ToLowerInvariant().Contains(';$(TargetPlatformIdentifier.ToLowerInvariant());')) )" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Flip ExcludeFromCurrentConfiguration back to false on the kept items so
+    Visual Studio's Solution Explorer / IntelliSense renders them as part of
+    the active configuration. The blanket <Compile Update> at the top of this
+    file unconditionally marks every $(PlatformsProjectFolder)/** file as
+    ExcludeFromCurrentConfiguration=true; the per-TPI flips at the top only
+    cover the built-in $(<TPI>ProjectFolder) paths. Without this target,
+    files in shared folders like Platforms/Apple/ compile correctly but
+    appear grayed-out in the IDE for both ios and maccatalyst targets.
+
+    This MUST run AFTER _MauiRemovePlatformCompileItems because that target
+    relies on cross-item-type batching of %(Compile.ExcludeFromCurrentConfiguration);
+    flipping kept items to false beforehand would remove them from the 'true'
+    batch and prevent the to-remove list from being computed correctly.
+  -->
+  <Target Name="_MauiUnflipKeptCompileItemMetadata"
+          AfterTargets="_MauiRemovePlatformCompileItems"
+          Condition=" '$(SingleProject)' == 'true' and '@(_MauiPlatformSpecificCompileItems)' != '' ">
+    <ItemGroup>
+      <Compile Update="@(_MauiPlatformSpecificCompileItems)">
+        <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+      </Compile>
     </ItemGroup>
   </Target>
 
@@ -57,7 +104,21 @@
 
   <!-- Removals -->
     <ItemGroup>
-      <!-- Remove everything that isn't part of this platform. -->
+      <!--
+        Remove every Compile item under $(PlatformsProjectFolder) that is not
+        part of the current build configuration AND has not been explicitly
+        kept by _MauiCollectPlatformSpecificCompileItems above.
+
+        The Condition references %(Compile.ExcludeFromCurrentConfiguration)
+        from inside an Include of a *different* item type — this is MSBuild
+        cross-item-type batching: the filesystem glob is evaluated once per
+        unique value of Compile.ExcludeFromCurrentConfiguration. In practice
+        the blanket <Compile Update> at the top of this file always marks
+        every $(PlatformsProjectFolder)/** file as ExcludeFromCurrentConfiguration=true,
+        so this batches into a single iteration; do NOT "simplify" away the
+        Condition without first re-verifying that contract still holds, or
+        files outside the active TPI may leak into the build.
+      -->
       <_MauiPlatformCompileToRemove
           Condition=" '%(Compile.ExcludeFromCurrentConfiguration)' == 'true' "
           Include="$(PlatformsProjectFolder)**/*$(DefaultLanguageSourceExtension)"

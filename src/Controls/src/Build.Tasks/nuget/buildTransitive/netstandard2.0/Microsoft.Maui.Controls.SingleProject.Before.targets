@@ -28,14 +28,32 @@
     <TizenProjectFolder>$([MSBuild]::EnsureTrailingSlash('$(TizenProjectFolder)'))</TizenProjectFolder>
   </PropertyGroup>
 
+  <!--
+    Built-in folder mappings declare only the legacy singular TargetPlatformIdentifier
+    metadata so that _MauiNormalizePlatformSpecificFolders is the single source of
+    truth for back-filling the plural TargetPlatformIdentifiers contract. Keeping
+    one source avoids drift between the two metadata fields and ensures the
+    normalization code path is exercised on every SingleProject build (so a
+    regression in the back-fill is caught immediately).
+  -->
   <ItemGroup>
-    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" TargetPlatformIdentifiers="android" />
-    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" TargetPlatformIdentifiers="ios" />
-    <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" TargetPlatformIdentifiers="maccatalyst" />
-    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" TargetPlatformIdentifiers="windows" />
-    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" TargetPlatformIdentifiers="tizen" />
+    <MauiPlatformSpecificFolder Include="$(AndroidProjectFolder)" TargetPlatformIdentifier="android" />
+    <MauiPlatformSpecificFolder Include="$(iOSProjectFolder)" TargetPlatformIdentifier="ios" />
+    <MauiPlatformSpecificFolder Include="$(MacCatalystProjectFolder)" TargetPlatformIdentifier="maccatalyst" />
+    <MauiPlatformSpecificFolder Include="$(WindowsProjectFolder)" TargetPlatformIdentifier="windows" />
+    <MauiPlatformSpecificFolder Include="$(TizenProjectFolder)" TargetPlatformIdentifier="tizen" />
   </ItemGroup>
 
+  <!--
+    Normalize MauiPlatformSpecificFolder items so downstream targets and any
+    third-party extension can rely on a uniform shape:
+      - TargetPlatformIdentifiers is back-filled from the legacy singular
+        TargetPlatformIdentifier when only the singular is set.
+    Identity (folder path) is intentionally not rewritten here because MSBuild
+    item-Identity rewriting requires a remove/re-add dance that loses caller
+    metadata. Instead, downstream consumers apply EnsureTrailingSlash() at the
+    use site (see _MauiCollectPlatformSpecificCompileItems).
+  -->
   <Target Name="_MauiNormalizePlatformSpecificFolders"
           BeforeTargets="_MauiCollectPlatformSpecificCompileItems;_MauiRemovePlatformCompileItems"
           Condition=" '$(SingleProject)' == 'true' ">
