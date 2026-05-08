@@ -222,16 +222,29 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		// If a page has been pushed onto the NavigationPage that hosts this TabbedPage,
-		// tabs must be removed so the pushed page gets full height.
-		var parentNav = Element?.Parent as NavigationPage;
-		if (parentNav?.CurrentPage != Element)
+		// Check if TabbedPage is hosted inside a NavigationPage and another page
+		// was pushed on top of it. In that case, we must remove tabs so the
+		// pushed page gets full height.
+		if (Element?.Parent is NavigationPage parentNav)
 		{
-			RemoveTabs();
+			var navStack = parentNav.Navigation?.NavigationStack;
+			// If the TabbedPage is no longer at the top of its NavigationPage's
+			// stack, a page was pushed over it — remove tabs.
+			if (navStack is not null && navStack.Count > 0 && navStack[navStack.Count - 1] != Element)
+			{
+				RemoveTabs();
+				return;
+			}
+
+			// TabbedPage is still the top page in the nav stack, so this
+			// Disappearing was triggered by a modal overlay or app lifecycle.
+			// Keep tabs visible.
 			return;
 		}
 
-		// For modal navigation (popup/dialog over TabbedPage), keep tabs visible
+		// No NavigationPage parent — original behavior applies.
+		// Check modal stack to avoid removing tabs when a modal is shown over
+		// a root TabbedPage.
 		if (Element?.Navigation?.ModalStack?.Count > 0)
 		{
 			return;
