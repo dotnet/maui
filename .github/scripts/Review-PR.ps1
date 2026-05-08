@@ -743,11 +743,19 @@ if ($uitestCategories -eq 'NONE') {
             )
             $infraReason = $envErrHit
             if (-not $infraReason -and $catFailedTests.Count -gt 0) {
+                # Two equally-strong infra-failure indicators:
+                #   (a) every failure is `OneTimeSetUp:` — driver couldn't
+                #       reach the runner UI button.
+                #   (b) the build itself failed (`Build FAILED`) and there
+                #       are zero passes — NUnit then "fails" every test in
+                #       the assembly because the HostApp APK never got
+                #       installed.
+                $logText = ($testOutput | ForEach-Object { "$_" }) -join "`n"
                 $allOneTimeSetup = @($catFailedTests | Where-Object {
                     ($_.error -as [string]) -match '^OneTimeSetUp:'
                 }).Count -eq $catFailedTests.Count
-                if ($allOneTimeSetup) {
-                    $logText = ($testOutput | ForEach-Object { "$_" }) -join "`n"
+                $buildFailedNoPasses = ($catPassedTests.Count -eq 0) -and ($logText -match '(?m)^Build FAILED\.\s*$')
+                if ($allOneTimeSetup -or $buildFailedNoPasses) {
                     foreach ($sig in $infraSignals) {
                         if ($logText -match [regex]::Escape($sig)) {
                             $infraReason = $sig
@@ -817,7 +825,7 @@ if ($uitestCategories -eq 'NONE') {
             $tPass  = if ($null -ne $d.tests_passed) { [int]$d.tests_passed } else { 0 }
             $tFail  = if ($null -ne $d.tests_failed) { [int]$d.tests_failed } else { 0 }
             $testsCol = if ($d.infra_failure) {
-                            "🛠️ infra failure ($tFail OneTimeSetUp timeouts)"
+                            "🛠️ infra failure ($tFail bogus failures)"
                         }
                         elseif ($d.result -eq 'FAILED' -and $tFail -eq 0) {
                             if ($tCount -eq 0) { "build/deploy failed" }
@@ -843,7 +851,7 @@ if ($uitestCategories -eq 'NONE') {
     $failedCats = @($uitestDetails | Where-Object { $_.result -eq 'FAILED' -and (($_.failed_tests -and $_.failed_tests.Count -gt 0) -or $_.build_tail) })
     $infraCats = @($failedCats | Where-Object { $_.infra_failure })
     if ($infraCats.Count -gt 0) {
-        [void]$appendMd.AppendLine("> ⚠️ **Infrastructure failure detected** — for $($infraCats.Count) categor$(if ($infraCats.Count -eq 1) { 'y' } else { 'ies' }) below, the HostApp couldn't be installed/launched on the device, so every test's ``OneTimeSetUp`` timed out. **These are NOT real test regressions** — the test runner never started. Look for ``$($infraCats[0].infra_failure)`` etc. in the build log.")
+        [void]$appendMd.AppendLine("> ⚠️ **Infrastructure failure detected** — for $($infraCats.Count) categor$(if ($infraCats.Count -eq 1) { 'y' } else { 'ies' }) below, the HostApp couldn't be installed or launched on the device (build/deploy failed). NUnit then reports every test in the assembly as failed. **These are NOT real test regressions** — the test runner never started. Look for ``$($infraCats[0].infra_failure)`` in the build log.")
         [void]$appendMd.AppendLine()
     }
     if ($failedCats.Count -gt 0) {
@@ -852,7 +860,7 @@ if ($uitestCategories -eq 'NONE') {
         foreach ($d in $failedCats) {
             $hasFailedTests = $d.failed_tests -and $d.failed_tests.Count -gt 0
             $headSummary = if ($d.infra_failure) {
-                "🛠️ <code>$($d.category)</code> — infra failure ($($d.failed_tests.Count) OneTimeSetUp timeouts, app never started)"
+                "🛠️ <code>$($d.category)</code> — infra failure ($($d.failed_tests.Count) bogus failures, app never installed)"
             } elseif ($hasFailedTests) {
                 "❌ <code>$($d.category)</code> — $($d.failed_tests.Count) failed test$(if ($d.failed_tests.Count -ne 1) { 's' })"
             } else {
