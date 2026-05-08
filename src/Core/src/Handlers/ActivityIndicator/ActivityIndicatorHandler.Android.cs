@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				if (handler.VirtualView is IActivityIndicator indicator)
+				{
 					progressBar.UpdateIsRunning(indicator);
+				}
 			});
 		}
 
