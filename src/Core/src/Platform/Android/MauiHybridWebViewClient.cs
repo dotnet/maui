@@ -15,10 +15,6 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
 {
-	[RequiresUnreferencedCode(HybridWebViewHandler.DynamicFeatures)]
-#if !NETSTANDARD
-	[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
-#endif
 	public class MauiHybridWebViewClient : WebViewClient
 	{
 		private readonly WeakReference<HybridWebViewHandler?> _handler;
@@ -95,7 +91,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// 1.b. Try special InvokeDotNet path
-			if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
+			if (relativePath == HybridWebViewHandler.InvokeDotNetPath && RuntimeFeature.IsHybridWebViewSupported)
 			{
 				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
 
