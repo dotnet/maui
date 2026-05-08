@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 
 			// Defer update via Post() so it runs after the layout traversal completes,
 			// ensuring startAnimation() is not silently ignored on views still being positioned.
+			// Read VirtualView inside the lambda (not captured at call time) so that if the handler
+			// reconnects to a different item before Post() fires, we apply the correct item's state.
 			progressBar.Post(() =>
 			{
 				if (progressBar.IsDisposed())
@@ -25,7 +27,8 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				progressBar.UpdateIsRunning(activityIndicator);
+				if (handler.VirtualView is IActivityIndicator indicator)
+					progressBar.UpdateIsRunning(indicator);
 			});
 		}
 
