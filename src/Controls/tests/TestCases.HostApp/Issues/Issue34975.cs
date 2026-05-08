@@ -29,7 +29,7 @@ public class Issue34975 : Shell
 			AutomationId = "StatusLabel",
 		};
 
-		WeakReference[] round1Refs = [];
+		WeakReference[] pageRefs = [];
 
 		navigateButton.Clicked += async (s, e) =>
 		{
@@ -41,7 +41,7 @@ public class Issue34975 : Shell
 			await Task.Delay(500);
 
 			// Snapshot Round 1 refs before Round 2 adds more.
-			round1Refs = Issue34975SecondPage.Instances.ToArray();
+			pageRefs = Issue34975SecondPage.Instances.ToArray();
 
 			// Round 2: on macCatalyst under Appium, the accessibility subsystem holds
 			// native refs to the most-recently-visible page. A second navigation
@@ -58,14 +58,14 @@ public class Issue34975 : Shell
 			statusLabel.Text = "Checking...";
 			try
 			{
-				await GarbageCollectionHelper.WaitForGC(5000, round1Refs);
+				await GarbageCollectionHelper.WaitForGC(5000, pageRefs);
 			}
 			catch (Exception)
 			{
 				// GC timeout — fall through to report count
 			}
 
-			var alive = round1Refs.Count(wr => wr.IsAlive);
+			var alive = pageRefs.Count(wr => wr.IsAlive);
 			statusLabel.Text = $"Still alive: {alive}";
 		};
 
