@@ -1225,12 +1225,31 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
             }
 
             $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
+            $uitestContentFile = Join-Path $uitestOutputDir "content.md"
+
+            # Preserve any STEP 3 results table that was appended earlier so
+            # the post-comment phase keeps the actual run output (categories +
+            # execution table) instead of just the refreshed category list.
+            $preservedExecution = ""
+            if (Test-Path $uitestContentFile) {
+                $existing = Get-Content $uitestContentFile -Raw
+                $marker = '### 🧪 UI Test Execution Results'
+                $idx = $existing.IndexOf($marker)
+                if ($idx -ge 0) {
+                    $preservedExecution = $existing.Substring($idx)
+                }
+            }
+
             if ($refreshedCategories -eq 'NONE') {
-                "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+                "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content $uitestContentFile -Encoding UTF8
             } elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) {
-                "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+                "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content $uitestContentFile -Encoding UTF8
             } else {
-                "**Detected UI test categories:** ``$refreshedCategories``" | Set-Content (Join-Path $uitestOutputDir "content.md") -Encoding UTF8
+                "**Detected UI test categories:** ``$refreshedCategories``" | Set-Content $uitestContentFile -Encoding UTF8
+            }
+
+            if (-not [string]::IsNullOrWhiteSpace($preservedExecution)) {
+                Add-Content $uitestContentFile "`n$preservedExecution" -Encoding UTF8
             }
         }
     } catch {
