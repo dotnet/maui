@@ -219,9 +219,13 @@ Write-Success "Test project: $TestProject"
 
 #region Run Tests
 
-# Determine the filter to use
+# Determine the filter to use.
+# NOTE: The CI pipeline `maui-pr-uitests` (definition 313) uses `TestCategory=`
+# (see eng/pipelines/common/ui-tests-steps.yml lines 116-164). NUnit accepts
+# both `Category=` and `TestCategory=` but Cake's RunTestWithLocalDotNet uses
+# `TestCategory=` so we mirror that here for byte-for-byte parity with CI.
 if ($Category) {
-    $effectiveFilter = "Category=$Category"
+    $effectiveFilter = "TestCategory=$Category"
     Write-Step "Running UI tests with category: $Category"
 } else {
     $effectiveFilter = $TestFilter
@@ -306,9 +310,42 @@ $appiumLogFile = Join-Path $HostAppLogsDir "appium.log"
 $env:APPIUM_LOG_FILE = $appiumLogFile
 Write-Info "Set APPIUM_LOG_FILE: $appiumLogFile (screenshots will be saved here)"
 
+# ── TRX setup (mirrors CI: eng/cake/dotnet.cake `RunTestWithLocalDotNet`) ──
+# CI writes one trx per test run via:
+#   --logger "trx;LogFileName=<sanitized-name>.trx"
+#   --logger "console;verbosity=normal"
+#   --results-directory <test-results-dir>
+#   /p:VStestUseMSBuildOutput=false
+# We reproduce that here so STEP 3's renderer can parse authoritative
+# pass/fail counts from the TRX (instead of scraping console output, which is
+# fragile when many tests run and lines get interleaved or wrapped).
+$trxResultsDir = Join-Path $HostAppLogsDir "TestResults"
+if (-not (Test-Path $trxResultsDir)) {
+    New-Item -ItemType Directory -Path $trxResultsDir -Force | Out-Null
+}
+# Sanitize the trx file name. NUnit/MSTest reject some characters. We keep
+# alpha-numeric, dash, underscore and dot — same set Cake's
+# SanitizeTestResultsFilename uses.
+$trxBaseName = if ($Category) { "$Category-$Platform" } else {
+    ($TestFilter -replace '[^A-Za-z0-9._-]', '_')
+}
+$trxBaseName = $trxBaseName -replace '[^A-Za-z0-9._-]', '_'
+$trxFileName = "$trxBaseName.trx"
+$trxFilePath = Join-Path $trxResultsDir $trxFileName
+# Pre-clean stale TRX so we never read a previous run's results
+if (Test-Path $trxFilePath) { Remove-Item $trxFilePath -Force -ErrorAction SilentlyContinue }
+
+Write-Info "TRX file will be written to: $trxFilePath"
+
 try {
-    # Run dotnet test and capture output
-    $testOutput = & dotnet test $TestProject --filter $effectiveFilter --logger "console;verbosity=detailed" 2>&1
+    # Run dotnet test using the SAME loggers and arguments CI uses in
+    # `RunTestWithLocalDotNet` (eng/cake/dotnet.cake line 943-981).
+    $testOutput = & dotnet test $TestProject `
+        --filter $effectiveFilter `
+        --logger "trx;LogFileName=$trxFileName" `
+        --logger "console;verbosity=normal" `
+        --results-directory $trxResultsDir `
+        "/p:VStestUseMSBuildOutput=false" 2>&1
     
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
@@ -316,7 +353,24 @@ try {
     # Output test results to the output stream so callers can capture them
     # (Write-Host goes to the Information stream which is not captured by 2>&1)
     $testOutput | ForEach-Object { Write-Output $_ }
-    
+
+    # Surface the TRX path on a marker line so callers (Invoke-UITestWithRetry
+    # and Review-PR.ps1) can locate the authoritative results file regardless
+    # of where the working directory was when this script ran.
+    if (Test-Path $trxFilePath) {
+        Write-Output ">>> TRX_RESULT_FILE: $trxFilePath"
+    } else {
+        # dotnet test may have written the TRX with a slightly different name
+        # (e.g. when the LogFileName argument got stripped on Windows). Fall
+        # back to scanning the results dir for the newest .trx so we still
+        # surface a usable path to the caller.
+        $latestTrx = Get-ChildItem -Path $trxResultsDir -Filter "*.trx" -ErrorAction SilentlyContinue |
+                     Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        if ($latestTrx) {
+            Write-Output ">>> TRX_RESULT_FILE: $($latestTrx.FullName)"
+        }
+    }
+
     $testExitCode = $LASTEXITCODE
     
     Write-Host ""

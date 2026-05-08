@@ -230,10 +230,26 @@ if ($LogFile) {
     }
 }
 
+# ── Surface the TRX path so STEP 3 can parse authoritative test results ──
+# BuildAndRunHostApp.ps1 prints a marker line `>>> TRX_RESULT_FILE: <path>`
+# (matching the format `RunTestWithLocalDotNet` would have produced via
+# Cake). Pull it out here so callers don't have to re-scan the output.
+$trxResultFile = $null
+foreach ($line in $normalized) {
+    $s = "$line"
+    if ($s -match '^\s*>>>\s*TRX_RESULT_FILE:\s*(.+?)\s*$') {
+        $candidate = $matches[1].Trim()
+        if (Test-Path $candidate) {
+            $trxResultFile = $candidate
+        }
+    }
+}
+
 return @{
-    Output      = $normalized
-    ExitCode    = $lastExit
-    Attempts    = $attempts
-    EnvErrorHit = $envHit
-    DeviceUdid  = $bootedUdid
+    Output        = $normalized
+    ExitCode      = $lastExit
+    Attempts      = $attempts
+    EnvErrorHit   = $envHit
+    DeviceUdid    = $bootedUdid
+    TrxResultFile = $trxResultFile
 }
