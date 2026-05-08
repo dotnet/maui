@@ -268,6 +268,84 @@ if ($DryRun) {
     Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
 }
 
+# ─── Helper: Parse `dotnet test --logger "console;verbosity=detailed"` ──────
+# Extracts per-test results (Passed/Failed/Skipped) plus failure messages and
+# stack traces from raw stdout. Used by STEP 3 so the AI summary comment shows
+# WHICH tests failed and WHY, not just an aggregate exit code.
+function Get-DotNetTestResults {
+    param([string[]]$Lines)
+
+    $results = New-Object System.Collections.ArrayList
+    if (-not $Lines -or $Lines.Count -eq 0) { return ,@() }
+    $n = $Lines.Count
+    $i = 0
+    # A test result line: "  Passed/Failed/Skipped <name> [<duration>]"
+    $testRe = '^  (Passed|Failed|Skipped)\s+(.+?)\s+\[(.+?)\]\s*$'
+    while ($i -lt $n) {
+        $line = [string]$Lines[$i]
+        if ($line -match $testRe) {
+            $status   = $Matches[1]
+            $name     = $Matches[2].Trim()
+            $duration = $Matches[3].Trim()
+
+            $err   = New-Object System.Collections.Generic.List[string]
+            $stack = New-Object System.Collections.Generic.List[string]
+            $section = $null
+            $j = $i + 1
+            while ($j -lt $n) {
+                $l = [string]$Lines[$j]
+                # Stop at the next test result.
+                if ($l -match $testRe) { break }
+                # Stop at runner / xharness section markers.
+                $stripped = $l.Trim()
+                if ($stripped.StartsWith('>>>>>') -or
+                    $stripped.StartsWith('NUnit Adapter') -or
+                    $stripped.StartsWith('Test Run') -or
+                    $stripped.StartsWith('Total tests:') -or
+                    $stripped.StartsWith('Total time:') -or
+                    $stripped.StartsWith('Test execution complete') -or
+                    $stripped.StartsWith('Passed!') -or
+                    $stripped.StartsWith('Failed!') -or
+                    $stripped.StartsWith('Skipped!') -or
+                    $stripped -match '^\[xUnit') {
+                    break
+                }
+                if ($stripped.StartsWith('Error Message:')) {
+                    $section = 'err'
+                    $rest = $stripped.Substring('Error Message:'.Length).Trim()
+                    if ($rest) { $err.Add($rest) | Out-Null }
+                } elseif ($stripped.StartsWith('Stack Trace:')) {
+                    $section = 'stack'
+                    $rest = $stripped.Substring('Stack Trace:'.Length).Trim()
+                    if ($rest) { $stack.Add($rest) | Out-Null }
+                } elseif ($stripped.StartsWith('Standard Output Messages:') -or
+                          $stripped.StartsWith('Attachments:')) {
+                    $section = 'stdout'
+                } elseif ($section -eq 'err') {
+                    $err.Add($l.TrimEnd()) | Out-Null
+                } elseif ($section -eq 'stack') {
+                    $stack.Add($l.TrimEnd()) | Out-Null
+                }
+                $j++
+            }
+
+            $entry = [ordered]@{
+                status   = $status
+                name     = $name
+                duration = $duration
+                error    = (($err   -join "`n").Trim())
+                stack    = (($stack -join "`n").Trim())
+            }
+            [void]$results.Add($entry)
+            $i = [Math]::Max($j, $i + 1)
+        } else {
+            $i++
+        }
+    }
+    # Force array semantics so callers see [object[]] even with 0 or 1 items.
+    return ,@($results.ToArray())
+}
+
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
     param([string]$StepName, [string]$Prompt)
@@ -551,6 +629,7 @@ if ($uitestCategories -eq 'NONE') {
         Write-Host "  📋 [$cat] BuildAndRunHostApp.ps1 -Platform $uitestPlatform -Category $cat" -ForegroundColor Cyan
 
         $catStart = Get-Date
+        $testOutput = @()
         try {
             $testOutput = & $uitestRunnerScript -Platform $uitestPlatform -Category $cat 2>&1
             $testExitCode = $LASTEXITCODE
@@ -561,18 +640,76 @@ if ($uitestCategories -eq 'NONE') {
         }
         $catDuration = [math]::Round(((Get-Date) - $catStart).TotalSeconds, 1)
 
+        # Parse per-test results from captured stdout. test-output.log on disk
+        # gets wiped on the next category run, so we work off the in-memory
+        # capture and persist it to a per-category log for traceability.
+        $perTestResults = @()
+        try {
+            $outputLines = @($testOutput | ForEach-Object { "$_" })
+            $perTestResults = @(Get-DotNetTestResults -Lines $outputLines)
+        } catch {
+            Write-Host "    ⚠️ Failed to parse per-test results: $_" -ForegroundColor Yellow
+        }
+        $catFailedTests = @($perTestResults | Where-Object { $_.status -eq 'Failed' })
+        $catPassedTests = @($perTestResults | Where-Object { $_.status -eq 'Passed' })
+
+        # Stash the raw category log + parsed results for post-mortem.
+        try {
+            $catLogPath = Join-Path $uitestRunOutputDir ("$cat-output.log")
+            $testOutput | Out-File -FilePath $catLogPath -Encoding UTF8
+        } catch { }
+
         if ($testExitCode -eq 0) {
-            Write-Host "    ✅ PASSED ($catDuration s)" -ForegroundColor Green
+            Write-Host "    ✅ PASSED ($catDuration s, $($catPassedTests.Count) test(s))" -ForegroundColor Green
             $uitestPassed++
-            $uitestDetails += @{ category = $cat; result = 'PASSED'; duration_s = $catDuration }
+            $uitestDetails += @{
+                category     = $cat
+                result       = 'PASSED'
+                duration_s   = $catDuration
+                tests_total  = $perTestResults.Count
+                tests_passed = $catPassedTests.Count
+                tests_failed = 0
+                passed_tests = @($catPassedTests | ForEach-Object { @{ name = $_.name; duration = $_.duration } })
+                failed_tests = @()
+            }
         } elseif ($testExitCode -eq -1) {
             Write-Host "    ⏭️ SKIPPED" -ForegroundColor DarkGray
             $uitestSkipped++
-            $uitestDetails += @{ category = $cat; result = 'SKIPPED'; duration_s = $catDuration; reason = 'Runner threw an exception' }
+            $uitestDetails += @{
+                category     = $cat
+                result       = 'SKIPPED'
+                duration_s   = $catDuration
+                reason       = 'Runner threw an exception'
+                tests_total  = 0
+                tests_passed = 0
+                tests_failed = 0
+                passed_tests = @()
+                failed_tests = @()
+            }
         } else {
-            Write-Host "    ❌ FAILED (exit code: $testExitCode, $catDuration s)" -ForegroundColor Red
+            Write-Host "    ❌ FAILED (exit code: $testExitCode, $catDuration s, $($catFailedTests.Count) failed test(s))" -ForegroundColor Red
+            foreach ($ft in $catFailedTests) {
+                Write-Host "       • $($ft.name)" -ForegroundColor Red
+            }
             $uitestFailed++
-            $uitestDetails += @{ category = $cat; result = 'FAILED'; duration_s = $catDuration; exit_code = $testExitCode }
+            $uitestDetails += @{
+                category     = $cat
+                result       = 'FAILED'
+                duration_s   = $catDuration
+                exit_code    = $testExitCode
+                tests_total  = $perTestResults.Count
+                tests_passed = $catPassedTests.Count
+                tests_failed = $catFailedTests.Count
+                passed_tests = @($catPassedTests | ForEach-Object { @{ name = $_.name; duration = $_.duration } })
+                failed_tests = @($catFailedTests | ForEach-Object {
+                    @{
+                        name     = $_.name
+                        duration = $_.duration
+                        error    = $_.error
+                        stack    = $_.stack
+                    }
+                })
+            }
         }
     }
 
@@ -602,15 +739,79 @@ if ($uitestCategories -eq 'NONE') {
     [void]$appendMd.AppendLine("$resultIcon **$uitestRunResult** — $uitestPassed passed, $uitestFailed failed, $uitestSkipped skipped (platform: ``$uitestPlatform``)")
     [void]$appendMd.AppendLine()
     if ($uitestDetails.Count -gt 0) {
-        [void]$appendMd.AppendLine("| Category | Result | Duration | Notes |")
-        [void]$appendMd.AppendLine("|---|---|---|---|")
+        [void]$appendMd.AppendLine("| Category | Result | Tests | Duration | Notes |")
+        [void]$appendMd.AppendLine("|---|---|---|---|---|")
         foreach ($d in $uitestDetails) {
             $icon = switch ($d.result) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
-            $notes = if ($d.exit_code) { "exit code $($d.exit_code)" } elseif ($d.reason) { $d.reason } else { "" }
-            [void]$appendMd.AppendLine("| ``$($d.category)`` | $icon $($d.result) | $($d.duration_s)s | $notes |")
+            # Tests column: e.g. "1/1 ✓" on pass, "0/1 (1 ❌)" on fail.
+            $tCount = if ($null -ne $d.tests_total) { [int]$d.tests_total } else { 0 }
+            $tPass  = if ($null -ne $d.tests_passed) { [int]$d.tests_passed } else { 0 }
+            $tFail  = if ($null -ne $d.tests_failed) { [int]$d.tests_failed } else { 0 }
+            $testsCol = if ($tCount -eq 0) { "—" }
+                        elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
+                        else { "$tPass/$tCount ✓" }
+            $notes = if ($d.exit_code) { "exit code $($d.exit_code)" }
+                     elseif ($d.reason)    { $d.reason }
+                     else                  { "" }
+            [void]$appendMd.AppendLine("| ``$($d.category)`` | $icon $($d.result) | $testsCol | $($d.duration_s)s | $notes |")
         }
     }
     [void]$appendMd.AppendLine()
+
+    # Per-failed-category breakdown: collapsible block with each failed test's
+    # name, error message, and first stack frame so a reviewer can diagnose
+    # without downloading the full build artifact.
+    $failedCats = @($uitestDetails | Where-Object { $_.failed_tests -and $_.failed_tests.Count -gt 0 })
+    if ($failedCats.Count -gt 0) {
+        [void]$appendMd.AppendLine("#### Failed test details")
+        [void]$appendMd.AppendLine()
+        foreach ($d in $failedCats) {
+            [void]$appendMd.AppendLine("<details><summary>❌ <code>$($d.category)</code> — $($d.failed_tests.Count) failed test$(if ($d.failed_tests.Count -ne 1) { 's' })</summary>")
+            [void]$appendMd.AppendLine()
+            foreach ($ft in $d.failed_tests) {
+                [void]$appendMd.AppendLine("**``$($ft.name)``** *(took $($ft.duration))*")
+                [void]$appendMd.AppendLine()
+                $errBody = if ($ft.error) {
+                    # First 1500 chars of the error message — keeps the comment
+                    # under GitHub's 65k limit even with many failures.
+                    $e = [string]$ft.error
+                    if ($e.Length -gt 1500) { $e.Substring(0, 1500) + "`n…(truncated)" } else { $e }
+                } else { "_(no error message captured)_" }
+                [void]$appendMd.AppendLine('```')
+                [void]$appendMd.AppendLine($errBody)
+                [void]$appendMd.AppendLine('```')
+                if ($ft.stack) {
+                    # Show only the first stack frame — usually the one in test code.
+                    $firstFrame = ($ft.stack -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
+                    if ($firstFrame) {
+                        [void]$appendMd.AppendLine("> at $($firstFrame.Trim().TrimStart('a','t',' '))")
+                        [void]$appendMd.AppendLine()
+                    }
+                }
+            }
+            [void]$appendMd.AppendLine()
+            [void]$appendMd.AppendLine("</details>")
+            [void]$appendMd.AppendLine()
+        }
+    }
+
+    # Per-passed-category mini-summary: only emitted if there were ANY passed
+    # tests, so empty/skipped runs stay quiet.
+    $passedCats = @($uitestDetails | Where-Object { $_.passed_tests -and $_.passed_tests.Count -gt 0 -and $_.result -eq 'PASSED' })
+    if ($passedCats.Count -gt 0) {
+        [void]$appendMd.AppendLine("<details><summary>Show $(($passedCats | Measure-Object -Property tests_passed -Sum).Sum) passed test name(s)</summary>")
+        [void]$appendMd.AppendLine()
+        foreach ($d in $passedCats) {
+            [void]$appendMd.AppendLine("**``$($d.category)``**")
+            [void]$appendMd.AppendLine()
+            foreach ($pt in $d.passed_tests) {
+                [void]$appendMd.AppendLine("- ``$($pt.name)`` *($($pt.duration))*")
+            }
+            [void]$appendMd.AppendLine()
+        }
+        [void]$appendMd.AppendLine("</details>")
+        [void]$appendMd.AppendLine()
+    }
     [void]$appendMd.AppendLine("_Failures here are informational only — they do not block the gate or affect try-fix candidate scoring._")
     Add-Content $uitestContentFile $appendMd.ToString() -Encoding UTF8
 
