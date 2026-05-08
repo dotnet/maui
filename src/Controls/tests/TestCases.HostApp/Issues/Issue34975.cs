@@ -34,13 +34,9 @@ public class Issue34975 : Shell
 		navigateButton.Clicked += async (s, e) =>
 		{
 			Issue34975SecondPage.Instances.Clear();
-
-			// Round 1: navigate to the second page and back.
 			await Shell.Current.GoToAsync("Issue34975_second");
 			await Shell.Current.GoToAsync("..");
 			await Task.Delay(500);
-
-			// Snapshot Round 1 refs before Round 2 adds more.
 			pageRefs = Issue34975SecondPage.Instances.ToArray();
 
 			// Round 2: on macCatalyst under Appium, the accessibility subsystem holds
@@ -60,10 +56,7 @@ public class Issue34975 : Shell
 			{
 				await GarbageCollectionHelper.WaitForGC(5000, pageRefs);
 			}
-			catch (Exception)
-			{
-				// GC timeout — fall through to report count
-			}
+			catch { }
 
 			var alive = pageRefs.Count(wr => wr.IsAlive);
 			statusLabel.Text = $"Still alive: {alive}";
