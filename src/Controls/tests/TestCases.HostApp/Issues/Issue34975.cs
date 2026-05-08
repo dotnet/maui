@@ -39,7 +39,6 @@ public class Issue34975 : Shell
 			// Round 1: navigate to the second page and back.
 			await Shell.Current.GoToAsync("Issue34975_second");
 			await Shell.Current.GoToAsync("..");
-			await Task.Delay(300);
 
 			// Snapshot Round 1 refs before Round 2 adds more.
 			round1Refs = Issue34975SecondPage.Instances.ToArray();
@@ -49,7 +48,6 @@ public class Issue34975 : Shell
 			// replaces those refs, releasing Round 1's page for GC.
 			await Shell.Current.GoToAsync("Issue34975_second");
 			await Shell.Current.GoToAsync("..");
-			await Task.Delay(500);
 
 			checkButton.IsVisible = true;
 			statusLabel.Text = "Now tap Check Memory";
@@ -60,7 +58,7 @@ public class Issue34975 : Shell
 			statusLabel.Text = "Checking...";
 			try
 			{
-				await GarbageCollectionHelper.WaitForGC(10000, round1Refs);
+				await GarbageCollectionHelper.WaitForGC(5000, round1Refs);
 			}
 			catch (Exception)
 			{

@@ -22,7 +22,7 @@ public class Issue34975 : _IssuesUITest
 
 		// GarbageCollectionHelper.WaitForGC runs for up to 10 s inside the app,
 		// so allow 30 s total for the status label to reflect the final result.
-		App.WaitForTextToBePresentInElement("StatusLabel", "Still alive:", timeout: TimeSpan.FromSeconds(10));
+		App.WaitForTextToBePresentInElement("StatusLabel", "Still alive:", timeout: TimeSpan.FromSeconds(2));
 		Assert.That(App.FindElement("StatusLabel").GetText(), Is.EqualTo("Still alive: 0"),
 			"Memory leak detected: SecondPage instances were not garbage collected.");
 	}
