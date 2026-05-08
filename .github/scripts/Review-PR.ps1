@@ -643,9 +643,26 @@ if ($uitestCategories -eq 'NONE') {
         # Parse per-test results from captured stdout. test-output.log on disk
         # gets wiped on the next category run, so we work off the in-memory
         # capture and persist it to a per-category log for traceability.
+        # IMPORTANT: PowerShell's `& cmd 2>&1` capture wraps multi-line stderr
+        # blocks (and dotnet test's verbose console logger output) as a single
+        # ErrorRecord/string with embedded `\n`. The parser regex is anchored
+        # with `^...$` (start/end of STRING, not line), so without splitting
+        # the parser would either skip those blocks entirely or — worse —
+        # collect the whole multi-line block as one bogus "test result" with
+        # all 100+ test names concatenated. Normalize each captured element
+        # by splitting on any newline variant so the parser sees true lines.
         $perTestResults = @()
         try {
-            $outputLines = @($testOutput | ForEach-Object { "$_" })
+            $outputLines = @(
+                $testOutput | ForEach-Object {
+                    $s = "$_"
+                    if ($s.Contains("`n") -or $s.Contains("`r")) {
+                        $s -split "`r`n|`n|`r"
+                    } else {
+                        $s
+                    }
+                }
+            )
             $perTestResults = @(Get-DotNetTestResults -Lines $outputLines)
         } catch {
             Write-Host "    ⚠️ Failed to parse per-test results: $_" -ForegroundColor Yellow
@@ -797,26 +814,69 @@ if ($uitestCategories -eq 'NONE') {
             [void]$appendMd.AppendLine("<details><summary>$headSummary</summary>")
             [void]$appendMd.AppendLine()
             if ($hasFailedTests) {
-                foreach ($ft in $d.failed_tests) {
-                    [void]$appendMd.AppendLine("**``$($ft.name)``** *(took $($ft.duration))*")
+                # GitHub's comment body limit is 65,536 chars; large categories
+                # can have 100+ failures with multi-KB error messages each.
+                # Group by error message to dedup the common "OneTimeSetUp:
+                # Timed out…" cases (one root cause, N tests). Show full
+                # detail for the first 5 unique errors, then a compact list.
+                # @() wrap is required: Group-Object on a single unique key
+                # returns ONE GroupInfo (not an array), and `.Count` on a
+                # GroupInfo returns the size of the group, not the number of
+                # groups — without @() the foreach below would iterate the
+                # group's members instead of the groups themselves.
+                $byErr = @($d.failed_tests | Group-Object -Property {
+                    if ($_.error) { ($_.error -as [string]).Substring(0, [Math]::Min(200, ([string]$_.error).Length)) } else { '<no error>' }
+                } | Sort-Object Count -Descending)
+
+                $shownGroups = 0
+                foreach ($g in $byErr) {
+                    if ($shownGroups -ge 5) {
+                        $remaining = ($byErr | Select-Object -Skip 5 | Measure-Object -Property Count -Sum).Sum
+                        [void]$appendMd.AppendLine("…and $remaining more failure(s) with other error signatures (see CopilotLogs artifact for full detail).")
+                        [void]$appendMd.AppendLine()
+                        break
+                    }
+                    $shownGroups++
+
+                    $first = $g.Group[0]
+                    $count = $g.Count
+                    if ($count -gt 1) {
+                        $sampleNames = ($g.Group | Select-Object -First 3 | ForEach-Object { "``$($_.name)``" }) -join ', '
+                        $more = if ($count -gt 3) { ", … (+$($count - 3) more)" } else { '' }
+                        [void]$appendMd.AppendLine("**$count tests failed with the same error** — e.g. $sampleNames$more")
+                    } else {
+                        [void]$appendMd.AppendLine("**``$($first.name)``** *(took $($first.duration))*")
+                    }
                     [void]$appendMd.AppendLine()
-                    $errBody = if ($ft.error) {
-                        # First 1500 chars of the error message — keeps the comment
-                        # under GitHub's 65k limit even with many failures.
-                        $e = [string]$ft.error
+
+                    $errBody = if ($first.error) {
+                        $e = [string]$first.error
                         if ($e.Length -gt 1500) { $e.Substring(0, 1500) + "`n…(truncated)" } else { $e }
                     } else { "_(no error message captured)_" }
                     [void]$appendMd.AppendLine('```')
                     [void]$appendMd.AppendLine($errBody)
                     [void]$appendMd.AppendLine('```')
-                    if ($ft.stack) {
-                        # Show only the first stack frame — usually the one in test code.
-                        $firstFrame = ($ft.stack -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
+                    if ($first.stack) {
+                        $firstFrame = ($first.stack -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
                         if ($firstFrame) {
                             [void]$appendMd.AppendLine("> at $($firstFrame.Trim().TrimStart('a','t',' '))")
                             [void]$appendMd.AppendLine()
                         }
                     }
+                }
+
+                # Always print a compact name-only list of every failed test
+                # so reviewers know exactly which tests need to be re-run,
+                # even if their error matched a deduped group above.
+                if ($d.failed_tests.Count -gt 1) {
+                    [void]$appendMd.AppendLine("<details><summary>All $($d.failed_tests.Count) failed test names</summary>")
+                    [void]$appendMd.AppendLine()
+                    foreach ($ft in $d.failed_tests) {
+                        [void]$appendMd.AppendLine("- ``$($ft.name)``")
+                    }
+                    [void]$appendMd.AppendLine()
+                    [void]$appendMd.AppendLine("</details>")
+                    [void]$appendMd.AppendLine()
                 }
             }
             if ($d.build_tail) {
