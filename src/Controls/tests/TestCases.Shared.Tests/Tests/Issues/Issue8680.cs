@@ -29,8 +29,8 @@ public class Issue8680 : _IssuesUITest
 		App.WaitForElement("StatusLabel");
 		Assert.That(
 		 App.FindElement("StatusLabel").GetText(),
-		 Does.Contain("Back intercepted"),
-		 "OnBackButtonPressed should have been called and returned true, intercepting the back press.");
+		 Is.EqualTo("Back intercepted: 1"),
+		 "OnBackButtonPressed should have been called exactly once per back press (detects dual-fire regression on API 33+).");
 
 		// The intercept page should still be displayed (not popped)
 		App.WaitForElement("InterceptPageLabel");
