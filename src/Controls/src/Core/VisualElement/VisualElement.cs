@@ -1674,26 +1674,37 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			if (!IsEnabled)
+			try
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
-			}
-			else
-			{
-				bool isSelected = this.IsElementInSelectedState();
-				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
-												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+				if (!IsEnabled)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+				}
+				else
+				{
+					bool isSelected = this.IsElementInSelectedState();
+					string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+													: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
 
-				VisualStateManager.GoToState(this, targetState);
-			}
+					VisualStateManager.GoToState(this, targetState);
+				}
 
-			if (IsEnabled)
+				if (IsEnabled)
+				{
+					// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+					// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+					// exits and the control still has focus.
+					VisualStateManager.GoToState(this,
+						IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				}
+			}
+			catch (InvalidOperationException)
 			{
-				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-				// exits and the control still has focus.
-				VisualStateManager.GoToState(this,
-					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				// Swallow "PlatformView cannot be null here" thrown when a visual state cascade fans out
+				// during handler disconnect (e.g. on Windows: navigating away from a focused control runs
+				// UpdateIsFocused(false) inside DisconnectHandler -> ChangeVisualState -> VSM Setter ->
+				// mapper -> strongly-typed PlatformView accessor). The handler/PlatformView has already
+				// been released, so there is nothing for the mapper to update. See dotnet/maui#27101.
 			}
 		}
 
