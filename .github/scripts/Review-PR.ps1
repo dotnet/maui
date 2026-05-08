@@ -692,6 +692,18 @@ if ($uitestCategories -eq 'NONE') {
                 Write-Host "       • $($ft.name)" -ForegroundColor Red
             }
             $uitestFailed++
+            # When per-test parsing found no failures (e.g. build/deploy
+            # crashed before tests ran), capture the last 30 lines of the
+            # category's stdout so the AI summary can show the actual error
+            # (CS0246, RS0016, missing dependency, etc.) instead of just
+            # "exit code 1".
+            $buildTail = $null
+            if ($catFailedTests.Count -eq 0) {
+                try {
+                    $tail = @($testOutput | ForEach-Object { "$_" } | Select-Object -Last 30)
+                    $buildTail = ($tail -join "`n").Trim()
+                } catch { $buildTail = $null }
+            }
             $uitestDetails += @{
                 category     = $cat
                 result       = 'FAILED'
@@ -700,6 +712,7 @@ if ($uitestCategories -eq 'NONE') {
                 tests_total  = $perTestResults.Count
                 tests_passed = $catPassedTests.Count
                 tests_failed = $catFailedTests.Count
+                build_tail   = $buildTail
                 passed_tests = @($catPassedTests | ForEach-Object { @{ name = $_.name; duration = $_.duration } })
                 failed_tests = @($catFailedTests | ForEach-Object {
                     @{
@@ -743,11 +756,18 @@ if ($uitestCategories -eq 'NONE') {
         [void]$appendMd.AppendLine("|---|---|---|---|---|")
         foreach ($d in $uitestDetails) {
             $icon = switch ($d.result) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
-            # Tests column: e.g. "1/1 ✓" on pass, "0/1 (1 ❌)" on fail.
+            # Tests column: e.g. "1/1 ✓" on pass, "0/1 (1 ❌)" on fail. When the
+            # category itself failed but no per-test failures were parsed (e.g.
+            # build/deploy crashed before tests ran), don't claim a green ✓ —
+            # show "build/deploy failed" so reviewers aren't misled.
             $tCount = if ($null -ne $d.tests_total) { [int]$d.tests_total } else { 0 }
             $tPass  = if ($null -ne $d.tests_passed) { [int]$d.tests_passed } else { 0 }
             $tFail  = if ($null -ne $d.tests_failed) { [int]$d.tests_failed } else { 0 }
-            $testsCol = if ($tCount -eq 0) { "—" }
+            $testsCol = if ($d.result -eq 'FAILED' -and $tFail -eq 0) {
+                            if ($tCount -eq 0) { "build/deploy failed" }
+                            else { "$tPass/$tCount — build/deploy failed before per-test results" }
+                        }
+                        elseif ($tCount -eq 0) { "—" }
                         elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
                         else { "$tPass/$tCount ✓" }
             $notes = if ($d.exit_code) { "exit code $($d.exit_code)" }
@@ -760,34 +780,53 @@ if ($uitestCategories -eq 'NONE') {
 
     # Per-failed-category breakdown: collapsible block with each failed test's
     # name, error message, and first stack frame so a reviewer can diagnose
-    # without downloading the full build artifact.
-    $failedCats = @($uitestDetails | Where-Object { $_.failed_tests -and $_.failed_tests.Count -gt 0 })
+    # without downloading the full build artifact. When a category failed but
+    # produced no per-test failures (build/deploy crashed), surface the last
+    # 30 lines of stdout so the AI summary still pinpoints the cause.
+    $failedCats = @($uitestDetails | Where-Object { $_.result -eq 'FAILED' -and (($_.failed_tests -and $_.failed_tests.Count -gt 0) -or $_.build_tail) })
     if ($failedCats.Count -gt 0) {
         [void]$appendMd.AppendLine("#### Failed test details")
         [void]$appendMd.AppendLine()
         foreach ($d in $failedCats) {
-            [void]$appendMd.AppendLine("<details><summary>❌ <code>$($d.category)</code> — $($d.failed_tests.Count) failed test$(if ($d.failed_tests.Count -ne 1) { 's' })</summary>")
+            $hasFailedTests = $d.failed_tests -and $d.failed_tests.Count -gt 0
+            $headSummary = if ($hasFailedTests) {
+                "❌ <code>$($d.category)</code> — $($d.failed_tests.Count) failed test$(if ($d.failed_tests.Count -ne 1) { 's' })"
+            } else {
+                "❌ <code>$($d.category)</code> — build/deploy failed (no per-test results)"
+            }
+            [void]$appendMd.AppendLine("<details><summary>$headSummary</summary>")
             [void]$appendMd.AppendLine()
-            foreach ($ft in $d.failed_tests) {
-                [void]$appendMd.AppendLine("**``$($ft.name)``** *(took $($ft.duration))*")
-                [void]$appendMd.AppendLine()
-                $errBody = if ($ft.error) {
-                    # First 1500 chars of the error message — keeps the comment
-                    # under GitHub's 65k limit even with many failures.
-                    $e = [string]$ft.error
-                    if ($e.Length -gt 1500) { $e.Substring(0, 1500) + "`n…(truncated)" } else { $e }
-                } else { "_(no error message captured)_" }
-                [void]$appendMd.AppendLine('```')
-                [void]$appendMd.AppendLine($errBody)
-                [void]$appendMd.AppendLine('```')
-                if ($ft.stack) {
-                    # Show only the first stack frame — usually the one in test code.
-                    $firstFrame = ($ft.stack -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
-                    if ($firstFrame) {
-                        [void]$appendMd.AppendLine("> at $($firstFrame.Trim().TrimStart('a','t',' '))")
-                        [void]$appendMd.AppendLine()
+            if ($hasFailedTests) {
+                foreach ($ft in $d.failed_tests) {
+                    [void]$appendMd.AppendLine("**``$($ft.name)``** *(took $($ft.duration))*")
+                    [void]$appendMd.AppendLine()
+                    $errBody = if ($ft.error) {
+                        # First 1500 chars of the error message — keeps the comment
+                        # under GitHub's 65k limit even with many failures.
+                        $e = [string]$ft.error
+                        if ($e.Length -gt 1500) { $e.Substring(0, 1500) + "`n…(truncated)" } else { $e }
+                    } else { "_(no error message captured)_" }
+                    [void]$appendMd.AppendLine('```')
+                    [void]$appendMd.AppendLine($errBody)
+                    [void]$appendMd.AppendLine('```')
+                    if ($ft.stack) {
+                        # Show only the first stack frame — usually the one in test code.
+                        $firstFrame = ($ft.stack -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
+                        if ($firstFrame) {
+                            [void]$appendMd.AppendLine("> at $($firstFrame.Trim().TrimStart('a','t',' '))")
+                            [void]$appendMd.AppendLine()
+                        }
                     }
                 }
+            }
+            if ($d.build_tail) {
+                $tail = [string]$d.build_tail
+                if ($tail.Length -gt 3000) { $tail = $tail.Substring($tail.Length - 3000) }
+                [void]$appendMd.AppendLine("Last 30 lines of build/test stdout:")
+                [void]$appendMd.AppendLine()
+                [void]$appendMd.AppendLine('```')
+                [void]$appendMd.AppendLine($tail)
+                [void]$appendMd.AppendLine('```')
             }
             [void]$appendMd.AppendLine()
             [void]$appendMd.AppendLine("</details>")
