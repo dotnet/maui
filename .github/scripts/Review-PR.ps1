@@ -7,7 +7,8 @@
     
     Step 0: Branch setup        - Create review branch from main, merge PR squashed
     Step 1: Gate                - Run test verification directly (verify-tests-fail.ps1)
-    Step 2: pr-review skill     - 3-phase review (Pre-Flight, Try-Fix, Report)
+    Step 2: Multi-candidate review - Pre-Flight, then PARALLEL (expert-reviewer eval of PR + Try-Fix×4),
+                                    then Report compares all candidates and writes winner.json
     Step 3: Post AI Summary     - Directly runs posting scripts
     Step 4: Apply labels        - Apply agent labels based on review results
 
@@ -298,7 +299,10 @@ function Invoke-CopilotStep {
     }
 
     # Use JSON output format to stream live progress of agent activity.
-    & copilot -p $Prompt --allow-all --output-format json 2>&1 | ForEach-Object {
+    # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model access
+    # can run this script (e.g., with 'claude-opus-4.6' or 'claude-sonnet-4.6').
+    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'claude-opus-4.7-1m-internal' }
+    & copilot -p $Prompt --allow-all --output-format json --model $copilotModel 2>&1 | ForEach-Object {
         $line = $_.ToString()
         try {
             $event = $line | ConvertFrom-Json -ErrorAction Stop
@@ -391,13 +395,13 @@ function Invoke-CopilotStep {
                     }
                 }
                 'result' {
-                    # Final stats
-                    $usage = $event.data.usage
+                    # Final stats — note: 'result' is a top-level event with no 'data' wrapper.
+                    $usage = $event.usage
                     if ($usage) {
                         $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
                         $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
                         $changes = $usage.codeChanges
-                        $filesChanged = if ($changes -and $changes.filesModified) { $changes.filesModified.Count } else { 0 }
+                        $filesChanged = if ($changes -and $changes.filesModified) { @($changes.filesModified).Count } else { 0 }
                         $linesAdded = if ($changes) { $changes.linesAdded } else { 0 }
                         $linesRemoved = if ($changes) { $changes.linesRemoved } else { 0 }
 
@@ -547,7 +551,12 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     }
     # Clear previous attempt's report so a crash mid-run doesn't leak its classification into this one.
     Remove-Item $gateContentFile -Force -ErrorAction SilentlyContinue
-    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber -RequireFullVerification 2>&1
+    # Note: -RequireFullVerification is intentionally OMITTED. The verify script
+    # auto-detects fix files from the diff; if there are none (e.g., a test-only
+    # PR like a regression repro), it falls back to "verify failure only" mode
+    # and reports whether the new tests fail without any fix. Passing the flag
+    # would force the script to error out for those PRs.
+    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
 
@@ -600,7 +609,74 @@ Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
 # Copy the verification report to gate/content.md (always overwrite — the report is the source of truth)
 $verificationReport = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
 # Capture last meaningful lines from gate output for fallback diagnostics
-$gateLogTail = @($gateOutput | ForEach-Object { $_.ToString() } | Where-Object { $_ -match '\S' } | Select-Object -Last 20) -join "`n"
+$gateLogTail = @($gateOutput | ForEach-Object { $_.ToString() } | Where-Object { $_ -match '\S' } | Select-Object -Last 60) -join "`n"
+
+# ─── Improvement #1: build rich fallback diagnostics for the silent-failure case ───
+# When verify-tests-fail.ps1 aborts before writing its report, the original fallback
+# emitted just "Gate Result: FAILED" + an empty <details> block. Capture extra signal
+# so reviewers and downstream agents can act on it.
+function Get-GateFallbackDetails {
+    param([string]$Tail, [int]$ExitCode, [string]$VerifyDir, [string]$ReviewedPlatform)
+
+    $sections = @()
+
+    $sections += "**Exit code:** ``$ExitCode``"
+
+    # Surface auto-detected tests / fix files from the verify script's stdout
+    # so reviewers can tell whether detection failed vs. the test run itself.
+    $detected = @{}
+    foreach ($line in ($Tail -split "`n")) {
+        if ($line -match '^\s*Detected test type:\s*(\S+)') { $detected['type'] = $Matches[1] }
+        elseif ($line -match '^\s*Test filter:\s*(\S+)')      { $detected['filter'] = $Matches[1] }
+        elseif ($line -match '^\s*Fix files \((\d+)\):')      { $detected['fixCount'] = $Matches[1] }
+        elseif ($line -match '^\s*Merge base:\s*(\S+)')       { $detected['mergeBase'] = $Matches[1] }
+    }
+    if ($detected.Count -gt 0) {
+        $items = @()
+        if ($detected.ContainsKey('type'))      { $items += "- Test type: ``$($detected['type'])``" }
+        if ($detected.ContainsKey('filter'))    { $items += "- Test filter: ``$($detected['filter'])``" }
+        if ($detected.ContainsKey('fixCount')) { $items += "- Fix files detected: $($detected['fixCount'])" }
+        if ($detected.ContainsKey('mergeBase')) { $items += "- Merge base: ``$($detected['mergeBase'])``" }
+        $sections += "**Auto-detected:**`n" + ($items -join "`n")
+    }
+
+    # Heuristic classification — make the cause actionable instead of leaving the
+    # reader to grep stderr.
+    $likely = @()
+    if ($Tail -match '(?i)Could not auto-detect PR number|no tests detected|0 test\(s\) detected') {
+        $likely += "Test detection failed — no runnable tests were found in the PR diff."
+    }
+    # Match coded build errors (CS, MSB, NU, MAUI, NETSDK, XA, etc.) without false-positiving
+    # on lines like "MSBUILD output: 0 error(s)". The general form `error <ABBR><NNNN>` covers
+    # compiler, MSBuild, NuGet restore, MAUI analyzer, .NET SDK, Android packaging diagnostics.
+    if ($Tail -match '(?i)build failed|\berror\s+[A-Z]{2,}\d+\b') {
+        $likely += "Build error before any test could run."
+    }
+    if ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)') {
+        $likely += "Device/emulator setup failed (env error class)."
+    }
+    if ($Tail -match '(?i)merge.conflict|conflict.*merge.base') {
+        $likely += "Merge conflict prevented running the gate."
+    }
+    if ($Tail -match '(?i)NO FIX FILES DETECTED') {
+        $likely += "No fix files detected in the diff (PR may be test-only — should now run in failure-only mode)."
+    }
+    if ($likely.Count -gt 0) {
+        $sections += "**Likely cause:**`n" + (($likely | ForEach-Object { "- $_" }) -join "`n")
+    }
+
+    # List artifacts under gate/verify-tests-fail/ — partial logs sometimes survive
+    # even when the report itself was not written.
+    if (Test-Path $VerifyDir) {
+        $files = Get-ChildItem -Path $VerifyDir -File -ErrorAction SilentlyContinue |
+            Sort-Object Name | ForEach-Object { "- ``$($_.Name)`` ($([math]::Round($_.Length / 1KB, 1)) KB)" }
+        if ($files) {
+            $sections += "**Artifacts written before exit:**`n" + ($files -join "`n")
+        }
+    }
+
+    return ($sections -join "`n`n")
+}
 
 if (Test-Path $verificationReport) {
     $reportContent = Get-Content $verificationReport -Raw -ErrorAction SilentlyContinue
@@ -612,13 +688,18 @@ if (Test-Path $verificationReport) {
         # Report exists but has bad format — generate fallback with logs
         Write-Host "  ⚠️ Verification report has invalid format — using fallback" -ForegroundColor Yellow
         $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } default { "❌" } }
+        $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
         @"
 ### Gate Result: $resultIcon $gateResult
 
 **Platform:** $($gatePlatform.ToUpper())
 
+> ⚠️ ``verify-tests-fail.ps1`` produced an empty report. Diagnostics below.
+
+$fallbackDetails
+
 <details>
-<summary>Gate output log</summary>
+<summary>Gate output log (last 60 lines)</summary>
 
 ``````
 $gateLogTail
@@ -638,13 +719,18 @@ No tests were detected in this PR.
 "@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     } else {
         $resultIcon = switch ($gateResult) { "PASSED" { "✅" } default { "❌" } }
+        $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
         @"
 ### Gate Result: $resultIcon $gateResult
 
 **Platform:** $($gatePlatform.ToUpper())
 
+> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report. Diagnostics below.
+
+$fallbackDetails
+
 <details>
-<summary>Gate output log</summary>
+<summary>Gate output log (last 60 lines)</summary>
 
 ``````
 $gateLogTail
@@ -655,11 +741,8 @@ $gateLogTail
     }
 }
 
-# Post gate result by updating (or creating) the unified AI Summary comment.
-# The same script is called again in STEP 3 once the review phases finish; here
-# it runs early so the PR author sees the gate outcome without waiting for the
-# full review.
-$postGateScript = Join-Path $PSScriptRoot "post-ai-summary-comment.ps1"
+# Post gate result as a separate PR comment
+$postGateScript = Join-Path $PSScriptRoot "post-gate-comment.ps1"
 if (Test-Path $postGateScript) {
     try {
         if ($DryRun) {
@@ -668,10 +751,10 @@ if (Test-Path $postGateScript) {
             & $postGateScript -PRNumber $PRNumber
         }
     } catch {
-        Write-Host "  ⚠️ Failed to post gate section (non-fatal): $_" -ForegroundColor Yellow
+        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found" -ForegroundColor Yellow
+    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
 }
 
 # Apply gate result label
@@ -715,7 +798,49 @@ $gateStatusForPrompt = switch ($gateResult) {
 }
 
 $step2Prompt = @"
-Use a skill to review PR #$PRNumber.
+Run a multi-candidate PR review for PR #$PRNumber using the following flow.
+
+## Phase 1 — Pre-Flight (context only)
+Use the pr-review skill's pre-flight phase to gather context. Do NOT modify code.
+Write summary to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``.
+
+## Phase 2 — Candidate generation (run BOTH branches; do not skip either)
+Generate the following candidates. Each candidate is an alternative diff against the PR's base branch. Do this work in isolated worktrees / scratch copies so artifacts do NOT clobber each other.
+
+### Branch A — Expert reviewer evaluation of the current PR fix (in sandbox)
+Use the code-review skill with the maui-expert-reviewer agent to evaluate the PR's existing fix. Apply the reviewer's actionable feedback in a sandbox copy and treat the result as a candidate named ``pr-plus-reviewer``.
+- Always also write the raw inline findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json`` (these are file:line findings against the PR's diff and feed the inline-comment posting step).
+- Write candidate output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/expert-pr-eval/content.md``.
+
+### Branch B — Try-Fix ×4 (ALWAYS runs — do NOT skip)
+Use the pr-review skill's try-fix phase to generate FOUR independent candidate fixes (``try-fix-1`` through ``try-fix-4``). Each candidate must load domain knowledge from a different maui-expert-reviewer dimension so the candidates are diverse.
+- 🚨 You MUST generate all four candidates. Do not short-circuit even if Pre-Flight or the expert eval suggests the PR is already correct.
+- Write each candidate's output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix-{N}/content.md`` (N = 1..4).
+- Aggregate try-fix narrative for the AI summary comment to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``.
+
+## Phase 3 — Report
+The expert reviewer evaluates ALL candidates against each other:
+- ``pr`` (the raw PR fix as submitted)
+- ``pr-plus-reviewer`` (PR fix + reviewer feedback applied in sandbox)
+- ``try-fix-1``..``try-fix-4``
+Pick the single winning candidate.
+Write the comparative analysis to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md``.
+
+## Phase 4 — Winner manifest (REQUIRED)
+Write ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json`` with this exact schema:
+``````json
+{
+  "schemaVersion": 1,
+  "winner": "pr" | "pr-plus-reviewer" | "try-fix-1" | "try-fix-2" | "try-fix-3" | "try-fix-4",
+  "isPRFix": true | false,
+  "summary": "1-3 sentence rationale for why this candidate won",
+  "candidateDiff": "<unified diff against PR base — REQUIRED iff isPRFix is false; OMIT or empty string when isPRFix is true>"
+}
+``````
+Rules:
+- ``isPRFix`` MUST be ``true`` when ``winner`` is ``pr`` or ``pr-plus-reviewer``.
+- ``isPRFix`` MUST be ``false`` when ``winner`` is any ``try-fix-*``.
+- When ``isPRFix`` is ``false``, ``candidateDiff`` MUST be a non-empty unified diff. Truncate at 55 KB if larger and end with a ``... [truncated]`` marker line.
 
 $platformInstruction
 $autonomousRules
@@ -723,9 +848,6 @@ $autonomousRules
 **Gate result (already completed in a prior step):** $gateStatusForPrompt
 Do NOT re-run gate verification. The gate phase is handled separately.
 ⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
-
-📁 Write phase output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/{phase}/content.md``
-(phases: pre-flight, try-fix, report — NOT gate)
 "@
 
 Invoke-CopilotStep -StepName "STEP 2: PR REVIEW" -Prompt $step2Prompt | Out-Null
@@ -804,6 +926,138 @@ if (Test-Path $reviewScript) {
     }
 } else {
     Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
+}
+
+# Determine winning candidate (winner.json) — drives whether we post inline findings or request changes
+$winnerFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json"
+$winner = $null
+if (Test-Path $winnerFile) {
+    try {
+        $winner = Get-Content -Raw -LiteralPath $winnerFile | ConvertFrom-Json
+        # Validation
+        $allowed = @('pr','pr-plus-reviewer','try-fix-1','try-fix-2','try-fix-3','try-fix-4')
+        if (-not $winner.winner -or $allowed -notcontains $winner.winner) {
+            Write-Host "  ⚠️ winner.json has invalid 'winner' value: $($winner.winner) — falling back to PR-fix path" -ForegroundColor Yellow
+            $winner = $null
+        } elseif ($winner.winner -in @('pr','pr-plus-reviewer') -and $winner.isPRFix -ne $true) {
+            Write-Host "  ⚠️ winner.json: '$($winner.winner)' must have isPRFix=true — overriding" -ForegroundColor Yellow
+            $winner.isPRFix = $true
+        } elseif ($winner.winner -like 'try-fix-*' -and $winner.isPRFix -ne $false) {
+            Write-Host "  ⚠️ winner.json: '$($winner.winner)' must have isPRFix=false — overriding" -ForegroundColor Yellow
+            $winner.isPRFix = $false
+        }
+        if ($winner -and $winner.isPRFix -eq $false -and [string]::IsNullOrWhiteSpace($winner.candidateDiff)) {
+            Write-Host "  ⚠️ winner.json: non-PR winner has empty candidateDiff — falling back to PR-fix path" -ForegroundColor Yellow
+            $winner = $null
+        }
+        if ($winner) {
+            Write-Host "  🏆 Winning candidate: $($winner.winner) (isPRFix=$($winner.isPRFix))" -ForegroundColor Cyan
+        }
+    } catch {
+        Write-Host "  ⚠️ Failed to parse winner.json (non-fatal): $_ — falling back to PR-fix path" -ForegroundColor Yellow
+        $winner = $null
+    }
+} else {
+    Write-Host "  ℹ️ No winner.json — defaulting to PR-fix posting path" -ForegroundColor Gray
+}
+
+$isPRWinner = (-not $winner) -or ($winner.isPRFix -eq $true)
+
+if ($isPRWinner) {
+    # Post inline review comments (file:line findings from expert-reviewer agent)
+    $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
+    $findingsFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json"
+    if ((Test-Path $inlineScript) -and (Test-Path $findingsFile)) {
+        try {
+            Write-Host "  📝 Posting inline review comments..." -ForegroundColor Cyan
+            if ($DryRun) {
+                & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -DryRun
+            } else {
+                & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile
+            }
+            Write-Host "  ✅ Inline review comments posted" -ForegroundColor Green
+        } catch {
+            Write-Host "  ⚠️ Inline review posting failed (non-fatal): $_" -ForegroundColor Yellow
+        }
+    } else {
+        if (-not (Test-Path $findingsFile)) {
+            Write-Host "  ℹ️ No inline findings file — agent may not have produced findings" -ForegroundColor Gray
+        }
+    }
+} else {
+    # Non-PR candidate won — submit a REQUEST_CHANGES review with the candidate diff in the body
+    Write-Host "  📝 Non-PR candidate won — submitting REQUEST_CHANGES review with candidate diff..." -ForegroundColor Cyan
+
+    $maxDiffBytes = 55KB
+    $diff = [string]$winner.candidateDiff
+    $truncated = $false
+    # Truncate by binary-searching the largest character count whose UTF-8
+    # encoding fits within the byte budget (reserving room for the marker line).
+    # O(log n) and much cheaper than the previous O(n²) trim-512-and-recount loop.
+    $marker = "`n... [truncated]"
+    $markerBytes = [System.Text.Encoding]::UTF8.GetByteCount($marker)
+    $budget = $maxDiffBytes - $markerBytes
+    if ([System.Text.Encoding]::UTF8.GetByteCount($diff) -gt $maxDiffBytes) {
+        $lo = 0
+        $hi = $diff.Length
+        while ($lo -lt $hi) {
+            $mid = [int](($lo + $hi + 1) / 2)
+            $bytes = [System.Text.Encoding]::UTF8.GetByteCount($diff.Substring(0, $mid))
+            if ($bytes -le $budget) { $lo = $mid } else { $hi = $mid - 1 }
+        }
+        $diff = $diff.Substring(0, $lo) + $marker
+        $truncated = $true
+    }
+
+    # Compute an outer code fence longer than any backtick run inside the diff
+    # (minimum 4) so the diff content cannot accidentally close the fence and
+    # leak into the surrounding markdown. Preserves the diff text exactly.
+    $maxBacktickRun = 0
+    foreach ($m in [regex]::Matches($diff, '`+')) {
+        if ($m.Length -gt $maxBacktickRun) { $maxBacktickRun = $m.Length }
+    }
+    $fenceLen = [Math]::Max(4, $maxBacktickRun + 1)
+    $fence = '`' * $fenceLen
+
+    $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
+    $reviewBody = @"
+🤖 **Automated review — alternative fix proposed**
+
+The expert-reviewer evaluation compared the PR fix against $($winner.winner -replace 'try-fix-','#') automatically generated candidates and selected ``$($winner.winner)`` as the strongest fix.
+
+**Why:** $rationale
+
+Please consider applying the candidate diff below (or use it as guidance). Once you push an update, this workflow will re-trigger and re-evaluate.
+
+<details><summary>Candidate diff (``$($winner.winner)``)</summary>
+
+${fence}diff
+$diff
+$fence
+
+</details>
+$( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limit._" } )
+"@
+
+    if ($DryRun) {
+        Write-Host "  [DryRun] Would POST review state=REQUEST_CHANGES with body length $($reviewBody.Length)" -ForegroundColor Yellow
+    } else {
+        try {
+            $bodyJson = @{ body = $reviewBody; event = 'REQUEST_CHANGES' } | ConvertTo-Json -Compress -Depth 5
+            $tmp = New-TemporaryFile
+            Set-Content -LiteralPath $tmp -Value $bodyJson -Encoding utf8 -NoNewline
+            $resp = & gh api -X POST "repos/dotnet/maui/pulls/$PRNumber/reviews" --input $tmp 2>&1
+            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "  ✅ REQUEST_CHANGES review submitted" -ForegroundColor Green
+            } else {
+                Write-Host "  ⚠️ Failed to submit REQUEST_CHANGES review (non-fatal): $resp" -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host "  ⚠️ REQUEST_CHANGES submission threw (non-fatal): $_" -ForegroundColor Yellow
+        }
+    }
+    Write-Host "  ⏭️ Skipping inline findings (winner is not the PR fix)" -ForegroundColor Gray
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
