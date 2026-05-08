@@ -201,5 +201,10 @@ namespace Microsoft.Maui.Platform
 				clearWrapperView.Invoke();
 			}
 		}
+
+		internal void ScheduleInvalidate()
+		{
+			Post(() => Invalidate());
+		}
 	}
 }

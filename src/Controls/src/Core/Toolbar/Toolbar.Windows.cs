@@ -314,6 +314,14 @@ namespace Microsoft.Maui.Controls
 		public static void MapToolbarDynamicOverflowEnabled(ToolbarHandler arg1, Toolbar arg2) =>
 			MapToolbarDynamicOverflowEnabled((IToolbarHandler)arg1, arg2);
 
+		public static void MapBackButtonAccessibilityLabel(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonAccessibilityLabel((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonAccessibilityLabel(IToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBackButton(arg2);
+		}
+
 		public static void MapToolbarPlacement(IToolbarHandler arg1, Toolbar arg2)
 		{
 		}

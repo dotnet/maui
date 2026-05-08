@@ -561,6 +561,12 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				AView? swipeItem = item?.ToPlatform(MauiContext);
+				// Disconnect a shared SwipeItem's handler when its Android view is already parented, so ToPlatform() creates a fresh view for the new one.
+				if (swipeItem?.Parent != null && item is IElement element)
+				{
+					element.Handler?.DisconnectHandler();
+					swipeItem = item?.ToPlatform(MauiContext);
+				}
 
 				if (swipeItem is not null)
 				{
@@ -722,7 +728,10 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in _swipeItems.Keys)
 			{
-				item.Handler?.DisconnectHandler();
+				if (item.Handler is not null && ReferenceEquals(item.Handler.PlatformView, _swipeItems[item]))
+				{
+					item.Handler.DisconnectHandler();
+				}
 			}
 
 			_swipeItems.Clear();
