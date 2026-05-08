@@ -340,6 +340,10 @@ Write-Info "TRX file will be written to: $trxFilePath"
 try {
     # Run dotnet test using the SAME loggers and arguments CI uses in
     # `RunTestWithLocalDotNet` (eng/cake/dotnet.cake line 943-981).
+    # Capture pre-run timestamp so the fallback below can only match TRX
+    # files written by THIS invocation (not stale TRXs from previous
+    # categories sharing the same results directory).
+    $trxRunStart = Get-Date
     $testOutput = & dotnet test $TestProject `
         --filter $effectiveFilter `
         --logger "trx;LogFileName=$trxFileName" `
@@ -361,10 +365,12 @@ try {
         Write-Output ">>> TRX_RESULT_FILE: $trxFilePath"
     } else {
         # dotnet test may have written the TRX with a slightly different name
-        # (e.g. when the LogFileName argument got stripped on Windows). Fall
-        # back to scanning the results dir for the newest .trx so we still
-        # surface a usable path to the caller.
+        # (e.g. LogFileName argument stripped on Windows, or it injected a
+        # timestamp). Fall back to scanning the results dir for any .trx
+        # written AFTER this run started — never pick up a stale TRX from a
+        # previous category that shares the same results directory.
         $latestTrx = Get-ChildItem -Path $trxResultsDir -Filter "*.trx" -ErrorAction SilentlyContinue |
+                     Where-Object { $_.LastWriteTime -ge $trxRunStart } |
                      Sort-Object LastWriteTime -Descending | Select-Object -First 1
         if ($latestTrx) {
             Write-Output ">>> TRX_RESULT_FILE: $($latestTrx.FullName)"
