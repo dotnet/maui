@@ -224,9 +224,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var headerBehavior = _context.Shell.FlyoutHeaderBehavior;
 				if (headerBehavior == FlyoutHeaderBehavior.Default || headerBehavior == FlyoutHeaderBehavior.Fixed)
 				{
-					// For Default/Fixed, the scroll view is positioned below the header,
-					// so no top content inset is needed.
+					// For Default/Fixed, the scroll view frame is positioned below the header by LayoutContent,
+					// so no top content inset is needed and no content offset compensation should be applied.
+					// Applying the compensation (offset = oldInset - 0) would incorrectly scroll the content
+					// down by the old inset amount, hiding the first flyout item behind the header.
 					ScrollView.ContentInset = new UIEdgeInsets(0, 0, 0, 0);
+					UpdateVerticalScrollMode();
+					return;
 				}
 				else
 				{
