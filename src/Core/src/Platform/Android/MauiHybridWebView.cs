@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Webkit;
 using AUri = Android.Net.Uri;
