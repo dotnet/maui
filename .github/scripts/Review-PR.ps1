@@ -626,116 +626,55 @@ if ($uitestCategories -eq 'NONE') {
 
     foreach ($cat in $categoryList) {
         Write-Host ""
-        Write-Host "  📋 [$cat] BuildAndRunHostApp.ps1 -Platform $uitestPlatform -Category $cat" -ForegroundColor Cyan
+        Write-Host "  📋 [$cat] Invoke-UITestWithRetry -Platform $uitestPlatform -Category $cat" -ForegroundColor Cyan
 
-        # Same retry-on-environment-error logic the Gate (verify-tests-fail.ps1)
-        # uses via Invoke-TestRunWithRetry. The Android emulator/iOS simulator
-        # occasionally rejects an APK install with "ADB0010 Broken pipe" or the
-        # app fails to launch (XHarness exit 83) — both transient infra
-        # problems, not test failures. Without retry, every test in the
-        # category's NUnit fixture would report a OneTimeSetUp timeout and the
-        # AI summary would falsely claim 100+ regressions.
-        $envErrorPatterns = @(
-            'error ADB0010.*InstallFailedException',
-            'Failure calling service package',
-            'XHarness exit code:\s*83',
-            'Application test run crashed',
-            'SIGABRT.*load_aot_module',
-            'AppiumServerHasNotBeenStartedLocally',
-            'no devices/emulators found',
-            'device offline'
-        )
-        $maxAttempts = 3
+        # Delegate to the shared deploy+retry script so STEP 3 uses the
+        # SAME pre-boot + retry-on-env-error + device-reboot pipeline as
+        # the Gate (verify-tests-fail.ps1's Invoke-TestRun +
+        # Invoke-TestRunWithRetry). When the Android emulator/iOS sim
+        # rejects an install ("ADB0010 Broken pipe", XHarness exit 83,
+        # AppiumServerHasNotBeenStartedLocally, …) the helper retries up
+        # to 3 times with adb reboot / simctl boot recovery between
+        # attempts. Without this, a single transient install failure was
+        # turning into "119 OneTimeSetUp timeouts" in the AI summary.
+        $catLogPath = Join-Path $uitestRunOutputDir ("$cat-output.log")
         $catStart = Get-Date
+        $sharedRunner = Join-Path $PSScriptRoot "shared/Invoke-UITestWithRetry.ps1"
+        $runResult = $null
         $testOutput = @()
         $testExitCode = -1
         $envErrHit = $null
-        for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
-            if ($attempt -gt 1) {
-                Write-Host "    ↻ Attempt $attempt/$maxAttempts after environment error '$envErrHit'" -ForegroundColor Yellow
-                # Recover the device on Android infra failures — same as the Gate.
-                if ($uitestPlatform -eq 'android') {
-                    try {
-                        Write-Host "    🔄 adb reboot to recover from $envErrHit" -ForegroundColor Yellow
-                        & adb reboot 2>$null | Out-Null
-                        & adb wait-for-device 2>$null | Out-Null
-                    } catch { Write-Host "    (adb reboot failed: $_)" -ForegroundColor DarkGray }
-                } elseif ($uitestPlatform -in @('ios','catalyst','maccatalyst')) {
-                    try {
-                        $bootedSim = (& xcrun simctl list devices booted 2>$null | Select-String -Pattern '\(([0-9A-F-]{36})\)' | Select-Object -First 1).Matches.Groups[1].Value
-                        if ($bootedSim) {
-                            Write-Host "    🔄 simctl shutdown/boot $bootedSim" -ForegroundColor Yellow
-                            & xcrun simctl shutdown $bootedSim 2>$null | Out-Null
-                            Start-Sleep -Seconds 5
-                            & xcrun simctl boot $bootedSim 2>$null | Out-Null
-                        }
-                    } catch { Write-Host "    (simctl reboot failed: $_)" -ForegroundColor DarkGray }
-                }
-                Start-Sleep -Seconds 30
-            }
-
-            $envErrHit = $null
-            $testOutput = @()
-            try {
-                $testOutput = & $uitestRunnerScript -Platform $uitestPlatform -Category $cat 2>&1
-                $testExitCode = $LASTEXITCODE
+        try {
+            $runResult = & $sharedRunner `
+                -Platform $uitestPlatform `
+                -Category $cat `
+                -RepoRoot $RepoRoot `
+                -LogFile $catLogPath
+            if ($runResult) {
+                $testOutput   = $runResult.Output
+                $testExitCode = $runResult.ExitCode
+                $envErrHit    = $runResult.EnvErrorHit
+                Write-Host "    Attempts: $($runResult.Attempts) · Exit: $testExitCode · EnvError: $envErrHit" -ForegroundColor Gray
                 $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
-            } catch {
-                Write-Host "    ⚠️ Error: $_" -ForegroundColor Yellow
-                $testExitCode = -1
             }
-
-            # Check the captured output for any env-error signal. We need to
-            # join the output once for the regex check; further parsing reuses
-            # $testOutput element-wise.
-            if ($testExitCode -ne 0) {
-                $joined = ($testOutput | ForEach-Object { "$_" }) -join "`n"
-                foreach ($p in $envErrorPatterns) {
-                    if ($joined -match $p) { $envErrHit = $p; break }
-                }
-            }
-            if (-not $envErrHit) { break }
-            if ($attempt -eq $maxAttempts) {
-                Write-Host "    ⚠️ Environment error persisted after $maxAttempts attempts ($envErrHit)" -ForegroundColor Yellow
-            }
+        } catch {
+            Write-Host "    ⚠️ Shared runner threw: $_" -ForegroundColor Yellow
+            $testExitCode = -1
         }
         $catDuration = [math]::Round(((Get-Date) - $catStart).TotalSeconds, 1)
 
-        # Parse per-test results from captured stdout. test-output.log on disk
-        # gets wiped on the next category run, so we work off the in-memory
-        # capture and persist it to a per-category log for traceability.
-        # IMPORTANT: PowerShell's `& cmd 2>&1` capture wraps multi-line stderr
-        # blocks (and dotnet test's verbose console logger output) as a single
-        # ErrorRecord/string with embedded `\n`. The parser regex is anchored
-        # with `^...$` (start/end of STRING, not line), so without splitting
-        # the parser would either skip those blocks entirely or — worse —
-        # collect the whole multi-line block as one bogus "test result" with
-        # all 100+ test names concatenated. Normalize each captured element
-        # by splitting on any newline variant so the parser sees true lines.
+        # Parse per-test results from captured stdout. The shared runner
+        # already split multi-line ErrorRecords into individual lines and
+        # wrote the category log file via -LogFile, so we just feed
+        # $testOutput straight into the parser.
         $perTestResults = @()
         try {
-            $outputLines = @(
-                $testOutput | ForEach-Object {
-                    $s = "$_"
-                    if ($s.Contains("`n") -or $s.Contains("`r")) {
-                        $s -split "`r`n|`n|`r"
-                    } else {
-                        $s
-                    }
-                }
-            )
-            $perTestResults = @(Get-DotNetTestResults -Lines $outputLines)
+            $perTestResults = @(Get-DotNetTestResults -Lines $testOutput)
         } catch {
             Write-Host "    ⚠️ Failed to parse per-test results: $_" -ForegroundColor Yellow
         }
         $catFailedTests = @($perTestResults | Where-Object { $_.status -eq 'Failed' })
         $catPassedTests = @($perTestResults | Where-Object { $_.status -eq 'Passed' })
-
-        # Stash the raw category log + parsed results for post-mortem.
-        try {
-            $catLogPath = Join-Path $uitestRunOutputDir ("$cat-output.log")
-            $testOutput | Out-File -FilePath $catLogPath -Encoding UTF8
-        } catch { }
 
         if ($testExitCode -eq 0) {
             Write-Host "    ✅ PASSED ($catDuration s, $($catPassedTests.Count) test(s))" -ForegroundColor Green
