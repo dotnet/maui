@@ -22,22 +22,29 @@ public class Issue34038 : _IssuesUITest
 	[Category(UITestCategories.IsEnabled)]
 	public void DisabledMenuBarItemCannotBeOpenedOrExecuted()
 	{
-        App.WaitForElement(MenuBarItemText);
-		App.Tap(MenuBarItemText);
-
-		App.WaitForElement(MenuFlyoutItemText);
-        App.Tap(MenuFlyoutItemText);
+#if WINDOWS
 		Assert.That(App.WaitForElement(StatusLabel).GetText(), Is.EqualTo("Failure"));
-        App.Tap(MenuBarItemText);
+		App.Click(MenuBarItemText);
+		App.WaitForNoElement(MenuFlyoutItemText);
+		Assert.That(App.WaitForElement(StatusLabel).GetText(), Is.EqualTo("Failure"));
 		App.WaitForElement(MenuEnabledSwitch);
-
 		App.Tap(MenuEnabledSwitch);
-
+		App.Click(MenuBarItemText);
+		App.Click(MenuFlyoutItemText);
+#else
 		App.WaitForElement(MenuBarItemText);
 		App.Tap(MenuBarItemText);
-
 		App.WaitForElement(MenuFlyoutItemText);
-        App.Tap(MenuFlyoutItemText);
+		App.Tap(MenuFlyoutItemText);
+		Assert.That(App.WaitForElement(StatusLabel).GetText(), Is.EqualTo("Failure"));
+		App.Tap(MenuBarItemText);
+		App.WaitForElement(MenuEnabledSwitch);
+		App.Tap(MenuEnabledSwitch);
+		App.WaitForElement(MenuBarItemText);
+		App.Tap(MenuBarItemText);
+		App.WaitForElement(MenuFlyoutItemText);
+		App.Tap(MenuFlyoutItemText);
+#endif
 		Assert.That(App.WaitForElement(StatusLabel).GetText(), Is.EqualTo("Success"));
 	}
 }
