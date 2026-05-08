@@ -1055,5 +1055,70 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage();
 			Assert.False(Window.CanConsumeBackNavigation(page));
 		}
+
+		[Fact]
+		public void FlyoutPage_SplitMode_ReturnsFalse()
+		{
+			// In split mode (tablets), CanChangeIsPresented=false while IsPresented is locked true.
+			// The flyout is always visible so back must NOT be consumed.
+			var flyout = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new ContentPage(),
+				IsPresented = true,
+				IsPlatformEnabled = true,
+			};
+			((IFlyoutPageController)flyout).CanChangeIsPresented = false;
+			Assert.False(Window.CanConsumeBackNavigation(flyout));
+		}
+
+		[Fact]
+		public void Shell_RootPage_ReturnsFalse()
+		{
+			// Shell at root with a single content page and no flyout visible -> cannot consume back.
+			var shell = CreateSimpleShell();
+			Assert.False(Window.CanConsumeBackNavigation(shell));
+		}
+
+		[Fact]
+		public void Shell_FlyoutIsPresented_ReturnsTrue()
+		{
+			// Shell flyout is open and not locked -> back closes the flyout.
+			var shell = CreateSimpleShell(FlyoutBehavior.Flyout);
+			shell.FlyoutIsPresented = true;
+			Assert.True(Window.CanConsumeBackNavigation(shell));
+		}
+
+		[Fact]
+		public void Shell_FlyoutIsPresented_Locked_ReturnsFalse()
+		{
+			// Locked flyout is always visible -- IsPresented should not suppress the
+			// back-to-home animation even if true.
+			var shell = CreateSimpleShell(FlyoutBehavior.Locked);
+			shell.FlyoutIsPresented = true;
+			Assert.False(Window.CanConsumeBackNavigation(shell));
+		}
+
+		[Fact]
+		public async Task Shell_StackGreaterThanOne_ReturnsTrue()
+		{
+			// After pushing a page via shell navigation the section stack is > 1 -> back can pop.
+			var shell = CreateSimpleShell();
+			_ = new TestWindow(shell);
+			await shell.Navigation.PushAsync(new ContentPage());
+			Assert.True(Window.CanConsumeBackNavigation(shell));
+		}
+
+		static Shell CreateSimpleShell(FlyoutBehavior flyoutBehavior = FlyoutBehavior.Disabled)
+		{
+			var shell = new Shell { FlyoutBehavior = flyoutBehavior };
+			var content = new ShellContent { Content = new ContentPage() };
+			var section = new ShellSection();
+			section.Items.Add(content);
+			var item = new ShellItem();
+			item.Items.Add(section);
+			shell.Items.Add(item);
+			return shell;
+		}
 	}
 }
