@@ -74,11 +74,12 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			_mapElementsLayer = new MapElementsLayer();
 			_mapControl.Layers.Add(_mapElementsLayer);
-		public static void MapMapStyle(IMapHandler handler, IMap map) => throw new NotImplementedException();
-		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
 			return _mapControl;
 		}
+
+		public static void MapMapStyle(IMapHandler handler, IMap map) => throw new NotImplementedException();
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map) => throw new NotImplementedException();
 
 		void OnMapControlLoaded(object sender, RoutedEventArgs e)
 		{
