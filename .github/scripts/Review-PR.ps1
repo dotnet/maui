@@ -721,6 +721,38 @@ if ($uitestCategories -eq 'NONE') {
                     $buildTail = ($tail -join "`n").Trim()
                 } catch { $buildTail = $null }
             }
+            # Detect infrastructure-level failure: when ALL failures share a
+            # OneTimeSetUp timeout AND the build log shows the HostApp couldn't
+            # be installed/launched (ADB install failure, broken pipe, no
+            # device, etc.), this is a CI infra problem — not real test
+            # regressions. Reviewers shouldn't be alarmed by "119 failed tests"
+            # when the app never even started.
+            $infraSignals = @(
+                'InstallFailedException',
+                'Failure calling service package',
+                'ADB0010',
+                'Broken pipe',
+                'no devices/emulators found',
+                'device offline',
+                'Could not connect to device',
+                'Failed to launch the application',
+                'cmd: Failure'
+            )
+            $infraReason = $null
+            if ($catFailedTests.Count -gt 0) {
+                $allOneTimeSetup = @($catFailedTests | Where-Object {
+                    ($_.error -as [string]) -match '^OneTimeSetUp:'
+                }).Count -eq $catFailedTests.Count
+                if ($allOneTimeSetup) {
+                    $logText = ($testOutput | ForEach-Object { "$_" }) -join "`n"
+                    foreach ($sig in $infraSignals) {
+                        if ($logText -match [regex]::Escape($sig)) {
+                            $infraReason = $sig
+                            break
+                        }
+                    }
+                }
+            }
             $uitestDetails += @{
                 category     = $cat
                 result       = 'FAILED'
@@ -730,6 +762,7 @@ if ($uitestCategories -eq 'NONE') {
                 tests_passed = $catPassedTests.Count
                 tests_failed = $catFailedTests.Count
                 build_tail   = $buildTail
+                infra_failure = $infraReason
                 passed_tests = @($catPassedTests | ForEach-Object { @{ name = $_.name; duration = $_.duration } })
                 failed_tests = @($catFailedTests | ForEach-Object {
                     @{
@@ -780,14 +813,18 @@ if ($uitestCategories -eq 'NONE') {
             $tCount = if ($null -ne $d.tests_total) { [int]$d.tests_total } else { 0 }
             $tPass  = if ($null -ne $d.tests_passed) { [int]$d.tests_passed } else { 0 }
             $tFail  = if ($null -ne $d.tests_failed) { [int]$d.tests_failed } else { 0 }
-            $testsCol = if ($d.result -eq 'FAILED' -and $tFail -eq 0) {
+            $testsCol = if ($d.infra_failure) {
+                            "🛠️ infra failure ($tFail OneTimeSetUp timeouts)"
+                        }
+                        elseif ($d.result -eq 'FAILED' -and $tFail -eq 0) {
                             if ($tCount -eq 0) { "build/deploy failed" }
                             else { "$tPass/$tCount — build/deploy failed before per-test results" }
                         }
                         elseif ($tCount -eq 0) { "—" }
                         elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
                         else { "$tPass/$tCount ✓" }
-            $notes = if ($d.exit_code) { "exit code $($d.exit_code)" }
+            $notes = if ($d.infra_failure) { "infra: $($d.infra_failure)" }
+                     elseif ($d.exit_code) { "exit code $($d.exit_code)" }
                      elseif ($d.reason)    { $d.reason }
                      else                  { "" }
             [void]$appendMd.AppendLine("| ``$($d.category)`` | $icon $($d.result) | $testsCol | $($d.duration_s)s | $notes |")
@@ -801,12 +838,19 @@ if ($uitestCategories -eq 'NONE') {
     # produced no per-test failures (build/deploy crashed), surface the last
     # 30 lines of stdout so the AI summary still pinpoints the cause.
     $failedCats = @($uitestDetails | Where-Object { $_.result -eq 'FAILED' -and (($_.failed_tests -and $_.failed_tests.Count -gt 0) -or $_.build_tail) })
+    $infraCats = @($failedCats | Where-Object { $_.infra_failure })
+    if ($infraCats.Count -gt 0) {
+        [void]$appendMd.AppendLine("> ⚠️ **Infrastructure failure detected** — for $($infraCats.Count) categor$(if ($infraCats.Count -eq 1) { 'y' } else { 'ies' }) below, the HostApp couldn't be installed/launched on the device, so every test's ``OneTimeSetUp`` timed out. **These are NOT real test regressions** — the test runner never started. Look for ``$($infraCats[0].infra_failure)`` etc. in the build log.")
+        [void]$appendMd.AppendLine()
+    }
     if ($failedCats.Count -gt 0) {
         [void]$appendMd.AppendLine("#### Failed test details")
         [void]$appendMd.AppendLine()
         foreach ($d in $failedCats) {
             $hasFailedTests = $d.failed_tests -and $d.failed_tests.Count -gt 0
-            $headSummary = if ($hasFailedTests) {
+            $headSummary = if ($d.infra_failure) {
+                "🛠️ <code>$($d.category)</code> — infra failure ($($d.failed_tests.Count) OneTimeSetUp timeouts, app never started)"
+            } elseif ($hasFailedTests) {
                 "❌ <code>$($d.category)</code> — $($d.failed_tests.Count) failed test$(if ($d.failed_tests.Count -ne 1) { 's' })"
             } else {
                 "❌ <code>$($d.category)</code> — build/deploy failed (no per-test results)"
