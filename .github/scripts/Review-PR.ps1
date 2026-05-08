@@ -346,6 +346,97 @@ function Get-DotNetTestResults {
     return ,@($results.ToArray())
 }
 
+# ─── Helper: Parse VSTest TRX file (authoritative test results) ─────────────
+# CI's `RunTestWithLocalDotNet` writes a TRX file via:
+#   --logger "trx;LogFileName=<sanitized>.trx" --results-directory <dir>
+# The TRX is the same format AzDO's PublishTestResults@2 ingests, so it has
+# every test's outcome, duration, error message and stack trace — without
+# any console-scrape ambiguity. STEP 3 prefers TRX when available because
+# parsing console output is fragile when many tests run, lines wrap, or
+# multi-line ErrorRecords get glued together by PowerShell stream merging.
+#
+# Returns hashtable:
+#   Total/Passed/Failed/Skipped : aggregate counters from <ResultSummary>
+#   Results                     : array of @{ status; name; duration; error; stack }
+#                                  matching Get-DotNetTestResults shape so the
+#                                  renderer is interchangeable.
+function Get-TrxResults {
+    param([string]$TrxPath)
+
+    if (-not $TrxPath -or -not (Test-Path $TrxPath)) {
+        return $null
+    }
+
+    try {
+        [xml]$trx = Get-Content -Path $TrxPath -Raw -Encoding UTF8
+    } catch {
+        Write-Host "    ⚠️ Failed to parse TRX $TrxPath : $_" -ForegroundColor Yellow
+        return $null
+    }
+
+    # The TRX is in the VSTest namespace. Set up an XmlNamespaceManager so we
+    # can address nodes regardless of prefix.
+    $ns = New-Object System.Xml.XmlNamespaceManager($trx.NameTable)
+    $ns.AddNamespace('t', 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010')
+
+    # Counters live on <ResultSummary><Counters .../></ResultSummary>
+    $countersNode = $trx.SelectSingleNode('//t:ResultSummary/t:Counters', $ns)
+    $total = 0; $passed = 0; $failed = 0; $skipped = 0
+    if ($countersNode) {
+        $total   = [int]($countersNode.GetAttribute('total'))
+        $passed  = [int]($countersNode.GetAttribute('passed'))
+        $failed  = [int]($countersNode.GetAttribute('failed'))
+        # Skipped is "executed - passed - failed" if not separately tracked.
+        $executed = [int]($countersNode.GetAttribute('executed'))
+        $skipped  = [Math]::Max(0, $total - $executed)
+    }
+
+    $entries = New-Object System.Collections.ArrayList
+    $resultNodes = $trx.SelectNodes('//t:UnitTestResult', $ns)
+    foreach ($r in $resultNodes) {
+        $rawName = $r.GetAttribute('testName')
+        # Strip the (TestName) parameter suffix VSTest sometimes adds — keep
+        # the bare method name so it matches what Get-DotNetTestResults emits.
+        $name = $rawName
+
+        $outcomeAttr = $r.GetAttribute('outcome')
+        $status = switch ($outcomeAttr) {
+            'Passed'           { 'Passed' }
+            'Failed'           { 'Failed' }
+            'NotExecuted'      { 'Skipped' }
+            'Inconclusive'     { 'Skipped' }
+            default            { $outcomeAttr }
+        }
+        $duration = $r.GetAttribute('duration')
+
+        $err = ''; $stack = ''
+        $errInfo = $r.SelectSingleNode('t:Output/t:ErrorInfo', $ns)
+        if ($errInfo) {
+            $msgNode   = $errInfo.SelectSingleNode('t:Message', $ns)
+            $stackNode = $errInfo.SelectSingleNode('t:StackTrace', $ns)
+            if ($msgNode)   { $err   = $msgNode.InnerText.Trim() }
+            if ($stackNode) { $stack = $stackNode.InnerText.Trim() }
+        }
+
+        [void]$entries.Add([ordered]@{
+            status   = $status
+            name     = $name
+            duration = $duration
+            error    = $err
+            stack    = $stack
+        })
+    }
+
+    return @{
+        Total   = $total
+        Passed  = $passed
+        Failed  = $failed
+        Skipped = $skipped
+        Results = @($entries.ToArray())
+        TrxPath = $TrxPath
+    }
+}
+
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
     param([string]$StepName, [string]$Prompt)
@@ -663,28 +754,60 @@ if ($uitestCategories -eq 'NONE') {
         }
         $catDuration = [math]::Round(((Get-Date) - $catStart).TotalSeconds, 1)
 
-        # Parse per-test results from captured stdout. The shared runner
-        # already split multi-line ErrorRecords into individual lines and
-        # wrote the category log file via -LogFile, so we just feed
-        # $testOutput straight into the parser.
+        # Parse per-test results. We prefer the TRX file written by
+        # `dotnet test --logger trx` (mirrors CI pipeline 313's
+        # `RunTestWithLocalDotNet`) — it's authoritative because it captures
+        # every test's outcome, duration, error and stack regardless of
+        # how the console output got wrapped or interleaved. We only fall
+        # back to scraping the captured stdout via Get-DotNetTestResults
+        # when the TRX is missing (build/deploy crashed before tests ran,
+        # or an older BuildAndRunHostApp.ps1 ran without --logger trx).
         $perTestResults = @()
-        try {
-            $perTestResults = @(Get-DotNetTestResults -Lines $testOutput)
-        } catch {
-            Write-Host "    ⚠️ Failed to parse per-test results: $_" -ForegroundColor Yellow
+        $trxAggregate   = $null
+        $trxPath        = if ($runResult) { [string]$runResult.TrxResultFile } else { $null }
+        if ($trxPath -and (Test-Path $trxPath)) {
+            try {
+                $trxAggregate = Get-TrxResults -TrxPath $trxPath
+                if ($trxAggregate) {
+                    $perTestResults = @($trxAggregate.Results)
+                    Write-Host "    📄 TRX parsed: total=$($trxAggregate.Total) passed=$($trxAggregate.Passed) failed=$($trxAggregate.Failed) skipped=$($trxAggregate.Skipped)" -ForegroundColor Cyan
+                }
+            } catch {
+                Write-Host "    ⚠️ Failed to parse TRX $trxPath : $_" -ForegroundColor Yellow
+            }
+        }
+        if (-not $trxAggregate) {
+            try {
+                $perTestResults = @(Get-DotNetTestResults -Lines $testOutput)
+            } catch {
+                Write-Host "    ⚠️ Failed to parse per-test results: $_" -ForegroundColor Yellow
+            }
         }
         $catFailedTests = @($perTestResults | Where-Object { $_.status -eq 'Failed' })
         $catPassedTests = @($perTestResults | Where-Object { $_.status -eq 'Passed' })
+        # Authoritative aggregate counts: TRX > per-test array. (When the TRX
+        # is present its <Counters total="N" .../> attribute beats counting
+        # array items because VSTest may report retries/skips that aren't in
+        # individual <UnitTestResult> nodes.)
+        if ($trxAggregate) {
+            $catTotalCount  = [int]$trxAggregate.Total
+            $catPassedCount = [int]$trxAggregate.Passed
+            $catFailedCount = [int]$trxAggregate.Failed
+        } else {
+            $catTotalCount  = $perTestResults.Count
+            $catPassedCount = $catPassedTests.Count
+            $catFailedCount = $catFailedTests.Count
+        }
 
         if ($testExitCode -eq 0) {
-            Write-Host "    ✅ PASSED ($catDuration s, $($catPassedTests.Count) test(s))" -ForegroundColor Green
+            Write-Host "    ✅ PASSED ($catDuration s, $catPassedCount test(s))" -ForegroundColor Green
             $uitestPassed++
             $uitestDetails += @{
                 category     = $cat
                 result       = 'PASSED'
                 duration_s   = $catDuration
-                tests_total  = $perTestResults.Count
-                tests_passed = $catPassedTests.Count
+                tests_total  = $catTotalCount
+                tests_passed = $catPassedCount
                 tests_failed = 0
                 passed_tests = @($catPassedTests | ForEach-Object { @{ name = $_.name; duration = $_.duration } })
                 failed_tests = @()
@@ -704,7 +827,7 @@ if ($uitestCategories -eq 'NONE') {
                 failed_tests = @()
             }
         } else {
-            Write-Host "    ❌ FAILED (exit code: $testExitCode, $catDuration s, $($catFailedTests.Count) failed test(s))" -ForegroundColor Red
+            Write-Host "    ❌ FAILED (exit code: $testExitCode, $catDuration s, $catFailedCount failed test(s))" -ForegroundColor Red
             foreach ($ft in $catFailedTests) {
                 Write-Host "       • $($ft.name)" -ForegroundColor Red
             }
@@ -715,7 +838,7 @@ if ($uitestCategories -eq 'NONE') {
             # (CS0246, RS0016, missing dependency, etc.) instead of just
             # "exit code 1".
             $buildTail = $null
-            if ($catFailedTests.Count -eq 0) {
+            if ($catFailedCount -eq 0) {
                 try {
                     $tail = @($testOutput | ForEach-Object { "$_" } | Select-Object -Last 30)
                     $buildTail = ($tail -join "`n").Trim()
@@ -754,7 +877,7 @@ if ($uitestCategories -eq 'NONE') {
                 $allOneTimeSetup = @($catFailedTests | Where-Object {
                     ($_.error -as [string]) -match '^OneTimeSetUp:'
                 }).Count -eq $catFailedTests.Count
-                $buildFailedNoPasses = ($catPassedTests.Count -eq 0) -and ($logText -match '(?m)^Build FAILED\.\s*$')
+                $buildFailedNoPasses = ($catPassedCount -eq 0) -and ($logText -match '(?m)^Build FAILED\.\s*$')
                 if ($allOneTimeSetup -or $buildFailedNoPasses) {
                     foreach ($sig in $infraSignals) {
                         if ($logText -match [regex]::Escape($sig)) {
@@ -769,11 +892,12 @@ if ($uitestCategories -eq 'NONE') {
                 result       = 'FAILED'
                 duration_s   = $catDuration
                 exit_code    = $testExitCode
-                tests_total  = $perTestResults.Count
-                tests_passed = $catPassedTests.Count
-                tests_failed = $catFailedTests.Count
+                tests_total  = $catTotalCount
+                tests_passed = $catPassedCount
+                tests_failed = $catFailedCount
                 build_tail   = $buildTail
                 infra_failure = $infraReason
+                trx_path     = $trxPath
                 passed_tests = @($catPassedTests | ForEach-Object { @{ name = $_.name; duration = $_.duration } })
                 failed_tests = @($catFailedTests | ForEach-Object {
                     @{
