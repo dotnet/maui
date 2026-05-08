@@ -33,12 +33,12 @@ public class Issue34975 : Shell
 
 		navigateButton.Clicked += async (s, e) =>
 		{
-			checkButton.IsVisible = false;
 			Issue34975SecondPage.Instances.Clear();
 
 			// Round 1: navigate to the second page and back.
 			await Shell.Current.GoToAsync("Issue34975_second");
 			await Shell.Current.GoToAsync("..");
+			await Task.Delay(500);
 
 			// Snapshot Round 1 refs before Round 2 adds more.
 			round1Refs = Issue34975SecondPage.Instances.ToArray();
