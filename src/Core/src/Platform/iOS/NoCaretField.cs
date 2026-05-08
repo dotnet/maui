@@ -8,6 +8,11 @@ namespace Microsoft.Maui.Platform
 {
 	public class NoCaretField : UITextField, IUIViewLifeCycleEvents
 	{
+		// UITextField's RoundedRect border uses an approximately 5pt corner radius.
+		const float roundedRectCornerRadius = 5f;
+
+		CoreGraphics.CGSize _lastFocusHaloBoundsSize;
+
 		public NoCaretField() : base(new RectangleF())
 		{
 			SpellCheckingType = UITextSpellCheckingType.No;
@@ -24,18 +29,18 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
-			// On iOS/MacCatalyst 26+, the system's default keyboard focus halo around a
+			// On MacCatalyst 26+, the system's default keyboard focus halo around a
 			// UITextField with BorderStyle == RoundedRect renders as a fully rounded
 			// (pill-shaped) outline that doesn't match the field's actual corner radius.
 			// Provide a custom UIFocusHaloEffect whose path follows the field's
 			// rounded-rect bounds so the halo aligns with the border.
 			// See: https://developer.apple.com/documentation/uikit/uifocushaloeffect
-			if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(26)
 			 && BorderStyle == UITextBorderStyle.RoundedRect
-			 && Bounds.Width > 0 && Bounds.Height > 0)
+			 && Bounds.Width > 0 && Bounds.Height > 0
+			 && Bounds.Size != _lastFocusHaloBoundsSize)
 			{
-				// UITextField's RoundedRect border uses an approximately 5pt corner radius.
-				const float roundedRectCornerRadius = 5f;
+				_lastFocusHaloBoundsSize = Bounds.Size;
 				var path = UIBezierPath.FromRoundedRect(Bounds, roundedRectCornerRadius);
 				FocusEffect = UIFocusHaloEffect.Create(path);
 			}
