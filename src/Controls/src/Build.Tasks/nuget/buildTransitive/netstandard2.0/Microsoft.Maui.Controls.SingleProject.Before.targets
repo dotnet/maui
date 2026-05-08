@@ -54,8 +54,16 @@
     metadata. Instead, downstream consumers apply EnsureTrailingSlash() at the
     use site (see _MauiCollectPlatformSpecificCompileItems).
   -->
+  <!--
+    BeforeTargets is intentionally limited to _MauiRemovePlatformCompileItems
+    because _MauiCollectPlatformSpecificCompileItems already declares
+    DependsOnTargets="_MauiNormalizePlatformSpecificFolders" (single source of
+    truth for that ordering). The Remove target does not depend on Collect (so
+    Normalize-Before-Remove is the only way to guarantee Remove sees the
+    back-filled TargetPlatformIdentifiers metadata when Collect is short-circuited).
+  -->
   <Target Name="_MauiNormalizePlatformSpecificFolders"
-          BeforeTargets="_MauiCollectPlatformSpecificCompileItems;_MauiRemovePlatformCompileItems"
+          BeforeTargets="_MauiRemovePlatformCompileItems"
           Condition=" '$(SingleProject)' == 'true' ">
     <ItemGroup>
       <MauiPlatformSpecificFolder

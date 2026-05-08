@@ -766,9 +766,11 @@ public static class ExtendedIosMarker
 		// EnsureTrailingSlash() in _MauiCollectPlatformSpecificCompileItems, the
 		// glob "Platforms\Apple**/*.cs" would silently include AppleX/AppleLegacy.
 		[Theory]
-		[InlineData("Platforms\\Apple")]
-		[InlineData("Platforms\\Apple\\")]
-		public void SingleProject_PlatformFolderWithoutTrailingSlashDoesNotMatchSiblingFolders(string includePath)
+		[InlineData("Platforms\\Apple", "ios")]
+		[InlineData("Platforms\\Apple\\", "ios")]
+		[InlineData("Platforms\\Apple", "maccatalyst")]
+		[InlineData("Platforms\\Apple\\", "maccatalyst")]
+		public void SingleProject_PlatformFolderWithoutTrailingSlashDoesNotMatchSiblingFolders(string includePath, string targetPlatformIdentifier)
 		{
 			SetUp();
 			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
@@ -816,7 +818,7 @@ public static class AppleXMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: "-p:TargetPlatformIdentifier=ios");
+			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier}");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
