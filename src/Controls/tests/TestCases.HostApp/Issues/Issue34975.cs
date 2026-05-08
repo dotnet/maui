@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34975, "Title view memory leak when using Shell TitleView and x Name", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 34975, "Title view memory leak when using Shell TitleView and x Name", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue34975 : Shell
 {
 	public Issue34975()
@@ -29,15 +29,26 @@ public class Issue34975 : Shell
 			AutomationId = "StatusLabel",
 		};
 
+		WeakReference[] round1Refs = [];
+
 		navigateButton.Clicked += async (s, e) =>
 		{
+			checkButton.IsVisible = false;
 			Issue34975SecondPage.Instances.Clear();
 
+			// Round 1: navigate to the second page and back.
 			await Shell.Current.GoToAsync("Issue34975_second");
-
 			await Shell.Current.GoToAsync("..");
+			await Task.Delay(300);
 
-			// A small delay lets that continuation run before we expose CheckMemoryButton.
+			// Snapshot Round 1 refs before Round 2 adds more.
+			round1Refs = Issue34975SecondPage.Instances.ToArray();
+
+			// Round 2: on macCatalyst under Appium, the accessibility subsystem holds
+			// native refs to the most-recently-visible page. A second navigation
+			// replaces those refs, releasing Round 1's page for GC.
+			await Shell.Current.GoToAsync("Issue34975_second");
+			await Shell.Current.GoToAsync("..");
 			await Task.Delay(500);
 
 			checkButton.IsVisible = true;
@@ -46,23 +57,18 @@ public class Issue34975 : Shell
 
 		checkButton.Clicked += async (s, e) =>
 		{
-			var instances = Issue34975SecondPage.Instances;
-			if (instances.Count == 0)
-			{
-				statusLabel.Text = "Navigate first";
-				return;
-			}
-
 			statusLabel.Text = "Checking...";
 			try
 			{
-				await GarbageCollectionHelper.WaitForGC(5000, instances.ToArray());
-				statusLabel.Text = "Test passed";
+				await GarbageCollectionHelper.WaitForGC(10000, round1Refs);
 			}
-			catch
+			catch (Exception)
 			{
-				statusLabel.Text = "Memory Leak Detected";
+				// GC timeout — fall through to report count
 			}
+
+			var alive = round1Refs.Count(wr => wr.IsAlive);
+			statusLabel.Text = $"Still alive: {alive}";
 		};
 
 		var mainPage = new ContentPage
