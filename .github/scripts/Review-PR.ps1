@@ -628,15 +628,76 @@ if ($uitestCategories -eq 'NONE') {
         Write-Host ""
         Write-Host "  📋 [$cat] BuildAndRunHostApp.ps1 -Platform $uitestPlatform -Category $cat" -ForegroundColor Cyan
 
+        # Same retry-on-environment-error logic the Gate (verify-tests-fail.ps1)
+        # uses via Invoke-TestRunWithRetry. The Android emulator/iOS simulator
+        # occasionally rejects an APK install with "ADB0010 Broken pipe" or the
+        # app fails to launch (XHarness exit 83) — both transient infra
+        # problems, not test failures. Without retry, every test in the
+        # category's NUnit fixture would report a OneTimeSetUp timeout and the
+        # AI summary would falsely claim 100+ regressions.
+        $envErrorPatterns = @(
+            'error ADB0010.*InstallFailedException',
+            'Failure calling service package',
+            'XHarness exit code:\s*83',
+            'Application test run crashed',
+            'SIGABRT.*load_aot_module',
+            'AppiumServerHasNotBeenStartedLocally',
+            'no devices/emulators found',
+            'device offline'
+        )
+        $maxAttempts = 3
         $catStart = Get-Date
         $testOutput = @()
-        try {
-            $testOutput = & $uitestRunnerScript -Platform $uitestPlatform -Category $cat 2>&1
-            $testExitCode = $LASTEXITCODE
-            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
-        } catch {
-            Write-Host "    ⚠️ Error: $_" -ForegroundColor Yellow
-            $testExitCode = -1
+        $testExitCode = -1
+        $envErrHit = $null
+        for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            if ($attempt -gt 1) {
+                Write-Host "    ↻ Attempt $attempt/$maxAttempts after environment error '$envErrHit'" -ForegroundColor Yellow
+                # Recover the device on Android infra failures — same as the Gate.
+                if ($uitestPlatform -eq 'android') {
+                    try {
+                        Write-Host "    🔄 adb reboot to recover from $envErrHit" -ForegroundColor Yellow
+                        & adb reboot 2>$null | Out-Null
+                        & adb wait-for-device 2>$null | Out-Null
+                    } catch { Write-Host "    (adb reboot failed: $_)" -ForegroundColor DarkGray }
+                } elseif ($uitestPlatform -in @('ios','catalyst','maccatalyst')) {
+                    try {
+                        $bootedSim = (& xcrun simctl list devices booted 2>$null | Select-String -Pattern '\(([0-9A-F-]{36})\)' | Select-Object -First 1).Matches.Groups[1].Value
+                        if ($bootedSim) {
+                            Write-Host "    🔄 simctl shutdown/boot $bootedSim" -ForegroundColor Yellow
+                            & xcrun simctl shutdown $bootedSim 2>$null | Out-Null
+                            Start-Sleep -Seconds 5
+                            & xcrun simctl boot $bootedSim 2>$null | Out-Null
+                        }
+                    } catch { Write-Host "    (simctl reboot failed: $_)" -ForegroundColor DarkGray }
+                }
+                Start-Sleep -Seconds 30
+            }
+
+            $envErrHit = $null
+            $testOutput = @()
+            try {
+                $testOutput = & $uitestRunnerScript -Platform $uitestPlatform -Category $cat 2>&1
+                $testExitCode = $LASTEXITCODE
+                $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+            } catch {
+                Write-Host "    ⚠️ Error: $_" -ForegroundColor Yellow
+                $testExitCode = -1
+            }
+
+            # Check the captured output for any env-error signal. We need to
+            # join the output once for the regex check; further parsing reuses
+            # $testOutput element-wise.
+            if ($testExitCode -ne 0) {
+                $joined = ($testOutput | ForEach-Object { "$_" }) -join "`n"
+                foreach ($p in $envErrorPatterns) {
+                    if ($joined -match $p) { $envErrHit = $p; break }
+                }
+            }
+            if (-not $envErrHit) { break }
+            if ($attempt -eq $maxAttempts) {
+                Write-Host "    ⚠️ Environment error persisted after $maxAttempts attempts ($envErrHit)" -ForegroundColor Yellow
+            }
         }
         $catDuration = [math]::Round(((Get-Date) - $catStart).TotalSeconds, 1)
 
@@ -727,6 +788,9 @@ if ($uitestCategories -eq 'NONE') {
             # device, etc.), this is a CI infra problem — not real test
             # regressions. Reviewers shouldn't be alarmed by "119 failed tests"
             # when the app never even started.
+            #
+            # If $envErrHit was set above, use that — the retry loop already
+            # detected an env error and exhausted retries.
             $infraSignals = @(
                 'InstallFailedException',
                 'Failure calling service package',
@@ -738,8 +802,8 @@ if ($uitestCategories -eq 'NONE') {
                 'Failed to launch the application',
                 'cmd: Failure'
             )
-            $infraReason = $null
-            if ($catFailedTests.Count -gt 0) {
+            $infraReason = $envErrHit
+            if (-not $infraReason -and $catFailedTests.Count -gt 0) {
                 $allOneTimeSetup = @($catFailedTests | Where-Object {
                     ($_.error -as [string]) -match '^OneTimeSetUp:'
                 }).Count -eq $catFailedTests.Count
