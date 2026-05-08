@@ -86,23 +86,18 @@ namespace Microsoft.Maui
 			if (services is null)
 				return false;
 
-			// Iterate with early exit to avoid per-navigation heap allocation from ToArray()/Any().
+			// Early exit after the first match — avoids iterating all registered delegates unnecessarily.
 			bool hasAnyHandler = false;
-			bool hasCustomBackHandler = false;
 			foreach (var handler in services.GetLifecycleEventDelegates<AndroidLifecycle.OnBackPressed>())
 			{
 				hasAnyHandler = true;
-				if (handler != AppHostBuilderExtensions.DefaultWindowBackHandler)
-				{
-					hasCustomBackHandler = true;
-					break;
-				}
+				break;
 			}
 
 			if (!hasAnyHandler)
 				return false;
 
-			return hasCustomBackHandler || this.GetWindow() is IBackNavigationState { CanConsumeBackNavigation: true };
+			return this.GetWindow() is IBackNavigationState { CanConsumeBackNavigation: true };
 		}
 
 		sealed class MauiOnBackPressedCallback : OnBackPressedCallback

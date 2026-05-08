@@ -814,7 +814,9 @@ namespace Microsoft.Maui.Controls
 					return navigationPage.Navigation.NavigationStack.Count > 1;
 
 				case FlyoutPage flyoutPage:
-					if (flyoutPage.IsPresented)
+					// In split-mode (tablets), CanChangeIsPresented=false and IsPresented is locked true;
+					// back should NOT be consumed in that state — only consume when the flyout can close.
+					if (flyoutPage.IsPresented && ((IFlyoutPageController)flyoutPage).CanChangeIsPresented)
 						return true;
 
 					return CanConsumeBackNavigation(flyoutPage.Detail);
