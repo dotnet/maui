@@ -771,6 +771,26 @@ stages:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
 
+          # Install Node.js and Appium — required by the UITest.Appium
+          # AppiumServerContext to boot a local Appium server. Same setup
+          # the existing CopilotReview job uses (see lines 316-329 of this
+          # file). Without these the test process throws
+          # InvalidServerInstanceException("There is no installed nodes")
+          # at the OneTimeSetUp boundary and ALL discovered tests fail.
+          - task: UseNode@1
+            inputs:
+              version: "24.x"
+            displayName: 'Install Node.js'
+
+          - pwsh: |
+              $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+              dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
+            displayName: 'Install Appium'
+            retryCountOnTaskFailure: 2
+            timeoutInMinutes: 10
+            env:
+              APPIUM_HOME: $(APPIUM_HOME)
+
           - bash: |
               set -e
               git config user.email "copilot-ci@microsoft.com"
