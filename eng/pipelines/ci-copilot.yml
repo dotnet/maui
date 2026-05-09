@@ -120,7 +120,7 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: true
+              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
@@ -767,7 +767,7 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: true
+              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
