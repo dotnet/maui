@@ -1111,21 +1111,44 @@ stages:
               $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
               $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $($byCat.Count) categor$(if ($byCat.Count -eq 1) {'y'} else {'ies'}) on platform-pool agent (replaces in-process counts above)."
 
-              # Fetch the existing comment body, splice the new section in
-              # after the existing "### 🧪 UI Test Execution Results"
-              # marker (or append if not found), and PATCH it.
+              # Fetch the existing comment body and splice in the deep
+              # section. We wrap the deep section in HTML comment markers
+              # so subsequent builds REPLACE (not append) — preventing the
+              # "Deep UI tests appears 3 times" duplication observed when
+              # multiple builds run on the same PR.
               $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join "`n"
               if ([string]::IsNullOrWhiteSpace($existing)) {
                 Write-Host "Could not fetch comment body — aborting"
                 exit 0
               }
 
-              $marker = '### 🧪 UI Test Execution Results'
-              $idx = $existing.IndexOf($marker)
-              $newBody = if ($idx -ge 0) {
-                $existing.Substring(0, $idx).TrimEnd() + "`n`n" + $headerLine + "`n" + $sb.ToString()
+              $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
+              $endMarker   = '<!-- DEEP_UITESTS_END -->'
+              $deepBlock   = "$beginMarker`n$headerLine`n$($sb.ToString())$endMarker"
+
+              $beginIdx = $existing.IndexOf($beginMarker)
+              $endIdx   = $existing.IndexOf($endMarker)
+              if ($beginIdx -ge 0 -and $endIdx -gt $beginIdx) {
+                # Already wrapped — replace the block in place.
+                $before = $existing.Substring(0, $beginIdx).TrimEnd()
+                $after  = $existing.Substring($endIdx + $endMarker.Length).TrimStart()
+                $newBody = $before + "`n`n" + $deepBlock + $(if ($after) { "`n`n" + $after } else { "" })
               } else {
-                $existing.TrimEnd() + "`n`n" + $headerLine + "`n" + $sb.ToString()
+                # Strip any pre-existing unwrapped "Deep UI tests" lines and
+                # the legacy in-process table marker, then append the wrapped
+                # block. This recovers cleanly from comments that were
+                # written by older runs that didn't use the markers.
+                $cleaned = $existing -split "`n" | Where-Object {
+                  $_ -notmatch '^\s*[❌✅⏭️]\s*\*\*Deep UI tests\*\*'
+                }
+                $cleanedBody = ($cleaned -join "`n")
+                $legacyMarker = '### 🧪 UI Test Execution Results'
+                $idx = $cleanedBody.IndexOf($legacyMarker)
+                $newBody = if ($idx -ge 0) {
+                  $cleanedBody.Substring(0, $idx).TrimEnd() + "`n`n" + $deepBlock
+                } else {
+                  $cleanedBody.TrimEnd() + "`n`n" + $deepBlock
+                }
               }
 
               $tmp = New-TemporaryFile
