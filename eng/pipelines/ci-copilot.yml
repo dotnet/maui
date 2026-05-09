@@ -387,14 +387,21 @@ stages:
             displayName: 'Install GitHub Copilot CLI'
 
           # Boot iOS Simulator (only for iOS platform)
-          # UI test baseline screenshots are captured on iPhone Xs - must use same device
+          # Match main CI ui-tests pipeline: defaultiOSVersion: '26.0'
+          # Snapshots are at src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
+          # UITest.cs picks ios-26 baseline when platformVersion starts with "26."
           - bash: |
               echo "=== Booting iOS Simulator ==="
               
-              # Find the latest stable iOS runtime (prefer 18.x, fallback to 17.x)
+              # Prefer iOS 26 (main pipeline default), fallback to 18.x then 17.x
               RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
+                [.runtimes[] | select(.name | test("iOS 26"))] | sort_by(.version) | last | .identifier // empty
               ')
+              if [ -z "$RUNTIME" ]; then
+                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                  [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
+                ')
+              fi
               if [ -z "$RUNTIME" ]; then
                 RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
                   [.runtimes[] | select(.name | test("iOS 17"))] | sort_by(.version) | last | .identifier // empty
@@ -950,7 +957,7 @@ stages:
     # (NOT stageDependencies.<stage>.<job>.outputs[<step>.<var>] — that
     # syntax only works at job level). See RunDeepUITests for full
     # explanation.
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''))
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''))
     jobs:
       - job: UpdateComment
         displayName: 'Edit AI summary comment with deep test results'
