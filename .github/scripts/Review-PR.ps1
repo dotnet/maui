@@ -1344,7 +1344,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
 # RunDeepUITests + UpdateAISummaryComment stages. Flip $skipGateAndTryFix
 # back to $false (or delete the wrapper) once the new pipeline stages
 # are validated end-to-end.
-$skipGateAndTryFix = $true
+$skipGateAndTryFix = $false
 if (-not $skipGateAndTryFix) {
 
 Write-Host ""
