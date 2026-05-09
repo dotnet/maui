@@ -765,12 +765,25 @@ stages:
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
 
-          - bash: |
-              set -e
-              echo "Building Microsoft.Maui.BuildTasks.slnf — required before any dotnet test invocation"
-              dotnet restore Microsoft.Maui.BuildTasks.slnf
-              dotnet build Microsoft.Maui.BuildTasks.slnf -c Debug
+          # Install .NET workloads (same as ReviewPR stage) — without this,
+          # dotnet build fails with NETSDK1147 because the ios/android workloads
+          # are not present after provision.yml (which only installs the SDK).
+          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+            displayName: 'Install .NET and workloads'
+            retryCountOnTaskFailure: 2
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Add .NET to PATH'
+
+          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
             displayName: 'Build MSBuild Tasks'
+            retryCountOnTaskFailure: 1
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
 
           - bash: |
               set -e
