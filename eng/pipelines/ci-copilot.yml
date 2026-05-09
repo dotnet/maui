@@ -533,7 +533,6 @@ stages:
           - bash: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
-              
               # Ensure copilot CLI is accessible to pwsh subprocess.
               # npm global install on Linux goes to UseNode@1 toolcache path which may not
               # be on PATH inside pwsh even when exported from bash. Create a symlink in
@@ -644,6 +643,7 @@ stages:
               fi
               
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
+            name: RunReview                       # referenceable name so the new RunDeepUITests / UpdateAISummaryComment stages can read this step's output variables (detectedCategories, detectedPlatform) via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.<var>'])
             displayName: 'Run PR Reviewer Agent'
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
@@ -677,3 +677,289 @@ stages:
               fi
             displayName: 'Check Copilot Result'
             condition: succeededOrFailed()
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  #  STAGE: RunDeepUITests
+  # ─────────────────────────────────────────────────────────────────────────────
+  # After the Copilot review agent has detected UI test categories and posted
+  # an initial AI summary comment with in-process per-category results, this
+  # stage re-runs those same categories on a real platform-appropriate pool
+  # (Tahoe iOS sim / Ubuntu Android emu / Windows-2022 / macOS-14) instead of
+  # whatever VM the Copilot agent happened to land on. Each category becomes
+  # a sequential `BuildAndRunHostApp.ps1` invocation inside ONE job per
+  # platform; we can't matrix-fan-out at runtime because matrix expansion is
+  # compile-time in AzDO. The TRX files land in the drop-deep-uitests
+  # artifact for the next stage to consume.
+  #
+  # Skipped via `condition:` when:
+  #   - ReviewPR didn't emit detectedCategories (script crashed pre-STEP 2)
+  #   - detectedCategories == 'NONE' (no UI-relevant changes)
+  #
+  # Note: this runs AFTER ReviewPR completes, not in parallel. Parallel
+  # execution would require splitting STEP 2 (detection) into its own
+  # pre-stage; that's a follow-up. The first cut is sequential to keep the
+  # change small and incremental.
+  - stage: RunDeepUITests
+    displayName: 'Deep UI Tests (platform pool)'
+    dependsOn: ReviewPR
+    condition: |
+      and(
+        in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues'),
+        ne(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], ''),
+        ne(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], 'NONE')
+      )
+    variables:
+      detectedCategories: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'] ]
+    jobs:
+      - job: RunUITests
+        displayName: 'Run detected UI test categories'
+        # Use the SAME platform-pool selection logic as the CopilotReview
+        # job — the deep-test agent should be the right OS for the
+        # requested target platform.
+        ${{ if eq(parameters.Platform, 'android') }}:
+          pool: ${{ parameters.androidPool }}
+        ${{ elseif eq(parameters.Platform, 'ios') }}:
+          pool: ${{ parameters.iosPool }}
+        ${{ elseif eq(parameters.Platform, 'catalyst') }}:
+          pool: ${{ parameters.macPool }}
+        ${{ elseif eq(parameters.Platform, 'windows') }}:
+          pool: ${{ parameters.windowsPool }}
+        ${{ else }}:
+          pool: ${{ parameters.windowsPool }}
+        timeoutInMinutes: 240
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          # Bring in .NET + workloads + tasks DLL — same prerequisites the
+          # CopilotReview job used. Reusing the install-dotnet template
+          # keeps the SDK version pinned to global.json.
+          - template: common/provision.yml
+            parameters:
+              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows')) }}
+              skipProvisionator: true
+              skipJdk: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidPlatformApis: true
+              onlyAndroidPlatformDefaultApis: true
+              skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCreateAvds: true
+              androidEmulatorApiLevel: '30'
+              skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
+              skipCertificates: true
+
+          - bash: |
+              set -e
+              echo "Building Microsoft.Maui.BuildTasks.slnf — required before any dotnet test invocation"
+              dotnet restore Microsoft.Maui.BuildTasks.slnf
+              dotnet build Microsoft.Maui.BuildTasks.slnf -c Debug
+            displayName: 'Build MSBuild Tasks'
+
+          - bash: |
+              set -e
+              git config user.email "copilot-ci@microsoft.com"
+              git config user.name  "Copilot CI"
+              # Merge the PR head commit so we run tests against the same
+              # tree the Copilot reviewer saw. Mirror Review-PR.ps1 STEP 1
+              # logic (squash-merge, fall back to head checkout on
+              # conflict — but in the conflict case the ReviewPR stage
+              # would have already failed and we wouldn't reach here).
+              git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
+              git checkout -b deep-uitests-pr-${{ parameters.PRNumber }}
+              git merge --squash pr-${{ parameters.PRNumber }} || {
+                echo "Squash merge had conflicts — falling back to direct head checkout"
+                git merge --abort 2>/dev/null || true
+                git checkout pr-${{ parameters.PRNumber }}
+              }
+              git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
+            displayName: 'Merge PR for testing'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $cats = "$(detectedCategories)"
+              $platform = "${{ parameters.Platform }}"
+              Write-Host "Detected categories from ReviewPR stage: $cats"
+              Write-Host "Platform: $platform"
+
+              if ([string]::IsNullOrWhiteSpace($cats) -or $cats -eq 'NONE') {
+                Write-Host "Nothing to run — skipping"
+                exit 0
+              }
+
+              # Same per-category loop the in-process STEP 3 does, only
+              # this time on a proper platform-pool agent. Each TRX lands
+              # in its own subdir so the aggregator can split per category.
+              $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+              $outputRoot = "$(Build.ArtifactStagingDirectory)/deep-uitests"
+              New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
+
+              $hadFailure = $false
+              foreach ($cat in $catList) {
+                $safeCat = $cat -replace '[^A-Za-z0-9_.-]', '_'
+                $catDir = Join-Path $outputRoot "drop-${platform}_ui_tests-controls-$safeCat"
+                New-Item -ItemType Directory -Force -Path $catDir | Out-Null
+                Write-Host "============================================================"
+                Write-Host " Running category: $cat (platform=$platform)"
+                Write-Host "============================================================"
+                $catLog = Join-Path $catDir "build-output.log"
+                try {
+                  $result = & pwsh -NoProfile -File .github/scripts/BuildAndRunHostApp.ps1 `
+                      -Platform $platform `
+                      -TestFilter "TestCategory=$cat" `
+                      -OutputDir $catDir `
+                      -LogFile $catLog 2>&1
+                  $result | ForEach-Object { Write-Host $_ }
+                  if ($LASTEXITCODE -ne 0) { $hadFailure = $true }
+                } catch {
+                  Write-Host "BuildAndRunHostApp.ps1 threw: $_" -ForegroundColor Red
+                  $hadFailure = $true
+                }
+                # Copy any TRX file that landed in the working dir into the
+                # category drop folder so the aggregator finds it.
+                Get-ChildItem -Path . -Filter "*.trx" -Recurse -ErrorAction SilentlyContinue |
+                  Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-30) } |
+                  ForEach-Object {
+                    $dest = Join-Path $catDir $_.Name
+                    if (-not (Test-Path $dest)) { Copy-Item $_.FullName $dest -ErrorAction SilentlyContinue }
+                  }
+              }
+
+              if ($hadFailure) {
+                # Don't fail the stage — the AI summary comment is the
+                # deliverable; failed tests get reported there. Stage-level
+                # failure would prevent the UpdateAISummaryComment stage
+                # from running.
+                Write-Host "##vso[task.logissue type=warning]One or more deep UI test categories failed (see TRX in drop-deep-uitests artifact)"
+              }
+            displayName: 'Run deep UI tests (per-category loop)'
+            timeoutInMinutes: 220
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish drop-deep-uitests'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/deep-uitests'
+              artifact: 'drop-deep-uitests'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  #  STAGE: UpdateAISummaryComment
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Final stage. Depends on both ReviewPR (which posted the initial AI
+  # summary comment and emitted aiSummaryCommentId) and RunDeepUITests
+  # (which produced the TRX artifacts on the right pool). Downloads the
+  # artifacts, parses them via Aggregate-UITestArtifacts.ps1, and edits
+  # the existing PR comment to replace the in-process STEP 3 section
+  # with the deep-test results.
+  - stage: UpdateAISummaryComment
+    displayName: 'Update AI Summary with Deep UI Test Results'
+    dependsOn:
+      - ReviewPR
+      - RunDeepUITests
+    condition: |
+      and(
+        in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues'),
+        ne(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.aiSummaryCommentId'], '')
+      )
+    variables:
+      aiSummaryCommentId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.aiSummaryCommentId'] ]
+    jobs:
+      - job: UpdateComment
+        displayName: 'Edit AI summary comment with deep test results'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download drop-deep-uitests'
+            inputs:
+              buildType: 'current'
+              artifactName: 'drop-deep-uitests'
+              targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
+              $commentId = "$(aiSummaryCommentId)"
+              $prNumber = "${{ parameters.PRNumber }}"
+
+              if ([string]::IsNullOrWhiteSpace($commentId)) {
+                Write-Host "No AI summary comment ID — nothing to edit"
+                exit 0
+              }
+              if (-not (Test-Path $artDir)) {
+                Write-Host "drop-deep-uitests not present at $artDir — nothing to update"
+                exit 0
+              }
+
+              # Aggregator returns @{ category -> @{ Total/Passed/Failed/.../Results } }
+              # using the SAME shape the in-process STEP 3 renderer expects
+              # so we can reuse the markdown generation pattern directly.
+              $aggScript = ".github/scripts/shared/Aggregate-UITestArtifacts.ps1"
+              if (-not (Test-Path $aggScript)) { throw "$aggScript missing" }
+
+              # The aggregator normally calls `az pipelines runs artifact list`.
+              # Here we already have the artifact downloaded — invoke its
+              # internal directory-walker function directly.
+              $aggSrc = Get-Content -Raw -Path $aggScript
+              $reviewSrc = Get-Content -Raw -Path .github/scripts/Review-PR.ps1
+              foreach ($fn in @('Get-TrxResults','Get-CategoryFromArtifactName','Get-AggregatedTrxFromDirectory')) {
+                $rx = [regex]::Match(($aggSrc + "`n" + $reviewSrc), "(?ms)^function\s+$fn\s*\{.*?^\}", 'Multiline')
+                if ($rx.Success) { Invoke-Expression $rx.Value }
+              }
+              $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
+              if (-not $byCat -or $byCat.Count -eq 0) {
+                Write-Host "Aggregator returned no categories — leaving comment as-is"
+                exit 0
+              }
+
+              # Render the new STEP 3 section.
+              $totalPassed = 0; $totalFailed = 0
+              $sb = [System.Text.StringBuilder]::new()
+              [void]$sb.AppendLine()
+              [void]$sb.AppendLine("### 🧪 UI Test Execution Results (deep, platform pool)")
+              [void]$sb.AppendLine()
+              [void]$sb.AppendLine("| Category | Tests | Notes |")
+              [void]$sb.AppendLine("|---|---|---|")
+              foreach ($k in ($byCat.Keys | Sort-Object)) {
+                $b = $byCat[$k]
+                $totalPassed += [int]$b.Passed
+                $totalFailed += [int]$b.Failed
+                $tCount = [int]$b.Total
+                $tPass  = [int]$b.Passed
+                $tFail  = [int]$b.Failed
+                $col = if ($tCount -eq 0) { '—' }
+                       elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
+                       else { "$tPass/$tCount ✓" }
+                [void]$sb.AppendLine("| ``$k`` | $col | from TRX |")
+              }
+              $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
+              $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $($byCat.Count) categor$(if ($byCat.Count -eq 1) {'y'} else {'ies'}) on platform-pool agent (replaces in-process counts above)."
+
+              # Fetch the existing comment body, splice the new section in
+              # after the existing "### 🧪 UI Test Execution Results"
+              # marker (or append if not found), and PATCH it.
+              $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join "`n"
+              if ([string]::IsNullOrWhiteSpace($existing)) {
+                Write-Host "Could not fetch comment body — aborting"
+                exit 0
+              }
+
+              $marker = '### 🧪 UI Test Execution Results'
+              $idx = $existing.IndexOf($marker)
+              $newBody = if ($idx -ge 0) {
+                $existing.Substring(0, $idx).TrimEnd() + "`n`n" + $headerLine + "`n" + $sb.ToString()
+              } else {
+                $existing.TrimEnd() + "`n`n" + $headerLine + "`n" + $sb.ToString()
+              }
+
+              $tmp = New-TemporaryFile
+              @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
+              gh api -X PATCH "repos/dotnet/maui/issues/comments/$commentId" --input $tmp.FullName | Out-Null
+              Write-Host "✅ Patched comment $commentId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
+            displayName: 'Aggregate TRX + edit AI summary comment'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)

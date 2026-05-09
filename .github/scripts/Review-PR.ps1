@@ -649,6 +649,18 @@ if (Test-Path $detectScript) {
             Write-Host "  🎯 Detected categories: $uitestCategories" -ForegroundColor Green
         }
 
+        # Emit detected categories as an AzDO output variable so downstream
+        # stages (RunDeepUITests, UpdateAISummaryComment) in ci-copilot.yml
+        # can read them via $(stageDependencies.ReviewPR.CopilotReview.outputs['Detection.detectedCategories']).
+        # `isOutput=true` is required for cross-stage consumption; the
+        # variable name is namespaced under the step's reference name
+        # (`Detection`) by AzDO so the dependsOn lookup path includes it.
+        # Local invocations (no $env:TF_BUILD) won't have an AzDO variable
+        # store but the marker is harmless — gets ignored.
+        $catsForOutput = if ([string]::IsNullOrWhiteSpace($uitestCategories)) { 'NONE' } else { $uitestCategories }
+        Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$catsForOutput"
+        Write-Host "##vso[task.setvariable variable=detectedPlatform;isOutput=true]$Platform"
+
         # Write detection result for AI summary
         $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
         New-Item -ItemType Directory -Force -Path $uitestOutputDir | Out-Null
@@ -1763,6 +1775,15 @@ if (Test-Path $reviewScript) {
         if ($idLine -match '^COMMENT_ID=(\d+)$') {
             $aiSummaryCommentId = $Matches[1]
             Write-Host "  ✅ PR review summary posted (comment ID: $aiSummaryCommentId)" -ForegroundColor Green
+
+            # Persist comment ID + PR number to a known location and emit
+            # as an output variable so the downstream UpdateAISummaryComment
+            # stage in ci-copilot.yml can rewrite the STEP 3 section once
+            # the deep UI tests finish on the platform-pool agents.
+            $commentIdFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/ai-summary-comment-id.txt"
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $commentIdFile) | Out-Null
+            $aiSummaryCommentId | Set-Content $commentIdFile -Encoding UTF8
+            Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]$aiSummaryCommentId"
         } else {
             Write-Host "  ✅ PR review summary posted" -ForegroundColor Green
         }
