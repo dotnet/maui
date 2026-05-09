@@ -919,6 +919,19 @@ stages:
                     $dest = Join-Path $catDir $_.Name
                     if (-not (Test-Path $dest)) { Copy-Item $_.FullName $dest -ErrorAction SilentlyContinue }
                   }
+
+                # Capture snapshot-diff PNGs that VisualRegressionTester writes
+                # to $BUILD_ARTIFACTSTAGINGDIRECTORY/Controls.TestCases.Shared.Tests/snapshots-diff
+                # (see ui-tests-collect-snapshot-diffs.yml for reference impl).
+                # Move them into the per-category folder so they ship in the
+                # drop-deep-uitests artifact alongside the TRX. Move (not copy)
+                # so the next category's run starts with a clean diff folder.
+                $snapDiffSrc = Join-Path "$(Build.ArtifactStagingDirectory)" "Controls.TestCases.Shared.Tests/snapshots-diff"
+                if (Test-Path $snapDiffSrc) {
+                  $snapDiffDest = Join-Path $catDir "snapshots-diff"
+                  Write-Host "Moving snapshot-diffs from $snapDiffSrc -> $snapDiffDest"
+                  Move-Item -Path $snapDiffSrc -Destination $snapDiffDest -Force -ErrorAction SilentlyContinue
+                }
               }
 
               if ($hadFailure) {
@@ -1023,8 +1036,9 @@ stages:
               [void]$sb.AppendLine()
               [void]$sb.AppendLine("### 🧪 UI Test Execution Results (deep, platform pool)")
               [void]$sb.AppendLine()
-              [void]$sb.AppendLine("| Category | Tests | Notes |")
+              [void]$sb.AppendLine("| Category | Tests | Snapshot diffs |")
               [void]$sb.AppendLine("|---|---|---|")
+              $perCategoryFailures = [ordered]@{}
               foreach ($k in ($byCat.Keys | Sort-Object)) {
                 $b = $byCat[$k]
                 $totalPassed += [int]$b.Passed
@@ -1035,8 +1049,65 @@ stages:
                 $col = if ($tCount -eq 0) { '—' }
                        elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
                        else { "$tPass/$tCount ✓" }
-                [void]$sb.AppendLine("| ``$k`` | $col | from TRX |")
+                # Count snapshot-diff PNGs we shipped in this artifact subdir
+                $catDir = Join-Path $artDir $b.ArtifactName
+                $diffCount = 0
+                if (Test-Path $catDir) {
+                  $diffCount = @(Get-ChildItem -Path $catDir -Filter "*-diff.png" -Recurse -ErrorAction SilentlyContinue).Count
+                }
+                $diffCol = if ($diffCount -gt 0) { "$diffCount diff PNG$(if ($diffCount -eq 1) {'' } else {'s'})" } else { '—' }
+                [void]$sb.AppendLine("| ``$k`` | $col | $diffCol |")
+
+                # Capture failed test entries from the parsed TRX so we can
+                # render a per-category disclosure section listing the actual
+                # failing test names + the first line of their error message.
+                $catFailed = @()
+                foreach ($r in @($b.Results)) {
+                  if ($r.status -eq 'Failed') {
+                    $catFailed += [pscustomobject]@{
+                      Name  = $r.name
+                      Error = ($r.error -split "`n" | Select-Object -First 1) -as [string]
+                    }
+                  }
+                }
+                if ($catFailed.Count -gt 0) {
+                  $perCategoryFailures[$k] = $catFailed
+                }
               }
+
+              # Per-category failed-test disclosure sections (collapsed by
+              # default to keep the comment compact).
+              if ($perCategoryFailures.Count -gt 0) {
+                [void]$sb.AppendLine()
+                foreach ($cat in $perCategoryFailures.Keys) {
+                  $items = $perCategoryFailures[$cat]
+                  [void]$sb.AppendLine("<details><summary>❌ <code>$cat</code> — $($items.Count) failed test$(if ($items.Count -eq 1) {''} else {'s'})</summary>")
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("| Test | First-line error |")
+                  [void]$sb.AppendLine("|---|---|")
+                  foreach ($it in $items | Select-Object -First 50) {
+                    $err = if ([string]::IsNullOrWhiteSpace($it.Error)) { '—' } else { ($it.Error -replace '\|', '\|') }
+                    if ($err.Length -gt 200) { $err = $err.Substring(0, 200) + '…' }
+                    [void]$sb.AppendLine("| ``$($it.Name)`` | $err |")
+                  }
+                  if ($items.Count -gt 50) {
+                    [void]$sb.AppendLine("| _(+$($items.Count - 50) more — see TRX in artifact)_ | |")
+                  }
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("</details>")
+                  [void]$sb.AppendLine()
+                }
+              }
+
+              # Link to the published artifact so reviewers can download the
+              # snapshot-diff PNGs to triage visual regressions.
+              $buildId = "$(Build.BuildId)"
+              $orgUri  = "$(System.CollectionUri)".TrimEnd('/')
+              $project = "$(System.TeamProject)"
+              $artifactUrl = "$orgUri/$project/_build/results?buildId=$buildId&view=artifacts&pathAsName=false&type=publishedArtifacts"
+              [void]$sb.AppendLine("📎 [Download `drop-deep-uitests` artifact (TRX + snapshot diffs)]($artifactUrl)")
+              [void]$sb.AppendLine()
+
               $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
               $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $($byCat.Count) categor$(if ($byCat.Count -eq 1) {'y'} else {'ies'}) on platform-pool agent (replaces in-process counts above)."
 
