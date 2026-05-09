@@ -363,16 +363,18 @@ if ($Platform -eq "android") {
         Write-Info "Auto-detecting iOS simulator..."
         $simList = xcrun simctl list devices available --json | ConvertFrom-Json
         
-        # Preferred iOS versions in order (stable preferred, beta fallback)
-        $preferredVersions = @("iOS-18", "iOS-17", "iOS-26")
+        # Preferred iOS versions in order — match main CI ui-tests pipeline (defaultiOSVersion: '26.0')
+        # iOS 26 snapshots live in src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
+        # and UITest.cs selects ios-26 environment when platformVersion starts with "26."
+        $preferredVersions = @("iOS-26", "iOS-18", "iOS-17")
         # Preferred devices per iOS version to match CI configuration:
-        #   iOS 18.x → iPhone Xs (matches CI default in UITest.cs)
-        #   iOS 26.x → iPhone 11 Pro (matches CI visual test requirement)
+        #   iOS 26.x → iPhone Xs / iPhone 16 Pro (snapshots in /ios-26 baseline are device-agnostic per UITest.cs:367)
+        #   iOS 18.x → iPhone Xs (matches /ios baseline default)
         #   iOS 17.x → iPhone Xs (fallback)
         $preferredDevicesPerVersion = @{
+            "iOS-26" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 11 Pro")
             "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
             "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
-            "iOS-26" = @("iPhone 11 Pro", "iPhone 16 Pro", "iPhone 15 Pro")
         }
         
         $selectedDevice = $null
