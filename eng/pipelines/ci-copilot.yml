@@ -771,6 +771,18 @@ stages:
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
 
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - pwsh: |
+                $sdk = $env:ANDROID_SDK_ROOT
+                if (-not $sdk) { $sdk = $env:ANDROID_HOME }
+                if (-not $sdk) { $sdk = "$env:HOME/Library/Android/sdk" }
+                $pt = Join-Path $sdk "platform-tools"
+                $em = Join-Path $sdk "emulator"
+                Write-Host "Adding Android tools to PATH: $pt, $em"
+                echo "##vso[task.prependpath]$pt"
+                echo "##vso[task.prependpath]$em"
+              displayName: 'Add Android SDK tools to PATH'
+
           - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
