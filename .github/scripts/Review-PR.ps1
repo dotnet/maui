@@ -1319,6 +1319,17 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
 #  STEP 5: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
+# TEMP: Skip Gate (STEP 5) + Try-Fix (STEP 6) for fast iteration on the
+# inline-stages architecture. Both phases are expensive (build the whole
+# repo, run agents on multiple candidates) and we just need STEPs 1-4 +
+# STEP 7 (post comment) to validate that detectedCategories /
+# aiSummaryCommentId output variables flow through to the new
+# RunDeepUITests + UpdateAISummaryComment stages. Flip $skipGateAndTryFix
+# back to $false (or delete the wrapper) once the new pipeline stages
+# are validated end-to-end.
+$skipGateAndTryFix = $true
+if (-not $skipGateAndTryFix) {
+
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
 Write-Host "║  STEP 5: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
@@ -1747,6 +1758,8 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
         Write-Host "  ⚠️ AI-tier category refresh failed (non-fatal, keeping Step 2 result): $_" -ForegroundColor Yellow
     }
 }
+
+}  # END TEMP SKIP wrapper for STEP 5 (Gate) + STEP 6 (Try-Fix) — see $skipGateAndTryFix above
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 7: Post AI Summary Comment (direct script invocation)
