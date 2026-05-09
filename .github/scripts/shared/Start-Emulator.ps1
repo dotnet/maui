@@ -384,11 +384,20 @@ if ($Platform -eq "android") {
         foreach ($version in $preferredVersions) {
             if ($selectedDevice) { break }
             
-            # Get all runtimes matching this version prefix, sorted by version descending
-            # so the latest minor version is preferred (e.g., iOS-18-5 before iOS-18-3)
-            $matchingRuntimes = $simList.devices.PSObject.Properties | 
-                Where-Object { $_.Name -match $version } |
-                Sort-Object { $_.Name } -Descending
+            # Get all runtimes matching this version prefix.
+            # For iOS-26 prefer the .0 minor version (provision.yml installs 26.0
+            # and main CI baselines were captured on 26.0). For other major versions
+            # prefer the latest minor version available.
+            if ($version -eq "iOS-26") {
+                $matchingRuntimes = $simList.devices.PSObject.Properties | 
+                    Where-Object { $_.Name -match $version } |
+                    Sort-Object { $_.Name }   # ascending: iOS-26-0 first, then iOS-26-1
+            }
+            else {
+                $matchingRuntimes = $simList.devices.PSObject.Properties | 
+                    Where-Object { $_.Name -match $version } |
+                    Sort-Object { $_.Name } -Descending
+            }
             
             if ($matchingRuntimes) {
                 # Try each preferred device for this version
