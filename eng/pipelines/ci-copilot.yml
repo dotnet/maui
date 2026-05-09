@@ -818,12 +818,29 @@ stages:
                 Write-Host " Running category: $cat (platform=$platform)"
                 Write-Host "============================================================"
                 $catLog = Join-Path $catDir "build-output.log"
+                # Diagnostic: dump exact args before invocation so any quoting
+                # issue or stray characters in the category value are visible
+                # in the log.
+                Write-Host "DEBUG: cat='$cat' (length=$($cat.Length))"
+                Write-Host "DEBUG: platform='$platform' (length=$($platform.Length))"
+                Write-Host "DEBUG: PWD='$(Get-Location)'"
+                Write-Host "DEBUG: BuildAndRunHostApp.ps1 exists: $(Test-Path '.github/scripts/BuildAndRunHostApp.ps1')"
                 try {
-                  $result = & pwsh -NoProfile -File .github/scripts/BuildAndRunHostApp.ps1 `
-                      -Platform $platform `
-                      -Category $cat 2>&1
-                  $result | ForEach-Object { Write-Host $_ }
-                  if ($LASTEXITCODE -ne 0) { $hadFailure = $true }
+                  # Splat parameters via hashtable to avoid any backtick
+                  # line-continuation quirks. Tee output to the catLog file
+                  # while still streaming to console.
+                  $argList = @(
+                    '-NoProfile',
+                    '-File', '.github/scripts/BuildAndRunHostApp.ps1',
+                    '-Platform', $platform,
+                    '-Category', $cat
+                  )
+                  Write-Host "DEBUG: invoking pwsh with args: $($argList -join ' | ')"
+                  & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object { Write-Host $_ }
+                  if ($LASTEXITCODE -ne 0) {
+                    Write-Host "Category $cat exited with code $LASTEXITCODE" -ForegroundColor Yellow
+                    $hadFailure = $true
+                  }
                 } catch {
                   Write-Host "BuildAndRunHostApp.ps1 threw: $_" -ForegroundColor Red
                   $hadFailure = $true
