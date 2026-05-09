@@ -835,9 +835,7 @@ stages:
                 try {
                   $result = & pwsh -NoProfile -File .github/scripts/BuildAndRunHostApp.ps1 `
                       -Platform $platform `
-                      -TestFilter "TestCategory=$cat" `
-                      -OutputDir $catDir `
-                      -LogFile $catLog 2>&1
+                      -Category $cat 2>&1
                   $result | ForEach-Object { Write-Host $_ }
                   if ($LASTEXITCODE -ne 0) { $hadFailure = $true }
                 } catch {
