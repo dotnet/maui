@@ -14,15 +14,6 @@ parameters:
   skipProvisioning: true
   BuildNativeAOT: false # Parameter to control whether NativeAOT artifacts should be built
   RunNativeAOT: false # Parameter to control whether NativeAOT UI tests should run
-  # targetPlatform restricts which platform stages run.
-  # 'all' (default)  → every platform stage runs (existing CI behavior)
-  # 'android'        → only build_ui_tests + android_ui_tests stages
-  # 'ios'            → only build_ui_tests + ios_ui_tests_mono stage
-  # 'windows'        → only build_ui_tests_windows + winui_ui_tests stages
-  # 'catalyst'       → only build_ui_tests + mac_ui_tests stage
-  # Used by ci-copilot-uitests.yml to spin up just the platform that matches
-  # the Copilot review's --Platform parameter.
-  targetPlatform: 'all'
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
@@ -61,46 +52,40 @@ parameters:
       app: /optional/path/to/app.csproj
 
 stages:
-  # build_ui_tests builds android+ios+mac sample apps on a macOS pool.
-  # Skipped when targetPlatform == 'windows' since the windows test stage
-  # only consumes the windows-specific build artifact.
-  - ${{ if ne(parameters.targetPlatform, 'windows') }}:
-    - stage: build_ui_tests
-      displayName: Build UITests Sample App
-      dependsOn: []
-      jobs:
-        - job: build_ui_tests
-          displayName: Build Sample App
-          pool: ${{ parameters.androidPool }}
-          variables:
-            REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-            APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-          steps:
-            - template: ui-tests-build-sample.yml
-              parameters:
-                  runtimeVariant: "Mono"
-                  skipProvisioning: ${{ parameters.skipProvisioning }}
+  - stage: build_ui_tests
+    displayName: Build UITests Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests
+        displayName: Build Sample App
+        pool: ${{ parameters.androidPool }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "Mono"
+                skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  # CoreCLR build stage — only needed for android_ui_tests_coreclr (android only).
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'android')) }}:
-    - stage: build_ui_tests_coreclr
-      displayName: Build UITests CoreCLR Sample App
-      dependsOn: []
-      jobs:
-        - job: build_ui_tests
-          displayName: Build Sample App
-          pool: ${{ parameters.androidPool }}
-          variables:
-            REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-            APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-          steps:
-            - template: ui-tests-build-sample.yml
-              parameters:
-                  runtimeVariant: "CoreCLR"
-                  skipProvisioning: ${{ parameters.skipProvisioning }}
+  - stage: build_ui_tests_coreclr
+    displayName: Build UITests CoreCLR Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests
+        displayName: Build Sample App
+        pool: ${{ parameters.androidPool }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "CoreCLR"
+                skipProvisioning: ${{ parameters.skipProvisioning }}
   
   # NativeAOT UI tests build stage - only run when BuildNativeAOT parameter is true
-  - ${{ if and(eq(parameters.BuildNativeAOT, true), or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'ios'))) }}:
+  - ${{ if eq(parameters.BuildNativeAOT, true) }}:
     - stage: build_ui_tests_nativeaot
       displayName: Build UITests NativeAOT Sample App
       dependsOn: []
@@ -118,49 +103,46 @@ stages:
                   platform: ios
                   skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'windows')) }}:
-    - stage: build_ui_tests_windows
-      displayName: Build UITests Windows Sample App
-      dependsOn: []
-      jobs:
-        - job: build_ui_tests
-          displayName: Build Sample App (Windows)
-          pool: ${{ parameters.windowsBuildPool }}
-          variables:
-            APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-          steps:
-            - template: ui-tests-build-sample.yml
-              parameters:
-                  platform: windows
-                  skipProvisioning: ${{ parameters.skipProvisioning }}
+  - stage: build_ui_tests_windows
+    displayName: Build UITests Windows Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests
+        displayName: Build Sample App (Windows)
+        pool: ${{ parameters.windowsBuildPool }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                platform: windows
+                skipProvisioning: ${{ parameters.skipProvisioning }}
 
   # Material3 Build Stage - Separate build with UseMaterial3=true (Android-only)
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'android')) }}:
-    - stage: build_ui_tests_material3
-      displayName: Build UITests Material3 Sample App
-      dependsOn: []
-      jobs:
-        - job: build_ui_tests_material3
-          displayName: Build Sample App (Material3)
-          workspace:
-            clean: all
-          pool: ${{ parameters.androidPool }}
-          variables:
-            REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-            APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-          steps:
-            - template: ui-tests-build-sample.yml
-              parameters:
-                  runtimeVariant: "Mono"
-                  platform: android
-                  useMaterial3: true
-                  skipProvisioning: ${{ parameters.skipProvisioning }}
+  - stage: build_ui_tests_material3
+    displayName: Build UITests Material3 Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_material3
+        displayName: Build Sample App (Material3)
+        workspace:
+          clean: all
+        pool: ${{ parameters.androidPool }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "Mono"
+                platform: android
+                useMaterial3: true
+                skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'android')) }}:
-    - stage: android_ui_tests
-      displayName: Android UITests
-      dependsOn: build_ui_tests
-      jobs:
+  - stage: android_ui_tests
+    displayName: Android UITests
+    dependsOn: build_ui_tests
+    jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevels }}:
@@ -201,11 +183,10 @@ stages:
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'android')) }}:
-    - stage: android_ui_tests_coreclr
-      displayName: Android UITests CoreClr
-      dependsOn: build_ui_tests_coreclr
-      jobs:
+  - stage: android_ui_tests_coreclr
+    displayName: Android UITests CoreClr
+    dependsOn: build_ui_tests_coreclr
+    jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevels }}:
@@ -248,11 +229,10 @@ stages:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'android')) }}:
-    - stage: android_ui_tests_material3
-      displayName: Android UITests Material3
-      dependsOn: build_ui_tests_material3
-      jobs:
+  - stage: android_ui_tests_material3
+    displayName: Android UITests Material3
+    dependsOn: build_ui_tests_material3
+    jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevelsExtended }}:
@@ -289,11 +269,10 @@ stages:
                       platform: 'Android Material3'
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'ios')) }}:
-    - stage: ios_ui_tests_mono
-      displayName: iOS UITests Mono
-      dependsOn: build_ui_tests
-      jobs:
+  - stage: ios_ui_tests_mono
+    displayName: iOS UITests Mono
+    dependsOn: build_ui_tests
+    jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
@@ -338,11 +317,10 @@ stages:
                       platform: 'iOS'
                       artifactName: 'uitest-snapshot-results-ios-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'ios')) }}:
-    - stage: ios_ui_tests_mono_cv1
-      displayName: iOS UITests Mono CollectionView1
-      dependsOn: build_ui_tests
-      jobs:
+  - stage: ios_ui_tests_mono_cv1
+    displayName: iOS UITests Mono CollectionView1
+    dependsOn: build_ui_tests
+    jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
@@ -383,11 +361,10 @@ stages:
                       platform: 'iOS CV1'
                       artifactName: 'uitest-snapshot-results-ios-cv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'ios')) }}:
-    - stage: ios_ui_tests_mono_carv1
-      displayName: iOS UITests Mono CarouselView1
-      dependsOn: build_ui_tests
-      jobs:
+  - stage: ios_ui_tests_mono_carv1
+    displayName: iOS UITests Mono CarouselView1
+    dependsOn: build_ui_tests
+    jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
@@ -428,7 +405,7 @@ stages:
                       artifactName: 'uitest-snapshot-results-ios-carv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   # NativeAOT iOS UI tests stage - only run when both BuildNativeAOT and RunNativeAOT parameters are true
-  - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true), or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'ios'))) }}:
+  - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
       dependsOn: build_ui_tests_nativeaot
@@ -471,11 +448,10 @@ stages:
                         headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'windows')) }}:
-    - stage: winui_ui_tests
-      displayName: WinUI UITests
-      dependsOn: build_ui_tests_windows
-      jobs:
+  - stage: winui_ui_tests
+    displayName: WinUI UITests
+    dependsOn: build_ui_tests_windows
+    jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: winui_ui_tests_${{ project.name }}
@@ -512,11 +488,10 @@ stages:
                       platform: 'Windows'
                       artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  - ${{ if or(eq(parameters.targetPlatform, 'all'), eq(parameters.targetPlatform, 'catalyst')) }}:
-    - stage: mac_ui_tests
-      displayName: macOS UITests
-      dependsOn: build_ui_tests
-      jobs:
+  - stage: mac_ui_tests
+    displayName: macOS UITests
+    dependsOn: build_ui_tests
+    jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
               - job: mac_ui_tests_${{ project.name }}
