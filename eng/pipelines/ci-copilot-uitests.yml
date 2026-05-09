@@ -1,0 +1,157 @@
+# Pipeline: ci-copilot-uitests.yml
+# ----------------------------------------------------------------------
+# CHILD pipeline of ci-copilot.yml. Queued at runtime by Review-PR.ps1
+# STEP 3 with the categories detected by detect-ui-test-categories.ps1
+# and the platform from --Platform.
+#
+# Mirrors CI pipeline 313's structure (eng/pipelines/ci-uitests.yml) by
+# extending the SAME common/ui-tests.yml template, but limits the work
+# to a single platform via the new targetPlatform parameter so the
+# Copilot review only spends agent time on what its --Platform asked for.
+#
+# Why a separate pipeline (vs an inline stage):
+#   AzDO matrix expansion is COMPILE-TIME — the categoryGroupsToTest list
+#   has to be known when the build is queued. Detection happens at runtime
+#   in the Copilot review pipeline. By queueing this child pipeline AFTER
+#   detection, we get a properly-sized matrix (one job per detected category)
+#   instead of running the full default matrix and skipping non-detected
+#   categories at runtime (which still spins up agents per skipped job).
+#
+# Inputs (all set by the parent at queue time):
+#   PRNumber              the PR being reviewed (string)
+#   PRBranch              the head SHA to checkout (string)
+#   targetPlatform        android | ios | windows | catalyst
+#   categoryGroupsToTest  comma-or-newline-separated list of categories
+# ----------------------------------------------------------------------
+
+trigger: none  # Manual trigger only — queued by ci-copilot.yml at runtime
+pr: none       # Not triggered by PRs
+
+parameters:
+  - name: PRNumber
+    displayName: 'Pull Request Number'
+    type: string
+
+  - name: PRBranch
+    displayName: 'PR head SHA (or branch ref)'
+    type: string
+
+  - name: targetPlatform
+    displayName: 'Target Platform (matches Copilot review --Platform)'
+    type: string
+    default: 'android'
+    values:
+      - android
+      - ios
+      - windows
+      - catalyst
+
+  # categoryGroupsToTest is the matrix list passed straight through to
+  # common/ui-tests.yml. Pass each detected category as one element of
+  # the object list. Defaulting to a single placeholder so that the
+  # pipeline is queueable from the AzDO UI for testing — production
+  # callers always override.
+  - name: categoryGroupsToTest
+    displayName: 'Detected UI categories (object list — one matrix job per item)'
+    type: object
+    default:
+      - 'CollectionView'
+
+  # Pool defaults — mirror ci-uitests.yml's public-side pools.
+  # ci-copilot.yml runs on dnceng-public, so we use the same pool set.
+  - name: androidPoolPublic
+    type: object
+    default:
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+
+  - name: androidPoolLinuxPublic
+    type: object
+    default:
+      name: MAUI-DNCENG
+      demands:
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
+
+  - name: iosPoolPublic
+    type: object
+    default:
+      name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+
+  - name: windowsBuildPoolPublic
+    type: object
+    default:
+      name: NetCore-Public
+      demands:
+        - ImageOverride -equals 1es-windows-2022-open
+
+  - name: windowsPoolPublic
+    type: object
+    default:
+      name: NetCore-Public
+      demands:
+        - ImageOverride -equals 1es-windows-2022-open
+
+  - name: macosPoolPublic
+    type: object
+    default:
+      name: Azure Pipelines
+      vmImage: macOS-14
+
+variables:
+  - template: /eng/pipelines/common/variables.yml@self
+  - name: Codeql.Enabled
+    value: false
+  - name: Codeql.SkipTaskAutoInjection
+    value: true
+  # Stamp PRNumber + Platform into the build number so it shows up in
+  # the AzDO UI / artifact names without having to drill into parameters.
+  - name: CopilotPRNumber
+    value: ${{ parameters.PRNumber }}
+  - name: CopilotTargetPlatform
+    value: ${{ parameters.targetPlatform }}
+
+name: 'PR-${{ parameters.PRNumber }}-${{ parameters.targetPlatform }}-$(Date:yyyyMMdd)$(Rev:.r)'
+
+# ----------------------------------------------------------------------
+# Pre-stage: checkout the PR head before common/ui-tests.yml runs.
+# common/ui-tests.yml itself doesn't have a checkout-PR step (assumes
+# the pipeline ran on the right ref). We depend on AzDO's default
+# self-checkout in the build job to grab the right SHA passed via
+# the build's sourceBranch / sourceVersion at queue time. The parent
+# Review-PR.ps1 sets --commit-id to the merge commit so all builds
+# in this child pipeline see exactly what Copilot reviewed.
+# ----------------------------------------------------------------------
+
+stages:
+
+  - template: common/ui-tests.yml
+    parameters:
+      androidPool: ${{ parameters.androidPoolPublic }}
+      androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
+      iosPool: ${{ parameters.iosPoolPublic }}
+      windowsPool: ${{ parameters.windowsPoolPublic }}
+      windowsBuildPool: ${{ parameters.windowsBuildPoolPublic }}
+      macosPool: ${{ parameters.macosPoolPublic }}
+      androidApiLevels: [ 30 ]
+      iosVersions: [ 'latest' ]
+      # NativeAOT not relevant for PR-review feedback loop
+      BuildNativeAOT: false
+      RunNativeAOT: false
+      # Fan-out matrix: one job per detected category.
+      categoryGroupsToTest: ${{ parameters.categoryGroupsToTest }}
+      # The new platform-filtering parameter — only the matching
+      # platform's build + test stages get expanded.
+      targetPlatform: ${{ parameters.targetPlatform }}
+      projects:
+        - name: controls
+          desc: Controls
+          androidApiLevelsExclude: [25] # match ci-uitests.yml
+          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
+          app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+          iosVersionsExclude: [ '12.4']
+          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
+          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
+          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
