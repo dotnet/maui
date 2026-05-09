@@ -385,19 +385,13 @@ if ($Platform -eq "android") {
             if ($selectedDevice) { break }
             
             # Get all runtimes matching this version prefix.
-            # For iOS-26 prefer the .0 minor version (provision.yml installs 26.0
-            # and main CI baselines were captured on 26.0). For other major versions
-            # prefer the latest minor version available.
-            if ($version -eq "iOS-26") {
-                $matchingRuntimes = $simList.devices.PSObject.Properties | 
-                    Where-Object { $_.Name -match $version } |
-                    Sort-Object { $_.Name }   # ascending: iOS-26-0 first, then iOS-26-1
-            }
-            else {
-                $matchingRuntimes = $simList.devices.PSObject.Properties | 
-                    Where-Object { $_.Name -match $version } |
-                    Sort-Object { $_.Name } -Descending
-            }
+            # Sort descending so the HIGHEST minor version wins (e.g. iOS-26-4
+            # over iOS-26-0). AcesShared agents ship iOS 26.4 pre-installed and
+            # PR #35061 resaved ios-26 baselines for 26.4 — using an older
+            # runtime (26.0) causes pixel-diff failures on every visual test.
+            $matchingRuntimes = $simList.devices.PSObject.Properties | 
+                Where-Object { $_.Name -match $version } |
+                Sort-Object { $_.Name } -Descending
             
             if ($matchingRuntimes) {
                 # Try each preferred device for this version
