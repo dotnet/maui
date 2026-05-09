@@ -413,7 +413,56 @@ if ($Platform -eq "android") {
                     }
                 }
                 
-                # If no preferred device found, take first available iPhone
+                # If no preferred device found, attempt to CREATE the right-size
+                # device for visual snapshot tests instead of falling back to a
+                # random iPhone (which would have wrong screen dimensions and
+                # cause every visual test to fail with "size differs").
+                #
+                # Resolution mapping (must match snapshots/<env>/ baselines):
+                #   iOS-26 baselines: 1124x1126 → iPhone 11 Pro / iPhone Xs (1125x2436 device)
+                #   iOS-18 baselines: matches iPhone Xs default
+                #   iOS-17 baselines: matches iPhone Xs
+                if (-not $selectedDevice) {
+                    $createDevice = $null
+                    $createDeviceTypeId = $null
+                    if ($version -eq "iOS-26") {
+                        $createDevice = "iPhone 11 Pro"
+                        $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"
+                    }
+                    elseif ($version -eq "iOS-18" -or $version -eq "iOS-17") {
+                        $createDevice = "iPhone Xs"
+                        $createDeviceTypeId = "com.apple.CoreSimulator.SimDeviceType.iPhone-Xs"
+                    }
+
+                    if ($createDevice -and $matchingRuntimes) {
+                        $createRuntime = $matchingRuntimes[0].Name
+                        Write-Info "No preferred device pre-installed for $version; creating $createDevice on $createRuntime to match snapshot baselines..."
+                        $createOutput = & xcrun simctl create $createDevice $createDeviceTypeId $createRuntime 2>&1
+                        if ($LASTEXITCODE -eq 0 -and $createOutput -match '^[0-9A-F-]{36}$') {
+                            $newUdid = $createOutput.Trim()
+                            Write-Info "Created $createDevice : $newUdid"
+                            # Re-query so we have the full device object
+                            $simList = xcrun simctl list devices available --json | ConvertFrom-Json
+                            $found = $null
+                            foreach ($rtProp in $simList.devices.PSObject.Properties) {
+                                if ($rtProp.Name -eq $createRuntime) {
+                                    $found = $rtProp.Value | Where-Object { $_.udid -eq $newUdid } | Select-Object -First 1
+                                    if ($found) {
+                                        $selectedDevice = $found
+                                        $selectedVersion = $rtProp.Name
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            Write-Info "Failed to create $createDevice on $createRuntime`: $createOutput"
+                        }
+                    }
+                }
+
+                # Last-resort: take first available iPhone (visual tests will likely
+                # report 'size differs' but at least non-visual tests can run)
                 if (-not $selectedDevice) {
                     $anyiPhone = $null
                     $iphoneRuntime = $null
@@ -429,7 +478,7 @@ if ($Platform -eq "android") {
                     if ($anyiPhone) {
                         $selectedDevice = $anyiPhone
                         $selectedVersion = $iphoneRuntime
-                        Write-Info "Using available iPhone: $($anyiPhone.name) on $selectedVersion"
+                        Write-Info "Using available iPhone (resolution may not match snapshot baselines): $($anyiPhone.name) on $selectedVersion"
                     }
                 }
             }
