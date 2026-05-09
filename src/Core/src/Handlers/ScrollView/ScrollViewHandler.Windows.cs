@@ -149,20 +149,23 @@ namespace Microsoft.Maui.Handlers
 				{
 					currentPaddingLayer.CachedChildren.Clear();
 				}
-				
+
 				return;
 			}
+
+			if (currentPaddingLayer is not null)
+			{
+				currentPaddingLayer.CachedChildren.Clear();
+			}
+
+			// Detach the old handler if it exists (prevents WinUI COM exception on reuse)
+			scrollView.PresentedContent.Handler?.DisconnectHandler();
 
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
 			if (currentPaddingLayer is not null)
 			{
-				// Only update if content has changed or is missing
-				if (currentPaddingLayer.CachedChildren.Count == 0 || currentPaddingLayer.CachedChildren[0] != nativeContent)
-				{
-					currentPaddingLayer.CachedChildren.Clear();
-					currentPaddingLayer.CachedChildren.Add(nativeContent);
-				}
+				currentPaddingLayer.CachedChildren.Add(nativeContent);
 			}
 			else
 			{
