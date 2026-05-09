@@ -28,8 +28,7 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: ubuntu-22.04
+      name: AcesShared
 
   - name: iosPool
     type: object
