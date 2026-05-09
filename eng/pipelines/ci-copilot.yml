@@ -804,6 +804,31 @@ stages:
               git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
             displayName: 'Merge PR for testing'
 
+          # Bypass the iOS/MacCatalyst SDK's strict Xcode-version check.
+          # Same patch the CopilotReview job performs (see lines ~571-580
+          # of this file). Without it, .NET 10 iOS workload (which pins
+          # to e.g. Xcode 26.0) refuses to build on agents that have
+          # Xcode 26.1.1 selected — even though the produced app runs
+          # fine on the simulator.
+          - bash: |
+              set -e
+              if [ -f Directory.Build.Override.props.in ]; then
+                cp Directory.Build.Override.props.in Directory.Build.Override.props
+              fi
+              if [ ! -f Directory.Build.Override.props ]; then
+                printf '<?xml version="1.0" encoding="utf-8"?>\n<Project>\n</Project>\n' > Directory.Build.Override.props
+              fi
+              if [[ "$(uname)" == "Linux" ]]; then
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              elif [[ "$(uname)" == "Darwin" ]]; then
+                sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              else
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              fi
+              echo "===== Directory.Build.Override.props ====="
+              cat Directory.Build.Override.props
+            displayName: 'Disable Xcode version validation'
+
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $cats = "$(detectedCategories)"
