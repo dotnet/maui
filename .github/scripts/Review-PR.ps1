@@ -160,19 +160,40 @@ if ($DryRun) {
         git branch -D $reviewBranch 2>$null
     }
 
-    # Auto-detect CI environment — in CI, always use current branch
+    # Auto-detect CI environment
     $isCI = $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS -or $env:BUILD_BUILDID
-    if ($isCI -and -not $UseCurrentBranch) {
-        Write-Host "  🤖 CI environment detected — using current branch instead of main" -ForegroundColor Cyan
-        $UseCurrentBranch = $true
-    }
 
     # Capture original branch so error paths can restore it (not `git checkout -` which is unreliable)
     $originalBranch = git branch --show-current 2>$null
     if (-not $originalBranch) { $originalBranch = git rev-parse HEAD 2>$null }
 
-    if (-not $UseCurrentBranch) {
-        # Default: checkout main first
+    if ($UseCurrentBranch) {
+        $currentBranch = git branch --show-current 2>$null
+        if (-not $currentBranch) { $currentBranch = "(detached HEAD)" }
+        Write-Host "  📌 Using current branch: $currentBranch" -ForegroundColor Cyan
+    } elseif ($isCI) {
+        # In CI the checkout is pinned to the pipeline branch (e.g.
+        # feature/regression-check) which may differ from the PR's target
+        # branch (main, net10.0, net11.0). Squash-merging the PR onto the
+        # wrong base causes spurious conflicts. Resolve the PR's actual
+        # target branch and use it as the merge base.
+        $prTarget = gh pr view $PRNumber --json baseRefName --jq '.baseRefName' 2>$null
+        if (-not $prTarget) { $prTarget = 'main' }
+        Write-Host "  🤖 CI environment detected — using PR target branch '$prTarget' as merge base" -ForegroundColor Cyan
+        git fetch origin "$prTarget" 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "  ⚠️ Failed to fetch '$prTarget', falling back to current branch" -ForegroundColor Yellow
+        } else {
+            git checkout "origin/$prTarget" 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "  ⚠️ Failed to checkout 'origin/$prTarget', falling back to current branch" -ForegroundColor Yellow
+            } else {
+                $baseSha = git rev-parse --short HEAD 2>$null
+                Write-Host "  📌 Review base: $prTarget @ $baseSha" -ForegroundColor Cyan
+            }
+        }
+    } else {
+        # Default (local): checkout main
         Write-Host "  📌 Checking out main branch..." -ForegroundColor Cyan
         git checkout main 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) { Write-Error "Failed to checkout main"; exit 1 }
@@ -182,10 +203,6 @@ if ($DryRun) {
         }
         $baseSha = git rev-parse --short HEAD 2>$null
         Write-Host "  📌 Review base: main @ $baseSha" -ForegroundColor Cyan
-    } else {
-        $currentBranch = git branch --show-current 2>$null
-        if (-not $currentBranch) { $currentBranch = "(detached HEAD)" }
-        Write-Host "  📌 Using current branch: $currentBranch" -ForegroundColor Cyan
     }
 
     # Create review branch
