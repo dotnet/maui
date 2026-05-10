@@ -28,8 +28,9 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: ubuntu-22.04
+      name: MAUI-1ESPT
+      demands:
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
 
   - name: iosPool
     type: object
