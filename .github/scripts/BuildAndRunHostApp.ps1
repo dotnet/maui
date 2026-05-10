@@ -259,7 +259,7 @@ if ($Platform -eq "android") {
     # If we restart the app first, it ANRs/gets killed during that build.
     # Pre-building with --no-restore ensures dotnet test --no-build is instant.
     Write-Info "Pre-building test project to avoid app ANR during build..."
-    & dotnet build $TestProject -c $Configuration --no-restore 2>&1 | ForEach-Object { Write-Host $_ }
+    & dotnet build $TestProject -c $Configuration 2>&1 | ForEach-Object { Write-Host $_ }
     Write-Info "Test project pre-built. Now restarting app right before test run..."
     $androidPrebuilt = $true
 
