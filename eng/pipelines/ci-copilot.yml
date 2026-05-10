@@ -709,21 +709,16 @@ stages:
   # change small and incremental.
   - stage: RunDeepUITests
     displayName: 'Deep UI Tests (platform pool)'
-    dependsOn: ReviewPR
-    # IMPORTANT: stage-level conditions use `dependencies.<stage>.outputs[<job>.<step>.<var>]`,
-    # NOT `stageDependencies.<stage>.<job>.outputs[<step>.<var>]` (the latter
-    # form only works for JOB-level conditions / variables). Mismatching this
-    # path causes the condition to evaluate against an unset variable and
-    # silently skip the stage even when the upstream output WAS emitted.
-    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], 'NONE'))
+    # TEMP: Skip ReviewPR dependency for faster iteration on iOS 26.4 fix.
+    # Hardcode detectedCategories below instead of reading from ReviewPR outputs.
+    dependsOn: []
+    condition: "true"
     jobs:
       - job: RunUITests
         displayName: 'Run detected UI test categories'
-        # Within a JOB (cross-stage), the lookup is via stageDependencies.
-        # variables defined at job level can use $[ stageDependencies... ]
-        # but at stage level they'd need $[ dependencies... ].
         variables:
-          detectedCategories: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'] ]
+          # TEMP hardcoded for testing — normally from ReviewPR stage output
+          detectedCategories: 'ViewBaseTests'
         # Use the SAME platform-pool selection logic as the CopilotReview
         # job — the deep-test agent should be the right OS for the
         # requested target platform.
@@ -987,16 +982,14 @@ stages:
   # artifacts, parses them via Aggregate-UITestArtifacts.ps1, and edits
   # the existing PR comment to replace the in-process STEP 3 section
   # with the deep-test results.
+  # TEMP: Disabled for fast iteration — no aiSummaryCommentId without ReviewPR
+  # - stage: UpdateAISummaryComment
+  #   ...
   - stage: UpdateAISummaryComment
     displayName: 'Update AI Summary with Deep UI Test Results'
     dependsOn:
-      - ReviewPR
       - RunDeepUITests
-    # Stage-level condition uses dependencies.<stage>.outputs[<job>.<step>.<var>]
-    # (NOT stageDependencies.<stage>.<job>.outputs[<step>.<var>] — that
-    # syntax only works at job level). See RunDeepUITests for full
-    # explanation.
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''))
+    condition: "false"
     jobs:
       - job: UpdateComment
         displayName: 'Edit AI summary comment with deep test results'
