@@ -237,6 +237,25 @@ if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
     & adb -s $DeviceUdid logcat -c
 
+    # Wait for Android settings service to be available.
+    # On API 30 emulators, the service can take 30-60s after boot to initialize.
+    # UiAutomator2 driver fails with "Can't find service: settings" without this.
+    Write-Info "Waiting for Android settings service..."
+    $settingsReady = $false
+    for ($i = 0; $i -lt 30; $i++) {
+        $settingsCheck = & adb -s $DeviceUdid shell settings get global device_name 2>&1
+        if ($settingsCheck -and $settingsCheck -notmatch "Can't find service|error") {
+            $settingsReady = $true
+            Write-Success "Settings service ready (device_name=$settingsCheck)"
+            break
+        }
+        Write-Info "  Settings service not ready yet (attempt $($i+1)/30)..."
+        Start-Sleep -Seconds 5
+    }
+    if (-not $settingsReady) {
+        Write-Warn "Settings service may not be ready — tests might fail"
+    }
+
     # Force-stop and restart the test app before running tests.
     # On CI, the build (-t:Run) launches the app, but by the time the test
     # project is built (10+ min), Android may have killed the app or shown
