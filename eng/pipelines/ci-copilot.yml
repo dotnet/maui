@@ -759,12 +759,32 @@ stages:
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
 
-          # NOTE: ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
-          # Tahoe agents ship iOS 26.3.1+ pre-installed. provision.yml also
-          # downloads iOS 26.0 (needed for xcodebuild to compile net10.0-ios).
-          # The Tahoe pool demand + descending sort in Start-Emulator.ps1
-          # ensures the highest pre-installed runtime (26.3.1 or 26.4) is
-          # used for running tests, not the provisioned 26.0.
+          # ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
+          # Tahoe agents (macOS 26.4) have Xcode 26.3 which can download
+          # iOS 26.4 simulator. provision.yml only installs 26.0 (for build).
+          # Explicitly download 26.4 so visual tests match baselines exactly.
+          - ${{ if eq(parameters.Platform, 'ios') }}:
+            - script: |
+                echo "Current Xcode: $(xcode-select -p)"
+                echo "Available Xcodes:"
+                ls /Applications/Xcode*.app/Contents/Developer 2>/dev/null || true
+                # Use the highest available Xcode to download iOS 26.4
+                LATEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                if [ -n "$LATEST_XCODE" ]; then
+                  echo "Switching to $LATEST_XCODE for simulator download..."
+                  sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+                fi
+                echo "Downloading iOS 26.4 simulator..."
+                sudo xcodebuild -downloadPlatform iOS -buildVersion 26.4 2>&1 || echo "Download attempt finished (may already be installed)"
+                echo "Restoring Xcode to $(REQUIRED_XCODE)..."
+                RESTORE_XCODE=$(ls -d /Applications/Xcode_$(REQUIRED_XCODE)*.app 2>/dev/null | head -1)
+                if [ -n "$RESTORE_XCODE" ]; then
+                  sudo xcode-select -s "$RESTORE_XCODE/Contents/Developer"
+                fi
+                echo "Verifying runtimes:"
+                xcrun simctl runtime list
+              displayName: 'Install iOS 26.4 simulator via latest Xcode'
+              continueOnError: true
 
           # Install .NET workloads (same as ReviewPR stage) — without this,
           # dotnet build fails with NETSDK1147 because the ios/android workloads
