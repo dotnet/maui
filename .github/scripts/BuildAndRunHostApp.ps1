@@ -238,8 +238,6 @@ if ($Platform -eq "android") {
     & adb -s $DeviceUdid logcat -c
 
     # Wait for Android settings service to be available.
-    # On API 30 emulators, the service can take 30-60s after boot to initialize.
-    # UiAutomator2 driver fails with "Can't find service: settings" without this.
     Write-Info "Waiting for Android settings service..."
     $settingsReady = $false
     for ($i = 0; $i -lt 30; $i++) {
@@ -256,22 +254,26 @@ if ($Platform -eq "android") {
         Write-Warn "Settings service may not be ready — tests might fail"
     }
 
-    # Force-stop and restart the test app before running tests.
-    # On CI, the build (-t:Run) launches the app, but by the time the test
-    # project is built (10+ min), Android may have killed the app or shown
-    # ANR dialogs. Force a clean restart so Appium finds a fresh instance.
+    # Pre-build the test project BEFORE restarting the app.
+    # dotnet test spends 10-25 min restoring+building on slow ubuntu agents.
+    # If we restart the app first, it ANRs/gets killed during that build.
+    # Pre-building with --no-restore ensures dotnet test --no-build is instant.
+    Write-Info "Pre-building test project to avoid app ANR during build..."
+    & dotnet build $TestProject -c $Configuration --no-restore 2>&1 | ForEach-Object { Write-Host $_ }
+    Write-Info "Test project pre-built. Now restarting app right before test run..."
+    $androidPrebuilt = $true
+
+    # NOW force-stop and restart the app — tests will start immediately
     Write-Info "Force-stopping test app to ensure clean state..."
     & adb -s $DeviceUdid shell am force-stop $AppPackage 2>$null
     Start-Sleep -Seconds 2
     & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
     Start-Sleep -Seconds 1
 
-    # Restart the app
     Write-Info "Re-launching test app: $AppPackage/$AppActivity"
     & adb -s $DeviceUdid shell am start -n "$AppPackage/$AppActivity" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER 2>$null
     Start-Sleep -Seconds 5
 
-    # Dismiss any remaining system dialogs
     & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
     & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
     Start-Sleep -Seconds 1
@@ -361,12 +363,14 @@ try {
     # files written by THIS invocation (not stale TRXs from previous
     # categories sharing the same results directory).
     $trxRunStart = Get-Date
-    $testOutput = & dotnet test $TestProject `
-        --filter $effectiveFilter `
-        --logger "trx;LogFileName=$trxFileName" `
-        --logger "console;verbosity=normal" `
-        --results-directory $trxResultsDir `
-        "/p:VStestUseMSBuildOutput=false" 2>&1
+    $noBuildFlag = if ($androidPrebuilt) { "--no-build" } else { "" }
+    $testArgs = @($TestProject, "--filter", $effectiveFilter,
+        "--logger", "trx;LogFileName=$trxFileName",
+        "--logger", "console;verbosity=normal",
+        "--results-directory", $trxResultsDir,
+        "/p:VStestUseMSBuildOutput=false")
+    if ($androidPrebuilt) { $testArgs += "--no-build" }
+    $testOutput = & dotnet test @testArgs 2>&1
     
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
