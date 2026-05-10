@@ -757,19 +757,12 @@ stages:
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
 
-          # iOS 26.4 simulator: PR #35061 re-captured all ios-26 snapshot
-          # baselines on iOS 26.4 (build 23E244). provision.yml only
-          # downloads iOS 26.0. Some AcesShared agents ship 26.4 pre-
-          # installed, some don't. Explicitly download it so every agent
-          # has it and our descending-sort picks it reliably.
-          - ${{ if eq(parameters.Platform, 'ios') }}:
-            - script: |
-                echo "Installing iOS 26.4 simulator (23E244)..."
-                sudo xcodebuild -downloadPlatform iOS -buildVersion 26.4 || true
-                echo "Verifying runtimes..."
-                xcrun simctl runtime list
-              displayName: 'Install iOS 26.4 simulator'
-              continueOnError: true
+          # NOTE: ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061)
+          # which requires macOS 26.4+ (the iOS 26.4 runtime ships with the OS).
+          # AcesShared agents run mixed macOS versions — agents on macOS 26.4+
+          # pass visual tests, agents on older macOS get pixel diffs (same as
+          # the main maui-pr-uitests pipeline). This is a pool infra limitation,
+          # not fixable via xcodebuild download.
 
           # Install .NET workloads (same as ReviewPR stage) — without this,
           # dotnet build fails with NETSDK1147 because the ios/android workloads
