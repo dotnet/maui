@@ -254,15 +254,13 @@ if ($Platform -eq "android") {
         Write-Warn "Settings service may not be ready — tests might fail"
     }
 
-    # Pre-build the test project BEFORE restarting the app.
-    # dotnet test spends 10-25 min restoring+building on slow ubuntu agents.
-    # If we restart the app first, it ANRs/gets killed during that build.
-    # Pre-building with --no-restore ensures dotnet test --no-build is instant.
-    Write-Info "Pre-building test project to avoid app ANR during build..."
-    & dotnet build $TestProject -c $Configuration 2>&1 | ForEach-Object { Write-Host $_ }
-    Write-Info "Test project pre-built."
-    $androidPrebuilt = $true
-    # App restart moved to right before dotnet test (line ~375) to minimize idle time
+    # Do NOT force-stop or restart the app here. Appium's UiAutomator2
+    # driver handles app lifecycle via appPackage/appActivity capabilities.
+    # Manual restart causes double-stop issues and the app ends up in a
+    # bad state. Just dismiss any system dialogs and let Appium handle it.
+    & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
+    Start-Sleep -Seconds 1
 }
 
 # Capture test start time for iOS logs
@@ -345,31 +343,12 @@ Write-Info "TRX file will be written to: $trxFilePath"
 try {
     # Run dotnet test using the SAME loggers and arguments CI uses in
     # `RunTestWithLocalDotNet` (eng/cake/dotnet.cake line 943-981).
-    # Capture pre-run timestamp so the fallback below can only match TRX
-    # files written by THIS invocation (not stale TRXs from previous
-    # categories sharing the same results directory).
-    # For Android: restart the app RIGHT BEFORE dotnet test starts.
-    # Don't launch it earlier — the design-time build takes 10+ min and
-    # the app will ANR during that idle period.
-    if ($Platform -eq "android") {
-        Write-Info "Force-stopping + re-launching app right before test execution..."
-        & adb -s $DeviceUdid shell am force-stop $AppPackage 2>$null
-        Start-Sleep -Seconds 2
-        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
-        & adb -s $DeviceUdid shell am start -n "$AppPackage/$AppActivity" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER 2>$null
-        Start-Sleep -Seconds 8
-        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
-        Write-Info "App re-launched. Starting tests immediately..."
-    }
-
     $trxRunStart = Get-Date
-    $noBuildFlag = if ($androidPrebuilt) { "--no-build" } else { "" }
     $testArgs = @($TestProject, "--filter", $effectiveFilter,
         "--logger", "trx;LogFileName=$trxFileName",
         "--logger", "console;verbosity=normal",
         "--results-directory", $trxResultsDir,
         "/p:VStestUseMSBuildOutput=false")
-    if ($androidPrebuilt) { $testArgs += "--no-build" }
     Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
     $testOutput = & dotnet test @testArgs 2>&1
     
