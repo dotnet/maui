@@ -724,16 +724,13 @@ stages:
   # change small and incremental.
   - stage: RunDeepUITests
     displayName: 'Deep UI Tests (platform pool)'
-    # TEMP: Skip ReviewPR dependency for faster iteration on iOS 26.4 fix.
-    # Hardcode detectedCategories below instead of reading from ReviewPR outputs.
-    dependsOn: []
-    condition: "true"
+    dependsOn: ReviewPR
+    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], 'NONE'))
     jobs:
       - job: RunUITests
         displayName: 'Run detected UI test categories'
         variables:
-          # TEMP hardcoded for testing — normally from ReviewPR stage output
-          detectedCategories: 'ViewBaseTests'
+          detectedCategories: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'] ]
         # Use the SAME platform-pool selection logic as the CopilotReview
         # job — the deep-test agent should be the right OS for the
         # requested target platform.
@@ -1026,14 +1023,12 @@ stages:
   # artifacts, parses them via Aggregate-UITestArtifacts.ps1, and edits
   # the existing PR comment to replace the in-process STEP 3 section
   # with the deep-test results.
-  # TEMP: Disabled for fast iteration — no aiSummaryCommentId without ReviewPR
-  # - stage: UpdateAISummaryComment
-  #   ...
   - stage: UpdateAISummaryComment
     displayName: 'Update AI Summary with Deep UI Test Results'
     dependsOn:
+      - ReviewPR
       - RunDeepUITests
-    condition: "false"
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''))
     jobs:
       - job: UpdateComment
         displayName: 'Edit AI summary comment with deep test results'
