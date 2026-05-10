@@ -756,14 +756,15 @@ stages:
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
               androidEmulatorApiLevel: '30'
-              skipSimulatorSetup: true
+              skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
 
           # NOTE: ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
-          # Tahoe agents ship iOS 26.3.1 or 26.4 pre-installed. We skip
-          # provision's simulator download (which installs 26.0) so the
-          # agent's pre-installed runtime is used. The iosPool demand for
-          # ACES_VM_SharedPool_Tahoe ensures we get a macOS 26.x agent.
+          # Tahoe agents ship iOS 26.3.1+ pre-installed. provision.yml also
+          # downloads iOS 26.0 (needed for xcodebuild to compile net10.0-ios).
+          # The Tahoe pool demand + descending sort in Start-Emulator.ps1
+          # ensures the highest pre-installed runtime (26.3.1 or 26.4) is
+          # used for running tests, not the provisioned 26.0.
 
           # Install .NET workloads (same as ReviewPR stage) — without this,
           # dotnet build fails with NETSDK1147 because the ios/android workloads
