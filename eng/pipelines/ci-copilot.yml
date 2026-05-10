@@ -756,15 +756,14 @@ stages:
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
               androidEmulatorApiLevel: '30'
-              skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
+              skipSimulatorSetup: true
               skipCertificates: true
 
-          # NOTE: ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061)
-          # which requires macOS 26.4+ (the iOS 26.4 runtime ships with the OS).
-          # AcesShared agents run mixed macOS versions — agents on macOS 26.4+
-          # pass visual tests, agents on older macOS get pixel diffs (same as
-          # the main maui-pr-uitests pipeline). This is a pool infra limitation,
-          # not fixable via xcodebuild download.
+          # NOTE: ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
+          # Tahoe agents ship iOS 26.3.1 or 26.4 pre-installed. We skip
+          # provision's simulator download (which installs 26.0) so the
+          # agent's pre-installed runtime is used. The iosPool demand for
+          # ACES_VM_SharedPool_Tahoe ensures we get a macOS 26.x agent.
 
           # Install .NET workloads (same as ReviewPR stage) — without this,
           # dotnet build fails with NETSDK1147 because the ios/android workloads
