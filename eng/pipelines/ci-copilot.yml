@@ -1020,6 +1020,12 @@ stages:
                     '-Platform', $platform,
                     '-Category', $cat
                   )
+                  # Pass pre-booted emulator UDID so Start-Emulator.ps1 doesn't
+                  # try to boot a second instance (causes "multiple emulators" error)
+                  if ($env:DEVICE_UDID) {
+                    $argList += @('-DeviceUdid', $env:DEVICE_UDID)
+                    Write-Host "DEBUG: Passing DEVICE_UDID=$($env:DEVICE_UDID)"
+                  }
                   Write-Host "DEBUG: invoking pwsh with args: $($argList -join ' | ')"
                   & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object { Write-Host $_ }
                   if ($LASTEXITCODE -ne 0) {
