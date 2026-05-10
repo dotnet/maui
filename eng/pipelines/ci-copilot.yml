@@ -28,9 +28,8 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: AcesShared
-      demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+      name: Azure Pipelines
+      vmImage: ubuntu-22.04
 
   - name: iosPool
     type: object
@@ -769,6 +768,10 @@ stages:
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
+
+          # Enable KVM for Android emulator on Linux agents (matches main CI)
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - template: common/enable-kvm.yml
 
           # ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
           # Tahoe agents (macOS 26.4) have Xcode 26.3 which can download
