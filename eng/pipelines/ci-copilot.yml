@@ -774,25 +774,36 @@ stages:
           # Explicitly download 26.4 so visual tests match baselines exactly.
           - ${{ if eq(parameters.Platform, 'ios') }}:
             - script: |
-                echo "Current Xcode: $(xcode-select -p)"
-                echo "Available Xcodes:"
-                ls /Applications/Xcode*.app/Contents/Developer 2>/dev/null || true
-                # Use the highest available Xcode to download iOS 26.4
+                set -x
+                echo "=== Current runtimes ==="
+                xcrun simctl list runtimes
+
+                echo "=== Trying to install iOS 26.4 ==="
                 LATEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
                 if [ -n "$LATEST_XCODE" ]; then
-                  echo "Switching to $LATEST_XCODE for simulator download..."
+                  echo "Using $LATEST_XCODE"
                   sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
                 fi
-                echo "Downloading iOS 26.4 simulator..."
-                sudo xcodebuild -downloadPlatform iOS -buildVersion 26.4 2>&1 || echo "Download attempt finished (may already be installed)"
-                echo "Restoring Xcode to $(REQUIRED_XCODE)..."
+
+                # Attempt 1: download latest iOS platform (no version specified)
+                echo "--- Attempt 1: latest iOS ---"
+                sudo xcodebuild -downloadPlatform iOS 2>&1 || true
+
+                # Attempt 2: with universal architecture variant
+                echo "--- Attempt 2: iOS 26.4 universal ---"
+                sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.4 2>&1 || true
+
+                # Attempt 3: exact Apple build number
+                echo "--- Attempt 3: build 23E244 ---"
+                sudo xcodebuild -downloadPlatform iOS -buildVersion 23E244 2>&1 || true
+
+                # Restore Xcode for build step
                 RESTORE_XCODE=$(ls -d /Applications/Xcode_$(REQUIRED_XCODE)*.app 2>/dev/null | head -1)
-                if [ -n "$RESTORE_XCODE" ]; then
-                  sudo xcode-select -s "$RESTORE_XCODE/Contents/Developer"
-                fi
-                echo "Verifying runtimes:"
-                xcrun simctl runtime list
-              displayName: 'Install iOS 26.4 simulator via latest Xcode'
+                [ -n "$RESTORE_XCODE" ] && sudo xcode-select -s "$RESTORE_XCODE/Contents/Developer"
+
+                echo "=== Final runtimes ==="
+                xcrun simctl list runtimes
+              displayName: 'Install iOS 26.4 simulator'
               continueOnError: true
 
           # Install .NET workloads (same as ReviewPR stage) — without this,
