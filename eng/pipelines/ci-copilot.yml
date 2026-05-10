@@ -28,9 +28,8 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: MAUI-1ESPT
-      demands:
-        - ImageOverride -equals 1ESPT-Ubuntu22.04
+      name: Azure Pipelines
+      vmImage: ubuntu-22.04
 
   - name: iosPool
     type: object
@@ -784,6 +783,63 @@ stages:
                 echo "=== Disk after cleanup ==="
                 df -h /
               displayName: 'Free disk space for Android emulator'
+            # Boot Android emulator with proper partition size and ADB setup.
+            # Same step as ReviewPR stage — creates AVD, reduces partition to
+            # 2048m (fits on hosted agents), pre-authorizes ADB keys, waits
+            # for full boot + package manager. The emulator stays running for
+            # BuildAndRunHostApp.ps1 which will find it via 'adb devices'.
+            - script: |
+                export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+                export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+                echo "=== Creating AVD ==="
+                echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
+                AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
+                [ -f "$AVD_CONFIG" ] && sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
+
+                mkdir -p "$HOME/.android"
+                [ ! -f "$HOME/.android/adbkey" ] && adb keygen "$HOME/.android/adbkey" 2>/dev/null || true
+                ADB_KEY_PUB="$HOME/.android/adbkey.pub"
+                AVD_DIR="$HOME/.android/avd/Emulator_30.avd"
+                [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ] && cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
+
+                adb kill-server 2>/dev/null || true; sleep 1; adb start-server
+                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
+                echo "Emulator PID: $!"
+
+                echo "Waiting for device..."
+                timeout 120 adb wait-for-device || { echo "##[error]adb wait-for-device timed out"; tail -30 /tmp/emulator.log; exit 1; }
+
+                echo "Waiting for boot_completed..."
+                waited=0
+                while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                  sleep 5; waited=$((waited+5))
+                  [ $waited -ge 300 ] && { echo "##[error]Boot timeout"; exit 1; }
+                  [ $waited -eq 90 ] && { adb kill-server; sleep 2; adb start-server; sleep 2; }
+                done
+
+                echo "Waiting for package manager..."
+                waited=0
+                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                  sleep 5; waited=$((waited+5))
+                  [ $waited -ge 120 ] && { echo "##[error]PM timeout"; exit 1; }
+                done
+
+                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
+                echo "✅ Emulator booted: $DEVICE_ID"
+                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                adb -s $DEVICE_ID shell svc power stayon true || true
+                adb -s $DEVICE_ID shell input keyevent 82 || true
+                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
+              displayName: 'Create AVD and Boot Android Emulator'
+              retryCountOnTaskFailure: 3
+              timeoutInMinutes: 15
 
           # ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
           # Tahoe agents (macOS 26.4) have Xcode 26.3 which can download
