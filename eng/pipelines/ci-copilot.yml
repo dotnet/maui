@@ -771,6 +771,20 @@ stages:
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
 
+          # iOS 26.4 simulator: PR #35061 re-captured all ios-26 snapshot
+          # baselines on iOS 26.4 (build 23E244). provision.yml only
+          # downloads iOS 26.0. Some AcesShared agents ship 26.4 pre-
+          # installed, some don't. Explicitly download it so every agent
+          # has it and our descending-sort picks it reliably.
+          - ${{ if eq(parameters.Platform, 'ios') }}:
+            - script: |
+                echo "Installing iOS 26.4 simulator (23E244)..."
+                sudo xcodebuild -downloadPlatform iOS -buildVersion 26.4 || true
+                echo "Verifying runtimes..."
+                xcrun simctl runtime list
+              displayName: 'Install iOS 26.4 simulator'
+              continueOnError: true
+
           # Install .NET workloads (same as ReviewPR stage) — without this,
           # dotnet build fails with NETSDK1147 because the ios/android workloads
           # are not present after provision.yml (which only installs the SDK).
