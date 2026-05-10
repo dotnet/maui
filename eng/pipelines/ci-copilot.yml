@@ -772,6 +772,20 @@ stages:
           # Enable KVM for Android emulator on Linux agents (matches main CI)
           - ${{ if eq(parameters.Platform, 'android') }}:
             - template: common/enable-kvm.yml
+            # Free disk space on hosted Ubuntu agents — the emulator + SDK +
+            # workloads + AVD need ~15 GB but hosted agents start with limited
+            # free space. Remove pre-installed tools we don't need.
+            - bash: |
+                echo "=== Disk before cleanup ==="
+                df -h /
+                sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk/ndk /usr/local/share/boost /opt/ghc /usr/local/.ghcup \
+                  /usr/share/swift /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/go /opt/hostedtoolcache/node \
+                  /usr/local/lib/android/sdk/build-tools/[0-2]* /usr/local/lib/android/sdk/platforms/android-[0-2]* \
+                  2>/dev/null || true
+                sudo apt-get clean 2>/dev/null || true
+                echo "=== Disk after cleanup ==="
+                df -h /
+              displayName: 'Free disk space for Android emulator'
 
           # ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
           # Tahoe agents (macOS 26.4) have Xcode 26.3 which can download
