@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using CoreFoundation;
 using UIKit;
 
@@ -8,6 +7,7 @@ namespace Microsoft.Maui.Platform
 	public static class SwitchExtensions
 	{
 		static UIColor DefaultBackgroundColor = UIColor.FromRGBA(120, 120, 128, 40);
+		const int MaxColorReapplyAttempts = 2;
 
 		public static void UpdateIsOn(this UISwitch uiSwitch, ISwitch view)
 		{
@@ -121,23 +121,50 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			// UIKit may rebuild the switch's internal views after PreferredStyle changes,
-			// so reapply colors after its next layout pass.
-			DispatchQueue.MainQueue.DispatchAsync(async () =>
-			{
-				await Task.Delay(10);
+			uiSwitch.ScheduleColorReapply(view, 0);
+#endif
+		}
 
-				if (uiSwitch.Handle == IntPtr.Zero)
+		static void ScheduleColorReapply(this UISwitch uiSwitch, ISwitch view, int retryCount)
+		{
+			var weakSwitch = new WeakReference<UISwitch>(uiSwitch);
+			var weakView = new WeakReference<ISwitch>(view);
+
+			DispatchQueue.MainQueue.DispatchAsync(() =>
+			{
+				if (!weakSwitch.TryGetTarget(out var currentSwitch) || currentSwitch.Handle == IntPtr.Zero)
 				{
 					return;
 				}
 
-				uiSwitch.SetNeedsLayout();
-				uiSwitch.LayoutIfNeeded();
-				uiSwitch.ApplyTrackColor(view);
-				uiSwitch.ApplyThumbColor(view);
+				if (!weakView.TryGetTarget(out var currentView))
+				{
+					return;
+				}
+
+				currentSwitch.SetNeedsLayout();
+				currentSwitch.LayoutIfNeeded();
+
+				if (!currentSwitch.IsReadyForColorReapply() && retryCount < MaxColorReapplyAttempts)
+				{
+					currentSwitch.ScheduleColorReapply(currentView, retryCount + 1);
+					return;
+				}
+
+				currentSwitch.ApplyTrackColor(currentView);
+				currentSwitch.ApplyThumbColor(currentView);
 			});
-#endif
+		}
+
+		static bool IsReadyForColorReapply(this UISwitch uiSwitch)
+		{
+			var trackSubview = uiSwitch.GetTrackSubview();
+
+			return trackSubview is not null
+				&& uiSwitch.Bounds.Width > 0
+				&& uiSwitch.Bounds.Height > 0
+				&& trackSubview.Bounds.Width > 0
+				&& trackSubview.Bounds.Height > 0;
 		}
 
 		internal static UIView? GetTrackSubview(this UISwitch uISwitch)
