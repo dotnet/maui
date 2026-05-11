@@ -1,4 +1,4 @@
-namespace TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 35286, "Spacing problem with SearchBar", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue35286 : ContentPage
