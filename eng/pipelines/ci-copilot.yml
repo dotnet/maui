@@ -1173,7 +1173,8 @@ stages:
                   if ($r.status -eq 'Failed') {
                     $catFailed += [pscustomobject]@{
                       Name  = $r.name
-                      Error = ($r.error -split "`n" | Select-Object -First 1) -as [string]
+                      Error = $r.error -as [string]
+                      Stack = $r.stack -as [string]
                     }
                   }
                 }
@@ -1190,17 +1191,24 @@ stages:
                   $items = $perCategoryFailures[$cat]
                   [void]$sb.AppendLine("<details><summary>❌ <code>$cat</code> — $($items.Count) failed test$(if ($items.Count -eq 1) {''} else {'s'})</summary>")
                   [void]$sb.AppendLine()
-                  [void]$sb.AppendLine("| Test | First-line error |")
-                  [void]$sb.AppendLine("|---|---|")
-                  foreach ($it in $items | Select-Object -First 50) {
-                    $err = if ([string]::IsNullOrWhiteSpace($it.Error)) { '—' } else { ($it.Error -replace '\|', '\|') }
-                    if ($err.Length -gt 200) { $err = $err.Substring(0, 200) + '…' }
-                    [void]$sb.AppendLine("| ``$($it.Name)`` | $err |")
+                  foreach ($it in $items | Select-Object -First 30) {
+                    [void]$sb.AppendLine("**``$($it.Name)``**")
+                    if (-not [string]::IsNullOrWhiteSpace($it.Error)) {
+                      $errText = $it.Error.Trim()
+                      $stackText = if (-not [string]::IsNullOrWhiteSpace($it.Stack)) { "`n$($it.Stack.Trim())" } else { "" }
+                      # Truncate combined error+stack to 1000 chars to keep comment reasonable
+                      $combined = "$errText$stackText"
+                      if ($combined.Length -gt 1000) { $combined = $combined.Substring(0, 1000) + "`n..." }
+                      [void]$sb.AppendLine("```")
+                      [void]$sb.AppendLine($combined)
+                      [void]$sb.AppendLine("```")
+                    }
+                    [void]$sb.AppendLine()
                   }
-                  if ($items.Count -gt 50) {
-                    [void]$sb.AppendLine("| _(+$($items.Count - 50) more — see TRX in artifact)_ | |")
+                  if ($items.Count -gt 30) {
+                    [void]$sb.AppendLine("_(+$($items.Count - 30) more — see TRX in artifact)_")
+                    [void]$sb.AppendLine()
                   }
-                  [void]$sb.AppendLine()
                   [void]$sb.AppendLine("</details>")
                   [void]$sb.AppendLine()
                 }
