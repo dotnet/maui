@@ -21,7 +21,10 @@ internal partial class MauiItemsView
 	object? _draggedItem;
 	int _insertionIndex = -1;
 	bool _insertAfter;
-	bool _canReorderItems;
+	// Default to true so the drag/drop pipeline is armed by the time OnApplyTemplate
+	// wires events; otherwise the initial batch of ItemContainers is realized before
+	// CanReorderItems mapping runs and never receives CanDrag = true.
+	bool _canReorderItems = true;
 
 	// Reference to the MAUI virtual view so we can consult IsGrouped / CanMixGroups
 	// and mutate the original items source (rather than the wrapped WinUI flat list).
@@ -54,13 +57,13 @@ internal partial class MauiItemsView
 
 	/// <summary>
 	/// Enables or disables drag-drop reordering. Safe to call before <see cref="OnApplyTemplate"/>;
-	/// wiring is deferred until the template parts (<c>_scrollViewer</c>/<c>_itemsRepeater</c>) exist.
+	/// wiring is deferred until the template parts (<c>_itemsRepeater</c>/<c>_scrollViewer</c>) exist.
 	/// </summary>
 	public void UpdateCanReorderItems(bool canReorderItems)
 	{
 		_canReorderItems = canReorderItems;
 
-		if (_scrollViewer is null)
+		if (_itemsRepeater is null)
 		{
 			// Template not applied yet — OnApplyTemplate will wire up if enabled.
 			return;
@@ -78,45 +81,44 @@ internal partial class MauiItemsView
 
 	#region Event Wiring
 
+	// Drop events are wired on _itemsRepeater (not _scrollViewer) because the legacy
+	// WinUI ScrollViewer's pointer/manipulation pipeline swallows drag events, which
+	// prevents DragOver/Drop from reaching us reliably. The ItemsRepeater sits inside
+	// the ScrollViewer and forwards drag events normally. Auto-scroll still drives the
+	// outer ScrollViewer via ChangeView(...).
 	void WireUpDragDropEvents()
 	{
-		if (_scrollViewer is null)
+		if (_itemsRepeater is null)
 			return;
 
-		_scrollViewer.AllowDrop = true;
+		_itemsRepeater.AllowDrop = true;
 
-		_scrollViewer.DragEnter -= ScrollView_DragEnter;
-		_scrollViewer.DragOver -= ScrollView_DragOver;
-		_scrollViewer.DragLeave -= ScrollView_DragLeave;
-		_scrollViewer.Drop -= ScrollView_Drop;
+		_itemsRepeater.DragEnter -= ScrollView_DragEnter;
+		_itemsRepeater.DragOver -= ScrollView_DragOver;
+		_itemsRepeater.DragLeave -= ScrollView_DragLeave;
+		_itemsRepeater.Drop -= ScrollView_Drop;
 
-		_scrollViewer.DragEnter += ScrollView_DragEnter;
-		_scrollViewer.DragOver += ScrollView_DragOver;
-		_scrollViewer.DragLeave += ScrollView_DragLeave;
-		_scrollViewer.Drop += ScrollView_Drop;
+		_itemsRepeater.DragEnter += ScrollView_DragEnter;
+		_itemsRepeater.DragOver += ScrollView_DragOver;
+		_itemsRepeater.DragLeave += ScrollView_DragLeave;
+		_itemsRepeater.Drop += ScrollView_Drop;
 
-		if (_itemsRepeater is not null)
-		{
-			_itemsRepeater.ElementPrepared -= ItemsRepeater_ElementPrepared;
-			_itemsRepeater.ElementClearing -= ItemsRepeater_ElementClearing;
-			_itemsRepeater.ElementPrepared += ItemsRepeater_ElementPrepared;
-			_itemsRepeater.ElementClearing += ItemsRepeater_ElementClearing;
-		}
+		_itemsRepeater.ElementPrepared -= ItemsRepeater_ElementPrepared;
+		_itemsRepeater.ElementClearing -= ItemsRepeater_ElementClearing;
+		_itemsRepeater.ElementPrepared += ItemsRepeater_ElementPrepared;
+		_itemsRepeater.ElementClearing += ItemsRepeater_ElementClearing;
 	}
 
 	void UnwireDragDropEvents()
 	{
-		if (_scrollViewer is not null)
-		{
-			_scrollViewer.AllowDrop = false;
-			_scrollViewer.DragEnter -= ScrollView_DragEnter;
-			_scrollViewer.DragOver -= ScrollView_DragOver;
-			_scrollViewer.DragLeave -= ScrollView_DragLeave;
-			_scrollViewer.Drop -= ScrollView_Drop;
-		}
-
 		if (_itemsRepeater is not null)
 		{
+			_itemsRepeater.AllowDrop = false;
+			_itemsRepeater.DragEnter -= ScrollView_DragEnter;
+			_itemsRepeater.DragOver -= ScrollView_DragOver;
+			_itemsRepeater.DragLeave -= ScrollView_DragLeave;
+			_itemsRepeater.Drop -= ScrollView_Drop;
+
 			_itemsRepeater.ElementPrepared -= ItemsRepeater_ElementPrepared;
 			_itemsRepeater.ElementClearing -= ItemsRepeater_ElementClearing;
 		}

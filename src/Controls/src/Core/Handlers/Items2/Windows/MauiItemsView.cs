@@ -159,7 +159,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
 
 		// Wire up drag/drop now that template parts are available (no-op if reorder disabled).
-		if (_canReorderItems && _scrollViewer is not null)
+		if (_canReorderItems && _itemsRepeater is not null)
 		{
 			WireUpDragDropEvents();
 		}
