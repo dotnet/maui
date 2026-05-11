@@ -85,8 +85,7 @@ if (Test-Path $gateFilePath) {
         $gateSection = @"
 <details open>
 <summary>🚦 <strong>Gate — Test Before & After Fix</strong></summary>
-
----
+<br/>
 
 $gateContent
 
@@ -109,11 +108,18 @@ foreach ($key in $phases.Keys) {
         $content = Get-Content $filePath -Raw -Encoding UTF8
         if (-not [string]::IsNullOrWhiteSpace($content)) {
             Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
+            # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
+            $phaseTitle = "$($phase.Icon) $($phase.Title)"
+            if ($key -eq "uitests") {
+                $catMatch = [regex]::Match($content, 'Detected UI test categories:\*\*\s*`([^`]+)`')
+                if ($catMatch.Success) {
+                    $phaseTitle = "$($phase.Icon) $($phase.Title) — $($catMatch.Groups[1].Value)"
+                }
+            }
             $phaseSections += @"
 <details>
-<summary><strong>$($phase.Icon) $($phase.Title)</strong></summary>
-
----
+<summary><strong>$phaseTitle</strong></summary>
+<br/>
 
 $content
 
@@ -173,8 +179,7 @@ $newSessionBlock = @"
 $sessionMarkerStart
 <details open>
 <summary>📊 <strong>Review Session</strong> — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$commitTitle</strong> · <em>$timestamp</em></summary>
-
----
+<br/>
 
 $phaseContent
 
