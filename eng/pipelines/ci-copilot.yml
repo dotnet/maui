@@ -1271,15 +1271,30 @@ stages:
                 if (-not $prAgentDir) {
                   Write-Host "PRAgent directory not found in CopilotLogs — falling back to posting deep results only"
                 } else {
-                  # Append deep results to uitests/content.md so post-ai-summary-comment.ps1 includes them
+                  # Replace in-process results with deep results in uitests/content.md
+                  # The in-process section ("### 🧪 UI Test Execution Results ... informational only")
+                  # shows SKIPPED because it ran on Linux without an emulator. Deep results
+                  # are the real ones from platform-pool agents — replace, don't append.
                   $uitestContent = Join-Path $prAgentDir.FullName "uitests/content.md"
                   if (Test-Path $uitestContent) {
                     $existing = Get-Content $uitestContent -Raw
-                    "$existing`n`n$deepBlock" | Set-Content $uitestContent -Encoding UTF8
-                    Write-Host "Appended deep results to $uitestContent"
+                    # Strip everything from "### 🧪 UI Test Execution Results" onwards
+                    # (in-process results + any stale deep block), keep only the
+                    # "Detected UI test categories:" line at the top
+                    $inProcessMarker = '### ' + [char]0x1F9EA + ' UI Test Execution Results'
+                    $idx = $existing.IndexOf($inProcessMarker)
+                    if ($idx -gt 0) {
+                      $existing = $existing.Substring(0, $idx).TrimEnd()
+                    }
+                    # Also strip any old deep markers
+                    $existing = ($existing -split [Environment]::NewLine | Where-Object {
+                      $_ -notmatch 'DEEP_UITESTS_BEGIN|DEEP_UITESTS_END'
+                    }) -join [Environment]::NewLine
+                    ($existing.TrimEnd() + [Environment]::NewLine + [Environment]::NewLine + $deepBlock) | Set-Content $uitestContent -Encoding UTF8
+                    Write-Host "Replaced in-process results with deep results in $uitestContent"
                   } else {
                     New-Item -ItemType Directory -Force -Path (Join-Path $prAgentDir.FullName "uitests") | Out-Null
-                    "**Deep UI Test Results**`n`n$deepBlock" | Set-Content $uitestContent -Encoding UTF8
+                    $deepBlock | Set-Content $uitestContent -Encoding UTF8
                   }
 
                   # Copy PRAgent dir to expected location for post-ai-summary-comment.ps1
