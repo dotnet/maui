@@ -28,7 +28,7 @@ public class Issue19866 : _IssuesUITest
 
 		// Tap the status bar area to trigger iOS scroll-to-top
 		var rect = App.WaitForElement("TestCollectionView").GetRect();
-		App.TapCoordinates(rect.X + (rect.Width / 2), 5);
+		App.TapCoordinates(rect.X + 25, 5);
 
 		// Verify first item is visible again after scroll-to-top
 		App.WaitForElement("Item 0", timeout: TimeSpan.FromSeconds(5));
