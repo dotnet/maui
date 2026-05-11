@@ -1190,6 +1190,7 @@ stages:
                 foreach ($cat in $perCategoryFailures.Keys) {
                   $items = $perCategoryFailures[$cat]
                   [void]$sb.AppendLine("<details><summary>❌ <code>$cat</code> — $($items.Count) failed test$(if ($items.Count -eq 1) {''} else {'s'})</summary>")
+                  [void]$sb.AppendLine("<br/>")
                   [void]$sb.AppendLine()
                   foreach ($it in $items | Select-Object -First 30) {
                     [void]$sb.AppendLine("**``$($it.Name)``**")
