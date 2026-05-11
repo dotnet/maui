@@ -1207,17 +1207,20 @@ stages:
                   [void]$sb.AppendLine("<br/>")
                   [void]$sb.AppendLine()
                   foreach ($it in $items | Select-Object -First 30) {
-                    [void]$sb.AppendLine("**``$($it.Name)``**")
-                    if (-not [string]::IsNullOrWhiteSpace($it.Error)) {
-                      $errText = $it.Error.Trim()
-                      $stackText = if (-not [string]::IsNullOrWhiteSpace($it.Stack)) { "`n$($it.Stack.Trim())" } else { "" }
-                      # Truncate combined error+stack to 1000 chars to keep comment reasonable
-                      $combined = "$errText$stackText"
-                      if ($combined.Length -gt 1000) { $combined = $combined.Substring(0, 1000) + "`n..." }
-                      [void]$sb.AppendLine("```")
+                    $errText = if (-not [string]::IsNullOrWhiteSpace($it.Error)) { $it.Error.Trim() } else { "" }
+                    $stackText = if (-not [string]::IsNullOrWhiteSpace($it.Stack)) { $it.Stack.Trim() } else { "" }
+                    $combined = "$errText$(if ($stackText) { "`n$stackText" } else { "" })"
+                    if ($combined.Length -gt 1000) { $combined = $combined.Substring(0, 1000) + "`n..." }
+                    [void]$sb.AppendLine("<details><summary><code>$($it.Name)</code></summary>")
+                    [void]$sb.AppendLine("<br/>")
+                    [void]$sb.AppendLine()
+                    if ($combined) {
+                      [void]$sb.AppendLine("``````")
                       [void]$sb.AppendLine($combined)
-                      [void]$sb.AppendLine("```")
+                      [void]$sb.AppendLine("``````")
                     }
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("</details>")
                     [void]$sb.AppendLine()
                   }
                   if ($items.Count -gt 30) {
