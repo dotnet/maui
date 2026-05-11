@@ -802,9 +802,15 @@ namespace Microsoft.Maui.Controls
 					if (CanConsumeBackNavigation(shell.CurrentPage))
 						return true;
 
-					if (shell.FlyoutIsPresented && shell.GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
+					// Only consume back to close the flyout when it is user-dismissible.
+					// Locked and Disabled both mean the flyout is not user-controllable via back.
+					var flyoutBehavior = shell.GetEffectiveFlyoutBehavior();
+					if (shell.FlyoutIsPresented && flyoutBehavior == FlyoutBehavior.Flyout)
+					{
 						return true;
+					}
 
+					// Shell section nav stack depth (non-NavigationPage modern Shell shape).
 					return shell.CurrentItem?.CurrentItem?.Stack.Count > 1;
 
 				case NavigationPage navigationPage:
