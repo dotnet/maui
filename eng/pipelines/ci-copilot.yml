@@ -1092,7 +1092,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''))
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''))
     jobs:
       - job: UpdateComment
         displayName: 'Edit AI summary comment with deep test results'

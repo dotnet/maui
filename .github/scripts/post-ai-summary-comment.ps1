@@ -111,7 +111,7 @@ foreach ($key in $phases.Keys) {
             # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
             $phaseTitle = "$($phase.Icon) $($phase.Title)"
             if ($key -eq "uitests") {
-                $catMatch = [regex]::Match($content, 'Detected UI test categories:\*\*\s*`([^`]+)`')
+                $catMatch = [regex]::Match($content, 'Detected UI test categories:\*\*\s*`{1,2}([^`]+)`{1,2}')
                 if ($catMatch.Success) {
                     $phaseTitle = "$($phase.Icon) $($phase.Title) — $($catMatch.Groups[1].Value)"
                 }
