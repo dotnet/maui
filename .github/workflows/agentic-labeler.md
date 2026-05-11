@@ -11,8 +11,6 @@ on:
     types: [opened, reopened]
   pull_request_target:
     types: [opened, reopened]
-  pull_request:
-    types: [opened, reopened]
   workflow_dispatch:
     inputs:
       issue_number:
