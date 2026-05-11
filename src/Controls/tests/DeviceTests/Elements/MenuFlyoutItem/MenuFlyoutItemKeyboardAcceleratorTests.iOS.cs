@@ -1,4 +1,5 @@
 #if MACCATALYST
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -16,25 +17,31 @@ namespace Microsoft.Maui.DeviceTests
 		// entire parent UIMenu non-functional. The fix normalises single-letter keys to lowercase
 		// inside CreateMenuItemKeyCommand before they reach UIKeyCommand.Create.
 
-		[Theory(DisplayName = "Alphabetic key is normalised to lowercase before UIKeyCommand.Create")]
+		[Theory(DisplayName = "Single-character key normalization only lowercases uppercase alphabetic input")]
 		[InlineData("S", "s")]
 		[InlineData("A", "a")]
 		[InlineData("Z", "z")]
-		public void AlphabeticKeyIsNormalisedToLowercase(string inputKey, string expectedInput)
+		[InlineData("s", "s")]
+		[InlineData("+", "+")]
+		[InlineData("1", "1")]
+		public async Task AlphabeticKeyIsNormalisedToLowercase(string inputKey, string expectedInput)
 		{
 			try
 			{
-				var item = new MenuFlyoutItem { Text = "Test Item" };
-				item.KeyboardAccelerators.Add(new KeyboardAccelerator
+				await InvokeOnMainThreadAsync(() =>
 				{
-					Key = inputKey,
-					Modifiers = KeyboardAcceleratorModifiers.Cmd | KeyboardAcceleratorModifiers.Shift
+					var item = new MenuFlyoutItem { Text = "Test Item" };
+					item.KeyboardAccelerators.Add(new KeyboardAccelerator
+					{
+						Key = inputKey,
+						Modifiers = KeyboardAcceleratorModifiers.Cmd | KeyboardAcceleratorModifiers.Shift
+					});
+
+					var uiMenuElement = item.CreateMenuItem(MauiContext);
+					var keyCommand = Assert.IsType<UIKeyCommand>(uiMenuElement);
+
+					Assert.Equal(expectedInput, keyCommand.Input);
 				});
-
-				var uiMenuElement = item.CreateMenuItem(MauiContext);
-				var keyCommand = Assert.IsType<UIKeyCommand>(uiMenuElement);
-
-				Assert.Equal(expectedInput, keyCommand.Input);
 			}
 			finally
 			{
@@ -43,22 +50,51 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Cmd+Shift+S (the issue #35279 repro case) produces Input='s'")]
-		public void CmdShiftSProducesLowercaseInput()
+		public async Task CmdShiftSProducesLowercaseInput()
 		{
 			try
 			{
-				var item = new MenuFlyoutItem { Text = "Save As" };
-				item.KeyboardAccelerators.Add(new KeyboardAccelerator
+				await InvokeOnMainThreadAsync(() =>
 				{
-					Key = "S", // uppercase — the root cause of issue #35279
-					Modifiers = KeyboardAcceleratorModifiers.Cmd | KeyboardAcceleratorModifiers.Shift
+					var item = new MenuFlyoutItem { Text = "Save As" };
+					item.KeyboardAccelerators.Add(new KeyboardAccelerator
+					{
+						Key = "S", // uppercase — the root cause of issue #35279
+						Modifiers = KeyboardAcceleratorModifiers.Cmd | KeyboardAcceleratorModifiers.Shift
+					});
+
+					var uiMenuElement = item.CreateMenuItem(MauiContext);
+					var keyCommand = Assert.IsType<UIKeyCommand>(uiMenuElement);
+
+					Assert.Equal("s", keyCommand.Input);
+					Assert.Equal(UIKeyModifierFlags.Command | UIKeyModifierFlags.Shift, keyCommand.ModifierFlags);
 				});
+			}
+			finally
+			{
+				MenuFlyoutItemHandler.Reset();
+			}
+		}
 
-				var uiMenuElement = item.CreateMenuItem(MauiContext);
-				var keyCommand = Assert.IsType<UIKeyCommand>(uiMenuElement);
+		[Fact(DisplayName = "Multi-character key input passes through unchanged")]
+		public async Task MultiCharacterKeyPassesThroughUnchanged()
+		{
+			try
+			{
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var item = new MenuFlyoutItem { Text = "Function" };
+					item.KeyboardAccelerators.Add(new KeyboardAccelerator
+					{
+						Key = "F1",
+						Modifiers = KeyboardAcceleratorModifiers.Cmd
+					});
 
-				Assert.Equal("s", keyCommand.Input);
-				Assert.Equal(UIKeyModifierFlags.Command | UIKeyModifierFlags.Shift, keyCommand.ModifierFlags);
+					var uiMenuElement = item.CreateMenuItem(MauiContext);
+					var keyCommand = Assert.IsType<UIKeyCommand>(uiMenuElement);
+
+					Assert.Equal("F1", keyCommand.Input);
+				});
 			}
 			finally
 			{
