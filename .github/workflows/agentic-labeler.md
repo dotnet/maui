@@ -18,6 +18,10 @@ on:
         required: true
         type: number
   reaction: eyes
+  # Allow this workflow to run for any actor (including first-time community
+  # contributors). It is labeling-only — the agent itself runs with read-only
+  # tokens, and label writes happen through the sandboxed safe-output job.
+  roles: all
 
 permissions:
   contents: read
@@ -29,6 +33,17 @@ network: defaults
 safe-outputs:
   add-labels:
     max: 10
+  # This workflow is labeling-only — never create issues for agent-side
+  # status events (noop, missing tool, incomplete run, failure). Those
+  # paths default to opening tracker issues, which would contradict the
+  # "no comments, no issues" contract of this workflow.
+  noop:
+    report-as-issue: false
+  missing-tool:
+    create-issue: false
+  report-incomplete:
+    create-issue: false
+  report-failure-as-issue: false
 
 tools:
   github:
@@ -70,7 +85,7 @@ Repository: `${{ github.repository }}`
    - You may apply **any** existing label, not just `area-*` and `platform/*` — for example, severity (`high impact`, `regression`), kind (`bug`, `proposal`, `enhancement`, `documentation`), or status labels — when clearly justified by the content.
    - Do **not** create new labels. Only labels that already exist in the repository will be accepted.
 
-4. **Apply the labels** using the `add-labels` safe-output. If nothing is clearly applicable, apply nothing — it is better to add no labels than to add wrong ones.
+4. **Apply the labels** using the `add_labels` safe-output tool. If nothing is clearly applicable, apply nothing — it is better to add no labels than to add wrong ones.
 
 ## Labeling rules
 
@@ -127,4 +142,4 @@ Notes:
 
 ## Output
 
-Use the `add-labels` safe-output exactly once with the final set of labels. If no labels are clearly applicable, emit an empty `add-labels` call (or none at all).
+Use the `add_labels` safe-output tool exactly once with the final set of labels. If no labels are clearly applicable, do not call `add_labels` at all (and consider calling `noop` with a short reason).
