@@ -710,13 +710,13 @@ stages:
   # change small and incremental.
   - stage: RunDeepUITests
     displayName: 'Deep UI Tests (platform pool)'
-    dependsOn: []
-    condition: "true"
+    dependsOn: ReviewPR
+    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], 'NONE'))
     jobs:
       - job: RunUITests
         displayName: 'Run detected UI test categories'
         variables:
-          detectedCategories: 'ViewBaseTests'
+          detectedCategories: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'] ]
         # Use the SAME platform-pool selection logic as the CopilotReview
         # job — the deep-test agent should be the right OS for the
         # requested target platform.
