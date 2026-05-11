@@ -1209,15 +1209,16 @@ stages:
                   [void]$sb.AppendLine("<br/>")
                   [void]$sb.AppendLine()
                   foreach ($it in $items | Select-Object -First 30) {
-                    $errText = if (-not [string]::IsNullOrWhiteSpace($it.Error)) { $it.Error.Trim() } else { "" }
-                    $stackText = if (-not [string]::IsNullOrWhiteSpace($it.Stack)) { $it.Stack.Trim() } else { "" }
-                    $combined = "$errText$(if ($stackText) { "`n$stackText" } else { "" })"
-                    if ($combined.Length -gt 1000) { $combined = $combined.Substring(0, 1000) + "`n..." }
+                    $errText = if (-not [string]::IsNullOrWhiteSpace($it.Error)) { $it.Error.Trim() } else { '' }
+                    $stackText = if (-not [string]::IsNullOrWhiteSpace($it.Stack)) { $it.Stack.Trim() } else { '' }
+                    $combined = $errText
+                    if ($stackText) { $combined = $combined + [Environment]::NewLine + $stackText }
+                    if ($combined.Length -gt 1000) { $combined = $combined.Substring(0, 1000) + [Environment]::NewLine + '...' }
                     [void]$sb.AppendLine("<details><summary><code>$($it.Name)</code></summary>")
-                    [void]$sb.AppendLine("<br/>")
+                    [void]$sb.AppendLine('<br/>')
                     [void]$sb.AppendLine()
                     if ($combined) {
-                      $fence = '`' * 3
+                      $fence = [string]::new([char]96, 3)
                       [void]$sb.AppendLine($fence)
                       [void]$sb.AppendLine($combined)
                       [void]$sb.AppendLine($fence)
@@ -1309,7 +1310,7 @@ stages:
                 }
               } else {
                 # ── PATCH MODE: Update existing comment with deep results ──
-                $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join "`n"
+                $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join [Environment]::NewLine
                 if ([string]::IsNullOrWhiteSpace($existing)) {
                   Write-Host "Could not fetch comment body — aborting"
                   exit 0
@@ -1320,18 +1321,18 @@ stages:
                 if ($beginIdx -ge 0 -and $endIdx -gt $beginIdx) {
                   $before = $existing.Substring(0, $beginIdx).TrimEnd()
                   $after  = $existing.Substring($endIdx + $endMarker.Length).TrimStart()
-                  $newBody = $before + "`n`n" + $deepBlock + $(if ($after) { "`n`n" + $after } else { "" })
+                  $newBody = $before + ([Environment]::NewLine + [Environment]::NewLine) + $deepBlock + $(if ($after) { ([Environment]::NewLine + [Environment]::NewLine) + $after } else { "" })
                 } else {
-                  $cleaned = $existing -split "`n" | Where-Object {
+                  $cleaned = $existing -split [Environment]::NewLine | Where-Object {
                     $_ -notmatch '^\s*[❌✅⏭️]\s*\*\*Deep UI tests\*\*'
                   }
-                  $cleanedBody = ($cleaned -join "`n")
+                  $cleanedBody = ($cleaned -join [Environment]::NewLine)
                   $legacyMarker = '### 🧪 UI Test Execution Results'
                   $idx = $cleanedBody.IndexOf($legacyMarker)
                   $newBody = if ($idx -ge 0) {
-                    $cleanedBody.Substring(0, $idx).TrimEnd() + "`n`n" + $deepBlock
+                    $cleanedBody.Substring(0, $idx).TrimEnd() + ([Environment]::NewLine + [Environment]::NewLine) + $deepBlock
                   } else {
-                    $cleanedBody.TrimEnd() + "`n`n" + $deepBlock
+                    $cleanedBody.TrimEnd() + ([Environment]::NewLine + [Environment]::NewLine) + $deepBlock
                   }
                 }
 
