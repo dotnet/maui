@@ -50,25 +50,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// Regression tests for https://github.com/dotnet/maui/issues/34691
-		//
-		// Root cause: ObservableGroupedSource.CollectionChanged() called UpdateSection() before
-		// processing Remove. INCC semantics require the item to be already removed from the
-		// backing collection before CollectionChanged fires, so _groupSource has N-1 items when
-		// MAUI receives Remove — but UIKit still has N sections. UpdateSection() then iterates
-		// UIKit's N sections and calls NumberOfItemsInSection(N-1), re-entering the data source:
-		//   GetGroupCount(N-1) → _groupSource[N-1] → ArgumentOutOfRangeException.
-		//
-		// These tests use CollectionViewHandler2 (the default iOS handler) because the production
-		// crash in issue #34691 goes through ItemsViewController2 (Items2/), which calls
-		// ItemsSourceFactory.CreateGrouped() → ObservableGroupedSource (Items/). Both handlers
-		// share the same ObservableGroupedSource, so fixing it covers both paths.
-		//
-		// Each test forces a synchronous UIKit layout pass after the removal via SetNeedsLayout()
-		// + LayoutIfNeeded(). Before the fix this deterministically triggers the crash:
-		//   CollectionChanged(Remove) → UpdateSection() → NumberOfItemsInSection(N-1)
-		//   → GetGroupCount(N-1) → ArgumentOutOfRangeException.
-		// After the fix the pre-Remove UpdateSection() is skipped and GetGroupCount() has a
-		// defensive bounds check, so both the synchronous and the deferred layout paths are safe.
+		// ObservableGroupedSource.CollectionChanged() called UpdateSection() before Remove,
+		// causing GetGroupCount to access a stale section index → ArgumentOutOfRangeException.
+		// Each test forces a synchronous UIKit layout pass after removal to exercise the fix.
 
 		[Fact(DisplayName = "Removing last section from grouped CollectionView does not crash (Handler2)")]
 		public async Task ItemsSourceGroupedRemoveLastSectionDoesNotCrash()
@@ -90,25 +74,18 @@ namespace Microsoft.Maui.DeviceTests
 				ItemTemplate = new DataTemplate(() => new Label()),
 			};
 
-			// Capture the pre-layout frame so WaitForUIUpdate can detect the first layout pass.
 			var initialFrame = collectionView.Frame;
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
-				// Wait for the initial layout rather than a fixed delay.
 				await WaitForUIUpdate(initialFrame, collectionView);
 
-				// Removing the last section was the classic crash: UIKit still has N sections
-				// when UpdateSection() is called before Remove(), so GetGroupCount(N-1) is
-				// invoked against a _groupSource that already has N-1 items → out of range.
 				groupData.RemoveAt(groupData.Count - 1);
 
-				// Force a synchronous layout pass so UIKit queries the data source immediately.
-				// Without the fix this deterministically throws ArgumentOutOfRangeException.
 				handler.PlatformView.SetNeedsLayout();
 				handler.PlatformView.LayoutIfNeeded();
 
-				Assert.Equal(2, groupData.Count);
+				Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
 			});
 		}
 
@@ -141,12 +118,12 @@ namespace Microsoft.Maui.DeviceTests
 				groupData.RemoveAt(0);
 				handler.PlatformView.SetNeedsLayout();
 				handler.PlatformView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
 
 				groupData.RemoveAt(0);
 				handler.PlatformView.SetNeedsLayout();
 				handler.PlatformView.LayoutIfNeeded();
-
-				Assert.Single(groupData);
+				Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
 			});
 		}
 
@@ -179,10 +156,9 @@ namespace Microsoft.Maui.DeviceTests
 				while (groupData.Count > 0)
 				{
 					groupData.RemoveAt(groupData.Count - 1);
-					// Force synchronous layout after each removal to exercise the full range
-					// of section indices and confirm no re-entrancy crash occurs.
 					handler.PlatformView.SetNeedsLayout();
 					handler.PlatformView.LayoutIfNeeded();
+					Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
 				}
 
 				Assert.Empty(groupData);
