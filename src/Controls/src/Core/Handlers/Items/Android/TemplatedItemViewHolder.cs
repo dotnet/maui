@@ -42,14 +42,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			itemsView.RemoveLogicalChild(View);
+		}
 
-			// Disconnect and clear the handler via ItemContentView.Recycle(), which calls
-			// DisconnectHandlers() before releasing Content. Reset _selectedTemplate so the
-			// next Bind() call always goes through the templateChanging path and recreates
-			// the handler (since we just disconnected it).
+		internal void DisconnectAndRecycle(ItemsView itemsView)
+		{
+			if (View != null)
+			{
+				itemsView.RemoveLogicalChild(View);
+			}
+
 			_itemContentView.Recycle();
-			View = null; // clear reference to the disconnected view
-			_selectedTemplate = null; // force templateChanging=true on next Bind() to recreate the view
+			View = null;
+			_selectedTemplate = null;
 		}
 
 		public void Bind(object itemBindingContext, ItemsView itemsView,
