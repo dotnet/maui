@@ -21,7 +21,7 @@ public class Issue35286 : ContentPage
 				{
 					Placeholder = "Search with HeightRequest=35",
 					HeightRequest = 35,
-                    BackgroundColor = Colors.LightBlue,
+					BackgroundColor = Colors.LightBlue,
 					AutomationId = "Issue35286SearchBar1"
 				},
 
@@ -36,7 +36,7 @@ public class Issue35286 : ContentPage
 				{
 					Placeholder = "Search with HeightRequest=100",
 					HeightRequest = 100,
-                    BackgroundColor = Colors.LightBlue,
+					BackgroundColor = Colors.LightBlue,
 					AutomationId = "Issue35286SearchBar2"
 				},
 			}

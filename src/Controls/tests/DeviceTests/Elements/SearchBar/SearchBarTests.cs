@@ -194,6 +194,12 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(20)]
 		public async Task ValidateSearchBarSmallHeightRequestRendering(double requestedHeight)
 		{
+			// This test is gated to iOS/MacCatalyst 26+ where the handler clamp is applied
+			if (!OperatingSystem.IsIOSVersionAtLeast(26) && !OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				return;
+			}
+
 			var searchBar = new SearchBar
 			{
 				HeightRequest = requestedHeight,
@@ -205,13 +211,15 @@ namespace Microsoft.Maui.DeviceTests
 				var platformControl = GetPlatformControl(handler);
 
 				double actualHeight = 0;
+				double intrinsicHeight = 0;
 
 				if (platformControl is UIKit.UISearchBar uiSearchBar)
 				{
 					actualHeight = uiSearchBar.Frame.Height;
+					intrinsicHeight = uiSearchBar.IntrinsicContentSize.Height;
 				}
 
-				Assert.True(actualHeight >= 44, $"Expected intrinsic SearchBar height to remain at least 44, but was {actualHeight} for HeightRequest={requestedHeight}.");
+				Assert.True(actualHeight >= intrinsicHeight, $"Expected SearchBar height to remain at least the intrinsic height ({intrinsicHeight}), but was {actualHeight} for HeightRequest={requestedHeight}.");
 			});
 		}
 #endif
