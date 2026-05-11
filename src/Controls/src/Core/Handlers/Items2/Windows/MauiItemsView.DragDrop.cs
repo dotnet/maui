@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		// Drag and drop fields
 		object? _draggedItem;
+		ItemContainer? _sourceContainer;
 		int _insertionIndex = -1;
 		bool _insertAfter = false;
 		bool _canReorderItems = true;
@@ -81,6 +82,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_itemsRepeater.ElementClearing -= ItemsRepeater_ElementClearing;
 				_itemsRepeater.ElementPrepared += ItemsRepeater_ElementPrepared;
 				_itemsRepeater.ElementClearing += ItemsRepeater_ElementClearing;
+
+				// Enable built-in shuffle animation when items get rearranged in the data source.
+				// This is what makes neighbouring items "slide out of the way" while dragging,
+				// matching the CV1 (ListView) experience.
+				if (_itemsRepeater.Animator is null)
+				{
+					_itemsRepeater.Animator = new DefaultElementAnimator();
+				}
 			}
 		}
 
@@ -170,8 +179,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_draggedItem = item;
+			_sourceContainer = itemContainer;
 			args.Data.Properties.Add("DragSource", "MauiItemsView");
 			args.Data.RequestedOperation = WDataTransfer.DataPackageOperation.Move;
+
+			// Make sure the drop-completed handler is wired exactly once so we always
+			// restore the source container's visibility (success, cancel, or escape).
+			itemContainer.DropCompleted -= ItemContainer_DropCompleted;
+			itemContainer.DropCompleted += ItemContainer_DropCompleted;
+
+			// Hide the source slot so the user sees the item being "lifted out" of the
+			// list, mirroring the CV1 (ListView) drag experience. We defer the change so
+			// WinUI can capture the drag-preview bitmap from the still-visible element
+			// first, otherwise the drag ghost would be empty.
+			DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+			{
+				if (_sourceContainer is not null)
+				{
+					_sourceContainer.Visibility = Visibility.Collapsed;
+				}
+			});
+		}
+
+		void ItemContainer_DropCompleted(UIElement sender, UI.Xaml.DropCompletedEventArgs args)
+		{
+			if (sender is ItemContainer itemContainer)
+			{
+				itemContainer.DropCompleted -= ItemContainer_DropCompleted;
+				itemContainer.Visibility = Visibility.Visible;
+			}
+
+			// Make sure every container is visible again; if the source container was
+			// recycled during the live reorder we might end up with a stale collapsed one.
+			foreach (var container in FindAllContainers())
+			{
+				if (container.Visibility == Visibility.Collapsed)
+				{
+					container.Visibility = Visibility.Visible;
+				}
+			}
+
+			_sourceContainer = null;
 		}
 
 		void ScrollView_DragEnter(object sender, UI.Xaml.DragEventArgs e)
@@ -234,9 +282,67 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			System.Diagnostics.Debug.WriteLine($"DragOver: insertAfter={_insertAfter}, _insertionIndex={_insertionIndex}");
 
+			// Live-reorder the data so the surrounding items animate out of the way as
+			// the pointer moves, matching the CV1 behaviour. Grouped sources are handled
+			// on drop only because group/header/footer boundaries make incremental moves
+			// ambiguous.
+			bool isGrouped = _mauiItemsView is GroupableItemsView giv && giv.IsGrouped;
+			if (!isGrouped && _draggedItem is not null && _mauiItemsView?.ItemsSource is IList liveList)
+			{
+				PerformLiveReorder(liveList);
+			}
+
 			e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 			e.Handled = true;
 
+		}
+
+		/// <summary>
+		/// Moves the dragged item to <see cref="_insertionIndex"/> in the live data source
+		/// while the drag is still in progress. ItemsRepeater's animator then slides the
+		/// remaining items into their new slots, giving the same shuffle feedback CV1 has.
+		/// </summary>
+		void PerformLiveReorder(IList itemsList)
+		{
+			if (_draggedItem is null)
+				return;
+
+			int currentIndex = IndexOfItem(_draggedItem, itemsList);
+			if (currentIndex < 0)
+				return;
+
+			int targetIndex = _insertionIndex;
+			if (currentIndex < targetIndex)
+				targetIndex--;
+
+			targetIndex = Math.Clamp(targetIndex, 0, itemsList.Count - 1);
+
+			if (targetIndex == currentIndex)
+				return;
+
+			var wrapper = itemsList[currentIndex];
+			itemsList.RemoveAt(currentIndex);
+			itemsList.Insert(targetIndex, wrapper);
+
+			// The ItemsRepeater may recycle the source element after the move; re-resolve
+			// it so the hidden slot still follows the dragged item.
+			DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+			{
+				if (_draggedItem is null)
+					return;
+
+				var newContainer = FindContainerByIndex(targetIndex) as ItemContainer;
+				if (newContainer is null)
+					return;
+
+				if (_sourceContainer is not null && !ReferenceEquals(_sourceContainer, newContainer))
+				{
+					_sourceContainer.Visibility = Visibility.Visible;
+				}
+
+				_sourceContainer = newContainer;
+				_sourceContainer.Visibility = Visibility.Collapsed;
+			});
 		}
 
 		void ScrollView_DragLeave(object sender, UI.Xaml.DragEventArgs e)
@@ -303,7 +409,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				try
 				{
-					bool reordered = PerformReorder(itemsList);
+					// Live reorder already moved the item into its final slot as the pointer
+					// moved; the drop only needs to confirm and raise notifications. If for
+					// some reason live reorder never ran (e.g. on the very first drop frame)
+					// fall back to the previous one-shot logic.
+					bool reordered;
+					if (_draggedItem is not null && IndexOfItem(_draggedItem, itemsList) == _insertionIndex)
+					{
+						reordered = false; // unchanged after live reorder
+					}
+					else if (_draggedItem is not null && IndexOfItem(_draggedItem, itemsList) >= 0)
+					{
+						// Live reorder already happened.
+						reordered = true;
+					}
+					else
+					{
+						reordered = PerformReorder(itemsList);
+					}
 
 					System.Diagnostics.Debug.WriteLine($"  Reorder result: {reordered}");
 
@@ -711,6 +834,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void CleanupDragState()
 		{
+			// Restore the source container synchronously in case DropCompleted doesn't
+			// fire (e.g. drop handled outside the source element).
+			if (_sourceContainer is not null)
+			{
+				_sourceContainer.Visibility = Visibility.Visible;
+				_sourceContainer.DropCompleted -= ItemContainer_DropCompleted;
+				_sourceContainer = null;
+			}
+
 			_draggedItem = null;
 			_insertionIndex = -1;
 			_insertAfter = false;
