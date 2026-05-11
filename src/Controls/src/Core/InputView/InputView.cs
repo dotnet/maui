@@ -319,19 +319,21 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
 
-			// Note: these properties will always raise change events when set. On platforms like WinUI we
-			// need to always push the xplat -> native value flow in scenarios such as "select all text on focus". If we
-			// don't do this the native control will handle the input event and move the cursor after we set the selection
-			// length/cursor position, which is not the desired behavior.
+			// When the same CursorPosition or SelectionLength value is re-set, the bindable property
+			// system reports changed=false and does not fire PropertyChanged — so the handler mapper
+			// is never invoked. We force the handler update here so the native control always receives
+			// the selection state, which is required on WinUI where the native TextBox resets the
+			// caret position on each focus event.
 			if (!changed)
 			{
-				if (property.PropertyName == nameof(CursorPosition))
+				switch (property.PropertyName)
 				{
-					Handler?.UpdateValue(nameof(CursorPosition));
-				}
-				if (property.PropertyName == nameof(SelectionLength))
-				{
-					Handler?.UpdateValue(nameof(SelectionLength));
+					case nameof(CursorPosition):
+						Handler?.UpdateValue(nameof(CursorPosition));
+						break;
+					case nameof(SelectionLength):
+						Handler?.UpdateValue(nameof(SelectionLength));
+						break;
 				}
 			}
 		}
