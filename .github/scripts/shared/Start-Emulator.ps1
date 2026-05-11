@@ -565,5 +565,8 @@ if ($Platform -eq "android") {
 $env:DEVICE_UDID = $DeviceUdid
 Write-Success "DEVICE_UDID environment variable set: $DeviceUdid"
 
+# Ensure clean exit code (adb commands above may leave $LASTEXITCODE non-zero)
+$global:LASTEXITCODE = 0
+
 # Return UDID for callers
 return $DeviceUdid
