@@ -79,13 +79,14 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await WaitForUIUpdate(initialFrame, collectionView);
+				var uiCollectionView = handler.Controller.CollectionView;
 
 				groupData.RemoveAt(groupData.Count - 1);
 
-				handler.PlatformView.SetNeedsLayout();
-				handler.PlatformView.LayoutIfNeeded();
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
 
-				Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
 			});
 		}
 
@@ -114,16 +115,17 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await WaitForUIUpdate(initialFrame, collectionView);
+				var uiCollectionView = handler.Controller.CollectionView;
 
 				groupData.RemoveAt(0);
-				handler.PlatformView.SetNeedsLayout();
-				handler.PlatformView.LayoutIfNeeded();
-				Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
 
 				groupData.RemoveAt(0);
-				handler.PlatformView.SetNeedsLayout();
-				handler.PlatformView.LayoutIfNeeded();
-				Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
 			});
 		}
 
@@ -152,13 +154,14 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await WaitForUIUpdate(initialFrame, collectionView);
+				var uiCollectionView = handler.Controller.CollectionView;
 
 				while (groupData.Count > 0)
 				{
 					groupData.RemoveAt(groupData.Count - 1);
-					handler.PlatformView.SetNeedsLayout();
-					handler.PlatformView.LayoutIfNeeded();
-					Assert.Equal(groupData.Count, (int)handler.PlatformView.NumberOfSections());
+					uiCollectionView.SetNeedsLayout();
+					uiCollectionView.LayoutIfNeeded();
+					Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
 				}
 
 				Assert.Empty(groupData);
