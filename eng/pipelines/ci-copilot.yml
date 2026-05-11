@@ -1217,9 +1217,10 @@ stages:
                     [void]$sb.AppendLine("<br/>")
                     [void]$sb.AppendLine()
                     if ($combined) {
-                      [void]$sb.AppendLine("``````")
+                      $fence = '`' * 3
+                      [void]$sb.AppendLine($fence)
                       [void]$sb.AppendLine($combined)
-                      [void]$sb.AppendLine("``````")
+                      [void]$sb.AppendLine($fence)
                     }
                     [void]$sb.AppendLine()
                     [void]$sb.AppendLine("</details>")
