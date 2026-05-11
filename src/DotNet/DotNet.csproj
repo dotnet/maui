@@ -192,6 +192,23 @@
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
+  <!-- Remove stale workload manifest bands left by the SDK installer.
+       SDK preview.4 bundles manifests from preview.1 that reference non-existent packs
+       (e.g. _26.2 instead of _26.4), causing NETSDK1178 errors. We remove any band
+       that doesn't match the current DotNetSdkManifestsFolder. -->
+  <Target Name="_CleanStaleWorkloadManifestBands"
+      AfterTargets="_InstallDotNet"
+      BeforeTargets="_AcquireWorkloadManifests"
+      Condition=" '$(InstallDotNet)' == 'true' and Exists('$(DotNetDirectory)sdk-manifests') ">
+    <ItemGroup>
+      <_AllManifestBands Include="$([System.IO.Directory]::GetDirectories('$(DotNetDirectory)sdk-manifests'))" />
+      <_StaleManifestBands Include="@(_AllManifestBands)" Condition="'%(Filename)' != '$(DotNetSdkManifestsFolder)'" />
+    </ItemGroup>
+    <Message Text="Removing stale workload manifest band: %(Filename)" Importance="High"
+        Condition="'@(_StaleManifestBands)' != ''" />
+    <RemoveDir Directories="@(_StaleManifestBands)" />
+  </Target>
+
   <Target Name="_AcquireWorkloadManifests"
       Inputs="$(_Inputs);Dependencies/Workloads.csproj"
       Outputs="$(DotNetSdkManifestsDirectory).stamp">
@@ -210,7 +227,6 @@
       <_WorkloadRestoreEnvVars Condition="$([MSBuild]::IsOSPlatform('osx'))">$(_WorkloadRestoreEnvVars);DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT=true</_WorkloadRestoreEnvVars>
     </PropertyGroup>
     <ItemGroup>
-      <_WorkloadDirectoriesToRemove Include="$(DotNetDirectory)sdk-manifests/$(DotNetVersionBand)" />
       <_WorkloadDirectoriesToRemove Include="@(_PacksToRemove->'$(DotNetDirectory)sdk-manifests/$(DotNetSdkManifestsFolder)/%(Identity)')" />
     </ItemGroup>
     <RemoveDir Directories="$(_WorkloadManifestDir);@(_WorkloadDirectoriesToRemove)" />
