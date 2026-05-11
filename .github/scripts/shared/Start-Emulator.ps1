@@ -372,7 +372,8 @@ if ($Platform -eq "android") {
         #   iOS 18.x → iPhone Xs (matches /ios baseline default)
         #   iOS 17.x → iPhone Xs (fallback)
         $preferredDevicesPerVersion = @{
-            "iOS-26" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 11 Pro")
+            # iPhone 11 Pro first for iOS-26: baselines captured at 1124x1126 resolution
+            "iOS-26" = @("iPhone 11 Pro", "iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro")
             "iOS-18" = @("iPhone Xs", "iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro")
             "iOS-17" = @("iPhone Xs", "iPhone 15 Pro", "iPhone 14 Pro")
         }

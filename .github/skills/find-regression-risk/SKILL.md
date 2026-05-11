@@ -49,9 +49,9 @@ When `-OutputDir` is specified:
 
 ## Integration
 
-The script runs as **STEP 0.6** in `Review-PR.ps1` (between UI test detection and the Gate step). Its `content.md` is assembled into the AI summary comment by `post-ai-summary-comment.ps1`.
+The script runs as **STEP 4** in `Review-PR.ps1` (Regression Cross-Reference, after UI test detection and before the Gate step). Its `content.md` is assembled into the AI summary comment by `post-ai-summary-comment.ps1`.
 
-When REVERT risks are detected, **STEP 1.5** (after Gate) runs the regression tests from the reverted fix PRs:
+When REVERT risks are detected, the regression tests from the reverted fix PRs are executed:
 - **UI tests** → `BuildAndRunHostApp.ps1 -Platform <plat> -TestFilter <filter>`
 - **Device tests** → `Run-DeviceTests.ps1 -Project <proj> -Platform <plat> -TestFilter <filter>`
 - **Unit/XAML tests** → `dotnet test <project> --filter <filter>`

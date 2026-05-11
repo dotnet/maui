@@ -412,8 +412,7 @@ function Get-TrxResults {
     $resultNodes = $trx.SelectNodes('//t:UnitTestResult', $ns)
     foreach ($r in $resultNodes) {
         $rawName = $r.GetAttribute('testName')
-        # Strip the (TestName) parameter suffix VSTest sometimes adds — keep
-        # the bare method name so it matches what Get-DotNetTestResults emits.
+        # Use the raw test name as-is from TRX.
         $name = $rawName
 
         $outcomeAttr = $r.GetAttribute('outcome')
@@ -668,10 +667,10 @@ if (Test-Path $detectScript) {
 
         # Emit detected categories as an AzDO output variable so downstream
         # stages (RunDeepUITests, UpdateAISummaryComment) in ci-copilot.yml
-        # can read them via $(stageDependencies.ReviewPR.CopilotReview.outputs['Detection.detectedCategories']).
+        # can read them via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories']).
         # `isOutput=true` is required for cross-stage consumption; the
-        # variable name is namespaced under the step's reference name
-        # (`Detection`) by AzDO so the dependsOn lookup path includes it.
+        # variable name is namespaced under the step's `name:` property
+        # in ci-copilot.yml (currently `RunReview`) by AzDO.
         # Local invocations (no $env:TF_BUILD) won't have an AzDO variable
         # store but the marker is harmless — gets ignored.
         $catsForOutput = if ([string]::IsNullOrWhiteSpace($uitestCategories)) { 'NONE' } else { $uitestCategories }
