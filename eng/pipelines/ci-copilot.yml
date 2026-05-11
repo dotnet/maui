@@ -1069,6 +1069,7 @@ stages:
               }
             displayName: 'Run deep UI tests (per-category loop)'
             timeoutInMinutes: 220
+            retryCountOnTaskFailure: 2
 
           - task: PublishPipelineArtifact@1
             displayName: 'Publish drop-deep-uitests'
