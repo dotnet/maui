@@ -1780,12 +1780,21 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 7: Post AI Summary Comment (direct script invocation)
+#  When DEFER_COMMENT_TO_STAGE3=true, skip posting here — Stage 3
+#  (UpdateAISummaryComment) will post the full comment after deep tests.
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
 Write-Host "║  STEP 7: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+
+if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
+    Write-Host "  ⏭️ Deferred to Stage 3 (DEFER_COMMENT_TO_STAGE3=true)" -ForegroundColor Gray
+    Write-Host "  ℹ️  Content files saved in CopilotLogs artifact" -ForegroundColor Gray
+    # Still emit a dummy output var so Stage 3 condition works
+    Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]DEFERRED"
+} else {
 
 $summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
 
@@ -1977,6 +1986,8 @@ if (Test-Path $labelHelperPath) {
 } else {
     Write-Host "  ⚠️ Label helper not found — skipping" -ForegroundColor Yellow
 }
+
+} # END DEFER_COMMENT_TO_STAGE3 else block
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  Cleanup
