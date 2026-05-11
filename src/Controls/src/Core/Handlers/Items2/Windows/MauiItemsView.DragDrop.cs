@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
@@ -7,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -82,14 +84,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_itemsRepeater.ElementClearing -= ItemsRepeater_ElementClearing;
 				_itemsRepeater.ElementPrepared += ItemsRepeater_ElementPrepared;
 				_itemsRepeater.ElementClearing += ItemsRepeater_ElementClearing;
-
-				// Enable built-in shuffle animation when items get rearranged in the data source.
-				// This is what makes neighbouring items "slide out of the way" while dragging,
-				// matching the CV1 (ListView) experience.
-				if (_itemsRepeater.Animator is null)
-				{
-					_itemsRepeater.Animator = new DefaultElementAnimator();
-				}
 			}
 		}
 
@@ -126,6 +120,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				itemContainer.Tag = args.Index;
 
+				// Enable implicit offset animation so items slide smoothly during live reorder,
+				// matching the CV1 (ListView) drag experience.
+				ConfigureContainerReorderAnimation(itemContainer);
+
 				// Don't allow dragging group headers or footers
 				bool isHeaderOrFooter = false;
 				if (ItemsSource is IList flatList && args.Index >= 0 && args.Index < flatList.Count)
@@ -153,7 +151,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				itemContainer.CanDrag = false;
 				itemContainer.DragStarting -= ItemContainer_DragStarting;
 				itemContainer.Tag = null;
+
+				// Remove implicit animations when the container is recycled
+				var visual = ElementCompositionPreview.GetElementVisual(itemContainer);
+				visual.ImplicitAnimations = null;
 			}
+		}
+
+		/// <summary>
+		/// Configures an implicit Offset animation on the container so that when the
+		/// ItemsRepeater repositions it (e.g. during a live reorder), it slides smoothly
+		/// to its new location instead of jumping.
+		/// </summary>
+		void ConfigureContainerReorderAnimation(ItemContainer container)
+		{
+			var visual = ElementCompositionPreview.GetElementVisual(container);
+			var compositor = visual.Compositor;
+
+			var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+			offsetAnimation.Target = "Offset";
+			offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
+			offsetAnimation.Duration = TimeSpan.FromMilliseconds(250);
+
+			var animations = compositor.CreateImplicitAnimationCollection();
+			animations["Offset"] = offsetAnimation;
+			visual.ImplicitAnimations = animations;
 		}
 
 		#endregion
@@ -189,14 +211,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			itemContainer.DropCompleted += ItemContainer_DropCompleted;
 
 			// Hide the source slot so the user sees the item being "lifted out" of the
-			// list, mirroring the CV1 (ListView) drag experience. We defer the change so
-			// WinUI can capture the drag-preview bitmap from the still-visible element
-			// first, otherwise the drag ghost would be empty.
+			// list, mirroring the CV1 (ListView) drag experience. We use Opacity instead
+			// of Visibility.Collapsed so the element remains in the visual tree — this
+			// ensures WinUI captures a valid drag-preview bitmap and the layout slot is
+			// preserved (showing a gap where the item was).
 			DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
 			{
 				if (_sourceContainer is not null)
 				{
-					_sourceContainer.Visibility = Visibility.Collapsed;
+					_sourceContainer.Opacity = 0;
 				}
 			});
 		}
@@ -206,16 +229,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (sender is ItemContainer itemContainer)
 			{
 				itemContainer.DropCompleted -= ItemContainer_DropCompleted;
-				itemContainer.Visibility = Visibility.Visible;
+				itemContainer.Opacity = 1;
 			}
 
-			// Make sure every container is visible again; if the source container was
-			// recycled during the live reorder we might end up with a stale collapsed one.
+			// Make sure every container is fully visible again; if the source container was
+			// recycled during the live reorder we might end up with a stale hidden one.
 			foreach (var container in FindAllContainers())
 			{
-				if (container.Visibility == Visibility.Collapsed)
+				if (container.Opacity < 1)
 				{
-					container.Visibility = Visibility.Visible;
+					container.Opacity = 1;
 				}
 			}
 
@@ -337,11 +360,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_sourceContainer is not null && !ReferenceEquals(_sourceContainer, newContainer))
 				{
-					_sourceContainer.Visibility = Visibility.Visible;
+					_sourceContainer.Opacity = 1;
 				}
 
 				_sourceContainer = newContainer;
-				_sourceContainer.Visibility = Visibility.Collapsed;
+				_sourceContainer.Opacity = 0;
 			});
 		}
 
@@ -838,7 +861,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// fire (e.g. drop handled outside the source element).
 			if (_sourceContainer is not null)
 			{
-				_sourceContainer.Visibility = Visibility.Visible;
+				_sourceContainer.Opacity = 1;
 				_sourceContainer.DropCompleted -= ItemContainer_DropCompleted;
 				_sourceContainer = null;
 			}
