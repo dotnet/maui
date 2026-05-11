@@ -1281,8 +1281,18 @@ stages:
                     $uitestContent = Join-Path $prAgentDir.FullName "uitests/content.md"
                     if (Test-Path $uitestContent) {
                       $existing = Get-Content $uitestContent -Raw
-                      $inProcessMarker = '### ' + [char]0x1F9EA + ' UI Test Execution Results'
-                      $idx = $existing.IndexOf($inProcessMarker)
+                      # Strip in-process "SKIPPED" section — search for the header
+                      $idx = -1
+                      foreach ($marker in @('UI Test Execution Results', 'SKIPPED')) {
+                        $found = $existing.IndexOf($marker)
+                        if ($found -gt 0) {
+                          # Back up to start of line
+                          $lineStart = $existing.LastIndexOf([char]10, $found)
+                          if ($lineStart -lt 0) { $lineStart = 0 } else { $lineStart++ }
+                          $idx = $lineStart
+                          break
+                        }
+                      }
                       if ($idx -gt 0) {
                         $existing = $existing.Substring(0, $idx).TrimEnd()
                       }
