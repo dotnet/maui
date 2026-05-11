@@ -1149,9 +1149,13 @@ stages:
               . .github/scripts/shared/Get-AggregatedTrxFromDirectory.ps1
               $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
               if (-not $byCat -or $byCat.Count -eq 0) {
-                Write-Host "Aggregator returned no categories — leaving comment as-is"
-                exit 0
+                Write-Host "Aggregator returned no categories"
+                # No deep test results — but in DEFERRED mode we still need to
+                # post the review-only comment (without deep section).
               }
+
+              $deepBlock = ''
+              if ($byCat -and $byCat.Count -gt 0) {
 
               # Render the new STEP 3 section.
               $totalPassed = 0; $totalFailed = 0
@@ -1242,7 +1246,7 @@ stages:
               $orgUri  = "$(System.CollectionUri)".TrimEnd('/')
               $project = "$(System.TeamProject)"
               $artifactUrl = "$orgUri/$project/_build/results?buildId=$buildId&view=artifacts&pathAsName=false&type=publishedArtifacts"
-              [void]$sb.AppendLine("📎 [Download `drop-deep-uitests` artifact (TRX + snapshot diffs)]($artifactUrl)")
+              [void]$sb.AppendLine("📎 [Download ``drop-deep-uitests`` artifact (TRX + snapshot diffs)]($artifactUrl)")
               [void]$sb.AppendLine()
 
               $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
@@ -1250,7 +1254,8 @@ stages:
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
-              $deepBlock   = "$beginMarker`n$headerLine`n$($sb.ToString())$endMarker"
+              $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
+              } # end if ($byCat.Count -gt 0)
 
               if ($isDeferred) {
                 # ── DEFERRED MODE: Post full comment with deep results included ──
@@ -1271,30 +1276,24 @@ stages:
                 if (-not $prAgentDir) {
                   Write-Host "PRAgent directory not found in CopilotLogs — falling back to posting deep results only"
                 } else {
-                  # Replace in-process results with deep results in uitests/content.md
-                  # The in-process section ("### 🧪 UI Test Execution Results ... informational only")
-                  # shows SKIPPED because it ran on Linux without an emulator. Deep results
-                  # are the real ones from platform-pool agents — replace, don't append.
-                  $uitestContent = Join-Path $prAgentDir.FullName "uitests/content.md"
-                  if (Test-Path $uitestContent) {
-                    $existing = Get-Content $uitestContent -Raw
-                    # Strip everything from "### 🧪 UI Test Execution Results" onwards
-                    # (in-process results + any stale deep block), keep only the
-                    # "Detected UI test categories:" line at the top
-                    $inProcessMarker = '### ' + [char]0x1F9EA + ' UI Test Execution Results'
-                    $idx = $existing.IndexOf($inProcessMarker)
-                    if ($idx -gt 0) {
-                      $existing = $existing.Substring(0, $idx).TrimEnd()
+                  # Replace in-process results with deep results in uitests/content.md (if available)
+                  if ($deepBlock) {
+                    $uitestContent = Join-Path $prAgentDir.FullName "uitests/content.md"
+                    if (Test-Path $uitestContent) {
+                      $existing = Get-Content $uitestContent -Raw
+                      $inProcessMarker = '### ' + [char]0x1F9EA + ' UI Test Execution Results'
+                      $idx = $existing.IndexOf($inProcessMarker)
+                      if ($idx -gt 0) {
+                        $existing = $existing.Substring(0, $idx).TrimEnd()
+                      }
+                      $existing = ($existing -split [Environment]::NewLine | Where-Object {
+                        $_ -notmatch 'DEEP_UITESTS_BEGIN|DEEP_UITESTS_END'
+                      }) -join [Environment]::NewLine
+                      ($existing.TrimEnd() + [Environment]::NewLine + [Environment]::NewLine + $deepBlock) | Set-Content $uitestContent -Encoding UTF8
+                      Write-Host "Replaced in-process results with deep results"
                     }
-                    # Also strip any old deep markers
-                    $existing = ($existing -split [Environment]::NewLine | Where-Object {
-                      $_ -notmatch 'DEEP_UITESTS_BEGIN|DEEP_UITESTS_END'
-                    }) -join [Environment]::NewLine
-                    ($existing.TrimEnd() + [Environment]::NewLine + [Environment]::NewLine + $deepBlock) | Set-Content $uitestContent -Encoding UTF8
-                    Write-Host "Replaced in-process results with deep results in $uitestContent"
                   } else {
-                    New-Item -ItemType Directory -Force -Path (Join-Path $prAgentDir.FullName "uitests") | Out-Null
-                    $deepBlock | Set-Content $uitestContent -Encoding UTF8
+                    Write-Host "No deep results — posting review-only comment"
                   }
 
                   # Copy PRAgent dir to expected location for post-ai-summary-comment.ps1
@@ -1325,6 +1324,10 @@ stages:
                 }
               } else {
                 # ── PATCH MODE: Update existing comment with deep results ──
+                if (-not $deepBlock) {
+                  Write-Host "No deep results and comment already exists — nothing to patch"
+                  exit 0
+                }
                 $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join [Environment]::NewLine
                 if ([string]::IsNullOrWhiteSpace($existing)) {
                   Write-Host "Could not fetch comment body — aborting"
