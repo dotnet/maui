@@ -372,7 +372,12 @@ function Get-DotNetTestResults {
 # parsing console output is fragile when many tests run, lines wrap, or
 # multi-line ErrorRecords get glued together by PowerShell stream merging.
 # Get-TrxResults: dot-source from shared file (single source of truth)
-. "$PSScriptRoot/shared/Get-TrxResults.ps1"
+$_trxHelperPath = Join-Path $PSScriptRoot "shared/Get-TrxResults.ps1"
+if (-not (Test-Path $_trxHelperPath)) {
+    # Fallback: resolve relative to repo root (when $PSScriptRoot is empty, e.g. Copilot CLI)
+    $_trxHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Get-TrxResults.ps1"
+}
+. $_trxHelperPath
 
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
