@@ -63,16 +63,13 @@ if ([string]::IsNullOrWhiteSpace($OutputDir)) {
 }
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
-# --------- Source Get-TrxResults from Review-PR.ps1 ---------
-# We can't dot-source Review-PR.ps1 directly because it has top-level
-# imperative logic that demands a -PRNumber. Extract just the function
-# body the same way Review-PR.Tests.ps1 does it.
-$reviewSource = Get-Content -Raw -Path $reviewScript
-$fnMatch = [regex]::Match($reviewSource, '(?ms)^function\s+Get-TrxResults\s*\{.*?^\}', 'Multiline')
-if (-not $fnMatch.Success) {
-    throw "Could not extract Get-TrxResults function body from Review-PR.ps1"
+# --------- Source Get-TrxResults ---------
+$trxHelperPath = Join-Path $PSScriptRoot "Get-TrxResults.ps1"
+if (Test-Path $trxHelperPath) {
+    . $trxHelperPath
+} else {
+    throw "Get-TrxResults.ps1 not found at $trxHelperPath"
 }
-Invoke-Expression $fnMatch.Value
 
 # Map artifact name → matrix category. Job names look like:
 #   android_ui_tests_controls_30_<CATEGORYGROUP>

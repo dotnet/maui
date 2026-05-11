@@ -1143,14 +1143,17 @@ stages:
               $aggScript = ".github/scripts/shared/Aggregate-UITestArtifacts.ps1"
               if (-not (Test-Path $aggScript)) { throw "$aggScript missing" }
 
-              # The aggregator normally calls `az pipelines runs artifact list`.
-              # Here we already have the artifact downloaded — invoke its
-              # internal directory-walker function directly.
+              # Dot-source shared functions (no Invoke-Expression)
+              . .github/scripts/shared/Get-TrxResults.ps1
               $aggSrc = Get-Content -Raw -Path $aggScript
-              $reviewSrc = Get-Content -Raw -Path .github/scripts/Review-PR.ps1
-              foreach ($fn in @('Get-TrxResults','Get-CategoryFromArtifactName','Get-AggregatedTrxFromDirectory')) {
-                $rx = [regex]::Match(($aggSrc + "`n" + $reviewSrc), "(?ms)^function\s+$fn\s*\{.*?^\}", 'Multiline')
-                if ($rx.Success) { Invoke-Expression $rx.Value }
+              foreach ($fn in @('Get-CategoryFromArtifactName','Get-AggregatedTrxFromDirectory')) {
+                $fnFile = ".github/scripts/shared/$fn.ps1"
+                if (Test-Path $fnFile) { . $fnFile }
+                else {
+                  # Functions defined inline in Aggregate script — extract via regex as fallback
+                  $rx = [regex]::Match($aggSrc, "(?ms)^function\s+$fn\s*\{.*?^\}", 'Multiline')
+                  if ($rx.Success) { Invoke-Expression $rx.Value }
+                }
               }
               $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
               if (-not $byCat -or $byCat.Count -eq 0) {
@@ -1257,6 +1260,18 @@ stages:
 
               if ($isDeferred) {
                 # ── DEFERRED MODE: Post full comment with deep results included ──
+                # Guard against duplicate comments on pipeline retry: check if
+                # an AI Summary comment already exists for this PR.
+                $existingComment = gh api "repos/dotnet/maui/issues/$prNumber/comments" --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -Last 1
+                if ($existingComment) {
+                  Write-Host "Existing AI Summary comment found ($existingComment) — will PATCH instead of creating new"
+                  $commentId = $existingComment
+                  $isDeferred = $false
+                }
+              }
+
+              if ($isDeferred) {
+                # ── DEFERRED MODE (first run): Post full comment ──
                 # Find the PRAgent content dir from CopilotLogs artifact
                 $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
                 if (-not $prAgentDir) {

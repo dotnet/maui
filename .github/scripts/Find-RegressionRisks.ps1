@@ -300,6 +300,17 @@ function Get-PRMetadataIfBugFix {
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
+# Validate gh authentication before making any API calls.
+# Silent auth failures would cause every PR lookup to return empty,
+# producing a false CLEAN result for risky PRs.
+$authCheck = gh auth status 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ GitHub CLI not authenticated. Cannot reliably analyze regression risks." -ForegroundColor Red
+    Write-Host "   Run 'gh auth login' or set GH_TOKEN. Auth output:" -ForegroundColor Red
+    Write-Host "   $authCheck" -ForegroundColor Gray
+    exit 2
+}
+
 Write-Banner "Regression Cross-Reference — PR #$PRNumber"
 
 # Resolve files
