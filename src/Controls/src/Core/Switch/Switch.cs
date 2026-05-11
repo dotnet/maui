@@ -52,7 +52,11 @@ namespace Microsoft.Maui.Controls
 			});
 
 		/// <summary>Bindable property for <see cref="ThumbColor"/>. This is a bindable property.</summary>
-		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null);
+		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null,
+			propertyChanged: (bindable, oldValue, newValue) =>
+			{
+				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.ThumbColor));
+			});
 
 		/// <summary>
 		/// Gets or sets the color of the switch track when it is in the on position.

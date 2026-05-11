@@ -160,5 +160,73 @@ namespace Microsoft.Maui.DeviceTests
 				await ValidateTrackSubViewExists(switchStub);
 			});
 		}
+
+		[Theory(DisplayName = "Custom Colors Use Sliding Style On iOS 26")]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task CustomColorsUseSlidingStyleOniOS26(bool hasTrackColor, bool hasThumbColor)
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return;
+			}
+
+			var switchStub = new SwitchStub
+			{
+				TrackColor = hasTrackColor ? Colors.Red : null,
+				ThumbColor = hasThumbColor ? Colors.Orange : null
+			};
+
+			var styles = await GetValueAsync(switchStub, handler =>
+			{
+				var nativeSwitch = GetNativeSwitch(handler);
+				return (nativeSwitch.PreferredStyle, nativeSwitch.Style);
+			});
+
+			Assert.Equal(UISwitchStyle.Sliding, styles.PreferredStyle);
+			Assert.Equal(UISwitchStyle.Sliding, styles.Style);
+		}
+
+		[Fact(DisplayName = "Default Switch Uses Automatic Style On iOS 26")]
+		public async Task DefaultSwitchUsesAutomaticStyleOniOS26()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return;
+			}
+
+			var switchStub = new SwitchStub();
+
+			var style = await GetValueAsync(switchStub, handler => GetNativeSwitch(handler).PreferredStyle);
+
+			Assert.Equal(UISwitchStyle.Automatic, style);
+		}
+
+		[Fact(DisplayName = "Thumb Color Clears Correctly")]
+		public async Task ThumbColorClearsCorrectly()
+		{
+			var switchStub = new SwitchStub
+			{
+				ThumbColor = Colors.Red
+			};
+
+			var result = await GetValueAsync(switchStub, handler =>
+			{
+				Assert.NotNull(GetNativeSwitch(handler).ThumbTintColor);
+				switchStub.ThumbColor = null;
+				handler.UpdateValue(nameof(ISwitch.ThumbColor));
+				var nativeSwitch = GetNativeSwitch(handler);
+				return (nativeSwitch.ThumbTintColor, nativeSwitch.PreferredStyle);
+			});
+
+			Assert.Null(result.ThumbTintColor);
+
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				Assert.Equal(UISwitchStyle.Automatic, result.PreferredStyle);
+			}
+		}
+
 	}
 }

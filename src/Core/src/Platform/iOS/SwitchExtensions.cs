@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using CoreFoundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -19,6 +21,18 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
+
+			uiSwitch.ApplyTrackColor(view);
+
+			if (styleChanged)
+			{
+				uiSwitch.ReapplyColorsAfterStyleUpdate(view);
+			}
+		}
+
+		static void ApplyTrackColor(this UISwitch uiSwitch, ISwitch view)
+		{
 			var uIView = GetTrackSubview(uiSwitch);
 
 			if (uIView is null)
@@ -62,9 +76,68 @@ namespace Microsoft.Maui.Platform
 			if (view == null)
 				return;
 
-			Graphics.Color thumbColor = view.ThumbColor;
-			if (thumbColor != null)
-				uiSwitch.ThumbTintColor = thumbColor?.ToPlatform();
+			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
+			uiSwitch.ApplyThumbColor(view);
+
+			if (styleChanged)
+			{
+				uiSwitch.ReapplyColorsAfterStyleUpdate(view);
+			}
+		}
+
+		static void ApplyThumbColor(this UISwitch uiSwitch, ISwitch view)
+		{
+			uiSwitch.ThumbTintColor = view.ThumbColor?.ToPlatform();
+		}
+
+		static bool UpdatePreferredStyle(this UISwitch uiSwitch, ISwitch view)
+		{
+#if IOS
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return false;
+			}
+
+			var preferredStyle = view.TrackColor is not null || view.ThumbColor is not null
+				? UISwitchStyle.Sliding
+				: UISwitchStyle.Automatic;
+
+			if (uiSwitch.PreferredStyle != preferredStyle)
+			{
+				uiSwitch.PreferredStyle = preferredStyle;
+				uiSwitch.SetNeedsLayout();
+				uiSwitch.LayoutIfNeeded();
+				return true;
+			}
+#endif
+			return false;
+		}
+
+		static void ReapplyColorsAfterStyleUpdate(this UISwitch uiSwitch, ISwitch view)
+		{
+#if IOS
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return;
+			}
+
+			// UIKit may rebuild the switch's internal views after PreferredStyle changes,
+			// so reapply colors after its next layout pass.
+			DispatchQueue.MainQueue.DispatchAsync(async () =>
+			{
+				await Task.Delay(10);
+
+				if (uiSwitch.Handle == IntPtr.Zero)
+				{
+					return;
+				}
+
+				uiSwitch.SetNeedsLayout();
+				uiSwitch.LayoutIfNeeded();
+				uiSwitch.ApplyTrackColor(view);
+				uiSwitch.ApplyThumbColor(view);
+			});
+#endif
 		}
 
 		internal static UIView? GetTrackSubview(this UISwitch uISwitch)
