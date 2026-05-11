@@ -122,6 +122,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return ItemViewType.TextItem;
 		}
 
+		public override void OnDetachedFromRecyclerView(RecyclerView recyclerView)
+		{
+			// Detach can happen before adapter disposal; ensure tracked templated holders
+			// are torn down when this adapter is no longer attached to a RecyclerView.
+			DisconnectTemplatedViewHolders();
+			base.OnDetachedFromRecyclerView(recyclerView);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (!_disposed)
