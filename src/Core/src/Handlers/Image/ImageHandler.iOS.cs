@@ -80,5 +80,5 @@ namespace Microsoft.Maui.Handlers
 			!Dimension.IsExplicitSet(image.Height) ||
 			image.HorizontalLayoutAlignment != LayoutAlignment.Fill ||
 			image.VerticalLayoutAlignment != LayoutAlignment.Fill;
-		}
 	}
+}
