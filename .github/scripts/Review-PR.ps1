@@ -371,13 +371,75 @@ function Get-DotNetTestResults {
 # any console-scrape ambiguity. STEP 3 prefers TRX when available because
 # parsing console output is fragile when many tests run, lines wrap, or
 # multi-line ErrorRecords get glued together by PowerShell stream merging.
-# Get-TrxResults: dot-source from shared file (single source of truth)
-$_trxHelperPath = Join-Path $PSScriptRoot "shared/Get-TrxResults.ps1"
-if (-not (Test-Path $_trxHelperPath)) {
-    # Fallback: resolve relative to repo root (when $PSScriptRoot is empty, e.g. Copilot CLI)
-    $_trxHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Get-TrxResults.ps1"
+# Get-TrxResults: defined inline because Review-PR.ps1 is invoked by
+# Copilot CLI in a way that breaks dot-sourcing ($PSScriptRoot empty).
+# The canonical copy lives in shared/Get-TrxResults.ps1 for Stage 3.
+function Get-TrxResults {
+    param([string]$TrxPath)
+
+    if (-not $TrxPath -or -not (Test-Path $TrxPath)) {
+        return $null
+    }
+
+    try {
+        [xml]$trx = Get-Content -Path $TrxPath -Raw -Encoding UTF8
+    } catch {
+        Write-Host "    ⚠️ Failed to parse TRX $TrxPath : $_" -ForegroundColor Yellow
+        return $null
+    }
+
+    $ns = New-Object System.Xml.XmlNamespaceManager($trx.NameTable)
+    $ns.AddNamespace('t', 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010')
+
+    $countersNode = $trx.SelectSingleNode('//t:ResultSummary/t:Counters', $ns)
+    $total = 0; $passed = 0; $failed = 0; $skipped = 0
+    if ($countersNode) {
+        $total   = [int]($countersNode.GetAttribute('total'))
+        $passed  = [int]($countersNode.GetAttribute('passed'))
+        $failed  = [int]($countersNode.GetAttribute('failed'))
+        $executed = [int]($countersNode.GetAttribute('executed'))
+        $skipped  = [Math]::Max(0, $total - $executed)
+    }
+
+    $entries = New-Object System.Collections.ArrayList
+    $resultNodes = $trx.SelectNodes('//t:UnitTestResult', $ns)
+    foreach ($r in $resultNodes) {
+        $name = $r.GetAttribute('testName')
+        $outcomeAttr = $r.GetAttribute('outcome')
+        $status = switch ($outcomeAttr) {
+            'Passed'       { 'Passed' }
+            'Failed'       { 'Failed' }
+            'NotExecuted'  { 'Skipped' }
+            'Inconclusive' { 'Skipped' }
+            default        { $outcomeAttr }
+        }
+        $duration = $r.GetAttribute('duration')
+        $err = ''; $stack = ''
+        $errInfo = $r.SelectSingleNode('t:Output/t:ErrorInfo', $ns)
+        if ($errInfo) {
+            $msgNode   = $errInfo.SelectSingleNode('t:Message', $ns)
+            $stackNode = $errInfo.SelectSingleNode('t:StackTrace', $ns)
+            if ($msgNode)   { $err   = $msgNode.InnerText.Trim() }
+            if ($stackNode) { $stack = $stackNode.InnerText.Trim() }
+        }
+        [void]$entries.Add([ordered]@{
+            status   = $status
+            name     = $name
+            duration = $duration
+            error    = $err
+            stack    = $stack
+        })
+    }
+
+    return @{
+        Total   = $total
+        Passed  = $passed
+        Failed  = $failed
+        Skipped = $skipped
+        Results = @($entries.ToArray())
+        TrxPath = $TrxPath
+    }
 }
-. $_trxHelperPath
 
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
