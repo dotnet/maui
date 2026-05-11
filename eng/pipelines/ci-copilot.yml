@@ -1079,7 +1079,7 @@ stages:
             condition: succeededOrFailed()
 
   # ─────────────────────────────────────────────────────────────────────────────
-  #  STAGE: UpdateAISummaryComment
+  #  STAGE: PostAISummaryComment
   # ─────────────────────────────────────────────────────────────────────────────
   # Final stage. Depends on both ReviewPR (which posted the initial AI
   # summary comment and emitted aiSummaryCommentId) and RunDeepUITests
@@ -1088,14 +1088,14 @@ stages:
   # the existing PR comment to replace the in-process STEP 3 section
   # with the deep-test results.
   - stage: UpdateAISummaryComment
-    displayName: 'Update AI Summary with Deep UI Test Results'
+    displayName: 'Post AI Summary Comment'
     dependsOn:
       - ReviewPR
       - RunDeepUITests
     condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''))
     jobs:
       - job: UpdateComment
-        displayName: 'Edit AI summary comment with deep test results'
+        displayName: 'Post AI summary with review + deep test results'
         # Job-level variables can use $[ stageDependencies... ] (cross-stage,
         # job context). The stage condition above already gated emptiness;
         # this just makes the value available as $(aiSummaryCommentId)
@@ -1341,6 +1341,6 @@ stages:
                 gh api -X PATCH "repos/dotnet/maui/issues/comments/$commentId" --input $tmp.FullName | Out-Null
                 Write-Host "✅ Patched comment $commentId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
               }
-            displayName: 'Post/Update AI summary comment with deep results'
+            displayName: 'Post AI summary comment'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
