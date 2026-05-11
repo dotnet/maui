@@ -16,9 +16,9 @@ public class Issue34318 : _IssuesUITest
 	{
 		App.WaitForElement("ChangeContentButton");
 
-		App.WaitForElement("ResultLabelB");
+		App.WaitForElement("ResultLabelA");
 
-		var initialText = App.FindElement("ResultLabelB").GetText() ?? string.Empty;
+		var initialText = App.FindElement("ResultLabelA").GetText() ?? string.Empty;
 		Assert.That(initialText, Is.EqualTo("Waiting"));
 
 		App.Tap("ChangeContentButton");
@@ -28,5 +28,10 @@ public class Issue34318 : _IssuesUITest
 		var result = App.WaitForTextToBePresentInElement("ResultLabelB", "Navigating");
 
 		Assert.That(result, Is.True, "Navigating event should have fired and updated the label text");
+
+		var countText = App.FindElement("NavigatingCountLabel").GetText() ?? string.Empty;
+
+		Assert.That(countText, Is.EqualTo("1"),
+			"Navigating event should fire exactly once, not multiple times");
 	}
 }

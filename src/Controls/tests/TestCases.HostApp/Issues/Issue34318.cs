@@ -9,6 +9,8 @@ public class Issue34318 : Shell
 {
 	Label labelA;
 	Label labelB;
+	Label navigatingCountLabel;
+	int navigatingCount;
 
 	public Issue34318()
 	{
@@ -22,6 +24,12 @@ public class Issue34318 : Shell
 		{
 			Text = "Waiting",
 			AutomationId = "ResultLabelB"
+		};
+
+		navigatingCountLabel = new Label
+		{
+			Text = "0",
+			AutomationId = "NavigatingCountLabel"
 		};
 
 		var section = new ShellSection();
@@ -47,7 +55,8 @@ public class Issue34318 : Shell
 							Text = "Page B",
 							AutomationId = "PageBLabel"
 						},
-						labelB
+						labelB,
+						navigatingCountLabel
 					}
 				}
 			}
@@ -65,8 +74,11 @@ public class Issue34318 : Shell
 		{
 			MainThread.BeginInvokeOnMainThread(() =>
 			{
+				navigatingCount++;
+
 				labelA.Text = "Navigating";
 				labelB.Text = "Navigating";
+				navigatingCountLabel.Text = navigatingCount.ToString();
 			});
 		};
 	}
