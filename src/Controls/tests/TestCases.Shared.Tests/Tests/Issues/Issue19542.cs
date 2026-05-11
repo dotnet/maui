@@ -16,8 +16,9 @@ public class Issue19542 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void FlyoutItemShouldTakeFullWidth()
 	{
-		// Wait for the main page content to confirm navigation succeeded
-		App.WaitForElement("Label19542");
+		// Open the flyout via button and take screenshot
+		App.WaitForElement("OpenFlyoutButton");
+		App.Tap("OpenFlyoutButton");
 
 		VerifyScreenshot();
 	}

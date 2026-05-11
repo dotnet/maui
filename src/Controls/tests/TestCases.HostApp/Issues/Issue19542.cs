@@ -5,8 +5,6 @@ public class Issue19542 : TestShell
 {
 	protected override void Init()
 	{
-		FlyoutBehavior = FlyoutBehavior.Locked;
-
 		// Set custom item template
 		ItemTemplate = new DataTemplate(() =>
 		{
@@ -63,12 +61,26 @@ public class Issue19542 : TestShell
 		{
 			ContentTemplate = new DataTemplate(() =>
 			{
+				var openFlyoutButton = new Button
+				{
+					AutomationId = "OpenFlyoutButton",
+					Text = "Open Flyout",
+					Command = new Command(() => Shell.Current.FlyoutIsPresented = true)
+				};
+
 				return new ContentPage
 				{
-					Content = new Label
+					Content = new VerticalStackLayout
 					{
-						AutomationId = "Label19542",
-						Text = "Test passes if flyout item takes full width",
+						Children =
+						{
+							new Label
+							{
+								AutomationId = "Label19542",
+								Text = "Test passes if flyout item takes full width",
+							},
+							openFlyoutButton
+						}
 					}
 				};
 			})
