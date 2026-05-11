@@ -12,8 +12,7 @@ namespace Maui.Controls.Sample.Services;
 /// Uses the workflow-as-agent pattern for a cleaner, more unified API.
 /// </summary>
 public class ItineraryService(
-	[FromKeyedServices("itinerary-workflow-agent")] AIAgent workflowAgent,
-	LanguagePreferenceService languagePreference)
+	[FromKeyedServices("itinerary-workflow-agent")] AIAgent workflowAgent)
 {
 	private static readonly JsonSerializerOptions s_jsonOptions = new()
 	{
@@ -21,27 +20,6 @@ public class ItineraryService(
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 		Converters = { new JsonStringEnumConverter() },
 	};
-
-	/// <summary>
-	/// Streams an itinerary for a specific landmark (legacy UI-driven flow).
-	/// Constructs a natural language request from the parameters.
-	/// </summary>
-	public async IAsyncEnumerable<ItineraryStreamUpdate> StreamItineraryAsync(
-		Landmark landmark,
-		int dayCount,
-		[EnumeratorCancellation] CancellationToken cancellationToken = default)
-	{
-		// Build natural language request from UI parameters
-		var language = languagePreference.SelectedLanguage;
-		var userRequest = language.Equals("English", StringComparison.OrdinalIgnoreCase)
-			? $"Create a {dayCount}-day itinerary for {landmark.Name}"
-			: $"Create a {dayCount}-day itinerary for {landmark.Name} in {language}";
-
-		await foreach (var update in StreamItineraryAsync(userRequest, cancellationToken))
-		{
-			yield return update;
-		}
-	}
 
 	/// <summary>
 	/// Streams an itinerary from a natural language request.
