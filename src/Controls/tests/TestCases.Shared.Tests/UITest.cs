@@ -667,6 +667,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				// Kill other common system dialog processes
 				ShellHelper.ExecuteShellCommand("killall 'UserNotificationCenter' 2>/dev/null || true");
 				ShellHelper.ExecuteShellCommand("killall 'CoreServicesUIAgent' 2>/dev/null || true");
+				// Dismiss notification banners (e.g., "See what's new in macOS" on fresh CI machines)
+				ShellHelper.ExecuteShellCommand("killall 'NotificationCenter' 2>/dev/null || true");
 			}
 			catch
 			{
