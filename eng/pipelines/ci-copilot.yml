@@ -673,6 +673,7 @@ stages:
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
+              DEFER_COMMENT_TO_STAGE3: "true"
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
@@ -1109,24 +1110,30 @@ stages:
           - checkout: self
 
           - task: DownloadPipelineArtifact@2
+            displayName: 'Download CopilotLogs'
+            inputs:
+              buildType: 'current'
+              artifactName: 'CopilotLogs'
+              targetPath: '$(Pipeline.Workspace)/CopilotLogs'
+
+          - task: DownloadPipelineArtifact@2
             displayName: 'Download drop-deep-uitests'
             inputs:
               buildType: 'current'
               artifactName: 'drop-deep-uitests'
               targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
+            continueOnError: true
 
           - pwsh: |
               $ErrorActionPreference = 'Continue'
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
-              $commentId = "$(aiSummaryCommentId)"
+              $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "${{ parameters.PRNumber }}"
+              $commentId = "$(aiSummaryCommentId)"
+              $isDeferred = ($commentId -eq 'DEFERRED')
 
               if ([string]::IsNullOrWhiteSpace($commentId)) {
-                Write-Host "No AI summary comment ID — nothing to edit"
-                exit 0
-              }
-              if (-not (Test-Path $artDir)) {
-                Write-Host "drop-deep-uitests not present at $artDir — nothing to update"
+                Write-Host "No AI summary comment ID — nothing to do"
                 exit 0
               }
 
@@ -1244,50 +1251,87 @@ stages:
               $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
               $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $($byCat.Count) categor$(if ($byCat.Count -eq 1) {'y'} else {'ies'}) on platform-pool agent (replaces in-process counts above)."
 
-              # Fetch the existing comment body and splice in the deep
-              # section. We wrap the deep section in HTML comment markers
-              # so subsequent builds REPLACE (not append) — preventing the
-              # "Deep UI tests appears 3 times" duplication observed when
-              # multiple builds run on the same PR.
-              $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join "`n"
-              if ([string]::IsNullOrWhiteSpace($existing)) {
-                Write-Host "Could not fetch comment body — aborting"
-                exit 0
-              }
-
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
               $deepBlock   = "$beginMarker`n$headerLine`n$($sb.ToString())$endMarker"
 
-              $beginIdx = $existing.IndexOf($beginMarker)
-              $endIdx   = $existing.IndexOf($endMarker)
-              if ($beginIdx -ge 0 -and $endIdx -gt $beginIdx) {
-                # Already wrapped — replace the block in place.
-                $before = $existing.Substring(0, $beginIdx).TrimEnd()
-                $after  = $existing.Substring($endIdx + $endMarker.Length).TrimStart()
-                $newBody = $before + "`n`n" + $deepBlock + $(if ($after) { "`n`n" + $after } else { "" })
-              } else {
-                # Strip any pre-existing unwrapped "Deep UI tests" lines and
-                # the legacy in-process table marker, then append the wrapped
-                # block. This recovers cleanly from comments that were
-                # written by older runs that didn't use the markers.
-                $cleaned = $existing -split "`n" | Where-Object {
-                  $_ -notmatch '^\s*[❌✅⏭️]\s*\*\*Deep UI tests\*\*'
-                }
-                $cleanedBody = ($cleaned -join "`n")
-                $legacyMarker = '### 🧪 UI Test Execution Results'
-                $idx = $cleanedBody.IndexOf($legacyMarker)
-                $newBody = if ($idx -ge 0) {
-                  $cleanedBody.Substring(0, $idx).TrimEnd() + "`n`n" + $deepBlock
+              if ($isDeferred) {
+                # ── DEFERRED MODE: Post full comment with deep results included ──
+                # Find the PRAgent content dir from CopilotLogs artifact
+                $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
+                if (-not $prAgentDir) {
+                  Write-Host "PRAgent directory not found in CopilotLogs — falling back to posting deep results only"
                 } else {
-                  $cleanedBody.TrimEnd() + "`n`n" + $deepBlock
-                }
-              }
+                  # Append deep results to uitests/content.md so post-ai-summary-comment.ps1 includes them
+                  $uitestContent = Join-Path $prAgentDir.FullName "uitests/content.md"
+                  if (Test-Path $uitestContent) {
+                    $existing = Get-Content $uitestContent -Raw
+                    "$existing`n`n$deepBlock" | Set-Content $uitestContent -Encoding UTF8
+                    Write-Host "Appended deep results to $uitestContent"
+                  } else {
+                    New-Item -ItemType Directory -Force -Path (Join-Path $prAgentDir.FullName "uitests") | Out-Null
+                    "**Deep UI Test Results**`n`n$deepBlock" | Set-Content $uitestContent -Encoding UTF8
+                  }
 
-              $tmp = New-TemporaryFile
-              @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
-              gh api -X PATCH "repos/dotnet/maui/issues/comments/$commentId" --input $tmp.FullName | Out-Null
-              Write-Host "✅ Patched comment $commentId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
-            displayName: 'Aggregate TRX + edit AI summary comment'
+                  # Copy PRAgent dir to expected location for post-ai-summary-comment.ps1
+                  $targetDir = "CustomAgentLogsTmp/PRState/$prNumber/PRAgent"
+                  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetDir) | Out-Null
+                  Copy-Item -Path $prAgentDir.FullName -Destination $targetDir -Recurse -Force
+
+                  # Post the full comment
+                  $postScript = ".github/scripts/post-ai-summary-comment.ps1"
+                  if (Test-Path $postScript) {
+                    Write-Host "Posting full AI summary comment with deep results..."
+                    $output = & $postScript -PRNumber $prNumber
+                    $output | ForEach-Object { Write-Host $_ }
+                    Write-Host "✅ Full AI summary comment posted with deep results"
+                  }
+
+                  # Apply labels
+                  $labelScript = ".github/scripts/shared/Update-AgentLabels.ps1"
+                  if (Test-Path $labelScript) {
+                    try {
+                      . $labelScript
+                      Apply-AgentLabels -PRNumber $prNumber -RepoRoot (Get-Location).Path
+                      Write-Host "✅ Labels applied"
+                    } catch {
+                      Write-Host "⚠️ Label application failed: $_"
+                    }
+                  }
+                }
+              } else {
+                # ── PATCH MODE: Update existing comment with deep results ──
+                $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join "`n"
+                if ([string]::IsNullOrWhiteSpace($existing)) {
+                  Write-Host "Could not fetch comment body — aborting"
+                  exit 0
+                }
+
+                $beginIdx = $existing.IndexOf($beginMarker)
+                $endIdx   = $existing.IndexOf($endMarker)
+                if ($beginIdx -ge 0 -and $endIdx -gt $beginIdx) {
+                  $before = $existing.Substring(0, $beginIdx).TrimEnd()
+                  $after  = $existing.Substring($endIdx + $endMarker.Length).TrimStart()
+                  $newBody = $before + "`n`n" + $deepBlock + $(if ($after) { "`n`n" + $after } else { "" })
+                } else {
+                  $cleaned = $existing -split "`n" | Where-Object {
+                    $_ -notmatch '^\s*[❌✅⏭️]\s*\*\*Deep UI tests\*\*'
+                  }
+                  $cleanedBody = ($cleaned -join "`n")
+                  $legacyMarker = '### 🧪 UI Test Execution Results'
+                  $idx = $cleanedBody.IndexOf($legacyMarker)
+                  $newBody = if ($idx -ge 0) {
+                    $cleanedBody.Substring(0, $idx).TrimEnd() + "`n`n" + $deepBlock
+                  } else {
+                    $cleanedBody.TrimEnd() + "`n`n" + $deepBlock
+                  }
+                }
+
+                $tmp = New-TemporaryFile
+                @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
+                gh api -X PATCH "repos/dotnet/maui/issues/comments/$commentId" --input $tmp.FullName | Out-Null
+                Write-Host "✅ Patched comment $commentId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
+              }
+            displayName: 'Post/Update AI summary comment with deep results'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
