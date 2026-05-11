@@ -1145,16 +1145,8 @@ stages:
 
               # Dot-source shared functions (no Invoke-Expression)
               . .github/scripts/shared/Get-TrxResults.ps1
-              $aggSrc = Get-Content -Raw -Path $aggScript
-              foreach ($fn in @('Get-CategoryFromArtifactName','Get-AggregatedTrxFromDirectory')) {
-                $fnFile = ".github/scripts/shared/$fn.ps1"
-                if (Test-Path $fnFile) { . $fnFile }
-                else {
-                  # Functions defined inline in Aggregate script — extract via regex as fallback
-                  $rx = [regex]::Match($aggSrc, "(?ms)^function\s+$fn\s*\{.*?^\}", 'Multiline')
-                  if ($rx.Success) { Invoke-Expression $rx.Value }
-                }
-              }
+              . .github/scripts/shared/Get-CategoryFromArtifactName.ps1
+              . .github/scripts/shared/Get-AggregatedTrxFromDirectory.ps1
               $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
               if (-not $byCat -or $byCat.Count -eq 0) {
                 Write-Host "Aggregator returned no categories — leaving comment as-is"
@@ -1262,7 +1254,7 @@ stages:
                 # ── DEFERRED MODE: Post full comment with deep results included ──
                 # Guard against duplicate comments on pipeline retry: check if
                 # an AI Summary comment already exists for this PR.
-                $existingComment = gh api "repos/dotnet/maui/issues/$prNumber/comments" --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -Last 1
+                $existingComment = gh api "repos/dotnet/maui/issues/$prNumber/comments?per_page=100" --paginate --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -Last 1
                 if ($existingComment) {
                   Write-Host "Existing AI Summary comment found ($existingComment) — will PATCH instead of creating new"
                   $commentId = $existingComment
