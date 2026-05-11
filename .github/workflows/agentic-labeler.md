@@ -26,13 +26,9 @@ permissions:
 
 network: defaults
 
-engine:
-  id: copilot
-  model: claude-sonnet-4.6
-
 safe-outputs:
   add-labels:
-    max: 5
+    max: 10
 
 tools:
   github:
@@ -42,7 +38,7 @@ concurrency:
   group: "agentic-labeler-${{ github.event.issue.number || github.event.pull_request.number || inputs.issue_number || github.run_id }}"
   cancel-in-progress: false
 
-timeout-minutes: 8
+timeout-minutes: 15
 ---
 
 # Agentic Labeler
@@ -68,16 +64,11 @@ Repository: `${{ github.repository }}`
    - For PRs, also fetch the list of changed files using `get_pull_request_files` (or equivalent).
    - You may search related issues with `search_issues` if the report is ambiguous and you need disambiguation, but keep this lightweight.
 
-3. **Select labels** from the allowed list below. Do **not** invent labels or apply labels not in this list — they will be rejected.
+3. **Select labels** from the repository's existing labels.
 
-   **Allowed labels:**
-
-   - **Platform:** `platform/android`, `platform/ios`, `platform/macos`, `platform/windows`, `platform/linux`, `platform/tizen`
-   - **Cross-cutting areas:** `area-animation`, `area-architecture`, `area-blazor`, `area-docs`, `area-drawing`, `area-essentials`, `area-fonts`, `area-gestures`, `area-image`, `area-infrastructure`, `area-keyboard`, `area-layout`, `area-localization`, `area-navigation`, `area-publishing`, `area-setup`, `area-single-project`, `area-templates`, `area-testing`, `area-theme`, `area-tooling`, `area-xaml`
-   - **Core:** `area-core-dispatching`, `area-core-hosting`, `area-core-lifecycle`, `area-core-platform`
-   - **Controls:** `area-controls-activityindicator`, `area-controls-border`, `area-controls-button`, `area-controls-checkbox`, `area-controls-collectionview`, `area-controls-contextmenu`, `area-controls-datetimepicker`, `area-controls-dialogalert`, `area-controls-entry`, `area-controls-flyout`, `area-controls-flyoutpage`, `area-controls-frame`, `area-controls-general`, `area-controls-image`, `area-controls-label`, `area-controls-listview`, `area-controls-map`, `area-controls-menubar`, `area-controls-modal`, `area-controls-newcontrol`, `area-controls-pages`, `area-controls-picker`, `area-controls-progressbar`, `area-controls-radiobutton`, `area-controls-refreshview`, `area-controls-scrollview`, `area-controls-shell`, `area-controls-slider`, `area-controls-stepper`, `area-controls-swipeview`, `area-controls-switch`, `area-controls-tabbedpage`, `area-controls-titleview`, `area-controls-toolbar`, `area-controls-twopaneview`, `area-controls-webview`, `area-controls-window`
-
-   You may additionally fetch the live label list with `gh label list` if you want to double-check, but only emit labels that exist in the list above.
+   - Fetch the current list of labels with `gh label list --limit 300` (bash) and choose from that list.
+   - You may apply **any** existing label, not just `area-*` and `platform/*` — for example, severity (`high impact`, `regression`), kind (`bug`, `proposal`, `enhancement`, `documentation`), or status labels — when clearly justified by the content.
+   - Do **not** create new labels. Only labels that already exist in the repository will be accepted.
 
 4. **Apply the labels** using the `add-labels` safe-output. If nothing is clearly applicable, apply nothing — it is better to add no labels than to add wrong ones.
 
@@ -128,11 +119,11 @@ Notes:
 
 ### What NOT to do
 
-- Do **not** add labels that are not in the allowed list.
+- Do **not** create new labels — apply only labels that already exist in the repository.
 - Do **not** add `platform/*` labels to PRs that don't touch platform-specific files.
 - Do **not** post a comment summarizing the labels — labels speak for themselves.
 - Do **not** close, lock, or otherwise modify the issue/PR beyond labeling.
-- Do **not** apply more than ~5 labels. Be conservative; precision beats recall.
+- Be conservative; precision beats recall. Up to 10 labels are allowed, but only apply ones that clearly fit.
 
 ## Output
 
