@@ -28,7 +28,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	FrameworkElement? _footer;
 
 	WStackPanel? _containerPanel;
-	FrameworkElement? _itemsRepeater;
+	ItemsRepeater? _itemsRepeater;
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
 
@@ -44,10 +44,10 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Fixes: https://github.com/dotnet/maui/issues/13197
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 		var zeroCornerRadius = new Microsoft.UI.Xaml.CornerRadius(0);
-		
+
 		// Set the control's CornerRadius property directly
 		CornerRadius = zeroCornerRadius;
-		
+
 		// Override theme resources that control corner radius for ItemsView and its children
 		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
@@ -155,8 +155,14 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
 		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
-		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
+		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as ItemsRepeater;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
+
+		// Wire up drag/drop now that template parts are available (no-op if reorder disabled).
+		if (_canReorderItems && _scrollViewer is not null)
+		{
+			WireUpDragDropEvents();
+		}
 
 		if (_emptyViewContentControl is not null)
 		{
