@@ -26,7 +26,6 @@ internal partial class MauiItemsView
 	ItemsView? _mauiVirtualView;
 
 	// Auto-scroll fields
-	bool _isHorizontalLayout;
 	Microsoft.UI.Dispatching.DispatcherQueueTimer? _autoScrollTimer;
 	double _targetScrollVelocity;
 	double _currentScrollVelocity;
@@ -698,7 +697,7 @@ internal partial class MauiItemsView
 
 		var position = e.GetPosition(repeater);
 
-		var elements = VisualTreeHelper.FindElementsInHostCoordinate(
+		var elements = VisualTreeHelper.FindElementsInHostCoordinates(
 			repeater.TransformToVisual(null).TransformPoint(position),
 			repeater,
 			false);
