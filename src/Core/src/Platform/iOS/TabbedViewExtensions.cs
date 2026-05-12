@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Platform
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		internal static void UpdateiOS15TabBarAppearance(
 			this UITabBar tabBar,
 			ref UITabBarAppearance _tabBarAppearance,
@@ -49,7 +50,24 @@ namespace Microsoft.Maui.Platform
 			// Set BarBackgroundColor
 			if (effectiveBarColor != null)
 			{
+				// Use ConfigureWithOpaqueBackground so the custom color overrides system glass/blur
+				// effects (e.g., Liquid Glass on iOS/MacCatalyst 26). ConfigureWithDefaultBackground
+				// enables a translucent blur that can visually override a custom BackgroundColor.
+				// This matches the behavior of ShellNavBarAppearanceTracker which also uses Opaque.
+				_tabBarAppearance.ConfigureWithOpaqueBackground();
 				_tabBarAppearance.BackgroundColor = effectiveBarColor;
+				_tabBarAppearance.BackgroundEffect = null;
+
+				// Fallback for platform-specific material rendering on MacCatalyst where
+				// appearance background can still be visually ignored.
+				tabBar.BackgroundColor = effectiveBarColor;
+				tabBar.BarTintColor = effectiveBarColor;
+			}
+			else
+			{
+				_tabBarAppearance.ConfigureWithDefaultBackground();
+				tabBar.BackgroundColor = null;
+				tabBar.BarTintColor = null;
 			}
 
 			// Set BarTextColor
@@ -152,7 +170,7 @@ namespace Microsoft.Maui.Platform
 				newSize.Width = isRegularTabBar ? regularSquareSize : compactSquareSize;
 				newSize.Height = newSize.Width;
 			}
-			
+             
 			return image.ResizeImageSource(newSize.Width, newSize.Height, new CGSize(image.Size.Width, image.Size.Height));
 		}
 	}
