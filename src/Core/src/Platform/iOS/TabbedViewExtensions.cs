@@ -51,8 +51,10 @@ namespace Microsoft.Maui.Platform
 			if (effectiveBarColor != null)
 			{
 				_tabBarAppearance.BackgroundColor = effectiveBarColor;
-				tabBar.BackgroundColor = effectiveBarColor;
-				tabBar.BarTintColor = effectiveBarColor;
+				if(OperatingSystem.IsIOSVersionAtLeast(26)|| OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+                    tabBar.BackgroundColor = effectiveBarColor;
+				}
 			}
 
 			// Set BarTextColor
