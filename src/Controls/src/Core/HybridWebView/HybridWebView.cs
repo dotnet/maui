@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 			{
 				_dotNetMethodProvider = provider;
 			}
-			else if (RuntimeFeature.IsHybridWebViewSupported)
+			else if (RuntimeFeature.IsHybridWebViewReflectionSupported)
 			{
 				_dotNetMethodProvider = new HybridWebViewReflectionDotNetMethodProvider(target, typeof(T));
 			}
