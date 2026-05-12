@@ -3,9 +3,9 @@ using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 using AndroidLocation = Android.Locations.Location;
 
-namespace Microsoft.Maui.Essentials.DeviceTests.Shared
+namespace Microsoft.Maui.Essentials.DeviceTests
 {
-	[Category("Android Geolocation")]
+	[Category("Geolocation")]
 	public class Android_Geolocation_Tests
 	{
 		[Fact]
