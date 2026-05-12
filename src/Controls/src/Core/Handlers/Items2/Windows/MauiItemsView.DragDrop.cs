@@ -275,14 +275,19 @@ internal partial class MauiItemsView
 
 		// Use the container's currently bound item first. The Tag/index can become
 		// stale after a reorder because the element is reused without being recreated.
-		var sourceList = GetSourceList();
 		object? item = GetContainerItem(itemContainer);
-		if (item is null && itemContainer.Tag is int index && sourceList is not null && index >= 0 && index < sourceList.Count)
+
+		// Fallback: look up by index from the source (works for IList and IEnumerable).
+		if (item is null && itemContainer.Tag is int index && index >= 0)
 		{
-			item = GetItemAtIndex(index, sourceList);
+			var sourceList = GetSourceList();
+			if (sourceList is not null && index < sourceList.Count)
+			{
+				item = GetItemAtIndex(index, sourceList);
+			}
 		}
 
-		if (item is null || sourceList is null)
+		if (item is null)
 		{
 			args.Cancel = true;
 			return;
@@ -387,21 +392,42 @@ internal partial class MauiItemsView
 		}
 		else
 		{
-			if (_mauiVirtualView.ItemsSource is not IList itemsList)
+			if (_mauiVirtualView.ItemsSource is IList itemsList)
 			{
-				CleanupDragState();
-				return;
-			}
-
-			try
-			{
-				bool reordered = PerformReorder(itemsList);
-				if (reordered)
+				try
 				{
-					ReorderCompleted?.Invoke(this, EventArgs.Empty);
+					bool reordered = PerformReorder(itemsList);
+					if (reordered)
+					{
+						ReorderCompleted?.Invoke(this, EventArgs.Empty);
+					}
+				}
+				finally
+				{
+					CleanupDragState();
 				}
 			}
-			finally
+			else if (_mauiVirtualView.ItemsSource is IEnumerable itemsEnumerable)
+			{
+				// For plain IEnumerable sources (non-IList), materialize into a new
+				// list, reorder it, then reassign ItemsSource so the change propagates
+				// back through the normal data-binding pipeline.
+				try
+				{
+					var materializedList = new System.Collections.Generic.List<object?>(itemsEnumerable.Cast<object?>());
+					bool reordered = PerformReorder(materializedList);
+					if (reordered)
+					{
+						_mauiVirtualView.ItemsSource = materializedList;
+						ReorderCompleted?.Invoke(this, EventArgs.Empty);
+					}
+				}
+				finally
+				{
+					CleanupDragState();
+				}
+			}
+			else
 			{
 				CleanupDragState();
 			}
@@ -441,13 +467,16 @@ internal partial class MauiItemsView
 		adjustedInsertionIndex = Math.Clamp(adjustedInsertionIndex, 0, itemsList.Count);
 		itemsList.Insert(adjustedInsertionIndex, itemToMove);
 
-		var finalIndex = adjustedInsertionIndex;
+		// Capture the moved item by reference so the async callback can find its
+		// container by identity. Using the index is unsafe — another reorder or
+		// collection change between now and the callback makes it stale.
+		var movedItem = itemToMove is ItemTemplateContext2 itc ? itc.Item : itemToMove;
 		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
 		{
 			ItemsRepeaterControl?.UpdateLayout();
 			UpdateAllContainerIndices();
 
-			var container = FindContainerByIndex(finalIndex);
+			var container = FindContainerByItem(movedItem);
 			container?.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = true });
 		});
 
@@ -616,7 +645,23 @@ internal partial class MauiItemsView
 		{
 			return list;
 		}
-		return _mauiVirtualView?.ItemsSource as IList;
+
+		var mauiSource = _mauiVirtualView?.ItemsSource;
+		if (mauiSource is IList mauiList)
+		{
+			return mauiList;
+		}
+
+		// For plain IEnumerable sources (non-IList), materialize a snapshot so that
+		// all index/count operations (wiring affordances, finding containers, etc.)
+		// work correctly. This snapshot is read-only — mutation reassigns ItemsSource
+		// directly in ScrollViewer_Drop for IEnumerable sources.
+		if (mauiSource is IEnumerable enumerable)
+		{
+			return enumerable.Cast<object>().ToList();
+		}
+
+		return null;
 	}
 
 	FrameworkElement? FindContainerUnderPointer(UI.Xaml.DragEventArgs e)
@@ -698,6 +743,22 @@ internal partial class MauiItemsView
 		}
 
 		return FindAllContainers().FirstOrDefault(c => GetContainerIndex(c) == index);
+	}
+
+	/// <summary>
+	/// Finds the realized container whose binding context equals <paramref name="targetItem"/>
+	/// by identity. Unlike <see cref="FindContainerByIndex"/>, this is safe to call from
+	/// an async callback because it does not rely on a captured index that may have been
+	/// invalidated by a subsequent collection change.
+	/// </summary>
+	FrameworkElement? FindContainerByItem(object? targetItem)
+	{
+		if (targetItem is null)
+		{
+			return null;
+		}
+
+		return FindAllContainers().FirstOrDefault(c => Equals(GetContainerItem(c), targetItem));
 	}
 
 	IEnumerable<FrameworkElement> FindAllContainers()
@@ -936,7 +997,10 @@ internal partial class MauiItemsView
 
 	void AutoScrollTimer_Tick(object? sender, object e)
 	{
-		if (_scrollViewer is null)
+		// Cache to a local so that a concurrent DisconnectHandler nulling _scrollViewer
+		// cannot produce a NullReferenceException between the null-check and ChangeView.
+		var scrollViewer = _scrollViewer;
+		if (scrollViewer is null)
 		{
 			StopAutoScroll();
 			return;
@@ -956,15 +1020,15 @@ internal partial class MauiItemsView
 		double newOffset;
 		if (_isHorizontalLayout)
 		{
-			newOffset = _scrollViewer.HorizontalOffset + _currentScrollVelocity;
-			newOffset = Math.Clamp(newOffset, 0, _scrollViewer.ScrollableWidth);
-			_scrollViewer.ChangeView(newOffset, _scrollViewer.VerticalOffset, null, disableAnimation: true);
+			newOffset = scrollViewer.HorizontalOffset + _currentScrollVelocity;
+			newOffset = Math.Clamp(newOffset, 0, scrollViewer.ScrollableWidth);
+			scrollViewer.ChangeView(newOffset, scrollViewer.VerticalOffset, null, disableAnimation: true);
 		}
 		else
 		{
-			newOffset = _scrollViewer.VerticalOffset + _currentScrollVelocity;
-			newOffset = Math.Clamp(newOffset, 0, _scrollViewer.ScrollableHeight);
-			_scrollViewer.ChangeView(_scrollViewer.HorizontalOffset, newOffset, null, disableAnimation: true);
+			newOffset = scrollViewer.VerticalOffset + _currentScrollVelocity;
+			newOffset = Math.Clamp(newOffset, 0, scrollViewer.ScrollableHeight);
+			scrollViewer.ChangeView(scrollViewer.HorizontalOffset, newOffset, null, disableAnimation: true);
 		}
 	}
 
