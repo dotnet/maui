@@ -648,13 +648,36 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is Page oldPage)
 			{
 #if ANDROID
-				// Covers the case where FlyoutPage is the direct Window.Page; nested
-				// FlyoutPage scenarios (e.g. NavigationPage containing a FlyoutPage) are not addressed.
-				(oldPage as FlyoutPage)?.ReleaseDrawerCallbackBeforePageChange();
+				// Release any DrawerLayout system-back callbacks in the outgoing page tree
+				// before the page is torn down, so they cannot shadow the incoming page's
+				// back handlers on Android 16 (API 36+).
+				// This must happen before SendDisappearing so all callbacks are gone before
+				// the framework begins dismantling the outgoing page tree.
+				ReleaseFlyoutDrawerCallbacks(oldPage);
 #endif
 				oldPage.SendDisappearing();
 			}
 		}
+
+#if ANDROID
+		// Walks the outgoing page tree and releases the DrawerLayout system-back callback
+		// on every FlyoutViewHandler found. Handles both the direct case (Window.Page IS
+		// the FlyoutPage) and the nested case (e.g. NavigationPage wrapping a FlyoutPage).
+		static void ReleaseFlyoutDrawerCallbacks(Page page)
+		{
+			if (page.Handler is FlyoutViewHandler flyoutHandler)
+			{
+				flyoutHandler.ReleaseDrawerCallbackBeforePageChange();
+				return;
+			}
+
+			// Recurse into page containers: NavigationPage, TabbedPage, Shell, etc.
+			if (page is IPageContainer<Page> container && container.CurrentPage is Page child)
+			{
+				ReleaseFlyoutDrawerCallbacks(child);
+			}
+		}
+#endif
 
 		static void OnIsActivatedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{

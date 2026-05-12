@@ -403,14 +403,6 @@ namespace Microsoft.Maui.Controls
 		double IFlyoutView.FlyoutWidth => -1;
 #endif
 
-#if ANDROID
-		internal void ReleaseDrawerCallbackBeforePageChange()
-		{
-			if (Handler is FlyoutViewHandler handler)
-				handler.ReleaseDrawerCallbackBeforePageChange();
-		}
-#endif
-
 		private protected override string GetDebuggerDisplay()
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Detail), Detail, "FlyoutPage", Flyout, nameof(BindingContext), BindingContext);
