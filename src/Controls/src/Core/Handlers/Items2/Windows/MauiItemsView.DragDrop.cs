@@ -128,17 +128,19 @@ internal partial class MauiItemsView
 			repeater.ElementPrepared += ItemsRepeater_ElementPrepared;
 			repeater.ElementClearing += ItemsRepeater_ElementClearing;
 
-			// Apply drag affordance to already-realized containers.
-			for (int i = 0; ; i++)
+			// Apply drag affordance to already-realized containers. ItemsRepeater
+			// virtualizes containers, so TryGetElement returns null for unrealized
+			// indices — we must iterate over the full source range to avoid missing
+			// realized containers that sit past an unrealized gap.
+			var sourceList = GetSourceList();
+			if (sourceList is not null)
 			{
-				var element = repeater.TryGetElement(i);
-				if (element is null)
+				for (int i = 0; i < sourceList.Count; i++)
 				{
-					break;
-				}
-				if (element is ItemContainer ic)
-				{
-					ApplyDragAffordance(ic, i);
+					if (repeater.TryGetElement(i) is ItemContainer ic)
+					{
+						ApplyDragAffordance(ic, i);
+					}
 				}
 			}
 		}
@@ -168,17 +170,19 @@ internal partial class MauiItemsView
 			repeater.ElementPrepared -= ItemsRepeater_ElementPrepared;
 			repeater.ElementClearing -= ItemsRepeater_ElementClearing;
 
-			for (int i = 0; ; i++)
+			// Iterate the full source range; TryGetElement returns null for unrealized
+			// indices so we can't stop at the first gap and assume we've cleared every
+			// realized container.
+			var sourceList = GetSourceList();
+			if (sourceList is not null)
 			{
-				var element = repeater.TryGetElement(i);
-				if (element is null)
+				for (int i = 0; i < sourceList.Count; i++)
 				{
-					break;
-				}
-				if (element is ItemContainer ic)
-				{
-					ic.CanDrag = false;
-					ic.DragStarting -= ItemContainer_DragStarting;
+					if (repeater.TryGetElement(i) is ItemContainer ic)
+					{
+						ic.CanDrag = false;
+						ic.DragStarting -= ItemContainer_DragStarting;
+					}
 				}
 			}
 		}
@@ -195,6 +199,21 @@ internal partial class MauiItemsView
 			Loaded -= _deferredWireHandler;
 			_deferredWireHandler = null;
 		}
+
+		// Fully tear down the auto-scroll timer. StopAutoScroll only calls Stop(),
+		// which leaves the Tick delegate (and therefore this instance) rooted by
+		// the dispatcher queue.
+		if (_autoScrollTimer is not null)
+		{
+			_autoScrollTimer.Stop();
+			_autoScrollTimer.Tick -= AutoScrollTimer_Tick;
+			_autoScrollTimer = null;
+		}
+
+		// Clear any remaining ReorderCompleted subscribers so a stray subscriber
+		// can't keep this instance alive past disconnect.
+		ReorderCompleted = null;
+
 		_mauiVirtualView = null;
 		CleanupDragState();
 	}
@@ -233,6 +252,11 @@ internal partial class MauiItemsView
 
 	void ItemsRepeater_ElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
 	{
+		if (!_canReorderItems)
+		{
+			return;
+		}
+
 		if (args.Element is ItemContainer itemContainer)
 		{
 			itemContainer.CanDrag = false;
