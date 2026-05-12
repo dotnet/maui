@@ -238,15 +238,17 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this SearchView searchView, ISearchBar searchBar)
 		{
-			searchView.SetInputType(searchBar);
-			// Keep SearchView's own ImeOptions current so Android doesn't re-propagate a
-			// stale stored value back to the EditText after configuration changes or focus resets.
-			searchView.ImeOptions = (int)searchBar.ReturnType.ToPlatform();
+			// Resolve the inner EditText once and reuse it to avoid two tree-walk calls.
+			var editText = searchView.GetFirstChildOfType<EditText>();
+			searchView.SetInputType(searchBar, editText);
+			// Keep SearchView's own ImeOptions current (including NoFullscreen) so Android
+			// doesn't re-propagate a stale stored value back to the EditText after
+			// configuration changes or focus resets.
+			searchView.ImeOptions = (int)((int)searchBar.ReturnType.ToPlatform() | (int)ImeFlags.NoFullscreen);
 			// Also set directly on the inner EditText: SearchView.setImeOptions propagates to
 			// the inner query EditText on most API levels, but does not reliably forward ImeFlags
 			// (e.g., NoFullscreen) on older APIs. Writing to EditText directly and then calling
 			// EnsureNoFullscreenFlag guarantees the flag is always present regardless of API level.
-			var editText = searchView.GetFirstChildOfType<EditText>();
 			if (editText is not null)
 			{
 				editText.ImeOptions = searchBar.ReturnType.ToPlatform();
