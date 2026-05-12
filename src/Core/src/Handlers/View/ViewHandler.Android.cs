@@ -244,6 +244,11 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			appbarLayout.AddView(nativeToolBar, 0);
+
+			// Re-apply bar background now that the toolbar is parented to the AppBarLayout.
+			// The initial MapBarBackground call may have run before this point, when the
+			// toolbar had no parent.
+			te.Toolbar?.Handler?.UpdateValue("BarBackground");
 		}
 
 		public static void MapContextFlyout(IViewHandler handler, IView view)

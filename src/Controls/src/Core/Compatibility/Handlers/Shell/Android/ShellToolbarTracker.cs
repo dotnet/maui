@@ -651,28 +651,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				ApplyToolbarChanges((Toolbar)sender, (Toolbar)_toolbar);
 				UpdateToolbarIconAccessibilityText(_platformToolbar, _shell);
-
-				if (e.PropertyName == nameof(Toolbar.BarBackground))
-					UpdateAppBarBackground((Toolbar)sender);
 			}
 		}
 
-		void UpdateAppBarBackground(Toolbar shellToolbar)
-		{
-			if (_appBar is null)
-				return;
-
-			var barBackground = shellToolbar.BarBackground;
-			if (barBackground is SolidColorBrush solidColor && solidColor.Color is Color color)
-			{
-				_appBar.BackgroundTintMode = PorterDuff.Mode.Src;
-				_appBar.BackgroundTintList = global::Android.Content.Res.ColorStateList.ValueOf(color.ToPlatform());
-			}
-			else if (Brush.IsNullOrEmpty(barBackground))
-			{
-				_appBar.BackgroundTintMode = null;
-			}
-		}
 
 		protected virtual void UpdatePageTitle(AToolbar toolbar, Page page)
 		{
