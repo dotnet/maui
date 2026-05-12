@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!isDefaultColor)
 				_barBackgroundColorWasSet = true;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
 			else
 				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToPlatform();
@@ -617,6 +617,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		void UpdateiOS15TabBarAppearance()
 		{
 			if (Tabbed is not TabbedPage tabbed)

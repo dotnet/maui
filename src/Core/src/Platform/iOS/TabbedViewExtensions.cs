@@ -41,20 +41,23 @@ namespace Microsoft.Maui.Platform
 			Color? unSelectedBarTextColor)
 		{
 			if (_tabBarAppearance == null)
-			{
 				_tabBarAppearance = new UITabBarAppearance();
-				_tabBarAppearance.ConfigureWithDefaultBackground();
-			}
 
 			var effectiveBarColor = (barBackgroundColor == null) ? defaultBarColor : barBackgroundColor.ToPlatform();
 			// Set BarBackgroundColor
 			if (effectiveBarColor != null)
 			{
+				_tabBarAppearance.ConfigureWithOpaqueBackground();
 				_tabBarAppearance.BackgroundColor = effectiveBarColor;
-				if(OperatingSystem.IsIOSVersionAtLeast(26)|| OperatingSystem.IsMacCatalystVersionAtLeast(26))
-				{
-                    tabBar.BackgroundColor = effectiveBarColor;
-				}
+				tabBar.Translucent = false;
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					tabBar.BackgroundColor = effectiveBarColor;
+			}
+			else
+			{
+				_tabBarAppearance.ConfigureWithDefaultBackground();
+				tabBar.Translucent = true;
+				tabBar.BackgroundColor = null;
 			}
 
 			// Set BarTextColor
@@ -157,7 +160,7 @@ namespace Microsoft.Maui.Platform
 				newSize.Width = isRegularTabBar ? regularSquareSize : compactSquareSize;
 				newSize.Height = newSize.Width;
 			}
-             
+
 			return image.ResizeImageSource(newSize.Width, newSize.Height, new CGSize(image.Size.Width, image.Size.Height));
 		}
 	}
