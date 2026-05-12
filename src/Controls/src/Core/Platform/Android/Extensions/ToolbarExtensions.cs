@@ -217,14 +217,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					else
 					{
-						if (appBar is not null)
-						{
-							appBar.UpdateBackground(barBackground);
-						}
-						else
-						{
-							nativeToolbar.UpdateBackground(barBackground);
-						}
+						appBar.UpdateBackground(barBackground);
 
 						if (Brush.IsNullOrEmpty(barBackground))
 						{
