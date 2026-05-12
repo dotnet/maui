@@ -650,51 +650,38 @@ internal partial class MauiItemsView
 
 			foreach (var container in allContainers)
 			{
-				try
+				var containerPosition = container.TransformToVisual(repeater).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+
+				bool isInBounds;
+				if (_isHorizontalLayout)
 				{
-					var containerPosition = container.TransformToVisual(repeater).TransformPoint(new global::Windows.Foundation.Point(0, 0));
-
-					bool isInBounds;
-					if (_isHorizontalLayout)
-					{
-						isInBounds = position.X >= containerPosition.X &&
-									 position.X <= containerPosition.X + container.ActualWidth;
-					}
-					else
-					{
-						isInBounds = position.Y >= containerPosition.Y &&
-									 position.Y <= containerPosition.Y + container.ActualHeight;
-					}
-
-					if (isInBounds)
-					{
-						return container;
-					}
+					isInBounds = position.X >= containerPosition.X &&
+								 position.X <= containerPosition.X + container.ActualWidth;
 				}
-				catch
+				else
 				{
-					// Container may be detached mid-drag; ignore and continue.
+					isInBounds = position.Y >= containerPosition.Y &&
+								 position.Y <= containerPosition.Y + container.ActualHeight;
+				}
+
+				if (isInBounds)
+				{
+					return container;
 				}
 			}
 
 			if (allContainers.Count > 0)
 			{
 				var lastContainer = allContainers[allContainers.Count - 1];
-				try
-				{
-					var lastPos = lastContainer.TransformToVisual(repeater).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+				var lastPos = lastContainer.TransformToVisual(repeater).TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
-					bool isBeyondLast = _isHorizontalLayout
-						? position.X > lastPos.X + lastContainer.ActualWidth
-						: position.Y > lastPos.Y + lastContainer.ActualHeight;
+				bool isBeyondLast = _isHorizontalLayout
+					? position.X > lastPos.X + lastContainer.ActualWidth
+					: position.Y > lastPos.Y + lastContainer.ActualHeight;
 
-					if (isBeyondLast)
-					{
-						return lastContainer;
-					}
-				}
-				catch
+				if (isBeyondLast)
 				{
+					return lastContainer;
 				}
 			}
 		}
@@ -966,25 +953,18 @@ internal partial class MauiItemsView
 			return;
 		}
 
-		try
+		double newOffset;
+		if (_isHorizontalLayout)
 		{
-			double newOffset;
-			if (_isHorizontalLayout)
-			{
-				newOffset = _scrollViewer.HorizontalOffset + _currentScrollVelocity;
-				newOffset = Math.Clamp(newOffset, 0, _scrollViewer.ScrollableWidth);
-				_scrollViewer.ChangeView(newOffset, _scrollViewer.VerticalOffset, null, disableAnimation: true);
-			}
-			else
-			{
-				newOffset = _scrollViewer.VerticalOffset + _currentScrollVelocity;
-				newOffset = Math.Clamp(newOffset, 0, _scrollViewer.ScrollableHeight);
-				_scrollViewer.ChangeView(_scrollViewer.HorizontalOffset, newOffset, null, disableAnimation: true);
-			}
+			newOffset = _scrollViewer.HorizontalOffset + _currentScrollVelocity;
+			newOffset = Math.Clamp(newOffset, 0, _scrollViewer.ScrollableWidth);
+			_scrollViewer.ChangeView(newOffset, _scrollViewer.VerticalOffset, null, disableAnimation: true);
 		}
-		catch
+		else
 		{
-			StopAutoScroll();
+			newOffset = _scrollViewer.VerticalOffset + _currentScrollVelocity;
+			newOffset = Math.Clamp(newOffset, 0, _scrollViewer.ScrollableHeight);
+			_scrollViewer.ChangeView(_scrollViewer.HorizontalOffset, newOffset, null, disableAnimation: true);
 		}
 	}
 
