@@ -654,7 +654,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-
 		protected virtual void UpdatePageTitle(AToolbar toolbar, Page page)
 		{
 		}
