@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this));
+			hwv.SetInvokeJavaScriptTarget(new DotNetMethods(this));
 		}
 
 		int count;
@@ -130,12 +130,15 @@ namespace Maui.Controls.Sample.Pages
 		[JsonSerializable(typeof(ComputationResult))]
 		[JsonSerializable(typeof(double))]
 		[JsonSerializable(typeof(string))]
+		[JsonSerializable(typeof(int))]
 		[JsonSerializable(typeof(Dictionary<string, string>))]
+		[JsonSerializable(typeof(SyncReturn))]
 		internal partial class SampleInvokeJsContext : JsonSerializerContext
 		{
 		}
 
-		private class DotNetMethods
+		[HybridWebViewDotNetMethodProvider(typeof(SampleInvokeJsContext), ExposeAllPublicMethods = true)]
+		private partial class DotNetMethods
 		{
 			private HybridWebViewPage _hybridWebViewPage;
 
