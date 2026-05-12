@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Platform
 				progressBar.Post(() =>
 				{
 					// Guard: skip if the view was recycled/disposed or detached before the runnable fired.
-					if (!progressBar.IsDisposed() && progressBar.IsAttachedToWindow)
+					if (!progressBar.IsDisposed())
 					{
 						progressBar.Visibility = targetVisibility;
 					}
