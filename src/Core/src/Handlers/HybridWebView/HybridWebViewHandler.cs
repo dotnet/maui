@@ -42,14 +42,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Handlers
 {
-	[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-	[RequiresDynamicCode(DynamicFeatures)]
-#endif
 	public partial class HybridWebViewHandler : IHybridWebViewHandler
 	{
-		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
-		internal const string NotSupportedMessage = DynamicFeatures + " Enable the $(MauiHybridWebViewSupported) property in your .csproj file to use in a trimming unsafe manner.";
+		internal const string DynamicFeatures = "HybridWebView reflection-based method invocation uses dynamic System.Text.Json serialization features. Use [HybridWebViewDotNetMethodProvider] source generator instead.";
+		internal const string NotSupportedMessage = DynamicFeatures;
 
 		// Using an IP address means that the web view doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
