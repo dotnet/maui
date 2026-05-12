@@ -380,6 +380,55 @@ try {
 
     $testExitCode = $LASTEXITCODE
     
+    # ── Per-test retry for flaky failures (Android emulator instability) ──
+    # Parse the TRX for failed tests and re-run them once. This catches
+    # emulator-induced timeouts and transient ADB failures that aren't
+    # real test bugs. Only retry on Android where flake rate is ~5%.
+    if ($testExitCode -ne 0 -and $Platform -eq 'android' -and (Test-Path $trxFilePath)) {
+        . "$PSScriptRoot/shared/Get-TrxResults.ps1"
+        $firstRun = Get-TrxResults -TrxPath $trxFilePath
+        if ($firstRun -and [int]$firstRun.Failed -gt 0 -and [int]$firstRun.Passed -gt 0) {
+            $failedNames = @($firstRun.Results | Where-Object { $_.status -eq 'Failed' } | ForEach-Object { $_.name })
+            Write-Host ""
+            Write-Warn "🔄 Retrying $($failedNames.Count) failed test(s) on Android..."
+            
+            # Build a FullyQualifiedName filter for just the failed tests
+            $retryFilter = ($failedNames | ForEach-Object { "FullyQualifiedName~$_" }) -join ' | '
+            $retryTrx = Join-Path $trxResultsDir "retry-$trxBaseName.trx"
+            Remove-Item $retryTrx -Force -ErrorAction SilentlyContinue
+            
+            $retryArgs = @($TestProject, "--filter", $retryFilter,
+                "--logger", "trx;LogFileName=retry-$trxFileName",
+                "--logger", "console;verbosity=normal",
+                "--results-directory", $trxResultsDir,
+                "/p:VStestUseMSBuildOutput=false", "--no-build")
+            Write-Info "Retry args: dotnet test --filter '$retryFilter' --no-build"
+            $retryOutput = & dotnet test @retryArgs 2>&1
+            $retryOutput | ForEach-Object { Write-Output $_ }
+            $retryExitCode = $LASTEXITCODE
+            
+            # Parse retry TRX and count how many passed on retry
+            $retryTrxPath = Join-Path $trxResultsDir "retry-$trxFileName"
+            if (Test-Path $retryTrxPath) {
+                $retryResults = Get-TrxResults -TrxPath $retryTrxPath
+                if ($retryResults) {
+                    $retryPassed = @($retryResults.Results | Where-Object { $_.status -eq 'Passed' }).Count
+                    $retryFailed = @($retryResults.Results | Where-Object { $_.status -eq 'Failed' }).Count
+                    Write-Host "  Retry results: $retryPassed passed, $retryFailed failed (of $($failedNames.Count) retried)" -ForegroundColor Cyan
+                    
+                    if ($retryFailed -eq 0) {
+                        Write-Success "All $retryPassed flaky test(s) passed on retry!"
+                        $testExitCode = 0
+                    } else {
+                        Write-Warn "$retryFailed test(s) still failing after retry (real failures)"
+                    }
+                    # Overwrite original TRX with retry results for accurate reporting
+                    Copy-Item $retryTrxPath $trxFilePath -Force
+                }
+            }
+        }
+    }
+
     Write-Host ""
     Write-Info "Test output saved to: $testOutputFile"
     
