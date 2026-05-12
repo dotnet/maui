@@ -36,25 +36,21 @@ jobs:
        (github.event.comment.body == '/review' ||
         startsWith(github.event.comment.body, '/review ')))
     runs-on: ubuntu-latest
-    concurrency:
-      group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
-      cancel-in-progress: false
-    timeout-minutes: 10
     permissions:
       id-token: write
       contents: read
+      pull-requests: read
     steps:
       - name: Check actor permission
         if: github.event_name == 'issue_comment'
         env:
           GH_TOKEN: ${{ github.token }}
-          ACTOR: ${{ github.actor }}
         run: |
-          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${ACTOR}/permission" --jq '.permission')
-          echo "User ${ACTOR} has permission: ${PERMISSION}"
+          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
+          echo "User ${{ github.actor }} has permission: ${PERMISSION}"
           # write, maintain, and admin can all trigger /review
           if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
-            echo "::error::User ${ACTOR} does not have sufficient access. Only write/maintain/admin can trigger /review."
+            echo "::error::User ${{ github.actor }} does not have sufficient access. Only write/maintain/admin can trigger /review."
             exit 1
           fi
 
@@ -77,7 +73,7 @@ jobs:
           else
             PR_NUMBER="${{ github.event.issue.number }}"
             # Strip the '/review' prefix and parse remaining args
-            ARGS=$(printf '%s' "${COMMENT_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s '[:space:]')
+            ARGS=$(echo "${COMMENT_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
@@ -114,18 +110,13 @@ jobs:
                   done
                   ;;
               esac
-              shift
+              shift || true
             done
           fi
 
-          # Sanitize ref to valid git ref characters only (allow alphanumeric, /, _, ., -)
-          PIPELINE_REF=$(printf '%s' "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\.\-]//g')
-          # Reject unsafe patterns:
-          #   ..    — path traversal
-          #   //    — empty segments (leading, trailing, or middle)
-          #   */    — trailing slash
-          #   /*    — leading slash
-          # See: https://github.com/dotnet/maui/pull/35250#discussion (reviewer thread)
+          # Sanitize ref to valid git ref characters only
+          PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
+          # Reject path traversal, empty segments, and leading /
           case "${PIPELINE_REF}" in
             *..*|//*|*//*|*/|/*) PIPELINE_REF="main" ;;
           esac
@@ -177,21 +168,20 @@ jobs:
           fi
 
           echo "No platform specified — inferring from PR #${PR_NUMBER} labels..."
-          echo "(File-based detection is handled by the 'Platform Label' workflow on PR open.)"
+          echo "(File-based detection is handled by the platform-label.yml workflow on PR open/synchronize.)"
 
-          # Check PR labels (platform/android, platform/ios, platform/macos, platform/windows,
-          # or legacy area labels a/android, a/ios, a/maccatalyst, a/windows)
+          # Check PR labels applied by platform-label.yml or manually
           LABELS=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
           LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
           echo "PR labels: ${LABELS_LOWER:-<none>}"
 
-          if echo "${LABELS_LOWER}" | grep -qE '^(a/ios|platform/ios)$'; then
+          if echo "${LABELS_LOWER}" | grep -qE '^platform/ios$'; then
             PLATFORM="ios"
-          elif echo "${LABELS_LOWER}" | grep -qE '^(a/maccatalyst|platform/macos)$'; then
+          elif echo "${LABELS_LOWER}" | grep -qE '^(platform/macos|platform/maccatalyst)$'; then
             PLATFORM="catalyst"
-          elif echo "${LABELS_LOWER}" | grep -qE '^(a/android|platform/android)$'; then
+          elif echo "${LABELS_LOWER}" | grep -qE '^platform/android$'; then
             PLATFORM="android"
-          elif echo "${LABELS_LOWER}" | grep -qE '^(a/windows|platform/windows)$'; then
+          elif echo "${LABELS_LOWER}" | grep -qE '^platform/windows$'; then
             PLATFORM="windows"
           fi
 
@@ -221,13 +211,11 @@ jobs:
         id: token
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
-          AAD_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
-          AAD_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
         run: |
           AZURE_RESPONSE=$(curl -s -X POST \
-            "https://login.microsoftonline.com/${AAD_TENANT_ID}/oauth2/v2.0/token" \
+            "https://login.microsoftonline.com/${{ secrets.AZDO_TRIGGER_TENANT_ID }}/oauth2/v2.0/token" \
             -d "grant_type=client_credentials" \
-            -d "client_id=${AAD_CLIENT_ID}" \
+            -d "client_id=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" \
             -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
             -d "client_assertion=${OIDC_TOKEN}" \
             -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
