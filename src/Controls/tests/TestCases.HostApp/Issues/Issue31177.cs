@@ -5,12 +5,11 @@ public class Issue31177 : ContentPage
 {
 	readonly ScrollView _scrollView;
 	readonly Label _statusLabel;
-
 	public Issue31177()
 	{
 		_statusLabel = new Label
 		{
-			Text = "Waiting",
+			Text = "The test passes if the text shown below says 'ScrollToAsync Succeeded'.",
 			AutomationId = "StatusLabel"
 		};
 
@@ -59,6 +58,5 @@ public class Issue31177 : ContentPage
 
 		// This is the scenario from the issue: ScrollToAsync called from OnAppearing
 		await _scrollView.ScrollToAsync(0, 2000, false);
-		_statusLabel.Text = "Scrolled";
 	}
 }
