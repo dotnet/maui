@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			// WinUI SwipeItem does not support a Visibility property, so we need to
 			// rebuild the parent SwipeView's swipe items to reflect the visibility change.
-			var swipeView = view.Parent?.Parent as ISwipeView;
+			var swipeView = GetParentSwipeView(view);
 			if (swipeView?.Handler is ISwipeViewHandler swipeViewHandler)
 			{
 				if (swipeView.LeftItems?.Contains(view) == true)
@@ -52,6 +52,23 @@ namespace Microsoft.Maui.Handlers
 					swipeViewHandler.UpdateValue(nameof(ISwipeView.BottomItems));
 				}
 			}
+		}
+
+		// Walk up the virtual view parent chain to find the owning ISwipeView.
+		// This is more robust than assuming a fixed depth (Parent?.Parent) which
+		// can silently fail if parenting is in transition.
+		static ISwipeView? GetParentSwipeView(IElement? element)
+		{
+			var parent = element?.Parent;
+			while (parent is not null)
+			{
+				if (parent is ISwipeView swipeView)
+				{
+					return swipeView;
+				}
+				parent = parent.Parent;
+			}
+			return null;
 		}
 
 		protected override void ConnectHandler(WSwipeItem platformView)
