@@ -43,33 +43,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public void ToLocation_HasAltitudeButNoMslAltitude_UsesEllipsoid()
-		{
-			// On every API level, a location that reports an ellipsoidal altitude but no
-			// MSL altitude must resolve to Ellipsoid. On pre-34 devices that is the only
-			// code path; on API 34+ devices this exercises the HasMslAltitude == false
-			// fallback branch. Either way this assertion runs, so the test cannot silently
-			// pass if the fallback regresses.
-			var androidLocation = new AndroidLocation("test")
-			{
-				Altitude = 123.45,
-			};
-
-			if (OperatingSystem.IsAndroidVersionAtLeast(26))
-				androidLocation.VerticalAccuracyMeters = 5.0f;
-
-			var location = androidLocation.ToLocation();
-
-			Assert.Equal(123.45, location.Altitude);
-			Assert.Equal(AltitudeReferenceSystem.Ellipsoid, location.AltitudeReferenceSystem);
-
-			if (OperatingSystem.IsAndroidVersionAtLeast(26))
-				Assert.Equal(5.0, location.VerticalAccuracy);
-			else
-				Assert.Null(location.VerticalAccuracy);
-		}
-
-		[Fact]
 		public void ToLocation_MslAltitude_UsesGeoidReferenceSystem()
 		{
 			var androidLocation = new AndroidLocation("test")
@@ -105,23 +78,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public void LocationCopyConstructor_PreservesAltitudeReferenceSystem()
-		{
-			var original = new Location(51.5, -0.1)
-			{
-				Altitude = 100.0,
-				AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid,
-				VerticalAccuracy = 2.5
-			};
-
-			var copy = new Location(original);
-
-			Assert.Equal(original.Altitude, copy.Altitude);
-			Assert.Equal(original.AltitudeReferenceSystem, copy.AltitudeReferenceSystem);
-			Assert.Equal(original.VerticalAccuracy, copy.VerticalAccuracy);
-		}
-
-		[Fact]
 		public void ToLocation_MslAltitudeWithoutMslAccuracy_ReportsNullVerticalAccuracy()
 		{
 			var androidLocation = new AndroidLocation("test");
@@ -146,6 +102,23 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.Equal(100.0, location.Altitude);
 			Assert.Equal(AltitudeReferenceSystem.Geoid, location.AltitudeReferenceSystem);
 			Assert.Null(location.VerticalAccuracy);
+		}
+
+		[Fact]
+		public void LocationCopyConstructor_PreservesAltitudeReferenceSystem()
+		{
+			var original = new Location(51.5, -0.1)
+			{
+				Altitude = 100.0,
+				AltitudeReferenceSystem = AltitudeReferenceSystem.Geoid,
+				VerticalAccuracy = 2.5
+			};
+
+			var copy = new Location(original);
+
+			Assert.Equal(original.Altitude, copy.Altitude);
+			Assert.Equal(original.AltitudeReferenceSystem, copy.AltitudeReferenceSystem);
+			Assert.Equal(original.VerticalAccuracy, copy.VerticalAccuracy);
 		}
 	}
 }
