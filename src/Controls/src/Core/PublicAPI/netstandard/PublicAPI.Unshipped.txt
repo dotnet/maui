@@ -83,7 +83,7 @@ static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProper
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDurationProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequiredProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.StateProperty -> Microsoft.Maui.Controls.BindableProperty!
-~static readonly Microsoft.Maui.Controls.NavigationPage.BackButtonAccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readon  ly Microsoft.Maui.Controls.NavigationPage.BackButtonAccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
