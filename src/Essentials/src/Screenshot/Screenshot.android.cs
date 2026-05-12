@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -5,16 +7,16 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
+using Android.OS;
 using Android.Views;
 using Java.Nio;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Media
 {
 	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
-		static IWindowManager WindowManager =>
+		static IWindowManager? WindowManager =>
 			Application.Context.GetSystemService(Context.WindowService) as IWindowManager;
 
 		public bool IsCaptureSupported => true;
@@ -24,28 +26,28 @@ namespace Microsoft.Maui.Media
 			if (WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
 				throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
 
-			var activity = ActivityStateManager.Default.GetCurrentActivity(true);
+			var activity = ActivityStateManager.Default.GetCurrentActivity(true)
+				?? throw new InvalidOperationException("Unable to find the current activity.");
 
 			return CaptureAsync(activity);
 		}
 
-		public Task<IScreenshotResult> CaptureAsync(Activity activity)
+		public async Task<IScreenshotResult> CaptureAsync(Activity activity)
 		{
 			var view = activity?.Window?.DecorView?.RootView;
 			if (view == null)
 				throw new InvalidOperationException("Unable to find the main window.");
 
-			return CaptureAsync(view);
+			var result = await CaptureAsync(view).ConfigureAwait(false);
+			return result ?? throw new InvalidOperationException("Unable to capture screenshot.");
 		}
 
-		public async Task<IScreenshotResult> CaptureAsync(View view)
+		public async Task<IScreenshotResult?> CaptureAsync(View view)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
 			var bitmap = await RenderAsync(view).ConfigureAwait(false);
-			var result = bitmap is null ? null : new ScreenshotResult(bitmap);
-
-			return result;
+			return bitmap is null ? null : new ScreenshotResult(bitmap);
 		}
 
 		static async Task<Bitmap?> RenderAsync(View view)
@@ -65,8 +67,7 @@ namespace Microsoft.Maui.Media
 			if (view.Width <= 0 || view.Height <= 0 || !view.IsAttachedToWindow)
 				return Task.FromResult<Bitmap?>(null);
 
-			var activity = view.Context?.GetActivity();
-			var window = (activity as Activity)?.Window;
+			var window = GetActivity(view.Context)?.Window;
 			if (window is null)
 				return Task.FromResult<Bitmap?>(null);
 
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Media
 			{
 				PixelCopy.Request(window, rect, bitmap,
 					new PixelCopyFinishedListener(tcs, bitmap),
-					new Android.OS.Handler(Android.OS.Looper.MainLooper!));
+					new Handler(Looper.MainLooper!));
 			}
 			catch (Exception)
 			{
@@ -97,6 +98,17 @@ namespace Microsoft.Maui.Media
 			}
 
 			return tcs.Task;
+		}
+
+		static Activity? GetActivity(Context? context)
+		{
+			while (context is ContextWrapper wrapper)
+			{
+				if (context is Activity activity)
+					return activity;
+				context = wrapper.BaseContext;
+			}
+			return context as Activity;
 		}
 
 		sealed class PixelCopyFinishedListener : Java.Lang.Object, PixelCopy.IOnPixelCopyFinishedListener
