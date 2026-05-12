@@ -130,45 +130,76 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Use the nullable IViewHandler.VirtualView (not the typed property) for the null
 			// check. The typed VirtualView throws InvalidOperationException if base.VirtualView
 			// is null, which can happen if the handler was disconnected before this event fires.
-			if (((IViewHandler)this).VirtualView is null)
+			if (((IViewHandler)this).VirtualView is null || ListViewBase is null)
 				return;
 
-			if (sender is not ItemCollection items)
-				return;
+			var mode = VirtualView.ItemsUpdatingScrollMode;
 
-			ListViewBase.DispatcherQueue.TryEnqueue(() =>
+			if (mode != ItemsUpdatingScrollMode.KeepItemsInView && mode != ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				// The lambda is dispatched asynchronously. By the time it runs, the handler may
-				// have been disconnected (e.g. by element.DisconnectHandlers() in
-				// CleanUpCollectionViewSource), setting base.VirtualView to null. The typed
-				// VirtualView property throws in that case, so use the nullable interface accessor
-				// here to safely bail out instead of crashing (issue #9075).
-				if (((IViewHandler)this).VirtualView is null || ListViewBase is null)
-				{
+				return;
+			}
+
+			// Reset notifications are unsafe to process because WinUI may still be rebuilding
+			// the internal projection. Accessing indexes during Reset can trigger
+			// E_CHANGED_STATE / COMException.
+			if (@event?.CollectionChange == global::Windows.Foundation.Collections.CollectionChange.Reset)
+			{
+				return;
+			}
+
+			// Grouped CollectionViews are backed by a flattened projection that may still be
+			// mutating while VectorChanged is firing. Accessing indexes synchronously can
+			// trigger STATUS_STOWED_EXCEPTION / E_CHANGED_STATE.
+			//
+			// Non-grouped views (e.g. CarouselView) should remain synchronous to avoid
+			// regressions where deferred scrolling changes the intended position.
+			bool shouldDefer = CollectionViewSource?.IsSourceGrouped == true;
+
+			if (shouldDefer)
+			{
+				var dispatcherQueue = PlatformView?.DispatcherQueue;
+
+				if (dispatcherQueue is null)
 					return;
-				}
 
-				var itemsCount = items.Count;
+				dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, ScrollIntoViewIfNeeded);
+			}
+			else
+			{
+				ScrollIntoViewIfNeeded();
+			}
+		}
 
-				if (itemsCount == 0)
-				{
-					return;
-				}
+		void ScrollIntoViewIfNeeded()
+		{
+			// Handler may have been disconnected before deferred execution runs
+			if (((IViewHandler)this).VirtualView is null || ListViewBase is null)
+				return;
 
-				if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
-				{
-					var firstItem = items[0];
-					// Keeps the first item in the list displayed when new items are added.
-					ListViewBase.ScrollIntoView(firstItem);
-				}
+			var view = CollectionViewSource?.View;
+			var itemsCount = view?.Count ?? 0;
 
-				if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
-				{
-					var lastItem = items[itemsCount - 1];
-					// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
-					ListViewBase.ScrollIntoView(lastItem, ScrollIntoViewAlignment.Leading);
-				}
-			});
+			if (itemsCount == 0)
+			{
+				return;
+			}
+
+			// Re-read the mode here (rather than capturing it from the caller) so the
+			// deferred path picks up the latest value if it changed between enqueue and
+			// drain, and so this helper has no implicit dependency on caller state.
+			var mode = VirtualView.ItemsUpdatingScrollMode;
+
+			if (mode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				// Keeps the first item visible when items are inserted
+				ListViewBase.ScrollIntoView(view[0]);
+			}
+			else if (mode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				// Keeps the last item visible when items are appended
+				ListViewBase.ScrollIntoView(view[itemsCount - 1], ScrollIntoViewAlignment.Leading);
+			}
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
