@@ -20,9 +20,8 @@ public partial class CollectionViewHandler2
 	{
 	}
 
-	public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ItemsViewMapper)
+	public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ReorderableItemsViewMapper)
 	{
-		[ReorderableItemsView.CanReorderItemsProperty.PropertyName] = MapCanReorderItems,
 		[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
 		[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapGroupHeaderTemplate,
 		[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapGroupFooterTemplate,
@@ -33,19 +32,13 @@ public partial class CollectionViewHandler2
 
 	};
 }
-public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
+public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<ReorderableItemsView>
 {
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
 
-	protected override IItemsLayout Layout { get => ItemsView.ItemsLayout; }
-
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
-
-	public static void MapCanReorderItems(CollectionViewHandler2 handler, ReorderableItemsView itemsView)
-	{
-	}
 
 	public static void MapIsGrouped(CollectionViewHandler2 handler, GroupableItemsView itemsView)
 	{
