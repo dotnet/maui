@@ -32,6 +32,10 @@ The `ci-analysis` skill and its `Get-CIStatus.ps1` script are loaded automatical
 
 Most failures are in `maui-pr`. Device test failures appear in `maui-pr-devicetests`. Focus on the first failing pipeline before checking others.
 
+**When CI hasn't run:** Community PRs require a maintainer to trigger builds. Use `/azp run maui-pr` (or `maui-pr-devicetests`, `maui-pr-uitests`) in a PR comment, or trigger via Azure CLI. Not all pipelines run automatically — `maui-pr-devicetests` and `maui-pr-uitests` may need explicit triggers depending on the changed files.
+
+**Escalation:** For deep Helix log analysis (recurring failures, machine-specific issues, comparing passing vs. failing runs), escalate to the `helix-investigation` skill.
+
 ## MAUI-Specific Quirks
 
 ### XHarness Exit-0 Blind Spot
@@ -66,6 +70,37 @@ If available, use the `mcp-binlog-tool` MCP server to analyze downloaded `.binlo
 | `error CS####` | `maui-pr` | C# compiler error — check file/line |
 | `error XA####` | `maui-pr` | Android build error |
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
+| `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see below |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
 | `No test result files found` | `maui-pr-devicetests` Helix logs | Tests never ran or app crashed on launch |
 | UI test screenshot diff | `maui-pr-uitests` | Visual regression; check baseline images |
+
+## Test Count Deduplication
+
+When querying AzDO test results directly (e.g., via the `/test/runs/{id}/results` API), **always deduplicate before reporting counts**. MAUI UI tests produce multiple test runs per test because each test executes across:
+- **Runtime variants**: CoreCLR and Mono
+- **Platform versions**: e.g., iOS 18.5 and iOS latest, Android API 30 and API 36
+- **Retry attempts**: failed jobs are retried, each attempt publishes a new test run
+
+A single failing test can appear in 4–8+ test runs. Summing raw `totalTests - passedTests` across all runs inflates failure counts dramatically.
+
+**How to deduplicate**: Group by **test name + OS platform** (extract the OS token — `ios`, `android`, `mac`, `win` — from the run name as the grouping key). For example, "DatePicker_Format_D on iOS" vs "DatePicker_Format_D on Android" are distinct failures worth reporting separately. Collapse retries and runtime variants (coreclr/mono) of the same test on the same OS — if a test fails on both coreclr and mono for iOS, that's one issue, not two.
+
+### Gradle / Maven / CFSClean Failures
+
+**Error signatures:**
+```
+error XAGRDL0000: Could not resolve com.android.tools.build:gradle:8.11.1
+  > Received status code 401: Unauthorized - No local versions of package
+```
+```
+error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
+  > Unauthorized - Please provide authentication to save package from upstream
+```
+
+**Fix:** Tell the user to run `./eng/ingest-maven-deps.sh` locally to pre-ingest packages into the feed.
+
+**Do NOT:**
+- Remove CFSClean from `ci-official.yml` — security compliance requirement
+- Upgrade Gradle past 8.x — `dotnet/android#10738`
+- Add `mavenCentral()` or `google()` back — use the Azure Artifacts feed

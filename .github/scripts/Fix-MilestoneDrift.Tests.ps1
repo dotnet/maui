@@ -9,6 +9,57 @@
 .EXAMPLE
     Invoke-Pester ./Fix-MilestoneDrift.Tests.ps1
     Invoke-Pester ./Fix-MilestoneDrift.Tests.ps1 -Output Detailed
+
+.NOTES
+    === LIVE VALIDATION GUIDE ===
+
+    The following functions require git and GitHub API access and cannot be unit tested
+    with Pester alone. When modifying these functions, run the dry-run commands below
+    to validate correctness before merging.
+
+    Functions requiring live validation:
+      - Invoke-AnalyzeSinglePr (version detection, release branch lookup, fallback logic)
+      - Invoke-AnalyzeRelease (tag-based batch analysis)
+      - Find-ReleaseBranchForCommit (git ancestry checks against release branches)
+      - Get-VersionFromGitRef (reads Versions.props from git refs, fetches missing commits)
+      - Get-MainBranchForVersion (reads Versions.props from origin/main)
+
+    Dry-run validation commands (run from repo root with gh CLI authenticated):
+
+      # 1. PR merged to inflight/current — should read from origin/main (all branches feed into main)
+      pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 34228 -RepoPath . -Verbose
+      # Expected: "Version from Versions.props on origin/main: 10.0.70", milestone = .NET 10 SR7
+
+      # 2. PR merged to main, already on a release branch — should use release branch
+      pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 34620 -RepoPath . -Verbose
+      # Expected: "Found in release branch: release/10.0.1xx-sr6 → .NET 10 SR6"
+
+      # 3. PR merged to net11.0 — should read from origin/net11.0, not origin/main
+      pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 34969 -RepoPath . -Verbose
+      # Expected: reads from origin/net11.0, milestone is .NET 11.0-preview{N}
+
+      # 4. PR merged to net11.0, on a preview release branch — should use release branch
+      pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 30132 -RepoPath . -Verbose
+      # Expected: "Found in release branch: release/11.0.1xx-preview3 → .NET 11.0-preview3"
+
+      # 5. PR merged to a release branch directly — should read from that branch
+      pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 35016 -RepoPath . -Verbose
+      # Expected: reads from origin/release/10.0.1xx-sr6, milestone is .NET 10 SR6
+
+      # 6. Tag-based reconciliation for a preview release
+      pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -Tag '11.0.0-preview.3.26203.7' -RepoPath . -Verbose
+      # Expected: finds preview2 as previous tag, scans ~234 PRs, skips ~180 merge-ups, checks ~53
+
+      # 7. Tag-based reconciliation for a stable release
+      pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -Tag 10.0.50 -RepoPath . -Output /dev/null -Verbose
+      # Expected: finds 10.0.41 as previous tag, scans ~78 PRs, all .NET 10
+
+    Key things to verify after changes:
+      - inflight/* and darc/* PRs read from origin/main (they feed into main)
+      - net11.0 PRs read from origin/net11.0 (never from origin/main)
+      - PRs on release branches get the milestone from the branch name (not Versions.props)
+      - Preview tags in tag mode find the correct previous tag (preview2 → preview3, not full history)
+      - Rebased/cherry-picked PRs are found via commit message grep when ancestry fails
 #>
 
 BeforeAll {

@@ -18,8 +18,7 @@ When performing a code review on PRs that change functional code, run the pr-fin
 
 - **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
   - **main branch**: Latest stable .NET version
-  - **net10.0 branch**: .NET 10 SDK
-  - **Feature branches**: Each feature branch (e.g., `net11.0`, `net12.0`) correlates to its respective .NET version
+  - **Feature branches**: Each `netN.0` branch targets the .NET N SDK. By convention, the highest `netN.0` branch is the current development branch for new features and API changes.
 - **Cake build system** for compilation and packaging (`dotnet cake`)
 - **MSBuild** with custom build tasks (must build `Microsoft.Maui.BuildTasks.slnf` first)
 - **Testing frameworks**:
@@ -102,6 +101,30 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 **⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
 
+### Investigating CI Failures
+
+**🚨 ALWAYS use the `azdo-build-investigator` skill when investigating CI failures or assessing merge readiness.** Its instructions direct you to invoke the `ci-analysis` skill first for the core investigation workflow, then apply MAUI-specific corrections (correct pipeline names, XHarness quirks, binlog guidance).
+
+Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
+
+**When to use it:**
+- "How does CI look?" / "Is CI green?" / "Can we merge?"
+- "What's failing?" / "Are these known failures?"
+- "Is this PR safe to merge?" / "Any CI concerns?"
+- After any PR push to verify the build
+
+**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", query the **actual AzDO test results** — do NOT infer whether a test ran by inspecting code attributes. Class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
+
+**Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines. The skills handle Helix work item details, known issue cross-referencing, and test result aggregation that manual approaches miss.
+
+### Gradle / Maven Dependency Failures (CFSClean)
+
+The official CI build uses CFSClean network isolation which blocks `repo.maven.apache.org`. All Gradle/Maven dependencies resolve through the `dotnet-public-maven` Azure Artifacts feed.
+
+**If CI fails with Gradle 401 errors** like `"No local versions of package"` or `"Please provide authentication to save package from upstream"`, it means a Maven package hasn't been ingested into the feed yet. **Fix:** run `./eng/ingest-maven-deps.sh` locally to pre-populate the feed. See `src/Core/AndroidNative/settings.gradle` for details.
+
+**Do NOT upgrade Gradle past 8.x** — the Android SDK's `net.android.init.gradle.kts` is incompatible with Gradle 9.x (`dotnet/android#10738`).
+
 ### Code Formatting
 
 Always format code before committing:
@@ -140,7 +163,7 @@ When working with public API changes:
 
 ### Branching
 - `main` - For bug fixes without API changes
-- `net10.0` - For new features and API changes
+- The highest `netN.0` branch (by convention) - For new features and API changes. To find it, run `git fetch origin` then: `git for-each-ref --sort=-version:refname --count=1 --format='%(refname:lstrip=3)' refs/remotes/origin/net*.0`
 
 ### Git Workflow (Copilot CLI Rules)
 
@@ -301,11 +324,6 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Verifies tests catch the bug before fix and pass with fix. Auto-detects test type (UI, device, unit, XAML) and dispatches to the appropriate runner.
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
-
-9. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
-   - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
-   - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
-   - **Used by**: When investigating CI failures
 
 10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally

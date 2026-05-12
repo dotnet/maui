@@ -266,6 +266,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			View.UpdateFlowDirection(_context.Shell);
 			NavigationBar.UpdateFlowDirection(_context.Shell);
+
+			if (TabBarController?.TabBar is not null)
+			{
+				TabBarController.TabBar.UpdateFlowDirection(_context.Shell);
+			}
 		}
 
 		public override void ViewDidLayoutSubviews()
