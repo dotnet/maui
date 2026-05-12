@@ -486,6 +486,8 @@ internal partial class MauiItemsView
 	/// <summary>
 	/// Performs a reorder operation on grouped data, respecting CanMixGroups.
 	/// Maps the flat insertion index to the correct group and position within the group.
+	/// Groups that implement only IEnumerable (not IList) are traversed for item lookup
+	/// but cannot be mutated — a reorder into or out of such a group returns false.
 	/// </summary>
 	bool PerformGroupedReorder(IList groupsList)
 	{
@@ -498,32 +500,41 @@ internal partial class MauiItemsView
 		bool hasFooters = groupableView.GroupFooterTemplate is not null;
 
 		// Find which group the dragged item belongs to.
+		// Groups may be IEnumerable-only (e.g., IGrouping<K,V>), so enumerate rather
+		// than requiring IList for the search. IList is still required for mutation.
 		int sourceGroupIndex = -1;
 		int sourceItemIndex = -1;
 		IList? sourceGroup = null;
 
 		for (int g = 0; g < groupsList.Count; g++)
 		{
-			if (groupsList[g] is IList group)
+			if (groupsList[g] is not IEnumerable groupItems)
 			{
-				for (int i = 0; i < group.Count; i++)
+				continue;
+			}
+
+			int i = 0;
+			foreach (var groupItem in groupItems)
+			{
+				if (ReferenceEquals(groupItem, _draggedItem) || Equals(groupItem, _draggedItem))
 				{
-					if (Equals(group[i], _draggedItem))
-					{
-						sourceGroupIndex = g;
-						sourceItemIndex = i;
-						sourceGroup = group;
-						break;
-					}
-				}
-				if (sourceGroup is not null)
-				{
+					sourceGroupIndex = g;
+					sourceItemIndex = i;
+					sourceGroup = groupsList[g] as IList;
 					break;
 				}
+
+				i++;
+			}
+
+			if (sourceGroupIndex >= 0)
+			{
+				break;
 			}
 		}
 
-		if (sourceGroup is null || sourceGroupIndex < 0 || sourceItemIndex < 0)
+		// sourceGroup being null means the group is not mutable — reorder not possible.
+		if (sourceGroupIndex < 0 || sourceItemIndex < 0 || sourceGroup is null)
 		{
 			return false;
 		}
@@ -536,37 +547,44 @@ internal partial class MauiItemsView
 
 		for (int g = 0; g < groupsList.Count; g++)
 		{
-			if (groupsList[g] is IList group)
+			if (groupsList[g] is not IEnumerable groupItems)
 			{
-				int groupStart = flatPos;
-				if (hasHeaders)
-				{
-					flatPos++; // skip header
-				}
+				continue;
+			}
 
-				int itemsStart = flatPos;
-				flatPos += group.Count;
+			// Use ICollection.Count when available (O(1)); otherwise enumerate (O(n)).
+			int groupItemCount = groupsList[g] is ICollection coll
+				? coll.Count
+				: groupItems.Cast<object>().Count();
 
-				if (hasFooters)
-				{
-					flatPos++; // skip footer
-				}
+			int groupStart = flatPos;
+			if (hasHeaders)
+			{
+				flatPos++; // skip header
+			}
 
-				if (_insertionIndex >= itemsStart && _insertionIndex <= itemsStart + group.Count)
-				{
-					targetGroupIndex = g;
-					targetItemIndex = _insertionIndex - itemsStart;
-					targetGroup = group;
-					break;
-				}
+			int itemsStart = flatPos;
+			flatPos += groupItemCount;
 
-				if (hasHeaders && _insertionIndex == groupStart)
-				{
-					targetGroupIndex = g;
-					targetItemIndex = 0;
-					targetGroup = group;
-					break;
-				}
+			if (hasFooters)
+			{
+				flatPos++; // skip footer
+			}
+
+			if (_insertionIndex >= itemsStart && _insertionIndex <= itemsStart + groupItemCount)
+			{
+				targetGroupIndex = g;
+				targetItemIndex = _insertionIndex - itemsStart;
+				targetGroup = groupsList[g] as IList;
+				break;
+			}
+
+			if (hasHeaders && _insertionIndex == groupStart)
+			{
+				targetGroupIndex = g;
+				targetItemIndex = 0;
+				targetGroup = groupsList[g] as IList;
+				break;
 			}
 		}
 
@@ -575,11 +593,15 @@ internal partial class MauiItemsView
 		{
 			for (int g = groupsList.Count - 1; g >= 0; g--)
 			{
-				if (groupsList[g] is IList group)
+				if (groupsList[g] is IEnumerable groupItems)
 				{
+					int groupItemCount = groupsList[g] is ICollection coll
+						? coll.Count
+						: groupItems.Cast<object>().Count();
+
 					targetGroupIndex = g;
-					targetItemIndex = group.Count;
-					targetGroup = group;
+					targetItemIndex = groupItemCount;
+					targetGroup = groupsList[g] as IList;
 					break;
 				}
 			}
@@ -758,7 +780,24 @@ internal partial class MauiItemsView
 			return null;
 		}
 
-		return FindAllContainers().FirstOrDefault(c => Equals(GetContainerItem(c), targetItem));
+		// Prefer reference equality so duplicate value-equal items resolve to the
+		// correct container. Fall back to value equality for value types.
+		FrameworkElement? valueEqualFallback = null;
+		foreach (var container in FindAllContainers())
+		{
+			var item = GetContainerItem(container);
+			if (ReferenceEquals(item, targetItem))
+			{
+				return container;
+			}
+
+			if (valueEqualFallback is null && Equals(item, targetItem))
+			{
+				valueEqualFallback = container;
+			}
+		}
+
+		return valueEqualFallback;
 	}
 
 	IEnumerable<FrameworkElement> FindAllContainers()
@@ -831,6 +870,19 @@ internal partial class MauiItemsView
 
 	int IndexOfItem(object item, IList itemsList)
 	{
+		// First pass: reference equality — correctly distinguishes two items that are
+		// value-equal but distinct objects (e.g., duplicate records in the list).
+		for (int i = 0; i < itemsList.Count; i++)
+		{
+			var currentItem = GetItemAtIndex(i, itemsList);
+			if (ReferenceEquals(currentItem, item))
+			{
+				return i;
+			}
+		}
+
+		// Second pass: value equality fallback for value types (structs, primitives)
+		// where ReferenceEquals is always false.
 		for (int i = 0; i < itemsList.Count; i++)
 		{
 			var currentItem = GetItemAtIndex(i, itemsList);
@@ -839,6 +891,7 @@ internal partial class MauiItemsView
 				return i;
 			}
 		}
+
 		return -1;
 	}
 
@@ -862,11 +915,21 @@ internal partial class MauiItemsView
 			return;
 		}
 
-		var containers = FindAllContainers().ToList();
-
-		for (int i = 0; i < containers.Count && i < sourceList.Count; i++)
+		// Derive each container's Tag from its item's actual position in the source.
+		// A positional loop (containers[i].Tag = i) is wrong when ItemsRepeater
+		// virtualizes: FindAllContainers skips unrealized slots, so containers[i]
+		// does not necessarily correspond to sourceList[i].
+		foreach (var container in FindAllContainers())
 		{
-			containers[i].Tag = i;
+			var item = GetContainerItem(container);
+			if (item is not null)
+			{
+				int actualIndex = IndexOfItem(item, sourceList);
+				if (actualIndex >= 0)
+				{
+					container.Tag = actualIndex;
+				}
+			}
 		}
 	}
 
