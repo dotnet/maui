@@ -515,7 +515,13 @@ stages:
                 sleep 2
                 adb start-server
                 sleep 2
-                timeout 60 adb wait-for-device
+                timeout 90 adb wait-for-device
+                # Wait for boot to complete after ADB reconnect
+                waited=0
+                while [ "$(adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                  sleep 5; waited=$((waited+5))
+                  [ $waited -ge 90 ] && { echo "##[warning]Emulator still not booted after ADB restart"; break; }
+                done
               fi
 
               # Dismiss ANR dialogs and wake screen — run twice for reliability
@@ -557,7 +563,8 @@ stages:
               echo "✅ Emulator warmed up and responsive"
             displayName: 'Warm Up Android Emulator'
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
-            timeoutInMinutes: 3
+            timeoutInMinutes: 6
+            retryCountOnTaskFailure: 2
 
           - bash: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
