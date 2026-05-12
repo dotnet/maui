@@ -104,7 +104,7 @@ internal partial class MauiItemsView
 
 	void WireUpDragDropEvents()
 	{
-		if (_scrollViewer is null)
+		if (_dragDropWired || _scrollViewer is null)
 		{
 			return;
 		}
@@ -148,6 +148,11 @@ internal partial class MauiItemsView
 
 	void UnwireDragDropEvents()
 	{
+		if (!_dragDropWired)
+		{
+			return;
+		}
+
 		if (_scrollViewer is not null)
 		{
 			_scrollViewer.AllowDrop = false;
@@ -716,19 +721,33 @@ internal partial class MauiItemsView
 	int GetContainerIndex(FrameworkElement container)
 	{
 		var sourceList = GetSourceList();
-		if (sourceList is not null)
+		var containerItem = GetContainerItem(container);
+
+		// Prefer the Tag set during ElementPrepared — it is the authoritative flat
+		// index and avoids the ambiguity where group headers and footers share the
+		// same underlying Item (the group object). Validate the tag by checking that
+		// the item at that index still matches the container's current item.
+		if (container.Tag is int tagIndex && sourceList is not null &&
+			tagIndex >= 0 && tagIndex < sourceList.Count)
 		{
-			var item = GetContainerItem(container);
-			if (item is not null)
+			var tagItem = GetItemAtIndex(tagIndex, sourceList);
+			if (containerItem is not null && Equals(tagItem, containerItem))
 			{
-				var liveIndex = IndexOfItem(item, sourceList);
-				if (liveIndex >= 0)
-				{
-					return liveIndex;
-				}
+				return tagIndex;
 			}
 		}
 
+		// Tag is stale — fall back to a linear search.
+		if (sourceList is not null && containerItem is not null)
+		{
+			var liveIndex = IndexOfItem(containerItem, sourceList);
+			if (liveIndex >= 0)
+			{
+				return liveIndex;
+			}
+		}
+
+		// Last resort: use the raw tag even if unvalidated.
 		if (container.Tag is int index)
 		{
 			return index;
