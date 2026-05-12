@@ -30,6 +30,18 @@ namespace Microsoft.Maui.Platform
 			"ToggleSwitchFillOffDisabled"
 		};
 
+		static readonly string[] toggleSwitchThumbKeys =
+		{
+			"ToggleSwitchKnobFillOnPointerOver",
+			"ToggleSwitchKnobFillOn",
+			"ToggleSwitchKnobFillOnPressed",
+			"ToggleSwitchKnobFillOnDisabled",
+			"ToggleSwitchKnobFillOffPointerOver",
+			"ToggleSwitchKnobFillOff",
+			"ToggleSwitchKnobFillOffPressed",
+			"ToggleSwitchKnobFillOffDisabled"
+		};
+
 		public static void UpdateTrackColor(this ToggleSwitch toggleSwitch, ISwitch view)
 		{
 			if (toggleSwitch is null)
@@ -72,24 +84,18 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (view.ThumbColor is null)
+			var thumbColor = view.ThumbColor?.ToPlatform();
+
+			if (thumbColor is not null)
 			{
-				return;
+				toggleSwitch.Resources.SetValueForAllKey(toggleSwitchThumbKeys, thumbColor);
+			}
+			else
+			{
+				toggleSwitch.Resources.RemoveKeys(toggleSwitchThumbKeys);
 			}
 
-			if (view.ThumbColor is not null)
-			{
-				toggleSwitch.TryUpdateResource(
-					view.ThumbColor.ToPlatform(),
-					"ToggleSwitchKnobFillOnPointerOver",
-					"ToggleSwitchKnobFillOn",
-					"ToggleSwitchKnobFillOnPressed",
-					"ToggleSwitchKnobFillOnDisabled",
-					"ToggleSwitchKnobFillOffPointerOver",
-					"ToggleSwitchKnobFillOff",
-					"ToggleSwitchKnobFillOffPressed",
-					"ToggleSwitchKnobFillOffDisabled");
-			}
+			toggleSwitch.RefreshThemeResources();
 		}
 
 		internal static void UpdateMinWidth(this ToggleSwitch toggleSwitch, ISwitch view)

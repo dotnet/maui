@@ -188,6 +188,43 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(UISwitchStyle.Sliding, styles.Style);
 		}
 
+		[Fact(DisplayName = "Custom Colors Render On Initial Off State On iOS 26")]
+		public async Task CustomColorsRenderOnInitialOffStateOniOS26()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return;
+			}
+
+			var switchStub = new SwitchStub
+			{
+				IsOn = false,
+				TrackColor = Colors.Red,
+				ThumbColor = Colors.Orange
+			};
+
+			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
+			{
+				var nativeSwitch = GetNativeSwitch(handler);
+
+				nativeSwitch.SizeToFit();
+				nativeSwitch.SetNeedsLayout();
+				nativeSwitch.LayoutIfNeeded();
+
+				UIView renderedView = handler.ContainerView is not null ? handler.ContainerView : nativeSwitch;
+				renderedView.SetNeedsLayout();
+				renderedView.LayoutIfNeeded();
+
+				UIGraphics.BeginImageContextWithOptions(renderedView.Bounds.Size, false, 0);
+				renderedView.DrawViewHierarchy(renderedView.Bounds, true);
+				var bitmap = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+
+				Assert.NotNull(bitmap);
+				await bitmap.AssertContainsColor(Colors.Red, tolerance: 0.1);
+			});
+		}
+
 		[Fact(DisplayName = "Default Switch Uses Automatic Style On iOS 26")]
 		public async Task DefaultSwitchUsesAutomaticStyleOniOS26()
 		{

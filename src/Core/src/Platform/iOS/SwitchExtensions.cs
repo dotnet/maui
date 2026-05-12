@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Platform
 			var weakSwitch = new WeakReference<UISwitch>(uiSwitch);
 			var weakView = new WeakReference<ISwitch>(view);
 
-			DispatchQueue.MainQueue.DispatchAsync(() =>
+			DispatchQueue.MainQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, TimeSpan.FromMilliseconds(10)), () =>
 			{
 				if (!weakSwitch.TryGetTarget(out var currentSwitch) || currentSwitch.Handle == IntPtr.Zero)
 				{
@@ -160,7 +160,8 @@ namespace Microsoft.Maui.Platform
 		{
 			var trackSubview = uiSwitch.GetTrackSubview();
 
-			return trackSubview is not null
+			return uiSwitch.Window is not null
+				&& trackSubview is not null
 				&& uiSwitch.Bounds.Width > 0
 				&& uiSwitch.Bounds.Height > 0
 				&& trackSubview.Bounds.Width > 0
