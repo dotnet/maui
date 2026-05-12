@@ -10,6 +10,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);RS0041;RS0026;RS0027</NoWarn>
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <DefaultItemExcludes>$(DefaultItemExcludes);HybridWebViewSourceGen\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
@@ -44,7 +45,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />
     <ProjectReference
-      Include="..\HybridWebViewSourceGen\Core.HybridWebViewSourceGen.csproj"
+      Include="HybridWebViewSourceGen\Core.HybridWebViewSourceGen.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false" />
     <PackageReference Include="System.Numerics.Vectors" Condition="$(TargetFramework.StartsWith('netstandard'))" />
