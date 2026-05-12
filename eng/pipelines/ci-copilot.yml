@@ -231,7 +231,12 @@ stages:
                   echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
                   timeout 120 adb wait-for-device
                   if [ $? -eq 0 ]; then
-                    echo "Device detected: $(adb devices -l | grep emulator)"
+                    # Capture device ID immediately while it's responsive
+                    DETECTED_DEVICE=$(adb devices | grep "emulator.*device" | awk '{print $1}' | head -1)
+                    if [ -z "$DETECTED_DEVICE" ]; then
+                      DETECTED_DEVICE="emulator-5554"
+                    fi
+                    echo "Device detected: $DETECTED_DEVICE ($(adb devices -l | grep emulator || true))"
                     break
                   fi
 
@@ -283,7 +288,11 @@ stages:
                   fi
                 done
 
-                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
+                DEVICE_ID="${DETECTED_DEVICE:-$(adb devices | grep 'emulator.*device' | awk '{print $1}' | head -1)}"
+                if [ -z "$DEVICE_ID" ]; then
+                  DEVICE_ID="emulator-5554"
+                  echo "##[warning]Could not detect device ID, defaulting to $DEVICE_ID"
+                fi
                 echo "✅ Emulator fully booted: $DEVICE_ID"
 
                 # Prepare emulator for CI use — keeps device responsive during idle period
@@ -826,7 +835,11 @@ stages:
                   [ $waited -ge 120 ] && { echo "##[error]PM timeout"; exit 1; }
                 done
 
-                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
+                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}' | head -1)
+                if [ -z "$DEVICE_ID" ]; then
+                  DEVICE_ID="emulator-5554"
+                  echo "##[warning]Could not detect device ID, defaulting to $DEVICE_ID"
+                fi
                 echo "✅ Emulator booted: $DEVICE_ID"
                 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
                 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
