@@ -257,6 +257,8 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView.Text = VirtualView.GetItem(pickerSource.SelectedIndex);
 			VirtualView.SelectedIndex = pickerSource.SelectedIndex;
+			// Re-apply kern: plain Text assignment above clears iOS kern attributes.
+			PlatformView.UpdateCharacterSpacing(VirtualView);
 		}
 
 		void UpdatePickerSelectedIndex(UIPickerView? pickerView, int formsIndex)
