@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Handlers
 							UpdateTrackOffColor(PlatformView);
 							if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
 							{
-								UpdateThumbColor(PlatformView);
+								UpdateThumbAndTrackColor(PlatformView);
 							}
 						}
 					});
@@ -116,12 +116,12 @@ namespace Microsoft.Maui.Handlers
 						{
 							if (view is UISwitch uiSwitch)
 							{
-								UpdateThumbColor(uiSwitch);
+								UpdateThumbAndTrackColor(uiSwitch);
 							}
 						});
 
 					// iOS 26+ resets ThumbTintColor after initial layout, so re-apply the custom ThumbColor here.
-					UpdateThumbColor(platformView);
+					UpdateThumbAndTrackColor(platformView);
 				}
 			}
 
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Handlers
 				});
 			}
 
-			void UpdateThumbColor(UISwitch platformView)
+			void UpdateThumbAndTrackColor(UISwitch platformView)
 			{
 				DispatchQueue.MainQueue.DispatchAsync(async () =>
 				{
