@@ -50,6 +50,8 @@ namespace Microsoft.Maui.Handlers
 				{
 					contentPanel.SizeChanged -= OnContentPanelSizeChanged;
 				}
+
+				VirtualView?.ScrollFinished();
 				PendingScrollToRequest = null;
 			}
 		}
@@ -102,9 +104,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (handler is ScrollViewHandler scrollViewHandler)
 				{
-					bool needsDefer = (request.VerticalOffset > 0 && handler.PlatformView.ScrollableHeight == 0) ||
-									  (request.HorizontalOffset > 0 && handler.PlatformView.ScrollableWidth == 0);
-					if (needsDefer)
+					bool notMeasuredYet = (request.VerticalOffset > 0 && handler.PlatformView.ScrollableHeight == 0 && handler.PlatformView.ExtentHeight == 0) ||
+										  (request.HorizontalOffset > 0 && handler.PlatformView.ScrollableWidth == 0 && handler.PlatformView.ExtentWidth == 0);
+					if (notMeasuredYet)
 					{
 						// Defer until ContentPanel.SizeChanged fires (after WinUI arrange pass).
 						// Only subscribe once; overwrite the pending request so the latest wins.
@@ -122,8 +124,8 @@ namespace Microsoft.Maui.Handlers
 
 				if (targetVerticalOffset == handler.PlatformView.VerticalOffset && targetHorizontalOffset == handler.PlatformView.HorizontalOffset)
 				{
-				   handler.VirtualView.ScrollFinished();
-				   return;
+					handler.VirtualView.ScrollFinished();
+					return;
 				}
 
 				handler.PlatformView.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, request.Instant);
@@ -188,7 +190,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					currentPaddingLayer.CachedChildren.Clear();
 				}
-                
+
 				return;
 			}
 
