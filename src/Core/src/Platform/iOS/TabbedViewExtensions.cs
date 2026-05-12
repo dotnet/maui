@@ -50,24 +50,9 @@ namespace Microsoft.Maui.Platform
 			// Set BarBackgroundColor
 			if (effectiveBarColor != null)
 			{
-				// Use ConfigureWithOpaqueBackground so the custom color overrides system glass/blur
-				// effects (e.g., Liquid Glass on iOS/MacCatalyst 26). ConfigureWithDefaultBackground
-				// enables a translucent blur that can visually override a custom BackgroundColor.
-				// This matches the behavior of ShellNavBarAppearanceTracker which also uses Opaque.
-				_tabBarAppearance.ConfigureWithOpaqueBackground();
 				_tabBarAppearance.BackgroundColor = effectiveBarColor;
-				_tabBarAppearance.BackgroundEffect = null;
-
-				// Fallback for platform-specific material rendering on MacCatalyst where
-				// appearance background can still be visually ignored.
 				tabBar.BackgroundColor = effectiveBarColor;
 				tabBar.BarTintColor = effectiveBarColor;
-			}
-			else
-			{
-				_tabBarAppearance.ConfigureWithDefaultBackground();
-				tabBar.BackgroundColor = null;
-				tabBar.BarTintColor = null;
 			}
 
 			// Set BarTextColor
