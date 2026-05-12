@@ -907,5 +907,28 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 		}
+
+		/// <summary>
+		/// Optional callback invoked by <see cref="AccessibilityActivate"/> when VoiceOver activates this view.
+		/// Set by GesturePlatformManager for container layouts with tap gestures to bypass UIKit's
+		/// simulated-touch path, which can be intermittently unreliable on macOS Catalyst.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Memory", "MEM0002",
+			Justification = "Callback captures only a WeakReference<GesturePlatformManager>, which is not an NSObject. No circular strong NSObject reference is created.")]
+		internal Func<bool>? AccessibilityActivateCallback { get; set; }
+
+		/// <inheritdoc/>
+		public override bool AccessibilityActivate()
+		{
+			// Prefer direct MAUI gesture invocation over UIKit's simulated-touch mechanism.
+			// On macOS Catalyst, the simulated-touch path for UITapGestureRecognizer is
+			// intermittently unreliable when VoiceOver activates a container with Ctrl+Option+Space.
+			if (AccessibilityActivateCallback?.Invoke() == true)
+			{
+				return true;
+			}
+
+			return base.AccessibilityActivate();
+		}
 	}
 }
