@@ -61,7 +61,6 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				_tabBarAppearance.ConfigureWithDefaultBackground();
-				_tabBarAppearance.BackgroundColor = null;
 				tabBar.Translucent = true;
 				tabBar.BackgroundColor = null;
 			}
