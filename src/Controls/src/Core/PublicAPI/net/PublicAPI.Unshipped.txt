@@ -96,4 +96,3 @@ Microsoft.Maui.Controls.BoxView.~BoxView() -> void
 ~Microsoft.Maui.Controls.BoxView.Fill.get -> Microsoft.Maui.Controls.Brush
 ~Microsoft.Maui.Controls.BoxView.Fill.set -> void
 ~static readonly Microsoft.Maui.Controls.BoxView.FillProperty -> Microsoft.Maui.Controls.BindableProperty
-Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget(Microsoft.Maui.IHybridWebViewDotNetMethodProvider! provider) -> void

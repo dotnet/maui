@@ -27,32 +27,24 @@ namespace Microsoft.Maui
 		IHybridWebViewDotNetMethodProvider? DotNetMethodProvider { get; }
 
 		/// <summary>
-		/// Sets the AOT-friendly method provider for JavaScript-to-.NET invocation.
-		/// Use this with <see cref="HybridWebViewDotNetMethodProviderAttribute"/> and a source generator,
-		/// or implement <see cref="IHybridWebViewDotNetMethodProvider"/> directly.
-		/// </summary>
-		/// <param name="provider">An instance that handles method dispatch from JavaScript.</param>
-		void SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider provider);
-
-		/// <summary>
 		/// For internal use only.
 		/// </summary>
-		[Obsolete("Use SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider) instead. Apply [HybridWebViewDotNetMethodProvider] to a partial class with a source generator, or implement IHybridWebViewDotNetMethodProvider directly.")]
 		object? InvokeJavaScriptTarget { get; set; }
 
 		/// <summary>
 		///  Sets the object that will be the target of JavaScript calls from the web view. The public methods on this object
 		///  are callable from JavaScript using the <c>window.HybridWebView.InvokeDotNet</c> method.
+		///  If <typeparamref name="T"/> implements <see cref="IHybridWebViewDotNetMethodProvider"/> (e.g. via the
+		///  <see cref="HybridWebViewDotNetMethodProviderAttribute"/> source generator), the AOT-safe path is used.
+		///  Otherwise, reflection-based dispatch is used (requires <c>MauiHybridWebViewSupported</c> to be enabled).
 		/// </summary>
 		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
 		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
-		[Obsolete("Use SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider) instead. Apply [HybridWebViewDotNetMethodProvider] to a partial class with a source generator, or implement IHybridWebViewDotNetMethodProvider directly.")]
 		void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class;
 
 		/// <summary>
 		/// For internal use only.
 		/// </summary>
-		[Obsolete("Use SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider) instead.")]
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? InvokeJavaScriptType { get; set; }
 

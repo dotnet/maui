@@ -43,12 +43,6 @@ namespace Microsoft.Maui.Controls
 
 		IHybridWebViewDotNetMethodProvider? _dotNetMethodProvider;
 
-		/// <inheritdoc/>
-		public void SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider provider)
-		{
-			_dotNetMethodProvider = provider ?? throw new ArgumentNullException(nameof(provider));
-		}
-
 		[UnconditionalSuppressMessage("Trimming", "IL2114", Justification = "Base type VisualElement specifies DynamicallyAccessedMemberTypes.NonPublicFields: https://github.com/dotnet/runtime/issues/108978#issuecomment-2420091986")]
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? _invokeJavaScriptType;
@@ -62,14 +56,27 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
-#pragma warning disable CS0618 // Obsolete members used for backward compatibility
 		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
 		{
+			if (target is IHybridWebViewDotNetMethodProvider provider)
+			{
+				_dotNetMethodProvider = provider;
+			}
+			else if (RuntimeFeature.IsHybridWebViewSupported)
+			{
+				_dotNetMethodProvider = new HybridWebViewReflectionDotNetMethodProvider(target, typeof(T));
+			}
+			else
+			{
+				throw new NotSupportedException(
+					$"Reflection-based HybridWebView method invocation is not supported in this configuration. " +
+					$"Apply [HybridWebViewDotNetMethodProvider] to '{typeof(T).Name}' and make it partial, " +
+					$"or implement IHybridWebViewDotNetMethodProvider directly.");
+			}
+
 			((IHybridWebView)this).InvokeJavaScriptTarget = target;
 			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
-			_dotNetMethodProvider = new HybridWebViewReflectionDotNetMethodProvider(target, typeof(T));
 		}
-#pragma warning restore CS0618
 
 		void IHybridWebView.RawMessageReceived(string rawMessage)
 		{

@@ -1,5 +1,4 @@
 ﻿#nullable enable
-#pragma warning disable CS0618 // Backward compat tests: intentionally using obsolete SetInvokeJavaScriptTarget<T>
 using System;
 using System.Threading.Tasks;
 using Xunit;
