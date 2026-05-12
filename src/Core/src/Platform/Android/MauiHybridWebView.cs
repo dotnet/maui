@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
 			UpdateClipBounds(Width, Height);
 
-			if (IsInsideSwipeRefreshLayout())
+			if (RefreshViewWebViewScrollCapture.IsInsideMauiSwipeRefreshLayout(this))
 			{
 				RefreshViewWebViewScrollCapture.Attach(this);
 				// If a page has already loaded before this HybridWebView was placed inside a
@@ -61,21 +61,6 @@ namespace Microsoft.Maui.Platform
 		{
 			RefreshViewWebViewScrollCapture.Detach(this);
 			base.OnDetachedFromWindow();
-		}
-
-		// IsInsideSwipeRefreshLayout — walks parent view tree.
-		bool IsInsideSwipeRefreshLayout()
-		{
-			var parent = Parent;
-			while (parent is not null)
-			{
-				if (parent is MauiSwipeRefreshLayout)
-				{
-					return true;
-				}
-				parent = parent.Parent;
-			}
-			return false;
 		}
 
 		void UpdateClipBounds(int width, int height)

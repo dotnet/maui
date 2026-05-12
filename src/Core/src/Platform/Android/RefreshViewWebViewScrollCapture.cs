@@ -142,6 +142,20 @@ internal static class RefreshViewWebViewScrollCapture
 
 	internal static bool IsAttached(WebView? webView) => GetState(webView) is not null;
 
+	internal static bool IsInsideMauiSwipeRefreshLayout(WebView webView)
+	{
+		var parent = webView.Parent;
+		while (parent is not null)
+		{
+			if (parent is MauiSwipeRefreshLayout)
+			{
+				return true;
+			}
+			parent = parent.Parent;
+		}
+		return false;
+	}
+
 	internal static bool TryGetCanScrollUp(WebView? webView, out bool canScrollUp)
 	{
 		if (webView is null)
