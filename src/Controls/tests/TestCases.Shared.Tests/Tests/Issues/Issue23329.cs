@@ -1,12 +1,13 @@
+#if WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class EntrySelectionTest : _IssuesUITest
+public class Issue23329 : _IssuesUITest
 {
-	public EntrySelectionTest(TestDevice device)
+	public Issue23329(TestDevice device)
 		: base(device)
 	{ }
 
@@ -14,7 +15,7 @@ public class EntrySelectionTest : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Entry)]
-	public void VerifySelectWorks()
+	public void VerifyEntrySelectAllOnRefocusWorks()
 	{
 		App.WaitForElement("TextBox");
 		App.Click("TextBox");
@@ -29,3 +30,4 @@ public class EntrySelectionTest : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
