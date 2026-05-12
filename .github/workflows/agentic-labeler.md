@@ -8,7 +8,7 @@ description: |
 
 on:
   issues:
-    types: [opened, reopened]
+    types: [opened]
   pull_request_target:
     types: [opened, reopened]
   workflow_dispatch:
@@ -67,6 +67,8 @@ The number of the item to label is one of (use whichever is set):
 - Issue / PR number from the triggering event: `${{ github.event.issue.number || github.event.pull_request.number }}`
 - Manual dispatch input: `${{ inputs.issue_number }}`
 
+Determine the **target item number** from those values and remember it. You will need to pass it explicitly as `item_number` to the `add_labels` safe-output tool — do **not** rely on the tool inferring the target, especially under `workflow_dispatch`.
+
 Repository: `${{ github.repository }}`
 
 ## Workflow
@@ -81,11 +83,15 @@ Repository: `${{ github.repository }}`
 
 3. **Select labels** from the repository's existing labels.
 
-   - Fetch the current list of labels with `gh label list --limit 300` (bash) and choose from that list.
-   - You may apply **any** existing label, not just `area-*` and `platform/*` — for example, severity (`high impact`, `regression`), kind (`bug`, `proposal`, `enhancement`, `documentation`), or status labels — when clearly justified by the content.
-   - Do **not** create new labels. Only labels that already exist in the repository will be accepted.
+   - Fetch the current list of labels using the `list_labels` MCP tool (provided by the `github` toolset). Do **not** try to use `gh label list` from a shell — there is no authenticated `gh` CLI inside the agent sandbox.
+   - You may apply **any** existing label, not just `area-*` and `platform/*`. Examples of other useful label families that exist in this repo include kind (`t/bug`, `t/enhancement`, `t/docs`, `t/breaking`), severity / status (`i/regression`, `s/needs-repro`, `s/needs-info`, `s/duplicate`), and priority (`p/0`, `p/1`, `p/2`, `p/3`) — apply them only when clearly justified by the content.
+   - Do **not** create new labels. Only labels that already exist in the repository (per `list_labels`) will be accepted.
 
-4. **Apply the labels** using the `add_labels` safe-output tool. If nothing is clearly applicable, apply nothing — it is better to add no labels than to add wrong ones.
+4. **Apply the labels** by calling the `add_labels` safe-output tool **exactly once** with:
+   - `item_number`: the target issue/PR number you determined above (always pass this explicitly).
+   - `labels`: the array of selected label names.
+
+   If no labels clearly apply, do **not** call `add_labels`. Instead, call the `noop` safe-output with a one-sentence reason — this is **required** to signal that the workflow ran to completion intentionally without labeling.
 
 ## Labeling rules
 
@@ -113,15 +119,15 @@ Prefer the most specific label. It is fine to apply both a generic and a specifi
 
 This is the most important behavior for PRs.
 
-**For pull requests**, infer `platform/*` labels primarily from the **changed files**, using the rules below. Each rule maps a file pattern to one or more platform labels. Apply a `platform/*` label if **any** changed file matches that pattern:
+**For pull requests**, infer `platform/*` labels primarily from the **changed files**, using the rules below. Each rule maps a file pattern to one or more platform labels. Apply a `platform/*` label if **any** changed file matches that pattern. The path patterns intentionally target the established MAUI source-layout conventions (`Platform/<Name>/` and `Platforms/<Name>/`) — do not match on bare `/Android/`, `/iOS/`, `/Windows/`, etc., as those occur in templates, docs, and unrelated tooling paths.
 
 | File pattern (changed in the PR) | Label(s) to apply |
 | --- | --- |
-| `*.android.cs`, `*.Android.cs`, paths containing `/Platform/Android/`, `/Platforms/Android/`, `/AndroidNative/`, `/Android/` | `platform/android` |
+| `*.android.cs`, `*.Android.cs`, paths containing `/Platform/Android/`, `/Platforms/Android/`, `/AndroidNative/` | `platform/android` |
 | `*.ios.cs`, `*.iOS.cs`, paths containing `/Platform/iOS/`, `/Platforms/iOS/` | `platform/ios` (note: `.ios.cs` also compiles for MacCatalyst — also add `platform/macos`) |
-| `*.maccatalyst.cs`, `*.MacCatalyst.cs`, paths containing `/Platform/MacCatalyst/`, `/Platforms/MacCatalyst/`, `/macOS/`, `/MacCatalyst/` | `platform/macos` |
-| `*.windows.cs`, `*.Windows.cs`, paths containing `/Platform/Windows/`, `/Platforms/Windows/`, `/Windows/` | `platform/windows` |
-| `*.tizen.cs`, paths containing `/Tizen/` | `platform/tizen` |
+| `*.maccatalyst.cs`, `*.MacCatalyst.cs`, paths containing `/Platform/MacCatalyst/`, `/Platforms/MacCatalyst/` | `platform/macos` |
+| `*.windows.cs`, `*.Windows.cs`, paths containing `/Platform/Windows/`, `/Platforms/Windows/` | `platform/windows` |
+| `*.tizen.cs`, paths containing `/Platform/Tizen/`, `/Platforms/Tizen/` | `platform/tizen` |
 
 Notes:
 
@@ -142,4 +148,4 @@ Notes:
 
 ## Output
 
-Use the `add_labels` safe-output tool exactly once with the final set of labels. If no labels are clearly applicable, do not call `add_labels` at all (and consider calling `noop` with a short reason).
+Call the `add_labels` safe-output tool **exactly once** with `item_number` (the target issue/PR number) and `labels` (the chosen label names). If no labels clearly apply, instead call `noop` with a one-sentence reason. Always emit one of these two safe-output calls so the workflow run completes cleanly.
