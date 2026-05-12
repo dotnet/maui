@@ -530,6 +530,13 @@ namespace Microsoft.Maui.Controls
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>
+		/// Defines the background brush for the Shell toolbar. Supports gradient brushes.
+		/// </summary>
+		public static readonly new BindableProperty BackgroundProperty =
+			BindableProperty.CreateAttached("Background", typeof(Brush), typeof(Shell), Brush.Default,
+				propertyChanged: OnShellAppearanceValueChanged);
+
+		/// <summary>
 		/// The backdrop of the flyout, which is the appearance of the flyout overlay.
 		/// </summary>
 		public static readonly BindableProperty FlyoutBackdropProperty =
@@ -713,6 +720,20 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The brushed used in the backdrop of the flyout.</param>
 		public static void SetFlyoutBackdrop(BindableObject obj, Brush value) => obj.SetValue(FlyoutBackdropProperty, value);
 
+		/// <summary>
+		/// Gets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object from which to get the background brush.</param>
+		/// <returns>The background brush for the Shell toolbar.</returns>
+		public static Brush GetBackground(BindableObject obj) => (Brush)obj.GetValue(BackgroundProperty);
+
+		/// <summary>
+		/// Sets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object on which to set the background brush.</param>
+		/// <param name="value">The brush to use as the Shell toolbar background.</param>
+		public static void SetBackground(BindableObject obj, Brush value) => obj.SetValue(BackgroundProperty, value);
+
 		static void OnShellAppearanceValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var item = (Element)bindable;
@@ -816,7 +837,14 @@ namespace Microsoft.Maui.Controls
 			{
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
 				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
-				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				if (!Brush.IsNullOrEmpty(appearance?.Background))
+				{
+					Toolbar.BarBackground = appearance.Background;
+				}
+				else
+				{
+					Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				}
 				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
 			}
 		}

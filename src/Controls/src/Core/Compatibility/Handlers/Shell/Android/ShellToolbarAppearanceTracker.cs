@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public virtual void SetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker, ShellAppearance appearance)
 		{
 			var foreground = appearance.ForegroundColor;
-			var background = appearance.BackgroundColor;
+			var background = !Brush.IsNullOrEmpty(appearance.Background)
+				? appearance.Background
+				: new SolidColorBrush(appearance.BackgroundColor);
 			var titleColor = appearance.TitleColor;
 
 			SetColors(toolbar, toolbarTracker, foreground, background, titleColor);
@@ -29,10 +31,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(AToolbar toolbar, IShellToolbarTracker toolbarTracker)
 		{
-			SetColors(toolbar, toolbarTracker, ShellRenderer.DefaultForegroundColor, ShellRenderer.DefaultBackgroundColor, ShellRenderer.DefaultTitleColor);
+			SetColors(toolbar, toolbarTracker, ShellRenderer.DefaultForegroundColor, new SolidColorBrush(ShellRenderer.DefaultBackgroundColor), ShellRenderer.DefaultTitleColor);
 		}
 
-		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Color background, Color title)
+		protected virtual void SetColors(AToolbar toolbar, IShellToolbarTracker toolbarTracker, Color foreground, Brush background, Color title)
 		{
 			if (_disposed)
 				return;
@@ -43,7 +45,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
-			shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
+			shellToolbar.BarBackground = background ?? new SolidColorBrush(ShellRenderer.DefaultBackgroundColor);
 			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
 		}
 
