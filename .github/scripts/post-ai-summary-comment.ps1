@@ -67,6 +67,7 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 $phases = [ordered]@{
+    "uitests"     = @{ File = "uitests/content.md";        Icon = "🧪"; Title = "UI Tests — Category Detection" }
     "pre-flight"  = @{ File = "pre-flight/content.md";     Icon = "🔍"; Title = "Pre-Flight — Context & Validation" }
     "code-review" = @{ File = "pre-flight/code-review.md"; Icon = "🔬"; Title = "Code Review — Deep Analysis" }
     "try-fix"     = @{ File = "try-fix/content.md";        Icon = "🔧"; Title = "Fix — Analysis & Comparison" }

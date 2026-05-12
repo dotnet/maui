@@ -26,7 +26,7 @@ scenarios:
         value: "Devil's Advocate"
     rubric:
       - "The agent provides a plain summary without launching a structured multi-step review workflow"
-      - "The agent does NOT load review-rules.md or walk through MAUI-specific review checklists"
+      - "The agent does NOT walk through a multi-step review workflow"
     timeout: 120
 
   - name: "Independence-first - agent reads diff before description"
@@ -64,7 +64,7 @@ scenarios:
         pattern: "(NEEDS_CHANGES|NEEDS_DISCUSSION)"
     rubric:
       - "If the agent finds or confirms a ❌ Error-level issue, the verdict is NEEDS_CHANGES — not LGTM"
-      - "The agent applies handler lifecycle rules from review-rules.md (ConnectHandler/DisconnectHandler symmetry)"
+      - "The agent applies handler lifecycle rules from the expert reviewer dimensions (ConnectHandler/DisconnectHandler symmetry)"
       - "The agent cites specific file and line references for the concern"
     timeout: 300
 
