@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using Android.Content;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 		bool _usingItemTemplate = false;
 		DataTemplateSelector _itemTemplateSelector = null;
-		readonly System.Collections.Generic.List<WeakReference<TemplatedItemViewHolder>> _templatedViewHolders = new();
+		readonly List<WeakReference<TemplatedItemViewHolder>> _templatedViewHolders = new();
 
 		protected internal ItemsViewAdapter(TItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
@@ -99,7 +100,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override int ItemCount => ItemsSource.Count;
 
-		System.Collections.Generic.Dictionary<int, DataTemplate> _viewTypeDataTemplates = new();
+		Dictionary<int, DataTemplate> _viewTypeDataTemplates = new();
 
 		public override int GetItemViewType(int position)
 		{
@@ -120,14 +121,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// No template, just use the Text view
 			return ItemViewType.TextItem;
-		}
-
-		public override void OnDetachedFromRecyclerView(RecyclerView recyclerView)
-		{
-			// Detach can happen before adapter disposal; ensure tracked templated holders
-			// are torn down when this adapter is no longer attached to a RecyclerView.
-			DisconnectTemplatedViewHolders();
-			base.OnDetachedFromRecyclerView(recyclerView);
 		}
 
 		protected override void Dispose(bool disposing)
