@@ -21,8 +21,23 @@ namespace Microsoft.Maui
 		string? HybridRoot { get; }
 
 		/// <summary>
+		/// Gets the AOT-friendly method provider for JavaScript-to-.NET invocation.
 		/// For internal use only.
 		/// </summary>
+		IHybridWebViewDotNetMethodProvider? DotNetMethodProvider { get; }
+
+		/// <summary>
+		/// Sets the AOT-friendly method provider for JavaScript-to-.NET invocation.
+		/// Use this with <see cref="HybridWebViewDotNetMethodProviderAttribute"/> and a source generator,
+		/// or implement <see cref="IHybridWebViewDotNetMethodProvider"/> directly.
+		/// </summary>
+		/// <param name="provider">An instance that handles method dispatch from JavaScript.</param>
+		void SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider provider);
+
+		/// <summary>
+		/// For internal use only.
+		/// </summary>
+		[Obsolete("Use SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider) instead. Apply [HybridWebViewDotNetMethodProvider] to a partial class with a source generator, or implement IHybridWebViewDotNetMethodProvider directly.")]
 		object? InvokeJavaScriptTarget { get; set; }
 
 		/// <summary>
@@ -31,11 +46,13 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
 		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
+		[Obsolete("Use SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider) instead. Apply [HybridWebViewDotNetMethodProvider] to a partial class with a source generator, or implement IHybridWebViewDotNetMethodProvider directly.")]
 		void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class;
 
 		/// <summary>
 		/// For internal use only.
 		/// </summary>
+		[Obsolete("Use SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider) instead.")]
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? InvokeJavaScriptType { get; set; }
 

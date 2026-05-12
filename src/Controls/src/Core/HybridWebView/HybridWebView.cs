@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -37,6 +38,17 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
 
+		/// <inheritdoc/>
+		IHybridWebViewDotNetMethodProvider? IHybridWebView.DotNetMethodProvider => _dotNetMethodProvider;
+
+		IHybridWebViewDotNetMethodProvider? _dotNetMethodProvider;
+
+		/// <inheritdoc/>
+		public void SetInvokeJavaScriptTarget(IHybridWebViewDotNetMethodProvider provider)
+		{
+			_dotNetMethodProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+		}
+
 		[UnconditionalSuppressMessage("Trimming", "IL2114", Justification = "Base type VisualElement specifies DynamicallyAccessedMemberTypes.NonPublicFields: https://github.com/dotnet/runtime/issues/108978#issuecomment-2420091986")]
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? _invokeJavaScriptType;
@@ -50,11 +62,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
+#pragma warning disable CS0618 // Obsolete members used for backward compatibility
 		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
 		{
 			((IHybridWebView)this).InvokeJavaScriptTarget = target;
 			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
+			_dotNetMethodProvider = new HybridWebViewReflectionDotNetMethodProvider(target, typeof(T));
 		}
+#pragma warning restore CS0618
 
 		void IHybridWebView.RawMessageReceived(string rawMessage)
 		{
