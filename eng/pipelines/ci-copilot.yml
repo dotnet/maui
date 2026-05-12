@@ -663,6 +663,7 @@ stages:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              COMMENTS_VIA_FILE: "true"
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
