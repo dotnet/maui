@@ -41,7 +41,10 @@ namespace Microsoft.Maui.Platform
 			Color? unSelectedBarTextColor)
 		{
 			if (_tabBarAppearance == null)
+			{
 				_tabBarAppearance = new UITabBarAppearance();
+				_tabBarAppearance.ConfigureWithDefaultBackground();
+			}
 
 			var effectiveBarColor = (barBackgroundColor == null) ? defaultBarColor : barBackgroundColor.ToPlatform();
 			// Set BarBackgroundColor
@@ -51,11 +54,14 @@ namespace Microsoft.Maui.Platform
 				_tabBarAppearance.BackgroundColor = effectiveBarColor;
 				tabBar.Translucent = false;
 				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
 					tabBar.BackgroundColor = effectiveBarColor;
+				}
 			}
 			else
 			{
 				_tabBarAppearance.ConfigureWithDefaultBackground();
+				_tabBarAppearance.BackgroundColor = null;
 				tabBar.Translucent = true;
 				tabBar.BackgroundColor = null;
 			}
