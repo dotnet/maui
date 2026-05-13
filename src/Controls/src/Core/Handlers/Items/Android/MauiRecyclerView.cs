@@ -461,6 +461,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		private static object FindBoundItemInGroup(ScrollToRequestEventArgs args, IGroupableItemsViewSource groupItemSource)
 		{
+			// When no group index is specified (groupIndex < 0), fall back to flat index lookup.
+			// This handles the case where ScrollTo(index) is called without a group on a grouped CollectionView.
+			if (args.GroupIndex < 0)
+			{
+				return groupItemSource.GetItem(args.Index);
+			}
+
 			var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
 
 			// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a  header (UngroupedItemsSource does not do this)
