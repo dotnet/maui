@@ -174,9 +174,9 @@ namespace Microsoft.Maui.Controls.Platform
 				if (RuntimeFeature.IsMaterial3Enabled)
 				{
 					if (appBar.Background is MaterialShapeDrawable shapeDrawable
-						&& barBackground is SolidColorBrush solidBrush
-						&& solidBrush.Color is Color tintColor)
+						&& barBackground is SolidColorBrush solidBrush)
 					{
+						var tintColor = solidBrush.Color;
 						var platformTintColor = tintColor.ToPlatform();
 						shapeDrawable.FillColor = ColorStateList.ValueOf(platformTintColor);
 
@@ -186,6 +186,19 @@ namespace Microsoft.Maui.Controls.Platform
 						appBar.Background = null;
 						appBar.Background = shapeDrawable;
 					}
+					else if (appBar.Background is MaterialShapeDrawable shapeDrawableToReset
+						&& Brush.IsNullOrEmpty(barBackground))
+					{
+						// Reset to the theme default colorSurface
+						var context = nativeToolbar.Context;
+						if (context != null)
+						{
+							var defaultColor = ContextExtensions.GetThemeAttrColor(context, Resource.Attribute.colorSurface);
+							shapeDrawableToReset.FillColor = ColorStateList.ValueOf(new AGraphics.Color(defaultColor));
+							appBar.Background = null;
+							appBar.Background = shapeDrawableToReset;
+						}
+					}
 					// gradient and other complex brushes are not supported with Material3's dynamic color theming,
 					//  so we fall back to the non-Material3 path which sets the background on the Toolbar itself
 				}
@@ -194,25 +207,14 @@ namespace Microsoft.Maui.Controls.Platform
 					if (barBackground is SolidColorBrush solidColor)
 					{
 						var tintColor = solidColor.Color;
-						if (tintColor is null)
+						if (tintColor == null)
 						{
-							nativeToolbar.BackgroundTintMode = null;
-							if (appBar is not null)
-							{
-								appBar.BackgroundTintMode = null;
-							}
+							appBar.BackgroundTintMode = null;
 						}
 						else
 						{
-							var platformTintColor = ColorStateList.ValueOf(tintColor.ToPlatform());
-							nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
-							nativeToolbar.BackgroundTintList = platformTintColor;
-
-							if (appBar is not null)
-							{
-								appBar.BackgroundTintMode = PorterDuff.Mode.Src;
-								appBar.BackgroundTintList = platformTintColor;
-							}
+							appBar.BackgroundTintMode = PorterDuff.Mode.Src;
+							appBar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
 						}
 					}
 					else
@@ -221,7 +223,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 						if (Brush.IsNullOrEmpty(barBackground))
 						{
-							nativeToolbar.BackgroundTintMode = null;
+							appBar.BackgroundTintMode = null;
+							appBar.BackgroundTintList = null;
 						}
 					}
 				}
