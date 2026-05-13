@@ -47,7 +47,10 @@ safe-outputs:
 
 tools:
   github:
-    toolsets: [default]
+    # `default` gives us issues, repos, pull_requests, context.
+    # `labels` adds `list_label` (singular) and `get_label` — needed for
+    # discovering the repo's actual label set at runtime.
+    toolsets: [default, labels]
 
 concurrency:
   group: "agentic-labeler-${{ github.event.issue.number || github.event.pull_request.number || inputs.issue_number || github.run_id }}"
@@ -83,13 +86,18 @@ Repository: `${{ github.repository }}`
 
 3. **Select labels** from the repository's existing labels.
 
-   - Fetch the current list of labels using the `list_labels` MCP tool (provided by the `github` toolset). Do **not** try to use `gh label list` from a shell — there is no authenticated `gh` CLI inside the agent sandbox.
-   - You may apply **any** existing label, not just `area-*` and `platform/*`. Examples of other useful label families that exist in this repo include kind (`t/bug`, `t/enhancement`, `t/docs`, `t/breaking`), severity / status (`i/regression`, `s/needs-repro`, `s/needs-info`, `s/duplicate`), and priority (`p/0`, `p/1`, `p/2`, `p/3`) — apply them only when clearly justified by the content.
-   - Do **not** create new labels. Only labels that already exist in the repository (per `list_labels`) will be accepted.
+   - Fetch the current list of labels using the `list_label` MCP tool (provided by the `labels` toolset). Note the **singular** name — it is `list_label`, not `list_labels`. Do **not** try to use `gh label list` from a shell — there is no authenticated `gh` CLI inside the agent sandbox.
+   - **Important pagination caveat:** the `list_label` tool only returns the first ~100 labels (no pagination). This repo has ~440 labels, so many `area-*`, `platform/*`, and status labels will be missing from the listing. If you have a strong candidate label name in mind that isn't in the listing, **verify it exists** with the `get_label` tool before adding it. The label families enumerated in this prompt (`area-*`, `platform/*`, `t/*`, `s/*`, `i/*`, `p/*`) are reliable guides; use `get_label` for anything else.
+   - You may apply **any** existing label, not just `area-*` and `platform/*`. Examples of other useful label families that exist in this repo (with **exact** names — emoji suffixes are part of the label and must be matched verbatim):
+     - **Kind:** `t/bug`, `t/enhancement ☀️`, `t/docs 📝`, `t/breaking 💥`, `t/native-embedding`, `t/desktop`, `t/a11y`
+     - **Status / signal (issues):** `i/regression`, `s/needs-repro`, `s/needs-info`, `s/needs-attention`, `s/duplicate 2️⃣`, `s/no-repro`, `s/not-a-bug`
+     - **Priority:** `p/0`, `p/1`, `p/2`, `p/3`
+   - **PR-specific status caveat:** **do not** apply `s/needs-info` or `s/needs-repro` to pull requests — repo automation rewrites or removes them and posts a comment. On PRs, use `s/pr-needs-author-input` instead when more information is needed.
+   - Do **not** create new labels. Only labels that already exist in the repository will be accepted.
 
 4. **Apply the labels** by calling the `add_labels` safe-output tool **exactly once** with:
    - `item_number`: the target issue/PR number you determined above (always pass this explicitly).
-   - `labels`: the array of selected label names.
+   - `labels`: the array of selected label names, using **exact** names including any emoji suffixes.
 
    If no labels clearly apply, do **not** call `add_labels`. Instead, call the `noop` safe-output with a one-sentence reason — this is **required** to signal that the workflow ran to completion intentionally without labeling.
 
