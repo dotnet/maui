@@ -85,7 +85,7 @@ Current workload release channels:
 ### 🛡️ Input validation
 - **Version strings**: Must match semver format (e.g., `9.0.60`, `10.0.0-preview.4`)
 - **BAR build IDs**: Must be integers only
-- **Channel names**: Must match output from `maestro_default_channels` — never accept arbitrary names
+- **Channel names**: Must match output from `maestro_default_channels` or be a known Workload Release channel (`.NET X Workload Release`) — never accept arbitrary names
 
 ## Common MAUI Workflows
 
