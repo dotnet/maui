@@ -34,5 +34,6 @@
     <CompilerVisibleProperty Include="EnablePreviewFeatures" />
     <CompilerVisibleProperty Include="MauiXamlLazyRD" />
 		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LazyRD" />
+    <CompilerVisibleProperty Include="MauiQueryPropertyAttributeSupport" />
 	</ItemGroup>
 </Project>
