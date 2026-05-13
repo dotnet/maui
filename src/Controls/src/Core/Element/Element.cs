@@ -422,7 +422,9 @@ namespace Microsoft.Maui.Controls
 			RealParent = value;
 			if (RealParent != null)
 			{
-				OnParentResourcesChanged(RealParent.GetMergedResources());
+				var resources = GetParentResourcesForParentSet();
+				if (resources != null)
+					OnParentResourcesChanged(resources);
 				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 
@@ -444,6 +446,25 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnPropertyChanged(nameof(Parent));
+		}
+
+		IEnumerable<KeyValuePair<string, object>> GetParentResourcesForParentSet()
+		{
+			// Existing resource-change listeners observe the full parent snapshot during parent set.
+			// Preserve that payload; the filtered path below is only for this element's own DynamicResources.
+			if (_changeHandlers?.Count > 0)
+				return RealParent.GetMergedResources();
+
+			if (_dynamicResources == null || _dynamicResources.Count == 0)
+				return null;
+
+			return RealParent.GetMergedResourcesForKeys(GetDynamicResourceKeys());
+		}
+
+		IEnumerable<string> GetDynamicResourceKeys()
+		{
+			foreach (var dynamicResource in _dynamicResources)
+				yield return dynamicResource.Value.Item1;
 		}
 
 		internal bool IsTemplateRoot { get; set; }
