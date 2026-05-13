@@ -69,24 +69,12 @@ public class HybridWebViewMethodProviderGenerator : IIncrementalGenerator
 
 		// Collect methods
 		var methods = new List<HybridWebViewMethodInfo>();
-		bool hasAnyCallableAttribute = false;
 		var allPublicMethods = classSymbol.GetMembers()
 			.OfType<IMethodSymbol>()
 			.Where(m => m.MethodKind == MethodKind.Ordinary
 				&& m.DeclaredAccessibility == Accessibility.Public
 				&& !m.IsStatic
 				&& !IsObjectMethod(m));
-
-		foreach (var method in allPublicMethods)
-		{
-			ct.ThrowIfCancellationRequested();
-
-			var callableAttr = method.GetAttributes()
-				.FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == CallableAttributeFqn);
-
-			if (callableAttr is not null)
-				hasAnyCallableAttribute = true;
-		}
 
 		// Determine which methods to include
 		foreach (var method in allPublicMethods)
