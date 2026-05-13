@@ -778,5 +778,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(content2.IsSet(ShellContent.QueryAttributesProperty),
 				"QueryAttributesProperty should be set when changing ShellSection");
 		}
+
+		// ApplyQueryAttributes should NOT be called on an inactive (non-target) page's ViewModel
+		// when navigating back with query params on the second cycle through the same pages.
+		[Fact]
+		public async Task ApplyQueryAttributesNotCalledOnInactivePageDuringBackNavigation()
+		{
+			Routing.RegisterRoute("secondPage", typeof(ShellTestPage));
+			Routing.RegisterRoute("thirdPage", typeof(ShellTestPage));
+
+			var mainPage = new ShellTestPage();
+			mainPage.BindingContext = mainPage;
+
+			var shellContent = new ShellContent
+			{
+				Route = "mainPage",
+				Content = mainPage
+			};
+			shellContent.SetValue(Shell.PresentationModeProperty, PresentationMode.NotAnimated);
+
+			var shell = new TestShell(shellContent);
+
+			// Cycle 1: main → second → third → back(third→second) → back(second→main)
+			await shell.GoToAsync("secondPage?fromMain=1");
+			await shell.GoToAsync("thirdPage?fromSecond=2");
+			await shell.GoToAsync("..?fromThird=3");  // Third → Second
+
+			int callsAfterCycle1Back = mainPage.AppliedQueryAttributes.Count;
+
+			await shell.GoToAsync("..?backToMain=1");  // Second → Main
+
+			// Cycle 2: navigate the same sequence again
+			await shell.GoToAsync("secondPage?fromMain=1");
+			await shell.GoToAsync("thirdPage?fromSecond=2");
+
+			int callsBeforeCycle2ThirdBack = mainPage.AppliedQueryAttributes.Count;
+
+			// This is where the bug triggered: main's ApplyQueryAttributes was incorrectly called
+			await shell.GoToAsync("..?fromThird=3");  // Third → Second
+
+			int callsAfterCycle2ThirdBack = mainPage.AppliedQueryAttributes.Count;
+
+			// Main's ApplyQueryAttributes should NOT have been called when Third navigated back to Second
+			Assert.Equal(callsBeforeCycle2ThirdBack, callsAfterCycle2ThirdBack);
+		}
 	}
 }
