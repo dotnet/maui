@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 34930, "SearchHandler.ShowSoftInputAsync() does not focus the SearchHandler", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 34930, "SearchHandler ShowSoftInputAsync does not focus the SearchHandler", PlatformAffected.UWP)]
 public class Issue34930 : Shell
 {
 	public Issue34930()
@@ -38,18 +38,18 @@ public class Issue34930 : Shell
 			var isFocusedLabel = new Label
 			{
 				Text = "IsFocused: False",
-				AutomationId = "isFocusedLabel"
+				AutomationId = "IsFocusedLabel"
 			};
 
 			var focusedEventLabel = new Label
 			{
 				Text = "FocusedEvent: False",
-				AutomationId = "focusedEventLabel"
+				AutomationId = "FocusedEventLabel"
 			};
 
 			var searchHandler = new SearchHandler
 			{
-				AutomationId = "searchHandler",
+				AutomationId = "SearchHandler",
 				Placeholder = "Search...",
 				SearchBoxVisibility = SearchBoxVisibility.Expanded,
 				ShowsResults = false
@@ -57,7 +57,13 @@ public class Issue34930 : Shell
 
 			searchHandler.Focused += (s, e) =>
 			{
+				isFocusedLabel.Text = "IsFocused: True";
 				focusedEventLabel.Text = "FocusedEvent: True";
+			};
+
+			searchHandler.Unfocused += (s, e) =>
+			{
+				isFocusedLabel.Text = "IsFocused: False";
 			};
 
 			var showKeyboardButton = new Button
@@ -66,11 +72,9 @@ public class Issue34930 : Shell
 				AutomationId = "ShowKeyboardButton"
 			};
 
-			showKeyboardButton.Clicked += async (s, e) =>
+			showKeyboardButton.Clicked += (s, e) =>
 			{
 				searchHandler.ShowSoftInputAsync();
-				await Task.Delay(200);
-				isFocusedLabel.Text = $"IsFocused: {searchHandler.IsFocused}";
 			};
 
 			var hideKeyboardButton = new Button
