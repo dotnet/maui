@@ -85,15 +85,15 @@ namespace Microsoft.Maui.Controls
 				}
 				catch (NotSupportedException)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Cannot scan assembly {assembly} for Visual types.", assembly.FullName);
+					MauiLogger<IVisual>.Log(LogLevel.Warning, $"Cannot scan assembly {assembly.FullName} for Visual types.");
 				}
 				catch (FileNotFoundException)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. It cannot be scanned for Visual types.", assembly.FullName);
+					MauiLogger<IVisual>.Log(LogLevel.Warning, $"Unable to load a dependent assembly for {assembly.FullName}. It cannot be scanned for Visual types.");
 				}
 				catch (ReflectionTypeLoadException)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. Types cannot be loaded.", assembly.FullName);
+					MauiLogger<IVisual>.Log(LogLevel.Warning, $"Unable to load a dependent assembly for {assembly.FullName}. Types cannot be loaded.");
 				}
 			}
 
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to register {visualType} please add a public default constructor", visualType.ToString());
+				MauiLogger<IVisual>.Log(LogLevel.Warning, $"Unable to register {visualType} please add a public default constructor");
 			}
 
 			return null;
@@ -164,9 +164,7 @@ namespace Microsoft.Maui.Controls
 
 				if (!RuntimeFeature.IsIVisualAssemblyScanningEnabled)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning(
-						"Unable to find visual {key}. Automatic discovery of IVisual types is disabled. You can enabled it by setting the $(MauiEnableIVisualAssemblyScanning)=true MSBuild property. " +
-						"Note: automatic registration of IVisual types through assembly scanning is not trimming-compatible and it can lead to slower app startup.", strValue);
+				MauiLogger<IVisual>.Log(LogLevel.Warning, $"Unable to find visual {strValue}. Automatic discovery of IVisual types is disabled. You can enabled it by setting the $(MauiEnableIVisualAssemblyScanning)=true MSBuild property. Note: automatic registration of IVisual types through assembly scanning is not trimming-compatible and it can lead to slower app startup.");
 				}
 
 				return VisualMarker.Default;

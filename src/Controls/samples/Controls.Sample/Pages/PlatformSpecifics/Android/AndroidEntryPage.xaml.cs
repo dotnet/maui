@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnSelectedIndexChanged(object sender, EventArgs e)
+		void OnSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			ImeFlags flag = (ImeFlags)Enum.Parse(typeof(ImeFlags), _picker.SelectedItem.ToString()!);
 			_entry.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().SetImeOptions(flag);

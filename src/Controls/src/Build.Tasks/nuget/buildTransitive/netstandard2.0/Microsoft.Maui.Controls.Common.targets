@@ -32,5 +32,7 @@
     <CompilerVisibleProperty Include="Configuration" />
     <CompilerVisibleProperty Include="MauiXamlHotReload" />
     <CompilerVisibleProperty Include="EnablePreviewFeatures" />
+    <CompilerVisibleProperty Include="MauiXamlLazyRD" />
+		<CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="LazyRD" />
 	</ItemGroup>
 </Project>

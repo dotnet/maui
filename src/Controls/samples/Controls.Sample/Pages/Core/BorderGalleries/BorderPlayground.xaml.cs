@@ -24,58 +24,58 @@ namespace Maui.Controls.Sample.Pages
 			UpdateCornerRadius();
 		}
 
-		void OnBorderContentSelectedIndexChanged(object sender, EventArgs e)
+		void OnBorderContentSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			UpdateBorderContent();
 			UpdateBorder();
 		}
 
-		void OnBorderShapeSelectedIndexChanged(object sender, EventArgs e)
+		void OnBorderShapeSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			UpdateBorderShape();
 		}
 
-		void OnBorderLineJoinSelectedIndexChanged(object sender, EventArgs e)
+		void OnBorderLineJoinSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			UpdateBorderShape();
 		}
 
-		void OnBorderLineCapSelectedIndexChanged(object sender, EventArgs e)
+		void OnBorderLineCapSelectedIndexChanged(object? sender, EventArgs e)
 		{
 			UpdateBorderShape();
 		}
 
-		void OnBackgroundChanged(object sender, TextChangedEventArgs e)
+		void OnBackgroundChanged(object? sender, TextChangedEventArgs e)
 		{
 			UpdateBackground();
 		}
 
-		void OnBorderChanged(object sender, TextChangedEventArgs e)
+		void OnBorderChanged(object? sender, TextChangedEventArgs e)
 		{
 			UpdateBorder();
 		}
 
-		void OnBorderWidthChanged(object sender, ValueChangedEventArgs e)
+		void OnBorderWidthChanged(object? sender, ValueChangedEventArgs e)
 		{
 			UpdateBorder();
 		}
 
-		void OnBorderDashArrayChanged(object sender, TextChangedEventArgs e)
+		void OnBorderDashArrayChanged(object? sender, TextChangedEventArgs e)
 		{
 			UpdateBorder();
 		}
 
-		void OnBorderDashOffsetChanged(object sender, ValueChangedEventArgs e)
+		void OnBorderDashOffsetChanged(object? sender, ValueChangedEventArgs e)
 		{
 			UpdateBorder();
 		}
 
-		void OnCornerRadiusChanged(object sender, ValueChangedEventArgs e)
+		void OnCornerRadiusChanged(object? sender, ValueChangedEventArgs e)
 		{
 			UpdateCornerRadius();
 		}
 
-		void OnContentBackgroundCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+		void OnContentBackgroundCheckBoxChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			UpdateContentBackground();
 		}

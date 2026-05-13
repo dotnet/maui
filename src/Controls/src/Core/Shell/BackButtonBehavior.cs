@@ -35,6 +35,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextOverrideProperty =
 			BindableProperty.Create(nameof(TextOverride), typeof(string), typeof(BackButtonBehavior), null, BindingMode.OneTime);
 
+		/// <summary>Bindable property for <see cref="AccessibilityLabel"/>.</summary>
+		public static readonly BindableProperty AccessibilityLabelProperty =
+			BindableProperty.Create(nameof(AccessibilityLabel), typeof(string), typeof(BackButtonBehavior), null, BindingMode.OneWay);
+
 		/// <summary>
 		/// Gets or sets the command to execute when the back button is pressed. This is a bindable property.
 		/// </summary>
@@ -96,6 +100,16 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(TextOverrideProperty); }
 			set { SetValue(TextOverrideProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the accessibility label announced by the screen reader for the back button,
+		/// independent of the visible text (<see cref="TextOverride"/>). This is a bindable property.
+		/// </summary>
+		public string AccessibilityLabel
+		{
+			get { return (string)GetValue(AccessibilityLabelProperty); }
+			set { SetValue(AccessibilityLabelProperty, value); }
 		}
 
 		bool IsEnabledCore
