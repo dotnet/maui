@@ -458,13 +458,15 @@ namespace Microsoft.Maui.Controls
 			if (_dynamicResources == null || _dynamicResources.Count == 0)
 				return null;
 
-			return RealParent.GetMergedResourcesForKeys(GetDynamicResourceKeys());
-		}
-
-		IEnumerable<string> GetDynamicResourceKeys()
-		{
+			HashSet<string> dynamicResourceKeys = null;
 			foreach (var dynamicResource in _dynamicResources)
-				yield return dynamicResource.Value.Item1;
+			{
+				var dynamicResourceKey = dynamicResource.Value.Item1;
+				if (!string.IsNullOrEmpty(dynamicResourceKey))
+					(dynamicResourceKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(dynamicResourceKey);
+			}
+
+			return RealParent.GetMergedResourcesForKeys(dynamicResourceKeys);
 		}
 
 		internal bool IsTemplateRoot { get; set; }

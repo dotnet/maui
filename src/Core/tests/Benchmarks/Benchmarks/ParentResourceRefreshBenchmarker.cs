@@ -244,4 +244,158 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			return views;
 		}
 	}
+
+	[MemoryDiagnoser]
+	[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+	public class ParentResourceRefreshDynamicResourceBenchmarker
+	{
+		const int Operations = 100;
+		const int AppResourceCount = 2000;
+
+		[Params(1, 5, 20, 100, 500)]
+		public int RequestedDynamicResourceCount { get; set; }
+
+		Application _previousApplication;
+		Application _application;
+		VerticalStackLayout _host;
+		View[] _views;
+
+		[GlobalSetup]
+		public void Setup()
+		{
+			_previousApplication = Application.Current;
+			_application = new Application
+			{
+				Resources = CreateAppResources(AppResourceCount, ManyDynamicResourceView.MaxDynamicResourceCount),
+			};
+			Application.Current = _application;
+
+			var page = CreateComplexPage(out _host);
+			page.Parent = _application;
+
+			_views = CreateViews(RequestedDynamicResourceCount);
+		}
+
+		[GlobalCleanup]
+		public void Cleanup()
+		{
+			Application.Current = _previousApplication;
+		}
+
+		[Benchmark(OperationsPerInvoke = Operations)]
+		public void AttachViews_MatchingDynamicResources_NoResourceListener()
+		{
+			AttachAndDetachAll();
+		}
+
+		[Benchmark]
+		public void AttachViews_MatchingDynamicResources_NoResourceListener_Batch()
+		{
+			AttachAndDetachAll();
+		}
+
+		void AttachAndDetachAll()
+		{
+			for (var i = 0; i < Operations; i++)
+			{
+				var view = _views[i];
+				_host.AddLogicalChild(view);
+				_host.RemoveLogicalChild(view);
+			}
+		}
+
+		static View[] CreateViews(int requestedDynamicResourceCount)
+		{
+			var views = new View[Operations];
+			for (var i = 0; i < Operations; i++)
+			{
+				var view = new ManyDynamicResourceView();
+				view.SetDynamicResources(requestedDynamicResourceCount);
+				views[i] = view;
+			}
+
+			return views;
+		}
+
+		static ResourceDictionary CreateAppResources(int unrelatedResourceCount, int dynamicResourceCount)
+		{
+			var resources = new ResourceDictionary();
+			for (var i = 0; i < unrelatedResourceCount; i++)
+				resources.Add($"app-resource-{i}", i);
+
+			for (var i = 0; i < dynamicResourceCount; i++)
+				resources.Add(ManyDynamicResourceView.GetResourceKey(i), $"Value {i}");
+
+			return resources;
+		}
+
+		static ContentPage CreateComplexPage(out VerticalStackLayout host)
+		{
+			host = new VerticalStackLayout
+			{
+				Resources = CreateLocalResources("host", 50),
+			};
+
+			var formSection = new Grid
+			{
+				Resources = CreateLocalResources("form-section", 50),
+				Children = {
+					new Label { Text = "Account" },
+					host,
+				}
+			};
+
+			var detailSection = new VerticalStackLayout
+			{
+				Resources = CreateLocalResources("detail-section", 50),
+				Children = {
+					new Label { Text = "Details" },
+					formSection,
+				}
+			};
+
+			return new ContentPage
+			{
+				Resources = CreateLocalResources("page", 50),
+				Content = detailSection,
+			};
+		}
+
+		static ResourceDictionary CreateLocalResources(string prefix, int count)
+		{
+			var resources = new ResourceDictionary();
+			for (var i = 0; i < count; i++)
+				resources.Add($"{prefix}-resource-{i}", i);
+
+			return resources;
+		}
+
+		sealed class ManyDynamicResourceView : View
+		{
+			const int DynamicResourcePropertyCount = 500;
+			static readonly BindableProperty[] DynamicResourceProperties = CreateDynamicResourceProperties();
+
+			public static int MaxDynamicResourceCount => DynamicResourcePropertyCount;
+
+			public static string GetResourceKey(int index)
+			{
+				return $"dynamic-resource-{index}";
+			}
+
+			public void SetDynamicResources(int count)
+			{
+				for (var i = 0; i < count; i++)
+					SetDynamicResource(DynamicResourceProperties[i], GetResourceKey(i));
+			}
+
+			static BindableProperty[] CreateDynamicResourceProperties()
+			{
+				var properties = new BindableProperty[DynamicResourcePropertyCount];
+				for (var i = 0; i < properties.Length; i++)
+					properties[i] = BindableProperty.Create($"DynamicResourceValue{i}", typeof(object), typeof(ManyDynamicResourceView), default(object));
+
+				return properties;
+			}
+		}
+	}
 }
