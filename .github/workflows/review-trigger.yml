@@ -172,9 +172,9 @@ jobs:
           fi
 
           echo "No platform specified — inferring from PR #${PR_NUMBER} labels..."
-          echo "(File-based detection is handled by the platform-label.yml workflow on PR open/synchronize.)"
+          echo "(File-based detection is handled by the agentic-labeler.md‎ workflow on PR open/synchronize.)"
 
-          # Check PR labels applied by platform-label.yml or manually
+          # Check PR labels applied by agentic-labeler.md‎ or manually
           LABELS=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
           LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
           echo "PR labels: ${LABELS_LOWER:-<none>}"
