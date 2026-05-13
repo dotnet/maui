@@ -199,6 +199,15 @@ stages:
                 fi
                 
                 echo "=== Starting Emulator ==="
+                # Kill ALL stale emulator processes from previous step retries
+                for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                  echo "Killing stale emulator PID $STALE_PID"
+                  kill "$STALE_PID" 2>/dev/null || true
+                done
+                sleep 2
+                for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                  kill -9 "$STALE_PID" 2>/dev/null || true
+                done
                 # Kill any stale adb server and restart
                 adb kill-server 2>/dev/null || true
                 sleep 1
@@ -819,6 +828,16 @@ stages:
                 ADB_KEY_PUB="$HOME/.android/adbkey.pub"
                 AVD_DIR="$HOME/.android/avd/Emulator_30.avd"
                 [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ] && cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
+
+                # Kill ALL stale emulator processes from previous step retries
+                for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                  echo "Killing stale emulator PID $STALE_PID"
+                  kill "$STALE_PID" 2>/dev/null || true
+                done
+                sleep 2
+                for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                  kill -9 "$STALE_PID" 2>/dev/null || true
+                done
 
                 adb kill-server 2>/dev/null || true; sleep 1; adb start-server
                 nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
