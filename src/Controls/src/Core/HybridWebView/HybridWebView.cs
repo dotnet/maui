@@ -110,15 +110,7 @@ namespace Microsoft.Maui.Controls
 			_invokeJavaScriptTarget = target;
 			_invokeJavaScriptType = typeof(T);
 			_invokeJavaScriptJsonSerializerContext = jsonSerializerContext;
-
-			if (jsonSerializerContext is not null)
-			{
-				_invokeJavaScriptMethodCache = Maui.Handlers.HybridWebViewHandler.BuildMethodCache(typeof(T), jsonSerializerContext);
-			}
-			else
-			{
-				_invokeJavaScriptMethodCache = null;
-			}
+			_invokeJavaScriptMethodCache = null;
 		}
 
 		void IHybridWebView.RawMessageReceived(string rawMessage)
