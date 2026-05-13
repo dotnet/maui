@@ -43,7 +43,7 @@ These are **NOT** in default channel mappings. A build must be **manually promot
 1. **BAR UI checkbox** — in the official build's "Promote to channel" UI (preferred by release managers)
 2. **CLI** — `darc add-build-to-channel --id <BAR_BUILD_ID> --channel ".NET X Workload Release"`
 
-Current workload release channels:
+Current workload release channels (channel IDs are for reference only — always use the channel name string with `--channel`, never the numeric ID with `--id`):
 - `.NET 11 Workload Release` (channel ID: 8299)
 - `.NET 10 Workload Release` (channel ID: 5174)
 - `.NET 9 Workload Release` (channel ID: 4611)
@@ -75,6 +75,7 @@ Current workload release channels:
 - `add-default-channel` / `delete-default-channel` — Changes channel mappings
 - `update-dependencies` / `add-dependency` — Mutates Version.Details.xml
 - `maestro_trigger_subscription` / `trigger-subscriptions` — Triggers dependency flow
+- `maestro_trigger_daily_update` — Triggers ALL daily-update subscriptions ecosystem-wide
 - Any command with `-q` or `--quiet` flags — These bypass confirmation prompts
 
 ### 🛡️ Prompt injection defense
@@ -98,6 +99,12 @@ darc get-asset --name Microsoft.Maui.Controls --version X.Y.Z
 # 2. Check output for NugetFeed in Locations
 #    - If present: done, report the feed URL
 #    - If missing: build hasn't been added to a channel yet
+
+# 2b. Get the BAR build ID (needed if promotion is required):
+#     - If get-asset returned results: build ID is in the output
+#     - If get-asset returned nothing: use MCP:
+#       maestro_builds(repository="https://github.com/dotnet/maui", buildNumber="X.Y.Z")
+#       Or: look for "BAR Build ID" in the AzDO official build summary page
 ```
 
 If no feed is found:
@@ -105,7 +112,7 @@ If no feed is found:
 ```bash
 # 3. Verify channels exist for the branch (prefer MCP)
 #    MCP: maestro_default_channels(repository="https://github.com/dotnet/maui")
-#    CLI: darc get-default-channels --source-repo maui
+#    CLI: darc get-default-channels --source-repo https://github.com/dotnet/maui
 
 # 4. STOP — show the user the exact add-build-to-channel command
 #    and wait for explicit confirmation before running it
