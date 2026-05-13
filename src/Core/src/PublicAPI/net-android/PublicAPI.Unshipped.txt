@@ -92,9 +92,6 @@ Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(nint javaR
 Microsoft.Maui.Platform.MauiMaterialTimePicker.OnClick(Android.Views.View? v) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.set -> void
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptJsonSerializerContext.get -> System.Text.Json.Serialization.JsonSerializerContext?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptJsonSerializerContext.set -> void
-Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
@@ -279,3 +276,8 @@ static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTime(this Microsoft.Ma
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
 virtual Microsoft.Maui.Handlers.DatePickerHandler2.CreateDatePickerDialog(int year, int month, int day) -> Google.Android.Material.DatePicker.MaterialDatePicker?
 virtual Microsoft.Maui.Handlers.TimePickerHandler2.CreateTimePickerDialog(int hour, int minute) -> Google.Android.Material.TimePicker.MaterialTimePicker?
+Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.IHybridWebViewInvoker?
+Microsoft.Maui.IHybridWebView.Invoker.set -> void
+Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.IHybridWebViewInvoker
+Microsoft.Maui.IHybridWebViewInvoker.InvokeMethodAsync(string! methodName, string[]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
