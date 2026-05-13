@@ -43,7 +43,7 @@ These are **NOT** in default channel mappings. A build must be **manually promot
 1. **BAR UI checkbox** — in the official build's "Promote to channel" UI (preferred by release managers)
 2. **CLI** — `darc add-build-to-channel --id <BAR_BUILD_ID> --channel ".NET X Workload Release"`
 
-Current workload release channels (channel IDs are for reference only — always use the channel name string with `--channel`, never the numeric ID with `--id`):
+Current workload release channels (IDs shown for reference — when running `add-build-to-channel`, always specify the channel via `--channel "<name>"`, not by its numeric channel ID):
 - `.NET 11 Workload Release` (channel ID: 8299)
 - `.NET 10 Workload Release` (channel ID: 5174)
 - `.NET 9 Workload Release` (channel ID: 4611)
