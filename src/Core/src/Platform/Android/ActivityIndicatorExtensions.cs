@@ -7,6 +7,13 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsRunning(this ProgressBar progressBar, IActivityIndicator activityIndicator)
 		{
+			// Guard: check IsDisposed() before accessing any view properties to avoid ObjectDisposedException
+			// on a ProgressBar whose native handle has already been released (see ViewExtensions pattern).
+			if (progressBar.IsDisposed())
+			{
+				return;
+			}
+
 			// Pre-compute the desired visibility from the current activityIndicator state before deferring,
 			// so the lambda performs a simple write with no risk of reading stale handler state.
 			// Defer via Post() only when a layout traversal is in progress OR the view is not yet attached
