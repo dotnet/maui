@@ -334,10 +334,13 @@ namespace Microsoft.Maui.Controls
 			}
 			else if (element is Page)
 			{
-				// Intermediate page not yet in visual tree (Parent is null).
+				// Intermediate page (not the last item, not wrapped in ShellContent).
 				// Apply prefix-filtered query parameters directly via the attached property,
 				// which triggers OnQueryAttributesPropertyChanged to handle IQueryAttributable,
 				// BindingContext propagation, and [QueryProperty] attributes.
+				if (filteredQuery.Count == 0 && !element.IsSet(ShellContent.QueryAttributesProperty))
+					return;
+
 				var mergedData = MergeData(element, filteredQuery, isPopping);
 				if (mergedData.Count > 0 || !isPopping)
 				{

@@ -931,5 +931,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("name"));
 			Assert.Equal("Alice", lastPage.AppliedQueryAttributes[0]["name"]);
 		}
+
+		[Fact]
+		public async Task IntermediatePageWithNoPrefixedParamsDoesNotReceiveEmptyQuery()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			// No prefixed params for "product" — only unprefixed params for last page
+			await shell.GoToAsync("product/review?name=Alice");
+
+			// Intermediate page should NOT receive ApplyQueryAttributes at all
+			Assert.Empty(intermediatePage.AppliedQueryAttributes);
+
+			// Last page should still get the param
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.Single(lastPage.AppliedQueryAttributes);
+			Assert.Equal("Alice", lastPage.AppliedQueryAttributes[0]["name"]);
+		}
+
+		[Fact]
+		public async Task IntermediatePageReceivesParamsOnReNavigation()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			// First navigation: push product + review
+			await shell.GoToAsync("product/review?product.sku=tomato&stars=5");
+			Assert.Single(intermediatePage.AppliedQueryAttributes);
+			Assert.Equal("tomato", intermediatePage.AppliedQueryAttributes[0]["sku"]);
+
+			// Navigate back to root
+			await shell.GoToAsync("//section/content");
+
+			// Second navigation with different params
+			await shell.GoToAsync("product/review?product.sku=pepper&stars=3");
+			Assert.Equal(2, intermediatePage.AppliedQueryAttributes.Count);
+			Assert.Equal("pepper", intermediatePage.AppliedQueryAttributes[1]["sku"]);
+		}
 	}
 }
