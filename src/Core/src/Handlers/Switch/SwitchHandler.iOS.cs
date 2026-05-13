@@ -155,13 +155,11 @@ namespace Microsoft.Maui.Handlers
 
 					if (VirtualView is ISwitch view)
 					{
-#if !MACCATALYST
 						// iOS 26+ "Liquid Glass" resets TrackColor during post-connect layout. Re-apply both.
 						if (view.TrackColor is not null)
 						{
 							platformView.UpdateTrackColor(view);
 						}
-#endif
 
 						if (view.ThumbColor is not null)
 						{

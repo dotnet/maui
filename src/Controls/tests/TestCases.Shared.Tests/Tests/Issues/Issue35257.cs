@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_CATALYST // PR link - https://github.com/dotnet/maui/pull/33953
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -36,4 +35,3 @@ public class Issue35257 : _IssuesUITest
 		}
 	}
 }
-#endif
