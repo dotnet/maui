@@ -347,6 +347,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 			title: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Warning,
+			isEnabledByDefault: true);
+
 		//QueryPropertyGenerator
 		public static DiagnosticDescriptor QueryPropertyClassMustBePartial = new DiagnosticDescriptor(
 			id: "MAUI1200",
