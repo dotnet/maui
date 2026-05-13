@@ -310,7 +310,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteValue))
-				return SymbolDisplay.FormatPrimitive(byteValue, true, false);
+				return $"(byte){SymbolDisplay.FormatPrimitive(byteValue, true, false)}";
 			else
 				reportDiagnostic();
 		}
