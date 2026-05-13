@@ -21,9 +21,10 @@ using static GeneratorHelpers;
 /// </para>
 /// <para>
 /// For each partial class with <c>[QueryProperty]</c> attributes, the generator emits a partial class
-/// that explicitly implements <c>IQueryAttributable.ApplyQueryAttributes</c> and is marked with
-/// <c>[GeneratedCode("QueryPropertyGenerator", ...)]</c>. At runtime, <c>ShellContent</c> detects
-/// this attribute and skips the reflection-based property setting, avoiding double application.
+/// that explicitly implements <c>IQueryAttributable.ApplyQueryAttributes</c>. At runtime,
+/// <c>ShellContent</c> skips the reflection path for any type implementing <c>IQueryAttributable</c>,
+/// so the generated code takes precedence. <c>ShellContent</c> also merges removed keys from
+/// the previous navigation as null entries, enabling property clearing without per-instance state.
 /// </para>
 /// <para>
 /// For non-partial classes, the generator emits a MAUI1200 warning and no code is generated.
@@ -32,7 +33,7 @@ using static GeneratorHelpers;
 /// <para>
 /// The generated code handles: URL decoding for string properties, <c>Convert.ChangeType</c>
 /// for non-string properties (using the underlying type for <c>Nullable&lt;T&gt;</c>),
-/// and clearing properties that were set in a previous navigation but are absent in the current one.
+/// and clearing properties via the null-entries convention from <c>ShellContent</c>.
 /// </para>
 /// </remarks>
 [Generator(LanguageNames.CSharp)]
