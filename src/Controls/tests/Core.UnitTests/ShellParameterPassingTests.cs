@@ -778,5 +778,100 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(content2.IsSet(ShellContent.QueryAttributesProperty),
 				"QueryAttributesProperty should be set when changing ShellSection");
 		}
+
+		[Fact]
+		public async Task IntermediatePageReceivesPrefixedQueryParamsViaIQueryAttributable()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			await shell.GoToAsync("product/review?product.sku=seed-tomato&stars=5");
+
+			// Intermediate page should have received the prefixed param "sku"
+			Assert.Single(intermediatePage.AppliedQueryAttributes);
+			Assert.True(intermediatePage.AppliedQueryAttributes[0].ContainsKey("sku"));
+			Assert.Equal("seed-tomato", intermediatePage.AppliedQueryAttributes[0]["sku"]);
+
+			// Last page should have received "stars"
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.NotEqual(intermediatePage, lastPage);
+			Assert.Single(lastPage.AppliedQueryAttributes);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
+			Assert.Equal("5", lastPage.AppliedQueryAttributes[0]["stars"]);
+		}
+
+		[Fact]
+		public async Task IntermediatePageReceivesQueryPropertyAttributes()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			await shell.GoToAsync($"product/review?product.{nameof(ShellTestPage.SomeQueryParameter)}=hello");
+
+			Assert.Equal("hello", intermediatePage.SomeQueryParameter);
+		}
+
+		[Fact]
+		public async Task LastPageStillReceivesUnprefixedParamsWithIntermediatePages()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			Routing.RegisterRoute("product", typeof(ShellTestPage));
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			await shell.GoToAsync($"product/review?{nameof(ShellTestPage.SomeQueryParameter)}=world&stars=5");
+
+			// Last page (review) should get the unprefixed params
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey(nameof(ShellTestPage.SomeQueryParameter)));
+			Assert.Equal("world", lastPage.AppliedQueryAttributes[0][nameof(ShellTestPage.SomeQueryParameter)]);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
+		}
+
+		[Fact]
+		public async Task MultipleIntermediatePagesEachReceiveOwnPrefixedParams()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var categoryPage = new ShellTestPage();
+			var productPage = new ShellTestPage();
+			shell.RegisterPage("category", categoryPage);
+			shell.RegisterPage("product", productPage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			await shell.GoToAsync("category/product/review?category.name=seeds&product.sku=tomato&stars=5");
+
+			// First intermediate page gets category-prefixed params
+			Assert.Single(categoryPage.AppliedQueryAttributes);
+			Assert.True(categoryPage.AppliedQueryAttributes[0].ContainsKey("name"));
+			Assert.Equal("seeds", categoryPage.AppliedQueryAttributes[0]["name"]);
+
+			// Second intermediate page gets product-prefixed params
+			Assert.Single(productPage.AppliedQueryAttributes);
+			Assert.True(productPage.AppliedQueryAttributes[0].ContainsKey("sku"));
+			Assert.Equal("tomato", productPage.AppliedQueryAttributes[0]["sku"]);
+
+			// Last page gets unprefixed params
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
+			Assert.Equal("5", lastPage.AppliedQueryAttributes[0]["stars"]);
+		}
 	}
 }
