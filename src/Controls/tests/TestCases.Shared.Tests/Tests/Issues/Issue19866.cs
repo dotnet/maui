@@ -15,6 +15,10 @@ public class Issue19866 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void StatusBarTapScrollsCollectionViewToTop()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26.4"); // Issue Link: https://github.com/dotnet/maui/issues/35420
+		}
 		// Verify first item is visible initially
 		App.WaitForElement("Item 0");
 
