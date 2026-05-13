@@ -56,9 +56,9 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 	public Task InvokerIsSet_WhenUsingLegacyOverload() =>
 		RunTest("invokedotnettests.html", (hybridWebView) =>
 		{
-#pragma warning disable CS0618, IL2026, IL3050 // Testing the legacy obsolete overload
+#pragma warning disable IL2026, IL3050 // Testing the legacy overload
 			hybridWebView.SetInvokeJavaScriptTarget(new TestDotNetMethods());
-#pragma warning restore CS0618, IL2026, IL3050
+#pragma warning restore IL2026, IL3050
 
 			// Verify the invoker was set (legacy reflection path)
 			var invoker = ((IHybridWebView)hybridWebView).Invoker;

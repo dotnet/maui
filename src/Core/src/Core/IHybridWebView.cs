@@ -28,10 +28,9 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
 		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
-		[Obsolete("This overload uses reflection and dynamic System.Text.Json serialization features and is not compatible with trimming or NativeAOT. Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) instead.")]
-		[RequiresUnreferencedCode("This overload uses reflection and is not compatible with trimming or NativeAOT.")]
+		[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
 #if !NETSTANDARD
-		[RequiresDynamicCode("This overload uses reflection and is not compatible with trimming or NativeAOT.")]
+		[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
 #endif
 		void SetInvokeJavaScriptTarget<T>(T target) where T : class;
 

@@ -44,10 +44,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
-		[Obsolete("This overload uses reflection and dynamic System.Text.Json serialization features and is not compatible with trimming or NativeAOT. Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) instead.")]
-		[RequiresUnreferencedCode("This overload uses reflection and is not compatible with trimming or NativeAOT.")]
+		[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
 #if !NETSTANDARD
-		[RequiresDynamicCode("This overload uses reflection and is not compatible with trimming or NativeAOT.")]
+		[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
 #endif
 		void IHybridWebView.SetInvokeJavaScriptTarget<T>(T target)
 		{
