@@ -164,7 +164,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		sb.AppendLine("    }");
 		sb.AppendLine("}");
 		sb.AppendLine();
-		sb.AppendLine("namespace Microsoft.Maui.Generated");
+		sb.AppendLine("namespace Microsoft.Maui.Controls.Generated");
 		sb.AppendLine("{");
 		sb.AppendLine("    file static class HybridWebViewInterceptors");
 		sb.AppendLine("    {");

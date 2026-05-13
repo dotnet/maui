@@ -38,7 +38,6 @@
 	<PropertyGroup>
 		<_MauiBindingInterceptorsSupport Condition=" '$(_MauiBindingInterceptorsSupport)' == '' and '$(DisableMauiAnalyzers)' != 'true' ">true</_MauiBindingInterceptorsSupport>
 		<InterceptorsPreviewNamespaces Condition=" '$(_MauiBindingInterceptorsSupport)' == 'true' ">$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
-		<InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Generated</InterceptorsPreviewNamespaces>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiBindingInterceptorsSupport)' == 'true' ">
 		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.BindingSourceGen.dll" IsImplicitlyDefined="true" />
