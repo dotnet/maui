@@ -48,7 +48,11 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(platformView);
 
-			PendingScrollToRequest = null;
+			if (PendingScrollToRequest is not null)
+			{
+				VirtualView?.ScrollFinished();
+				PendingScrollToRequest = null;
+			}
 			_eventProxy.Disconnect(platformView);
 		}
 

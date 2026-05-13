@@ -61,8 +61,8 @@ namespace Microsoft.Maui.Handlers
 			((FrameworkElement)sender).SizeChanged -= OnContentPanelSizeChanged;
 			if (PendingScrollToRequest is { } pending)
 			{
-				MapRequestScrollTo(this, VirtualView, pending);
 				PendingScrollToRequest = null;
+				MapRequestScrollTo(this, VirtualView, pending);
 			}
 		}
 
