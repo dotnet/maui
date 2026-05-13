@@ -1689,6 +1689,31 @@ Invoke-CopilotStep -StepName "STEP 6a: TRY-FIX" -Prompt $step6aPrompt | Out-Null
 # Restore review branch between copilot calls
 git checkout $reviewBranch 2>$null | Out-Null
 
+# Diagnostic: check what STEP 6a produced
+Write-Host ""
+Write-Host "  📊 STEP 6a output check:" -ForegroundColor Cyan
+$tryFixDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
+$tryFixContent = Join-Path $tryFixDir "try-fix/content.md"
+$preFlightContent = Join-Path $tryFixDir "pre-flight/content.md"
+if (Test-Path $preFlightContent) {
+    $pfSize = (Get-Item $preFlightContent).Length
+    Write-Host "    ✅ pre-flight/content.md ($pfSize bytes)" -ForegroundColor Green
+} else {
+    Write-Host "    ❌ pre-flight/content.md MISSING" -ForegroundColor Red
+}
+if (Test-Path $tryFixContent) {
+    $tfSize = (Get-Item $tryFixContent).Length
+    Write-Host "    ✅ try-fix/content.md ($tfSize bytes)" -ForegroundColor Green
+} else {
+    Write-Host "    ⚠️ try-fix/content.md not found (agent may not have written it)" -ForegroundColor Yellow
+}
+$tryFixDirs = Get-ChildItem -Path $tryFixDir -Directory -Filter "try-fix-*" -ErrorAction SilentlyContinue
+if ($tryFixDirs) {
+    Write-Host "    📁 Try-fix candidates: $($tryFixDirs.Count) ($($tryFixDirs.Name -join ', '))" -ForegroundColor Cyan
+} else {
+    Write-Host "    ⚠️ No try-fix-N directories found" -ForegroundColor Yellow
+}
+
 # ── STEP 6b: Expert Review of PR fix + final comparison (Copilot call 2) ──
 $step6bPrompt = @"
 Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 6a.
@@ -1734,6 +1759,38 @@ Do NOT re-run gate verification.
 "@
 
 Invoke-CopilotStep -StepName "STEP 6b: EXPERT REVIEW + COMPARE" -Prompt $step6bPrompt | Out-Null
+
+# Diagnostic: check what STEP 6b produced
+Write-Host ""
+Write-Host "  📊 STEP 6b output check:" -ForegroundColor Cyan
+$expertEvalContent = Join-Path $tryFixDir "expert-pr-eval/content.md"
+$reportContent = Join-Path $tryFixDir "report/content.md"
+$winnerFile = Join-Path $tryFixDir "winner.json"
+$inlineFindings = Join-Path $tryFixDir "inline-findings.json"
+if (Test-Path $expertEvalContent) {
+    $eeSize = (Get-Item $expertEvalContent).Length
+    Write-Host "    ✅ expert-pr-eval/content.md ($eeSize bytes)" -ForegroundColor Green
+} else {
+    Write-Host "    ❌ expert-pr-eval/content.md MISSING — expert review did not complete" -ForegroundColor Red
+}
+if (Test-Path $reportContent) {
+    $rpSize = (Get-Item $reportContent).Length
+    Write-Host "    ✅ report/content.md ($rpSize bytes)" -ForegroundColor Green
+} else {
+    Write-Host "    ❌ report/content.md MISSING — comparative report not written" -ForegroundColor Red
+}
+if (Test-Path $winnerFile) {
+    $winnerJson = Get-Content -Raw $winnerFile | ConvertFrom-Json -ErrorAction SilentlyContinue
+    Write-Host "    🏆 winner.json: winner=$($winnerJson.winner) isPRFix=$($winnerJson.isPRFix)" -ForegroundColor Green
+} else {
+    Write-Host "    ❌ winner.json MISSING — no winner determined" -ForegroundColor Red
+}
+if (Test-Path $inlineFindings) {
+    $ifSize = (Get-Item $inlineFindings).Length
+    Write-Host "    ✅ inline-findings.json ($ifSize bytes)" -ForegroundColor Green
+} else {
+    Write-Host "    ⚠️ inline-findings.json not found" -ForegroundColor Yellow
+}
 
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
