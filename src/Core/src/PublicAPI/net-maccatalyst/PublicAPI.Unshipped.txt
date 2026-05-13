@@ -1,4 +1,5 @@
-﻿override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+﻿#nullable enable
+override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
@@ -7,4 +8,3 @@ override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateCont
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
 static Microsoft.Maui.Handlers.DatePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
-﻿#nullable enable
