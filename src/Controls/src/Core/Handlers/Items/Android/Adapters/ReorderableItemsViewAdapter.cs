@@ -37,12 +37,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var toItemsSource = itemsSource.GetGroupItemsViewSource(toGroupIndex);
 				var toItemIndex = toIndex - (toItemsSource?.HasHeader == true ? 1 : 0);
 
-				if (toGroupIndex > fromGroupIndex)
+				if (toGroupIndex != fromGroupIndex)
 				{
-					toItemIndex = toItemIndex + 1;
+					// When targeting the group header of a non-empty group, block the move.
+					// This prevents an item from being prematurely inserted at the start of the
+					// group as the drag passes over its header. Dropping onto an empty group's
+					// header is still allowed to support the empty-group drag scenario.
+					if (toItemsSource?.HasHeader == true && toIndex == 0 && toList?.Count > 0)
+					{
+						return false;
+					}
+
+					// When moving forward into a different group, adjust the target index
+					// to insert after the resolved position rather than before it.
+					if (toGroupIndex > fromGroupIndex)
+					{
+						toItemIndex = toItemIndex + 1;
+					}
 				}
 
 				if (toGroupIndex != fromGroupIndex && !itemsView.CanMixGroups)
+				{
+					return false;
+				}
+
+				if (fromItemIndex < 0 || fromItemIndex >= fromList.Count)
+				{
+					return false;
+				}
+
+				if (toItemIndex < 0 || toItemIndex > toList.Count)
 				{
 					return false;
 				}

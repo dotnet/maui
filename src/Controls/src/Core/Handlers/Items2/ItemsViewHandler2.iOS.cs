@@ -197,11 +197,65 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var scrollDirection = Controller.GetScrollDirection();
 
 			// If contentSize is zero in the relevant dimension (height for vertical, width for horizontal),
-			// it means none of the content has been realized yet; we need to return the expansive size
-			// the collection view wants by default to get it to start measuring its content
+			// it means none of the content has been realized yet.
 			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
 				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
 			{
+				var collectionView = Controller.CollectionView;
+
+				// When the CollectionView has not yet been added to a window (pre-mount measurement),
+				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
+				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
+				// so the layout can compute actual content size from its items.
+				if (collectionView.Window == null)
+				{
+					// Local helper to clamp layout constraints to finite, non-negative nfloat values.
+					nfloat ClampConstraint(double constraint, nfloat fallback)
+					{
+						// Treat NaN, infinity, and negative values as invalid and fall back.
+						if (double.IsNaN(constraint) || double.IsInfinity(constraint) || constraint < 0)
+							return fallback;
+
+						var value = (nfloat)constraint;
+
+						// Guard against overflow to infinity/NaN or negative after casting.
+						var valueAsDouble = (double)value;
+						if (double.IsNaN(valueAsDouble) || double.IsInfinity(valueAsDouble) || value < 0)
+							return fallback;
+
+						return value;
+					}
+
+					var previousFrame = collectionView.Frame;
+					try
+					{
+						// Give the CollectionView a finite available size so the layout calculates correctly
+						var frameWidth = ClampConstraint(widthConstraint, UIView.UILayoutFittingExpandedSize.Width);
+						var frameHeight = ClampConstraint(heightConstraint, UIView.UILayoutFittingExpandedSize.Height);
+
+						collectionView.Frame = new CoreGraphics.CGRect(0, 0, frameWidth, frameHeight);
+						collectionView.SetNeedsLayout();
+						collectionView.LayoutIfNeeded();
+
+						// Re-read the content size now that the layout has run
+						contentSize = Controller.GetSize();
+					}
+					finally
+					{
+						// Always restore the original frame
+						collectionView.Frame = previousFrame;
+					}
+
+					// If the forced layout produced a valid size, return it directly
+					if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height > 0) ||
+						(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width > 0))
+					{
+						return contentSize;
+					}
+				}
+
+				// Fallback: return the expansive size the collection view wants by default
+				// to get it to start measuring its content
 				var desiredSize = base.GetDesiredSize(widthConstraint, heightConstraint);
 				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
 				{
@@ -210,6 +264,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				else
 				{
 					contentSize.Width = desiredSize.Width;
+
+					// For horizontal layouts, items use FractionalHeight(1f), meaning their height equals
+					// the CollectionView's current frame height. When no items are loaded (Width == 0),
+					// contentSize.Height reflects the container's frame height rather than actual content.
+					// This creates a circular sizing issue in Auto-height containers: the frame grows based
+					// on the incorrect content height and stays locked in even after items load.
+					// Reset to 0 so that MinimumHeight / HeightRequest can determine the correct size.
+					contentSize.Height = 0;
 				}
 			}
 
