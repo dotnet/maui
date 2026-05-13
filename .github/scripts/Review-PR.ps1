@@ -1649,27 +1649,31 @@ Run these AFTER your primary test command succeeds. If any regression test fails
     }
 }
 
-# ── STEP 6a: Try-Fix — generate alternative fixes (Copilot call 1) ────────
+# ── STEP 6a: Try-Fix — iterative candidate generation (Copilot call 1) ────
 $step6aPrompt = @"
-Generate alternative fix candidates for PR #$PRNumber.
+Generate alternative fix candidates for PR #$PRNumber using an iterative expert-review-and-test loop.
 
 ## Phase 1 — Pre-Flight (context only)
 Use the pr-review skill's pre-flight phase to gather context about the issue and PR. Do NOT modify code.
 Write summary to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``.
 
-## Phase 2 — Try-Fix (as many candidates as needed)
-Use the pr-review skill's try-fix phase to generate independent candidate fixes. Each candidate must explore a DIFFERENT approach from the PR's current fix and from each other. Number them sequentially (``try-fix-1``, ``try-fix-2``, ``try-fix-3``, ...).
+## Phase 2 — Iterative Try-Fix loop
+For each candidate, follow this cycle:
 
-**Keep generating candidates until you either:**
-- Find one that passes all tests (including regression tests) AND is demonstrably better than the PR's fix, OR
-- Have exhausted meaningfully different approaches (don't generate trivial variations)
+1. **Generate** — Use the code-review skill with the maui-expert-reviewer agent to analyze the problem and generate a fix candidate. Each candidate must explore a DIFFERENT approach from the PR's current fix and from previous candidates. The expert reviewer provides domain-specific guidance for MAUI (handlers, platform specifics, layout, etc.).
+2. **Test** — Run the candidate against the gate criteria and regression tests. Record pass/fail.
+3. **Learn** — If the candidate failed, feed the failure details (test output, error messages) back to the expert reviewer to inform the next candidate.
+4. **Repeat or stop** — Generate the next candidate incorporating lessons from failures. Stop when:
+   - A candidate passes ALL tests and is demonstrably better than the PR's fix, OR
+   - You've exhausted meaningfully different approaches (don't generate trivial variations)
+
+Number candidates sequentially (``try-fix-1``, ``try-fix-2``, ``try-fix-3``, ...).
 
 For each candidate:
 - Write output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix-{N}/content.md``
-- Test it against the gate criteria and regression tests
-- Record pass/fail result
+- Include: approach description, diff, test results, failure analysis (if failed)
 
-Aggregate try-fix narrative for the AI summary comment to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``.
+Aggregate all try-fix narrative to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``.
 $regressionTestInstruction
 
 $platformInstruction
@@ -1685,9 +1689,9 @@ Invoke-CopilotStep -StepName "STEP 6a: TRY-FIX" -Prompt $step6aPrompt | Out-Null
 # Restore review branch between copilot calls
 git checkout $reviewBranch 2>$null | Out-Null
 
-# ── STEP 6b: Expert Review of PR fix + comparison (Copilot call 2) ────────
+# ── STEP 6b: Expert Review of PR fix + final comparison (Copilot call 2) ──
 $step6bPrompt = @"
-Run expert code review for PR #$PRNumber and compare against try-fix candidates.
+Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 6a.
 
 Read context from:
 - ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``
