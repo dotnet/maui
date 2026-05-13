@@ -67,7 +67,7 @@ public class MockViewWithValues : View
 	}
 
 	public static readonly BindableProperty BPByteProperty =
-		BindableProperty.Create("BPByte", typeof(byte), typeof(MockViewWithValues), (byte)0);
+		BindableProperty.Create("BPByte", typeof(byte), typeof(MockViewWithValues), (byte)255);
 
 	public byte BPByte
 	{
