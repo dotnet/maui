@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var foreground = appearance.ForegroundColor;
 			var background = !Brush.IsNullOrEmpty(appearance.Background)
 				? appearance.Background
-				: new SolidColorBrush(appearance.BackgroundColor);
+				: appearance.BackgroundColor is not null
+					? new SolidColorBrush(appearance.BackgroundColor)
+					: null;
 			var titleColor = appearance.TitleColor;
 
 			SetColors(toolbar, toolbarTracker, foreground, background, titleColor);
