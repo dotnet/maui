@@ -203,6 +203,9 @@ namespace Microsoft.Maui.Handlers
 		void UpdateVirtualViewFrame(AppWindow appWindow)
 		{
 			var hwnd = WindowNative.GetWindowHandle(PlatformView);
+			// GetWindowHandle returns IntPtr.Zero only when the underlying HWND has not yet been
+			// created. In practice ConnectHandler only calls this after GetAppWindow() succeeds,
+			// which requires a valid HWND, so this guard is a safety net for unexpected edge cases.
 			if (hwnd == IntPtr.Zero)
 				return;
 

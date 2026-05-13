@@ -170,8 +170,10 @@ namespace Microsoft.Maui.DeviceTests
 				presenter.Maximize();
 				var appWindow = handler.PlatformView.GetWindow();
 				Assert.NotNull(appWindow);
-				await AssertEventually(() => appWindow.X == 0);
-				await AssertEventually(() => appWindow.Y == 0);
+				// X and Y should be >= 0 (on a multi-monitor setup the maximized window may
+				// land on a non-primary monitor, giving a non-zero but still non-negative position).
+				await AssertEventually(() => appWindow.X >= 0);
+				await AssertEventually(() => appWindow.Y >= 0);
 				// Verify width and height are non-zero (regression: Height was reported as 0 when maximized)
 				await AssertEventually(() => appWindow.Width > 0);
 				await AssertEventually(() => appWindow.Height > 0);
