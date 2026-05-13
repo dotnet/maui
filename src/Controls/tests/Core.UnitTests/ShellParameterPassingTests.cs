@@ -873,5 +873,63 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
 			Assert.Equal("5", lastPage.AppliedQueryAttributes[0]["stars"]);
 		}
+
+		[Fact]
+		public async Task OverlappingParamNamesDeliverCorrectValueToEachPage()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			// Both pages have "name" as key, but intermediate gets it via prefix
+			await shell.GoToAsync("product/review?product.name=IntermediateValue&name=DetailValue");
+
+			// Intermediate page should get "name=IntermediateValue"
+			Assert.Single(intermediatePage.AppliedQueryAttributes);
+			Assert.True(intermediatePage.AppliedQueryAttributes[0].ContainsKey("name"));
+			Assert.Equal("IntermediateValue", intermediatePage.AppliedQueryAttributes[0]["name"]);
+
+			// Last page should get "name=DetailValue", NOT "IntermediateValue"
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.NotEqual(intermediatePage, lastPage);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("name"));
+			Assert.Equal("DetailValue", lastPage.AppliedQueryAttributes[0]["name"]);
+		}
+
+		[Fact]
+		public async Task IntermediatePageDoesNotReceiveUnprefixedParams()
+		{
+			var shell = new TestShell();
+			var item = CreateShellItem(shellSectionRoute: "section", shellContentRoute: "content");
+			shell.Items.Add(item);
+
+			var intermediatePage = new ShellTestPage();
+			shell.RegisterPage("product", intermediatePage);
+			Routing.RegisterRoute("review", typeof(ShellTestPage));
+
+			// "stars" is unprefixed — should only go to the last page
+			// "product.sku" is prefixed — should only go to intermediate
+			await shell.GoToAsync("product/review?product.sku=seed-tomato&stars=5&name=Alice");
+
+			// Intermediate page should only get "sku" (from "product.sku")
+			Assert.Single(intermediatePage.AppliedQueryAttributes);
+			Assert.True(intermediatePage.AppliedQueryAttributes[0].ContainsKey("sku"));
+			Assert.Equal("seed-tomato", intermediatePage.AppliedQueryAttributes[0]["sku"]);
+			// Should NOT contain unprefixed params
+			Assert.False(intermediatePage.AppliedQueryAttributes[0].ContainsKey("stars"));
+			Assert.False(intermediatePage.AppliedQueryAttributes[0].ContainsKey("name"));
+
+			// Last page should get both unprefixed params
+			var lastPage = shell.CurrentPage as ShellTestPage;
+			Assert.NotNull(lastPage);
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("stars"));
+			Assert.True(lastPage.AppliedQueryAttributes[0].ContainsKey("name"));
+			Assert.Equal("Alice", lastPage.AppliedQueryAttributes[0]["name"]);
+		}
 	}
 }
