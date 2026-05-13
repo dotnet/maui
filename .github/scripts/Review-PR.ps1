@@ -1700,17 +1700,25 @@ Generate alternative fix candidates for PR #$PRNumber. The expert review (Phase 
 - ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/expert-pr-eval/content.md``
 - ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md``
 
-## Try-Fix ×2
-Use the pr-review skill's try-fix phase to generate TWO independent candidate fixes (``try-fix-1`` and ``try-fix-2``). Each candidate must explore a DIFFERENT approach from the PR's current fix and from each other.
-- Write each candidate's output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix-{N}/content.md`` (N = 1..2).
-- Aggregate try-fix narrative for the AI summary comment to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``.
+## Try-Fix — as many candidates as needed
+Use the pr-review skill's try-fix phase to generate independent candidate fixes. Each candidate must explore a DIFFERENT approach from the PR's current fix and from each other. Number them sequentially (``try-fix-1``, ``try-fix-2``, ``try-fix-3``, ...).
+
+**Keep generating candidates until you either:**
+- Find one that passes all tests (including regression tests) AND is demonstrably better than the PR's fix, OR
+- Have exhausted meaningfully different approaches (don't generate trivial variations)
+
+For each candidate:
+- Write output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix-{N}/content.md``
+- Test it against the gate criteria and regression tests
+- Record pass/fail result
+- Aggregate try-fix narrative for the AI summary comment to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``
 $regressionTestInstruction
 
 ## Update Report
-Read the existing report at ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md`` and APPEND a comparison section that includes the try-fix candidates:
+Read the existing report at ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md`` and APPEND a comparison section that includes ALL try-fix candidates alongside:
 - ``pr`` (the raw PR fix as submitted)
 - ``pr-plus-reviewer`` (from Phase 1)
-- ``try-fix-1``, ``try-fix-2``
+- ``try-fix-1``, ``try-fix-2``, ... (all generated candidates)
 Pick the single winning candidate. **Candidates that failed regression tests MUST be ranked lower than candidates that passed them.**
 
 ## Update Winner manifest
@@ -1718,7 +1726,7 @@ If a try-fix candidate is better than the PR fix, update ``CustomAgentLogsTmp/PR
 ``````json
 {
   "schemaVersion": 1,
-  "winner": "pr" | "pr-plus-reviewer" | "try-fix-1" | "try-fix-2",
+  "winner": "pr" | "pr-plus-reviewer" | "try-fix-N",
   "isPRFix": true | false,
   "summary": "1-3 sentence rationale",
   "candidateDiff": "<unified diff — REQUIRED when isPRFix is false>"
