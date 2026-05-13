@@ -39,12 +39,15 @@ using Microsoft.Maui.Hosting;
 using System.Collections.Specialized;
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Extensions.Logging;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class HybridWebViewHandler : IHybridWebViewHandler
 	{
+		internal const string LegacyApiMessage = "This API uses reflection and dynamic System.Text.Json serialization. Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) instead.";
 
 		/// <summary>
 		/// The delegate type stored in the method cache. Each entry handles the full pipeline:
@@ -183,13 +186,26 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[RequiresUnreferencedCode(LegacyApiMessage)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(LegacyApiMessage)]
+#endif
 		internal async Task<byte[]?> InvokeDotNetAsync(Stream? streamBody = null, string? stringBody = null)
 		{
 			try
 			{
-				var methodCache = VirtualView.InvokeJavaScriptMethodCache
-					?? throw new InvalidOperationException(
-						$"No method cache is configured. Call {nameof(IHybridWebView.SetInvokeJavaScriptTarget)} with a JsonSerializerContext to enable JS-to-.NET method invocation.");
+				var methodCache = VirtualView.InvokeJavaScriptMethodCache;
+
+				// Legacy path: if no cache exists, lazily build one from the target type using reflection.
+				// This happens when the obsolete SetInvokeJavaScriptTarget<T>(T) overload was used.
+				if (methodCache is null)
+				{
+					var targetType = VirtualView.InvokeJavaScriptType
+						?? throw new InvalidOperationException(
+							$"No method cache is configured. Call {nameof(IHybridWebView.SetInvokeJavaScriptTarget)} with a JsonSerializerContext to enable JS-to-.NET method invocation.");
+					methodCache = BuildMethodCacheLegacy(targetType);
+					VirtualView.InvokeJavaScriptMethodCache = methodCache;
+				}
 
 				var target = VirtualView.InvokeJavaScriptTarget
 					?? throw new InvalidOperationException(
@@ -238,6 +254,95 @@ namespace Microsoft.Maui.Handlers
 				var errorJson = JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
 				return Encoding.UTF8.GetBytes(errorJson);
 			}
+		}
+
+		/// <summary>
+		/// Builds a method cache using reflection for the legacy SetInvokeJavaScriptTarget overload.
+		/// This is only called from the obsolete overload that doesn't take a JsonSerializerContext.
+		/// </summary>
+		[RequiresUnreferencedCode(LegacyApiMessage)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(LegacyApiMessage)]
+#endif
+		internal static IReadOnlyDictionary<string, object> BuildMethodCacheLegacy(
+			Type targetType)
+		{
+			var cache = new Dictionary<string, object>(StringComparer.Ordinal);
+
+			var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+			foreach (var method in methods)
+			{
+				if (method.IsSpecialName || method.IsGenericMethodDefinition)
+				{
+					continue;
+				}
+
+				var methodName = method.Name;
+				if (cache.ContainsKey(methodName))
+				{
+					continue; // skip overloads silently in legacy mode
+				}
+
+				var capturedMethod = method;
+				cache[methodName] = new DotNetMethodDelegate(async (object t, string[]? paramJsonValues) =>
+				{
+					var dotnetParams = capturedMethod.GetParameters();
+					object?[]? args = null;
+					if (paramJsonValues is not null)
+					{
+						if (dotnetParams.Length != paramJsonValues.Length)
+						{
+							throw new InvalidOperationException($"Method '{methodName}' expects {dotnetParams.Length} parameter(s) but {paramJsonValues.Length} were provided.");
+						}
+
+						args = new object?[paramJsonValues.Length];
+						for (var i = 0; i < paramJsonValues.Length; i++)
+						{
+							args[i] = JsonSerializer.Deserialize(paramJsonValues[i], dotnetParams[i].ParameterType);
+						}
+					}
+
+					object? returnValue;
+					try
+					{
+						returnValue = capturedMethod.Invoke(t, args);
+					}
+					catch (TargetInvocationException tie) when (tie.InnerException is not null)
+					{
+						ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+						throw; // unreachable
+					}
+
+					if (returnValue is null)
+					{
+						return null;
+					}
+
+					if (returnValue is Task task)
+					{
+						await task;
+
+						if (capturedMethod.ReturnType.IsGenericType && capturedMethod.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+						{
+							var resultProperty = capturedMethod.ReturnType.GetProperty(nameof(Task<object>.Result));
+							var result = resultProperty?.GetValue(task);
+							return result is null ? null : JsonSerializer.Serialize(result);
+						}
+
+						return null;
+					}
+
+					var resultType = returnValue.GetType();
+					if (resultType.IsArray || resultType.IsClass)
+					{
+						return JsonSerializer.Serialize(returnValue);
+					}
+
+					return JsonSerializer.Serialize(returnValue);
+				});
+			}
+
+			return cache;
 		}
 
 		private sealed class JSInvokeMethodData
