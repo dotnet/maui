@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Internal abstraction for JS-to-.NET method invocation.
+	/// Abstraction for JS-to-.NET method invocation in HybridWebView.
 	/// Implemented by the reflection-based fallback and by the source generator.
 	/// </summary>
-	internal interface IHybridWebViewInvoker
+	public interface IHybridWebViewInvoker
 	{
 		/// <summary>
 		/// Invokes the named .NET method with JSON-serialized parameters and returns a JSON-serialized result.

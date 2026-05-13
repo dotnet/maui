@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -44,9 +45,10 @@ namespace Microsoft.Maui
 		void SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) where T : class;
 
 		/// <summary>
-		/// For internal use only.
+		/// For internal use only. The invoker that handles JS-to-.NET method dispatch.
 		/// </summary>
-		internal IHybridWebViewInvoker? Invoker { get; set; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		IHybridWebViewInvoker? Invoker { get; set; }
 
 		void RawMessageReceived(string rawMessage);
 
