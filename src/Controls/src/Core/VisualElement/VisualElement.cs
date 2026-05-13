@@ -1667,6 +1667,26 @@ namespace Microsoft.Maui.Controls
 			set => _isItemSelected = value;
 		}
 
+		/// <summary>
+		/// Sets the selected state flag and transitions the visual state accordingly.
+		/// All platform code that selects/deselects items should use this single entry point
+		/// so that IsItemSelected and the VSM state are always kept in sync.
+		/// </summary>
+		internal void SetSelectedState(bool isSelected)
+		{
+			_isItemSelected = isSelected;
+			if (isSelected)
+			{
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Selected);
+			}
+			else
+			{
+				// Re-evaluate the full state chain so that PointerOver, Disabled, etc.
+				// are correctly applied instead of blindly going to Normal.
+				ChangeVisualState();
+			}
+		}
+
 		internal bool IsPointerOver
 		{
 			get { return _isPointerOver; }
@@ -1678,10 +1698,8 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_isPointerOver = value;
-			if (callChangeVisualState && !_isItemSelected)
-			{
+			if (callChangeVisualState)
 				ChangeVisualState();
-			}
 		}
 
 		/// <summary>
