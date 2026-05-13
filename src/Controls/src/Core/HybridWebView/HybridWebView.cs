@@ -84,13 +84,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		[Obsolete(LegacyInvokeJavaScriptTargetObsoleteMessage)]
-		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
+		public void SetInvokeJavaScriptTarget<T>(T target) where T : class
 		{
 			SetInvokeJavaScriptTargetCore<T>(target, jsonSerializerContext: null);
 		}
 
 		/// <inheritdoc/>
-		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target, JsonSerializerContext jsonSerializerContext) where T : class
+		public void SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) where T : class
 		{
 			if (jsonSerializerContext is null)
 			{
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 			SetInvokeJavaScriptTargetCore(target, jsonSerializerContext);
 		}
 
-		void SetInvokeJavaScriptTargetCore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target, JsonSerializerContext? jsonSerializerContext) where T : class
+		void SetInvokeJavaScriptTargetCore<T>(T target, JsonSerializerContext? jsonSerializerContext) where T : class
 		{
 			if (target is null)
 			{
