@@ -244,12 +244,6 @@ namespace Microsoft.Maui.DeviceTests
 			return mauiPicker.TextColor;
 		}
 
-		double GetNativeCharacterSpacing(PickerHandler pickerHandler)
-		{
-			var mauiPicker = GetNativePicker(pickerHandler);
-			return mauiPicker.AttributedText.GetCharacterSpacing();
-		}
-
 		UIControlContentVerticalAlignment GetNativeVerticalTextAlignment(PickerHandler pickerHandler) =>
 			GetNativePicker(pickerHandler).VerticalAlignment;
 	}
