@@ -1,0 +1,19 @@
+using System.Threading.Tasks;
+
+namespace Microsoft.Maui
+{
+	/// <summary>
+	/// Internal abstraction for JS-to-.NET method invocation.
+	/// Implemented by the reflection-based fallback and by the source generator.
+	/// </summary>
+	internal interface IHybridWebViewInvoker
+	{
+		/// <summary>
+		/// Invokes the named .NET method with JSON-serialized parameters and returns a JSON-serialized result.
+		/// </summary>
+		/// <param name="methodName">The name of the method to invoke.</param>
+		/// <param name="paramJsonValues">JSON-serialized parameter values, or null for parameterless methods.</param>
+		/// <returns>JSON-serialized result, or null for void methods or null returns.</returns>
+		Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues);
+	}
+}

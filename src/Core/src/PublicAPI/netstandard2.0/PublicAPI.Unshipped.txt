@@ -1,7 +1,7 @@
 ﻿#nullable enable
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptJsonSerializerContext.get -> System.Text.Json.Serialization.JsonSerializerContext?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptJsonSerializerContext.set -> void
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptMethodCache.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
-Microsoft.Maui.IHybridWebView.InvokeJavaScriptMethodCache.set -> void
+*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.get -> object?
+*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.set -> void
+*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.get -> System.Type?
+*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges

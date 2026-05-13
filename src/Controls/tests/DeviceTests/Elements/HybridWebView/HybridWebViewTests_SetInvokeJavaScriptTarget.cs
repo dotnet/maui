@@ -35,20 +35,17 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 		});
 
 	[Fact]
-	public Task MethodCacheIsPopulated_WhenUsingJsonSerializerContext() =>
+	public Task InvokerIsSet_WhenUsingJsonSerializerContext() =>
 		RunTest("invokedotnettests.html", async (hybridWebView) =>
 		{
 			var invokeJavaScriptTarget = new TestDotNetMethods();
 			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, InvokeDotNetJsonContext.Default);
 
-			// Verify the method cache was populated (AOT-safe path)
-			var cache = ((IHybridWebView)hybridWebView).InvokeJavaScriptMethodCache;
-			Assert.NotNull(cache);
-			Assert.True(cache.ContainsKey("Invoke_NoParam_NoReturn"), "Cache should contain void method");
-			Assert.True(cache.ContainsKey("Invoke_NoParam_ReturnTaskValueType"), "Cache should contain Task<int> method");
-			Assert.True(cache.ContainsKey("Invoke_OneParam_ReturnValueType"), "Cache should contain parameterized method");
+			// Verify the invoker was set (AOT-safe path)
+			var invoker = ((IHybridWebView)hybridWebView).Invoker;
+			Assert.NotNull(invoker);
 
-			// Verify the cached path actually works end-to-end
+			// Verify the invoker actually works end-to-end
 			hybridWebView.SendRawMessage("Invoke_NoParam_ReturnTaskValueType");
 			await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
 			var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
@@ -56,16 +53,17 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 		});
 
 	[Fact]
-	public Task MethodCacheIsNull_WhenUsingLegacyOverload() =>
+	public Task InvokerIsSet_WhenUsingLegacyOverload() =>
 		RunTest("invokedotnettests.html", (hybridWebView) =>
 		{
-#pragma warning disable CS0618 // Testing the legacy obsolete overload
+#pragma warning disable CS0618, IL2026, IL3050 // Testing the legacy obsolete overload
 			hybridWebView.SetInvokeJavaScriptTarget(new TestDotNetMethods());
-#pragma warning restore CS0618
+#pragma warning restore CS0618, IL2026, IL3050
 
-			// Verify the method cache is NOT populated (legacy fallback path)
-			var cache = ((IHybridWebView)hybridWebView).InvokeJavaScriptMethodCache;
-			Assert.Null(cache);
+			// Verify the invoker was set (legacy reflection path)
+			var invoker = ((IHybridWebView)hybridWebView).Invoker;
+			Assert.NotNull(invoker);
+			Assert.IsType<ReflectionHybridWebViewInvoker>(invoker);
 
 			return Task.CompletedTask;
 		});

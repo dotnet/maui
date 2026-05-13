@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,15 +13,12 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public class HybridWebView : View, IHybridWebView
 	{
-		const string LegacyInvokeJavaScriptTargetObsoleteMessage = "This overload uses reflection and dynamic System.Text.Json serialization features and is not compatible with trimming or NativeAOT. Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) instead.";
-
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		public static readonly BindableProperty DefaultFileProperty =
 			BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
 		/// <summary>Bindable property for <see cref="HybridRoot"/>.</summary>
 		public static readonly BindableProperty HybridRootProperty =
 			BindableProperty.Create(nameof(HybridRoot), typeof(string), typeof(HybridWebView), defaultValue: "wwwroot");
-
 
 		/// <inheritdoc/>
 		public string? DefaultFile
@@ -38,79 +34,50 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HybridRootProperty, value); }
 		}
 
-		/// <inheritdoc/>
-		object? IHybridWebView.InvokeJavaScriptTarget
-		{
-			get => _invokeJavaScriptTarget;
-			set
-			{
-				_invokeJavaScriptTarget = value;
-				_invokeJavaScriptJsonSerializerContext = null;
-			}
-		}
-
-		object? _invokeJavaScriptTarget;
-
-		Type? _invokeJavaScriptType;
+		IHybridWebViewInvoker? _invoker;
 
 		/// <inheritdoc/>
-		Type? IHybridWebView.InvokeJavaScriptType
+		IHybridWebViewInvoker? IHybridWebView.Invoker
 		{
-			get => _invokeJavaScriptType;
-			set
-			{
-				_invokeJavaScriptType = value;
-				_invokeJavaScriptJsonSerializerContext = null;
-			}
+			get => _invoker;
+			set => _invoker = value;
 		}
 
 		/// <inheritdoc/>
-		JsonSerializerContext? IHybridWebView.InvokeJavaScriptJsonSerializerContext
-		{
-			get => _invokeJavaScriptJsonSerializerContext;
-			set => _invokeJavaScriptJsonSerializerContext = value;
-		}
-
-		JsonSerializerContext? _invokeJavaScriptJsonSerializerContext;
-
-		/// <inheritdoc/>
-		IReadOnlyDictionary<string, object>? IHybridWebView.InvokeJavaScriptMethodCache
-		{
-			get => _invokeJavaScriptMethodCache;
-			set => _invokeJavaScriptMethodCache = value;
-		}
-
-		IReadOnlyDictionary<string, object>? _invokeJavaScriptMethodCache;
-
-		/// <inheritdoc/>
-		[Obsolete(LegacyInvokeJavaScriptTargetObsoleteMessage)]
-		public void SetInvokeJavaScriptTarget<T>(T target) where T : class
-		{
-			SetInvokeJavaScriptTargetCore<T>(target, jsonSerializerContext: null);
-		}
-
-		/// <inheritdoc/>
-		public void SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) where T : class
-		{
-			if (jsonSerializerContext is null)
-			{
-				throw new ArgumentNullException(nameof(jsonSerializerContext));
-			}
-
-			SetInvokeJavaScriptTargetCore(target, jsonSerializerContext);
-		}
-
-		void SetInvokeJavaScriptTargetCore<T>(T target, JsonSerializerContext? jsonSerializerContext) where T : class
+		[Obsolete("This overload uses reflection and dynamic System.Text.Json serialization features and is not compatible with trimming or NativeAOT. Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) instead.")]
+		[RequiresUnreferencedCode("This overload uses reflection and is not compatible with trimming or NativeAOT.")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("This overload uses reflection and is not compatible with trimming or NativeAOT.")]
+#endif
+		void IHybridWebView.SetInvokeJavaScriptTarget<T>(T target)
 		{
 			if (target is null)
 			{
 				throw new ArgumentNullException(nameof(target));
 			}
 
-			_invokeJavaScriptTarget = target;
-			_invokeJavaScriptType = typeof(T);
-			_invokeJavaScriptJsonSerializerContext = jsonSerializerContext;
-			_invokeJavaScriptMethodCache = null;
+			_invoker = new ReflectionHybridWebViewInvoker(target, typeof(T));
+		}
+
+		/// <inheritdoc/>
+		public void SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) where T : class
+		{
+			if (target is null)
+			{
+				throw new ArgumentNullException(nameof(target));
+			}
+
+			if (jsonSerializerContext is null)
+			{
+				throw new ArgumentNullException(nameof(jsonSerializerContext));
+			}
+
+			// The source generator interceptor replaces this method call at compile time
+			// and sets _invoker to a generated implementation with fully typed delegates.
+			// If the interceptor didn't fire (e.g. indirect call), throw at runtime.
+			throw new InvalidOperationException(
+				"SetInvokeJavaScriptTarget<T>(T, JsonSerializerContext) must be intercepted by the source generator. " +
+				"Ensure the Microsoft.Maui.Core.HybridWebViewSourceGen analyzer is referenced.");
 		}
 
 		void IHybridWebView.RawMessageReceived(string rawMessage)

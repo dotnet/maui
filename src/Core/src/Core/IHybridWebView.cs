@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -23,17 +22,16 @@ namespace Microsoft.Maui
 		string? HybridRoot { get; }
 
 		/// <summary>
-		/// For internal use only.
-		/// </summary>
-		object? InvokeJavaScriptTarget { get; set; }
-
-		/// <summary>
 		///  Sets the object that will be the target of JavaScript calls from the web view. The public methods on this object
 		///  are callable from JavaScript using the <c>window.HybridWebView.InvokeDotNet</c> method.
 		/// </summary>
 		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
 		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
 		[Obsolete("This overload uses reflection and dynamic System.Text.Json serialization features and is not compatible with trimming or NativeAOT. Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) instead.")]
+		[RequiresUnreferencedCode("This overload uses reflection and is not compatible with trimming or NativeAOT.")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("This overload uses reflection and is not compatible with trimming or NativeAOT.")]
+#endif
 		void SetInvokeJavaScriptTarget<T>(T target) where T : class;
 
 		/// <summary>
@@ -48,17 +46,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// For internal use only.
 		/// </summary>
-		Type? InvokeJavaScriptType { get; set; }
-
-		/// <summary>
-		/// For internal use only.
-		/// </summary>
-		JsonSerializerContext? InvokeJavaScriptJsonSerializerContext { get; set; }
-
-		/// <summary>
-		/// For internal use only. Pre-resolved method cache for AOT-safe JS-to-.NET invocation.
-		/// </summary>
-		IReadOnlyDictionary<string, object>? InvokeJavaScriptMethodCache { get; set; }
+		internal IHybridWebViewInvoker? Invoker { get; set; }
 
 		void RawMessageReceived(string rawMessage);
 

@@ -176,82 +176,90 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 				continue;
 
 			var loc = info.Location;
+
+			// Generate the interceptor method
 			sb.AppendLine($"        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({loc.Version}, @\"{loc.Data}\")]");
 			sb.AppendLine($"        public static void SetInvokeJavaScriptTarget_{index}<T>(this global::Microsoft.Maui.Controls.HybridWebView hybridWebView, T target, global::System.Text.Json.Serialization.JsonSerializerContext jsonSerializerContext) where T : class");
 			sb.AppendLine("        {");
 			sb.AppendLine("            if (target is null) throw new ArgumentNullException(nameof(target));");
 			sb.AppendLine("            if (jsonSerializerContext is null) throw new ArgumentNullException(nameof(jsonSerializerContext));");
 			sb.AppendLine();
-			sb.AppendLine($"            var cache = BuildMethodCache_{index}(({info.TargetTypeName})(object)target, jsonSerializerContext);");
-			sb.AppendLine("            ((global::Microsoft.Maui.IHybridWebView)hybridWebView).InvokeJavaScriptTarget = target;");
-			sb.AppendLine($"            ((global::Microsoft.Maui.IHybridWebView)hybridWebView).InvokeJavaScriptType = typeof({info.TargetTypeName});");
-			sb.AppendLine("            ((global::Microsoft.Maui.IHybridWebView)hybridWebView).InvokeJavaScriptJsonSerializerContext = jsonSerializerContext;");
-			sb.AppendLine("            ((global::Microsoft.Maui.IHybridWebView)hybridWebView).InvokeJavaScriptMethodCache = cache;");
+			sb.AppendLine($"            ((global::Microsoft.Maui.IHybridWebView)hybridWebView).Invoker = new Invoker_{index}(({info.TargetTypeName})(object)target, jsonSerializerContext);");
 			sb.AppendLine("        }");
 			sb.AppendLine();
 
-			// Generate the typed BuildMethodCache
-			sb.AppendLine($"        private static global::System.Collections.Generic.IReadOnlyDictionary<string, object> BuildMethodCache_{index}({info.TargetTypeName} target, global::System.Text.Json.Serialization.JsonSerializerContext ctx)");
+			// Generate the IHybridWebViewInvoker implementation
+			sb.AppendLine($"        private sealed class Invoker_{index} : global::Microsoft.Maui.IHybridWebViewInvoker");
 			sb.AppendLine("        {");
-			sb.AppendLine("            return new global::System.Collections.Generic.Dictionary<string, object>(global::System.StringComparer.Ordinal)");
+			sb.AppendLine($"            private readonly {info.TargetTypeName} _target;");
+			sb.AppendLine("            private readonly global::System.Text.Json.Serialization.JsonSerializerContext _ctx;");
+			sb.AppendLine();
+			sb.AppendLine($"            public Invoker_{index}({info.TargetTypeName} target, global::System.Text.Json.Serialization.JsonSerializerContext ctx)");
 			sb.AppendLine("            {");
+			sb.AppendLine("                _target = target;");
+			sb.AppendLine("                _ctx = ctx;");
+			sb.AppendLine("            }");
+			sb.AppendLine();
+			sb.AppendLine("            public async global::System.Threading.Tasks.Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues)");
+			sb.AppendLine("            {");
+			sb.AppendLine("                switch (methodName)");
+			sb.AppendLine("                {");
 
 			foreach (var method in info.Methods)
 			{
-				sb.AppendLine($"                [\"{method.Name}\"] = new global::Microsoft.Maui.Handlers.HybridWebViewHandler.DotNetMethodDelegate(async (object __target, string[]? __args) =>");
-				sb.AppendLine("                {");
-				sb.AppendLine($"                    var __typedTarget = ({info.TargetTypeName})(object)__target;");
+				sb.AppendLine($"                    case \"{method.Name}\":");
+				sb.AppendLine("                    {");
 
-				// Deserialize params — validate args count first
+				// Deserialize params
 				if (method.Parameters.Length > 0)
 				{
-					sb.AppendLine($"                    if (__args is null || __args.Length != {method.Parameters.Length})");
-					sb.AppendLine($"                        throw new global::System.InvalidOperationException(\"Method '{method.Name}' expects {method.Parameters.Length} argument(s) but received \" + (__args?.Length ?? 0) + \".\");");
+					sb.AppendLine($"                        if (paramJsonValues is null || paramJsonValues.Length != {method.Parameters.Length})");
+					sb.AppendLine($"                            throw new global::System.InvalidOperationException(\"Method '{method.Name}' expects {method.Parameters.Length} argument(s) but received \" + (paramJsonValues?.Length ?? 0) + \".\");");
 
 					for (int i = 0; i < method.Parameters.Length; i++)
 					{
 						var p = method.Parameters[i];
-						sb.AppendLine($"                    var __{p.Name} = global::System.Text.Json.JsonSerializer.Deserialize<{p.TypeName}>(__args[{i}], GetRequiredJsonTypeInfo<{p.TypeName}>(ctx, \"{method.Name}\", \"{p.Name}\"));");
+						sb.AppendLine($"                        var __{p.Name} = global::System.Text.Json.JsonSerializer.Deserialize<{p.TypeName}>(paramJsonValues[{i}], GetRequiredJsonTypeInfo<{p.TypeName}>(_ctx, \"{method.Name}\", \"{p.Name}\"));");
 					}
 				}
 
-				// Build argument list
 				var argList = string.Join(", ", Array.ConvertAll(method.Parameters, p => $"__{p.Name}"));
 
-				// Invoke + handle result
 				switch (method.ReturnKind)
 				{
 					case "void":
-						sb.AppendLine($"                    __typedTarget.{method.Name}({argList});");
-						sb.AppendLine("                    return null;");
+						sb.AppendLine($"                        _target.{method.Name}({argList});");
+						sb.AppendLine("                        return null;");
 						break;
 					case "Task":
-						sb.AppendLine($"                    await __typedTarget.{method.Name}({argList});");
-						sb.AppendLine("                    return null;");
+						sb.AppendLine($"                        await _target.{method.Name}({argList});");
+						sb.AppendLine("                        return null;");
 						break;
 					case "TaskOfT":
-						sb.AppendLine($"                    var __result = await __typedTarget.{method.Name}({argList});");
-						sb.AppendLine($"                    if (__result is null) return null;");
-						sb.AppendLine($"                    return global::System.Text.Json.JsonSerializer.Serialize<{method.ResultTypeName}>(__result, GetRequiredJsonTypeInfo<{method.ResultTypeName}>(ctx, \"{method.Name}\", \"return\"));");
+						sb.AppendLine($"                        var __result = await _target.{method.Name}({argList});");
+						sb.AppendLine($"                        if (__result is null) return null;");
+						sb.AppendLine($"                        return global::System.Text.Json.JsonSerializer.Serialize<{method.ResultTypeName}>(__result, GetRequiredJsonTypeInfo<{method.ResultTypeName}>(_ctx, \"{method.Name}\", \"return\"));");
 						break;
 					case "sync":
-						sb.AppendLine($"                    var __result = __typedTarget.{method.Name}({argList});");
-						sb.AppendLine($"                    if (__result is null) return null;");
-						sb.AppendLine($"                    return global::System.Text.Json.JsonSerializer.Serialize<{method.ResultTypeName}>(__result, GetRequiredJsonTypeInfo<{method.ResultTypeName}>(ctx, \"{method.Name}\", \"return\"));");
+						sb.AppendLine($"                        var __result = _target.{method.Name}({argList});");
+						sb.AppendLine($"                        if (__result is null) return null;");
+						sb.AppendLine($"                        return global::System.Text.Json.JsonSerializer.Serialize<{method.ResultTypeName}>(__result, GetRequiredJsonTypeInfo<{method.ResultTypeName}>(_ctx, \"{method.Name}\", \"return\"));");
 						break;
 				}
 
-				sb.AppendLine("                }),");
+				sb.AppendLine("                    }");
 			}
 
-			sb.AppendLine("            };");
+			sb.AppendLine("                    default:");
+			sb.AppendLine($"                        throw new global::System.InvalidOperationException($\"The method '{{methodName}}' was not found on type '{info.TargetTypeName}'.\");");
+			sb.AppendLine("                }");
+			sb.AppendLine("            }");
 			sb.AppendLine("        }");
 			sb.AppendLine();
 			index++;
 		}
 
-		sb.AppendLine("    }");
-		sb.AppendLine();
+		// Shared helper method
 		sb.AppendLine("        private static global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> GetRequiredJsonTypeInfo<T>(global::System.Text.Json.Serialization.JsonSerializerContext ctx, string methodName, string paramName)");
 		sb.AppendLine("        {");
 		sb.AppendLine("            var typeInfo = ctx.GetTypeInfo(typeof(T));");
