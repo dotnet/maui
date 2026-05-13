@@ -36,6 +36,10 @@ jobs:
        (github.event.comment.body == '/review' ||
         startsWith(github.event.comment.body, '/review ')))
     runs-on: ubuntu-latest
+    concurrency:
+      group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
+      cancel-in-progress: false
+    timeout-minutes: 10
     permissions:
       id-token: write
       contents: read
