@@ -307,6 +307,13 @@ namespace Microsoft.Maui.Controls
 			//filter the query to only apply the keys with matching prefix
 			var filteredQuery = new ShellRouteParameters(query, prefix);
 
+			// For non-destination items (isLastItem=false), skip entirely when there are no
+			// matching prefix params. This prevents stale QueryAttributesProperty stored from
+			// a prior cycle from propagating to pages that are not the navigation target.
+			if (!isLastItem && filteredQuery.Count == 0)
+			{
+				return;
+			}
 
 			if (baseShellItem is ShellContent)
 			{
