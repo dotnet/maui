@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -19,7 +20,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 		RunTest("invokedotnettests.html", async (hybridWebView) =>
 		{
 			var invokeJavaScriptTarget = new TestDotNetMethods();
-			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, InvokeDotNetJsonContext.Default);
 
 			// Tell JavaScript to invoke the method
 			hybridWebView.SendRawMessage(methodName);
@@ -31,6 +32,42 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
 			Assert.Equal(expectedReturnValue, result);
 			Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
+		});
+
+	[Fact]
+	public Task MethodCacheIsPopulated_WhenUsingJsonSerializerContext() =>
+		RunTest("invokedotnettests.html", async (hybridWebView) =>
+		{
+			var invokeJavaScriptTarget = new TestDotNetMethods();
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, InvokeDotNetJsonContext.Default);
+
+			// Verify the method cache was populated (AOT-safe path)
+			var cache = ((IHybridWebView)hybridWebView).InvokeJavaScriptMethodCache;
+			Assert.NotNull(cache);
+			Assert.True(cache.ContainsKey("Invoke_NoParam_NoReturn"), "Cache should contain void method");
+			Assert.True(cache.ContainsKey("Invoke_NoParam_ReturnTaskValueType"), "Cache should contain Task<int> method");
+			Assert.True(cache.ContainsKey("Invoke_OneParam_ReturnValueType"), "Cache should contain parameterized method");
+
+			// Verify the cached path actually works end-to-end
+			hybridWebView.SendRawMessage("Invoke_NoParam_ReturnTaskValueType");
+			await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
+			var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
+			Assert.Equal("2", result);
+		});
+
+	[Fact]
+	public Task MethodCacheIsNull_WhenUsingLegacyOverload() =>
+		RunTest("invokedotnettests.html", (hybridWebView) =>
+		{
+#pragma warning disable CS0618 // Testing the legacy obsolete overload
+			hybridWebView.SetInvokeJavaScriptTarget(new TestDotNetMethods());
+#pragma warning restore CS0618
+
+			// Verify the method cache is NOT populated (legacy fallback path)
+			var cache = ((IHybridWebView)hybridWebView).InvokeJavaScriptMethodCache;
+			Assert.Null(cache);
+
+			return Task.CompletedTask;
 		});
 
 	private class TestDotNetMethods
@@ -170,5 +207,15 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 	{
 		public decimal result { get; set; }
 		public string? operationName { get; set; }
+	}
+
+	[JsonSerializable(typeof(ComputationResult))]
+	[JsonSerializable(typeof(Dictionary<string, int>))]
+	[JsonSerializable(typeof(int[]))]
+	[JsonSerializable(typeof(string))]
+	[JsonSerializable(typeof(int))]
+	[JsonSerializable(typeof(object))]
+	internal partial class InvokeDotNetJsonContext : JsonSerializerContext
+	{
 	}
 }

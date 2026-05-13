@@ -1,5 +1,7 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
@@ -31,13 +33,32 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
 		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
+		[Obsolete("This overload uses reflection and dynamic System.Text.Json serialization features and is not compatible with trimming or NativeAOT. Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) instead.")]
 		void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class;
+
+		/// <summary>
+		///  Sets the object that will be the target of JavaScript calls from the web view. The public methods on this object
+		///  are callable from JavaScript using the <c>window.HybridWebView.InvokeDotNet</c> method.
+		/// </summary>
+		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
+		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
+		/// <param name="jsonSerializerContext">The source-generated JSON serializer context for parameter and return types used by the target methods.</param>
+		void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target, JsonSerializerContext jsonSerializerContext) where T : class;
 
 		/// <summary>
 		/// For internal use only.
 		/// </summary>
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? InvokeJavaScriptType { get; set; }
+
+		/// <summary>
+		/// For internal use only.
+		/// </summary>
+		JsonSerializerContext? InvokeJavaScriptJsonSerializerContext { get; set; }
+
+		/// <summary>
+		/// For internal use only. Pre-resolved method cache for AOT-safe JS-to-.NET invocation.
+		/// </summary>
+		IReadOnlyDictionary<string, object>? InvokeJavaScriptMethodCache { get; set; }
 
 		void RawMessageReceived(string rawMessage);
 

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
@@ -12,6 +14,8 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public class HybridWebView : View, IHybridWebView
 	{
+		const string LegacyInvokeJavaScriptTargetObsoleteMessage = "This overload uses reflection and dynamic System.Text.Json serialization features and is not compatible with trimming or NativeAOT. Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) instead.";
+
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		public static readonly BindableProperty DefaultFileProperty =
 			BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
@@ -35,25 +39,86 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
-		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
+		object? IHybridWebView.InvokeJavaScriptTarget
+		{
+			get => _invokeJavaScriptTarget;
+			set
+			{
+				_invokeJavaScriptTarget = value;
+				_invokeJavaScriptJsonSerializerContext = null;
+			}
+		}
 
-		[UnconditionalSuppressMessage("Trimming", "IL2114", Justification = "Base type VisualElement specifies DynamicallyAccessedMemberTypes.NonPublicFields: https://github.com/dotnet/runtime/issues/108978#issuecomment-2420091986")]
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		object? _invokeJavaScriptTarget;
+
 		Type? _invokeJavaScriptType;
 
 		/// <inheritdoc/>
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? IHybridWebView.InvokeJavaScriptType
 		{
 			get => _invokeJavaScriptType;
-			set => _invokeJavaScriptType = value;
+			set
+			{
+				_invokeJavaScriptType = value;
+				_invokeJavaScriptJsonSerializerContext = null;
+			}
 		}
 
 		/// <inheritdoc/>
+		JsonSerializerContext? IHybridWebView.InvokeJavaScriptJsonSerializerContext
+		{
+			get => _invokeJavaScriptJsonSerializerContext;
+			set => _invokeJavaScriptJsonSerializerContext = value;
+		}
+
+		JsonSerializerContext? _invokeJavaScriptJsonSerializerContext;
+
+		/// <inheritdoc/>
+		IReadOnlyDictionary<string, object>? IHybridWebView.InvokeJavaScriptMethodCache
+		{
+			get => _invokeJavaScriptMethodCache;
+			set => _invokeJavaScriptMethodCache = value;
+		}
+
+		IReadOnlyDictionary<string, object>? _invokeJavaScriptMethodCache;
+
+		/// <inheritdoc/>
+		[Obsolete(LegacyInvokeJavaScriptTargetObsoleteMessage)]
 		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
 		{
-			((IHybridWebView)this).InvokeJavaScriptTarget = target;
-			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
+			SetInvokeJavaScriptTargetCore<T>(target, jsonSerializerContext: null);
+		}
+
+		/// <inheritdoc/>
+		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target, JsonSerializerContext jsonSerializerContext) where T : class
+		{
+			if (jsonSerializerContext is null)
+			{
+				throw new ArgumentNullException(nameof(jsonSerializerContext));
+			}
+
+			SetInvokeJavaScriptTargetCore(target, jsonSerializerContext);
+		}
+
+		void SetInvokeJavaScriptTargetCore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target, JsonSerializerContext? jsonSerializerContext) where T : class
+		{
+			if (target is null)
+			{
+				throw new ArgumentNullException(nameof(target));
+			}
+
+			_invokeJavaScriptTarget = target;
+			_invokeJavaScriptType = typeof(T);
+			_invokeJavaScriptJsonSerializerContext = jsonSerializerContext;
+
+			if (jsonSerializerContext is not null)
+			{
+				_invokeJavaScriptMethodCache = Maui.Handlers.HybridWebViewHandler.BuildMethodCache(typeof(T), jsonSerializerContext);
+			}
+			else
+			{
+				_invokeJavaScriptMethodCache = null;
+			}
 		}
 
 		void IHybridWebView.RawMessageReceived(string rawMessage)

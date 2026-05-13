@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,7 +17,7 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 		RunTest("exception-tests.html", async (hybridWebView) =>
 		{
 			var invokeJavaScriptTarget = new TestExceptionMethods();
-			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, ExceptionHandlingJsonContext.Default);
 
 			// Tell JavaScript to invoke the method that throws an exception
 			hybridWebView.SendRawMessage("ThrowException");
@@ -37,7 +38,7 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 		RunTest("exception-tests.html", async (hybridWebView) =>
 		{
 			var invokeJavaScriptTarget = new TestExceptionMethods();
-			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, ExceptionHandlingJsonContext.Default);
 
 			// Tell JavaScript to invoke the async method that throws an exception
 			hybridWebView.SendRawMessage("ThrowExceptionAsync");
@@ -58,7 +59,7 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 		RunTest("exception-tests.html", async (hybridWebView) =>
 		{
 			var invokeJavaScriptTarget = new TestExceptionMethods();
-			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, ExceptionHandlingJsonContext.Default);
 
 			// Tell JavaScript to invoke the method that throws a custom exception
 			hybridWebView.SendRawMessage("ThrowCustomException");
@@ -79,7 +80,7 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 		RunTest("exception-tests.html", async (hybridWebView) =>
 		{
 			var invokeJavaScriptTarget = new TestExceptionMethods();
-			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, ExceptionHandlingJsonContext.Default);
 
 			// Tell JavaScript to invoke a normal method that doesn't throw
 			hybridWebView.SendRawMessage("SuccessMethod");
@@ -94,6 +95,25 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 			// Check that no error was thrown
 			var hasError = await hybridWebView.EvaluateJavaScriptAsync("HasError()");
 			Assert.Contains("false", hasError, StringComparison.Ordinal);
+		});
+
+	[Fact]
+	public Task MissingJsonMetadata_ShouldPropagateToJavaScript() =>
+		RunTest("exception-tests.html", async (hybridWebView) =>
+		{
+			var invokeJavaScriptTarget = new TestExceptionMethods();
+			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, MissingMetadataJsonContext.Default);
+
+			hybridWebView.SendRawMessage("SuccessMethod");
+
+			await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
+
+			var errorType = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorType()");
+			var errorMessage = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorMessage()");
+
+			Assert.Equal("InvalidOperationException", errorType);
+			Assert.Equal("The JSON serializer context did not provide metadata for type 'System.String'.", errorMessage);
+			Assert.Equal("SuccessMethod", invokeJavaScriptTarget.LastMethodCalled);
 		});
 
 	private class TestExceptionMethods
@@ -124,5 +144,15 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 			LastMethodCalled = nameof(SuccessMethod);
 			return "Success!";
 		}
+	}
+
+	[JsonSerializable(typeof(string))]
+	internal partial class ExceptionHandlingJsonContext : JsonSerializerContext
+	{
+	}
+
+	[JsonSerializable(typeof(int))]
+	internal partial class MissingMetadataJsonContext : JsonSerializerContext
+	{
 	}
 }

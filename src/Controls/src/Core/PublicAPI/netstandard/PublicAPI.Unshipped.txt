@@ -1,4 +1,5 @@
 ﻿#nullable enable
+Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 ~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.get -> string
 ~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.set -> void
 ~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color

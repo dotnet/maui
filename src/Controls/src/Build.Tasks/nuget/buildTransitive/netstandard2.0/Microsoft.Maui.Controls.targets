@@ -38,6 +38,7 @@
 	<PropertyGroup>
 		<_MauiBindingInterceptorsSupport Condition=" '$(_MauiBindingInterceptorsSupport)' == '' and '$(DisableMauiAnalyzers)' != 'true' ">true</_MauiBindingInterceptorsSupport>
 		<InterceptorsPreviewNamespaces Condition=" '$(_MauiBindingInterceptorsSupport)' == 'true' ">$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
+		<InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Generated</InterceptorsPreviewNamespaces>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiBindingInterceptorsSupport)' == 'true' ">
 		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.BindingSourceGen.dll" IsImplicitlyDefined="true" />
@@ -322,7 +323,6 @@
       <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
-      <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
       <MauiCssEnabled Condition="'$(MauiCssEnabled)' == '' and '@(MauiCss->Count())' == '0'">false</MauiCssEnabled>
       <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
       <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
@@ -356,10 +356,6 @@
                                       Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' != ''"
                                       Value="$(MauiEnableXamlCBindingWithSourceCompilation)"
                                       Trim="false" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported"
-                                      Condition="'$(MauiHybridWebViewSupported)' != ''"
-                                      Value="$(MauiHybridWebViewSupported)"
-                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsCssEnabled"
                                       Condition="'$(MauiCssEnabled)' != ''"
                                       Value="$(MauiCssEnabled)"

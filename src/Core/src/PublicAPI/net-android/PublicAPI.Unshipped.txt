@@ -92,6 +92,9 @@ Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(nint javaR
 Microsoft.Maui.Platform.MauiMaterialTimePicker.OnClick(Android.Views.View? v) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.get -> System.Action?
 Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.set -> void
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptJsonSerializerContext.get -> System.Text.Json.Serialization.JsonSerializerContext?
+Microsoft.Maui.IHybridWebView.InvokeJavaScriptJsonSerializerContext.set -> void
+Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void

@@ -32,6 +32,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
@@ -44,14 +45,15 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Maui.Handlers
 {
-	[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-	[RequiresDynamicCode(DynamicFeatures)]
-#endif
 	public partial class HybridWebViewHandler : IHybridWebViewHandler
 	{
-		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
-		internal const string NotSupportedMessage = DynamicFeatures + " Enable the $(MauiHybridWebViewSupported) property in your .csproj file to use in a trimming unsafe manner.";
+		internal const string DynamicFeatures = "HybridWebView's legacy SetInvokeJavaScriptTarget API uses reflection and dynamic System.Text.Json serialization features.";
+
+		/// <summary>
+		/// The delegate type stored in the method cache. Each entry handles the full pipeline:
+		/// deserialize params → invoke method → await if Task → serialize result.
+		/// </summary>
+		internal delegate Task<string?> DotNetMethodDelegate(object target, string[]? paramJsonValues);
 
 		// Using an IP address means that the web view doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
@@ -184,13 +186,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		internal async Task<byte[]?> InvokeDotNetAsync(Stream? streamBody = null, string? stringBody = null)
 		{
 			try
 			{
-				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
-				var invokeTargetType = VirtualView.InvokeJavaScriptType ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptType)} property must have a value in order to invoke a .NET method from JavaScript.");
-
 				JSInvokeMethodData? invokeData = null;
 				if (streamBody is not null)
 				{
@@ -206,34 +209,95 @@ namespace Microsoft.Maui.Handlers
 					throw new InvalidOperationException("The invoke data did not provide a method name.");
 				}
 
-				var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
-				var invokeResult = CreateInvokeResult(invokeResultRaw);
-				var json = JsonSerializer.Serialize(invokeResult);
-				var contentBytes = Encoding.UTF8.GetBytes(json);
+				DotNetInvokeResult invokeResult;
+				if (VirtualView.InvokeJavaScriptMethodCache is { } methodCache)
+				{
+					// AOT-safe path: use pre-built delegates from method cache
+					invokeResult = await InvokeCachedMethodAsync(
+						VirtualView.InvokeJavaScriptTarget!,
+						methodCache,
+						invokeData);
+				}
+				else
+				{
+					// Legacy path: full reflection
+					invokeResult = await InvokeLegacyAsync(invokeData);
+				}
 
-				return contentBytes;
+				var json = JsonSerializer.Serialize(invokeResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
+				return Encoding.UTF8.GetBytes(json);
 			}
 			catch (Exception ex)
 			{
 				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
 
-				// Return error response instead of null so JavaScript can handle the error
-				var errorResult = CreateErrorResult(ex);
+				var errorResult = new DotNetInvokeResult
+				{
+					IsError = true,
+					ErrorMessage = ex.Message,
+					ErrorType = ex.GetType().Name,
+					ErrorStackTrace = ex.StackTrace
+				};
 				var errorJson = JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
-				var errorBytes = Encoding.UTF8.GetBytes(errorJson);
-				return errorBytes;
+				return Encoding.UTF8.GetBytes(errorJson);
 			}
 		}
 
-		private static DotNetInvokeResult CreateInvokeResult(object? result)
+		/// <summary>
+		/// AOT-safe invocation path: uses pre-built typed delegates from the method cache.
+		/// No MakeGenericMethod, no GetProperty, no reflection-based JSON.
+		/// </summary>
+		private static async Task<DotNetInvokeResult> InvokeCachedMethodAsync(
+			object target,
+			IReadOnlyDictionary<string, object> methodCache,
+			JSInvokeMethodData invokeData)
 		{
-			// null invoke result means an empty result
+			var methodName = invokeData.MethodName!;
+			if (!methodCache.TryGetValue(methodName, out var entry) || entry is not DotNetMethodDelegate handler)
+			{
+				throw new InvalidOperationException($"The method '{methodName}' was not found on the invoke target. Available methods: {string.Join(", ", methodCache.Keys)}.");
+			}
+
+			var jsonResult = await handler(target, invokeData.ParamValues);
+			if (jsonResult is null)
+			{
+				return new DotNetInvokeResult();
+			}
+
+			return new DotNetInvokeResult
+			{
+				Result = jsonResult,
+				IsJson = true,
+			};
+		}
+
+		/// <summary>
+		/// Legacy reflection-based invocation path for backward compatibility.
+		/// </summary>
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
+		private async Task<DotNetInvokeResult> InvokeLegacyAsync(JSInvokeMethodData invokeData)
+		{
+			var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+			var invokeTargetType = VirtualView.InvokeJavaScriptType ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptType)} property must have a value in order to invoke a .NET method from JavaScript.");
+
+			var result = await InvokeDotNetMethodLegacyAsync(invokeTargetType, invokeTarget, invokeData);
+			return CreateInvokeResultLegacy(result);
+		}
+
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
+		private static DotNetInvokeResult CreateInvokeResultLegacy(object? result)
+		{
 			if (result is null)
 			{
 				return new();
 			}
 
-			// a reference type or an array should be serialized to JSON
 			var resultType = result.GetType();
 			if (resultType.IsArray || resultType.IsClass)
 			{
@@ -244,25 +308,17 @@ namespace Microsoft.Maui.Handlers
 				};
 			}
 
-			// a value type should be returned as is
 			return new DotNetInvokeResult()
 			{
 				Result = result,
 			};
 		}
 
-		private static DotNetInvokeResult CreateErrorResult(Exception ex)
-		{
-			return new DotNetInvokeResult()
-			{
-				IsError = true,
-				ErrorMessage = ex.Message,
-				ErrorType = ex.GetType().Name,
-				ErrorStackTrace = ex.StackTrace
-			};
-		}
-
-		private static async Task<object?> InvokeDotNetMethodAsync(
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
+		private static async Task<object?> InvokeDotNetMethodLegacyAsync(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType,
 			object jsInvokeTarget,
 			JSInvokeMethodData invokeData)
@@ -270,7 +326,6 @@ namespace Microsoft.Maui.Handlers
 			var requestMethodName = invokeData.MethodName!;
 			var requestParams = invokeData.ParamValues;
 
-			// get the method and its parameters from the .NET object instance
 			var dotnetMethod = targetType.GetMethod(requestMethodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
 			if (dotnetMethod is null)
 			{
@@ -282,47 +337,40 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"The number of parameters on {nameof(jsInvokeTarget)}'s method {requestMethodName} ({dotnetParams.Length}) doesn't match the number of values passed from JavaScript code ({requestParams.Length}).");
 			}
 
-			// deserialize the parameters from JSON to .NET types
 			object?[]? invokeParamValues = null;
 			if (requestParams is not null)
 			{
 				invokeParamValues = new object?[requestParams.Length];
 				for (var i = 0; i < requestParams.Length; i++)
 				{
-					var reqValue = requestParams[i];
-					var paramType = dotnetParams[i].ParameterType;
-					var deserialized = JsonSerializer.Deserialize(reqValue, paramType);
-					invokeParamValues[i] = deserialized;
+					invokeParamValues[i] = JsonSerializer.Deserialize(requestParams[i], dotnetParams[i].ParameterType);
 				}
 			}
 
-			// invoke the .NET method
-			var dotnetReturnValue = GetDotNetMethodReturnValue(jsInvokeTarget, dotnetMethod, invokeParamValues);
+			var dotnetReturnValue = InvokeMethod(jsInvokeTarget, dotnetMethod, invokeParamValues);
 
-			if (dotnetReturnValue is null) // null result
+			if (dotnetReturnValue is null)
 			{
 				return null;
 			}
 
-			if (dotnetReturnValue is Task task) // Task or Task<T> result
+			if (dotnetReturnValue is Task task)
 			{
 				await task;
 
-				// Task<T>
 				if (dotnetMethod.ReturnType.IsGenericType)
 				{
 					var resultProperty = dotnetMethod.ReturnType.GetProperty(nameof(Task<object>.Result));
 					return resultProperty?.GetValue(task);
 				}
 
-				// Task
 				return null;
 			}
 
-			return dotnetReturnValue; // regular result
+			return dotnetReturnValue;
 		}
 
-		private static object? GetDotNetMethodReturnValue(object jsInvokeTarget, MethodInfo dotnetMethod, object?[]? invokeParamValues)
+		private static object? InvokeMethod(object jsInvokeTarget, MethodInfo dotnetMethod, object?[]? invokeParamValues)
 		{
 			try
 			{
@@ -344,6 +392,137 @@ namespace Microsoft.Maui.Handlers
 				throw;
 			}
 		}
+
+		/// <summary>
+		/// Builds a method cache at registration time using reflection.
+		/// This is the runtime fallback — the source generator will replace this with
+		/// fully typed delegates that don't need any suppressions.
+		/// </summary>
+		internal static IReadOnlyDictionary<string, object> BuildMethodCache(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type targetType,
+			JsonSerializerContext jsonSerializerContext)
+		{
+			var cache = new Dictionary<string, object>(StringComparer.Ordinal);
+
+			var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+			foreach (var method in methods)
+			{
+				if (method.IsSpecialName || method.IsGenericMethodDefinition)
+				{
+					continue;
+				}
+
+				var methodName = method.Name;
+				if (cache.ContainsKey(methodName))
+				{
+					throw new InvalidOperationException($"The type '{targetType.FullName}' has multiple methods named '{methodName}'. Method overloads are not supported for JavaScript invocation.");
+				}
+
+				var parameters = method.GetParameters();
+
+				// Pre-resolve parameter JsonTypeInfos
+				var paramJsonTypeInfos = new JsonTypeInfo[parameters.Length];
+				for (var i = 0; i < parameters.Length; i++)
+				{
+					var paramType = parameters[i].ParameterType;
+					if (paramType.IsByRef || paramType.IsPointer)
+					{
+						throw new InvalidOperationException($"The method '{methodName}' on type '{targetType.FullName}' has a ref/pointer parameter '{parameters[i].Name}' which is not supported for JavaScript invocation.");
+					}
+
+					paramJsonTypeInfos[i] = jsonSerializerContext.GetTypeInfo(paramType)
+						?? throw new InvalidOperationException($"The JSON serializer context does not contain metadata for parameter type '{paramType.FullName}' (parameter '{parameters[i].Name}' of method '{methodName}'). Add [JsonSerializable(typeof({paramType.Name}))] to your JsonSerializerContext.");
+				}
+
+				// Pre-resolve return type handling
+				var returnType = method.ReturnType;
+				JsonTypeInfo? returnJsonTypeInfo = null;
+				PropertyInfo? taskResultProperty = null;
+				bool isTask = false;
+				bool isTaskOfT = false;
+
+				if (returnType == typeof(void))
+				{
+					// no-op
+				}
+				else if (returnType == typeof(Task))
+				{
+					isTask = true;
+				}
+				else if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
+				{
+					isTask = true;
+					isTaskOfT = true;
+					var resultType = returnType.GetGenericArguments()[0];
+					returnJsonTypeInfo = jsonSerializerContext.GetTypeInfo(resultType)
+						?? throw new InvalidOperationException($"The JSON serializer context does not contain metadata for return type '{resultType.FullName}' (Task<{resultType.Name}> of method '{methodName}'). Add [JsonSerializable(typeof({resultType.Name}))] to your JsonSerializerContext.");
+					taskResultProperty = GetTaskResultProperty(returnType);
+				}
+				else
+				{
+					returnJsonTypeInfo = jsonSerializerContext.GetTypeInfo(returnType)
+						?? throw new InvalidOperationException($"The JSON serializer context does not contain metadata for return type '{returnType.FullName}' of method '{methodName}'. Add [JsonSerializable(typeof({returnType.Name}))] to your JsonSerializerContext.");
+				}
+
+				// Capture everything in a closure — this delegate handles the full pipeline
+				var capturedMethod = method;
+				var capturedParamInfos = paramJsonTypeInfos;
+				var capturedReturnInfo = returnJsonTypeInfo;
+				var capturedTaskResultProp = taskResultProperty;
+				var capturedIsTask = isTask;
+				var capturedIsTaskOfT = isTaskOfT;
+
+				cache[methodName] = new DotNetMethodDelegate(async (object target, string[]? paramJsonValues) =>
+				{
+					// Deserialize parameters
+					object?[]? args = null;
+					if (capturedParamInfos.Length > 0)
+					{
+						if (paramJsonValues is null || paramJsonValues.Length != capturedParamInfos.Length)
+						{
+							throw new InvalidOperationException($"The method '{methodName}' expects {capturedParamInfos.Length} parameter(s) but {paramJsonValues?.Length ?? 0} were provided from JavaScript.");
+						}
+
+						args = new object?[capturedParamInfos.Length];
+						for (var i = 0; i < capturedParamInfos.Length; i++)
+						{
+							args[i] = JsonSerializer.Deserialize(paramJsonValues[i], capturedParamInfos[i]);
+						}
+					}
+
+					// Invoke
+					var returnValue = InvokeMethod(target, capturedMethod, args);
+
+					// Handle result
+					if (capturedIsTask && returnValue is Task task)
+					{
+						await task;
+
+						if (capturedIsTaskOfT)
+						{
+							var result = capturedTaskResultProp!.GetValue(task);
+							return result is null ? null : JsonSerializer.Serialize(result, capturedReturnInfo!);
+						}
+
+						return null; // Task (void)
+					}
+
+					if (returnValue is null)
+					{
+						return null;
+					}
+
+					return JsonSerializer.Serialize(returnValue, capturedReturnInfo!);
+				});
+			}
+
+			return cache;
+		}
+
+		[UnconditionalSuppressMessage("Trimming", "IL2070",
+			Justification = "Task<T> is a BCL framework type whose public properties (including Result) are always preserved and never trimmed. This will be replaced by the source generator.")]
+		private static PropertyInfo GetTaskResultProperty(Type taskOfTType) =>
+			taskOfTType.GetProperty(nameof(Task<object>.Result))!;
 
 		private sealed class JSInvokeMethodData
 		{

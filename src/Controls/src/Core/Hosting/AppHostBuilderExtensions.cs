@@ -127,11 +127,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
-			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
-		}
+		handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
@@ -247,11 +243,7 @@ public static partial class AppHostBuilderExtensions
 			handlers.AddControlsHandlers();
 		});
 
-		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
-		}
+		builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
 
 		builder.ConfigureMauiControlsDiagnostics();
 
