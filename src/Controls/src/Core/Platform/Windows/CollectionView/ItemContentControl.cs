@@ -261,6 +261,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (formsElement == null)
 				return;
 
+			formsElement.IsItemSelected = isSelected;
 			VisualStateManager.GoToState(formsElement, isSelected
 				? VisualStateManager.CommonStates.Selected
 				: VisualStateManager.CommonStates.Normal);
