@@ -283,4 +283,3 @@ Microsoft.Maui.HybridWebViewDotNetMethodProviderAttribute.JsonSerializerContextT
 Microsoft.Maui.IHybridWebView.DotNetMethodProvider.get -> Microsoft.Maui.IHybridWebViewDotNetMethodProvider?
 Microsoft.Maui.IHybridWebViewDotNetMethodProvider
 Microsoft.Maui.IHybridWebViewDotNetMethodProvider.InvokeMethodAsync(string! methodName, string[]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
-Microsoft.Maui.RuntimeFeature.IsHybridWebViewReflectionSupported.get -> bool

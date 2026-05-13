@@ -89,7 +89,6 @@ namespace Microsoft.Maui
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 		[FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
 #endif
-		[Obsolete("HybridWebView is now always registered. Use IsHybridWebViewReflectionSupported to control reflection-based method invocation.")]
 		public static bool IsHybridWebViewSupported =>
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewSupported)}", out bool isSupported)
 				? isSupported
