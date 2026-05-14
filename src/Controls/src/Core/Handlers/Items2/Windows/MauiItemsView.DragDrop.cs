@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
@@ -19,6 +20,7 @@ internal partial class MauiItemsView
 {
 	// Drag and drop fields
 	object? _draggedItem;
+	ItemContainer? _sourceContainer;
 	int _insertionIndex = -1;
 	bool _insertAfter;
 	bool _canReorderItems;
@@ -249,6 +251,32 @@ internal partial class MauiItemsView
 		{
 			itemContainer.DragStarting += ItemContainer_DragStarting;
 		}
+
+		// Enable an implicit Offset animation so when the data source is reordered
+		// on drop, ItemsRepeater repositions the surrounding containers smoothly
+		// instead of snapping. Header/footer containers benefit from the same
+		// animation when neighbors shift, so we apply it unconditionally.
+		ConfigureContainerReorderAnimation(itemContainer);
+	}
+
+	/// <summary>
+	/// Installs an implicit Composition animation on the container's Offset property
+	/// so layout repositioning animates instead of snapping. Idempotent — replacing
+	/// the animation collection on each call is safe.
+	/// </summary>
+	static void ConfigureContainerReorderAnimation(ItemContainer container)
+	{
+		var visual = ElementCompositionPreview.GetElementVisual(container);
+		var compositor = visual.Compositor;
+
+		var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+		offsetAnimation.Target = "Offset";
+		offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
+		offsetAnimation.Duration = TimeSpan.FromMilliseconds(250);
+
+		var animations = compositor.CreateImplicitAnimationCollection();
+		animations["Offset"] = offsetAnimation;
+		visual.ImplicitAnimations = animations;
 	}
 
 	void ItemsRepeater_ElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
@@ -263,6 +291,20 @@ internal partial class MauiItemsView
 			itemContainer.CanDrag = false;
 			itemContainer.DragStarting -= ItemContainer_DragStarting;
 			itemContainer.Tag = null;
+
+			// Detach the implicit animation when the container is recycled so the
+			// Composition visual doesn't keep state from a previous item.
+			var visual = ElementCompositionPreview.GetElementVisual(itemContainer);
+			visual.ImplicitAnimations = null;
+
+			// If the container being cleared is the one currently hidden as the drag
+			// source (e.g. recycled mid-drag), restore its opacity so it doesn't get
+			// reused while invisible.
+			itemContainer.Opacity = 1;
+			if (ReferenceEquals(_sourceContainer, itemContainer))
+			{
+				_sourceContainer = null;
+			}
 		}
 	}
 
@@ -295,8 +337,48 @@ internal partial class MauiItemsView
 		}
 
 		_draggedItem = item;
+		_sourceContainer = itemContainer;
 		args.Data.Properties.Add("DragSource", "MauiItemsView");
 		args.Data.RequestedOperation = WDataTransfer.DataPackageOperation.Move;
+
+		// Make sure the drop-completed handler is wired exactly once so the source
+		// container's opacity is restored on success, cancel, or escape.
+		itemContainer.DropCompleted -= ItemContainer_DropCompleted;
+		itemContainer.DropCompleted += ItemContainer_DropCompleted;
+
+		// Hide the source slot so the user perceives the item as "lifted out" of
+		// the list, leaving a visible gap. Opacity (not Visibility.Collapsed) keeps
+		// the element in the visual tree so WinUI captures a valid drag preview and
+		// the layout slot is preserved. Deferred so the platform snapshot for the
+		// drag ghost is taken from a fully opaque container.
+		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+		{
+			if (_sourceContainer is not null)
+			{
+				_sourceContainer.Opacity = 0;
+			}
+		});
+	}
+
+	void ItemContainer_DropCompleted(UIElement sender, UI.Xaml.DropCompletedEventArgs args)
+	{
+		if (sender is ItemContainer itemContainer)
+		{
+			itemContainer.DropCompleted -= ItemContainer_DropCompleted;
+			itemContainer.Opacity = 1;
+		}
+
+		// Defensive: if the source container was recycled during reorder, make sure
+		// no realized container is left hidden.
+		foreach (var container in FindAllContainers())
+		{
+			if (container.Opacity < 1)
+			{
+				container.Opacity = 1;
+			}
+		}
+
+		_sourceContainer = null;
 	}
 
 	void ScrollViewer_DragEnter(object sender, UI.Xaml.DragEventArgs e)
@@ -940,6 +1022,15 @@ internal partial class MauiItemsView
 
 	void CleanupDragState()
 	{
+		// Restore the source container synchronously in case DropCompleted does not
+		// fire (e.g. drop handled outside the source element, or disconnect).
+		if (_sourceContainer is not null)
+		{
+			_sourceContainer.Opacity = 1;
+			_sourceContainer.DropCompleted -= ItemContainer_DropCompleted;
+			_sourceContainer = null;
+		}
+
 		_draggedItem = null;
 		_insertionIndex = -1;
 		_insertAfter = false;
