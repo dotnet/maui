@@ -737,9 +737,17 @@ internal partial class MauiItemsView
 		}
 		else
 		{
-			// Instant reset: UIElement.Translation is the correct way to zero the
-			// compositor-side Translation Vector3 property. InsertScalar on a
-			// sub-channel path ("Translation.Y") does not work for this property.
+			// Stop any in-flight shuffle animation first — if the 200ms animation
+			// is still running when Drop fires, the compositor animation wins over
+			// a plain property set and the stale translation persists (causing the
+			// layout gap visible in the screenshot). StopAnimation reverts control
+			// to the static property, then we zero it.
+			var axis = _isHorizontalLayout ? "Translation.X" : "Translation.Y";
+			visual.StopAnimation(axis);
+
+			// UIElement.Translation is the correct way to zero the compositor-side
+			// Translation Vector3 property. InsertScalar on a sub-channel path
+			// ("Translation.Y") does not work for this property.
 			container.Translation = System.Numerics.Vector3.Zero;
 		}
 	}
@@ -886,19 +894,9 @@ internal partial class MauiItemsView
 			{
 				try
 				{
-					// Live reorder during DragOver already moved the item into its
-					// final slot. The drop only needs to confirm and raise the
-					// completion event. If live reorder never ran (e.g. drop on the
-					// very first frame), fall back to the one-shot PerformReorder.
-					bool reordered;
-					if (_draggedItem is not null && IndexOfItem(_draggedItem, itemsList) >= 0)
-					{
-						reordered = true;
-					}
-					else
-					{
-						reordered = PerformReorder(itemsList);
-					}
+					// Visual-only shuffle never mutates the collection during drag.
+					// Always call PerformReorder here to commit the actual move.
+					bool reordered = PerformReorder(itemsList);
 
 					if (reordered)
 					{
