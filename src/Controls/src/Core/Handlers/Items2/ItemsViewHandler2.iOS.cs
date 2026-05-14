@@ -125,7 +125,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal static void MapIsEnabled(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			if (handler.Controller?.CollectionView is not null)
-				handler.Controller.CollectionView.UserInteractionEnabled = itemsView.IsEnabled;
+			{
+				// Use IsExplicitlyEnabled instead of IsEnabled to avoid disabling user interaction
+				// when IsEnabled=false is propagated from a parent (e.g., RefreshView.IsEnabled=false).
+				// Only the CollectionView's own explicitly set IsEnabled=false should restrict interaction.
+				handler.Controller.CollectionView.UserInteractionEnabled = itemsView.IsExplicitlyEnabled;
+			}
 		}
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
