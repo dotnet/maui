@@ -144,6 +144,12 @@ namespace Microsoft.Maui.Platform
 		// Null means not yet determined. Invalidated when view hierarchy changes.
 		bool? _parentHandlesSafeArea;
 
+		// Tracks whether this MauiView changed IsFocused, so we only clear focus we own.
+		// We intentionally do not rely on PreviouslyFocusedView here because composite
+		// controls can mirror a focused child Entry to the parent IsFocused state while
+		// UIKit reports the child (or null) as the previously focused view.
+		bool _isFocusedSetByUs;
+
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
 		bool _isKeyboardShowing;
@@ -880,14 +886,24 @@ namespace Microsoft.Maui.Platform
 			{
 				if (CrossPlatformLayout is IView view)
 				{
-					view.IsFocused = true;
+					if (!view.IsFocused)
+					{
+						view.IsFocused = true;
+						_isFocusedSetByUs = true;
+					}
 				}
 			}
-			else
+			else if (_isFocusedSetByUs)
 			{
+				// Don't switch to PreviouslyFocusedView here. Composite controls can mirror a
+				// focused child Entry to the parent IsFocused state while UIKit reports the
+				// child (or null) as the previously focused view, so we only clear focus we set.
 				if (CrossPlatformLayout is IView view)
 				{
-					view.IsFocused = false;
+					if (view.IsFocused)
+						view.IsFocused = false;
+
+					_isFocusedSetByUs = false;
 				}
 			}
 		}

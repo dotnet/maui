@@ -1,0 +1,276 @@
+# Trigger the maui-copilot DevDiv pipeline when a maintainer comments '/review' on a PR.
+# Uses OIDC (no PAT) — see .github/docs/trigger-azdo-pipeline-setup.md for identity setup.
+
+name: Review Trigger
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+      platform:
+        description: 'Target platform (android, ios, catalyst, windows, or empty for pipeline default)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - android
+          - ios
+          - catalyst
+          - windows
+      pipeline_ref:
+        description: 'AzDO pipeline branch (default: main)'
+        required: false
+        default: 'main'
+
+jobs:
+  trigger-review:
+    # For issue_comment: only run on PR comments that are exactly '/review' or start with '/review '
+    # For workflow_dispatch: always run
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.issue.pull_request &&
+       (github.event.comment.body == '/review' ||
+        startsWith(github.event.comment.body, '/review ')))
+    runs-on: ubuntu-latest
+    concurrency:
+      group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
+      cancel-in-progress: false
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check actor permission
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
+          echo "User ${{ github.actor }} has permission: ${PERMISSION}"
+          # write, maintain, and admin can all trigger /review
+          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
+            echo "::error::User ${{ github.actor }} does not have sufficient access. Only write/maintain/admin can trigger /review."
+            exit 1
+          fi
+
+      - name: Parse parameters
+        id: params
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          INPUT_PLATFORM: ${{ inputs.platform }}
+          INPUT_PIPELINE_REF: ${{ inputs.pipeline_ref }}
+        run: |
+          # Valid platforms (from AzDO pipeline definition)
+          VALID_PLATFORMS="android ios catalyst windows"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUMBER="${INPUT_PR_NUMBER}"
+            PLATFORM="${INPUT_PLATFORM}"
+            PIPELINE_REF="${INPUT_PIPELINE_REF:-main}"
+          else
+            PR_NUMBER="${{ github.event.issue.number }}"
+            # Strip the '/review' prefix and parse remaining args
+            ARGS=$(echo "${COMMENT_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+            PLATFORM=""
+            PIPELINE_REF="main"
+            # Parse args: positional platform, --branch <ref>, --platform <name>
+            # Disable globbing so user input like '*.cs' doesn't expand
+            set -f
+            set -- ${ARGS}
+            while [ $# -gt 0 ]; do
+              case "$1" in
+                --branch|-b)
+                  shift
+                  if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
+                    PIPELINE_REF="$1"
+                  fi
+                  ;;
+                --platform|-p)
+                  shift
+                  if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
+                    CANDIDATE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+                    for p in ${VALID_PLATFORMS}; do
+                      if [ "${CANDIDATE}" = "${p}" ]; then
+                        PLATFORM="${p}"
+                        break
+                      fi
+                    done
+                  fi
+                  ;;
+                *)
+                  # Check if it's a valid platform name
+                  for p in ${VALID_PLATFORMS}; do
+                    if [ "$(echo "$1" | tr '[:upper:]' '[:lower:]')" = "${p}" ]; then
+                      PLATFORM="${p}"
+                      break
+                    fi
+                  done
+                  ;;
+              esac
+              shift || true
+            done
+          fi
+
+          # Sanitize ref to valid git ref characters only
+          PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
+          # Reject path traversal, empty segments, and leading /
+          case "${PIPELINE_REF}" in
+            *..*|//*|*//*|*/|/*) PIPELINE_REF="main" ;;
+          esac
+          if [ -z "${PIPELINE_REF}" ]; then
+            PIPELINE_REF="main"
+          fi
+
+          # Validate PR number is a positive integer
+          if ! [[ "${PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::pr_number must be a positive integer, got: '${PR_NUMBER}'"
+            exit 1
+          fi
+
+          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
+          echo "pipeline_ref=${PIPELINE_REF}" >> "$GITHUB_OUTPUT"
+          echo "Parsed — PR: #${PR_NUMBER}, Platform: '${PLATFORM:-<not specified>}', Ref: ${PIPELINE_REF}"
+
+      - name: Validate PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
+          PR_STATE=$(echo "${PR_JSON}" | jq -r '.state')
+          if [ "${PR_STATE}" != "open" ]; then
+            echo "::error::PR #${PR_NUMBER} is not open (state: ${PR_STATE})"
+            exit 1
+          fi
+          PR_TITLE=$(echo "${PR_JSON}" | jq -r '.title')
+          echo "PR #${PR_NUMBER}: ${PR_TITLE}"
+          echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
+          echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Infer platform
+        id: infer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLATFORM: ${{ steps.params.outputs.platform }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+        run: |
+
+          # If platform was explicitly set, use it as-is
+          if [ -n "${PLATFORM}" ]; then
+            echo "Platform explicitly set to: ${PLATFORM}"
+            echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "No platform specified — inferring from PR #${PR_NUMBER} labels..."
+          echo "(File-based detection is handled by the agentic-labeler.md workflow on PR open/reopen.)"
+
+          # Check PR labels applied by agentic-labeler.md or manually
+          LABELS=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
+          LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
+          echo "PR labels: ${LABELS_LOWER:-<none>}"
+
+          if echo "${LABELS_LOWER}" | grep -qE '^platform/ios$'; then
+            PLATFORM="ios"
+          elif echo "${LABELS_LOWER}" | grep -qE '^(platform/macos|platform/maccatalyst)$'; then
+            PLATFORM="catalyst"
+          elif echo "${LABELS_LOWER}" | grep -qE '^platform/android$'; then
+            PLATFORM="android"
+          elif echo "${LABELS_LOWER}" | grep -qE '^platform/windows$'; then
+            PLATFORM="windows"
+          fi
+
+          # Default to android when labels are inconclusive
+          if [ -z "${PLATFORM}" ]; then
+            echo "No platform label found — defaulting to android. Use --platform to specify explicitly."
+            PLATFORM="android"
+          fi
+
+          echo "Inferred platform: ${PLATFORM}"
+          echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
+
+      - name: Get OIDC Token
+        id: oidc
+        run: |
+          OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
+            | jq -r '.value')
+          if [ -z "$OIDC_TOKEN" ] || [ "$OIDC_TOKEN" = "null" ]; then
+            echo "::error::Failed to get OIDC token"
+            exit 1
+          fi
+          echo "::add-mask::${OIDC_TOKEN}"
+          echo "oidc_token=${OIDC_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Exchange for AzDO Token
+        id: token
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
+        run: |
+          AZURE_RESPONSE=$(curl -s -X POST \
+            "https://login.microsoftonline.com/${{ secrets.AZDO_TRIGGER_TENANT_ID }}/oauth2/v2.0/token" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" \
+            -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
+            -d "client_assertion=${OIDC_TOKEN}" \
+            -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
+
+          AZDO_TOKEN=$(echo "$AZURE_RESPONSE" | jq -r '.access_token')
+          if [ -z "$AZDO_TOKEN" ] || [ "$AZDO_TOKEN" = "null" ]; then
+            echo "::error::Failed to get Azure AD token"
+            echo "$AZURE_RESPONSE" | jq '{error, error_description, error_codes, timestamp, trace_id}' 2>/dev/null \
+              || echo "(failed to parse AAD response — check job permissions)"
+            exit 1
+          fi
+          echo "::add-mask::${AZDO_TOKEN}"
+          echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger maui-copilot pipeline
+        env:
+          AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
+          PLATFORM: ${{ steps.infer.outputs.platform }}
+        run: |
+          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
+
+          # Platform is always resolved at this point (inferred or explicit)
+          # Build JSON payload safely with jq to avoid injection
+          PAYLOAD=$(jq -n \
+            --arg pr "${PR_NUMBER}" \
+            --arg plat "${PLATFORM}" \
+            --arg ref "refs/heads/${PIPELINE_REF}" \
+            '{
+              templateParameters: { PRNumber: $pr, Platform: $plat },
+              resources: { repositories: { self: { refName: $ref } } }
+            }')
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
+            -H "Authorization: Bearer ${AZDO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "${PAYLOAD}")
+
+          HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
+          RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
+          echo "HTTP Status: ${HTTP_CODE}"
+
+          if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
+            RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
+            PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
+            echo "Pipeline '${PIPELINE_NAME}' triggered! Run ID: ${RUN_ID}"
+            echo "View: https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}"
+          else
+            echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
+            echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
+            exit 1
+          fi
