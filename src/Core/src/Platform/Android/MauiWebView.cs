@@ -36,6 +36,25 @@ namespace Microsoft.Maui.Platform
 
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
 			UpdateClipBounds(Width, Height);
+
+			if (RefreshViewWebViewScrollCapture.IsInsideMauiSwipeRefreshLayout(this))
+			{
+				RefreshViewWebViewScrollCapture.Attach(this);
+				// If a page has already loaded before this WebView was placed inside a
+				// RefreshView (late-attach), OnPageFinished already fired with IsAttached=false
+				// and the observer was never injected. Re-inject it now so inner-scroll can
+				// correctly prevent pull-to-refresh.
+				if (!string.IsNullOrEmpty(Url))
+				{
+					RefreshViewWebViewScrollCapture.InjectObserver(this);
+				}
+			}
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			RefreshViewWebViewScrollCapture.Detach(this);
+			base.OnDetachedFromWindow();
 		}
 
 		void UpdateClipBounds(int width, int height)
@@ -107,6 +126,16 @@ namespace Microsoft.Maui.Platform
 
 				LoadUrl(url ?? string.Empty);
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				RefreshViewWebViewScrollCapture.Detach(this);
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }
