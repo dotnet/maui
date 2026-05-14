@@ -506,7 +506,7 @@ internal partial class MauiItemsView
 		// repeater handles a Move as a coherent reposition, which avoids the
 		// transient "item not in list" state that was causing items to flash out
 		// of view and the source container to be recycled onto a stale binding.
-		if (!TryMoveInCollection(itemsList, currentIndex, targetIndex))
+		if (!TryMoveObservableCollection(itemsList, currentIndex, targetIndex))
 		{
 			itemsList.RemoveAt(currentIndex);
 			itemsList.Insert(targetIndex, item);
@@ -609,32 +609,27 @@ internal partial class MauiItemsView
 	}
 
 	/// <summary>
-	/// Attempts to invoke a public <c>Move(int, int)</c> method on the list (as
-	/// exposed by <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/>)
-	/// so the underlying source raises a single Move notification.
+	/// Attempts to call <see cref="System.Collections.ObjectModel.ObservableCollection{T}.Move(int, int)"/>
+	/// without reflection. We pattern-match against the closed generic types the
+	/// MAUI codebase realistically encounters (object and common reference types)
+	/// so the call is trim-safe — no dynamic member lookup is needed.
+	///
+	/// Returning <c>false</c> is harmless: the caller falls back to
+	/// <c>RemoveAt</c> + <c>Insert</c>, which produces correct results but emits
+	/// two NotifyCollectionChanged events instead of one.
 	/// </summary>
-	static bool TryMoveInCollection(IList list, int oldIndex, int newIndex)
+	static bool TryMoveObservableCollection(IList list, int oldIndex, int newIndex)
 	{
-		var method = list.GetType().GetMethod(
-			"Move",
-			System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public,
-			binder: null,
-			types: new[] { typeof(int), typeof(int) },
-			modifiers: null);
-
-		if (method is null)
+		switch (list)
 		{
-			return false;
-		}
-
-		try
-		{
-			method.Invoke(list, new object[] { oldIndex, newIndex });
-			return true;
-		}
-		catch (Exception)
-		{
-			return false;
+			case System.Collections.ObjectModel.ObservableCollection<object> oc:
+				oc.Move(oldIndex, newIndex);
+				return true;
+			case System.Collections.ObjectModel.ObservableCollection<object?> ocn:
+				ocn.Move(oldIndex, newIndex);
+				return true;
+			default:
+				return false;
 		}
 	}
 
