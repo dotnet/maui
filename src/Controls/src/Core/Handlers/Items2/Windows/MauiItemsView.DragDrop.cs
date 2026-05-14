@@ -234,6 +234,20 @@ internal partial class MauiItemsView
 		if (args.Element is ItemContainer itemContainer)
 		{
 			ApplyDragAffordance(itemContainer, args.Index);
+
+			// If a live-reorder happens to recycle a container onto the dragged
+			// item's new position, hide it immediately. This is what makes the
+			// "empty source slot" follow the dragged item without us having to
+			// chase a moving _sourceContainer reference through dispatcher races.
+			if (_draggedItem is not null && IsContainerBoundToDraggedItem(itemContainer))
+			{
+				itemContainer.Opacity = 0;
+				_sourceContainer = itemContainer;
+			}
+			else
+			{
+				itemContainer.Opacity = 1;
+			}
 		}
 	}
 
@@ -480,16 +494,29 @@ internal partial class MauiItemsView
 		}
 
 		var item = itemsList[currentIndex];
-		itemsList.RemoveAt(currentIndex);
-		itemsList.Insert(targetIndex, item);
 
-		// Capture the dragged item by identity. Resolving the hidden source slot
-		// by index after the move is unreliable because the ItemsRepeater may not
-		// have laid out yet — index lookups can return a stale container whose
-		// binding still points at the *previous* item, which causes the wrong row
-		// to be hidden (items "disappear") and the real dragged item to remain
-		// visible alongside the drag-ghost (the "duplicate").
+		// Prefer ObservableCollection<T>.Move when available so we emit a single
+		// NotifyCollectionChangedAction.Move event rather than Remove+Insert. The
+		// repeater handles a Move as a coherent reposition, which avoids the
+		// transient "item not in list" state that was causing items to flash out
+		// of view and the source container to be recycled onto a stale binding.
+		if (!TryMoveInCollection(itemsList, currentIndex, targetIndex))
+		{
+			itemsList.RemoveAt(currentIndex);
+			itemsList.Insert(targetIndex, item);
+		}
+
+		// Capture the dragged item by identity. We don't trust positional indices
+		// after the move because the ItemsRepeater may not have laid out yet.
 		var draggedItem = _draggedItem;
+
+		// Reconcile synchronously first — in many cases the repeater has already
+		// re-bound containers by the time we get here.
+		ReconcileSourceOpacity(draggedItem);
+
+		// Belt-and-suspenders: queue another reconciliation at Low priority for
+		// the case where the repeater needed a layout pass to settle. Both are
+		// idempotent so it's safe to run twice.
 		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
 		{
 			if (_draggedItem is null || !ReferenceEquals(_draggedItem, draggedItem))
@@ -497,31 +524,97 @@ internal partial class MauiItemsView
 				return;
 			}
 
-			// Find the container currently bound to the dragged item. This is
-			// stable across recycling and reorder because it matches by binding
-			// context, not by positional index.
-			var newContainer = FindContainerByItem(draggedItem) as ItemContainer;
-
-			// Defensive sweep: restore opacity on every realized container EXCEPT
-			// the new source. Earlier queued callbacks may have left a stale
-			// container hidden if its binding has since been recycled.
-			foreach (var c in FindAllContainers())
-			{
-				if (c is ItemContainer ic && !ReferenceEquals(ic, newContainer) && ic.Opacity < 1)
-				{
-					ic.Opacity = 1;
-				}
-			}
-
-			if (newContainer is null)
-			{
-				_sourceContainer = null;
-				return;
-			}
-
-			_sourceContainer = newContainer;
-			_sourceContainer.Opacity = 0;
+			ReconcileSourceOpacity(draggedItem);
 		});
+	}
+
+	/// <summary>
+	/// Walks every realized container and sets Opacity = 0 on whichever one is
+	/// currently bound to the dragged item, Opacity = 1 on all others. Idempotent
+	/// and self-healing — a stale hidden container left over from a previous
+	/// reorder is restored automatically.
+	/// </summary>
+	void ReconcileSourceOpacity(object? draggedItem)
+	{
+		if (draggedItem is null)
+		{
+			return;
+		}
+
+		ItemContainer? newSource = null;
+		foreach (var c in FindAllContainers())
+		{
+			if (c is not ItemContainer ic)
+			{
+				continue;
+			}
+
+			if (IsContainerBoundToItem(ic, draggedItem))
+			{
+				ic.Opacity = 0;
+				newSource = ic;
+			}
+			else if (ic.Opacity < 1)
+			{
+				ic.Opacity = 1;
+			}
+		}
+
+		if (newSource is not null)
+		{
+			_sourceContainer = newSource;
+		}
+	}
+
+	bool IsContainerBoundToDraggedItem(ItemContainer container)
+	{
+		return _draggedItem is not null && IsContainerBoundToItem(container, _draggedItem);
+	}
+
+	static bool IsContainerBoundToItem(ItemContainer container, object item)
+	{
+		if (container.Child is not ElementWrapper wrapper || wrapper.VirtualView is not View view)
+		{
+			return false;
+		}
+
+		var bound = view.BindingContext;
+		if (bound is null)
+		{
+			return false;
+		}
+
+		return ReferenceEquals(bound, item) || Equals(bound, item);
+	}
+
+	/// <summary>
+	/// Attempts to invoke a public <c>Move(int, int)</c> method on the list (as
+	/// exposed by <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/>)
+	/// so the underlying source raises a single Move notification.
+	/// </summary>
+	static bool TryMoveInCollection(IList list, int oldIndex, int newIndex)
+	{
+		var method = list.GetType().GetMethod(
+			"Move",
+			System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public,
+			binder: null,
+			types: new[] { typeof(int), typeof(int) },
+			modifiers: null);
+
+		if (method is null)
+		{
+			return false;
+		}
+
+		try
+		{
+			method.Invoke(list, new object[] { oldIndex, newIndex });
+			return true;
+		}
+		catch (Exception)
+		{
+			return false;
+		}
 	}
 
 	void ScrollViewer_DragLeave(object sender, UI.Xaml.DragEventArgs e)
