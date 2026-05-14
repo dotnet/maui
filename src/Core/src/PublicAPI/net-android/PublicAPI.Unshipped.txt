@@ -23,3 +23,4 @@ override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height
 override Microsoft.Maui.Platform.MauiSwipeRefreshLayout.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
 override Microsoft.Maui.Platform.MauiWebView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnDetachedFromWindow() -> void
+override Microsoft.Maui.Platform.MauiWebView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
