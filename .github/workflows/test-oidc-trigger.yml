@@ -1,0 +1,92 @@
+# TEMPORARY test workflow — tests invocation with Platform parameter
+# Verifies that "Edit queue build configuration" permission works.
+# DELETE after testing.
+
+name: Test OIDC Trigger
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  trigger-review:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Get OIDC Token
+        id: oidc
+        run: |
+          OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
+            | jq -r '.value')
+          if [ -z "$OIDC_TOKEN" ] || [ "$OIDC_TOKEN" = "null" ]; then
+            echo "::error::Failed to get OIDC token"
+            exit 1
+          fi
+          echo "::add-mask::${OIDC_TOKEN}"
+          echo "oidc_token=${OIDC_TOKEN}" >> "$GITHUB_OUTPUT"
+          echo "OIDC token acquired successfully"
+
+      - name: Exchange for AzDO Token
+        id: token
+        env:
+          OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
+        run: |
+          AZURE_RESPONSE=$(curl -s -X POST \
+            "https://login.microsoftonline.com/${{ secrets.AZDO_TRIGGER_TENANT_ID }}/oauth2/v2.0/token" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" \
+            -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
+            -d "client_assertion=${OIDC_TOKEN}" \
+            -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
+
+          AZDO_TOKEN=$(echo "$AZURE_RESPONSE" | jq -r '.access_token')
+          if [ -z "$AZDO_TOKEN" ] || [ "$AZDO_TOKEN" = "null" ]; then
+            echo "::error::Failed to get Azure AD token"
+            echo "$AZURE_RESPONSE" | jq 'del(.access_token)' 2>/dev/null || echo "$AZURE_RESPONSE"
+            exit 1
+          fi
+          echo "::add-mask::${AZDO_TOKEN}"
+          echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
+          echo "AzDO token acquired successfully"
+
+      - name: Trigger maui-copilot pipeline (with Platform parameter)
+        env:
+          AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
+        run: |
+          PR_NUMBER="35250"
+          PLATFORM="android"
+          echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM})..."
+
+          PAYLOAD=$(jq -n \
+            --arg pr "${PR_NUMBER}" \
+            --arg plat "${PLATFORM}" \
+            --arg ref "refs/heads/main" \
+            '{
+              templateParameters: { PRNumber: $pr, Platform: $plat },
+              resources: { repositories: { self: { refName: $ref } } }
+            }')
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST "https://dev.azure.com/DevDiv/DevDiv/_apis/pipelines/27723/runs?api-version=7.1" \
+            -H "Authorization: Bearer ${AZDO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "${PAYLOAD}")
+
+          HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
+          RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
+          echo "HTTP Status: ${HTTP_CODE}"
+
+          if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
+            RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
+            PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
+            echo "Pipeline '${PIPELINE_NAME}' triggered! Run ID: ${RUN_ID}"
+            echo "View: https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}"
+          else
+            echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
+            echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
+            exit 1
+          fi
