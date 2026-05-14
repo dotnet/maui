@@ -31,24 +31,35 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Thumb Color Clears Correctly")]
 		public async Task ThumbColorClearsCorrectly()
 		{
-			var switchStub = new SwitchStub();
+			var switchStub = new SwitchStub
+			{
+				ThumbColor = Colors.Red
+			};
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var handler = CreateHandler(switchStub);
+				var handler = CreateHandler<NullThumbTintSwitchHandler>(switchStub);
 				var nativeSwitch = GetNativeSwitch(handler);
-				var defaultThumbTintColor = GetThumbTintColor(nativeSwitch);
 
-				switchStub.ThumbColor = Colors.Red;
-				handler.UpdateValue(nameof(ISwitch.ThumbColor));
+				Assert.NotNull(nativeSwitch.ThumbTintList);
 
 				Assert.Equal(Colors.Red.ToPlatform().ToArgb(), GetThumbTintColor(nativeSwitch));
 
 				switchStub.ThumbColor = null;
 				handler.UpdateValue(nameof(ISwitch.ThumbColor));
 
-				Assert.Equal(defaultThumbTintColor, GetThumbTintColor(nativeSwitch));
+				Assert.Null(nativeSwitch.ThumbTintList);
 			});
+		}
+
+		class NullThumbTintSwitchHandler : SwitchHandler
+		{
+			protected override ASwitch CreatePlatformView()
+			{
+				var nativeSwitch = base.CreatePlatformView();
+				nativeSwitch.ThumbTintList = null;
+				return nativeSwitch;
+			}
 		}
 
 		static int? GetThumbTintColor(ASwitch aSwitch)

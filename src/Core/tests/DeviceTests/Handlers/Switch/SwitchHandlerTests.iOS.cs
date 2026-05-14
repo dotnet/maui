@@ -1,11 +1,15 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
+using AppTheme = Microsoft.Maui.ApplicationModel.AppTheme;
+using ControlsApplication = Microsoft.Maui.Controls.Application;
+using ControlsSwitch = Microsoft.Maui.Controls.Switch;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -84,6 +88,28 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.NotNull(uIView);
+		}
+
+		UIImage CaptureRenderedSwitch(SwitchHandler handler)
+		{
+			var nativeSwitch = GetNativeSwitch(handler);
+
+			nativeSwitch.SizeToFit();
+			nativeSwitch.SetNeedsLayout();
+			nativeSwitch.LayoutIfNeeded();
+
+			UIView renderedView = handler.ContainerView is not null ? handler.ContainerView : nativeSwitch;
+			renderedView.SetNeedsLayout();
+			renderedView.LayoutIfNeeded();
+
+			UIGraphics.BeginImageContextWithOptions(renderedView.Bounds.Size, false, 0);
+			renderedView.DrawViewHierarchy(renderedView.Bounds, true);
+			var bitmap = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			Assert.NotNull(bitmap);
+
+			return bitmap;
 		}
 
 		/// <summary>
@@ -205,22 +231,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
 			{
-				var nativeSwitch = GetNativeSwitch(handler);
-
-				nativeSwitch.SizeToFit();
-				nativeSwitch.SetNeedsLayout();
-				nativeSwitch.LayoutIfNeeded();
-
-				UIView renderedView = handler.ContainerView is not null ? handler.ContainerView : nativeSwitch;
-				renderedView.SetNeedsLayout();
-				renderedView.LayoutIfNeeded();
-
-				UIGraphics.BeginImageContextWithOptions(renderedView.Bounds.Size, false, 0);
-				renderedView.DrawViewHierarchy(renderedView.Bounds, true);
-				var bitmap = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
-
-				Assert.NotNull(bitmap);
+				var bitmap = CaptureRenderedSwitch(handler);
 				await bitmap.AssertContainsColor(Colors.Red, tolerance: 0.1);
 			});
 		}
@@ -262,6 +273,106 @@ namespace Microsoft.Maui.DeviceTests
 			if (OperatingSystem.IsIOSVersionAtLeast(26))
 			{
 				Assert.Equal(UISwitchStyle.Automatic, result.PreferredStyle);
+			}
+		}
+
+		[Fact(DisplayName = "Thumb Color ClearValue Clears Correctly")]
+		public async Task ThumbColorClearValueClearsCorrectly()
+		{
+			var switchView = new ControlsSwitch
+			{
+				ThumbColor = Colors.Red
+			};
+
+			var result = await GetValueAsync(switchView, handler =>
+			{
+				Assert.NotNull(GetNativeSwitch(handler).ThumbTintColor);
+				switchView.ClearValue(ControlsSwitch.ThumbColorProperty);
+				var nativeSwitch = GetNativeSwitch(handler);
+				return (nativeSwitch.ThumbTintColor, nativeSwitch.PreferredStyle);
+			});
+
+			Assert.Null(result.ThumbTintColor);
+
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				Assert.Equal(UISwitchStyle.Automatic, result.PreferredStyle);
+			}
+		}
+
+		[Fact(DisplayName = "Custom Colors Update After App Theme Change On iOS 26")]
+		public async Task CustomColorsUpdateAfterAppThemeChangeOniOS26()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return;
+			}
+
+			var previousApplication = ControlsApplication.Current;
+			var previousTheme = previousApplication?.UserAppTheme ?? AppTheme.Unspecified;
+			var application = new ControlsApplication();
+			var switchView = new ControlsSwitch
+			{
+				IsToggled = false
+			};
+
+			application.UserAppTheme = AppTheme.Light;
+#pragma warning disable CS0618 // MainPage is enough to parent the test element for app-theme resource propagation.
+			application.MainPage = new ContentPage { Content = switchView };
+#pragma warning restore CS0618
+			switchView.SetAppThemeColor(ControlsSwitch.OffColorProperty, Colors.Red, Colors.Blue);
+			switchView.SetAppThemeColor(ControlsSwitch.ThumbColorProperty, Colors.Orange, Colors.Yellow);
+			application.UpdateUserInterfaceStyle();
+
+			try
+			{
+				await AttachAndRun(switchView, async (SwitchHandler handler) =>
+				{
+					var nativeSwitch = GetNativeSwitch(handler);
+
+					await CaptureRenderedSwitch(handler).AssertContainsColor(Colors.Red, tolerance: 0.1);
+					Assert.Equal(Colors.Orange, nativeSwitch.ThumbTintColor.ToColor());
+
+					application.UserAppTheme = AppTheme.Dark;
+					application.UpdateUserInterfaceStyle();
+
+					await new Func<bool>(() => switchView.OffColor == Colors.Blue)
+						.AssertEventually(message: "Switch OffColor did not update to the dark app theme color.");
+
+					await new Func<bool>(() => switchView.ThumbColor == Colors.Yellow)
+						.AssertEventually(message: "Switch ThumbColor did not update to the dark app theme color.");
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), Colors.Blue.ToPlatform(), tolerance: 0.1))
+						.AssertEventually(message: "Native switch track color did not update to the dark app theme color.");
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, Colors.Yellow.ToPlatform(), tolerance: 0.1))
+						.AssertEventually(message: "Native switch thumb color did not update to the dark app theme color.");
+
+					await new Func<Task<bool>>(async () =>
+					{
+						try
+						{
+							await CaptureRenderedSwitch(handler).AssertContainsColor(Colors.Blue, tolerance: 0.1);
+							return true;
+						}
+						catch
+						{
+							return false;
+						}
+					}).AssertEventuallyAsync(message: "Rendered switch track did not update to the dark app theme color.");
+				});
+			}
+			finally
+			{
+				application.UserAppTheme = AppTheme.Unspecified;
+				application.UpdateUserInterfaceStyle();
+				ControlsApplication.Current = previousApplication;
+
+				if (previousApplication is not null)
+				{
+					previousApplication.UserAppTheme = previousTheme;
+					previousApplication.UpdateUserInterfaceStyle();
+				}
 			}
 		}
 

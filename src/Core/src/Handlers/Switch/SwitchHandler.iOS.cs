@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using CoreFoundation;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -22,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UISwitch CreatePlatformView()
 		{
-			return new UISwitch(RectangleF.Empty);
+			return new MauiSwitch(RectangleF.Empty);
 		}
 
 		protected override void ConnectHandler(UISwitch platformView)
@@ -76,6 +75,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				_virtualView = new(virtualView);
 				_platformView = new(platformView);
+				(platformView as MauiSwitch)?.Connect(virtualView);
 				platformView.ValueChanged += OnControlValueChanged;
 
 #if MACCATALYST
@@ -130,16 +130,12 @@ namespace Microsoft.Maui.Handlers
 			// especially when the app enters the background and returns to the foreground.
 			void UpdateTrackOffColor(UISwitch platformView)
 			{
-				DispatchQueue.MainQueue.DispatchAsync(async () =>
+				DispatchQueue.MainQueue.DispatchAsync(() =>
 				{
-					if (!platformView.On)
+					if (!platformView.On && VirtualView is ISwitch view && view.TrackColor is not null)
 					{
-						await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
-
-						if (VirtualView is ISwitch view && view.TrackColor is not null)
-						{
-							platformView.UpdateTrackColor(view);
-						}
+						platformView.UpdateTrackColor(view);
+						(platformView as MauiSwitch)?.SetNeedsColorReapply();
 					}
 				});
 			}
@@ -172,6 +168,7 @@ namespace Microsoft.Maui.Handlers
 			public void Disconnect(UISwitch platformView)
 			{
 				platformView.ValueChanged -= OnControlValueChanged;
+				(platformView as MauiSwitch)?.Disconnect();
 
 				if (_willEnterForegroundObserver is not null)
 				{

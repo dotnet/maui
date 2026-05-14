@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		// Thread safety (no shared mutable state)
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultTrackTintCache = new();
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
-		static readonly ConditionalWeakTable<ASwitch, ColorStateList> _defaultAppCompatThumbTintCache = new();
+		static readonly ConditionalWeakTable<ASwitch, CachedColorStateList> _defaultAppCompatThumbTintCache = new();
 
 		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view)
 		{
@@ -91,12 +91,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!_defaultAppCompatThumbTintCache.TryGetValue(aSwitch, out var defaultThumbTintList))
 			{
-				var currentTint = aSwitch.ThumbTintList;
-				if (currentTint is not null)
-				{
-					_defaultAppCompatThumbTintCache.Add(aSwitch, currentTint);
-					defaultThumbTintList = currentTint;
-				}
+				defaultThumbTintList = new CachedColorStateList(aSwitch.ThumbTintList);
+				_defaultAppCompatThumbTintCache.Add(aSwitch, defaultThumbTintList);
 			}
 
 			var thumbColor = view.ThumbColor;
@@ -109,8 +105,18 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				aSwitch.ThumbTintList = defaultThumbTintList;
+				aSwitch.ThumbTintList = defaultThumbTintList.Value;
 			}
+		}
+
+		sealed class CachedColorStateList
+		{
+			public CachedColorStateList(ColorStateList? value)
+			{
+				Value = value;
+			}
+
+			public ColorStateList? Value { get; }
 		}
 
 		public static Drawable? GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>

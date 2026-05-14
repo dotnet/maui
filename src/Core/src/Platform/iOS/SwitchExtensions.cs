@@ -1,5 +1,4 @@
 ﻿using System;
-using CoreFoundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -7,7 +6,6 @@ namespace Microsoft.Maui.Platform
 	public static class SwitchExtensions
 	{
 		static UIColor DefaultBackgroundColor = UIColor.FromRGBA(120, 120, 128, 40);
-		const int MaxColorReapplyAttempts = 2;
 
 		public static void UpdateIsOn(this UISwitch uiSwitch, ISwitch view)
 		{
@@ -31,7 +29,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static void ApplyTrackColor(this UISwitch uiSwitch, ISwitch view)
+		internal static void ApplyTrackColor(this UISwitch uiSwitch, ISwitch view)
 		{
 			var uIView = GetTrackSubview(uiSwitch);
 
@@ -85,15 +83,15 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static void ApplyThumbColor(this UISwitch uiSwitch, ISwitch view)
+		internal static void ApplyThumbColor(this UISwitch uiSwitch, ISwitch view)
 		{
 			uiSwitch.ThumbTintColor = view.ThumbColor?.ToPlatform();
 		}
 
 		static bool UpdatePreferredStyle(this UISwitch uiSwitch, ISwitch view)
 		{
-#if IOS
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+#if IOS || MACCATALYST
+			if (!IsSlidingStyleRequiredForCustomColors())
 			{
 				return false;
 			}
@@ -106,7 +104,6 @@ namespace Microsoft.Maui.Platform
 			{
 				uiSwitch.PreferredStyle = preferredStyle;
 				uiSwitch.SetNeedsLayout();
-				uiSwitch.LayoutIfNeeded();
 				return true;
 			}
 #endif
@@ -115,48 +112,25 @@ namespace Microsoft.Maui.Platform
 
 		static void ReapplyColorsAfterStyleUpdate(this UISwitch uiSwitch, ISwitch view)
 		{
-#if IOS
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+#if IOS || MACCATALYST
+			if (!IsSlidingStyleRequiredForCustomColors())
 			{
 				return;
 			}
 
-			uiSwitch.ScheduleColorReapply(view, 0);
+			if (uiSwitch is MauiSwitch mauiSwitch)
+			{
+				mauiSwitch.SetNeedsColorReapply();
+			}
+			else if (uiSwitch.IsReadyForColorReapply())
+			{
+				uiSwitch.ApplyTrackColor(view);
+				uiSwitch.ApplyThumbColor(view);
+			}
 #endif
 		}
 
-		static void ScheduleColorReapply(this UISwitch uiSwitch, ISwitch view, int retryCount)
-		{
-			var weakSwitch = new WeakReference<UISwitch>(uiSwitch);
-			var weakView = new WeakReference<ISwitch>(view);
-
-			DispatchQueue.MainQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, TimeSpan.FromMilliseconds(10)), () =>
-			{
-				if (!weakSwitch.TryGetTarget(out var currentSwitch) || currentSwitch.Handle == IntPtr.Zero)
-				{
-					return;
-				}
-
-				if (!weakView.TryGetTarget(out var currentView))
-				{
-					return;
-				}
-
-				currentSwitch.SetNeedsLayout();
-				currentSwitch.LayoutIfNeeded();
-
-				if (!currentSwitch.IsReadyForColorReapply() && retryCount < MaxColorReapplyAttempts)
-				{
-					currentSwitch.ScheduleColorReapply(currentView, retryCount + 1);
-					return;
-				}
-
-				currentSwitch.ApplyTrackColor(currentView);
-				currentSwitch.ApplyThumbColor(currentView);
-			});
-		}
-
-		static bool IsReadyForColorReapply(this UISwitch uiSwitch)
+		internal static bool IsReadyForColorReapply(this UISwitch uiSwitch)
 		{
 			var trackSubview = uiSwitch.GetTrackSubview();
 
@@ -166,6 +140,15 @@ namespace Microsoft.Maui.Platform
 				&& uiSwitch.Bounds.Height > 0
 				&& trackSubview.Bounds.Width > 0
 				&& trackSubview.Bounds.Height > 0;
+		}
+
+		static bool IsSlidingStyleRequiredForCustomColors()
+		{
+#if IOS || MACCATALYST
+			return OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
+#else
+			return false;
+#endif
 		}
 
 		internal static UIView? GetTrackSubview(this UISwitch uISwitch)
