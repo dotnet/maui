@@ -289,7 +289,13 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static void OnIsPresentedPropertyChanged(BindableObject sender, object oldValue, object newValue)
-			=> ((FlyoutPage)sender).IsPresentedChanged?.Invoke(sender, EventArgs.Empty);
+		{
+			var flyoutPage = (FlyoutPage)sender;
+			flyoutPage.IsPresentedChanged?.Invoke(sender, EventArgs.Empty);
+			// Refresh the predictive back callback when the flyout opens or closes so the
+			// back-to-home animation is suppressed only while the flyout is actually open.
+			(flyoutPage.Window as Window)?.NotifyNavigationStateChanged();
+		}
 
 		static void OnIsPresentedPropertyChanging(BindableObject sender, object oldValue, object newValue)
 		{
