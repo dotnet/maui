@@ -1,4 +1,3 @@
 {
-    "dotnet.defaultSolution": "Microsoft.Maui-vscode.sln",
-    "dotrush.roslyn.projectOrSolutionFiles": []
+    "dotnet.defaultSolution": "Microsoft.Maui-vscode.sln"
 }
