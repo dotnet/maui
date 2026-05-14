@@ -21,6 +21,7 @@ internal partial class MauiItemsView
 	// Drag and drop fields
 	object? _draggedItem;
 	ItemContainer? _sourceContainer;
+	readonly HashSet<ItemContainer> _shiftedContainers = new();
 	int _insertionIndex = -1;
 	bool _insertAfter;
 	bool _canReorderItems;
@@ -260,12 +261,14 @@ internal partial class MauiItemsView
 	}
 
 	/// <summary>
-	/// Installs an implicit Composition animation on the container's Offset property
-	/// so layout repositioning animates instead of snapping. Idempotent — replacing
-	/// the animation collection on each call is safe.
+	/// Installs implicit Composition animations on the container's Offset and
+	/// Translation properties so layout changes and hover-shuffle shifts animate
+	/// smoothly instead of snapping. Idempotent.
 	/// </summary>
 	static void ConfigureContainerReorderAnimation(ItemContainer container)
 	{
+		ElementCompositionPreview.SetIsTranslationEnabled(container, true);
+
 		var visual = ElementCompositionPreview.GetElementVisual(container);
 		var compositor = visual.Compositor;
 
@@ -274,8 +277,14 @@ internal partial class MauiItemsView
 		offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
 		offsetAnimation.Duration = TimeSpan.FromMilliseconds(250);
 
+		var translationAnimation = compositor.CreateVector3KeyFrameAnimation();
+		translationAnimation.Target = "Translation";
+		translationAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
+		translationAnimation.Duration = TimeSpan.FromMilliseconds(200);
+
 		var animations = compositor.CreateImplicitAnimationCollection();
 		animations["Offset"] = offsetAnimation;
+		animations["Translation"] = translationAnimation;
 		visual.ImplicitAnimations = animations;
 	}
 
@@ -304,6 +313,13 @@ internal partial class MauiItemsView
 			if (ReferenceEquals(_sourceContainer, itemContainer))
 			{
 				_sourceContainer = null;
+			}
+
+			// Reset any hover-shuffle translation and drop the tracking entry so a
+			// recycled container doesn't carry stale offset state to its next item.
+			if (_shiftedContainers.Remove(itemContainer))
+			{
+				ResetTranslation(itemContainer);
 			}
 		}
 	}
@@ -432,6 +448,12 @@ internal partial class MauiItemsView
 
 		_insertionIndex = _insertAfter ? targetIndex + 1 : targetIndex;
 
+		// Visually shuffle the items between the source slot and the prospective
+		// drop position so the user sees where the item will land. Data is NOT
+		// mutated — only Composition Translation is adjusted, and the implicit
+		// Translation animation smooths the motion.
+		UpdateHoverShift();
+
 		e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 		e.Handled = true;
 	}
@@ -439,6 +461,7 @@ internal partial class MauiItemsView
 	void ScrollViewer_DragLeave(object sender, UI.Xaml.DragEventArgs e)
 	{
 		StopAutoScroll();
+		ResetAllHoverShifts();
 	}
 
 	void ScrollViewer_Drop(object sender, UI.Xaml.DragEventArgs e)
@@ -1022,6 +1045,12 @@ internal partial class MauiItemsView
 
 	void CleanupDragState()
 	{
+		// Reset hover shifts BEFORE clearing _sourceContainer so the shifted
+		// containers' Translation snaps back; the implicit Translation animation
+		// will smooth this. After that, any real layout reorder (Drop case) is
+		// animated via the implicit Offset animation.
+		ResetAllHoverShifts();
+
 		// Restore the source container synchronously in case DropCompleted does not
 		// fire (e.g. drop handled outside the source element, or disconnect).
 		if (_sourceContainer is not null)
@@ -1035,6 +1064,149 @@ internal partial class MauiItemsView
 		_insertionIndex = -1;
 		_insertAfter = false;
 		StopAutoScroll();
+	}
+
+	#endregion
+
+	#region Hover Shuffle (visual-only)
+
+	/// <summary>
+	/// Visually shifts the containers between the source slot and the prospective
+	/// drop position to reveal where the item will land. Operates purely on the
+	/// Composition Translation property — the underlying data source is not
+	/// modified until the drop is committed.
+	/// </summary>
+	void UpdateHoverShift()
+	{
+		if (_draggedItem is null || _sourceContainer is null)
+		{
+			ResetAllHoverShifts();
+			return;
+		}
+
+		var sourceList = GetSourceList();
+		var repeater = ItemsRepeaterControl;
+		if (sourceList is null || repeater is null)
+		{
+			ResetAllHoverShifts();
+			return;
+		}
+
+		int sourceIndex = IndexOfItem(_draggedItem, sourceList);
+		if (sourceIndex < 0)
+		{
+			ResetAllHoverShifts();
+			return;
+		}
+
+		// Map _insertionIndex (where the item would be inserted) to the final index
+		// it would occupy after a Remove+Insert. When dragging forward, the removal
+		// shifts everything down by one.
+		int targetIndex = _insertionIndex;
+		if (sourceIndex < targetIndex)
+		{
+			targetIndex--;
+		}
+		targetIndex = Math.Clamp(targetIndex, 0, sourceList.Count - 1);
+
+		float shiftSize = _isHorizontalLayout
+			? (float)_sourceContainer.ActualWidth
+			: (float)_sourceContainer.ActualHeight;
+
+		if (shiftSize <= 0)
+		{
+			return;
+		}
+
+		int rangeStart, rangeEnd;
+		float direction;
+		if (sourceIndex < targetIndex)
+		{
+			// Dragging forward: items in (source, target] slide back toward the source.
+			rangeStart = sourceIndex + 1;
+			rangeEnd = targetIndex;
+			direction = -1f;
+		}
+		else if (sourceIndex > targetIndex)
+		{
+			// Dragging backward: items in [target, source) slide forward.
+			rangeStart = targetIndex;
+			rangeEnd = sourceIndex - 1;
+			direction = +1f;
+		}
+		else
+		{
+			ResetAllHoverShifts();
+			return;
+		}
+
+		var newShifted = new HashSet<ItemContainer>();
+		for (int i = rangeStart; i <= rangeEnd; i++)
+		{
+			if (repeater.TryGetElement(i) is not ItemContainer ic)
+			{
+				continue;
+			}
+
+			if (ReferenceEquals(ic, _sourceContainer))
+			{
+				continue;
+			}
+
+			// Don't shift headers/footers/group headers/footers.
+			if (ic.Child is ElementWrapper wrapper && wrapper.IsHeaderOrFooter)
+			{
+				continue;
+			}
+
+			ApplyTranslation(ic, direction * shiftSize);
+			newShifted.Add(ic);
+		}
+
+		// Reset containers that were shifted previously but no longer should be.
+		foreach (var c in _shiftedContainers)
+		{
+			if (!newShifted.Contains(c))
+			{
+				ResetTranslation(c);
+			}
+		}
+
+		_shiftedContainers.Clear();
+		foreach (var c in newShifted)
+		{
+			_shiftedContainers.Add(c);
+		}
+	}
+
+	void ApplyTranslation(ItemContainer container, float distance)
+	{
+		ElementCompositionPreview.SetIsTranslationEnabled(container, true);
+		var visual = ElementCompositionPreview.GetElementVisual(container);
+		var offset = _isHorizontalLayout
+			? new System.Numerics.Vector3(distance, 0f, 0f)
+			: new System.Numerics.Vector3(0f, distance, 0f);
+		visual.Properties.InsertVector3("Translation", offset);
+	}
+
+	static void ResetTranslation(ItemContainer container)
+	{
+		var visual = ElementCompositionPreview.GetElementVisual(container);
+		visual.Properties.InsertVector3("Translation", System.Numerics.Vector3.Zero);
+	}
+
+	void ResetAllHoverShifts()
+	{
+		if (_shiftedContainers.Count == 0)
+		{
+			return;
+		}
+
+		foreach (var c in _shiftedContainers)
+		{
+			ResetTranslation(c);
+		}
+		_shiftedContainers.Clear();
 	}
 
 	#endregion
