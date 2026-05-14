@@ -21,7 +21,6 @@ internal partial class MauiItemsView
 	// Drag and drop fields
 	object? _draggedItem;
 	ItemContainer? _sourceContainer;
-	readonly HashSet<ItemContainer> _shiftedContainers = new();
 	int _insertionIndex = -1;
 	bool _insertAfter;
 	bool _canReorderItems;
@@ -261,14 +260,12 @@ internal partial class MauiItemsView
 	}
 
 	/// <summary>
-	/// Installs implicit Composition animations on the container's Offset and
-	/// Translation properties so layout changes and hover-shuffle shifts animate
-	/// smoothly instead of snapping. Idempotent.
+	/// Installs an implicit Composition animation on the container's Offset property
+	/// so layout repositioning (driven by ItemsRepeater after a Move/Remove/Insert in
+	/// ItemsSource) animates instead of snapping. Idempotent.
 	/// </summary>
 	static void ConfigureContainerReorderAnimation(ItemContainer container)
 	{
-		ElementCompositionPreview.SetIsTranslationEnabled(container, true);
-
 		var visual = ElementCompositionPreview.GetElementVisual(container);
 		var compositor = visual.Compositor;
 
@@ -277,14 +274,8 @@ internal partial class MauiItemsView
 		offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
 		offsetAnimation.Duration = TimeSpan.FromMilliseconds(250);
 
-		var translationAnimation = compositor.CreateVector3KeyFrameAnimation();
-		translationAnimation.Target = "Translation";
-		translationAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
-		translationAnimation.Duration = TimeSpan.FromMilliseconds(200);
-
 		var animations = compositor.CreateImplicitAnimationCollection();
 		animations["Offset"] = offsetAnimation;
-		animations["Translation"] = translationAnimation;
 		visual.ImplicitAnimations = animations;
 	}
 
@@ -313,13 +304,6 @@ internal partial class MauiItemsView
 			if (ReferenceEquals(_sourceContainer, itemContainer))
 			{
 				_sourceContainer = null;
-			}
-
-			// Reset any hover-shuffle translation and drop the tracking entry so a
-			// recycled container doesn't carry stale offset state to its next item.
-			if (_shiftedContainers.Remove(itemContainer))
-			{
-				ResetTranslation(itemContainer);
 			}
 		}
 	}
@@ -448,20 +432,84 @@ internal partial class MauiItemsView
 
 		_insertionIndex = _insertAfter ? targetIndex + 1 : targetIndex;
 
-		// Visually shuffle the items between the source slot and the prospective
-		// drop position so the user sees where the item will land. Data is NOT
-		// mutated — only Composition Translation is adjusted, and the implicit
-		// Translation animation smooths the motion.
-		UpdateHoverShift();
+		// Live-reorder the data so ItemsRepeater repositions the surrounding
+		// containers as the pointer moves, and the implicit Offset animation slides
+		// them smoothly into their new slots. Grouped sources are handled only on
+		// drop because group/header/footer boundaries make incremental moves
+		// ambiguous.
+		bool isGrouped = _mauiVirtualView is GroupableItemsView giv && giv.IsGrouped;
+		if (!isGrouped && _draggedItem is not null && _mauiVirtualView?.ItemsSource is IList liveList)
+		{
+			PerformLiveReorder(liveList);
+		}
 
 		e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 		e.Handled = true;
 	}
 
+	/// <summary>
+	/// Moves the dragged item to <see cref="_insertionIndex"/> in the live data
+	/// source while the drag is still in progress. ItemsRepeater repositions the
+	/// other containers and the implicit Offset animation slides them into their
+	/// new slots, giving real-time shuffle feedback. Only used for flat lists.
+	/// </summary>
+	void PerformLiveReorder(IList itemsList)
+	{
+		if (_draggedItem is null)
+		{
+			return;
+		}
+
+		int currentIndex = IndexOfItem(_draggedItem, itemsList);
+		if (currentIndex < 0)
+		{
+			return;
+		}
+
+		int targetIndex = _insertionIndex;
+		if (currentIndex < targetIndex)
+		{
+			targetIndex--;
+		}
+
+		targetIndex = Math.Clamp(targetIndex, 0, itemsList.Count - 1);
+
+		if (targetIndex == currentIndex)
+		{
+			return;
+		}
+
+		var item = itemsList[currentIndex];
+		itemsList.RemoveAt(currentIndex);
+		itemsList.Insert(targetIndex, item);
+
+		// The repeater may recycle the source container after the move; re-resolve
+		// it so the hidden slot continues to follow the dragged item.
+		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+		{
+			if (_draggedItem is null)
+			{
+				return;
+			}
+
+			if (FindContainerByIndex(targetIndex) is not ItemContainer newContainer)
+			{
+				return;
+			}
+
+			if (_sourceContainer is not null && !ReferenceEquals(_sourceContainer, newContainer))
+			{
+				_sourceContainer.Opacity = 1;
+			}
+
+			_sourceContainer = newContainer;
+			_sourceContainer.Opacity = 0;
+		});
+	}
+
 	void ScrollViewer_DragLeave(object sender, UI.Xaml.DragEventArgs e)
 	{
 		StopAutoScroll();
-		ResetAllHoverShifts();
 	}
 
 	void ScrollViewer_Drop(object sender, UI.Xaml.DragEventArgs e)
@@ -501,7 +549,20 @@ internal partial class MauiItemsView
 			{
 				try
 				{
-					bool reordered = PerformReorder(itemsList);
+					// Live reorder during DragOver already moved the item into its
+					// final slot. The drop only needs to confirm and raise the
+					// completion event. If live reorder never ran (e.g. drop on the
+					// very first frame), fall back to the one-shot PerformReorder.
+					bool reordered;
+					if (_draggedItem is not null && IndexOfItem(_draggedItem, itemsList) >= 0)
+					{
+						reordered = true;
+					}
+					else
+					{
+						reordered = PerformReorder(itemsList);
+					}
+
 					if (reordered)
 					{
 						ReorderCompleted?.Invoke(this, EventArgs.Empty);
@@ -1045,12 +1106,6 @@ internal partial class MauiItemsView
 
 	void CleanupDragState()
 	{
-		// Reset hover shifts BEFORE clearing _sourceContainer so the shifted
-		// containers' Translation snaps back; the implicit Translation animation
-		// will smooth this. After that, any real layout reorder (Drop case) is
-		// animated via the implicit Offset animation.
-		ResetAllHoverShifts();
-
 		// Restore the source container synchronously in case DropCompleted does not
 		// fire (e.g. drop handled outside the source element, or disconnect).
 		if (_sourceContainer is not null)
@@ -1064,200 +1119,6 @@ internal partial class MauiItemsView
 		_insertionIndex = -1;
 		_insertAfter = false;
 		StopAutoScroll();
-	}
-
-	#endregion
-
-	#region Hover Shuffle (visual-only)
-
-	/// <summary>
-	/// Visually shifts the containers between the source slot and the prospective
-	/// drop position to reveal where the item will land. Operates purely on the
-	/// Composition Translation property — the underlying data source is not
-	/// modified until the drop is committed.
-	/// </summary>
-	void UpdateHoverShift()
-	{
-		if (_draggedItem is null || _sourceContainer is null)
-		{
-			ResetAllHoverShifts();
-			return;
-		}
-
-		var sourceList = GetSourceList();
-		var repeater = ItemsRepeaterControl;
-		if (sourceList is null || repeater is null)
-		{
-			ResetAllHoverShifts();
-			return;
-		}
-
-		int sourceIndex = IndexOfItem(_draggedItem, sourceList);
-		if (sourceIndex < 0)
-		{
-			ResetAllHoverShifts();
-			return;
-		}
-
-		// Map _insertionIndex (where the item would be inserted) to the final index
-		// it would occupy after a Remove+Insert. When dragging forward, the removal
-		// shifts everything down by one.
-		int targetIndex = _insertionIndex;
-		if (sourceIndex < targetIndex)
-		{
-			targetIndex--;
-		}
-		targetIndex = Math.Clamp(targetIndex, 0, sourceList.Count - 1);
-
-		// Measure the actual stride between two adjacent realized containers in the
-		// repeater. Using just _sourceContainer.ActualHeight/Width misses any
-		// inter-item spacing the layout applies, which causes neighbors to land
-		// short of their target slot — appearing to overlap.
-		float shiftSize = ComputeContainerStride(repeater, sourceList.Count);
-		if (shiftSize <= 0)
-		{
-			// Fall back to the source container size if we can't measure a stride
-			// (e.g. only one realized container).
-			shiftSize = _isHorizontalLayout
-				? (float)_sourceContainer.ActualWidth
-				: (float)_sourceContainer.ActualHeight;
-		}
-
-		if (shiftSize <= 0)
-		{
-			return;
-		}
-
-		int rangeStart, rangeEnd;
-		float direction;
-		if (sourceIndex < targetIndex)
-		{
-			// Dragging forward: items in (source, target] slide back toward the source.
-			rangeStart = sourceIndex + 1;
-			rangeEnd = targetIndex;
-			direction = -1f;
-		}
-		else if (sourceIndex > targetIndex)
-		{
-			// Dragging backward: items in [target, source) slide forward.
-			rangeStart = targetIndex;
-			rangeEnd = sourceIndex - 1;
-			direction = +1f;
-		}
-		else
-		{
-			ResetAllHoverShifts();
-			return;
-		}
-
-		var newShifted = new HashSet<ItemContainer>();
-		for (int i = rangeStart; i <= rangeEnd; i++)
-		{
-			if (repeater.TryGetElement(i) is not ItemContainer ic)
-			{
-				continue;
-			}
-
-			if (ReferenceEquals(ic, _sourceContainer))
-			{
-				continue;
-			}
-
-			// Don't shift headers/footers/group headers/footers.
-			if (ic.Child is ElementWrapper wrapper && wrapper.IsHeaderOrFooter)
-			{
-				continue;
-			}
-
-			ApplyTranslation(ic, direction * shiftSize);
-			newShifted.Add(ic);
-		}
-
-		// Reset containers that were shifted previously but no longer should be.
-		foreach (var c in _shiftedContainers)
-		{
-			if (!newShifted.Contains(c))
-			{
-				ResetTranslation(c);
-			}
-		}
-
-		_shiftedContainers.Clear();
-		foreach (var c in newShifted)
-		{
-			_shiftedContainers.Add(c);
-		}
-	}
-
-	void ApplyTranslation(ItemContainer container, float distance)
-	{
-		ElementCompositionPreview.SetIsTranslationEnabled(container, true);
-		var visual = ElementCompositionPreview.GetElementVisual(container);
-		var offset = _isHorizontalLayout
-			? new System.Numerics.Vector3(distance, 0f, 0f)
-			: new System.Numerics.Vector3(0f, distance, 0f);
-		visual.Properties.InsertVector3("Translation", offset);
-	}
-
-	static void ResetTranslation(ItemContainer container)
-	{
-		var visual = ElementCompositionPreview.GetElementVisual(container);
-		visual.Properties.InsertVector3("Translation", System.Numerics.Vector3.Zero);
-	}
-
-	void ResetAllHoverShifts()
-	{
-		if (_shiftedContainers.Count == 0)
-		{
-			return;
-		}
-
-		foreach (var c in _shiftedContainers)
-		{
-			ResetTranslation(c);
-		}
-		_shiftedContainers.Clear();
-	}
-
-	/// <summary>
-	/// Returns the on-axis distance between the layout positions of two adjacent
-	/// realized containers, including any inter-item spacing applied by the layout.
-	/// Returns 0 if fewer than two adjacent realized containers can be found.
-	/// </summary>
-	float ComputeContainerStride(ItemsRepeater repeater, int itemCount)
-	{
-		FrameworkElement? prev = null;
-		int prevIndex = -1;
-
-		for (int i = 0; i < itemCount; i++)
-		{
-			if (repeater.TryGetElement(i) is not FrameworkElement cur)
-			{
-				continue;
-			}
-
-			if (prev is not null && i == prevIndex + 1)
-			{
-				var p1 = prev.TransformToVisual(repeater)
-					.TransformPoint(new global::Windows.Foundation.Point(0, 0));
-				var p2 = cur.TransformToVisual(repeater)
-					.TransformPoint(new global::Windows.Foundation.Point(0, 0));
-
-				float stride = _isHorizontalLayout
-					? (float)(p2.X - p1.X)
-					: (float)(p2.Y - p1.Y);
-
-				if (stride > 0)
-				{
-					return stride;
-				}
-			}
-
-			prev = cur;
-			prevIndex = i;
-		}
-
-		return 0f;
 	}
 
 	#endregion
