@@ -383,7 +383,21 @@ namespace Microsoft.Maui.Platform
 			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 				_safeArea = GetInset().ToSafeAreaInsets();
 			else
-				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
+			{
+				// UIKit's Automatic behavior only adds top/bottom safe area to AdjustedContentInset
+				// for vertical scroll views — it does NOT add left/right horizontal safe area.
+				// In landscape orientation with a notch (e.g., landscape-left), this means
+				// SystemAdjustedContentInset.Left = 0, causing content to start at x=0 under the notch.
+				// We use GetInset() for horizontal edges so that SafeAreaInsets.Left/Right are respected,
+				// and keep ACI-based values for vertical edges (which UIKit already handles via contentOffset.y).
+				var aci = SystemAdjustedContentInset;
+				var manualInset = GetInset();
+				_safeArea = new SafeAreaPadding(
+					(double)manualInset.Left,
+					(double)manualInset.Right,
+					(double)aci.Top,
+					(double)aci.Bottom);
+			}
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -452,7 +466,10 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+				// UIKit handles vertical safe area (top/bottom) via contentOffset.y adjustment.
+				// We keep y=0 so UIKit's offset applies correctly, but use bounds.X (= SafeAreaInsets.Left
+				// from the fixed _safeArea) to manually offset content past the horizontal notch/home indicator.
+				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(bounds.X, 0, bounds.Width, bounds.Height)) ?? Size.Zero;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
