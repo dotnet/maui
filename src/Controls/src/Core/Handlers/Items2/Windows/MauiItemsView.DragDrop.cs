@@ -1109,9 +1109,19 @@ internal partial class MauiItemsView
 		}
 		targetIndex = Math.Clamp(targetIndex, 0, sourceList.Count - 1);
 
-		float shiftSize = _isHorizontalLayout
-			? (float)_sourceContainer.ActualWidth
-			: (float)_sourceContainer.ActualHeight;
+		// Measure the actual stride between two adjacent realized containers in the
+		// repeater. Using just _sourceContainer.ActualHeight/Width misses any
+		// inter-item spacing the layout applies, which causes neighbors to land
+		// short of their target slot — appearing to overlap.
+		float shiftSize = ComputeContainerStride(repeater, sourceList.Count);
+		if (shiftSize <= 0)
+		{
+			// Fall back to the source container size if we can't measure a stride
+			// (e.g. only one realized container).
+			shiftSize = _isHorizontalLayout
+				? (float)_sourceContainer.ActualWidth
+				: (float)_sourceContainer.ActualHeight;
+		}
 
 		if (shiftSize <= 0)
 		{
@@ -1207,6 +1217,47 @@ internal partial class MauiItemsView
 			ResetTranslation(c);
 		}
 		_shiftedContainers.Clear();
+	}
+
+	/// <summary>
+	/// Returns the on-axis distance between the layout positions of two adjacent
+	/// realized containers, including any inter-item spacing applied by the layout.
+	/// Returns 0 if fewer than two adjacent realized containers can be found.
+	/// </summary>
+	float ComputeContainerStride(ItemsRepeater repeater, int itemCount)
+	{
+		FrameworkElement? prev = null;
+		int prevIndex = -1;
+
+		for (int i = 0; i < itemCount; i++)
+		{
+			if (repeater.TryGetElement(i) is not FrameworkElement cur)
+			{
+				continue;
+			}
+
+			if (prev is not null && i == prevIndex + 1)
+			{
+				var p1 = prev.TransformToVisual(repeater)
+					.TransformPoint(new global::Windows.Foundation.Point(0, 0));
+				var p2 = cur.TransformToVisual(repeater)
+					.TransformPoint(new global::Windows.Foundation.Point(0, 0));
+
+				float stride = _isHorizontalLayout
+					? (float)(p2.X - p1.X)
+					: (float)(p2.Y - p1.Y);
+
+				if (stride > 0)
+				{
+					return stride;
+				}
+			}
+
+			prev = cur;
+			prevIndex = i;
+		}
+
+		return 0f;
 	}
 
 	#endregion
