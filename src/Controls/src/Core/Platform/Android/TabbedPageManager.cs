@@ -222,15 +222,15 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		// Check if TabbedPage is hosted inside a NavigationPage and another page
-		// was pushed on top of it. In that case, we must remove tabs so the
-		// pushed page gets full height.
-		if (Element?.Parent is NavigationPage parentNav)
+		// Element.Navigation.NavigationStack is resolved through the
+		// NavigationProxy, which already walks the parent chain to find
+		// the nearest NavigationPage ancestor.
+		var navStack = Element?.Navigation?.NavigationStack;
+		if (navStack is not null && navStack.Count > 0)
 		{
-			var navStack = parentNav.Navigation?.NavigationStack;
-			// If the TabbedPage is no longer at the top of its NavigationPage's
-			// stack, a page was pushed over it — remove tabs.
-			if (navStack is not null && navStack.Count > 0 && navStack[navStack.Count - 1] != Element)
+			// If the TabbedPage is no longer the top page in the nav stack,
+			// a page was pushed over it — remove tabs.
+			if (navStack[navStack.Count - 1] != Element)
 			{
 				RemoveTabs();
 				return;
@@ -242,9 +242,15 @@ public class TabbedPageManager
 			return;
 		}
 
-		// No NavigationPage parent — original behavior applies.
-		// Check modal stack to avoid removing tabs when a modal is shown over
-		// a root TabbedPage.
+		// No NavigationPage ancestor — original behavior applies.
+		// This branch covers two cases (see PR #32878):
+		// 1. A modal page is pushed over a root TabbedPage — ModalStack contains
+		//    the modal, so we keep tabs alive and restore them on modal dismiss.
+		// 2. The TabbedPage itself was pushed as a modal — ModalStack includes the
+		//    TabbedPage, so tabs also stay. Disappearing only fires when something
+		//    is later shown over it, and the guard still holds.
+		// Do NOT simplify this check; removing it re-introduces the regression
+		// where tabs are destroyed on modal overlay.
 		if (Element?.Navigation?.ModalStack?.Count > 0)
 		{
 			return;

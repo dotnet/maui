@@ -35,7 +35,7 @@ public class Issue35331 : TestContentPage
 	}
 }
 
-public class Issue35331TabbedPage : Microsoft.Maui.Controls.TabbedPage
+public class Issue35331TabbedPage : TabbedPage
 {
 	public Issue35331TabbedPage()
 	{
