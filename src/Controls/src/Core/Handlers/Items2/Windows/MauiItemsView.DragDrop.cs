@@ -483,23 +483,40 @@ internal partial class MauiItemsView
 		itemsList.RemoveAt(currentIndex);
 		itemsList.Insert(targetIndex, item);
 
-		// The repeater may recycle the source container after the move; re-resolve
-		// it so the hidden slot continues to follow the dragged item.
+		// Capture the dragged item by identity. Resolving the hidden source slot
+		// by index after the move is unreliable because the ItemsRepeater may not
+		// have laid out yet — index lookups can return a stale container whose
+		// binding still points at the *previous* item, which causes the wrong row
+		// to be hidden (items "disappear") and the real dragged item to remain
+		// visible alongside the drag-ghost (the "duplicate").
+		var draggedItem = _draggedItem;
 		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
 		{
-			if (_draggedItem is null)
+			if (_draggedItem is null || !ReferenceEquals(_draggedItem, draggedItem))
 			{
 				return;
 			}
 
-			if (FindContainerByIndex(targetIndex) is not ItemContainer newContainer)
+			// Find the container currently bound to the dragged item. This is
+			// stable across recycling and reorder because it matches by binding
+			// context, not by positional index.
+			var newContainer = FindContainerByItem(draggedItem) as ItemContainer;
+
+			// Defensive sweep: restore opacity on every realized container EXCEPT
+			// the new source. Earlier queued callbacks may have left a stale
+			// container hidden if its binding has since been recycled.
+			foreach (var c in FindAllContainers())
 			{
-				return;
+				if (c is ItemContainer ic && !ReferenceEquals(ic, newContainer) && ic.Opacity < 1)
+				{
+					ic.Opacity = 1;
+				}
 			}
 
-			if (_sourceContainer is not null && !ReferenceEquals(_sourceContainer, newContainer))
+			if (newContainer is null)
 			{
-				_sourceContainer.Opacity = 1;
+				_sourceContainer = null;
+				return;
 			}
 
 			_sourceContainer = newContainer;
