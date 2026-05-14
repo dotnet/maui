@@ -225,8 +225,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (invalidatedCells is not null)
 			{
-				// Workaround for Apple bug in iPadOS 18+ with UICollectionViewCompositionalLayout
-				// Self-sizing cells cause scroll position jumps during invalidation
+				// Workaround for layout issue observed on iPadOS 18+ with UICollectionViewCompositionalLayout
+				// where self-sizing cells can cause scroll position jumps during invalidation
 				if (ShouldApplyCellReConfiguration())
 				{
 					// Wrap in PerformWithoutAnimation to prevent ReconfigureItems from animating
