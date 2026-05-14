@@ -446,12 +446,13 @@ namespace Microsoft.Maui.Platform
 
 			double width;
 			double height;
-			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Automatic
-				&& SystemAdjustedContentInset != UIEdgeInsets.Zero)
+			if (SystemAdjustedContentInset != UIEdgeInsets.Zero
+				&& ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
-				// UIKit's Automatic mode manages vertical safe area via contentOffset.y automatically.
-				// Passing bounds.Y would double-count the top inset. Only apply the horizontal offset
-				// (bounds.X = _safeArea.Left) to push content past the landscape notch; keep y=0.
+				// UIKit manages contentOffset.y automatically for both Automatic and Always CIAB modes
+				// (when ACI is non-zero). Passing bounds.Y would double-count the top inset.
+				// Keep y=0 so UIKit's adjustment works correctly; use bounds.X for horizontal offset
+				// (= _safeArea.Left = SafeAreaInsets.Left) to push content past the landscape notch.
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(bounds.X, 0, bounds.Width, bounds.Height)) ?? Size.Zero;
 
 				width = contentSize.Width;
@@ -459,7 +460,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// For Never/Always CIAB (or zero ACI), MAUI fully controls safe area — apply full bounds.
+				// Never CIAB (or zero ACI): MAUI fully controls safe area — apply full inset bounds.
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
 
 				width = contentSize.Width;
