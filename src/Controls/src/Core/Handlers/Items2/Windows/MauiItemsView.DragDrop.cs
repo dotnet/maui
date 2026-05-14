@@ -312,9 +312,10 @@ internal partial class MauiItemsView
 			visual.ImplicitAnimations = null;
 
 			// If the container being cleared is the one currently hidden as the drag
-			// source (e.g. recycled mid-drag), restore its opacity so it doesn't get
-			// reused while invisible.
+			// source (e.g. recycled mid-drag), restore its opacity and hit-testability
+			// so it doesn't get reused while invisible.
 			itemContainer.Opacity = 1;
+			itemContainer.IsHitTestVisible = true;
 			if (ReferenceEquals(_sourceContainer, itemContainer))
 			{
 				_sourceContainer = null;
@@ -370,6 +371,9 @@ internal partial class MauiItemsView
 			if (_sourceContainer is not null)
 			{
 				_sourceContainer.Opacity = 0;
+				// Disable hit testing so the invisible container does not intercept
+				// pointer events and is excluded from FindElementsInHostCoordinates.
+				_sourceContainer.IsHitTestVisible = false;
 			}
 		});
 	}
@@ -380,6 +384,7 @@ internal partial class MauiItemsView
 		{
 			itemContainer.DropCompleted -= ItemContainer_DropCompleted;
 			itemContainer.Opacity = 1;
+			itemContainer.IsHitTestVisible = true;
 		}
 
 		// Defensive: if the source container was recycled during reorder, make sure
@@ -389,6 +394,7 @@ internal partial class MauiItemsView
 			if (container.Opacity < 1)
 			{
 				container.Opacity = 1;
+				container.IsHitTestVisible = true;
 			}
 		}
 
@@ -524,6 +530,9 @@ internal partial class MauiItemsView
 				return;
 			}
 
+			// Force the ItemsRepeater to finish its layout pass so container
+			// bindings are current before we walk them for opacity reconciliation.
+			ItemsRepeaterControl?.UpdateLayout();
 			ReconcileSourceOpacity(draggedItem);
 		});
 	}
@@ -541,6 +550,16 @@ internal partial class MauiItemsView
 			return;
 		}
 
+		// Fast path: if the tracked source container is still valid and already
+		// bound to the dragged item, just ensure it stays hidden. Avoids walking
+		// all realized containers on every DragOver for large lists.
+		if (_sourceContainer is not null && IsContainerBoundToItem(_sourceContainer, draggedItem))
+		{
+			_sourceContainer.Opacity = 0;
+			_sourceContainer.IsHitTestVisible = false;
+			return;
+		}
+
 		ItemContainer? newSource = null;
 		foreach (var c in FindAllContainers())
 		{
@@ -552,11 +571,13 @@ internal partial class MauiItemsView
 			if (IsContainerBoundToItem(ic, draggedItem))
 			{
 				ic.Opacity = 0;
+				ic.IsHitTestVisible = false;
 				newSource = ic;
 			}
 			else if (ic.Opacity < 1)
 			{
 				ic.Opacity = 1;
+				ic.IsHitTestVisible = true;
 			}
 		}
 
@@ -980,7 +1001,9 @@ internal partial class MauiItemsView
 
 		foreach (var element in elements)
 		{
-			if (element is ItemContainer itemContainer && itemContainer.Tag is int)
+			if (element is ItemContainer itemContainer &&
+				itemContainer.Tag is int &&
+				!ReferenceEquals(itemContainer, _sourceContainer))
 			{
 				return itemContainer;
 			}
@@ -994,6 +1017,13 @@ internal partial class MauiItemsView
 
 			foreach (var container in allContainers)
 			{
+				// Skip the invisible source container — its layout slot is occupied
+				// but should not be a valid drop target while the drag is active.
+				if (ReferenceEquals(container, _sourceContainer))
+				{
+					continue;
+				}
+
 				var containerPosition = container.TransformToVisual(repeater).TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
 				bool isInBounds;
