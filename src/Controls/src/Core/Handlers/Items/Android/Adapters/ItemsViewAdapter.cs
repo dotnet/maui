@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using Android.Content;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -19,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 		bool _usingItemTemplate = false;
 		DataTemplateSelector _itemTemplateSelector = null;
+		readonly List<WeakReference<TemplatedItemViewHolder>> _templatedViewHolders = new();
 
 		protected internal ItemsViewAdapter(TItemsView itemsView, Func<View, Context, ItemContentView> createItemContentView = null)
 		{
@@ -90,15 +92,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// See if our cached templates have a match
 			if (_viewTypeDataTemplates.TryGetValue(viewType, out var dataTemplate))
 			{
-				return new TemplatedItemViewHolder(itemContentView, dataTemplate, IsSelectionEnabled(parent, viewType));
+				return TrackTemplatedViewHolder(new TemplatedItemViewHolder(itemContentView, dataTemplate, IsSelectionEnabled(parent, viewType)));
 			}
 
-			return new TemplatedItemViewHolder(itemContentView, ItemsView.ItemTemplate, IsSelectionEnabled(parent, viewType));
+			return TrackTemplatedViewHolder(new TemplatedItemViewHolder(itemContentView, ItemsView.ItemTemplate, IsSelectionEnabled(parent, viewType)));
 		}
 
 		public override int ItemCount => ItemsSource.Count;
 
-		System.Collections.Generic.Dictionary<int, DataTemplate> _viewTypeDataTemplates = new();
+		Dictionary<int, DataTemplate> _viewTypeDataTemplates = new();
 
 		public override int GetItemViewType(int position)
 		{
@@ -127,6 +129,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (disposing)
 				{
+					DisconnectTemplatedViewHolders();
 					ItemsSource?.Dispose();
 					ItemsView.PropertyChanged -= ItemsViewPropertyChanged;
 				}
@@ -156,6 +159,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_usingItemTemplate = ItemsView.ItemTemplate != null;
 			_itemTemplateSelector = ItemsView.ItemTemplate as DataTemplateSelector;
+		}
+
+		TemplatedItemViewHolder TrackTemplatedViewHolder(TemplatedItemViewHolder holder)
+		{
+			for (int index = _templatedViewHolders.Count - 1; index >= 0; index--)
+			{
+				if (!_templatedViewHolders[index].TryGetTarget(out _))
+				{
+					_templatedViewHolders.RemoveAt(index);
+				}
+			}
+
+			_templatedViewHolders.Add(new WeakReference<TemplatedItemViewHolder>(holder));
+			return holder;
+		}
+
+		void DisconnectTemplatedViewHolders()
+		{
+			for (int index = _templatedViewHolders.Count - 1; index >= 0; index--)
+			{
+				if (_templatedViewHolders[index].TryGetTarget(out var holder))
+				{
+					holder.DisconnectAndRecycle(ItemsView);
+				}
+			}
+
+			_templatedViewHolders.Clear();
 		}
 	}
 }
