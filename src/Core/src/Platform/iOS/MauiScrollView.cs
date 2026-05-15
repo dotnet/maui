@@ -380,13 +380,44 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			// Always use GetInset() (backed by SafeAreaInsets) as the single source for _safeArea.
-			// UIKit's Automatic ContentInsetAdjustmentBehavior only adds top/bottom safe area to
-			// AdjustedContentInset for vertical scroll views — it does NOT include left/right edges.
-			// In landscape orientation with a notch, SystemAdjustedContentInset.Left = 0 even though
-			// SafeAreaInsets.Left = 44. GetInset() reads SafeAreaInsets directly, so it captures all
-			// edges correctly regardless of ContentInsetAdjustmentBehavior mode.
-			_safeArea = GetInset().ToSafeAreaInsets();
+			//
+			// Safe area source is chosen per-edge based on who owns each edge:
+			//
+			//   Never / SACI=Zero : MAUI fully manages all edges → read SafeAreaInsets via GetInset().
+			//
+			//   Automatic (default for vertical scroll views):
+			//     UIKit adds top+bottom to AdjustedContentInset but does NOT add left+right for
+			//     non-horizontal scroll views. In landscape-left, SACI.Left=0 even though
+			//     SafeAreaInsets.Left=44, causing content to render under the notch (#35410).
+			//     Fix: use GetInset() for L/R (MAUI-owned), SACI for T/B (UIKit-owned).
+			//
+			//   Always : UIKit manages ALL edges in AdjustedContentInset → use SACI for all edges
+			//     to avoid double-applying horizontal safe area that UIKit already handles.
+			var aci = SystemAdjustedContentInset;
+
+			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never
+				|| aci == UIEdgeInsets.Zero)
+			{
+				// MAUI-managed, or UIKit hasn't applied ACI yet: use SafeAreaInsets for all edges.
+				_safeArea = GetInset().ToSafeAreaInsets();
+			}
+			else if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Always)
+			{
+				// UIKit manages ALL edges (left/right/top/bottom) in ACI.
+				// Use SACI to stay in sync with UIKit's content-offset model.
+				_safeArea = aci.ToSafeAreaInsets();
+			}
+			else
+			{
+				// Automatic (or scrollableAxes): UIKit manages T/B but NOT L/R for vertical-only scroll.
+				// Use GetInset() for horizontal edges (landscape notch fix) and SACI for vertical edges.
+				var inset = GetInset();
+				_safeArea = new SafeAreaPadding(
+					(double)inset.Left,
+					(double)inset.Right,
+					(double)aci.Top,
+					(double)aci.Bottom);
+			}
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
