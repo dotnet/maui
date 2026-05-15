@@ -140,21 +140,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Reset notifications are unsafe to process because WinUI may still be rebuilding
-			// the internal projection. Accessing indexes during Reset can trigger
-			// E_CHANGED_STATE / COMException.
-			if (@event?.CollectionChange == global::Windows.Foundation.Collections.CollectionChange.Reset)
-			{
-				return;
-			}
+			bool isReset = @event?.CollectionChange == global::Windows.Foundation.Collections.CollectionChange.Reset;
+			bool isGrouped = CollectionViewSource?.IsSourceGrouped == true;
 
-			// Grouped CollectionViews are backed by a flattened projection that may still be
-			// mutating while VectorChanged is firing. Accessing indexes synchronously can
-			// trigger STATUS_STOWED_EXCEPTION / E_CHANGED_STATE.
-			//
-			// Non-grouped views (e.g. CarouselView) should remain synchronous to avoid
-			// regressions where deferred scrolling changes the intended position.
-			bool shouldDefer = CollectionViewSource?.IsSourceGrouped == true;
+			// Grouped sources cannot be processed during a Reset. The flattened projection
+			// backing the CollectionView may still be rebuilding while VectorChanged fires,
+			// and indexing into it can raise E_CHANGED_STATE / COMException. Deferring is
+			// also unsafe because the projection may be torn down before the dispatched
+			// lambda runs, so we skip the scroll entirely.
+			if (isGrouped && isReset)
+				return;
+
+			// CarouselView manages its own initial scroll when a non-zero Position is set.
+			// Scrolling to the first item here would override that intent and trigger
+			// cascading PositionChanged / CurrentItemChanged events.
+			if (isReset && VirtualView is CarouselView carouselView && carouselView.Position != 0)
+				return;
+
+			// Defer when WinUI may still be mutating the projection (grouped sources, or any
+			// Reset notification) so the scroll runs against a settled state.
+			bool shouldDefer = isGrouped || isReset;
 
 			if (shouldDefer)
 			{
