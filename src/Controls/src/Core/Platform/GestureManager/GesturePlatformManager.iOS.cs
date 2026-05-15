@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
 		bool _setIsAccessibilityElement;
+		bool _setAccessibilityActivateCallback;
 
 		double _previousScale = 1.0;
 		ShouldReceiveTouchProxy? _proxy;
@@ -117,6 +118,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_interactions.Clear();
 			_gestureRecognizers.Clear();
+
+			if (PlatformView is not null)
+			{
+				if (_setIsAccessibilityElement)
+				{
+					PlatformView.ShouldGroupAccessibilityChildren = false;
+				}
+
+				if (_setAccessibilityActivateCallback && PlatformView is Microsoft.Maui.Platform.MauiView mv)
+				{
+					mv.AccessibilityActivateCallback = null;
+				}
+			}
 
 			_dragAndDropDelegate?.Disconnect();
 			_dragAndDropDelegate = null;
@@ -662,25 +676,28 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// Ensure container views are marked as accessibility elements so VoiceOver
 				// can announce the Button trait and make the container focusable for VoiceOver.
-				if (!PlatformView.IsAccessibilityElement && _handler.VirtualView is ILayout)
+				if (!PlatformView.ShouldGroupAccessibilityChildren && _handler.VirtualView is ILayout)
 				{
-					PlatformView.IsAccessibilityElement = true;
+					PlatformView.ShouldGroupAccessibilityChildren = true;
 					_setIsAccessibilityElement = true;
+				}
 
-					// Register a direct activation callback for reliable VoiceOver activation on macOS Catalyst.
-					// UIKit's default accessibilityActivate() simulates touch events which are intermittently
-					// unreliable for UITapGestureRecognizer on Catalyst. We bypass that path by directly
-					// invoking SendTapped on the MAUI TapGestureRecognizer.
-					if (PlatformView is Microsoft.Maui.Platform.MauiView mauiView && _handler.VirtualView is View)
+				// UIKit's default accessibilityActivate() simulates touch events which are intermittently
+				// unreliable for UITapGestureRecognizer (especially on macOS Catalyst). Bypass that path
+				// by directly invoking SendTapped on the MAUI TapGestureRecognizer for both iOS and Catalyst.
+				// This is decoupled from the grouping block above so it also registers when
+				// SemanticExtensions already set ShouldGroupAccessibilityChildren (layout with Hint + gesture).
+				if (PlatformView is Microsoft.Maui.Platform.MauiView mauiView &&
+					_handler.VirtualView is ILayout)
+				{
+					var weakThis = new WeakReference<GesturePlatformManager>(this);
+
+					mauiView.AccessibilityActivateCallback = () =>
 					{
-						var weakThis = new WeakReference<GesturePlatformManager>(this);
-
-						mauiView.AccessibilityActivateCallback = () =>
+						if (!weakThis.TryGetTarget(out var manager))
 						{
-							if (!weakThis.TryGetTarget(out var manager))
-							{
-								return false;
-							}
+							return false;
+						}
 
 							var view = manager._handler?.VirtualView as View;
 
@@ -695,9 +712,10 @@ namespace Microsoft.Maui.Controls.Platform
 								return true;
 							}
 
-							return false;
-						};
-					}
+						return false;
+					};
+
+					_setAccessibilityActivateCallback = true;
 				}
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13)
@@ -921,16 +939,16 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				PlatformView.AccessibilityTraits &= ~_addedFlags;
 
-				// Reset IsAccessibilityElement if we promoted this container when the gesture was added
+				// Reset ShouldGroupAccessibilityChildren if we promoted this container when the gesture was added
 				if (_setIsAccessibilityElement)
 				{
-					PlatformView.IsAccessibilityElement = false;
+					PlatformView.ShouldGroupAccessibilityChildren = false;
+				}
 
-					// Clear the direct activation callback registered when we promoted this container
-					if (PlatformView is Microsoft.Maui.Platform.MauiView mv)
-					{
-						mv.AccessibilityActivateCallback = null;
-					}
+				// Clear the macOS Catalyst direct activation callback if we registered one
+				if (_setAccessibilityActivateCallback && PlatformView is Microsoft.Maui.Platform.MauiView mv)
+				{
+					mv.AccessibilityActivateCallback = null;
 				}
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
@@ -943,6 +961,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_addedFlags = UIAccessibilityTrait.None;
 			_defaultAccessibilityRespondsToUserInteraction = null;
 			_setIsAccessibilityElement = false;
+			_setAccessibilityActivateCallback = false;
 			LoadRecognizers();
 		}
 

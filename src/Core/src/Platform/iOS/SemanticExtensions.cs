@@ -156,23 +156,7 @@ namespace Microsoft.Maui.Platform
 					platformView.IsAccessibilityElement = true;
 			}
 
-			var accessibilityTraits = platformView.AccessibilityTraits;
-			var hasHeader = (accessibilityTraits & UIAccessibilityTrait.Header) == UIAccessibilityTrait.Header;
-
-			if (semantics.IsHeading)
-			{
-				if (!hasHeader)
-				{
-					platformView.AccessibilityTraits = accessibilityTraits | UIAccessibilityTrait.Header;
-				}
-			}
-			else
-			{
-				if (hasHeader)
-				{
-					platformView.AccessibilityTraits = accessibilityTraits & ~UIAccessibilityTrait.Header;
-				}
-			}
+			UpdateSemanticsHeading(platformView, semantics);
 		}
 
 		static void UpdateSemanticsHeading(UIView platformView, Semantics semantics)
