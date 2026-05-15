@@ -131,3 +131,65 @@ scenarios:
       - "The final label set does NOT include s/needs-info or s/needs-repro on a pull request"
       - "If the agent determines more information is needed, it uses s/pr-needs-author-input instead"
     timeout: 180
+
+  # --- iOS directory vs extension distinction ---
+
+  - name: "iOS .ios.cs extension applies both platform/ios and platform/macos"
+    prompt: "Label PR #35318 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "platform/ios"
+      - type: "output_contains"
+        value: "platform/macos"
+    rubric:
+      - "The final label set includes BOTH platform/ios AND platform/macos because .iOS.cs files compile for both TFMs"
+    timeout: 180
+
+  # --- MacCatalyst-only files ---
+
+  - name: "MacCatalyst PR applies platform/macos only, not platform/ios"
+    prompt: "Label PR #34970 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
+        value: "platform/ios"
+    rubric:
+      - "The final label set includes platform/macos for a MacCatalyst-titled PR"
+      - "The final label set does NOT include platform/ios — .maccatalyst.cs files do not compile for iOS"
+    timeout: 180
+
+  # --- Multi-platform PR ---
+
+  - name: "Multi-platform PR applies multiple platform labels"
+    prompt: "Label PR #35385 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "platform/android"
+      - type: "output_contains"
+        value: "platform/ios"
+    rubric:
+      - "The final label set includes multiple platform/* labels when the PR touches files for multiple platforms"
+    timeout: 180
+
+  # --- Dependency bump noop ---
+
+  - name: "Dependency bump PR with existing labels should noop"
+    prompt: "Label PR #35453 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_matches"
+        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+appl|already.+label|skip|no action|no additional)"
+    rubric:
+      - "The agent determines no additional labels are needed for a dependency bump PR that is already correctly labeled"
+    timeout: 180
+
+  # --- XAML source generator issue ---
+
+  - name: "XAML source generator issue gets area-xaml"
+    prompt: "Label PR #35444 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "area-xaml"
+    rubric:
+      - "The final label set includes area-xaml for a XAML source generator issue"
+    timeout: 180
