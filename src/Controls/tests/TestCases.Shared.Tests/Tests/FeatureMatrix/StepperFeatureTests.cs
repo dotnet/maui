@@ -34,7 +34,13 @@ public class StepperFeatureTests : _GalleryUITest
 			App.FindElement("ValueChangedEventLabel").GetText(),
 			Is.EqualTo("Not Raised")
 		);
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
+#endif
 
 		Assert.That(
 			App.FindElement("ValueChangedEventLabel").GetText(),
@@ -95,7 +101,13 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Options");
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
+#endif
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("2.00"));
 	}
 
@@ -167,7 +179,13 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Options");
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
+#endif
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("0.00"));
 	}
 
@@ -221,7 +239,13 @@ public class StepperFeatureTests : _GalleryUITest
 		var currentValue = App.FindElement("ValueLabel").GetText();
 		Assert.That(currentValue, Is.EqualTo("10.00"));
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.IncreaseStepper("StepperControl");
+#else
 		App.DecreaseStepper("StepperControl");
+#endif
 
 		var newValue = App.FindElement("ValueLabel").GetText();
 		Assert.That(newValue, Is.EqualTo("10.00"));
@@ -249,7 +273,13 @@ public class StepperFeatureTests : _GalleryUITest
 		var currentValue = App.FindElement("ValueLabel").GetText();
 		Assert.That(currentValue, Is.EqualTo("10.00"));
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
+#endif
 
 		var newValue = App.FindElement("ValueLabel").GetText();
 		Assert.That(newValue, Is.EqualTo("10.00"));
@@ -266,9 +296,21 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("Options");
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
+#endif
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("5.00"));
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
+#endif
 		Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("10.00"));
 	}
 
@@ -319,10 +361,19 @@ public class StepperFeatureTests : _GalleryUITest
 
 		App.WaitForElement("Options");
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+		App.DecreaseStepper("StepperControl");
+		App.DecreaseStepper("StepperControl");
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
 		App.IncreaseStepper("StepperControl");
 		App.IncreaseStepper("StepperControl");
 		App.IncreaseStepper("StepperControl");
+#endif
 
 		var currentValue = App.FindElement("ValueLabel").GetText();
 		Assert.That(currentValue, Is.EqualTo("10.00"));
@@ -355,8 +406,15 @@ public class StepperFeatureTests : _GalleryUITest
 
 		App.WaitForElement("Options");
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.IncreaseStepper("StepperControl");
+		App.IncreaseStepper("StepperControl");
+#else
 		App.DecreaseStepper("StepperControl");
 		App.DecreaseStepper("StepperControl");
+#endif
 
 		var currentValue = App.FindElement("ValueLabel").GetText();
 		Assert.That(currentValue, Is.EqualTo("0.00"));
@@ -418,7 +476,13 @@ public class StepperFeatureTests : _GalleryUITest
 
 		App.WaitForElement("Options");
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
+#endif
 
 		Assert.That(App.FindElement("ValueChangedEventLabel").GetText(), Is.EqualTo("Not Raised"));
 	}
@@ -435,7 +499,13 @@ public class StepperFeatureTests : _GalleryUITest
 
 		Assert.That(App.FindElement("ValueChangedEventLabel").GetText(), Is.EqualTo("Not Raised"));
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
+#endif
 
 		Assert.That(App.FindElement("ValueChangedEventLabel").GetText(), Is.EqualTo("Raised"));
 
@@ -452,8 +522,15 @@ public class StepperFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("StepperControl");
+		App.DecreaseStepper("StepperControl");
+#else
 		App.IncreaseStepper("StepperControl");
 		App.IncreaseStepper("StepperControl");
+#endif
 
 		Assert.That(App.FindElement("OldValueLabel").GetText(), Is.EqualTo("1.00"));
 		Assert.That(App.FindElement("NewValueLabel").GetText(), Is.EqualTo("2.00"));

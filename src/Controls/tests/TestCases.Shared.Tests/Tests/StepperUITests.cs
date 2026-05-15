@@ -37,7 +37,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual("0", step1Value);
 
 			// 2. Increase the value.
+			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+			// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+			App.DecreaseStepper(stepperAutomationId);
+#else
 			App.IncreaseStepper(stepperAutomationId);
+#endif
 
 			// 3. Verify that the value has increased.
 			var step3Value = App.FindElement(valueAutomationId).GetText();
@@ -59,14 +65,26 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual("0", step1Value);
 
 			// 2. Increase the value.
+			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+			// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+			App.DecreaseStepper(stepperAutomationId);
+#else
 			App.IncreaseStepper(stepperAutomationId);
+#endif
 
 			// 3. Verify that the value has increased.
 			var step3Value = App.FindElement(valueAutomationId).GetText();
 			ClassicAssert.AreEqual("1", step3Value);
 
 			// 4. Decrease the value.
+			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+			// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+			App.IncreaseStepper(stepperAutomationId);
+#else
 			App.DecreaseStepper(stepperAutomationId);
+#endif
 
 			// 5. Verify that the value has decreased.
 			var step5Value = App.FindElement(valueAutomationId).GetText();

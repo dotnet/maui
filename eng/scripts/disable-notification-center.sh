@@ -2,8 +2,8 @@
 
 # Suppress macOS system dialogs and notifications that interfere with UI tests.
 # This script runs before MacCatalyst UI tests in CI to prevent system-level
-# windows (e.g., Apple Sign-In, Setup Assistant) from blocking app interaction
-# and appearing in screenshots.
+# windows (e.g., Apple Sign-In, Setup Assistant, onboarding tips) from blocking
+# app interaction and appearing in screenshots.
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
@@ -29,7 +29,20 @@ echo "Setup Assistant preferences updated"
 #    Uses defaults write (works without elevated permissions, unlike launchctl unload)
 defaults write com.apple.ncprefs dnd_prefs -data 62706C6973743030D60102030405060708080A08085B646E644D6972726F7265645F100F646E64446973706C6179536C6565705F101E72657065617465644661636574696D6543616C6C73427265616B73444E445E646E64446973706C61794C6F636B5F10136661636574696D6543616E427265616B444E4409080808 2>/dev/null && echo "Do Not Disturb enabled" || echo "Do Not Disturb: defaults write not supported on this version"
 
-# 4. Also try killing any other system dialogs that might interfere
+# 4. Suppress macOS onboarding tips and "What's new" banners (macOS 26 Tahoe+)
+#    These appear as notification banners (e.g., "See what's new in macOS Tahoe")
+#    and interfere with full-screen screenshot tests.
+defaults write com.apple.tipsd ShouldShowTips -bool false 2>/dev/null && echo "Tips disabled (tipsd)" || echo "Tips: defaults write not supported"
+defaults write com.apple.tipsd LastTipShownTimestamp -date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" 2>/dev/null
+# Also suppress Tips via the Notification Center preferences
+defaults write com.apple.tips ShouldShowTips -bool false 2>/dev/null
+# Kill the tips daemon so changes take effect immediately
+if pgrep -x "tipsd" > /dev/null 2>&1; then
+  echo "Terminating tipsd..."
+  killall "tipsd" 2>/dev/null
+fi
+
+# 5. Also try killing any other system dialogs that might interfere
 for proc in "UserNotificationCenter" "CoreServicesUIAgent"; do
   if pgrep -x "$proc" > /dev/null 2>&1; then
     echo "Terminating $proc..."
