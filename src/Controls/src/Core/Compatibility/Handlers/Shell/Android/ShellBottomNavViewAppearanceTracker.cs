@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bottomView.ItemIconTintList = GetDefaultTabColorList(_shellContext.AndroidContext);
 			bottomView.ItemTextColor = GetDefaultTabColorList(_shellContext.AndroidContext);
 			SetBackgroundColor(bottomView, null);
+			AndroidSystemChrome.UpdateBottomChrome(bottomView, null);
 		}
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
@@ -68,6 +69,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bottomView.ItemIconTintList = _itemIconTint;
 
 			SetBackgroundColor(bottomView, backgroundColor);
+			AndroidSystemChrome.UpdateBottomChrome(
+				bottomView,
+				backgroundColor is null ? null : new SolidColorBrush(backgroundColor),
+				titleColor ?? foregroundColor);
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)

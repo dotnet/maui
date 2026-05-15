@@ -4,6 +4,7 @@ using Android.Content.Res;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui
@@ -45,6 +46,19 @@ namespace Microsoft.Maui
 		//TODO : Make it public in NET 11.
 		internal static void ConfigureTranslucentSystemBars(this Window? window, Activity activity)
 		{
+			window.UpdateSystemBarAppearance(activity, updateStatusBar: true, updateNavigationBar: true);
+		}
+
+		internal static void UpdateSystemBarAppearance(
+			this Window? window,
+			Activity? activity,
+			bool updateStatusBar,
+			bool updateNavigationBar,
+			Color? statusBarBackgroundColor = null,
+			Color? statusBarForegroundColor = null,
+			Color? navigationBarBackgroundColor = null,
+			Color? navigationBarForegroundColor = null)
+		{
 			if (window is null)
 			{
 				return;
@@ -55,8 +69,18 @@ namespace Microsoft.Maui
 			if (windowInsetsController is not null)
 			{
 				var isLightTheme = IsLightTheme(activity);
-				windowInsetsController.AppearanceLightStatusBars = isLightTheme;
-				windowInsetsController.AppearanceLightNavigationBars = isLightTheme;
+
+				if (updateStatusBar)
+				{
+					windowInsetsController.AppearanceLightStatusBars =
+						GetLightSystemBarAppearance(statusBarBackgroundColor, statusBarForegroundColor) ?? isLightTheme;
+				}
+
+				if (updateNavigationBar)
+				{
+					windowInsetsController.AppearanceLightNavigationBars =
+						GetLightSystemBarAppearance(navigationBarBackgroundColor, navigationBarForegroundColor) ?? isLightTheme;
+				}
 			}
 		}
 
@@ -79,11 +103,26 @@ namespace Microsoft.Maui
 			}
 		}
 
-		static bool IsLightTheme(Activity activity)
+		static bool IsLightTheme(Activity? activity)
 		{
-			var configuration = activity.Resources?.Configuration;
+			var configuration = activity?.Resources?.Configuration;
 			return configuration is null ||
 				(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
+		}
+
+		static bool? GetLightSystemBarAppearance(Color? backgroundColor, Color? foregroundColor)
+		{
+			if (foregroundColor?.Alpha > 0)
+			{
+				return foregroundColor.GetLuminosity() <= 0.5;
+			}
+
+			if (backgroundColor?.Alpha > 0)
+			{
+				return backgroundColor.GetLuminosity() > 0.5;
+			}
+
+			return null;
 		}
 	}
 }
