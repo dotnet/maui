@@ -73,10 +73,19 @@ Notes:
 
 **For issues**, infer `platform/*` labels only if the reporter clearly indicates a platform (explicit mention of Android / iOS / macOS / Windows / Tizen in the title, body, or attached logs/stack traces). Do not guess. If the report says "all platforms" or doesn't specify, apply no `platform/*` label.
 
+### When to noop (no labels)
+
+Some items should **not** be labeled. If any of the following apply, skip labeling entirely:
+
+- **Automated inter-branch merge PRs** — titles like `[automated] Merge branch 'main' => 'net11.0'` or similar bot-created merge PRs. These are infrastructure, not feature/bug work.
+- **Dependency bump PRs** that already have `dependencies` and `area-infrastructure` labels.
+- **Items where no label clearly fits** — when the content is too vague or ambiguous to determine area or platform with confidence.
+
 ### What NOT to do
 
 - Do **not** create new labels — apply only labels that already exist in the repository.
 - Do **not** add `platform/*` labels to PRs that don't touch platform-specific files.
 - Do **not** post a comment summarizing the labels — labels speak for themselves.
 - Do **not** close, lock, or otherwise modify the issue/PR beyond labeling.
+- Do **not** label automated merge PRs — these are infrastructure, not actionable items.
 - Be conservative; precision beats recall. Only apply labels that clearly fit.
