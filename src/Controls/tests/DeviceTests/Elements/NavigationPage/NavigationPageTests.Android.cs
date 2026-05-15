@@ -4,11 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -109,6 +111,44 @@ namespace Microsoft.Maui.DeviceTests
 					fragmentManagerField.GetValue(tab2SnManager) == null,
 					message: "StackNavigationManager fields were not cleared after Disconnect()");
 			});
+		}
+
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors AppBar status bar area")]
+		public async Task BarBackgroundColorUpdatesAppBarStatusBarArea()
+		{
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = firstColor,
+				BarTextColor = Colors.Black
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+
+				AssertAppBarBackgroundColor(appBar, firstColor);
+
+				navPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		static int GetAppBarBackgroundColor(AppBarLayout appBar)
+		{
+			return Assert.IsType<ColorDrawable>(appBar.Background).Color.ToArgb();
+		}
+
+		static void AssertAppBarBackgroundColor(AppBarLayout appBar, Color expectedColor)
+		{
+			Assert.Equal(expectedColor.ToPlatform().ToArgb(), GetAppBarBackgroundColor(appBar));
 		}
 	}
 }

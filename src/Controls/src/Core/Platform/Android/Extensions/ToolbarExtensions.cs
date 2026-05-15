@@ -176,13 +176,18 @@ namespace Microsoft.Maui.Controls.Platform
 				if (Brush.IsNullOrEmpty(barBackground))
 					nativeToolbar.BackgroundTintMode = null;
 			}
+
+			nativeToolbar.UpdateSystemChrome(toolbar);
 		}
 
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var navIconColor = toolbar.IconColor;
 			if (navIconColor is null)
+			{
+				nativeToolbar.UpdateSystemChrome(toolbar);
 				return;
+			}
 
 			var platformColor = navIconColor.ToPlatform();
 			if (nativeToolbar.NavigationIcon is Drawable navigationIcon)
@@ -197,6 +202,8 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				overflowIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
 			}
+
+			nativeToolbar.UpdateSystemChrome(toolbar);
 		}
 
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -233,6 +240,13 @@ namespace Microsoft.Maui.Controls.Platform
 					icon.Color = _defaultNavigationIconColor.Value;
 				}
 			}
+
+			nativeToolbar.UpdateSystemChrome(toolbar);
+		}
+
+		static void UpdateSystemChrome(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			AndroidSystemChrome.UpdateTopChrome(nativeToolbar, toolbar.BarBackground, toolbar.BarTextColor ?? toolbar.IconColor);
 		}
 
 		class ToolbarTitleIconImageView : AppCompatImageView

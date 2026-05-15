@@ -265,6 +265,12 @@ namespace Microsoft.Maui.Controls.Platform
 				if (OperatingSystem.IsAndroidVersionAtLeast(30) && Context?.GetActivity() is global::Android.App.Activity activity)
 				{
 					dialog.Window.ConfigureTranslucentSystemBars(activity);
+					AndroidSystemChrome.UpdateWindowChrome(
+						Context,
+						dialog.Window,
+						updateStatusBar: true,
+						updateNavigationBar: true,
+						background: (_modal as IView)?.Background);
 				}
 				else if (mainActivityWindow is not null)
 				{
@@ -326,6 +332,13 @@ namespace Microsoft.Maui.Controls.Platform
 				var modalBkgndColor = view.Background;
 				if (modalBkgndColor is null)
 					pageView.SetWindowBackground();
+
+				AndroidSystemChrome.UpdateWindowChrome(
+					pageView.Context,
+					Dialog?.Window,
+					updateStatusBar: true,
+					updateNavigationBar: true,
+					background: modalBkgndColor);
 			}
 
 			public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
