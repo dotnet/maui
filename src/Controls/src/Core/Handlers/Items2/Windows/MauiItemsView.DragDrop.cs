@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -28,11 +27,11 @@ internal partial class MauiItemsView
 	bool _dragDropWired;
 	ItemsView? _mauiVirtualView;
 
-	// Insertion indicator — a thin horizontal (or vertical) line drawn on a Canvas
-	// overlay to show where the dragged item will be inserted on drop.
-	Canvas? _dragOverlayCanvas;
-	Rectangle? _insertionLine;
-	int _lastIndicatorInsertionIndex = -2;  // sentinel: -2 = uninitialised
+	// Drop target indicator — the ItemContainer currently highlighted as the
+	// insertion target. A colored border is applied directly to this container
+	// so no coordinate transforms or overlay canvas are needed.
+	ItemContainer? _dropTargetContainer;
+	bool _dropTargetIsAfter;
 
 	// Dim overlay opacity applied to non-source containers during a drag so the
 	// list visually enters "reorder mode" (same pattern as iOS drag-reorder).
@@ -337,6 +336,14 @@ internal partial class MauiItemsView
 
 			// Reset any stale Translation so the recycled container starts clean.
 			container.Translation = System.Numerics.Vector3.Zero;
+
+			// Clear any drop-target highlight so it doesn't persist on recycled containers.
+			if (ReferenceEquals(_dropTargetContainer, itemContainer))
+			{
+				itemContainer.BorderBrush = null;
+				itemContainer.BorderThickness = default;
+				_dropTargetContainer = null;
+			}
 		}
 	}
 
@@ -379,13 +386,20 @@ internal partial class MauiItemsView
 		itemContainer.DropCompleted -= ItemContainer_DropCompleted;
 		itemContainer.DropCompleted += ItemContainer_DropCompleted;
 
-		// Hide the source slot so the user perceives the item as "lifted out" of
-		// the list, leaving a visible gap. Opacity (not Visibility.Collapsed) keeps
-		// the element in the visual tree so WinUI captures a valid drag preview and
-		// the layout slot is preserved. Deferred so the platform snapshot for the
-		// drag ghost is taken from a fully opaque container.
+		// Apply card appearance SYNCHRONOUSLY before this handler returns.
+		// WinUI captures the drag ghost visual immediately after DragStarting fires,
+		// so this runs before the snapshot is taken. This gives the ghost a solid
+		// card background + shadow (matching CV1/ListViewBase native behaviour) instead
+		// of being transparent (which made it look like "only the item is dragged").
+		ApplyDragGhostAppearance(itemContainer);
+
+		// Deferred: remove ghost styling, hide the source slot, dim others.
+		// The ghost has already been captured at this point so removing the card
+		// background here does not affect the visual that floats under the pointer.
 		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
 		{
+			RemoveDragGhostAppearance(itemContainer);
+
 			if (_sourceContainer is not null)
 			{
 				_sourceContainer.Opacity = 0;
@@ -469,7 +483,7 @@ internal partial class MauiItemsView
 
 		_insertionIndex = _insertAfter ? targetIndex + 1 : targetIndex;
 
-		UpdateInsertionIndicator();
+		UpdateInsertionIndicator(targetContainer, _insertAfter);
 
 		e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 		e.Handled = true;
@@ -1172,6 +1186,9 @@ internal partial class MauiItemsView
 		// fire (e.g. drop handled outside the source element, or disconnect).
 		if (_sourceContainer is not null)
 		{
+			// Remove ghost appearance defensively — the deferred block in DragStarting
+			// may not have run yet if drag was cancelled immediately.
+			RemoveDragGhostAppearance(_sourceContainer);
 			_sourceContainer.Opacity = 1;
 			_sourceContainer.IsHitTestVisible = true;
 			_sourceContainer.DropCompleted -= ItemContainer_DropCompleted;
@@ -1344,187 +1361,76 @@ internal partial class MauiItemsView
 
 	#endregion
 
-	#region Insertion Indicator
+	#region Drop Target Indicator
 
 	/// <summary>
-	/// Lazily creates a full-size <see cref="Canvas"/> overlay that floats above
-	/// the scroll viewer content and hosts the thin insertion-indicator line.
-	/// The canvas is added as a child of the scroll viewer's parent panel so it
-	/// can be positioned relative to the scroll viewer bounds.
+	/// Highlights the drop target directly on <paramref name="target"/> by setting a
+	/// 2 px accent-coloured border on the edge (top/left for "insert before", bottom/right
+	/// for "insert after") where the dragged item will land.
+	/// <para>
+	/// Unlike a floating canvas overlay, this modifies the container itself — zero
+	/// coordinate-transform complexity, always visible regardless of scroll position.
+	/// </para>
 	/// </summary>
-	void EnsureInsertionIndicator()
+	void UpdateInsertionIndicator(ItemContainer target, bool insertAfter)
 	{
-		if (_insertionLine is not null)
+		// Skip if neither the target nor the edge changed — avoids redundant layout
+		// work on every pointer-move event.
+		if (ReferenceEquals(target, _dropTargetContainer) && insertAfter == _dropTargetIsAfter)
 		{
 			return;
 		}
 
-		// Resolve the accent colour from the app theme resources so the indicator
-		// matches the system accent. Fall back to CornflowerBlue if unavailable.
+		// Clear the previous target's highlight first.
+		ClearDropTargetHighlight();
+
+		// Skip highlighting the source slot itself.
+		if (ReferenceEquals(target, _sourceContainer))
+		{
+			return;
+		}
+
+		_dropTargetContainer = target;
+		_dropTargetIsAfter = insertAfter;
+
 		var accentBrush = TryGetAccentBrush();
-
-		_insertionLine = new Rectangle
-		{
-			Fill = accentBrush,
-			IsHitTestVisible = false,
-			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
-			RadiusX = 1,
-			RadiusY = 1,
-		};
-
-		_dragOverlayCanvas = new Canvas
-		{
-			IsHitTestVisible = false,
-			IsTabStop = false,
-		};
-		_dragOverlayCanvas.Children.Add(_insertionLine);
-
-		// Attach the overlay canvas as a child of the same parent as the scroll
-		// viewer so it renders on top of all items without being clipped by the
-		// scroll viewer's viewport.
-		if (_scrollViewer?.Parent is Microsoft.UI.Xaml.Controls.Panel parentPanel)
-		{
-			parentPanel.Children.Add(_dragOverlayCanvas);
-		}
-		else if (_scrollViewer?.Parent is Microsoft.UI.Xaml.Controls.Border border && border.Parent is Microsoft.UI.Xaml.Controls.Panel grandparentPanel)
-		{
-			grandparentPanel.Children.Add(_dragOverlayCanvas);
-		}
-		else
-		{
-			// Last resort: add directly to the MauiItemsView itself via its template
-			// root. This still works but may be clipped by overflow settings.
-			if (GetTemplateChild("PART_RootGrid") is Microsoft.UI.Xaml.Controls.Grid rootGrid)
-			{
-				rootGrid.Children.Add(_dragOverlayCanvas);
-				// Span all rows/columns so it covers everything.
-				if (rootGrid.RowDefinitions.Count > 0)
-				{
-					Microsoft.UI.Xaml.Controls.Grid.SetRowSpan(_dragOverlayCanvas, rootGrid.RowDefinitions.Count);
-				}
-				if (rootGrid.ColumnDefinitions.Count > 0)
-				{
-					Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(_dragOverlayCanvas, rootGrid.ColumnDefinitions.Count);
-				}
-			}
-		}
-	}
-
-	/// <summary>
-	/// Positions the insertion indicator at the appropriate edge of the container
-	/// at <see cref="_insertionIndex"/> relative to the scroll viewer.
-	/// </summary>
-	void UpdateInsertionIndicator()
-	{
-		if (_scrollViewer is null || _insertionIndex < 0)
-		{
-			HideInsertionIndicator();
-			return;
-		}
-
-		// Skip redraw if the index hasn't changed — avoids redundant layout work
-		// on every pointer-move event.
-		if (_insertionIndex == _lastIndicatorInsertionIndex)
-		{
-			return;
-		}
-
-		_lastIndicatorInsertionIndex = _insertionIndex;
-
-		EnsureInsertionIndicator();
-
-		if (_insertionLine is null || _dragOverlayCanvas is null)
-		{
-			return;
-		}
-
-		var repeater = ItemsRepeaterControl;
-		if (repeater is null)
-		{
-			HideInsertionIndicator();
-			return;
-		}
-
-		var sourceList = GetSourceList();
-		int count = sourceList?.Count ?? 0;
-
-		// Clamp to valid range.
-		int clampedIndex = Math.Clamp(_insertionIndex, 0, count);
-
-		// Try to resolve the adjacent container to position the line between items.
-		// If insertion is after the last item, use the last item's trailing edge.
-		ItemContainer? refContainer = null;
-		bool useTrailingEdge = false;
-
-		if (clampedIndex < count)
-		{
-			// Place line at the leading edge of the container at clampedIndex.
-			refContainer = repeater.TryGetElement(clampedIndex) as ItemContainer;
-		}
-
-		if (refContainer is null && clampedIndex > 0)
-		{
-			// Fall back: trailing edge of the previous container.
-			refContainer = repeater.TryGetElement(clampedIndex - 1) as ItemContainer;
-			useTrailingEdge = true;
-		}
-
-		if (refContainer is null)
-		{
-			HideInsertionIndicator();
-			return;
-		}
-
-		// Transform the container's origin into scroll-viewer coordinates.
-		var transform = refContainer.TransformToVisual(_scrollViewer);
-		var containerOrigin = transform.TransformPoint(new global::Windows.Foundation.Point(0, 0));
-
 		const double LineThickness = 2.0;
-		const double LineMargin = 4.0;   // inset from left/top edge
 
-		double lineLeft, lineTop, lineWidth, lineHeight;
+		// Apply a 2 px border on the insertion edge only.
+		// Vertical list  → top border = "insert before", bottom = "insert after".
+		// Horizontal list → left border = "insert before", right = "insert after".
+		target.BorderBrush = accentBrush;
 
 		if (_isHorizontalLayout)
 		{
-			double x = useTrailingEdge
-				? containerOrigin.X + refContainer.ActualWidth
-				: containerOrigin.X;
-
-			lineLeft = x - LineThickness / 2;
-			lineTop = containerOrigin.Y + LineMargin;
-			lineWidth = LineThickness;
-			lineHeight = Math.Max(0, refContainer.ActualHeight - LineMargin * 2);
+			target.BorderThickness = insertAfter
+				? new Microsoft.UI.Xaml.Thickness(0, 0, LineThickness, 0)   // right edge
+				: new Microsoft.UI.Xaml.Thickness(LineThickness, 0, 0, 0);  // left edge
 		}
 		else
 		{
-			double y = useTrailingEdge
-				? containerOrigin.Y + refContainer.ActualHeight
-				: containerOrigin.Y;
-
-			lineLeft = containerOrigin.X + LineMargin;
-			lineTop = y - LineThickness / 2;
-			lineWidth = Math.Max(0, _scrollViewer.ActualWidth - LineMargin * 2);
-			lineHeight = LineThickness;
+			target.BorderThickness = insertAfter
+				? new Microsoft.UI.Xaml.Thickness(0, 0, 0, LineThickness)   // bottom edge
+				: new Microsoft.UI.Xaml.Thickness(0, LineThickness, 0, 0);  // top edge
 		}
-
-		// Position the canvas so the line sits at the right coordinates relative
-		// to the scroll viewer.
-		var canvasTransform = _scrollViewer.TransformToVisual(_dragOverlayCanvas);
-		var canvasOrigin = canvasTransform.TransformPoint(new global::Windows.Foundation.Point(lineLeft, lineTop));
-
-		Canvas.SetLeft(_insertionLine, canvasOrigin.X);
-		Canvas.SetTop(_insertionLine, canvasOrigin.Y);
-		_insertionLine.Width = lineWidth;
-		_insertionLine.Height = lineHeight;
-		_insertionLine.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 	}
 
+	/// <summary>
+	/// Removes the insertion highlight from the currently highlighted container.
+	/// Safe to call even when no container is highlighted.
+	/// </summary>
 	void HideInsertionIndicator()
 	{
-		_lastIndicatorInsertionIndex = -2;
-		if (_insertionLine is not null)
+		ClearDropTargetHighlight();
+	}
+
+	void ClearDropTargetHighlight()
+	{
+		if (_dropTargetContainer is not null)
 		{
-			_insertionLine.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+			_dropTargetContainer.BorderBrush = null;
+			_dropTargetContainer.BorderThickness = default;
+			_dropTargetContainer = null;
 		}
 	}
 
@@ -1540,7 +1446,7 @@ internal partial class MauiItemsView
 		}
 		catch { }
 
-		// Fallback: a recognizable blue similar to Windows accent.
+		// Fallback: Windows blue accent colour.
 		return new Microsoft.UI.Xaml.Media.SolidColorBrush(
 			Windows.UI.Color.FromArgb(255, 0, 120, 212));
 	}
@@ -1548,6 +1454,58 @@ internal partial class MauiItemsView
 	#endregion
 
 	#region Dim / Restore During Drag
+
+	/// <summary>
+	/// Applies a card-style background and shadow elevation to <paramref name="container"/>
+	/// synchronously so that WinUI's drag-ghost snapshot (captured immediately after
+	/// <c>DragStarting</c> returns) looks like a full elevated row — matching the
+	/// native CV1 / ListViewBase ghost behaviour.
+	/// <para>
+	/// Root cause of the difference: <see cref="MauiItemsView"/> sets
+	/// <c>ItemContainerBackground = Transparent</c> to suppress WinUI hover/press
+	/// overlays. This makes the ghost transparent, so only the inner MAUI content
+	/// was visible during drag. Temporarily restoring a solid background here fixes
+	/// that without affecting the live visual states during normal interaction.
+	/// </para>
+	/// </summary>
+	static void ApplyDragGhostAppearance(ItemContainer container)
+	{
+		// Resolve the theme-appropriate card/layer background.
+		// "LayerFillColorDefaultBrush" is the WinUI 3 system resource for card surfaces
+		// (white in Light theme, #2C2C2C in Dark theme).  Fall back to solid white.
+		Microsoft.UI.Xaml.Media.Brush cardBrush;
+		if (Microsoft.UI.Xaml.Application.Current.Resources
+			.TryGetValue("LayerFillColorDefaultBrush", out var raw)
+			&& raw is Microsoft.UI.Xaml.Media.Brush b)
+		{
+			cardBrush = b;
+		}
+		else
+		{
+			cardBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+				Windows.UI.Color.FromArgb(255, 255, 255, 255));
+		}
+
+		container.Background = cardBrush;
+
+		// Z-elevation via ThemeShadow creates the raised-card shadow on the ghost.
+		// Translation.Z > 0 is required for ThemeShadow to render in WinUI 3.
+		var shadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
+		container.Shadow = shadow;
+		container.Translation = new System.Numerics.Vector3(0, 0, 8);
+	}
+
+	/// <summary>
+	/// Removes the temporary card appearance applied by
+	/// <see cref="ApplyDragGhostAppearance"/> so the source slot returns to its
+	/// normal (transparent-background) state before being hidden.
+	/// </summary>
+	static void RemoveDragGhostAppearance(ItemContainer container)
+	{
+		container.Background = null;
+		container.Shadow = null;
+		container.Translation = System.Numerics.Vector3.Zero;
+	}
 
 	/// <summary>
 	/// Dims all realized containers except the source container to the
