@@ -1,2 +1,5 @@
 #nullable enable
 override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.AllowedDomains.set -> void
+static readonly Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!

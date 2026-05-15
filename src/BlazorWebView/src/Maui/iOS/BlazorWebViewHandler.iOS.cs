@@ -89,6 +89,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
+			// When AllowedDomains is set, enable WKAppBoundDomains enforcement for sub-resource blocking
+			var allowedDomains = VirtualView.AllowedDomains;
+			if (allowedDomains is not null && allowedDomains.Count > 0)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14))
+				{
+					config.LimitsNavigationsToAppBoundDomains = true;
+				}
+
+				Microsoft.Maui.Handlers.WebViewPlistValidator.ValidateAllowedDomainsAgainstPlist(allowedDomains, Logger);
+			}
+
 			var webview = new WKWebView(RectangleF.Empty, config)
 			{
 				BackgroundColor = UIColor.Clear,

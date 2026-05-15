@@ -151,6 +151,10 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
 				return true;
 
+			// Check AllowedDomains before raising the Navigating event
+			if (!WebViewDomainAllowlist.IsUrlAllowed(url, VirtualView.AllowedDomains))
+				return true;
+
 			SyncPlatformCookies(url);
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
 

@@ -22,6 +22,8 @@ Microsoft.Maui.Controls.BoxView.~BoxView() -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
+Microsoft.Maui.Controls.HybridWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
+Microsoft.Maui.Controls.HybridWebView.AllowedDomains.set -> void
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object
@@ -59,6 +61,8 @@ Microsoft.Maui.Controls.StyleableElement.InvalidateStyle() -> void
 ~Microsoft.Maui.Controls.ToolbarItem.BadgeText.set -> void
 ~Microsoft.Maui.Controls.ToolbarItem.BadgeTextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ToolbarItem.BadgeTextColor.set -> void
+~Microsoft.Maui.Controls.WebView.AllowedDomains.get -> System.Collections.Generic.IList<string>
+~Microsoft.Maui.Controls.WebView.AllowedDomains.set -> void
 ~const Microsoft.Maui.Controls.AppThemeBinding.AppThemeResource = "__MAUI_ApplicationTheme__" -> string
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.AddSubview(UIKit.UIView! view) -> void
@@ -95,6 +99,7 @@ static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Ma
 ~static readonly Microsoft.Maui.Controls.BoxView.FillProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Editor.ReturnCommandProperty -> Microsoft.Maui.Controls.BindableProperty
+static readonly Microsoft.Maui.Controls.HybridWebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovementProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -105,5 +110,6 @@ static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.StateProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.WebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty
 virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

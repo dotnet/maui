@@ -1,2 +1,4 @@
 #nullable enable
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.IAllowedDomainsWebView
+Microsoft.Maui.IAllowedDomainsWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?

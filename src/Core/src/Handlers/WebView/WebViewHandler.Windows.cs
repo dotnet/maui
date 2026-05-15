@@ -67,6 +67,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
 			{
+				// Check AllowedDomains before raising the Navigating event
+				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView.AllowedDomains))
+				{
+					args.Cancel = true;
+					_eventState = WebNavigationEvent.NewPage;
+					_navigationResult = WebNavigationResult.Cancel;
+					return;
+				}
+
 				bool cancel = VirtualView.Navigating(CurrentNavigationEvent, uri.AbsoluteUri);
 
 				args.Cancel = cancel;

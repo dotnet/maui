@@ -380,6 +380,13 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
+#if WEBVIEW2_MAUI
+				if (!Microsoft.Maui.Handlers.WebViewDomainAllowlist.IsUrlAllowed(uri.ToString(), _blazorWebViewHandler.VirtualView?.AllowedDomains, AppOriginUri))
+				{
+					args.Cancel = true;
+					return;
+				}
+#endif
 				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF

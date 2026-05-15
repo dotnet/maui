@@ -1,5 +1,6 @@
 ﻿using System;
 using Foundation;
+using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using WebKit;
 
@@ -144,6 +145,13 @@ namespace Microsoft.Maui.Platform
 
 			var request = navigationAction.Request;
 			var lastUrl = request.Url?.ToString() ?? string.Empty;
+
+			// Check AllowedDomains before raising the Navigating event
+			if (!WebViewDomainAllowlist.IsUrlAllowed(lastUrl, virtualView.AllowedDomains))
+			{
+				decisionHandler(WKNavigationActionPolicy.Cancel);
+				return;
+			}
 
 			bool cancel = virtualView.Navigating(navEvent, lastUrl);
 			platformView.UpdateCanGoBackForward(virtualView);

@@ -57,6 +57,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Cookies"/>.</summary>
 		public static readonly BindableProperty CookiesProperty = BindableProperty.Create(nameof(Cookies), typeof(CookieContainer), typeof(WebView), null);
 
+		/// <summary>Bindable property for <see cref="AllowedDomains"/>.</summary>
+		public static readonly BindableProperty AllowedDomainsProperty = BindableProperty.Create(nameof(AllowedDomains), typeof(IList<string>), typeof(WebView), null);
+
 		readonly Lazy<PlatformConfigurationRegistry<WebView>> _platformConfigurationRegistry;
 
 		bool _canGoBack;
@@ -120,6 +123,17 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (CookieContainer)GetValue(CookiesProperty); }
 			set { SetValue(CookiesProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the list of domains that this web view is allowed to navigate to.
+		/// When <see langword="null"/> or empty, all domains are allowed.
+		/// </summary>
+		/// <seealso cref="IAllowedDomainsWebView"/>
+		public IList<string> AllowedDomains
+		{
+			get { return (IList<string>)GetValue(AllowedDomainsProperty); }
+			set { SetValue(AllowedDomainsProperty, value); }
 		}
 
 		/// <summary>
