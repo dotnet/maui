@@ -57,7 +57,7 @@ Note on iOS / MacCatalyst: file-extension patterns and directory patterns map di
 
 | File pattern (changed in the PR) | Label(s) to apply |
 | --- | --- |
-| `*.android.cs`, `*.Android.cs`, paths containing `/Platform/Android/`, `/Platforms/Android/`, `/AndroidNative/` | `platform/android` |
+| `*.android.cs`, `*.Android.cs`, paths containing `/Platform/Android/`, `/Platforms/Android/`, `/AndroidNative/`, or handler subdirectories like `/Handlers/*/Android/` | `platform/android` |
 | `*.ios.cs`, `*.iOS.cs` (file-extension pattern — these compile for **both** iOS and MacCatalyst) | `platform/ios` **and** `platform/macos` |
 | Paths containing `/Platform/iOS/` or `/Platforms/iOS/` (directory pattern — these compile **only** for the iOS TFM) | `platform/ios` only |
 | `*.maccatalyst.cs`, `*.MacCatalyst.cs`, paths containing `/Platform/MacCatalyst/`, `/Platforms/MacCatalyst/` | `platform/macos` |
