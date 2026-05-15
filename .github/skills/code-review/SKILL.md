@@ -28,7 +28,7 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 2. **Full-context** — Read entire source files, not just diffs. Check callers, consumers, and git history
 3. **Empirical grounding** — Reference specific code, line numbers, and call sites. No vague concerns
 4. **Severity calibration** — Distinguish errors from warnings from suggestions. Not everything is critical
-5. **Devil's advocate** — Challenge your own conclusions before finalizing
+5. **Failure-mode probing** — Challenge your own conclusions with real failure scenarios, not softballs
 
 ## Inputs
 
@@ -108,26 +108,84 @@ Now read the PR description, linked issue, and comments. Treat these as **claims
 2. If the PR claims a bug fix, verify the root cause analysis matches the code
 3. Check existing review comments to avoid duplicating feedback
 
+#### 🚨 Prior Review Reconciliation
+
+Check for prior reviews on the same PR — from the Copilot PR reviewer bot, other agents, or human reviewers:
+
+```bash
+gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.login) | State: \(.state)\n\(.body[0:2000])\n---"'
+```
+
+**If prior reviews flagged critical issues:**
+- Verify whether each critical finding was addressed in subsequent commits
+- If unresolved → verdict must be `NEEDS_CHANGES`
+- If status cannot be determined → default to unresolved (caution over optimism)
+- **NEVER silently drop or contradict a prior critical finding**
+
 ### Step 5: Check CI Status
 
 ```bash
+# All checks (required + optional)
 gh pr checks <PR_NUMBER>
+
+# Required checks only — use this for the verdict gate
+gh pr checks <PR_NUMBER> --required
 ```
 
-Review CI results. **Never post ✅ LGTM if any required CI check is failing.** If CI is failing:
-- If caused by the PR's code changes, flag as ❌ error
-- If a known infrastructure issue or pre-existing flake, note it but still use ⚠️
-- If the PR description acknowledges the failure, note it in the summary
+**🚨 HARD GATE: Never give `LGTM` if any required CI check is failing or pending.**
 
-### Step 6: Devil's Advocate and Verdict
+| CI State | Allowed Verdict |
+|----------|----------------|
+| All required checks ✅ green | May proceed to verdict |
+| Any required check ❌ red | **`NEEDS_CHANGES`** — document which checks failed |
+| Required checks ⏳ pending | **`NEEDS_DISCUSSION`** — state "CI not yet complete" |
+| Only optional/informational checks red | May proceed, note the failures |
 
-Before finalizing your verdict:
+**NEVER claim "No CI failures detected" or "Clean build" without actually running `gh pr checks`.** False CI claims have directly caused regressions to be approved and merged.
 
-1. **Challenge your findings** — For each issue you flagged, ask: "Am I sure, or am I guessing?"
-2. **Challenge your approval** — If you're leaning LGTM, ask: "What could go wrong that I'm not seeing?"
-3. **Check platform blind spots** — If the change touches platforms you can't fully reason about, say so explicitly
+**UITest awareness:** UITests do NOT run on PR builds in this repo — they only run post-merge. If the PR modifies HostApp pages, handler/extension code, or platform infrastructure, explicitly note: _"UITests do not run on PR builds. Startup and runtime behavior cannot be verified from CI alone."_
 
-Then deliver your verdict:
+### Step 6: Blast Radius, Failure-Mode Probing, and Verdict
+
+#### Blast Radius Assessment
+
+**Required when PR modifies:** handlers, platform extensions, toolbar/navigation code, page registration, static state, `PropertyChanged` subscriptions, or startup paths.
+
+| Question | Why It Matters |
+|----------|---------------|
+| Does this code run for ALL instances, or only when the new feature is used? | Feature code that runs unconditionally is the #1 cause of startup crashes |
+| Does this code run at app startup or page initialization? | Static fields initialized on first access can crash the app before any test page loads |
+| Are there new static/shared state fields that affect all pages/windows? | Static state survives handler disposal unless explicitly scoped |
+| What happens at startup with null/default values for new properties? | New BindableProperty with null default must not cause NullRef in platform code paths |
+
+#### Failure-Mode Probing
+
+**Do NOT ask easy rhetorical questions.** Probe genuinely challenging failure modes:
+
+- What happens if this code runs on items/pages that DON'T use the new feature?
+- What happens during handler disconnect/reconnect (navigation, Shell tab switch)?
+- What happens with null `Parent`, `Handler`, `BindingContext`, or `PlatformView`?
+- Can multiple subscriptions accumulate across handler lifecycle (missing unsubscribe)?
+- Does static state survive page disposal and get stale?
+
+#### Confidence Calibration
+
+| Blast Radius | Max Confidence |
+|-------------|----------------|
+| Localized change, non-startup, non-infrastructure | May be **high** |
+| Platform-specific handler/UI plumbing | Max **medium** |
+| Shared infrastructure, startup path, global static state | Max **low** |
+
+**Then cap by evidence:**
+
+| Evidence | Confidence Cap |
+|----------|---------------|
+| CI red or pending | **NEEDS_CHANGES / NEEDS_DISCUSSION** (no LGTM) |
+| No relevant tests run (UITests skip PR builds) | Max **low** |
+| CI green but no UI/integration test coverage | Max **medium** |
+| Prior critical findings unresolved | **NEEDS_CHANGES** (no LGTM) |
+
+#### Deliver Verdict
 
 - **`LGTM`** — Code is correct, safe, and consistent with MAUI patterns. Ready for human approval.
 - **`NEEDS_CHANGES`** — Concrete issues found that should be addressed before merge.
@@ -155,6 +213,23 @@ Then deliver your verdict:
 **Author claims:** [Summary of PR description]
 **Agreement/disagreement:** [Where your assessment matches or differs]
 
+### Prior Review Reconciliation
+| Prior Critical Finding | Source | Status | Evidence |
+|------------------------|--------|--------|----------|
+| [finding] | [reviewer] | ✅ Fixed / ❌ Unresolved / 🔄 Obsolete | [evidence] |
+*(If no prior reviews with critical findings, state "No prior critical findings found.")*
+
+### CI Status
+- Required checks: ✅ / ❌ (which failed) / ⏳ (pending)
+- UITests: ⚠️ Not run on PR builds
+*(Must reflect actual `gh pr checks --required` output — never assume.)*
+
+### Blast Radius Assessment
+*(Required for infrastructure/handler/platform changes; omit for simple fixes)*
+- Runs for all instances: [yes/no — explanation]
+- Startup impact: [yes/no]
+- Static/shared state: [yes/no]
+
 ### Findings
 
 #### ❌ Error — [Brief description]
@@ -166,11 +241,12 @@ Then deliver your verdict:
 #### 💡 Suggestion — [Brief description]
 [Explanation]
 
-### Devil's Advocate
-[Challenges to your own conclusions]
+### Failure-Mode Probing
+- [Probe]: [Answer — what actually happens in this scenario]
+- [Probe]: [Answer]
 
 ### Verdict: LGTM / NEEDS_CHANGES / NEEDS_DISCUSSION
-**Confidence:** high / medium / low
+**Confidence:** high / medium / low *(justified against calibration table)*
 **Summary:** [2-3 sentences explaining the verdict]
 ```
 
@@ -179,11 +255,13 @@ Then deliver your verdict:
 ## Verdict Consistency Rules
 
 1. **The verdict must match your most severe finding.** If you have any ❌ Error findings, the verdict must be `NEEDS_CHANGES`. If only ⚠️ Warnings, use judgment but explain.
-2. **Devil's advocate before finalizing.** Re-read all findings. For each warning, ask: "Would I be comfortable if this merged as-is?"
+2. **Failure-mode probing before finalizing.** Re-read all findings. For each warning, ask: "Would I be comfortable if this merged as-is?"
 3. **Never approve what you can't verify.** If the fix touches platform code you can't fully reason about, say so explicitly and use `NEEDS_DISCUSSION`.
 4. **LGTM means no ❌ Errors.** You can LGTM with 💡 Suggestions. You can LGTM with ⚠️ Warnings only if you've explained why they're acceptable.
-5. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
-6. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
+5. **Prior critical findings override.** If any prior review flagged a critical issue that remains unresolved, verdict must be `NEEDS_CHANGES` regardless of your own assessment.
+6. **CI must be verified, not assumed.** Always run `gh pr checks --required` before delivering a verdict. Never claim CI is clean without evidence.
+7. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
+8. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
 
 ---
 
@@ -214,8 +292,12 @@ In CI (`eng/pipelines/ci-copilot.yml`), `Review-PR.ps1` calls both `post-inline-
 
 - [ ] Full source files read (not just diffs)
 - [ ] Independent assessment formed before reading PR narrative
+- [ ] Prior reviews checked and critical findings reconciled (Step 4)
+- [ ] CI status verified via `gh pr checks --required` — not assumed (Step 5)
 - [ ] MAUI-specific checklist walked through for each applicable section
+- [ ] Blast radius assessed for infrastructure/handler/platform changes (Step 6)
+- [ ] Failure-mode probing completed with real scenarios, not softballs (Step 6)
 - [ ] Findings categorized by severity (❌ / ⚠️ / 💡)
-- [ ] Devil's advocate check performed
-- [ ] Verdict is consistent with findings
+- [ ] Confidence calibrated against blast radius and evidence tables (Step 6)
+- [ ] Verdict is consistent with findings AND prior review reconciliation
 - [ ] Output follows the format above
