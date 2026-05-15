@@ -458,6 +458,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (customIcon != null)
 				{
+					// Mutate() clones the drawable's ConstantState into a private copy so that
+					// SetTint() calls in Draw() don't bleed into the shared drawable cache and
+					// corrupt the tint across navigation cycles
+					customIcon = customIcon.Mutate();
+
 					if (fid == null)
 					{
 						fid = new FlyoutIconDrawerDrawable(MauiContext.Context, tintColor, customIcon, text);
