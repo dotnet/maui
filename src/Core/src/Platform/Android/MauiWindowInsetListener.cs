@@ -101,10 +101,13 @@ namespace Microsoft.Maui.Platform
 				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
 				// We want the layout listener logic to get applied to the MaterialToolbar itself
 				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
-				// CollectionView/CarouselView items are not excluded to enable per-item SafeAreaEdges control.
-				// Performance overhead is negligible due to early pass-through for items without insets.
+				// For RecyclerView item templates, only allow listener attachment when SafeAreaEdges
+				// is explicitly customized. This avoids recycled item padding drift while preserving
+				// explicit per-item SafeAreaEdges scenarios.
 				if (view is not MaterialToolbar &&
-					(parent is AppBarLayout || parent is MauiScrollView))
+					(parent is AppBarLayout ||
+					parent is MauiScrollView ||
+					(parent is IMauiRecyclerView && !HasExplicitSafeAreaEdges(view))))
 				{
 					return null;
 				}
@@ -131,6 +134,16 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		static bool HasExplicitSafeAreaEdges(AView view)
+		{
+			if (view is not ICrossPlatformLayoutBacking { CrossPlatformLayout: ISafeAreaElement safeAreaElement })
+			{
+				return false;
+			}
+			
+			return safeAreaElement.SafeAreaEdges != safeAreaElement.SafeAreaEdgesDefaultValueCreator();
 		}
 
 		/// <summary>
