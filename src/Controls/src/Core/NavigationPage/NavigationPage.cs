@@ -547,6 +547,9 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is Page newPage && ((NavigationPage)bindable).HasAppeared)
 				newPage.SendAppearing();
+
+			// Refresh Enabled on the predictive back callback when the active page changes.
+			(((NavigationPage)bindable).Window as Window)?.NotifyNavigationStateChanged();
 		}
 
 		internal IToolbar FindMyToolbar()
@@ -817,7 +820,9 @@ namespace Microsoft.Maui.Controls
 						//// the current navigation stack
 						//if (Owner._waitingCount == 0)
 						//	Owner.UpdateToolbar();
-
+						// InsertPageBefore changes the stack depth without triggering SendNavigated,
+						// so refresh the predictive back callback here.
+						(Owner.Window as Window)?.NotifyNavigationStateChanged();
 					}).FireAndForget();
 			}
 
@@ -961,7 +966,9 @@ namespace Microsoft.Maui.Controls
 						//// the current navigation stack
 						//if (Owner._waitingCount == 0)
 						//	Owner.UpdateToolbar();
-
+						// RemovePage changes the stack depth without triggering SendNavigated,
+						// so refresh the predictive back callback here.
+						(Owner.Window as Window)?.NotifyNavigationStateChanged();
 					}).FireAndForget();
 			}
 		}
