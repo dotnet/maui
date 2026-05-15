@@ -31,6 +31,9 @@ public class ButtonViewModel : INotifyPropertyChanged
 	private string _releasedEventLabelText = string.Empty;
 	private string _clickedEventLabelText = string.Empty;
 	private ImageSource _imageSource = null;
+	private Button.ButtonContentLayout _contentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 10);
+	private LayoutOptions _horizontalOptions = LayoutOptions.Center;
+	private LayoutOptions _verticalOptions = LayoutOptions.Center;
 
 	public Color BorderColor
 	{
@@ -344,9 +347,53 @@ public class ButtonViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public Button.ButtonContentLayout ContentLayout
+	{
+		get => _contentLayout;
+		set
+		{
+			if (_contentLayout != value)
+			{
+				_contentLayout = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public LayoutOptions HorizontalOptions
+	{
+		get => _horizontalOptions;
+		set
+		{
+			if (!_horizontalOptions.Equals(value))
+			{
+				_horizontalOptions = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public LayoutOptions VerticalOptions
+	{
+		get => _verticalOptions;
+		set
+		{
+			if (!_verticalOptions.Equals(value))
+			{
+				_verticalOptions = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public ButtonViewModel()
 	{
-		Command = new Command<string>(
+		Command = CreateCommand();
+	}
+
+	private ICommand CreateCommand()
+	{
+		return new Command<string>(
 			execute: (buttonText) =>
 			{
 				if (buttonText == "Command with Parameter")
@@ -366,7 +413,7 @@ public class ButtonViewModel : INotifyPropertyChanged
 		BorderColor = Colors.White;
 		BorderWidth = 0d;
 		CharacterSpacing = 0.0d;
-		Command = null;
+		Command = CreateCommand();
 		CornerRadius = 0;
 		FlowDirection = FlowDirection.MatchParent;
 		FontAttributes = FontAttributes.None;
@@ -386,6 +433,9 @@ public class ButtonViewModel : INotifyPropertyChanged
 		ReleasedEventLabelText = string.Empty;
 		ClickedEventLabelText = string.Empty;
 		ImageSource = null;
+		ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 10);
+		HorizontalOptions = LayoutOptions.Center;
+		VerticalOptions = LayoutOptions.Center;
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;

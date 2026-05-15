@@ -2,8 +2,8 @@ namespace Maui.Controls.Sample;
 
 public partial class ButtonOptionsPage : ContentPage
 {
-	private ButtonViewModel _viewModel;
-	public ButtonOptionsPage(ButtonViewModel viewModel)
+	private ButtonViewModal _viewModel;
+	public ButtonOptionsPage(ButtonViewModal viewModel)
 	{
 		InitializeComponent();
 		BindingContext = viewModel;
@@ -20,16 +20,12 @@ public partial class ButtonOptionsPage : ContentPage
 		await Navigation.PopAsync();
 	}
 
-	private void BorderColorButton_Clicked(object sender, EventArgs e)
+	private void OnBorderColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (sender is Button button)
+		var radioButton = sender as RadioButton;
+		if (radioButton.IsChecked)
 		{
-			_viewModel.BorderColor = button.Text switch
-			{
-				"Red" => Colors.Red,
-				"Green" => Colors.Green,
-				_ => Colors.White,
-			};
+			_viewModel.BorderColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
 		}
 	}
 
@@ -42,14 +38,13 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void FontAttributesCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void OnFontAttributesRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		var attrs = FontAttributes.None;
-		if (FontAttributesBoldCheckBox.IsChecked)
-			attrs |= FontAttributes.Bold;
-		if (FontAttributesItalicCheckBox.IsChecked)
-			attrs |= FontAttributes.Italic;
-		_viewModel.FontAttributes = attrs;
+		var radioButton = sender as RadioButton;
+		if (radioButton.IsChecked)
+		{
+			_viewModel.FontAttributes = radioButton.Content.ToString() == "Italic" ? FontAttributes.Italic : radioButton.Content.ToString() == "Bold" ? FontAttributes.Bold : FontAttributes.None;
+		}
 	}
 
 	private void OnFontFamilyRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -79,19 +74,32 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void LineBreakModeButton_Clicked(object sender, EventArgs e)
+	private void OnLineBreakModeRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (sender is Button button)
+		var radioButton = sender as RadioButton;
+		if (radioButton.IsChecked)
 		{
-			_viewModel.LineBreakMode = button.Text switch
+			switch (radioButton.Content.ToString())
 			{
-				"CharacterWrap" => LineBreakMode.CharacterWrap,
-				"HeadTruncation" => LineBreakMode.HeadTruncation,
-				"MiddleTruncation" => LineBreakMode.MiddleTruncation,
-				"TailTruncation" => LineBreakMode.TailTruncation,
-				"WordWrap" => LineBreakMode.WordWrap,
-				_ => LineBreakMode.NoWrap,
-			};
+				case "CharacterWrap":
+					_viewModel.LineBreakMode = LineBreakMode.CharacterWrap;
+					break;
+				case "HeadTruncation":
+					_viewModel.LineBreakMode = LineBreakMode.HeadTruncation;
+					break;
+				case "MiddleTruncation":
+					_viewModel.LineBreakMode = LineBreakMode.MiddleTruncation;
+					break;
+				case "TailTruncation":
+					_viewModel.LineBreakMode = LineBreakMode.TailTruncation;
+					break;
+				case "WordWrap":
+					_viewModel.LineBreakMode = LineBreakMode.WordWrap;
+					break;
+				default:
+					_viewModel.LineBreakMode = LineBreakMode.NoWrap;
+					break;
+			}
 		}
 	}
 
@@ -104,16 +112,12 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void TextColorButton_Clicked(object sender, EventArgs e)
+	private void OnTextColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (sender is Button button)
+		var radioButton = sender as RadioButton;
+		if (radioButton.IsChecked)
 		{
-			_viewModel.TextColor = button.Text switch
-			{
-				"Red" => Colors.Red,
-				"Green" => Colors.Green,
-				_ => null,
-			};
+			_viewModel.TextColor = radioButton.Content.ToString() == "Red" ? Colors.Red : Colors.Green;
 		}
 	}
 
@@ -125,19 +129,6 @@ public partial class ButtonOptionsPage : ContentPage
 			_viewModel.TextTransform = radioButton.Content.ToString() == "Lowercase"
 				? TextTransform.Lowercase
 				: TextTransform.Uppercase;
-		}
-	}
-
-	private void BackgroundColorButton_Clicked(object sender, EventArgs e)
-	{
-		if (sender is Button button)
-		{
-			_viewModel.Background = button.AutomationId switch
-			{
-				"BackgroundColorRed" => new SolidColorBrush(Colors.Red),
-				"BackgroundColorGreen" => new SolidColorBrush(Colors.Green),
-				_ => null,
-			};
 		}
 	}
 }
