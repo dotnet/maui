@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public bool CanGoBack { get; set; }
 		public bool CanGoForward { get; set; }
 		public string UserAgent { get; set; }
+		public IList<string> AllowedDomains { get; set; }
 
 		public void GoBack() { }
 		public void GoForward() { }
