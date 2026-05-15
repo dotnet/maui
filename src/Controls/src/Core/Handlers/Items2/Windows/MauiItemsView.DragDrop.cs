@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -26,6 +27,16 @@ internal partial class MauiItemsView
 	bool _canReorderItems;
 	bool _dragDropWired;
 	ItemsView? _mauiVirtualView;
+
+	// Insertion indicator — a thin horizontal (or vertical) line drawn on a Canvas
+	// overlay to show where the dragged item will be inserted on drop.
+	Canvas? _dragOverlayCanvas;
+	Rectangle? _insertionLine;
+	int _lastIndicatorInsertionIndex = -2;  // sentinel: -2 = uninitialised
+
+	// Dim overlay opacity applied to non-source containers during a drag so the
+	// list visually enters "reorder mode" (same pattern as iOS drag-reorder).
+	const double DragDimOpacity = 0.4;
 
 	// Auto-scroll fields
 	Microsoft.UI.Dispatching.DispatcherQueueTimer? _autoScrollTimer;
@@ -247,7 +258,8 @@ internal partial class MauiItemsView
 			}
 			else
 			{
-				itemContainer.Opacity = 1;
+				// Apply dim if a drag is in progress and this is not the source.
+				itemContainer.Opacity = _draggedItem is not null ? DragDimOpacity : 1;
 				itemContainer.IsHitTestVisible = true;
 			}
 		}
@@ -381,6 +393,9 @@ internal partial class MauiItemsView
 				// pointer events and is excluded from FindElementsInHostCoordinates.
 				_sourceContainer.IsHitTestVisible = false;
 			}
+
+			// Dim all non-source containers to signal "reorder mode" to the user.
+			DimNonSourceContainers();
 		});
 	}
 
@@ -393,15 +408,11 @@ internal partial class MauiItemsView
 			itemContainer.IsHitTestVisible = true;
 		}
 
-		// Defensive: if the source container was recycled during reorder, make sure
-		// no realized container is left hidden.
+		// Restore all containers — dim + source hide
 		foreach (var container in FindAllContainers())
 		{
-			if (container.Opacity < 1)
-			{
-				container.Opacity = 1;
-				container.IsHitTestVisible = true;
-			}
+			container.Opacity = 1;
+			container.IsHitTestVisible = true;
 		}
 
 		_sourceContainer = null;
@@ -457,6 +468,8 @@ internal partial class MauiItemsView
 		}
 
 		_insertionIndex = _insertAfter ? targetIndex + 1 : targetIndex;
+
+		UpdateInsertionIndicator();
 
 		e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 		e.Handled = true;
@@ -556,6 +569,7 @@ internal partial class MauiItemsView
 	void ScrollViewer_DragLeave(object sender, UI.Xaml.DragEventArgs e)
 	{
 		StopAutoScroll();
+		HideInsertionIndicator();
 	}
 
 	void ScrollViewer_Drop(object sender, UI.Xaml.DragEventArgs e)
@@ -1151,6 +1165,9 @@ internal partial class MauiItemsView
 
 	void CleanupDragState()
 	{
+		// Hide insertion indicator before restoring containers.
+		HideInsertionIndicator();
+
 		// Restore the source container synchronously in case DropCompleted does not
 		// fire (e.g. drop handled outside the source element, or disconnect).
 		if (_sourceContainer is not null)
@@ -1160,6 +1177,9 @@ internal partial class MauiItemsView
 			_sourceContainer.DropCompleted -= ItemContainer_DropCompleted;
 			_sourceContainer = null;
 		}
+
+		// Restore all dimmed containers.
+		RestoreAllContainerOpacity();
 
 		_draggedItem = null;
 		_insertionIndex = -1;
@@ -1320,6 +1340,251 @@ internal partial class MauiItemsView
 	static double Lerp(double start, double end, double amount)
 	{
 		return start + (end - start) * amount;
+	}
+
+	#endregion
+
+	#region Insertion Indicator
+
+	/// <summary>
+	/// Lazily creates a full-size <see cref="Canvas"/> overlay that floats above
+	/// the scroll viewer content and hosts the thin insertion-indicator line.
+	/// The canvas is added as a child of the scroll viewer's parent panel so it
+	/// can be positioned relative to the scroll viewer bounds.
+	/// </summary>
+	void EnsureInsertionIndicator()
+	{
+		if (_insertionLine is not null)
+		{
+			return;
+		}
+
+		// Resolve the accent colour from the app theme resources so the indicator
+		// matches the system accent. Fall back to CornflowerBlue if unavailable.
+		var accentBrush = TryGetAccentBrush();
+
+		_insertionLine = new Rectangle
+		{
+			Fill = accentBrush,
+			IsHitTestVisible = false,
+			Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
+			RadiusX = 1,
+			RadiusY = 1,
+		};
+
+		_dragOverlayCanvas = new Canvas
+		{
+			IsHitTestVisible = false,
+			IsTabStop = false,
+		};
+		_dragOverlayCanvas.Children.Add(_insertionLine);
+
+		// Attach the overlay canvas as a child of the same parent as the scroll
+		// viewer so it renders on top of all items without being clipped by the
+		// scroll viewer's viewport.
+		if (_scrollViewer?.Parent is Microsoft.UI.Xaml.Controls.Panel parentPanel)
+		{
+			parentPanel.Children.Add(_dragOverlayCanvas);
+		}
+		else if (_scrollViewer?.Parent is Microsoft.UI.Xaml.Controls.Border border && border.Parent is Microsoft.UI.Xaml.Controls.Panel grandparentPanel)
+		{
+			grandparentPanel.Children.Add(_dragOverlayCanvas);
+		}
+		else
+		{
+			// Last resort: add directly to the MauiItemsView itself via its template
+			// root. This still works but may be clipped by overflow settings.
+			if (GetTemplateChild("PART_RootGrid") is Microsoft.UI.Xaml.Controls.Grid rootGrid)
+			{
+				rootGrid.Children.Add(_dragOverlayCanvas);
+				// Span all rows/columns so it covers everything.
+				if (rootGrid.RowDefinitions.Count > 0)
+				{
+					Microsoft.UI.Xaml.Controls.Grid.SetRowSpan(_dragOverlayCanvas, rootGrid.RowDefinitions.Count);
+				}
+				if (rootGrid.ColumnDefinitions.Count > 0)
+				{
+					Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(_dragOverlayCanvas, rootGrid.ColumnDefinitions.Count);
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// Positions the insertion indicator at the appropriate edge of the container
+	/// at <see cref="_insertionIndex"/> relative to the scroll viewer.
+	/// </summary>
+	void UpdateInsertionIndicator()
+	{
+		if (_scrollViewer is null || _insertionIndex < 0)
+		{
+			HideInsertionIndicator();
+			return;
+		}
+
+		// Skip redraw if the index hasn't changed — avoids redundant layout work
+		// on every pointer-move event.
+		if (_insertionIndex == _lastIndicatorInsertionIndex)
+		{
+			return;
+		}
+
+		_lastIndicatorInsertionIndex = _insertionIndex;
+
+		EnsureInsertionIndicator();
+
+		if (_insertionLine is null || _dragOverlayCanvas is null)
+		{
+			return;
+		}
+
+		var repeater = ItemsRepeaterControl;
+		if (repeater is null)
+		{
+			HideInsertionIndicator();
+			return;
+		}
+
+		var sourceList = GetSourceList();
+		int count = sourceList?.Count ?? 0;
+
+		// Clamp to valid range.
+		int clampedIndex = Math.Clamp(_insertionIndex, 0, count);
+
+		// Try to resolve the adjacent container to position the line between items.
+		// If insertion is after the last item, use the last item's trailing edge.
+		ItemContainer? refContainer = null;
+		bool useTrailingEdge = false;
+
+		if (clampedIndex < count)
+		{
+			// Place line at the leading edge of the container at clampedIndex.
+			refContainer = repeater.TryGetElement(clampedIndex) as ItemContainer;
+		}
+
+		if (refContainer is null && clampedIndex > 0)
+		{
+			// Fall back: trailing edge of the previous container.
+			refContainer = repeater.TryGetElement(clampedIndex - 1) as ItemContainer;
+			useTrailingEdge = true;
+		}
+
+		if (refContainer is null)
+		{
+			HideInsertionIndicator();
+			return;
+		}
+
+		// Transform the container's origin into scroll-viewer coordinates.
+		var transform = refContainer.TransformToVisual(_scrollViewer);
+		var containerOrigin = transform.TransformPoint(new global::Windows.Foundation.Point(0, 0));
+
+		const double LineThickness = 2.0;
+		const double LineMargin = 4.0;   // inset from left/top edge
+
+		double lineLeft, lineTop, lineWidth, lineHeight;
+
+		if (_isHorizontalLayout)
+		{
+			double x = useTrailingEdge
+				? containerOrigin.X + refContainer.ActualWidth
+				: containerOrigin.X;
+
+			lineLeft = x - LineThickness / 2;
+			lineTop = containerOrigin.Y + LineMargin;
+			lineWidth = LineThickness;
+			lineHeight = Math.Max(0, refContainer.ActualHeight - LineMargin * 2);
+		}
+		else
+		{
+			double y = useTrailingEdge
+				? containerOrigin.Y + refContainer.ActualHeight
+				: containerOrigin.Y;
+
+			lineLeft = containerOrigin.X + LineMargin;
+			lineTop = y - LineThickness / 2;
+			lineWidth = Math.Max(0, _scrollViewer.ActualWidth - LineMargin * 2);
+			lineHeight = LineThickness;
+		}
+
+		// Position the canvas so the line sits at the right coordinates relative
+		// to the scroll viewer.
+		var canvasTransform = _scrollViewer.TransformToVisual(_dragOverlayCanvas);
+		var canvasOrigin = canvasTransform.TransformPoint(new global::Windows.Foundation.Point(lineLeft, lineTop));
+
+		Canvas.SetLeft(_insertionLine, canvasOrigin.X);
+		Canvas.SetTop(_insertionLine, canvasOrigin.Y);
+		_insertionLine.Width = lineWidth;
+		_insertionLine.Height = lineHeight;
+		_insertionLine.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+	}
+
+	void HideInsertionIndicator()
+	{
+		_lastIndicatorInsertionIndex = -2;
+		if (_insertionLine is not null)
+		{
+			_insertionLine.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+		}
+	}
+
+	static Microsoft.UI.Xaml.Media.Brush TryGetAccentBrush()
+	{
+		try
+		{
+			if (Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue(
+				"SystemAccentColor", out var raw) && raw is Windows.UI.Color accentColor)
+			{
+				return new Microsoft.UI.Xaml.Media.SolidColorBrush(accentColor);
+			}
+		}
+		catch { }
+
+		// Fallback: a recognizable blue similar to Windows accent.
+		return new Microsoft.UI.Xaml.Media.SolidColorBrush(
+			Windows.UI.Color.FromArgb(255, 0, 120, 212));
+	}
+
+	#endregion
+
+	#region Dim / Restore During Drag
+
+	/// <summary>
+	/// Dims all realized containers except the source container to the
+	/// <see cref="DragDimOpacity"/> level, visually signalling reorder mode.
+	/// Called after the source container is hidden so it doesn't accidentally
+	/// receive DragDimOpacity on top of Opacity=0.
+	/// </summary>
+	void DimNonSourceContainers()
+	{
+		if (_draggedItem is null)
+		{
+			return;
+		}
+
+		foreach (var container in FindAllContainers())
+		{
+			// Skip the source slot (already at Opacity=0).
+			if (ReferenceEquals(container, _sourceContainer))
+			{
+				continue;
+			}
+
+			container.Opacity = DragDimOpacity;
+		}
+	}
+
+	/// <summary>
+	/// Restores all realized containers to full opacity. Called from
+	/// <see cref="CleanupDragState"/> and <see cref="ItemContainer_DropCompleted"/>.
+	/// </summary>
+	void RestoreAllContainerOpacity()
+	{
+		foreach (var container in FindAllContainers())
+		{
+			container.Opacity = 1;
+			container.IsHitTestVisible = true;
+		}
 	}
 
 	#endregion
