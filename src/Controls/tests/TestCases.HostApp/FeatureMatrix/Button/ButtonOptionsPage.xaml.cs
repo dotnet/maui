@@ -2,8 +2,8 @@ namespace Maui.Controls.Sample;
 
 public partial class ButtonOptionsPage : ContentPage
 {
-	private ButtonViewModal _viewModel;
-	public ButtonOptionsPage(ButtonViewModal viewModel)
+	private ButtonViewModel _viewModel;
+	public ButtonOptionsPage(ButtonViewModel viewModel)
 	{
 		InitializeComponent();
 		BindingContext = viewModel;
