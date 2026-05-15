@@ -23,6 +23,7 @@ on:
   # tokens, and label writes happen through the sandboxed safe-output job.
   roles: all
 
+checkout: false
 permissions:
   contents: read
   issues: read
