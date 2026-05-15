@@ -19,13 +19,27 @@ public class Issue33274 : _IssuesUITest
 		App.WaitForElement("Maximumlabel");
 
 		// We are already at maximum and the increment schould not increase the internal value
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("Maximumstepper");
+		App.IncreaseStepper("Maximumstepper");
+#else
 		App.IncreaseStepper("Maximumstepper");
 		App.DecreaseStepper("Maximumstepper");
+#endif
 		Assert.That(App.FindElement("Maximumlabel").GetText(), Is.EqualTo("0"));
 
 		// We are already at minimum and the decrement schould not decrease the internal value
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.IncreaseStepper("Minimumstepper");
+		App.DecreaseStepper("Minimumstepper");
+#else
 		App.DecreaseStepper("Minimumstepper");
 		App.IncreaseStepper("Minimumstepper");
+#endif
 		Assert.That(App.FindElement("Minimumlabel").GetText(), Is.EqualTo("1"));
 	}
 }

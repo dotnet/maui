@@ -12,5 +12,9 @@ echo "=== Re-enabling macOS notifications ==="
 # Disable Do Not Disturb
 defaults delete com.apple.ncprefs dnd_prefs 2>/dev/null && echo "Do Not Disturb disabled" || echo "Do Not Disturb: already disabled or not supported"
 
+# Re-enable tips
+defaults delete com.apple.tipsd ShouldShowTips 2>/dev/null && echo "Tips re-enabled (tipsd)" || echo "Tips: already enabled or not supported"
+defaults delete com.apple.tips ShouldShowTips 2>/dev/null
+
 echo "=== Notifications re-enabled ==="
 exit 0

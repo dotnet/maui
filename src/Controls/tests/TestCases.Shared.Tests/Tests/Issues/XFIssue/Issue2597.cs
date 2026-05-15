@@ -18,11 +18,23 @@ public class Issue2597 : _IssuesUITest
 	{
 		App.WaitForElement("Stepper");
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.DecreaseStepper("Stepper");
+#else
 		App.IncreaseStepper("Stepper");
+#endif
 
 		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
 
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+		App.IncreaseStepper("Stepper");
+#else
 		App.DecreaseStepper("Stepper");
+#endif
 
 		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
 	}

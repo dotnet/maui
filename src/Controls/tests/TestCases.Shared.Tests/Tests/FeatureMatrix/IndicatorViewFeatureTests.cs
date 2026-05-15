@@ -660,6 +660,14 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 			App.IncreaseStepper(stepperAutomationId);
 		else
 			App.DecreaseStepper(stepperAutomationId);
+#elif MACCATALYST
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+		App.WaitForElement(stepperAutomationId);
+		if (increase)
+			App.DecreaseStepper(stepperAutomationId);
+		else
+			App.IncreaseStepper(stepperAutomationId);
 #else
 		App.WaitForElement(stepperAutomationId);
 		if (increase)

@@ -44,6 +44,11 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 		{
 			_appiumApp.Driver.Manage().Window.FullScreen();
 
+			// Wait for macOS full-screen transition animation to complete and
+			// any system notification banners (e.g., "See what's new in macOS Tahoe")
+			// to auto-dismiss before tests proceed to take screenshots.
+			Thread.Sleep(3000);
+
 			return CommandResponse.SuccessEmptyResponse;
 		}
 		catch

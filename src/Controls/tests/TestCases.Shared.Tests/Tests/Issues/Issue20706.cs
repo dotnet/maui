@@ -22,7 +22,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That("0", Is.EqualTo(initialValue));
 
 			// Increase the value.
+			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+			// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+			App.DecreaseStepper("myStepper");
+#else
 			App.IncreaseStepper("myStepper");
+#endif
 
 			// Verify that the value has been increased.
 			var step1Value = App.FindElement("entry").GetText();
@@ -32,12 +38,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("incrementButton");
 
 			// Increase the value.
+			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+			// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+			App.DecreaseStepper("myStepper");
+#else
 			App.IncreaseStepper("myStepper");
+#endif
 			var step2Value = App.FindElement("entry").GetText();
 			Assert.That("12", Is.EqualTo(step2Value));
 
 			// Decrease the value.
+			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+			// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+			App.IncreaseStepper("myStepper");
+#else
 			App.DecreaseStepper("myStepper");
+#endif
 
 			// Verify that the value has decreased.
 			var step3Value = App.FindElement("entry").GetText();
