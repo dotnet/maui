@@ -27,12 +27,6 @@ internal partial class MauiItemsView
 	bool _dragDropWired;
 	ItemsView? _mauiVirtualView;
 
-	// Shuffle animation fields — track the visual-only translation applied to
-	// surrounding containers during a drag so no data change is needed until Drop.
-	int _shuffleFromIndex = -1;
-	int _lastShuffleInsertionIndex = -2;        // -2 = uninitialised sentinel
-	readonly Dictionary<FrameworkElement, float> _containerShuffleOffsets = new();
-
 	// Auto-scroll fields
 	Microsoft.UI.Dispatching.DispatcherQueueTimer? _autoScrollTimer;
 	double _targetScrollVelocity;
@@ -329,9 +323,8 @@ internal partial class MauiItemsView
 				_sourceContainer = null;
 			}
 
-			// Reset any shuffle translation so the recycled container starts
-			// its next lifecycle at the correct visual position.
-			ResetContainerShuffleOffset(itemContainer);
+			// Reset any stale Translation so the recycled container starts clean.
+			container.Translation = System.Numerics.Vector3.Zero;
 		}
 	}
 
@@ -365,15 +358,6 @@ internal partial class MauiItemsView
 
 		_draggedItem = item;
 		_sourceContainer = itemContainer;
-
-		// Capture the dragged item's starting index for shuffle animation.
-		// Because we no longer mutate the collection during DragOver, this index
-		// stays valid for the entire drag.
-		var shuffleSourceList = GetSourceList();
-		_shuffleFromIndex = shuffleSourceList is not null
-			? IndexOfItem(item, shuffleSourceList)
-			: -1;
-		_lastShuffleInsertionIndex = -2;
 
 		args.Data.Properties.Add("DragSource", "MauiItemsView");
 		args.Data.RequestedOperation = WDataTransfer.DataPackageOperation.Move;
@@ -474,285 +458,9 @@ internal partial class MauiItemsView
 
 		_insertionIndex = _insertAfter ? targetIndex + 1 : targetIndex;
 
-		// Visually shuffle surrounding containers to preview the reorder without
-		// touching the data source. The actual reorder happens once on Drop so
-		// container bindings stay stable throughout the drag.
-		// Grouped sources are handled only on drop (group/header boundaries make
-		// incremental index maths ambiguous).
-		bool isGrouped = _mauiVirtualView is GroupableItemsView giv && giv.IsGrouped;
-		if (!isGrouped && _draggedItem is not null)
-		{
-			ApplyShuffleAnimation(_insertionIndex);
-		}
-
 		e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 		e.Handled = true;
 	}
-
-	/// <summary>
-	/// Moves the dragged item to <see cref="_insertionIndex"/> in the live data
-	/// source while the drag is still in progress. ItemsRepeater repositions the
-	/// other containers and the implicit Offset animation slides them into their
-	/// new slots, giving real-time shuffle feedback. Only used for flat lists.
-	/// </summary>
-	void PerformLiveReorder(IList itemsList)
-	{
-		if (_draggedItem is null)
-		{
-			return;
-		}
-
-		int currentIndex = IndexOfItem(_draggedItem, itemsList);
-		if (currentIndex < 0)
-		{
-			return;
-		}
-
-		int targetIndex = _insertionIndex;
-		if (currentIndex < targetIndex)
-		{
-			targetIndex--;
-		}
-
-		targetIndex = Math.Clamp(targetIndex, 0, itemsList.Count - 1);
-
-		if (targetIndex == currentIndex)
-		{
-			return;
-		}
-
-		var item = itemsList[currentIndex];
-
-		// Prefer ObservableCollection<T>.Move when available so we emit a single
-		// NotifyCollectionChangedAction.Move event rather than Remove+Insert. The
-		// repeater handles a Move as a coherent reposition, which avoids the
-		// transient "item not in list" state that was causing items to flash out
-		// of view and the source container to be recycled onto a stale binding.
-		if (!TryMoveObservableCollection(itemsList, currentIndex, targetIndex))
-		{
-			itemsList.RemoveAt(currentIndex);
-			itemsList.Insert(targetIndex, item);
-		}
-
-		// Capture the dragged item by identity. We don't trust positional indices
-		// after the move because the ItemsRepeater may not have laid out yet.
-		var draggedItem = _draggedItem;
-
-		// Reconcile synchronously first — in many cases the repeater has already
-		// re-bound containers by the time we get here.
-		ReconcileSourceOpacity(draggedItem);
-
-		// Belt-and-suspenders: queue another reconciliation at Low priority for
-		// the case where the repeater needed a layout pass to settle. Both are
-		// idempotent so it's safe to run twice.
-		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-		{
-			if (_draggedItem is null || !ReferenceEquals(_draggedItem, draggedItem))
-			{
-				return;
-			}
-
-			// Force the ItemsRepeater to finish its layout pass so container
-			// bindings are current before we walk them for opacity reconciliation.
-			ItemsRepeaterControl?.UpdateLayout();
-			ReconcileSourceOpacity(draggedItem);
-		});
-	}
-
-	#region Shuffle Animation
-
-	/// <summary>
-	/// Applies a GPU-composited Translation offset to each surrounding container
-	/// so they visually shift to preview the reorder. The data source is never
-	/// modified here — only on Drop — so container bindings remain stable and
-	/// <see cref="_shuffleFromIndex"/> stays valid for the entire drag.
-	/// </summary>
-	void ApplyShuffleAnimation(int insertionIndex)
-	{
-		if (_draggedItem is null || _shuffleFromIndex < 0)
-		{
-			return;
-		}
-
-		// Skip if the intended insertion position hasn't changed — avoids
-		// redundant Composition animation starts on every pointer-move event.
-		if (insertionIndex == _lastShuffleInsertionIndex)
-		{
-			return;
-		}
-
-		_lastShuffleInsertionIndex = insertionIndex;
-
-		var sourceList = GetSourceList();
-		if (sourceList is null)
-		{
-			return;
-		}
-
-		int draggedIndex = _shuffleFromIndex;
-
-		foreach (var container in FindAllContainers())
-		{
-			if (container is not ItemContainer itemContainer)
-			{
-				continue;
-			}
-
-			if (ReferenceEquals(itemContainer, _sourceContainer))
-			{
-				continue;
-			}
-
-			var item = GetContainerItem(itemContainer);
-			if (item is null)
-			{
-				continue;
-			}
-
-			int itemIndex = IndexOfItem(item, sourceList);
-			if (itemIndex < 0)
-			{
-				continue;
-			}
-
-			float targetOffset = 0f;
-
-			if (draggedIndex < insertionIndex)
-			{
-				// Moving forward (down/right): items between draggedIndex+1 and
-				// insertionIndex-1 slide backward (up/left) to fill the gap.
-				if (itemIndex > draggedIndex && itemIndex < insertionIndex)
-				{
-					targetOffset = _isHorizontalLayout
-						? -(float)itemContainer.ActualWidth
-						: -(float)itemContainer.ActualHeight;
-				}
-			}
-			else if (draggedIndex > insertionIndex)
-			{
-				// Moving backward (up/left): items between insertionIndex and
-				// draggedIndex-1 slide forward (down/right) to make room.
-				if (itemIndex >= insertionIndex && itemIndex < draggedIndex)
-				{
-					targetOffset = _isHorizontalLayout
-						? (float)itemContainer.ActualWidth
-						: (float)itemContainer.ActualHeight;
-				}
-			}
-
-			SetContainerShuffleOffset(itemContainer, targetOffset);
-		}
-	}
-
-	/// <summary>
-	/// Animates a single container to <paramref name="targetOffset"/> along the
-	/// scroll axis using a Composition ScalarKeyFrameAnimation on the
-	/// Translation property. Translation is compositor-side: it shifts the
-	/// element visually without affecting XAML layout or triggering measure/arrange.
-	/// </summary>
-	void SetContainerShuffleOffset(FrameworkElement container, float targetOffset)
-	{
-		if (_containerShuffleOffsets.TryGetValue(container, out var current) &&
-			Math.Abs(current - targetOffset) < 0.5f)
-		{
-			return;
-		}
-
-		_containerShuffleOffsets[container] = targetOffset;
-
-		// Bridge the XAML Translation property to the Composition visual.
-		ElementCompositionPreview.SetIsTranslationEnabled(container, true);
-		var visual = ElementCompositionPreview.GetElementVisual(container);
-		var compositor = visual.Compositor;
-
-		var animation = compositor.CreateScalarKeyFrameAnimation();
-		animation.InsertKeyFrame(
-			1.0f,
-			targetOffset,
-			compositor.CreateCubicBezierEasingFunction(
-				new System.Numerics.Vector2(0.25f, 0.0f),
-				new System.Numerics.Vector2(0.0f, 1.0f)));
-		animation.Duration = TimeSpan.FromMilliseconds(200);
-
-		visual.StartAnimation(
-			_isHorizontalLayout ? "Translation.X" : "Translation.Y",
-			animation);
-	}
-
-	/// <summary>
-	/// Resets the shuffle translation on all shifted containers.
-	/// Pass <c>animate = true</c> to ease back (DragLeave / cancel);
-	/// pass <c>false</c> for an instant snap before a Drop reorder so the
-	/// implicit Composition Offset animation can drive the final settle.
-	/// </summary>
-	void ClearShuffleAnimations(bool animate = false)
-	{
-		// Iterate a snapshot — ResetContainerTranslation must not modify the dict
-		// that is being enumerated here.
-		foreach (var container in _containerShuffleOffsets.Keys.ToList())
-		{
-			ResetContainerTranslation(container, animate);
-		}
-
-		_containerShuffleOffsets.Clear();
-		_shuffleFromIndex = -1;
-		_lastShuffleInsertionIndex = -2;
-	}
-
-	/// <summary>
-	/// Resets the shuffle translation on a single container (called when it is
-	/// recycled by ItemsRepeater so it doesn't carry a stale offset forward).
-	/// </summary>
-	void ResetContainerShuffleOffset(FrameworkElement container, bool animate = false)
-	{
-		// Remove returns false when the container was never shuffled — skip it.
-		if (!_containerShuffleOffsets.Remove(container))
-		{
-			return;
-		}
-
-		ResetContainerTranslation(container, animate);
-	}
-
-	/// <summary>
-	/// Applies the visual-only translation reset to a single container.
-	/// Separated from dict management so it can be called from both
-	/// <see cref="ClearShuffleAnimations"/> (batch, dict cleared afterward) and
-	/// <see cref="ResetContainerShuffleOffset"/> (single entry, dict entry removed).
-	/// </summary>
-	void ResetContainerTranslation(FrameworkElement container, bool animate)
-	{
-		ElementCompositionPreview.SetIsTranslationEnabled(container, true);
-		var visual = ElementCompositionPreview.GetElementVisual(container);
-
-		if (animate)
-		{
-			var compositor = visual.Compositor;
-			var animation = compositor.CreateScalarKeyFrameAnimation();
-			animation.InsertKeyFrame(1.0f, 0f);
-			animation.Duration = TimeSpan.FromMilliseconds(150);
-			visual.StartAnimation(
-				_isHorizontalLayout ? "Translation.X" : "Translation.Y",
-				animation);
-		}
-		else
-		{
-			// Stop any in-flight shuffle animation first — if the 200ms animation
-			// is still running when Drop fires, the compositor animation wins over
-			// a plain property set and the stale translation persists (causing the
-			// layout gap visible in the screenshot). StopAnimation reverts control
-			// to the static property, then we zero it.
-			var axis = _isHorizontalLayout ? "Translation.X" : "Translation.Y";
-			visual.StopAnimation(axis);
-
-			// UIElement.Translation is the correct way to zero the compositor-side
-			// Translation Vector3 property. InsertScalar on a sub-channel path
-			// ("Translation.Y") does not work for this property.
-			container.Translation = System.Numerics.Vector3.Zero;
-		}
-	}
-
-	#endregion
 
 	/// <summary>
 	/// Walks every realized container and sets Opacity = 0 on whichever one is
@@ -848,8 +556,6 @@ internal partial class MauiItemsView
 	void ScrollViewer_DragLeave(object sender, UI.Xaml.DragEventArgs e)
 	{
 		StopAutoScroll();
-		// Animate items back to their natural positions when the pointer leaves.
-		ClearShuffleAnimations(animate: true);
 	}
 
 	void ScrollViewer_Drop(object sender, UI.Xaml.DragEventArgs e)
@@ -859,11 +565,6 @@ internal partial class MauiItemsView
 			CleanupDragState();
 			return;
 		}
-
-		// Reset all visual shuffle translations instantly before the data reorder.
-		// The implicit Composition Offset animation then animates each container
-		// from its current (shuffled) position to its new layout slot.
-		ClearShuffleAnimations(animate: false);
 
 		bool isGrouped = _mauiVirtualView is GroupableItemsView giv && giv.IsGrouped;
 
@@ -1459,8 +1160,6 @@ internal partial class MauiItemsView
 			_sourceContainer.DropCompleted -= ItemContainer_DropCompleted;
 			_sourceContainer = null;
 		}
-
-		ClearShuffleAnimations(animate: false);
 
 		_draggedItem = null;
 		_insertionIndex = -1;
