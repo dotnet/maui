@@ -1044,14 +1044,20 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
-		public async Task ProcessPhotoPreservingSource_Propagates_Rotation_Failure()
+		public async Task ProcessPhotoPreservingSource_InvalidRotationInput_Leaves_Source_Intact()
 		{
 			var invalidJpegPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var originalBytes = await File.ReadAllBytesAsync(invalidJpegPath);
 
-			await Assert.ThrowsAnyAsync<Exception>(() =>
-				MediaPickerImplementation.ProcessPhotoPreservingSourceAsync(
-					invalidJpegPath,
-					new PersistedPhotoProcessingOptions(null, null, 100, true, true)));
+			var processedPath = await MediaPickerImplementation.ProcessPhotoPreservingSourceAsync(
+				invalidJpegPath,
+				new PersistedPhotoProcessingOptions(null, null, 100, true, true));
+
+			Assert.NotEqual(invalidJpegPath, processedPath);
+			Assert.True(File.Exists(invalidJpegPath));
+			Assert.Equal(originalBytes, await File.ReadAllBytesAsync(invalidJpegPath));
+			Assert.True(File.Exists(processedPath));
+			Assert.Equal(originalBytes, await File.ReadAllBytesAsync(processedPath));
 		}
 
 		[Fact]
