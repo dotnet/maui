@@ -250,15 +250,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				if (_emptyViewDisplayed)
-				{
-					if (_emptyView != null && ListViewBase is IEmptyView emptyView)
-						emptyView.EmptyViewVisibility = WVisibility.Collapsed;
-
-					ItemsView.RemoveLogicalChild(_formsEmptyView);
-				}
-
-				_emptyViewDisplayed = false;
+				RemoveEmptyView();
 			}
 		}
 
@@ -334,28 +326,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var emptyView = Element.EmptyView;
+			var emptyViewTemplate = Element.EmptyViewTemplate;
 
-			if (emptyView == null)
+			if (emptyView is null && emptyViewTemplate is null)
 			{
+				RemoveEmptyView();
+				if (_formsEmptyView is IView formsView && formsView.Handler is not null)
+				{
+					formsView.Handler.DisconnectHandler();
+				}
+				_emptyView = null;
+				_formsEmptyView = null;
+				(ListViewBase as IEmptyView)?.SetEmptyView(null, null);
 				return;
 			}
 
-			switch (emptyView)
+			if (emptyViewTemplate is DataTemplate template)
 			{
-				case string text:
-					_emptyView = new TextBlock
-					{
-						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-						Text = text
-					};
-					break;
-				case View view:
-					_emptyView = RealizeEmptyView(view);
-					break;
-				default:
-					_emptyView = RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate);
-					break;
+				_emptyView = RealizeEmptyViewTemplate(emptyView, template);
+			}
+			else if (emptyView is View view)
+			{
+				_emptyView = RealizeEmptyView(view);
+			}
+			else
+			{
+				_emptyView = new TextBlock
+				{
+					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+					Text = emptyView?.ToString() ?? string.Empty,
+				};
+			}
+
+			if (_formsEmptyView is not null && _emptyView is not null)
+			{
+				var margin = _formsEmptyView.Margin;
+				_emptyView.Margin = WinUIHelpers.CreateThickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
 			}
 
 			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView, _formsEmptyView);
@@ -376,6 +383,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateItemsSource();
 			UpdateScrollBarVisibility();
 			UpdateEmptyView();
+		}
+
+		void RemoveEmptyView()
+		{
+			if (_emptyView is not null && ListViewBase is IEmptyView emptyViewControl)
+			{
+				emptyViewControl.EmptyViewVisibility = WVisibility.Collapsed;
+			}
+
+			if (_formsEmptyView is not null && _emptyViewDisplayed)
+			{
+				ItemsView.RemoveLogicalChild(_formsEmptyView);
+			}
+
+			_emptyViewDisplayed = false;
 		}
 
 		void FindScrollViewer(ListViewBase listView)
@@ -476,21 +498,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
 		{
-			if (emptyViewTemplate == null)
-			{
-				return new TextBlock
-				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = bindingContext.ToString()
-				};
-			}
-
-			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
-			var view = template.CreateContent() as View;
-			view.BindingContext = bindingContext;
-
-			return RealizeEmptyView(view);
+			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, ItemsView);
+			var templatedElement = template.CreateContent() as View;
+			templatedElement.BindingContext = bindingContext;
+			return RealizeEmptyView(templatedElement);
 		}
 
 		FrameworkElement RealizeEmptyView(View view)
