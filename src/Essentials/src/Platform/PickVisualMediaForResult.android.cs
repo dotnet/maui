@@ -1,5 +1,5 @@
 ﻿using System;
-using AndroidX.Collection;
+using Microsoft.Maui.Media;
 using static AndroidX.Activity.Result.Contract.ActivityResultContracts;
 using AndroidUri = Android.Net.Uri;
 
@@ -10,4 +10,10 @@ internal class PickVisualMediaForResult : ActivityForResultRequest<PickVisualMed
 	static readonly Lazy<PickVisualMediaForResult> LazyInstance = new(new PickVisualMediaForResult());
 
 	public static PickVisualMediaForResult Instance => LazyInstance.Value;
+
+	protected override void OnActivityResultForActiveLaunch(AndroidUri result)
+		=> MediaPickerRecoveryManager.RecordSinglePickCallbackResult(result, materializeImmediately: true);
+
+	protected override void OnActivityResultForOrphanedLaunch(AndroidUri result)
+		=> MediaPickerRecoveryManager.RecoverOrphanedSinglePickResult(result);
 }
