@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
@@ -100,10 +101,13 @@ namespace Microsoft.Maui.Platform
 			{
 				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
 				// We want the layout listener logic to get applied to the MaterialToolbar itself
-				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
-				// For RecyclerView item templates, only allow listener attachment when SafeAreaEdges
-				// is explicitly customized. This avoids recycled item padding drift while preserving
-				// explicit per-item SafeAreaEdges scenarios.
+				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView).
+				//
+				// For RecyclerView item templates, the same AView is reused across different bound MAUI elements
+				// during scrolling. Attaching the inset listener unconditionally caused recycled item views to
+				// carry stale inset-derived padding, which manifested as a progressive bottom gap (#34634/#34635).
+				// We therefore only attach when SafeAreaEdges is explicitly customized on the currently bound
+				// element — preserving per-item SafeAreaEdges customization while keeping recycle behavior safe.
 				if (view is not MaterialToolbar &&
 					(parent is AppBarLayout ||
 					parent is MauiScrollView ||
@@ -136,14 +140,32 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		// Per-element-type cache of SafeAreaEdges default values.
+		// The default value returned by ISafeAreaElement.SafeAreaEdgesDefaultValueCreator() is constant per
+		// implementing type (e.g. Layout -> Container, Border/ContentView/ContentPage -> None, ScrollView -> Default).
+		// The cache is therefore append-only and never needs invalidation. Caching by AView would be unsafe
+		// because RecyclerView rebinds the same AView to different MAUI elements during scrolling; caching
+		// by Type is independent of any individual instance.
+		static readonly ConcurrentDictionary<Type, SafeAreaEdges> _safeAreaEdgesDefaults = new();
+
 		static bool HasExplicitSafeAreaEdges(AView view)
 		{
 			if (view is not ICrossPlatformLayoutBacking { CrossPlatformLayout: ISafeAreaElement safeAreaElement })
 			{
 				return false;
 			}
-			
-			return safeAreaElement.SafeAreaEdges != safeAreaElement.SafeAreaEdgesDefaultValueCreator();
+
+			// Hoist the current value into a local: SafeAreaEdges is a BindableProperty getter that may lazily
+			// initialize state on first read, so we read it exactly once.
+			var current = safeAreaElement.SafeAreaEdges;
+			var defaultEdges = _safeAreaEdgesDefaults.GetOrAdd(
+				safeAreaElement.GetType(),
+				static (_, element) => element.SafeAreaEdgesDefaultValueCreator(),
+				safeAreaElement);
+
+			// Use the typed IEquatable<SafeAreaEdges>.Equals to stay independent of operator overloads
+			// in case SafeAreaEdges evolves (e.g. into a flags-style struct) in the future.
+			return !current.Equals(defaultEdges);
 		}
 
 		/// <summary>
