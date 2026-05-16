@@ -59,13 +59,22 @@ namespace Microsoft.Maui.Maps.Handlers
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
 
-			if (Map != null)
+			var map = Map;
+			Map = null;
+
+			if (map != null)
 			{
-				Map.SetOnCameraMoveListener(null);
-				Map.MarkerClick -= OnMarkerClick;
-				Map.InfoWindowClick -= OnInfoWindowClick;
-				Map.MapClick -= OnMapClick;
+				map.MyLocationEnabled = false;
+				map.TrafficEnabled = false;
+				map.Clear();
+				map.SetOnCameraMoveListener(null);
+				map.MarkerClick -= OnMarkerClick;
+				map.InfoWindowClick -= OnInfoWindowClick;
+				map.MapClick -= OnMapClick;
 			}
+
+			_mapReady?.Dispose();
+			_mapReady = null;
 
 			if (_trackedMapElements != null)
 			{
@@ -75,18 +84,25 @@ namespace Microsoft.Maui.Maps.Handlers
 				_trackedMapElements = null;
 			}
 
+			_markers = null;
+			_pins = null;
 			_polylines = null;
 			_polygons = null;
 			_circles = null;
-			Map = null;
 			_init = true;
-			_mapReady = null;
+
+			platformView.OnPause();
+			platformView.OnStop();
+			platformView.OnDestroy();
+			map?.Dispose();
+			platformView.Dispose();
 		}
 
 		protected override MapView CreatePlatformView()
 		{
 			MapView mapView = new MapView(Context);
 			mapView.OnCreate(s_bundle);
+			mapView.OnStart();
 			mapView.OnResume();
 			return mapView;
 		}
@@ -314,6 +330,12 @@ namespace Microsoft.Maui.Maps.Handlers
 				return;
 			}
 
+			if (((IElementHandler)this).VirtualView is not IMap virtualView || _mapReady == null)
+			{
+				map.SetOnCameraMoveListener(null);
+				return;
+			}
+
 			Map = map;
 
 			map.SetOnCameraMoveListener(_mapReady);
@@ -322,33 +344,33 @@ namespace Microsoft.Maui.Maps.Handlers
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
 
-			if (VirtualView != null)
-			{
-				map.UpdateMapType(VirtualView);
-				map.UpdateIsShowingUser(VirtualView, MauiContext);
-				map.UpdateIsScrollEnabled(VirtualView);
-				map.UpdateIsTrafficEnabled(VirtualView);
-				map.UpdateIsZoomEnabled(VirtualView);
-			}
+			map.UpdateMapType(virtualView);
+			map.UpdateIsShowingUser(virtualView, MauiContext);
+			map.UpdateIsScrollEnabled(virtualView);
+			map.UpdateIsTrafficEnabled(virtualView);
+			map.UpdateIsZoomEnabled(virtualView);
 
 			InitialUpdate();
 		}
 
 		internal void UpdateVisibleRegion(LatLng pos)
 		{
-			if (Map == null)
+			var map = Map;
+			if (map == null ||
+				((IElementHandler)this).VirtualView is not IMap virtualView ||
+				((IElementHandler)this).PlatformView is not MapView platformView)
 				return;
 
-			Projection projection = Map.Projection;
-			int width = PlatformView.Width;
-			int height = PlatformView.Height;
+			Projection projection = map.Projection;
+			int width = platformView.Width;
+			int height = platformView.Height;
 			LatLng ul = projection.FromScreenLocation(new global::Android.Graphics.Point(0, 0));
 			LatLng ur = projection.FromScreenLocation(new global::Android.Graphics.Point(width, 0));
 			LatLng ll = projection.FromScreenLocation(new global::Android.Graphics.Point(0, height));
 			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
-			VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
+			virtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
 		}
 
 		void MapViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)
@@ -358,7 +380,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void InitialUpdate()
 		{
-			if (Map == null)
+			if (Map == null || ((IElementHandler)this).VirtualView is not IMap virtualView)
 				return;
 
 			if (_init && _lastMoveToRegion != null)
@@ -366,7 +388,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				MoveToRegion(_lastMoveToRegion, false);
 				if (_pins != null)
 					AddPins(_pins);
-				if (VirtualView?.Elements is IList elements && elements.Count > 0)
+				if (virtualView.Elements is IList elements && elements.Count > 0)
 				{
 					SyncMapElements(elements);
 				}
@@ -440,8 +462,11 @@ namespace Microsoft.Maui.Maps.Handlers
 			}
 		}
 
-		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e) =>
-			VirtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e)
+		{
+			if (((IElementHandler)this).VirtualView is IMap virtualView)
+				virtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+		}
 
 		void AddPins(IList pins)
 		{
@@ -479,9 +504,12 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			IMapPin? targetPin = null;
 
-			for (int i = 0; i < VirtualView.Pins.Count; i++)
+			if (((IElementHandler)this).VirtualView is not IMap virtualView)
+				return null;
+
+			for (int i = 0; i < virtualView.Pins.Count; i++)
 			{
-				var pin = VirtualView.Pins[i];
+				var pin = virtualView.Pins[i];
 				if (pin?.MarkerId is string markerId)
 				{
 					if (markerId == marker.Id)
@@ -697,8 +725,14 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public void OnMapReady(GoogleMap googleMap)
 		{
+			if (_handler == null)
+			{
+				googleMap.SetOnCameraMoveListener(null);
+				return;
+			}
+
 			_googleMap = googleMap;
-			_handler?.OnMapReady(googleMap);
+			_handler.OnMapReady(googleMap);
 		}
 
 		void GoogleMap.IOnCameraMoveListener.OnCameraMove()
@@ -711,7 +745,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && _handler != null)
+			if (disposing)
 			{
 				_handler = null;
 				_googleMap = null;
