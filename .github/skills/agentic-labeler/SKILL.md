@@ -31,7 +31,7 @@ Labeling rules for the [dotnet/maui](https://github.com/dotnet/maui) repository.
 
 Pick one or more `area-*` labels based on the subject matter:
 
-- Specific control mentioned → matching `area-controls-<name>` (e.g., `CollectionView` → `area-controls-collectionview`, `Entry` → `area-controls-entry`).
+- Specific control mentioned → matching `area-controls-<name>` (e.g., `CollectionView` → `area-controls-collectionview`, `Entry` → `area-controls-entry`, `Map` / `Maps` → `area-controls-map`, `Window` → `area-controls-window`, `WebView` → `area-controls-webview`, `HybridWebView` → `area-controls-hybridwebview`). **Always** use the `area-controls-<name>` prefix — never invent shorter aliases (e.g., the Maps area is `area-controls-map`, **not** `area-maps`).
 - Layout, measure/arrange, sizing issues → `area-layout`.
 - Navigation, Shell routing, page navigation → `area-navigation` (or `area-controls-shell` when Shell-specific).
 - XAML parsing, markup extensions, XamlC, source generators → `area-xaml`.
@@ -44,6 +44,9 @@ Pick one or more `area-*` labels based on the subject matter:
 - Dispatcher / main thread / threading → `area-core-dispatching`.
 - Localization / RTL / culture → `area-localization`.
 - Docs only → `area-docs`.
+- **CI, build pipelines, Maestro / dependency flow, branch mirroring, GitHub workflows, agentic-workflow / skill files** → `area-infrastructure`. This covers:
+  - `[dnceng-bot]` codeflow/branch-mirroring issues (the standard "Branch `…` can't be mirrored to Azdo" issues) → `area-infrastructure` (do **not** noop these — they have a clear area).
+  - PRs touching only `.github/workflows/`, `.github/skills/`, `.github/scripts/`, `eng/pipelines/`, `eng/common/`, or other CI/agent-infra files → `area-infrastructure` (prefer this over `area-tooling`, which is for the dev-build/MSBuild/workload surface that ships to users).
 
 Prefer the most specific label. It is fine to apply both a generic and a specific area label (e.g., `area-layout` + `area-controls-collectionview`) when both clearly apply.
 
@@ -80,6 +83,8 @@ Some items should **not** be labeled. If any of the following apply, skip labeli
 - **Automated inter-branch merge PRs** — titles like `[automated] Merge branch 'main' => 'net11.0'` or similar bot-created merge PRs. These are infrastructure, not feature/bug work.
 - **Dependency bump PRs** that already have `dependencies` and `area-infrastructure` labels.
 - **Items where no label clearly fits** — when the content is too vague or ambiguous to determine area or platform with confidence.
+
+> ⚠️ **Do NOT noop `[dnceng-bot]` codeflow/branch-mirroring issues.** Despite being bot-authored, they have a clear area (`area-infrastructure`) and should be labeled, not noop'd. The noop rule for automated PRs above is specifically about `[automated] Merge branch …` titles.
 
 ### What NOT to do
 

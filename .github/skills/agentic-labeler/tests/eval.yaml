@@ -193,3 +193,55 @@ scenarios:
     rubric:
       - "The final label set includes area-xaml for a XAML source generator issue"
     timeout: 180
+
+  # --- area-infrastructure scenarios ---
+
+  - name: "[dnceng-bot] codeflow issue gets area-infrastructure (not noop)"
+    prompt: "Label issue #34197 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "area-infrastructure"
+    rubric:
+      - "The final label set includes area-infrastructure for a [dnceng-bot] branch-mirroring codeflow issue"
+      - "The agent does NOT noop a [dnceng-bot] issue — these have a clear infrastructure area"
+    timeout: 180
+
+  - name: "Workflow-only PR gets area-infrastructure"
+    prompt: "Label PR #35438 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "area-infrastructure"
+      - type: "output_not_contains"
+        value: "platform/"
+    rubric:
+      - "The final label set includes area-infrastructure for a PR that only touches .github/workflows/"
+      - "No platform/* labels are applied for a workflow-only PR"
+    timeout: 180
+
+  - name: "Skill-file PR gets area-infrastructure (not area-tooling)"
+    prompt: "Label PR #34962 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "area-infrastructure"
+      - type: "output_not_contains"
+        value: "area-tooling"
+    rubric:
+      - "The final label set includes area-infrastructure for a PR that only touches .github/skills/"
+      - "The agent prefers area-infrastructure over area-tooling for agent-infra/skill changes"
+    timeout: 180
+
+  # --- Map control label naming ---
+
+  - name: "Maps PR uses area-controls-map (not invented area-maps)"
+    prompt: "Label PR #35476 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "area-controls-map"
+      - type: "output_not_contains"
+        value: "area-maps"
+      - type: "output_contains"
+        value: "platform/android"
+    rubric:
+      - "The final label set uses the exact label area-controls-map for Maps-related PRs"
+      - "The agent does NOT invent a shorter alias like area-maps"
+    timeout: 180
