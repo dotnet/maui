@@ -82,17 +82,6 @@ scenarios:
       - "No severity markers (❌/⚠️/💡) or verdicts appear in the output"
     timeout: 120
 
-  - name: "CI verification - must run gh pr checks before verdict"
-    prompt: "code review PR #34024 in dotnet/maui"
-    assertions:
-      - type: "output_matches"
-        pattern: "(gh pr checks|CI Status)"
-    rubric:
-      - "The agent runs 'gh pr checks' or 'gh pr checks --required' to verify CI status before delivering a verdict"
-      - "The agent does NOT claim 'clean build' or 'no CI failures' without evidence from gh pr checks output"
-      - "The agent includes a CI Status section in its review output"
-    timeout: 300
-
   - name: "Blast radius - infrastructure changes get probed"
     prompt: "code review PR #32278 in dotnet/maui — this PR modifies handler code that affects platform extensions"
     assertions:

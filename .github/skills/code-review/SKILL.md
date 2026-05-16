@@ -122,30 +122,7 @@ gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.lo
 - If status cannot be determined → default to unresolved (caution over optimism)
 - **NEVER silently drop or contradict a prior critical finding**
 
-### Step 5: Check CI Status
-
-```bash
-# All checks (required + optional)
-gh pr checks <PR_NUMBER>
-
-# Required checks only — use this for the verdict gate
-gh pr checks <PR_NUMBER> --required
-```
-
-**🚨 HARD GATE: Never give `LGTM` if any required CI check is failing or pending.**
-
-| CI State | Allowed Verdict |
-|----------|----------------|
-| All required checks ✅ green | May proceed to verdict |
-| Any required check ❌ red | **`NEEDS_CHANGES`** — document which checks failed |
-| Required checks ⏳ pending | **`NEEDS_DISCUSSION`** — state "CI not yet complete" |
-| Only optional/informational checks red | May proceed, note the failures |
-
-**NEVER claim "No CI failures detected" or "Clean build" without actually running `gh pr checks`.** False CI claims have directly caused regressions to be approved and merged.
-
-**UITest awareness:** UITests do NOT run on PR builds in this repo — they only run post-merge. If the PR modifies HostApp pages, handler/extension code, or platform infrastructure, explicitly note: _"UITests do not run on PR builds. Startup and runtime behavior cannot be verified from CI alone."_
-
-### Step 6: Blast Radius, Failure-Mode Probing, and Verdict
+### Step 5: Blast Radius, Failure-Mode Probing, and Verdict
 
 #### Blast Radius Assessment
 
@@ -180,9 +157,8 @@ gh pr checks <PR_NUMBER> --required
 
 | Evidence | Confidence Cap |
 |----------|---------------|
-| CI red or pending | **NEEDS_CHANGES / NEEDS_DISCUSSION** (no LGTM) |
+| CI red or pending | Defer to `azdo-build-investigator` skill for CI analysis |
 | No relevant tests run (UITests skip PR builds) | Max **low** |
-| CI green but no UI/integration test coverage | Max **medium** |
 | Prior critical findings unresolved | **NEEDS_CHANGES** (no LGTM) |
 
 #### Deliver Verdict
@@ -219,11 +195,6 @@ gh pr checks <PR_NUMBER> --required
 | [finding] | [reviewer] | ✅ Fixed / ❌ Unresolved / 🔄 Obsolete | [evidence] |
 *(If no prior reviews with critical findings, state "No prior critical findings found.")*
 
-### CI Status
-- Required checks: ✅ / ❌ (which failed) / ⏳ (pending)
-- UITests: ⚠️ Not run on PR builds
-*(Must reflect actual `gh pr checks --required` output — never assume.)*
-
 ### Blast Radius Assessment
 *(Required for infrastructure/handler/platform changes; omit for simple fixes)*
 - Runs for all instances: [yes/no — explanation]
@@ -259,9 +230,8 @@ gh pr checks <PR_NUMBER> --required
 3. **Never approve what you can't verify.** If the fix touches platform code you can't fully reason about, say so explicitly and use `NEEDS_DISCUSSION`.
 4. **LGTM means no ❌ Errors.** You can LGTM with 💡 Suggestions. You can LGTM with ⚠️ Warnings only if you've explained why they're acceptable.
 5. **Prior critical findings override.** If any prior review flagged a critical issue that remains unresolved, verdict must be `NEEDS_CHANGES` regardless of your own assessment.
-6. **CI must be verified, not assumed.** Always run `gh pr checks --required` before delivering a verdict. Never claim CI is clean without evidence.
-7. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
-8. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
+6. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
+7. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
 
 ---
 
@@ -293,7 +263,6 @@ In CI (`eng/pipelines/ci-copilot.yml`), `Review-PR.ps1` calls both `post-inline-
 - [ ] Full source files read (not just diffs)
 - [ ] Independent assessment formed before reading PR narrative
 - [ ] Prior reviews checked and critical findings reconciled (Step 4)
-- [ ] CI status verified via `gh pr checks --required` — not assumed (Step 5)
 - [ ] MAUI-specific checklist walked through for each applicable section
 - [ ] Blast radius assessed for infrastructure/handler/platform changes (Step 6)
 - [ ] Failure-mode probing completed with real scenarios, not softballs (Step 6)
