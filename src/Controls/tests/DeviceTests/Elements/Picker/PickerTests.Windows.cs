@@ -197,8 +197,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "CharacterSpacing propagates to placeholder TextBlock when Title is set")]
-		public async Task CharacterSpacingPropagatesToPlaceholderWithTitle()
+		[Fact(DisplayName = "CharacterSpacing applies to placeholder TextBlock when Title is set")]
+		public async Task CharacterSpacingAppliesToPlaceholderWithTitle()
 		{
 			const string title = "Select Option";
 			const double characterSpacingPt = 8d;

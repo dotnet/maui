@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTitle(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.PlaceholderText = picker.Title ?? string.Empty;
+			nativeComboBox.UpdatePlaceholderCharacterSpacing();
 		}
 
 		public static void UpdateTitleColor(this ComboBox nativeComboBox, IPicker picker)
@@ -79,6 +80,29 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCharacterSpacing(this ComboBox nativeComboBox, IPicker picker)
 		{
 			nativeComboBox.CharacterSpacing = picker.CharacterSpacing.ToEm();
+			nativeComboBox.UpdatePlaceholderCharacterSpacing();
+		}
+
+		static void UpdatePlaceholderCharacterSpacing(this ComboBox nativeComboBox)
+		{
+			if (nativeComboBox.IsLoaded)
+			{
+				ApplyPlaceholderCharacterSpacing(nativeComboBox);
+			}
+			else
+			{
+				nativeComboBox.OnLoaded(() => ApplyPlaceholderCharacterSpacing(nativeComboBox));
+			}
+		}
+
+		static void ApplyPlaceholderCharacterSpacing(ComboBox nativeComboBox)
+		{
+			var placeholderTextBlock = nativeComboBox.GetDescendantByName<TextBlock>("PlaceholderTextBlock");
+
+			if (placeholderTextBlock is not null)
+			{
+				placeholderTextBlock.CharacterSpacing = nativeComboBox.CharacterSpacing;
+			}
 		}
 
 		public static void UpdateFont(this ComboBox nativeComboBox, IPicker picker, IFontManager fontManager) =>
