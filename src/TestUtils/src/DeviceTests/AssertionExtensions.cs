@@ -76,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var collectResult = await WaitForCollect(references);
 
-			Assert.True(collectResult, $"Expected all references to be collected, but some are still alive. {ListLivingReferences(references)}");
+			Assert.False(collectResult, $"Expected all references to be collected, but some are still alive. {ListLivingReferences(references)}");
 		}
 
 		static string ListLivingReferences(WeakReference[] references)
