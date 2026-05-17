@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				// If the domain is blocked by our handler code,
 				// the Navigating event may still fire but the handler cancels it
-				if (e.Url?.Contains("evil.com") == true)
+				if (e.Url?.Contains("evil.com", StringComparison.Ordinal) == true)
 					navigatingCancelled = true;
 			};
 
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 				webView.Navigated += (s, e) =>
 				{
 					// If we get navigated to evil.com, the test should fail
-					if (e.Url?.Contains("evil.com") == true)
+					if (e.Url?.Contains("evil.com", StringComparison.Ordinal) == true)
 						blockedNavigatedTcs.TrySetResult(false);
 				};
 
