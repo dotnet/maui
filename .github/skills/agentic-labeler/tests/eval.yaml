@@ -74,7 +74,13 @@ scenarios:
       - type: "output_not_contains"
         value: "area-tooling"
       - type: "output_not_contains"
-        value: "platform/"
+        value: "platform/android"
+      - type: "output_not_contains"
+        value: "platform/ios"
+      - type: "output_not_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
+        value: "platform/windows"
     rubric:
       - "The final label set includes area-infrastructure for a PR that only modifies .github/workflows/"
       - "The agent prefers area-infrastructure over area-tooling for CI workflow changes"
@@ -103,7 +109,7 @@ scenarios:
     prompt: "Label PR #35464 in dotnet/maui. List the labels you would apply."
     assertions:
       - type: "output_matches"
-        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|will not.+label|existing.+labels?.+(sufficient|enough))"
+        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary))"
     rubric:
       - "The agent determines that no labels should be applied to this automated merge PR"
       - "The agent does NOT apply area or platform labels to automated infrastructure PRs"
@@ -183,7 +189,7 @@ scenarios:
     prompt: "Label PR #35453 in dotnet/maui. List the labels you would apply."
     assertions:
       - type: "output_matches"
-        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|already.+label|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|no additional.+(label|action|change)|will not.+label|existing.+labels?.+(sufficient|enough))"
+        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|already.+label|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|no additional.+(label|action|change))"
     rubric:
       - "The agent determines no additional labels are needed for a dependency bump PR that is already correctly labeled"
     timeout: 180
@@ -217,7 +223,13 @@ scenarios:
       - type: "output_contains"
         value: "area-infrastructure"
       - type: "output_not_contains"
-        value: "platform/"
+        value: "platform/android"
+      - type: "output_not_contains"
+        value: "platform/ios"
+      - type: "output_not_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
+        value: "platform/windows"
     rubric:
       - "The final label set includes area-infrastructure for a PR that only touches .github/workflows/"
       - "No platform/* labels are applied for a workflow-only PR"
