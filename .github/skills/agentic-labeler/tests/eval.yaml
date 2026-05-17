@@ -50,7 +50,11 @@ scenarios:
       - type: "output_not_contains"
         value: "platform/ios"
       - type: "output_not_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
         value: "platform/windows"
+      - type: "output_not_contains"
+        value: "platform/tizen"
     rubric:
       - "The final label set includes area-controls-shell for Shell-related source files"
       - "No platform/* labels are applied since only shared cross-platform code is changed"
@@ -81,6 +85,8 @@ scenarios:
         value: "platform/macos"
       - type: "output_not_contains"
         value: "platform/windows"
+      - type: "output_not_contains"
+        value: "platform/tizen"
     rubric:
       - "The final label set includes area-infrastructure for a PR that only modifies .github/workflows/"
       - "The agent prefers area-infrastructure over area-tooling for CI workflow changes"
@@ -97,7 +103,13 @@ scenarios:
       - type: "output_not_contains"
         value: "platform/android"
       - type: "output_not_contains"
+        value: "platform/ios"
+      - type: "output_not_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
         value: "platform/windows"
+      - type: "output_not_contains"
+        value: "platform/tizen"
     rubric:
       - "The final label set includes area-controls-shell for a Shell badge propagation bug"
       - "No platform/* labels are applied when the issue does not specify a platform"
@@ -109,7 +121,7 @@ scenarios:
     prompt: "Label PR #35464 in dotnet/maui. List the labels you would apply."
     assertions:
       - type: "output_matches"
-        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary))"
+        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|will not apply (any |additional |any additional )?labels?|existing labels? (are )?(sufficient|enough))"
     rubric:
       - "The agent determines that no labels should be applied to this automated merge PR"
       - "The agent does NOT apply area or platform labels to automated infrastructure PRs"
@@ -189,7 +201,7 @@ scenarios:
     prompt: "Label PR #35453 in dotnet/maui. List the labels you would apply."
     assertions:
       - type: "output_matches"
-        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|already.+label|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|no additional.+(label|action|change))"
+        pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|already.+label|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|no additional.+(label|action|change)|will not apply (any |additional |any additional )?labels?|existing labels? (are )?(sufficient|enough))"
     rubric:
       - "The agent determines no additional labels are needed for a dependency bump PR that is already correctly labeled"
     timeout: 180
@@ -230,6 +242,8 @@ scenarios:
         value: "platform/macos"
       - type: "output_not_contains"
         value: "platform/windows"
+      - type: "output_not_contains"
+        value: "platform/tizen"
     rubric:
       - "The final label set includes area-infrastructure for a PR that only touches .github/workflows/"
       - "No platform/* labels are applied for a workflow-only PR"
