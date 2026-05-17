@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls
 		{
 			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, MapAutomationPropertiesIsInAccessibleTree);
 			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.ExcludedWithChildrenProperty.PropertyName, MapAutomationPropertiesExcludedWithChildren);
+#if WINDOWS
+			ViewHandler.ViewMapper.ModifyMapping<Maui.IElement, IElementHandler>(nameof(Maui.IView.AutomationId), MapAutomationId);
+#endif
 		}
 	}
 }
