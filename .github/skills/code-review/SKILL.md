@@ -116,11 +116,11 @@ Check for prior reviews on the same PR — from the Copilot PR reviewer bot, oth
 gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.login) | State: \(.state)\n\(.body[0:2000])\n---"'
 ```
 
-**If prior reviews flagged critical issues:**
+**If prior reviews flagged ❌ Error-level issues:**
 - Verify whether each critical finding was addressed in subsequent commits
 - If unresolved → verdict must be `NEEDS_CHANGES`
 - If status cannot be determined → default to unresolved (caution over optimism)
-- **NEVER silently drop or contradict a prior critical finding**
+- **NEVER silently drop or contradict a prior ❌ Error finding** — confirm it no longer applies to current code before dismissing
 
 ### Step 5: Blast Radius, Failure-Mode Probing, and Verdict
 
@@ -190,10 +190,10 @@ gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.lo
 **Agreement/disagreement:** [Where your assessment matches or differs]
 
 ### Prior Review Reconciliation
-| Prior Critical Finding | Source | Status | Evidence |
+| Prior ❌ Error Finding | Source | Status | Evidence |
 |------------------------|--------|--------|----------|
 | [finding] | [reviewer] | ✅ Fixed / ❌ Unresolved / 🔄 Obsolete | [evidence] |
-*(If no prior reviews with critical findings, state "No prior critical findings found.")*
+*(If no prior reviews with ❌ Error findings, state "No prior ❌ Error findings found.")*
 
 ### Blast Radius Assessment
 *(Required for infrastructure/handler/platform changes; omit for simple fixes)*
@@ -229,7 +229,8 @@ gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.lo
 2. **Failure-mode probing before finalizing.** Re-read all findings. For each warning, ask: "Would I be comfortable if this merged as-is?"
 3. **Never approve what you can't verify.** If the fix touches platform code you can't fully reason about, say so explicitly and use `NEEDS_DISCUSSION`.
 4. **LGTM means no ❌ Errors.** You can LGTM with 💡 Suggestions. You can LGTM with ⚠️ Warnings only if you've explained why they're acceptable.
-5. **Prior critical findings override.** If any prior review flagged a critical issue that remains unresolved, verdict must be `NEEDS_CHANGES` regardless of your own assessment.
+5. **Prior ❌ Error findings override.** If any prior review flagged an ❌ Error-level issue (using this skill's severity taxonomy) that remains unresolved in the current code, verdict must be `NEEDS_CHANGES` regardless of your own assessment. Confirm the finding still applies to the current diff before applying the override.
+6. **Never LGTM if CI is red.** If required CI checks are failing, invoke `azdo-build-investigator` to determine whether failures are PR-caused. Do not post `LGTM` until CI passes or failures are confirmed unrelated.
 6. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
 7. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
 
@@ -262,11 +263,11 @@ In CI (`eng/pipelines/ci-copilot.yml`), `Review-PR.ps1` calls both `post-inline-
 
 - [ ] Full source files read (not just diffs)
 - [ ] Independent assessment formed before reading PR narrative
-- [ ] Prior reviews checked and critical findings reconciled (Step 4)
+- [ ] Prior reviews checked and ❌ Error findings reconciled (Step 4)
 - [ ] MAUI-specific checklist walked through for each applicable section
-- [ ] Blast radius assessed for infrastructure/handler/platform changes (Step 6)
-- [ ] Failure-mode probing completed with real scenarios, not softballs (Step 6)
+- [ ] Blast radius assessed for infrastructure/handler/platform changes (Step 5)
+- [ ] Failure-mode probing completed with real scenarios, not softballs (Step 5)
 - [ ] Findings categorized by severity (❌ / ⚠️ / 💡)
-- [ ] Confidence calibrated against blast radius and evidence tables (Step 6)
+- [ ] Confidence calibrated against blast radius and evidence tables (Step 5)
 - [ ] Verdict is consistent with findings AND prior review reconciliation
 - [ ] Output follows the format above
