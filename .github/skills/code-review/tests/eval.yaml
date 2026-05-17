@@ -83,10 +83,10 @@ scenarios:
     timeout: 120
 
   - name: "Blast radius - infrastructure changes get probed"
-    prompt: "code review PR #32278 in dotnet/maui — this PR modifies handler code that affects platform extensions"
+    prompt: "code review PR #32278 in dotnet/maui — I believe the handler changes affect platform extensions that run unconditionally at startup, even for controls that don't use the new feature"
     assertions:
       - type: "output_matches"
-        pattern: "(NEEDS_CHANGES|NEEDS_DISCUSSION)"
+        pattern: "(blast radius|all instances|startup|handler disconnect|unconditional)"
     rubric:
       - "The agent assesses blast radius for handler/platform changes (does this run for all instances?)"
       - "The agent probes real failure modes, not softballs (e.g., handler disconnect, null PlatformView)"
