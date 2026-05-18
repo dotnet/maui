@@ -1,0 +1,2577 @@
+version=1
+
+# This file caches language service data to improve the performance of C# Dev Kit.
+# It is not intended for manual editing. It can safely be deleted and will be
+# regenerated automatically. For more information, see https://aka.ms/lscache
+#
+# To control where cache files are stored, use the following VS Code setting:
+#   "dotnet.projectsystem.cacheInProjectFolder": true
+
+[project]
+language=C#
+lastDtbSucceeded
+
+[sliceDimensions]
+TargetFramework=net11.0-android
+
+[properties]
+AssemblyName=Microsoft.Maui.Core.DeviceTests
+CommandLineArgsForDesignTimeEvaluation=-langversion:Latest -checksumalgorithm:SHA256 -define:TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=14.0
+ProjectAssetsFile=<PATH>../../../../artifacts/obj/Core.DeviceTests/project.assets.json
+RootNamespace=Microsoft.Maui.DeviceTests
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=*Undefined*
+TargetFrameworkIdentifier=.NETCoreApp
+TargetPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-android/Microsoft.Maui.Core.DeviceTests.dll
+TargetRefPath=
+TemporaryDependencyNodeTargetIdentifier=net11.0-android
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1705,1591,CA1416,NU5105,NETSDK1206,NU1702,IL6001,AD0001,CS1573,CS1591,1701,1702,8002
+/fullpaths
+/nostdlib+
+/errorreport:prompt
+/warn:11
+/doc:<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-android/Microsoft.Maui.Core.DeviceTests.xml
+/define:TRACE;DEBUG;__XAMARIN_ANDROID_v1_0__;__MOBILE__;__ANDROID__;__ANDROID_1__;__ANDROID_2__;__ANDROID_3__;__ANDROID_4__;__ANDROID_5__;__ANDROID_6__;__ANDROID_7__;__ANDROID_8__;__ANDROID_9__;__ANDROID_10__;__ANDROID_11__;__ANDROID_12__;__ANDROID_13__;__ANDROID_14__;__ANDROID_15__;__ANDROID_16__;__ANDROID_17__;__ANDROID_18__;__ANDROID_19__;__ANDROID_20__;__ANDROID_21__;__ANDROID_22__;__ANDROID_23__;__ANDROID_24__;__ANDROID_25__;__ANDROID_26__;__ANDROID_27__;__ANDROID_28__;__ANDROID_29__;__ANDROID_30__;__ANDROID_31__;__ANDROID_32__;__ANDROID_33__;__ANDROID_34__;__ANDROID_35__;__ANDROID_36__;__ANDROID_36_1__;NET;NET11_0;NETCOREAPP;ANDROID;ANDROID36_1;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NET11_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;ANDROID21_0_OR_GREATER;ANDROID22_0_OR_GREATER;ANDROID23_0_OR_GREATER;ANDROID24_0_OR_GREATER;ANDROID25_0_OR_GREATER;ANDROID26_0_OR_GREATER;ANDROID27_0_OR_GREATER;ANDROID28_0_OR_GREATER;ANDROID29_0_OR_GREATER;ANDROID30_0_OR_GREATER;ANDROID31_0_OR_GREATER;ANDROID32_0_OR_GREATER;ANDROID33_0_OR_GREATER;ANDROID34_0_OR_GREATER;ANDROID35_0_OR_GREATER;ANDROID36_0_OR_GREATER;ANDROID36_1_OR_GREATER
+/highentropyva+
+/features:"InterceptorsNamespaces=;Microsoft.Extensions.Validation.Generated;Microsoft.Maui.Controls.Generated"
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-android/Microsoft.Maui.Core.DeviceTests.dll
+/target:library
+/warnaserror+
+/utf8output
+/deterministic+
+/checksumalgorithm:SHA256
+/langversion:Latest
+/warnaserror+:NU1605,SYSLIB0011
+
+[sourceFiles]
+../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-android/
+ .NETCoreApp,Version=v11.0.AssemblyAttributes.cs
+ Core.DeviceTests.AssemblyInfo.cs
+ designtime/__Microsoft.Android.Resource.Designer.cs
+ApplicationTests.Android.cs
+CoreDeviceTestExtensions.cs
+GlobalNamespaces.cs
+Graphics/
+ GraphicsTests.Android.cs
+ GraphicsTests.cs
+Handlers/ActivityIndicator/
+ ActivityIndicatorHandlerTests.Android.cs
+ ActivityIndicatorHandlerTests.cs
+Handlers/Border/
+ BorderHandlerTests.Android.cs
+ BorderHandlerTests.cs
+Handlers/Button/
+ ButtonHandlerTests.Android.cs
+ ButtonHandlerTests.cs
+Handlers/CheckBox/
+ CheckBoxHandlerTests.Android.cs
+ CheckBoxHandlerTests.cs
+Handlers/
+ ContentView/ContentViewTests.cs
+ CoreHandlerTestBase.cs
+ CoreHandlerTestBaseOfT.cs
+ DatePicker/
+  DatePickerHandlerTests.Android.cs
+  DatePickerHandlerTests.cs
+ Editor/
+  EditorHandlerTests.Android.cs
+  EditorHandlerTests.cs
+ Element/ElementTests.cs
+ Entry/
+  EntryHandlerTests.Android.cs
+  EntryHandlerTests.cs
+ GraphicsView/
+  GraphicsViewHandlerTests.Android.cs
+  GraphicsViewHandlerTests.cs
+ Image/
+  ImageHandlerTests.Android.cs
+  ImageHandlerTests.cs
+ ImageButton/
+  ImageButtonHandlerTests.Android.cs
+  ImageButtonHandlerTests.cs
+ IndicatorView/
+  IndicatorViewHandlerTests.Android.cs
+  IndicatorViewHandlerTests.cs
+ Label/
+  LabelHandlerTests.Android.cs
+  LabelHandlerTests.cs
+ Layout/
+  LayoutHandlerTests.Android.cs
+  LayoutHandlerTests.cs
+ Navigation/
+  NavigationViewHandlerTests.Android.cs
+  NavigationViewHandlerTests.cs
+ Page/
+  PageHandlerTests.Android.cs
+  PageHandlerTests.cs
+ Picker/
+  PickerHandlerTests.Android.cs
+  PickerHandlerTests.cs
+ ProgressBar/
+  ProgressBarHandlerTests.Android.cs
+  ProgressBarHandlerTests.cs
+ RadioButton/
+  RadioButtonHandlerTests.Android.cs
+  RadioButtonHandlerTests.cs
+ RefreshView/
+  RefreshViewHandlerTests.Android.cs
+  RefreshViewHandlerTests.cs
+ ScrollView/
+  ScrollViewHandlerTests.Android.cs
+  ScrollViewHandlerTests.cs
+ SearchBar/
+  SearchBarHandlerTests.Android.cs
+  SearchBarHandlerTests.cs
+ ShapeView/
+  ShapeViewHandlerTests.Android.cs
+  ShapeViewHandlerTests.cs
+ Slider/
+  SliderHandlerTests.Android.cs
+  SliderHandlerTests.cs
+ Stepper/
+  StepperHandlerTests.Android.cs
+  StepperHandlerTests.cs
+ SwipeView/
+  SwipeViewHandlerTests.Android.cs
+  SwipeViewHandlerTests.cs
+ Switch/
+  SwitchHandlerTests.Android.cs
+  SwitchHandlerTests.cs
+ TimePicker/
+  TimePickerHandlerTests.Android.cs
+  TimePickerHandlerTests.cs
+ View/
+  ViewHandlerTests.Android.cs
+  ViewHandlerTests.cs
+ WebView/
+  WebViewHandlerTests.Android.cs
+  WebViewHandlerTests.cs
+ Window/
+  WindowHandlerTests.Android.cs
+  WindowHandlerTests.cs
+MauiContextTests.Android.cs
+MauiProgram.cs
+Memory/
+ CALayerAutosizeToSuperLayerBehaviorTests.cs
+ UIViewSubclassTests.cs
+Services/
+ Dispatching/DispatcherTests.cs
+ FontManagerTests.Android.cs
+ FontManagerTests.cs
+ ImageSource/
+  BaseImageSourceServiceTests.Android.cs
+  BaseImageSourceServiceTests.cs
+  FileImageSourceServiceTests.Android.cs
+  FileImageSourceServiceTests.cs
+  FontImageSourceServiceTests.Android.cs
+  FontImageSourceServiceTests.cs
+  ImageSourceServiceTests.Android.cs
+  ImageSourceServiceTests.cs
+  StreamImageSourceServiceTests.Android.cs
+  StreamImageSourceServiceTests.cs
+  UriImageSourceServiceTests.Android.cs
+  UriImageSourceServiceTests.cs
+Stubs/
+ ActivityIndicatorStub.cs
+ BorderStub.cs
+ ButtonStub.cs
+ ButtonWithContainerStub.cs
+ CheckBoxStub.cs
+ ContentViewStub.cs
+ CountedImageHandler.Android.cs
+ CountedImageHandler.cs
+ CountedImageSourceServiceStub.Android.cs
+ CountedImageSourceServiceStub.cs
+ CountedImageSourceStub.cs
+ CustomImageCacheStub.Android.cs
+ CustomImageSourceServiceStub.Android.cs
+ CustomImageSourceStub.cs
+ DatePickerStub.cs
+ EditorStub.cs
+ ElementHandlerStub.cs
+ ElementStub.cs
+ EllipseStub.cs
+ EntryStub.cs
+ GraphicsViewStub.cs
+ HorizontalStackLayoutStub.cs
+ HtmlWebViewSourceStub.cs
+ IImageStub.cs
+ ImageButtonStub.cs
+ ImageSourceStub.cs
+ ImageStub.cs
+ IndicatorViewStub.cs
+ LabelStub.cs
+ LayoutManagerStub.cs
+ LayoutStub.cs
+ LinearGradientPaintStub.cs
+ LineStub.cs
+ NavigationViewStub.cs
+ PageStub.cs
+ PathStub.cs
+ PickerStub.cs
+ PointCollectionStub.cs
+ PolygonStub.cs
+ PolylineStub.cs
+ ProgressBarStub.cs
+ RadialGradientPaintStub.cs
+ RadioButtonStub.cs
+ RectangleStub.cs
+ RefreshViewStub.cs
+ RoundRectangleStub.cs
+ ScrollViewStub.cs
+ SearchBarStub.cs
+ ShadowStub.cs
+ ShapeViewStub.cs
+ SliderStub.cs
+ StepperStub.cs
+ StubBase.cs
+ StubBaseHandler.cs
+ SwipeItemsStub.cs
+ SwipeItemStub.cs
+ SwipeViewStub.cs
+ SwitchStub.cs
+ TimePickerStub.cs
+ UrlWebViewSourceStub.cs
+ VerticalStackLayoutStub.cs
+ WebView.cs
+ WindowHandlerProxyStub.cs
+TestCategory.cs
+TestCollections.cs
+
+[metadataReferences]
+../../../../artifacts/bin/
+ Controls.Core/Debug/net11.0-android36.1/ref/Microsoft.Maui.Controls.dll
+ Controls.Xaml/Debug/net11.0-android36.1/ref/Microsoft.Maui.Controls.Xaml.dll
+ Core.DeviceTests.Shared/Debug/net11.0-android/ref/Microsoft.Maui.DeviceTests.Shared.dll
+ Core/Debug/net11.0-android36.1/ref/Microsoft.Maui.dll
+ Essentials/Debug/net11.0-android36.1/ref/Microsoft.Maui.Essentials.dll
+ Graphics/Debug/net11.0-android36.1/ref/Microsoft.Maui.Graphics.dll
+ TestUtils.DeviceTests.Runners/Debug/net11.0-android/ref/Microsoft.Maui.TestUtils.DeviceTests.Runners.dll
+ TestUtils.DeviceTests/Debug/net11.0-android/ref/Microsoft.Maui.TestUtils.DeviceTests.dll
+../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-android/designtime/_Microsoft.Android.Resource.Designer.dll
+<DOTNET>/packs/Microsoft.Android.Ref.36.1/36.99.0-preview.3.10/ref/net11.0/
+ Java.Interop.dll
+ Mono.Android.dll
+ Mono.Android.Export.dll
+ Mono.Android.Runtime.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/ref/net11.0/
+ Microsoft.CSharp.dll
+ Microsoft.VisualBasic.Core.dll
+ Microsoft.VisualBasic.dll
+ Microsoft.Win32.Primitives.dll
+ Microsoft.Win32.Registry.dll
+ mscorlib.dll
+ netstandard.dll
+ System.AppContext.dll
+ System.Buffers.dll
+ System.Collections.Concurrent.dll
+ System.Collections.dll
+ System.Collections.Immutable.dll
+ System.Collections.NonGeneric.dll
+ System.Collections.Specialized.dll
+ System.ComponentModel.Annotations.dll
+ System.ComponentModel.DataAnnotations.dll
+ System.ComponentModel.dll
+ System.ComponentModel.EventBasedAsync.dll
+ System.ComponentModel.Primitives.dll
+ System.ComponentModel.TypeConverter.dll
+ System.Configuration.dll
+ System.Console.dll
+ System.Core.dll
+ System.Data.Common.dll
+ System.Data.DataSetExtensions.dll
+ System.Data.dll
+ System.Diagnostics.Contracts.dll
+ System.Diagnostics.Debug.dll
+ System.Diagnostics.DiagnosticSource.dll
+ System.Diagnostics.FileVersionInfo.dll
+ System.Diagnostics.Process.dll
+ System.Diagnostics.StackTrace.dll
+ System.Diagnostics.TextWriterTraceListener.dll
+ System.Diagnostics.Tools.dll
+ System.Diagnostics.TraceSource.dll
+ System.Diagnostics.Tracing.dll
+ System.dll
+ System.Drawing.dll
+ System.Drawing.Primitives.dll
+ System.Dynamic.Runtime.dll
+ System.Formats.Asn1.dll
+ System.Formats.Tar.dll
+ System.Globalization.Calendars.dll
+ System.Globalization.dll
+ System.Globalization.Extensions.dll
+ System.IO.Compression.Brotli.dll
+ System.IO.Compression.dll
+ System.IO.Compression.FileSystem.dll
+ System.IO.Compression.ZipFile.dll
+ System.IO.dll
+ System.IO.FileSystem.AccessControl.dll
+ System.IO.FileSystem.dll
+ System.IO.FileSystem.DriveInfo.dll
+ System.IO.FileSystem.Primitives.dll
+ System.IO.FileSystem.Watcher.dll
+ System.IO.IsolatedStorage.dll
+ System.IO.MemoryMappedFiles.dll
+ System.IO.Pipelines.dll
+ System.IO.Pipes.AccessControl.dll
+ System.IO.Pipes.dll
+ System.IO.UnmanagedMemoryStream.dll
+ System.Linq.AsyncEnumerable.dll
+ System.Linq.dll
+ System.Linq.Expressions.dll
+ System.Linq.Parallel.dll
+ System.Linq.Queryable.dll
+ System.Memory.dll
+ System.Net.dll
+ System.Net.Http.dll
+ System.Net.Http.Json.dll
+ System.Net.HttpListener.dll
+ System.Net.Mail.dll
+ System.Net.NameResolution.dll
+ System.Net.NetworkInformation.dll
+ System.Net.Ping.dll
+ System.Net.Primitives.dll
+ System.Net.Quic.dll
+ System.Net.Requests.dll
+ System.Net.Security.dll
+ System.Net.ServerSentEvents.dll
+ System.Net.ServicePoint.dll
+ System.Net.Sockets.dll
+ System.Net.WebClient.dll
+ System.Net.WebHeaderCollection.dll
+ System.Net.WebProxy.dll
+ System.Net.WebSockets.Client.dll
+ System.Net.WebSockets.dll
+ System.Numerics.dll
+ System.Numerics.Vectors.dll
+ System.ObjectModel.dll
+ System.Reflection.DispatchProxy.dll
+ System.Reflection.dll
+ System.Reflection.Emit.dll
+ System.Reflection.Emit.ILGeneration.dll
+ System.Reflection.Emit.Lightweight.dll
+ System.Reflection.Extensions.dll
+ System.Reflection.Metadata.dll
+ System.Reflection.Primitives.dll
+ System.Reflection.TypeExtensions.dll
+ System.Resources.Reader.dll
+ System.Resources.ResourceManager.dll
+ System.Resources.Writer.dll
+ System.Runtime.CompilerServices.Unsafe.dll
+ System.Runtime.CompilerServices.VisualC.dll
+ System.Runtime.dll
+ System.Runtime.Extensions.dll
+ System.Runtime.Handles.dll
+ System.Runtime.InteropServices.dll
+ System.Runtime.InteropServices.JavaScript.dll
+ System.Runtime.InteropServices.RuntimeInformation.dll
+ System.Runtime.Intrinsics.dll
+ System.Runtime.Loader.dll
+ System.Runtime.Numerics.dll
+ System.Runtime.Serialization.dll
+ System.Runtime.Serialization.Formatters.dll
+ System.Runtime.Serialization.Json.dll
+ System.Runtime.Serialization.Primitives.dll
+ System.Runtime.Serialization.Xml.dll
+ System.Security.AccessControl.dll
+ System.Security.Claims.dll
+ System.Security.Cryptography.Algorithms.dll
+ System.Security.Cryptography.Cng.dll
+ System.Security.Cryptography.Csp.dll
+ System.Security.Cryptography.dll
+ System.Security.Cryptography.Encoding.dll
+ System.Security.Cryptography.OpenSsl.dll
+ System.Security.Cryptography.Primitives.dll
+ System.Security.Cryptography.X509Certificates.dll
+ System.Security.dll
+ System.Security.Principal.dll
+ System.Security.Principal.Windows.dll
+ System.Security.SecureString.dll
+ System.ServiceModel.Web.dll
+ System.ServiceProcess.dll
+ System.Text.Encoding.CodePages.dll
+ System.Text.Encoding.dll
+ System.Text.Encoding.Extensions.dll
+ System.Text.Encodings.Web.dll
+ System.Text.Json.dll
+ System.Text.RegularExpressions.dll
+ System.Threading.AccessControl.dll
+ System.Threading.Channels.dll
+ System.Threading.dll
+ System.Threading.Overlapped.dll
+ System.Threading.Tasks.Dataflow.dll
+ System.Threading.Tasks.dll
+ System.Threading.Tasks.Extensions.dll
+ System.Threading.Tasks.Parallel.dll
+ System.Threading.Thread.dll
+ System.Threading.ThreadPool.dll
+ System.Threading.Timer.dll
+ System.Transactions.dll
+ System.Transactions.Local.dll
+ System.ValueTuple.dll
+ System.Web.dll
+ System.Web.HttpUtility.dll
+ System.Windows.dll
+ System.Xml.dll
+ System.Xml.Linq.dll
+ System.Xml.ReaderWriter.dll
+ System.Xml.Serialization.dll
+ System.Xml.XDocument.dll
+ System.Xml.XmlDocument.dll
+ System.Xml.XmlSerializer.dll
+ System.Xml.XPath.dll
+ System.Xml.XPath.XDocument.dll
+ WindowsBase.dll
+<NUGET>/
+ googlegson/2.13.2.2/lib/net10.0-android36.0/GoogleGson.dll
+ microsoft.dotnet.xharness.testrunners.common/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Common.dll
+ microsoft.dotnet.xharness.testrunners.xunit/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Xunit.dll
+ microsoft.extensions.configuration.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Abstractions.dll
+ microsoft.extensions.configuration.binder/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Binder.dll
+ microsoft.extensions.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.dll
+ microsoft.extensions.dependencyinjection.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.dll
+ microsoft.extensions.diagnostics.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+ microsoft.extensions.fileproviders.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+ microsoft.extensions.hosting.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Hosting.Abstractions.dll
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Configuration.dll
+ microsoft.extensions.logging.console/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Console.dll
+ microsoft.extensions.logging/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.options.configurationextensions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Primitives.dll
+ mono.options/6.6.0.161/lib/netstandard2.0/Mono.Options.dll
+ xamarin.android.glide.annotations/5.0.5.2/lib/net10.0-android36.0/Xamarin.Android.Glide.Annotations.dll
+ xamarin.android.glide.disklrucache/5.0.5.2/lib/net10.0-android36.0/Xamarin.Android.Glide.DiskLruCache.dll
+ xamarin.android.glide.gifdecoder/5.0.5.2/lib/net10.0-android36.0/Xamarin.Android.Glide.GifDecoder.dll
+ xamarin.android.glide/5.0.5.2/lib/net10.0-android36.0/Xamarin.Android.Glide.dll
+ xamarin.androidx.activity.ktx/1.12.4.1/lib/net10.0-android36.0/Xamarin.AndroidX.Activity.Ktx.dll
+ xamarin.androidx.activity/1.12.4.1/lib/net10.0-android36.0/Xamarin.AndroidX.Activity.dll
+ xamarin.androidx.annotation.experimental/1.5.1.3/lib/net10.0-android36.0/Xamarin.AndroidX.Annotation.Experimental.dll
+ xamarin.androidx.annotation.jvm/1.9.1.7/lib/net10.0-android36.0/Xamarin.AndroidX.Annotation.Jvm.dll
+ xamarin.androidx.annotation/1.9.1.7/lib/net10.0-android36.0/Xamarin.AndroidX.Annotation.dll
+ xamarin.androidx.appcompat.appcompatresources/1.7.1.3/lib/net10.0-android36.0/Xamarin.AndroidX.AppCompat.AppCompatResources.dll
+ xamarin.androidx.appcompat/1.7.1.3/lib/net10.0-android36.0/Xamarin.AndroidX.AppCompat.dll
+ xamarin.androidx.arch.core.common/2.2.0.20/lib/net10.0-android36.0/Xamarin.AndroidX.Arch.Core.Common.dll
+ xamarin.androidx.arch.core.runtime/2.2.0.20/lib/net10.0-android36.0/Xamarin.AndroidX.Arch.Core.Runtime.dll
+ xamarin.androidx.browser/1.9.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Browser.dll
+ xamarin.androidx.cardview/1.0.0.38/lib/net10.0-android36.0/Xamarin.AndroidX.CardView.dll
+ xamarin.androidx.collection.jvm/1.5.0.5/lib/net10.0-android36.0/Xamarin.AndroidX.Collection.Jvm.dll
+ xamarin.androidx.collection.ktx/1.5.0.5/lib/net10.0-android36.0/Xamarin.AndroidX.Collection.Ktx.dll
+ xamarin.androidx.collection/1.5.0.5/lib/net10.0-android36.0/Xamarin.AndroidX.Collection.dll
+ xamarin.androidx.concurrent.futures/1.3.0.3/lib/net10.0-android36.0/Xamarin.AndroidX.Concurrent.Futures.dll
+ xamarin.androidx.constraintlayout.core/1.1.1.5/lib/net10.0-android36.0/Xamarin.AndroidX.ConstraintLayout.Core.dll
+ xamarin.androidx.constraintlayout/2.2.1.5/lib/net10.0-android36.0/Xamarin.AndroidX.ConstraintLayout.dll
+ xamarin.androidx.coordinatorlayout/1.3.0.5/lib/net10.0-android36.0/Xamarin.AndroidX.CoordinatorLayout.dll
+ xamarin.androidx.core.core.ktx/1.17.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Core.Core.Ktx.dll
+ xamarin.androidx.core.viewtree/1.0.0.5/lib/net10.0-android36.0/Xamarin.AndroidX.Core.ViewTree.dll
+ xamarin.androidx.core/1.17.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Core.dll
+ xamarin.androidx.cursoradapter/1.0.0.36/lib/net10.0-android36.0/Xamarin.AndroidX.CursorAdapter.dll
+ xamarin.androidx.customview.poolingcontainer/1.1.0.3/lib/net10.0-android36.0/Xamarin.AndroidX.CustomView.PoolingContainer.dll
+ xamarin.androidx.customview/1.2.0.3/lib/net10.0-android36.0/Xamarin.AndroidX.CustomView.dll
+ xamarin.androidx.drawerlayout/1.2.0.20/lib/net10.0-android36.0/Xamarin.AndroidX.DrawerLayout.dll
+ xamarin.androidx.dynamicanimation/1.1.0.5/lib/net10.0-android36.0/Xamarin.AndroidX.DynamicAnimation.dll
+ xamarin.androidx.emoji2.viewshelper/1.6.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Emoji2.ViewsHelper.dll
+ xamarin.androidx.emoji2/1.6.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Emoji2.dll
+ xamarin.androidx.exifinterface/1.4.2.2/lib/net10.0-android36.0/Xamarin.AndroidX.ExifInterface.dll
+ xamarin.androidx.fragment.ktx/1.8.9.2/lib/net10.0-android36.0/Xamarin.AndroidX.Fragment.Ktx.dll
+ xamarin.androidx.fragment/1.8.9.2/lib/net10.0-android36.0/Xamarin.AndroidX.Fragment.dll
+ xamarin.androidx.graphics.shapes.android/1.1.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Graphics.Shapes.Android.dll
+ xamarin.androidx.graphics.shapes/1.1.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Graphics.Shapes.dll
+ xamarin.androidx.interpolator/1.0.0.36/lib/net10.0-android36.0/Xamarin.AndroidX.Interpolator.dll
+ xamarin.androidx.lifecycle.common.jvm/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.Common.Jvm.dll
+ xamarin.androidx.lifecycle.common/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.Common.dll
+ xamarin.androidx.lifecycle.livedata.core.ktx/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.LiveData.Core.Ktx.dll
+ xamarin.androidx.lifecycle.livedata.core/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.LiveData.Core.dll
+ xamarin.androidx.lifecycle.livedata/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.LiveData.dll
+ xamarin.androidx.lifecycle.process/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.Process.dll
+ xamarin.androidx.lifecycle.runtime.android/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.Runtime.Android.dll
+ xamarin.androidx.lifecycle.runtime.ktx.android/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.Runtime.Ktx.Android.dll
+ xamarin.androidx.lifecycle.runtime.ktx/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.Runtime.Ktx.dll
+ xamarin.androidx.lifecycle.runtime/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.Runtime.dll
+ xamarin.androidx.lifecycle.viewmodel.android/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.ViewModel.Android.dll
+ xamarin.androidx.lifecycle.viewmodel.ktx/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.ViewModel.Ktx.dll
+ xamarin.androidx.lifecycle.viewmodel/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.ViewModel.dll
+ xamarin.androidx.lifecycle.viewmodelsavedstate.android/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.ViewModelSavedState.Android.dll
+ xamarin.androidx.lifecycle.viewmodelsavedstate/2.10.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.Lifecycle.ViewModelSavedState.dll
+ xamarin.androidx.loader/1.1.0.36/lib/net10.0-android36.0/Xamarin.AndroidX.Loader.dll
+ xamarin.androidx.navigation.common.android/2.9.7.1/lib/net10.0-android36.0/Xamarin.AndroidX.Navigation.Common.Android.dll
+ xamarin.androidx.navigation.common/2.9.7.1/lib/net10.0-android36.0/Xamarin.AndroidX.Navigation.Common.dll
+ xamarin.androidx.navigation.fragment/2.9.7.1/lib/net10.0-android36.0/Xamarin.AndroidX.Navigation.Fragment.dll
+ xamarin.androidx.navigation.runtime.android/2.9.7.1/lib/net10.0-android36.0/Xamarin.AndroidX.Navigation.Runtime.Android.dll
+ xamarin.androidx.navigation.runtime/2.9.7.1/lib/net10.0-android36.0/Xamarin.AndroidX.Navigation.Runtime.dll
+ xamarin.androidx.navigation.ui/2.9.7.1/lib/net10.0-android36.0/Xamarin.AndroidX.Navigation.UI.dll
+ xamarin.androidx.navigationevent.android/1.0.2.1/lib/net10.0-android36.0/Xamarin.AndroidX.NavigationEvent.Android.dll
+ xamarin.androidx.navigationevent/1.0.2.1/lib/net10.0-android36.0/Xamarin.AndroidX.NavigationEvent.dll
+ xamarin.androidx.profileinstaller.profileinstaller/1.4.1.7/lib/net10.0-android36.0/Xamarin.AndroidX.ProfileInstaller.ProfileInstaller.dll
+ xamarin.androidx.recyclerview/1.4.0.5/lib/net10.0-android36.0/Xamarin.AndroidX.RecyclerView.dll
+ xamarin.androidx.resourceinspection.annotation/1.0.1.24/lib/net10.0-android36.0/Xamarin.AndroidX.ResourceInspection.Annotation.dll
+ xamarin.androidx.savedstate.savedstate.android/1.4.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.SavedState.SavedState.Android.dll
+ xamarin.androidx.savedstate.savedstate.ktx/1.4.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.SavedState.SavedState.Ktx.dll
+ xamarin.androidx.savedstate/1.4.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.SavedState.dll
+ xamarin.androidx.security.securitycrypto/1.1.0.4-alpha07/lib/net10.0-android36.0/Xamarin.AndroidX.Security.SecurityCrypto.dll
+ xamarin.androidx.slidingpanelayout/1.2.0.24/lib/net10.0-android36.0/Xamarin.AndroidX.SlidingPaneLayout.dll
+ xamarin.androidx.startup.startupruntime/1.2.0.7/lib/net10.0-android36.0/Xamarin.AndroidX.Startup.StartupRuntime.dll
+ xamarin.androidx.swiperefreshlayout/1.2.0.2/lib/net10.0-android36.0/Xamarin.AndroidX.SwipeRefreshLayout.dll
+ xamarin.androidx.tracing.tracing.android/1.3.0.3/lib/net10.0-android36.0/Xamarin.AndroidX.Tracing.Tracing.Android.dll
+ xamarin.androidx.tracing.tracing/1.3.0.3/lib/net10.0-android36.0/Xamarin.AndroidX.Tracing.Tracing.dll
+ xamarin.androidx.transition/1.7.0.1/lib/net10.0-android36.0/Xamarin.AndroidX.Transition.dll
+ xamarin.androidx.vectordrawable.animated/1.2.0.10/lib/net10.0-android36.0/Xamarin.AndroidX.VectorDrawable.Animated.dll
+ xamarin.androidx.vectordrawable/1.2.0.10/lib/net10.0-android36.0/Xamarin.AndroidX.VectorDrawable.dll
+ xamarin.androidx.versionedparcelable/1.2.1.5/lib/net10.0-android36.0/Xamarin.AndroidX.VersionedParcelable.dll
+ xamarin.androidx.viewpager/1.1.0.6/lib/net10.0-android36.0/Xamarin.AndroidX.ViewPager.dll
+ xamarin.androidx.viewpager2/1.1.0.10/lib/net10.0-android36.0/Xamarin.AndroidX.ViewPager2.dll
+ xamarin.androidx.window.windowcore.jvm/1.5.1.2/lib/net10.0-android36.0/Xamarin.AndroidX.Window.WindowCore.Jvm.dll
+ xamarin.androidx.window.windowcore/1.5.1.2/lib/net10.0-android36.0/Xamarin.AndroidX.Window.WindowCore.dll
+ xamarin.androidx.window/1.5.1.2/lib/net10.0-android36.0/Xamarin.AndroidX.Window.dll
+ xamarin.google.android.material/1.13.0.2/lib/net10.0-android36.0/Xamarin.Google.Android.Material.dll
+ xamarin.google.code.findbugs.jsr305/3.0.2.23/lib/net10.0-android36.0/Jsr305Binding.dll
+ xamarin.google.crypto.tink.android/1.20.0.2/lib/net10.0-android36.0/Xamarin.Google.Crypto.Tink.Android.dll
+ xamarin.google.errorprone.annotations/2.48.0.1/lib/net10.0-android36.0/Xamarin.Google.ErrorProne.Annotations.dll
+ xamarin.google.guava.listenablefuture/1.0.0.31/lib/net10.0-android36.0/Xamarin.Google.Guava.ListenableFuture.dll
+ xamarin.jetbrains.annotations/26.1.0.1/lib/net10.0-android36.0/Xamarin.Jetbrains.Annotations.dll
+ xamarin.jspecify/1.0.0.6/lib/net10.0-android36.0/Xamarin.JSpecify.dll
+ xamarin.kotlin.stdlib/2.3.10.1/lib/net10.0-android36.0/Xamarin.Kotlin.StdLib.dll
+ xamarin.kotlinx.coroutines.android/1.10.2.3/lib/net10.0-android36.0/Xamarin.KotlinX.Coroutines.Android.dll
+ xamarin.kotlinx.coroutines.core.jvm/1.10.2.3/lib/net10.0-android36.0/Xamarin.KotlinX.Coroutines.Core.Jvm.dll
+ xamarin.kotlinx.coroutines.core/1.10.2.3/lib/net10.0-android36.0/Xamarin.KotlinX.Coroutines.Core.dll
+ xamarin.kotlinx.serialization.core.jvm/1.10.0.1/lib/net10.0-android36.0/Xamarin.KotlinX.Serialization.Core.Jvm.dll
+ xamarin.kotlinx.serialization.core/1.10.0.1/lib/net10.0-android36.0/Xamarin.KotlinX.Serialization.Core.dll
+ xunit.abstractions/2.0.3/lib/netstandard2.0/xunit.abstractions.dll
+ xunit.assert/2.9.0/lib/net6.0/xunit.assert.dll
+ xunit.extensibility.core/2.9.0/lib/netstandard1.1/xunit.core.dll
+ xunit.extensibility.execution/2.9.0/lib/netstandard1.1/xunit.execution.dotnet.dll
+ xunit.runner.utility/2.9.0/lib/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll
+
+[analyzerReferences]
+../../../../.buildtasks/
+ Microsoft.Maui.Controls.BindingSourceGen.dll
+ Microsoft.Maui.Controls.SourceGen.dll
+../../../../artifacts/bin/TestUtils.DeviceTests.Runners.SourceGen/Debug/netstandard2.0/Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen.dll
+<DOTNET>/packs/
+ Microsoft.Android.Ref.36.1/36.99.0-preview.3.10/analyzers/dotnet/cs/Microsoft.Android.Sdk.Analysis.dll
+ Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/analyzers/dotnet/cs/
+  Microsoft.Interop.ComInterfaceGenerator.dll
+  Microsoft.Interop.JavaScript.JSImportGenerator.dll
+  Microsoft.Interop.LibraryImportGenerator.dll
+  Microsoft.Interop.SourceGeneration.dll
+  System.Text.Json.SourceGeneration.dll
+  System.Text.RegularExpressions.Generator.dll
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/analyzers/
+ Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+ Microsoft.CodeAnalysis.NetAnalyzers.dll
+<NUGET>/
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
+ microsoft.net.illink.tasks/11.0.0-preview.3.26207.106/analyzers/dotnet/cs/
+  ILLink.CodeFixProvider.dll
+  ILLink.RoslynAnalyzer.dll
+ xunit.analyzers/1.15.0/analyzers/dotnet/cs/
+  xunit.analyzers.dll
+  xunit.analyzers.fixes.dll
+
+[analyzerConfigFiles]
+../../../../
+ .editorconfig
+ artifacts/obj/Core.DeviceTests/Debug/net11.0-android/Core.DeviceTests.GeneratedMSBuildEditorConfig.editorconfig
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/
+ analyzers/build/config/analysislevel_11_default.globalconfig
+ codestyle/cs/build/config/analysislevelstyle_default.globalconfig
+
+[additionalFiles]
+Resources/appiconfg.svg
+
+---
+
+[project]
+language=C#
+primary
+lastDtbSucceeded
+
+[sliceDimensions]
+TargetFramework=net11.0-ios
+
+[properties]
+AssemblyName=Microsoft.Maui.Core.DeviceTests
+CommandLineArgsForDesignTimeEvaluation=-langversion:Latest -checksumalgorithm:SHA256 -define:TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=14.0
+ProjectAssetsFile=<PATH>../../../../artifacts/obj/Core.DeviceTests/project.assets.json
+RootNamespace=Microsoft.Maui.DeviceTests
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=*Undefined*
+TargetFrameworkIdentifier=.NETCoreApp
+TargetPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-ios/iossimulator-x64/Microsoft.Maui.Core.DeviceTests.dll
+TargetRefPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-ios/iossimulator-x64/ref/Microsoft.Maui.Core.DeviceTests.dll
+TemporaryDependencyNodeTargetIdentifier=net11.0-ios
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1705,1591,CA1416,NU5105,NETSDK1206,NU1702,IL6001,AD0001,1701,1702,8002
+/fullpaths
+/nostdlib+
+/platform:x64
+/errorreport:prompt
+/warn:11
+/define:__IOS__;__MOBILE__;__UNIFIED__;TRACE;DEBUG;NET;NET11_0;NETCOREAPP;IOS;IOS26_2;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NET11_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;IOS10_0_OR_GREATER;IOS10_1_OR_GREATER;IOS10_2_OR_GREATER;IOS11_0_OR_GREATER;IOS11_1_OR_GREATER;IOS11_2_OR_GREATER;IOS11_3_OR_GREATER;IOS11_4_OR_GREATER;IOS12_0_OR_GREATER;IOS12_1_OR_GREATER;IOS12_2_OR_GREATER;IOS12_3_OR_GREATER;IOS12_4_OR_GREATER;IOS13_0_OR_GREATER;IOS13_1_OR_GREATER;IOS13_2_OR_GREATER;IOS13_3_OR_GREATER;IOS13_4_OR_GREATER;IOS13_5_OR_GREATER;IOS13_6_OR_GREATER;IOS14_0_OR_GREATER;IOS14_1_OR_GREATER;IOS14_2_OR_GREATER;IOS14_3_OR_GREATER;IOS14_4_OR_GREATER;IOS14_5_OR_GREATER;IOS15_0_OR_GREATER;IOS15_2_OR_GREATER;IOS15_4_OR_GREATER;IOS16_0_OR_GREATER;IOS16_1_OR_GREATER;IOS16_2_OR_GREATER;IOS16_4_OR_GREATER;IOS17_0_OR_GREATER;IOS17_2_OR_GREATER;IOS17_4_OR_GREATER;IOS17_5_OR_GREATER;IOS18_0_OR_GREATER;IOS18_1_OR_GREATER;IOS18_2_OR_GREATER;IOS18_3_OR_GREATER;IOS18_4_OR_GREATER;IOS18_5_OR_GREATER;IOS26_0_OR_GREATER;IOS26_1_OR_GREATER;IOS26_2_OR_GREATER
+/highentropyva+
+/features:"InterceptorsNamespaces=;Microsoft.Extensions.Validation.Generated;Microsoft.Maui.Controls.Generated"
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-ios/iossimulator-x64/Microsoft.Maui.Core.DeviceTests.dll
+/refout:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-ios/iossimulator-x64/refint/Microsoft.Maui.Core.DeviceTests.dll
+/target:exe
+/warnaserror+
+/utf8output
+/deterministic+
+/checksumalgorithm:SHA256
+/langversion:Latest
+/warnaserror+:NU1605,SYSLIB0011
+
+[sourceFiles]
+../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-ios/iossimulator-x64/
+ .NETCoreApp,Version=v11.0.AssemblyAttributes.cs
+ Core.DeviceTests.AssemblyInfo.cs
+ Core.DeviceTests.nfloat.g.cs
+CoreDeviceTestExtensions.cs
+GlobalNamespaces.cs
+Graphics/GraphicsTests.cs
+Handlers/ActivityIndicator/
+ ActivityIndicatorHandlerTests.cs
+ ActivityIndicatorHandlerTests.iOS.cs
+Handlers/Border/
+ BorderHandlerTests.cs
+ BorderHandlerTests.iOS.cs
+Handlers/Button/
+ ButtonHandlerTests.cs
+ ButtonHandlerTests.iOS.cs
+Handlers/CheckBox/
+ CheckBoxHandlerTests.cs
+ CheckBoxHandlerTests.iOS.cs
+Handlers/ContentView/
+ ContentViewTests.cs
+ ContentViewTests.iOS.cs
+Handlers/
+ CoreHandlerTestBase.cs
+ CoreHandlerTestBaseOfT.cs
+ DatePicker/
+  DatePickerHandlerTests.cs
+  DatePickerHandlerTests.iOS.cs
+ Editor/
+  EditorHandlerTests.cs
+  EditorHandlerTests.iOS.cs
+ Element/ElementTests.cs
+ Entry/
+  EntryHandlerTests.cs
+  EntryHandlerTests.iOS.cs
+ GraphicsView/
+  GraphicsViewHandlerTests.cs
+  GraphicsViewHandlerTests.iOS.cs
+ Image/
+  ImageHandlerTests.cs
+  ImageHandlerTests.iOS.cs
+ ImageButton/
+  ImageButtonHandlerTests.cs
+  ImageButtonHandlerTests.iOS.cs
+ IndicatorView/
+  IndicatorViewHandlerTests.cs
+  IndicatorViewHandlerTests.iOS.cs
+ Label/
+  LabelHandlerTests.cs
+  LabelHandlerTests.iOS.cs
+ Layout/
+  LayoutHandlerTests.cs
+  LayoutHandlerTests.iOS.cs
+ Navigation/NavigationViewHandlerTests.cs
+ Page/
+  PageHandlerTests.cs
+  PageHandlerTests.iOS.cs
+ Picker/
+  PickerHandlerTests.cs
+  PickerHandlerTests.iOS.cs
+ ProgressBar/
+  ProgressBarHandlerTests.cs
+  ProgressBarHandlerTests.iOS.cs
+ RadioButton/RadioButtonHandlerTests.cs
+ RefreshView/
+  RefreshViewHandlerTests.cs
+  RefreshViewHandlerTests.iOS.cs
+ ScrollView/
+  ScrollViewHandlerTests.cs
+  ScrollViewHandlerTests.iOS.cs
+ SearchBar/
+  SearchBarHandlerTests.cs
+  SearchBarHandlerTests.iOS.cs
+ ShapeView/
+  ShapeViewHandlerTests.cs
+  ShapeViewHandlerTests.iOS.cs
+ Slider/
+  SliderHandlerTests.cs
+  SliderHandlerTests.iOS.cs
+ Stepper/
+  StepperHandlerTests.cs
+  StepperHandlerTests.iOS.cs
+ SwipeView/SwipeViewHandlerTests.cs
+ Switch/
+  SwitchHandlerTests.cs
+  SwitchHandlerTests.iOS.cs
+ TimePicker/
+  TimePickerHandlerTests.cs
+  TimePickerHandlerTests.iOS.cs
+ View/
+  ViewHandlerTests.cs
+  ViewHandlerTests.iOS.cs
+ WebView/
+  WebViewHandlerTests.cs
+  WebViewHandlerTests.iOS.cs
+ Window/
+  WindowHandlerTests.cs
+  WindowHandlerTests.iOS.cs
+MauiProgram.cs
+Memory/
+ CALayerAutosizeToSuperLayerBehaviorTests.cs
+ UIViewSubclassTests.cs
+Services/
+ Dispatching/DispatcherTests.cs
+ FontManagerTests.cs
+ FontManagerTests.iOS.cs
+ ImageSource/
+  BaseImageSourceServiceTests.cs
+  BaseImageSourceServiceTests.iOS.cs
+  FileImageSourceServiceTests.cs
+  FileImageSourceServiceTests.iOS.cs
+  FontImageSourceServiceTests.cs
+  FontImageSourceServiceTests.iOS.cs
+  ImageSourceServiceTests.cs
+  ImageSourceServiceTests.iOS.cs
+  StreamImageSourceServiceTests.cs
+  StreamImageSourceServiceTests.iOS.cs
+  UriImageSourceServiceTests.cs
+  UriImageSourceServiceTests.iOS.cs
+Stubs/
+ ActivityIndicatorStub.cs
+ BorderStub.cs
+ ButtonStub.cs
+ ButtonWithContainerStub.cs
+ CheckBoxStub.cs
+ ContentViewStub.cs
+ CountedImageHandler.cs
+ CountedImageHandler.iOS.cs
+ CountedImageSourceServiceStub.cs
+ CountedImageSourceServiceStub.iOS.cs
+ CountedImageSourceStub.cs
+ CustomImageCacheStub.iOS.cs
+ CustomImageSourceServiceStub.iOS.cs
+ CustomImageSourceStub.cs
+ DatePickerStub.cs
+ EditorStub.cs
+ ElementHandlerStub.cs
+ ElementStub.cs
+ EllipseStub.cs
+ EntryStub.cs
+ GraphicsViewStub.cs
+ HorizontalStackLayoutStub.cs
+ HtmlWebViewSourceStub.cs
+ IImageStub.cs
+ ImageButtonStub.cs
+ ImageSourceStub.cs
+ ImageStub.cs
+ IndicatorViewStub.cs
+ LabelStub.cs
+ LayoutManagerStub.cs
+ LayoutStub.cs
+ LinearGradientPaintStub.cs
+ LineStub.cs
+ NavigationViewStub.cs
+ PageStub.cs
+ PathStub.cs
+ PickerStub.cs
+ PointCollectionStub.cs
+ PolygonStub.cs
+ PolylineStub.cs
+ ProgressBarStub.cs
+ RadialGradientPaintStub.cs
+ RadioButtonStub.cs
+ RectangleStub.cs
+ RefreshViewStub.cs
+ RoundRectangleStub.cs
+ ScrollViewStub.cs
+ SearchBarStub.cs
+ ShadowStub.cs
+ ShapeViewStub.cs
+ SliderStub.cs
+ StepperStub.cs
+ StubBase.cs
+ StubBaseHandler.cs
+ SwipeItemsStub.cs
+ SwipeItemStub.cs
+ SwipeViewStub.cs
+ SwitchStub.cs
+ TimePickerStub.cs
+ UrlWebViewSourceStub.cs
+ VerticalStackLayoutStub.cs
+ WebView.cs
+ WindowHandlerProxyStub.cs
+TestCategory.cs
+TestCollections.cs
+
+[metadataReferences]
+../../../../artifacts/bin/
+ Controls.Core/Debug/net11.0-ios26.2/ref/Microsoft.Maui.Controls.dll
+ Controls.Xaml/Debug/net11.0-ios26.2/ref/Microsoft.Maui.Controls.Xaml.dll
+ Core.DeviceTests.Shared/Debug/net11.0-ios/ref/Microsoft.Maui.DeviceTests.Shared.dll
+ Core/Debug/net11.0-ios26.2/ref/Microsoft.Maui.dll
+ Essentials/Debug/net11.0-ios26.2/ref/Microsoft.Maui.Essentials.dll
+ Graphics/Debug/net11.0-ios26.2/ref/Microsoft.Maui.Graphics.dll
+ TestUtils.DeviceTests.Runners/Debug/net11.0-ios/ref/Microsoft.Maui.TestUtils.DeviceTests.Runners.dll
+ TestUtils.DeviceTests/Debug/net11.0-ios/ref/Microsoft.Maui.TestUtils.DeviceTests.dll
+<DOTNET>/packs/
+ Microsoft.iOS.Ref.net11.0_26.2/26.2.11588-net11-p3/ref/net11.0/Microsoft.iOS.dll
+ Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/ref/net11.0/
+  Microsoft.CSharp.dll
+  Microsoft.VisualBasic.Core.dll
+  Microsoft.VisualBasic.dll
+  Microsoft.Win32.Primitives.dll
+  Microsoft.Win32.Registry.dll
+  mscorlib.dll
+  netstandard.dll
+  System.AppContext.dll
+  System.Buffers.dll
+  System.Collections.Concurrent.dll
+  System.Collections.dll
+  System.Collections.Immutable.dll
+  System.Collections.NonGeneric.dll
+  System.Collections.Specialized.dll
+  System.ComponentModel.Annotations.dll
+  System.ComponentModel.DataAnnotations.dll
+  System.ComponentModel.dll
+  System.ComponentModel.EventBasedAsync.dll
+  System.ComponentModel.Primitives.dll
+  System.ComponentModel.TypeConverter.dll
+  System.Configuration.dll
+  System.Console.dll
+  System.Core.dll
+  System.Data.Common.dll
+  System.Data.DataSetExtensions.dll
+  System.Data.dll
+  System.Diagnostics.Contracts.dll
+  System.Diagnostics.Debug.dll
+  System.Diagnostics.DiagnosticSource.dll
+  System.Diagnostics.FileVersionInfo.dll
+  System.Diagnostics.Process.dll
+  System.Diagnostics.StackTrace.dll
+  System.Diagnostics.TextWriterTraceListener.dll
+  System.Diagnostics.Tools.dll
+  System.Diagnostics.TraceSource.dll
+  System.Diagnostics.Tracing.dll
+  System.dll
+  System.Drawing.dll
+  System.Drawing.Primitives.dll
+  System.Dynamic.Runtime.dll
+  System.Formats.Asn1.dll
+  System.Formats.Tar.dll
+  System.Globalization.Calendars.dll
+  System.Globalization.dll
+  System.Globalization.Extensions.dll
+  System.IO.Compression.Brotli.dll
+  System.IO.Compression.dll
+  System.IO.Compression.FileSystem.dll
+  System.IO.Compression.ZipFile.dll
+  System.IO.dll
+  System.IO.FileSystem.AccessControl.dll
+  System.IO.FileSystem.dll
+  System.IO.FileSystem.DriveInfo.dll
+  System.IO.FileSystem.Primitives.dll
+  System.IO.FileSystem.Watcher.dll
+  System.IO.IsolatedStorage.dll
+  System.IO.MemoryMappedFiles.dll
+  System.IO.Pipelines.dll
+  System.IO.Pipes.AccessControl.dll
+  System.IO.Pipes.dll
+  System.IO.UnmanagedMemoryStream.dll
+  System.Linq.AsyncEnumerable.dll
+  System.Linq.dll
+  System.Linq.Expressions.dll
+  System.Linq.Parallel.dll
+  System.Linq.Queryable.dll
+  System.Memory.dll
+  System.Net.dll
+  System.Net.Http.dll
+  System.Net.Http.Json.dll
+  System.Net.HttpListener.dll
+  System.Net.Mail.dll
+  System.Net.NameResolution.dll
+  System.Net.NetworkInformation.dll
+  System.Net.Ping.dll
+  System.Net.Primitives.dll
+  System.Net.Quic.dll
+  System.Net.Requests.dll
+  System.Net.Security.dll
+  System.Net.ServerSentEvents.dll
+  System.Net.ServicePoint.dll
+  System.Net.Sockets.dll
+  System.Net.WebClient.dll
+  System.Net.WebHeaderCollection.dll
+  System.Net.WebProxy.dll
+  System.Net.WebSockets.Client.dll
+  System.Net.WebSockets.dll
+  System.Numerics.dll
+  System.Numerics.Vectors.dll
+  System.ObjectModel.dll
+  System.Reflection.DispatchProxy.dll
+  System.Reflection.dll
+  System.Reflection.Emit.dll
+  System.Reflection.Emit.ILGeneration.dll
+  System.Reflection.Emit.Lightweight.dll
+  System.Reflection.Extensions.dll
+  System.Reflection.Metadata.dll
+  System.Reflection.Primitives.dll
+  System.Reflection.TypeExtensions.dll
+  System.Resources.Reader.dll
+  System.Resources.ResourceManager.dll
+  System.Resources.Writer.dll
+  System.Runtime.CompilerServices.Unsafe.dll
+  System.Runtime.CompilerServices.VisualC.dll
+  System.Runtime.dll
+  System.Runtime.Extensions.dll
+  System.Runtime.Handles.dll
+  System.Runtime.InteropServices.dll
+  System.Runtime.InteropServices.JavaScript.dll
+  System.Runtime.InteropServices.RuntimeInformation.dll
+  System.Runtime.Intrinsics.dll
+  System.Runtime.Loader.dll
+  System.Runtime.Numerics.dll
+  System.Runtime.Serialization.dll
+  System.Runtime.Serialization.Formatters.dll
+  System.Runtime.Serialization.Json.dll
+  System.Runtime.Serialization.Primitives.dll
+  System.Runtime.Serialization.Xml.dll
+  System.Security.AccessControl.dll
+  System.Security.Claims.dll
+  System.Security.Cryptography.Algorithms.dll
+  System.Security.Cryptography.Cng.dll
+  System.Security.Cryptography.Csp.dll
+  System.Security.Cryptography.dll
+  System.Security.Cryptography.Encoding.dll
+  System.Security.Cryptography.OpenSsl.dll
+  System.Security.Cryptography.Primitives.dll
+  System.Security.Cryptography.X509Certificates.dll
+  System.Security.dll
+  System.Security.Principal.dll
+  System.Security.Principal.Windows.dll
+  System.Security.SecureString.dll
+  System.ServiceModel.Web.dll
+  System.ServiceProcess.dll
+  System.Text.Encoding.CodePages.dll
+  System.Text.Encoding.dll
+  System.Text.Encoding.Extensions.dll
+  System.Text.Encodings.Web.dll
+  System.Text.Json.dll
+  System.Text.RegularExpressions.dll
+  System.Threading.AccessControl.dll
+  System.Threading.Channels.dll
+  System.Threading.dll
+  System.Threading.Overlapped.dll
+  System.Threading.Tasks.Dataflow.dll
+  System.Threading.Tasks.dll
+  System.Threading.Tasks.Extensions.dll
+  System.Threading.Tasks.Parallel.dll
+  System.Threading.Thread.dll
+  System.Threading.ThreadPool.dll
+  System.Threading.Timer.dll
+  System.Transactions.dll
+  System.Transactions.Local.dll
+  System.ValueTuple.dll
+  System.Web.dll
+  System.Web.HttpUtility.dll
+  System.Windows.dll
+  System.Xml.dll
+  System.Xml.Linq.dll
+  System.Xml.ReaderWriter.dll
+  System.Xml.Serialization.dll
+  System.Xml.XDocument.dll
+  System.Xml.XmlDocument.dll
+  System.Xml.XmlSerializer.dll
+  System.Xml.XPath.dll
+  System.Xml.XPath.XDocument.dll
+  WindowsBase.dll
+<NUGET>/
+ microsoft.dotnet.xharness.testrunners.common/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Common.dll
+ microsoft.dotnet.xharness.testrunners.xunit/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Xunit.dll
+ microsoft.extensions.configuration.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Abstractions.dll
+ microsoft.extensions.configuration.binder/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Binder.dll
+ microsoft.extensions.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.dll
+ microsoft.extensions.dependencyinjection.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.dll
+ microsoft.extensions.diagnostics.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+ microsoft.extensions.fileproviders.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+ microsoft.extensions.hosting.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Hosting.Abstractions.dll
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Configuration.dll
+ microsoft.extensions.logging.console/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Console.dll
+ microsoft.extensions.logging/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.options.configurationextensions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Primitives.dll
+ mono.options/6.6.0.161/lib/netstandard2.0/Mono.Options.dll
+ xunit.abstractions/2.0.3/lib/netstandard2.0/xunit.abstractions.dll
+ xunit.assert/2.9.0/lib/net6.0/xunit.assert.dll
+ xunit.extensibility.core/2.9.0/lib/netstandard1.1/xunit.core.dll
+ xunit.extensibility.execution/2.9.0/lib/netstandard1.1/xunit.execution.dotnet.dll
+ xunit.runner.utility/2.9.0/lib/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll
+
+[analyzerReferences]
+../../../../.buildtasks/
+ Microsoft.Maui.Controls.BindingSourceGen.dll
+ Microsoft.Maui.Controls.SourceGen.dll
+../../../../artifacts/bin/TestUtils.DeviceTests.Runners.SourceGen/Debug/netstandard2.0/Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/analyzers/dotnet/cs/
+ Microsoft.Interop.ComInterfaceGenerator.dll
+ Microsoft.Interop.JavaScript.JSImportGenerator.dll
+ Microsoft.Interop.LibraryImportGenerator.dll
+ Microsoft.Interop.SourceGeneration.dll
+ System.Text.Json.SourceGeneration.dll
+ System.Text.RegularExpressions.Generator.dll
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/analyzers/
+ Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+ Microsoft.CodeAnalysis.NetAnalyzers.dll
+<NUGET>/
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
+ microsoft.net.illink.tasks/11.0.0-preview.3.26207.106/analyzers/dotnet/cs/
+  ILLink.CodeFixProvider.dll
+  ILLink.RoslynAnalyzer.dll
+ xunit.analyzers/1.15.0/analyzers/dotnet/cs/
+  xunit.analyzers.dll
+  xunit.analyzers.fixes.dll
+
+[analyzerConfigFiles]
+../../../../
+ .editorconfig
+ artifacts/obj/Core.DeviceTests/Debug/net11.0-ios/iossimulator-x64/Core.DeviceTests.GeneratedMSBuildEditorConfig.editorconfig
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/
+ analyzers/build/config/analysislevel_11_default.globalconfig
+ codestyle/cs/build/config/analysislevelstyle_default.globalconfig
+
+[additionalFiles]
+Resources/appiconfg.svg
+
+---
+
+[project]
+language=C#
+lastDtbSucceeded
+
+[sliceDimensions]
+TargetFramework=net11.0-maccatalyst
+
+[properties]
+AssemblyName=Microsoft.Maui.Core.DeviceTests
+CommandLineArgsForDesignTimeEvaluation=-langversion:Latest -checksumalgorithm:SHA256 -define:TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=14.0
+ProjectAssetsFile=<PATH>../../../../artifacts/obj/Core.DeviceTests/project.assets.json
+RootNamespace=Microsoft.Maui.DeviceTests
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=*Undefined*
+TargetFrameworkIdentifier=.NETCoreApp
+TargetPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-maccatalyst/maccatalyst-x64/Microsoft.Maui.Core.DeviceTests.dll
+TargetRefPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-maccatalyst/maccatalyst-x64/ref/Microsoft.Maui.Core.DeviceTests.dll
+TemporaryDependencyNodeTargetIdentifier=net11.0-maccatalyst
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1705,1591,CA1416,NU5105,NETSDK1206,NU1702,IL6001,AD0001,1701,1702,8002
+/fullpaths
+/nostdlib+
+/platform:x64
+/errorreport:prompt
+/warn:11
+/define:__MACCATALYST__;__IOS__;__MOBILE__;__UNIFIED__;TRACE;DEBUG;NET;NET11_0;NETCOREAPP;MACCATALYST;MACCATALYST26_2;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NET11_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;MACCATALYST13_1_OR_GREATER;MACCATALYST13_2_OR_GREATER;MACCATALYST13_3_OR_GREATER;MACCATALYST13_4_OR_GREATER;MACCATALYST13_5_OR_GREATER;MACCATALYST14_2_OR_GREATER;MACCATALYST14_3_OR_GREATER;MACCATALYST14_4_OR_GREATER;MACCATALYST14_5_OR_GREATER;MACCATALYST15_0_OR_GREATER;MACCATALYST15_2_OR_GREATER;MACCATALYST15_4_OR_GREATER;MACCATALYST16_1_OR_GREATER;MACCATALYST16_2_OR_GREATER;MACCATALYST16_4_OR_GREATER;MACCATALYST17_0_OR_GREATER;MACCATALYST17_2_OR_GREATER;MACCATALYST17_4_OR_GREATER;MACCATALYST17_5_OR_GREATER;MACCATALYST18_0_OR_GREATER;MACCATALYST18_1_OR_GREATER;MACCATALYST18_2_OR_GREATER;MACCATALYST18_3_OR_GREATER;MACCATALYST18_4_OR_GREATER;MACCATALYST18_5_OR_GREATER;MACCATALYST26_0_OR_GREATER;MACCATALYST26_1_OR_GREATER;MACCATALYST26_2_OR_GREATER
+/highentropyva+
+/features:"InterceptorsNamespaces=;Microsoft.Extensions.Validation.Generated;Microsoft.Maui.Controls.Generated"
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-maccatalyst/maccatalyst-x64/Microsoft.Maui.Core.DeviceTests.dll
+/refout:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-maccatalyst/maccatalyst-x64/refint/Microsoft.Maui.Core.DeviceTests.dll
+/target:exe
+/warnaserror+
+/utf8output
+/deterministic+
+/checksumalgorithm:SHA256
+/langversion:Latest
+/warnaserror+:NU1605,SYSLIB0011
+
+[sourceFiles]
+../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-maccatalyst/maccatalyst-x64/
+ .NETCoreApp,Version=v11.0.AssemblyAttributes.cs
+ Core.DeviceTests.AssemblyInfo.cs
+ Core.DeviceTests.nfloat.g.cs
+CoreDeviceTestExtensions.cs
+GlobalNamespaces.cs
+Graphics/GraphicsTests.cs
+Handlers/ActivityIndicator/
+ ActivityIndicatorHandlerTests.cs
+ ActivityIndicatorHandlerTests.iOS.cs
+Handlers/Border/
+ BorderHandlerTests.cs
+ BorderHandlerTests.iOS.cs
+Handlers/Button/
+ ButtonHandlerTests.cs
+ ButtonHandlerTests.iOS.cs
+Handlers/CheckBox/
+ CheckBoxHandlerTests.cs
+ CheckBoxHandlerTests.iOS.cs
+Handlers/ContentView/
+ ContentViewTests.cs
+ ContentViewTests.iOS.cs
+Handlers/
+ CoreHandlerTestBase.cs
+ CoreHandlerTestBaseOfT.cs
+ DatePicker/
+  DatePickerHandlerTests.cs
+  DatePickerHandlerTests.iOS.cs
+ Editor/
+  EditorHandlerTests.cs
+  EditorHandlerTests.iOS.cs
+ Element/ElementTests.cs
+ Entry/
+  EntryHandlerTests.cs
+  EntryHandlerTests.iOS.cs
+ GraphicsView/
+  GraphicsViewHandlerTests.cs
+  GraphicsViewHandlerTests.iOS.cs
+ Image/
+  ImageHandlerTests.cs
+  ImageHandlerTests.iOS.cs
+ ImageButton/
+  ImageButtonHandlerTests.cs
+  ImageButtonHandlerTests.iOS.cs
+ IndicatorView/
+  IndicatorViewHandlerTests.cs
+  IndicatorViewHandlerTests.iOS.cs
+ Label/
+  LabelHandlerTests.cs
+  LabelHandlerTests.iOS.cs
+ Layout/
+  LayoutHandlerTests.cs
+  LayoutHandlerTests.iOS.cs
+ Navigation/NavigationViewHandlerTests.cs
+ Page/
+  PageHandlerTests.cs
+  PageHandlerTests.iOS.cs
+ Picker/
+  PickerHandlerTests.cs
+  PickerHandlerTests.iOS.cs
+ ProgressBar/
+  ProgressBarHandlerTests.cs
+  ProgressBarHandlerTests.iOS.cs
+ RadioButton/RadioButtonHandlerTests.cs
+ RefreshView/
+  RefreshViewHandlerTests.cs
+  RefreshViewHandlerTests.iOS.cs
+ ScrollView/
+  ScrollViewHandlerTests.cs
+  ScrollViewHandlerTests.iOS.cs
+ SearchBar/
+  SearchBarHandlerTests.cs
+  SearchBarHandlerTests.iOS.cs
+ ShapeView/
+  ShapeViewHandlerTests.cs
+  ShapeViewHandlerTests.iOS.cs
+ Slider/
+  SliderHandlerTests.cs
+  SliderHandlerTests.iOS.cs
+ Stepper/
+  StepperHandlerTests.cs
+  StepperHandlerTests.iOS.cs
+ SwipeView/SwipeViewHandlerTests.cs
+ Switch/
+  SwitchHandlerTests.cs
+  SwitchHandlerTests.iOS.cs
+ TimePicker/
+  TimePickerHandlerTests.cs
+  TimePickerHandlerTests.iOS.cs
+ View/
+  ViewHandlerTests.cs
+  ViewHandlerTests.iOS.cs
+ WebView/
+  WebViewHandlerTests.cs
+  WebViewHandlerTests.iOS.cs
+ Window/
+  WindowHandlerTests.cs
+  WindowHandlerTests.iOS.cs
+MauiProgram.cs
+Memory/
+ CALayerAutosizeToSuperLayerBehaviorTests.cs
+ UIViewSubclassTests.cs
+Platforms/MacCatalyst/SceneDelegate.cs
+Services/
+ Dispatching/DispatcherTests.cs
+ FontManagerTests.cs
+ FontManagerTests.iOS.cs
+ ImageSource/
+  BaseImageSourceServiceTests.cs
+  BaseImageSourceServiceTests.iOS.cs
+  FileImageSourceServiceTests.cs
+  FileImageSourceServiceTests.iOS.cs
+  FontImageSourceServiceTests.cs
+  FontImageSourceServiceTests.iOS.cs
+  ImageSourceServiceTests.cs
+  ImageSourceServiceTests.iOS.cs
+  StreamImageSourceServiceTests.cs
+  StreamImageSourceServiceTests.iOS.cs
+  UriImageSourceServiceTests.cs
+  UriImageSourceServiceTests.iOS.cs
+Stubs/
+ ActivityIndicatorStub.cs
+ BorderStub.cs
+ ButtonStub.cs
+ ButtonWithContainerStub.cs
+ CheckBoxStub.cs
+ ContentViewStub.cs
+ CountedImageHandler.cs
+ CountedImageHandler.iOS.cs
+ CountedImageSourceServiceStub.cs
+ CountedImageSourceServiceStub.iOS.cs
+ CountedImageSourceStub.cs
+ CustomImageCacheStub.iOS.cs
+ CustomImageSourceServiceStub.iOS.cs
+ CustomImageSourceStub.cs
+ DatePickerStub.cs
+ EditorStub.cs
+ ElementHandlerStub.cs
+ ElementStub.cs
+ EllipseStub.cs
+ EntryStub.cs
+ GraphicsViewStub.cs
+ HorizontalStackLayoutStub.cs
+ HtmlWebViewSourceStub.cs
+ IImageStub.cs
+ ImageButtonStub.cs
+ ImageSourceStub.cs
+ ImageStub.cs
+ IndicatorViewStub.cs
+ LabelStub.cs
+ LayoutManagerStub.cs
+ LayoutStub.cs
+ LinearGradientPaintStub.cs
+ LineStub.cs
+ NavigationViewStub.cs
+ PageStub.cs
+ PathStub.cs
+ PickerStub.cs
+ PointCollectionStub.cs
+ PolygonStub.cs
+ PolylineStub.cs
+ ProgressBarStub.cs
+ RadialGradientPaintStub.cs
+ RadioButtonStub.cs
+ RectangleStub.cs
+ RefreshViewStub.cs
+ RoundRectangleStub.cs
+ ScrollViewStub.cs
+ SearchBarStub.cs
+ ShadowStub.cs
+ ShapeViewStub.cs
+ SliderStub.cs
+ StepperStub.cs
+ StubBase.cs
+ StubBaseHandler.cs
+ SwipeItemsStub.cs
+ SwipeItemStub.cs
+ SwipeViewStub.cs
+ SwitchStub.cs
+ TimePickerStub.cs
+ UrlWebViewSourceStub.cs
+ VerticalStackLayoutStub.cs
+ WebView.cs
+ WindowHandlerProxyStub.cs
+TestCategory.cs
+TestCollections.cs
+
+[metadataReferences]
+../../../../artifacts/bin/
+ Controls.Core/Debug/net11.0-maccatalyst26.2/ref/Microsoft.Maui.Controls.dll
+ Controls.Xaml/Debug/net11.0-maccatalyst26.2/ref/Microsoft.Maui.Controls.Xaml.dll
+ Core.DeviceTests.Shared/Debug/net11.0-maccatalyst/ref/Microsoft.Maui.DeviceTests.Shared.dll
+ Core/Debug/net11.0-maccatalyst26.2/ref/Microsoft.Maui.dll
+ Essentials/Debug/net11.0-maccatalyst26.2/ref/Microsoft.Maui.Essentials.dll
+ Graphics/Debug/net11.0-maccatalyst26.2/ref/Microsoft.Maui.Graphics.dll
+ TestUtils.DeviceTests.Runners/Debug/net11.0-maccatalyst/ref/Microsoft.Maui.TestUtils.DeviceTests.Runners.dll
+ TestUtils.DeviceTests/Debug/net11.0-maccatalyst/ref/Microsoft.Maui.TestUtils.DeviceTests.dll
+<DOTNET>/packs/
+ Microsoft.MacCatalyst.Ref.net11.0_26.2/26.2.11588-net11-p3/ref/net11.0/Microsoft.MacCatalyst.dll
+ Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/ref/net11.0/
+  Microsoft.CSharp.dll
+  Microsoft.VisualBasic.Core.dll
+  Microsoft.VisualBasic.dll
+  Microsoft.Win32.Primitives.dll
+  Microsoft.Win32.Registry.dll
+  mscorlib.dll
+  netstandard.dll
+  System.AppContext.dll
+  System.Buffers.dll
+  System.Collections.Concurrent.dll
+  System.Collections.dll
+  System.Collections.Immutable.dll
+  System.Collections.NonGeneric.dll
+  System.Collections.Specialized.dll
+  System.ComponentModel.Annotations.dll
+  System.ComponentModel.DataAnnotations.dll
+  System.ComponentModel.dll
+  System.ComponentModel.EventBasedAsync.dll
+  System.ComponentModel.Primitives.dll
+  System.ComponentModel.TypeConverter.dll
+  System.Configuration.dll
+  System.Console.dll
+  System.Core.dll
+  System.Data.Common.dll
+  System.Data.DataSetExtensions.dll
+  System.Data.dll
+  System.Diagnostics.Contracts.dll
+  System.Diagnostics.Debug.dll
+  System.Diagnostics.DiagnosticSource.dll
+  System.Diagnostics.FileVersionInfo.dll
+  System.Diagnostics.Process.dll
+  System.Diagnostics.StackTrace.dll
+  System.Diagnostics.TextWriterTraceListener.dll
+  System.Diagnostics.Tools.dll
+  System.Diagnostics.TraceSource.dll
+  System.Diagnostics.Tracing.dll
+  System.dll
+  System.Drawing.dll
+  System.Drawing.Primitives.dll
+  System.Dynamic.Runtime.dll
+  System.Formats.Asn1.dll
+  System.Formats.Tar.dll
+  System.Globalization.Calendars.dll
+  System.Globalization.dll
+  System.Globalization.Extensions.dll
+  System.IO.Compression.Brotli.dll
+  System.IO.Compression.dll
+  System.IO.Compression.FileSystem.dll
+  System.IO.Compression.ZipFile.dll
+  System.IO.dll
+  System.IO.FileSystem.AccessControl.dll
+  System.IO.FileSystem.dll
+  System.IO.FileSystem.DriveInfo.dll
+  System.IO.FileSystem.Primitives.dll
+  System.IO.FileSystem.Watcher.dll
+  System.IO.IsolatedStorage.dll
+  System.IO.MemoryMappedFiles.dll
+  System.IO.Pipelines.dll
+  System.IO.Pipes.AccessControl.dll
+  System.IO.Pipes.dll
+  System.IO.UnmanagedMemoryStream.dll
+  System.Linq.AsyncEnumerable.dll
+  System.Linq.dll
+  System.Linq.Expressions.dll
+  System.Linq.Parallel.dll
+  System.Linq.Queryable.dll
+  System.Memory.dll
+  System.Net.dll
+  System.Net.Http.dll
+  System.Net.Http.Json.dll
+  System.Net.HttpListener.dll
+  System.Net.Mail.dll
+  System.Net.NameResolution.dll
+  System.Net.NetworkInformation.dll
+  System.Net.Ping.dll
+  System.Net.Primitives.dll
+  System.Net.Quic.dll
+  System.Net.Requests.dll
+  System.Net.Security.dll
+  System.Net.ServerSentEvents.dll
+  System.Net.ServicePoint.dll
+  System.Net.Sockets.dll
+  System.Net.WebClient.dll
+  System.Net.WebHeaderCollection.dll
+  System.Net.WebProxy.dll
+  System.Net.WebSockets.Client.dll
+  System.Net.WebSockets.dll
+  System.Numerics.dll
+  System.Numerics.Vectors.dll
+  System.ObjectModel.dll
+  System.Reflection.DispatchProxy.dll
+  System.Reflection.dll
+  System.Reflection.Emit.dll
+  System.Reflection.Emit.ILGeneration.dll
+  System.Reflection.Emit.Lightweight.dll
+  System.Reflection.Extensions.dll
+  System.Reflection.Metadata.dll
+  System.Reflection.Primitives.dll
+  System.Reflection.TypeExtensions.dll
+  System.Resources.Reader.dll
+  System.Resources.ResourceManager.dll
+  System.Resources.Writer.dll
+  System.Runtime.CompilerServices.Unsafe.dll
+  System.Runtime.CompilerServices.VisualC.dll
+  System.Runtime.dll
+  System.Runtime.Extensions.dll
+  System.Runtime.Handles.dll
+  System.Runtime.InteropServices.dll
+  System.Runtime.InteropServices.JavaScript.dll
+  System.Runtime.InteropServices.RuntimeInformation.dll
+  System.Runtime.Intrinsics.dll
+  System.Runtime.Loader.dll
+  System.Runtime.Numerics.dll
+  System.Runtime.Serialization.dll
+  System.Runtime.Serialization.Formatters.dll
+  System.Runtime.Serialization.Json.dll
+  System.Runtime.Serialization.Primitives.dll
+  System.Runtime.Serialization.Xml.dll
+  System.Security.AccessControl.dll
+  System.Security.Claims.dll
+  System.Security.Cryptography.Algorithms.dll
+  System.Security.Cryptography.Cng.dll
+  System.Security.Cryptography.Csp.dll
+  System.Security.Cryptography.dll
+  System.Security.Cryptography.Encoding.dll
+  System.Security.Cryptography.OpenSsl.dll
+  System.Security.Cryptography.Primitives.dll
+  System.Security.Cryptography.X509Certificates.dll
+  System.Security.dll
+  System.Security.Principal.dll
+  System.Security.Principal.Windows.dll
+  System.Security.SecureString.dll
+  System.ServiceModel.Web.dll
+  System.ServiceProcess.dll
+  System.Text.Encoding.CodePages.dll
+  System.Text.Encoding.dll
+  System.Text.Encoding.Extensions.dll
+  System.Text.Encodings.Web.dll
+  System.Text.Json.dll
+  System.Text.RegularExpressions.dll
+  System.Threading.AccessControl.dll
+  System.Threading.Channels.dll
+  System.Threading.dll
+  System.Threading.Overlapped.dll
+  System.Threading.Tasks.Dataflow.dll
+  System.Threading.Tasks.dll
+  System.Threading.Tasks.Extensions.dll
+  System.Threading.Tasks.Parallel.dll
+  System.Threading.Thread.dll
+  System.Threading.ThreadPool.dll
+  System.Threading.Timer.dll
+  System.Transactions.dll
+  System.Transactions.Local.dll
+  System.ValueTuple.dll
+  System.Web.dll
+  System.Web.HttpUtility.dll
+  System.Windows.dll
+  System.Xml.dll
+  System.Xml.Linq.dll
+  System.Xml.ReaderWriter.dll
+  System.Xml.Serialization.dll
+  System.Xml.XDocument.dll
+  System.Xml.XmlDocument.dll
+  System.Xml.XmlSerializer.dll
+  System.Xml.XPath.dll
+  System.Xml.XPath.XDocument.dll
+  WindowsBase.dll
+<NUGET>/
+ microsoft.dotnet.xharness.testrunners.common/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Common.dll
+ microsoft.dotnet.xharness.testrunners.xunit/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Xunit.dll
+ microsoft.extensions.configuration.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Abstractions.dll
+ microsoft.extensions.configuration.binder/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Binder.dll
+ microsoft.extensions.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.dll
+ microsoft.extensions.dependencyinjection.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.dll
+ microsoft.extensions.diagnostics.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+ microsoft.extensions.fileproviders.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+ microsoft.extensions.hosting.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Hosting.Abstractions.dll
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Configuration.dll
+ microsoft.extensions.logging.console/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Console.dll
+ microsoft.extensions.logging/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.options.configurationextensions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Primitives.dll
+ mono.options/6.6.0.161/lib/netstandard2.0/Mono.Options.dll
+ xunit.abstractions/2.0.3/lib/netstandard2.0/xunit.abstractions.dll
+ xunit.assert/2.9.0/lib/net6.0/xunit.assert.dll
+ xunit.extensibility.core/2.9.0/lib/netstandard1.1/xunit.core.dll
+ xunit.extensibility.execution/2.9.0/lib/netstandard1.1/xunit.execution.dotnet.dll
+ xunit.runner.utility/2.9.0/lib/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll
+
+[analyzerReferences]
+../../../../.buildtasks/
+ Microsoft.Maui.Controls.BindingSourceGen.dll
+ Microsoft.Maui.Controls.SourceGen.dll
+../../../../artifacts/bin/TestUtils.DeviceTests.Runners.SourceGen/Debug/netstandard2.0/Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/analyzers/dotnet/cs/
+ Microsoft.Interop.ComInterfaceGenerator.dll
+ Microsoft.Interop.JavaScript.JSImportGenerator.dll
+ Microsoft.Interop.LibraryImportGenerator.dll
+ Microsoft.Interop.SourceGeneration.dll
+ System.Text.Json.SourceGeneration.dll
+ System.Text.RegularExpressions.Generator.dll
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/analyzers/
+ Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+ Microsoft.CodeAnalysis.NetAnalyzers.dll
+<NUGET>/
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
+ microsoft.net.illink.tasks/11.0.0-preview.3.26207.106/analyzers/dotnet/cs/
+  ILLink.CodeFixProvider.dll
+  ILLink.RoslynAnalyzer.dll
+ xunit.analyzers/1.15.0/analyzers/dotnet/cs/
+  xunit.analyzers.dll
+  xunit.analyzers.fixes.dll
+
+[analyzerConfigFiles]
+../../../../
+ .editorconfig
+ artifacts/obj/Core.DeviceTests/Debug/net11.0-maccatalyst/maccatalyst-x64/Core.DeviceTests.GeneratedMSBuildEditorConfig.editorconfig
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/
+ analyzers/build/config/analysislevel_11_default.globalconfig
+ codestyle/cs/build/config/analysislevelstyle_default.globalconfig
+
+[additionalFiles]
+Resources/appiconfg.svg
+
+---
+
+[project]
+language=C#
+lastDtbSucceeded
+
+[sliceDimensions]
+TargetFramework=net11.0-windows10.0.19041.0
+
+[properties]
+AssemblyName=Microsoft.Maui.Core.DeviceTests
+CommandLineArgsForDesignTimeEvaluation=-langversion:Latest -checksumalgorithm:SHA256 -define:;WINDOWS;TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=14.0
+ProjectAssetsFile=<PATH>../../../../artifacts/obj/Core.DeviceTests/project.assets.json
+RootNamespace=Microsoft.Maui.DeviceTests
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=*Undefined*
+TargetFrameworkIdentifier=.NETCoreApp
+TargetPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-windows10.0.19041.0/win-x64/Microsoft.Maui.Core.DeviceTests.dll
+TargetRefPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-windows10.0.19041.0/win-x64/ref/Microsoft.Maui.Core.DeviceTests.dll
+TemporaryDependencyNodeTargetIdentifier=net11.0-windows10.0.19041.0
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1705,1591,CA1416,NU5105,NETSDK1206,NU1702,IL6001,AD0001,1701,1702,8002
+/fullpaths
+/nostdlib+
+/platform:x64
+/errorreport:prompt
+/warn:11
+/define:WINDOWS;TRACE;MICROSOFT_WINDOWSAPPSDK_AUTOINITIALIZE_DEPLOYMENTMANAGER;DEBUG;NET;NET11_0;NETCOREAPP;WINDOWS;WINDOWS10_0_19041_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NET11_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS10_0_19041_0_OR_GREATER;WINDOWS10_0_18362_0_OR_GREATER;WINDOWS10_0_17763_0_OR_GREATER;WINDOWS8_0_OR_GREATER;WINDOWS7_0_OR_GREATER
+/highentropyva+
+/features:"InterceptorsNamespaces=;Microsoft.Extensions.Validation.Generated;Microsoft.Maui.Controls.Generated"
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.19041.0/win-x64/Microsoft.Maui.Core.DeviceTests.dll
+/refout:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.19041.0/win-x64/refint/Microsoft.Maui.Core.DeviceTests.dll
+/subsystemversion:6.00
+/target:winexe
+/warnaserror+
+/utf8output
+/win32icon:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.19041.0/win-x64/resizetizer/r/appicon.ico
+/win32manifest:Platforms\Windows\app.manifest
+/deterministic+
+/checksumalgorithm:SHA256
+/langversion:Latest
+/warnaserror+:NU1605,SYSLIB0011
+
+[sourceFiles]
+../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.19041.0/win-x64/
+ .NETCoreApp,Version=v11.0.AssemblyAttributes.cs
+ Core.DeviceTests.AssemblyInfo.cs
+<NUGET>/microsoft.windowsappsdk.foundation/1.8.251104000/include/
+ DeploymentManagerAutoInitializer.cs
+ WindowsAppRuntimeAutoInitializer.cs
+<NUGET>/microsoft.windowsappsdk.runtime/1.8.251106002/include/WindowsAppSDK-VersionInfo.cs
+CoreDeviceTestExtensions.cs
+GlobalNamespaces.cs
+Graphics/GraphicsTests.cs
+Handlers/ActivityIndicator/
+ ActivityIndicatorHandlerTests.cs
+ ActivityIndicatorHandlerTests.Windows.cs
+Handlers/Border/
+ BorderHandlerTests.cs
+ BorderHandlerTests.Windows.cs
+Handlers/Button/
+ ButtonHandlerTests.cs
+ ButtonHandlerTests.Windows.cs
+Handlers/CheckBox/
+ CheckBoxHandlerTests.cs
+ CheckBoxHandlerTests.Windows.cs
+Handlers/
+ ContentView/ContentViewTests.cs
+ CoreHandlerTestBase.cs
+ CoreHandlerTestBaseOfT.cs
+ DatePicker/
+  DatePickerHandlerTests.cs
+  DatePickerHandlerTests.Windows.cs
+ Editor/
+  EditorHandlerTests.cs
+  EditorHandlerTests.Windows.cs
+ Element/ElementTests.cs
+ Entry/
+  EntryHandlerTests.cs
+  EntryHandlerTests.Windows.cs
+ GraphicsView/
+  GraphicsViewHandlerTests.cs
+  GraphicsViewHandlerTests.Windows.cs
+ Image/
+  ImageHandlerTests.cs
+  ImageHandlerTests.Windows.cs
+ IndicatorView/
+  IndicatorViewHandlerTests.cs
+  IndicatorViewHandlerTests.Windows.cs
+ Label/
+  LabelHandlerTests.cs
+  LabelHandlerTests.Windows.cs
+ Layout/
+  LayoutHandlerTests.cs
+  LayoutHandlerTests.Windows.cs
+ Navigation/
+  NavigationViewHandlerTests.cs
+  NavigationViewHandlerTests.Windows.cs
+ Page/
+  PageHandlerTests.cs
+  PageHandlerTests.Windows.cs
+ Picker/
+  PickerHandlerTests.cs
+  PickerHandlerTests.Windows.cs
+ ProgressBar/
+  ProgressBarHandlerTests.cs
+  ProgressBarHandlerTests.Windows.cs
+ RadioButton/
+  RadioButtonHandlerTests.cs
+  RadioButtonHandlerTests.Windows.cs
+ RefreshView/
+  RefreshViewHandlerTests.cs
+  RefreshViewHandlerTests.Windows.cs
+ ScrollView/ScrollViewHandlerTests.cs
+ SearchBar/
+  SearchBarHandlerTests.cs
+  SearchBarHandlerTests.Windows.cs
+ Slider/
+  SliderHandlerTests.cs
+  SliderHandlerTests.Windows.cs
+ Stepper/
+  StepperHandlerTests.cs
+  StepperHandlerTests.Windows.cs
+ SwipeView/SwipeViewHandlerTests.cs
+ Switch/
+  SwitchHandlerTests.cs
+  SwitchHandlerTests.Windows.cs
+ TimePicker/
+  TimePickerHandlerTests.cs
+  TimePickerHandlerTests.Windows.cs
+ View/
+  ViewHandlerTests.cs
+  ViewHandlerTests.Windows.cs
+ WebView/
+  WebViewHandlerTests.cs
+  WebViewHandlerTests.Windows.cs
+ Window/
+  WindowHandlerTests.cs
+  WindowHandlerTests.Windows.cs
+MauiProgram.cs
+Memory/
+ CALayerAutosizeToSuperLayerBehaviorTests.cs
+ UIViewSubclassTests.cs
+Platforms/Windows/App.xaml.cs
+Services/
+ Dispatching/DispatcherTests.cs
+ FontManagerTests.cs
+ FontManagerTests.Windows.cs
+ ImageSource/
+  BaseImageSourceServiceTests.cs
+  BaseImageSourceServiceTests.Windows.cs
+  FileImageSourceServiceTests.cs
+  FontImageSourceServiceTests.cs
+  ImageSourceServiceTests.cs
+  StreamImageSourceServiceTests.cs
+  UriImageSourceServiceTests.cs
+Stubs/
+ ActivityIndicatorStub.cs
+ BorderStub.cs
+ ButtonStub.cs
+ ButtonWithContainerStub.cs
+ CheckBoxStub.cs
+ ContentViewStub.cs
+ CountedImageHandler.cs
+ CountedImageHandler.Windows.cs
+ CountedImageSourceServiceStub.cs
+ CountedImageSourceServiceStub.Windows.cs
+ CountedImageSourceStub.cs
+ CustomImageCacheStub.Windows.cs
+ CustomImageSourceStub.cs
+ DatePickerStub.cs
+ EditorStub.cs
+ ElementHandlerStub.cs
+ ElementStub.cs
+ EllipseStub.cs
+ EntryStub.cs
+ GraphicsViewStub.cs
+ HorizontalStackLayoutStub.cs
+ HtmlWebViewSourceStub.cs
+ IImageStub.cs
+ ImageButtonStub.cs
+ ImageSourceStub.cs
+ ImageStub.cs
+ IndicatorViewStub.cs
+ LabelStub.cs
+ LayoutManagerStub.cs
+ LayoutStub.cs
+ LinearGradientPaintStub.cs
+ LineStub.cs
+ NavigationViewStub.cs
+ PageStub.cs
+ PathStub.cs
+ PickerStub.cs
+ PointCollectionStub.cs
+ PolygonStub.cs
+ PolylineStub.cs
+ ProgressBarStub.cs
+ RadialGradientPaintStub.cs
+ RadioButtonStub.cs
+ RectangleStub.cs
+ RefreshViewStub.cs
+ RoundRectangleStub.cs
+ ScrollViewStub.cs
+ SearchBarStub.cs
+ ShadowStub.cs
+ ShapeViewStub.cs
+ SliderStub.cs
+ StepperStub.cs
+ StubBase.cs
+ StubBaseHandler.cs
+ SwipeItemsStub.cs
+ SwipeItemStub.cs
+ SwipeViewStub.cs
+ SwitchStub.cs
+ TimePickerStub.cs
+ UrlWebViewSourceStub.cs
+ VerticalStackLayoutStub.cs
+ WebView.cs
+ WindowHandlerProxyStub.cs
+TestCategory.cs
+TestCollections.cs
+
+[metadataReferences]
+../../../../artifacts/bin/
+ Controls.Core/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.Controls.dll
+ Controls.Xaml/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.Controls.Xaml.dll
+ Core.DeviceTests.Shared/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.DeviceTests.Shared.dll
+ Core/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.dll
+ Essentials/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.Essentials.dll
+ Graphics.Win2D/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll
+ Graphics/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.Graphics.dll
+ TestUtils.DeviceTests.Runners/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.TestUtils.DeviceTests.Runners.dll
+ TestUtils.DeviceTests/Debug/net11.0-windows10.0.19041.0/ref/Microsoft.Maui.TestUtils.DeviceTests.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/ref/net11.0/
+ Microsoft.CSharp.dll
+ Microsoft.VisualBasic.Core.dll
+ Microsoft.VisualBasic.dll
+ Microsoft.Win32.Primitives.dll
+ Microsoft.Win32.Registry.dll
+ mscorlib.dll
+ netstandard.dll
+ System.AppContext.dll
+ System.Buffers.dll
+ System.Collections.Concurrent.dll
+ System.Collections.dll
+ System.Collections.Immutable.dll
+ System.Collections.NonGeneric.dll
+ System.Collections.Specialized.dll
+ System.ComponentModel.Annotations.dll
+ System.ComponentModel.DataAnnotations.dll
+ System.ComponentModel.dll
+ System.ComponentModel.EventBasedAsync.dll
+ System.ComponentModel.Primitives.dll
+ System.ComponentModel.TypeConverter.dll
+ System.Configuration.dll
+ System.Console.dll
+ System.Core.dll
+ System.Data.Common.dll
+ System.Data.DataSetExtensions.dll
+ System.Data.dll
+ System.Diagnostics.Contracts.dll
+ System.Diagnostics.Debug.dll
+ System.Diagnostics.DiagnosticSource.dll
+ System.Diagnostics.FileVersionInfo.dll
+ System.Diagnostics.Process.dll
+ System.Diagnostics.StackTrace.dll
+ System.Diagnostics.TextWriterTraceListener.dll
+ System.Diagnostics.Tools.dll
+ System.Diagnostics.TraceSource.dll
+ System.Diagnostics.Tracing.dll
+ System.dll
+ System.Drawing.dll
+ System.Drawing.Primitives.dll
+ System.Dynamic.Runtime.dll
+ System.Formats.Asn1.dll
+ System.Formats.Tar.dll
+ System.Globalization.Calendars.dll
+ System.Globalization.dll
+ System.Globalization.Extensions.dll
+ System.IO.Compression.Brotli.dll
+ System.IO.Compression.dll
+ System.IO.Compression.FileSystem.dll
+ System.IO.Compression.ZipFile.dll
+ System.IO.dll
+ System.IO.FileSystem.AccessControl.dll
+ System.IO.FileSystem.dll
+ System.IO.FileSystem.DriveInfo.dll
+ System.IO.FileSystem.Primitives.dll
+ System.IO.FileSystem.Watcher.dll
+ System.IO.IsolatedStorage.dll
+ System.IO.MemoryMappedFiles.dll
+ System.IO.Pipelines.dll
+ System.IO.Pipes.AccessControl.dll
+ System.IO.Pipes.dll
+ System.IO.UnmanagedMemoryStream.dll
+ System.Linq.AsyncEnumerable.dll
+ System.Linq.dll
+ System.Linq.Expressions.dll
+ System.Linq.Parallel.dll
+ System.Linq.Queryable.dll
+ System.Memory.dll
+ System.Net.dll
+ System.Net.Http.dll
+ System.Net.Http.Json.dll
+ System.Net.HttpListener.dll
+ System.Net.Mail.dll
+ System.Net.NameResolution.dll
+ System.Net.NetworkInformation.dll
+ System.Net.Ping.dll
+ System.Net.Primitives.dll
+ System.Net.Quic.dll
+ System.Net.Requests.dll
+ System.Net.Security.dll
+ System.Net.ServerSentEvents.dll
+ System.Net.ServicePoint.dll
+ System.Net.Sockets.dll
+ System.Net.WebClient.dll
+ System.Net.WebHeaderCollection.dll
+ System.Net.WebProxy.dll
+ System.Net.WebSockets.Client.dll
+ System.Net.WebSockets.dll
+ System.Numerics.dll
+ System.Numerics.Vectors.dll
+ System.ObjectModel.dll
+ System.Reflection.DispatchProxy.dll
+ System.Reflection.dll
+ System.Reflection.Emit.dll
+ System.Reflection.Emit.ILGeneration.dll
+ System.Reflection.Emit.Lightweight.dll
+ System.Reflection.Extensions.dll
+ System.Reflection.Metadata.dll
+ System.Reflection.Primitives.dll
+ System.Reflection.TypeExtensions.dll
+ System.Resources.Reader.dll
+ System.Resources.ResourceManager.dll
+ System.Resources.Writer.dll
+ System.Runtime.CompilerServices.Unsafe.dll
+ System.Runtime.CompilerServices.VisualC.dll
+ System.Runtime.dll
+ System.Runtime.Extensions.dll
+ System.Runtime.Handles.dll
+ System.Runtime.InteropServices.dll
+ System.Runtime.InteropServices.JavaScript.dll
+ System.Runtime.InteropServices.RuntimeInformation.dll
+ System.Runtime.Intrinsics.dll
+ System.Runtime.Loader.dll
+ System.Runtime.Numerics.dll
+ System.Runtime.Serialization.dll
+ System.Runtime.Serialization.Formatters.dll
+ System.Runtime.Serialization.Json.dll
+ System.Runtime.Serialization.Primitives.dll
+ System.Runtime.Serialization.Xml.dll
+ System.Security.AccessControl.dll
+ System.Security.Claims.dll
+ System.Security.Cryptography.Algorithms.dll
+ System.Security.Cryptography.Cng.dll
+ System.Security.Cryptography.Csp.dll
+ System.Security.Cryptography.dll
+ System.Security.Cryptography.Encoding.dll
+ System.Security.Cryptography.OpenSsl.dll
+ System.Security.Cryptography.Primitives.dll
+ System.Security.Cryptography.X509Certificates.dll
+ System.Security.dll
+ System.Security.Principal.dll
+ System.Security.Principal.Windows.dll
+ System.Security.SecureString.dll
+ System.ServiceModel.Web.dll
+ System.ServiceProcess.dll
+ System.Text.Encoding.CodePages.dll
+ System.Text.Encoding.dll
+ System.Text.Encoding.Extensions.dll
+ System.Text.Encodings.Web.dll
+ System.Text.Json.dll
+ System.Text.RegularExpressions.dll
+ System.Threading.AccessControl.dll
+ System.Threading.Channels.dll
+ System.Threading.dll
+ System.Threading.Overlapped.dll
+ System.Threading.Tasks.Dataflow.dll
+ System.Threading.Tasks.dll
+ System.Threading.Tasks.Extensions.dll
+ System.Threading.Tasks.Parallel.dll
+ System.Threading.Thread.dll
+ System.Threading.ThreadPool.dll
+ System.Threading.Timer.dll
+ System.Transactions.dll
+ System.Transactions.Local.dll
+ System.ValueTuple.dll
+ System.Web.dll
+ System.Web.HttpUtility.dll
+ System.Windows.dll
+ System.Xml.dll
+ System.Xml.Linq.dll
+ System.Xml.ReaderWriter.dll
+ System.Xml.Serialization.dll
+ System.Xml.XDocument.dll
+ System.Xml.XmlDocument.dll
+ System.Xml.XmlSerializer.dll
+ System.Xml.XPath.dll
+ System.Xml.XPath.XDocument.dll
+ WindowsBase.dll
+<NUGET>/
+ microsoft.dotnet.xharness.testrunners.common/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Common.dll
+ microsoft.dotnet.xharness.testrunners.xunit/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Xunit.dll
+ microsoft.extensions.configuration.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Abstractions.dll
+ microsoft.extensions.configuration.binder/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Binder.dll
+ microsoft.extensions.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.dll
+ microsoft.extensions.dependencyinjection.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.dll
+ microsoft.extensions.diagnostics.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+ microsoft.extensions.fileproviders.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+ microsoft.extensions.hosting.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Hosting.Abstractions.dll
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Configuration.dll
+ microsoft.extensions.logging.console/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Console.dll
+ microsoft.extensions.logging/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.options.configurationextensions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Primitives.dll
+ microsoft.graphics.win2d/1.3.2/lib/net6.0-windows10.0.19041.0/Microsoft.Graphics.Canvas.Interop.dll
+ microsoft.io.recyclablememorystream/3.0.1/lib/net6.0/Microsoft.IO.RecyclableMemoryStream.dll
+ microsoft.web.webview2/1.0.3179.45/lib_manual/net8.0-windows10.0.17763.0/Microsoft.Web.WebView2.Core.Projection.dll
+ microsoft.windows.sdk.net.ref/10.0.19041.44/lib/net8.0/
+  Microsoft.Windows.SDK.NET.dll
+  WinRT.Runtime.dll
+ microsoft.windowsappsdk.ai/1.8.39/lib/net6.0-windows10.0.17763.0/
+  Microsoft.Graphics.Imaging.Projection.dll
+  Microsoft.Windows.AI.ContentSafety.Projection.dll
+  Microsoft.Windows.AI.Foundation.Projection.dll
+  Microsoft.Windows.AI.Imaging.Projection.dll
+  Microsoft.Windows.AI.Projection.dll
+  Microsoft.Windows.AI.Text.Projection.dll
+ microsoft.windowsappsdk.foundation/1.8.251104000/lib/net6.0-windows10.0.17763.0/
+  Microsoft.Security.Authentication.OAuth.Projection.dll
+  Microsoft.Windows.ApplicationModel.Background.Projection.dll
+  Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll
+  Microsoft.Windows.ApplicationModel.Resources.Projection.dll
+  Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll
+  Microsoft.Windows.AppLifecycle.Projection.dll
+  Microsoft.Windows.AppNotifications.Builder.Projection.dll
+  Microsoft.Windows.AppNotifications.Projection.dll
+  Microsoft.Windows.BadgeNotifications.Projection.dll
+  Microsoft.Windows.Foundation.Projection.dll
+  Microsoft.Windows.Management.Deployment.Projection.dll
+  Microsoft.Windows.Media.Capture.Projection.dll
+  Microsoft.Windows.PushNotifications.Projection.dll
+  Microsoft.Windows.Security.AccessControl.Projection.dll
+  Microsoft.Windows.Storage.Pickers.Projection.dll
+  Microsoft.Windows.Storage.Projection.dll
+  Microsoft.Windows.System.Power.Projection.dll
+  Microsoft.Windows.System.Projection.dll
+  Microsoft.WindowsAppRuntime.Bootstrap.Net.dll
+ microsoft.windowsappsdk.interactiveexperiences/1.8.251104001/lib/net6.0-windows10.0.18362.0/Microsoft.InteractiveExperiences.Projection.dll
+ microsoft.windowsappsdk.ml/1.8.2109/lib/net8.0-windows10.0.17763.0/
+  Microsoft.ML.OnnxRuntime.dll
+  Microsoft.Windows.AI.MachineLearning.Projection.dll
+ microsoft.windowsappsdk.widgets/1.8.250904007/lib/net6.0-windows10.0.17763.0/Microsoft.Windows.Widgets.Projection.dll
+ microsoft.windowsappsdk.winui/1.8.251105000/lib/net6.0-windows10.0.17763.0/Microsoft.WinUI.dll
+ mono.options/6.6.0.161/lib/netstandard2.0/Mono.Options.dll
+ system.numerics.tensors/9.0.0/lib/net9.0/System.Numerics.Tensors.dll
+ xunit.abstractions/2.0.3/lib/netstandard2.0/xunit.abstractions.dll
+ xunit.assert/2.9.0/lib/net6.0/xunit.assert.dll
+ xunit.extensibility.core/2.9.0/lib/netstandard1.1/xunit.core.dll
+ xunit.extensibility.execution/2.9.0/lib/netstandard1.1/xunit.execution.dotnet.dll
+ xunit.runner.utility/2.9.0/lib/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll
+
+[analyzerReferences]
+../../../../.buildtasks/
+ Microsoft.Maui.Controls.BindingSourceGen.dll
+ Microsoft.Maui.Controls.SourceGen.dll
+../../../../artifacts/bin/TestUtils.DeviceTests.Runners.SourceGen/Debug/netstandard2.0/Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/analyzers/dotnet/cs/
+ Microsoft.Interop.ComInterfaceGenerator.dll
+ Microsoft.Interop.JavaScript.JSImportGenerator.dll
+ Microsoft.Interop.LibraryImportGenerator.dll
+ Microsoft.Interop.SourceGeneration.dll
+ System.Text.Json.SourceGeneration.dll
+ System.Text.RegularExpressions.Generator.dll
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/analyzers/
+ Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+ Microsoft.CodeAnalysis.NetAnalyzers.dll
+<NUGET>/
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
+ microsoft.windows.sdk.net.ref/10.0.19041.44/analyzers/dotnet/cs/WinRT.SourceGenerator.dll
+ xunit.analyzers/1.15.0/analyzers/dotnet/cs/
+  xunit.analyzers.dll
+  xunit.analyzers.fixes.dll
+
+[analyzerConfigFiles]
+../../../../
+ .editorconfig
+ artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.19041.0/win-x64/Core.DeviceTests.GeneratedMSBuildEditorConfig.editorconfig
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/
+ analyzers/build/config/analysislevel_11_default.globalconfig
+ codestyle/cs/build/config/analysislevelstyle_default.globalconfig
+
+[additionalFiles]
+Resources/appiconfg.svg
+
+---
+
+[project]
+language=C#
+lastDtbSucceeded
+
+[sliceDimensions]
+TargetFramework=net11.0-windows10.0.20348.0
+
+[properties]
+AssemblyName=Microsoft.Maui.Core.DeviceTests
+CommandLineArgsForDesignTimeEvaluation=-langversion:Latest -checksumalgorithm:SHA256 -define:;WINDOWS;TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=14.0
+ProjectAssetsFile=<PATH>../../../../artifacts/obj/Core.DeviceTests/project.assets.json
+RootNamespace=Microsoft.Maui.DeviceTests
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=*Undefined*
+TargetFrameworkIdentifier=.NETCoreApp
+TargetPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-windows10.0.20348.0/win-x64/Microsoft.Maui.Core.DeviceTests.dll
+TargetRefPath=<PATH>../../../../artifacts/bin/Core.DeviceTests/Debug/net11.0-windows10.0.20348.0/win-x64/ref/Microsoft.Maui.Core.DeviceTests.dll
+TemporaryDependencyNodeTargetIdentifier=net11.0-windows10.0.20348.0
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1705,1591,CA1416,NU5105,NETSDK1206,NU1702,IL6001,AD0001,1701,1702,8002
+/fullpaths
+/nostdlib+
+/platform:x64
+/errorreport:prompt
+/warn:11
+/define:WINDOWS;TRACE;MICROSOFT_WINDOWSAPPSDK_AUTOINITIALIZE_DEPLOYMENTMANAGER;DEBUG;NET;NET11_0;NETCOREAPP;WINDOWS;WINDOWS10_0_20348_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NET11_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS10_0_20348_0_OR_GREATER;WINDOWS10_0_19041_0_OR_GREATER;WINDOWS10_0_18362_0_OR_GREATER;WINDOWS10_0_17763_0_OR_GREATER;WINDOWS8_0_OR_GREATER;WINDOWS7_0_OR_GREATER
+/highentropyva+
+/features:"InterceptorsNamespaces=;Microsoft.Extensions.Validation.Generated;Microsoft.Maui.Controls.Generated"
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.20348.0/win-x64/Microsoft.Maui.Core.DeviceTests.dll
+/refout:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.20348.0/win-x64/refint/Microsoft.Maui.Core.DeviceTests.dll
+/subsystemversion:6.00
+/target:winexe
+/warnaserror+
+/utf8output
+/win32icon:<PATH>../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.20348.0/win-x64/resizetizer/r/appicon.ico
+/win32manifest:Platforms\Windows\app.manifest
+/deterministic+
+/checksumalgorithm:SHA256
+/langversion:Latest
+/warnaserror+:NU1605,SYSLIB0011
+
+[sourceFiles]
+../../../../artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.20348.0/win-x64/
+ .NETCoreApp,Version=v11.0.AssemblyAttributes.cs
+ Core.DeviceTests.AssemblyInfo.cs
+<NUGET>/microsoft.windowsappsdk.foundation/1.8.251104000/include/
+ DeploymentManagerAutoInitializer.cs
+ WindowsAppRuntimeAutoInitializer.cs
+<NUGET>/microsoft.windowsappsdk.runtime/1.8.251106002/include/WindowsAppSDK-VersionInfo.cs
+CoreDeviceTestExtensions.cs
+GlobalNamespaces.cs
+Graphics/GraphicsTests.cs
+Handlers/ActivityIndicator/
+ ActivityIndicatorHandlerTests.cs
+ ActivityIndicatorHandlerTests.Windows.cs
+Handlers/Border/
+ BorderHandlerTests.cs
+ BorderHandlerTests.Windows.cs
+Handlers/Button/
+ ButtonHandlerTests.cs
+ ButtonHandlerTests.Windows.cs
+Handlers/CheckBox/
+ CheckBoxHandlerTests.cs
+ CheckBoxHandlerTests.Windows.cs
+Handlers/
+ ContentView/ContentViewTests.cs
+ CoreHandlerTestBase.cs
+ CoreHandlerTestBaseOfT.cs
+ DatePicker/
+  DatePickerHandlerTests.cs
+  DatePickerHandlerTests.Windows.cs
+ Editor/
+  EditorHandlerTests.cs
+  EditorHandlerTests.Windows.cs
+ Element/ElementTests.cs
+ Entry/
+  EntryHandlerTests.cs
+  EntryHandlerTests.Windows.cs
+ GraphicsView/
+  GraphicsViewHandlerTests.cs
+  GraphicsViewHandlerTests.Windows.cs
+ Image/
+  ImageHandlerTests.cs
+  ImageHandlerTests.Windows.cs
+ IndicatorView/
+  IndicatorViewHandlerTests.cs
+  IndicatorViewHandlerTests.Windows.cs
+ Label/
+  LabelHandlerTests.cs
+  LabelHandlerTests.Windows.cs
+ Layout/
+  LayoutHandlerTests.cs
+  LayoutHandlerTests.Windows.cs
+ Navigation/
+  NavigationViewHandlerTests.cs
+  NavigationViewHandlerTests.Windows.cs
+ Page/
+  PageHandlerTests.cs
+  PageHandlerTests.Windows.cs
+ Picker/
+  PickerHandlerTests.cs
+  PickerHandlerTests.Windows.cs
+ ProgressBar/
+  ProgressBarHandlerTests.cs
+  ProgressBarHandlerTests.Windows.cs
+ RadioButton/
+  RadioButtonHandlerTests.cs
+  RadioButtonHandlerTests.Windows.cs
+ RefreshView/
+  RefreshViewHandlerTests.cs
+  RefreshViewHandlerTests.Windows.cs
+ ScrollView/ScrollViewHandlerTests.cs
+ SearchBar/
+  SearchBarHandlerTests.cs
+  SearchBarHandlerTests.Windows.cs
+ Slider/
+  SliderHandlerTests.cs
+  SliderHandlerTests.Windows.cs
+ Stepper/
+  StepperHandlerTests.cs
+  StepperHandlerTests.Windows.cs
+ SwipeView/SwipeViewHandlerTests.cs
+ Switch/
+  SwitchHandlerTests.cs
+  SwitchHandlerTests.Windows.cs
+ TimePicker/
+  TimePickerHandlerTests.cs
+  TimePickerHandlerTests.Windows.cs
+ View/
+  ViewHandlerTests.cs
+  ViewHandlerTests.Windows.cs
+ WebView/
+  WebViewHandlerTests.cs
+  WebViewHandlerTests.Windows.cs
+ Window/
+  WindowHandlerTests.cs
+  WindowHandlerTests.Windows.cs
+MauiProgram.cs
+Memory/
+ CALayerAutosizeToSuperLayerBehaviorTests.cs
+ UIViewSubclassTests.cs
+Platforms/Windows/App.xaml.cs
+Services/
+ Dispatching/DispatcherTests.cs
+ FontManagerTests.cs
+ FontManagerTests.Windows.cs
+ ImageSource/
+  BaseImageSourceServiceTests.cs
+  BaseImageSourceServiceTests.Windows.cs
+  FileImageSourceServiceTests.cs
+  FontImageSourceServiceTests.cs
+  ImageSourceServiceTests.cs
+  StreamImageSourceServiceTests.cs
+  UriImageSourceServiceTests.cs
+Stubs/
+ ActivityIndicatorStub.cs
+ BorderStub.cs
+ ButtonStub.cs
+ ButtonWithContainerStub.cs
+ CheckBoxStub.cs
+ ContentViewStub.cs
+ CountedImageHandler.cs
+ CountedImageHandler.Windows.cs
+ CountedImageSourceServiceStub.cs
+ CountedImageSourceServiceStub.Windows.cs
+ CountedImageSourceStub.cs
+ CustomImageCacheStub.Windows.cs
+ CustomImageSourceStub.cs
+ DatePickerStub.cs
+ EditorStub.cs
+ ElementHandlerStub.cs
+ ElementStub.cs
+ EllipseStub.cs
+ EntryStub.cs
+ GraphicsViewStub.cs
+ HorizontalStackLayoutStub.cs
+ HtmlWebViewSourceStub.cs
+ IImageStub.cs
+ ImageButtonStub.cs
+ ImageSourceStub.cs
+ ImageStub.cs
+ IndicatorViewStub.cs
+ LabelStub.cs
+ LayoutManagerStub.cs
+ LayoutStub.cs
+ LinearGradientPaintStub.cs
+ LineStub.cs
+ NavigationViewStub.cs
+ PageStub.cs
+ PathStub.cs
+ PickerStub.cs
+ PointCollectionStub.cs
+ PolygonStub.cs
+ PolylineStub.cs
+ ProgressBarStub.cs
+ RadialGradientPaintStub.cs
+ RadioButtonStub.cs
+ RectangleStub.cs
+ RefreshViewStub.cs
+ RoundRectangleStub.cs
+ ScrollViewStub.cs
+ SearchBarStub.cs
+ ShadowStub.cs
+ ShapeViewStub.cs
+ SliderStub.cs
+ StepperStub.cs
+ StubBase.cs
+ StubBaseHandler.cs
+ SwipeItemsStub.cs
+ SwipeItemStub.cs
+ SwipeViewStub.cs
+ SwitchStub.cs
+ TimePickerStub.cs
+ UrlWebViewSourceStub.cs
+ VerticalStackLayoutStub.cs
+ WebView.cs
+ WindowHandlerProxyStub.cs
+TestCategory.cs
+TestCollections.cs
+
+[metadataReferences]
+../../../../artifacts/bin/
+ Controls.Core/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.Controls.dll
+ Controls.Xaml/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.Controls.Xaml.dll
+ Core.DeviceTests.Shared/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.DeviceTests.Shared.dll
+ Core/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.dll
+ Essentials/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.Essentials.dll
+ Graphics.Win2D/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.Graphics.Win2D.WinUI.Desktop.dll
+ Graphics/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.Graphics.dll
+ TestUtils.DeviceTests.Runners/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.TestUtils.DeviceTests.Runners.dll
+ TestUtils.DeviceTests/Debug/net11.0-windows10.0.20348.0/ref/Microsoft.Maui.TestUtils.DeviceTests.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/ref/net11.0/
+ Microsoft.CSharp.dll
+ Microsoft.VisualBasic.Core.dll
+ Microsoft.VisualBasic.dll
+ Microsoft.Win32.Primitives.dll
+ Microsoft.Win32.Registry.dll
+ mscorlib.dll
+ netstandard.dll
+ System.AppContext.dll
+ System.Buffers.dll
+ System.Collections.Concurrent.dll
+ System.Collections.dll
+ System.Collections.Immutable.dll
+ System.Collections.NonGeneric.dll
+ System.Collections.Specialized.dll
+ System.ComponentModel.Annotations.dll
+ System.ComponentModel.DataAnnotations.dll
+ System.ComponentModel.dll
+ System.ComponentModel.EventBasedAsync.dll
+ System.ComponentModel.Primitives.dll
+ System.ComponentModel.TypeConverter.dll
+ System.Configuration.dll
+ System.Console.dll
+ System.Core.dll
+ System.Data.Common.dll
+ System.Data.DataSetExtensions.dll
+ System.Data.dll
+ System.Diagnostics.Contracts.dll
+ System.Diagnostics.Debug.dll
+ System.Diagnostics.DiagnosticSource.dll
+ System.Diagnostics.FileVersionInfo.dll
+ System.Diagnostics.Process.dll
+ System.Diagnostics.StackTrace.dll
+ System.Diagnostics.TextWriterTraceListener.dll
+ System.Diagnostics.Tools.dll
+ System.Diagnostics.TraceSource.dll
+ System.Diagnostics.Tracing.dll
+ System.dll
+ System.Drawing.dll
+ System.Drawing.Primitives.dll
+ System.Dynamic.Runtime.dll
+ System.Formats.Asn1.dll
+ System.Formats.Tar.dll
+ System.Globalization.Calendars.dll
+ System.Globalization.dll
+ System.Globalization.Extensions.dll
+ System.IO.Compression.Brotli.dll
+ System.IO.Compression.dll
+ System.IO.Compression.FileSystem.dll
+ System.IO.Compression.ZipFile.dll
+ System.IO.dll
+ System.IO.FileSystem.AccessControl.dll
+ System.IO.FileSystem.dll
+ System.IO.FileSystem.DriveInfo.dll
+ System.IO.FileSystem.Primitives.dll
+ System.IO.FileSystem.Watcher.dll
+ System.IO.IsolatedStorage.dll
+ System.IO.MemoryMappedFiles.dll
+ System.IO.Pipelines.dll
+ System.IO.Pipes.AccessControl.dll
+ System.IO.Pipes.dll
+ System.IO.UnmanagedMemoryStream.dll
+ System.Linq.AsyncEnumerable.dll
+ System.Linq.dll
+ System.Linq.Expressions.dll
+ System.Linq.Parallel.dll
+ System.Linq.Queryable.dll
+ System.Memory.dll
+ System.Net.dll
+ System.Net.Http.dll
+ System.Net.Http.Json.dll
+ System.Net.HttpListener.dll
+ System.Net.Mail.dll
+ System.Net.NameResolution.dll
+ System.Net.NetworkInformation.dll
+ System.Net.Ping.dll
+ System.Net.Primitives.dll
+ System.Net.Quic.dll
+ System.Net.Requests.dll
+ System.Net.Security.dll
+ System.Net.ServerSentEvents.dll
+ System.Net.ServicePoint.dll
+ System.Net.Sockets.dll
+ System.Net.WebClient.dll
+ System.Net.WebHeaderCollection.dll
+ System.Net.WebProxy.dll
+ System.Net.WebSockets.Client.dll
+ System.Net.WebSockets.dll
+ System.Numerics.dll
+ System.Numerics.Vectors.dll
+ System.ObjectModel.dll
+ System.Reflection.DispatchProxy.dll
+ System.Reflection.dll
+ System.Reflection.Emit.dll
+ System.Reflection.Emit.ILGeneration.dll
+ System.Reflection.Emit.Lightweight.dll
+ System.Reflection.Extensions.dll
+ System.Reflection.Metadata.dll
+ System.Reflection.Primitives.dll
+ System.Reflection.TypeExtensions.dll
+ System.Resources.Reader.dll
+ System.Resources.ResourceManager.dll
+ System.Resources.Writer.dll
+ System.Runtime.CompilerServices.Unsafe.dll
+ System.Runtime.CompilerServices.VisualC.dll
+ System.Runtime.dll
+ System.Runtime.Extensions.dll
+ System.Runtime.Handles.dll
+ System.Runtime.InteropServices.dll
+ System.Runtime.InteropServices.JavaScript.dll
+ System.Runtime.InteropServices.RuntimeInformation.dll
+ System.Runtime.Intrinsics.dll
+ System.Runtime.Loader.dll
+ System.Runtime.Numerics.dll
+ System.Runtime.Serialization.dll
+ System.Runtime.Serialization.Formatters.dll
+ System.Runtime.Serialization.Json.dll
+ System.Runtime.Serialization.Primitives.dll
+ System.Runtime.Serialization.Xml.dll
+ System.Security.AccessControl.dll
+ System.Security.Claims.dll
+ System.Security.Cryptography.Algorithms.dll
+ System.Security.Cryptography.Cng.dll
+ System.Security.Cryptography.Csp.dll
+ System.Security.Cryptography.dll
+ System.Security.Cryptography.Encoding.dll
+ System.Security.Cryptography.OpenSsl.dll
+ System.Security.Cryptography.Primitives.dll
+ System.Security.Cryptography.X509Certificates.dll
+ System.Security.dll
+ System.Security.Principal.dll
+ System.Security.Principal.Windows.dll
+ System.Security.SecureString.dll
+ System.ServiceModel.Web.dll
+ System.ServiceProcess.dll
+ System.Text.Encoding.CodePages.dll
+ System.Text.Encoding.dll
+ System.Text.Encoding.Extensions.dll
+ System.Text.Encodings.Web.dll
+ System.Text.Json.dll
+ System.Text.RegularExpressions.dll
+ System.Threading.AccessControl.dll
+ System.Threading.Channels.dll
+ System.Threading.dll
+ System.Threading.Overlapped.dll
+ System.Threading.Tasks.Dataflow.dll
+ System.Threading.Tasks.dll
+ System.Threading.Tasks.Extensions.dll
+ System.Threading.Tasks.Parallel.dll
+ System.Threading.Thread.dll
+ System.Threading.ThreadPool.dll
+ System.Threading.Timer.dll
+ System.Transactions.dll
+ System.Transactions.Local.dll
+ System.ValueTuple.dll
+ System.Web.dll
+ System.Web.HttpUtility.dll
+ System.Windows.dll
+ System.Xml.dll
+ System.Xml.Linq.dll
+ System.Xml.ReaderWriter.dll
+ System.Xml.Serialization.dll
+ System.Xml.XDocument.dll
+ System.Xml.XmlDocument.dll
+ System.Xml.XmlSerializer.dll
+ System.Xml.XPath.dll
+ System.Xml.XPath.XDocument.dll
+ WindowsBase.dll
+<NUGET>/
+ microsoft.dotnet.xharness.testrunners.common/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Common.dll
+ microsoft.dotnet.xharness.testrunners.xunit/1.0.0-prerelease.21558.2/lib/net6.0/Microsoft.DotNet.XHarness.TestRunners.Xunit.dll
+ microsoft.extensions.configuration.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Abstractions.dll
+ microsoft.extensions.configuration.binder/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.Binder.dll
+ microsoft.extensions.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Configuration.dll
+ microsoft.extensions.dependencyinjection.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.DependencyInjection.dll
+ microsoft.extensions.diagnostics.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+ microsoft.extensions.fileproviders.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+ microsoft.extensions.hosting.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Hosting.Abstractions.dll
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging.configuration/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Configuration.dll
+ microsoft.extensions.logging.console/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.Console.dll
+ microsoft.extensions.logging/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.options.configurationextensions/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/11.0.0-preview.3.26166.111/lib/net11.0/Microsoft.Extensions.Primitives.dll
+ microsoft.graphics.win2d/1.3.2/lib/net6.0-windows10.0.19041.0/Microsoft.Graphics.Canvas.Interop.dll
+ microsoft.io.recyclablememorystream/3.0.1/lib/net6.0/Microsoft.IO.RecyclableMemoryStream.dll
+ microsoft.web.webview2/1.0.3179.45/lib_manual/net8.0-windows10.0.17763.0/Microsoft.Web.WebView2.Core.Projection.dll
+ microsoft.windows.sdk.net.ref/10.0.19041.44/lib/net8.0/
+  Microsoft.Windows.SDK.NET.dll
+  WinRT.Runtime.dll
+ microsoft.windowsappsdk.ai/1.8.39/lib/net6.0-windows10.0.17763.0/
+  Microsoft.Graphics.Imaging.Projection.dll
+  Microsoft.Windows.AI.ContentSafety.Projection.dll
+  Microsoft.Windows.AI.Foundation.Projection.dll
+  Microsoft.Windows.AI.Imaging.Projection.dll
+  Microsoft.Windows.AI.Projection.dll
+  Microsoft.Windows.AI.Text.Projection.dll
+ microsoft.windowsappsdk.foundation/1.8.251104000/lib/net6.0-windows10.0.17763.0/
+  Microsoft.Security.Authentication.OAuth.Projection.dll
+  Microsoft.Windows.ApplicationModel.Background.Projection.dll
+  Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll
+  Microsoft.Windows.ApplicationModel.Resources.Projection.dll
+  Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll
+  Microsoft.Windows.AppLifecycle.Projection.dll
+  Microsoft.Windows.AppNotifications.Builder.Projection.dll
+  Microsoft.Windows.AppNotifications.Projection.dll
+  Microsoft.Windows.BadgeNotifications.Projection.dll
+  Microsoft.Windows.Foundation.Projection.dll
+  Microsoft.Windows.Management.Deployment.Projection.dll
+  Microsoft.Windows.Media.Capture.Projection.dll
+  Microsoft.Windows.PushNotifications.Projection.dll
+  Microsoft.Windows.Security.AccessControl.Projection.dll
+  Microsoft.Windows.Storage.Pickers.Projection.dll
+  Microsoft.Windows.Storage.Projection.dll
+  Microsoft.Windows.System.Power.Projection.dll
+  Microsoft.Windows.System.Projection.dll
+  Microsoft.WindowsAppRuntime.Bootstrap.Net.dll
+ microsoft.windowsappsdk.interactiveexperiences/1.8.251104001/lib/net6.0-windows10.0.18362.0/Microsoft.InteractiveExperiences.Projection.dll
+ microsoft.windowsappsdk.ml/1.8.2109/lib/net8.0-windows10.0.17763.0/
+  Microsoft.ML.OnnxRuntime.dll
+  Microsoft.Windows.AI.MachineLearning.Projection.dll
+ microsoft.windowsappsdk.widgets/1.8.250904007/lib/net6.0-windows10.0.17763.0/Microsoft.Windows.Widgets.Projection.dll
+ microsoft.windowsappsdk.winui/1.8.251105000/lib/net6.0-windows10.0.17763.0/Microsoft.WinUI.dll
+ mono.options/6.6.0.161/lib/netstandard2.0/Mono.Options.dll
+ system.numerics.tensors/9.0.0/lib/net9.0/System.Numerics.Tensors.dll
+ xunit.abstractions/2.0.3/lib/netstandard2.0/xunit.abstractions.dll
+ xunit.assert/2.9.0/lib/net6.0/xunit.assert.dll
+ xunit.extensibility.core/2.9.0/lib/netstandard1.1/xunit.core.dll
+ xunit.extensibility.execution/2.9.0/lib/netstandard1.1/xunit.execution.dotnet.dll
+ xunit.runner.utility/2.9.0/lib/netcoreapp1.0/xunit.runner.utility.netcoreapp10.dll
+
+[analyzerReferences]
+../../../../.buildtasks/
+ Microsoft.Maui.Controls.BindingSourceGen.dll
+ Microsoft.Maui.Controls.SourceGen.dll
+../../../../artifacts/bin/TestUtils.DeviceTests.Runners.SourceGen/Debug/netstandard2.0/Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/11.0.0-preview.3.26207.106/analyzers/dotnet/cs/
+ Microsoft.Interop.ComInterfaceGenerator.dll
+ Microsoft.Interop.JavaScript.JSImportGenerator.dll
+ Microsoft.Interop.LibraryImportGenerator.dll
+ Microsoft.Interop.SourceGeneration.dll
+ System.Text.Json.SourceGeneration.dll
+ System.Text.RegularExpressions.Generator.dll
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/analyzers/
+ Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+ Microsoft.CodeAnalysis.NetAnalyzers.dll
+<NUGET>/
+ microsoft.extensions.logging.abstractions/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.options/11.0.0-preview.3.26166.111/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
+ microsoft.windows.sdk.net.ref/10.0.19041.44/analyzers/dotnet/cs/WinRT.SourceGenerator.dll
+ xunit.analyzers/1.15.0/analyzers/dotnet/cs/
+  xunit.analyzers.dll
+  xunit.analyzers.fixes.dll
+
+[analyzerConfigFiles]
+../../../../
+ .editorconfig
+ artifacts/obj/Core.DeviceTests/Debug/net11.0-windows10.0.20348.0/win-x64/Core.DeviceTests.GeneratedMSBuildEditorConfig.editorconfig
+<DOTNET>/sdk/11.0.100-preview.3.26207.106/Sdks/Microsoft.NET.Sdk/
+ analyzers/build/config/analysislevel_11_default.globalconfig
+ codestyle/cs/build/config/analysislevelstyle_default.globalconfig
+
+[additionalFiles]
+Resources/appiconfg.svg

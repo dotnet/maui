@@ -1,0 +1,126 @@
+version=1
+
+# This file caches language service data to improve the performance of C# Dev Kit.
+# It is not intended for manual editing. It can safely be deleted and will be
+# regenerated automatically. For more information, see https://aka.ms/lscache
+#
+# To control where cache files are stored, use the following VS Code setting:
+#   "dotnet.projectsystem.cacheInProjectFolder": true
+
+[project]
+language=C#
+primary
+lastDtbSucceeded
+
+[sliceDimensions]
+TargetFramework=net472
+
+[properties]
+AssemblyName=Microsoft.Maui.Controls.DesignTools
+CommandLineArgsForDesignTimeEvaluation=-langversion:Latest -checksumalgorithm:SHA256 -define:TRACE -doc:"<PATH>../../../../artifacts/obj/Controls.Core.Design/Debug/net472/Microsoft.Maui.Controls.DesignTools.xml"
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=7.3
+ProjectAssetsFile=<PATH>../../../../artifacts/obj/Controls.Core.Design/project.assets.json
+RootNamespace=Controls.Core.Design
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=*Undefined*
+TargetFrameworkIdentifier=.NETFramework
+TargetPath=<PATH>../../../../artifacts/bin/Controls.Core.Design/Debug/net472/Microsoft.Maui.Controls.DesignTools.dll
+TargetRefPath=<PATH>../../../../artifacts/bin/Controls.Core.Design/Debug/net472/ref/Microsoft.Maui.Controls.DesignTools.dll
+TemporaryDependencyNodeTargetIdentifier=net472
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1705,1591,NU5105,NETSDK1206,NU1702,IL6001,AD0001,1701,1702
+/fullpaths
+/nostdlib+
+/errorreport:prompt
+/warn:4
+/doc:<PATH>../../../../artifacts/obj/Controls.Core.Design/Debug/net472/Microsoft.Maui.Controls.DesignTools.xml
+/define:TRACE;DEBUG;NETFRAMEWORK;NET472;NET20_OR_GREATER;NET30_OR_GREATER;NET35_OR_GREATER;NET40_OR_GREATER;NET45_OR_GREATER;NET451_OR_GREATER;NET452_OR_GREATER;NET46_OR_GREATER;NET461_OR_GREATER;NET462_OR_GREATER;NET47_OR_GREATER;NET471_OR_GREATER;NET472_OR_GREATER
+/highentropyva+
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:<PATH>../../../../artifacts/obj/Controls.Core.Design/Debug/net472/Microsoft.Maui.Controls.DesignTools.dll
+/refout:<PATH>../../../../artifacts/obj/Controls.Core.Design/Debug/net472/refint/Microsoft.Maui.Controls.DesignTools.dll
+/subsystemversion:6.00
+/target:library
+/warnaserror+
+/utf8output
+/deterministic+
+/checksumalgorithm:SHA256
+/langversion:Latest
+/warnaserror+:NU1605,CS1591
+
+[sourceFiles]
+../../../../artifacts/obj/Controls.Core.Design/Debug/net472/
+ .NETFramework,Version=v4.7.2.AssemblyAttributes.cs
+ Controls.Core.Design.AssemblyInfo.cs
+AttributeTableBuilder.cs
+BoundsDesignTypeConverter.cs
+ButtonContentDesignTypeConverter.cs
+ColorDesignTypeConverter.cs
+ConstraintDesignTypeConverter.cs
+CornerRadiusDesignTypeConverter.cs
+DesignTypeConverterHelper.cs
+EasingDesignTypeConverter.cs
+EnumConverter.cs
+FlexEnumDesignTypeConverters.cs
+FlowDirectionDesignTypeConverter.cs
+FontSizeDesignTypeConverter.cs
+GridLengthCollectionDesignTypeConverter.cs
+GridLengthDesignTypeConverter.cs
+ImageSourceDesignTypeConverter.cs
+ItemsLayoutDesignTypeConverter.cs
+KeyboardDesignTypeConverter.cs
+KnownValuesDesignTypeConverter.cs
+LayoutOptionsDesignTypeConverter.cs
+LinearItemsLayoutDesignTypeConverter.cs
+NonExclusiveEnumConverter.cs
+PointTypeDesignConverter.cs
+Properties/AssemblyInfo.cs
+RectTypeDesignConverter.cs
+RegisterMetadata.cs
+SafeAreaEdgesTypeDesignConverter.cs
+ThicknessTypeDesignConverter.cs
+VisibilityDesignTypeConverter.cs
+VisualDesignTypeConverter.cs
+
+[metadataReferences]
+<NETFXREF>/v4.7.2/
+ Facades/netstandard.dll
+ mscorlib.dll
+ System.Core.dll
+ System.Data.dll
+ System.dll
+ System.Drawing.dll
+ System.IO.Compression.FileSystem.dll
+ System.Numerics.dll
+ System.Runtime.Serialization.dll
+ System.Xaml.dll
+ System.Xml.dll
+ System.Xml.Linq.dll
+<NUGET>/microsoft.visualstudio.designtools.extensibility/17.5.33428.366/lib/net45/
+ Microsoft.VisualStudio.DesignTools.Extensibility.dll
+ Microsoft.VisualStudio.DesignTools.Interaction.dll
+
+[analyzerReferences]
+<NUGET>/microsoft.codeanalysis.bannedapianalyzers/4.14.0/analyzers/dotnet/cs/
+ Microsoft.CodeAnalysis.BannedApiAnalyzers.dll
+ Microsoft.CodeAnalysis.CSharp.BannedApiAnalyzers.dll
+<NUGET>/microsoft.codeanalysis.netanalyzers/9.0.0/analyzers/dotnet/cs/
+ Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+ Microsoft.CodeAnalysis.NetAnalyzers.dll
+
+[analyzerConfigFiles]
+../../../../
+ .editorconfig
+ artifacts/obj/Controls.Core.Design/Debug/net472/Controls.Core.Design.GeneratedMSBuildEditorConfig.editorconfig
+
+[additionalFiles]
+../../../../eng/BannedSymbols.txt

@@ -333,6 +333,13 @@ namespace Maui.Controls.Sample
 				}
 			});
 
+			appBuilder.ConfigureMauiHandlers(handlers =>
+			{
+#if WINDOWS
+				handlers.AddHandler(typeof(CollectionView), typeof(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2));
+#endif
+			});
+
 			return appBuilder.Build();
 		}
 	}

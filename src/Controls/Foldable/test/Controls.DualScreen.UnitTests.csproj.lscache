@@ -1,0 +1,79 @@
+version=1
+
+# This file caches language service data to improve the performance of C# Dev Kit.
+# It is not intended for manual editing. It can safely be deleted and will be
+# regenerated automatically. For more information, see https://aka.ms/lscache
+#
+# To control where cache files are stored, use the following VS Code setting:
+#   "dotnet.projectsystem.cacheInProjectFolder": true
+
+[project]
+language=C#
+primary
+lastDtbSucceeded
+
+[sliceDimensions]
+TargetFramework=net47
+
+[properties]
+AssemblyName=Controls.DualScreen.UnitTests
+CommandLineArgsForDesignTimeEvaluation=-langversion:Latest -checksumalgorithm:SHA256 -define:TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=7.3
+ProjectAssetsFile=<PATH>../../../../artifacts/obj/Controls.DualScreen.UnitTests/project.assets.json
+RootNamespace=Controls.DualScreen.UnitTests
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=*Undefined*
+TargetFrameworkIdentifier=.NETFramework
+TargetPath=<PATH>../../../../artifacts/bin/Controls.DualScreen.UnitTests/Debug/net47/Controls.DualScreen.UnitTests.dll
+TargetRefPath=<PATH>../../../../artifacts/bin/Controls.DualScreen.UnitTests/Debug/net47/ref/Controls.DualScreen.UnitTests.dll
+TemporaryDependencyNodeTargetIdentifier=net47
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:0114,0672,0108,0067,0168,0169,0219,0612,0618,1998,NU5105,NETSDK1206,NU1702,IL6001,AD0001,1701,1702
+/fullpaths
+/nostdlib+
+/errorreport:prompt
+/warn:4
+/define:TRACE;DEBUG;NETFRAMEWORK;NET47;NET20_OR_GREATER;NET30_OR_GREATER;NET35_OR_GREATER;NET40_OR_GREATER;NET45_OR_GREATER;NET451_OR_GREATER;NET452_OR_GREATER;NET46_OR_GREATER;NET461_OR_GREATER;NET462_OR_GREATER;NET47_OR_GREATER
+/highentropyva+
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:<PATH>../../../../artifacts/obj/Controls.DualScreen.UnitTests/Debug/net47/Controls.DualScreen.UnitTests.dll
+/refout:<PATH>../../../../artifacts/obj/Controls.DualScreen.UnitTests/Debug/net47/refint/Controls.DualScreen.UnitTests.dll
+/subsystemversion:6.00
+/target:library
+/warnaserror+
+/utf8output
+/deterministic+
+/checksumalgorithm:SHA256
+/langversion:Latest
+/warnaserror+:NU1605
+
+[sourceFiles]
+../../../../artifacts/obj/Controls.DualScreen.UnitTests/Debug/net47/
+ .NETFramework,Version=v4.7.AssemblyAttributes.cs
+ Controls.DualScreen.UnitTests.AssemblyInfo.cs
+BaseTestFixture.cs
+MockPlatformServices.cs
+TestDeviceInfo.cs
+TestDualScreenService.cs
+TwoPaneViewNotSpannedTests.cs
+TwoPaneViewSpannedTests.cs
+
+[metadataReferences]
+../../../../../../mscorlib.dll
+
+[analyzerConfigFiles]
+../../../../
+ .editorconfig
+ artifacts/obj/Controls.DualScreen.UnitTests/Debug/net47/Controls.DualScreen.UnitTests.GeneratedMSBuildEditorConfig.editorconfig
+
+[additionalFiles]
+../../../../eng/BannedSymbols.txt

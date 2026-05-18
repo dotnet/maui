@@ -30,7 +30,7 @@ public class ToolbarBadgePage : BasePage
 			},
 			BadgeText = "3"
 		};
-		_numericItem.Clicked += (s, e) => _statusLabel.Text = "Tapped: Alerts";
+		//_numericItem.Clicked += (s, e) => _statusLabel.Text = "Tapped: Alerts";
 
 		_textItem = new ToolbarItem
 		{
@@ -43,7 +43,7 @@ public class ToolbarBadgePage : BasePage
 			},
 			BadgeText = "New"
 		};
-		_textItem.Clicked += (s, e) => _statusLabel.Text = "Tapped: Messages";
+		//_textItem.Clicked += (s, e) => _statusLabel.Text = "Tapped: Messages";
 
 		_colorItem = new ToolbarItem
 		{
@@ -57,7 +57,7 @@ public class ToolbarBadgePage : BasePage
 			BadgeText = "2",
 			BadgeColor = Colors.Green
 		};
-		_colorItem.Clicked += (s, e) => _statusLabel.Text = "Tapped: Cart";
+		//_colorItem.Clicked += (s, e) => _statusLabel.Text = "Tapped: Cart";
 
 		ToolbarItems.Add(_numericItem);
 		ToolbarItems.Add(_textItem);
@@ -110,9 +110,9 @@ public class ToolbarBadgePage : BasePage
 					new Label
 					{
 						Text = "Platform Notes:\n" +
-						       "• Android: Full support via Material BadgeDrawable\n" +
-						       "• iOS/macOS: Requires iOS 26+ / macOS 26+\n" +
-						       "• Windows: Non-numeric text shows as dot indicator",
+							   "• Android: Full support via Material BadgeDrawable\n" +
+							   "• iOS/macOS: Requires iOS 26+ / macOS 26+\n" +
+							   "• Windows: Non-numeric text shows as dot indicator",
 						FontSize = 12,
 						TextColor = Colors.Gray,
 						Margin = new Thickness(0, 20, 0, 0)

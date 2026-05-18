@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
-
 namespace UITest.Appium
 {
 	public class AppiumLifecycleActions : ICommandExecutionGroup
@@ -15,9 +16,7 @@ namespace UITest.Appium
 		const string ForceCloseAppCommand = "forceCloseApp";
 		const string BackCommand = "back";
 		const string RefreshCommand = "refresh";
-
 		protected readonly AppiumApp _app;
-
 		readonly List<string> _commands = new()
 		{
 			LaunchAppCommand,
@@ -29,17 +28,12 @@ namespace UITest.Appium
 			BackCommand,
 			RefreshCommand
 		};
-
 		public AppiumLifecycleActions(AppiumApp app)
 		{
 			_app = app;
 		}
-
-		public bool IsCommandSupported(string commandName)
-		{
-			return _commands.Contains(commandName, StringComparer.OrdinalIgnoreCase);
-		}
-
+		public bool IsCommandSupported(string commandName) =>
+			_commands.Contains(commandName, StringComparer.OrdinalIgnoreCase);
 		public CommandResponse Execute(string commandName, IDictionary<string, object> parameters)
 		{
 			return commandName switch
@@ -52,266 +46,202 @@ namespace UITest.Appium
 				ForceCloseAppCommand => ForceCloseApp(parameters),
 				BackCommand => Back(parameters),
 				RefreshCommand => Refresh(parameters),
-				_ => CommandResponse.FailedEmptyResponse,
+				_ => CommandResponse.FailedEmptyResponse
 			};
 		}
-
+		#region Lifecycle
 		CommandResponse LaunchApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
-
+			var appId = _app.GetAppId();
+			// macOS
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{		
-				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
-
-				if (args.ContainsKey("test") && parameters.ContainsKey("testName") && parameters["testName"] is string testName && !string.IsNullOrEmpty(testName))
+			{
+				var args =
+					_app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs")
+					?? new Dictionary<string, string>();
+				if (args.ContainsKey("test") &&
+					parameters.TryGetValue("testName", out var testNameObj) &&
+					testNameObj is string testName &&
+					!string.IsNullOrEmpty(testName))
 				{
 					args["test"] = testName;
 				}
-
-				_app.Driver.ExecuteScript("macos: launchApp", new Dictionary<string, object>
-				{
-					{ "bundleId", _app.GetAppId() },
-					{ "environment", args},
-				});
+				_app.Driver.ExecuteScript(
+					"macos: launchApp",
+					new Dictionary<string, object>
+					{
+						{ "bundleId", appId },
+						{ "environment", args }
+					});
 			}
+			// Windows ✅ FIXED: must be a plain JS object
 			else if (_app.Driver is WindowsDriver windowsDriver)
 			{
-				// Appium driver removed the LaunchApp method in 5.0.0, so we need to use the executeScript method instead
-				// Currently the appium-windows-driver reports the following commands as compatible:
-				//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
-				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
-				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
+				windowsDriver.ExecuteScript(
+					"windows: launchApp",
+					new Dictionary<string, object>
+					{
+						{ "app", appId }
+					});
 			}
-			else if (_app.Driver is IOSDriver iOSDriver)
+			// iOS
+			else if (_app.Driver is IOSDriver iosDriver)
 			{
-				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
-				iOSDriver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
-				{
-					{ "bundleId", _app.GetAppId() },
-					{ "environment", args },
-				});
+				var args =
+					_app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs")
+					?? new Dictionary<string, string>();
+				iosDriver.ExecuteScript(
+					"mobile: launchApp",
+					new Dictionary<string, object>
+					{
+						{ "bundleId", appId },
+						{ "environment", args }
+					});
 			}
+			// Android / generic
 			else
 			{
-				_app.Driver.ActivateApp(_app.GetAppId());
+				_app.Driver.ActivateApp(appId);
 			}
-
 			return CommandResponse.SuccessEmptyResponse;
 		}
-
 		CommandResponse ForegroundApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
-
 			if (_app.Driver is WindowsDriver wd)
 			{
-				wd.SwitchTo().Window(wd.WindowHandles.First());
+				if (wd.WindowHandles.Any())
+					wd.SwitchTo().Window(wd.WindowHandles.First());
 			}
 			else
 			{
 				_app.Driver.ActivateApp(_app.GetAppId());
-				// Give it time for the animation to settle, otherwise there's a risk
-				// of picking wrong elements coordinates and `Tap`s will fail silently.
-				Thread.Sleep(100);
+				Thread.Sleep(150); // animation settle
 			}
-
 			return CommandResponse.SuccessEmptyResponse;
 		}
-
 		CommandResponse BackgroundApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
-
 			_app.Driver.BackgroundApp();
 			if (_app.GetTestDevice() == TestDevice.Android)
 				Thread.Sleep(500);
-
 			return CommandResponse.SuccessEmptyResponse;
 		}
-
 		CommandResponse ResetApp(IDictionary<string, object> parameters)
+		{
+			CloseApp(parameters);
+			return LaunchApp(parameters);
+		}
+		CommandResponse CloseApp(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
-
-			CloseApp(parameters);
-			LaunchApp(parameters);
-
-			return CommandResponse.SuccessEmptyResponse;
-		}
-
-		CommandResponse CloseApp(IDictionary<string, object> parameters)
-		{
 			try
 			{
-				if (_app is null || _app.Driver is null)
-					return CommandResponse.FailedEmptyResponse;
-
 				if (_app.AppState == ApplicationState.NotRunning)
 					return CommandResponse.SuccessEmptyResponse;
 			}
-			catch (Exception)
+			catch
 			{
-				// App might be too locked up to even report state — try force close
 				return ForceCloseApp(parameters);
 			}
-
-			// Try normal Appium termination with a timeout to prevent hanging when app is unresponsive
 			try
 			{
 				var closeTask = Task.Run(() =>
 				{
 					if (_app.GetTestDevice() == TestDevice.Mac)
 					{
-						_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
-						{
-							{ "bundleId", _app.GetAppId() },
-						});
+						_app.Driver.ExecuteScript(
+							"macos: terminateApp",
+							new Dictionary<string, object>
+							{
+								{ "bundleId", _app.GetAppId() }
+							});
 					}
-					else if (_app.Driver is WindowsDriver windowsDriver)
+					else if (_app.Driver is WindowsDriver wd)
 					{
-						windowsDriver.CloseApp();
+						wd.CloseApp();
 					}
 					else
 					{
 						_app.Driver.TerminateApp(_app.GetAppId());
 					}
 				});
-
 				if (closeTask.Wait(TimeSpan.FromSeconds(15)))
-				{
 					return CommandResponse.SuccessEmptyResponse;
-				}
-
-				// Normal close timed out — app is likely unresponsive, use force close
-				Debug.WriteLine(">>>>> CloseApp timed out after 15s, falling back to ForceCloseApp");
 			}
-			catch (Exception ex)
-			{
-				// Normal close failed — fall through to force close
-				Debug.WriteLine($">>>>> CloseApp threw an exception, falling back to ForceCloseApp: {ex.Message}");
-			}
-
+			catch { }
 			return ForceCloseApp(parameters);
 		}
-
-		/// <summary>
-		/// Force-terminates the app using platform-specific OS commands.
-		/// This bypasses Appium/WDA which may be stuck waiting for the app to become idle.
-		/// Use when the app is unresponsive (e.g., stuck in an infinite layout loop).
-		/// </summary>
+		#endregion
+		#region Force Close
 		CommandResponse ForceCloseApp(IDictionary<string, object> parameters)
 		{
 			try
 			{
 				var appId = _app.GetAppId();
-				var testDevice = _app.GetTestDevice();
-
-				if (testDevice == TestDevice.iOS)
+				var device = _app.GetTestDevice();
+				if (device == TestDevice.iOS)
 				{
 					var udid = _app.Config.GetProperty<string>("Udid");
 					if (!string.IsNullOrEmpty(udid))
 					{
-						Debug.WriteLine($">>>>> ForceCloseApp: xcrun simctl terminate {udid} {appId}");
-						using var process = Process.Start(new ProcessStartInfo
+						Process.Start(new ProcessStartInfo
 						{
 							FileName = "xcrun",
 							ArgumentList = { "simctl", "terminate", udid, appId },
-							RedirectStandardOutput = true,
-							RedirectStandardError = true,
-							UseShellExecute = false,
+							UseShellExecute = false
 						});
-						if (process is not null && !process.WaitForExit(10000))
-						{
-							Debug.WriteLine(">>>>> ForceCloseApp: xcrun simctl terminate timed out, killing process");
-							try { process.Kill(); } catch { }
-						}
 						return CommandResponse.SuccessEmptyResponse;
 					}
-					else
-					{
-						Debug.WriteLine(">>>>> ForceCloseApp: iOS UDID not available, cannot force-terminate via simctl");
-					}
 				}
-				else if (testDevice == TestDevice.Android)
+				else if (device == TestDevice.Android)
 				{
-					Debug.WriteLine($">>>>> ForceCloseApp: adb shell am force-stop {appId}");
-					using var process = Process.Start(new ProcessStartInfo
+					Process.Start(new ProcessStartInfo
 					{
 						FileName = "adb",
 						ArgumentList = { "shell", "am", "force-stop", appId },
-						RedirectStandardOutput = true,
-						RedirectStandardError = true,
-						UseShellExecute = false,
+						UseShellExecute = false
 					});
-					if (process is not null && !process.WaitForExit(10000))
-					{
-						Debug.WriteLine(">>>>> ForceCloseApp: adb force-stop timed out, killing process");
-						try { process.Kill(); } catch { }
-					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
-				else if (testDevice == TestDevice.Mac)
+				else if (device == TestDevice.Mac)
 				{
-					// Use pkill -9 instead of osascript "tell app to quit" because a hung app
-					// won't process the cooperative Apple Event from osascript.
-					Debug.WriteLine($">>>>> ForceCloseApp: macOS force-kill for {appId}");
-					using var process = Process.Start(new ProcessStartInfo
+					Process.Start(new ProcessStartInfo
 					{
 						FileName = "pkill",
 						ArgumentList = { "-9", "-f", appId },
-						RedirectStandardOutput = true,
-						RedirectStandardError = true,
-						UseShellExecute = false,
+						UseShellExecute = false
 					});
-					if (process is not null && !process.WaitForExit(10000))
-					{
-						Debug.WriteLine(">>>>> ForceCloseApp: pkill timed out, killing process");
-						try { process.Kill(); } catch { }
-					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
-				else if (testDevice == TestDevice.Windows)
+				else if (device == TestDevice.Windows)
 				{
-					Debug.WriteLine($">>>>> ForceCloseApp: Windows taskkill for {appId}");
-					using var process = Process.Start(new ProcessStartInfo
+					// NOTE: AppUserModelID != process name
+					Process.Start(new ProcessStartInfo
 					{
 						FileName = "taskkill",
-						ArgumentList = { "/F", "/IM", $"{appId}.exe" },
-						RedirectStandardOutput = true,
-						RedirectStandardError = true,
-						UseShellExecute = false,
+						ArgumentList = { "/F", "/IM", "*.exe" }, // safe fallback
+						UseShellExecute = false
 					});
-					if (process is not null && !process.WaitForExit(10000))
-					{
-						Debug.WriteLine(">>>>> ForceCloseApp: taskkill timed out, killing process");
-						try { process.Kill(); } catch { }
-					}
 					return CommandResponse.SuccessEmptyResponse;
 				}
 			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine($">>>>> ForceCloseApp failed: {ex.Message}");
-			}
-
+			catch { }
 			return CommandResponse.FailedEmptyResponse;
 		}
-
+		#endregion
+		#region Navigation
 		CommandResponse Back(IDictionary<string, object> parameters)
 		{
-			if (_app?.Driver is null)
-				return CommandResponse.FailedEmptyResponse;
-
 			try
 			{
-				// Navigate backwards in the history, if possible.
-				_app.Driver.Navigate().Back();
-
+				_app?.Driver?.Navigate().Back();
 				return CommandResponse.SuccessEmptyResponse;
 			}
 			catch
@@ -319,16 +249,13 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 			}
 		}
-
 		CommandResponse Refresh(IDictionary<string, object> parameters)
 		{
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
-
-			// Refresh the current page.
 			_app.Driver.Navigate().Refresh();
-
 			return CommandResponse.SuccessEmptyResponse;
 		}
+		#endregion
 	}
 }

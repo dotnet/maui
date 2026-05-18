@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 8305, "ToolbarItem Badge Support", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 0000, "ToolbarItem Badge Support", PlatformAffected.All)]
 public class Issue8305_Toolbar : ContentPage
 {
 	readonly ToolbarItem _badgeTextItem;

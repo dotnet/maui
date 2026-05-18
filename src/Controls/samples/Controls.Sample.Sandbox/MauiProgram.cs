@@ -22,5 +22,6 @@ public static class MauiProgram
 				fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
 				fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 			})
+
 			.Build();
 }

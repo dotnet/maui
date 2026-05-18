@@ -1,0 +1,75 @@
+version=1
+
+# This file caches language service data to improve the performance of C# Dev Kit.
+# It is not intended for manual editing. It can safely be deleted and will be
+# regenerated automatically. For more information, see https://aka.ms/lscache
+#
+# To control where cache files are stored, use the following VS Code setting:
+#   "dotnet.projectsystem.cacheInProjectFolder": true
+
+[project]
+language=C#
+primary
+lastDtbSucceeded
+
+[properties]
+AssemblyName=Compatibility.Maps.WPF
+CommandLineArgsForDesignTimeEvaluation=-langversion:Latest -checksumalgorithm:SHA256 -define:TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=7.3
+ProjectAssetsFile=<PATH>../../../../../artifacts/obj/Compatibility.Maps.WPF/project.assets.json
+RootNamespace=Compatibility.Maps.WPF
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=*Undefined*
+TargetFrameworkIdentifier=.NETFramework
+TargetPath=<PATH>../../../../../artifacts/bin/Compatibility.Maps.WPF/Debug/net462/Compatibility.Maps.WPF.dll
+TargetRefPath=<PATH>../../../../../artifacts/bin/Compatibility.Maps.WPF/Debug/net462/ref/Compatibility.Maps.WPF.dll
+TemporaryDependencyNodeTargetIdentifier=net462
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1705,1591,NU1701,NU5105,NETSDK1206,NU1702,IL6001,AD0001,1701,1702
+/fullpaths
+/nostdlib+
+/errorreport:prompt
+/warn:4
+/define:TRACE;DEBUG;NETFRAMEWORK;NET462;NET30_OR_GREATER;NET35_OR_GREATER;NET40_OR_GREATER;NET45_OR_GREATER;NET451_OR_GREATER;NET452_OR_GREATER;NET46_OR_GREATER;NET461_OR_GREATER;NET462_OR_GREATER
+/highentropyva+
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:<PATH>../../../../../artifacts/obj/Compatibility.Maps.WPF/Debug/net462/Compatibility.Maps.WPF.dll
+/refout:<PATH>../../../../../artifacts/obj/Compatibility.Maps.WPF/Debug/net462/refint/Compatibility.Maps.WPF.dll
+/subsystemversion:6.00
+/target:library
+/warnaserror+
+/utf8output
+/deterministic+
+/checksumalgorithm:SHA256
+/langversion:Latest
+/warnaserror+:NU1605
+
+[sourceFiles]
+../../../../../artifacts/obj/Compatibility.Maps.WPF/Debug/net462/.NETFramework,Version=v4.6.2.AssemblyAttributes.cs
+FormsMaps.cs
+FormsPushPin.cs
+GeocoderBackend.cs
+MapRenderer.cs
+Properties/
+ AssemblyInfo.cs
+ Resources.Designer.cs
+
+[metadataReferences]
+../../../../../../../mscorlib.dll
+
+[analyzerConfigFiles]
+../../../../../
+ .editorconfig
+ artifacts/obj/Compatibility.Maps.WPF/Debug/net462/Compatibility.Maps.WPF.GeneratedMSBuildEditorConfig.editorconfig
+
+[additionalFiles]
+../../../../../eng/BannedSymbols.txt

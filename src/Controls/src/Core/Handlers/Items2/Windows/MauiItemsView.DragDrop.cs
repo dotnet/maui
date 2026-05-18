@@ -335,7 +335,7 @@ internal partial class MauiItemsView
 			}
 
 			// Reset any stale Translation so the recycled container starts clean.
-			container.Translation = System.Numerics.Vector3.Zero;
+			itemContainer.Translation = System.Numerics.Vector3.Zero;
 
 			// Clear any drop-target highlight so it doesn't persist on recycled containers.
 			if (ReferenceEquals(_dropTargetContainer, itemContainer))
@@ -483,7 +483,10 @@ internal partial class MauiItemsView
 
 		_insertionIndex = _insertAfter ? targetIndex + 1 : targetIndex;
 
-		UpdateInsertionIndicator(targetContainer, _insertAfter);
+		if (targetContainer is ItemContainer ic)
+		{
+			UpdateInsertionIndicator(ic, _insertAfter);
+		}
 
 		e.AcceptedOperation = WDataTransfer.DataPackageOperation.Move;
 		e.Handled = true;
@@ -571,9 +574,6 @@ internal partial class MauiItemsView
 		{
 			case System.Collections.ObjectModel.ObservableCollection<object> oc:
 				oc.Move(oldIndex, newIndex);
-				return true;
-			case System.Collections.ObjectModel.ObservableCollection<object?> ocn:
-				ocn.Move(oldIndex, newIndex);
 				return true;
 			default:
 				return false;
@@ -1439,7 +1439,7 @@ internal partial class MauiItemsView
 		try
 		{
 			if (Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue(
-				"SystemAccentColor", out var raw) && raw is Windows.UI.Color accentColor)
+				"SystemAccentColor", out var raw) && raw is global::Windows.UI.Color accentColor)
 			{
 				return new Microsoft.UI.Xaml.Media.SolidColorBrush(accentColor);
 			}
@@ -1448,7 +1448,7 @@ internal partial class MauiItemsView
 
 		// Fallback: Windows blue accent colour.
 		return new Microsoft.UI.Xaml.Media.SolidColorBrush(
-			Windows.UI.Color.FromArgb(255, 0, 120, 212));
+			global::Windows.UI.Color.FromArgb(255, 0, 120, 212));
 	}
 
 	#endregion
@@ -1483,7 +1483,7 @@ internal partial class MauiItemsView
 		else
 		{
 			cardBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-				Windows.UI.Color.FromArgb(255, 255, 255, 255));
+				global::Windows.UI.Color.FromArgb(255, 255, 255, 255));
 		}
 
 		container.Background = cardBrush;
