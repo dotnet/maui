@@ -80,12 +80,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						formsView.SetValue(VisualElement.IsFocusedPropertyKey, true);
 						break;
 					case ViewHolderState.Normal:
-						formsView.SetSelectedState(false);
+						formsView.IsItemSelected = false;
 						formsView.SetValue(VisualElement.IsFocusedPropertyKey, false);
 						break;
 					case ViewHolderState.Selected:
 						if (IsSelectable)
-							formsView.SetSelectedState(true);
+							formsView.IsItemSelected = true;
 						break;
 				}
 			}

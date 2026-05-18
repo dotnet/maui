@@ -342,7 +342,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (PlatformHandler?.VirtualView is VisualElement element)
 			{
-				element.SetSelectedState(Selected);
+				element.IsItemSelected = Selected;
 			}
 		}
 

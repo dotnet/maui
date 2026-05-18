@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			View.SetSelectedState(IsSelected);
+			View.IsItemSelected = IsSelected;
 		}
 
 		public void Recycle(ItemsView itemsView)
