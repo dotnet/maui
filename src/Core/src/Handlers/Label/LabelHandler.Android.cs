@@ -30,15 +30,32 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Ellipsize == null)
 			{
 				float maxLineWidth = 0;
+				float maxLineRight = 0;
 				for (int i = 0; i < layout.LineCount; i++)
 				{
 					float lineWidth = layout.GetLineWidth(i);
 					if (lineWidth > maxLineWidth)
 						maxLineWidth = lineWidth;
+
+					// GetLineRight() captures the true visual right edge, including RTL/bidi
+					// offsets that GetLineWidth() can under-report for non-left-anchored text.
+					float lineRight = layout.GetLineRight(i);
+					if (lineRight > maxLineRight)
+					{
+						maxLineRight = lineRight;
+					}
 				}
 
 				if (maxLineWidth > 0)
 				{
+					// If any line's visual right edge exceeds the computed content width,
+					// narrowing to that width would clip the text (e.g. RTL/bidi in an RTL
+					// container). Return the original size without an extra measure pass.
+					if (maxLineRight > maxLineWidth)
+					{
+						return size;
+					}
+
 					var actualWidth = Context.FromPixels(maxLineWidth + PlatformView.PaddingLeft + PlatformView.PaddingRight);
 					if (actualWidth < size.Width)
 					{

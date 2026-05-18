@@ -326,14 +326,34 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (Aspect == Stretch.None)
 			{
-				bool requireAdjustX = viewBounds.Left > pathBounds.Left;
-				bool requireAdjustY = viewBounds.Top > pathBounds.Top;
+				float translateX = 0;
+				float translateY = 0;
 
-				if (requireAdjustX || requireAdjustY)
+				// Check if path needs to be shifted right to fit within view bounds (left edge)
+				if (viewBounds.Left > pathBounds.Left)
 				{
-					transform = Matrix3x2.CreateTranslation(
-						(float)(pathBounds.X + viewBounds.Left - pathBounds.Left),
-						(float)(pathBounds.Y + viewBounds.Top - pathBounds.Top));
+					translateX = (float)(viewBounds.Left - pathBounds.Left);
+				}
+				// Check if path needs to be shifted left to fit within view bounds (right edge)
+				else if (pathBounds.Right > viewBounds.Right)
+				{
+					translateX = (float)(viewBounds.Right - pathBounds.Right);
+				}
+
+				// Check if path needs to be shifted down to fit within view bounds (top edge)
+				if (viewBounds.Top > pathBounds.Top)
+				{
+					translateY = (float)(viewBounds.Top - pathBounds.Top);
+				}
+				// Check if path needs to be shifted up to fit within view bounds (bottom edge)
+				else if (pathBounds.Bottom > viewBounds.Bottom)
+				{
+					translateY = (float)(viewBounds.Bottom - pathBounds.Bottom);
+				}
+
+				if (translateX != 0 || translateY != 0)
+				{
+					transform = Matrix3x2.CreateTranslation(translateX, translateY);
 				}
 				else
 				{
@@ -428,7 +448,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 			else
 			{
-			    pathBounds = this.GetPath().GetBoundsByFlattening(1);
+				pathBounds = this.GetPath().GetBoundsByFlattening(1);
 			}
 
 			SizeF boundsByFlattening = pathBounds.Size;

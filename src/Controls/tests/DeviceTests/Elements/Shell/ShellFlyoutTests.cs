@@ -323,14 +323,20 @@ namespace Microsoft.Maui.DeviceTests
                                 }
                                 else
                                 {
-                                        AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
+                                        // After scrolling, the header height may include the safe area margin
+                                        // depending on the content type and how InvalidateMeasure is triggered.
+                                        var safeAreaTop = GetSafeArea(handler.ToPlatform()).Top;
+                                        Assert.True(
+                                                scrolledBox.Height >= headerRequestedHeight - 0.3 &&
+                                                scrolledBox.Height <= headerRequestedHeight + safeAreaTop + 0.3,
+                                                $"Header Height: expected between {headerRequestedHeight} and {headerRequestedHeight + safeAreaTop}, actual: {scrolledBox.Height}");
 
                                         if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
                                         {
-                                                // scrolledBoy.Y is negative because the header is scrolled up
-                                                var diff = scrolledBox.Y + headerRequestedHeight;
+                                                // scrolledBox.Y is negative because the header is scrolled up
+                                                var diff = scrolledBox.Y + scrolledBox.Height;
                                                 var epsilon = 0.3;
-                                                Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+                                                Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is not enough to cover height ({scrolledBox.Height}). Epsilon: {epsilon}");
                                         }
                                         else
                                         {

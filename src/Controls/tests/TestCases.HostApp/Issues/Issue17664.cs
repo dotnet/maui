@@ -26,7 +26,7 @@ public class Issue17664 : ContentPage
 			HorizontalOptions = LayoutOptions.Center
 		};
 
-		_collectionView = new CollectionView
+		_collectionView = new CollectionView2
 		{
 			IsGrouped = true,
 			GroupHeaderTemplate = new DataTemplate(() =>
