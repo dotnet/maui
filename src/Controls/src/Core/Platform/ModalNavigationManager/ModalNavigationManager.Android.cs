@@ -14,6 +14,7 @@ using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using AWindow = Android.Views.Window;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -265,12 +266,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (OperatingSystem.IsAndroidVersionAtLeast(30) && Context?.GetActivity() is global::Android.App.Activity activity)
 				{
 					dialog.Window.ConfigureTranslucentSystemBars(activity);
-					AndroidSystemChrome.UpdateWindowChrome(
-						Context,
-						dialog.Window,
-						updateStatusBar: true,
-						updateNavigationBar: true,
-						background: (_modal as IView)?.Background);
+					UpdateModalWindowChrome(dialog.Window, Context);
 				}
 				else if (mainActivityWindow is not null)
 				{
@@ -311,7 +307,8 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 
-				if (e.IsOneOf(Page.BackgroundColorProperty, Page.BackgroundProperty))
+				if (e.IsOneOf(Page.BackgroundColorProperty, Page.BackgroundProperty) ||
+					IsNavigationPageBarProperty(e.PropertyName))
 				{
 					UpdateBackgroundColor();
 				}
@@ -329,16 +326,53 @@ namespace Microsoft.Maui.Controls.Platform
 				if (pageView is null)
 					return;
 
-				var modalBkgndColor = view.Background;
-				if (modalBkgndColor is null)
+				var modalBackground = view.Background;
+				if (modalBackground is null)
 					pageView.SetWindowBackground();
 
+				UpdateModalWindowChrome(Dialog?.Window, pageView.Context);
+			}
+
+			void UpdateModalWindowChrome(AWindow? window, Context? context)
+			{
+				var modalBackground = (_modal as IView)?.Background;
+
+				if (_modal is NavigationPage navigationPage)
+				{
+					AndroidSystemChrome.UpdateWindowChrome(
+						context ?? Context,
+						window,
+						updateStatusBar: true,
+						updateNavigationBar: true,
+						statusBarBackground: GetNavigationPageBarBackground(navigationPage),
+						statusBarForeground: navigationPage.BarTextColor,
+						navigationBarBackground: modalBackground);
+					return;
+				}
+
 				AndroidSystemChrome.UpdateWindowChrome(
-					pageView.Context,
-					Dialog?.Window,
+					context ?? Context,
+					window,
 					updateStatusBar: true,
 					updateNavigationBar: true,
-					background: modalBkgndColor);
+					background: modalBackground);
+			}
+
+			static bool IsNavigationPageBarProperty(string? propertyName)
+			{
+				return propertyName == NavigationPage.BarBackgroundColorProperty.PropertyName ||
+					propertyName == NavigationPage.BarBackgroundProperty.PropertyName ||
+					propertyName == NavigationPage.BarTextColorProperty.PropertyName;
+			}
+
+			static Brush? GetNavigationPageBarBackground(NavigationPage navigationPage)
+			{
+				if (navigationPage.BarBackground is not null)
+				{
+					return navigationPage.BarBackground;
+				}
+
+				return navigationPage.BarBackgroundColor is null ? null : new SolidColorBrush(navigationPage.BarBackgroundColor);
 			}
 
 			public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
