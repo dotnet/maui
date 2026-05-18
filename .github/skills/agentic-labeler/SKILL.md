@@ -73,7 +73,7 @@ Prefer the most specific label. It is fine to apply both a generic and a specifi
 
 This is the most important behavior for PRs.
 
-**For pull requests**, infer `platform/*` labels primarily from the **changed files**, using the rules below. Each rule maps a file pattern to one or more platform labels. Apply a `platform/*` label if **any** changed file matches that pattern. The path patterns intentionally target the established MAUI source-layout conventions (`Platform/<Name>/` and `Platforms/<Name>/`) — do not match on bare `/Android/`, `/iOS/`, `/Windows/`, etc., as those occur in templates, docs, and unrelated tooling paths.
+**For pull requests**, infer `platform/*` labels primarily from the **changed files**, using the rules below. Each rule maps a file pattern to one or more platform labels. Apply a `platform/*` label if **any** changed file matches that pattern. The path patterns intentionally target the established MAUI source-layout conventions — match the patterns in the table below (e.g., `/Platform/<Name>/`, `/Platforms/<Name>/`, `/Handlers/*/<Name>/`). Do **not** match on a bare top-level `/Android/`, `/iOS/`, `/Windows/`, or `/MacCatalyst/` segment that is not part of one of the patterns in the table — bare segments occur in templates, docs, and unrelated tooling paths and are not platform-specific source code.
 
 Note on iOS / MacCatalyst: file-extension patterns and directory patterns map differently because of MAUI's compilation conventions — they are split into separate rows below.
 

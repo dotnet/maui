@@ -19,8 +19,19 @@ on:
         type: number
   reaction: eyes
   # Allow this workflow to run for any actor (including first-time community
-  # contributors). It is labeling-only — the agent itself runs with read-only
-  # tokens, and label writes happen through the sandboxed safe-output job.
+  # contributors). It is labeling-only — the agent runs with read-only tokens,
+  # and label writes happen through the sandboxed safe-output job capped at
+  # `add_labels: max: 1`.
+  #
+  # Fork PR safety: this workflow uses `pull_request_target` and DOES check
+  # out the PR branch (no `checkout: false`). gh-aw protects the agent
+  # infrastructure by restoring `.github/` (including this SKILL.md and the
+  # workflow definition) from the base branch via `restore_base_github_folders.sh`
+  # AFTER the PR-branch checkout. Attacker-controlled fork content cannot
+  # influence labeling rules, prompts, or workflow config. The agent CAN read
+  # other workspace files but has no shell/exec/write tools — only safe-output
+  # `add_labels` calls, which post the chosen labels through a separate
+  # sandboxed job.
   roles: all
 
 permissions:

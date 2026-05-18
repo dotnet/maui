@@ -80,6 +80,32 @@ scenarios:
       - "The agent correctly identifies the PR as a revert from the title"
     timeout: 180
 
+  - name: "Handlers/*/Android/ subdirectory triggers platform/android (headline rule fix)"
+    prompt: "Label PR #35000 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "platform/android"
+      - type: "output_contains"
+        value: "area-controls-collectionview"
+      - type: "output_not_contains"
+        value: "partner/syncfusion"
+      - type: "output_not_contains"
+        value: "community ✨"
+      - type: "output_not_contains"
+        value: "regressed-in-inflight/candidate"
+      - type: "output_not_contains"
+        value: "platform/ios"
+      - type: "output_not_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
+        value: "platform/windows"
+    rubric:
+      - "The agent applies platform/android because the changed file lives under src/Controls/src/Core/Handlers/Items/Android/Adapters/ (a /Handlers/*/Android/ path with NO .android.cs extension)"
+      - "The agent applies area-controls-collectionview because the file is an items-view adapter"
+      - "The agent does NOT apply partner/*, community/*, regressed-in-*, or any non-(area-*/platform/*) labels even though those exist on the PR"
+      - "The agent does NOT apply platform/ios, platform/macos, or platform/windows — the PR is Android-only"
+    timeout: 180
+
   - name: "Infrastructure area - CI workflow file deletion"
     prompt: "Label PR #35450 in dotnet/maui. List the labels you would apply."
     assertions:
@@ -160,6 +186,16 @@ scenarios:
     assertions:
       - type: "output_matches"
         pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|will not apply (any |additional |any additional )?labels?|existing labels? (are )?(sufficient|enough))"
+      - type: "output_not_contains"
+        value: "area-infrastructure"
+      - type: "output_not_contains"
+        value: "platform/android"
+      - type: "output_not_contains"
+        value: "platform/ios"
+      - type: "output_not_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
+        value: "platform/windows"
     rubric:
       - "The agent determines that no labels should be applied to this automated merge PR"
       - "The agent does NOT apply area or platform labels to automated infrastructure PRs"
@@ -277,8 +313,17 @@ scenarios:
     assertions:
       - type: "output_matches"
         pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|already.+label|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|no additional.+(label|action|change)|will not apply (any |additional |any additional )?labels?|existing labels? (are )?(sufficient|enough))"
+      - type: "output_not_contains"
+        value: "platform/android"
+      - type: "output_not_contains"
+        value: "platform/ios"
+      - type: "output_not_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
+        value: "platform/windows"
     rubric:
       - "The agent determines no additional labels are needed for a dependency bump PR that is already correctly labeled"
+      - "The agent does NOT apply additional platform/* labels — the PR is purely a dependency bump"
     timeout: 180
 
   # --- XAML source generator issue ---
