@@ -1,10 +1,10 @@
 ---
 description: |
-  Agentic labeler for issues and pull requests. Inspects the title, body, and
-  (for PRs) the list of changed files, then applies appropriate labels chosen
-  from the existing repository label set. Pays special attention to
-  `platform/*` labels on PRs based on which platform-specific source files
-  were touched.
+  Agentic labeler for issues and pull requests. Applies `area-*` and
+  `platform/*` labels ONLY, based on technical content and (for PRs)
+  platform-specific file paths. Does NOT apply triage, status, priority,
+  type, severity, partner, regression, or any other label families — those
+  remain the responsibility of human triagers.
 
 on:
   issues:
@@ -19,11 +19,21 @@ on:
         type: number
   reaction: eyes
   # Allow this workflow to run for any actor (including first-time community
-  # contributors). It is labeling-only — the agent itself runs with read-only
-  # tokens, and label writes happen through the sandboxed safe-output job.
+  # contributors). It is labeling-only — the agent runs with read-only tokens,
+  # and label writes happen through the sandboxed safe-output job capped at
+  # `add_labels: max: 1`.
+  #
+  # Fork PR safety: this workflow uses `pull_request_target` and DOES check
+  # out the PR branch (no `checkout: false`). gh-aw protects the agent
+  # infrastructure by restoring `.github/` (including this SKILL.md and the
+  # workflow definition) from the base branch via `restore_base_github_folders.sh`
+  # AFTER the PR-branch checkout. Attacker-controlled fork content cannot
+  # influence labeling rules, prompts, or workflow config. The agent CAN read
+  # other workspace files but has no shell/exec/write tools — only safe-output
+  # `add_labels` calls, which post the chosen labels through a separate
+  # sandboxed job.
   roles: all
 
-checkout: false
 permissions:
   contents: read
   issues: read
