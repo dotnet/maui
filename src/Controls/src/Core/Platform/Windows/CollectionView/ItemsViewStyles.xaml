@@ -330,6 +330,9 @@
         <ControlTemplate x:Key="MauiItemsViewTemplate"
                          TargetType="items2:MauiItemsView">
 
+                <!-- Grid wrapper so the drop-indicator Canvas can overlay the ScrollViewer -->
+                <Grid>
+
                 <ScrollViewer x:Name="PART_ScrollViewer"
                               Background="{TemplateBinding Background}"
                               BorderBrush="{TemplateBinding BorderBrush}"
@@ -376,6 +379,15 @@
                                                 VerticalContentAlignment="Stretch"/>
                         </controls:StackPanel>
                 </ScrollViewer>
+
+                <!-- Transparent overlay canvas for the between-items drop indicator line.
+                     IsHitTestVisible=False so it never intercepts pointer events. -->
+                <Canvas x:Name="PART_DropIndicatorCanvas"
+                        IsHitTestVisible="False"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"/>
+
+                </Grid>
 
         </ControlTemplate>
 
