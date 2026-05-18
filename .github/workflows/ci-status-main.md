@@ -13,15 +13,10 @@ permissions:
 on:
   schedule: every 12h
   workflow_dispatch:
-  roles: [admin, maintainer, write]
 
 engine:
   id: copilot
   model: claude-sonnet-4.6
-
-runtimes:
-  dotnet:
-    version: "9.0"
 
 concurrency:
   group: "ci-failure-scan"
@@ -31,7 +26,7 @@ tools:
   github:
     toolsets: [pull_requests, repos, issues, search]
   edit:
-  bash: ["dotnet", "git", "find", "ls", "cat", "grep", "head", "tail", "wc", "curl", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod"]
+  bash: ["git", "find", "ls", "cat", "grep", "head", "tail", "wc", "curl", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod"]
 
 checkout:
   fetch-depth: 50
@@ -67,41 +62,22 @@ network:
     - "*.blob.core.windows.net"
 
 steps:
-  - name: Install arcade-skills CLI tools and verify connectivity
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
-      DOTNET_NOLOGO: "1"
+  - name: Verify connectivity to AzDO and Helix
     run: |
       set -euo pipefail
 
-      echo "=== Installing arcade-skills CLI tools ==="
-      dotnet tool install --global lewing.helix.mcp --version "*" 2>&1 || echo "⚠️ Failed to install helix MCP tool"
-      dotnet tool install --global lewing.maestro.mcp --version "*" 2>&1 || echo "⚠️ Failed to install maestro MCP tool"
-      dotnet tool install --global baronfel.binlog.mcp --version "*" 2>&1 || echo "⚠️ Failed to install binlog MCP tool"
+      check_url() {
+        local label="$1" url="$2"
+        local code
+        code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+        echo "$label: HTTP $code"
+      }
 
-      echo ""
-      echo "=== Installed tools ==="
-      dotnet tool list --global 2>&1 || true
-
-      echo ""
       echo "=== AzDO API check ==="
-      url='https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302&branchName=refs/heads/main&%24top=1&api-version=7.1'
-      HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-      echo "AzDO: HTTP $HTTP_CODE"
+      check_url "AzDO" 'https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302&branchName=refs/heads/main&%24top=1&api-version=7.1'
 
       echo "=== Helix API check ==="
-      url='https://helix.dot.net/api/2019-06-17/jobs?count=1'
-      HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-      echo "Helix: HTTP $HTTP_CODE"
-
-      echo "=== Skill files ==="
-      test -f .github/skills/azdo-build-investigator/SKILL.md && echo "✅ azdo-build-investigator" || echo "⚠️ azdo-build-investigator missing"
-      echo "AzDO: HTTP $HTTP_CODE"
-
-      echo "=== Helix API check ==="
-      url='https://helix.dot.net/api/2019-06-17/jobs?count=1'
-      HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-      echo "Helix: HTTP $HTTP_CODE"
+      check_url "Helix" 'https://helix.dot.net/api/2019-06-17/jobs?count=1'
 
       echo "=== Skill files ==="
       test -f .github/skills/azdo-build-investigator/SKILL.md && echo "✅ azdo-build-investigator" || echo "⚠️ azdo-build-investigator missing"
@@ -137,20 +113,7 @@ Key points from that skill:
 - **Pipeline priority**: `maui-pr` → `maui-pr-devicetests` → `maui-pr-uitests`
 - **Container artifacts**: MAUI build artifacts are Container type, not PipelineArtifact
 
-### Arcade-skills CLI tools (installed in pre-agent steps)
-
-The following .NET tools from `dotnet/arcade-skills` are installed as global tools in the pre-agent step. Use them as CLI tools via bash when they provide richer data than raw REST APIs:
-
-- **`lewing.helix.mcp`** — Helix test infrastructure queries (work items, logs, results). Run as: `dotnet tool run lewing.helix.mcp -- <args>` or invoke directly if on PATH.
-- **`lewing.maestro.mcp`** — Maestro/BAR dependency flow data.
-- **`baronfel.binlog.mcp`** — MSBuild binlog analysis.
-
-Check if they installed successfully:
-```bash
-dotnet tool list --global 2>/dev/null
-```
-
-If a tool is not available, fall back to direct `curl` + `jq` calls to the AzDO/Helix REST APIs (see Data sources below). The tools are a convenience, not a hard requirement.
+All data retrieval uses `curl` + `jq` against the AzDO and Helix REST APIs (see **Data sources** below). The MCP Gateway in the gh-aw runtime does not support stdio MCP servers, so the arcade-skills tooling is not available at agent runtime.
 
 ## MAUI-specific failure patterns
 
