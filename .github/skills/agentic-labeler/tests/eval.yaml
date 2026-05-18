@@ -93,26 +93,45 @@ scenarios:
       - "No platform/* labels are applied since workflow files are not platform-specific"
     timeout: 180
 
-  # --- Cross-platform / no platform labels ---
+  # --- Issue platform inference + triage label avoidance ---
 
-  - name: "Cross-platform only issue - no platform labels"
+  - name: "Issue with explicit platforms gets platform labels but no triage workflow labels"
     prompt: "Label issue #35448 in dotnet/maui. List the labels you would apply."
     assertions:
       - type: "output_contains"
         value: "area-controls-shell"
-      - type: "output_not_contains"
-        value: "platform/android"
-      - type: "output_not_contains"
+      - type: "output_contains"
         value: "platform/ios"
+      - type: "output_contains"
+        value: "platform/android"
       - type: "output_not_contains"
         value: "platform/macos"
       - type: "output_not_contains"
         value: "platform/windows"
       - type: "output_not_contains"
         value: "platform/tizen"
+      - type: "output_not_contains"
+        value: "s/needs-info"
+      - type: "output_not_contains"
+        value: "s/needs-repro"
+      - type: "output_not_contains"
+        value: "s/needs-verification"
+      - type: "output_not_contains"
+        value: "s/needs-attention"
+      - type: "output_not_contains"
+        value: "untriaged"
+      - type: "output_not_contains"
+        value: ":watch: Not Triaged"
+      - type: "output_not_contains"
+        value: "p/0"
+      - type: "output_not_contains"
+        value: "p/1"
     rubric:
       - "The final label set includes area-controls-shell for a Shell badge propagation bug"
-      - "No platform/* labels are applied when the issue does not specify a platform"
+      - "The final label set includes platform/ios and platform/android because the reporter explicitly listed both in Affected platforms"
+      - "The final label set does NOT include platform/macos, platform/windows, or platform/tizen — reporter did not mention these"
+      - "The final label set does NOT include any triage workflow labels (s/needs-*, untriaged, :watch: Not Triaged) — those are managed by repo automation and human triagers, not the labeler"
+      - "The final label set does NOT include any p/* priority labels"
     timeout: 180
 
   # --- Noop scenarios ---
@@ -143,16 +162,28 @@ scenarios:
 
   # --- PR-specific status label caveat ---
 
-  - name: "PR should not get s/needs-info or s/needs-repro"
+  - name: "PR does not get triage workflow labels"
     prompt: "Label PR #35457 in dotnet/maui. List the labels you would apply."
     assertions:
+      - type: "output_contains"
+        value: "platform/android"
       - type: "output_not_contains"
         value: "s/needs-info"
       - type: "output_not_contains"
         value: "s/needs-repro"
+      - type: "output_not_contains"
+        value: "s/needs-verification"
+      - type: "output_not_contains"
+        value: "s/needs-attention"
+      - type: "output_not_contains"
+        value: "s/pr-needs-author-input"
+      - type: "output_not_contains"
+        value: "untriaged"
+      - type: "output_not_contains"
+        value: ":watch: Not Triaged"
     rubric:
-      - "The final label set does NOT include s/needs-info or s/needs-repro on a pull request"
-      - "If the agent determines more information is needed, it uses s/pr-needs-author-input instead"
+      - "The final label set includes content-derived labels (platform/android for an Android-targeted fix)"
+      - "The final label set does NOT include any triage workflow labels (s/needs-*, untriaged, :watch: Not Triaged) — these are managed by repo automation and human triagers"
     timeout: 180
 
   # --- iOS directory vs extension distinction ---

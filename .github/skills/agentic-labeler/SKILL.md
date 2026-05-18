@@ -20,9 +20,13 @@ Labeling rules for the [dotnet/maui](https://github.com/dotnet/maui) repository.
 - **Important pagination caveat:** the `list_label` tool only returns the first ~100 labels (no pagination). This repo has ~440 labels, so many `area-*`, `platform/*`, and status labels will be missing from the listing. If you have a strong candidate label name in mind that isn't in the listing, **verify it exists** with the `get_label` tool before adding it. The label families enumerated below (`area-*`, `platform/*`, `t/*`, `s/*`, `i/*`, `p/*`) are reliable guides; use `get_label` for anything else.
 - You may apply **any** existing label, not just `area-*` and `platform/*`. Examples of other useful label families that exist in this repo (with **exact** names — emoji suffixes are part of the label and must be matched verbatim):
   - **Kind:** `t/bug`, `t/enhancement ☀️`, `t/docs 📝`, `t/breaking 💥`, `t/native-embedding`, `t/desktop`, `t/a11y`
-  - **Status / signal (issues):** `i/regression`, `s/needs-repro`, `s/needs-info`, `s/needs-attention`, `s/duplicate 2️⃣`, `s/no-repro`, `s/not-a-bug`
-  - **Priority:** `p/0`, `p/1`, `p/2`, `p/3`
-- **PR-specific status caveat:** **do not** apply `s/needs-info` or `s/needs-repro` to pull requests — repo automation rewrites or removes them and posts a comment. On PRs, use `s/pr-needs-author-input` instead when more information is needed.
+  - **Issue-content signal:** `i/regression` — only when the reporter explicitly states the bug is a regression from a prior version (e.g., the issue template's "Is this a regression" answers "Yes" or the body explicitly says so). Do not infer regressions from version numbers alone.
+- **Triage / workflow labels are managed by repo automation and human triagers — the labeler must NEVER apply any of these, on issues or PRs:**
+  - `untriaged`, `:watch: Not Triaged` — applied by repo automation on issue open.
+  - `s/needs-info`, `s/needs-repro`, `s/needs-verification`, `s/needs-attention`, `s/triaged`, `s/verified`, `s/no-repro`, `s/not-a-bug`, `s/duplicate 2️⃣`, `s/pr-needs-author-input` — managed by `dotnet-policy-service[bot]` and human triagers as part of the triage workflow.
+  - `p/0`, `p/1`, `p/2`, `p/3` — priority is set by maintainers, not derivable from initial content.
+
+  These rules apply to **both** issues and pull requests. The labeler's job is to assign content-derived labels (`area-*`, `platform/*`, `t/*`, `i/regression`) only — leave everything else for triagers and automation.
 - Do **not** create new labels. Only labels that already exist in the repository will be accepted.
 
 ## Labeling rules
@@ -91,6 +95,7 @@ Some items should **not** be labeled. If any of the following apply, skip labeli
 
 - Do **not** create new labels — apply only labels that already exist in the repository.
 - Do **not** add `platform/*` labels to PRs that don't touch platform-specific files.
+- Do **not** apply any `s/*` status label, any `p/*` priority label, `untriaged`, or `:watch: Not Triaged` on issues or PRs — these are triage workflow labels managed by `dotnet-policy-service[bot]` and human triagers, not derivable from initial content. See "Triage / workflow labels" above for the full list.
 - Do **not** post a comment summarizing the labels — labels speak for themselves.
 - Do **not** close, lock, or otherwise modify the issue/PR beyond labeling.
 - Do **not** label automated merge PRs — these are infrastructure, not actionable items.
