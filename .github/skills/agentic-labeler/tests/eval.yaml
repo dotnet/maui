@@ -60,13 +60,23 @@ scenarios:
       - "No platform/* labels are applied since only shared cross-platform code is changed"
     timeout: 180
 
-  - name: "CollectionView area with Android platform"
+  - name: "CollectionView area with Android platform (scope restriction holds despite complex existing labels)"
     prompt: "Label PR #35461 in dotnet/maui. List the labels you would apply."
     assertions:
       - type: "output_contains"
         value: "area-controls-collectionview"
+      - type: "output_contains"
+        value: "platform/android"
+      - type: "output_not_contains"
+        value: "i/regression"
+      - type: "output_not_contains"
+        value: "partner/syncfusion"
+      - type: "output_not_contains"
+        value: "t/bug"
     rubric:
       - "The final label set includes area-controls-collectionview"
+      - "The final label set includes platform/android (the PR touches Android-specific files)"
+      - "The agent does NOT apply i/regression, partner/syncfusion, t/bug, or any other non-area/non-platform labels even though those labels already exist on the PR"
       - "The agent correctly identifies the PR as a revert from the title"
     timeout: 180
 
@@ -249,8 +259,15 @@ scenarios:
         value: "platform/android"
       - type: "output_contains"
         value: "platform/ios"
+      - type: "output_contains"
+        value: "platform/macos"
+      - type: "output_contains"
+        value: "platform/windows"
     rubric:
-      - "The final label set includes multiple platform/* labels when the PR touches files for multiple platforms"
+      - "The final label set includes platform/android (Platform/Android/ files changed)"
+      - "The final label set includes platform/ios (Platform/iOS/ files and *.iOS.cs files changed)"
+      - "The final label set includes platform/macos (*.iOS.cs files compile for MacCatalyst too)"
+      - "The final label set includes platform/windows (Platform/Windows/ files changed)"
     timeout: 180
 
   # --- Dependency bump noop ---
@@ -266,7 +283,7 @@ scenarios:
 
   # --- XAML source generator issue ---
 
-  - name: "XAML source generator issue gets area-xaml"
+  - name: "XAML source generator PR gets area-xaml"
     prompt: "Label PR #35444 in dotnet/maui. List the labels you would apply."
     assertions:
       - type: "output_contains"

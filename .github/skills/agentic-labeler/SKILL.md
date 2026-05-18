@@ -81,9 +81,9 @@ Note on iOS / MacCatalyst: file-extension patterns and directory patterns map di
 | --- | --- |
 | `*.android.cs`, `*.Android.cs`, paths containing `/Platform/Android/`, `/Platforms/Android/`, `/AndroidNative/`, or handler subdirectories like `/Handlers/*/Android/` | `platform/android` |
 | `*.ios.cs`, `*.iOS.cs` (file-extension pattern — these compile for **both** iOS and MacCatalyst) | `platform/ios` **and** `platform/macos` |
-| Paths containing `/Platform/iOS/` or `/Platforms/iOS/` (directory pattern — these compile **only** for the iOS TFM) | `platform/ios` only |
-| `*.maccatalyst.cs`, `*.MacCatalyst.cs`, paths containing `/Platform/MacCatalyst/`, `/Platforms/MacCatalyst/` | `platform/macos` |
-| `*.windows.cs`, `*.Windows.cs`, paths containing `/Platform/Windows/`, `/Platforms/Windows/` | `platform/windows` |
+| Paths containing `/Platform/iOS/`, `/Platforms/iOS/`, or handler subdirectories like `/Handlers/*/iOS/` (directory pattern — these compile **only** for the iOS TFM) | `platform/ios` only |
+| `*.maccatalyst.cs`, `*.MacCatalyst.cs`, paths containing `/Platform/MacCatalyst/`, `/Platforms/MacCatalyst/`, or handler subdirectories like `/Handlers/*/MacCatalyst/` | `platform/macos` |
+| `*.windows.cs`, `*.Windows.cs`, paths containing `/Platform/Windows/`, `/Platforms/Windows/`, or handler subdirectories like `/Handlers/*/Windows/` | `platform/windows` |
 | `*.tizen.cs`, paths containing `/Platform/Tizen/`, `/Platforms/Tizen/` | `platform/tizen` |
 
 Notes:

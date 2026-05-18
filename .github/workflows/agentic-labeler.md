@@ -1,10 +1,10 @@
 ---
 description: |
-  Agentic labeler for issues and pull requests. Inspects the title, body, and
-  (for PRs) the list of changed files, then applies appropriate labels chosen
-  from the existing repository label set. Pays special attention to
-  `platform/*` labels on PRs based on which platform-specific source files
-  were touched.
+  Agentic labeler for issues and pull requests. Applies `area-*` and
+  `platform/*` labels ONLY, based on technical content and (for PRs)
+  platform-specific file paths. Does NOT apply triage, status, priority,
+  type, severity, partner, regression, or any other label families — those
+  remain the responsibility of human triagers.
 
 on:
   issues:
