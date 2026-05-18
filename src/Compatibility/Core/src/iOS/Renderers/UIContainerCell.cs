@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
 			{
-				View.SetSelectedState(baseShellItem.IsChecked);
+				View.IsItemSelected = baseShellItem.IsChecked;
 			}
 		}
 

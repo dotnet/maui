@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
 			{
-				View.SetSelectedState(baseShellItem.IsChecked);
+				View.IsItemSelected = baseShellItem.IsChecked;
 			}
 		}
 

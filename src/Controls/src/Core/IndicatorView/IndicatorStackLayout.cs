@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls
 					: GetColorOrDefault(_indicatorView.IndicatorColor, Colors.Silver);
 
 
-				visualElement.SetSelectedState(isSelected);
+				visualElement.IsItemSelected = isSelected;
 
 			}
 

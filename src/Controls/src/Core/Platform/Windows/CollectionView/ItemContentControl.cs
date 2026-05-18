@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (formsElement == null)
 				return;
 
-			formsElement.SetSelectedState(isSelected);
+			formsElement.IsItemSelected = isSelected;
 		}
 
 		void OnViewMeasureInvalidated(object sender, EventArgs e)

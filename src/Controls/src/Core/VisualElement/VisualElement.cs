@@ -1656,33 +1656,23 @@ namespace Microsoft.Maui.Controls
 		bool _isItemSelected;
 
 		/// <summary>
-		/// Tracks whether this element has been explicitly put in the Selected visual state
-		/// by platform handlers (e.g., CollectionView, Shell flyout). This provides a non-circular
-		/// source of truth for ChangeVisualState() to preserve the Selected state during
-		/// pointer and focus transitions.
+		/// Gets or sets whether this element is in the Selected visual state.
+		/// Platform handlers (CollectionView, Shell flyout, IndicatorView) use this property
+		/// to select/deselect items. The setter includes an equality guard to avoid redundant
+		/// state recomputation and routes through <see cref="ChangeVisualState"/> so that
+		/// IsEnabled and other state priorities (Disabled, PointerOver, Normal) are respected.
 		/// </summary>
 		internal bool IsItemSelected
 		{
 			get => _isItemSelected;
-			set => _isItemSelected = value;
-		}
+			set
+			{
+				if (_isItemSelected == value)
+				{
+					return;
+				}
 
-		/// <summary>
-		/// Sets the selected state flag and transitions the visual state accordingly.
-		/// All platform code that selects/deselects items should use this single entry point
-		/// so that IsItemSelected and the VSM state are always kept in sync.
-		/// </summary>
-		internal void SetSelectedState(bool isSelected)
-		{
-			_isItemSelected = isSelected;
-			if (isSelected)
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Selected);
-			}
-			else
-			{
-				// Re-evaluate the full state chain so that PointerOver, Disabled, etc.
-				// are correctly applied instead of blindly going to Normal.
+				_isItemSelected = value;
 				ChangeVisualState();
 			}
 		}

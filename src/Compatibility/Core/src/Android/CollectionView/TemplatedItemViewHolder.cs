@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return;
 			}
 
-			View.SetSelectedState(IsSelected);
+			View.IsItemSelected = IsSelected;
 		}
 
 		public void Recycle(ItemsView itemsView)
