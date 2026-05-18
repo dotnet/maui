@@ -653,7 +653,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (GetLayoutManager().ItemCount > 0)
 				{
-					ScrollTo(new ScrollToRequestEventArgs(0, 0, Microsoft.Maui.Controls.ScrollToPosition.Start, true));
+					ScrollTo(new ScrollToRequestEventArgs(0, 0, Microsoft.Maui.Controls.ScrollToPosition.Start, false));
 				}
 			}
 		}
