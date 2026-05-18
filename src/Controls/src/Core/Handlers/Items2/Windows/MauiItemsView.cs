@@ -31,6 +31,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	FrameworkElement? _itemsRepeater;
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
+	Canvas? _dropIndicatorCanvas;
 
 	public MauiItemsView()
 	{
@@ -157,6 +158,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
+		_dropIndicatorCanvas = GetTemplateChild("PART_DropIndicatorCanvas") as Canvas;
 
 		if (_emptyViewContentControl is not null)
 		{

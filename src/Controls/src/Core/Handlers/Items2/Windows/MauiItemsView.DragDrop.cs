@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -27,11 +28,8 @@ internal partial class MauiItemsView
 	bool _dragDropWired;
 	ItemsView? _mauiVirtualView;
 
-	// Drop target indicator — the ItemContainer currently highlighted as the
-	// insertion target. A colored border is applied directly to this container
-	// so no coordinate transforms or overlay canvas are needed.
-	ItemContainer? _dropTargetContainer;
-	bool _dropTargetIsAfter;
+	// Between-items drop indicator — a thin colored Rectangle on _dropIndicatorCanvas.
+	Rectangle? _dropIndicatorLine;
 
 	// Dim overlay opacity applied to non-source containers during a drag so the
 	// list visually enters "reorder mode" (same pattern as iOS drag-reorder).
@@ -336,14 +334,6 @@ internal partial class MauiItemsView
 
 			// Reset any stale Translation so the recycled container starts clean.
 			container.Translation = System.Numerics.Vector3.Zero;
-
-			// Clear any drop-target highlight so it doesn't persist on recycled containers.
-			if (ReferenceEquals(_dropTargetContainer, itemContainer))
-			{
-				itemContainer.BorderBrush = null;
-				itemContainer.BorderThickness = default;
-				_dropTargetContainer = null;
-			}
 		}
 	}
 
@@ -1364,74 +1354,80 @@ internal partial class MauiItemsView
 	#region Drop Target Indicator
 
 	/// <summary>
-	/// Highlights the drop target directly on <paramref name="target"/> by setting a
-	/// 2 px accent-coloured border on the edge (top/left for "insert before", bottom/right
-	/// for "insert after") where the dragged item will land.
-	/// <para>
-	/// Unlike a floating canvas overlay, this modifies the container itself — zero
-	/// coordinate-transform complexity, always visible regardless of scroll position.
-	/// </para>
+	/// Shows a 2 px accent-coloured line on <see cref="_dropIndicatorCanvas"/> at the
+	/// boundary between items — "insert before <paramref name="target"/>" or "insert
+	/// after <paramref name="target"/>".  The line is positioned in the canvas coordinate
+	/// space so it is always correct regardless of scroll position.
 	/// </summary>
 	void UpdateInsertionIndicator(ItemContainer target, bool insertAfter)
 	{
-		// Skip if neither the target nor the edge changed — avoids redundant layout
-		// work on every pointer-move event.
-		if (ReferenceEquals(target, _dropTargetContainer) && insertAfter == _dropTargetIsAfter)
-		{
+		if (_dropIndicatorCanvas is null)
 			return;
-		}
 
-		// Clear the previous target's highlight first.
-		ClearDropTargetHighlight();
-
-		// Skip highlighting the source slot itself.
+		// Skip the source slot itself.
 		if (ReferenceEquals(target, _sourceContainer))
 		{
+			HideInsertionIndicator();
 			return;
 		}
 
-		_dropTargetContainer = target;
-		_dropTargetIsAfter = insertAfter;
-
-		var accentBrush = TryGetAccentBrush();
-		const double LineThickness = 2.0;
-
-		// Apply a 2 px border on the insertion edge only.
-		// Vertical list  → top border = "insert before", bottom = "insert after".
-		// Horizontal list → left border = "insert before", right = "insert after".
-		target.BorderBrush = accentBrush;
-
-		if (_isHorizontalLayout)
+		// Lazily create the indicator line once.
+		if (_dropIndicatorLine is null)
 		{
-			target.BorderThickness = insertAfter
-				? new Microsoft.UI.Xaml.Thickness(0, 0, LineThickness, 0)   // right edge
-				: new Microsoft.UI.Xaml.Thickness(LineThickness, 0, 0, 0);  // left edge
+			_dropIndicatorLine = new Rectangle
+			{
+				Fill = TryGetAccentBrush(),
+				IsHitTestVisible = false,
+			};
+			_dropIndicatorCanvas.Children.Add(_dropIndicatorLine);
 		}
 		else
 		{
-			target.BorderThickness = insertAfter
-				? new Microsoft.UI.Xaml.Thickness(0, 0, 0, LineThickness)   // bottom edge
-				: new Microsoft.UI.Xaml.Thickness(0, LineThickness, 0, 0);  // top edge
+			// Refresh the brush each time (accent color may change with theme).
+			_dropIndicatorLine.Fill = TryGetAccentBrush();
 		}
+
+		// Transform the target container's origin to canvas coordinates.
+		var containerOrigin = target.TransformToVisual(_dropIndicatorCanvas)
+			.TransformPoint(new Windows.Foundation.Point(0, 0));
+
+		const double LineThickness = 2.0;
+
+		if (_isHorizontalLayout)
+		{
+			// Vertical line on left (insert before) or right (insert after) edge.
+			double lineX = insertAfter
+				? containerOrigin.X + target.ActualWidth
+				: containerOrigin.X;
+
+			_dropIndicatorLine.Width = LineThickness;
+			_dropIndicatorLine.Height = target.ActualHeight;
+			Canvas.SetLeft(_dropIndicatorLine, lineX - LineThickness / 2);
+			Canvas.SetTop(_dropIndicatorLine, containerOrigin.Y);
+		}
+		else
+		{
+			// Horizontal line at top (insert before) or bottom (insert after) edge.
+			double lineY = insertAfter
+				? containerOrigin.Y + target.ActualHeight
+				: containerOrigin.Y;
+
+			_dropIndicatorLine.Width = target.ActualWidth;
+			_dropIndicatorLine.Height = LineThickness;
+			Canvas.SetLeft(_dropIndicatorLine, containerOrigin.X);
+			Canvas.SetTop(_dropIndicatorLine, lineY - LineThickness / 2);
+		}
+
+		_dropIndicatorLine.Visibility = Visibility.Visible;
 	}
 
 	/// <summary>
-	/// Removes the insertion highlight from the currently highlighted container.
-	/// Safe to call even when no container is highlighted.
+	/// Hides the between-items drop indicator line. Safe to call when no indicator is shown.
 	/// </summary>
 	void HideInsertionIndicator()
 	{
-		ClearDropTargetHighlight();
-	}
-
-	void ClearDropTargetHighlight()
-	{
-		if (_dropTargetContainer is not null)
-		{
-			_dropTargetContainer.BorderBrush = null;
-			_dropTargetContainer.BorderThickness = default;
-			_dropTargetContainer = null;
-		}
+		if (_dropIndicatorLine is not null)
+			_dropIndicatorLine.Visibility = Visibility.Collapsed;
 	}
 
 	static Microsoft.UI.Xaml.Media.Brush TryGetAccentBrush()
