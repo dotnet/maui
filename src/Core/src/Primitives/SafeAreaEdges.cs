@@ -126,9 +126,9 @@ namespace Microsoft.Maui
 		public static SafeAreaEdges All { get; } = new(SafeAreaRegions.All);
 
 		/// <summary>
-		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.All"/>.
+		/// A <see cref="SafeAreaEdges"/> with all edges set to <see cref="SafeAreaRegions.Container"/>.
 		/// </summary>
-		internal static SafeAreaEdges Container { get; } = new(SafeAreaRegions.Container);
+		public static SafeAreaEdges Container { get; } = new(SafeAreaRegions.Container);
 
 		public static bool operator ==(SafeAreaEdges left, SafeAreaEdges right)
 		{
