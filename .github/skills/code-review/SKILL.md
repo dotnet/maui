@@ -113,11 +113,11 @@ Now read the PR description, linked issue, and comments. Treat these as **claims
 Check for prior reviews on the same PR — from the Copilot PR reviewer bot, other agents, or human reviewers:
 
 ```bash
-gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.login) | State: \(.state)\n\(.body[0:2000])\n---"'
+gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | select((.body // "") != "") | "Reviewer: \(.author.login) | State: \(.state)\n\(.body[0:10000])\n---"'
 ```
 
 **If prior reviews flagged ❌ Error-level issues:**
-- Verify whether each critical finding was addressed in subsequent commits
+- Verify whether each ❌ Error finding was addressed in subsequent commits
 - If unresolved → verdict must be `NEEDS_CHANGES`
 - If status cannot be determined → default to unresolved (caution over optimism)
 - **NEVER silently drop or contradict a prior ❌ Error finding** — confirm it no longer applies to current code before dismissing
@@ -157,9 +157,9 @@ gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.lo
 
 | Evidence | Confidence Cap |
 |----------|---------------|
-| CI red or pending | Defer to `azdo-build-investigator` skill for CI analysis |
+| CI red or pending | Max **low** — invoke `azdo-build-investigator` skill for CI analysis before finalizing |
 | No relevant tests run (UITests skip PR builds) | Max **low** |
-| Prior critical findings unresolved | **NEEDS_CHANGES** (no LGTM) |
+| Prior ❌ Error findings unresolved | **NEEDS_CHANGES** (no LGTM) |
 
 #### Deliver Verdict
 
@@ -231,8 +231,8 @@ gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | "Reviewer: \(.author.lo
 4. **LGTM means no ❌ Errors.** You can LGTM with 💡 Suggestions. You can LGTM with ⚠️ Warnings only if you've explained why they're acceptable.
 5. **Prior ❌ Error findings override.** If any prior review flagged an ❌ Error-level issue (using this skill's severity taxonomy) that remains unresolved in the current code, verdict must be `NEEDS_CHANGES` regardless of your own assessment. Confirm the finding still applies to the current diff before applying the override.
 6. **Never LGTM if CI is red.** If required CI checks are failing, invoke `azdo-build-investigator` to determine whether failures are PR-caused. Do not post `LGTM` until CI passes or failures are confirmed unrelated.
-6. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
-7. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
+7. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
+8. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
 
 ---
 
