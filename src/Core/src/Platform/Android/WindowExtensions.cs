@@ -68,6 +68,8 @@ namespace Microsoft.Maui
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
 			if (windowInsetsController is not null)
 			{
+				// Automatically adjust icon/text colors based on explicit chrome colors when available,
+				// falling back to the app theme when MAUI doesn't know the system bar background.
 				var isLightTheme = IsLightTheme(activity);
 
 				if (updateStatusBar)

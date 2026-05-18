@@ -71,6 +71,27 @@ namespace Microsoft.Maui.Controls.Platform
 				navigationBarForegroundColor: foreground);
 		}
 
+		internal static void UpdateWindowChrome(
+			Context? context,
+			AWindow? window,
+			bool updateStatusBar,
+			bool updateNavigationBar,
+			Brush? statusBarBackground,
+			Color? statusBarForeground = null,
+			Paint? navigationBarBackground = null,
+			Color? navigationBarForeground = null)
+		{
+			UpdateSystemBarAppearance(
+				context,
+				window,
+				updateStatusBar,
+				updateNavigationBar,
+				statusBarBackgroundColor: GetSolidColor(statusBarBackground),
+				statusBarForegroundColor: statusBarForeground,
+				navigationBarBackgroundColor: GetSolidColor(navigationBarBackground),
+				navigationBarForegroundColor: navigationBarForeground);
+		}
+
 		static void UpdateSystemBarAppearance(
 			Context? context,
 			AWindow? window,
