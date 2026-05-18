@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -6,9 +7,45 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ProgressBarHandler : ViewHandler<IProgress, UIProgressView>
 	{
+		public override bool NeedsContainer => true;
+
 		protected override UIProgressView CreatePlatformView()
 		{
 			return new UIProgressView(UIProgressViewStyle.Default);
+		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			base.PlatformArrange(rect);
+
+			if (ContainerView is ProgressBarContainerView progressBarContainerView)
+			{
+				progressBarContainerView.LayoutProgressView();
+			}
+		}
+
+		protected override void SetupContainer()
+		{
+			if (PlatformView == null || ContainerView != null)
+			{
+				return;
+			}
+
+			var oldParent = PlatformView.Superview;
+			var oldIndex = oldParent?.IndexOfSubview(PlatformView);
+			PlatformView.RemoveFromSuperview();
+
+			ContainerView ??= new ProgressBarContainerView(PlatformView.Bounds);
+			ContainerView.AddSubview(PlatformView);
+
+			if (oldIndex is { } idx and >= 0)
+			{
+				oldParent?.InsertSubview(ContainerView, idx);
+			}
+			else
+			{
+				oldParent?.AddSubview(ContainerView);
+			}
 		}
 
 		public static void MapProgress(IProgressBarHandler handler, IProgress progress)
