@@ -53,19 +53,8 @@ namespace Microsoft.Maui.DeviceTests
 			foreach (var reference in references)
 			{
 				Assert.NotNull(reference);
-				var taskCollect = reference.WaitForCollect();
-				try
-				{
-					await AssertEventuallyAsync(async () => await taskCollect);
-				}
-				catch (XunitException)
-				{
-					var isAlive = await taskCollect;
-					if (isAlive)
-					{
-						allCollected = false;
-					}
-				}
+				var isAlive = await reference.WaitForCollect();
+				allCollected = !isAlive;
 			}
 			return allCollected; // Only true if all references are collected
 		}
@@ -76,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var collectResult = await WaitForCollect(references);
 
-			Assert.False(collectResult, $"Expected all references to be collected, but some are still alive. {ListLivingReferences(references)}");
+			Assert.True(collectResult, $"Expected all references to be collected, but some are still alive. {ListLivingReferences(references)}");
 		}
 
 		static string ListLivingReferences(WeakReference[] references)
