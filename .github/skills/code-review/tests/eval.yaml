@@ -83,12 +83,15 @@ scenarios:
     timeout: 120
 
   - name: "Blast radius - infrastructure changes get probed"
-    prompt: "code review PR #32278 in dotnet/maui — I believe the handler changes affect platform extensions that run unconditionally at startup, even for controls that don't use the new feature"
+    prompt: "code review PR #35223 in dotnet/maui — this PR changes back-navigation callback registration on Android. Hypothesis: the registration may run unconditionally for all activities, not just those using predictive back. Please verify or refute."
     assertions:
       - type: "output_matches"
-        pattern: "(blast radius|all instances|startup|handler disconnect|unconditional)"
+        pattern: "(blast radius|all instances|unconditional|callback registration)"
+      - type: "output_matches"
+        pattern: "(medium|low)"
     rubric:
       - "The agent assesses blast radius for handler/platform changes (does this run for all instances?)"
       - "The agent probes real failure modes, not softballs (e.g., handler disconnect, null PlatformView)"
-      - "The confidence is calibrated — not 'high' for handler infrastructure changes"
+      - "The agent provides evidence-backed acceptance or refutation of the hypothesis — not just echoing it"
+      - "The confidence is calibrated — not 'high' for platform infrastructure changes"
     timeout: 300
