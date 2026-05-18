@@ -32,13 +32,10 @@ public partial class ScrollViewControlMainPage : ContentPage
 		_viewModel.ScrollX = 0;
 		_viewModel.ScrollY = 0;
 		_viewModel.ContentSize = new Size(0, 0);
-		Dispatcher.Dispatch(async () =>
+		if (_viewModel.Content != null)
 		{
-			if (_viewModel.Content != null)
-			{
-				await MyScrollView.ScrollToAsync(_viewModel.Content, ScrollToPosition.MakeVisible, false);
-			}
-		});
+			await MyScrollView.ScrollToAsync(_viewModel.Content, ScrollToPosition.MakeVisible, false);
+		}
 		await Navigation.PushAsync(new ScrollViewOptionsPage(_viewModel));
 	}
 
