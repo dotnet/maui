@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var originalBackground = s_originalAppBarBackgrounds.GetValue(
 				appBarLayout,
-				static appBar => new OriginalAppBarBackground(CloneDrawable(appBar.Background)));
+				static appBar => new OriginalAppBarBackground(appBar.Background?.GetConstantState()));
 
 			if (Brush.IsNullOrEmpty(background))
 			{
@@ -142,28 +142,18 @@ namespace Microsoft.Maui.Controls.Platform
 				: null;
 		}
 
-		static Drawable? CloneDrawable(Drawable? drawable)
-		{
-			if (drawable is null)
-			{
-				return null;
-			}
-
-			return drawable.GetConstantState()?.NewDrawable()?.Mutate() ?? drawable;
-		}
-
 		sealed class OriginalAppBarBackground
 		{
-			readonly Drawable? _background;
+			readonly Drawable.ConstantState? _backgroundConstantState;
 
-			public OriginalAppBarBackground(Drawable? background)
+			public OriginalAppBarBackground(Drawable.ConstantState? backgroundConstantState)
 			{
-				_background = background;
+				_backgroundConstantState = backgroundConstantState;
 			}
 
 			public Drawable? CreateDrawable()
 			{
-				return CloneDrawable(_background);
+				return _backgroundConstantState?.NewDrawable()?.Mutate();
 			}
 		}
 	}

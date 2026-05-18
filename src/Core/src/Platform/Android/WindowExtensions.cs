@@ -89,14 +89,14 @@ namespace Microsoft.Maui
 
 		static bool? GetLightSystemBarAppearance(Color? backgroundColor, Color? foregroundColor)
 		{
-			if (foregroundColor?.Alpha > 0)
-			{
-				return foregroundColor.GetLuminosity() <= 0.5;
-			}
-
 			if (backgroundColor?.Alpha > 0)
 			{
 				return backgroundColor.GetLuminosity() > 0.5;
+			}
+
+			if (foregroundColor?.Alpha > 0)
+			{
+				return foregroundColor.GetLuminosity() <= 0.5;
 			}
 
 			return null;
