@@ -28,8 +28,9 @@ internal partial class MauiItemsView
 	bool _dragDropWired;
 	ItemsView? _mauiVirtualView;
 
-	// Between-items drop indicator — a thin colored Rectangle on _dropIndicatorCanvas.
-	Rectangle? _dropIndicatorLine;
+	// Between-items drop indicator — circle head with "+" and a colored line on _dropIndicatorCanvas.
+	Border? _dropIndicatorHead;    // filled circle with "+" at the leading edge
+	Rectangle? _dropIndicatorLine; // accent-colored line extending from the circle
 
 	// Dim overlay opacity applied to non-source containers during a drag so the
 	// list visually enters "reorder mode" (same pattern as iOS drag-reorder).
@@ -223,6 +224,21 @@ internal partial class MauiItemsView
 		// Clear any remaining ReorderCompleted subscribers so a stray subscriber
 		// can't keep this instance alive past disconnect.
 		ReorderCompleted = null;
+
+		// Remove indicator visuals from the canvas so they don't linger.
+		if (_dropIndicatorCanvas is not null)
+		{
+			if (_dropIndicatorHead is not null)
+			{
+				_dropIndicatorCanvas.Children.Remove(_dropIndicatorHead);
+				_dropIndicatorHead = null;
+			}
+			if (_dropIndicatorLine is not null)
+			{
+				_dropIndicatorCanvas.Children.Remove(_dropIndicatorLine);
+				_dropIndicatorLine = null;
+			}
+		}
 
 		_mauiVirtualView = null;
 		CleanupDragState();
@@ -1379,64 +1395,145 @@ internal partial class MauiItemsView
 			return;
 		}
 
-		// Lazily create the indicator line once.
-		if (_dropIndicatorLine is null)
+		var accentBrush = TryGetAccentBrush();
+
+		// ── Lazily build the indicator visuals once ───────────────────────────
+		if (_dropIndicatorHead is null || _dropIndicatorLine is null)
 		{
+			// Circle head containing a "+" label.
+			_dropIndicatorHead = new Border
+			{
+				Width = IndicatorHeadSize,
+				Height = IndicatorHeadSize,
+				CornerRadius = new CornerRadius(IndicatorHeadSize / 2),
+				Background = accentBrush,
+				IsHitTestVisible = false,
+				Child = new TextBlock
+				{
+					Text = "+",
+					FontSize = 10,
+					FontWeight = new Windows.UI.Text.FontWeight { Weight = 700 },
+					Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
+					HorizontalAlignment = HorizontalAlignment.Center,
+					VerticalAlignment = VerticalAlignment.Center,
+					IsHitTestVisible = false,
+				},
+			};
+
 			_dropIndicatorLine = new Rectangle
 			{
-				Fill = TryGetAccentBrush(),
+				Fill = accentBrush,
+				Height = IndicatorLineThickness,
 				IsHitTestVisible = false,
 			};
+
+			_dropIndicatorCanvas.Children.Add(_dropIndicatorHead);
 			_dropIndicatorCanvas.Children.Add(_dropIndicatorLine);
 		}
 		else
 		{
-			// Refresh the brush each time (accent color may change with theme).
-			_dropIndicatorLine.Fill = TryGetAccentBrush();
+			// Refresh brushes on every update so theme changes are reflected.
+			_dropIndicatorHead.Background = accentBrush;
+			_dropIndicatorLine.Fill = accentBrush;
 		}
 
-		// Transform the target container's origin to canvas coordinates.
-		var containerOrigin = target.TransformToVisual(_dropIndicatorCanvas)
+		// ── Calculate position in canvas coordinates ──────────────────────────
+		var origin = target.TransformToVisual(_dropIndicatorCanvas)
 			.TransformPoint(new Windows.Foundation.Point(0, 0));
-
-		const double LineThickness = 2.0;
 
 		if (_isHorizontalLayout)
 		{
-			// Vertical line on left (insert before) or right (insert after) edge.
+			// Vertical indicator: circle on top, line extending downward.
 			double lineX = insertAfter
-				? containerOrigin.X + target.ActualWidth
-				: containerOrigin.X;
+				? origin.X + target.ActualWidth
+				: origin.X;
 
-			_dropIndicatorLine.Width = LineThickness;
-			_dropIndicatorLine.Height = target.ActualHeight;
-			Canvas.SetLeft(_dropIndicatorLine, lineX - LineThickness / 2);
-			Canvas.SetTop(_dropIndicatorLine, containerOrigin.Y);
+			double lineHeight = target.ActualHeight - IndicatorHeadSize - IndicatorHeadGap;
+			if (lineHeight < 0) lineHeight = 0;
+
+			// Head at top-center of the insertion edge.
+			Canvas.SetLeft(_dropIndicatorHead, lineX - IndicatorHeadSize / 2);
+			Canvas.SetTop(_dropIndicatorHead, origin.Y);
+
+			// Line: starts below the head, same thickness as IndicatorLineThickness but rotated.
+			_dropIndicatorLine.Width = IndicatorLineThickness;
+			_dropIndicatorLine.Height = lineHeight;
+			Canvas.SetLeft(_dropIndicatorLine, lineX - IndicatorLineThickness / 2);
+			Canvas.SetTop(_dropIndicatorLine, origin.Y + IndicatorHeadSize + IndicatorHeadGap);
 		}
 		else
 		{
-			// Horizontal line at top (insert before) or bottom (insert after) edge.
+			// Horizontal indicator: circle on left, line extending rightward.
 			double lineY = insertAfter
-				? containerOrigin.Y + target.ActualHeight
-				: containerOrigin.Y;
+				? origin.Y + target.ActualHeight
+				: origin.Y;
 
-			_dropIndicatorLine.Width = target.ActualWidth;
-			_dropIndicatorLine.Height = LineThickness;
-			Canvas.SetLeft(_dropIndicatorLine, containerOrigin.X);
-			Canvas.SetTop(_dropIndicatorLine, lineY - LineThickness / 2);
+			double lineWidth = target.ActualWidth - IndicatorHeadSize - IndicatorHeadGap;
+			if (lineWidth < 0) lineWidth = 0;
+
+			// Head: vertically centered on the insertion line.
+			Canvas.SetLeft(_dropIndicatorHead, origin.X);
+			Canvas.SetTop(_dropIndicatorHead, lineY - IndicatorHeadSize / 2);
+
+			// Line: starts to the right of the head, centered on lineY.
+			_dropIndicatorLine.Width = lineWidth;
+			_dropIndicatorLine.Height = IndicatorLineThickness;
+			Canvas.SetLeft(_dropIndicatorLine, origin.X + IndicatorHeadSize + IndicatorHeadGap);
+			Canvas.SetTop(_dropIndicatorLine, lineY - IndicatorLineThickness / 2);
 		}
 
+		// ── Make visible with a quick fade-in ────────────────────────────────
+		if (_dropIndicatorHead.Visibility == Visibility.Collapsed)
+		{
+			_dropIndicatorHead.Opacity = 0;
+			_dropIndicatorLine.Opacity = 0;
+		}
+
+		_dropIndicatorHead.Visibility = Visibility.Visible;
 		_dropIndicatorLine.Visibility = Visibility.Visible;
+
+		// Animate to full opacity so the indicator doesn't just "pop" in.
+		var fadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+		{
+			To = 1.0,
+			Duration = new Duration(TimeSpan.FromMilliseconds(80)),
+			EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
+				{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
+		};
+		var storyboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+		storyboard.Children.Add(fadeIn);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn, _dropIndicatorHead);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn, "Opacity");
+
+		var fadeIn2 = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+		{
+			To = 1.0,
+			Duration = new Duration(TimeSpan.FromMilliseconds(80)),
+			EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
+				{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
+		};
+		storyboard.Children.Add(fadeIn2);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn2, _dropIndicatorLine);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn2, "Opacity");
+
+		storyboard.Begin();
 	}
 
 	/// <summary>
-	/// Hides the between-items drop indicator line. Safe to call when no indicator is shown.
+	/// Hides the between-items drop indicator. Safe to call when no indicator is shown.
 	/// </summary>
 	void HideInsertionIndicator()
 	{
+		if (_dropIndicatorHead is not null)
+			_dropIndicatorHead.Visibility = Visibility.Collapsed;
 		if (_dropIndicatorLine is not null)
 			_dropIndicatorLine.Visibility = Visibility.Collapsed;
 	}
+
+	// Indicator geometry constants.
+	const double IndicatorHeadSize = 18.0;   // circle diameter in px
+	const double IndicatorHeadGap = 2.0;     // gap between circle and line
+	const double IndicatorLineThickness = 2.0;
 
 	static Microsoft.UI.Xaml.Media.Brush TryGetAccentBrush()
 	{
