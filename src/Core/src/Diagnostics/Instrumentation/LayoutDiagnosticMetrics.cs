@@ -91,6 +91,14 @@ internal class LayoutDiagnosticMetrics : IDiagnosticMetrics
 	internal static int GetElapsedNanoseconds(long startTimestamp)
 	{
 		var elapsedTimestamp = Stopwatch.GetTimestamp() - startTimestamp;
-		return (int)(elapsedTimestamp * (1_000_000_000.0 / Stopwatch.Frequency));
+		if (elapsedTimestamp <= 0)
+		{
+			return 0;
+		}
+
+		var elapsedNanoseconds = elapsedTimestamp * (1_000_000_000.0 / Stopwatch.Frequency);
+		return elapsedNanoseconds >= int.MaxValue
+			? int.MaxValue
+			: (int)elapsedNanoseconds;
 	}
 }

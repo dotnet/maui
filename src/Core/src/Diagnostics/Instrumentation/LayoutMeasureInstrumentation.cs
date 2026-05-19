@@ -11,6 +11,7 @@ readonly struct LayoutMeasureInstrumentation : System.IDisposable
 	readonly IDiagnosticsManager _diagnostics;
 	readonly LayoutDiagnosticMetrics? _metrics;
 	readonly Activity? _activity;
+	readonly bool _metricsDurationStarted;
 	readonly long _metricsStartTimestamp;
 
 	public LayoutMeasureInstrumentation(IView view, IDiagnosticsManager diagnostics, LayoutDiagnosticMetrics? metrics)
@@ -32,7 +33,8 @@ readonly struct LayoutMeasureInstrumentation : System.IDisposable
 			_activity = null;
 		}
 
-		_metricsStartTimestamp = metrics?.IsMeasureDurationEnabled == true
+		_metricsDurationStarted = metrics?.IsMeasureDurationEnabled == true;
+		_metricsStartTimestamp = _metricsDurationStarted
 			? Stopwatch.GetTimestamp()
 			: 0;
 	}
@@ -43,7 +45,7 @@ readonly struct LayoutMeasureInstrumentation : System.IDisposable
 	public void Dispose()
 	{
 		var metrics = _metrics;
-		var recordDuration = _metricsStartTimestamp != 0 && metrics?.IsMeasureDurationEnabled == true;
+		var recordDuration = _metricsDurationStarted && metrics?.IsMeasureDurationEnabled == true;
 		var duration = recordDuration
 			? LayoutDiagnosticMetrics.GetElapsedNanoseconds(_metricsStartTimestamp)
 			: 0;
