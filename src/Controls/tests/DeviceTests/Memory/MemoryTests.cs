@@ -18,6 +18,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 using System.Diagnostics.CodeAnalysis;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests.Memory;
 
@@ -150,7 +151,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
-	#if ANDROID
+#if ANDROID
 	[Fact("FlyoutPage Detail Navigation Does Not Leak")]
 	public async Task FlyoutPageDetailNavigationDoesNotLeak()
 	{
@@ -697,6 +698,28 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 
 		Assert.True(AnimationExtensions.TweenersCounter <= 2);
+	}
+
+	[Fact]
+	public async Task ShouldThrowTrueException()
+	{
+		var page = new ContentPage { Title = "Page 1" };
+
+		await CreateHandlerAndAddToWindow(new Window(page), async () =>
+		{
+			await OnLoadedAsync(page);
+
+		});
+
+		await Assert.ThrowsAsync<TrueException>(async () => await AssertionExtensions.WaitForGC(new WeakReference(page)));
+
+		GC.KeepAlive(page);
+	}
+
+	[Fact]
+	public async Task ShouldPassAlways()
+	{
+		await AssertionExtensions.WaitForGC(new WeakReference(new object()));
 	}
 }
 
