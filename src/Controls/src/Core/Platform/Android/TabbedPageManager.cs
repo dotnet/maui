@@ -158,7 +158,7 @@ public class TabbedPageManager
 					var layoutInflater = Element.Handler.MauiContext.GetLayoutInflater();
 					_tabLayout = new TabLayout(_context.Context)
 					{
-						TabMode = TabLayout.ModeFixed,
+						TabMode = TabLayout.ModeAuto,
 						TabGravity = TabLayout.GravityFill,
 						LayoutParameters = new AppBarLayout.LayoutParams(AppBarLayout.LayoutParams.MatchParent, AppBarLayout.LayoutParams.WrapContent)
 					};
@@ -268,7 +268,7 @@ public class TabbedPageManager
 			if (_tabplacementId == id)
 				return;
 
-			SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
+			SetContentBottomMargin(RuntimeFeature.IsMaterial3Enabled ? _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.m3_bottom_nav_min_height) : _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
 		}
 		else
 		{
