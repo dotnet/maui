@@ -1,3 +1,4 @@
+#if IOS || MACCATALYST // The floating glass tab bar is a UIKit-only feature introduced in iOS/MacCatalyst 26. This issue does not affect Android or Windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,3 +21,4 @@ public class Issue35490 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
