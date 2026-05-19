@@ -135,7 +135,7 @@ foreach ($f in $findings) {
     $comment = @{
         path = $p
         line = [int]$f.line
-        body = $f.body
+        body = if ($f.body) { [string]$f.body } elseif ($f.message) { [string]$f.message } elseif ($f.content) { [string]$f.content } else { "(no description)" }
     }
     # GitHub API requires 'side' for pull request review comments
     $comment['side'] = 'RIGHT'
