@@ -1327,10 +1327,29 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 
-			if (Application.Current != null)
+			if (Application.Current is not null)
 			{
+				Color light;
+				Color dark;
+
+				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
+				{
+					light = Color.FromArgb("#FEF7FF");
+					dark = Color.FromArgb("#141218");
+				}
+				else
+				{
+					light = Colors.White;
+					dark = Colors.Black;
+				}
+
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
-					new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
+					new AppThemeBinding
+					{
+						Light = light,
+						Dark = dark,
+						Mode = BindingMode.OneWay
+					});
 			}
 
 			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
