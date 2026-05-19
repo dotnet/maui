@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
@@ -728,16 +728,7 @@ internal static class MediaPickerRecoveryStore
 	const string ActiveOperationKey = "active_operation";
 	const string RecoveredResultsKey = "recovered_results";
 	const string PreferencesFeatureName = "media_picker";
-	const string PendingOperationSerializedRecordVersion = "5";
-	const string PendingOperationWithoutPickerUrisSerializedRecordVersion = "4";
-	const string LegacyPendingCaptureSerializedRecordVersion = "1";
-	const string LegacyPendingCaptureWithStateAndOutputUriSerializedRecordVersion = "2";
-	const string LegacyPendingCaptureWithStateSerializedRecordVersion = "3";
-	const string RecoveredResultSerializedRecordVersion = "2";
-	const string LegacyRecoveredCaptureResultSerializedRecordVersion = "1";
-	const string FieldSeparator = "|";
-	const string FilePathSeparator = ",";
-	const string RecoveredResultSeparator = "\n";
+	const int SerializedRecordVersion = 1;
 
 	static readonly string PreferencesSharedName = Preferences.GetPrivatePreferencesSharedName(PreferencesFeatureName);
 
@@ -759,12 +750,22 @@ internal static class MediaPickerRecoveryStore
 			return [];
 		}
 
-		return value
-			.Split([RecoveredResultSeparator], StringSplitOptions.RemoveEmptyEntries)
-			.Select(DeserializeRecoveredResult)
-			.Where(result => result is not null)
-			.Cast<RecoveredMediaPickerRecord>()
-			.ToList();
+		try
+		{
+			var records = JsonSerializer.Deserialize(value, MediaPickerRecoveryJsonContext.Default.RecoveredResults);
+
+			return records is null
+				? []
+				: records
+					.Select(DeserializeRecoveredResult)
+					.Where(result => result is not null)
+					.Cast<RecoveredMediaPickerRecord>()
+					.ToList();
+		}
+		catch
+		{
+			return [];
+		}
 	}
 
 	internal static void WriteRecoveredResults(List<RecoveredMediaPickerRecord> results)
@@ -775,24 +776,12 @@ internal static class MediaPickerRecoveryStore
 			return;
 		}
 
-		Preferences.Set(RecoveredResultsKey, string.Join(RecoveredResultSeparator, results.Select(SerializeRecoveredResult)), PreferencesSharedName);
+		var records = results.Select(ToPreferenceRecord).ToArray();
+		Preferences.Set(RecoveredResultsKey, JsonSerializer.Serialize(records, MediaPickerRecoveryJsonContext.Default.RecoveredResults), PreferencesSharedName);
 	}
 
 	static string SerializePendingOperation(PendingMediaPickerOperation operation)
-		=> string.Join(FieldSeparator, new[]
-		{
-			PendingOperationSerializedRecordVersion,
-			Encode(operation.Id),
-			((int)operation.Kind).ToString(CultureInfo.InvariantCulture),
-			((int)operation.State).ToString(CultureInfo.InvariantCulture),
-			EncodeMany(operation.FilePaths),
-			EncodeMany(operation.PickerUriStrings),
-			SerializeNullableInt(operation.PhotoProcessingOptions.MaximumWidth),
-			SerializeNullableInt(operation.PhotoProcessingOptions.MaximumHeight),
-			operation.PhotoProcessingOptions.CompressionQuality.ToString(CultureInfo.InvariantCulture),
-			SerializeBool(operation.PhotoProcessingOptions.RotateImage),
-			SerializeBool(operation.PhotoProcessingOptions.PreserveMetaData)
-		});
+		=> JsonSerializer.Serialize(ToPreferenceRecord(operation), MediaPickerRecoveryJsonContext.Default.PendingOperation);
 
 	static PendingMediaPickerOperation? DeserializePendingOperation(string? value)
 	{
@@ -803,18 +792,29 @@ internal static class MediaPickerRecoveryStore
 				return null;
 			}
 
-			var parts = value.Split([FieldSeparator], StringSplitOptions.None);
-			if (parts.Length == 11 && parts[0] == PendingOperationSerializedRecordVersion)
+			var record = JsonSerializer.Deserialize(value, MediaPickerRecoveryJsonContext.Default.PendingOperation);
+			if (record is null ||
+				record.Version != SerializedRecordVersion ||
+				string.IsNullOrWhiteSpace(record.Id) ||
+				record.PhotoProcessingOptions is null ||
+				!TryDeserializeResultKind(record.Kind, out var kind) ||
+				!TryDeserializePendingState(record.State, out var state))
 			{
-				return DeserializeCurrentPendingOperation(parts, hasPickerUris: true);
+				return null;
 			}
 
-			if (parts.Length == 10 && parts[0] == PendingOperationWithoutPickerUrisSerializedRecordVersion)
-			{
-				return DeserializeCurrentPendingOperation(parts, hasPickerUris: false);
-			}
-
-			return DeserializeLegacyPendingCapture(parts);
+			return new PendingMediaPickerOperation(
+				record.Id,
+				kind,
+				state,
+				GetValidStrings(record.FilePaths),
+				GetValidStrings(record.PickerUriStrings),
+				new PersistedPhotoProcessingOptions(
+					record.PhotoProcessingOptions.MaximumWidth,
+					record.PhotoProcessingOptions.MaximumHeight,
+					record.PhotoProcessingOptions.CompressionQuality,
+					record.PhotoProcessingOptions.RotateImage,
+					record.PhotoProcessingOptions.PreserveMetaData));
 		}
 		catch
 		{
@@ -822,109 +822,61 @@ internal static class MediaPickerRecoveryStore
 		}
 	}
 
-	static PendingMediaPickerOperation? DeserializeCurrentPendingOperation(string[] parts, bool hasPickerUris)
-	{
-		var maximumWidthIndex = hasPickerUris ? 6 : 5;
-		var maximumHeightIndex = hasPickerUris ? 7 : 6;
-		var compressionQualityIndex = hasPickerUris ? 8 : 7;
-		var rotateImageIndex = hasPickerUris ? 9 : 8;
-		var preserveMetaDataIndex = hasPickerUris ? 10 : 9;
+	static MediaPickerPendingOperationPreferenceRecord ToPreferenceRecord(PendingMediaPickerOperation operation)
+		=> new()
+		{
+			Version = SerializedRecordVersion,
+			Id = operation.Id,
+			Kind = (int)operation.Kind,
+			State = (int)operation.State,
+			FilePaths = operation.FilePaths.ToArray(),
+			PickerUriStrings = operation.PickerUriStrings.ToArray(),
+			PhotoProcessingOptions = new MediaPickerPhotoProcessingOptionsPreferenceRecord
+			{
+				MaximumWidth = operation.PhotoProcessingOptions.MaximumWidth,
+				MaximumHeight = operation.PhotoProcessingOptions.MaximumHeight,
+				CompressionQuality = operation.PhotoProcessingOptions.CompressionQuality,
+				RotateImage = operation.PhotoProcessingOptions.RotateImage,
+				PreserveMetaData = operation.PhotoProcessingOptions.PreserveMetaData
+			}
+		};
 
-		if (!TryDeserializeResultKind(parts[2], out var kind) ||
-		    !TryDeserializePendingState(parts[3], out var state) ||
-		    !int.TryParse(parts[compressionQualityIndex], NumberStyles.Integer, CultureInfo.InvariantCulture, out var compressionQuality))
+	static RecoveredMediaPickerRecord? DeserializeRecoveredResult(MediaPickerRecoveredResultPreferenceRecord? record)
+	{
+		if (record is null ||
+			record.Version != SerializedRecordVersion ||
+			string.IsNullOrWhiteSpace(record.Id) ||
+			!TryDeserializeResultKind(record.Kind, out var kind))
 		{
 			return null;
 		}
 
-		return new PendingMediaPickerOperation(
-			Decode(parts[1]),
-			kind,
-			state,
-			DecodeMany(parts[4]),
-			hasPickerUris ? DecodeMany(parts[5]) : [],
-			new PersistedPhotoProcessingOptions(
-				DeserializeNullableInt(parts[maximumWidthIndex]),
-				DeserializeNullableInt(parts[maximumHeightIndex]),
-				compressionQuality,
-				DeserializeBool(parts[rotateImageIndex]),
-				DeserializeBool(parts[preserveMetaDataIndex])));
+		var filePaths = GetValidStrings(record.FilePaths);
+		return filePaths.Count > 0 ? new RecoveredMediaPickerRecord(record.Id, kind, filePaths) : null;
 	}
 
-	static PendingMediaPickerOperation? DeserializeLegacyPendingCapture(string[] parts)
+	static MediaPickerRecoveredResultPreferenceRecord ToPreferenceRecord(RecoveredMediaPickerRecord result)
+		=> new()
+		{
+			Version = SerializedRecordVersion,
+			Id = result.Id,
+			Kind = (int)result.Kind,
+			FilePaths = result.FilePaths.ToArray()
+		};
+
+	static IReadOnlyList<string> GetValidStrings(string[]? values)
+		=> values is null
+			? []
+			: values
+				.Where(value => !string.IsNullOrEmpty(value))
+				.Select(value => value!)
+				.ToArray();
+
+	static bool TryDeserializePendingState(int value, out PendingMediaPickerState state)
 	{
-		var isLegacyPendingCapture = parts.Length == 10 && parts[0] == LegacyPendingCaptureSerializedRecordVersion;
-		var isPendingCaptureWithStateAndOutputUri = parts.Length == 11 && parts[0] == LegacyPendingCaptureWithStateAndOutputUriSerializedRecordVersion;
-		var isPendingCaptureWithState = parts.Length == 10 && parts[0] == LegacyPendingCaptureWithStateSerializedRecordVersion;
-
-		if (!isLegacyPendingCapture && !isPendingCaptureWithStateAndOutputUri && !isPendingCaptureWithState)
+		if (Enum.IsDefined(typeof(PendingMediaPickerState), value))
 		{
-			return null;
-		}
-
-		var state = PendingMediaPickerState.Pending;
-		var filePathIndex = 3;
-		var maximumWidthIndex = 5;
-		var maximumHeightIndex = 6;
-		var compressionQualityIndex = 7;
-		var rotateImageIndex = 8;
-		var preserveMetaDataIndex = 9;
-
-		if (isPendingCaptureWithStateAndOutputUri)
-		{
-			if (!TryDeserializePendingState(parts[3], out state))
-			{
-				return null;
-			}
-
-			filePathIndex = 4;
-			maximumWidthIndex = 6;
-			maximumHeightIndex = 7;
-			compressionQualityIndex = 8;
-			rotateImageIndex = 9;
-			preserveMetaDataIndex = 10;
-		}
-		else if (isPendingCaptureWithState)
-		{
-			if (!TryDeserializePendingState(parts[3], out state))
-			{
-				return null;
-			}
-
-			filePathIndex = 4;
-			maximumWidthIndex = 5;
-			maximumHeightIndex = 6;
-			compressionQualityIndex = 7;
-			rotateImageIndex = 8;
-			preserveMetaDataIndex = 9;
-		}
-
-		if (!TryDeserializeLegacyCaptureKind(parts[2], out var kind) ||
-		    !int.TryParse(parts[compressionQualityIndex], NumberStyles.Integer, CultureInfo.InvariantCulture, out var compressionQuality))
-		{
-			return null;
-		}
-
-		return new PendingMediaPickerOperation(
-			Decode(parts[1]),
-			kind,
-			state,
-			[Decode(parts[filePathIndex])],
-			[],
-			new PersistedPhotoProcessingOptions(
-				DeserializeNullableInt(parts[maximumWidthIndex]),
-				DeserializeNullableInt(parts[maximumHeightIndex]),
-				compressionQuality,
-				DeserializeBool(parts[rotateImageIndex]),
-				DeserializeBool(parts[preserveMetaDataIndex])));
-	}
-
-	static bool TryDeserializePendingState(string value, out PendingMediaPickerState state)
-	{
-		if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var stateValue) &&
-		    Enum.IsDefined(typeof(PendingMediaPickerState), stateValue))
-		{
-			state = (PendingMediaPickerState)stateValue;
+			state = (PendingMediaPickerState)value;
 			return true;
 		}
 
@@ -932,111 +884,64 @@ internal static class MediaPickerRecoveryStore
 		return false;
 	}
 
-	static bool TryDeserializeResultKind(string value, out RecoveredMediaPickerResultKind kind)
+	static bool TryDeserializeResultKind(int value, out RecoveredMediaPickerResultKind kind)
 	{
-		if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var kindValue) &&
-		    Enum.IsDefined(typeof(RecoveredMediaPickerResultKind), kindValue))
+		if (Enum.IsDefined(typeof(RecoveredMediaPickerResultKind), value))
 		{
-			kind = (RecoveredMediaPickerResultKind)kindValue;
+			kind = (RecoveredMediaPickerResultKind)value;
 			return true;
 		}
 
 		kind = RecoveredMediaPickerResultKind.CapturePhoto;
 		return false;
 	}
+}
 
-	static bool TryDeserializeLegacyCaptureKind(string value, out RecoveredMediaPickerResultKind kind)
-	{
-		if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var mediaTypeValue))
-		{
-			if (mediaTypeValue == 0)
-			{
-				kind = RecoveredMediaPickerResultKind.CapturePhoto;
-				return true;
-			}
+internal sealed class MediaPickerPendingOperationPreferenceRecord
+{
+	public int Version { get; set; }
 
-			if (mediaTypeValue == 1)
-			{
-				kind = RecoveredMediaPickerResultKind.CaptureVideo;
-				return true;
-			}
-		}
+	public string? Id { get; set; }
 
-		kind = RecoveredMediaPickerResultKind.CapturePhoto;
-		return false;
-	}
+	public int Kind { get; set; }
 
-	static string SerializeRecoveredResult(RecoveredMediaPickerRecord result)
-		=> string.Join(FieldSeparator, new[]
-		{
-			RecoveredResultSerializedRecordVersion,
-			Encode(result.Id),
-			((int)result.Kind).ToString(CultureInfo.InvariantCulture),
-			EncodeMany(result.FilePaths)
-		});
+	public int State { get; set; }
 
-	static RecoveredMediaPickerRecord? DeserializeRecoveredResult(string value)
-	{
-		try
-		{
-			var parts = value.Split([FieldSeparator], StringSplitOptions.None);
-			if (parts.Length != 4)
-			{
-				return null;
-			}
+	public string[]? FilePaths { get; set; }
 
-			if (parts[0] == RecoveredResultSerializedRecordVersion)
-			{
-				if (!TryDeserializeResultKind(parts[2], out var kind))
-				{
-					return null;
-				}
+	public string[]? PickerUriStrings { get; set; }
 
-				var filePaths = DecodeMany(parts[3]);
-				return filePaths.Count > 0 ? new RecoveredMediaPickerRecord(Decode(parts[1]), kind, filePaths) : null;
-			}
+	public MediaPickerPhotoProcessingOptionsPreferenceRecord? PhotoProcessingOptions { get; set; }
+}
 
-			if (parts[0] == LegacyRecoveredCaptureResultSerializedRecordVersion &&
-			    TryDeserializeLegacyCaptureKind(parts[2], out var legacyKind))
-			{
-				return new RecoveredMediaPickerRecord(Decode(parts[1]), legacyKind, [Decode(parts[3])]);
-			}
+internal sealed class MediaPickerRecoveredResultPreferenceRecord
+{
+	public int Version { get; set; }
 
-			return null;
-		}
-		catch
-		{
-			return null;
-		}
-	}
+	public string? Id { get; set; }
 
-	static string EncodeMany(IReadOnlyList<string> values)
-		=> string.Join(FilePathSeparator, values.Select(Encode));
+	public int Kind { get; set; }
 
-	static IReadOnlyList<string> DecodeMany(string value)
-		=> string.IsNullOrEmpty(value)
-			? []
-			: value.Split([FilePathSeparator], StringSplitOptions.RemoveEmptyEntries)
-				.Select(Decode)
-				.ToArray();
+	public string[]? FilePaths { get; set; }
+}
 
-	static string Encode(string value)
-		=> Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
+internal sealed class MediaPickerPhotoProcessingOptionsPreferenceRecord
+{
+	public int? MaximumWidth { get; set; }
 
-	static string Decode(string value)
-		=> Encoding.UTF8.GetString(Convert.FromBase64String(value));
+	public int? MaximumHeight { get; set; }
 
-	static string SerializeNullableInt(int? value)
-		=> value?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+	public int CompressionQuality { get; set; }
 
-	static int? DeserializeNullableInt(string value)
-		=> string.IsNullOrEmpty(value) ? null : int.Parse(value, CultureInfo.InvariantCulture);
+	public bool RotateImage { get; set; }
 
-	static string SerializeBool(bool value)
-		=> value ? "1" : "0";
+	public bool PreserveMetaData { get; set; }
+}
 
-	static bool DeserializeBool(string value)
-		=> value == "1";
+[JsonSerializable(typeof(MediaPickerPendingOperationPreferenceRecord), TypeInfoPropertyName = nameof(PendingOperation))]
+[JsonSerializable(typeof(MediaPickerRecoveredResultPreferenceRecord[]), TypeInfoPropertyName = nameof(RecoveredResults))]
+internal sealed partial class MediaPickerRecoveryJsonContext : JsonSerializerContext
+{
 }
 
 /// <summary>

@@ -1,9 +1,8 @@
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
@@ -1103,77 +1102,53 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.Equal(options.PreserveMetaData, processingOptions.PreserveMetaData);
 		}
 
-		[Theory]
-		[InlineData("1", (int)PendingMediaPickerState.Pending)]
-		[InlineData("2", (int)PendingMediaPickerState.ResultAccepted)]
-		public void Pending_Capture_Reads_Previous_Unshipped_Formats(string version, int expectedStateValue)
-		{
-			var expectedState = (PendingMediaPickerState)expectedStateValue;
-			var id = Guid.NewGuid().ToString("N");
-			var capturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
-			var serializedCapture = version == "1"
-				? SerializeLegacyPendingCaptureForTests(id, RecoveredMediaPickerResultKind.CapturePhoto, capturePath)
-				: SerializePendingCaptureWithOutputUriForTests(id, RecoveredMediaPickerResultKind.CapturePhoto, expectedState, capturePath);
-
-			SetSerializedActiveOperation(serializedCapture);
-
-			var activeCapture = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
-			Assert.Equal(id, activeCapture.Id);
-			Assert.Equal(RecoveredMediaPickerResultKind.CapturePhoto, activeCapture.Kind);
-			Assert.Equal(expectedState, activeCapture.State);
-			Assert.Equal(capturePath, GetSingleActiveOperationFilePath(activeCapture));
-			Assert.Equal(640, activeCapture.PhotoProcessingOptions.MaximumWidth.GetValueOrDefault());
-			Assert.Equal(480, activeCapture.PhotoProcessingOptions.MaximumHeight.GetValueOrDefault());
-			Assert.Equal(70, activeCapture.PhotoProcessingOptions.CompressionQuality);
-			Assert.True(activeCapture.PhotoProcessingOptions.RotateImage);
-			Assert.False(activeCapture.PhotoProcessingOptions.PreserveMetaData);
-		}
-
 		[Fact]
-		public void Pending_Operation_Reads_Previous_Unshipped_Format_Without_PickerUris()
+		public void Pending_Operation_Writes_Json_Baseline_And_RoundTrips()
 		{
 			var id = Guid.NewGuid().ToString("N");
 			var capturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
-			var serializedCapture = SerializePendingOperationWithoutPickerUrisForTests(
+			var pickerUriString = "content://maui-test/picked-media";
+			var operation = new PendingMediaPickerOperation(
 				id,
-				RecoveredMediaPickerResultKind.CapturePhoto,
+				RecoveredMediaPickerResultKind.PickPhotos,
 				PendingMediaPickerState.ResultAccepted,
-				capturePath);
-
-			SetSerializedActiveOperation(serializedCapture);
-
-			var activeCapture = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
-			Assert.Equal(id, activeCapture.Id);
-			Assert.Equal(PendingMediaPickerState.ResultAccepted, activeCapture.State);
-			Assert.Equal(capturePath, GetSingleActiveOperationFilePath(activeCapture));
-			Assert.Empty(activeCapture.PickerUriStrings);
-		}
-
-		[Fact]
-		public void Pending_Capture_Writes_Current_Format_Without_OutputUri()
-		{
-			var capturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
-
-			var pendingCapture = MediaPickerRecoveryManager.BeginOperation(
-				RecoveredMediaPickerResultKind.CapturePhoto,
 				[capturePath],
+				[pickerUriString],
 				new PersistedPhotoProcessingOptions(640, 480, 70, true, false));
 
-			var serializedCapture = Assert.IsType<string>(GetSerializedActiveOperation());
-			var parts = serializedCapture.Split('|');
+			MediaPickerRecoveryStore.WriteActiveOperation(operation);
 
-			Assert.Equal("5", parts[0]);
-			Assert.Equal(11, parts.Length);
-			Assert.Equal(EncodePreferenceValueForTests(pendingCapture.Id), parts[1]);
-			Assert.Equal(((int)RecoveredMediaPickerResultKind.CapturePhoto).ToString(CultureInfo.InvariantCulture), parts[2]);
-			Assert.Equal(((int)PendingMediaPickerState.Pending).ToString(CultureInfo.InvariantCulture), parts[3]);
-			Assert.Equal(EncodePreferenceValueForTests(capturePath), parts[4]);
-			Assert.Empty(parts[5]);
-			Assert.Equal("640", parts[6]);
-			Assert.Equal("480", parts[7]);
-			Assert.Equal("70", parts[8]);
-			Assert.Equal("1", parts[9]);
-			Assert.Equal("0", parts[10]);
+			var serializedCapture = Assert.IsType<string>(GetSerializedActiveOperation());
+
+			using var jsonDocument = JsonDocument.Parse(serializedCapture);
+			var root = jsonDocument.RootElement;
+			Assert.Equal(1, root.GetProperty("Version").GetInt32());
+			Assert.Equal(id, root.GetProperty("Id").GetString());
+			Assert.Equal((int)RecoveredMediaPickerResultKind.PickPhotos, root.GetProperty("Kind").GetInt32());
+			Assert.Equal((int)PendingMediaPickerState.ResultAccepted, root.GetProperty("State").GetInt32());
+			Assert.Equal(capturePath, Assert.Single(root.GetProperty("FilePaths").EnumerateArray()).GetString());
+			Assert.Equal(pickerUriString, Assert.Single(root.GetProperty("PickerUriStrings").EnumerateArray()).GetString());
+			Assert.DoesNotContain("OutputUri", serializedCapture, StringComparison.Ordinal);
+			Assert.DoesNotContain("outputUri", serializedCapture, StringComparison.Ordinal);
+
+			var photoProcessingOptions = root.GetProperty("PhotoProcessingOptions");
+			Assert.Equal(640, photoProcessingOptions.GetProperty("MaximumWidth").GetInt32());
+			Assert.Equal(480, photoProcessingOptions.GetProperty("MaximumHeight").GetInt32());
+			Assert.Equal(70, photoProcessingOptions.GetProperty("CompressionQuality").GetInt32());
+			Assert.True(photoProcessingOptions.GetProperty("RotateImage").GetBoolean());
+			Assert.False(photoProcessingOptions.GetProperty("PreserveMetaData").GetBoolean());
+
+			var activeOperation = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
+			Assert.Equal(id, activeOperation.Id);
+			Assert.Equal(RecoveredMediaPickerResultKind.PickPhotos, activeOperation.Kind);
+			Assert.Equal(PendingMediaPickerState.ResultAccepted, activeOperation.State);
+			Assert.Equal(capturePath, GetSingleActiveOperationFilePath(activeOperation));
+			Assert.Equal(pickerUriString, GetSingleActiveOperationPickerUri(activeOperation));
+			Assert.Equal(640, activeOperation.PhotoProcessingOptions.MaximumWidth.GetValueOrDefault());
+			Assert.Equal(480, activeOperation.PhotoProcessingOptions.MaximumHeight.GetValueOrDefault());
+			Assert.Equal(70, activeOperation.PhotoProcessingOptions.CompressionQuality);
+			Assert.True(activeOperation.PhotoProcessingOptions.RotateImage);
+			Assert.False(activeOperation.PhotoProcessingOptions.PreserveMetaData);
 		}
 
 		[Fact]
@@ -1454,9 +1429,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		static string GetSerializedActiveOperation()
 			=> Preferences.Get(ActiveOperationPreferenceKey, null, RecoveryPreferencesSharedName);
 
-		static void SetSerializedActiveOperation(string value)
-			=> Preferences.Set(ActiveOperationPreferenceKey, value, RecoveryPreferencesSharedName);
-
 		static void ClearInProcessOperationIds()
 		{
 			var ids = GetPrivateStaticField<object>("InProcessOperationIds");
@@ -1528,58 +1500,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 		static string GetSingleActiveOperationPickerUri(PendingMediaPickerOperation operation)
 			=> Assert.Single(operation.PickerUriStrings);
-
-		static string SerializeLegacyPendingCaptureForTests(string id, RecoveredMediaPickerResultKind kind, string filePath)
-			=> string.Join("|", new[]
-			{
-				"1",
-				EncodePreferenceValueForTests(id),
-				GetLegacyCaptureKindValue(kind).ToString(CultureInfo.InvariantCulture),
-				EncodePreferenceValueForTests(filePath),
-				EncodePreferenceValueForTests("content://maui-test/media-capture/legacy"),
-				"640",
-				"480",
-				"70",
-				"1",
-				"0"
-			});
-
-		static string SerializePendingCaptureWithOutputUriForTests(string id, RecoveredMediaPickerResultKind kind, PendingMediaPickerState state, string filePath)
-			=> string.Join("|", new[]
-			{
-				"2",
-				EncodePreferenceValueForTests(id),
-				GetLegacyCaptureKindValue(kind).ToString(CultureInfo.InvariantCulture),
-				((int)state).ToString(CultureInfo.InvariantCulture),
-				EncodePreferenceValueForTests(filePath),
-				EncodePreferenceValueForTests("content://maui-test/media-capture/previous"),
-				"640",
-				"480",
-				"70",
-				"1",
-				"0"
-				});
-
-		static string SerializePendingOperationWithoutPickerUrisForTests(string id, RecoveredMediaPickerResultKind kind, PendingMediaPickerState state, string filePath)
-			=> string.Join("|", new[]
-			{
-				"4",
-				EncodePreferenceValueForTests(id),
-				((int)kind).ToString(CultureInfo.InvariantCulture),
-				((int)state).ToString(CultureInfo.InvariantCulture),
-				EncodePreferenceValueForTests(filePath),
-				"640",
-				"480",
-				"70",
-				"1",
-				"0"
-			});
-
-		static int GetLegacyCaptureKindValue(RecoveredMediaPickerResultKind kind)
-			=> kind == RecoveredMediaPickerResultKind.CaptureVideo ? 1 : 0;
-
-		static string EncodePreferenceValueForTests(string value)
-			=> Convert.ToBase64String(Encoding.UTF8.GetBytes(value ?? string.Empty));
 
 		sealed class TestMediaCaptureForResult : MediaCaptureForResult<TakePicture>
 		{
