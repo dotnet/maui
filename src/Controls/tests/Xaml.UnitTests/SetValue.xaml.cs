@@ -65,6 +65,15 @@ public class MockViewWithValues : View
 		get { throw new NotImplementedException(); }
 		set { throw new NotImplementedException(); }
 	}
+
+	public static readonly BindableProperty BPByteProperty =
+		BindableProperty.Create("BPByte", typeof(byte), typeof(MockViewWithValues), (byte)255);
+
+	public byte BPByte
+	{
+		get => (byte)GetValue(BPByteProperty);
+		set => SetValue(BPByteProperty, value);
+	}
 }
 
 [TypeConverter(typeof(SV_FooTypeConveter))]
@@ -390,6 +399,15 @@ public class MockViewWithValues : View
 		get { throw new NotImplementedException(); }
 		set { throw new NotImplementedException(); }
 	}
+
+	public static readonly BindableProperty BPByteProperty =
+		BindableProperty.Create("BPByte", typeof(byte), typeof(MockViewWithValues), (byte)0);
+
+	public byte BPByte
+	{
+		get => (byte)GetValue(BPByteProperty);
+		set => SetValue(BPByteProperty, value);
+	}
 }
 
 [TypeConverter(typeof(SV_FooTypeConveter))]
@@ -550,6 +568,7 @@ public partial class SetValue : ContentPage
 			Assert.Equal((short)-22, page.mockView0.AShort);
 			Assert.Equal((ushort)32, page.mockView0.UShort);
 			Assert.Equal((decimal)42, page.mockView0.ADecimal);
+			Assert.Equal((byte)150, page.mockView0.BPByte);
 		}
 
 		[Theory]
