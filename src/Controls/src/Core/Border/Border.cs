@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls
 	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;
+		WeakNotifyCollectionChangedProxy? _strokeDashArrayProxy;
+		NotifyCollectionChangedEventHandler? _strokeDashArrayChanged;
 
 		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
 		PropertyChangedEventHandler? _strokeShapeChanged;
@@ -28,6 +30,7 @@ namespace Microsoft.Maui.Controls
 
 		~Border()
 		{
+			_strokeDashArrayProxy?.Unsubscribe();
 			_strokeShapeProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
 		}
@@ -310,13 +313,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (StrokeDashArray is INotifyCollectionChanged oldCollection)
-					oldCollection.CollectionChanged -= OnStrokeDashArrayChanged;
+				UpdateStrokeDashArraySubscription();
 
 				_strokeDashPattern = StrokeDashArray?.ToFloatArray();
-
-				if (StrokeDashArray is INotifyCollectionChanged newCollection)
-					newCollection.CollectionChanged += OnStrokeDashArrayChanged;
 
 				return _strokeDashPattern;
 			}
@@ -421,8 +420,22 @@ namespace Microsoft.Maui.Controls
 			}
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
 			{
+				UpdateStrokeDashArraySubscription();
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
 			}
+		}
+
+		void UpdateStrokeDashArraySubscription()
+		{
+			if (StrokeDashArray is not INotifyCollectionChanged strokeDashArray)
+			{
+				_strokeDashArrayProxy?.Unsubscribe();
+				return;
+			}
+
+			_strokeDashArrayChanged ??= OnStrokeDashArrayChanged;
+			_strokeDashArrayProxy ??= new();
+			_strokeDashArrayProxy.Subscribe(strokeDashArray, _strokeDashArrayChanged);
 		}
 
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)
