@@ -73,7 +73,7 @@ stages:
         ${{ elseif eq(parameters.Platform, 'windows') }}:
           pool: ${{ parameters.windowsPool }}
         ${{ else }}:
-          pool: ${{ parameters.windowsPool }}  # fallback — should not be reached; AzDO parameter validation prevents unknown values
+          pool: ${{ parameters.androidPool }}  # fallback to android pool
         timeoutInMinutes: 360
         steps:
           - checkout: self
@@ -81,18 +81,30 @@ stages:
             persistCredentials: true
 
           # Validate Parameters
+          # PRNumber is received via env var to avoid compile-time shell injection.
+          # Anyone triggering this pipeline directly (AzDO UI/REST) could pass arbitrary
+          # strings — so we validate before any further use.
           - bash: |
               echo "Validating PR Number parameter..."
-              if [ -z "${{ parameters.PRNumber }}" ]; then
+              PR_NUM="${PARAM_PR_NUMBER}"
+              if [ -z "${PR_NUM}" ]; then
                 echo "##vso[task.logissue type=error]PRNumber parameter is required"
                 exit 1
               fi
-              echo "PR Number: ${{ parameters.PRNumber }}"
+              if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "##vso[task.logissue type=error]PRNumber must be a positive integer, got: '${PR_NUM}'"
+                exit 1
+              fi
+              echo "PR Number: ${PR_NUM}"
             displayName: 'Validate Parameters'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           - bash: |
-              echo "##vso[build.updatebuildnumber]PR ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
+              echo "##vso[build.updatebuildnumber]PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
             displayName: 'Set Pipeline Run Title'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
           - ${{ if eq(parameters.Platform, 'android') }}:
@@ -374,7 +386,6 @@ stages:
               echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
-
           # Boot iOS Simulator (only for iOS platform)
           # UI test baseline screenshots are captured on iPhone Xs - must use same device
           - bash: |
@@ -532,7 +543,7 @@ stages:
 
           - bash: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
-              echo "Reviewing PR #${{ parameters.PRNumber }}..."
+              echo "Reviewing PR #${PARAM_PR_NUMBER}..."
               
               # Ensure copilot CLI is accessible to pwsh subprocess.
               # npm global install on Linux goes to UseNode@1 toolcache path which may not
@@ -586,8 +597,10 @@ stages:
               # Invoke the PR reviewer using our PowerShell script
               # The script will merge the PR into the current branch
               # -PostSummaryComment and -RunFinalize handle posting comments
+              echo "Review platform: ${{ parameters.Platform }}"
+              
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
               
@@ -649,6 +662,7 @@ stages:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
 
           # Publish Copilot logs and session artifacts
