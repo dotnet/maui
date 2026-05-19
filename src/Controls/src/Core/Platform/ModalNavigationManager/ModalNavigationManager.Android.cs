@@ -262,11 +262,9 @@ namespace Microsoft.Maui.Controls.Platform
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
 				}
 
-				// Configure translucent system bars for modal pages on Android API 30+
 				if (OperatingSystem.IsAndroidVersionAtLeast(30) && Context?.GetActivity() is global::Android.App.Activity activity)
 				{
 					dialog.Window.ConfigureTranslucentSystemBars(activity);
-					UpdateModalWindowChrome(dialog.Window, Context);
 				}
 				else if (mainActivityWindow is not null)
 				{
@@ -279,6 +277,7 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning restore CA1422
 				}
 
+				UpdateModalWindowChrome(dialog.Window, Context);
 
 				return dialog;
 			}
