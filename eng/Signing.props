@@ -25,10 +25,6 @@
     <FileSignInfo Include="SegoeUI-Semibold.ttf" CertificateName="3PartyScriptsSHA2" />
   </ItemGroup>
 
-  <ItemGroup Label="Microsoft files">
-    <FileSignInfo Include="ReconnectModal.razor.js" CertificateName="Microsoft400" />
-  </ItemGroup>
-
   <ItemGroup Label="MSI workload cab signing">
     <!-- Sign cab files embedded inside MSI workload packs -->
     <FileExtensionSignInfo Include=".cab" CertificateName="Microsoft400" />

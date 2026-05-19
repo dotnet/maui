@@ -121,4 +121,54 @@
   <!-- this target will get replaced by the nuget -->
   <Target Name="LocalizeTemplatesAfterBuild" />
 
+  <!--
+    Generate a catalog (.cat) file for customer-modifiable template files (e.g., .js).
+    These files cannot use Authenticode signing because customers edit them after project
+    creation, which would break the embedded signature. Instead, a .cat file provides
+    integrity verification at install time while leaving the original files editable.
+    The .cat is signed via FileExtensionSignInfo in eng/Signing.props.
+  -->
+  <Target Name="_GenerateTemplateCatalogFile"
+          BeforeTargets="_UpdateTemplateVersions"
+          Condition="'$(OS)' == 'Windows_NT'">
+    <PropertyGroup>
+      <_CatalogDir>$(IntermediateOutputPath)catalog\</_CatalogDir>
+      <_CatalogName>MauiTemplateFiles</_CatalogName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_TemplateCatalogFile Include="templates\maui-blazor-solution\MauiApp.1.Web\Components\Layout\ReconnectModal.razor.js" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(_CatalogDir)" />
+
+    <!-- Generate the CDF (catalog definition file) -->
+    <PropertyGroup>
+      <_CdfContent>
+[CatalogHeader]
+Name=$(_CatalogName).cat
+ResultDir=$(_CatalogDir)
+PublicVersion=1
+
+[CatalogFiles]
+@(_TemplateCatalogFile->'%(Filename)%(Extension)=%(FullPath)', '%0A')
+      </_CdfContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(_CatalogDir)$(_CatalogName).cdf"
+                     Lines="$(_CdfContent)"
+                     Overwrite="true" />
+
+    <!-- Run makecat.exe to create the unsigned .cat (signed later by Arcade) -->
+    <Exec Command="makecat.exe &quot;$(_CatalogDir)$(_CatalogName).cdf&quot;"
+          IgnoreExitCode="false" />
+
+    <!-- Include the .cat in the nupkg alongside the template files -->
+    <ItemGroup>
+      <Content Include="$(_CatalogDir)$(_CatalogName).cat"
+               PackagePath="content\templates\maui-blazor-solution\MauiApp.1.Web\Components\Layout\$(_CatalogName).cat"
+               Pack="true" />
+    </ItemGroup>
+  </Target>
+
 </Project>
