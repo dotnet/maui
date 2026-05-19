@@ -530,8 +530,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				[],
 				PersistedPhotoProcessingOptions.Default);
 
-			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(pickUri));
+			var callbackRecorded = false;
+			var exception = Record.Exception(() =>
+				callbackRecorded = MediaPickerRecoveryManager.RecordSinglePickCallbackResult(pickUri));
 
+			Assert.Null(exception);
+			Assert.True(callbackRecorded);
 			var activePick = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
 			Assert.Equal(pendingPick.Id, activePick.Id);
 			Assert.Equal(PendingMediaPickerState.ResultAccepted, activePick.State);

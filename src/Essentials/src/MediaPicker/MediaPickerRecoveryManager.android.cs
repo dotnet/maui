@@ -339,6 +339,11 @@ internal static class MediaPickerRecoveryManager
 			return true;
 		}
 
+		foreach (var uri in uris)
+		{
+			TryPersistPickerUriReadAccess(uri);
+		}
+
 		lock (Locker)
 		{
 			var current = MediaPickerRecoveryStore.ReadActiveOperation();
@@ -347,14 +352,9 @@ internal static class MediaPickerRecoveryManager
 				return false;
 			}
 
-			// AndroidX accepted the picker result. Persist the URI payload before copying from it so
-			// process death during materialization can still be retried after recreation.
+			// AndroidX accepted the picker result. Take durable URI access first, then persist the
+			// URI payload before copying from it so process death during materialization can be retried.
 			MediaPickerRecoveryStore.WriteActiveOperation(current.WithAcceptedPickerUris(uriStrings));
-		}
-
-		foreach (var uri in uris)
-		{
-			TryPersistPickerUriReadAccess(uri);
 		}
 
 		return true;
