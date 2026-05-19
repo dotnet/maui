@@ -683,6 +683,9 @@ internal static class MediaPickerRecoveryManager
 		   kind == RecoveredMediaPickerResultKind.PickPhoto ||
 		   kind == RecoveredMediaPickerResultKind.PickPhotos;
 
+	// PickPhotos/PickVideos with SelectionLimit == 1 use AndroidX's single-picker launcher, but
+	// higher selection limits use the multiple-picker launcher. AndroidX replays the launcher that
+	// produced the result, so plural operation kinds intentionally match both callback shapes.
 	static bool IsSinglePickCallbackKind(RecoveredMediaPickerResultKind kind)
 		=> kind == RecoveredMediaPickerResultKind.PickPhoto ||
 		   kind == RecoveredMediaPickerResultKind.PickVideo ||
