@@ -29,9 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			VisualStateManager.GoToState(View, IsSelected
-				? VisualStateManager.CommonStates.Selected
-				: VisualStateManager.CommonStates.Normal);
+			View.IsItemSelected = IsSelected;
 		}
 
 		public void Recycle(ItemsView itemsView)

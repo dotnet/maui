@@ -1653,6 +1653,29 @@ namespace Microsoft.Maui.Controls
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
 
 		bool _isPointerOver;
+		bool _isItemSelected;
+
+		/// <summary>
+		/// Gets or sets whether this element is in the Selected visual state.
+		/// Platform handlers (CollectionView, Shell flyout, IndicatorView) use this property
+		/// to select/deselect items. The setter includes an equality guard to avoid redundant
+		/// state recomputation and routes through <see cref="ChangeVisualState"/> so that
+		/// IsEnabled and other state priorities (Disabled, PointerOver, Normal) are respected.
+		/// </summary>
+		internal bool IsItemSelected
+		{
+			get => _isItemSelected;
+			set
+			{
+				if (_isItemSelected == value)
+				{
+					return;
+				}
+
+				_isItemSelected = value;
+				ChangeVisualState();
+			}
+		}
 
 		internal bool IsPointerOver
 		{
