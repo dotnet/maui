@@ -1863,14 +1863,14 @@ Write-Host "╔═════════════════════�
 Write-Host "║  STEP 7: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
+$summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
+
 if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
     Write-Host "  ⏭️ Deferred to Stage 3 (DEFER_COMMENT_TO_STAGE3=true)" -ForegroundColor Gray
     Write-Host "  ℹ️  Content files saved in CopilotLogs artifact" -ForegroundColor Gray
     # Still emit a dummy output var so Stage 3 condition works
     Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]DEFERRED"
 } else {
-
-$summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
 
 # Post PR review phases (pre-flight, try-fix, report)
 $aiSummaryCommentId = $null
@@ -1906,6 +1906,8 @@ if (Test-Path $reviewScript) {
 } else {
     Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
 }
+
+} # END DEFER_COMMENT_TO_STAGE3 else block (summary comment only — inline findings + labels always run below)
 
 # Determine winning candidate (winner.json) — drives whether we post inline findings or request changes
 $winnerFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json"
@@ -2060,8 +2062,6 @@ if (Test-Path $labelHelperPath) {
 } else {
     Write-Host "  ⚠️ Label helper not found — skipping" -ForegroundColor Yellow
 }
-
-} # END DEFER_COMMENT_TO_STAGE3 else block
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  Cleanup
