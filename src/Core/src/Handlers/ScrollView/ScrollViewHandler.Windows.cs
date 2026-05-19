@@ -38,6 +38,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ScrollViewer platformView)
 		{
+			// Cascade disconnect to the PresentedContent's handler. Without this, when the
+			// ScrollView is restored as ContentPage.Content after being swapped out, the
+			// PresentedContent's native view still has a stale parent (the old ContentPanel),
+			// causing a WinUI COM exception "Element already has a parent" (Issue #35277).
+			// Cascading here ensures ToPlatform() creates a fresh native view with no parent.
+			VirtualView?.PresentedContent?.Handler?.DisconnectHandler();
 			base.DisconnectHandler(platformView);
 			platformView.ViewChanged -= ViewChanged;
 		}
@@ -157,9 +163,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				currentPaddingLayer.CachedChildren.Clear();
 			}
-
-			// Detach the old handler if it exists (prevents WinUI COM exception on reuse)
-			scrollView.PresentedContent.Handler?.DisconnectHandler();
 
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
