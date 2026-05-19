@@ -196,7 +196,9 @@ internal static class MediaPickerRecoveryManager
 	}
 
 	internal static void RecoverOrphanedCaptureResult(RecoveredMediaPickerResultKind kind, bool success)
-		=> _ = RecoverOrphanedCaptureResultAsync(kind, success);
+		=> ObserveOrphanedRecoveryTask(
+			RecoverOrphanedCaptureResultAsync(kind, success),
+			"Unhandled media capture recovery task failure");
 
 	internal static bool RecordCaptureCallbackResult(RecoveredMediaPickerResultKind kind, bool success)
 	{
@@ -245,7 +247,9 @@ internal static class MediaPickerRecoveryManager
 			uris ?? []);
 
 	internal static void RecoverOrphanedSinglePickResult(AndroidUri? uri)
-		=> _ = RecoverOrphanedSinglePickResultAsync(uri);
+		=> ObserveOrphanedRecoveryTask(
+			RecoverOrphanedSinglePickResultAsync(uri),
+			"Unhandled picked media recovery task failure");
 
 	internal static async Task RecoverOrphanedSinglePickResultAsync(AndroidUri? uri)
 		=> await RecoverOrphanedOperationResultAsync(
@@ -253,12 +257,27 @@ internal static class MediaPickerRecoveryManager
 			"Unable to recover picked media result").ConfigureAwait(false);
 
 	internal static void RecoverOrphanedMultiplePickResult(IReadOnlyList<AndroidUri>? uris)
-		=> _ = RecoverOrphanedMultiplePickResultAsync(uris);
+		=> ObserveOrphanedRecoveryTask(
+			RecoverOrphanedMultiplePickResultAsync(uris),
+			"Unhandled picked media recovery task failure");
 
 	internal static async Task RecoverOrphanedMultiplePickResultAsync(IReadOnlyList<AndroidUri>? uris)
 		=> await RecoverOrphanedOperationResultAsync(
 			() => RecordMultiplePickCallbackResult(uris),
 			"Unable to recover picked media results").ConfigureAwait(false);
+
+	static void ObserveOrphanedRecoveryTask(Task task, string failureMessage)
+	{
+		_ = task.ContinueWith(
+			static (faultedTask, state) =>
+			{
+				Trace.WriteLine($"{state}: {faultedTask.Exception}");
+			},
+			failureMessage,
+			CancellationToken.None,
+			TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+			TaskScheduler.Default);
+	}
 
 	internal static async Task<IReadOnlyList<RecoveredMediaPickerResult>> RecoverOperationIfAvailableAsync()
 	{
