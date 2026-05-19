@@ -7,40 +7,29 @@ public class Issue99999 : Shell
 	{
 		FlyoutBehavior = FlyoutBehavior.Disabled;
 
-		// Create a Shell with TabBar containing multiple tabs
-		// This exercises ShellSectionRenderer.OnHiddenChanged when switching tabs
-		var tab1Page = new ContentPage
+		// Pre-register routes
+		Routing.RegisterRoute("testroute", typeof(Issue99999TargetPage));
+		Routing.RegisterRoute("finalpage", typeof(Issue99999FinalPage));
+
+		var mainPage = new ContentPage
 		{
-			Title = "Tab 1",
+			Title = "Shell Layout Test",
 			Content = CreateMainContent()
 		};
 
-		var tab2Page = new ContentPage
+		var shellContent = new ShellContent
 		{
-			Title = "Tab 2",
-			Content = new Label
-			{
-				Text = "Tab 2 Content",
-				AutomationId = "Tab2Label",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			}
+			Content = mainPage,
+			Title = "Main",
+			Route = "Main"
 		};
 
-		var tabBar = new TabBar();
+		var shellSection = new ShellSection { Title = "Home" };
+		shellSection.Items.Add(shellContent);
 
-		var shellSection1 = new ShellSection { Title = "Home", Route = "home" };
-		shellSection1.Items.Add(new ShellContent { Content = tab1Page, Route = "main" });
-		tabBar.Items.Add(shellSection1);
-
-		var shellSection2 = new ShellSection { Title = "Other", Route = "other" };
-		shellSection2.Items.Add(new ShellContent { Content = tab2Page, Route = "tab2" });
-		tabBar.Items.Add(shellSection2);
-
-		Items.Add(tabBar);
-
-		// Register the route for push navigation
-		Routing.RegisterRoute("navtarget", typeof(Issue99999TargetPage));
+		var shellItem = new ShellItem();
+		shellItem.Items.Add(shellSection);
+		Items.Add(shellItem);
 	}
 
 	StackLayout CreateMainContent()
@@ -53,10 +42,9 @@ public class Issue99999 : Shell
 			Margin = new Thickness(20, 10)
 		};
 
-		// Button that runs rapid push/pop cycles combined with tab switches
 		var runCyclesButton = new Button
 		{
-			Text = "Run Cycles",
+			Text = "Run Rapid Cycles",
 			AutomationId = "RunCyclesButton",
 			Margin = new Thickness(20, 10)
 		};
@@ -68,24 +56,21 @@ public class Issue99999 : Shell
 
 			try
 			{
-				// Cycle pattern: push/pop on tab1, switch to tab2, switch back, repeat
-				// This exercises both fragment Hide/Show (tab switch) and fragment Add/Remove (push/pop)
-				for (int i = 0; i < 10; i++)
+				// Run rapid push/pop cycles without animation.
+				// This exercises the fragment Hide/Show path on the ShellSectionRenderer.
+				// The bug manifests when the CoordinatorLayout goes GONE→VISIBLE many times
+				// and the Choreographer can't run layout passes between transitions.
+				for (int i = 0; i < 20; i++)
 				{
-					// Push and pop on current tab
-					await Current.GoToAsync("navtarget");
-					await Current.GoToAsync("..");
-
-					// Switch to other tab and back (triggers ShellSectionRenderer.OnHiddenChanged)
-					await Current.GoToAsync("//other");
-					await Current.GoToAsync("//home");
+					await Current.GoToAsync("testroute", false);
+					await Current.GoToAsync("..", false);
 				}
 
-				statusLabel.Text = "Cycles done";
+				statusLabel.Text = "CyclesDone";
 			}
 			catch (Exception ex)
 			{
-				statusLabel.Text = $"ERROR: {ex.Message}";
+				statusLabel.Text = $"ERROR: {ex.GetType().Name}: {ex.Message}";
 			}
 			finally
 			{
@@ -93,17 +78,16 @@ public class Issue99999 : Shell
 			}
 		};
 
-		// Button to navigate to target page (for verification after cycles)
 		var navigateButton = new Button
 		{
-			Text = "Navigate",
+			Text = "Navigate After Cycles",
 			AutomationId = "NavigateButton",
 			Margin = new Thickness(20, 10)
 		};
 
 		navigateButton.Clicked += async (s, e) =>
 		{
-			await Current.GoToAsync("navtarget");
+			await Current.GoToAsync("finalpage");
 		};
 
 		return new StackLayout
@@ -123,45 +107,47 @@ public class Issue99999TargetPage : ContentPage
 	public Issue99999TargetPage()
 	{
 		Title = "Target Page";
-
-		var contentLabel = new Label
+		Content = new Label
 		{
-			Text = "Target Page Content",
-			AutomationId = "TargetPageLabel",
+			Text = "Target",
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
+		};
+	}
+}
+
+public class Issue99999FinalPage : ContentPage
+{
+	public Issue99999FinalPage()
+	{
+		Title = "Final Page";
+
+		var sizeInfo = new Label
+		{
+			Text = "Size: waiting...",
+			AutomationId = "FinalPageSizeLabel",
 			FontSize = 20,
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
 		};
 
-		var goBackButton = new Button
-		{
-			Text = "Go Back",
-			AutomationId = "GoBackButton",
-			Margin = new Thickness(20, 10)
-		};
-
-		goBackButton.Clicked += async (s, e) =>
-		{
-			await Shell.Current.GoToAsync("..");
-		};
-
-		var sizeInfo = new Label
-		{
-			Text = "Size: waiting...",
-			AutomationId = "SizeInfoLabel",
-			FontSize = 14,
-			Margin = new Thickness(20, 5)
-		};
-
 		var layout = new VerticalStackLayout
 		{
-			AutomationId = "TargetPageLayout",
+			AutomationId = "FinalPageLayout",
 			HorizontalOptions = LayoutOptions.Fill,
 			VerticalOptions = LayoutOptions.Fill,
-			Children = { contentLabel, sizeInfo, goBackButton }
+			Children = { sizeInfo }
 		};
 
 		Content = layout;
+
+		// Report page dimensions once laid out (or report -1x-1 if never laid out)
+		Loaded += async (s, e) =>
+		{
+			// Wait 3 seconds — if the bug is present, layout never happens
+			await Task.Delay(3000);
+			sizeInfo.Text = $"Size: {Width}x{Height}";
+		};
 
 		SizeChanged += (s, e) =>
 		{

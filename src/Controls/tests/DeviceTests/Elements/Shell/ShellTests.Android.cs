@@ -751,5 +751,161 @@ namespace Microsoft.Maui.DeviceTests
 			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
 			await OnNavigatedToAsync(page);
 		}
+
+		[Fact(DisplayName = "Shell CoordinatorLayout restores dimensions after push/pop navigation cycles")]
+		public async Task CoordinatorLayoutHasDimensionsAfterPushPopCycles()
+		{
+			// This test verifies that the Shell's CoordinatorLayout gets properly laid out
+			// after being hidden (push) and shown (pop) via fragment transactions.
+			// Bug: After many rapid push/pop cycles, the CoordinatorLayout can end up at 0x0
+			// because OnHiddenChanged doesn't call RequestLayout on the root view.
+			SetupBuilder();
+
+			var page1 = new ContentPage { Title = "Home", Content = new Label { Text = "Home" } };
+			var page2 = new ContentPage { Title = "Pushed" };
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Home",
+							Content = page1
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page1);
+
+				// Get the CoordinatorLayout (root view of ShellSectionRenderer)
+				var platformView = (page1.Handler as IPlatformViewHandler).PlatformView;
+				var coordinatorLayout = platformView.GetParentOfType<CoordinatorLayout>();
+				Assert.NotNull(coordinatorLayout);
+
+				// Verify initial dimensions are valid
+				Assert.True(coordinatorLayout.Width > 0, $"Initial CoordinatorLayout Width should be > 0 but was {coordinatorLayout.Width}");
+				Assert.True(coordinatorLayout.Height > 0, $"Initial CoordinatorLayout Height should be > 0 but was {coordinatorLayout.Height}");
+
+				var expectedWidth = coordinatorLayout.Width;
+				var expectedHeight = coordinatorLayout.Height;
+
+				// Do push/pop navigation cycles without animation
+				Routing.RegisterRoute("testpush", typeof(ContentPage));
+				try
+				{
+					for (int i = 0; i < 20; i++)
+					{
+						await shell.GoToAsync("testpush", false);
+						await shell.GoToAsync("..", false);
+					}
+				}
+				finally
+				{
+					Routing.UnRegisterRoute("testpush");
+				}
+
+				// After cycles, wait for any pending layout pass
+				await Task.Delay(100);
+				await InvokeOnMainThreadAsync(() => { });
+
+				// Verify CoordinatorLayout still has correct dimensions
+				Assert.True(coordinatorLayout.Width > 0,
+					$"CoordinatorLayout Width should be > 0 after navigation cycles but was {coordinatorLayout.Width}");
+				Assert.True(coordinatorLayout.Height > 0,
+					$"CoordinatorLayout Height should be > 0 after navigation cycles but was {coordinatorLayout.Height}");
+				Assert.Equal(expectedWidth, coordinatorLayout.Width);
+				Assert.Equal(expectedHeight, coordinatorLayout.Height);
+			});
+		}
+
+		[Fact(DisplayName = "Shell CoordinatorLayout recovers dimensions when shown after layout was invalidated while hidden")]
+		public async Task CoordinatorLayoutRecoversDimensionsWhenShownAfterLayoutInvalidation()
+		{
+			// This test simulates the scenario where the CoordinatorLayout's layout
+			// becomes invalid while it's hidden during push navigation, and verifies
+			// that showing it again (pop) properly triggers a re-layout.
+			// This is the core bug: if the Choreographer couldn't run between hide/show cycles,
+			// the CoordinatorLayout's stale 0x0 dimensions are never refreshed.
+			SetupBuilder();
+
+			var page1 = new ContentPage { Title = "Home", Content = new Label { Text = "Home" } };
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Home",
+							Content = page1
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page1);
+
+				// Get the CoordinatorLayout
+				var platformView = (page1.Handler as IPlatformViewHandler).PlatformView;
+				var coordinatorLayout = platformView.GetParentOfType<CoordinatorLayout>();
+				Assert.NotNull(coordinatorLayout);
+
+				// Verify initial dimensions
+				Assert.True(coordinatorLayout.Width > 0, "Initial width > 0");
+				Assert.True(coordinatorLayout.Height > 0, "Initial height > 0");
+				var expectedWidth = coordinatorLayout.Width;
+				var expectedHeight = coordinatorLayout.Height;
+
+				// Push a page (this hides the ShellSectionRenderer fragment)
+				Routing.RegisterRoute("testpush2", typeof(ContentPage));
+				try
+				{
+					await shell.GoToAsync("testpush2", false);
+
+					// While the ShellSectionRenderer is hidden, force the CoordinatorLayout
+					// to have 0x0 bounds. This simulates what happens when the layout system
+					// couldn't process a layout pass between rapid hide/show cycles.
+					await InvokeOnMainThreadAsync(() =>
+					{
+						coordinatorLayout.Layout(0, 0, 0, 0);
+					});
+
+					// Verify it's now at 0x0
+					Assert.Equal(0, coordinatorLayout.Width);
+					Assert.Equal(0, coordinatorLayout.Height);
+
+					// Pop back (this shows the ShellSectionRenderer fragment)
+					// OnHiddenChanged(false) should trigger RequestLayout to restore dimensions
+					await shell.GoToAsync("..", false);
+
+					// Wait for layout pass to complete
+					await Task.Delay(200);
+					await InvokeOnMainThreadAsync(() => { });
+					await Task.Delay(100);
+
+					// Verify CoordinatorLayout has recovered its dimensions
+					Assert.True(coordinatorLayout.Width > 0,
+						$"CoordinatorLayout Width should recover after pop but was {coordinatorLayout.Width}");
+					Assert.True(coordinatorLayout.Height > 0,
+						$"CoordinatorLayout Height should recover after pop but was {coordinatorLayout.Height}");
+					Assert.Equal(expectedWidth, coordinatorLayout.Width);
+					Assert.Equal(expectedHeight, coordinatorLayout.Height);
+				}
+				finally
+				{
+					Routing.UnRegisterRoute("testpush2");
+				}
+			});
+		}
 	}
 }

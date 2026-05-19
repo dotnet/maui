@@ -247,9 +247,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnHiddenChanged(hidden);
 			
-			if (!hidden && _shellToolbar?.Handler != null)
+			if (!hidden)
 			{
-				_shellToolbar.Handler.UpdateValue(nameof(Toolbar.TitleView));
+				// When the fragment becomes visible after being hidden (e.g., after a pop navigation),
+				// explicitly request layout on the root view. Under rapid navigation cycles, the
+				// Choreographer may not process layout passes between fragment transactions, leaving
+				// the CoordinatorLayout at 0x0 dimensions. This ensures a layout pass is scheduled.
+				_rootView?.RequestLayout();
+
+				if (_shellToolbar?.Handler != null)
+				{
+					_shellToolbar.Handler.UpdateValue(nameof(Toolbar.TitleView));
+				}
 			}
 		}
 
