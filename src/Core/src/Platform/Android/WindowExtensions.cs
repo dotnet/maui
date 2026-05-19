@@ -1,16 +1,20 @@
-﻿using Android.App;
+using Android.App;
 using Android.Content;
 using Android.Content.Res;
+using System.Runtime.CompilerServices;
 using Android.Views;
 using AndroidX.Core.View;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui
 {
 	public static partial class WindowExtensions
 	{
+		static readonly ConditionalWeakTable<Window, OriginalSystemBarColors> s_originalSystemBarColors = new();
+
 		internal static void UpdateTitle(this Activity platformWindow, IWindow window)
 		{
 			if (string.IsNullOrEmpty(window.Title))
@@ -64,7 +68,14 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			// Set appropriate system bar appearance for readability using API 30+ methods
+			UpdateSystemBarBackgrounds(
+				window,
+				updateStatusBar,
+				updateNavigationBar,
+				statusBarBackgroundColor,
+				navigationBarBackgroundColor);
+
+			// Set appropriate system bar appearance for readability using AndroidX compat APIs.
 			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
 			if (windowInsetsController is not null)
 			{
@@ -88,6 +99,44 @@ namespace Microsoft.Maui
 			}
 		}
 
+		static void UpdateSystemBarBackgrounds(
+			Window window,
+			bool updateStatusBar,
+			bool updateNavigationBar,
+			Color? statusBarBackgroundColor,
+			Color? navigationBarBackgroundColor)
+		{
+			var originalSystemBarColors = s_originalSystemBarColors.GetValue(
+				window,
+				static window => new OriginalSystemBarColors(window));
+
+#pragma warning disable CA1422 // System bar color APIs still apply to older Android versions and are harmless on newer versions.
+			if (updateStatusBar)
+			{
+				if (statusBarBackgroundColor?.Alpha > 0)
+				{
+					window.SetStatusBarColor(statusBarBackgroundColor.ToPlatform());
+				}
+				else
+				{
+					originalSystemBarColors.RestoreStatusBarColor(window);
+				}
+			}
+
+			if (updateNavigationBar)
+			{
+				if (navigationBarBackgroundColor?.Alpha > 0)
+				{
+					window.SetNavigationBarColor(navigationBarBackgroundColor.ToPlatform());
+				}
+				else
+				{
+					originalSystemBarColors.RestoreNavigationBarColor(window);
+				}
+			}
+#pragma warning restore CA1422
+		}
+
 		static bool? GetLightSystemBarAppearance(Color? backgroundColor, Color? foregroundColor)
 		{
 			if (backgroundColor?.Alpha > 0)
@@ -101,6 +150,30 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		sealed class OriginalSystemBarColors
+		{
+			readonly int _statusBarColor;
+			readonly int _navigationBarColor;
+
+			public OriginalSystemBarColors(Window window)
+			{
+#pragma warning disable CA1422
+				_statusBarColor = window.StatusBarColor;
+				_navigationBarColor = window.NavigationBarColor;
+#pragma warning restore CA1422
+			}
+
+			public void RestoreStatusBarColor(Window window)
+			{
+				window.SetStatusBarColor(new AColor(_statusBarColor));
+			}
+
+			public void RestoreNavigationBarColor(Window window)
+			{
+				window.SetNavigationBarColor(new AColor(_navigationBarColor));
+			}
 		}
 	}
 }

@@ -102,11 +102,6 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? navigationBarBackgroundColor = null,
 			Color? navigationBarForegroundColor = null)
 		{
-			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
-			{
-				return;
-			}
-
 			var activity = context?.GetActivity();
 			if (window is null)
 			{
