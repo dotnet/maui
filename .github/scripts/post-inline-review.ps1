@@ -80,7 +80,11 @@ if (-not (Test-Path $FindingsFile)) {
 # ============================================================================
 
 Write-Host "Loading findings from: $FindingsFile" -ForegroundColor Cyan
-$findings = Get-Content -Path $FindingsFile -Raw -Encoding UTF8 | ConvertFrom-Json
+$rawJson = Get-Content -Path $FindingsFile -Raw -Encoding UTF8
+# Force array parsing: PowerShell's ConvertFrom-Json can unwrap single-element
+# arrays or misparse nested structures. Wrap in @() to guarantee array.
+$parsed = $rawJson | ConvertFrom-Json
+$findings = @($parsed)
 
 if (-not $findings -or $findings.Count -eq 0) {
     Write-Host "No findings to post." -ForegroundColor Green
