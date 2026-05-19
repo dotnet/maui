@@ -809,6 +809,42 @@ namespace Microsoft.Maui.DeviceTests
 			return entry.AttributedText.GetCharacterSpacing();
 		}
 
+		[Fact(DisplayName = "Entry ClearButton uses template rendering tinted to TextColor")]
+		public async Task EntryClearButtonUsesTemplateRenderingTintedToTextColor()
+		{
+			var entry = new EntryStub
+			{
+				Text = "hello",
+				TextColor = Colors.Blue,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing,
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				var textField = GetNativeEntry(handler);
+
+				await textField.AttachAndRun(async () =>
+				{
+					textField.BecomeFirstResponder();
+
+					UIButton clearButton = null;
+					await AssertEventually(() =>
+					{
+						clearButton = textField.ValueForKey(new NSString("clearButton")) as UIButton;
+						return clearButton?.ImageForState(UIControlState.Normal) is not null;
+					}, timeout: 2000);
+
+					Assert.NotNull(clearButton);
+					Assert.Equal(Colors.Blue.ToPlatform(), clearButton.TintColor);
+
+					var image = clearButton.ImageForState(UIControlState.Normal);
+					Assert.NotNull(image);
+					Assert.Equal(UIImageRenderingMode.AlwaysTemplate, image.RenderingMode);
+				});
+			});
+		}
+
 		static UITextField GetNativeEntry(EntryHandler entryHandler) =>
 			(UITextField)entryHandler.PlatformView;
 
