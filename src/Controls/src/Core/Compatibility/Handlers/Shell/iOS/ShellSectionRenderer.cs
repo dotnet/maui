@@ -175,6 +175,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (!enabled)
 					{
+						_sendPopPending = false; // reset before returning
 						return false;
 					}
 
@@ -194,6 +195,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// hardware/system back button.
 					if (_context.Shell?.SendBackButtonPressed() == true)
 					{
+						_sendPopPending = false; // reset before returning
 						return false;
 					}
 
