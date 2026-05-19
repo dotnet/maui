@@ -12,7 +12,7 @@ internal class PickVisualMediaForResult : ActivityForResultRequest<PickVisualMed
 	public static PickVisualMediaForResult Instance => LazyInstance.Value;
 
 	protected override void OnActivityResultForActiveLaunch(AndroidUri result)
-		=> MediaPickerRecoveryManager.RecordSinglePickCallbackResult(result, materializeImmediately: true);
+		=> MediaPickerRecoveryManager.RecordSinglePickCallbackResult(result);
 
 	protected override void OnActivityResultForOrphanedLaunch(AndroidUri result)
 		=> MediaPickerRecoveryManager.RecoverOrphanedSinglePickResult(result);

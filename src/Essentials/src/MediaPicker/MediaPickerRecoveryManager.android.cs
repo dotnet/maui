@@ -198,24 +198,22 @@ internal static class MediaPickerRecoveryManager
 			() => RecordCaptureCallbackResult(kind, success),
 			"Unable to recover media capture result").ConfigureAwait(false);
 
-	internal static bool RecordSinglePickCallbackResult(AndroidUri? uri, bool materializeImmediately)
+	internal static bool RecordSinglePickCallbackResult(AndroidUri? uri)
 		=> RecordPickCallbackResult(
 			operation => IsSinglePickCallbackKind(operation.Kind),
-			uri is null || uri.Equals(AndroidUri.Empty) ? Array.Empty<AndroidUri>() : new[] { uri },
-			materializeImmediately);
+			uri is null || uri.Equals(AndroidUri.Empty) ? Array.Empty<AndroidUri>() : new[] { uri });
 
-	internal static bool RecordMultiplePickCallbackResult(IReadOnlyList<AndroidUri>? uris, bool materializeImmediately)
+	internal static bool RecordMultiplePickCallbackResult(IReadOnlyList<AndroidUri>? uris)
 		=> RecordPickCallbackResult(
 			operation => IsMultiplePickCallbackKind(operation.Kind),
-			uris ?? [],
-			materializeImmediately);
+			uris ?? []);
 
 	internal static void RecoverOrphanedSinglePickResult(AndroidUri? uri)
 		=> _ = RecoverOrphanedSinglePickResultAsync(uri);
 
 	internal static async Task RecoverOrphanedSinglePickResultAsync(AndroidUri? uri)
 		=> await RecoverOrphanedOperationResultAsync(
-			() => RecordSinglePickCallbackResult(uri, materializeImmediately: false),
+			() => RecordSinglePickCallbackResult(uri),
 			"Unable to recover picked media result").ConfigureAwait(false);
 
 	internal static void RecoverOrphanedMultiplePickResult(IReadOnlyList<AndroidUri>? uris)
@@ -223,7 +221,7 @@ internal static class MediaPickerRecoveryManager
 
 	internal static async Task RecoverOrphanedMultiplePickResultAsync(IReadOnlyList<AndroidUri>? uris)
 		=> await RecoverOrphanedOperationResultAsync(
-			() => RecordMultiplePickCallbackResult(uris, materializeImmediately: false),
+			() => RecordMultiplePickCallbackResult(uris),
 			"Unable to recover picked media results").ConfigureAwait(false);
 
 	internal static async Task<IReadOnlyList<RecoveredMediaPickerResult>> RecoverOperationIfAvailableAsync()
@@ -279,8 +277,7 @@ internal static class MediaPickerRecoveryManager
 
 	static bool RecordPickCallbackResult(
 		Func<PendingMediaPickerOperation, bool> matchesOperation,
-		IReadOnlyList<AndroidUri> uris,
-		bool materializeImmediately)
+		IReadOnlyList<AndroidUri> uris)
 	{
 		PendingMediaPickerOperation? operation;
 
@@ -324,15 +321,10 @@ internal static class MediaPickerRecoveryManager
 			TryPersistPickerUriReadAccess(uri);
 		}
 
-		if (materializeImmediately)
-		{
-			MaterializeAcceptedFilePaths(operation.Id, throwOnMaterializationFailure: true);
-		}
-
 		return true;
 	}
 
-	internal static IReadOnlyList<string> MaterializeAcceptedFilePaths(string id, bool throwOnMaterializationFailure)
+	internal static async Task<IReadOnlyList<string>> MaterializeAcceptedFilePathsAsync(string id, bool throwOnMaterializationFailure)
 	{
 		if (id is null)
 		{
@@ -362,7 +354,7 @@ internal static class MediaPickerRecoveryManager
 		IReadOnlyList<string> filePaths;
 		try
 		{
-			filePaths = MaterializePickerUris(operation.PickerUriStrings);
+			filePaths = await MaterializePickerUrisAsync(operation.PickerUriStrings).ConfigureAwait(false);
 		}
 		catch (Exception ex)
 		{
@@ -405,7 +397,7 @@ internal static class MediaPickerRecoveryManager
 			.Select(uri => uri!)
 			.ToArray();
 
-	static IReadOnlyList<string> MaterializePickerUris(IReadOnlyList<string> uriStrings)
+	static async Task<IReadOnlyList<string>> MaterializePickerUrisAsync(IReadOnlyList<string> uriStrings)
 	{
 		var filePaths = new List<string>();
 
@@ -422,7 +414,7 @@ internal static class MediaPickerRecoveryManager
 				continue;
 			}
 
-			var filePath = FileSystemUtils.EnsurePhysicalPath(uri);
+			var filePath = await FileSystemUtils.EnsurePhysicalPathAsync(uri).ConfigureAwait(false);
 			if (!string.IsNullOrEmpty(filePath))
 			{
 				filePaths.Add(filePath);
@@ -486,7 +478,7 @@ internal static class MediaPickerRecoveryManager
 	static async Task PublishRecoveredOperationAsync(PendingMediaPickerOperation operation)
 	{
 		var recoveredPaths = new List<string>();
-		var acceptedFilePaths = MaterializeAcceptedFilePaths(operation.Id, throwOnMaterializationFailure: false);
+		var acceptedFilePaths = await MaterializeAcceptedFilePathsAsync(operation.Id, throwOnMaterializationFailure: false).ConfigureAwait(false);
 
 		foreach (var filePath in acceptedFilePaths)
 		{

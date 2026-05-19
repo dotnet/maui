@@ -309,8 +309,8 @@ namespace Microsoft.Maui.Media
 					return null;
 				}
 
-				var acceptedPaths = MediaPickerRecoveryManager.MaterializeAcceptedFilePaths(pendingOperation.Id, throwOnMaterializationFailure: true);
-				var path = acceptedPaths.FirstOrDefault() ?? FileSystemUtils.EnsurePhysicalPath(androidUri);
+				var acceptedPaths = await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingOperation.Id, throwOnMaterializationFailure: true);
+				var path = acceptedPaths.FirstOrDefault() ?? await FileSystemUtils.EnsurePhysicalPathAsync(androidUri);
 
 				if (photo)
 				{
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Media
 				if (androidUris?.IsEmpty ?? true)
 					return [];
 
-				var acceptedPaths = MediaPickerRecoveryManager.MaterializeAcceptedFilePaths(pendingOperation.Id, throwOnMaterializationFailure: true);
+				var acceptedPaths = await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingOperation.Id, throwOnMaterializationFailure: true);
 
 				var resultList = new List<FileResult>();
 

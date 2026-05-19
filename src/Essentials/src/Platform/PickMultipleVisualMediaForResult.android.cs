@@ -14,7 +14,7 @@ internal class PickMultipleVisualMediaForResult : ActivityForResultRequest<PickM
 	public static PickMultipleVisualMediaForResult Instance => LazyInstance.Value;
 
 	protected override void OnActivityResultForActiveLaunch(JavaList result)
-		=> MediaPickerRecoveryManager.RecordMultiplePickCallbackResult(ToAndroidUris(result), materializeImmediately: true);
+		=> MediaPickerRecoveryManager.RecordMultiplePickCallbackResult(ToAndroidUris(result));
 
 	protected override void OnActivityResultForOrphanedLaunch(JavaList result)
 		=> MediaPickerRecoveryManager.RecoverOrphanedMultiplePickResult(ToAndroidUris(result));

@@ -524,20 +524,56 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public void Pick_Callback_Records_Accepted_Uri_Before_Materialization()
 		{
-			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
-			var pickUri = CreateFileUri(pickPath);
+			var pickUri = AndroidUri.Parse("content://maui-test/missing-picked-media") ?? throw new InvalidOperationException("Unable to create invalid picker URI.");
 			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.PickPhoto,
 				[],
 				PersistedPhotoProcessingOptions.Default);
 
-			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(pickUri, materializeImmediately: false));
+			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(pickUri));
 
 			var activePick = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
 			Assert.Equal(pendingPick.Id, activePick.Id);
 			Assert.Equal(PendingMediaPickerState.ResultAccepted, activePick.State);
 			Assert.Empty(activePick.FilePaths);
 			Assert.Equal(pickUri.ToString(), GetSingleActiveOperationPickerUri(activePick));
+		}
+
+		[Fact]
+		public async Task Accepted_Pick_Materialization_Writes_Accepted_File_Paths()
+		{
+			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.PickPhoto,
+				[],
+				PersistedPhotoProcessingOptions.Default);
+
+			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(CreateFileUri(pickPath)));
+
+			var acceptedPaths = await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingPick.Id, throwOnMaterializationFailure: true);
+
+			Assert.Equal(pickPath, Assert.Single(acceptedPaths));
+			var activePick = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
+			Assert.Equal(pendingPick.Id, activePick.Id);
+			Assert.Equal(PendingMediaPickerState.ResultAccepted, activePick.State);
+			Assert.Equal(pickPath, GetSingleActiveOperationFilePath(activePick));
+			Assert.Empty(activePick.PickerUriStrings);
+		}
+
+		[Fact]
+		public async Task Accepted_Pick_Materialization_Failure_Throws_And_Clears_Active_State()
+		{
+			var invalidPickerUri = AndroidUri.Parse("content://maui-test/missing-picked-media") ?? throw new InvalidOperationException("Unable to create invalid picker URI.");
+			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.PickPhoto,
+				[],
+				PersistedPhotoProcessingOptions.Default);
+
+			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(invalidPickerUri));
+
+			await Assert.ThrowsAnyAsync<Exception>(async () =>
+				await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingPick.Id, throwOnMaterializationFailure: true));
+			Assert.Null(GetActiveOperation());
 		}
 
 		[Fact]
@@ -549,7 +585,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				[],
 				PersistedPhotoProcessingOptions.Default);
 
-			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(invalidPickerUri, materializeImmediately: false));
+			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(invalidPickerUri));
 			SimulateProcessRecreation();
 
 			var results = await MediaPicker.WaitForRecoveredMediaPickerResultsAsync(CancellationToken.None);
@@ -608,7 +644,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				[],
 				PersistedPhotoProcessingOptions.Default);
 
-			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(CreateFileUri(pickPath), materializeImmediately: true));
+			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(CreateFileUri(pickPath)));
 			MediaPickerRecoveryManager.ClearActiveOperation(pendingPick.Id);
 			SimulateProcessRecreation();
 
