@@ -34,7 +34,31 @@ MAUI uses two types of channels:
 ### SDK Channels (automatic)
 Pattern: `.NET X.0.Yxx SDK` (e.g., `.NET 10.0.1xx SDK`)
 
-These are configured via default channel mappings — builds are **automatically** added when they complete on a mapped branch. Preview releases use `.NET X.0.Yxx SDK Preview N`.
+These are configured via default channel mappings — builds are **automatically** added when they complete on a mapped branch.
+
+**Branch → channel mapping rules:**
+- **Servicing release branches** (`release/X.0.Yxx-srN`) all map to the **single** general SDK channel for that band (e.g., `release/10.0.1xx-sr6`, `release/10.0.1xx-sr7`, etc. all map to `.NET 10.0.1xx SDK`). There is **no** `.NET X.0.Yxx SDK SRn` channel — do not invent one.
+- **Preview release branches** (`release/X.0.Yxx-previewN`) map to dedicated per-preview channels (e.g., `release/11.0.1xx-preview3` → `.NET 11.0.1xx SDK Preview 3`).
+- **Main/development branches** (`main`, `netN.0`, `release/X.0.Yxx`) map to the general SDK channel for that band.
+
+**Always verify by listing existing mappings before constructing a command:**
+```bash
+darc get-default-channels --source-repo https://github.com/dotnet/maui
+```
+Find a sibling branch (e.g., the previous SR) and copy its channel exactly.
+
+### Adding a new branch to the default channel mapping
+
+Common case: a new servicing release branch is created (e.g., `release/10.0.1xx-sr7`) and needs to be added so its builds flow automatically.
+
+```bash
+darc add-default-channel \
+  --channel ".NET 10.0.1xx SDK" \
+  --branch release/10.0.1xx-sr7 \
+  --repo https://github.com/dotnet/maui
+```
+
+⚠️ `add-default-channel` is in the explicit-confirmation list below. Show the user the exact command and wait for approval before running.
 
 ### Workload Release Channels (manual promotion)
 Pattern: `.NET X Workload Release` (e.g., `.NET 10 Workload Release`)
