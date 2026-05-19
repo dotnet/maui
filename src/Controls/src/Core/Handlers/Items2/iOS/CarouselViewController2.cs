@@ -208,7 +208,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (_orientationObserver is not null)
 			{
 				NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
-				_orientationObserver.Dispose();
 				_orientationObserver = null;
 			}
 			_carouselViewLoopManager?.Dispose();
