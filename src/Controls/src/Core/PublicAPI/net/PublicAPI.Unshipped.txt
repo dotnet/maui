@@ -1,5 +1,6 @@
-#nullable enable
+﻿#nullable enable
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
+override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
