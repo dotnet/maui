@@ -121,6 +121,14 @@ namespace Microsoft.Maui.Platform
 			{
 				// Windows.Foundation.UniversalApiContract < 5
 				platformButton.Resources.RemoveKeys(resourceKeys);
+
+				// RefreshThemeResources must run BEFORE ClearValue so that the theme flip
+				// happens while the local Foreground value is still set (and thus not
+				// affected by the transient wrong-theme evaluation). After the flip/restore
+				// completes, ClearValue removes the local value and the style-setter's
+				// {ThemeResource ButtonForeground} evaluates against the final correct theme.
+				platformButton.RefreshThemeResources();
+
 				// Windows.Foundation.UniversalApiContract >= 5
 				platformButton.ClearValue(Button.ForegroundProperty);
 			}
@@ -130,9 +138,9 @@ namespace Microsoft.Maui.Platform
 				platformButton.Resources.SetValueForAllKey(resourceKeys, brush);
 				// Windows.Foundation.UniversalApiContract >= 5
 				platformButton.Foreground = brush;
-			}
 
-			platformButton.RefreshThemeResources();
+				platformButton.RefreshThemeResources();
+			}
 		}
 
 		static readonly string[] TextColorResourceKeys =

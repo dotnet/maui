@@ -107,10 +107,12 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
 			{
 				var config = handler.PlatformView?.Configuration ?? UIButtonConfiguration.BorderedButtonConfiguration;
-				if (button?.TextColor != null && handler.PlatformView != null)
-					config.BaseForegroundColor = button?.TextColor.ToPlatform();
 				if (handler.PlatformView != null)
+				{
+					// A null BaseForegroundColor resets UIButtonConfiguration to the system default foreground.
+					config.BaseForegroundColor = button?.TextColor?.ToPlatform();
 					handler.PlatformView.Configuration = config;
+				}
 			}
 			else
 			{

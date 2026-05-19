@@ -31,7 +31,15 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this UIButton platformButton, ITextStyle button)
 		{
 			if (button.TextColor is null)
+			{
+				// Reset to the platform default: passing null clears the override and lets
+				// UIButtonType.System revert to its tint-colour-based default.
+				platformButton.SetTitleColor(null, UIControlState.Normal);
+				platformButton.SetTitleColor(null, UIControlState.Highlighted);
+				platformButton.SetTitleColor(null, UIControlState.Disabled);
+				platformButton.TintColor = null;
 				return;
+			}
 
 			var color = button.TextColor.ToPlatform();
 
