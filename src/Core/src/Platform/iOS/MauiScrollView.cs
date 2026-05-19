@@ -341,6 +341,13 @@ namespace Microsoft.Maui.Platform
 					// in case the ScrollView is configured to grow/shrink with its content.
 					this.InvalidateAncestorsMeasures();
 				}
+
+				// Now that layout is complete and ContentSize is set, process any pending scroll request
+				// that was deferred because ContentSize was empty when the request arrived.
+				if (ContentSize != CGSize.Empty && CrossPlatformLayout is ScrollViewHandler scrollViewHandler)
+				{
+					scrollViewHandler.ProcessPendingScrollRequest();
+				}
 			}
 
 			base.LayoutSubviews();

@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		const string ContentPanelTag = "MAUIScrollViewContentPanel";
 
+		// Stores a scroll request that arrived before the content was laid out.
+		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
+
 		protected override ScrollViewer CreatePlatformView()
 		{
 			return new ScrollViewer();
@@ -46,6 +49,27 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.PresentedContent?.Handler?.DisconnectHandler();
 			base.DisconnectHandler(platformView);
 			platformView.ViewChanged -= ViewChanged;
+
+			if (PendingScrollToRequest is not null)
+			{
+				if (GetContentPanel(platformView) is { } contentPanel)
+				{
+					contentPanel.SizeChanged -= OnContentPanelSizeChanged;
+				}
+
+				VirtualView?.ScrollFinished();
+				PendingScrollToRequest = null;
+			}
+		}
+
+		void OnContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			((FrameworkElement)sender).SizeChanged -= OnContentPanelSizeChanged;
+			if (PendingScrollToRequest is { } pending)
+			{
+				PendingScrollToRequest = null;
+				MapRequestScrollTo(this, VirtualView, pending);
+			}
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -84,13 +108,30 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
+				if (handler is ScrollViewHandler scrollViewHandler)
+				{
+					bool notMeasuredYet = (request.VerticalOffset > 0 && handler.PlatformView.ScrollableHeight == 0 && handler.PlatformView.ExtentHeight == 0) ||
+										  (request.HorizontalOffset > 0 && handler.PlatformView.ScrollableWidth == 0 && handler.PlatformView.ExtentWidth == 0);
+					if (notMeasuredYet)
+					{
+						// Defer until ContentPanel.SizeChanged fires (after WinUI arrange pass).
+						// Only subscribe once; overwrite the pending request so the latest wins.
+						if (scrollViewHandler.PendingScrollToRequest is null && GetContentPanel(handler.PlatformView) is { } contentPanel)
+						{
+							contentPanel.SizeChanged += scrollViewHandler.OnContentPanelSizeChanged;
+						}
+						scrollViewHandler.PendingScrollToRequest = request;
+						return;
+					}
+				}
+
 				var targetHorizontalOffset = Math.Clamp(request.HorizontalOffset, 0, handler.PlatformView.ScrollableWidth);
 				var targetVerticalOffset = Math.Clamp(request.VerticalOffset, 0, handler.PlatformView.ScrollableHeight);
 
 				if (targetVerticalOffset == handler.PlatformView.VerticalOffset && targetHorizontalOffset == handler.PlatformView.HorizontalOffset)
 				{
-				   handler.VirtualView.ScrollFinished();
-				   return;
+					handler.VirtualView.ScrollFinished();
+					return;
 				}
 
 				handler.PlatformView.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, request.Instant);
