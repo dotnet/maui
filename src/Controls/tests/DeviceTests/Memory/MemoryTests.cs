@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
@@ -11,6 +12,7 @@ using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 #if IOS || MACCATALYST
 using Microsoft.Maui.Controls.Handlers.Items2;
 #endif
@@ -343,6 +345,104 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
+
+	[Theory("Polygon and Polyline Points Replacement Does Not Leak Handler")]
+	[InlineData(typeof(Polygon))]
+	[InlineData(typeof(Polyline))]
+	public async Task ShapeHandlerDoesNotLeakWhenPointsReplaced(Type type)
+	{
+		SetupBuilder();
+
+		var result = await InvokeOnMainThreadAsync(() => CreateAndDisconnectShapeWithReplacedPoints(type));
+
+		await AssertionExtensions.WaitForGC(result.ShapeReference, result.HandlerReference, result.PlatformViewReference);
+		GC.KeepAlive(result.RootedOriginalPoints);
+	}
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	ShapePointsLeakProbeResult CreateAndDisconnectShapeWithReplacedPoints(Type type)
+	{
+		var originalPoints = CreatePointCollection(0);
+		var shape = CreateShapeWithPoints(type, originalPoints);
+		var layout = new Grid();
+
+		layout.Add(shape);
+		CreateHandler<LayoutHandler>(layout);
+
+		var handler = shape.Handler ?? throw new InvalidOperationException($"{type.Name} did not get a handler.");
+		var platformView = handler.PlatformView ?? throw new InvalidOperationException($"{type.Name} handler did not get a platform view.");
+
+		SetShapePoints(shape, CreatePointCollection(20));
+
+		var result = new ShapePointsLeakProbeResult(
+			new WeakReference(shape),
+			new WeakReference(handler),
+			new WeakReference(platformView),
+			originalPoints);
+
+		layout.Remove(shape);
+		handler.DisconnectHandler();
+		shape.Handler = null;
+
+		return result;
+	}
+
+	static Shape CreateShapeWithPoints(Type type, PointCollection points)
+	{
+		if (type == typeof(Polygon))
+		{
+			return new Polygon
+			{
+				Points = points,
+				WidthRequest = 120,
+				HeightRequest = 90
+			};
+		}
+
+		if (type == typeof(Polyline))
+		{
+			return new Polyline
+			{
+				Points = points,
+				WidthRequest = 120,
+				HeightRequest = 90
+			};
+		}
+
+		throw new ArgumentException($"Unsupported shape type: {type}", nameof(type));
+	}
+
+	static void SetShapePoints(Shape shape, PointCollection points)
+	{
+		switch (shape)
+		{
+			case Polygon polygon:
+				polygon.Points = points;
+				break;
+			case Polyline polyline:
+				polyline.Points = points;
+				break;
+			default:
+				throw new ArgumentException($"Unsupported shape: {shape.GetType().Name}", nameof(shape));
+		}
+	}
+
+	static PointCollection CreatePointCollection(double offset)
+	{
+		return
+		[
+			new Point(10 + offset, 10),
+			new Point(100 + offset, 20),
+			new Point(75 + offset, 80),
+			new Point(15 + offset, 70)
+		];
+	}
+
+	sealed record ShapePointsLeakProbeResult(
+		WeakReference ShapeReference,
+		WeakReference HandlerReference,
+		WeakReference PlatformViewReference,
+		PointCollection RootedOriginalPoints);
 
 	[Theory("CollectionView Header/Footer Doesn't Leak")]
 	[InlineData(typeof(CollectionView))]
