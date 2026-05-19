@@ -55,6 +55,19 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			// When the handler is being disconnected (page popped, view removed),
+			// detach the SelectionList to break the event subscription leak chain
+			if (args.NewHandler is null && GetValue(SelectedItemsProperty) is SelectionList selectionList)
+			{
+				selectionList.Detach();
+			}
+		}
+
 		/// <summary>
 		/// Gets or sets the currently selected item when <see cref="SelectionMode"/> is <see cref="SelectionMode.Single"/>.
 		/// </summary>
@@ -153,9 +166,18 @@ namespace Microsoft.Maui.Controls
 
 		static object CoerceSelectedItems(BindableObject bindable, object value)
 		{
+			var selectableItemsView = (SelectableItemsView)bindable;
+
+			// Detach the old SelectionList to unsubscribe from CollectionChanged
+			// and prevent accumulating leaked subscriptions on reassignment
+			if (selectableItemsView.GetValue(SelectedItemsProperty) is SelectionList oldSelectionList)
+			{
+				oldSelectionList.Detach();
+			}
+
 			if (value == null)
 			{
-				return new SelectionList((SelectableItemsView)bindable);
+				return new SelectionList(selectableItemsView);
 			}
 
 			if (value is SelectionList)
@@ -163,7 +185,7 @@ namespace Microsoft.Maui.Controls
 				return value;
 			}
 
-			return new SelectionList((SelectableItemsView)bindable, value as IList<object>);
+			return new SelectionList(selectableItemsView, value as IList<object>);
 		}
 
 		static object DefaultValueCreator(BindableObject bindable)

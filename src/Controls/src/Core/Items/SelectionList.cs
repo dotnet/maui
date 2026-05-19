@@ -27,6 +27,19 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Unsubscribes from the underlying collection's CollectionChanged event to prevent
+		/// memory leaks when the collection outlives the owning SelectableItemsView.
+		/// This method is idempotent.
+		/// </summary>
+		internal void Detach()
+		{
+			if (_internal is INotifyCollectionChanged incc)
+			{
+				incc.CollectionChanged -= OnCollectionChanged;
+			}
+		}
+
 		public object this[int index] { get => _internal[index]; set => _internal[index] = value; }
 
 		public int Count => _internal.Count;
