@@ -25,6 +25,18 @@
     <FileSignInfo Include="SegoeUI-Semibold.ttf" CertificateName="3PartyScriptsSHA2" />
   </ItemGroup>
 
+  <ItemGroup Label="Customer-modifiable template files">
+    <!-- Skip Authenticode - this JS is included in customer applications and users edit it.
+         Covered by catalog signing (.cat) instead - see GenerateCatalogFiles target in
+         src/Templates/src/Microsoft.Maui.Templates.csproj. -->
+    <FileSignInfo Include="ReconnectModal.razor.js" CertificateName="None" />
+  </ItemGroup>
+
+  <ItemGroup Label="Catalog signing">
+    <!-- Sign catalog files that cover customer-modifiable template content -->
+    <FileExtensionSignInfo Include=".cat" CertificateName="Microsoft400" />
+  </ItemGroup>
+
   <ItemGroup>
     <ItemsToSign Include="$(ArtifactsShippingPackagesDir)\**\*.msi" Condition="'$(PostBuildSign)' != 'true'" />
     <ItemsToSign Include="$(ArtifactsShippingPackagesDir)**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
@@ -32,4 +44,4 @@
     <ItemsToSign Include="$(ArtifactsShippingPackagesDir)\**\*.zip" Condition="'$(PostBuildSign)' != 'true'" />
     <ItemsToSignPostBuild Include="$(ArtifactsShippingPackagesDir)\**\*.zip" Condition="'$(PostBuildSign)' == 'true'" />
   </ItemGroup>
-</Project>   
+</Project>

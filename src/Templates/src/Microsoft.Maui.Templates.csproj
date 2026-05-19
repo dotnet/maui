@@ -121,4 +121,30 @@
   <!-- this target will get replaced by the nuget -->
   <Target Name="LocalizeTemplatesAfterBuild" />
 
+  <!--
+    Generate a catalog (.cat) file for customer-modifiable template content.
+    The .cat is signed by Arcade (FileExtensionSignInfo in eng/Signing.props)
+    while the .js files themselves are marked CertificateName="None" because
+    customers are expected to edit them.
+    Windows-only: makecat.exe ships with the Windows SDK.
+  -->
+  <Target Name="GenerateCatalogFiles"
+          AfterTargets="Build"
+          BeforeTargets="Pack"
+          Condition="'$(OS)' == 'Windows_NT'">
+    <PropertyGroup>
+      <_TemplateContentRoot>$(MSBuildProjectDirectory)\templates\</_TemplateContentRoot>
+      <_CatOutputPath>$(IntermediateOutputPath)maui-template-content.cat</_CatOutputPath>
+    </PropertyGroup>
+
+    <Exec Command="pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)..\..\..\eng\generate-catalog.ps1&quot; -RootPath &quot;$(_TemplateContentRoot)&quot; -CatOutputPath &quot;$(_CatOutputPath)&quot; -Filter &quot;*.js&quot; -ErrorIfMakecatNotFound"
+          IgnoreExitCode="false" />
+
+    <ItemGroup>
+      <Content Include="$(_CatOutputPath)" Pack="true" PackagePath="content" />
+      <FileWrites Include="$(_CatOutputPath)" />
+      <FileWrites Include="$(IntermediateOutputPath)maui-template-content.cdf" />
+    </ItemGroup>
+  </Target>
+
 </Project>
