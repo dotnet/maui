@@ -149,6 +149,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// effect because once the page content loads all the document state gets reset.
 				RunBlazorStartupScripts(view);
 			}
+
+			_webViewHandler?.UpdateBackNavigationState();
+		}
+
+		public override void DoUpdateVisitedHistory(AWebView? view, string? url, bool isReload)
+		{
+			base.DoUpdateVisitedHistory(view, url, isReload);
+			_webViewHandler?.UpdateBackNavigationState();
 		}
 
 		private void RunBlazorStartupScripts(AWebView view)
