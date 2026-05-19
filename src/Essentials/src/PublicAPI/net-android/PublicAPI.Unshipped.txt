@@ -13,6 +13,7 @@ Microsoft.Maui.Media.RecoveredMediaPickerResultKind.PickVideo = 4 -> Microsoft.M
 Microsoft.Maui.Media.RecoveredMediaPickerResultKind.PickVideos = 5 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
 *REMOVED*Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
 static Microsoft.Maui.Media.MediaPicker.ClearRecoveredMediaPickerResultAsync(string! id) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Media.MediaPicker.DiscardPendingMediaPickerOperationAsync() -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Media.MediaPicker.GetRecoveredMediaPickerResultsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Media.RecoveredMediaPickerResult!>!>!
 static Microsoft.Maui.Media.MediaPicker.WaitForRecoveredMediaPickerResultsAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Media.RecoveredMediaPickerResult!>!>!
 *REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!

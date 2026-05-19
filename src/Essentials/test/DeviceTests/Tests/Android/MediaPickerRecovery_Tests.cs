@@ -893,6 +893,115 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task Discard_Recreated_Pending_Capture_Allows_New_Operation()
+		{
+			var firstCapturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+			var secondCapturePath = CreateMissingMediaFilePath(FileExtensions.Mp4);
+
+			var firstCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[firstCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			SimulateProcessRecreation();
+
+			await MediaPicker.DiscardPendingMediaPickerOperationAsync();
+
+			Assert.Null(GetActiveOperation());
+
+			var secondCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CaptureVideo,
+				[secondCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			Assert.NotEqual(firstCapture.Id, secondCapture.Id);
+			Assert.Equal(secondCapture.Id, GetActiveOperation()?.Id);
+		}
+
+		[Theory]
+		[InlineData(RecoveredMediaPickerResultKind.PickPhoto)]
+		[InlineData(RecoveredMediaPickerResultKind.PickPhotos)]
+		public async Task Discard_Recreated_Pending_Pick_Completes_Waiter_Empty(RecoveredMediaPickerResultKind kind)
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			MediaPickerRecoveryManager.BeginOperation(
+				kind,
+				[],
+				PersistedPhotoProcessingOptions.Default);
+
+			SimulateProcessRecreation();
+
+			var waitTask = MediaPicker.WaitForRecoveredMediaPickerResultsAsync(cancellationTokenSource.Token);
+			Assert.Equal(1, GetPendingWaiterCount());
+
+			await MediaPicker.DiscardPendingMediaPickerOperationAsync();
+
+			Assert.Empty(await WaitForCompletion(waitTask));
+			Assert.Null(GetActiveOperation());
+			Assert.Equal(0, GetPendingWaiterCount());
+		}
+
+		[Fact]
+		public async Task Discard_InProcess_Operation_Throws_And_Leaves_Active_Record()
+		{
+			var capturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+
+			var pendingCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[capturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				MediaPicker.DiscardPendingMediaPickerOperationAsync());
+
+			Assert.Equal("A MediaPicker operation is already in progress.", exception.Message);
+
+			var activeCapture = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
+			Assert.Equal(pendingCapture.Id, activeCapture.Id);
+			Assert.Equal(RecoveredMediaPickerResultKind.CapturePhoto, activeCapture.Kind);
+			Assert.Equal(PendingMediaPickerState.Pending, activeCapture.State);
+			Assert.Equal(capturePath, GetSingleActiveOperationFilePath(activeCapture));
+		}
+
+		[Fact]
+		public async Task Discard_Pending_Operation_Is_NoOp_When_No_Active_Operation()
+		{
+			await MediaPicker.DiscardPendingMediaPickerOperationAsync();
+
+			Assert.Null(GetActiveOperation());
+			Assert.Empty(await MediaPicker.GetRecoveredMediaPickerResultsAsync());
+		}
+
+		[Fact]
+		public async Task Discard_Recreated_Accepted_Capture_Does_Not_Publish_Recovered_Result()
+		{
+			var firstCapturePath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var secondCapturePath = CreateMissingMediaFilePath(FileExtensions.Mp4);
+
+			var firstCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[firstCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			MediaPickerRecoveryManager.RecordCaptureCallbackResult(RecoveredMediaPickerResultKind.CapturePhoto, true);
+			SimulateProcessRecreation();
+
+			await MediaPicker.DiscardPendingMediaPickerOperationAsync();
+
+			Assert.Null(GetActiveOperation());
+			Assert.Empty(await MediaPicker.GetRecoveredMediaPickerResultsAsync());
+
+			var secondCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CaptureVideo,
+				[secondCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			Assert.NotEqual(firstCapture.Id, secondCapture.Id);
+			Assert.Equal(secondCapture.Id, GetActiveOperation()?.Id);
+		}
+
+		[Fact]
 		public void Recreated_Accepted_Capture_Blocks_New_Capture_Until_Recovered()
 		{
 			var firstCapturePath = CreateNonEmptyMediaFile(FileExtensions.Jpg);

@@ -108,6 +108,17 @@ namespace Microsoft.Maui.Media
 			=> MediaPickerRecoveryManager.WaitForRecoveredResultsAsync(cancellationToken);
 
 		/// <summary>
+		/// Discards an Android MediaPicker operation that is still pending recovery.
+		/// </summary>
+		/// <returns>A task that represents the asynchronous discard operation.</returns>
+		/// <remarks>
+		/// <para>This Android recovery escape hatch is intended for cases where AndroidX does not replay or reconcile a pending MediaPicker result. Calling this method may discard a result that AndroidX has not replayed or that has not yet been published as recovered.</para>
+		/// <para>This method does not cancel an in-process picker or capture operation.</para>
+		/// </remarks>
+		public static Task DiscardPendingMediaPickerOperationAsync()
+			=> MediaPickerRecoveryManager.DiscardPendingOperationAsync();
+
+		/// <summary>
 		/// Clears an Android MediaPicker result that was recovered after the app process was recreated.
 		/// </summary>
 		/// <param name="id">The identifier of the recovered result to clear.</param>

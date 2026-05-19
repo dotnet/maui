@@ -159,6 +159,42 @@ internal static class MediaPickerRecoveryManager
 		return Task.CompletedTask;
 	}
 
+	internal static async Task DiscardPendingOperationAsync()
+	{
+		IReadOnlyList<RecoveredMediaPickerResult>? waiterResults = null;
+
+		await RecoveryPromotionSemaphore.WaitAsync().ConfigureAwait(false);
+
+		try
+		{
+			lock (Locker)
+			{
+				var operation = MediaPickerRecoveryStore.ReadActiveOperation();
+				if (operation is null)
+				{
+					return;
+				}
+
+				if (IsInProcessOperation(operation))
+				{
+					throw new InvalidOperationException("A MediaPicker operation is already in progress.");
+				}
+
+				ClearActiveOperationUnderLock(operation);
+				waiterResults = ReadPublicRecoveredResultsUnderLock();
+			}
+
+			if (waiterResults is not null)
+			{
+				CompleteRecoveryWaitersForReconciliation(waiterResults);
+			}
+		}
+		finally
+		{
+			RecoveryPromotionSemaphore.Release();
+		}
+	}
+
 	internal static void RecoverOrphanedCaptureResult(RecoveredMediaPickerResultKind kind, bool success)
 		=> _ = RecoverOrphanedCaptureResultAsync(kind, success);
 
