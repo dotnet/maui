@@ -13,7 +13,6 @@ public class Issue16767_Resize : _IssuesUITest
 	public override string Issue => "Resize function in W2DImage class";
 	protected override bool ResetAfterEachTest => true;
 
-#if TEST_FAILS_ON_IOS //Issue Link - https://github.com/dotnet/maui/issues/34755
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
 	public void ImagePaintWithResizeModeFit()
@@ -21,7 +20,6 @@ public class Issue16767_Resize : _IssuesUITest
 		App.WaitForElement("ResizeModeFit");
 		VerifyScreenshot();
 	}
-#endif
 
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
