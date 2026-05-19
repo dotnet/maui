@@ -54,7 +54,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Assert.NotNull(reference);
 				var isAlive = await reference.WaitForCollect();
-				allCollected = !isAlive;
+				if (isAlive)
+					allCollected = false;
 			}
 			return allCollected; // Only true if all references are collected
 		}
