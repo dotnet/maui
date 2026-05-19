@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
@@ -172,6 +173,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			defaultWebView.Source = "http://xamarin.com";
 
 			Assert.NotNull(defaultWebView.Cookies);
+		}
+
+		// A shared WebViewSource must not keep WebViews alive after their handler is disconnected.
+		[Fact]
+		public void SharedHtmlSourceDoesNotPreventWebViewGC()
+		{
+			var sharedSource = new HtmlWebViewSource { Html = "<html/>" };
+			var weakRef = CreateWebViewWithSharedSource(sharedSource);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.False(weakRef.IsAlive, "WebView should be GC-eligible after handler disconnect even when a shared HtmlWebViewSource is still alive.");
+		}
+
+		// A shared UrlWebViewSource must not keep WebViews alive after their handler is disconnected.
+		[Fact]
+		public void SharedUrlSourceDoesNotPreventWebViewGC()
+		{
+			var sharedSource = new UrlWebViewSource { Url = "https://microsoft.com" };
+			var weakRef = CreateWebViewWithSharedSource(sharedSource);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.False(weakRef.IsAlive, "WebView should be GC-eligible after handler disconnect even when a shared UrlWebViewSource is still alive.");
+		}
+
+		// Multiple WebViews sharing one source must all be GC-eligible after their handlers are disconnected.
+		[Fact]
+		public void MultipleWebViewsWithSharedSourceAreAllGCEligible()
+		{
+			var sharedSource = new HtmlWebViewSource { Html = "<html/>" };
+			var weakRefs = CreateMultipleWebViewsWithSharedSource(sharedSource);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			for (int i = 0; i < weakRefs.Length; i++)
+				Assert.False(weakRefs[i].IsAlive, $"WebView[{i}] should be GC-eligible after handler disconnect even when a shared WebViewSource is still alive.");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateWebViewWithSharedSource(WebViewSource source)
+		{
+			var webView = new WebView { Source = source };
+			webView.Handler = new HandlerStub();
+			webView.Handler = null; // simulate page pop / handler disconnect
+			return new WeakReference(webView);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference[] CreateMultipleWebViewsWithSharedSource(WebViewSource source)
+		{
+			var weakRefs = new WeakReference[5];
+			for (int i = 0; i < weakRefs.Length; i++)
+			{
+				var webView = new WebView { Source = source };
+				webView.Handler = new HandlerStub();
+				webView.Handler = null; // simulate page pop
+				weakRefs[i] = new WeakReference(webView);
+			}
+			return weakRefs;
 		}
 	}
 }
