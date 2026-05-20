@@ -187,6 +187,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.Collect();
 
 			Assert.False(weakRef.IsAlive, "WebView should be GC-eligible after handler disconnect even when a shared HtmlWebViewSource is still alive.");
+			GC.KeepAlive(sharedSource); // ensure JIT does not elide sharedSource before the GC cycle
 		}
 
 		// A shared UrlWebViewSource must not keep WebViews alive after their handler is disconnected.
@@ -201,6 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.Collect();
 
 			Assert.False(weakRef.IsAlive, "WebView should be GC-eligible after handler disconnect even when a shared UrlWebViewSource is still alive.");
+			GC.KeepAlive(sharedSource); // ensure JIT does not elide sharedSource before the GC cycle
 		}
 
 		// Multiple WebViews sharing one source must all be GC-eligible after their handlers are disconnected.
@@ -215,7 +217,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.Collect();
 
 			for (int i = 0; i < weakRefs.Length; i++)
+			{
 				Assert.False(weakRefs[i].IsAlive, $"WebView[{i}] should be GC-eligible after handler disconnect even when a shared WebViewSource is still alive.");
+			}
+			GC.KeepAlive(sharedSource); // ensure JIT does not elide sharedSource before the GC cycle
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
