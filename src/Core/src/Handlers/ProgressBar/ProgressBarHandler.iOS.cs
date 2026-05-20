@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -18,34 +19,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.PlatformArrange(rect);
 
-			if (ContainerView is ProgressBarContainerView progressBarContainerView)
-			{
-				progressBarContainerView.LayoutProgressView();
-			}
-		}
-
-		protected override void SetupContainer()
-		{
-			if (PlatformView == null || ContainerView != null)
-			{
-				return;
-			}
-
-			var oldParent = PlatformView.Superview;
-			var oldIndex = oldParent?.IndexOfSubview(PlatformView);
-			PlatformView.RemoveFromSuperview();
-
-			ContainerView ??= new ProgressBarContainerView(PlatformView.Bounds);
-			ContainerView.AddSubview(PlatformView);
-
-			if (oldIndex is { } idx and >= 0)
-			{
-				oldParent?.InsertSubview(ContainerView, idx);
-			}
-			else
-			{
-				oldParent?.AddSubview(ContainerView);
-			}
+			LayoutProgressView();
 		}
 
 		public static void MapProgress(IProgressBarHandler handler, IProgress progress)
@@ -78,6 +52,58 @@ namespace Microsoft.Maui.Handlers
 					subview.SemanticContentAttribute = contentAttribute;
 				}
 			}
+		}
+
+		void LayoutProgressView()
+		{
+			if (PlatformView is null || ContainerView is null)
+			{
+				return;
+			}
+
+			LayoutProgressView(PlatformView, ContainerView.Bounds);
+		}
+
+		static void LayoutProgressView(UIProgressView progressView, CGRect bounds)
+		{
+			progressView.Transform = CGAffineTransform.MakeIdentity();
+
+			var targetWidth = bounds.Width < 0 ? 0 : bounds.Width;
+			var targetHeight = bounds.Height < 0 ? 0 : bounds.Height;
+			var naturalHeight = GetNaturalHeight(progressView, new CGSize(targetWidth, targetHeight));
+
+			if (!IsPositiveFinite(naturalHeight) || !IsPositiveFinite(targetHeight))
+			{
+				progressView.Frame = new CGRect(bounds.X, bounds.Y, targetWidth, 0);
+				return;
+			}
+
+			progressView.Bounds = new CGRect(0, 0, targetWidth, naturalHeight);
+			progressView.Center = new CGPoint(bounds.GetMidX(), bounds.GetMidY());
+			progressView.Transform = CGAffineTransform.MakeScale(1, targetHeight / naturalHeight);
+		}
+
+		static nfloat GetNaturalHeight(UIProgressView progressView, CGSize size)
+		{
+			var naturalHeight = progressView.SizeThatFits(size).Height;
+
+			if (!IsPositiveFinite(naturalHeight))
+			{
+				naturalHeight = progressView.IntrinsicContentSize.Height;
+			}
+
+			if (!IsPositiveFinite(naturalHeight))
+			{
+				naturalHeight = progressView.Bounds.Height;
+			}
+
+			return naturalHeight;
+		}
+
+		static bool IsPositiveFinite(nfloat value)
+		{
+			var doubleValue = (double)value;
+			return doubleValue > 0 && !double.IsNaN(doubleValue) && !double.IsInfinity(doubleValue);
 		}
 
 		static UISemanticContentAttribute GetSemanticContentAttribute(IProgress progress)
