@@ -910,7 +910,7 @@ if ($uitestCategories -eq 'NONE') {
                 $buildFailedNoPasses = ($catPassedCount -eq 0) -and ($logText -match '(?m)^Build FAILED\.\s*$')
                 if ($allOneTimeSetup -or $buildFailedNoPasses) {
                     foreach ($sig in $infraSignals) {
-                        if ($logText -match [regex]::Escape($sig)) {
+                        if ($logText -match $sig) {
                             $infraReason = $sig
                             break
                         }
