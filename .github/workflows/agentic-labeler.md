@@ -43,10 +43,10 @@ network: defaults
 
 safe-outputs:
   add-labels:
-    # Blast-radius cap: the prompt instructs exactly one call to add_labels,
-    # so cap the number of accepted calls at 1. (Each single call may carry
-    # multiple label names in its `labels` array.)
-    max: 1
+    # Blast-radius cap: the prompt instructs exactly one call to add_labels.
+    # `max` limits the number of labels the handler will accept in a single
+    # call, so set it high enough to cover area + platform labels together.
+    max: 10
   # This workflow is labeling-only — never create issues for agent-side
   # status events (noop, missing tool, incomplete run, failure). Those
   # paths default to opening tracker issues, which would contradict the
@@ -55,14 +55,7 @@ safe-outputs:
     report-as-issue: false
   missing-tool:
     create-issue: false
-  report-incomplete:
-    create-issue: false
   report-failure-as-issue: false
-  # Note: `create-issue: false` is the canonical key for `missing-tool` /
-  # `report-incomplete` and IS honored by the compiler (verified: removing
-  # these blocks regresses GH_AW_*_CREATE_ISSUE back to "true" in the lock).
-  # The compiled config.json drops the property, but the env-var generation
-  # for the issue-creation step is correctly suppressed.
 
 tools:
   github:
