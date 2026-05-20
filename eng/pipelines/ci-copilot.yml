@@ -780,7 +780,7 @@ stages:
           # keeps the SDK version pinned to global.json.
           - template: common/provision.yml
             parameters:
-              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows')) }}
+              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipProvisionator: true
               skipJdk: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
@@ -791,6 +791,8 @@ stages:
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
+              ${{ if eq(parameters.Platform, 'catalyst') }}:
+                openSslArgs: ''
 
           # Enable KVM for Android emulator on Linux agents (matches main CI)
           - ${{ if eq(parameters.Platform, 'android') }}:
@@ -917,6 +919,44 @@ stages:
                 echo "=== Final runtimes ==="
                 xcrun simctl list runtimes
               displayName: 'Install iOS 26.4 simulator'
+              continueOnError: true
+
+          # Catalyst (MacCatalyst) runs directly on the Mac host — no device needed.
+          # Mirrors main CI ui-tests-steps.yml: disable Notification Center
+          # (intercepts UI interactions) and macOS text autocorrect.
+          - ${{ if eq(parameters.Platform, 'catalyst') }}:
+            - bash: |
+                chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+                $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+              displayName: 'Disable Notification Center'
+              continueOnError: true
+              timeoutInMinutes: 5
+
+          # Disable macOS text autocorrect for iOS and Catalyst (mirrors main CI).
+          # Autocapitalize/spellcheck can interfere with Appium text entry tests.
+          - ${{ if or(eq(parameters.Platform, 'ios'), eq(parameters.Platform, 'catalyst')) }}:
+            - task: PowerShell@2
+              inputs:
+                targetType: 'inline'
+                script: |
+                  defaults write -g NSAutomaticCapitalizationEnabled -bool false
+                  defaults write -g NSAutomaticTextCompletionEnabled -bool false
+                  defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
+              displayName: 'Disable macOS text autocorrect'
+              continueOnError: true
+
+          # Windows UI tests run on the host desktop. Set screen resolution
+          # to 1920x1080 (AzDO hosted agents default to 1024x768) so
+          # controls are fully visible during Appium interactions.
+          - ${{ if eq(parameters.Platform, 'windows') }}:
+            - pwsh: |
+                $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
+                if (Test-Path $scriptPath) {
+                  & $scriptPath -Width 1920 -Height 1080
+                } else {
+                  Write-Host "##[warning]Set-ScreenResolution.ps1 not found — using default resolution"
+                }
+              displayName: 'Set screen resolution (1920x1080)'
               continueOnError: true
 
           # Install .NET workloads (same as ReviewPR stage) — without this,
@@ -1156,6 +1196,16 @@ stages:
               }
             displayName: 'Run deep UI tests (per-category loop)'
             timeoutInMinutes: 220
+
+          # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
+          - ${{ if eq(parameters.Platform, 'catalyst') }}:
+            - bash: |
+                chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+                $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+              displayName: 'Re-enable Notification Center'
+              condition: succeededOrFailed()
+              continueOnError: true
+              timeoutInMinutes: 5
 
           - task: PublishPipelineArtifact@1
             displayName: 'Publish drop-deep-uitests'
