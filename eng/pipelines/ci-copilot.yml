@@ -1042,16 +1042,18 @@ stages:
                 exit 0
               }
 
-              if ($cats -eq 'ALL') {
+              $isRunAll = ($cats -eq 'ALL')
+              if ($isRunAll) {
                 Write-Host "Run-all mode detected — running without category filter"
-                # For ALL, we run a single invocation without -Category
-                $cats = ''
+                # Single-element list with empty string triggers one iteration
+                # of the loop below without passing -Category to the runner.
+                $catList = @('')
+              } else {
+                # Same per-category loop the in-process STEP 3 does, only
+                # this time on a proper platform-pool agent. Each TRX lands
+                # in its own subdir so the aggregator can split per category.
+                $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
               }
-
-              # Same per-category loop the in-process STEP 3 does, only
-              # this time on a proper platform-pool agent. Each TRX lands
-              # in its own subdir so the aggregator can split per category.
-              $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
               $outputRoot = "$(Build.ArtifactStagingDirectory)/deep-uitests"
               New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 
@@ -1062,11 +1064,12 @@ stages:
 
               $hadFailure = $false
               foreach ($cat in $catList) {
-                $safeCat = $cat -replace '[^A-Za-z0-9_.-]', '_'
+                $safeCat = if ([string]::IsNullOrEmpty($cat)) { 'ALL' } else { $cat -replace '[^A-Za-z0-9_.-]', '_' }
                 $catDir = Join-Path $outputRoot "drop-${platform}_ui_tests-controls-$safeCat"
                 New-Item -ItemType Directory -Force -Path $catDir | Out-Null
+                $displayCat = if ([string]::IsNullOrEmpty($cat)) { '(all tests)' } else { $cat }
                 Write-Host "============================================================"
-                Write-Host " Running category: $cat (platform=$platform)"
+                Write-Host " Running category: $displayCat (platform=$platform)"
                 Write-Host "============================================================"
                 $catLog = Join-Path $catDir "build-output.log"
                 # Diagnostic: dump exact args before invocation so any quoting
@@ -1078,13 +1081,16 @@ stages:
                 Write-Host "DEBUG: BuildAndRunHostApp.ps1 exists: $(Test-Path '.github/scripts/BuildAndRunHostApp.ps1')"
                 try {
                   if ($hasRetryWrapper) {
-                    # Use Invoke-UITestWithRetry for env-error retry + device recovery
-                    $runResult = & $retryScript `
-                        -Platform $platform `
-                        -Category $cat `
-                        -RepoRoot (Get-Location).Path `
-                        -LogFile $catLog `
-                        -DeviceUdid $env:DEVICE_UDID
+                    # Use Invoke-UITestWithRetry for env-error retry + device recovery.
+                    # Only pass -Category when we have a specific category (not run-all).
+                    $retryParams = @{
+                      Platform = $platform
+                      RepoRoot = (Get-Location).Path
+                      LogFile  = $catLog
+                    }
+                    if (-not [string]::IsNullOrEmpty($cat)) { $retryParams.Category = $cat }
+                    if ($env:DEVICE_UDID) { $retryParams.DeviceUdid = $env:DEVICE_UDID }
+                    $runResult = & $retryScript @retryParams
                     $exitCode = if ($runResult) { $runResult.ExitCode } else { -1 }
                     Write-Host "Attempts: $(if ($runResult) { $runResult.Attempts } else { '?' }) · Exit: $exitCode · EnvError: $(if ($runResult) { $runResult.EnvErrorHit } else { 'N/A' })"
 
@@ -1103,9 +1109,11 @@ stages:
                     $argList = @(
                       '-NoProfile',
                       '-File', '.github/scripts/BuildAndRunHostApp.ps1',
-                      '-Platform', $platform,
-                      '-Category', $cat
+                      '-Platform', $platform
                     )
+                    if (-not [string]::IsNullOrEmpty($cat)) {
+                      $argList += @('-Category', $cat)
+                    }
                     if ($env:DEVICE_UDID) {
                       $argList += @('-DeviceUdid', $env:DEVICE_UDID)
                     }
@@ -1210,6 +1218,9 @@ stages:
               buildType: 'current'
               artifactName: 'CopilotLogs'
               targetPath: '$(Pipeline.Workspace)/CopilotLogs'
+            # Continue if ReviewPR crashed before publishing CopilotLogs —
+            # the DEFERRED fallback can still post deep test results alone.
+            continueOnError: true
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download drop-deep-uitests'
