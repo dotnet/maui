@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Graphics;
 using Android.Webkit;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Platform
 {
@@ -19,6 +20,22 @@ namespace Microsoft.Maui.Platform
 		}
 		public override bool ShouldOverrideUrlLoading(WebView? view, IWebResourceRequest? request)
 			=> NavigatingCanceled(request?.Url?.ToString());
+
+		public override WebResourceResponse? ShouldInterceptRequest(WebView? view, IWebResourceRequest? request)
+		{
+			// Block sub-resource requests (iframes, images, scripts) to disallowed domains
+			if (request?.Url is Android.Net.Uri url && _handler.TryGetTarget(out var handler) && handler?.VirtualView is not null)
+			{
+				var urlString = url.ToString();
+				if (!string.IsNullOrEmpty(urlString) && !WebViewDomainAllowlist.IsUrlAllowed(urlString, handler.VirtualView.AllowedDomains))
+				{
+					// Return an empty response to block the request
+					return new WebResourceResponse("text/plain", "UTF-8", null);
+				}
+			}
+
+			return base.ShouldInterceptRequest(view, request);
+		}
 
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{

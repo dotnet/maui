@@ -278,3 +278,4 @@ virtual Microsoft.Maui.Handlers.DatePickerHandler2.CreateDatePickerDialog(int ye
 virtual Microsoft.Maui.Handlers.TimePickerHandler2.CreateTimePickerDialog(int hour, int minute) -> Google.Android.Material.TimePicker.MaterialTimePicker?
 Microsoft.Maui.IAllowedDomainsWebView
 Microsoft.Maui.IAllowedDomainsWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
+override Microsoft.Maui.Platform.MauiWebViewClient.ShouldInterceptRequest(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> Android.Webkit.WebResourceResponse?
