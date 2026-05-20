@@ -1400,7 +1400,7 @@ internal partial class MauiItemsView
 		// ── Lazily build the indicator visuals once ───────────────────────────
 		if (_dropIndicatorHead is null || _dropIndicatorLine is null)
 		{
-			// Circle head containing a "+" label.
+			// Solid filled circle — no icon text, clean bullet-style indicator.
 			_dropIndicatorHead = new Border
 			{
 				Width = IndicatorHeadSize,
@@ -1408,16 +1408,6 @@ internal partial class MauiItemsView
 				CornerRadius = new CornerRadius(IndicatorHeadSize / 2),
 				Background = accentBrush,
 				IsHitTestVisible = false,
-				Child = new TextBlock
-				{
-					Text = "+",
-					FontSize = 10,
-					FontWeight = new Windows.UI.Text.FontWeight { Weight = 700 },
-					Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
-					HorizontalAlignment = HorizontalAlignment.Center,
-					VerticalAlignment = VerticalAlignment.Center,
-					IsHitTestVisible = false,
-				},
 			};
 
 			_dropIndicatorLine = new Rectangle
