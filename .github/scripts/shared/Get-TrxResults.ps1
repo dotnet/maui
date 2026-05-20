@@ -42,7 +42,10 @@ function Get-TrxResults {
             'Failed'           { 'Failed' }
             'NotExecuted'      { 'Skipped' }
             'Inconclusive'     { 'Skipped' }
-            default            { $outcomeAttr }
+            # Map all other outcomes (Aborted, Timeout, Error, Disconnected,
+            # Warning, Pending) to Failed so they appear in failure disclosures
+            # and match the TRX Counters/failed count.
+            default            { 'Failed' }
         }
         $duration = $r.GetAttribute('duration')
 

@@ -392,8 +392,12 @@ try {
             Write-Host ""
             Write-Warn "🔄 Retrying $($failedNames.Count) failed test(s) on Android..."
             
-            # Build a FullyQualifiedName filter for just the failed tests
-            $retryFilter = ($failedNames | ForEach-Object { "FullyQualifiedName~$_" }) -join ' | '
+            # Build a FullyQualifiedName filter for just the failed tests.
+            # Strip parameter signatures (e.g. TestMethod(arg: "val")) because
+            # VSTest filter grammar treats ( ) | & ! as operators. Using the
+            # bare method name with ~ (contains) is safe and sufficient.
+            $safeNames = @($failedNames | ForEach-Object { $_ -replace '\(.*$', '' } | Select-Object -Unique)
+            $retryFilter = ($safeNames | ForEach-Object { "FullyQualifiedName~$_" }) -join ' | '
             $retryTrx = Join-Path $trxResultsDir "retry-$trxBaseName.trx"
             Remove-Item $retryTrx -Force -ErrorAction SilentlyContinue
             
@@ -422,8 +426,57 @@ try {
                     } else {
                         Write-Warn "$retryFailed test(s) still failing after retry (real failures)"
                     }
-                    # Overwrite original TRX with retry results for accurate reporting
-                    Copy-Item $retryTrxPath $trxFilePath -Force
+                    # Merge retry results into the original TRX: replace only the
+                    # retried test entries in the original with their retry outcomes,
+                    # preserving all tests that passed on the first run. This avoids
+                    # the prior bug where Copy-Item overwrote the full TRX with the
+                    # retry-only TRX, losing the first-run passing tests entirely.
+                    try {
+                        [xml]$origXml = Get-Content -Path $trxFilePath -Raw -Encoding UTF8
+                        [xml]$retryXml = Get-Content -Path $retryTrxPath -Raw -Encoding UTF8
+                        $nsUri = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
+                        $nsMgr = New-Object System.Xml.XmlNamespaceManager($origXml.NameTable)
+                        $nsMgr.AddNamespace('t', $nsUri)
+                        $retryNsMgr = New-Object System.Xml.XmlNamespaceManager($retryXml.NameTable)
+                        $retryNsMgr.AddNamespace('t', $nsUri)
+
+                        # Build a lookup of retry results by testName
+                        $retryByName = @{}
+                        foreach ($rr in $retryXml.SelectNodes('//t:UnitTestResult', $retryNsMgr)) {
+                            $retryByName[$rr.GetAttribute('testName')] = $rr
+                        }
+
+                        # Replace matching entries in the original TRX
+                        foreach ($origResult in $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)) {
+                            $tName = $origResult.GetAttribute('testName')
+                            if ($retryByName.ContainsKey($tName)) {
+                                $imported = $origXml.ImportNode($retryByName[$tName], $true)
+                                $origResult.ParentNode.ReplaceChild($imported, $origResult) | Out-Null
+                            }
+                        }
+
+                        # Update counters to reflect merged results
+                        $allResults = $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)
+                        $mergedTotal = $allResults.Count
+                        $mergedPassed = @($allResults | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
+                        $mergedFailed = @($allResults | Where-Object { $_.GetAttribute('outcome') -eq 'Failed' }).Count
+                        $mergedExecuted = $mergedPassed + $mergedFailed
+                        $counters = $origXml.SelectSingleNode('//t:ResultSummary/t:Counters', $nsMgr)
+                        if ($counters) {
+                            $counters.SetAttribute('total', $mergedTotal)
+                            $counters.SetAttribute('executed', $mergedExecuted)
+                            $counters.SetAttribute('passed', $mergedPassed)
+                            $counters.SetAttribute('failed', $mergedFailed)
+                        }
+
+                        $origXml.Save($trxFilePath)
+                        Write-Info "Merged retry results into original TRX ($mergedTotal total, $mergedPassed passed, $mergedFailed failed)"
+                    } catch {
+                        Write-Warn "Failed to merge TRX — falling back to retry-only TRX: $_"
+                        Copy-Item $retryTrxPath $trxFilePath -Force
+                    }
+                    # Remove the retry TRX to prevent double-counting by downstream aggregators
+                    Remove-Item $retryTrxPath -Force -ErrorAction SilentlyContinue
                 }
             }
         }

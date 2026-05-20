@@ -919,6 +919,21 @@ stages:
               displayName: 'Install iOS 26.4 simulator'
               continueOnError: true
 
+          # Set a pipeline variable to track iOS 26.4 availability so the
+          # Stage 3 comment can warn when running with fallback baselines.
+          - ${{ if in(parameters.Platform, 'ios', 'catalyst') }}:
+            - pwsh: |
+                $runtimes = xcrun simctl list runtimes 2>&1
+                if ($runtimes -match 'iOS 26') {
+                  Write-Host "##vso[task.setvariable variable=IOS26Available;isOutput=true]true"
+                  Write-Host "iOS 26.x runtime available"
+                } else {
+                  Write-Host "##vso[task.setvariable variable=IOS26Available;isOutput=true]false"
+                  Write-Host "⚠️ iOS 26.x NOT available — visual tests may fail with baseline mismatch" -ForegroundColor Yellow
+                }
+              displayName: 'Check iOS 26 availability'
+              name: iOSCheck
+
           # Install .NET workloads (same as ReviewPR stage) — without this,
           # dotnet build fails with NETSDK1147 because the ios/android workloads
           # are not present after provision.yml (which only installs the SDK).
@@ -1027,12 +1042,23 @@ stages:
                 exit 0
               }
 
+              if ($cats -eq 'ALL') {
+                Write-Host "Run-all mode detected — running without category filter"
+                # For ALL, we run a single invocation without -Category
+                $cats = ''
+              }
+
               # Same per-category loop the in-process STEP 3 does, only
               # this time on a proper platform-pool agent. Each TRX lands
               # in its own subdir so the aggregator can split per category.
               $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
               $outputRoot = "$(Build.ArtifactStagingDirectory)/deep-uitests"
               New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
+
+              # Dot-source the shared retry wrapper so Stage 2 gets the same
+              # env-error detection, device recovery, and retry logic as Stage 1.
+              $retryScript = ".github/scripts/shared/Invoke-UITestWithRetry.ps1"
+              $hasRetryWrapper = Test-Path $retryScript
 
               $hadFailure = $false
               foreach ($cat in $catList) {
@@ -1051,39 +1077,68 @@ stages:
                 Write-Host "DEBUG: PWD='$(Get-Location)'"
                 Write-Host "DEBUG: BuildAndRunHostApp.ps1 exists: $(Test-Path '.github/scripts/BuildAndRunHostApp.ps1')"
                 try {
-                  # Splat parameters via hashtable to avoid any backtick
-                  # line-continuation quirks. Tee output to the catLog file
-                  # while still streaming to console.
-                  $argList = @(
-                    '-NoProfile',
-                    '-File', '.github/scripts/BuildAndRunHostApp.ps1',
-                    '-Platform', $platform,
-                    '-Category', $cat
-                  )
-                  # Pass pre-booted emulator UDID so Start-Emulator.ps1 doesn't
-                  # try to boot a second instance (causes "multiple emulators" error)
-                  if ($env:DEVICE_UDID) {
-                    $argList += @('-DeviceUdid', $env:DEVICE_UDID)
-                    Write-Host "DEBUG: Passing DEVICE_UDID=$($env:DEVICE_UDID)"
-                  }
-                  Write-Host "DEBUG: invoking pwsh with args: $($argList -join ' | ')"
-                  & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object { Write-Host $_ }
-                  if ($LASTEXITCODE -ne 0) {
-                    Write-Host "Category $cat exited with code $LASTEXITCODE" -ForegroundColor Yellow
-                    $hadFailure = $true
+                  if ($hasRetryWrapper) {
+                    # Use Invoke-UITestWithRetry for env-error retry + device recovery
+                    $runResult = & $retryScript `
+                        -Platform $platform `
+                        -Category $cat `
+                        -RepoRoot (Get-Location).Path `
+                        -LogFile $catLog `
+                        -DeviceUdid $env:DEVICE_UDID
+                    $exitCode = if ($runResult) { $runResult.ExitCode } else { -1 }
+                    Write-Host "Attempts: $(if ($runResult) { $runResult.Attempts } else { '?' }) · Exit: $exitCode · EnvError: $(if ($runResult) { $runResult.EnvErrorHit } else { 'N/A' })"
+
+                    # Copy the specific TRX file from the result into the category dir
+                    if ($runResult -and $runResult.TrxResultFile -and (Test-Path $runResult.TrxResultFile)) {
+                      $dest = Join-Path $catDir (Split-Path -Leaf $runResult.TrxResultFile)
+                      if (-not (Test-Path $dest)) { Copy-Item $runResult.TrxResultFile $dest -ErrorAction SilentlyContinue }
+                    }
+
+                    if ($exitCode -ne 0) {
+                      Write-Host "Category $cat exited with code $exitCode" -ForegroundColor Yellow
+                      $hadFailure = $true
+                    }
+                  } else {
+                    # Fallback: call BuildAndRunHostApp.ps1 directly
+                    $argList = @(
+                      '-NoProfile',
+                      '-File', '.github/scripts/BuildAndRunHostApp.ps1',
+                      '-Platform', $platform,
+                      '-Category', $cat
+                    )
+                    if ($env:DEVICE_UDID) {
+                      $argList += @('-DeviceUdid', $env:DEVICE_UDID)
+                    }
+                    Write-Host "DEBUG: invoking pwsh with args: $($argList -join ' | ')"
+                    & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object { Write-Host $_ }
+                    if ($LASTEXITCODE -ne 0) {
+                      Write-Host "Category $cat exited with code $LASTEXITCODE" -ForegroundColor Yellow
+                      $hadFailure = $true
+                    }
                   }
                 } catch {
-                  Write-Host "BuildAndRunHostApp.ps1 threw: $_" -ForegroundColor Red
+                  Write-Host "Test runner threw: $_" -ForegroundColor Red
                   $hadFailure = $true
                 }
-                # Copy any TRX file that landed in the working dir into the
-                # category drop folder so the aggregator finds it.
-                Get-ChildItem -Path . -Filter "*.trx" -Recurse -ErrorAction SilentlyContinue |
-                  Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-30) } |
-                  ForEach-Object {
-                    $dest = Join-Path $catDir $_.Name
-                    if (-not (Test-Path $dest)) { Copy-Item $_.FullName $dest -ErrorAction SilentlyContinue }
+                # If the retry wrapper didn't produce a TRX (or we used fallback),
+                # scan the TRX results directory for this category's TRX only.
+                # Use filename matching instead of a time-based filter to avoid
+                # picking up TRX files from other categories or missing slow runs.
+                $existingTrx = @(Get-ChildItem -Path $catDir -Filter "*.trx" -ErrorAction SilentlyContinue)
+                if ($existingTrx.Count -eq 0) {
+                  # Look for TRX by category name pattern in common output locations
+                  $trxSearchDirs = @(".", "TestResults", "src/Controls/tests/TestCases.Shared.Tests/TestResults")
+                  foreach ($searchDir in $trxSearchDirs) {
+                    if (Test-Path $searchDir) {
+                      $found = Get-ChildItem -Path $searchDir -Filter "*$safeCat*.trx" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+                      if ($found) {
+                        $dest = Join-Path $catDir $found.Name
+                        if (-not (Test-Path $dest)) { Copy-Item $found.FullName $dest -ErrorAction SilentlyContinue }
+                        break
+                      }
+                    }
                   }
+                }
 
                 # Capture snapshot-diff PNGs that VisualRegressionTester writes
                 # to $BUILD_ARTIFACTSTAGINGDIRECTORY/Controls.TestCases.Shared.Tests/snapshots-diff
@@ -1108,7 +1163,6 @@ stages:
               }
             displayName: 'Run deep UI tests (per-category loop)'
             timeoutInMinutes: 220
-            retryCountOnTaskFailure: 2
 
           - task: PublishPipelineArtifact@1
             displayName: 'Publish drop-deep-uitests'
@@ -1132,7 +1186,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''))
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
       - job: UpdateComment
         displayName: 'Post AI summary with review + deep test results'
@@ -1165,7 +1219,7 @@ stages:
               targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
             # Only attempt download if deep tests stage actually ran (not skipped).
             # This prevents the partiallySucceeded noise when deep tests were skipped.
-            condition: and(succeeded(), eq(variables.deepTestsRan, 'True'))
+            condition: and(succeeded(), eq(lower(variables.deepTestsRan), 'true'))
             continueOnError: true
 
           - pwsh: |
@@ -1177,8 +1231,17 @@ stages:
               $isDeferred = ($commentId -eq 'DEFERRED')
 
               if ([string]::IsNullOrWhiteSpace($commentId)) {
-                Write-Host "No AI summary comment ID — nothing to do"
-                exit 0
+                # Reviewer crashed before posting the initial comment. If deep
+                # tests produced results, fall back to DEFERRED mode to post
+                # a degraded comment with test results only.
+                if (Test-Path $artDir) {
+                  Write-Host "No AI summary comment ID but deep test artifacts exist — falling back to DEFERRED mode"
+                  $commentId = 'DEFERRED'
+                  $isDeferred = $true
+                } else {
+                  Write-Host "No AI summary comment ID and no deep test artifacts — nothing to do"
+                  exit 0
+                }
               }
 
               # Aggregator returns @{ category -> @{ Total/Passed/Failed/.../Results } }

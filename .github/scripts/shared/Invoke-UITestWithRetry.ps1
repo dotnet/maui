@@ -80,20 +80,29 @@ if (-not $RepoRoot) {
     if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
 }
 
-# Same env-error patterns the Gate uses in Get-TestResultFromOutput. Kept
-# in sync so STEP 3 and Gate retry on identical conditions.
-$envErrorPatterns = @(
-    'error ADB0010.*InstallFailedException',
-    'Failure calling service package',
-    'Broken pipe',
-    'XHarness exit code:\s*83',
-    'Application test run crashed',
-    'SIGABRT.*load_aot_module',
-    'AppiumServerHasNotBeenStartedLocally',
-    'no such element.*could not be located',
-    'no devices/emulators found',
-    'device offline'
-)
+# Load shared env-error patterns (single source of truth).
+$sharedPatternsScript = Join-Path $PSScriptRoot "Get-EnvErrorPatterns.ps1"
+if (Test-Path $sharedPatternsScript) {
+    . $sharedPatternsScript
+    $envErrorPatterns = Get-EnvErrorPatterns
+} else {
+    Write-Host "⚠️ Get-EnvErrorPatterns.ps1 not found — using inline fallback" -ForegroundColor Yellow
+    $envErrorPatterns = @(
+        'error ADB0010.*InstallFailedException',
+        'Failure calling service package',
+        'Broken pipe',
+        'XHarness exit code:\s*83',
+        'Application test run crashed',
+        'SIGABRT.*load_aot_module',
+        'AppiumServerHasNotBeenStartedLocally',
+        'no such element.*could not be located',
+        'no devices/emulators found',
+        'device offline',
+        'Could not connect to device',
+        'Failed to launch the application',
+        'cmd: Failure'
+    )
+}
 
 # ── Step 1: pre-boot the device once (same as Gate's Invoke-TestRun) ──────
 $bootedUdid = $DeviceUdid
