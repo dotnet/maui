@@ -460,7 +460,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					// Mutate() clones the drawable's ConstantState into a private copy so that
 					// SetTint() calls in Draw() don't bleed into the shared drawable cache and
-					// corrupt the tint across navigation cycles
+					// corrupt the tint across navigation cycles.
 					customIcon = customIcon.Mutate();
 
 					if (fid == null)
@@ -470,7 +470,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 					{
 						fid.TintColor = tintColor;
+						var previousIcon = fid.IconBitmap;
 						fid.IconBitmap = customIcon;
+						// Dispose the previous mutated drawable to release its native handle.
+						// The new customIcon is a fresh Mutate() clone so previousIcon != customIcon.
+						if (!ReferenceEquals(previousIcon, customIcon))
+						{
+							previousIcon?.Dispose();
+						}
+
 						fid.Text = text;
 					}
 
