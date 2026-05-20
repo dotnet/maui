@@ -27,14 +27,51 @@ on:
         default: 'main'
 
 jobs:
-  trigger-review:
-    # For issue_comment: only run on PR comments that are exactly '/review' or start with '/review '
-    # For workflow_dispatch: always run
+  # Lightweight pre-flight gate. Runs the cheap comment-match + permission check
+  # so unauthorized users do NOT cause the heavier `trigger-review` runner to spin
+  # up. Both checks exit 0 and surface the result via an output, keeping the
+  # workflow run history clean (no noisy failed runs from drive-by `/review`
+  # comments by non-collaborators).
+  authorize:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.issue.pull_request &&
        (github.event.comment.body == '/review' ||
         startsWith(github.event.comment.body, '/review ')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      proceed: ${{ steps.gate.outputs.proceed }}
+    steps:
+      - name: Check actor permission
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "workflow_dispatch — skipping collaborator check"
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>/dev/null || echo "none")
+          echo "User ${ACTOR} has permission: ${PERMISSION}"
+          # write, maintain, and admin can all trigger /review
+          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
+            echo "::notice::User ${ACTOR} does not have sufficient access (${PERMISSION}). Only write/maintain/admin can trigger /review. Skipping."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "proceed=true" >> "$GITHUB_OUTPUT"
+
+  trigger-review:
+    needs: authorize
+    if: needs.authorize.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
@@ -44,20 +81,10 @@ jobs:
       id-token: write
       contents: read
       pull-requests: read
+    env:
+      REPO: ${{ github.repository }}
+      ACTOR: ${{ github.actor }}
     steps:
-      - name: Check actor permission
-        if: github.event_name == 'issue_comment'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
-          echo "User ${{ github.actor }} has permission: ${PERMISSION}"
-          # write, maintain, and admin can all trigger /review
-          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
-            echo "::error::User ${{ github.actor }} does not have sufficient access. Only write/maintain/admin can trigger /review."
-            exit 1
-          fi
-
       - name: Parse parameters
         id: params
         env:
@@ -145,7 +172,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
+          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
           PR_STATE=$(echo "${PR_JSON}" | jq -r '.state')
           if [ "${PR_STATE}" != "open" ]; then
             echo "::error::PR #${PR_NUMBER} is not open (state: ${PR_STATE})"
@@ -175,7 +202,7 @@ jobs:
           echo "(File-based detection is handled by the agentic-labeler.md workflow on PR open/reopen.)"
 
           # Check PR labels applied by agentic-labeler.md or manually
-          LABELS=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
+          LABELS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
           LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
           echo "PR labels: ${LABELS_LOWER:-<none>}"
 
@@ -198,9 +225,19 @@ jobs:
           echo "Inferred platform: ${PLATFORM}"
           echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
 
-      - name: Get OIDC Token
-        id: oidc
+      # OIDC -> AzDO token exchange -> pipeline trigger combined into a single
+      # step. Keeping the tokens in shell-local variables avoids persisting them
+      # through `$GITHUB_OUTPUT` between steps (where they are masked but still
+      # serialized to disk on the runner).
+      - name: Trigger maui-copilot pipeline
+        env:
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
+          PLATFORM: ${{ steps.infer.outputs.platform }}
+          AZDO_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
+          AZDO_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
         run: |
+          # 1. Get GitHub OIDC token
           OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
             | jq -r '.value')
@@ -209,20 +246,17 @@ jobs:
             exit 1
           fi
           echo "::add-mask::${OIDC_TOKEN}"
-          echo "oidc_token=${OIDC_TOKEN}" >> "$GITHUB_OUTPUT"
 
-      - name: Exchange for AzDO Token
-        id: token
-        env:
-          OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
-        run: |
+          # 2. Exchange OIDC token for AzDO access token
           AZURE_RESPONSE=$(curl -s -X POST \
-            "https://login.microsoftonline.com/${{ secrets.AZDO_TRIGGER_TENANT_ID }}/oauth2/v2.0/token" \
+            "https://login.microsoftonline.com/${AZDO_TENANT_ID}/oauth2/v2.0/token" \
             -d "grant_type=client_credentials" \
-            -d "client_id=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" \
+            -d "client_id=${AZDO_CLIENT_ID}" \
             -d "client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer" \
             -d "client_assertion=${OIDC_TOKEN}" \
             -d "scope=499b84ac-1321-427f-aa17-267ca6975798/.default")
+          # Drop OIDC token from memory once we have the AzDO token
+          unset OIDC_TOKEN
 
           AZDO_TOKEN=$(echo "$AZURE_RESPONSE" | jq -r '.access_token')
           if [ -z "$AZDO_TOKEN" ] || [ "$AZDO_TOKEN" = "null" ]; then
@@ -232,19 +266,13 @@ jobs:
             exit 1
           fi
           echo "::add-mask::${AZDO_TOKEN}"
-          echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
+          unset AZURE_RESPONSE
 
-      - name: Trigger maui-copilot pipeline
-        env:
-          AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
-          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
-          PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
-          PLATFORM: ${{ steps.infer.outputs.platform }}
-        run: |
+          # 3. Trigger the pipeline
           echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
 
-          # Platform is always resolved at this point (inferred or explicit)
-          # Build JSON payload safely with jq to avoid injection
+          # Platform is always resolved at this point (inferred or explicit).
+          # Build JSON payload safely with jq to avoid injection.
           PAYLOAD=$(jq -n \
             --arg pr "${PR_NUMBER}" \
             --arg plat "${PLATFORM}" \
@@ -259,6 +287,7 @@ jobs:
             -H "Authorization: Bearer ${AZDO_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "${PAYLOAD}")
+          unset AZDO_TOKEN
 
           HTTP_CODE=$(echo "${RESPONSE}" | tail -1)
           RESPONSE_BODY=$(echo "${RESPONSE}" | head -n -1)
