@@ -1,3 +1,7 @@
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue35492 : _IssuesUITest
@@ -8,10 +12,16 @@ public class Issue35492 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Border)]
-	public void DashboardShowsSingleRunLeakActionAndSandboxText()
+	public void SharedDashArray_PushedPagesAreCollectedAfterForceGC()
 	{
-		App.WaitForElement("RunSharedResourceLeakButton");
-		App.Tap("RunSharedResourceLeakButton");
-		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+		App.WaitForElement("PushPageButton");
+		App.Tap("PushPageButton");
+		App.WaitForElement("TestCollectionView");
+		App.Back();
+		App.WaitForElement("PushPageButton");
+		App.Tap("ForceGCButton");
+
+		var summaryText = App.FindElement("SummaryLabel").GetText();
+		Assert.That(summaryText, Is.EqualTo($"Alive count: 0/1"), "Expected all pushed pages to be collectable after forcing GC.");
 	}
 }
