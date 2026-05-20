@@ -313,10 +313,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				UpdateStrokeDashArraySubscription();
-
 				_strokeDashPattern = StrokeDashArray?.ToFloatArray();
-
 				return _strokeDashPattern;
 			}
 		}
