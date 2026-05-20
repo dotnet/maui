@@ -222,12 +222,39 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		// Don't remove tabs during modal navigation — tabs should remain visible so they
-		// restore properly when the modal is dismissed.
-		// For non-modal navigation (e.g. NavigationPage.PushAsync), tabs must be removed so that
-		// the newly pushed page can use the full available height.
-		if (Element?.Navigation?.ModalStack?.Count > 0)
+		// Element.Navigation.NavigationStack is resolved through the
+		// NavigationProxy, which already walks the parent chain to find
+		// the nearest NavigationPage ancestor.
+		var navStack = Element?.Navigation?.NavigationStack;
+		if (navStack is not null && navStack.Count > 0)
+		{
+			// If the TabbedPage is no longer the top page in the nav stack,
+			// a page was pushed over it — remove tabs.
+			if (navStack[navStack.Count - 1] != Element)
+			{
+				RemoveTabs();
+				return;
+			}
+
+			// TabbedPage is still the top page in the nav stack, so this
+			// Disappearing was triggered by a modal overlay or app lifecycle.
+			// Keep tabs visible.
 			return;
+		}
+
+		// No NavigationPage ancestor — original behavior applies.
+		// This branch covers two cases (see PR #32878):
+		// 1. A modal page is pushed over a root TabbedPage — ModalStack contains
+		//    the modal, so we keep tabs alive and restore them on modal dismiss.
+		// 2. The TabbedPage itself was pushed as a modal — ModalStack includes the
+		//    TabbedPage, so tabs also stay. Disappearing only fires when something
+		//    is later shown over it, and the guard still holds.
+		// Do NOT simplify this check; removing it re-introduces the regression
+		// where tabs are destroyed on modal overlay.
+		if (Element?.Navigation?.ModalStack?.Count > 0)
+		{
+			return;
+		}
 
 		RemoveTabs();
 	}
