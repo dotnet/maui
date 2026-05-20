@@ -661,7 +661,12 @@ if (Test-Path $detectScript) {
         # in ci-copilot.yml (currently `RunReview`) by AzDO.
         # Local invocations (no $env:TF_BUILD) won't have an AzDO variable
         # store but the marker is harmless — gets ignored.
-        $catsForOutput = if ([string]::IsNullOrWhiteSpace($uitestCategories)) { 'NONE' } else { $uitestCategories }
+        # Emit detected categories. Blank = "run all", a specific string = categories,
+        # NONE = no UI tests needed. Preserve blank as 'ALL' (not NONE) so Stage 2
+        # can distinguish "run everything" from "run nothing".
+        $catsForOutput = if ($uitestCategories -eq 'NONE') { 'NONE' }
+                         elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) { 'ALL' }
+                         else { $uitestCategories }
         Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$catsForOutput"
         Write-Host "##vso[task.setvariable variable=detectedPlatform;isOutput=true]$Platform"
 
@@ -1815,6 +1820,16 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
                 if ($line.ToString() -match 'UITestCategoryList;isOutput=true\](.*)$') {
                     $refreshedCategories = $Matches[1]
                 }
+            }
+
+            # Re-emit the AzDO output variable so Stage 2 (RunDeepUITests)
+            # picks up the AI-refreshed category list, not the pre-AI one.
+            if ($refreshedCategories -ne $uitestCategories) {
+                $refreshedForOutput = if ($refreshedCategories -eq 'NONE') { 'NONE' }
+                                      elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) { 'ALL' }
+                                      else { $refreshedCategories }
+                Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"
+                Write-Host "  🔁 Updated detectedCategories output: $refreshedForOutput" -ForegroundColor Green
             }
 
             $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"

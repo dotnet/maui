@@ -222,7 +222,10 @@ function Test-IsTrivialLine {
 
 function Test-IsBugFixLabel {
     param([string]$Label)
-    return $Label -match '^(i/regression|t/bug|p/0|p/1)$'
+    # Only definitive bug-fix labels. p/0 and p/1 are priority labels that also
+    # apply to enhancements — they're used as secondary signal in Get-PRMetadataIfBugFix
+    # (AND-ed with linked-issue bug labels) but not as standalone classifiers.
+    return $Label -match '^(i/regression|t/bug)$'
 }
 
 function Get-LinkedIssueNumbers {
@@ -233,7 +236,7 @@ function Get-LinkedIssueNumbers {
     $set = New-Object 'System.Collections.Generic.HashSet[int]'
 
     $patterns = @(
-        '(?i)(?:Fixes|Closes|Resolves)\s+(?:https://github\.com/dotnet/maui/issues/)?#?(\d+)',
+        '(?i)(?:Fix(?:es|ed)?|Close[sd]?|Resolve[sd]?)\s+(?:https://github\.com/dotnet/maui/issues/)?#?(\d+)',
         '(?m)^\s*-\s+#(\d+)\s*$',
         '(?m)^\s*-\s+https://github\.com/dotnet/maui/issues/(\d+)\s*$'
     )
@@ -268,6 +271,11 @@ function Get-PRMetadataIfBugFix {
     $title = if ($data.title) { $data.title } else { '(unknown)' }
     $linkedIssues = Get-LinkedIssueNumbers $data.body
 
+    # Secondary signal: high-priority labels (p/0, p/1) combined with
+    # linked-issue bug labels suggest a bug-fix even when the PR itself
+    # lacks t/bug or i/regression.
+    $hasPriorityLabel = @($labelNames | Where-Object { $_ -match '^(p/0|p/1)$' }).Count -gt 0
+
     # Fall back to linked-issue labels (the PR itself may not be labeled even though
     # it fixes a bug — common for fork PRs where labels weren't applied at merge).
     if ($matched.Count -eq 0 -and $linkedIssues.Count -gt 0) {
@@ -280,6 +288,12 @@ function Get-PRMetadataIfBugFix {
                 }
             }
         }
+    }
+
+    # p/0 and p/1 only count as bug-fix signals when combined with a
+    # definitive bug label from the PR or its linked issues.
+    if ($matched.Count -gt 0 -and $hasPriorityLabel) {
+        $matched += @($labelNames | Where-Object { $_ -match '^(p/0|p/1)$' })
     }
 
     if ($matched.Count -eq 0) { return $null }
