@@ -394,30 +394,7 @@ namespace Microsoft.Maui.Platform
 			//   Always : UIKit manages ALL edges in AdjustedContentInset → use SACI for all edges
 			//     to avoid double-applying horizontal safe area that UIKit already handles.
 			var aci = SystemAdjustedContentInset;
-
-			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never
-				|| aci == UIEdgeInsets.Zero)
-			{
-				// MAUI-managed, or UIKit hasn't applied ACI yet: use SafeAreaInsets for all edges.
-				_safeArea = GetInset().ToSafeAreaInsets();
-			}
-			else if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Always)
-			{
-				// UIKit manages ALL edges (left/right/top/bottom) in ACI.
-				// Use SACI to stay in sync with UIKit's content-offset model.
-				_safeArea = aci.ToSafeAreaInsets();
-			}
-			else
-			{
-				// Automatic (or scrollableAxes): UIKit manages T/B but NOT L/R for vertical-only scroll.
-				// Use GetInset() for horizontal edges (landscape notch fix) and SACI for vertical edges.
-				var inset = GetInset();
-				_safeArea = new SafeAreaPadding(
-					(double)inset.Left,
-					(double)inset.Right,
-					(double)aci.Top,
-					(double)aci.Bottom);
-			}
+			_safeArea = ComputeSafeArea(aci, ContentInsetAdjustmentBehavior, GetInset());
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -458,6 +435,40 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
+		/// Chooses the correct safe-area source for each edge based on who owns it.
+		/// </summary>
+		/// <param name="aci">SystemAdjustedContentInset (AdjustedContentInset minus developer ContentInset).</param>
+		/// <param name="ciab">The scroll view's ContentInsetAdjustmentBehavior.</param>
+		/// <param name="deviceInset">Raw SafeAreaInsets from GetInset() — the actual device notch/home-indicator insets.</param>
+		/// <returns>The safe-area padding to apply to the MAUI layout.</returns>
+		internal static SafeAreaPadding ComputeSafeArea(
+			UIEdgeInsets aci,
+			UIScrollViewContentInsetAdjustmentBehavior ciab,
+			UIEdgeInsets deviceInset)
+		{
+			if (ciab == UIScrollViewContentInsetAdjustmentBehavior.Never
+				|| aci == UIEdgeInsets.Zero)
+			{
+				// MAUI-managed, or UIKit hasn't applied ACI yet: use SafeAreaInsets for all edges.
+				return deviceInset.ToSafeAreaInsets();
+			}
+
+			if (ciab == UIScrollViewContentInsetAdjustmentBehavior.Always)
+			{
+				// UIKit manages ALL edges in ACI — use SACI to stay in sync with UIKit's model.
+				return aci.ToSafeAreaInsets();
+			}
+
+			// Default/fallback (Automatic): UIKit manages T/B but NOT L/R for vertical-only scroll.
+			// Use GetInset() for horizontal edges (landscape notch fix) and SACI for vertical edges.
+			return new SafeAreaPadding(
+				Left: (double)deviceInset.Left,
+				Right: (double)deviceInset.Right,
+				Top: (double)aci.Top,
+				Bottom: (double)aci.Bottom);
+		}
+
+		/// <summary>
 		/// Arranges the cross-platform content within the specified bounds, accounting for safe area adjustments.
 		/// This method applies safe area insets to the bounds before arranging the content.
 		/// </summary>
@@ -480,11 +491,17 @@ namespace Microsoft.Maui.Platform
 			if (SystemAdjustedContentInset != UIEdgeInsets.Zero
 				&& ContentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
-				// UIKit manages contentOffset.y automatically for both Automatic and Always CIAB modes
-				// (when ACI is non-zero). Passing bounds.Y would double-count the top inset.
-				// Keep y=0 so UIKit's adjustment works correctly; use bounds.X for horizontal offset
-				// (= _safeArea.Left = SafeAreaInsets.Left) to push content past the landscape notch.
-				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(bounds.X, 0, bounds.Width, bounds.Height)) ?? Size.Zero;
+				// UIKit manages contentOffset.y automatically for both Automatic and Always CIAB modes.
+				// Keep y=0 so UIKit's vertical adjustment works correctly.
+				//
+				// For CIAB.Always: UIKit manages ALL edges including horizontal — pass x=0 to avoid
+				// double-applying the horizontal inset that UIKit already handles via AdjustedContentInset.
+				// For CIAB.Automatic: UIKit does NOT add L/R to ACI for vertical-only scroll — pass
+				// bounds.X (= _safeArea.Left = SafeAreaInsets.Left) to push content past the landscape notch.
+				var arrangeX = ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Always
+					? 0
+					: bounds.X;
+				contentSize = CrossPlatformLayout?.CrossPlatformArrange(new Rect(arrangeX, 0, bounds.Width, bounds.Height)) ?? Size.Zero;
 
 				width = contentSize.Width;
 				height = contentSize.Height;
