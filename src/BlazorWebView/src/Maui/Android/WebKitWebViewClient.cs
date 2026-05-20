@@ -156,6 +156,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public override void DoUpdateVisitedHistory(AWebView? view, string? url, bool isReload)
 		{
 			base.DoUpdateVisitedHistory(view, url, isReload);
+			// Covers Blazor client-side (SPA) navigations that use pushState/replaceState.
+			// DoUpdateVisitedHistory fires for pushState on all supported Android API levels (24+).
+			// replaceState does not add a new history entry so CanGoBack() is unaffected by it.
 			_webViewHandler?.UpdateBackNavigationState();
 		}
 

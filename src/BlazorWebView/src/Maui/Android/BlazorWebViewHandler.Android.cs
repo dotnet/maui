@@ -62,12 +62,41 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return blazorAndroidWebView;
 		}
 
+		/// <summary>
+		/// Connects the handler to the Android <see cref="AWebView"/> and registers a
+		/// <see cref="OnBackPressedCallback"/> so the WebView can consume back presses
+		/// before the containing page is popped or the back-to-home animation plays.
+		/// </summary>
+		/// <param name="platformView">The native Android <see cref="AWebView"/> instance associated with this handler.</param>
+		/// <remarks>
+		/// Uses AndroidX <see cref="OnBackPressedCallback"/> with <c>Enabled</c> as the sole
+		/// authority for whether this callback intercepts back presses. When <c>Enabled = false</c>
+		/// (WebView has no back history), the system predictive back-to-home animation plays naturally.
+		/// <c>Enabled</c> is updated after every navigation via <see cref="UpdateBackNavigationState"/>.
+		/// <para>
+		/// The callback is lifecycle-scoped to the <see cref="AndroidX.Activity.ComponentActivity"/>
+		/// so it is automatically removed when the activity is destroyed.
+		/// </para>
+		/// <para>
+		/// <b>Multiple instances:</b> The <see cref="AndroidX.Activity.OnBackPressedDispatcher"/>
+		/// is LIFO; the last-added callback fires first. If that WebView can't handle the back press
+		/// (e.g. it lost focus or was detached), <see cref="BlazorWebViewBackCallback.HandleOnBackPressed"/>
+		/// disables itself so the next callback in the stack gets a chance.
+		/// </para>
+		/// <para>
+		/// <b>Note:</b> This requires <see cref="Microsoft.Maui.ApplicationModel.Platform.CurrentActivity"/>
+		/// to be a <see cref="AndroidX.Activity.ComponentActivity"/> (which all MAUI apps use via
+		/// <c>MauiAppCompatActivity</c>). Custom activities not extending <c>ComponentActivity</c>
+		/// will not register this callback.
+		/// </para>
+		/// </remarks>
 		protected override void ConnectHandler(AWebView platformView)
 		{
 			base.ConnectHandler(platformView);
 
 			// Use OnBackPressedCallback (AndroidX) so that when the WebView has no back history
 			// (Enabled = false), the system predictive back-to-home animation plays naturally.
+			// Note: requires ComponentActivity — all MAUI apps satisfy this via MauiAppCompatActivity.
 			if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is ComponentActivity activity)
 			{
 				var weakPlatformView = new WeakReference<AWebView>(platformView);
@@ -81,6 +110,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		protected override void DisconnectHandler(AWebView platformView)
 		{
 			_backPressedCallback?.Remove();
+			_backPressedCallback?.Dispose();
 			_backPressedCallback = null;
 
 			platformView.StopLoading();
@@ -232,7 +262,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					webView.CanGoBack())
 				{
 					webView.GoBack();
+					return;
 				}
+
+				// Conditions not met (detached, unfocused, or no history) — disable so the next
+				// callback in the LIFO dispatcher stack can handle this back press. This is important
+				// for multiple BlazorWebView instances: the last-added callback fires first; if it
+				// can't handle the press it must yield rather than silently consuming the event.
+				// UpdateBackNavigationState() will re-enable this callback on the next navigation.
+				Enabled = false;
 			}
 		}
 	}
