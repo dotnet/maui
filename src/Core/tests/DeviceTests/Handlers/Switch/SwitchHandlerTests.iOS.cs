@@ -251,55 +251,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(UISwitchStyle.Automatic, style);
 		}
 
-		[Fact(DisplayName = "Thumb Color Clears Correctly")]
-		public async Task ThumbColorClearsCorrectly()
-		{
-			var switchStub = new SwitchStub
-			{
-				ThumbColor = Colors.Red
-			};
-
-			var result = await GetValueAsync(switchStub, handler =>
-			{
-				Assert.NotNull(GetNativeSwitch(handler).ThumbTintColor);
-				switchStub.ThumbColor = null;
-				handler.UpdateValue(nameof(ISwitch.ThumbColor));
-				var nativeSwitch = GetNativeSwitch(handler);
-				return (nativeSwitch.ThumbTintColor, nativeSwitch.PreferredStyle);
-			});
-
-			Assert.Null(result.ThumbTintColor);
-
-			if (OperatingSystem.IsIOSVersionAtLeast(26))
-			{
-				Assert.Equal(UISwitchStyle.Automatic, result.PreferredStyle);
-			}
-		}
-
-		[Fact(DisplayName = "Thumb Color ClearValue Clears Correctly")]
-		public async Task ThumbColorClearValueClearsCorrectly()
-		{
-			var switchView = new ControlsSwitch
-			{
-				ThumbColor = Colors.Red
-			};
-
-			var result = await GetValueAsync(switchView, handler =>
-			{
-				Assert.NotNull(GetNativeSwitch(handler).ThumbTintColor);
-				switchView.ClearValue(ControlsSwitch.ThumbColorProperty);
-				var nativeSwitch = GetNativeSwitch(handler);
-				return (nativeSwitch.ThumbTintColor, nativeSwitch.PreferredStyle);
-			});
-
-			Assert.Null(result.ThumbTintColor);
-
-			if (OperatingSystem.IsIOSVersionAtLeast(26))
-			{
-				Assert.Equal(UISwitchStyle.Automatic, result.PreferredStyle);
-			}
-		}
-
 		[Fact(DisplayName = "Custom Colors Update After App Theme Change On iOS 26")]
 		public async Task CustomColorsUpdateAfterAppThemeChangeOniOS26()
 		{

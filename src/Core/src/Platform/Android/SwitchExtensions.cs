@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Platform
 		// Thread safety (no shared mutable state)
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultTrackTintCache = new();
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
-		static readonly ConditionalWeakTable<ASwitch, CachedColorStateList> _defaultAppCompatThumbTintCache = new();
 
 		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view)
 		{
@@ -89,12 +88,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateThumbColor(this ASwitch aSwitch, ISwitch view)
 		{
-			if (!_defaultAppCompatThumbTintCache.TryGetValue(aSwitch, out var defaultThumbTintList))
-			{
-				defaultThumbTintList = new CachedColorStateList(aSwitch.ThumbTintList);
-				_defaultAppCompatThumbTintCache.Add(aSwitch, defaultThumbTintList);
-			}
-
 			var thumbColor = view.ThumbColor;
 
 			if (thumbColor is not null)
@@ -103,20 +96,6 @@ namespace Microsoft.Maui.Platform
 				// SetColorFilter flattens the drawable and removes the shadow effect
 				aSwitch.ThumbTintList = ColorStateListExtensions.CreateDefault(thumbColor.ToPlatform());
 			}
-			else
-			{
-				aSwitch.ThumbTintList = defaultThumbTintList.Value;
-			}
-		}
-
-		sealed class CachedColorStateList
-		{
-			public CachedColorStateList(ColorStateList? value)
-			{
-				Value = value;
-			}
-
-			public ColorStateList? Value { get; }
 		}
 
 		public static Drawable? GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>

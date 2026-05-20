@@ -85,7 +85,11 @@ namespace Microsoft.Maui.Platform
 
 		internal static void ApplyThumbColor(this UISwitch uiSwitch, ISwitch view)
 		{
-			uiSwitch.ThumbTintColor = view.ThumbColor?.ToPlatform();
+			var thumbColor = view.ThumbColor;
+			if (thumbColor is not null)
+			{
+				uiSwitch.ThumbTintColor = thumbColor.ToPlatform();
+			}
 		}
 
 		static bool UpdatePreferredStyle(this UISwitch uiSwitch, ISwitch view)
