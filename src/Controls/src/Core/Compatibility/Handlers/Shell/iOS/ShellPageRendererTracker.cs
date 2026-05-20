@@ -1335,11 +1335,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
 					tvc.Disconnect();
 
-				if (_keyboardWillHideObserver is not null)
-				{
-					NSNotificationCenter.DefaultCenter.RemoveObserver(_keyboardWillHideObserver);
-					_keyboardWillHideObserver = null;
-				}
+				_keyboardWillHideObserver?.Dispose();
+				_keyboardWillHideObserver = null;
 			}
 
 			_context = null;
