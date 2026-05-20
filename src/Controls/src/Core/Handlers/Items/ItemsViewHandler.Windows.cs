@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// covers the grouped case. For a CarouselView at a non-zero Position, scrolling to
 			// the first item would override the intended initial position and trigger cascading
 			// PositionChanged / CurrentItemChanged events (https://github.com/dotnet/maui/issues/29529).
-			if (isReset && (VirtualView is not CarouselView carouselView || carouselView.Position != 0))
+			if (isReset && (ItemsView is not CarouselView carouselView || carouselView.Position != 0))
 			{
 				return;
 			}
