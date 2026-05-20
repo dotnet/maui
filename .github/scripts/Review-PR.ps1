@@ -874,17 +874,24 @@ if ($uitestCategories -eq 'NONE') {
             #
             # If $envErrHit was set above, use that — the retry loop already
             # detected an env error and exhausted retries.
-            $infraSignals = @(
-                'InstallFailedException',
-                'Failure calling service package',
-                'ADB0010',
-                'Broken pipe',
-                'no devices/emulators found',
-                'device offline',
-                'Could not connect to device',
-                'Failed to launch the application',
-                'cmd: Failure'
-            )
+            # Load shared env-error patterns (single source of truth).
+            $sharedPatternsScript = Join-Path $PSScriptRoot "shared/Get-EnvErrorPatterns.ps1"
+            if (Test-Path $sharedPatternsScript) {
+                . $sharedPatternsScript
+                $infraSignals = Get-EnvErrorPatterns
+            } else {
+                $infraSignals = @(
+                    'InstallFailedException',
+                    'Failure calling service package',
+                    'ADB0010',
+                    'Broken pipe',
+                    'no devices/emulators found',
+                    'device offline',
+                    'Could not connect to device',
+                    'Failed to launch the application',
+                    'cmd: Failure'
+                )
+            }
             $infraReason = $envErrHit
             if (-not $infraReason -and $catFailedTests.Count -gt 0) {
                 # Two equally-strong infra-failure indicators:
