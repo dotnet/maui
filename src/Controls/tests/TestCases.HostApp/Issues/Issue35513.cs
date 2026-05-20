@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 35513, "Button TextColor does not restore to platform default when reset to null after dynamic update", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 35513, "Button TextColor does not restore to platform default when reset to null after dynamic update", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue35513 : ContentPage
 {
 	Button _sampleButton;
