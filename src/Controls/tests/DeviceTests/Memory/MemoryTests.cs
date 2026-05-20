@@ -354,9 +354,13 @@ public class MemoryTests : ControlsHandlerTestBase
 		SetupBuilder();
 
 		var result = await InvokeOnMainThreadAsync(() => CreateAndDisconnectShapeWithReplacedPoints(type));
+		var rootedOriginalPoints = result.RootedOriginalPoints;
 
+		// Keep the original collection rooted and fire its event; the broken implementation
+		// still has the disconnected handler subscribed to this old collection.
+		await InvokeOnMainThreadAsync(() => rootedOriginalPoints.Add(new Point(50, 50)));
 		await AssertionExtensions.WaitForGC(result.ShapeReference, result.HandlerReference, result.PlatformViewReference);
-		GC.KeepAlive(result.RootedOriginalPoints);
+		GC.KeepAlive(rootedOriginalPoints);
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
@@ -840,4 +844,3 @@ sealed class AnimationPage : ContentPage
 
 	}
 }
-
