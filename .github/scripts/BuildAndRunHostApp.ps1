@@ -53,7 +53,7 @@ param(
     [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
-    [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
+    [Parameter(Mandatory = $false, ParameterSetName = "TestFilter")]
     [string]$TestFilter,
 
     [Parameter(Mandatory = $true, ParameterSetName = "Category")]
@@ -227,9 +227,12 @@ Write-Success "Test project: $TestProject"
 if ($Category) {
     $effectiveFilter = "TestCategory=$Category"
     Write-Step "Running UI tests with category: $Category"
-} else {
+} elseif ($TestFilter) {
     $effectiveFilter = $TestFilter
     Write-Step "Running UI tests with filter: $TestFilter"
+} else {
+    $effectiveFilter = $null
+    Write-Step "Running ALL UI tests (no filter)"
 }
 
 # Clear device logs before test
@@ -329,9 +332,9 @@ if (-not (Test-Path $trxResultsDir)) {
 # Sanitize the trx file name. NUnit/MSTest reject some characters. We keep
 # alpha-numeric, dash, underscore and dot — same set Cake's
 # SanitizeTestResultsFilename uses.
-$trxBaseName = if ($Category) { "$Category-$Platform" } else {
-    ($TestFilter -replace '[^A-Za-z0-9._-]', '_')
-}
+$trxBaseName = if ($Category) { "$Category-$Platform" }
+               elseif ($TestFilter) { ($TestFilter -replace '[^A-Za-z0-9._-]', '_') }
+               else { "ALL-$Platform" }
 $trxBaseName = $trxBaseName -replace '[^A-Za-z0-9._-]', '_'
 $trxFileName = "$trxBaseName.trx"
 $trxFilePath = Join-Path $trxResultsDir $trxFileName
@@ -344,11 +347,14 @@ try {
     # Run dotnet test using the SAME loggers and arguments CI uses in
     # `RunTestWithLocalDotNet` (eng/cake/dotnet.cake line 943-981).
     $trxRunStart = Get-Date
-    $testArgs = @($TestProject, "--filter", $effectiveFilter,
+    $testArgs = @($TestProject,
         "--logger", "trx;LogFileName=$trxFileName",
         "--logger", "console;verbosity=normal",
         "--results-directory", $trxResultsDir,
         "/p:VStestUseMSBuildOutput=false")
+    if ($effectiveFilter) {
+        $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
+    }
     Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
     $testOutput = & dotnet test @testArgs 2>&1
     
