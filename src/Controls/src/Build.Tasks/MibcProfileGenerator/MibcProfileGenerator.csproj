@@ -9,6 +9,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<IsPackable>false</IsPackable>
 		<IsShipping>false</IsShipping>
+		<RollForward>Major</RollForward>
 	</PropertyGroup>
 
 	<PropertyGroup>

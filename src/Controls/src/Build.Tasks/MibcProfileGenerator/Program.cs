@@ -20,6 +20,22 @@ namespace Microsoft.Maui.Controls.Build.Tasks;
 ///   - InitializeComponentXamlC    — XamlC IL-compiled XAML inflation (switch mode)
 ///   - InitializeComponentSourceGen — source-generator compiled XAML inflation (switch mode)
 /// All of these are included in the generated MIBC profile.
+///
+/// Why a standalone tool rather than an in-process MSBuild task:
+///   - The tool depends on System.Reflection.Metadata at a version that may differ from
+///     the version already loaded inside the MSBuild process hosting the build tasks
+///     assembly. Running out-of-process avoids assembly load conflicts.
+///   - Build tasks targeting netstandard2.0 cannot easily emit a PE/MIBC blob with the
+///     modern System.Reflection.Metadata.Ecma335 surface; this tool targets the current
+///     .NET TFM and uses the up-to-date emit API.
+///   - Out-of-process execution lets the tool be reused by external pipelines (e.g.
+///     direct invocation from a CI step or from the dotnet-pgo workflow).
+///
+/// Note on MIBC dependency expansion: profiled methods listed in a MIBC do NOT propagate
+/// into crossgen2's dependency analysis. Only the methods explicitly enumerated here are
+/// promoted to R2R for the partial-R2R assemblies. Callees of InitializeComponent* are
+/// expected to already be R2R'd via the normal framework R2R image (Microsoft.Maui.Controls,
+/// etc.), which is why this profile only needs to cover the XAML entry points themselves.
 /// </summary>
 static class MibcProfileGenerator
 {
@@ -448,7 +464,8 @@ static class MibcProfileGenerator
 		}
 		else
 		{
-			using var zip = ZipFile.Open(outputPath, ZipArchiveMode.Create);
+			using var fs = new FileStream(outputPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+			using var zip = new ZipArchive(fs, ZipArchiveMode.Create);
 			var entry = zip.CreateEntry(Path.GetFileName(outputPath) + ".dll", CompressionLevel.Optimal);
 			using var entryStream = entry.Open();
 			peBlob.WriteContentTo(entryStream);
