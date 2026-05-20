@@ -1508,17 +1508,28 @@ internal partial class MauiItemsView
 	{
 		try
 		{
-			if (Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue(
-				"SystemAccentColor", out var raw) && raw is global::Windows.UI.Color accentColor)
+			var resources = Microsoft.UI.Xaml.Application.Current.Resources;
+
+			// Prefer the WinUI 3 semantic brush — automatically adapts to the user's
+			// accent color and light/dark theme (Windows 11 design language).
+			if (resources.TryGetValue("AccentFillColorDefaultBrush", out var brush) &&
+				brush is Microsoft.UI.Xaml.Media.SolidColorBrush accentBrush)
+			{
+				return accentBrush;
+			}
+
+			// Secondary fallback: raw accent color token.
+			if (resources.TryGetValue("SystemAccentColor", out var raw) &&
+				raw is global::Windows.UI.Color accentColor)
 			{
 				return new Microsoft.UI.Xaml.Media.SolidColorBrush(accentColor);
 			}
 		}
 		catch { }
 
-		// Fallback: Windows blue accent colour.
+		// Final fallback: Windows 11 default accent blue.
 		return new Microsoft.UI.Xaml.Media.SolidColorBrush(
-			global::Windows.UI.Color.FromArgb(255, 0, 120, 212));
+			global::Windows.UI.Color.FromArgb(255, 0, 95, 184)); // #005FB8
 	}
 
 	#endregion
