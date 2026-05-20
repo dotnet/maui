@@ -81,10 +81,23 @@ if (-not (Test-Path $FindingsFile)) {
 
 Write-Host "Loading findings from: $FindingsFile" -ForegroundColor Cyan
 $rawJson = Get-Content -Path $FindingsFile -Raw -Encoding UTF8
-# Force array parsing: PowerShell's ConvertFrom-Json can unwrap single-element
-# arrays or misparse nested structures. Wrap in @() to guarantee array.
 $parsed = $rawJson | ConvertFrom-Json
-$findings = @($parsed)
+
+# The agent may produce either a bare array [...] or an object wrapper
+# like {"findings": [...]}. Detect and unwrap both forms.
+if ($parsed -is [System.Collections.IEnumerable] -and $parsed -isnot [string]) {
+    # Already an array
+    $findings = @($parsed)
+} elseif ($parsed.findings) {
+    # Object wrapper: {"findings": [...]}
+    $findings = @($parsed.findings)
+} elseif ($parsed.items) {
+    # Alternative wrapper: {"items": [...]}
+    $findings = @($parsed.items)
+} else {
+    # Single object — wrap in array
+    $findings = @($parsed)
+}
 
 if (-not $findings -or $findings.Count -eq 0) {
     Write-Host "No findings to post." -ForegroundColor Green
