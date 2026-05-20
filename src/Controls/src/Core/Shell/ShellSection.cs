@@ -127,6 +127,7 @@ namespace Microsoft.Maui.Controls
 			await poppingCompleted;
 
 			RemovePage(page);
+			page?.DisconnectHandlers();
 
 			(Parent?.Parent as IShellController)?.UpdateCurrentState(ShellNavigationSource.Pop);
 		}
@@ -146,7 +147,10 @@ namespace Microsoft.Maui.Controls
 			await finishedPopping;
 
 			for (int i = 1; i < oldStack.Count; i++)
+			{
 				RemovePage(oldStack[i]);
+				oldStack[i]?.DisconnectHandlers();
+			}
 
 			(Parent?.Parent as IShellController)?.UpdateCurrentState(ShellNavigationSource.PopToRoot);
 		}
@@ -163,6 +167,7 @@ namespace Microsoft.Maui.Controls
 			_navStack.Remove(last);
 
 			RemovePage(last);
+			last?.DisconnectHandlers();
 		}
 
 		// we want the list returned from here to remain point in time accurate
@@ -187,6 +192,7 @@ namespace Microsoft.Maui.Controls
 				_navStack.Remove(page);
 
 			RemovePage(page);
+			page?.DisconnectHandlers();
 		}
 
 
@@ -817,6 +823,7 @@ namespace Microsoft.Maui.Controls
 				await _handlerBasedNavigationCompletionSource.Task;
 
 			RemovePage(page);
+			page?.DisconnectHandlers();
 
 			return page;
 		}
@@ -873,6 +880,7 @@ namespace Microsoft.Maui.Controls
 				if (i < oldStack.Count - 1)
 					oldStack[i].SendDisappearing();
 				RemovePage(oldStack[i]);
+				oldStack[i]?.DisconnectHandlers();
 			}
 
 		}
