@@ -16,4 +16,3 @@ override Microsoft.Maui.Platform.MauiHybridWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
 override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
-static Microsoft.Maui.Platform.ButtonExtensions.UpdateTextColor(this Google.Android.Material.Button.MaterialButton! platformButton, Microsoft.Maui.ITextStyle! button) -> void

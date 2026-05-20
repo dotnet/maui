@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
-		public static void UpdateTextColor(this MaterialButton platformButton, ITextStyle button)
+		// TODO: Make this public in .NET 11
+		internal static void UpdateTextColor(this MaterialButton platformButton, ITextStyle button)
 		{
 			if (button.TextColor is null)
 			{
