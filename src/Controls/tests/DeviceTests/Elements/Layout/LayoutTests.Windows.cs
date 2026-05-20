@@ -39,6 +39,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<HorizontalStackLayout, LayoutHandler>();
 					handlers.AddHandler<AbsoluteLayout, LayoutHandler>();
+					handlers.AddHandler<FlexLayout, LayoutHandler>();
+					handlers.AddHandler<StackLayout, LayoutHandler>();
 				});
 			});
 		}
@@ -76,15 +78,28 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(typeof(VerticalStackLayout), "VerticalStackLayout")]
 		[InlineData(typeof(HorizontalStackLayout), "HorizontalStackLayout")]
 		[InlineData(typeof(AbsoluteLayout), "AbsoluteLayout")]
+		[InlineData(typeof(FlexLayout), "FlexLayout")]
+		[InlineData(typeof(StackLayout), "StackLayout")]
 		public async Task LayoutPanelClassNameReflectsCrossPlatformType(Type layoutType, string expectedClassName)
 		{
 			SetupLayoutBuilder();
 
 			var layout = (Layout)Activator.CreateInstance(layoutType)!;
 
-			await AttachAndRun(layout, (LayoutHandler handler) =>
+			// FlexLayout._root is only initialized when it has a MAUI parent.
+			// Wrap it in a VerticalStackLayout so OnParentSet() fires before layout runs.
+			Layout root = layout is FlexLayout
+				? new VerticalStackLayout { layout }
+				: layout;
+
+			await AttachAndRun(root, (LayoutHandler handler) =>
 			{
-				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				// For FlexLayout, find the inner FlexLayout's platform view via its handler
+				var targetView = layout is FlexLayout
+					? (layout.Handler as LayoutHandler)?.PlatformView ?? handler.PlatformView
+					: handler.PlatformView;
+
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(targetView);
 				Assert.Equal(expectedClassName, peer.GetClassName());
 			});
 		}
