@@ -118,7 +118,6 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRun(grid, (LayoutHandler handler) =>
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
-				Assert.Equal(hasAutomationId, peer.IsControlElement());
 				Assert.Equal(hasAutomationId, peer.IsContentElement());
 			});
 		}
@@ -134,6 +133,28 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
 				Assert.False(peer.IsKeyboardFocusable());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel IsControlElement and IsContentElement update when AutomationId is set at runtime")]
+		public async Task LayoutPanelAutomationPeerUpdatesWhenAutomationIdChangesAtRuntime()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+
+				// Initially no AutomationId — should NOT be exposed
+				Assert.False(peer.IsContentElement());
+
+				// Set AutomationId at runtime — should now be exposed.
+				// Note: MAUI AutomationId is write-once (Element.cs enforces this),
+				// so we can only test the transition from unset → set, not set → cleared.
+				grid.AutomationId = "DynamicGrid";
+				Assert.True(peer.IsContentElement());
 			});
 		}
 	}

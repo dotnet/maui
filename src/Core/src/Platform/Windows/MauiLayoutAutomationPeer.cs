@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 	// TODO: Make this class public in .NET11.0
 	internal partial class MauiLayoutAutomationPeer : FrameworkElementAutomationPeer
 	{
-		internal MauiLayoutAutomationPeer(Panel owner) : base(owner) { }
+		internal MauiLayoutAutomationPeer(LayoutPanel owner) : base(owner) { }
 
 		// Returns the cross-platform layout type name (e.g. "Grid", "VerticalStackLayout") so
 		// accessibility tools can distinguish between different layout types. Falls back to "Panel"
@@ -33,9 +33,9 @@ namespace Microsoft.Maui.Platform
 		// Layouts are never keyboard-focusable — they are structural containers, not interactive elements.
 		protected override bool IsKeyboardFocusableCore() => false;
 
-		// Expose in the Control View only when an AutomationId is explicitly set by the developer,
-		// indicating they intentionally opted this layout into the automation tree.
-		protected override bool IsControlElementCore() => HasAutomationId();
+		// Always expose in the Control View so that Narrator can read SemanticProperties.Description
+		// even when no AutomationId is set.
+		protected override bool IsControlElementCore() => true;
 
 		// Expose in the Content View only when an AutomationId is explicitly set by the developer.
 		protected override bool IsContentElementCore() => HasAutomationId();
