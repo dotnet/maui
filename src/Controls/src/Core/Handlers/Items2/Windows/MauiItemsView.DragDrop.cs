@@ -1400,13 +1400,15 @@ internal partial class MauiItemsView
 		// ── Lazily build the indicator visuals once ───────────────────────────
 		if (_dropIndicatorHead is null || _dropIndicatorLine is null)
 		{
-			// Solid filled circle — no icon text, clean bullet-style indicator.
+			// Hollow circle (outline only, transparent fill) — matches Teams/Notion drag indicator style.
 			_dropIndicatorHead = new Border
 			{
 				Width = IndicatorHeadSize,
 				Height = IndicatorHeadSize,
 				CornerRadius = new CornerRadius(IndicatorHeadSize / 2),
-				Background = accentBrush,
+				Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
+				BorderBrush = accentBrush,
+				BorderThickness = new Thickness(IndicatorHeadStroke),
 				IsHitTestVisible = false,
 			};
 
@@ -1423,7 +1425,7 @@ internal partial class MauiItemsView
 		else
 		{
 			// Refresh brushes on every update so theme changes are reflected.
-			_dropIndicatorHead.Background = accentBrush;
+			_dropIndicatorHead.BorderBrush = accentBrush;
 			_dropIndicatorLine.Fill = accentBrush;
 		}
 
@@ -1433,7 +1435,7 @@ internal partial class MauiItemsView
 
 		if (_isHorizontalLayout)
 		{
-			// Vertical indicator: circle on top, line extending downward.
+			// Vertical indicator: hollow circle at top-center, line extending downward.
 			double lineX = insertAfter
 				? origin.X + target.ActualWidth
 				: origin.X;
@@ -1445,7 +1447,7 @@ internal partial class MauiItemsView
 			Canvas.SetLeft(_dropIndicatorHead, lineX - IndicatorHeadSize / 2);
 			Canvas.SetTop(_dropIndicatorHead, origin.Y);
 
-			// Line: starts below the head, same thickness as IndicatorLineThickness but rotated.
+			// Line: starts below the head, centered on the insertion edge.
 			_dropIndicatorLine.Width = IndicatorLineThickness;
 			_dropIndicatorLine.Height = lineHeight;
 			Canvas.SetLeft(_dropIndicatorLine, lineX - IndicatorLineThickness / 2);
@@ -1453,19 +1455,20 @@ internal partial class MauiItemsView
 		}
 		else
 		{
-			// Horizontal indicator: circle on left, line extending rightward.
+			// Horizontal indicator: hollow circle on left, line extending to the right edge.
 			double lineY = insertAfter
 				? origin.Y + target.ActualHeight
 				: origin.Y;
 
+			// Circle sits at the left edge of the item; line fills the remaining width.
 			double lineWidth = target.ActualWidth - IndicatorHeadSize - IndicatorHeadGap;
 			if (lineWidth < 0) lineWidth = 0;
 
-			// Head: vertically centered on the insertion line.
+			// Head: vertically centered on the insertion line, pinned to item left edge.
 			Canvas.SetLeft(_dropIndicatorHead, origin.X);
 			Canvas.SetTop(_dropIndicatorHead, lineY - IndicatorHeadSize / 2);
 
-			// Line: starts to the right of the head, centered on lineY.
+			// Line: immediately right of circle, 2 px tall, runs to the right edge.
 			_dropIndicatorLine.Width = lineWidth;
 			_dropIndicatorLine.Height = IndicatorLineThickness;
 			Canvas.SetLeft(_dropIndicatorLine, origin.X + IndicatorHeadSize + IndicatorHeadGap);
@@ -1521,8 +1524,9 @@ internal partial class MauiItemsView
 	}
 
 	// Indicator geometry constants.
-	const double IndicatorHeadSize = 18.0;   // circle diameter in px
-	const double IndicatorHeadGap = 2.0;     // gap between circle and line
+	const double IndicatorHeadSize = 12.0;    // hollow circle outer diameter in px
+	const double IndicatorHeadStroke = 2.0;   // circle border/stroke thickness
+	const double IndicatorHeadGap = 2.0;      // gap between circle and line
 	const double IndicatorLineThickness = 2.0;
 
 	static Microsoft.UI.Xaml.Media.Brush TryGetAccentBrush()
