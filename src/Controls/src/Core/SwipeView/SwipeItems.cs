@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -70,21 +71,19 @@ namespace Microsoft.Maui.Controls
 
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
+
+			// Self-subscribe to PropertyChanged so we can notify the owning SwipeView when
+			// any of this SwipeItems' properties change. The handler's Target is this same
+			// SwipeItems instance, so the subscription cannot keep the SwipeItems alive
+			// beyond its natural lifetime, and it does not root the owning SwipeView
+			// either (the SwipeView is located on demand via Element.Parent, which is a
+			// WeakReference internally — see issue #35481).
+			PropertyChanged += OnSelfPropertyChanged;
 		}
 
-		// Override OnPropertyChanged so we can notify the owning SwipeView when Mode /
-		// SwipeBehaviorOnInvoked change. The notification goes through Parent (a weak
-		// reference managed by AddLogicalChild), so the owning SwipeView is never rooted
-		// by this SwipeItems instance (issue #35481).
-		protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+		void OnSelfPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			base.OnPropertyChanged(propertyName);
-
-			if (propertyName == ModeProperty.PropertyName ||
-				propertyName == SwipeBehaviorOnInvokedProperty.PropertyName)
-			{
-				NotifyOwner();
-			}
+			NotifyOwner();
 		}
 
 		/// <summary>
