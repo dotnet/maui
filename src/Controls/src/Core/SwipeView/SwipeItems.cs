@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +16,45 @@ namespace Microsoft.Maui.Controls
 	public class SwipeItems : Element, IList<ISwipeItem>, INotifyCollectionChanged
 	{
 		readonly ObservableCollection<Maui.ISwipeItem> _swipeItems;
+
+		/// <summary>
+		/// Notifies the owning <see cref="SwipeView"/> (resolved via <see cref="Element.Parent"/>)
+		/// that something in this collection has changed so the handler can refresh the platform UI.
+		/// </summary>
+		/// <remarks>
+		/// Using <see cref="Element.Parent"/> (rather than a captured-closure subscription on the
+		/// SwipeView side) avoids leaking the owning SwipeView when a SwipeItems instance is
+		/// cached/shared across multiple SwipeView instances. When SwipeItems is reassigned to a
+		/// new owner, <c>AddLogicalChild</c> reassigns <see cref="Element.Parent"/> so notifications
+		/// always go to the current owner.
+		/// </remarks>
+		void NotifyOwner()
+		{
+			if (Parent is not SwipeView swipeView)
+			{
+				return;
+			}
+
+			if (this == swipeView.LeftItems)
+			{
+				swipeView.Handler?.UpdateValue(nameof(SwipeView.LeftItems));
+			}
+
+			if (this == swipeView.RightItems)
+			{
+				swipeView.Handler?.UpdateValue(nameof(SwipeView.RightItems));
+			}
+
+			if (this == swipeView.TopItems)
+			{
+				swipeView.Handler?.UpdateValue(nameof(SwipeView.TopItems));
+			}
+
+			if (this == swipeView.BottomItems)
+			{
+				swipeView.Handler?.UpdateValue(nameof(SwipeView.BottomItems));
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SwipeItems"/> class with the specified swipe items.
@@ -31,6 +71,22 @@ namespace Microsoft.Maui.Controls
 
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
+
+			// Self-subscribe to PropertyChanged so we can notify the owning SwipeView when
+			// Mode / SwipeBehaviorOnInvoked change. Using a self-subscription (rather than an
+			// OnPropertyChanged override) keeps the public API surface unchanged. The handler's
+			// Target is this same SwipeItems instance, so it cannot keep the object alive
+			// beyond its natural lifetime.
+			PropertyChanged += OnSelfPropertyChanged;
+		}
+
+		void OnSelfPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == ModeProperty.PropertyName ||
+				e.PropertyName == SwipeBehaviorOnInvokedProperty.PropertyName)
+			{
+				NotifyOwner();
+			}
 		}
 
 		/// <summary>
@@ -157,6 +213,9 @@ namespace Microsoft.Maui.Controls
 			}
 
 			CollectionChanged?.Invoke(this, notifyCollectionChangedEventArgs);
+
+			// Notify the owning SwipeView so its handler can update the platform UI.
+			NotifyOwner();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
