@@ -154,6 +154,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					tabbed.PagesChanged -= OnPagesChanged;
 				}
 
+				if (_currentBarBackground is GradientBrush currentGradientBrush)
+				{
+					currentGradientBrush.Parent = null;
+					currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+				}
+				_currentBarBackground = null;
+
 				FinishedCustomizingViewControllers -= HandleFinishedCustomizingViewControllers;
 			}
 

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -502,6 +503,118 @@ namespace Microsoft.Maui.DeviceTests
 
 			Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.SetIsSmoothScrollEnabled(tabs, isSmoothScrollEnabled);
 			return tabs;
+		}
+
+		// https://github.com/dotnet/maui/issues/35469
+		// When a TabbedPage.BarBackground is set from a shared GradientBrush (e.g. via an app-resource Style),
+		// removing the TabbedPage from the window must not leave a live subscription on the shared brush.
+		// The renderer/manager subscribes to GradientBrush.InvalidateGradientBrushRequested; if it fails to
+		// unsubscribe on disconnect the brush keeps the renderer alive, preventing GC.
+		[Fact(DisplayName = "TabbedPage renderer/manager does not leak shared GradientBrush subscriber on disconnect")]
+		public async Task TabbedPageDoesNotLeakGradientBrushSubscriberOnDisconnect()
+		{
+			SetupBuilder();
+
+			// Simulate a shared app-resource brush — this object lives beyond the TabbedPage.
+			var sharedBrush = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Teal, 0f),
+					new GradientStop(Colors.CornflowerBlue, 1f)
+				},
+				new Graphics.Point(0, 0),
+				new Graphics.Point(1, 1));
+
+			var tabbedPageRef = new WeakReference(null);
+			var handlerRef = new WeakReference(null);
+
+			var navPage = new NavigationPage(new ContentPage { Title = "Home" });
+
+			await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+			{
+				var tabbedPage = new TabbedPage
+				{
+					Title = "Tabbed",
+					BarBackground = sharedBrush,
+				};
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 1" });
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 2" });
+
+				// Push so the TabbedPage handler is created and subscribes to the brush.
+				await navPage.Navigation.PushModalAsync(tabbedPage);
+				await OnLoadedAsync(tabbedPage.Children[0]);
+
+				tabbedPageRef.Target = tabbedPage;
+				handlerRef.Target = tabbedPage.Handler;
+
+				// Pop — this should cause the renderer/manager to disconnect and unsubscribe.
+				await navPage.Navigation.PopModalAsync();
+			});
+
+			// After full GC the renderer/manager should be collected.
+			await AssertionExtensions.WaitForGC(handlerRef);
+
+			// The shared brush must have zero subscribers to InvalidateGradientBrushRequested.
+			// If the renderer/manager leaked, it would still be subscribed here.
+			var brushInvocationList = GetGradientBrushInvocationList(sharedBrush);
+			Assert.Empty(brushInvocationList);
+		}
+
+		// https://github.com/dotnet/maui/issues/35469
+		// Variant: BarBackground applied via a Style (the exact scenario from the bug report).
+		[Fact(DisplayName = "TabbedPage renderer/manager does not leak shared GradientBrush subscriber when BarBackground is set via Style")]
+		public async Task TabbedPageDoesNotLeakGradientBrushSubscriberWhenSetViaStyle()
+		{
+			SetupBuilder();
+
+			var sharedBrush = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.DarkGreen, 0f),
+					new GradientStop(Colors.SteelBlue, 1f)
+				},
+				new Graphics.Point(0, 0),
+				new Graphics.Point(1, 1));
+
+			var barBackgroundStyle = new Style(typeof(TabbedPage))
+			{
+				Setters = { new Setter { Property = TabbedPage.BarBackgroundProperty, Value = sharedBrush } }
+			};
+
+			var handlerRef = new WeakReference(null);
+
+			var navPage = new NavigationPage(new ContentPage { Title = "Home" });
+
+			await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+			{
+				var tabbedPage = new TabbedPage { Style = barBackgroundStyle };
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 1" });
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 2" });
+
+				await navPage.Navigation.PushModalAsync(tabbedPage);
+				await OnLoadedAsync(tabbedPage.Children[0]);
+
+				handlerRef.Target = tabbedPage.Handler;
+
+				await navPage.Navigation.PopModalAsync();
+			});
+
+			await AssertionExtensions.WaitForGC(handlerRef);
+
+			var brushInvocationList = GetGradientBrushInvocationList(sharedBrush);
+			Assert.Empty(brushInvocationList);
+		}
+
+		static System.Delegate[] GetGradientBrushInvocationList(GradientBrush brush)
+		{
+			var field = typeof(GradientBrush).GetField(
+				"InvalidateGradientBrushRequested",
+				BindingFlags.Instance | BindingFlags.NonPublic);
+
+			if (field is null)
+				return [];
+
+			return (field.GetValue(brush) as MulticastDelegate)?.GetInvocationList() ?? [];
 		}
 	}
 }
