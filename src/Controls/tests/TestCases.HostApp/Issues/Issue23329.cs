@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 23329, "Entry select all text on refocus does not work on WinUI", PlatformAffected.Windows)]
+[Issue(IssueTracker.Github, 23329, "Entry select all text on refocus does not work on WinUI", PlatformAffected.UWP)]
 public class Issue23329 : ContentPage
 {
 	readonly Entry _textBox;
