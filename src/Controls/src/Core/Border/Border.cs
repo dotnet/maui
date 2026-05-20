@@ -20,24 +20,26 @@ namespace Microsoft.Maui.Controls
 	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;
+
+		readonly WeakNotifyPropertyChangedProxy _strokeShapeProxy = new();
+		readonly PropertyChangedEventHandler _strokeShapeChanged;
+		readonly WeakNotifyPropertyChangedProxy _strokeProxy = new();
+		readonly PropertyChangedEventHandler _strokeChanged;
 		readonly WeakNotifyCollectionChangedProxy _strokeDashArrayProxy = new();
 		readonly NotifyCollectionChangedEventHandler _strokeDashArrayChanged;
 
-		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
-		PropertyChangedEventHandler? _strokeShapeChanged;
-		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
-		PropertyChangedEventHandler? _strokeChanged;
-
 		public Border()
 		{
+			_strokeShapeChanged = OnStrokeShapePropertyChanged;
+			_strokeChanged = OnStrokePropertyChanged;
 			_strokeDashArrayChanged = OnStrokeDashArrayChanged;
 		}
 
 		~Border()
 		{
+			_strokeShapeProxy.Unsubscribe();
+			_strokeProxy.Unsubscribe();
 			_strokeDashArrayProxy.Unsubscribe();
-			_strokeShapeProxy?.Unsubscribe();
-			_strokeProxy?.Unsubscribe();
 		}
 
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
@@ -105,15 +107,6 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				AddLogicalChild(visualElement);
-				_strokeShapeChanged ??= (sender, e) =>
-				{
-					if (e.PropertyName != nameof(Window) &&
-						e.PropertyName != nameof(Parent))
-					{
-						OnPropertyChanged(nameof(StrokeShape));
-					}
-				};
-				_strokeShapeProxy ??= new();
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
 			}
 		}
@@ -125,7 +118,16 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				RemoveLogicalChild(visualElement);
-				_strokeShapeProxy?.Unsubscribe();
+				_strokeShapeProxy.Unsubscribe();
+			}
+		}
+
+		void OnStrokeShapePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName != nameof(Window) &&
+				e.PropertyName != nameof(Parent))
+			{
+				OnPropertyChanged(nameof(StrokeShape));
 			}
 		}
 
@@ -153,8 +155,6 @@ namespace Microsoft.Maui.Controls
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, BindingContext);
-				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
-				_strokeProxy ??= new();
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
 
 				OnParentResourcesChanged(this.GetMergedResources());
@@ -174,8 +174,13 @@ namespace Microsoft.Maui.Controls
 				((IElementDefinition)this).RemoveResourcesChangedListener(stroke.OnParentResourcesChanged);
 
 				SetInheritedBindingContext(stroke, null);
-				_strokeProxy?.Unsubscribe();
+				_strokeProxy.Unsubscribe();
 			}
+		}
+
+		void OnStrokePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(Stroke));
 		}
 
 		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
@@ -185,7 +190,28 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="StrokeDashArray"/>.</summary>
 		public static readonly BindableProperty StrokeDashArrayProperty =
 			BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Border), null,
-				defaultValueCreator: bindable => new DoubleCollection());
+				defaultValueCreator: bindable => new DoubleCollection(),
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					(bindable as Border)?.StopNotifyingStrokeDashArrayChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					(bindable as Border)?.NotifyStrokeDashArrayChanges();
+				});
+
+		void NotifyStrokeDashArrayChanges()
+		{
+			if (StrokeDashArray is INotifyCollectionChanged collection)
+			{
+				_strokeDashArrayProxy.Subscribe(collection, _strokeDashArrayChanged);
+			}
+		}
+
+		void StopNotifyingStrokeDashArrayChanges()
+		{
+			_strokeDashArrayProxy.Unsubscribe();
+		}
 
 		/// <summary>Bindable property for <see cref="StrokeDashOffset"/>.</summary>
 		public static readonly BindableProperty StrokeDashOffsetProperty =
@@ -422,20 +448,8 @@ namespace Microsoft.Maui.Controls
 			}
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
 			{
-				UpdateStrokeDashArraySubscription();
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
 			}
-		}
-
-		void UpdateStrokeDashArraySubscription()
-		{
-			if (StrokeDashArray is not INotifyCollectionChanged strokeDashArray)
-			{
-				_strokeDashArrayProxy.Unsubscribe();
-				return;
-			}
-
-			_strokeDashArrayProxy.Subscribe(strokeDashArray, _strokeDashArrayChanged);
 		}
 
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)
