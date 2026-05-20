@@ -188,7 +188,7 @@ stages:
             displayName: 'Pre-check: merge feasibility'
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
-              GH_TOKEN: $(System.AccessToken)
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           - bash: |
               echo "##vso[build.updatebuildnumber]PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
