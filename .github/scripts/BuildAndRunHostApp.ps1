@@ -304,7 +304,8 @@ if ($Platform -eq "catalyst") {
     $env:MAUI_LOG_FILE = $deviceLogFile
 }
 
-Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
+$filterDisplay = if ($effectiveFilter) { "--filter `"$effectiveFilter`"" } else { "(no filter — all tests)" }
+Write-Info "Executing: dotnet test $filterDisplay"
 Write-Host ""
 
 # Set environment variables for the test
@@ -671,7 +672,7 @@ Write-Host @"
 ╠═══════════════════════════════════════════════════════════╣
 ║  Platform:     $($Platform.ToUpper().PadRight(10))                             ║
 ║  Device:       $($DeviceUdid.Substring(0, [Math]::Min(40, $DeviceUdid.Length)).PadRight(40))      ║
-║  Test Filter:  $($effectiveFilter.Substring(0, [Math]::Min(40, $effectiveFilter.Length)).PadRight(40))      ║
+║  Test Filter:  $($(if ($effectiveFilter) { $effectiveFilter.Substring(0, [Math]::Min(40, $effectiveFilter.Length)) } else { '(all tests)' }).PadRight(40))      ║
 ║  Result:       SUCCESS ✅                                 ║
 ║  Logs:         $HostAppLogsDir
 ╚═══════════════════════════════════════════════════════════╝
