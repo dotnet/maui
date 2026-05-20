@@ -8,20 +8,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
-		// TODO: Make this public in .NET 11
-		internal static void UpdateTextColor(this MaterialButton platformButton, ITextStyle button)
-		{
-			if (button.TextColor is null)
-			{
-				// Reset to the MaterialButton default text color by reading it from a fresh instance
-				using var tempButton = new MaterialButton(platformButton.Context!);
-				platformButton.SetTextColor(tempButton.TextColors);
-				return;
-			}
-
-			platformButton.SetTextColor(button.TextColor.ToPlatform());
-		}
-
 		public static void UpdateBackground(this MaterialButton platformView, IButton button) =>
 			platformView.UpdateButtonBackground(button);
 
