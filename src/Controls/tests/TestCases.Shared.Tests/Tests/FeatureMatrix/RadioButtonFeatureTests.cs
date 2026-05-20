@@ -24,7 +24,7 @@ public class RadioButtonFeatureTests : _GalleryUITest
 	}
 
 	[Test, Order(2)]
-	public void RadioButton_Checking_Initial_Configuration_VerifyVisualState()
+	public void RadioButton_Checking_Initial_Configuration_UpdatesSelectedValueLabels()
 	{
 		App.WaitForElement("RadioButtonControlOne");
 		App.Tap("RadioButtonControlOne");
@@ -112,7 +112,6 @@ public class RadioButtonFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test fails on Android and Windows because the text transform is not applied correctly. Issue Link - https://github.com/dotnet/maui/issues/29729
 	[Test, Order(7)]
 	public void RadioButton_SetFontFamilyAndTextTransform_VerifyVisualState()
 	{
@@ -127,7 +126,6 @@ public class RadioButtonFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, the View object is not supported, so it falls back to a string representation of the object. https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/radiobutton?view=net-maui-9.0#create-radiobuttons
 	[Test, Order(8)]
@@ -218,7 +216,6 @@ public class RadioButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test fails on Android and Windows because the text transform is not applied correctly. Issue Link - https://github.com/dotnet/maui/issues/29729
 	[Test, Order(13)]
 	public void RadioButton_SetContentAndTextTransform()
 	{
@@ -234,7 +231,6 @@ public class RadioButtonFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 	[Test, Order(14)]
 	public void RadioButton_SetFontFamilyAndFontAttributes_VerifyVisualState()
