@@ -267,11 +267,7 @@
 	     generates a single MIBC profile, then moves only the assemblies that contributed
 	     methods from the exclude list to partial R2R compilation.
 	     Enabled by setting EmitPartialR2RXamlProfile=true.
-	     Runs after R2R assembly selection.
-
-	     Only runs in non-Release builds: in Release the user assemblies are fully R2R'd
-	     by the SDK (FilterReadyToRunAssemblies defaults to false in Release on macios),
-	     so the MIBC partial-R2R workflow has nothing to contribute. -->
+	     Runs after R2R assembly selection. -->
 	<Target Name="_MauiGenerateMibcProfile"
 		AfterTargets="_SelectR2RAssemblies"
 		Condition=" '$(EmitPartialR2RXamlProfile)' == 'true' AND '$(Configuration)' != 'Release' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
