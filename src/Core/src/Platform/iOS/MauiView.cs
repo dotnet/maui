@@ -327,17 +327,16 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateKeyboardSubscription()
 		{
-			// Update keyboard subscription based on current SafeAreaEdges settings
-			if (Window != null)
+			// Subscribe only when attached to a window and SoftInput edges are configured.
+			// Always unsubscribe when detached (Window == null) to release the NSNotificationCenter
+			// observer tokens that otherwise retain this MauiView instance and cause memory leaks.
+			if (Window != null && ShouldSubscribeToKeyboardNotifications())
 			{
-				if (ShouldSubscribeToKeyboardNotifications())
-				{
-					SubscribeToKeyboardNotifications();
-				}
-				else
-				{
-					UnsubscribeFromKeyboardNotifications();
-				}
+				SubscribeToKeyboardNotifications();
+			}
+			else
+			{
+				UnsubscribeFromKeyboardNotifications();
 			}
 		}
 
