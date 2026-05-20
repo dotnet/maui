@@ -157,6 +157,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		base.OnApplyTemplate();
 
+		// WinUI's base.OnApplyTemplate() re-assigns ItemTransitionProvider to its
+		// default StackLayoutItemCollectionTransitionProvider (cascade animation).
+		// Override it again here so it stays null regardless of template application order.
+		ItemTransitionProvider = null;
+
 		_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
 		_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
@@ -164,6 +169,12 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
 		_dropIndicatorCanvas = GetTemplateChild("PART_DropIndicatorCanvas") as Canvas;
+
+		// Also null out the inner ItemsRepeater's own provider directly — the
+		// TemplateBinding {x:Null} in XAML may be evaluated before WinUI assigns
+		// defaults, so a direct code assignment is the reliable approach.
+		if (_itemsRepeater is ItemsRepeater repeater)
+			repeater.ItemTransitionProvider = null;
 
 		if (_emptyViewContentControl is not null)
 		{

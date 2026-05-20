@@ -352,7 +352,7 @@
                                                 VerticalContentAlignment="Stretch"/>
 
                                 <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
-                                                        ItemTransitionProvider="{x:Null}"
+                                                        ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
                                                         HorizontalCacheLength="2"
                                                         VerticalCacheLength="2"
                                                         ItemsSource="{TemplateBinding ItemsSource}"

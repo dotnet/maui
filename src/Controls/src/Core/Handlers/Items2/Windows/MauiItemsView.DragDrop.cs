@@ -292,32 +292,6 @@ internal partial class MauiItemsView
 		{
 			itemContainer.DragStarting += ItemContainer_DragStarting;
 		}
-
-		// Enable an implicit Offset animation so when the data source is reordered
-		// on drop, ItemsRepeater repositions the surrounding containers smoothly
-		// instead of snapping. Header/footer containers benefit from the same
-		// animation when neighbors shift, so we apply it unconditionally.
-		ConfigureContainerReorderAnimation(itemContainer);
-	}
-
-	/// <summary>
-	/// Installs an implicit Composition animation on the container's Offset property
-	/// so layout repositioning (driven by ItemsRepeater after a Move/Remove/Insert in
-	/// ItemsSource) animates instead of snapping. Idempotent.
-	/// </summary>
-	static void ConfigureContainerReorderAnimation(ItemContainer container)
-	{
-		var visual = ElementCompositionPreview.GetElementVisual(container);
-		var compositor = visual.Compositor;
-
-		var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
-		offsetAnimation.Target = "Offset";
-		offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
-		offsetAnimation.Duration = TimeSpan.FromMilliseconds(250);
-
-		var animations = compositor.CreateImplicitAnimationCollection();
-		animations["Offset"] = offsetAnimation;
-		visual.ImplicitAnimations = animations;
 	}
 
 	void ItemsRepeater_ElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
@@ -333,11 +307,6 @@ internal partial class MauiItemsView
 			itemContainer.DragStarting -= ItemContainer_DragStarting;
 			itemContainer.Tag = null;
 
-			// Detach the implicit animation when the container is recycled so the
-			// Composition visual doesn't keep state from a previous item.
-			var visual = ElementCompositionPreview.GetElementVisual(itemContainer);
-			visual.ImplicitAnimations = null;
-
 			// If the container being cleared is the one currently hidden as the drag
 			// source (e.g. recycled mid-drag), restore its opacity and hit-testability
 			// so it doesn't get reused while invisible.
@@ -350,14 +319,6 @@ internal partial class MauiItemsView
 
 			// Reset any stale Translation so the recycled container starts clean.
 			itemContainer.Translation = System.Numerics.Vector3.Zero;
-
-			// Clear any drop-target highlight so it doesn't persist on recycled containers.
-			if (ReferenceEquals(_dropTargetContainer, itemContainer))
-			{
-				itemContainer.BorderBrush = null;
-				itemContainer.BorderThickness = default;
-				_dropTargetContainer = null;
-			}
 		}
 	}
 
