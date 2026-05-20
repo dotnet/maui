@@ -143,20 +143,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			bool isReset = @event?.CollectionChange == global::Windows.Foundation.Collections.CollectionChange.Reset;
 			bool isGrouped = CollectionViewSource?.IsSourceGrouped == true;
 
-			// Grouped sources cannot be processed during a Reset. The flattened projection
-			// backing the CollectionView may still be rebuilding while VectorChanged fires,
-			// and indexing into it can raise E_CHANGED_STATE / COMException. Deferring is
-			// also unsafe because the projection may be torn down before the dispatched
-			// lambda runs, so we skip the scroll entirely.
-			if (isGrouped && isReset)
-			{
-				return;
-			}
-
-			// CarouselView manages its own initial scroll when a non-zero Position is set.
-			// Scrolling to the first item here would override that intent and trigger
-			// cascading PositionChanged / CurrentItemChanged events.
-			if (isReset && VirtualView is CarouselView carouselView && carouselView.Position != 0)
+			// Skip the deferred ScrollIntoView on Reset except for CarouselView at Position 0.
+			// For a plain CollectionView, the deferred ScrollIntoView(view[0]) races with a
+			// user-initiated ScrollTo on the page-pop path and can pollute OnScrolled indices.
+			// For a grouped CollectionView, the flattened projection backing the view may still
+			// be rebuilding when VectorChanged fires, and indexing into it can raise
+			// E_CHANGED_STATE / COMException (https://github.com/dotnet/maui/issues/17969).
+			// CarouselView does not support grouping, so the not-CarouselView check below also
+			// covers the grouped case. For a CarouselView at a non-zero Position, scrolling to
+			// the first item would override the intended initial position and trigger cascading
+			// PositionChanged / CurrentItemChanged events (https://github.com/dotnet/maui/issues/29529).
+			if (isReset && (VirtualView is not CarouselView carouselView || carouselView.Position != 0))
 			{
 				return;
 			}
