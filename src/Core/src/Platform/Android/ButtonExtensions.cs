@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Platform
 			if (button.TextColor is null)
 			{
 				// Reset to the MaterialButton default text color by reading it from a fresh instance
-				// (same pattern used in UpdateButtonBackground for background color reset).
 				using var tempButton = new MaterialButton(platformButton.Context!);
 				platformButton.SetTextColor(tempButton.TextColors);
 				return;

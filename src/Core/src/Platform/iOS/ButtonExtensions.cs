@@ -32,8 +32,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (button.TextColor is null)
 			{
-				// Reset to the platform default: passing null clears the override and lets
-				// UIButtonType.System revert to its tint-colour-based default.
+				// Reset to platform default: null clears overrides and restores UIButtonType.System tint-based color.
 				platformButton.SetTitleColor(null, UIControlState.Normal);
 				platformButton.SetTitleColor(null, UIControlState.Highlighted);
 				platformButton.SetTitleColor(null, UIControlState.Disabled);

@@ -8,15 +8,13 @@ public class Issue35513 : _IssuesUITest
 {
 	public Issue35513(TestDevice device) : base(device) { }
 
-	public override string Issue => "[Windows, Android, iOS & Mac] Button TextColor does not restore to platform default when reset to null after dynamic update";
+	public override string Issue => "Button TextColor does not restore to platform default when reset to null after dynamic update";
 
 	[Test, Order(1)]
 	[Category(UITestCategories.Button)]
 	public void ButtonTextColorUpdatesToDarkRed()
 	{
 		App.WaitForElement("SampleButton");
-
-		// Set text color to DarkRed
 		App.Tap("SetTextColorButton");
 		VerifyScreenshot("AfterSetTextColorDarkRed");
 	}
@@ -26,11 +24,7 @@ public class Issue35513 : _IssuesUITest
 	public void ButtonTextColorRestoresToDefaultAfterResetToNull()
 	{
 		App.WaitForElement("SampleButton");
-
-		// Set text color to DarkRed first, then reset to verify default restoration.
 		App.Tap("SetTextColorButton");
-
-		// Reset text color to null (should restore platform default)
 		App.Tap("ResetTextColorButton");
 		VerifyScreenshot("AfterResetTextColorToNull");
 	}
