@@ -1475,8 +1475,13 @@ internal partial class MauiItemsView
 			Canvas.SetTop(_dropIndicatorLine, lineY - IndicatorLineThickness / 2);
 		}
 
-		// ── Make visible with a quick fade-in ────────────────────────────────
-		if (_dropIndicatorHead.Visibility == Visibility.Collapsed)
+		// ── Make visible; only animate on first appearance to avoid flicker ─────
+		// Starting a new Storyboard on every DragOver mouse-move (while already visible)
+		// causes multiple animations to compete on Opacity, producing a visible flicker.
+		// Only fade in when transitioning from Collapsed → Visible.
+		bool wasCollapsed = _dropIndicatorHead.Visibility == Visibility.Collapsed;
+
+		if (wasCollapsed)
 		{
 			_dropIndicatorHead.Opacity = 0;
 			_dropIndicatorLine.Opacity = 0;
@@ -1485,31 +1490,40 @@ internal partial class MauiItemsView
 		_dropIndicatorHead.Visibility = Visibility.Visible;
 		_dropIndicatorLine.Visibility = Visibility.Visible;
 
-		// Animate to full opacity so the indicator doesn't just "pop" in.
-		var fadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+		if (wasCollapsed)
 		{
-			To = 1.0,
-			Duration = new Duration(TimeSpan.FromMilliseconds(80)),
-			EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
-				{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
-		};
-		var storyboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
-		storyboard.Children.Add(fadeIn);
-		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn, _dropIndicatorHead);
-		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn, "Opacity");
+			// One-shot fade-in only on first show.
+			var fadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+			{
+				To = 1.0,
+				Duration = new Duration(TimeSpan.FromMilliseconds(80)),
+				EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
+					{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
+			};
+			var storyboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+			storyboard.Children.Add(fadeIn);
+			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn, _dropIndicatorHead);
+			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn, "Opacity");
 
-		var fadeIn2 = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+			var fadeIn2 = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+			{
+				To = 1.0,
+				Duration = new Duration(TimeSpan.FromMilliseconds(80)),
+				EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
+					{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
+			};
+			storyboard.Children.Add(fadeIn2);
+			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn2, _dropIndicatorLine);
+			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn2, "Opacity");
+
+			storyboard.Begin();
+		}
+		else
 		{
-			To = 1.0,
-			Duration = new Duration(TimeSpan.FromMilliseconds(80)),
-			EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
-				{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
-		};
-		storyboard.Children.Add(fadeIn2);
-		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn2, _dropIndicatorLine);
-		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn2, "Opacity");
-
-		storyboard.Begin();
+			// Already visible — ensure full opacity without starting another animation.
+			_dropIndicatorHead.Opacity = 1;
+			_dropIndicatorLine.Opacity = 1;
+		}
 	}
 
 	/// <summary>

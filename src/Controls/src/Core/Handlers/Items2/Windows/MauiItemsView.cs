@@ -37,6 +37,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
 
+		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
+		// staggered top-to-bottom cascade animation as virtualized items enter the
+		// viewport during scroll. This is unexpected for a data list in MAUI.
+		ItemTransitionProvider = null;
+
 		// Suppress the native WinUI ItemContainer visual states (PointerOver,
 		// Pressed, Selected, and their combinations) so they don't overlay
 		// on top of MAUI's own VisualStateManager states. Setting these on
