@@ -64,7 +64,6 @@ namespace Microsoft.Maui.Handlers
 					webChromeClient.Disconnect();
 			}
 
-			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
