@@ -22,29 +22,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			tabBar.BarTintColor = _defaultBarTint;
 			tabBar.TintColor = _defaultTint;
 			tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
-
-			// Clear UITabBarAppearance state and direct BackgroundColor set by SetAppearance,
-			// otherwise the tab bar remains styled after the Shell appearance is removed.
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
-				ResetModernAppearance(tabBar);
-		}
-
-		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
-		void ResetModernAppearance(UITabBar tabBar)
-		{
-			if (_tabBarAppearance is not null)
-			{
-				_tabBarAppearance.Dispose();
-				_tabBarAppearance = null;
-			}
-
-			tabBar.Translucent = true;
-			tabBar.BackgroundColor = null;
-			var defaultAppearance = new UITabBarAppearance();
-			defaultAppearance.ConfigureWithDefaultBackground();
-			tabBar.StandardAppearance = tabBar.ScrollEdgeAppearance = defaultAppearance;
 		}
 
 		public virtual void SetAppearance(UITabBarController controller, ShellAppearance appearance)
@@ -65,7 +42,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15))
+			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance(controller, appearance);
 			else
 				UpdateTabBarAppearance(controller, appearance);
@@ -90,7 +67,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		void UpdateiOS15TabBarAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
 			IShellAppearanceElement appearanceElement = appearance;

@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Platform
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		internal static void UpdateiOS15TabBarAppearance(
 			this UITabBar tabBar,
 			ref UITabBarAppearance _tabBarAppearance,
@@ -50,19 +49,11 @@ namespace Microsoft.Maui.Platform
 			// Set BarBackgroundColor
 			if (effectiveBarColor != null)
 			{
-				_tabBarAppearance.ConfigureWithOpaqueBackground();
 				_tabBarAppearance.BackgroundColor = effectiveBarColor;
-				tabBar.Translucent = false;
-				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				if (OperatingSystem.IsIOSVersionAtLeast(26))
 				{
 					tabBar.BackgroundColor = effectiveBarColor;
 				}
-			}
-			else
-			{
-				_tabBarAppearance.ConfigureWithDefaultBackground();
-				tabBar.Translucent = true;
-				tabBar.BackgroundColor = null;
 			}
 
 			// Set BarTextColor
