@@ -140,28 +140,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			// Reset notifications are unsafe to process because WinUI may still be rebuilding
-			// the internal projection. Accessing indexes during Reset can trigger
-			// E_CHANGED_STATE / COMException.
-			if (@event?.CollectionChange == global::Windows.Foundation.Collections.CollectionChange.Reset)
+			bool isReset = @event?.CollectionChange == global::Windows.Foundation.Collections.CollectionChange.Reset;
+			bool isGrouped = CollectionViewSource?.IsSourceGrouped == true;
+
+			// Skip the deferred ScrollIntoView on Reset except for CarouselView at Position 0.
+			// For a plain CollectionView, the deferred ScrollIntoView(view[0]) races with a
+			// user-initiated ScrollTo on the page-pop path and can pollute OnScrolled indices.
+			// For a grouped CollectionView, the flattened projection backing the view may still
+			// be rebuilding when VectorChanged fires, and indexing into it can raise
+			// E_CHANGED_STATE / COMException (https://github.com/dotnet/maui/issues/17969).
+			// CarouselView does not support grouping, so the not-CarouselView check below also
+			// covers the grouped case. For a CarouselView at a non-zero Position, scrolling to
+			// the first item would override the intended initial position and trigger cascading
+			// PositionChanged / CurrentItemChanged events (https://github.com/dotnet/maui/issues/29529).
+			if (isReset && (ItemsView is not CarouselView carouselView || carouselView.Position != 0))
 			{
 				return;
 			}
 
-			// Grouped CollectionViews are backed by a flattened projection that may still be
-			// mutating while VectorChanged is firing. Accessing indexes synchronously can
-			// trigger STATUS_STOWED_EXCEPTION / E_CHANGED_STATE.
-			//
-			// Non-grouped views (e.g. CarouselView) should remain synchronous to avoid
-			// regressions where deferred scrolling changes the intended position.
-			bool shouldDefer = CollectionViewSource?.IsSourceGrouped == true;
+			// Defer when WinUI may still be mutating the projection (grouped sources, or any
+			// Reset notification) so the scroll runs against a settled state.
+			bool shouldDefer = isGrouped || isReset;
 
 			if (shouldDefer)
 			{
 				var dispatcherQueue = PlatformView?.DispatcherQueue;
 
 				if (dispatcherQueue is null)
+				{
 					return;
+				}
 
 				dispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, ScrollIntoViewIfNeeded);
 			}
