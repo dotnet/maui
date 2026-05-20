@@ -19,6 +19,70 @@ public partial class ButtonOptionsPage : ContentPage
 	{
 		await Navigation.PopAsync();
 	}
+	private void BorderColorButton_Clicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		if (button is null)
+			return;
+		_viewModel.BorderColor = button.Text switch
+		{
+			"Red" => Colors.Red,
+			"Green" => Colors.Green,
+			_ => null,
+		};
+	}
+
+	private void TextColorButton_Clicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		if (button is null)
+			return;
+		_viewModel.TextColor = button.Text switch
+		{
+			"Red" => Colors.Red,
+			"Green" => Colors.Green,
+			_ => null,
+		};
+	}
+
+	private void BackgroundColorButton_Clicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		if (button is null)
+			return;
+		_viewModel.Background = button.Text switch
+		{
+			"Red" => new SolidColorBrush(Colors.Red),
+			"Green" => new SolidColorBrush(Colors.Green),
+			_ => null,
+		};
+	}
+
+	private void LineBreakModeButton_Clicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		if (button is null)
+			return;
+		_viewModel.LineBreakMode = button.Text switch
+		{
+			"CharacterWrap" => LineBreakMode.CharacterWrap,
+			"HeadTruncation" => LineBreakMode.HeadTruncation,
+			"MiddleTruncation" => LineBreakMode.MiddleTruncation,
+			"TailTruncation" => LineBreakMode.TailTruncation,
+			"WordWrap" => LineBreakMode.WordWrap,
+			_ => LineBreakMode.NoWrap,
+		};
+	}
+
+	private void FontAttributesCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var attrs = FontAttributes.None;
+		if (FontAttributesBoldCheckBox?.IsChecked == true)
+			attrs |= FontAttributes.Bold;
+		if (FontAttributesItalicCheckBox?.IsChecked == true)
+			attrs |= FontAttributes.Italic;
+		_viewModel.FontAttributes = attrs;
+	}
 
 	private void OnBorderColorRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
@@ -34,7 +98,9 @@ public partial class ButtonOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton != null && radioButton.IsChecked)
 		{
-			_viewModel.FlowDirection = radioButton.Content.ToString() == "Left to Right" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+			_viewModel.FlowDirection = radioButton.Content.ToString() == "LTR" || radioButton.Content.ToString() == "Left to Right"
+				? FlowDirection.LeftToRight
+				: FlowDirection.RightToLeft;
 		}
 	}
 
@@ -130,5 +196,29 @@ public partial class ButtonOptionsPage : ContentPage
 				? TextTransform.Lowercase
 				: TextTransform.Uppercase;
 		}
+	}
+
+	private void ImageSourceButton_Clicked(object sender, EventArgs e)
+	{
+		if (sender is not Button button)
+			return;
+		_viewModel.ImageSource = button.AutomationId switch
+		{
+			"ImageSourceDotnetBotButton" => ImageSource.FromFile("dotnet_bot.png"),
+			_ => null,
+		};
+	}
+
+	private void ContentLayoutPositionButton_Clicked(object sender, EventArgs e)
+	{
+		if (sender is not Button button)
+			return;
+		_viewModel.ContentLayoutPosition = button.AutomationId switch
+		{
+			"ContentLayoutTopButton" => Button.ButtonContentLayout.ImagePosition.Top,
+			"ContentLayoutRightButton" => Button.ButtonContentLayout.ImagePosition.Right,
+			"ContentLayoutBottomButton" => Button.ButtonContentLayout.ImagePosition.Bottom,
+			_ => Button.ButtonContentLayout.ImagePosition.Left,
+		};
 	}
 }

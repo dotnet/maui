@@ -31,7 +31,8 @@ public class ButtonViewModel : INotifyPropertyChanged
 	private string _releasedEventLabelText = string.Empty;
 	private string _clickedEventLabelText = string.Empty;
 	private ImageSource _imageSource = null;
-	private Button.ButtonContentLayout _contentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 10);
+	private Button.ButtonContentLayout.ImagePosition _contentLayoutPosition = Button.ButtonContentLayout.ImagePosition.Left;
+	private double _contentLayoutSpacing = 10d;
 	private LayoutOptions _horizontalOptions = LayoutOptions.Center;
 	private LayoutOptions _verticalOptions = LayoutOptions.Center;
 
@@ -348,14 +349,32 @@ public class ButtonViewModel : INotifyPropertyChanged
 	}
 
 	public Button.ButtonContentLayout ContentLayout
+		=> new Button.ButtonContentLayout(_contentLayoutPosition, _contentLayoutSpacing);
+
+	public Button.ButtonContentLayout.ImagePosition ContentLayoutPosition
 	{
-		get => _contentLayout;
+		get => _contentLayoutPosition;
 		set
 		{
-			if (_contentLayout != value)
+			if (_contentLayoutPosition != value)
 			{
-				_contentLayout = value;
+				_contentLayoutPosition = value;
 				OnPropertyChanged();
+				OnPropertyChanged(nameof(ContentLayout));
+			}
+		}
+	}
+
+	public double ContentLayoutSpacing
+	{
+		get => _contentLayoutSpacing;
+		set
+		{
+			if (_contentLayoutSpacing != value)
+			{
+				_contentLayoutSpacing = value;
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(ContentLayout));
 			}
 		}
 	}
@@ -433,7 +452,8 @@ public class ButtonViewModel : INotifyPropertyChanged
 		ReleasedEventLabelText = string.Empty;
 		ClickedEventLabelText = string.Empty;
 		ImageSource = null;
-		ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 10);
+		ContentLayoutPosition = Button.ButtonContentLayout.ImagePosition.Left;
+		ContentLayoutSpacing = 10d;
 		HorizontalOptions = LayoutOptions.Center;
 		VerticalOptions = LayoutOptions.Center;
 	}

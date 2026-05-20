@@ -101,7 +101,11 @@ public class ButtonFeatureTests : _GalleryUITest
 	[Test, Order(5)]
 	public void VerifyButton_AllEventHandlersExecute()
 	{
-		App.WaitForElement("ButtonControl");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
 		App.Tap("ButtonControl");
 		Assert.That(App.FindElement("ClickedEventLabel").GetText(), Is.EqualTo("Clicked Event Executed"));
 		Assert.That(App.FindElement("PressedEventLabel").GetText(), Is.EqualTo("Pressed Event Executed"));
@@ -826,6 +830,68 @@ public class ButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(47)]
+	public void VerifyButton_IsVisibleTrueAfterFalse()
+	{
+		// Hide the button.
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("IsVisibleFalseButton");
+		App.Tap("IsVisibleFalseButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForNoElement("ButtonControl");
+
+		// Restore visibility and assert the button reappears.
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("IsVisibleTrueButton");
+		App.Tap("IsVisibleTrueButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		App.Tap("ButtonControl");
+		Assert.That(App.FindElement("ClickedEventLabel").GetText(), Is.EqualTo("Clicked Event Executed"));
+	}
+
+	[Test, Order(48)]
+	public void VerifyButton_NegativeContentLayoutSpacing()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ImageSourceDotnetBotButton");
+		App.Tap("ImageSourceDotnetBotButton");
+		App.WaitForElement("ContentLayoutLeftButton");
+		App.Tap("ContentLayoutLeftButton");
+		App.WaitForElement("ContentLayoutSpacingEntry");
+		App.ClearText("ContentLayoutSpacingEntry");
+		App.EnterText("ContentLayoutSpacingEntry", "-1");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("ButtonControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(49)]
+	public void VerifyButton_ZeroHeightAndWidthRequest()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("HeightRequestEntry");
+		App.ClearText("HeightRequestEntry");
+		App.EnterText("HeightRequestEntry", "0");
+		App.WaitForElement("WidthRequestEntry");
+		App.ClearText("WidthRequestEntry");
+		App.EnterText("WidthRequestEntry", "0");
+		App.WaitForElement("TextEntry");
+		App.ClearText("TextEntry");
+		App.EnterText("TextEntry", "Button ZeroSize");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("Options");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
