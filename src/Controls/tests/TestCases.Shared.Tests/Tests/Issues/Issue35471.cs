@@ -26,8 +26,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// The back button should now show "Accueil" (updated title).
 			// Without the fix, it still shows "Home" (stale title).
-			App.WaitForElement("Accueil");
-			App.Tap("Accueil");
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				App.TapBackArrow(); // iOS 26+: no text on back button
+			}
+			else
+			{
+				App.TapBackArrow("Accueil");
+			}
 
 			// Verify we navigated back to root
 			App.WaitForElement("RootPageLabel");
