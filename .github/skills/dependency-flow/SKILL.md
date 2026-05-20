@@ -39,7 +39,7 @@ These are configured via default channel mappings — builds are **automatically
 **Common branch → channel patterns (not exhaustive — always verify with the command below):**
 - **Servicing release branches** (`release/X.0.Yxx-srN`) all map to the **single** general SDK channel for that band (e.g., `release/10.0.1xx-sr6`, `release/10.0.1xx-sr7`, etc. all map to `.NET 10.0.1xx SDK`). There is **no** `.NET X.0.Yxx SDK SRn` channel — do not invent one.
 - **Preview release branches** (`release/X.0.Yxx-previewN`) map to dedicated per-preview channels (e.g., `release/11.0.1xx-preview3` → `.NET 11.0.1xx SDK Preview 3`).
-- **RC release branches** (`release/X.0.Yxx-rcN`) map to dedicated per-RC channels (e.g., `.NET 10.0.1xx SDK RC 2`). MAUI defaults for these are only active during the corresponding pre-release cycle.
+- **RC release branches** (`release/X.0.Yxx-rcN`) use dedicated per-RC channels (e.g., `.NET 10.0.1xx SDK RC 2`) **only while their cycle is active** — these default mappings are removed after the RC ships, so `get-default-channels` will show no RC sibling to copy from. If you can't find a sibling, stop and ask release engineering rather than guessing the channel name.
 - **Main/development branches** (`main`, `netN.0`, `release/X.0.Yxx`) map to the general SDK channel for that band.
 - **Other shapes** also exist in dotnet/maui from time to time — point-sub-release branches (`-rc2.1`, `-preview6.1`), `inflight/*` mirrors, and vendor-suffixed branches (e.g., `release/10.0.1xx-meaipreview1`). Do not assume the four bullets above are complete — always check.
 
@@ -47,7 +47,7 @@ These are configured via default channel mappings — builds are **automatically
 ```bash
 darc get-default-channels --source-repo https://github.com/dotnet/maui
 ```
-Find a sibling branch (e.g., the previous SR, the previous RC, or the previous preview) and copy its channel exactly.
+Find a sibling branch (e.g., the previous SR or the previous preview) and copy its channel exactly. If no sibling exists (common for RC branches outside an active cycle), stop and ask release engineering — do not guess the channel name.
 
 ### Adding a new branch to the default channel mapping
 
