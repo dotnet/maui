@@ -65,10 +65,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				newValue = AccessibilityView.Raw;
 			}
-			else if (!string.IsNullOrWhiteSpace(Element.AutomationId))
-			{
-				newValue = AccessibilityView.Content;
-			}
 
 			if (currentValue is null || currentValue != newValue)
 			{

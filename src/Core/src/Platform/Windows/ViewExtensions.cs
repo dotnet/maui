@@ -9,6 +9,7 @@ using Microsoft.Maui.Media;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -138,8 +139,33 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateAutomationId(this FrameworkElement platformView, IView view) =>
-			AutomationProperties.SetAutomationId(platformView, view.AutomationId);
+		public static void UpdateAutomationId(this FrameworkElement platformView, IView view)
+		{
+			var automationId = view.AutomationId;
+			AutomationProperties.SetAutomationId(platformView, automationId);
+
+			// A FrameworkElement without a built-in AutomationPeer (ContentControl,
+			// Border, Panel-derived layout hosts, etc.) defaults to AccessibilityView.Raw,
+			// which hides it from the UIA tree even when an AutomationId is provided.
+			// Promote it to Content so test automation (Appium/WinAppDriver) and assistive
+			// technology can find it.
+			//
+			// Guards:
+			//  * Only promote when AutomationId is non-empty.
+			//  * Never override an explicit AccessibilityView already set in XAML or code
+			//    (e.g. "Raw" on the FlyoutScrollViewer template part in Resources.xaml).
+			//    ReadLocalValue returns DependencyProperty.UnsetValue only when no local
+			//    value has been assigned.
+			//  * The Controls-layer MapAutomationPropertiesIsInAccessibleTree mapper runs
+			//    after this and will overwrite to Raw when IsInAccessibleTree=false,
+			//    preserving developer intent.
+			// Fixes https://github.com/dotnet/maui/issues/4715
+			if (!string.IsNullOrEmpty(automationId) &&
+				platformView.ReadLocalValue(AutomationProperties.AccessibilityViewProperty) == DependencyProperty.UnsetValue)
+			{
+				AutomationProperties.SetAccessibilityView(platformView, AccessibilityView.Content);
+			}
+		}
 
 		public static void UpdateSemantics(this FrameworkElement platformView, IView view)
 		{

@@ -23,6 +23,26 @@ namespace Microsoft.Maui.DeviceTests
 				return 0;
 		}
 
+		[Fact("ContentView without AutomationId is not promoted in accessibility tree")]
+		public async Task ContentViewWithoutAutomationIdIsNotPromoted()
+		{
+			SetupBuilder();
+
+			var contentView = new ContentView
+			{
+				Content = new Label { Text = "content" }
+			};
+
+			var handler = await CreateHandlerAsync<ContentViewHandler>(contentView);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				// Without AutomationId, the platform default should remain (not promoted to Content)
+				var accessibilityView = UIAutomationProperties.GetAccessibilityView(handler.PlatformView);
+				Assert.NotEqual(AccessibilityView.Content, accessibilityView);
+			});
+		}
+
 		[Fact("AutomationId makes ContentView visible in accessibility tree")]
 		public async Task ContentViewWithAutomationIdIsInAccessibilityTree()
 		{

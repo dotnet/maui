@@ -1,25 +1,12 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Element
 	{
-		public static void MapAutomationId(IElementHandler handler, IElement element, Action<IElementHandler, IElement> baseMethod)
-		{
-			baseMethod?.Invoke(handler, element);
-
-			if (element is not Element controlsElement ||
-				handler.PlatformView is not FrameworkElement platformView ||
-				string.IsNullOrWhiteSpace(controlsElement.AutomationId))
-				return;
-
-			Platform.AccessibilityExtensions.SetAutomationPropertiesAccessibilityView(platformView, controlsElement);
-		}
-
 		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, Element element)
 		{
 			if (handler.IsConnectingHandler() && element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) is null)
