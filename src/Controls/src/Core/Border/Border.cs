@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;
-		WeakNotifyCollectionChangedProxy? _strokeDashArrayProxy;
+		readonly WeakNotifyCollectionChangedProxy _strokeDashArrayProxy = new();
 		NotifyCollectionChangedEventHandler? _strokeDashArrayChanged;
 
 		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
@@ -431,7 +431,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_strokeDashArrayChanged ??= OnStrokeDashArrayChanged;
-			_strokeDashArrayProxy ??= new();
 			_strokeDashArrayProxy.Subscribe(strokeDashArray, _strokeDashArrayChanged);
 		}
 
