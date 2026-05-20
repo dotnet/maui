@@ -919,21 +919,6 @@ stages:
               displayName: 'Install iOS 26.4 simulator'
               continueOnError: true
 
-          # Set a pipeline variable to track iOS 26.4 availability so the
-          # Stage 3 comment can warn when running with fallback baselines.
-          - ${{ if in(parameters.Platform, 'ios', 'catalyst') }}:
-            - pwsh: |
-                $runtimes = xcrun simctl list runtimes 2>&1
-                if ($runtimes -match 'iOS 26') {
-                  Write-Host "##vso[task.setvariable variable=IOS26Available;isOutput=true]true"
-                  Write-Host "iOS 26.x runtime available"
-                } else {
-                  Write-Host "##vso[task.setvariable variable=IOS26Available;isOutput=true]false"
-                  Write-Host "⚠️ iOS 26.x NOT available — visual tests may fail with baseline mismatch" -ForegroundColor Yellow
-                }
-              displayName: 'Check iOS 26 availability'
-              name: iOSCheck
-
           # Install .NET workloads (same as ReviewPR stage) — without this,
           # dotnet build fails with NETSDK1147 because the ios/android workloads
           # are not present after provision.yml (which only installs the SDK).

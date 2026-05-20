@@ -411,7 +411,9 @@ function Get-TrxResults {
             'Failed'       { 'Failed' }
             'NotExecuted'  { 'Skipped' }
             'Inconclusive' { 'Skipped' }
-            default        { $outcomeAttr }
+            # Map all other outcomes (Aborted, Timeout, Error, Disconnected,
+            # Warning, Pending) to Failed — matches shared/Get-TrxResults.ps1.
+            default        { 'Failed' }
         }
         $duration = $r.GetAttribute('duration')
         $err = ''; $stack = ''

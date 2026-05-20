@@ -446,20 +446,31 @@ try {
                             $retryByName[$rr.GetAttribute('testName')] = $rr
                         }
 
-                        # Replace matching entries in the original TRX
+                        # Only replace entries that were in the original failed set.
+                        # The retry filter uses substring matching (~) so the retry TRX
+                        # may contain tests that passed on the first run (e.g. other
+                        # parameterizations of the same method). We must NOT overwrite
+                        # those — only replace originally-failed entries.
+                        $failedNameSet = New-Object 'System.Collections.Generic.HashSet[string]'
+                        foreach ($fn in $failedNames) { [void]$failedNameSet.Add($fn) }
+
                         foreach ($origResult in $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)) {
                             $tName = $origResult.GetAttribute('testName')
-                            if ($retryByName.ContainsKey($tName)) {
+                            if ($failedNameSet.Contains($tName) -and $retryByName.ContainsKey($tName)) {
                                 $imported = $origXml.ImportNode($retryByName[$tName], $true)
                                 $origResult.ParentNode.ReplaceChild($imported, $origResult) | Out-Null
                             }
                         }
 
-                        # Update counters to reflect merged results
+                        # Update counters to reflect merged results. Count outcomes
+                        # using the same logic as Get-TrxResults: Passed stays Passed,
+                        # NotExecuted/Inconclusive are Skipped, everything else is Failed.
                         $allResults = $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)
                         $mergedTotal = $allResults.Count
                         $mergedPassed = @($allResults | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
-                        $mergedFailed = @($allResults | Where-Object { $_.GetAttribute('outcome') -eq 'Failed' }).Count
+                        $skippedOutcomes = @('NotExecuted', 'Inconclusive')
+                        $mergedSkipped = @($allResults | Where-Object { $_.GetAttribute('outcome') -in $skippedOutcomes }).Count
+                        $mergedFailed = $mergedTotal - $mergedPassed - $mergedSkipped
                         $mergedExecuted = $mergedPassed + $mergedFailed
                         $counters = $origXml.SelectSingleNode('//t:ResultSummary/t:Counters', $nsMgr)
                         if ($counters) {
