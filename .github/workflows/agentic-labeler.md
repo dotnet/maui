@@ -43,10 +43,9 @@ network: defaults
 
 safe-outputs:
   add-labels:
-    # Blast-radius cap: the prompt instructs exactly one call to add_labels,
-    # so cap the number of accepted calls at 1. (Each single call may carry
-    # multiple label names in its `labels` array.)
-    max: 1
+    # Blast-radius cap: allow up to 10 labels per call so area + platform
+    # labels all survive in a single add_labels invocation.
+    max: 10
   # This workflow is labeling-only — never create issues for agent-side
   # status events (noop, missing tool, incomplete run, failure). Those
   # paths default to opening tracker issues, which would contradict the
