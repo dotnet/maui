@@ -120,6 +120,15 @@ namespace Microsoft.Maui.Platform
 				// "[children text], [hint]" as a single focus unit.
 				platformView.IsAccessibilityElement = true;
 
+				// If a TapGestureRecognizer was wired up first, GesturePlatformManager may have
+				// already set ShouldGroupAccessibilityChildren=true. Clear it now: once the layout
+				// is a leaf accessibility element the grouping flag is redundant, and some iOS
+				// versions silently drop the parent's accessibilityLabel/hint when both are set.
+				platformView.ShouldGroupAccessibilityChildren = false;
+
+				// Safe to early-return: an ILayout MAUI view never produces a UISearchBar/UIControl/
+				// UIStepper/UIPageControl platform view, so the internal UpdateSemantics branches for
+				// those types are not applicable here. Heading trait is explicitly applied below.
 				UpdateSemanticsHeading(platformView, semantics);
 				return;
 			}
@@ -181,18 +190,29 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
+		/// Maximum recursion depth for <see cref="CollectChildrenText"/>. Caps traversal of deeply
+		/// nested layouts so pathological hierarchies cannot stall accessibility updates.
+		/// </summary>
+		const int MaxChildTextRecursionDepth = 10;
+
+		/// <summary>
 		/// Synthesizes an accessibility label by collecting text from all IText children in the layout.
 		/// Uses the MAUI virtual view tree (not platform subviews) to avoid timing issues.
 		/// </summary>
 		static string? SynthesizeAccessibilityLabelFromChildren(ILayout layout)
 		{
 			var sb = new StringBuilder();
-			CollectChildrenText(layout, sb);
+			CollectChildrenText(layout, sb, depth: 0);
 			return sb.Length > 0 ? sb.ToString() : null;
 		}
 
-		static void CollectChildrenText(ILayout layout, StringBuilder sb)
+		static void CollectChildrenText(ILayout layout, StringBuilder sb, int depth)
 		{
+			if (depth >= MaxChildTextRecursionDepth)
+			{
+				return;
+			}
+
 			for (int i = 0; i < layout.Count; i++)
 			{
 				var child = layout[i];
@@ -219,7 +239,7 @@ namespace Microsoft.Maui.Platform
 				else if (child is ILayout childLayout)
 				{
 					// Recurse into nested layouts to collect text from their children
-					CollectChildrenText(childLayout, sb);
+					CollectChildrenText(childLayout, sb, depth + 1);
 				}
 			}
 		}

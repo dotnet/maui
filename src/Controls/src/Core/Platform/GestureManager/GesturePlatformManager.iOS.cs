@@ -676,19 +676,28 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// Ensure container views are marked as accessibility elements so VoiceOver
 				// can announce the Button trait and make the container focusable for VoiceOver.
-				if (!PlatformView.ShouldGroupAccessibilityChildren && _handler.VirtualView is ILayout)
+				// Skip if IsAccessibilityElement is already true (e.g. set by SemanticExtensions for a
+				// Hint/Description on this layout) — when the container is already a leaf accessibility
+				// element, ShouldGroupAccessibilityChildren is ignored by UIKit and would be redundant.
+				if (!PlatformView.ShouldGroupAccessibilityChildren
+					&& !PlatformView.IsAccessibilityElement
+					&& _handler.VirtualView is global::Microsoft.Maui.ILayout)
 				{
 					PlatformView.ShouldGroupAccessibilityChildren = true;
 					_setIsAccessibilityElement = true;
 				}
 
 				// UIKit's default accessibilityActivate() simulates touch events which are intermittently
-				// unreliable for UITapGestureRecognizer (especially on macOS Catalyst). Bypass that path
-				// by directly invoking SendTapped on the MAUI TapGestureRecognizer for both iOS and Catalyst.
-				// This is decoupled from the grouping block above so it also registers when
-				// SemanticExtensions already set ShouldGroupAccessibilityChildren (layout with Hint + gesture).
+				// unreliable for UITapGestureRecognizer (especially on macOS Catalyst Ctrl+Option+Space).
+				// Bypass that path by directly invoking SendTapped on the MAUI TapGestureRecognizer for
+				// both iOS and Catalyst. VoiceOver activation is a single semantic event — UIKit's
+				// simulated-touch path also does not honor NumberOfTapsRequired > 1 from a VoiceOver
+				// activation, so the direct path does not regress that scenario and makes activation
+				// reliable across both platforms.
+				// This block is decoupled from the grouping block above so it also registers when
+				// SemanticExtensions already promoted the container (layout with Hint + gesture).
 				if (PlatformView is Microsoft.Maui.Platform.MauiView mauiView &&
-					_handler.VirtualView is ILayout)
+					_handler.VirtualView is global::Microsoft.Maui.ILayout)
 				{
 					var weakThis = new WeakReference<GesturePlatformManager>(this);
 
@@ -699,18 +708,18 @@ namespace Microsoft.Maui.Controls.Platform
 							return false;
 						}
 
-							var view = manager._handler?.VirtualView as View;
+						var view = manager._handler?.VirtualView as View;
 
-							if (view is null)
-							{
-								return false;
-							}
+						if (view is null)
+						{
+							return false;
+						}
 
-							if (view.HasAccessibleTapGesture(out var tap))
-							{
-								tap.SendTapped(view);
-								return true;
-							}
+						if (view.HasAccessibleTapGesture(out var tap))
+						{
+							tap.SendTapped(view);
+							return true;
+						}
 
 						return false;
 					};
