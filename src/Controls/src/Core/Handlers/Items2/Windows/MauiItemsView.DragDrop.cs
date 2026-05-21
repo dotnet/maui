@@ -311,6 +311,7 @@ internal partial class MauiItemsView
 			// so it doesn't get reused while invisible.
 			itemContainer.Opacity = 1;
 			itemContainer.IsHitTestVisible = true;
+			RemoveDragGhostAppearance(itemContainer);
 			if (ReferenceEquals(_sourceContainer, itemContainer))
 			{
 				_sourceContainer = null;
@@ -360,33 +361,38 @@ internal partial class MauiItemsView
 		itemContainer.DropCompleted -= ItemContainer_DropCompleted;
 		itemContainer.DropCompleted += ItemContainer_DropCompleted;
 
-		// Set card background SYNCHRONOUSLY before DragStarting returns.
-		// WinUI builds the drag ghost AFTER this handler returns (not before), so the
-		// compositor captures the container WITH the card background already applied.
-		// RenderTargetBitmap is NOT used here because it cannot capture MAUI's
-		// compositor-layer content — it would produce a white ghost with no item content.
+		// Apply card background synchronously so it is live when the deferral releases.
 		ApplyDragGhostAppearance(itemContainer);
 
-		// Deferred cleanup: runs on the NEXT dispatcher frame, after the compositor
-		// has snapshotted the container for the ghost.  Removes the temporary card
-		// background and hides the source slot.
+		// GetDeferral() tells WinUI to wait before creating the drag ghost.
+		// The compositor snapshot is taken when deferral.Complete() is called —
+		// at that moment Background=cardBrush and Opacity=1, so the ghost captures
+		// the full card + MAUI item content.
+		var deferral = args.GetDeferral();
+
 		DispatcherQueue.TryEnqueue(
 			Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
 			() =>
 			{
-				// Remove card styling — ghost is already snapshotted by compositor.
-				RemoveDragGhostAppearance(itemContainer);
+				// Release deferral — ghost snapshot taken NOW (cardBrush, Opacity=1).
+				deferral.Complete();
 
-				if (_sourceContainer is not null)
-				{
-					_sourceContainer.Opacity = 0;
-					// Disable hit testing so the invisible slot doesn't intercept
-					// pointer events and FindElementsInHostCoordinates.
-					_sourceContainer.IsHitTestVisible = false;
-				}
+				// Hide source and remove card background in the next frame,
+				// after the ghost is committed by the compositor.
+				DispatcherQueue.TryEnqueue(
+					Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
+					() =>
+					{
+						RemoveDragGhostAppearance(itemContainer);
 
-				// Dim all non-source containers to signal "reorder mode".
-				DimNonSourceContainers();
+						if (_sourceContainer is not null)
+						{
+							_sourceContainer.Opacity = 0;
+							_sourceContainer.IsHitTestVisible = false;
+						}
+
+						DimNonSourceContainers();
+					});
 			});
 	}
 
