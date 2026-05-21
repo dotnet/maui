@@ -469,7 +469,7 @@ function Invoke-CopilotStep {
     # Use JSON output format to stream live progress of agent activity.
     # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model access
     # can run this script (e.g., with 'claude-opus-4.6' or 'claude-sonnet-4.6').
-    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'claude-opus-4.6' }
+    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.5' }
     & copilot -p $Prompt --allow-all --output-format json --model $copilotModel 2>&1 | ForEach-Object {
         $line = $_.ToString()
         try {
