@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(typeof(Button), typeof(ButtonHandler))]
 		[InlineData(typeof(ContentPage), typeof(PageHandler))]
 		[InlineData(typeof(Page), typeof(PageHandler))]
+		[InlineData(typeof(SwipeItemView), typeof(ContentViewHandler))]
 		[InlineData(typeof(TemplatedView), typeof(ContentViewHandler))]
 		[InlineData(typeof(ContentView), typeof(ContentViewHandler))]
 		[InlineData(typeof(MyTestCustomTemplatedView), typeof(ContentViewHandler))]

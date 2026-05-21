@@ -27,15 +27,15 @@ builder.ConfigureMauiHandlers(handlers =>
        }
 ```
 
-DI registration should only be used to override an existing `[ElementHandler]` declaration or when the element type is an interface (e.g., `IScrollView`). DI-registered handlers take priority over `[ElementHandler]` attributes when registered for the exact same type.
+DI registration should only be used to override an existing `[ElementHandler]` declaration or when the element type is an interface (e.g., `IScrollView`). DI-registered handlers take priority over `[ElementHandler]` attributes when the registered type is assignable from the requested element type.
 
 ## Resolution Order
 
 Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerType(Type)` follow the same resolution order:
 
 1. **Exact DI registration** — checks if a handler was registered for this exact type via `AddHandler`
-2. **`[ElementHandler]` attribute** — walks the type's base class hierarchy looking for the attribute
-3. **Interface-based DI registration** — uses `RegisteredHandlerServiceTypeSet` to find the best matching interface registration (e.g., a handler registered for `IScrollView` matches a `ScrollView` instance)
+2. **Assignable DI registration** — uses `RegisteredHandlerServiceTypeSet` to find the best matching concrete or interface registration (e.g., a handler registered for `Button` matches a derived `FancyButton`, and a handler registered for `IScrollView` matches a `ScrollView` instance)
+3. **`[ElementHandler]` attribute** — walks the type's base class hierarchy looking for the attribute
 4. **`IContentView` fallback** — returns `ContentViewHandler` for any `IContentView` implementation
 5. **`GetHandlerType` returns `null`** / **`GetHandler` throws `HandlerNotFoundException`** — if none of the above matched
 
@@ -43,8 +43,8 @@ Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerT
 
 How a handler instance is created depends on how it was resolved:
 
-- **DI-registered handlers** (steps 1 & 3): Instantiated through `MauiFactory.GetService()`, which uses `Activator.CreateInstance` on the registered `ImplementationType`, or invokes the `ImplementationFactory` delegate if one was provided.
-- **`[ElementHandler]` attribute** (step 2): Instantiated directly via `Activator.CreateInstance` — no DI involvement.
+- **DI-registered handlers** (steps 1 & 2): Instantiated through `MauiFactory.GetService()`, which uses `Activator.CreateInstance` on the registered `ImplementationType`, or invokes the `ImplementationFactory` delegate if one was provided.
+- **`[ElementHandler]` attribute** (step 3): Instantiated directly via `Activator.CreateInstance` — no DI involvement.
 - **Fallback in `ElementExtensions.ToHandler()`**: When `Activator.CreateInstance` fails with a `MissingMethodException` (e.g., the handler requires constructor parameters), `ActivatorUtilities.CreateInstance` is used instead, which supports constructor injection from the DI container.
 
 > **Note:** Handlers registered via `[ElementHandler]` must have a public parameterless constructor.
