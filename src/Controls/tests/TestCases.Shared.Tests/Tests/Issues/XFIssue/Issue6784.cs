@@ -50,10 +50,11 @@ public class Issue6784 : _IssuesUITest
 		App.WaitForElement("Tab 11");
 
 		// The "Edit" element count differs between MacCatalyst and other platforms
-		// In MacCatalyst it includes the "Edit" menu item in the macOS menu bar.
 		// Note: This different behavior is due to Appium's ability to detect macOS menu items in MacCatalyst apps.
+		// 1. The "Edit" menu item in the macOS system menu bar (always present in Mac apps)
+		// 2. The "Edit" button in the UIMoreNavigationController (visible in the More tab's navigation bar)
 #if MACCATALYST
-		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(1));
+		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(2));
 #else
 		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(0));
 #endif
