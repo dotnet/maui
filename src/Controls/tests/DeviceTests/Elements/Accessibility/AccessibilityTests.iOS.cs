@@ -1,4 +1,3 @@
-#if IOS || MACCATALYST
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -120,4 +119,4 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
-#endif
+
