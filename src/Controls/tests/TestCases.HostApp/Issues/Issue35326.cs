@@ -49,14 +49,14 @@ public class Issue35326 : ContentPage
 		{
 			Text = "Scroll To End",
 			AutomationId = "ScrollToEndButton",
-			Command = new Command(() => collectionView.ScrollTo(40, position: ScrollToPosition.Start, animate: false))
+			Command = new Command(() => collectionView.ScrollTo(40))
 		};
 
 		var scrollToStartButton = new Button
 		{
 			Text = "Scroll To Start",
 			AutomationId = "ScrollToStartButton",
-			Command = new Command(() => collectionView.ScrollTo(0, position: ScrollToPosition.Start, animate: false))
+			Command = new Command(() => collectionView.ScrollTo(0))
 		};
 
 		var scrollToItemButton = new Button

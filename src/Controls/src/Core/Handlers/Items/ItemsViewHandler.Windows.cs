@@ -717,20 +717,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return CollectionViewSource.View[index];
 		}
 
+		// Walks the grouped source to find the item at the given flat index, skipping any synthetic
+		// GroupFooterItemTemplateContext entries that GroupTemplateContext appends when GroupFooterTemplate is set.
 		object FindGroupedItemByFlatIndex(int flatIndex)
 		{
 			var groups = CollectionViewSource.View.CollectionGroups;
 			if (groups == null)
-			{
 				return null;
-			}
 
 			int remaining = flatIndex;
 			foreach (var group in groups)
 			{
 				if (group is ICollectionViewGroup itemGroup)
 				{
-					int itemCount = itemGroup.GroupItems.Count;
+					int totalCount = itemGroup.GroupItems.Count;
+
+					// GroupTemplateContext always appends the footer as the last entry; adjust the
+					// effective item count so the flat index skips it without iterating every item.
+					int itemCount = totalCount > 0 && itemGroup.GroupItems[totalCount - 1] is GroupFooterItemTemplateContext
+						? totalCount - 1
+						: totalCount;
+
 					if (remaining < itemCount)
 					{
 						return itemGroup.GroupItems[remaining];
