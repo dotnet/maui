@@ -71,6 +71,9 @@ namespace Microsoft.Maui.Handlers
 			var webViewClient = new MauiHybridWebViewClient(this);
 			PlatformView.SetWebViewClient(webViewClient);
 
+			var chromeClient = new HybridWebViewChromeClient(this);
+			PlatformView.SetWebChromeClient(chromeClient);
+
 			platformView.LoadUrl(new Uri(AppOriginUri, "/").ToString());
 		}
 
@@ -82,19 +85,54 @@ namespace Microsoft.Maui.Handlers
 				{
 					webViewClient.Disconnect();
 				}
-				//if (platformView.WebChromeClient is MauiWebChromeClient webChromeClient)
-				//{
-				//	webChromeClient.Disconnect();
-				//}
 			}
 
 			platformView.SetWebViewClient(null!);
-			//platformView.SetWebChromeClient(null);
+			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
 
 
 			base.DisconnectHandler(platformView);
+		}
+
+		sealed class HybridWebViewChromeClient : WebChromeClient
+		{
+			readonly WeakReference<HybridWebViewHandler> _handler;
+
+			public HybridWebViewChromeClient(HybridWebViewHandler handler)
+			{
+				_handler = new WeakReference<HybridWebViewHandler>(handler);
+			}
+
+			public override bool OnCreateWindow(AWebView? view, bool isDialog, bool isUserGesture, global::Android.OS.Message? resultMsg)
+			{
+				if (view is null || !_handler.TryGetTarget(out var handler))
+					return false;
+
+				var requestUrl = view.GetHitTestResult()?.Extra;
+				if (string.IsNullOrEmpty(requestUrl))
+					return false;
+
+				Uri.TryCreate(requestUrl, UriKind.RelativeOrAbsolute, out var uri);
+
+				if (handler.VirtualView is INavigatingAwareWebView navAware)
+				{
+					var args = new WebViewNavigatingEventArgs(uri, WebNavigationTarget.NewWindow, null);
+					bool cancel = navAware.Navigating(args);
+
+					if (!cancel)
+					{
+						view.LoadUrl(requestUrl);
+					}
+				}
+				else
+				{
+					view.LoadUrl(requestUrl);
+				}
+
+				return false;
+			}
 		}
 
 		internal static void EvaluateJavaScript(IHybridWebViewHandler handler, IHybridWebView hybridWebView, EvaluateJavaScriptAsyncRequest request)

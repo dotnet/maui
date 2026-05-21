@@ -274,12 +274,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (navigationAction.TargetFrame is null)
 				{
 					// Open in a new browser window regardless of UrlLoadingStrategy
-					strategy = UrlLoadingStrategy.OpenExternally;
+					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri, Microsoft.Maui.WebNavigationTarget.NewWindow);
+					_webView.UrlLoading(callbackArgs);
+					_webView.Logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
+					strategy = callbackArgs.UrlLoadingStrategy;
 				}
 				else
 				{
+					var target = navigationAction.TargetFrame.MainFrame
+						? Microsoft.Maui.WebNavigationTarget.MainFrame
+						: Microsoft.Maui.WebNavigationTarget.Frame;
+
 					// Invoke the UrlLoading event to allow overriding the default link handling behavior
-					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri);
+					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri, target);
 					_webView.UrlLoading(callbackArgs);
 					_webView.Logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
 

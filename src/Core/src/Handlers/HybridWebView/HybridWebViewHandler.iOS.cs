@@ -369,7 +369,9 @@ namespace Microsoft.Maui.Handlers
 				var requestUrl = navigationAction.Request.Url?.ToString();
 
 				// Allow navigations to the app origin (local content) without raising the event
+#pragma warning disable IL2026, IL3050 // AppOriginUri is a static field on the annotated outer class
 				if (!string.IsNullOrEmpty(requestUrl) && new Uri(requestUrl) is Uri uri && AppOriginUri.IsBaseOf(uri))
+#pragma warning restore IL2026, IL3050
 				{
 					decisionHandler(WKNavigationActionPolicy.Allow);
 					return;

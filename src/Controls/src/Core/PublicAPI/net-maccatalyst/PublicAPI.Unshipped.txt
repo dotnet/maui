@@ -1,13 +1,28 @@
-#nullable enable
-override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.AddSubview(UIKit.UIView! view) -> void
-override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
-override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.Dispose(bool disposing) -> void
-~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
-*REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+﻿#nullable enable
+Microsoft.Maui.Controls.HybridWebView.Navigating -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs!>?
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Cancel.get -> bool
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Cancel.set -> void
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.HybridWebViewNavigatingEventArgs(System.Uri? url, Microsoft.Maui.WebNavigationTarget target, Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs? platformArgs) -> void
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs?
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Url.get -> System.Uri?
+Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs
+Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs.NavigationAction.get -> WebKit.WKNavigationAction!
+Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs
+Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs.NavigationAction.get -> WebKit.WKNavigationAction!
+~Microsoft.Maui.Controls.WebNavigatingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs
+Microsoft.Maui.Controls.WebNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+~Microsoft.Maui.Controls.WebNavigatingEventArgs.WebNavigatingEventArgs(Microsoft.Maui.WebNavigationEvent navigationEvent, Microsoft.Maui.Controls.WebViewSource source, string url, Microsoft.Maui.WebNavigationTarget target, Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs platformArgs) -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
+override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.AddSubview(UIKit.UIView! view) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.Dispose(bool disposing) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.DisconnectHandler(UIKit.UIView platformView) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.UpdateFlowDirection() -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.ViewDidAppear(bool animated) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.DidMoveToParentViewController(UIKit.UIViewController parent) -> void
+*REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
-override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.UpdateFlowDirection() -> void

@@ -1,4 +1,6 @@
 ﻿#nullable enable
+*REMOVED*Microsoft.Maui.Handlers.WebViewHandler.NavigatingCanceled(string? url) -> bool
+Microsoft.Maui.Handlers.WebViewHandler.NavigatingCanceled(string? url, Android.Webkit.IWebResourceRequest? request = null) -> bool
 Microsoft.Maui.INavigatingAwareWebView
 Microsoft.Maui.INavigatingAwareWebView.Navigating(Microsoft.Maui.WebViewNavigatingEventArgs! args) -> bool
 Microsoft.Maui.PlatformDrawable
@@ -24,6 +26,7 @@ override Microsoft.Maui.Platform.LayoutViewGroup.HasOverlappingRendering.get -> 
 override Microsoft.Maui.Platform.MauiHybridWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.ShouldOverrideUrlLoading(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> bool
+~override Microsoft.Maui.Platform.MauiWebChromeClient.OnCreateWindow(Android.Webkit.WebView view, bool isDialog, bool isUserGesture, Android.OS.Message resultMsg) -> bool
 override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
 override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 			_navigationResult = WebNavigationResult.Success;
 		}
 		public override bool ShouldOverrideUrlLoading(WebView? view, IWebResourceRequest? request)
-			=> NavigatingCanceled(request?.Url?.ToString());
+			=> NavigatingCanceled(request?.Url?.ToString(), request);
 
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{
@@ -94,8 +94,8 @@ namespace Microsoft.Maui.Platform
 			return base.OnRenderProcessGone(view, detail);
 		}
 
-		bool NavigatingCanceled(string? url) =>
-			!_handler.TryGetTarget(out var handler) || handler.NavigatingCanceled(url);
+		bool NavigatingCanceled(string? url, IWebResourceRequest? request = null) =>
+			!_handler.TryGetTarget(out var handler) || handler.NavigatingCanceled(url, request);
 
 		static bool IsBlankNavigation(string? url)
 		{

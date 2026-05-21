@@ -380,7 +380,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
+#if WEBVIEW2_MAUI
+				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri, Microsoft.Maui.WebNavigationTarget.MainFrame);
+#else
 				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
+#endif
 
 #if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
 				_urlLoading?.Invoke(callbackArgs);

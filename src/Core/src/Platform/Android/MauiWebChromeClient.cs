@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiWebChromeClient : WebChromeClient
 	{
 		WeakReference<Activity> _activityRef;
+		WeakReference<IWebViewHandler> _handlerRef;
 		List<int> _requestCodes;
 		View _customView;
 		ICustomViewCallback _videoViewCallback;
@@ -28,8 +29,42 @@ namespace Microsoft.Maui.Platform
 			_ = handler ?? throw new ArgumentNullException(nameof(handler));
 
 			_originalOrientation = ScreenOrientation.Unspecified;
+			_handlerRef = new WeakReference<IWebViewHandler>(handler);
 
 			SetContext(handler);
+		}
+
+		public override bool OnCreateWindow(WebView view, bool isDialog, bool isUserGesture, global::Android.OS.Message resultMsg)
+		{
+			if (view is null || !_handlerRef.TryGetTarget(out var handler))
+				return false;
+
+			// Get the URL from the hit test result
+			var requestUrl = view.GetHitTestResult()?.Extra;
+			if (string.IsNullOrEmpty(requestUrl))
+				return false;
+
+			Uri.TryCreate(requestUrl, UriKind.RelativeOrAbsolute, out var uri);
+
+			// Use INavigatingAwareWebView if available to let devs intercept new window requests
+			if (handler.VirtualView is INavigatingAwareWebView navAware)
+			{
+				var args = new WebViewNavigatingEventArgs(uri, WebNavigationTarget.NewWindow, null);
+				bool cancel = navAware.Navigating(args);
+
+				if (!cancel)
+				{
+					// Load in the same WebView if not cancelled
+					view.LoadUrl(requestUrl);
+				}
+			}
+			else
+			{
+				// Fallback: load in same view
+				view.LoadUrl(requestUrl);
+			}
+
+			return false;
 		}
 
 		public override bool OnShowFileChooser(WebView webView, IValueCallback filePathCallback, FileChooserParams fileChooserParams)
