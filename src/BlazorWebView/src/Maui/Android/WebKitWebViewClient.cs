@@ -149,6 +149,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// effect because once the page content loads all the document state gets reset.
 				RunBlazorStartupScripts(view);
 			}
+
+			_webViewHandler?.UpdateBackNavigationState();
+		}
+
+		public override void DoUpdateVisitedHistory(AWebView? view, string? url, bool isReload)
+		{
+			base.DoUpdateVisitedHistory(view, url, isReload);
+			// Covers Blazor client-side (SPA) navigations that use pushState/replaceState.
+			// DoUpdateVisitedHistory fires for pushState on all supported Android API levels (24+).
+			// replaceState does not add a new history entry so CanGoBack() is unaffected by it.
+			_webViewHandler?.UpdateBackNavigationState();
 		}
 
 		private void RunBlazorStartupScripts(AWebView view)
