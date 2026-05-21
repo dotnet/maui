@@ -557,7 +557,15 @@ internal partial class MauiItemsView
 
 	void ScrollViewer_DragLeave(object sender, UI.Xaml.DragEventArgs e)
 	{
-		StopAutoScroll();
+		// Do NOT stop auto-scroll here. Two cases where this fires during a valid drag:
+		//   1. Horizontal right edge — pointer exits the ScrollViewer bounds; we want
+		//      scrolling to continue until the drag ends or velocity decays.
+		//   2. Vertical scroll — ChangeView() triggers a brief DragLeave/DragEnter
+		//      cycle as WinUI re-evaluates hit-targets after content shifts; stopping
+		//      here would cause stuttering (scroll→stop→scroll→stop).
+		// The timer decelerates naturally when _targetScrollVelocity is reset to 0 in
+		// HandleAutoScroll (pointer back in neutral zone) or when the scroll boundary
+		// is reached. Full cleanup happens in CleanupDragState when the drag ends.
 		HideInsertionIndicator();
 	}
 
@@ -1318,12 +1326,19 @@ internal partial class MauiItemsView
 		if (_isHorizontalLayout)
 		{
 			newOffset = scrollViewer.HorizontalOffset + _currentScrollVelocity;
+			// Stop accelerating when the boundary is reached so the timer
+			// decelerates and stops instead of spinning at max offset.
+			if (newOffset <= 0 || newOffset >= scrollViewer.ScrollableWidth)
+				_targetScrollVelocity = 0;
 			newOffset = Math.Clamp(newOffset, 0, scrollViewer.ScrollableWidth);
 			scrollViewer.ChangeView(newOffset, scrollViewer.VerticalOffset, null, disableAnimation: true);
 		}
 		else
 		{
 			newOffset = scrollViewer.VerticalOffset + _currentScrollVelocity;
+			// Stop accelerating when the boundary is reached.
+			if (newOffset <= 0 || newOffset >= scrollViewer.ScrollableHeight)
+				_targetScrollVelocity = 0;
 			newOffset = Math.Clamp(newOffset, 0, scrollViewer.ScrollableHeight);
 			scrollViewer.ChangeView(scrollViewer.HorizontalOffset, newOffset, null, disableAnimation: true);
 		}
