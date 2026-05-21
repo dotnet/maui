@@ -137,7 +137,7 @@ foreach ($f in $findings) {
     # Defense-in-depth: reject suspicious paths so a malformed/hostile finding
     # cannot poison the whole review post (especially in the fallback branch
     # below where the GitHub diff fetch failed and we can't cross-validate).
-    $p = [string]$f.path
+    $p = if ($f.path) { [string]$f.path } elseif ($f.file) { [string]$f.file } else { '' }
     if ([string]::IsNullOrWhiteSpace($p) -or
         $p.Contains('..') -or
         $p.StartsWith('/') -or
