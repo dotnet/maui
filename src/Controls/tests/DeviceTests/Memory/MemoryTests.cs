@@ -503,8 +503,10 @@ public class MemoryTests : ControlsHandlerTestBase
 			controllerReference = new WeakReference(handler.Controller);
 
 			// Null locals so they don't keep objects alive across the scope boundary.
+			// page.Content still references carousel, so null page too.
 			handler = null;
 			carousel = null;
+			page = null;
 
 			await navPage.Navigation.PopAsync();
 		});

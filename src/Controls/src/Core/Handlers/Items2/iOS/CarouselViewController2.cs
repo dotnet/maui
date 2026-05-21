@@ -69,8 +69,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			InitializeCarouselViewLoopManager();
 			base.ViewDidLoad();
-			// Subscribe to orientation change notifications; store the token so it can be removed later.
-			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DeviceOrientationChanged);
 		}
 
 		void DeviceOrientationChanged(NSNotification notification)
@@ -229,6 +227,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_oldViews = new List<View>();
 
 			SubscribeCollectionItemsSourceChanged(ItemsSource);
+
+			// Re-register on every attach for proper Setup/TearDown symmetry.
+			// ViewDidLoad is called only once, but TearDown removes the observer on every detach.
+			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DeviceOrientationChanged);
 		}
 
 		internal void UpdateIsScrolling(bool isScrolling)
@@ -784,6 +786,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (disposing)
 			{
+				if (_orientationObserver is not null)
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+					_orientationObserver = null;
+				}
 				_scrollDebounce?.Cancel();
 				_scrollDebounce?.Dispose();
 				_scrollDebounce = null;
