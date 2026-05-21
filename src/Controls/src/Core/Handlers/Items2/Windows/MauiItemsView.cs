@@ -57,10 +57,20 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Override theme resources that control corner radius for ItemsView and its children
 		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
-		// Background fills (PART_CommonVisual.Fill) — suppress the gray overlay
-		// that WinUI shows on PointerOver/Pressed so it doesn't interfere with
-		// MAUI's own VisualStateManager states. Fixes: #13197
-		Resources["ItemContainerBackground"] = transparent;
+		// ItemContainer background — use the Fluent card surface colour so that:
+		//   1. The drag ghost (a pre-DragStarting compositor snapshot) always shows
+		//      a visible card, matching the expected reorder UX.
+		//   2. Items look like distinct elevated cards in the list at rest.
+		// CardBackgroundFillColorDefaultBrush = white in light theme, dark-card in
+		// dark theme — the same surface colour used by WinUI's own list controls.
+		if (WApp.Current.Resources.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg)
+			&& cardBg is Microsoft.UI.Xaml.Media.Brush cardBrush)
+		{
+			Resources["ItemContainerBackground"] = cardBrush;
+		}
+
+		// Suppress the gray hover/press overlay (PART_CommonVisual.Fill) so it does
+		// not interfere with MAUI's own VisualStateManager states. Fixes: #13197
 		Resources["ItemContainerPointerOverBackground"] = transparent;
 		Resources["ItemContainerPressedBackground"] = transparent;
 

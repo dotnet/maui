@@ -361,38 +361,23 @@ internal partial class MauiItemsView
 		itemContainer.DropCompleted -= ItemContainer_DropCompleted;
 		itemContainer.DropCompleted += ItemContainer_DropCompleted;
 
-		// Apply card background synchronously so it is live when the deferral releases.
-		ApplyDragGhostAppearance(itemContainer);
-
-		// GetDeferral() tells WinUI to wait before creating the drag ghost.
-		// The compositor snapshot is taken when deferral.Complete() is called —
-		// at that moment Background=cardBrush and Opacity=1, so the ghost captures
-		// the full card + MAUI item content.
-		var deferral = args.GetDeferral();
-
+		// WinUI captures the drag ghost from the compositor tree BEFORE DragStarting
+		// fires — no DragStarting-based approach (sync, deferral, RenderTargetBitmap)
+		// can modify that snapshot.  The default ghost shows the item content on a
+		// transparent background, which is the correct CV2 behaviour.
+		// Hide the source slot and dim others on the next dispatcher frame so the
+		// compositor snapshot has been committed before we change visual state.
 		DispatcherQueue.TryEnqueue(
 			Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
 			() =>
 			{
-				// Release deferral — ghost snapshot taken NOW (cardBrush, Opacity=1).
-				deferral.Complete();
+				if (_sourceContainer is not null)
+				{
+					_sourceContainer.Opacity = 0;
+					_sourceContainer.IsHitTestVisible = false;
+				}
 
-				// Hide source and remove card background in the next frame,
-				// after the ghost is committed by the compositor.
-				DispatcherQueue.TryEnqueue(
-					Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
-					() =>
-					{
-						RemoveDragGhostAppearance(itemContainer);
-
-						if (_sourceContainer is not null)
-						{
-							_sourceContainer.Opacity = 0;
-							_sourceContainer.IsHitTestVisible = false;
-						}
-
-						DimNonSourceContainers();
-					});
+				DimNonSourceContainers();
 			});
 	}
 
@@ -1566,74 +1551,13 @@ internal partial class MauiItemsView
 	#region Dim / Restore During Drag
 
 	/// <summary>
-	/// Walks the visual tree under <paramref name="parent"/> (up to
-	/// <paramref name="maxDepth"/> levels) and returns the first
-	/// <see cref="FrameworkElement"/> whose <c>Name</c> matches <paramref name="name"/>.
-	/// </summary>
-	static FrameworkElement? FindChildByName(DependencyObject parent, string name, int maxDepth = 6)
-	{
-		int count = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
-		for (int i = 0; i < count; i++)
-		{
-			var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
-			if (child is FrameworkElement fe && fe.Name == name)
-				return fe;
-			if (maxDepth > 0)
-			{
-				var found = FindChildByName(child, name, maxDepth - 1);
-				if (found is not null)
-					return found;
-			}
-		}
-		return null;
-	}
-
-	static void ApplyDragGhostAppearance(ItemContainer container)
-	{
-		// The ItemContainer template structure (from WinUI source):
-		//
-		//   ItemContainer (Style sets Background = {ThemeResource ItemContainerBackground})
-		//     └── Grid "PART_ContainerRoot"  ← Background={TemplateBinding Background}
-		//           ├── Grid "PART_SelectionVisual"
-		//           ├── Rectangle "PART_CommonVisual"  ← Fill set by VSM for hover/press
-		//           └── CheckBox "PART_SelectionCheckbox"
-		//
-		// PART_ContainerRoot.Background uses {TemplateBinding Background}, which means
-		// it reads from container.Background (the Control DP).  Setting container.Background
-		// directly creates a LOCAL VALUE that takes precedence over the Style-based
-		// {ThemeResource ItemContainerBackground}.  The TemplateBinding propagates
-		// synchronously — so RenderTargetBitmap (used in the deferral) captures the
-		// card colour immediately.
-		//
-		// NOTE: PART_CommonVisual is a Rectangle (not Panel/Border) used only for
-		// state-based Fill overlays — it has NO background for the normal state.
-		Microsoft.UI.Xaml.Media.Brush cardBrush;
-		if (Microsoft.UI.Xaml.Application.Current.Resources
-			.TryGetValue("LayerFillColorDefaultBrush", out var raw)
-			&& raw is Microsoft.UI.Xaml.Media.Brush b)
-		{
-			cardBrush = b;
-		}
-		else
-		{
-			cardBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-				global::Windows.UI.Color.FromArgb(255, 255, 255, 255));
-		}
-
-		// Local value overrides Style ThemeResource → PART_ContainerRoot picks it up
-		// via TemplateBinding synchronously.
-		container.Background = cardBrush;
-	}
-
-	/// <summary>
-	/// Removes the temporary card appearance applied by
-	/// <see cref="ApplyDragGhostAppearance"/> so the source slot returns to its
-	/// normal (transparent-background) state before being hidden.
+	/// Removes any locally-set Background on <paramref name="container"/> so the
+	/// DP falls back to the Style-set ThemeResource (transparent by default in
+	/// MauiItemsView).  Called defensively in ElementClearing and CleanupDragState
+	/// to guard against stale local values on recycled containers.
 	/// </summary>
 	static void RemoveDragGhostAppearance(ItemContainer container)
 	{
-		// ClearValue removes the local value so the DP falls back to the Style-set
-		// ThemeResource (which our MauiItemsView resource override keeps transparent).
 		container.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 	}
 
