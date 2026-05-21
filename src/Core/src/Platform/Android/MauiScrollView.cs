@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
-		AppBarLiftTargetHelper? _appBarLiftTargetHelper;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -75,8 +74,7 @@ namespace Microsoft.Maui.Platform
 				// Use Post() to defer until layout is complete — when this ScrollView is inside
 				// a CarouselView, adjacent off-screen pages also attach and we need to verify
 				// the view is actually on-screen before claiming the lift target.
-				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
-				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
+				Post(() => this.TrySetAppBarLiftTargetIfOnScreen());
 			}
 		}
 
@@ -90,7 +88,7 @@ namespace Microsoft.Maui.Platform
 			_didSafeAreaEdgeConfigurationChange = true;
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				_appBarLiftTargetHelper?.Clear();
+				this.ClearAppBarLiftTarget();
 			}
 		}
 
@@ -105,12 +103,11 @@ namespace Microsoft.Maui.Platform
 
 			if (visibility == ViewStates.Visible)
 			{
-				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
-				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
+				Post(() => this.TrySetAppBarLiftTargetIfOnScreen());
 			}
 			else
 			{
-				_appBarLiftTargetHelper?.Clear();
+				this.ClearAppBarLiftTarget();
 			}
 		}
 

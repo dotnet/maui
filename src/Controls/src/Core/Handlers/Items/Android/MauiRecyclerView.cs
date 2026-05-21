@@ -49,7 +49,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
-		AppBarLiftTargetHelper _appBarLiftTargetHelper;
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -68,8 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
-				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
+				Post(() => this.TrySetAppBarLiftTargetIfOnScreen());
 			}
 		}
 
@@ -79,7 +77,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				_appBarLiftTargetHelper?.Clear();
+				this.ClearAppBarLiftTarget();
 			}
 		}
 
@@ -94,12 +92,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (visibility == ViewStates.Visible)
 			{
-				_appBarLiftTargetHelper ??= new AppBarLiftTargetHelper(this);
-				Post(_appBarLiftTargetHelper.TrySetIfOnScreen);
+				Post(() => this.TrySetAppBarLiftTargetIfOnScreen());
 			}
 			else
 			{
-				_appBarLiftTargetHelper?.Clear();
+				this.ClearAppBarLiftTarget();
 			}
 		}
 
