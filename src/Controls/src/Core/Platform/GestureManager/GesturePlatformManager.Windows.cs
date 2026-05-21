@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Input;
 using Windows.Storage.Streams;
+using Windows.System;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -398,6 +399,65 @@ namespace Microsoft.Maui.Controls.Platform
 					if (gestureRecognizers.FirstGestureOrDefault<DropGestureRecognizer>() is { } dropGesture)
 					{
 						dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					}
+				}
+			}
+
+			// Reset tab stop state when clearing gesture handlers for Border
+			UpdateContentPanelIsTapStop(false);
+		}
+
+		// Sets or resets the IsTabStop property on ContentPanel (Border) when gesture recognizers are added or removed for border.
+		// This allows Border to be focusable when it has TapGestureRecognizers for keyboard accessibility.
+		void UpdateContentPanelIsTapStop(bool canAllowTabStop)
+		{
+			if (_control is ContentPanel contentPanel && contentPanel.CrossPlatformLayout is IBorderView)
+			{
+				bool isSubscribed = (_subscriptionFlags & SubscriptionFlags.ContentPanelKeyDownSubscribed) != 0;
+
+				if (canAllowTabStop && !isSubscribed)
+				{
+					contentPanel.IsTabStop = true;
+					contentPanel.KeyDown += ContentPanelOnKeyDown;
+					_subscriptionFlags |= SubscriptionFlags.ContentPanelKeyDownSubscribed;
+				}
+				else if (!canAllowTabStop && isSubscribed)
+				{
+					contentPanel.IsTabStop = false;
+					contentPanel.KeyDown -= ContentPanelOnKeyDown;
+					_subscriptionFlags &= ~SubscriptionFlags.ContentPanelKeyDownSubscribed;
+				}
+			}
+		}
+
+		// Handle Enter and Space key presses to trigger TapGestureRecognizers on Border for keyboard accessibility
+		// This is only applicable when the Border has TapGestureRecognizers attached
+		void ContentPanelOnKeyDown(object sender, KeyRoutedEventArgs e)
+		{
+			if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Space)
+			{
+				if (Element is View view)
+				{
+					IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(recognizer =>
+						recognizer.NumberOfTapsRequired == 1 &&
+						(recognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
+
+					bool handled = false;
+
+					foreach (var recognizer in tapGestures)
+					{
+						recognizer.SendTapped(view, (relativeTo) =>
+						{
+							// Keyboard taps have no physical position, use Point.Zero
+							// consistent with Android keyboard behavior.
+							return Point.Zero;
+						});
+						handled = true;
+					}
+
+					if (handled)
+					{
+						e.Handled = true;
 					}
 				}
 			}
@@ -976,7 +1036,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
 
-			if (gestures.HasAnyGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1)
+			bool hasSelfTapGestures = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g =>
+				g.NumberOfTapsRequired == 1 &&
+				(g.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
+
+			if (hasSelfTapGestures
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
@@ -992,6 +1056,10 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				_container.RightTapped += OnTap;
+
+				// Only enable tab stop when the border itself has tap gestures (not just children).
+				// Children should handle their own keyboard focus independently.
+				UpdateContentPanelIsTapStop(hasSelfTapGestures);
 			}
 			else
 			{
@@ -1117,7 +1185,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		[Flags]
-		enum SubscriptionFlags : byte
+		enum SubscriptionFlags : ushort
 		{
 			None = 0,
 			ContainerDragEventsSubscribed = 1,
@@ -1127,7 +1195,8 @@ namespace Microsoft.Maui.Controls.Platform
 			ContainerTapAndRightTabEventSubscribed = 1 << 4,
 			ContainerDoubleTapEventSubscribed = 1 << 5,
 			ControlTapEventSubscribed = 1 << 6,
-			ControlDoubleTapEventSubscribed = 1 << 7
+			ControlDoubleTapEventSubscribed = 1 << 7,
+			ContentPanelKeyDownSubscribed = 1 << 8
 		}
 	}
 }
