@@ -767,7 +767,7 @@ stages:
   - stage: RunDeepUITests
     displayName: 'Deep UI Tests (platform pool)'
     dependsOn: ReviewPR
-    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], 'NONE'))
+    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], 'NONE'))
     jobs:
       - job: RunUITests
         displayName: 'Run detected UI test categories'
