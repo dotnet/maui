@@ -12,7 +12,7 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.ShellBadge)]
+	[Category(TestCategory.Shell)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public class ShellBadgeTests : ControlsHandlerTestBase
 	{
