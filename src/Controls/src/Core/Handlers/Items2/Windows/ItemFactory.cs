@@ -27,7 +27,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 	/// Caches the default ItemContainer template so it can be restored
 	/// when a header/footer container is recycled for a regular item.
 	/// </summary>
-	static Microsoft.UI.Xaml.Controls.ControlTemplate? _defaultItemContainerTemplate;
+	Microsoft.UI.Xaml.Controls.ControlTemplate? _defaultItemContainerTemplate;
 	internal static readonly BindableProperty OriginTemplateProperty =
 		BindableProperty.CreateAttached(
 			"OriginTemplate", typeof(DataTemplate), typeof(ItemFactory), null);
@@ -110,19 +110,19 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				// before the platform handler is created during the deferred ToPlatform() call.
 				// Without this, items display with default property values instead of the
 				// values defined in VisualState setters. (Fixes #27086)
-				if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode
-					!= SelectionMode.None)
+				if (view is VisualElement visualElement)
 				{
 					bool isSelected = false;
-					if (selectableItemsView.SelectionMode == SelectionMode.Single)
-						isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
-					else
-						isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
-
-					if (isSelected && view is VisualElement visualElement)
+					if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
 					{
-						VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
+						if (selectableItemsView.SelectionMode == SelectionMode.Single)
+							isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
+						else
+							isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
 					}
+
+					VisualStateManager.GoToState(visualElement,
+						isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
 				}
 
 			}
@@ -182,6 +182,17 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		var item = args.Element as ItemContainer;
 		var wrapper = item?.Child as ElementWrapper;
 		var wrapperView = wrapper?.VirtualView as View;
+		if (wrapperView is not null)
+		{
+			// Break references to the previous item while this container sits in the recycle pool.
+			wrapperView.BindingContext = null;
+		}
+
+		if (wrapper is not null)
+		{
+			wrapper.DataContext = null;
+		}
+
 		DataTemplate? template = wrapperView?.GetValue(OriginTemplateProperty) as DataTemplate;
 		if (template != null && item is not null)
 		{
@@ -213,7 +224,13 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				var wrapperView = wrapper?.VirtualView as View;
 				if (wrapperView is not null)
 				{
+					wrapperView.BindingContext = null;
 					_view.RemoveLogicalChild(wrapperView);
+				}
+
+				if (wrapper is not null)
+				{
+					wrapper.DataContext = null;
 				}
 			}
 		}

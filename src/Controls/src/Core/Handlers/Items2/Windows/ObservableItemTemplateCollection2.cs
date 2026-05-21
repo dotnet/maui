@@ -92,19 +92,24 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 			// One might think it would be a "Move" event but it is actually a "Remove" followed by "Add".
 			_observeChanges = false;
 
-			switch (args.Action)
+			try
 			{
-				case NotifyCollectionChangedAction.Add:
-					AddToSource(args);
-					break;
-				case NotifyCollectionChangedAction.Remove:
-					RemoveFromSource(args);
-					break;
-				default:
-					break;
+				switch (args.Action)
+				{
+					case NotifyCollectionChangedAction.Add:
+						AddToSource(args);
+						break;
+					case NotifyCollectionChangedAction.Remove:
+						RemoveFromSource(args);
+						break;
+					default:
+						break;
+				}
 			}
-
-			_observeChanges = true;
+			finally
+			{
+				_observeChanges = true;
+			}
 		}
 	}
 
@@ -164,27 +169,33 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	void InnerCollectionChanged(NotifyCollectionChangedEventArgs args)
 	{
 		_innerCollectionChange = true;
-		switch (args.Action)
+		try
 		{
-			case NotifyCollectionChangedAction.Add:
-				Add(args);
-				break;
-			case NotifyCollectionChangedAction.Move:
-				Move(args);
-				break;
-			case NotifyCollectionChangedAction.Remove:
-				Remove(args);
-				break;
-			case NotifyCollectionChangedAction.Replace:
-				Replace(args);
-				break;
-			case NotifyCollectionChangedAction.Reset:
-				Reset();
-				break;
-			default:
-				throw new ArgumentOutOfRangeException();
+			switch (args.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					Add(args);
+					break;
+				case NotifyCollectionChangedAction.Move:
+					Move(args);
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					Remove(args);
+					break;
+				case NotifyCollectionChangedAction.Replace:
+					Replace(args);
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					Reset();
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
-		_innerCollectionChange = false;
+		finally
+		{
+			_innerCollectionChange = false;
+		}
 	}
 
 	void Add(NotifyCollectionChangedEventArgs args)
