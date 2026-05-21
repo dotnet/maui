@@ -1,3 +1,5 @@
+// iOS/MacCatalyst only: The fix updates UINavigationItem.Title for back-stack pages,
+// which iOS uses to display the back button text. This is an Apple platform-specific behavior.
 #if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
@@ -17,6 +19,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ShellBackButtonHistoryUpdatesAfterTitleChange()
 		{
+			// iOS 26+ no longer exposes the back button title text via accessibility,
+			// so there is no reliable way to assert the updated title in a UI test.
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("iOS 26+ does not expose back button title text via accessibility");
+			}
+
+			// Navigate to Detail page
 			App.WaitForElement("NavigateToDetail");
 			App.Tap("NavigateToDetail");
 
@@ -24,18 +34,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("ChangePreviousPageTitle");
 			App.Tap("ChangePreviousPageTitle");
 
-			// The back button should now show "Accueil" (updated title).
-			// Without the fix, it still shows "Home" (stale title).
-			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-			{
-				App.TapBackArrow(); // iOS 26+: no text on back button
-			}
-			else
-			{
-				App.TapBackArrow("Accueil");
-			}
-
-			// Verify we navigated back to root
+			// Verify back button now shows updated title "Accueil"
+			// Without the fix, UINavigationItem.Title is stale and still shows "Home"
+			App.WaitForElement("Accueil");
+			App.Tap("Accueil");
 			App.WaitForElement("RootPageLabel");
 		}
 	}
