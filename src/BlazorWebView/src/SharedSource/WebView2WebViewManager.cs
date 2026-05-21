@@ -303,6 +303,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			};
 
 			_webview.CoreWebView2.NavigationStarting += CoreWebView2_NavigationStarting;
+			_webview.CoreWebView2.FrameNavigationStarting += CoreWebView2_FrameNavigationStarting;
 			_webview.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
 
 			// The code inside blazor.webview.js is meant to be agnostic to specific webview technologies,
@@ -402,13 +403,54 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			}
 		}
 
+		private void CoreWebView2_FrameNavigationStarting(object? sender, CoreWebView2NavigationStartingEventArgs args)
+		{
+			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
+			{
+#if WEBVIEW2_MAUI
+				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri, Microsoft.Maui.WebNavigationTarget.Frame);
+#else
+				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri);
+#endif
+
+#if WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+				_urlLoading?.Invoke(callbackArgs);
+#elif WEBVIEW2_MAUI
+				_blazorWebViewHandler.UrlLoading(callbackArgs);
+#endif
+				_logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
+
+				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
+				{
+					LaunchUriInExternalBrowser(uri);
+				}
+
+				args.Cancel = callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView;
+			}
+		}
+
 		private void CoreWebView2_NewWindowRequested(object? sender, CoreWebView2NewWindowRequestedEventArgs args)
 		{
 			// Intercept _blank target <a> tags to always open in device browser.
-			// The ExternalLinkCallback is not invoked.
 			if (Uri.TryCreate(args.Uri, UriKind.RelativeOrAbsolute, out var uri))
 			{
+#if WEBVIEW2_MAUI
+				var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, AppOriginUri, Microsoft.Maui.WebNavigationTarget.NewWindow);
+				_blazorWebViewHandler.UrlLoading(callbackArgs);
+				_logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
+
+				if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
+				{
+					LaunchUriInExternalBrowser(uri);
+				}
+				else if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenInWebView)
+				{
+					_webview.CoreWebView2.Navigate(args.Uri);
+				}
+				// CancelLoad: do nothing
+#else
 				LaunchUriInExternalBrowser(uri);
+#endif
 				args.Handled = true;
 			}
 		}
