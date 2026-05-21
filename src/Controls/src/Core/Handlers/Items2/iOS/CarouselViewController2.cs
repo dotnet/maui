@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _wasDetachedFromWindow = false;
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
+		NSObject _orientationObserver;
 
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
@@ -69,8 +70,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			InitializeCarouselViewLoopManager();
 			base.ViewDidLoad();
-			// Subscribe to orientation change notifications
-			NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DeviceOrientationChanged);
 		}
 
 		void DeviceOrientationChanged(NSNotification notification)
@@ -204,8 +203,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			InitialPositionSet = false;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
-			// Clean up orientation notification observer
-			NSNotificationCenter.DefaultCenter.RemoveObserver(this, UIDevice.OrientationDidChangeNotification, null);
+			// Remove the block-based observer using the stored token (RemoveObserver(this,...) does not remove block observers).
+			if (_orientationObserver is not null)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+				_orientationObserver = null;
+			}
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
 			_isUpdating = false;
@@ -226,6 +229,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_oldViews = new List<View>();
 
 			SubscribeCollectionItemsSourceChanged(ItemsSource);
+
+			// Re-register on every attach for proper Setup/TearDown symmetry.
+			// ViewDidLoad is called only once, but TearDown removes the observer on every detach.
+			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, DeviceOrientationChanged);
 		}
 
 		internal void UpdateIsScrolling(bool isScrolling)
@@ -793,6 +800,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (disposing)
 			{
+				if (_orientationObserver is not null)
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+					_orientationObserver = null;
+				}
 				_scrollDebounce?.Cancel();
 				_scrollDebounce?.Dispose();
 				_scrollDebounce = null;
