@@ -76,11 +76,11 @@ public class Issue35401ModalPage : ContentPage
 		Shell.SetPresentationMode(this, PresentationMode.ModalNotAnimated);
 		BackgroundColor = Color.FromArgb("#80000000");
 
-		var editor = new Editor
+		var entry = new Entry
 		{
 			Placeholder = "Enter text here",
 			HeightRequest = 120,
-			AutomationId = "ModalEditor"
+			AutomationId = "ModalEntry"
 		};
 
 		var closeButton = new Button
@@ -106,7 +106,7 @@ public class Issue35401ModalPage : ContentPage
 					{
 						Padding = 16,
 						Spacing = 12,
-						Children = { editor, closeButton }
+						Children = { entry, closeButton }
 					}
 				}
 			}

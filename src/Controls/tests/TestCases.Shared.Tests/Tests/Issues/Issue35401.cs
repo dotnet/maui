@@ -27,25 +27,31 @@ public class Issue35401 : _IssuesUITest
 		App.WaitForElement("OpenModalButton");
 		App.Tap("OpenModalButton");
 
-		// Focus the Editor inside the modal to trigger the software keyboard
-		App.WaitForElement("ModalEditor");
-		App.Tap("ModalEditor");
+		// Focus the Entry inside the modal to trigger the software keyboard
+		App.WaitForElement("ModalEntry");
+		App.Tap("ModalEntry");
 
 		// The bug only manifests when UIKeyboardWillHideNotification fires.
 		// On simulators with a hardware keyboard connected, the software keyboard
 		// does not appear and no notification is sent — skip rather than false-pass.
 		if (!App.WaitForKeyboardToShow(TimeSpan.FromSeconds(5)))
 		{
-			Assert.Ignore("Software keyboard did not appear in this test environment. " +
-				"Run on a device (or simulator with software keyboard enabled) to verify " +
-				"the regression from PR #33958 is fixed.");
-			return;
+			// Retry focus once for environments where the first tap does not consistently
+			// bring up the software keyboard.
+			App.Tap("ModalEntry");
+
+			if (!App.WaitForKeyboardToShow(TimeSpan.FromSeconds(5)))
+			{
+				Assert.Ignore("Software keyboard did not appear in this test environment. " +
+					"Run on a device (or simulator with software keyboard enabled) to verify " +
+					"the regression from PR #33958 is fixed.");
+				return;
+			}
 		}
 
 		// Dismiss the keyboard — this fires UIKeyboardWillHideNotification, which
 		// previously triggered an incorrect frame adjustment on the underlying Shell page.
-		App.Tap("Done");
-		App.WaitForKeyboardToHide();
+		App.DismissKeyboard();
 
 		// Close the modal
 		App.WaitForElement("CloseModalButton");

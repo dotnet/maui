@@ -1241,8 +1241,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// The keyboard observer is global — every live tracker receives every UIKeyboard hide
 			// event. If a modal view controller is currently presented over this nav controller,
 			// the keyboard belongs to that modal (e.g. a transparent Shell page with an Entry
-			// presented via Shell.GoToAsync). Return WITHOUT consuming _pendingKeyboardNavigation
-			// so the flag stays armed for a genuine page-load keyboard event on this tracker.
+			// presented via Shell.GoToAsync). Return WITHOUT consuming _pendingKeyboardNavigation:
+			// this modal is transient, and the flag must remain armed for a genuine keyboard hide
+			// on this tracker after the modal is dismissed. The correction gate below
+			// (currentFrame.Y == 0 and related checks) is what prevents false positives.
 			if (navController.PresentedViewController is not null)
 				return;
 
