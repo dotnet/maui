@@ -1,6 +1,6 @@
 namespace Microsoft.Maui
 {
-	interface IBackNavigationState
+	internal interface IBackNavigationState
 	{
 		bool CanConsumeBackNavigation { get; }
 	}
