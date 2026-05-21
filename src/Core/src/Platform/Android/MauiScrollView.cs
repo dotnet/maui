@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
+		readonly Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -35,16 +36,19 @@ namespace Microsoft.Maui.Platform
 		public MauiScrollView(Context context) : base(context)
 		{
 			_context = context;
+			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 			_context = context;
+			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			_context = context;
+			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		protected MauiScrollView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -52,6 +56,7 @@ namespace Microsoft.Maui.Platform
 			var context = Context;
 			ArgumentNullException.ThrowIfNull(context);
 			_context = context;
+			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
@@ -74,7 +79,7 @@ namespace Microsoft.Maui.Platform
 				// Use Post() to defer until layout is complete — when this ScrollView is inside
 				// a CarouselView, adjacent off-screen pages also attach and we need to verify
 				// the view is actually on-screen before claiming the lift target.
-				Post(() => this.TrySetAppBarLiftTargetIfOnScreen());
+				PostTrySetAppBarLiftTargetIfOnScreen();
 			}
 		}
 
@@ -88,13 +93,18 @@ namespace Microsoft.Maui.Platform
 			_didSafeAreaEdgeConfigurationChange = true;
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				this.ClearAppBarLiftTarget();
+				ClearAppBarLiftTargetAndPendingPost();
 			}
 		}
 
 		protected override void OnVisibilityChanged(View changedView, ViewStates visibility)
 		{
 			base.OnVisibilityChanged(changedView, visibility);
+
+			if (changedView != this)
+			{
+				return;
+			}
 
 			if (!RuntimeFeature.IsMaterial3Enabled)
 			{
@@ -103,12 +113,24 @@ namespace Microsoft.Maui.Platform
 
 			if (visibility == ViewStates.Visible)
 			{
-				Post(() => this.TrySetAppBarLiftTargetIfOnScreen());
+				PostTrySetAppBarLiftTargetIfOnScreen();
 			}
 			else
 			{
-				this.ClearAppBarLiftTarget();
+				ClearAppBarLiftTargetAndPendingPost();
 			}
+		}
+
+		void PostTrySetAppBarLiftTargetIfOnScreen()
+		{
+			RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			Post(_setAppBarLiftTargetRunnable);
+		}
+
+		void ClearAppBarLiftTargetAndPendingPost()
+		{
+			RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			this.ClearAppBarLiftTarget();
 		}
 
 		#region IHandleWindowInsets Implementation

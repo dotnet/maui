@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
+		readonly Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -56,6 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_getItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
 			CreateAdapter = getAdapter ?? throw new ArgumentNullException(nameof(getAdapter));
+			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
@@ -67,7 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				Post(() => this.TrySetAppBarLiftTargetIfOnScreen());
+				PostTrySetAppBarLiftTargetIfOnScreen();
 			}
 		}
 
@@ -77,13 +79,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
-				this.ClearAppBarLiftTarget();
+				ClearAppBarLiftTargetAndPendingPost();
 			}
 		}
 
 		protected override void OnVisibilityChanged(AView changedView, ViewStates visibility)
 		{
 			base.OnVisibilityChanged(changedView, visibility);
+
+			if (changedView != this)
+			{
+				return;
+			}
 
 			if (!RuntimeFeature.IsMaterial3Enabled)
 			{
@@ -92,12 +99,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (visibility == ViewStates.Visible)
 			{
-				Post(() => this.TrySetAppBarLiftTargetIfOnScreen());
+				PostTrySetAppBarLiftTargetIfOnScreen();
 			}
 			else
 			{
-				this.ClearAppBarLiftTarget();
+				ClearAppBarLiftTargetAndPendingPost();
 			}
+		}
+
+		void PostTrySetAppBarLiftTargetIfOnScreen()
+		{
+			RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			Post(_setAppBarLiftTargetRunnable);
+		}
+
+		void ClearAppBarLiftTargetAndPendingPost()
+		{
+			RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			this.ClearAppBarLiftTarget();
 		}
 
 		public virtual void TearDownOldElement(TItemsView oldElement)

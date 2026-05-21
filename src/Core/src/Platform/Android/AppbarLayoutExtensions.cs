@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using Android.Graphics;
 using Android.Views;
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Platform
         internal static void TrySetAppBarLiftTargetIfOnScreen(this View view)
         {
             // Guard: the view may have detached or been hidden between Post() and execution.
-            if (!view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
+            if (view.Handle == IntPtr.Zero || !view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
             {
                 return;
             }
@@ -81,7 +82,6 @@ namespace Microsoft.Maui.Platform
             if (state.LiftOnScrollAppBar.LiftOnScrollTargetViewId == view.Id)
             {
                 state.LiftOnScrollAppBar.LiftOnScrollTargetViewId = View.NoId;
-                state.LiftOnScrollAppBar.SetLifted(false);
             }
 
             state.LiftOnScrollAppBar = null;
@@ -100,6 +100,11 @@ namespace Microsoft.Maui.Platform
 
             if (view.Id == View.NoId)
             {
+                // LiftOnScrollTargetViewId requires a non-NoId view id.
+                // Intentionally assigning a generated id here; the view will
+                // keep this id for the rest of its lifetime, which is fine
+                // because MauiScrollView / MauiRecyclerView are not looked up
+                // by id by any other host code.
                 view.Id = View.GenerateViewId();
             }
 
@@ -115,7 +120,7 @@ namespace Microsoft.Maui.Platform
 
         static void OnParentScrollChanged(View view, AppBarLiftState state)
         {
-            if (!view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
+            if (view.Handle == IntPtr.Zero || !view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
             {
                 return;
             }
@@ -175,6 +180,11 @@ namespace Microsoft.Maui.Platform
             // (which should own the lift target instead) AND finds the AppBarLayout.
             // NavigationPage uses Resource.Id.navigationlayout_appbar, but Shell creates
             // its AppBarLayout programmatically without an ID, so we match any AppBarLayout.
+            //
+            // Nested-host note: Shell-inside-NavigationPage (or vice versa) is not a
+            // supported MAUI configuration, so there is only ever one relevant AppBarLayout
+            // in the ancestor/sibling chain for any given scroll view.  The walk returns the
+            // first one found, which is the correct one for all supported layouts.
             hasAncestorScrollView = false;
             var parent = view.Parent;
 
