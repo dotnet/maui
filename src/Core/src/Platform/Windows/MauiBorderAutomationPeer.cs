@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 	// TODO: Make this class public in .NET11.0. Issue Link: https://github.com/dotnet/maui/issues/30205
 	internal partial class MauiBorderAutomationPeer : FrameworkElementAutomationPeer
 	{
-		internal MauiBorderAutomationPeer(Panel owner) : base(owner) { }
+		internal MauiBorderAutomationPeer(ContentPanel owner) : base(owner) { }
 
 		protected override AutomationControlType GetAutomationControlTypeCore()
 		{
@@ -16,6 +16,11 @@ namespace Microsoft.Maui.Platform
 
 		protected override string GetClassNameCore()
 		{
+			if (Owner is ContentPanel panel)
+			{
+				return panel.CrossPlatformLayout?.GetType().Name ?? nameof(Panel);
+			}
+
 			return nameof(Panel);
 		}
 
