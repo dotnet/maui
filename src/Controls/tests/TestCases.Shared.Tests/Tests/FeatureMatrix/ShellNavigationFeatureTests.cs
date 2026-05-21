@@ -87,7 +87,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
       App.WaitForElement("Content1");
       App.Tap("Content1");
 #else
-      App.TapTab("Content1");
+		App.TapTab("Content1");
 #endif
 	}
 
@@ -98,7 +98,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
       App.WaitForElement("Content2");
       App.Tap("Content2");
 #else
-      App.TapTab("Content2");
+		App.TapTab("Content2");
 #endif
 	}
 
@@ -840,6 +840,78 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 		// cleanup
 		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+		App.Tap("QuerySenderGoBackButton");
+		App.WaitForElement("MainPageIdentityLabel");
+	}
+
+	// ── Multi-Page Navigation: Intermediate Page Parameters ─────────────────
+
+	// Multi-page GoToAsync with prefixed params: intermediate page receives its own params,
+	// last page receives unprefixed params. Overlapping "name" key is scoped correctly.
+	[Test, Order(148)]
+	public void PassData_MultiPageNavigation_IntermediateAndLastPageReceiveCorrectParams()
+	{
+		App.WaitForElement("MainPageIdentityLabel");
+		NavigateToQuerySenderAndWait();
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "DetailName");
+		App.ClearText("QuerySendLocationEntry");
+		App.EnterText("QuerySendLocationEntry", "DetailLoc");
+		App.Tap("QuerySendMultiPagePrefixedButton");
+
+		// Lands on the last page (QueryDataDetail)
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		// Last page should have received unprefixed params
+		Assert.That(App.FindElement("QueryPropertyReceivedLabel").GetText(), Is.EqualTo("DetailName"));
+		Assert.That(App.FindElement("QueryPropertyLocationLabel").GetText(), Is.EqualTo("DetailLoc"));
+
+		// Navigate back to the intermediate page and verify it received its prefixed param
+		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QueryIntermediatePageIdentityLabel");
+
+		// Intermediate page should have received "name=ForIntermediate" (from queryintermediate.name=ForIntermediate)
+		Assert.That(App.FindElement("QueryIntermediateReceivedNameLabel").GetText(), Is.EqualTo("ForIntermediate"));
+		// Intermediate page should NOT have received "location" (unprefixed, meant for last page only)
+		Assert.That(App.FindElement("QueryIntermediateReceivedLocationLabel").GetText(), Is.EqualTo("(none)"));
+		// IQA should have been called exactly once
+		Assert.That(App.FindElement("QueryIntermediateCallCountLabel").GetText(), Is.EqualTo("1"));
+
+		// cleanup
+		App.Tap("QueryIntermediateGoBackButton");
+		App.WaitForElement("QuerySenderPageIdentityLabel");
+		App.Tap("QuerySenderGoBackButton");
+		App.WaitForElement("MainPageIdentityLabel");
+	}
+
+	// Verifies that overlapping param names are correctly scoped: intermediate gets
+	// "name=ForIntermediate" while detail gets "name=DetailValue" — they don't cross-contaminate.
+	[Test, Order(149)]
+	public void PassData_MultiPageNavigation_OverlappingParamNamesAreScopedCorrectly()
+	{
+		App.WaitForElement("MainPageIdentityLabel");
+		NavigateToQuerySenderAndWait();
+
+		App.ClearText("QuerySendNameEntry");
+		App.EnterText("QuerySendNameEntry", "DetailValue");
+		App.Tap("QuerySendMultiPagePrefixedButton");
+
+		// Lands on detail page
+		App.WaitForElement("QueryDataDetailPageIdentityLabel");
+
+		// Detail page should have "DetailValue", NOT "ForIntermediate"
+		Assert.That(App.FindElement("QueryPropertyReceivedLabel").GetText(), Is.EqualTo("DetailValue"));
+		Assert.That(App.FindElement("IQueryAttributableReceivedLabel").GetText(), Is.EqualTo("DetailValue"));
+
+		// Go back to intermediate — should have "ForIntermediate", NOT "DetailValue"
+		App.Tap("QueryDetailGoBackButton");
+		App.WaitForElement("QueryIntermediatePageIdentityLabel");
+		Assert.That(App.FindElement("QueryIntermediateReceivedNameLabel").GetText(), Is.EqualTo("ForIntermediate"));
+
+		// cleanup
+		App.Tap("QueryIntermediateGoBackButton");
 		App.WaitForElement("QuerySenderPageIdentityLabel");
 		App.Tap("QuerySenderGoBackButton");
 		App.WaitForElement("MainPageIdentityLabel");
