@@ -1255,7 +1255,6 @@ stages:
         # inside the steps.
         variables:
           aiSummaryCommentId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.aiSummaryCommentId'] ]
-          deepTestsRan: $[ in(stageDependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed') ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -1279,9 +1278,11 @@ stages:
               buildType: 'current'
               artifactName: 'drop-deep-uitests'
               targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
-            # Only attempt download if deep tests stage actually ran (not skipped).
-            # This prevents the partiallySucceeded noise when deep tests were skipped.
-            condition: and(succeeded(), eq(lower(variables.deepTestsRan), 'true'))
+            # Always attempt download — continueOnError handles the case where
+            # RunDeepUITests was skipped and no artifact exists. The previous
+            # condition-based skip using deepTestsRan was unreliable because
+            # AzDO's $[ in() ] expression can return unexpected values depending
+            # on stage result propagation timing.
             continueOnError: true
 
           - pwsh: |
@@ -1291,6 +1292,20 @@ stages:
               $prNumber = "${{ parameters.PRNumber }}"
               $commentId = "$(aiSummaryCommentId)"
               $isDeferred = ($commentId -eq 'DEFERRED')
+
+              # Diagnostic logging for Stage 3 debugging
+              Write-Host "=== Stage 3 Diagnostics ===" -ForegroundColor Cyan
+              Write-Host "  commentId: '$commentId'"
+              Write-Host "  isDeferred: $isDeferred"
+              Write-Host "  artDir exists: $(Test-Path $artDir)"
+              Write-Host "  copilotLogsDir exists: $(Test-Path $copilotLogsDir)"
+              if (Test-Path $artDir) {
+                $trxCount = @(Get-ChildItem -Path $artDir -Filter "*.trx" -Recurse -ErrorAction SilentlyContinue).Count
+                Write-Host "  TRX files in artDir: $trxCount"
+                Get-ChildItem -Path $artDir -Recurse -ErrorAction SilentlyContinue | Select-Object -First 10 | ForEach-Object {
+                  Write-Host "    $($_.FullName.Substring($artDir.Length))" -ForegroundColor Gray
+                }
+              }
 
               if ([string]::IsNullOrWhiteSpace($commentId)) {
                 # Reviewer crashed before posting the initial comment. If deep
