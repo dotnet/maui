@@ -392,6 +392,23 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Throws<InvalidOperationException>(() => mauiHandlersFactory.GetHandler(typeof(MissingHandlerTypeAttributedViewStub)));
 		}
 
+		[Fact]
+		public void HostBuilderCachesElementHandlerAttributeLookup()
+		{
+			CountingElementHandlerAttribute.Reset();
+
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			Assert.IsType<AttributedViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(CountingAttributedViewStub)));
+			Assert.IsType<AttributedViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(CountingAttributedViewStub)));
+			Assert.Same(typeof(AttributedViewHandlerStub), mauiHandlersFactory.GetHandlerType(typeof(CountingAttributedViewStub)));
+			Assert.Same(typeof(AttributedViewHandlerStub), mauiHandlersFactory.GetHandlerType(typeof(CountingAttributedViewStub)));
+			Assert.Equal(1, CountingElementHandlerAttribute.InstanceCount);
+		}
+
 		[ElementHandler(typeof(AttributedViewHandlerStub))]
 		class AttributedViewStub : ViewStub { }
 		class DerivedAttributedViewStub : AttributedViewStub { }
@@ -421,5 +438,21 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[MissingHandlerTypeElementHandler]
 		class MissingHandlerTypeAttributedViewStub : ViewStub { }
 		class MissingHandlerTypeElementHandlerAttribute : ElementHandlerAttribute { }
+
+		[CountingElementHandler]
+		class CountingAttributedViewStub : ViewStub { }
+		class CountingElementHandlerAttribute : ElementHandlerAttribute
+		{
+			public static int InstanceCount { get; private set; }
+
+			public CountingElementHandlerAttribute()
+			{
+				InstanceCount++;
+			}
+
+			public static void Reset() => InstanceCount = 0;
+
+			public override Type GetHandlerType() => typeof(AttributedViewHandlerStub);
+		}
 	}
 }
