@@ -143,15 +143,16 @@ internal partial class MauiItemsView
 			// virtualizes containers, so TryGetElement returns null for unrealized
 			// indices — we must iterate over the full source range to avoid missing
 			// realized containers that sit past an unrealized gap.
-			var sourceList = GetSourceList();
-			if (sourceList is not null)
+			// Use ItemsSourceView.Count (the repeater's own flat count) rather than
+			// GetSourceList().Count: for grouped lists GetSourceList() returns the
+			// MAUI-side groups collection whose Count equals the number of groups, not
+			// the flat total of headers + items + footers.
+			int flatCount = repeater.ItemsSourceView?.Count ?? 0;
+			for (int i = 0; i < flatCount; i++)
 			{
-				for (int i = 0; i < sourceList.Count; i++)
+				if (repeater.TryGetElement(i) is ItemContainer ic)
 				{
-					if (repeater.TryGetElement(i) is ItemContainer ic)
-					{
-						ApplyDragAffordance(ic, i);
-					}
+					ApplyDragAffordance(ic, i);
 				}
 			}
 		}
@@ -183,17 +184,15 @@ internal partial class MauiItemsView
 
 			// Iterate the full source range; TryGetElement returns null for unrealized
 			// indices so we can't stop at the first gap and assume we've cleared every
-			// realized container.
-			var sourceList = GetSourceList();
-			if (sourceList is not null)
+			// realized container. Use ItemsSourceView.Count for the same reason as
+			// WireDragDropEvents — GetSourceList().Count is wrong for grouped data.
+			int flatCount = repeater.ItemsSourceView?.Count ?? 0;
+			for (int i = 0; i < flatCount; i++)
 			{
-				for (int i = 0; i < sourceList.Count; i++)
+				if (repeater.TryGetElement(i) is ItemContainer ic)
 				{
-					if (repeater.TryGetElement(i) is ItemContainer ic)
-					{
-						ic.CanDrag = false;
-						ic.DragStarting -= ItemContainer_DragStarting;
-					}
+					ic.CanDrag = false;
+					ic.DragStarting -= ItemContainer_DragStarting;
 				}
 			}
 		}
@@ -981,8 +980,9 @@ internal partial class MauiItemsView
 
 	FrameworkElement? FindContainerByIndex(int index)
 	{
-		var sourceList = GetSourceList();
-		if (sourceList is null || index < 0 || index >= sourceList.Count)
+		var repeater = ItemsRepeaterControl;
+		int flatCount = repeater?.ItemsSourceView?.Count ?? 0;
+		if (index < 0 || index >= flatCount)
 		{
 			return null;
 		}
@@ -1026,10 +1026,15 @@ internal partial class MauiItemsView
 	IEnumerable<FrameworkElement> FindAllContainers()
 	{
 		var repeater = ItemsRepeaterControl;
-		var sourceList = GetSourceList();
-		if (repeater is not null && sourceList is not null)
+		// Use ItemsSourceView.Count (the repeater's own flat count) rather than
+		// GetSourceList().Count. For grouped lists GetSourceList() returns the
+		// MAUI-side groups collection (count = number of groups), whereas
+		// ItemsSourceView.Count is the full flat count — headers + items + footers
+		// — which maps correctly to TryGetElement(i) repeater indices.
+		int count = repeater?.ItemsSourceView?.Count ?? 0;
+		if (repeater is not null && count > 0)
 		{
-			for (int i = 0; i < sourceList.Count; i++)
+			for (int i = 0; i < count; i++)
 			{
 				var container = repeater.TryGetElement(i);
 				if (container is FrameworkElement fe)
