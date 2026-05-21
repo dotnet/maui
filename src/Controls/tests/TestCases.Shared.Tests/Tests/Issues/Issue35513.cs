@@ -12,20 +12,20 @@ public class Issue35513 : _IssuesUITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.Button)]
-	public void ButtonTextColorUpdatesToDarkRed()
+	public void TextViewBasedControlsTextColorUpdates()
 	{
-		App.WaitForElement("SampleButton");
+		App.WaitForElement("SetTextColorButton");
 		App.Tap("SetTextColorButton");
-		VerifyScreenshot("AfterSetTextColorDarkRed");
+		VerifyScreenshot("AfterSetTextColorOnTextViewBasedControls");
 	}
 
 	[Test, Order(2)]
 	[Category(UITestCategories.Button)]
-	public void ButtonTextColorRestoresToDefaultAfterResetToNull()
+	public void TextViewBasedControlsRestoreDefaultAfterResetToNull()
 	{
-		App.WaitForElement("SampleButton");
+		App.WaitForElement("SetTextColorButton");
 		App.Tap("SetTextColorButton");
 		App.Tap("ResetTextColorButton");
-		VerifyScreenshot("AfterResetTextColorToNull");
+		VerifyScreenshot("AfterResetTextColorToNullOnTextViewBasedControls");
 	}
 }

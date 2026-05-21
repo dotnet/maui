@@ -4,6 +4,12 @@
 public class Issue35513 : ContentPage
 {
 	Button _sampleButton;
+	Label _sampleLabel;
+	Entry _sampleEntry;
+	Editor _sampleEditor;
+	RadioButton _sampleRadioButton;
+	SearchBar _sampleSearchBar;
+	Picker _samplePicker;
 
 	public Issue35513()
 	{
@@ -13,24 +19,92 @@ public class Issue35513 : ContentPage
 			AutomationId = "SampleButton"
 		};
 
-		Content = new VerticalStackLayout
+		_sampleLabel = new Label
 		{
-			Padding = new Thickness(24),
-			Spacing = 14,
-			Children =
+			Text = "Sample Label",
+			AutomationId = "SampleLabel"
+		};
+
+		_sampleEntry = new Entry
+		{
+			Text = "Sample Entry",
+			AutomationId = "SampleEntry"
+		};
+
+		_sampleEditor = new Editor
+		{
+			Text = "Sample Editor",
+			AutoSize = EditorAutoSizeOption.TextChanges,
+			AutomationId = "SampleEditor"
+		};
+
+		_sampleRadioButton = new RadioButton
+		{
+			Content = "Sample RadioButton",
+			AutomationId = "SampleRadioButton"
+		};
+
+		_sampleSearchBar = new SearchBar
+		{
+			Text = "Sample SearchBar",
+			AutomationId = "SampleSearchBar"
+		};
+
+		_samplePicker = new Picker
+		{
+			Title = "Sample Picker",
+			AutomationId = "SamplePicker"
+		};
+		_samplePicker.Items.Add("One");
+		_samplePicker.Items.Add("Two");
+		_samplePicker.SelectedIndex = 0;
+
+
+		Content = new ScrollView
+		{
+			Content = new VerticalStackLayout
 			{
-				_sampleButton,
-				new Button
+				Padding = new Thickness(24),
+				Spacing = 14,
+				Children =
 				{
-					Text = "Set Text Color",
-					AutomationId = "SetTextColorButton",
-					Command = new Command(() => _sampleButton.TextColor = Colors.Orange)
-				},
-				new Button
-				{
-					Text = "Reset Text Color",
-					AutomationId = "ResetTextColorButton",
-					Command = new Command(() => _sampleButton.TextColor = null)
+					_sampleButton,
+					_sampleLabel,
+					_sampleEntry,
+					_sampleEditor,
+					_sampleRadioButton,
+					_sampleSearchBar,
+					_samplePicker,
+					new Button
+					{
+						Text = "Set Text Color",
+						AutomationId = "SetTextColorButton",
+						Command = new Command(() =>
+						{
+							_sampleButton.TextColor = Colors.Orange;
+							_sampleLabel.TextColor = Colors.Orange;
+							_sampleEntry.TextColor = Colors.Orange;
+							_sampleEditor.TextColor = Colors.Orange;
+							_sampleRadioButton.TextColor = Colors.Orange;
+							_sampleSearchBar.TextColor = Colors.Orange;
+							_samplePicker.TextColor = Colors.Orange;
+						})
+					},
+					new Button
+					{
+						Text = "Reset Text Color",
+						AutomationId = "ResetTextColorButton",
+						Command = new Command(() =>
+						{
+							_sampleButton.TextColor = null;
+							_sampleLabel.TextColor = null;
+							_sampleEntry.TextColor = null;
+							_sampleEditor.TextColor = null;
+							_sampleRadioButton.TextColor = null;
+							_sampleSearchBar.TextColor = null;
+							_samplePicker.TextColor = null;
+						})
+					}
 				}
 			}
 		};
