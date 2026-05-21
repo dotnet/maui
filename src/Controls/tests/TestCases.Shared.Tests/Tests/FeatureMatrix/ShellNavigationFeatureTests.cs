@@ -917,10 +917,6 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	[Test, Order(52)]
 	public void BackButtonBehavior_IconOverride_CustomIconShownOnBackButton()
 	{
-		if (iOS26OrHigher)
-        {
-            NavigateToDetail1AndWait();
-        }
 		App.WaitForElement("Detail1GoBackButton");
 		App.Tap("Detail1GoBackButton");
 		App.WaitForElement("MainPageIdentityLabel");
