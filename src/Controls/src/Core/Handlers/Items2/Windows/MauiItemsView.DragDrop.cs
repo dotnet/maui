@@ -360,31 +360,67 @@ internal partial class MauiItemsView
 		itemContainer.DropCompleted -= ItemContainer_DropCompleted;
 		itemContainer.DropCompleted += ItemContainer_DropCompleted;
 
-		// Apply card appearance SYNCHRONOUSLY before this handler returns.
-		// WinUI captures the drag ghost visual immediately after DragStarting fires,
-		// so this runs before the snapshot is taken. This gives the ghost a solid
-		// card background + shadow (matching CV1/ListViewBase native behaviour) instead
-		// of being transparent (which made it look like "only the item is dragged").
+		// WinUI captures the compositor visual tree snapshot BEFORE DragStarting fires,
+		// so synchronous Background changes on the container are NOT reflected in the
+		// default drag ghost (already snapshotted by the compositor).
+		//
+		// The correct approach:
+		//   1. Apply the card background SYNCHRONOUSLY (local DP value → TemplateBinding).
+		//   2. Call GetDeferral() to pause ghost display.
+		//   3. On the dispatcher: RenderAsync captures the XAML software render (which
+		//      DOES reflect DP changes); SetContentFromSoftwareBitmap overrides the ghost.
+		//   4. Cleanup and call deferral.Complete() to un-pause.
 		ApplyDragGhostAppearance(itemContainer);
+		var deferral = args.GetDeferral();
 
-		// Deferred: remove ghost styling, hide the source slot, dim others.
-		// The ghost has already been captured at this point so removing the card
-		// background here does not affect the visual that floats under the pointer.
-		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-		{
-			RemoveDragGhostAppearance(itemContainer);
-
-			if (_sourceContainer is not null)
+		DispatcherQueue.TryEnqueue(
+			Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
+			async () =>
 			{
-				_sourceContainer.Opacity = 0;
-				// Disable hit testing so the invisible container does not intercept
-				// pointer events and is excluded from FindElementsInHostCoordinates.
-				_sourceContainer.IsHitTestVisible = false;
-			}
+				try
+				{
+					// Force layout so the Background local value is measured/arranged.
+					itemContainer.UpdateLayout();
 
-			// Dim all non-source containers to signal "reorder mode" to the user.
-			DimNonSourceContainers();
-		});
+					var rtb = new Microsoft.UI.Xaml.Media.Imaging.RenderTargetBitmap();
+					await rtb.RenderAsync(itemContainer);
+
+					if (rtb.PixelWidth > 0 && rtb.PixelHeight > 0)
+					{
+						var pixelBuffer = await rtb.GetPixelsAsync();
+						var softwareBitmap =
+							global::Windows.Graphics.Imaging.SoftwareBitmap.CreateCopyFromBuffer(
+								pixelBuffer,
+								global::Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8,
+								rtb.PixelWidth,
+								rtb.PixelHeight,
+								global::Windows.Graphics.Imaging.BitmapAlphaMode.Premultiplied);
+						args.DragUI.SetContentFromSoftwareBitmap(softwareBitmap);
+					}
+				}
+				catch
+				{
+					// Rendering failed — WinUI will fall back to its default ghost.
+				}
+				finally
+				{
+					// Remove card styling (ghost bitmap already set / or fallback used).
+					RemoveDragGhostAppearance(itemContainer);
+
+					if (_sourceContainer is not null)
+					{
+						_sourceContainer.Opacity = 0;
+						// Disable hit testing so the invisible slot doesn't intercept
+						// pointer events and FindElementsInHostCoordinates.
+						_sourceContainer.IsHitTestVisible = false;
+					}
+
+					// Dim all non-source containers to signal "reorder mode".
+					DimNonSourceContainers();
+
+					deferral.Complete();
+				}
+			});
 	}
 
 	void ItemContainer_DropCompleted(UIElement sender, UI.Xaml.DropCompletedEventArgs args)
@@ -1557,19 +1593,6 @@ internal partial class MauiItemsView
 	#region Dim / Restore During Drag
 
 	/// <summary>
-	/// Applies a card-style background and shadow elevation to <paramref name="container"/>
-	/// synchronously so that WinUI's drag-ghost snapshot (captured immediately after
-	/// <c>DragStarting</c> returns) looks like a full elevated row — matching the
-	/// native CV1 / ListViewBase ghost behaviour.
-	/// <para>
-	/// Root cause of the difference: <see cref="MauiItemsView"/> sets
-	/// <c>ItemContainerBackground = Transparent</c> to suppress WinUI hover/press
-	/// overlays. This makes the ghost transparent, so only the inner MAUI content
-	/// was visible during drag. Temporarily restoring a solid background here fixes
-	/// that without affecting the live visual states during normal interaction.
-	/// </para>
-	/// </summary>
-	/// <summary>
 	/// Walks the visual tree under <paramref name="parent"/> (up to
 	/// <paramref name="maxDepth"/> levels) and returns the first
 	/// <see cref="FrameworkElement"/> whose <c>Name</c> matches <paramref name="name"/>.
@@ -1594,20 +1617,23 @@ internal partial class MauiItemsView
 
 	static void ApplyDragGhostAppearance(ItemContainer container)
 	{
-		// The ItemContainer template renders its background via a child element
-		// named "PART_CommonVisual" whose Background property is bound with
-		// {ThemeResource ItemContainerBackground}.  MauiItemsView overrides that
-		// resource to Transparent at the parent level to suppress WinUI's native
-		// hover/press overlays.
+		// The ItemContainer template structure (from WinUI source):
 		//
-		// {ThemeResource} bindings re-evaluate ONLY on theme changes (Light ↔ Dark),
-		// NOT on runtime resource-dictionary mutations.  Setting container.Background
-		// or container.Resources["ItemContainerBackground"] therefore has no immediate
-		// visual effect.
+		//   ItemContainer (Style sets Background = {ThemeResource ItemContainerBackground})
+		//     └── Grid "PART_ContainerRoot"  ← Background={TemplateBinding Background}
+		//           ├── Grid "PART_SelectionVisual"
+		//           ├── Rectangle "PART_CommonVisual"  ← Fill set by VSM for hover/press
+		//           └── CheckBox "PART_SelectionCheckbox"
 		//
-		// The only reliable fix is to find PART_CommonVisual in the visual tree and
-		// set its Background property directly — bypassing the ThemeResource mechanism
-		// entirely.  ClearValue() in RemoveDragGhostAppearance restores the binding.
+		// PART_ContainerRoot.Background uses {TemplateBinding Background}, which means
+		// it reads from container.Background (the Control DP).  Setting container.Background
+		// directly creates a LOCAL VALUE that takes precedence over the Style-based
+		// {ThemeResource ItemContainerBackground}.  The TemplateBinding propagates
+		// synchronously — so RenderTargetBitmap (used in the deferral) captures the
+		// card colour immediately.
+		//
+		// NOTE: PART_CommonVisual is a Rectangle (not Panel/Border) used only for
+		// state-based Fill overlays — it has NO background for the normal state.
 		Microsoft.UI.Xaml.Media.Brush cardBrush;
 		if (Microsoft.UI.Xaml.Application.Current.Resources
 			.TryGetValue("LayerFillColorDefaultBrush", out var raw)
@@ -1621,16 +1647,9 @@ internal partial class MauiItemsView
 				global::Windows.UI.Color.FromArgb(255, 255, 255, 255));
 		}
 
-		var commonVisual = FindChildByName(container, "PART_CommonVisual");
-		if (commonVisual is Microsoft.UI.Xaml.Controls.Panel panel)
-			panel.Background = cardBrush;
-		else if (commonVisual is Microsoft.UI.Xaml.Controls.Border border)
-			border.Background = cardBrush;
-
-		// Z-elevation via ThemeShadow creates the raised-card shadow on the ghost.
-		// Translation.Z > 0 is required for ThemeShadow to render in WinUI 3.
-		container.Shadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
-		container.Translation = new System.Numerics.Vector3(0, 0, 8);
+		// Local value overrides Style ThemeResource → PART_ContainerRoot picks it up
+		// via TemplateBinding synchronously.
+		container.Background = cardBrush;
 	}
 
 	/// <summary>
@@ -1640,15 +1659,9 @@ internal partial class MauiItemsView
 	/// </summary>
 	static void RemoveDragGhostAppearance(ItemContainer container)
 	{
-		// ClearValue restores the {ThemeResource} binding on PART_CommonVisual.
-		var commonVisual = FindChildByName(container, "PART_CommonVisual");
-		if (commonVisual is Microsoft.UI.Xaml.Controls.Panel panel)
-			panel.ClearValue(Microsoft.UI.Xaml.Controls.Panel.BackgroundProperty);
-		else if (commonVisual is Microsoft.UI.Xaml.Controls.Border border)
-			border.ClearValue(Microsoft.UI.Xaml.Controls.Border.BackgroundProperty);
-
-		container.Shadow = null;
-		container.Translation = System.Numerics.Vector3.Zero;
+		// ClearValue removes the local value so the DP falls back to the Style-set
+		// ThemeResource (which our MauiItemsView resource override keeps transparent).
+		container.ClearValue(Microsoft.UI.Xaml.Controls.Control.BackgroundProperty);
 	}
 
 	/// <summary>
