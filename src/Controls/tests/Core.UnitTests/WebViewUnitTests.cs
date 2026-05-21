@@ -227,8 +227,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		static WeakReference CreateWebViewWithSharedSource(WebViewSource source)
 		{
 			var webView = new WebView { Source = source };
+
+			// Simulate a full page lifecycle (attach handler, then disconnect on page pop).
+			// The retention path under test is created by "Source = source": the propertyChanged
+			// callback subscribes WebView.OnSourceChanged to the shared source's SourceChanged
+			// event. Attaching and then nulling the handler mirrors what the framework does when
+			// a page is pushed and subsequently popped, giving the WebView a realistic lifetime
+			// before GC eligibility is asserted.
 			webView.Handler = new HandlerStub();
-			webView.Handler = null; // simulate page pop / handler disconnect
+			webView.Handler = null;
+
 			return new WeakReference(webView);
 		}
 
@@ -239,8 +247,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			for (int i = 0; i < weakRefs.Length; i++)
 			{
 				var webView = new WebView { Source = source };
+
+				// Simulate page pop for each WebView — see CreateWebViewWithSharedSource for details.
 				webView.Handler = new HandlerStub();
-				webView.Handler = null; // simulate page pop
+				webView.Handler = null;
+
 				weakRefs[i] = new WeakReference(webView);
 			}
 			return weakRefs;
