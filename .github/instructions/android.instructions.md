@@ -4,6 +4,9 @@ applyTo:
   - "**/Android/**/*.cs"
   - "**/Platforms/Android/**/*.cs"
   - "**/Platform/Android/**/*.cs"
+  - "**/AndroidNative/**"
+  - "eng/init.gradle"
+  - "eng/ingest-maven-deps.sh"
 ---
 
 # Android Platform Development Guidelines
@@ -123,3 +126,8 @@ protected override void DisconnectHandler(RecyclerView platformView)
 | Listener not working | Check lifecycle (register/unregister) |
 | Memory leak | Ensure Dispose() called on Java.Lang.Object |
 | Threading error | Use `platformView.Post()` for UI thread |
+| Gradle 401 / Maven dependency failure | Run `./eng/ingest-maven-deps.sh` — see `copilot-instructions.md` |
+
+## Gradle / Maven Dependency Failures
+
+CI uses CFSClean which blocks Maven Central. All deps go through the `dotnet-public-maven` Azure Artifacts feed. If a new package hasn't been ingested, CI fails with `XAGRDL0000` / 401. Run `./eng/ingest-maven-deps.sh` locally to fix. Do NOT upgrade Gradle past 8.x (`dotnet/android#10738`).
