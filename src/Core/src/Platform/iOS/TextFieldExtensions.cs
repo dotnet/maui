@@ -234,11 +234,6 @@ namespace Microsoft.Maui.Platform
 					clearButton.SetImage(null, UIControlState.Normal);
 					clearButton.SetImage(null, UIControlState.Highlighted);
 					clearButton.TintColor = null;
-					// SetImage(null) releases the custom tinted bitmap so UIKit restores its system default.
-					// The color path (else branch) reads ImageForState(.Highlighted) to get that original
-					// image as the source for tinting. Without these calls, TintColor=null has no visual effect.
-					clearButton.SetImage(null, UIControlState.Normal);
-					clearButton.SetImage(null, UIControlState.Highlighted);
 				}
 				else
 				{

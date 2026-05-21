@@ -121,7 +121,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var tintedImage = clearButton.ImageForState(UIControlState.Normal);
 				Assert.NotNull(tintedImage);
-				Assert.Equal(UIImageRenderingMode.Automatic, tintedImage.RenderingMode);
+				Assert.Equal(UIImageRenderingMode.AlwaysTemplate, tintedImage.RenderingMode);
 
 				entry.TextColor = null;
 				handler.UpdateValue(nameof(IEntry.TextColor));
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Confirms ImageForState(.Highlighted) returns the original after SetImage(null)
 				var retintedImage = clearButton.ImageForState(UIControlState.Normal);
 				Assert.NotNull(retintedImage);
-				Assert.Equal(UIImageRenderingMode.Automatic, retintedImage.RenderingMode);
+				Assert.Equal(UIImageRenderingMode.AlwaysTemplate, retintedImage.RenderingMode);
 			});
 		}
 
