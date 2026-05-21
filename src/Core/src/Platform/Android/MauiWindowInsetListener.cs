@@ -321,8 +321,9 @@ namespace Microsoft.Maui.Platform
 					continue;
 				}
 
+				var childLayoutHeight = child.LayoutParameters?.Height ?? 0;
 				var childContentHeight = Math.Max(0, child.MeasuredHeight - child.PaddingTop - child.PaddingBottom);
-				if (childContentHeight > 0 || child.Height > 0 || child.LayoutParameters?.Height > 0)
+				if (childContentHeight > 0 || child.Height > 0 || childLayoutHeight != 0)
 				{
 					return true;
 				}
