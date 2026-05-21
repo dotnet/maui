@@ -237,7 +237,6 @@ public class Material3RadioButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-
 	[Test, Order(14)]
 	public void Material3RadioButton_SetFontFamilyAndFontAttributes_VerifyVisualState()
 	{
@@ -296,6 +295,23 @@ public class Material3RadioButtonFeatureTests : _GalleryUITest
 		App.WaitForElement("ContentEntry");
 		App.ClearText("ContentEntry");
 		App.EnterText("ContentEntry", "Right to Left Option");
+		App.PressEnter();
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(18)]
+	public void Material3RadioButton_SetFontAutoScalingEnabled_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAutoScalingEnabledFalseRadio");
+		App.Tap("FontAutoScalingEnabledFalseRadio");
+		App.WaitForElement("FontSizeEntry");
+		App.ClearText("FontSizeEntry");
+		App.EnterText("FontSizeEntry", "20");
 		App.PressEnter();
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
