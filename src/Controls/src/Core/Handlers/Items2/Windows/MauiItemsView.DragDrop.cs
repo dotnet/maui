@@ -360,66 +360,33 @@ internal partial class MauiItemsView
 		itemContainer.DropCompleted -= ItemContainer_DropCompleted;
 		itemContainer.DropCompleted += ItemContainer_DropCompleted;
 
-		// WinUI captures the compositor visual tree snapshot BEFORE DragStarting fires,
-		// so synchronous Background changes on the container are NOT reflected in the
-		// default drag ghost (already snapshotted by the compositor).
-		//
-		// The correct approach:
-		//   1. Apply the card background SYNCHRONOUSLY (local DP value → TemplateBinding).
-		//   2. Call GetDeferral() to pause ghost display.
-		//   3. On the dispatcher: RenderAsync captures the XAML software render (which
-		//      DOES reflect DP changes); SetContentFromSoftwareBitmap overrides the ghost.
-		//   4. Cleanup and call deferral.Complete() to un-pause.
+		// Set card background SYNCHRONOUSLY before DragStarting returns.
+		// WinUI builds the drag ghost AFTER this handler returns (not before), so the
+		// compositor captures the container WITH the card background already applied.
+		// RenderTargetBitmap is NOT used here because it cannot capture MAUI's
+		// compositor-layer content — it would produce a white ghost with no item content.
 		ApplyDragGhostAppearance(itemContainer);
-		var deferral = args.GetDeferral();
 
+		// Deferred cleanup: runs on the NEXT dispatcher frame, after the compositor
+		// has snapshotted the container for the ghost.  Removes the temporary card
+		// background and hides the source slot.
 		DispatcherQueue.TryEnqueue(
 			Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
-			async () =>
+			() =>
 			{
-				try
+				// Remove card styling — ghost is already snapshotted by compositor.
+				RemoveDragGhostAppearance(itemContainer);
+
+				if (_sourceContainer is not null)
 				{
-					// Force layout so the Background local value is measured/arranged.
-					itemContainer.UpdateLayout();
-
-					var rtb = new Microsoft.UI.Xaml.Media.Imaging.RenderTargetBitmap();
-					await rtb.RenderAsync(itemContainer);
-
-					if (rtb.PixelWidth > 0 && rtb.PixelHeight > 0)
-					{
-						var pixelBuffer = await rtb.GetPixelsAsync();
-						var softwareBitmap =
-							global::Windows.Graphics.Imaging.SoftwareBitmap.CreateCopyFromBuffer(
-								pixelBuffer,
-								global::Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8,
-								rtb.PixelWidth,
-								rtb.PixelHeight,
-								global::Windows.Graphics.Imaging.BitmapAlphaMode.Premultiplied);
-						args.DragUI.SetContentFromSoftwareBitmap(softwareBitmap);
-					}
+					_sourceContainer.Opacity = 0;
+					// Disable hit testing so the invisible slot doesn't intercept
+					// pointer events and FindElementsInHostCoordinates.
+					_sourceContainer.IsHitTestVisible = false;
 				}
-				catch
-				{
-					// Rendering failed — WinUI will fall back to its default ghost.
-				}
-				finally
-				{
-					// Remove card styling (ghost bitmap already set / or fallback used).
-					RemoveDragGhostAppearance(itemContainer);
 
-					if (_sourceContainer is not null)
-					{
-						_sourceContainer.Opacity = 0;
-						// Disable hit testing so the invisible slot doesn't intercept
-						// pointer events and FindElementsInHostCoordinates.
-						_sourceContainer.IsHitTestVisible = false;
-					}
-
-					// Dim all non-source containers to signal "reorder mode".
-					DimNonSourceContainers();
-
-					deferral.Complete();
-				}
+				// Dim all non-source containers to signal "reorder mode".
+				DimNonSourceContainers();
 			});
 	}
 
