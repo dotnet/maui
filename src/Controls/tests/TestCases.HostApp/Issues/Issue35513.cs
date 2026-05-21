@@ -24,7 +24,7 @@ public class Issue35513 : ContentPage
 				{
 					Text = "Set Text Color",
 					AutomationId = "SetTextColorButton",
-					Command = new Command(() => _sampleButton.TextColor = Colors.DarkRed)
+					Command = new Command(() => _sampleButton.TextColor = Colors.Orange)
 				},
 				new Button
 				{
