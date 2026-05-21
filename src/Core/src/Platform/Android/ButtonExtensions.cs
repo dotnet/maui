@@ -1,8 +1,6 @@
-﻿using Android.Content.Res;
-using Android.Widget;
+﻿using Android.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Graphics;
-using System.Runtime.CompilerServices;
 using AColor = Android.Graphics.Color;
 using R = Android.Resource;
 
@@ -10,25 +8,6 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ButtonExtensions
 	{
-		static readonly ConditionalWeakTable<MaterialButton, ColorStateList> s_defaultTextColors = new();
-
-		// TODO: Make this public in .NET 11
-		internal static void UpdateTextColor(this MaterialButton platformButton, ITextStyle button)
-		{
-			// Cache the original TextColors before overriding them for the first time
-			if (platformButton.TextColors is ColorStateList colors)
-				s_defaultTextColors.GetOrAdd(platformButton, colors);
-
-			if (button.TextColor is null)
-			{
-				if (s_defaultTextColors.TryGetValue(platformButton, out var defaultColors))
-					platformButton.SetTextColor(defaultColors);
-				return;
-			}
-
-			platformButton.SetTextColor(button.TextColor.ToPlatform());
-		}
-
 		public static void UpdateBackground(this MaterialButton platformView, IButton button) =>
 			platformView.UpdateButtonBackground(button);
 
