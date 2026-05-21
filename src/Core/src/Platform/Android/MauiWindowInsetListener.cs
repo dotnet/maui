@@ -237,20 +237,12 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// Check if AppBarLayout has meaningful content
-			bool appBarHasContent = appBarLayout?.MeasuredHeight > 0;
-			if (!appBarHasContent && appBarLayout is not null)
-			{
-				for (int i = 0; i < appBarLayout.ChildCount; i++)
-				{
-					var child = appBarLayout.GetChildAt(i);
-					if (child?.MeasuredHeight > 0)
-					{
-						appBarHasContent = true;
-						break;
-					}
-				}
-			}
+			// Check if AppBarLayout has meaningful content.
+			// When the Shell toolbar is hidden we set its height to 0, but the AppBarLayout can still
+			// retain previously applied top padding. If we key off MeasuredHeight alone, that stale
+			// padding makes the app bar look "non-empty" and we keep consuming the top inset,
+			// leaving a blank gap on cutout devices.
+			bool appBarHasContent = HasVisibleAppBarContent(appBarLayout);
 
 			// Apply padding to AppBarLayout based on content and system insets
 			if (appBarLayout is not null)
@@ -306,6 +298,37 @@ namespace Microsoft.Maui.Platform
 				?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
 				?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
 				?.Build() ?? insets;
+		}
+
+		static bool HasVisibleAppBarContent(AppBarLayout? appBarLayout)
+		{
+			if (appBarLayout is null || appBarLayout.Visibility == ViewStates.Gone)
+			{
+				return false;
+			}
+
+			var measuredContentHeight = Math.Max(0, appBarLayout.MeasuredHeight - appBarLayout.PaddingTop - appBarLayout.PaddingBottom);
+			if (measuredContentHeight > 0)
+			{
+				return true;
+			}
+
+			for (int i = 0; i < appBarLayout.ChildCount; i++)
+			{
+				var child = appBarLayout.GetChildAt(i);
+				if (child is null || child.Visibility == ViewStates.Gone)
+				{
+					continue;
+				}
+
+				var childContentHeight = Math.Max(0, child.MeasuredHeight - child.PaddingTop - child.PaddingBottom);
+				if (childContentHeight > 0 || child.Height > 0 || child.LayoutParameters?.Height > 0)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		public void TrackView(AView view)

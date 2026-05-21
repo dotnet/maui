@@ -117,6 +117,44 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Hidden Shell navigation bar clears app bar inset padding")]
+		public async Task HiddenShellNavigationBarClearsAppBarInsetPadding()
+		{
+			SetupBuilder();
+
+			var contentPage = new ContentPage()
+			{
+				Title = "Test",
+				Content = new Label { Text = "Content" }
+			};
+
+			Shell.SetNavBarIsVisible(contentPage, false);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { contentPage } };
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(contentPage);
+				await OnNavigatedToAsync(contentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => platformToolbar.LayoutParameters?.Height == 0,
+					timeout: 2000,
+					message: "Toolbar did not collapse after Shell.NavBarIsVisible was set to false.");
+
+				await AssertEventually(() => appBar.PaddingTop == 0,
+					timeout: 2000,
+					message: "AppBar retained top inset padding after the Shell navigation bar was hidden.");
+			});
+		}
+
 		protected async Task CheckFlyoutState(ShellRenderer handler, bool desiredState)
 		{
 			var drawerLayout = GetDrawerLayout(handler);
