@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 		const float roundedRectCornerRadius = 5f;
 
 		CoreGraphics.CGSize _lastFocusHaloBoundsSize;
+		UITextBorderStyle _lastFocusHaloBorderStyle;
 
 		public NoCaretField() : base(new RectangleF())
 		{
@@ -35,14 +36,22 @@ namespace Microsoft.Maui.Platform
 			// Provide a custom UIFocusHaloEffect whose path follows the field's
 			// rounded-rect bounds so the halo aligns with the border.
 			// See: https://developer.apple.com/documentation/uikit/uifocushaloeffect
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(26)
-			 && BorderStyle == UITextBorderStyle.RoundedRect
-			 && Bounds.Width > 0 && Bounds.Height > 0
-			 && Bounds.Size != _lastFocusHaloBoundsSize)
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
 			{
-				_lastFocusHaloBoundsSize = Bounds.Size;
-				var path = UIBezierPath.FromRoundedRect(Bounds, roundedRectCornerRadius);
-				FocusEffect = UIFocusHaloEffect.Create(path);
+				if (BorderStyle == UITextBorderStyle.RoundedRect
+				 && Bounds.Width > 0 && Bounds.Height > 0
+				 && (Bounds.Size != _lastFocusHaloBoundsSize || BorderStyle != _lastFocusHaloBorderStyle))
+				{
+					_lastFocusHaloBoundsSize = Bounds.Size;
+					_lastFocusHaloBorderStyle = BorderStyle;
+					var path = UIBezierPath.FromRoundedRect(Bounds, roundedRectCornerRadius);
+					FocusEffect = UIFocusHaloEffect.Create(path);
+				}
+				else if (BorderStyle != UITextBorderStyle.RoundedRect && _lastFocusHaloBorderStyle == UITextBorderStyle.RoundedRect)
+				{
+					_lastFocusHaloBorderStyle = BorderStyle;
+					FocusEffect = null;
+				}
 			}
 		}
 

@@ -11,5 +11,4 @@ static Microsoft.Maui.Handlers.EditorHandler.MapBackground(Microsoft.Maui.Handle
 static Microsoft.Maui.Handlers.EntryHandler.MapBackground(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.DatePickerHandler.MapFlowDirection(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
 override Microsoft.Maui.Platform.MauiTextField.LayoutSubviews() -> void
-override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
