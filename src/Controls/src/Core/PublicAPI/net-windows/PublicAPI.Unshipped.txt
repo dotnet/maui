@@ -1,4 +1,21 @@
 #nullable enable
+Microsoft.Maui.Controls.HybridWebView.Navigating -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs!>?
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Cancel.get -> bool
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Cancel.set -> void
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.HybridWebViewNavigatingEventArgs(System.Uri? url, Microsoft.Maui.WebNavigationTarget target, Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs? platformArgs) -> void
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs?
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Url.get -> System.Uri?
+Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs
+Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs.NavigationArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs?
+Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs.NewWindowArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2NewWindowRequestedEventArgs?
+Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs
+Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs.NavigationArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs?
+Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs.NewWindowArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2NewWindowRequestedEventArgs?
+~Microsoft.Maui.Controls.WebNavigatingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs
+Microsoft.Maui.Controls.WebNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+~Microsoft.Maui.Controls.WebNavigatingEventArgs.WebNavigatingEventArgs(Microsoft.Maui.WebNavigationEvent navigationEvent, Microsoft.Maui.Controls.WebViewSource source, string url, Microsoft.Maui.WebNavigationTarget target, Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs platformArgs) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.ScrollTo(Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> System.Threading.Tasks.Task
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
