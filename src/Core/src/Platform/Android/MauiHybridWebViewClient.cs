@@ -30,6 +30,33 @@ namespace Microsoft.Maui.Platform
 
 		private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
 
+		public override bool ShouldOverrideUrlLoading(AWebView? view, IWebResourceRequest? request)
+		{
+			if (Handler is null || request?.Url is null)
+			{
+				return base.ShouldOverrideUrlLoading(view, request);
+			}
+
+			var uri = new Uri(request.Url.ToString()!);
+
+			// Don't intercept navigations to the app origin (local content)
+			if (HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
+			{
+				return false;
+			}
+
+			var target = request.IsForMainFrame ? WebNavigationTarget.MainFrame : WebNavigationTarget.Frame;
+			var args = new WebViewNavigatingEventArgs(uri, target, request);
+
+			if (Handler.VirtualView is INavigatingAwareWebView navigatingView)
+			{
+				return navigatingView.Navigating(args);
+			}
+
+			return false;
+		}
+
+
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
 		{
 			var url = request?.Url?.ToString();

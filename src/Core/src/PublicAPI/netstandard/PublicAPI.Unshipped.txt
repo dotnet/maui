@@ -1,1 +1,13 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.Maui.INavigatingAwareWebView
+Microsoft.Maui.INavigatingAwareWebView.Navigating(Microsoft.Maui.WebViewNavigatingEventArgs! args) -> bool
+Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.Frame = 1 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.MainFrame = 0 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.NewWindow = 2 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebViewNavigatingEventArgs
+Microsoft.Maui.WebViewNavigatingEventArgs.Cancel.get -> bool
+Microsoft.Maui.WebViewNavigatingEventArgs.Cancel.set -> void
+Microsoft.Maui.WebViewNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebViewNavigatingEventArgs.Url.get -> System.Uri?
+Microsoft.Maui.WebViewNavigatingEventArgs.WebViewNavigatingEventArgs(System.Uri? url, Microsoft.Maui.WebNavigationTarget target) -> void
