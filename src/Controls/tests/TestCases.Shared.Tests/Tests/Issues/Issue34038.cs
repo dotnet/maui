@@ -22,6 +22,10 @@ public class Issue34038 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void DisabledMenuBarItemCannotBeOpenedOrExecuted()
 	{
+		// Navigate to test page
+		App.WaitForElement("Issue34038NavigateButton");
+		App.Tap("Issue34038NavigateButton");
+
 #if WINDOWS
 		Assert.That(App.WaitForElement(StatusLabel).GetText(), Is.EqualTo("Failure"));
 		App.Click(MenuBarItemText);
