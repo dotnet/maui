@@ -1569,11 +1569,45 @@ internal partial class MauiItemsView
 	/// that without affecting the live visual states during normal interaction.
 	/// </para>
 	/// </summary>
+	/// <summary>
+	/// Walks the visual tree under <paramref name="parent"/> (up to
+	/// <paramref name="maxDepth"/> levels) and returns the first
+	/// <see cref="FrameworkElement"/> whose <c>Name</c> matches <paramref name="name"/>.
+	/// </summary>
+	static FrameworkElement? FindChildByName(DependencyObject parent, string name, int maxDepth = 6)
+	{
+		int count = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+		for (int i = 0; i < count; i++)
+		{
+			var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+			if (child is FrameworkElement fe && fe.Name == name)
+				return fe;
+			if (maxDepth > 0)
+			{
+				var found = FindChildByName(child, name, maxDepth - 1);
+				if (found is not null)
+					return found;
+			}
+		}
+		return null;
+	}
+
 	static void ApplyDragGhostAppearance(ItemContainer container)
 	{
-		// Resolve the theme-appropriate card/layer background.
-		// "LayerFillColorDefaultBrush" is the WinUI 3 system resource for card surfaces
-		// (white in Light theme, #2C2C2C in Dark theme).  Fall back to solid white.
+		// The ItemContainer template renders its background via a child element
+		// named "PART_CommonVisual" whose Background property is bound with
+		// {ThemeResource ItemContainerBackground}.  MauiItemsView overrides that
+		// resource to Transparent at the parent level to suppress WinUI's native
+		// hover/press overlays.
+		//
+		// {ThemeResource} bindings re-evaluate ONLY on theme changes (Light ↔ Dark),
+		// NOT on runtime resource-dictionary mutations.  Setting container.Background
+		// or container.Resources["ItemContainerBackground"] therefore has no immediate
+		// visual effect.
+		//
+		// The only reliable fix is to find PART_CommonVisual in the visual tree and
+		// set its Background property directly — bypassing the ThemeResource mechanism
+		// entirely.  ClearValue() in RemoveDragGhostAppearance restores the binding.
 		Microsoft.UI.Xaml.Media.Brush cardBrush;
 		if (Microsoft.UI.Xaml.Application.Current.Resources
 			.TryGetValue("LayerFillColorDefaultBrush", out var raw)
@@ -1587,12 +1621,15 @@ internal partial class MauiItemsView
 				global::Windows.UI.Color.FromArgb(255, 255, 255, 255));
 		}
 
-		container.Background = cardBrush;
+		var commonVisual = FindChildByName(container, "PART_CommonVisual");
+		if (commonVisual is Microsoft.UI.Xaml.Controls.Panel panel)
+			panel.Background = cardBrush;
+		else if (commonVisual is Microsoft.UI.Xaml.Controls.Border border)
+			border.Background = cardBrush;
 
 		// Z-elevation via ThemeShadow creates the raised-card shadow on the ghost.
 		// Translation.Z > 0 is required for ThemeShadow to render in WinUI 3.
-		var shadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
-		container.Shadow = shadow;
+		container.Shadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
 		container.Translation = new System.Numerics.Vector3(0, 0, 8);
 	}
 
@@ -1603,7 +1640,13 @@ internal partial class MauiItemsView
 	/// </summary>
 	static void RemoveDragGhostAppearance(ItemContainer container)
 	{
-		container.Background = null;
+		// ClearValue restores the {ThemeResource} binding on PART_CommonVisual.
+		var commonVisual = FindChildByName(container, "PART_CommonVisual");
+		if (commonVisual is Microsoft.UI.Xaml.Controls.Panel panel)
+			panel.ClearValue(Microsoft.UI.Xaml.Controls.Panel.BackgroundProperty);
+		else if (commonVisual is Microsoft.UI.Xaml.Controls.Border border)
+			border.ClearValue(Microsoft.UI.Xaml.Controls.Border.BackgroundProperty);
+
 		container.Shadow = null;
 		container.Translation = System.Numerics.Vector3.Zero;
 	}
