@@ -21,6 +21,11 @@ public class Issue12320 : _IssuesUITest
 		{
 			App.Back(); // In iOS 26, the AutomationID set on the Back button is not found by Appium, so the Back method is used for iOS 26.
 		}
+		else if (App is AppiumCatalystApp)
+		{
+			// On Mac Catalyst, the AutomationId set on FileImageSource inside BackButtonBehavior.IconOverride is not working, so tap the back button by coordinates as a workaround.
+			App.TapCoordinates(158, 67);
+		}
 		else
 		{
 			App.TapBackArrow("BackButtonImage");
