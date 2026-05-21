@@ -83,20 +83,34 @@ Write-Host "Loading findings from: $FindingsFile" -ForegroundColor Cyan
 $rawJson = Get-Content -Path $FindingsFile -Raw -Encoding UTF8
 $parsed = $rawJson | ConvertFrom-Json
 
-# The agent may produce either a bare array [...] or an object wrapper
-# like {"findings": [...]}. Detect and unwrap both forms.
+# Diagnostic: log what the parser sees
+Write-Host "  Parsed type: $($parsed.GetType().FullName)" -ForegroundColor Gray
+if ($parsed -is [System.Management.Automation.PSCustomObject]) {
+    Write-Host "  Object properties: $(($parsed.PSObject.Properties | ForEach-Object { $_.Name }) -join ', ')" -ForegroundColor Gray
+}
+
+# The agent may produce:
+#   1. A bare array [...] of findings
+#   2. An object wrapper {"findings": [...]} or {"schemaVersion":1, "findings":[...]}
+#   3. An object wrapper {"items": [...]}
+#   4. A single finding object {...}
+# Detect and unwrap all forms robustly.
+$findings = @()
 if ($parsed -is [System.Collections.IEnumerable] -and $parsed -isnot [string]) {
     # Already an array
     $findings = @($parsed)
-} elseif ($parsed.findings) {
-    # Object wrapper: {"findings": [...]}
+} elseif ($parsed.PSObject.Properties.Match('findings').Count -gt 0 -and $null -ne $parsed.findings) {
+    # Object wrapper with explicit 'findings' property
     $findings = @($parsed.findings)
-} elseif ($parsed.items) {
-    # Alternative wrapper: {"items": [...]}
+} elseif ($parsed.PSObject.Properties.Match('items').Count -gt 0 -and $null -ne $parsed.items) {
+    # Alternative wrapper with 'items' property
     $findings = @($parsed.items)
-} else {
-    # Single object — wrap in array
+} elseif ($parsed.PSObject.Properties.Match('file').Count -gt 0 -or $parsed.PSObject.Properties.Match('path').Count -gt 0) {
+    # Single finding object — wrap in array
     $findings = @($parsed)
+} else {
+    Write-Host "  ⚠️ Unrecognized findings format — dumping first 200 chars:" -ForegroundColor Yellow
+    Write-Host "  $($rawJson.Substring(0, [Math]::Min(200, $rawJson.Length)))" -ForegroundColor Gray
 }
 
 if (-not $findings -or $findings.Count -eq 0) {
@@ -105,6 +119,7 @@ if (-not $findings -or $findings.Count -eq 0) {
 }
 
 Write-Host "  Found $($findings.Count) inline findings" -ForegroundColor Gray
+Write-Host "  First finding keys: $(($findings[0].PSObject.Properties | ForEach-Object { $_.Name }) -join ', ')" -ForegroundColor Gray
 
 # Load summary if available
 $summaryBody = ""
