@@ -627,15 +627,6 @@ stages:
               # Create artifacts directory for Copilot outputs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
               
-              # Preserve pipeline-ref scripts before Review-PR.ps1 switches
-              # to origin/main. The review script checks out the PR's target
-              # branch (main) and squash-merges the PR, replacing all files
-              # in the working tree. Our script fixes on the pipeline ref
-              # (feature/regression-check) would be lost. Save them and
-              # restore after the branch switch.
-              SCRIPTS_BACKUP=$(Build.ArtifactStagingDirectory)/_scripts-backup
-              cp -r .github/scripts "$SCRIPTS_BACKUP"
-              
               # Invoke the PR reviewer using our PowerShell script
               # The script will merge the PR into the current branch
               # -PostSummaryComment and -RunFinalize handle posting comments
@@ -645,10 +636,6 @@ stages:
               pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
-              
-              # Restore pipeline-ref scripts over the review branch's versions
-              # so STEP 7 (post-inline-review.ps1) and STEP 8 use our fixes.
-              cp -r "$SCRIPTS_BACKUP"/* .github/scripts/ 2>/dev/null || true
               
               echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
               
@@ -697,7 +684,6 @@ stages:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
               DEFER_COMMENT_TO_STAGE3: "true"
-              SCRIPTS_BACKUP: $(Build.ArtifactStagingDirectory)/_scripts-backup
 
           # Copy review artifacts into the CopilotLogs staging dir.
           # Uses pwsh (not bash) so paths resolve correctly on Windows.

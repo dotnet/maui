@@ -173,25 +173,15 @@ if ($DryRun) {
         Write-Host "  📌 Using current branch: $currentBranch" -ForegroundColor Cyan
     } elseif ($isCI) {
         # In CI the checkout is pinned to the pipeline branch (e.g.
-        # feature/regression-check) which may differ from the PR's target
-        # branch (main, net10.0, net11.0). Squash-merging the PR onto the
-        # wrong base causes spurious conflicts. Resolve the PR's actual
-        # target branch and use it as the merge base.
-        $prTarget = gh pr view $PRNumber --json baseRefName --jq '.baseRefName' 2>$null
-        if (-not $prTarget) { $prTarget = 'main' }
-        Write-Host "  🤖 CI environment detected — using PR target branch '$prTarget' as merge base" -ForegroundColor Cyan
-        git fetch origin "$prTarget" 2>&1 | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "  ⚠️ Failed to fetch '$prTarget', falling back to current branch" -ForegroundColor Yellow
-        } else {
-            git checkout "origin/$prTarget" 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) {
-                Write-Host "  ⚠️ Failed to checkout 'origin/$prTarget', falling back to current branch" -ForegroundColor Yellow
-            } else {
-                $baseSha = git rev-parse --short HEAD 2>$null
-                Write-Host "  📌 Review base: $prTarget @ $baseSha" -ForegroundColor Cyan
-            }
-        }
+        # feature/regression-check via -b parameter). The pipeline ref
+        # already contains our script fixes — switching to origin/main
+        # would overwrite them. Stay on the current branch and squash-merge
+        # the PR onto it. This preserves all pipeline-ref scripts while
+        # still testing the PR's changes.
+        $currentBranch = git branch --show-current 2>$null
+        if (-not $currentBranch) { $currentBranch = git rev-parse --short HEAD 2>$null }
+        $baseSha = git rev-parse --short HEAD 2>$null
+        Write-Host "  🤖 CI environment detected — using pipeline branch '$currentBranch' as merge base ($baseSha)" -ForegroundColor Cyan
     } else {
         # Default (local): checkout main
         Write-Host "  📌 Checking out main branch..." -ForegroundColor Cyan
@@ -283,26 +273,6 @@ if ($DryRun) {
     $headCommit = git log --oneline -1 2>$null
     Write-Host "  ✅ Review branch ready: $reviewBranch" -ForegroundColor Green
     Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
-}
-
-# Restore pipeline-ref scripts that were saved before STEP 1's branch switch.
-# The review branch is now main+PR — our script fixes from the pipeline ref
-# (feature/regression-check) were overwritten. The YAML saves them to
-# $SCRIPTS_BACKUP before invoking this script; restore them now so STEP 7
-# (post-inline-review.ps1) and other scripts use the pipeline-ref versions.
-$scriptsBackup = $env:SCRIPTS_BACKUP
-if ($scriptsBackup -and (Test-Path $scriptsBackup)) {
-    Write-Host "  🔄 Restoring pipeline-ref scripts from backup..." -ForegroundColor Cyan
-    Copy-Item -Path (Join-Path $scriptsBackup "*") -Destination $PSScriptRoot -Recurse -Force -ErrorAction SilentlyContinue
-    # Also restore shared/ subdirectory
-    $sharedBackup = Join-Path $scriptsBackup "shared"
-    $sharedDest = Join-Path $PSScriptRoot "shared"
-    if (Test-Path $sharedBackup) {
-        Copy-Item -Path (Join-Path $sharedBackup "*") -Destination $sharedDest -Recurse -Force -ErrorAction SilentlyContinue
-    }
-    Write-Host "  ✅ Pipeline-ref scripts restored" -ForegroundColor Green
-} elseif ($env:TF_BUILD) {
-    Write-Host "  ⚠️ SCRIPTS_BACKUP not set or not found — using review branch scripts" -ForegroundColor Yellow
 }
 
 # ─── Helper: Parse `dotnet test --logger "console;verbosity=detailed"` ──────
