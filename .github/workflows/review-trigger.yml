@@ -27,14 +27,38 @@ on:
         default: 'main'
 
 jobs:
+  # Coarse pre-filter that decides whether the comment is a /review command.
+  # Doing this in a tiny job (rather than only in the trigger-review job-level `if`)
+  # lets us match the command robustly with a bash regex — GitHub expression syntax
+  # has no trim/regex, so it can't reliably handle leading whitespace, tabs, or
+  # newlines that may precede the slash command (e.g. when users paste it).
+  match:
+    if: github.event_name == 'workflow_dispatch' || github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      matched: ${{ steps.check.outputs.matched }}
+    steps:
+      - name: Match /review command
+        id: check
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Match `/review` as the first non-whitespace token, optionally followed by args.
+          # Allows arbitrary leading whitespace (spaces, tabs, newlines).
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+          fi
+
   trigger-review:
-    # For issue_comment: only run on PR comments that are exactly '/review' or start with '/review '
-    # For workflow_dispatch: always run
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.issue.pull_request &&
-       (github.event.comment.body == '/review' ||
-        startsWith(github.event.comment.body, '/review ')))
+    needs: match
+    if: needs.match.outputs.matched == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}
@@ -76,8 +100,11 @@ jobs:
             PIPELINE_REF="${INPUT_PIPELINE_REF:-main}"
           else
             PR_NUMBER="${{ github.event.issue.number }}"
-            # Strip the '/review' prefix and parse remaining args
-            ARGS=$(echo "${COMMENT_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+            # Trim any leading whitespace (spaces/tabs/newlines) the user may have
+            # accidentally typed before the slash command, then strip the '/review'
+            # prefix and parse remaining args.
+            TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//')
+            ARGS=$(echo "${TRIMMED_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
