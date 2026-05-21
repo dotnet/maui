@@ -61,7 +61,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var platformView = PlatformView;
 
-			if (platformView is not null && platformView.Handle != IntPtr.Zero)
+			if (this.IsAlive() &&
+				platformView.IsAlive() &&
+				platformView.Parent == this)
 			{
 				RemoveView(platformView);
 			}
