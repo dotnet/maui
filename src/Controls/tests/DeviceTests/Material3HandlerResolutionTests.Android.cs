@@ -1,14 +1,17 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Mapper)]
-	public class Material3HandlerResolutionTests
+	public class Material3HandlerResolutionTests : ControlsHandlerTestBase
 	{
 		const string IsMaterial3EnabledSwitch = "Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled";
 
@@ -29,6 +32,13 @@ namespace Microsoft.Maui.DeviceTests
 			{ typeof(TimePicker), "Microsoft.Maui.Handlers.TimePickerHandler", "Microsoft.Maui.Handlers.TimePickerHandler2" },
 		};
 
+		public static TheoryData<Func<View>, string, string> Material3HandlerInstantiations => new()
+		{
+			{ () => new Editor(), "Microsoft.Maui.Handlers.EditorHandler2", "Microsoft.Maui.Platform.MauiMaterialEditText" },
+			{ () => new Picker(), "Microsoft.Maui.Handlers.PickerHandler2", "Microsoft.Maui.Platform.MauiMaterialPicker" },
+			{ () => new TimePicker(), "Microsoft.Maui.Handlers.TimePickerHandler2", "Microsoft.Maui.Platform.MauiMaterialTimePicker" },
+		};
+
 		[Theory]
 		[MemberData(nameof(Material3HandlerTypes))]
 		public void ResolvesMaterial3HandlerWhenFeatureSwitchEnabled(Type viewType, string defaultHandlerTypeName, string material3HandlerTypeName)
@@ -42,6 +52,32 @@ namespace Microsoft.Maui.DeviceTests
 
 				AppContext.SetSwitch(IsMaterial3EnabledSwitch, true);
 				Assert.Equal(material3HandlerTypeName, ResolveHandlerType(viewType).FullName);
+			}
+			finally
+			{
+				AppContext.SetSwitch(IsMaterial3EnabledSwitch, originalValue);
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(Material3HandlerInstantiations))]
+		public async Task InstantiatesMaterial3HandlerAndPlatformViewWhenFeatureSwitchEnabled(
+			Func<View> createView,
+			string material3HandlerTypeName,
+			string material3PlatformViewTypeName)
+		{
+			AppContext.TryGetSwitch(IsMaterial3EnabledSwitch, out var originalValue);
+
+			try
+			{
+				AppContext.SetSwitch(IsMaterial3EnabledSwitch, true);
+
+				var handler = await CreateHandlerAsync(createView());
+				var platformView = Assert.IsAssignableFrom<IPlatformViewHandler>(handler).PlatformView;
+
+				Assert.Equal(material3HandlerTypeName, handler.GetType().FullName);
+				Assert.NotNull(platformView);
+				Assert.Equal(material3PlatformViewTypeName, platformView.GetType().FullName);
 			}
 			finally
 			{
