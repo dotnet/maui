@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Navigation Tests</title>
+    <link rel="icon" href="data:,">
+    <script src="_framework/hybridwebview.js"></script>
+</head>
+<body>
+    <div id="status">ready</div>
+    <iframe id="testframe" style="width:100px;height:100px;"></iframe>
+    <script>
+        function navigateMainFrame(url) {
+            window.location.href = url;
+        }
+
+        function navigateIframe(url) {
+            document.getElementById('testframe').src = url;
+        }
+
+        function openNewWindow(url) {
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
