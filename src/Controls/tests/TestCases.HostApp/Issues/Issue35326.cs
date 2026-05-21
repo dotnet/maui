@@ -49,7 +49,7 @@ public class Issue35326 : ContentPage
 		{
 			Text = "Scroll To End",
 			AutomationId = "ScrollToEndButton",
-			Command = new Command(() => collectionView.ScrollTo(40))
+			Command = new Command(() => collectionView.ScrollTo(49))
 		};
 
 		var scrollToStartButton = new Button
@@ -59,23 +59,11 @@ public class Issue35326 : ContentPage
 			Command = new Command(() => collectionView.ScrollTo(0))
 		};
 
-		var scrollToItemButton = new Button
-		{
-			Text = "Scroll To Item",
-			AutomationId = "ScrollToItemButton",
-			Command = new Command(() =>
-			{
-				var lastGroup = groups[^1];
-				var lastItem = lastGroup[^1];
-				collectionView.ScrollTo(lastItem, lastGroup, position: ScrollToPosition.End, animate: false);
-			})
-		};
-
 		var buttonPanel = new HorizontalStackLayout
 		{
 			Padding = new Thickness(8),
 			Spacing = 8,
-			Children = { scrollToStartButton, scrollToEndButton, scrollToItemButton }
+			Children = { scrollToStartButton, scrollToEndButton }
 		};
 
 		var grid = new Grid
