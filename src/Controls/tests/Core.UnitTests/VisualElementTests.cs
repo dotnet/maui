@@ -8,6 +8,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
+using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -78,6 +79,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			visualElement.Background = brush2;
 			Assert.Equal(bc1, brush2.BindingContext);
 
+		}
+
+		[Fact]
+		public void PlatformContainerViewChangedFiresWhenContainerViewIsMapped()
+		{
+			var visualElement = new VisualElement();
+			var handler = Substitute.For<IViewHandler>();
+			var fired = false;
+
+			((IControlsVisualElement)visualElement).PlatformContainerViewChanged += (_, _) => fired = true;
+
+			ViewHandler.ViewMapper.UpdateProperty(handler, visualElement, nameof(IViewHandler.ContainerView));
+
+			Assert.True(fired);
 		}
 
 		[Fact]

@@ -29,17 +29,20 @@ namespace Microsoft.Maui.Hosting.Internal
 				return exactHandler;
 			}
 
-			// 2. ElementHandler attribute (no DI, just Activator.CreateInstance)
-			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
+			// 2. Assignable DI registration. This preserves base/interface override behavior, e.g.
+			// AddHandler<Button, CustomButtonHandler>() must also win for FancyButton : Button
+			// instead of falling through to Button's inherited ElementHandler attribute.
+			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
+				&& GetService(serviceType) is IElementHandler assignedHandler)
 			{
-				return (IElementHandler?)Activator.CreateInstance(elementHandlerAttribute.GetHandlerType());
+				return assignedHandler;
 			}
 
-			// 3. Interface-based DI registration (e.g., handler registered for IScrollView)
-			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
-				&& GetService(serviceType) is IElementHandler interfaceHandler)
+			// 3. ElementHandler attribute. Built-in controls use this as their trimmable default
+			// when no user DI registration overrides the view type.
+			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
 			{
-				return interfaceHandler;
+				return CreateAttributeHandler(type, elementHandlerAttribute);
 			}
 
 			// 4. ContentView fallback
@@ -63,15 +66,17 @@ namespace Microsoft.Maui.Hosting.Internal
 				return type;
 			}
 
-			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
-			{
-				return elementHandlerAttribute.GetHandlerType();
-			}
-
 			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
 				&& TryGetRegisteredHandlerType(serviceType, out type))
 			{
 				return type;
+			}
+
+			// Keep GetHandlerType in the same order as GetHandler so injection fallback paths see
+			// the user-registered override type instead of the inherited ElementHandler default.
+			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
+			{
+				return elementHandlerAttribute.GetHandlerType();
 			}
 
 			// ContentViewHandler is the default/fallback handler for any IContentView
@@ -124,5 +129,23 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
+
+		private static IElementHandler? CreateAttributeHandler(Type viewType, ElementHandlerAttribute elementHandlerAttribute)
+		{
+			var handlerType = elementHandlerAttribute.GetHandlerType();
+
+			try
+			{
+				return (IElementHandler?)Activator.CreateInstance(handlerType);
+			}
+			catch (MissingMethodException ex)
+			{
+				throw new HandlerNotFoundException(
+					$"Unable to create the {nameof(IElementHandler)} {handlerType} declared by {nameof(ElementHandlerAttribute)} for {viewType}. " +
+					$"Handlers declared with {nameof(ElementHandlerAttribute)} must have a public parameterless constructor. " +
+					$"Use `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` to register handlers that require constructor arguments.",
+					ex);
+			}
+		}
 	}
 }
