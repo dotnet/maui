@@ -8,55 +8,42 @@ public class Issue35513 : ContentPage
 	Entry _sampleEntry;
 	Editor _sampleEditor;
 	RadioButton _sampleRadioButton;
-	SearchBar _sampleSearchBar;
 	Picker _samplePicker;
 
 	public Issue35513()
 	{
 		_sampleButton = new Button
 		{
-			Text = "Sample Button",
-			AutomationId = "SampleButton"
+			Text = "Button Control"
 		};
 
 		_sampleLabel = new Label
 		{
-			Text = "Sample Label",
-			AutomationId = "SampleLabel"
+			Text = "Label Control"
 		};
 
 		_sampleEntry = new Entry
 		{
-			Text = "Sample Entry",
-			AutomationId = "SampleEntry"
+			Text = "Entry Control"
 		};
 
 		_sampleEditor = new Editor
 		{
-			Text = "Sample Editor",
-			AutoSize = EditorAutoSizeOption.TextChanges,
-			AutomationId = "SampleEditor"
+			Text = "Editor Control",
+			AutoSize = EditorAutoSizeOption.TextChanges
 		};
 
 		_sampleRadioButton = new RadioButton
 		{
-			Content = "Sample RadioButton",
-			AutomationId = "SampleRadioButton"
-		};
-
-		_sampleSearchBar = new SearchBar
-		{
-			Text = "Sample SearchBar",
-			AutomationId = "SampleSearchBar"
+			Content = "RadioButton Control"
 		};
 
 		_samplePicker = new Picker
 		{
-			Title = "Sample Picker",
-			AutomationId = "SamplePicker"
+			Title = "Picker Control"
 		};
-		_samplePicker.Items.Add("One");
-		_samplePicker.Items.Add("Two");
+		_samplePicker.Items.Add("First Option");
+		_samplePicker.Items.Add("Second Option");
 		_samplePicker.SelectedIndex = 0;
 
 
@@ -73,7 +60,6 @@ public class Issue35513 : ContentPage
 					_sampleEntry,
 					_sampleEditor,
 					_sampleRadioButton,
-					_sampleSearchBar,
 					_samplePicker,
 					new Button
 					{
@@ -86,7 +72,6 @@ public class Issue35513 : ContentPage
 							_sampleEntry.TextColor = Colors.Orange;
 							_sampleEditor.TextColor = Colors.Orange;
 							_sampleRadioButton.TextColor = Colors.Orange;
-							_sampleSearchBar.TextColor = Colors.Orange;
 							_samplePicker.TextColor = Colors.Orange;
 						})
 					},
@@ -101,7 +86,6 @@ public class Issue35513 : ContentPage
 							_sampleEntry.TextColor = null;
 							_sampleEditor.TextColor = null;
 							_sampleRadioButton.TextColor = null;
-							_sampleSearchBar.TextColor = null;
 							_samplePicker.TextColor = null;
 						})
 					}
