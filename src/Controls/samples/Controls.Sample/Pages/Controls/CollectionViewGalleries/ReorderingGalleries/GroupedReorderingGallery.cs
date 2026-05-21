@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.GroupingGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
@@ -20,7 +19,6 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Auto },
-					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Star }
 				}
 			};
@@ -30,15 +28,6 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 			var canMixGroupsControl = new StackLayout { Orientation = StackOrientation.Horizontal };
 			canMixGroupsControl.Children.Add(canMixGroupsLabel);
 			canMixGroupsControl.Children.Add(canMixGroupsSwitch);
-
-			var supportLabel = new Label
-			{
-				Text = "Reordering of grouped sources is not supported on Windows!",
-				FontSize = 24,
-				FontAttributes = FontAttributes.Bold,
-				IsVisible = (DeviceInfo.Platform == DevicePlatform.WinUI),
-				BackgroundColor = Colors.Red
-			};
 
 			var reorderCompletedLabel = new Label
 			{
@@ -61,21 +50,23 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 			var reloadButton = new Button { Text = "Reload Current Source", AutomationId = "btnReload", HorizontalOptions = LayoutOptions.Start };
 			reloadButton.Clicked += (sender, e) => ReloadItemsSource(collectionView);
 
-			layout.Children.Add(supportLabel);
 			layout.Children.Add(canMixGroupsControl);
 			layout.Children.Add(reorderCompletedLabel);
 			layout.Children.Add(reloadButton);
 			layout.Children.Add(collectionView);
 
-			Grid.SetRow(supportLabel, 0);
-			Grid.SetRow(canMixGroupsControl, 1);
-			Grid.SetRow(reorderCompletedLabel, 2);
-			Grid.SetRow(reloadButton, 3);
-			Grid.SetRow(collectionView, 4);
+			Grid.SetRow(canMixGroupsControl, 0);
+			Grid.SetRow(reorderCompletedLabel, 1);
+			Grid.SetRow(reloadButton, 2);
+			Grid.SetRow(collectionView, 3);
 
 			Content = layout;
 
-			collectionView.ItemsSource = new SuperTeams();
+			// Use ObservableSuperTeams (ObservableCollection<ObservableTeam>) so that
+			// group mutations during drag-and-drop fire INotifyCollectionChanged,
+			// allowing GroupedItemTemplateCollection2 to update the flat list and
+			// refresh the UI after each reorder.
+			collectionView.ItemsSource = new ObservableSuperTeams();
 		}
 
 		void ReloadItemsSource(CollectionView collectionView)
