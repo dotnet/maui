@@ -285,6 +285,26 @@ if ($DryRun) {
     Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
 }
 
+# Restore pipeline-ref scripts that were saved before STEP 1's branch switch.
+# The review branch is now main+PR — our script fixes from the pipeline ref
+# (feature/regression-check) were overwritten. The YAML saves them to
+# $SCRIPTS_BACKUP before invoking this script; restore them now so STEP 7
+# (post-inline-review.ps1) and other scripts use the pipeline-ref versions.
+$scriptsBackup = $env:SCRIPTS_BACKUP
+if ($scriptsBackup -and (Test-Path $scriptsBackup)) {
+    Write-Host "  🔄 Restoring pipeline-ref scripts from backup..." -ForegroundColor Cyan
+    Copy-Item -Path (Join-Path $scriptsBackup "*") -Destination $PSScriptRoot -Recurse -Force -ErrorAction SilentlyContinue
+    # Also restore shared/ subdirectory
+    $sharedBackup = Join-Path $scriptsBackup "shared"
+    $sharedDest = Join-Path $PSScriptRoot "shared"
+    if (Test-Path $sharedBackup) {
+        Copy-Item -Path (Join-Path $sharedBackup "*") -Destination $sharedDest -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    Write-Host "  ✅ Pipeline-ref scripts restored" -ForegroundColor Green
+} elseif ($env:TF_BUILD) {
+    Write-Host "  ⚠️ SCRIPTS_BACKUP not set or not found — using review branch scripts" -ForegroundColor Yellow
+}
+
 # ─── Helper: Parse `dotnet test --logger "console;verbosity=detailed"` ──────
 # Extracts per-test results (Passed/Failed/Skipped) plus failure messages and
 # stack traces from raw stdout. Used by STEP 3 so the AI summary comment shows
