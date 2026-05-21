@@ -86,13 +86,15 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			// For layout containers with Hint or Description set, synthesize an AccessibilityLabel
-			// from the MAUI virtual children's text so VoiceOver reads both the children's content
-			// AND the container's hint in a single announcement — matching Android TalkBack behavior.
+			// For layout containers with a Hint set, synthesize an AccessibilityLabel from the MAUI
+			// virtual children's text so VoiceOver reads both the children's content AND the
+			// container's hint in a single announcement — matching Android TalkBack behavior.
 			// We read from the virtual view tree (not platformView.Subviews) to avoid timing issues:
 			// UpdateSemantics can be called before platform children are attached.
+			// Note: We gate on Hint only (not Description) to preserve the existing contract for
+			// Description-only layouts, which already read just the Description text today.
 			if (view is ILayout layout &&
-				(!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
+				!string.IsNullOrWhiteSpace(semantics.Hint))
 			{
 				var synthesizedLabel = SynthesizeAccessibilityLabelFromChildren(layout);
 
@@ -227,8 +229,13 @@ namespace Microsoft.Maui.Platform
 
 					sb.Append(childDesc);
 				}
-				else if (child is IText textElement && !string.IsNullOrWhiteSpace(textElement.Text))
+				else if (child is IText textElement
+					&& child is not ITextInput
+					&& !string.IsNullOrWhiteSpace(textElement.Text))
 				{
+					// Skip ITextInput (Entry/Editor/SearchBar): their .Text is user input which
+					// would leak into the layout's accessibility label and never refresh as the
+					// user types. Entries/editors are independently focusable anyway.
 					if (sb.Length > 0)
 					{
 						sb.Append(", ");

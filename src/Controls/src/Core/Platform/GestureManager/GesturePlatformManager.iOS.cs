@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 		WeakReference<PlatformView>? _platformView;
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
-		bool _setIsAccessibilityElement;
+		bool _setShouldGroupAccessibilityChildren;
 		bool _setAccessibilityActivateCallback;
 
 		double _previousScale = 1.0;
@@ -121,15 +121,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (PlatformView is not null)
 			{
-				if (_setIsAccessibilityElement)
-				{
-					PlatformView.ShouldGroupAccessibilityChildren = false;
-				}
-
-				if (_setAccessibilityActivateCallback && PlatformView is Microsoft.Maui.Platform.MauiView mv)
-				{
-					mv.AccessibilityActivateCallback = null;
-				}
+				ResetAccessibilityPromotionFlags();
 			}
 
 			_dragAndDropDelegate?.Disconnect();
@@ -684,7 +676,7 @@ namespace Microsoft.Maui.Controls.Platform
 					&& _handler.VirtualView is global::Microsoft.Maui.ILayout)
 				{
 					PlatformView.ShouldGroupAccessibilityChildren = true;
-					_setIsAccessibilityElement = true;
+					_setShouldGroupAccessibilityChildren = true;
 				}
 
 				// UIKit's default accessibilityActivate() simulates touch events which are intermittently
@@ -696,6 +688,9 @@ namespace Microsoft.Maui.Controls.Platform
 				// reliable across both platforms.
 				// This block is decoupled from the grouping block above so it also registers when
 				// SemanticExtensions already promoted the container (layout with Hint + gesture).
+				// Note: Only Microsoft.Maui.Platform.MauiView exposes AccessibilityActivateCallback,
+				// so layouts whose platform view is not a MauiView (e.g. Border, ScrollView, custom
+				// container handlers) fall back to UIKit's default simulated-touch activation path.
 				if (PlatformView is Microsoft.Maui.Platform.MauiView mauiView &&
 					_handler.VirtualView is global::Microsoft.Maui.ILayout)
 				{
@@ -948,17 +943,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				PlatformView.AccessibilityTraits &= ~_addedFlags;
 
-				// Reset ShouldGroupAccessibilityChildren if we promoted this container when the gesture was added
-				if (_setIsAccessibilityElement)
-				{
-					PlatformView.ShouldGroupAccessibilityChildren = false;
-				}
-
-				// Clear the macOS Catalyst direct activation callback if we registered one
-				if (_setAccessibilityActivateCallback && PlatformView is Microsoft.Maui.Platform.MauiView mv)
-				{
-					mv.AccessibilityActivateCallback = null;
-				}
+				ResetAccessibilityPromotionFlags();
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 				{
@@ -969,9 +954,31 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_addedFlags = UIAccessibilityTrait.None;
 			_defaultAccessibilityRespondsToUserInteraction = null;
-			_setIsAccessibilityElement = false;
-			_setAccessibilityActivateCallback = false;
 			LoadRecognizers();
+		}
+
+		// Reverts any accessibility-related state this manager set on the platform view when a
+		// tap gesture was wired up. Called from both Disconnect() and the gesture-collection-changed
+		// path so the two stay in sync.
+		void ResetAccessibilityPromotionFlags()
+		{
+			if (PlatformView is null)
+			{
+				return;
+			}
+
+			if (_setShouldGroupAccessibilityChildren)
+			{
+				PlatformView.ShouldGroupAccessibilityChildren = false;
+			}
+
+			if (_setAccessibilityActivateCallback && PlatformView is Microsoft.Maui.Platform.MauiView mv)
+			{
+				mv.AccessibilityActivateCallback = null;
+			}
+
+			_setShouldGroupAccessibilityChildren = false;
+			_setAccessibilityActivateCallback = false;
 		}
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
