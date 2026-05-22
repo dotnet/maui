@@ -7,6 +7,8 @@ internal interface IDiagnosticsManager
 {
 	ActivitySource ActivitySource { get; }
 
+	bool HasActivityListeners { get; }
+
 	Meter? Meter { get; }
 
 	void GetTags(object source, out TagList tagList);
