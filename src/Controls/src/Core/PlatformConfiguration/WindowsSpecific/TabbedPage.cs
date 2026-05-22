@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	{
 		/// <summary>Bindable property for attached property <c>HeaderIconsEnabled</c>.</summary>
 		public static readonly BindableProperty HeaderIconsEnabledProperty =
-			BindableProperty.Create(nameof(HeaderIconsEnabledProperty), typeof(bool), typeof(TabbedPage), true);
+			BindableProperty.Create(nameof(HeaderIconsEnabledProperty), typeof(bool), typeof(TabbedPage), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for attached property <c>HeaderIconsSize</c>.</summary>
 		public static readonly BindableProperty HeaderIconsSizeProperty =

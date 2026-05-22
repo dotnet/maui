@@ -3,6 +3,7 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using System;
+	using Microsoft.Maui.Controls.Internals;
 	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.VisualElement;
 
@@ -377,7 +378,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		#endregion
 
 		/// <summary>Bindable property for <see cref="CanBecomeFirstResponder"/>.</summary>
-		public static readonly BindableProperty CanBecomeFirstResponderProperty = BindableProperty.Create(nameof(CanBecomeFirstResponder), typeof(bool), typeof(VisualElement), false);
+		public static readonly BindableProperty CanBecomeFirstResponderProperty = BindableProperty.Create(nameof(CanBecomeFirstResponder), typeof(bool), typeof(VisualElement), BooleanBoxes.FalseBox);
 
 		/// <summary>
 		/// Gets whether this element can become the first responder to touch events, rather than the page containing the element.

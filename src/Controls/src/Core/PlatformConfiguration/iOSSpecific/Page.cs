@@ -1,5 +1,6 @@
 #nullable disable
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
@@ -418,7 +419,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		/// <summary>Bindable property for <see cref="PrefersHomeIndicatorAutoHidden"/>.</summary>
 		public static readonly BindableProperty PrefersHomeIndicatorAutoHiddenProperty =
-			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
+			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
 
 		/// <summary>
 		/// Gets a value that indicates whether the visual indicator should hide upon returning to the home screen.

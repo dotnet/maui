@@ -1,13 +1,14 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.ScrollView;
 
 	/// <summary>The scroll view instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
 	public static class ScrollView
 	{
 		/// <summary>Bindable property for <see cref="ShouldDelayContentTouches"/>.</summary>
-		public static readonly BindableProperty ShouldDelayContentTouchesProperty = BindableProperty.Create(nameof(ShouldDelayContentTouches), typeof(bool), typeof(ScrollView), true);
+		public static readonly BindableProperty ShouldDelayContentTouchesProperty = BindableProperty.Create(nameof(ShouldDelayContentTouches), typeof(bool), typeof(ScrollView), BooleanBoxes.TrueBox);
 
 		/// <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
 		/// <param name="element">The platform specific element on which to perform the operation.</param>

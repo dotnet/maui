@@ -26,10 +26,10 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _visualChildren;
 
 		/// <summary>Bindable property for <see cref="IsPullToRefreshEnabled"/>.</summary>
-		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create(nameof(IsPullToRefreshEnabled), typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create(nameof(IsPullToRefreshEnabled), typeof(bool), typeof(ListView), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="IsRefreshing"/>.</summary>
-		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(ListView), false, BindingMode.TwoWay);
+		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(ListView), BooleanBoxes.FalseBox, BindingMode.TwoWay);
 
 		/// <summary>Bindable property for <see cref="RefreshCommand"/>.</summary>
 		public static readonly BindableProperty RefreshCommandProperty = BindableProperty.Create(nameof(RefreshCommand), typeof(ICommand), typeof(ListView), null, propertyChanged: OnRefreshCommandChanged);
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty SelectionModeProperty = BindableProperty.Create(nameof(SelectionMode), typeof(ListViewSelectionMode), typeof(ListView), ListViewSelectionMode.Single);
 
 		/// <summary>Bindable property for <see cref="HasUnevenRows"/>.</summary>
-		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(ListView), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="RowHeight"/>.</summary>
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create(nameof(RowHeight), typeof(int), typeof(ListView), -1);
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: OnGroupHeaderTemplateChanged);
 
 		/// <summary>Bindable property for <see cref="IsGroupingEnabled"/>.</summary>
-		public static readonly BindableProperty IsGroupingEnabledProperty = BindableProperty.Create(nameof(IsGroupingEnabled), typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty IsGroupingEnabledProperty = BindableProperty.Create(nameof(IsGroupingEnabled), typeof(bool), typeof(ListView), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="SeparatorVisibility"/>.</summary>
 		public static readonly BindableProperty SeparatorVisibilityProperty = BindableProperty.Create(nameof(SeparatorVisibility), typeof(SeparatorVisibility), typeof(ListView), SeparatorVisibility.Default);

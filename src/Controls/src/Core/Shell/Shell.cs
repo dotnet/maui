@@ -1285,7 +1285,7 @@ namespace Microsoft.Maui.Controls
 		/// The flyout can be programmatically opened and closed by setting the FlyoutIsPresented property to a boolean value that indicates whether the flyout is currently open.
 		/// </summary>
 		public static readonly BindableProperty FlyoutIsPresentedProperty =
-			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), false, BindingMode.TwoWay);
+			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), BooleanBoxes.FalseBox, BindingMode.TwoWay);
 
 		/// <summary>Bindable property for <see cref="Items"/>.</summary>
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
