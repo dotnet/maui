@@ -62,16 +62,31 @@ namespace Microsoft.Maui.Media
 				return null;
 			}
 
+			var originalImagePath = imagePath;
+			string rotatedImagePath = null;
+
 			// Recovery-sensitive MediaPicker paths must leave the original file intact until the
 			// active recovery record has been cleared or promoted.
 			if (options.RotateImage)
 			{
-				imagePath = await RotateImageToNewFileAsync(imagePath);
+				var rotatedPath = await RotateImageToNewFileAsync(imagePath);
+				if (!string.Equals(rotatedPath, imagePath, StringComparison.Ordinal))
+				{
+					rotatedImagePath = rotatedPath;
+				}
+
+				imagePath = rotatedPath;
 			}
 
 			if (ImageProcessor.IsProcessingNeeded(options.MaximumWidth, options.MaximumHeight, options.CompressionQuality))
 			{
-				imagePath = await CompressImageIfNeeded(imagePath, options, preserveSource: true);
+				var compressedImagePath = await CompressImageIfNeeded(imagePath, options, preserveSource: true);
+				if (ShouldDeleteIntermediateFile(rotatedImagePath, originalImagePath, compressedImagePath))
+				{
+					TryDeleteFile(rotatedImagePath);
+				}
+
+				imagePath = compressedImagePath;
 			}
 
 			return imagePath;
@@ -434,6 +449,18 @@ namespace Microsoft.Maui.Media
 			await rotatedStream.CopyToAsync(outputStream);
 
 			return outputFile.AbsolutePath;
+		}
+
+		static bool ShouldDeleteIntermediateFile(string intermediatePath, string originalPath, string finalPath)
+			=> !string.IsNullOrEmpty(intermediatePath) &&
+				!string.Equals(intermediatePath, originalPath, StringComparison.Ordinal) &&
+				!string.Equals(intermediatePath, finalPath, StringComparison.Ordinal);
+
+		static void TryDeleteFile(string filePath)
+		{
+			try
+			{ File.Delete(filePath); }
+			catch { }
 		}
 
 		static Task<string> CompressImageIfNeeded(string imagePath, MediaPickerOptions options, bool preserveSource = false)

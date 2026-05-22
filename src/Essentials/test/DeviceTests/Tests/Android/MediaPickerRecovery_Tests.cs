@@ -1377,6 +1377,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task ProcessPhotoPreservingSource_RotationAndCompression_Deletes_Rotated_Intermediate()
+		{
+			var capturePath = CreateValidJpegMediaFile();
+			var originalBytes = await File.ReadAllBytesAsync(capturePath);
+			var temporaryFilesBefore = GetEssentialsTemporaryFiles();
+
+			var processedPath = await MediaPickerImplementation.ProcessPhotoPreservingSourceAsync(
+				capturePath,
+				new PersistedPhotoProcessingOptions(16, null, 70, true, false));
+
+			var createdTemporaryFiles = GetEssentialsTemporaryFiles()
+				.Except(temporaryFilesBefore, StringComparer.Ordinal)
+				.ToArray();
+
+			Assert.NotEqual(capturePath, processedPath);
+			Assert.True(File.Exists(capturePath));
+			Assert.Equal(originalBytes, await File.ReadAllBytesAsync(capturePath));
+			Assert.True(new FileInfo(processedPath).Length > 0);
+			Assert.Equal(processedPath, Assert.Single(createdTemporaryFiles));
+		}
+
+		[Fact]
 		public async Task ProcessPhotoPreservingSource_InvalidRotationInput_Leaves_Source_Intact()
 		{
 			var invalidJpegPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
@@ -1885,6 +1907,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		{
 			var cacheDirectory = FileSystem.CacheDirectory ?? throw new InvalidOperationException("FileSystem.CacheDirectory is not available.");
 			return Path.Combine(cacheDirectory, $"{Guid.NewGuid():N}{extension}");
+		}
+
+		static string[] GetEssentialsTemporaryFiles()
+		{
+			var cacheDirectory = FileSystem.CacheDirectory ?? throw new InvalidOperationException("FileSystem.CacheDirectory is not available.");
+			var temporaryRoot = Path.Combine(cacheDirectory, FileSystemUtils.EssentialsFolderHash);
+			return Directory.Exists(temporaryRoot)
+				? Directory.GetFiles(temporaryRoot, "*", SearchOption.AllDirectories)
+				: Array.Empty<string>();
 		}
 
 		static AndroidUri CreateFileUri(string path)
