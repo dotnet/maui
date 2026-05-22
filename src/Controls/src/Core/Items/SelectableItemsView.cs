@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-
 		/// <summary>
 		/// Gets or sets the currently selected item when <see cref="SelectionMode"/> is <see cref="SelectionMode.Single"/>.
 		/// </summary>
