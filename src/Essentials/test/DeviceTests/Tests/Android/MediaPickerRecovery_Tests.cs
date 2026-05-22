@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -575,6 +576,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		public void Pick_Callback_Records_Accepted_Uri_Before_Materialization()
 		{
 			var pickUri = AndroidUri.Parse("content://maui-test/missing-picked-media") ?? throw new InvalidOperationException("Unable to create invalid picker URI.");
+			using var permissions = TrackPickerUriPermissions();
 			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.PickPhoto,
 				[],
@@ -591,6 +593,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.Equal(PendingMediaPickerState.ResultAccepted, activePick.State);
 			Assert.Empty(activePick.FilePaths);
 			Assert.Equal(pickUri.ToString(), GetSingleActiveOperationPickerUri(activePick));
+			Assert.Equal(new[] { pickUri.ToString() }, permissions.Persisted);
+			Assert.Empty(permissions.Released);
 		}
 
 		[Fact]
@@ -615,9 +619,36 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task Accepted_Pick_Materialization_Releases_Persisted_Picker_Uri_Access()
+		{
+			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pickUri = CreateContentUri(pickPath);
+			using var permissions = TrackPickerUriPermissions();
+			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.PickPhoto,
+				[],
+				PersistedPhotoProcessingOptions.Default);
+
+			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(pickUri));
+
+			var acceptedPaths = await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingPick.Id, throwOnMaterializationFailure: true);
+
+			var acceptedPath = Assert.Single(acceptedPaths);
+			Assert.True(File.Exists(acceptedPath));
+			var activePick = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
+			Assert.Equal(pendingPick.Id, activePick.Id);
+			Assert.Equal(PendingMediaPickerState.ResultAccepted, activePick.State);
+			Assert.Equal(acceptedPath, GetSingleActiveOperationFilePath(activePick));
+			Assert.Empty(activePick.PickerUriStrings);
+			Assert.Equal(new[] { pickUri.ToString() }, permissions.Persisted);
+			Assert.Equal(new[] { pickUri.ToString() }, permissions.Released);
+		}
+
+		[Fact]
 		public async Task Accepted_Pick_Materialization_Failure_Throws_And_Clears_Active_State()
 		{
 			var invalidPickerUri = AndroidUri.Parse("content://maui-test/missing-picked-media") ?? throw new InvalidOperationException("Unable to create invalid picker URI.");
+			using var permissions = TrackPickerUriPermissions();
 			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.PickPhoto,
 				[],
@@ -628,6 +659,32 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			await Assert.ThrowsAnyAsync<Exception>(async () =>
 				await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingPick.Id, throwOnMaterializationFailure: true));
 			Assert.Null(GetActiveOperation());
+			Assert.Equal(new[] { invalidPickerUri.ToString() }, permissions.Persisted);
+			Assert.Equal(new[] { invalidPickerUri.ToString() }, permissions.Released);
+		}
+
+		[Fact]
+		public void Pick_Callback_Lost_Active_Operation_Race_Releases_Persisted_Uri_Access()
+		{
+			var pickUri = AndroidUri.Parse("content://maui-test/picked-media") ?? throw new InvalidOperationException("Unable to create picker URI.");
+			PendingMediaPickerOperation? pendingPick = null;
+			using var permissions = TrackPickerUriPermissions(_ =>
+			{
+				if (pendingPick is not null)
+				{
+					MediaPickerRecoveryManager.ClearActiveOperation(pendingPick.Id);
+				}
+			});
+			pendingPick = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.PickPhoto,
+				[],
+				PersistedPhotoProcessingOptions.Default);
+
+			Assert.False(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(pickUri));
+
+			Assert.Null(GetActiveOperation());
+			Assert.Equal(new[] { pickUri.ToString() }, permissions.Persisted);
+			Assert.Equal(new[] { pickUri.ToString() }, permissions.Released);
 		}
 
 		[Fact]
@@ -1455,6 +1512,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		static string CreateMissingMediaFilePath(string extension)
 			=> CreateCacheFilePath(extension);
 
+		static AndroidUri CreateContentUri(string path)
+			=> FileProvider.GetUriForFile(new Java.IO.File(path)) ?? throw new InvalidOperationException("Unable to create content URI.");
+
 		static void SimulateProcessRecreation()
 		{
 			// Clear only in-memory operation ownership. Durable preference state remains so the next
@@ -1466,6 +1526,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		{
 			ClearInProcessOperationIds();
 			CompleteAndClearRecoveryWaiters();
+			MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(null, null);
 			SetRecoveryReconciliationGeneration(0);
 			Preferences.Remove(ActiveOperationPreferenceKey, RecoveryPreferencesSharedName);
 			Preferences.Remove(RecoveredResultsPreferenceKey, RecoveryPreferencesSharedName);
@@ -1504,6 +1565,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		static System.Collections.IList GetRecoveryWaiters()
 			=> GetPrivateStaticField<System.Collections.IList>("RecoveryWaiters");
 
+		static PickerUriPermissionTracker TrackPickerUriPermissions(Action<AndroidUri>? onPersist = null)
+		{
+			var tracker = new PickerUriPermissionTracker(onPersist);
+			MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(tracker.Persist, tracker.Release);
+			return tracker;
+		}
+
 		static void SetRecoveryReconciliationGeneration(long value)
 		{
 			var field = typeof(MediaPickerRecoveryManager)
@@ -1520,6 +1588,35 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			var value = field.GetValue(null);
 			Assert.NotNull(value);
 			return (T)value;
+		}
+
+		sealed class PickerUriPermissionTracker : IDisposable
+		{
+			readonly Action<AndroidUri>? onPersist;
+			readonly List<string> persisted = [];
+			readonly List<string> released = [];
+
+			public PickerUriPermissionTracker(Action<AndroidUri>? onPersist)
+			{
+				this.onPersist = onPersist;
+			}
+
+			public IReadOnlyList<string> Persisted => persisted;
+
+			public IReadOnlyList<string> Released => released;
+
+			public bool Persist(AndroidUri uri)
+			{
+				persisted.Add(uri.ToString());
+				onPersist?.Invoke(uri);
+				return true;
+			}
+
+			public void Release(AndroidUri uri)
+				=> released.Add(uri.ToString());
+
+			public void Dispose()
+				=> MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(null, null);
 		}
 
 		static string CreateCacheFilePath(string extension)

@@ -31,6 +31,8 @@ internal static class MediaPickerRecoveryManager
 	static readonly HashSet<string> InProcessOperationIds = new(StringComparer.Ordinal);
 	static readonly List<MediaPickerRecoveryWaiter> RecoveryWaiters = [];
 	static readonly SemaphoreSlim RecoveryPromotionSemaphore = new(1, 1);
+	static Func<AndroidUri, bool> PersistPickerUriReadAccessHandler = PersistPickerUriReadAccessCore;
+	static Action<AndroidUri> ReleasePickerUriReadAccessHandler = ReleasePickerUriReadAccessCore;
 	// Lets waiters detect an empty recovery outcome that happened before they could be registered.
 	static long RecoveryReconciliationGeneration;
 
@@ -82,14 +84,18 @@ internal static class MediaPickerRecoveryManager
 			return;
 		}
 
+		IReadOnlyList<string> pickerUriStringsToRelease = [];
+
 		lock (Locker)
 		{
 			var operation = MediaPickerRecoveryStore.ReadActiveOperation();
 			if (operation?.Id == id)
 			{
-				ClearActiveOperationUnderLock(operation);
+				pickerUriStringsToRelease = ClearActiveOperationUnderLock(operation);
 			}
 		}
+
+		ReleasePickerUriReadAccess(pickerUriStringsToRelease);
 	}
 
 	internal static async Task<IReadOnlyList<RecoveredMediaPickerResult>> GetRecoveredResultsAsync()
@@ -159,9 +165,18 @@ internal static class MediaPickerRecoveryManager
 		return Task.CompletedTask;
 	}
 
+	internal static void SetPickerUriPermissionHandlersForTests(
+		Func<AndroidUri, bool>? persistHandler,
+		Action<AndroidUri>? releaseHandler)
+	{
+		PersistPickerUriReadAccessHandler = persistHandler ?? PersistPickerUriReadAccessCore;
+		ReleasePickerUriReadAccessHandler = releaseHandler ?? ReleasePickerUriReadAccessCore;
+	}
+
 	internal static async Task DiscardPendingOperationAsync()
 	{
 		IReadOnlyList<RecoveredMediaPickerResult>? waiterResults = null;
+		IReadOnlyList<string> pickerUriStringsToRelease = [];
 
 		await RecoveryPromotionSemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -180,9 +195,11 @@ internal static class MediaPickerRecoveryManager
 					throw new InvalidOperationException("A MediaPicker operation is already in progress.");
 				}
 
-				ClearActiveOperationUnderLock(operation);
+				pickerUriStringsToRelease = ClearActiveOperationUnderLock(operation);
 				waiterResults = ReadPublicRecoveredResultsUnderLock();
 			}
+
+			ReleasePickerUriReadAccess(pickerUriStringsToRelease);
 
 			if (waiterResults is not null)
 			{
@@ -219,7 +236,7 @@ internal static class MediaPickerRecoveryManager
 			var outputPath = operation.FilePaths.Count == 1 ? operation.FilePaths[0] : null;
 			if (!success || !IsFileAvailable(outputPath))
 			{
-				ClearActiveOperationUnderLock(operation);
+				_ = ClearActiveOperationUnderLock(operation);
 				return true;
 			}
 
@@ -358,22 +375,44 @@ internal static class MediaPickerRecoveryManager
 			return true;
 		}
 
+		var persistedUriStrings = new List<string>();
 		foreach (var uri in uris)
 		{
-			TryPersistPickerUriReadAccess(uri);
+			if (TryPersistPickerUriReadAccess(uri) && uri is not null)
+			{
+				var uriString = uri.ToString();
+				if (!string.IsNullOrWhiteSpace(uriString))
+				{
+					persistedUriStrings.Add(uriString);
+				}
+			}
 		}
 
-		lock (Locker)
+		var callbackRecorded = false;
+		try
 		{
-			var current = MediaPickerRecoveryStore.ReadActiveOperation();
-			if (current?.Id != operation.Id)
+			lock (Locker)
 			{
-				return false;
+				var current = MediaPickerRecoveryStore.ReadActiveOperation();
+				if (current?.Id == operation.Id)
+				{
+					// AndroidX accepted the picker result. Take durable URI access first, then persist the
+					// URI payload before copying from it so process death during materialization can be retried.
+					MediaPickerRecoveryStore.WriteActiveOperation(current.WithAcceptedPickerUris(uriStrings));
+					callbackRecorded = true;
+				}
 			}
+		}
+		catch
+		{
+			ReleasePickerUriReadAccess(persistedUriStrings);
+			throw;
+		}
 
-			// AndroidX accepted the picker result. Take durable URI access first, then persist the
-			// URI payload before copying from it so process death during materialization can be retried.
-			MediaPickerRecoveryStore.WriteActiveOperation(current.WithAcceptedPickerUris(uriStrings));
+		if (!callbackRecorded)
+		{
+			ReleasePickerUriReadAccess(persistedUriStrings);
+			return false;
 		}
 
 		return true;
@@ -430,6 +469,7 @@ internal static class MediaPickerRecoveryManager
 			return [];
 		}
 
+		IReadOnlyList<string> pickerUriStringsToRelease;
 		lock (Locker)
 		{
 			var current = MediaPickerRecoveryStore.ReadActiveOperation();
@@ -438,9 +478,11 @@ internal static class MediaPickerRecoveryManager
 				return [];
 			}
 
+			pickerUriStringsToRelease = current.PickerUriStrings.ToArray();
 			MediaPickerRecoveryStore.WriteActiveOperation(current.WithAcceptedFiles(filePaths));
 		}
 
+		ReleasePickerUriReadAccess(pickerUriStringsToRelease);
 		return filePaths;
 	}
 
@@ -479,24 +521,73 @@ internal static class MediaPickerRecoveryManager
 		return filePaths;
 	}
 
-	static void TryPersistPickerUriReadAccess(AndroidUri? uri)
+	static bool TryPersistPickerUriReadAccess(AndroidUri? uri)
 	{
-		if (uri is null ||
-			uri.Equals(AndroidUri.Empty) ||
-			!string.Equals(uri.Scheme, FileSystemUtils.UriSchemeContent, StringComparison.OrdinalIgnoreCase))
+		if (!IsPersistablePickerUri(uri))
+		{
+			return false;
+		}
+
+		try
+		{
+			return PersistPickerUriReadAccessHandler(uri!);
+		}
+		catch (Exception ex)
+		{
+			Trace.WriteLine($"Unable to persist picked media URI access: {ex}");
+			return false;
+		}
+	}
+
+	static bool PersistPickerUriReadAccessCore(AndroidUri uri)
+	{
+		var contentResolver = Application.Context?.ContentResolver;
+		if (contentResolver is null)
+		{
+			return false;
+		}
+
+		contentResolver.TakePersistableUriPermission(uri, ActivityFlags.GrantReadUriPermission);
+		return true;
+	}
+
+	static void ReleasePickerUriReadAccess(IReadOnlyList<string> uriStrings)
+	{
+		foreach (var uriString in uriStrings)
+		{
+			if (string.IsNullOrWhiteSpace(uriString))
+			{
+				continue;
+			}
+
+			TryReleasePickerUriReadAccess(AndroidUri.Parse(uriString));
+		}
+	}
+
+	static void TryReleasePickerUriReadAccess(AndroidUri? uri)
+	{
+		if (!IsPersistablePickerUri(uri))
 		{
 			return;
 		}
 
 		try
 		{
-			Application.Context?.ContentResolver?.TakePersistableUriPermission(uri, ActivityFlags.GrantReadUriPermission);
+			ReleasePickerUriReadAccessHandler(uri!);
 		}
 		catch (Exception ex)
 		{
-			Trace.WriteLine($"Unable to persist picked media URI access: {ex}");
+			Trace.WriteLine($"Unable to release picked media URI access: {ex}");
 		}
 	}
+
+	static void ReleasePickerUriReadAccessCore(AndroidUri uri)
+		=> Application.Context?.ContentResolver?.ReleasePersistableUriPermission(uri, ActivityFlags.GrantReadUriPermission);
+
+	static bool IsPersistablePickerUri(AndroidUri? uri)
+		=> uri is not null &&
+		   !uri.Equals(AndroidUri.Empty) &&
+		   string.Equals(uri.Scheme, FileSystemUtils.UriSchemeContent, StringComparison.OrdinalIgnoreCase);
 
 	static async Task RecoverOrphanedOperationResultAsync(Func<bool> recordResult, string failureMessage)
 	{
@@ -567,7 +658,7 @@ internal static class MediaPickerRecoveryManager
 
 			if (recoveredPaths.Count == 0)
 			{
-				ClearActiveOperationUnderLock(operation);
+				_ = ClearActiveOperationUnderLock(operation);
 				return;
 			}
 
@@ -577,7 +668,7 @@ internal static class MediaPickerRecoveryManager
 			recoveredResults.Add(recoveredResult);
 
 			MediaPickerRecoveryStore.WriteRecoveredResults(recoveredResults);
-			ClearActiveOperationUnderLock(operation);
+			_ = ClearActiveOperationUnderLock(operation);
 		}
 	}
 
@@ -644,10 +735,11 @@ internal static class MediaPickerRecoveryManager
 		throw new InvalidOperationException("A MediaPicker operation is pending AndroidX result replay.");
 	}
 
-	static void ClearActiveOperationUnderLock(PendingMediaPickerOperation operation)
+	static IReadOnlyList<string> ClearActiveOperationUnderLock(PendingMediaPickerOperation operation)
 	{
 		InProcessOperationIds.Remove(operation.Id);
 		MediaPickerRecoveryStore.RemoveActiveOperation();
+		return operation.PickerUriStrings.ToArray();
 	}
 
 	static void CancelRecoveryWaiter(MediaPickerRecoveryWaiter waiter)
