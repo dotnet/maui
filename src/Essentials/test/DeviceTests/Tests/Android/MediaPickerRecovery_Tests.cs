@@ -1446,6 +1446,166 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task BeginOperationWithRecoveryAsync_Recovers_Accepted_Result_And_Starts_New_Operation()
+		{
+			var firstCapturePath = CreateNonEmptyMediaFile(FileExtensions.Mp4);
+			var secondCapturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+
+			var firstCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CaptureVideo,
+				[firstCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			MediaPickerRecoveryManager.RecordCaptureCallbackResult(RecoveredMediaPickerResultKind.CaptureVideo, true);
+			SimulateProcessRecreation();
+
+			var secondCapture = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[secondCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			var recoveredResults = await MediaPicker.GetRecoveredMediaPickerResultsAsync();
+			Assert.Equal(firstCapture.Id, Assert.Single(recoveredResults).Id);
+			Assert.NotEqual(firstCapture.Id, secondCapture.Id);
+			Assert.Equal(secondCapture.Id, GetActiveOperation()?.Id);
+		}
+
+		[Fact]
+		public async Task BeginOperationWithRecoveryAsync_Completes_Waiters_When_Recovering_Accepted_Result()
+		{
+			var firstCapturePath = CreateNonEmptyMediaFile(FileExtensions.Mp4);
+			var secondCapturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			var firstCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CaptureVideo,
+				[firstCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			SimulateProcessRecreation();
+
+			var waitTask = MediaPicker.WaitForRecoveredMediaPickerResultsAsync(cancellationTokenSource.Token);
+			Assert.Equal(1, GetPendingWaiterCount());
+
+			MediaPickerRecoveryManager.RecordCaptureCallbackResult(RecoveredMediaPickerResultKind.CaptureVideo, true);
+
+			var secondCapture = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[secondCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			var waiterResults = await WaitForCompletion(waitTask);
+			Assert.Equal(firstCapture.Id, Assert.Single(waiterResults).Id);
+			Assert.Equal(0, GetPendingWaiterCount());
+			Assert.NotEqual(firstCapture.Id, secondCapture.Id);
+			Assert.Equal(secondCapture.Id, GetActiveOperation()?.Id);
+		}
+
+		[Fact]
+		public async Task BeginOperationWithRecoveryAsync_Recreated_Pending_Operation_Still_Blocks_New_Operation()
+		{
+			var firstCapturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+			var secondCapturePath = CreateMissingMediaFilePath(FileExtensions.Mp4);
+
+			var firstCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[firstCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			SimulateProcessRecreation();
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+					RecoveredMediaPickerResultKind.CaptureVideo,
+					[secondCapturePath],
+					PersistedPhotoProcessingOptions.Default));
+
+			Assert.Equal("A MediaPicker operation is pending AndroidX result replay.", exception.Message);
+
+			var activeCapture = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
+			Assert.Equal(firstCapture.Id, activeCapture.Id);
+			Assert.Equal(PendingMediaPickerState.Pending, activeCapture.State);
+			Assert.Equal(firstCapturePath, GetSingleActiveOperationFilePath(activeCapture));
+		}
+
+		[Fact]
+		public async Task BeginOperationWithRecoveryAsync_InProcess_Operation_Still_Blocks_New_Operation()
+		{
+			var firstCapturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+			var secondCapturePath = CreateMissingMediaFilePath(FileExtensions.Mp4);
+
+			var firstCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[firstCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+					RecoveredMediaPickerResultKind.CaptureVideo,
+					[secondCapturePath],
+					PersistedPhotoProcessingOptions.Default));
+
+			Assert.Equal("A MediaPicker operation is already in progress.", exception.Message);
+
+			var activeCapture = Assert.IsType<PendingMediaPickerOperation>(GetActiveOperation());
+			Assert.Equal(firstCapture.Id, activeCapture.Id);
+			Assert.Equal(PendingMediaPickerState.Pending, activeCapture.State);
+			Assert.Equal(firstCapturePath, GetSingleActiveOperationFilePath(activeCapture));
+		}
+
+		[Fact]
+		public async Task BeginOperationWithRecoveryAsync_Promotes_Callback_Race_And_Starts_New_Operation()
+		{
+			var firstCapturePath = CreateNonEmptyMediaFile(FileExtensions.Mp4);
+			var secondCapturePath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			var firstCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CaptureVideo,
+				[firstCapturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			SimulateProcessRecreation();
+
+			var waitTask = MediaPicker.WaitForRecoveredMediaPickerResultsAsync(cancellationTokenSource.Token);
+			Assert.Equal(1, GetPendingWaiterCount());
+
+			var checkpointHit = false;
+			MediaPickerRecoveryManager.SetBeginOperationWithRecoveryCheckpointForTests(() =>
+			{
+				if (checkpointHit)
+				{
+					return;
+				}
+
+				checkpointHit = true;
+				Assert.True(MediaPickerRecoveryManager.RecordCaptureCallbackResult(RecoveredMediaPickerResultKind.CaptureVideo, true));
+			});
+
+			try
+			{
+				var secondCapture = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
+					RecoveredMediaPickerResultKind.CapturePhoto,
+					[secondCapturePath],
+					PersistedPhotoProcessingOptions.Default);
+
+				var waiterResults = await WaitForCompletion(waitTask);
+				var recoveredResults = await MediaPicker.GetRecoveredMediaPickerResultsAsync();
+
+				Assert.True(checkpointHit);
+				Assert.Equal(firstCapture.Id, Assert.Single(waiterResults).Id);
+				Assert.Equal(firstCapture.Id, Assert.Single(recoveredResults).Id);
+				Assert.NotEqual(firstCapture.Id, secondCapture.Id);
+				Assert.Equal(secondCapture.Id, GetActiveOperation()?.Id);
+				Assert.Equal(0, GetPendingWaiterCount());
+			}
+			finally
+			{
+				MediaPickerRecoveryManager.SetBeginOperationWithRecoveryCheckpointForTests(null);
+			}
+		}
+
+		[Fact]
 		public async Task Concurrent_Accepted_Result_Promotion_Queues_Single_Result()
 		{
 			var capturePath = CreateNonEmptyMediaFile(FileExtensions.Mp4);
@@ -1527,6 +1687,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			ClearInProcessOperationIds();
 			CompleteAndClearRecoveryWaiters();
 			MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(null, null);
+			MediaPickerRecoveryManager.SetBeginOperationWithRecoveryCheckpointForTests(null);
 			SetRecoveryReconciliationGeneration(0);
 			Preferences.Remove(ActiveOperationPreferenceKey, RecoveryPreferencesSharedName);
 			Preferences.Remove(RecoveredResultsPreferenceKey, RecoveryPreferencesSharedName);

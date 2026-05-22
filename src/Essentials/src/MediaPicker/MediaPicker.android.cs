@@ -174,10 +174,8 @@ namespace Microsoft.Maui.Media
 			var captureFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
 			var outputUri = FileProvider.GetUriForFile(captureFile);
 
-			await MediaPickerRecoveryManager.RecoverOperationIfAvailableAsync();
-
 			var processingOptions = GetPhotoProcessingOptions(options);
-			var pendingOperation = MediaPickerRecoveryManager.BeginOperation(
+			var pendingOperation = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
 				RecoveredMediaPickerResultKind.CapturePhoto,
 				[captureFile.AbsolutePath],
 				processingOptions);
@@ -206,9 +204,7 @@ namespace Microsoft.Maui.Media
 			var captureFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
 			var outputUri = FileProvider.GetUriForFile(captureFile);
 
-			await MediaPickerRecoveryManager.RecoverOperationIfAvailableAsync();
-
-			var pendingOperation = MediaPickerRecoveryManager.BeginOperation(
+			var pendingOperation = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
 				RecoveredMediaPickerResultKind.CaptureVideo,
 				[captureFile.AbsolutePath],
 				PersistedPhotoProcessingOptions.Default);
@@ -292,10 +288,8 @@ namespace Microsoft.Maui.Media
 				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
 				.Build();
 
-			await MediaPickerRecoveryManager.RecoverOperationIfAvailableAsync();
-
 			var processingOptions = GetPhotoProcessingOptions(options);
-			var pendingOperation = MediaPickerRecoveryManager.BeginOperation(
+			var pendingOperation = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
 				operationKind ?? (photo ? RecoveredMediaPickerResultKind.PickPhoto : RecoveredMediaPickerResultKind.PickVideo),
 				[],
 				processingOptions);
@@ -351,10 +345,8 @@ namespace Microsoft.Maui.Media
 				pickVisualMediaRequestBuilder.SetMaxItems(selectionLimit);
 			}
 
-			await MediaPickerRecoveryManager.RecoverOperationIfAvailableAsync();
-
 			var processingOptions = GetPhotoProcessingOptions(options);
-			var pendingOperation = MediaPickerRecoveryManager.BeginOperation(
+			var pendingOperation = await MediaPickerRecoveryManager.BeginOperationWithRecoveryAsync(
 				photo ? RecoveredMediaPickerResultKind.PickPhotos : RecoveredMediaPickerResultKind.PickVideos,
 				[],
 				processingOptions);

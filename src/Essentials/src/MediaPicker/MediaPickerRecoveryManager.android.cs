@@ -33,6 +33,7 @@ internal static class MediaPickerRecoveryManager
 	static readonly SemaphoreSlim RecoveryPromotionSemaphore = new(1, 1);
 	static Func<AndroidUri, bool> PersistPickerUriReadAccessHandler = PersistPickerUriReadAccessCore;
 	static Action<AndroidUri> ReleasePickerUriReadAccessHandler = ReleasePickerUriReadAccessCore;
+	static Action? BeginOperationWithRecoveryCheckpointHandler;
 	// Lets waiters detect an empty recovery outcome that happened before they could be registered.
 	static long RecoveryReconciliationGeneration;
 
@@ -41,17 +42,7 @@ internal static class MediaPickerRecoveryManager
 		IReadOnlyList<string> filePaths,
 		PersistedPhotoProcessingOptions photoProcessingOptions)
 	{
-		if (!IsKnownKind(kind))
-		{
-			throw new ArgumentOutOfRangeException(nameof(kind));
-		}
-
-		if (filePaths is null)
-		{
-			throw new ArgumentNullException(nameof(filePaths));
-		}
-
-		PendingMediaPickerOperation operation;
+		ValidateBeginOperationArguments(kind, filePaths);
 
 		// Persist the one active MediaPicker operation before launching AndroidX. Later AndroidX
 		// callbacks are matched back to this durable record, including after process recreation.
@@ -62,19 +53,50 @@ internal static class MediaPickerRecoveryManager
 				ThrowIfActiveOperationBlocksNewOperation(activeOperation);
 			}
 
-			operation = new PendingMediaPickerOperation(
-				Guid.NewGuid().ToString("N"),
-				kind,
-				PendingMediaPickerState.Pending,
-				filePaths.ToArray(),
-				[],
-				photoProcessingOptions);
-
-			MediaPickerRecoveryStore.WriteActiveOperation(operation);
-			InProcessOperationIds.Add(operation.Id);
+			return BeginOperationUnderLock(kind, filePaths, photoProcessingOptions);
 		}
+	}
 
-		return operation;
+	internal static async Task<PendingMediaPickerOperation> BeginOperationWithRecoveryAsync(
+		RecoveredMediaPickerResultKind kind,
+		IReadOnlyList<string> filePaths,
+		PersistedPhotoProcessingOptions photoProcessingOptions)
+	{
+		ValidateBeginOperationArguments(kind, filePaths);
+
+		await RecoveryPromotionSemaphore.WaitAsync().ConfigureAwait(false);
+
+		try
+		{
+			while (true)
+			{
+				var reconciliation = await RecoverOperationIfAvailableUnderSemaphoreAsync().ConfigureAwait(false);
+				if (reconciliation.WasReconciled)
+				{
+					CompleteRecoveryWaitersForReconciliation(reconciliation.Results);
+				}
+
+				BeginOperationWithRecoveryCheckpointHandler?.Invoke();
+
+				lock (Locker)
+				{
+					var activeOperation = MediaPickerRecoveryStore.ReadActiveOperation();
+					if (activeOperation is null)
+					{
+						return BeginOperationUnderLock(kind, filePaths, photoProcessingOptions);
+					}
+
+					if (!ShouldPromoteRecreatedOperation(activeOperation))
+					{
+						ThrowIfActiveOperationBlocksNewOperation(activeOperation);
+					}
+				}
+			}
+		}
+		finally
+		{
+			RecoveryPromotionSemaphore.Release();
+		}
 	}
 
 	internal static void ClearActiveOperation(string id)
@@ -172,6 +194,9 @@ internal static class MediaPickerRecoveryManager
 		PersistPickerUriReadAccessHandler = persistHandler ?? PersistPickerUriReadAccessCore;
 		ReleasePickerUriReadAccessHandler = releaseHandler ?? ReleasePickerUriReadAccessCore;
 	}
+
+	internal static void SetBeginOperationWithRecoveryCheckpointForTests(Action? checkpointHandler)
+		=> BeginOperationWithRecoveryCheckpointHandler = checkpointHandler;
 
 	internal static async Task DiscardPendingOperationAsync()
 	{
@@ -719,6 +744,38 @@ internal static class MediaPickerRecoveryManager
 
 	static bool HasAcceptedResultPayload(PendingMediaPickerOperation operation)
 		=> operation.FilePaths.Count > 0 || operation.PickerUriStrings.Count > 0;
+
+	static void ValidateBeginOperationArguments(RecoveredMediaPickerResultKind kind, IReadOnlyList<string> filePaths)
+	{
+		if (!IsKnownKind(kind))
+		{
+			throw new ArgumentOutOfRangeException(nameof(kind));
+		}
+
+		if (filePaths is null)
+		{
+			throw new ArgumentNullException(nameof(filePaths));
+		}
+	}
+
+	static PendingMediaPickerOperation BeginOperationUnderLock(
+		RecoveredMediaPickerResultKind kind,
+		IReadOnlyList<string> filePaths,
+		PersistedPhotoProcessingOptions photoProcessingOptions)
+	{
+		var operation = new PendingMediaPickerOperation(
+			Guid.NewGuid().ToString("N"),
+			kind,
+			PendingMediaPickerState.Pending,
+			filePaths.ToArray(),
+			[],
+			photoProcessingOptions);
+
+		MediaPickerRecoveryStore.WriteActiveOperation(operation);
+		InProcessOperationIds.Add(operation.Id);
+
+		return operation;
+	}
 
 	static void ThrowIfActiveOperationBlocksNewOperation(PendingMediaPickerOperation activeOperation)
 	{
