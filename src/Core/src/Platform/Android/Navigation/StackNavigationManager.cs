@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Android.Content;
 using Android.OS;
 using Android.Views;
+using Android.Views.Animations;
 using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
@@ -247,6 +248,33 @@ namespace Microsoft.Maui.Platform
 			destination.Id = AView.GenerateViewId();
 			NavGraph.AddDestination(destination);
 			return destination;
+		}
+
+		/// <summary>
+		/// Creates the animation for a navigation transition. Override to provide custom page transition animations.
+		/// Called by <see cref="NavigationViewFragment.OnCreateAnimation"/> during push/pop navigation.
+		/// </summary>
+		/// <param name="context">The Android context for loading animation resources.</param>
+		/// <param name="isPopping">True if navigating back, false if navigating forward.</param>
+		/// <param name="enter">True for the entering fragment's animation, false for the exiting fragment's animation.</param>
+		/// <returns>The animation to use, or null to skip animation.</returns>
+		public virtual Animation? OnCreateNavigationAnimation(Context context, bool isPopping, bool enter)
+		{
+			int id;
+			if (isPopping)
+			{
+				id = enter
+					? Resource.Animation.nav_default_pop_enter_anim
+					: Resource.Animation.nav_default_pop_exit_anim;
+			}
+			else
+			{
+				id = enter
+					? Resource.Animation.nav_default_enter_anim
+					: Resource.Animation.nav_default_exit_anim;
+			}
+
+			return id > 0 ? AnimationUtils.LoadAnimation(context, id) : null;
 		}
 
 		internal void NavigationFinished(IStackNavigation? navigationView)

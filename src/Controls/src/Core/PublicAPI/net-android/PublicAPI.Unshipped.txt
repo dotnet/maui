@@ -163,8 +163,37 @@ static Microsoft.Maui.Controls.Handlers.ShellItemHandler.Mapper -> Microsoft.Mau
 static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ShellSection!, Microsoft.Maui.Controls.Handlers.ShellSectionHandler!>!
 static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler, Microsoft.Maui.Controls.ShellSection! shellSection) -> void
 static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ShellSection!, Microsoft.Maui.Controls.Handlers.ShellSectionHandler!>!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateBottomNavViewAppearanceTracker(Microsoft.Maui.Controls.ShellItem! shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellBottomNavViewAppearanceTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateFragmentForPage(Microsoft.Maui.Controls.Page! page) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellObservableFragment!
 virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellFlyoutContentRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer!
 virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem! shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer!
-virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.HookChildEvents(Microsoft.Maui.Controls.ShellSection! shellSection) -> void
-virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.UnhookChildEvents(Microsoft.Maui.Controls.ShellSection! shellSection) -> void
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellSectionRenderer(Microsoft.Maui.Controls.ShellSection! shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellSectionRenderer!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateTabLayoutAppearanceTracker(Microsoft.Maui.Controls.ShellSection! shellSection) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellTabLayoutAppearanceTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateToolbarAppearanceTracker() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarAppearanceTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateTrackerForToolbar(AndroidX.AppCompat.Widget.Toolbar! toolbar) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellToolbarTracker!
+virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.CreateMoreBottomSheet(System.Action<int, Google.Android.Material.BottomSheet.BottomSheetDialog!>! selectCallback, System.Collections.Generic.List<(string! title, Microsoft.Maui.Controls.ImageSource! icon, bool tabEnabled)>! items) -> Google.Android.Material.BottomSheet.BottomSheetDialog!
+virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.OnSectionChanged(Microsoft.Maui.Controls.ShellSection! shellSection, bool animate) -> void
+virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.OnTabReselected(Microsoft.Maui.Controls.ShellSection! shellSection) -> void
+virtual Microsoft.Maui.Controls.Handlers.ShellSectionHandler.OnCreateNavigationAnimation(Android.Content.Context! context, bool isPopping, bool enter) -> Android.Views.Animations.Animation?
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.UpdateVerticalScrollMode() -> void
+Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment
+Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.ShellContentNavigationFragment() -> void
+Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.ShellContentNavigationFragment(Microsoft.Maui.Controls.ShellContent? shellContent, Microsoft.Maui.IMauiContext? mauiContext, Microsoft.Maui.Controls.Handlers.ShellSectionHandler? handler) -> void
+Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment
+Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.ShellItemWrapperFragment() -> void
+Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.ShellItemWrapperFragment(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler) -> void
+Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment
+Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.ShellSectionWrapperFragment() -> void
+Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.ShellSectionWrapperFragment(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler) -> void
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellContentNavigationFragment.OnDestroyView() -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellItemWrapperFragment.OnViewCreated(Android.Views.View! view, Android.OS.Bundle? savedInstanceState) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnCreateView(Android.Views.LayoutInflater! inflater, Android.Views.ViewGroup? container, Android.OS.Bundle? savedInstanceState) -> Android.Views.View!
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnResume() -> void
+override Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.OnViewCreated(Android.Views.View! view, Android.OS.Bundle? savedInstanceState) -> void

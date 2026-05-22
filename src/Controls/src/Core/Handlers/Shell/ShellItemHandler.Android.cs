@@ -9,6 +9,7 @@ using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
@@ -192,6 +193,24 @@ namespace Microsoft.Maui.Controls.Handlers
             // MapCurrentItem → SwitchToSection for all tracking work.
             _tabbedViewManager = new TabbedViewManager(MauiContext, _viewPager);
 
+            // Wire reselect callback so consumers can override OnTabReselected
+            // for scroll-to-top or refresh behavior (matching legacy ShellItemRenderer).
+            _tabbedViewManager.OnTabReselected = (position) =>
+            {
+                var sections = ((IShellItemController)VirtualView).GetItems();
+                if (position >= 0 && position < sections.Count)
+                {
+                    OnTabReselected(sections[position]);
+                }
+            };
+
+            // Wire "More" bottom sheet creation so consumers can override CreateMoreBottomSheet
+            // to provide a custom overflow UI (matching legacy ShellItemRenderer).
+            _tabbedViewManager.CreateMoreBottomSheet = (selectCallback, items) =>
+            {
+                return CreateMoreBottomSheet(selectCallback, items);
+            };
+
             // SetElement creates BNV and populates tabs
             _tabbedViewManager.SetElement(_shellItemAdapter);
 
@@ -357,25 +376,38 @@ namespace Microsoft.Maui.Controls.Handlers
         #region Navigation Support
 
         /// <summary>
-        /// Hook up property change events for a shell section.
-        /// Kept as empty virtual for backward compatibility — property changes are now
-        /// handled via ShellSectionHandler mapper (Title, Icon, IsEnabled).
+        /// Called when an already-selected tab is tapped again. Override to implement
+        /// scroll-to-top, refresh, or other custom reselection behavior.
+        /// Matches the legacy ShellItemRenderer.OnTabReselected extensibility point.
         /// </summary>
-        protected virtual void HookChildEvents(ShellSection shellSection)
+        protected virtual void OnTabReselected(ShellSection shellSection)
         {
         }
 
         /// <summary>
-        /// Unhook property change events for a shell section.
+        /// Called when the active section changes (e.g., user taps a different bottom tab).
+        /// Override to intercept tab switches, add custom transition logic, or perform
+        /// analytics. Call base to execute the actual section switch.
+        /// Matches the legacy ShellItemRenderer.ChangeSection extensibility point.
         /// </summary>
-        protected virtual void UnhookChildEvents(ShellSection shellSection)
+        protected virtual void OnSectionChanged(ShellSection shellSection, bool animate)
         {
-            if (shellSection is null)
-            {
-                return;
-            }
+            SwitchToSection(shellSection, animate);
+        }
 
-            ((IShellSectionController)shellSection).RemoveDisplayedPageObserver(this);
+        /// <summary>
+        /// Creates the "More" overflow bottom sheet displayed when there are more than 5 tabs.
+        /// Override to provide a completely custom overflow UI.
+        /// Matches the legacy ShellItemRenderer.CreateMoreBottomSheet extensibility point.
+        /// </summary>
+        protected virtual BottomSheetDialog CreateMoreBottomSheet(
+            Action<int, BottomSheetDialog> selectCallback,
+            List<(string title, ImageSource icon, bool tabEnabled)> items)
+        {
+            return BottomNavigationViewUtils.CreateMoreBottomSheet(
+                selectCallback,
+                MauiContext!,
+                items);
         }
 
         /// <summary>
@@ -675,7 +707,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 return;
             }
 
-            handler.SwitchToSection(shellItem.CurrentItem, animate: true);
+            handler.OnSectionChanged(shellItem.CurrentItem, animate: true);
         }
 
         /// <summary>
@@ -1159,165 +1191,6 @@ namespace Microsoft.Maui.Controls.Handlers
             Destroyed?.Invoke(this, EventArgs.Empty);
             _wrapperFragment?.Dispose();
             _wrapperFragment = null;
-        }
-
-        /// <summary>
-        /// Wrapper Fragment that hosts the ShellItemHandler's layout.
-        /// Inflates shellitemlayout.axml consistent with NavigationViewHandler and FlyoutViewHandler patterns.
-        /// The toolbar is managed at the ShellItem level (shared across all sections).
-        /// </summary>
-        class ShellItemWrapperFragment : Fragment
-        {
-            readonly ShellItemHandler? _handler;
-            CoordinatorLayout? _rootLayout;
-            ShellBackPressedCallback? _backPressedCallback;
-
-            // Default constructor required by Android's FragmentManager for fragment restoration.
-            // Without this, FragmentManager.instantiate() crashes on process-death restoration.
-            public ShellItemWrapperFragment()
-            {
-                _handler = null;
-            }
-
-            public ShellItemWrapperFragment(ShellItemHandler handler)
-            {
-                _handler = handler;
-                // Let the handler know about its parent fragment for child fragment management
-                _handler.SetParentFragment(this);
-            }
-
-            public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
-            {
-                // If restored without proper handler reference, return empty view.
-                // The Shell infrastructure will recreate proper fragments after reconnecting.
-                if (_handler is null)
-                {
-                    return new global::Android.Widget.FrameLayout(inflater.Context!);
-                }
-
-                // Inflate from XML layout — consistent with NavigationViewHandler/FlyoutViewHandler pattern
-                var rootView = inflater.Inflate(Resource.Layout.shellitemlayout, container, false)
-                    ?? throw new InvalidOperationException("shellitemlayout inflation failed");
-
-                // Get references from inflated layout
-                _rootLayout = rootView.FindViewById<CoordinatorLayout>(Resource.Id.shellitem_coordinator)
-                    ?? throw new InvalidOperationException("shellitem_coordinator not found");
-                // NOTE: _appBarLayout is the outer navigationlayout_appbar from
-                // navigationlayout.axml, resolved lazily in SetupToolbar().
-
-                // Get ViewPager2 from the inflated layout
-                _handler._viewPager = rootView.FindViewById<ViewPager2>(Resource.Id.shellitem_viewpager);
-
-                // BNV is created by TabbedViewManager in SetupTabbedViewManager().
-                // It is placed into navigationlayout_bottomtabs via TabbedViewManager.SetTabLayout().
-
-                // Setup window insets for safe area handling
-                MauiWindowInsetListener.SetupViewWithLocalListener(_rootLayout);
-
-                return rootView;
-            }
-
-            public override void OnViewCreated(AView view, Bundle? savedInstanceState)
-            {
-                base.OnViewCreated(view, savedInstanceState);
-
-                // Skip setup if restored without handler (parameterless constructor path)
-                if (_handler is null)
-                {
-                    return;
-                }
-
-                // Setup back button handling
-                _backPressedCallback = new ShellBackPressedCallback(_handler, this);
-                RequireActivity().OnBackPressedDispatcher.AddCallback(ViewLifecycleOwner, _backPressedCallback);
-
-                // Setup the shared toolbar
-                _handler.SetupToolbar();
-
-                // Setup TabbedViewManager for bottom tab management
-                // (creates BNV and populates tabs)
-                _handler.SetupTabbedViewManager();
-
-                // Place bottom tabs into navigationlayout_bottomtabs via TabbedViewManager
-                _handler._tabbedViewManager?.SetTabLayout();
-
-                // Apply initial badges to bottom navigation tabs
-                _handler.UpdateAllBadges();
-
-                // Now that the fragment is attached, setup the ViewPager2 adapter
-                _handler.SetupViewPagerAdapter();
-
-                // Register as appearance observer NOW that all views are ready.
-                // This must happen after SetupToolbar and SetupTabbedViewManager so that
-                // when Shell calls OnAppearanceChanged, the views can receive appearance updates.
-                _handler.RegisterAppearanceObserver();
-
-                // Trigger the initial section switch if needed
-                if (_handler.VirtualView?.CurrentItem is not null)
-                {
-                    _handler.SwitchToSection(_handler.VirtualView.CurrentItem, animate: false);
-                }
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                if (disposing)
-                {
-                    if (_backPressedCallback is not null)
-                    {
-                        _backPressedCallback.Remove();
-                        _backPressedCallback.Dispose();
-                        _backPressedCallback = null;
-                    }
-
-                    // Remove window insets listener
-                    if (_rootLayout is not null)
-                    {
-                        MauiWindowInsetListener.RemoveViewWithLocalListener(_rootLayout);
-                    }
-
-                    _rootLayout = null;
-                }
-                base.Dispose(disposing);
-            }
-
-            /// <summary>
-            /// Custom OnBackPressedCallback for Shell navigation
-            /// </summary>
-            sealed class ShellBackPressedCallback : AndroidX.Activity.OnBackPressedCallback
-            {
-                readonly ShellItemHandler _handler;
-                readonly Fragment _fragment;
-
-                public ShellBackPressedCallback(ShellItemHandler handler, Fragment fragment) : base(true)
-                {
-                    _handler = handler;
-                    _fragment = fragment;
-                }
-
-                public override void HandleOnBackPressed()
-                {
-                    // Route through Shell's full back navigation pipeline.
-                    // Shell.SendBackButtonPressed() handles:
-                    //   - BackButtonBehavior.Command execution
-                    //   - Page.OnBackButtonPressed() overrides
-                    //   - Navigation stack pops (via Shell.OnBackButtonPressed)
-                    //   - Modal stack dismissal
-                    //   - ShellNavigatingEventArgs cancellation
-                    // This matches the old renderer behavior where the lifecycle chain
-                    // (Activity → Window → Shell) naturally invoked the full pipeline.
-                    if (!_handler.OnBackButtonPressed())
-                    {
-                        // Shell didn't handle it (at root, no stack to pop, not cancelled).
-                        // Forward to system by temporarily disabling this callback so the
-                        // dispatcher falls through to the next handler in the chain
-                        // (e.g., the Activity's default that finishes the app).
-                        this.Enabled = false;
-                        _fragment.RequireActivity().OnBackPressedDispatcher.OnBackPressed();
-                        this.Enabled = true;
-                    }
-                }
-            }
         }
     }
 

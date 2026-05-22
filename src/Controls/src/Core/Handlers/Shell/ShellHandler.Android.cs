@@ -565,8 +565,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected virtual IShellItemRenderer CreateShellItemRenderer(ShellItem shellItem)
         {
-            // Use the new handler-based architecture
-            var handler = new ShellItemHandler();
+            // Resolve the handler through the handler service to allow custom ShellItemHandler subclasses
+            // registered via AddHandler<ShellItem, THandler>() to be used.
+            var handler = MauiContext!.Handlers.GetHandler(shellItem.GetType()) as ShellItemHandler
+                ?? new ShellItemHandler();
             handler.SetMauiContext(MauiContext!);
             handler.SetVirtualView(shellItem);
 
@@ -577,6 +579,44 @@ namespace Microsoft.Maui.Controls.Handlers
         protected virtual IShellFlyoutContentRenderer CreateShellFlyoutContentRenderer()
         {
             return new ShellFlyoutTemplatedContentRenderer(this);
+        }
+
+        protected virtual IShellObservableFragment CreateFragmentForPage(Page page)
+        {
+            return new ShellContentFragment(this, page);
+        }
+
+        protected virtual IShellSectionRenderer CreateShellSectionRenderer(ShellSection shellSection)
+        {
+            // Resolve the handler through the handler service to allow custom ShellSectionHandler subclasses
+            // registered via AddHandler<ShellSection, THandler>() to be used.
+            var handler = MauiContext!.Handlers.GetHandler(shellSection.GetType()) as ShellSectionHandler
+                ?? new ShellSectionHandler();
+
+            handler.SetMauiContext(MauiContext!);
+            handler.SetVirtualView(shellSection);
+
+            return new ShellSectionHandlerAdapter(handler, MauiContext!);
+        }
+
+        protected virtual IShellToolbarTracker CreateTrackerForToolbar(AToolbar toolbar)
+        {
+            return new ShellToolbarTracker(this, toolbar, MauiDrawerLayout);
+        }
+
+        protected virtual IShellToolbarAppearanceTracker CreateToolbarAppearanceTracker()
+        {
+            return new ShellToolbarAppearanceTracker(this);
+        }
+
+        protected virtual IShellTabLayoutAppearanceTracker CreateTabLayoutAppearanceTracker(ShellSection shellSection)
+        {
+            return new ShellTabLayoutAppearanceTracker(this);
+        }
+
+        protected virtual IShellBottomNavViewAppearanceTracker CreateBottomNavViewAppearanceTracker(ShellItem shellItem)
+        {
+            return new ShellBottomNavViewAppearanceTracker(this, shellItem);
         }
 
         #region IShellContext Implementation
@@ -590,12 +630,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         IShellObservableFragment IShellContext.CreateFragmentForPage(Page page)
         {
-            return new ShellContentFragment(this, page);
+            return CreateFragmentForPage(page);
         }
 
         IShellFlyoutContentRenderer IShellContext.CreateShellFlyoutContentRenderer()
         {
-            return new ShellFlyoutTemplatedContentRenderer(this);
+            return CreateShellFlyoutContentRenderer();
         }
 
         IShellItemRenderer IShellContext.CreateShellItemRenderer(ShellItem shellItem)
@@ -605,31 +645,27 @@ namespace Microsoft.Maui.Controls.Handlers
 
         IShellSectionRenderer IShellContext.CreateShellSectionRenderer(ShellSection shellSection)
         {
-            var handler = new ShellSectionHandler();
-            handler.SetMauiContext(MauiContext!);
-            handler.SetVirtualView(shellSection);
-
-            return new ShellSectionHandlerAdapter(handler, MauiContext!);
+            return CreateShellSectionRenderer(shellSection);
         }
 
         IShellToolbarTracker IShellContext.CreateTrackerForToolbar(AToolbar toolbar)
         {
-            return new ShellToolbarTracker(this, toolbar, MauiDrawerLayout);
+            return CreateTrackerForToolbar(toolbar);
         }
 
         IShellToolbarAppearanceTracker IShellContext.CreateToolbarAppearanceTracker()
         {
-            return new ShellToolbarAppearanceTracker(this);
+            return CreateToolbarAppearanceTracker();
         }
 
         IShellTabLayoutAppearanceTracker IShellContext.CreateTabLayoutAppearanceTracker(ShellSection shellSection)
         {
-            return new ShellTabLayoutAppearanceTracker(this);
+            return CreateTabLayoutAppearanceTracker(shellSection);
         }
 
         IShellBottomNavViewAppearanceTracker IShellContext.CreateBottomNavViewAppearanceTracker(ShellItem shellItem)
         {
-            return new ShellBottomNavViewAppearanceTracker(this, shellItem);
+            return CreateBottomNavViewAppearanceTracker(shellItem);
         }
 
         #endregion

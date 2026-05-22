@@ -99,6 +99,19 @@ internal class TabbedViewManager
     /// </summary>
     public Func<FragmentManager, IMauiContext, RecyclerView.Adapter> CreateAdapter { get; set; }
 
+    /// <summary>
+    /// Callback invoked when an already-selected tab is tapped again. Consumers can use this
+    /// to implement scroll-to-top or refresh behavior (matching legacy Shell OnTabReselected).
+    /// </summary>
+    public Action<int> OnTabReselected { get; set; }
+
+    /// <summary>
+    /// Delegate for creating a custom "More" bottom sheet when 5+ tabs overflow.
+    /// Receives the select callback and tab items list; returns the configured BottomSheetDialog.
+    /// If null, the default BottomNavigationViewUtils.CreateMoreBottomSheet is used.
+    /// </summary>
+    public Func<Action<int, BottomSheetDialog>, List<(string title, ImageSource icon, bool tabEnabled)>, BottomSheetDialog> CreateMoreBottomSheet { get; set; }
+
     protected NavigationRootManager NavigationRootManager { get; }
     public static bool IsDarkTheme => (Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme) == AppTheme.Dark;
 
@@ -440,6 +453,7 @@ internal class TabbedViewManager
             {
                 bottomNavigationView.Menu.Clear();
                 _bottomNavigationView?.SetOnItemSelectedListener(null);
+                _bottomNavigationView?.SetOnItemReselectedListener(null);
             }
             else
             {
@@ -773,6 +787,7 @@ internal class TabbedViewManager
         // Adding items to an empty BNV auto-selects item 0, firing OnNavigationItemSelected
         // before we establish the correct selection — poisoning Shell's CurrentItem.
         _bottomNavigationView.SetOnItemSelectedListener(_listeners);
+        _bottomNavigationView.SetOnItemReselectedListener(_listeners);
     }
 
     async void LoadBottomNavIconAsync(IMenuItem menuItem, ITab tab)
@@ -1037,6 +1052,28 @@ internal class TabbedViewManager
         return GetDefaultColorFromTheme(_context.Context);
     }
 
+    void ShowMoreBottomSheet()
+    {
+        var items = CreateTabList();
+        BottomSheetDialog bottomSheetDialog;
+        if (CreateMoreBottomSheet is not null)
+        {
+            bottomSheetDialog = CreateMoreBottomSheet(
+                OnMoreItemSelectedInternal,
+                items);
+        }
+        else
+        {
+            bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
+                OnMoreItemSelectedInternal,
+                _context,
+                items,
+                Math.Min(_bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems));
+        }
+        bottomSheetDialog.DismissEvent += (s, e) => OnMoreSheetDismissedInternal(bottomSheetDialog);
+        bottomSheetDialog.Show();
+    }
+
     void OnMoreSheetDismissedInternal(BottomSheetDialog dialog)
     {
         var index = Element.CurrentTabIndex;
@@ -1286,6 +1323,7 @@ internal class TabbedViewManager
         TabLayout.IOnTabSelectedListener,
 #pragma warning restore CS0618 // Type or member is obsolete
         NavigationBarView.IOnItemSelectedListener,
+        NavigationBarView.IOnItemReselectedListener,
         TabLayoutMediator.ITabConfigurationStrategy
     {
         readonly TabbedViewManager _manager;
@@ -1341,14 +1379,7 @@ internal class TabbedViewManager
             var id = item.ItemId;
             if (id == BottomNavigationViewUtils.MoreTabId)
             {
-                var items = _manager.CreateTabList();
-                var bottomSheetDialog = BottomNavigationViewUtils.CreateMoreBottomSheet(
-                    _manager.OnMoreItemSelectedInternal,
-                    _manager._context,
-                    items,
-                    Math.Min(_manager._bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems));
-                bottomSheetDialog.DismissEvent += (s, e) => _manager.OnMoreSheetDismissedInternal(bottomSheetDialog);
-                bottomSheetDialog.Show();
+                _manager.ShowMoreBottomSheet();
             }
             else
             {
@@ -1364,6 +1395,30 @@ internal class TabbedViewManager
 
         void TabLayout.IOnTabSelectedListener.OnTabReselected(TabLayout.Tab tab)
         {
+            if (tab?.Position >= 0)
+            {
+                _manager.OnTabReselected?.Invoke(tab.Position);
+            }
+        }
+
+        void NavigationBarView.IOnItemReselectedListener.OnNavigationItemReselected(IMenuItem item)
+        {
+            if (_manager.Element is null)
+            {
+                return;
+            }
+
+            var id = item.ItemId;
+            if (id == BottomNavigationViewUtils.MoreTabId)
+            {
+                // Re-show the More bottom sheet on reselection (e.g., user picks an
+                // overflow item, then taps More again to switch to a different one).
+                _manager.ShowMoreBottomSheet();
+            }
+            else if (id >= 0 && id < _manager.Element.Tabs.Count)
+            {
+                _manager.OnTabReselected?.Invoke(id);
+            }
         }
 
         void TabLayout.IOnTabSelectedListener.OnTabSelected(TabLayout.Tab tab)
