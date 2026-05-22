@@ -391,5 +391,4 @@ temp
 
 # Gradle build reports
 src/Core/AndroidNative/build/reports/
-.playwright-mcp/
-screenshots/
+
