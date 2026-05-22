@@ -222,6 +222,57 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task Recovery_Waiter_Result_Before_Registration_Disposes_Late_Registration()
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			var callbackCount = 0;
+			var waiter = new MediaPickerRecoveryWaiter(cancellationTokenSource.Token);
+
+			waiter.TrySetResult(Array.Empty<RecoveredMediaPickerResult>());
+			waiter.SetCancellationRegistration(cancellationTokenSource.Token.Register(
+				() => Interlocked.Increment(ref callbackCount)));
+
+			Assert.Empty(await WaitForCompletion(waiter.Task));
+			await cancellationTokenSource.CancelAsync();
+
+			Assert.Equal(0, Volatile.Read(ref callbackCount));
+		}
+
+		[Fact]
+		public async Task Recovery_Waiter_Cancel_Before_Registration_Disposes_Late_Registration()
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			var callbackCount = 0;
+			var waiter = new MediaPickerRecoveryWaiter(cancellationTokenSource.Token);
+
+			waiter.TrySetCanceled();
+			waiter.SetCancellationRegistration(cancellationTokenSource.Token.Register(
+				() => Interlocked.Increment(ref callbackCount)));
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waiter.Task);
+			await cancellationTokenSource.CancelAsync();
+
+			Assert.Equal(0, Volatile.Read(ref callbackCount));
+		}
+
+		[Fact]
+		public async Task Recovery_Waiter_Result_Disposes_Registered_Cancellation()
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			var callbackCount = 0;
+			var waiter = new MediaPickerRecoveryWaiter(cancellationTokenSource.Token);
+
+			waiter.SetCancellationRegistration(cancellationTokenSource.Token.Register(
+				() => Interlocked.Increment(ref callbackCount)));
+			waiter.TrySetResult(Array.Empty<RecoveredMediaPickerResult>());
+
+			Assert.Empty(await WaitForCompletion(waiter.Task));
+			await cancellationTokenSource.CancelAsync();
+
+			Assert.Equal(0, Volatile.Read(ref callbackCount));
+		}
+
+		[Fact]
 		public async Task Wait_For_Recovered_Results_Completes_Multiple_Waiters()
 		{
 			var capturePath = CreateNonEmptyMediaFile(FileExtensions.Jpg);

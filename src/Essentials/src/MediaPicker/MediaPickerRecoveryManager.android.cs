@@ -951,8 +951,9 @@ internal sealed class MediaPickerRecoveryWaiter
 {
 	readonly CancellationToken cancellationToken;
 	readonly TaskCompletionSource<IReadOnlyList<RecoveredMediaPickerResult>> completionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	readonly Lock completionLock = new();
 	CancellationTokenRegistration cancellationRegistration;
-	int completed;
+	bool completed;
 
 	public MediaPickerRecoveryWaiter(CancellationToken cancellationToken)
 	{
@@ -963,39 +964,63 @@ internal sealed class MediaPickerRecoveryWaiter
 
 	public void SetCancellationRegistration(CancellationTokenRegistration registration)
 	{
-		if (Volatile.Read(ref completed) == 0)
-		{
-			cancellationRegistration = registration;
+		var disposeRegistration = false;
 
-			if (Volatile.Read(ref completed) == 0)
+		lock (completionLock)
+		{
+			if (completed)
 			{
-				return;
+				disposeRegistration = true;
+			}
+			else
+			{
+				cancellationRegistration = registration;
 			}
 		}
 
-		registration.Dispose();
+		if (disposeRegistration)
+		{
+			registration.Dispose();
+		}
 	}
 
 	public void TrySetResult(IReadOnlyList<RecoveredMediaPickerResult> results)
 	{
-		if (Interlocked.Exchange(ref completed, 1) != 0)
+		if (!TryComplete(out var registration))
 		{
 			return;
 		}
 
-		cancellationRegistration.Dispose();
+		registration.Dispose();
 		completionSource.TrySetResult(results);
 	}
 
 	public void TrySetCanceled()
 	{
-		if (Interlocked.Exchange(ref completed, 1) != 0)
+		if (!TryComplete(out var registration))
 		{
 			return;
 		}
 
-		cancellationRegistration.Dispose();
+		registration.Dispose();
 		completionSource.TrySetCanceled(cancellationToken);
+	}
+
+	bool TryComplete(out CancellationTokenRegistration registration)
+	{
+		lock (completionLock)
+		{
+			if (completed)
+			{
+				registration = default;
+				return false;
+			}
+
+			completed = true;
+			registration = cancellationRegistration;
+			cancellationRegistration = default;
+			return true;
+		}
 	}
 }
 
