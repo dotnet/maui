@@ -2,6 +2,7 @@
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
+virtual Microsoft.Maui.Platform.StackNavigationManager.OnCreateNavigationAnimation(Android.Content.Context! context, bool isPopping, bool enter) -> Android.Views.Animations.Animation?
 Microsoft.Maui.Handlers.ActivityIndicatorHandler2
 Microsoft.Maui.Handlers.ActivityIndicatorHandler2.ActivityIndicatorHandler2() -> void
 Microsoft.Maui.Handlers.DatePickerHandler2
