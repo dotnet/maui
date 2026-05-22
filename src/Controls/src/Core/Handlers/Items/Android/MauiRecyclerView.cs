@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
-		readonly Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
+		Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -57,7 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_getItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
 			CreateAdapter = getAdapter ?? throw new ArgumentNullException(nameof(getAdapter));
-			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
@@ -110,14 +109,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void PostTrySetAppBarLiftTargetIfOnScreen()
 		{
-			RemoveCallbacks(_setAppBarLiftTargetRunnable);
-			Post(_setAppBarLiftTargetRunnable);
+			var runnable = GetOrCreateSetAppBarLiftTargetRunnable();
+			RemoveCallbacks(runnable);
+			Post(runnable);
 		}
 
 		void ClearAppBarLiftTargetAndPendingPost()
 		{
-			RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			if (_setAppBarLiftTargetRunnable is not null)
+			{
+				RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			}
+
 			this.ClearAppBarLiftTarget();
+		}
+
+		Java.Lang.IRunnable GetOrCreateSetAppBarLiftTargetRunnable()
+		{
+			return _setAppBarLiftTargetRunnable ??= new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		public virtual void TearDownOldElement(TItemsView oldElement)

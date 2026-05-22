@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
-		readonly Java.Lang.IRunnable _setAppBarLiftTargetRunnable;
+		Java.Lang.IRunnable? _setAppBarLiftTargetRunnable;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -36,19 +36,16 @@ namespace Microsoft.Maui.Platform
 		public MauiScrollView(Context context) : base(context)
 		{
 			_context = context;
-			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 			_context = context;
-			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		public MauiScrollView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 			_context = context;
-			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		protected MauiScrollView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
@@ -56,7 +53,6 @@ namespace Microsoft.Maui.Platform
 			var context = Context;
 			ArgumentNullException.ThrowIfNull(context);
 			_context = context;
-			_setAppBarLiftTargetRunnable = new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
@@ -125,14 +121,24 @@ namespace Microsoft.Maui.Platform
 
 		void PostTrySetAppBarLiftTargetIfOnScreen()
 		{
-			RemoveCallbacks(_setAppBarLiftTargetRunnable);
-			Post(_setAppBarLiftTargetRunnable);
+			var runnable = GetOrCreateSetAppBarLiftTargetRunnable();
+			RemoveCallbacks(runnable);
+			Post(runnable);
 		}
 
 		void ClearAppBarLiftTargetAndPendingPost()
 		{
-			RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			if (_setAppBarLiftTargetRunnable is not null)
+			{
+				RemoveCallbacks(_setAppBarLiftTargetRunnable);
+			}
+
 			this.ClearAppBarLiftTarget();
+		}
+
+		Java.Lang.IRunnable GetOrCreateSetAppBarLiftTargetRunnable()
+		{
+			return _setAppBarLiftTargetRunnable ??= new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		#region IHandleWindowInsets Implementation

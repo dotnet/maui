@@ -27,13 +27,14 @@ namespace Microsoft.Maui.Platform
         {
             public AppBarLayout? LiftOnScrollAppBar;
             public ScrollChangedListener? ScrollListener;
+            public ViewTreeObserver? ScrollListenerObserver;
             public readonly Rect VisibleRect = new();
         }
 
         internal static void TrySetAppBarLiftTargetIfOnScreen(this View view)
         {
             // Guard: the view may have detached or been hidden between Post() and execution.
-            if (view.Handle == IntPtr.Zero || !view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
+            if (!view.IsAlive() || !view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
             {
                 return;
             }
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Platform
 
         static void OnParentScrollChanged(View view, AppBarLiftState state)
         {
-            if (view.Handle == IntPtr.Zero || !view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
+            if (!view.IsAlive() || !view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
             {
                 return;
             }
@@ -162,6 +163,7 @@ namespace Microsoft.Maui.Platform
             }
 
             state.ScrollListener = new ScrollChangedListener(view, state);
+            state.ScrollListenerObserver = observer;
             observer.AddOnScrollChangedListener(state.ScrollListener);
         }
 
@@ -172,14 +174,25 @@ namespace Microsoft.Maui.Platform
                 return;
             }
 
-            var observer = view.ViewTreeObserver;
+            // Remove from the same observer instance used when adding.
+            var observer = state.ScrollListenerObserver;
             if (observer is not null && observer.IsAlive)
             {
                 observer.RemoveOnScrollChangedListener(state.ScrollListener);
             }
+            else
+            {
+                // Fallback for safety if observer rotated between add/remove.
+                observer = view.ViewTreeObserver;
+                if (observer is not null && observer.IsAlive)
+                {
+                    observer.RemoveOnScrollChangedListener(state.ScrollListener);
+                }
+            }
 
             state.ScrollListener.Dispose();
             state.ScrollListener = null;
+            state.ScrollListenerObserver = null;
         }
 
         static AppBarLayout? FindAppBarLayout(View view, out bool hasAncestorScrollView)
