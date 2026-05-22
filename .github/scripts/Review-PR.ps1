@@ -51,6 +51,13 @@ param(
     [string]$Platform,
 
     [Parameter(Mandatory = $false)]
+    [ValidateSet('Setup', 'Gate', 'CopilotReview', 'Post')]
+    [string]$Phase,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TrustedScriptsDir,
+
+    [Parameter(Mandatory = $false)]
     [switch]$UseCurrentBranch,
 
     [Parameter(Mandatory = $false)]
@@ -63,6 +70,13 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if ($LogFile) {
+    # When running with -Phase, each phase is a separate process writing to the same log.
+    # Append a phase suffix so phases don't overwrite each other's logs.
+    if ($Phase) {
+        $logExt = [System.IO.Path]::GetExtension($LogFile)
+        $logBase = $LogFile.Substring(0, $LogFile.Length - $logExt.Length)
+        $LogFile = "${logBase}_${Phase}${logExt}"
+    }
     $logDir = Split-Path $LogFile -Parent
     if ($logDir -and -not (Test-Path $logDir)) {
         New-Item -ItemType Directory -Path $logDir -Force | Out-Null
@@ -72,6 +86,28 @@ if ($LogFile) {
 
 $RepoRoot = git rev-parse --show-toplevel 2>$null
 if (-not $RepoRoot) { Write-Error "Not in a git repository"; exit 1 }
+
+# ─── Phase routing ─────────────────────────────────────────────────────────────
+# When -Phase is specified, run ONLY that phase. This enables the 4-task AzDO
+# split where each task calls Review-PR.ps1 with a different phase, each with
+# exactly the secrets it needs in its env: block.
+#
+# Task 1 (Setup):         env: GH_TOKEN.             No dotnet, no copilot.
+# Task 2 (Gate):          env: <nothing>.            dotnet build/test only.
+# Task 3 (CopilotReview): env: COPILOT_GITHUB_TOKEN. copilot → dotnet (stripped).
+# Task 4 (Post):          env: GH_TOKEN.             Trusted scripts, no dotnet.
+#
+# When -Phase is NOT specified, all steps run sequentially (backward compat for
+# local development use).
+$runSetup         = -not $Phase -or $Phase -eq 'Setup'
+$runGate          = -not $Phase -or $Phase -eq 'Gate'
+$runCopilotReview = -not $Phase -or $Phase -eq 'CopilotReview'
+$runPost          = -not $Phase -or $Phase -eq 'Post'
+
+# Resolve the scripts directory — use TrustedScriptsDir if provided (CI),
+# otherwise use the repo's own .github/ directory (local dev).
+$ScriptsDir = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts' } else { $PSScriptRoot }
+$SkillsDir  = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'skills' } else { Join-Path $PSScriptRoot '../skills' }
 
 # ─── Banner ───────────────────────────────────────────────────────────────────
 Write-Host ""
@@ -87,7 +123,25 @@ if ($Platform) {
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
+# ─── Shared variables (available to all phases) ──────────────────────────────
+$platformInstruction = if ($Platform) {
+    "**Platform for testing:** $Platform"
+} else {
+    "**Platform for testing:** Determine from PR's affected code paths and current host OS."
+}
+
+$autonomousRules = @"
+
+🚨 **AUTONOMOUS EXECUTION:**
+- There is NO human operator - NEVER stop and ask for input
+- On environment blockers: skip the blocked phase and continue
+- Always prefer CONTINUING with partial results over STOPPING
+"@
+
+$reviewBranch = "pr-review-$PRNumber"
+
 # ─── Prerequisites ────────────────────────────────────────────────────────────
+if ($runSetup) {
 Write-Host "📋 Checking prerequisites..." -ForegroundColor Yellow
 
 $ghVersion = gh --version 2>$null | Select-Object -First 1
@@ -104,21 +158,6 @@ $prInfo = gh pr view $PRNumber --json title,state 2>$null | ConvertFrom-Json
 if (-not $prInfo) { Write-Error "PR #$PRNumber not found"; exit 1 }
 Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
 
-# ─── Shared prompt rules ─────────────────────────────────────────────────────
-$platformInstruction = if ($Platform) {
-    "**Platform for testing:** $Platform"
-} else {
-    "**Platform for testing:** Determine from PR's affected code paths and current host OS."
-}
-
-$autonomousRules = @"
-
-🚨 **AUTONOMOUS EXECUTION:**
-- There is NO human operator - NEVER stop and ask for input
-- On environment blockers: skip the blocked phase and continue
-- Always prefer CONTINUING with partial results over STOPPING
-"@
-
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 1: Branch Setup (Create Review Branch & Cherry-Pick PR)
 # ═════════════════════════════════════════════════════════════════════════════
@@ -127,8 +166,6 @@ Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
 Write-Host "║  STEP 1: BRANCH SETUP                                     ║" -ForegroundColor Yellow
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
-
-$reviewBranch = "pr-review-$PRNumber"
 
 if ($DryRun) {
     if ($UseCurrentBranch) {
@@ -273,6 +310,24 @@ if ($DryRun) {
     $headCommit = git log --oneline -1 2>$null
     Write-Host "  ✅ Review branch ready: $reviewBranch" -ForegroundColor Green
     Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
+}
+
+} # end if ($runSetup)
+
+# End of Setup phase — write sentinel and exit early
+if ($Phase -eq 'Setup') {
+    # Sentinel signals to Tasks 2-4 that Setup completed successfully (PR merged).
+    $sentinelDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        $d = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+        New-Item -ItemType Directory -Force -Path $d | Out-Null
+        $d
+    }
+    "OK" | Set-Content (Join-Path $sentinelDir "setup-complete") -Encoding UTF8
+    Write-Host "✅ Setup phase complete" -ForegroundColor Green
+    if ($LogFile) { Stop-Transcript -ErrorAction SilentlyContinue | Out-Null }
+    exit 0
 }
 
 # ─── Helper: Parse `dotnet test --logger "console;verbosity=detailed"` ──────
@@ -467,10 +522,12 @@ function Invoke-CopilotStep {
     }
 
     # Use JSON output format to stream live progress of agent activity.
+    # --secret-env-vars: defense-in-depth — strips named tokens from copilot's
+    # shell/MCP subprocess env even if they somehow appear (e.g., via variable groups).
     # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model access
     # can run this script (e.g., with 'claude-opus-4.6' or 'claude-sonnet-4.6').
     $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.5' }
-    & copilot -p $Prompt --allow-all --output-format json --model $copilotModel 2>&1 | ForEach-Object {
+    & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
         $line = $_.ToString()
         try {
             $event = $line | ConvertFrom-Json -ErrorAction Stop
@@ -613,6 +670,8 @@ function Invoke-CopilotStep {
 #  STEP 2: DETECT UI Test Categories (detection only — no pipeline trigger)
 # ═════════════════════════════════════════════════════════════════════════════
 
+if ($runGate) {
+
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║  STEP 2: DETECT UI TEST CATEGORIES                       ║" -ForegroundColor Cyan
@@ -704,7 +763,7 @@ Write-Host "║  STEP 3: RUN DETECTED UI TESTS                            ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
 $uitestRunResult = "SKIPPED"
-$uitestRunnerScript = Join-Path $PSScriptRoot "BuildAndRunHostApp.ps1"
+$uitestRunnerScript = Join-Path $ScriptsDir "BuildAndRunHostApp.ps1"
 
 if ($uitestCategories -eq 'NONE') {
     Write-Host "  ⏭️  Skipped — detection returned NONE (no UI-relevant changes)" -ForegroundColor DarkGray
@@ -743,7 +802,7 @@ if ($uitestCategories -eq 'NONE') {
         # turning into "119 OneTimeSetUp timeouts" in the AI summary.
         $catLogPath = Join-Path $uitestRunOutputDir ("$cat-output.log")
         $catStart = Get-Date
-        $sharedRunner = Join-Path $PSScriptRoot "shared/Invoke-UITestWithRetry.ps1"
+        $sharedRunner = Join-Path $ScriptsDir "shared/Invoke-UITestWithRetry.ps1"
         $runResult = $null
         $testOutput = @()
         $testExitCode = -1
@@ -867,7 +926,7 @@ if ($uitestCategories -eq 'NONE') {
             # If $envErrHit was set above, use that — the retry loop already
             # detected an env error and exhausted retries.
             # Load shared env-error patterns (single source of truth).
-            $sharedPatternsScript = Join-Path $PSScriptRoot "shared/Get-EnvErrorPatterns.ps1"
+            $sharedPatternsScript = Join-Path $ScriptsDir "shared/Get-EnvErrorPatterns.ps1"
             if (Test-Path $sharedPatternsScript) {
                 . $sharedPatternsScript
                 $infraSignals = Get-EnvErrorPatterns
@@ -1144,7 +1203,7 @@ Write-Host "║  STEP 4: REGRESSION CROSS-REFERENCE                      ║" -F
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
 $regressionOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/regression-check"
-$regressionScript = Join-Path $PSScriptRoot "Find-RegressionRisks.ps1"
+$regressionScript = Join-Path $ScriptsDir "Find-RegressionRisks.ps1"
 if (Test-Path $regressionScript) {
     try {
         & $regressionScript -PRNumber $PRNumber -OutputDir $regressionOutputDir
@@ -1348,7 +1407,7 @@ New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 
 # Detect tests in PR
 Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
-$testDetectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
+$testDetectScript = Join-Path $ScriptsDir "shared/Detect-TestsInDiff.ps1"
 if (Test-Path $testDetectScript) {
     $testDetectScript = (Resolve-Path $testDetectScript).Path
     & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
@@ -1360,7 +1419,7 @@ if (Test-Path $testDetectScript) {
 $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
-$verifyScript = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
+$verifyScript = [System.IO.Path]::GetFullPath((Join-Path $SkillsDir "verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
 if (-not (Test-Path $verifyScript)) {
     Write-Host "  ❌ verify-tests-fail.ps1 not found at: $verifyScript" -ForegroundColor Red
     # $gateExitCode = 1 ensures the switch at line ~561 produces $gateResult = "FAILED"
@@ -1571,47 +1630,34 @@ $gateLogTail
     }
 }
 
-# Post gate result as a separate PR comment
-$postGateScript = Join-Path $PSScriptRoot "post-gate-comment.ps1"
-if (Test-Path $postGateScript) {
-    try {
-        if ($DryRun) {
-            & $postGateScript -PRNumber $PRNumber -DryRun
-        } else {
-            & $postGateScript -PRNumber $PRNumber
-        }
-    } catch {
-        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
-    }
+# Persist gate result so other phases can read it
+$gateVerdictDir = if ($TrustedScriptsDir) {
+    Split-Path $TrustedScriptsDir -Parent
 } else {
-    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
+    $d = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    New-Item -ItemType Directory -Force -Path $d | Out-Null
+    $d
 }
+$gateResult | Set-Content (Join-Path $gateVerdictDir "gate-result.txt") -Encoding UTF8
+Write-Host "  📄 Gate result persisted: $gateResult" -ForegroundColor Gray
 
-# Apply gate result label
-$gatePassLabel = "s/agent-gate-passed"
-$gateFaillabel = "s/agent-gate-failed"
-$gateSkipLabel = "s/agent-gate-skipped"
-$allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
+} # end if (-not $skipGateAndTryFix)
 
-$addLabel = switch ($gateResult) {
-    "PASSED"  { $gatePassLabel }
-    "SKIPPED" { $gateSkipLabel }
-    default   { $gateFaillabel }
-}
-$removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
+} # end if ($runGate)
 
-if (-not $DryRun) {
-    foreach ($lbl in $removeLabels) {
-        gh pr edit $PRNumber --remove-label $lbl --repo dotnet/maui 2>$null | Out-Null
-    }
-    gh pr edit $PRNumber --add-label $addLabel --repo dotnet/maui 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
+# ─── Phase: CopilotReview ──────────────────────────────────────────────────
+if ($runCopilotReview) {
+
+# Restore gate result from file when running in phased mode
+if ($Phase -eq 'CopilotReview') {
+    $gateVerdictFile = Join-Path (Split-Path $TrustedScriptsDir -Parent) "gate-result.txt"
+    if (Test-Path $gateVerdictFile) {
+        $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
+        Write-Host "  📄 Restored gate result: $gateResult" -ForegroundColor Gray
     } else {
-        Write-Host "  ⚠️ Failed to apply label $addLabel" -ForegroundColor Yellow
+        $gateResult = "SKIPPED"
+        Write-Host "  ⚠️ Gate result file not found — defaulting to SKIPPED" -ForegroundColor Yellow
     }
-} else {
-    Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
 }
 
 # Restore review branch
@@ -1804,7 +1850,7 @@ git checkout $reviewBranch 2>$null | Out-Null
 # Pre-flight (Step 6) wrote `ai-categories.md`; re-run detection now so the
 # unified comment reflects all three tiers before Step 7 posts.
 $aiCategoriesFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests/ai-categories.md"
-if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
+if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
     try {
         # Pass as a single string (the script declares [string]$AiCategories);
         # an array would not bind correctly across the pwsh -File boundary.
@@ -1864,7 +1910,63 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
     }
 }
 
-}  # END TEMP SKIP wrapper for STEP 5 (Gate) + STEP 6 (Try-Fix) — see $skipGateAndTryFix above
+} # end if ($runCopilotReview)
+
+# ─── Phase: Post ────────────────────────────────────────────────────────────
+if ($runPost) {
+
+# Restore gate result from file when running in phased mode
+if ($Phase -eq 'Post') {
+    $gateVerdictFile = Join-Path (Split-Path $TrustedScriptsDir -Parent) "gate-result.txt"
+    if (Test-Path $gateVerdictFile) {
+        $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
+    } else {
+        $gateResult = "SKIPPED"
+    }
+}
+
+# ─── Gate posting (moved here so only the Post task needs GH_TOKEN) ──────
+$postGateScript = Join-Path $ScriptsDir "post-gate-comment.ps1"
+if (Test-Path $postGateScript) {
+    try {
+        if ($DryRun) {
+            & $postGateScript -PRNumber $PRNumber -DryRun
+        } else {
+            & $postGateScript -PRNumber $PRNumber
+        }
+    } catch {
+        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
+}
+
+# Apply gate result label
+$gatePassLabel = "s/agent-gate-passed"
+$gateFaillabel = "s/agent-gate-failed"
+$gateSkipLabel = "s/agent-gate-skipped"
+$allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
+
+$addLabel = switch ($gateResult) {
+    "PASSED"  { $gatePassLabel }
+    "SKIPPED" { $gateSkipLabel }
+    default   { $gateFaillabel }
+}
+$removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
+
+if (-not $DryRun) {
+    foreach ($lbl in $removeLabels) {
+        gh pr edit $PRNumber --remove-label $lbl --repo dotnet/maui 2>$null | Out-Null
+    }
+    gh pr edit $PRNumber --add-label $addLabel --repo dotnet/maui 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
+    } else {
+        Write-Host "  ⚠️ Failed to apply label $addLabel" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
+}
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 7: Post AI Summary Comment (direct script invocation)
@@ -1877,7 +1979,7 @@ Write-Host "╔═════════════════════�
 Write-Host "║  STEP 7: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
-$summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
+$summaryScriptsDir = $ScriptsDir
 
 if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
     Write-Host "  ⏭️ Deferred to Stage 3 (DEFER_COMMENT_TO_STAGE3=true)" -ForegroundColor Gray
@@ -2064,7 +2166,7 @@ Write-Host "╔═════════════════════�
 Write-Host "║  STEP 8: APPLY LABELS                                     ║" -ForegroundColor Blue
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
-$labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
+$labelHelperPath = Join-Path $ScriptsDir "shared/Update-AgentLabels.ps1"
 if (Test-Path $labelHelperPath) {
     try {
         . $labelHelperPath
@@ -2076,6 +2178,8 @@ if (Test-Path $labelHelperPath) {
 } else {
     Write-Host "  ⚠️ Label helper not found — skipping" -ForegroundColor Yellow
 }
+
+} # end if ($runPost)
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  Cleanup
