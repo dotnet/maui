@@ -622,6 +622,37 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.Null(GetActiveOperation());
 		}
 
+		[Fact]
+		public async Task AndroidX_Orphaned_Single_Photo_Pick_Content_Uri_Materializes_And_Publishes_Recovered_Result()
+		{
+			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var originalBytes = await File.ReadAllBytesAsync(pickPath);
+			var pickUri = CreateContentUri(pickPath);
+			var pickForResult = new TestPickVisualMediaForResult();
+			using var permissions = TrackPickerUriPermissions();
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			var waitTask = MediaPicker.WaitForRecoveredMediaPickerResultsAsync(cancellationTokenSource.Token);
+			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.PickPhoto,
+				[],
+				PersistedPhotoProcessingOptions.Default);
+
+			SimulateProcessRecreation();
+			pickForResult.DispatchResultForTests(pickUri);
+
+			var recoveredResult = Assert.Single(await WaitForCompletion(waitTask));
+			var recoveredFile = GetSingleRecoveredFile(recoveredResult);
+			Assert.Equal(pendingPick.Id, recoveredResult.Id);
+			Assert.Equal(RecoveredMediaPickerResultKind.PickPhoto, recoveredResult.Kind);
+			Assert.True(File.Exists(recoveredFile.FullPath));
+			Assert.Equal(originalBytes, await File.ReadAllBytesAsync(recoveredFile.FullPath));
+			Assert.Null(GetActiveOperation());
+			Assert.Equal(0, GetPendingWaiterCount());
+			Assert.Equal(new[] { pickUri.ToString() }, permissions.Persisted);
+			Assert.Equal(new[] { pickUri.ToString() }, permissions.Released);
+		}
+
 		[Theory]
 		[InlineData(RecoveredMediaPickerResultKind.PickPhotos, FileExtensions.Jpg)]
 		[InlineData(RecoveredMediaPickerResultKind.PickVideos, FileExtensions.Mp4)]
