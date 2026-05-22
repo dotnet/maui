@@ -4,3 +4,4 @@ override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? property
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
+Microsoft.Maui.Controls.Label.~Label() -> void
