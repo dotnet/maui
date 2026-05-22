@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	public class SwitchCell : Cell
 	{
 		/// <summary>Bindable property for <see cref="On"/>.</summary>
-		public static readonly BindableProperty OnProperty = BindableProperty.Create(nameof(On), typeof(bool), typeof(SwitchCell), false, propertyChanged: (obj, oldValue, newValue) =>
+		public static readonly BindableProperty OnProperty = BindableProperty.Create(nameof(On), typeof(bool), typeof(SwitchCell), BooleanBoxes.FalseBox, propertyChanged: (obj, oldValue, newValue) =>
 		{
 			var switchCell = (SwitchCell)obj;
 			switchCell.OnChanged?.Invoke(obj, new ToggledEventArgs((bool)newValue));

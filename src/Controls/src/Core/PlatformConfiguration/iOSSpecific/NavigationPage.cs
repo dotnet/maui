@@ -3,6 +3,7 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using System;
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.NavigationPage;
 
 	/// <summary>The navigation page instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		#region PrefersLargeTitles
 		/// <summary>Bindable property for <see cref="PrefersLargeTitles"/>.</summary>
-		public static readonly BindableProperty PrefersLargeTitlesProperty = BindableProperty.Create(nameof(PrefersLargeTitles), typeof(bool), typeof(Page), false);
+		public static readonly BindableProperty PrefersLargeTitlesProperty = BindableProperty.Create(nameof(PrefersLargeTitles), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
 
 		/// <summary>Returns the large title preference of <paramref name="element"/>.</summary>
 		/// <param name="element">The element whose large title preference to get.</param>
@@ -158,7 +159,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		#region HideNavigationBarSeparator
 		/// <summary>Bindable property for <see cref="HideNavigationBarSeparator"/>.</summary>
-		public static readonly BindableProperty HideNavigationBarSeparatorProperty = BindableProperty.Create(nameof(HideNavigationBarSeparator), typeof(bool), typeof(Page), false);
+		public static readonly BindableProperty HideNavigationBarSeparatorProperty = BindableProperty.Create(nameof(HideNavigationBarSeparator), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
 
 		/// <summary>Returns <see langword="true"/> if the separator is hidden. Otherwise, returns <see langword="false"/>.</summary>
 		/// <param name="element">The element for which to return whether the navigation bar separator is hidden.</param>

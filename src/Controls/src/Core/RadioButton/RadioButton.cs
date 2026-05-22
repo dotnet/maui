@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
-			nameof(IsChecked), typeof(bool), typeof(RadioButton), false,
+			nameof(IsChecked), typeof(bool), typeof(RadioButton), BooleanBoxes.FalseBox,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnIsCheckedPropertyChanged((bool)n),
 			defaultBindingMode: BindingMode.TwoWay);
 

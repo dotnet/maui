@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
-			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
+			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), BooleanBoxes.FalseBox,
 				propertyChanged: IsClippedToBoundsPropertyChanged);
 
 		/// <summary>

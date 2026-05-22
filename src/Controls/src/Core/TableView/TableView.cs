@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create(nameof(RowHeight), typeof(int), typeof(TableView), -1);
 
 		/// <summary>Bindable property for <see cref="HasUnevenRows"/>.</summary>
-		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(TableView), false);
+		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(TableView), BooleanBoxes.FalseBox);
 
 		readonly Lazy<PlatformConfigurationRegistry<TableView>> _platformConfigurationRegistry;
 

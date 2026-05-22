@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -29,7 +30,7 @@ namespace Microsoft.Maui.Controls
 		public const string SwitchOffVisualState = "Off";
 
 		/// <summary>Bindable property for <see cref="IsToggled"/>. This is a bindable property.</summary>
-		public static readonly BindableProperty IsToggledProperty = BindableProperty.Create(nameof(IsToggled), typeof(bool), typeof(Switch), false, propertyChanged: (bindable, oldValue, newValue) =>
+		public static readonly BindableProperty IsToggledProperty = BindableProperty.Create(nameof(IsToggled), typeof(bool), typeof(Switch), BooleanBoxes.FalseBox, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			((Switch)bindable).Toggled?.Invoke(bindable, new ToggledEventArgs((bool)newValue));
 			((Switch)bindable).ChangeVisualState();
