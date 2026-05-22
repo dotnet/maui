@@ -219,7 +219,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		// --- Memory-leak regression tests for Issue #35495 ---
 		// A shared FormattedString must not prevent Label GC after the Label's handler is disconnected.
 
 		[Fact]
