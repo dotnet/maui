@@ -39,7 +39,7 @@ public class WebViewFeatureTests : _GalleryUITest
 			{
 				App.WaitForElement(Apply);
 				App.Tap(Apply);
-				App.WaitForElement(Options);
+				App.WaitForElementTillPageNavigationSettled(Options);
 				return;
 			}
 			catch (Exception ex)
@@ -70,12 +70,10 @@ public class WebViewFeatureTests : _GalleryUITest
 		App.WaitForElement("HtmlSourceButton");
 		App.Tap("HtmlSourceButton");
 		TapApplyAndWaitForMainPage();
-		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("MicrosoftUrlButton");
 		App.Tap("MicrosoftUrlButton");
 		TapApplyAndWaitForMainPage();
-		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement("GithubUrlButton");
 		App.Tap("GithubUrlButton");
