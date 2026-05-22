@@ -706,10 +706,10 @@ if (Test-Path $detectScript) {
 
         # Emit detected categories as an AzDO output variable so downstream
         # stages (RunDeepUITests, UpdateAISummaryComment) in ci-copilot.yml
-        # can read them via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories']).
+        # can read them via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories']).
         # `isOutput=true` is required for cross-stage consumption; the
         # variable name is namespaced under the step's `name:` property
-        # in ci-copilot.yml (currently `RunReview`) by AzDO.
+        # in ci-copilot.yml (currently `RunGate`) by AzDO.
         # Local invocations (no $env:TF_BUILD) won't have an AzDO variable
         # store but the marker is harmless — gets ignored.
         # Emit detected categories. Blank = "run all", a specific string = categories,
@@ -1641,6 +1641,28 @@ $gateVerdictDir = if ($TrustedScriptsDir) {
 $gateResult | Set-Content (Join-Path $gateVerdictDir "gate-result.txt") -Encoding UTF8
 Write-Host "  📄 Gate result persisted: $gateResult" -ForegroundColor Gray
 
+# Persist regression data for CopilotReview phase (try-fix instructions)
+if ($risksData) {
+    try {
+        $risksData | ConvertTo-Json -Depth 10 -Compress | Set-Content (Join-Path $gateVerdictDir "regression-risks.json") -Encoding UTF8
+        if ($regressionTests -and $regressionTests.Count -gt 0) {
+            @($regressionTests) | ConvertTo-Json -Depth 5 -Compress | Set-Content (Join-Path $gateVerdictDir "regression-tests.json") -Encoding UTF8
+        }
+        if ($regrPlatform) {
+            $regrPlatform | Set-Content (Join-Path $gateVerdictDir "regression-platform.txt") -Encoding UTF8
+        }
+        Write-Host "  📄 Regression data persisted" -ForegroundColor Gray
+    } catch {
+        Write-Host "  ⚠️ Failed to persist regression data (non-fatal): $_" -ForegroundColor Yellow
+    }
+}
+
+# Persist detect script path and detected categories for Tier 3 refresh
+if ($detectScript) {
+    $detectScript | Set-Content (Join-Path $gateVerdictDir "detect-script-path.txt") -Encoding UTF8
+}
+$uitestCategories | Set-Content (Join-Path $gateVerdictDir "uitest-categories.txt") -Encoding UTF8
+
 } # end if (-not $skipGateAndTryFix)
 
 } # end if ($runGate)
@@ -1650,13 +1672,45 @@ if ($runCopilotReview) {
 
 # Restore gate result from file when running in phased mode
 if ($Phase -eq 'CopilotReview') {
-    $gateVerdictFile = Join-Path (Split-Path $TrustedScriptsDir -Parent) "gate-result.txt"
+    $gateVerdictDir = Split-Path $TrustedScriptsDir -Parent
+    $gateVerdictFile = Join-Path $gateVerdictDir "gate-result.txt"
     if (Test-Path $gateVerdictFile) {
         $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
         Write-Host "  📄 Restored gate result: $gateResult" -ForegroundColor Gray
     } else {
         $gateResult = "SKIPPED"
         Write-Host "  ⚠️ Gate result file not found — defaulting to SKIPPED" -ForegroundColor Yellow
+    }
+
+    # Restore regression data persisted by Gate phase
+    $risksFile = Join-Path $gateVerdictDir "regression-risks.json"
+    $testsFile = Join-Path $gateVerdictDir "regression-tests.json"
+    $platFile  = Join-Path $gateVerdictDir "regression-platform.txt"
+    if (Test-Path $risksFile) {
+        try {
+            $risksData = Get-Content $risksFile -Raw -Encoding UTF8 | ConvertFrom-Json
+            if (Test-Path $testsFile) {
+                $regressionTests = @(Get-Content $testsFile -Raw -Encoding UTF8 | ConvertFrom-Json)
+            }
+            if (Test-Path $platFile) {
+                $regrPlatform = (Get-Content $platFile -Raw).Trim()
+            } else {
+                $regrPlatform = if ($Platform) { $Platform } else { "android" }
+            }
+            Write-Host "  📄 Restored regression data ($($regressionTests.Count) tests)" -ForegroundColor Gray
+        } catch {
+            Write-Host "  ⚠️ Failed to restore regression data (non-fatal): $_" -ForegroundColor Yellow
+        }
+    }
+
+    # Restore detect script path and UI test categories for Tier 3 refresh
+    $detectPathFile = Join-Path $gateVerdictDir "detect-script-path.txt"
+    $catsFile       = Join-Path $gateVerdictDir "uitest-categories.txt"
+    if (Test-Path $detectPathFile) {
+        $detectScript = (Get-Content $detectPathFile -Raw).Trim()
+    }
+    if (Test-Path $catsFile) {
+        $uitestCategories = (Get-Content $catsFile -Raw).Trim()
     }
 }
 

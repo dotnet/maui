@@ -726,7 +726,7 @@ stages:
               fi
 
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
-            name: RunPost                       # referenceable name so the new RunDeepUITests / UpdateAISummaryComment stages can read this step's output variables (detectedCategories, detectedPlatform) via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.<var>'])
+            name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryCommentId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryCommentId']). Note: detectedCategories comes from RunGate, not RunPost.
             displayName: 'Task 4: Post (comments + labels)'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
