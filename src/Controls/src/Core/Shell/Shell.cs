@@ -68,13 +68,13 @@ namespace Microsoft.Maui.Controls
 		/// Manages if the navigation bar is visible when a page is presented. 
 		/// </summary>
 		public static readonly BindableProperty NavBarIsVisibleProperty =
-			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), true, propertyChanged: OnNavBarIsVisibleChanged);
+			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), BooleanBoxes.TrueBox, propertyChanged: OnNavBarIsVisibleChanged);
 
 		/// <summary>
 		/// Determines if the navigation bar visibility change should be animated.
 		/// </summary>
 		public static readonly BindableProperty NavBarVisibilityAnimationEnabledProperty =
-			BindableProperty.CreateAttached("NavBarVisibilityAnimationEnabled", typeof(bool), typeof(Shell), true);
+			BindableProperty.CreateAttached("NavBarVisibilityAnimationEnabled", typeof(bool), typeof(Shell), BooleanBoxes.TrueBox);
 
 		private static void OnNavBarIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls
 		/// Controls whether the navigation bar has a shadow.
 		/// </summary>
 		public static readonly BindableProperty NavBarHasShadowProperty =
-			BindableProperty.CreateAttached("NavBarHasShadow", typeof(bool), typeof(Shell), default(bool),
+			BindableProperty.CreateAttached("NavBarHasShadow", typeof(bool), typeof(Shell), BooleanBoxes.FalseBox,
 				defaultValueCreator: (b) => DeviceInfo.Platform == DevicePlatform.Android);
 
 		/// <summary>
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls
 		/// Flyout items are visible in the flyout by default.
 		/// </summary>
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
-			BindableProperty.CreateAttached("FlyoutItemIsVisible", typeof(bool), typeof(Shell), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
+			BindableProperty.CreateAttached("FlyoutItemIsVisible", typeof(bool), typeof(Shell), BooleanBoxes.TrueBox, propertyChanged: OnFlyoutItemIsVisibleChanged);
 		public static bool GetFlyoutItemIsVisible(BindableObject obj) => (bool)obj.GetValue(FlyoutItemIsVisibleProperty);
 
 		/// <summary>
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls
 		/// The tab bar and tabs are visible in <see cref = "Shell" /> applications by default. 
 		/// </remarks>
 		public static readonly BindableProperty TabBarIsVisibleProperty =
-			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
+			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Enables any <see cref = "View" /> to be displayed in the navigation bar.
