@@ -19,10 +19,10 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for attached property <c>HasNavigationBar</c>.</summary>
 		public static readonly BindableProperty HasNavigationBarProperty =
-			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
+			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for attached property <c>HasBackButton</c>.</summary>
-		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
+		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="BarBackgroundColor"/>.</summary>
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;

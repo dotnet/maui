@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for attached property <c>IsShadowEnabled</c>.</summary>
 		public static readonly BindableProperty IsShadowEnabledProperty =
 			BindableProperty.Create("IsShadowEnabled", typeof(bool),
-			typeof(VisualElement), false, propertyChanged: OnIsShadowEnabledChanged);
+			typeof(VisualElement), BooleanBoxes.FalseBox, propertyChanged: OnIsShadowEnabledChanged);
 
 		static void OnIsShadowEnabledChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for attached property <c>IsLegacyColorModeEnabled</c>.</summary>
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
 			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
-				typeof(FormsElement), true);
+				typeof(FormsElement), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Returns whether or not the legacy color mode is enabled.
