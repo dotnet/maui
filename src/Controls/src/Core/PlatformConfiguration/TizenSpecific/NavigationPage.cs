@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <param name="value"><see langword="true"/> to show a bread crumb bar; otherwise, <see langword="false"/>.</param>
 		public static void SetHasBreadCrumbsBar(BindableObject element, bool value)
 		{
-			element.SetValue(HasBreadCrumbsBarProperty, value);
+			element.SetValue(HasBreadCrumbsBarProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>

@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true" /> to enable the shadow. Otherwise, <see langword="false" />.</param>
 		public static void SetIsShadowEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsShadowEnabledProperty, value);
+			element.SetValue(IsShadowEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true" /> to enable legacy color mode. Otherwise, <see langword="false" />.</param>
 		public static void SetIsLegacyColorModeEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetIsLegacyColorModeEnabled(
 			this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
-			config.Element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			config.Element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
 			return config;
 		}
 
@@ -397,7 +397,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true" /> to set this element as the first responder. Otherwise, <see langword="false" />.</param>
 		public static void SetCanBecomeFirstResponder(BindableObject element, bool value)
 		{
-			element.SetValue(CanBecomeFirstResponderProperty, value);
+			element.SetValue(CanBecomeFirstResponderProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>

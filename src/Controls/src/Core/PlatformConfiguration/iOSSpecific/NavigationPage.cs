@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static void SetIsNavigationBarTranslucent(BindableObject element, bool value)
 		{
-			element.SetValue(IsNavigationBarTranslucentProperty, value);
+			element.SetValue(IsNavigationBarTranslucentProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to prefer large titles; otherwise, <see langword="false"/>.</param>
 		public static void SetPrefersLargeTitles(BindableObject element, bool value)
 		{
-			element.SetValue(PrefersLargeTitlesProperty, value);
+			element.SetValue(PrefersLargeTitlesProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets whether iOS 11+ large titles are displayed in the navigation bar.</summary>
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to hide the separator; otherwise, <see langword="false"/>.</param>
 		public static void SetHideNavigationBarSeparator(BindableObject element, bool value)
 		{
-			element.SetValue(HideNavigationBarSeparatorProperty, value);
+			element.SetValue(HideNavigationBarSeparatorProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets whether to hide the navigation bar separator line on iOS.</summary>

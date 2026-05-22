@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to delay; <see langword="false"/> for immediate touch response.</param>
 		public static void SetShouldDelayContentTouches(BindableObject element, bool value)
 		{
-			element.SetValue(ShouldDelayContentTouchesProperty, value);
+			element.SetValue(ShouldDelayContentTouchesProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>

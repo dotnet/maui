@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <param name="value"><see langword="true"/> to enable legacy color mode.</param>
 		public static void SetIsLegacyColorModeEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether legacy color mode is enabled on Windows.</summary>
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetIsLegacyColorModeEnabled(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
 		{
-			config.Element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			config.Element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
 			return config;
 		}
 

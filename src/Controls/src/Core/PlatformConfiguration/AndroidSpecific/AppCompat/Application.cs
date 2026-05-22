@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <param name="value">The new property value to assign.</param>
 		public static void SetSendDisappearingEventOnPause(BindableObject element, bool value)
 		{
-			element.SetValue(SendDisappearingEventOnPauseProperty, value);
+			element.SetValue(SendDisappearingEventOnPauseProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that controls whether the disappearing event is sent when the application is paused.</summary>
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <param name="value">The new property value to assign.</param>
 		public static void SetSendAppearingEventOnResume(BindableObject element, bool value)
 		{
-			element.SetValue(SendAppearingEventOnResumeProperty, value);
+			element.SetValue(SendAppearingEventOnResumeProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that controls whether the appearing event is sent when the application resumes.</summary>
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 		/// <param name="value">The new property value to assign.</param>
 		public static void SetShouldPreserveKeyboardOnResume(BindableObject element, bool value)
 		{
-			element.SetValue(ShouldPreserveKeyboardOnResumeProperty, value);
+			element.SetValue(ShouldPreserveKeyboardOnResumeProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that controls whether the keyboard state should be preserved when the application resumes.</summary>

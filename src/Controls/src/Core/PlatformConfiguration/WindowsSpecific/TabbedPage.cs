@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <param name="value"><see langword="true"/> to enable header icons.</param>
 		public static void SetHeaderIconsEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(HeaderIconsEnabledProperty, value);
+			element.SetValue(HeaderIconsEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether tab header icons are displayed on Windows.</summary>
