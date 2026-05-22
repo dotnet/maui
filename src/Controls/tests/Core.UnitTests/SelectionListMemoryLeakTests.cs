@@ -44,10 +44,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var reference = CreateCollectionViewReference();
 
-			// Force GC — should collect the CollectionView
-			await TestHelpers.Collect();
-
-			Assert.False(reference.IsAlive, "CollectionView should be collected after handler disconnect, but it was retained by SelectionList's CollectionChanged subscription on the ObservableCollection.");
+			Assert.False(await reference.WaitForCollect(), "CollectionView should be collected after handler disconnect, but it was retained by SelectionList's CollectionChanged subscription on the ObservableCollection.");
 
 			// Keep the retained collection alive for the duration of the test
 			GC.KeepAlive(retainedCollection);
@@ -92,12 +89,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var reference = CreateCollectionViewReference();
 
-			await TestHelpers.Collect();
-
-			Assert.False(reference.IsAlive, "CollectionView should be collected after SelectedItems reassignment and handler disconnect.");
+			Assert.False(await reference.WaitForCollect(), "CollectionView should be collected after SelectedItems reassignment and handler disconnect.");
 
 			GC.KeepAlive(retainedCollection1);
 			GC.KeepAlive(retainedCollection2);
+		}
+
+		/// <summary>
+		/// Verifies that SelectionChanged still fires after handler disconnect and reconnect.
+		/// Ensures the weak proxy subscription survives handler lifecycle changes.
+		/// </summary>
+		[Fact]
+		public void SelectionChangedFiresAfterHandlerReconnect()
+		{
+			var selectedItems = new ObservableCollection<object>();
+			var cv = new CollectionView
+			{
+				SelectionMode = SelectionMode.Multiple,
+				ItemsSource = new List<string> { "Item1", "Item2", "Item3" },
+				SelectedItems = selectedItems
+			};
+
+			// Connect handler
+			cv.Handler = new CollectionViewHandlerStub();
+
+			// Disconnect handler (simulates page being removed from visual tree)
+			cv.Handler = null;
+
+			// Reconnect handler (simulates page being re-added)
+			cv.Handler = new CollectionViewHandlerStub();
+
+			// Mutate the source collection — SelectionChanged should still fire
+			int selectionChangedCount = 0;
+			cv.SelectionChanged += (_, _) => selectionChangedCount++;
+
+			selectedItems.Add("Item1");
+
+			Assert.Equal(1, selectionChangedCount);
 		}
 
 		/// <summary>
