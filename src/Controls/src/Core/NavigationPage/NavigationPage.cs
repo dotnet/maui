@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (page == null)
 				throw new ArgumentNullException(nameof(page));
-			page.SetValue(HasBackButtonProperty, value);
+			page.SetValue(HasBackButtonProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets a value that indicates whether or not this <see cref="Microsoft.Maui.Controls.NavigationPage"/> element has a navigation bar.</summary>
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The value to set.</param>
 		public static void SetHasNavigationBar(BindableObject page, bool value)
 		{
-			page.SetValue(HasNavigationBarProperty, value);
+			page.SetValue(HasNavigationBarProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <param name="bindable">The bindable parameter.</param>

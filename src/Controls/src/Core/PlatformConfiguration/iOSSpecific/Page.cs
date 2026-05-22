@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		[System.Obsolete("Use SafeAreaEdges attached property instead for per-edge safe area control.")]
 		public static void SetUseSafeArea(BindableObject element, bool value)
 		{
-			element.SetValue(UseSafeAreaProperty, value);
+			element.SetValue(UseSafeAreaProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -438,7 +438,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</param>
 		public static void SetPrefersHomeIndicatorAutoHidden(BindableObject element, bool value)
 		{
-			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, value);
+			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>

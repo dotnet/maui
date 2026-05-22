@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true" /> to enable legacy color mode. Otherwise, <see langword="false" />.</param>
 		public static void SetIsLegacyColorModeEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		public static IPlatformElementConfiguration<Android, FormsElement> SetIsLegacyColorModeEnabled(
 			this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
-			config.Element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			config.Element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
 			return config;
 		}
 

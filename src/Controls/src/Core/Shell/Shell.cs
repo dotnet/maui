@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="obj">The object that modifies the navigation bar visibility.</param>
 		/// <param name="value"><see langword="true"/> to set the navigation bar as visible; otherwise, <see langword="false"/>.</param>
-		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
+		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, BooleanBoxes.Box(value));
 
 		/// <summary>
 		/// Gets a value indicating whether the navigation bar visibility change is animated for the given <paramref name="obj"/>.
@@ -382,7 +382,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="obj">The object that modifies the animation setting.</param>
 		/// <param name="value"><see langword="true"/> to enable animation; otherwise, <see langword="false"/>.</param>
-		public static void SetNavBarVisibilityAnimationEnabled(BindableObject obj, bool value) => obj.SetValue(NavBarVisibilityAnimationEnabledProperty, value);
+		public static void SetNavBarVisibilityAnimationEnabled(BindableObject obj, bool value) => obj.SetValue(NavBarVisibilityAnimationEnabledProperty, BooleanBoxes.Box(value));
 
 
 		/// <summary>
@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="obj">The object that modifies if the navigation bar has a shadow.</param>
 		/// <param name="value">Manages if the navigation bar has a shadow.</param>
-		public static void SetNavBarHasShadow(BindableObject obj, bool value) => obj.SetValue(NavBarHasShadowProperty, value);
+		public static void SetNavBarHasShadow(BindableObject obj, bool value) => obj.SetValue(NavBarHasShadowProperty, BooleanBoxes.Box(value));
 
 		/// <summary>
 		/// Gets the integrated search functionality.
@@ -431,7 +431,7 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <param name="value"><see langword="true"/> to set the tab bar as visible; otherwise, <see langword="false"/>.</param>
-		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
+		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, BooleanBoxes.Box(value));
 
 		/// <summary>
 		/// Gets any <see cref = "View" /> to be displayed in the navigation bar when the given <paramref name="obj"/> is active.

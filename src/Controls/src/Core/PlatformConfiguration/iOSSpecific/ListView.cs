@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetRowAnimationsEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(RowAnimationsEnabledProperty, value);
+			element.SetValue(RowAnimationsEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets whether row animations are enabled for the ListView on iOS.</summary>
