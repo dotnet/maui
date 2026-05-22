@@ -31,10 +31,16 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	FrameworkElement? _itemsRepeater;
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
+	Canvas? _dropIndicatorCanvas;
 
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+
+		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
+		// staggered top-to-bottom cascade animation as virtualized items enter the
+		// viewport during scroll. This is unexpected for a data list in MAUI.
+		ItemTransitionProvider = null;
 
 		// Suppress the native WinUI ItemContainer visual states (PointerOver,
 		// Pressed, Selected, and their combinations) so they don't overlay
@@ -44,17 +50,27 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Fixes: https://github.com/dotnet/maui/issues/13197
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 		var zeroCornerRadius = new Microsoft.UI.Xaml.CornerRadius(0);
-		
+
 		// Set the control's CornerRadius property directly
 		CornerRadius = zeroCornerRadius;
-		
+
 		// Override theme resources that control corner radius for ItemsView and its children
 		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
-		// Background fills (PART_CommonVisual.Fill) — suppress the gray overlay
-		// that WinUI shows on PointerOver/Pressed so it doesn't interfere with
-		// MAUI's own VisualStateManager states. Fixes: #13197
-		Resources["ItemContainerBackground"] = transparent;
+		// ItemContainer background — use the Fluent card surface colour so that:
+		//   1. The drag ghost (a pre-DragStarting compositor snapshot) always shows
+		//      a visible card, matching the expected reorder UX.
+		//   2. Items look like distinct elevated cards in the list at rest.
+		// CardBackgroundFillColorDefaultBrush = white in light theme, dark-card in
+		// dark theme — the same surface colour used by WinUI's own list controls.
+		if (WApp.Current.Resources.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg)
+			&& cardBg is Microsoft.UI.Xaml.Media.Brush cardBrush)
+		{
+			Resources["ItemContainerBackground"] = cardBrush;
+		}
+
+		// Suppress the gray hover/press overlay (PART_CommonVisual.Fill) so it does
+		// not interfere with MAUI's own VisualStateManager states. Fixes: #13197
 		Resources["ItemContainerPointerOverBackground"] = transparent;
 		Resources["ItemContainerPressedBackground"] = transparent;
 
@@ -151,12 +167,26 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		base.OnApplyTemplate();
 
+		// WinUI's base.OnApplyTemplate() re-assigns ItemTransitionProvider to its
+		// default StackLayoutItemCollectionTransitionProvider (cascade animation).
+		// Override it again here so it stays null regardless of template application order.
+		ItemTransitionProvider = null;
+
 		_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
 		_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
 		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
+		_dropIndicatorCanvas = GetTemplateChild("PART_DropIndicatorCanvas") as Canvas;
+		_dropIndicatorHead = GetTemplateChild("PART_DropIndicatorHead") as Border;
+		_dropIndicatorLine = GetTemplateChild("PART_DropIndicatorLine") as Rectangle;
+
+		// Also null out the inner ItemsRepeater's own provider directly — the
+		// TemplateBinding {x:Null} in XAML may be evaluated before WinUI assigns
+		// defaults, so a direct code assignment is the reliable approach.
+		if (_itemsRepeater is ItemsRepeater repeater)
+			repeater.ItemTransitionProvider = null;
 
 		if (_emptyViewContentControl is not null)
 		{
