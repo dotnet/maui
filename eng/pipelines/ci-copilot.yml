@@ -644,7 +644,9 @@ stages:
 
           # ─────────────────────────────────────────────────────────
           #  Task 2 — GATE: UI detection, test runs, regression,
-          #  gate verification. NO tokens — only dotnet/build tools.
+          #  gate verification. GH_TOKEN is read-only here — needed
+          #  by Detect-TestsInDiff.ps1 for PR metadata/label fetches.
+          #  No COPILOT_GITHUB_TOKEN — the agent can't run here.
           # ─────────────────────────────────────────────────────────
           - bash: |
               echo "═══ TASK 2: GATE ═══"
@@ -667,6 +669,7 @@ stages:
             name: RunGate
             displayName: 'Task 2: Gate (test verification)'
             env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           # ─────────────────────────────────────────────────────────

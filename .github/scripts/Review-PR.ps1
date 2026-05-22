@@ -93,7 +93,7 @@ if (-not $RepoRoot) { Write-Error "Not in a git repository"; exit 1 }
 # exactly the secrets it needs in its env: block.
 #
 # Task 1 (Setup):         env: GH_TOKEN.             No dotnet, no copilot.
-# Task 2 (Gate):          env: <nothing>.            dotnet build/test only.
+# Task 2 (Gate):          env: GH_TOKEN (read-only).  dotnet build/test + PR metadata.
 # Task 3 (CopilotReview): env: COPILOT_GITHUB_TOKEN. copilot → dotnet (stripped).
 # Task 4 (Post):          env: GH_TOKEN.             Trusted scripts, no dotnet.
 #
