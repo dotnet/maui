@@ -314,6 +314,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task Wait_For_Recovered_Results_Requires_Cancellable_Token_When_Waiting()
+		{
+			var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+				MediaPicker.WaitForRecoveredMediaPickerResultsAsync(CancellationToken.None));
+
+			Assert.Equal("cancellationToken", exception.ParamName);
+			Assert.Equal(0, GetPendingWaiterCount());
+		}
+
+		[Fact]
 		public async Task Recovery_Waiter_Result_Before_Registration_Disposes_Late_Registration()
 		{
 			using var cancellationTokenSource = new CancellationTokenSource();

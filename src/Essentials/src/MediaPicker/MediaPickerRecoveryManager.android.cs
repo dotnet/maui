@@ -159,6 +159,13 @@ internal static class MediaPickerRecoveryManager
 				cancellationToken.ThrowIfCancellationRequested();
 			}
 
+			if (!cancellationToken.CanBeCanceled)
+			{
+				throw new ArgumentException(
+					"A cancellable token is required when waiting for MediaPicker recovery.",
+					nameof(cancellationToken));
+			}
+
 			RecoveryWaiters.Add(waiter);
 		}
 
