@@ -330,6 +330,20 @@ if ($Phase -eq 'Setup') {
     exit 0
 }
 
+# ─── Sentinel check: verify Setup completed before running later phases ───
+if ($Phase -and $Phase -ne 'Setup') {
+    $sentinelDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    }
+    $sentinelFile = Join-Path $sentinelDir "setup-complete"
+    if (-not (Test-Path $sentinelFile)) {
+        Write-Error "Setup phase did not complete (sentinel not found at '$sentinelFile'). Cannot proceed with -Phase $Phase."
+        exit 1
+    }
+}
+
 # ─── Helper: Parse `dotnet test --logger "console;verbosity=detailed"` ──────
 # Extracts per-test results (Passed/Failed/Skipped) plus failure messages and
 # stack traces from raw stdout. Used by STEP 3 so the AI summary comment shows
@@ -1672,7 +1686,11 @@ if ($runCopilotReview) {
 
 # Restore gate result from file when running in phased mode
 if ($Phase -eq 'CopilotReview') {
-    $gateVerdictDir = Split-Path $TrustedScriptsDir -Parent
+    $gateVerdictDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    }
     $gateVerdictFile = Join-Path $gateVerdictDir "gate-result.txt"
     if (Test-Path $gateVerdictFile) {
         $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
@@ -1971,7 +1989,12 @@ if ($runPost) {
 
 # Restore gate result from file when running in phased mode
 if ($Phase -eq 'Post') {
-    $gateVerdictFile = Join-Path (Split-Path $TrustedScriptsDir -Parent) "gate-result.txt"
+    $gateVerdictDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    }
+    $gateVerdictFile = Join-Path $gateVerdictDir "gate-result.txt"
     if (Test-Path $gateVerdictFile) {
         $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
     } else {
