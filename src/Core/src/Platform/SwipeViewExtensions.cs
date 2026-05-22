@@ -11,15 +11,7 @@ namespace Microsoft.Maui.Platform
 		{
 			Color? backgroundColor = swipeItemMenuItem.Background?.ToColor();
 
-			if (backgroundColor == null)
-				return null;
-
-			// Auto-contrast tinting only applies to FontImageSource without an explicit color.
-			// For regular image sources (PNG, etc.) we preserve the original image colors.
-			if (swipeItemMenuItem.Source is not IFontImageSource fontImageSource)
-				return null;
-
-			if (fontImageSource.Color != null)
+			if (backgroundColor == null || (swipeItemMenuItem.Source is IFontImageSource fontImageSource && fontImageSource.Color != null))
 				return null;
 
 			var luminosity = 0.2126f * backgroundColor.Red + 0.7152f * backgroundColor.Green + 0.0722f * backgroundColor.Blue;
