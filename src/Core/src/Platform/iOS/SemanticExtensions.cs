@@ -86,40 +86,37 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			// For layout containers with a Hint set, synthesize an AccessibilityLabel from the MAUI
-			// virtual children's text so VoiceOver reads both the children's content AND the
-			// container's hint in a single announcement — matching Android TalkBack behavior.
-			// We read from the virtual view tree (not platformView.Subviews) to avoid timing issues:
-			// UpdateSemantics can be called before platform children are attached.
-			// Note: We gate on Hint only (not Description) to preserve the existing contract for
-			// Description-only layouts, which already read just the Description text today.
+			// For layout containers with a Hint set, decide on an AccessibilityLabel that gives
+			// VoiceOver the children's content (matching Android TalkBack behavior).
+			// - If the developer explicitly set Description, respect it as the label — don't
+			//   second-guess by appending children. This preserves the pre-fix contract for
+			//   apps that deliberately set Description as a curated summary.
+			// - If only Hint is set (no Description), synthesize a label from the children's
+			//   text so VoiceOver reads "[children], [hint]" instead of just "[hint]".
+			// We gate on Hint only (not Description) so Description-only layouts retain their
+			// existing legacy-path behavior.
 			if (view is ILayout layout &&
 				!string.IsNullOrWhiteSpace(semantics.Hint))
 			{
-				var synthesizedLabel = SynthesizeAccessibilityLabelFromChildren(layout);
-
-				if (!string.IsNullOrWhiteSpace(synthesizedLabel))
+				if (!string.IsNullOrWhiteSpace(semantics.Description))
 				{
-					// If there's an explicit Description, prepend it to the children's text
-					if (!string.IsNullOrWhiteSpace(semantics.Description))
-					{
-						platformView.AccessibilityLabel = $"{semantics.Description}, {synthesizedLabel}";
-					}
-					else
-					{
-						platformView.AccessibilityLabel = synthesizedLabel;
-					}
+					// Explicit Description wins — honor the developer's curated label.
+					platformView.AccessibilityLabel = semantics.Description;
 				}
 				else
 				{
-					// No children text found — fall back to Description only
-					platformView.AccessibilityLabel = semantics.Description;
+					// No explicit Description; synthesize from children so VoiceOver isn't left
+					// reading only the Hint (which would silence the layout's actual content).
+					var synthesizedLabel = SynthesizeAccessibilityLabelFromChildren(layout);
+					platformView.AccessibilityLabel = !string.IsNullOrWhiteSpace(synthesizedLabel)
+						? synthesizedLabel
+						: null;
 				}
 
 				platformView.AccessibilityHint = semantics.Hint;
 
 				// Make the container the primary accessibility element so VoiceOver announces
-				// "[children text], [hint]" as a single focus unit.
+				// "[label], [hint]" as a single focus unit.
 				platformView.IsAccessibilityElement = true;
 
 				// If a TapGestureRecognizer was wired up first, GesturePlatformManager may have
@@ -133,6 +130,21 @@ namespace Microsoft.Maui.Platform
 				// those types are not applicable here. Heading trait is explicitly applied below.
 				UpdateSemanticsHeading(platformView, semantics);
 				return;
+			}
+
+			// If a layout previously had Hint set (triggering the synthesis branch above which
+			// promotes the layout to an accessibility element) and the Hint/Description was later
+			// cleared, restore the layout to a non-leaf so VoiceOver can navigate into its children
+			// again. Layouts default to IsAccessibilityElement=false; the legacy path below only
+			// flips it to true and never back to false, so without this reset the layout would
+			// remain a silent leaf.
+			if (view is ILayout
+				&& platformView is not UIControl
+				&& string.IsNullOrWhiteSpace(semantics.Hint)
+				&& string.IsNullOrWhiteSpace(semantics.Description)
+				&& platformView.IsAccessibilityElement)
+			{
+				platformView.IsAccessibilityElement = false;
 			}
 
 			UpdateSemantics(platformView, semantics);

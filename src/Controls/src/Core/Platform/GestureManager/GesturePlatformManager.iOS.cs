@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 		WeakReference<PlatformView>? _platformView;
 		UIAccessibilityTrait _addedFlags;
 		bool? _defaultAccessibilityRespondsToUserInteraction;
+		bool? _defaultShouldGroupAccessibilityChildren;
 		bool _setShouldGroupAccessibilityChildren;
 		bool _setAccessibilityActivateCallback;
 
@@ -671,10 +672,22 @@ namespace Microsoft.Maui.Controls.Platform
 				// Skip if IsAccessibilityElement is already true (e.g. set by SemanticExtensions for a
 				// Hint/Description on this layout) — when the container is already a leaf accessibility
 				// element, ShouldGroupAccessibilityChildren is ignored by UIKit and would be redundant.
+				//
+				// LIMITATION (Path A — gesture-only, no Hint/Description): Setting
+				// ShouldGroupAccessibilityChildren = true alone does NOT make the layout focusable to
+				// VoiceOver; UIKit only focuses views whose IsAccessibilityElement is true. So for a
+				// tappable layout without any Semantics set, VoiceOver still navigates directly to the
+				// individual children, the Button trait above is silenced, and the
+				// AccessibilityActivateCallback registered below is never reached via VoiceOver.
+				// This is a pre-existing UIKit constraint, intentionally not addressed by this fix
+				// (which targets the Hint scenario from issue #34380).
 				if (!PlatformView.ShouldGroupAccessibilityChildren
 					&& !PlatformView.IsAccessibilityElement
 					&& _handler.VirtualView is global::Microsoft.Maui.ILayout)
 				{
+					// Capture the pre-existing value so cleanup can restore it (mirrors the
+					// _defaultAccessibilityRespondsToUserInteraction pattern below).
+					_defaultShouldGroupAccessibilityChildren = PlatformView.ShouldGroupAccessibilityChildren;
 					PlatformView.ShouldGroupAccessibilityChildren = true;
 					_setShouldGroupAccessibilityChildren = true;
 				}
@@ -706,6 +719,14 @@ namespace Microsoft.Maui.Controls.Platform
 						var view = manager._handler?.VirtualView as View;
 
 						if (view is null)
+						{
+							return false;
+						}
+
+						// Honor the same gates UIKit's touch dispatch would have applied. VoiceOver
+						// activation bypasses UIKit's hit-testing/touch path, so without these
+						// guards a disabled or input-transparent layout would still fire its tap.
+						if (!view.IsEnabled || view.InputTransparent)
 						{
 							return false;
 						}
@@ -969,7 +990,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_setShouldGroupAccessibilityChildren)
 			{
-				PlatformView.ShouldGroupAccessibilityChildren = false;
+				PlatformView.ShouldGroupAccessibilityChildren = _defaultShouldGroupAccessibilityChildren ?? false;
 			}
 
 			if (_setAccessibilityActivateCallback && PlatformView is Microsoft.Maui.Platform.MauiView mv)
@@ -979,6 +1000,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_setShouldGroupAccessibilityChildren = false;
 			_setAccessibilityActivateCallback = false;
+			_defaultShouldGroupAccessibilityChildren = null;
 		}
 
 		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
