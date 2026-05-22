@@ -18,6 +18,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 using System.Diagnostics.CodeAnalysis;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests.Memory;
 
@@ -150,7 +151,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
-	#if ANDROID
+#if ANDROID
 	[Fact("FlyoutPage Detail Navigation Does Not Leak")]
 	public async Task FlyoutPageDetailNavigationDoesNotLeak()
 	{
@@ -462,6 +463,68 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
 	}
 
+	// https://github.com/dotnet/maui/issues/35472
+	// CarouselViewController2 leaked because the block-based NSNotificationCenter observer token was
+	// discarded and the subsequent RemoveObserver(this,...) call targeted the wrong observer type.
+#if IOS || MACCATALYST
+	[Fact("CarouselViewController2 Controller Does Not Leak After Navigation Pop (Issue 35472)")]
+	public async Task CarouselViewController2ControllerDoesNotLeakAfterNavigationPop()
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+		WeakReference controllerReference = null;
+
+		var navPage = new NavigationPage(new ContentPage { Title = "Root" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			var carousel = new CarouselView2
+			{
+				ItemsSource = Enumerable.Range(1, 5).Select(static i => $"Item {i}").ToList(),
+				ItemTemplate = new DataTemplate(static () => new Label
+				{
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center
+				})
+			};
+
+			var page = new ContentPage { Content = carousel };
+			await navPage.Navigation.PushAsync(page);
+
+			// Allow the handler + controller to be fully created before capturing references.
+			await Task.Delay(500);
+
+			var handler = carousel.Handler as CarouselViewHandler2;
+			Assert.NotNull(handler);
+
+			viewReference = new WeakReference(carousel);
+			handlerReference = new WeakReference(handler);
+			controllerReference = new WeakReference(handler.Controller);
+
+			// Null locals so they don't keep objects alive across the scope boundary.
+			// page.Content still references carousel, so null page too.
+			handler = null;
+			carousel = null;
+			page = null;
+
+			await navPage.Navigation.PopAsync();
+		});
+
+		// Post the orientation notification to exercise the observer-removal path that was broken.
+		Foundation.NSNotificationCenter.DefaultCenter.PostNotificationName(
+			UIKit.UIDevice.OrientationDidChangeNotification,
+			UIKit.UIDevice.CurrentDevice);
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference, controllerReference);
+
+		Assert.False(viewReference.IsAlive, "CarouselView should have been garbage collected");
+		Assert.False(handlerReference.IsAlive, "CarouselViewHandler2 should have been garbage collected");
+		Assert.False(controllerReference.IsAlive, "CarouselViewController2 should have been garbage collected (orientation observer was not properly removed before fix)");
+	}
+#endif
+
 	[Theory("Cells Do Not Leak")]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TextCell))]
@@ -697,6 +760,28 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 
 		Assert.True(AnimationExtensions.TweenersCounter <= 2);
+	}
+
+	[Fact]
+	public async Task ShouldThrowTrueException()
+	{
+		var page = new ContentPage { Title = "Page 1" };
+
+		await CreateHandlerAndAddToWindow(new Window(page), async () =>
+		{
+			await OnLoadedAsync(page);
+
+		});
+
+		await Assert.ThrowsAsync<TrueException>(async () => await AssertionExtensions.WaitForGC(new WeakReference(page)));
+
+		GC.KeepAlive(page);
+	}
+
+	[Fact]
+	public async Task ShouldPassAlways()
+	{
+		await AssertionExtensions.WaitForGC(new WeakReference(new object()));
 	}
 }
 

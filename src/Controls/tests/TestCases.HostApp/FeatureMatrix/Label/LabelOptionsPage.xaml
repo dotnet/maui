@@ -284,6 +284,13 @@
                                  CheckedChanged="OnLineBreakModeChanged"
                                  AutomationId="LineBreakModeTailTruncation"/>
                 </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Label Text="Single Line Formatted Text"
+                           VerticalOptions="Center"/>
+                    <CheckBox x:Name="SimpleFormattedTextCheckBox"
+                              CheckedChanged="SimpleFormattedTextCheckBox_CheckedChanged"
+                              AutomationId="SimpleFormattedText"/>
+                </HorizontalStackLayout>
             </VerticalStackLayout>
         </Grid>
     </VerticalStackLayout>
