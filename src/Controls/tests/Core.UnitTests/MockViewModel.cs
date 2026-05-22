@@ -26,6 +26,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		bool _boolean;
+		public virtual bool Boolean
+		{
+			get { return _boolean; }
+			set
+			{
+				if (_boolean == value)
+					return;
+
+				_boolean = value;
+				OnPropertyChanged("Boolean");
+			}
+		}
+
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
