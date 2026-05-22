@@ -178,7 +178,7 @@ public class ResizetizerTests : BaseBuildTest
 	[Theory]
 	[InlineData("maui", "mauilib", true)]
 	[InlineData("maui", "mauilib", false)]
-	public void AdditionalPropertiesPassesColorToLibrary(string id, string libid, bool unpackaged)
+	public void AdditionalPropertiesSelectsImageInLibrary(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
 		// TODO: fix the tests as they have been disabled too long!
@@ -197,12 +197,12 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.True(DotnetInternal.New(libid, libDir, DotNetCurrent, output: _output),
 			$"Unable to create template {libid}. Check test output for errors.");
 
-		// add a project reference with AdditionalProperties to override the image color
+		// add a project reference with AdditionalProperties to select the alternate image
 		FileUtilities.ReplaceInFile(appFile,
 			"</Project>",
 			"""
 			<ItemGroup>
-				<ProjectReference Include="..\thelib\thelib.csproj" AdditionalProperties="LibraryImageColor=%23FF0000" />
+				<ProjectReference Include="..\thelib\thelib.csproj" AdditionalProperties="UseAlternateImage=true" />
 			</ItemGroup>
 			</Project>
 			""");
@@ -220,20 +220,21 @@ public class ResizetizerTests : BaseBuildTest
 				""");
 		}
 
-		// add the svg file to the library (white fill, so color tint is visible)
-		File.WriteAllText(Path.Combine(libDir, "the_image.svg"), BlankSvgContents);
+		// add two svg files to the library — the property selects which one is included
+		File.WriteAllText(Path.Combine(libDir, "default_image.svg"), BlankSvgContents);
+		File.WriteAllText(Path.Combine(libDir, "alternate_image.svg"), BlankSvgContents);
 
-		// add the <MauiImage> with Color controlled by a property
+		// add <MauiImage> that conditionally includes one file or the other based on the property
 		FileUtilities.ReplaceInFile(libFile,
 			"</Project>",
 			"""
 			<PropertyGroup>
 				<UseMaui>true</UseMaui>
 				<SingleProject>true</SingleProject>
-				<LibraryImageColor Condition="'$(LibraryImageColor)' == ''">#0000FF</LibraryImageColor>
 			</PropertyGroup>
 			<ItemGroup>
-				<MauiImage Include="the_image.svg" Color="$(LibraryImageColor)" />
+				<MauiImage Condition="'$(UseAlternateImage)' != 'true'" Include="default_image.svg" />
+				<MauiImage Condition="'$(UseAlternateImage)' == 'true'" Include="alternate_image.svg" />
 			</ItemGroup>
 			</Project>
 			""");
@@ -242,11 +243,18 @@ public class ResizetizerTests : BaseBuildTest
 		Assert.True(DotnetInternal.Build(appFile, "Debug", properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(appFile)} failed to build. Check test output/attachments for errors.");
 
-		// assert - image should exist (it's not excluded, just colored differently)
-		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\the_image.png")),
-			"Android was missing the image file.");
+		// assert - alternate_image should be collected (property was propagated)
+		Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\alternate_image.png")),
+			"Android was missing alternate_image — AdditionalProperties was not propagated.");
+		// assert - default_image should NOT be collected (it was excluded by the property)
+		Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-android\\resizetizer\\r\\drawable-mdpi\\default_image.png")),
+			"Android should NOT have default_image — AdditionalProperties should have selected the alternate.");
 		if (TestEnvironment.IsWindows)
-			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\the_image.scale-100.png")),
-				"Windows was missing the image file.");
+		{
+			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\alternate_image.scale-100.png")),
+				"Windows was missing alternate_image — AdditionalProperties was not propagated.");
+			Assert.False(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\default_image.scale-100.png")),
+				"Windows should NOT have default_image — AdditionalProperties should have selected the alternate.");
+		}
 	}
 }
