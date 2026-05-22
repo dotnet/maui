@@ -821,12 +821,20 @@ stages:
   - stage: RunDeepUITests
     displayName: 'Deep UI Tests (platform pool)'
     dependsOn: ReviewPR
-    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], 'NONE'))
+    # Prefer AI-refreshed categories from CopilotReview (RunReview) when available,
+    # falling back to Gate-detected categories (RunGate). RunReview is only set when
+    # the Tier 3 AI refresh actually changed the categories; otherwise it's empty.
+    condition: >-
+      and(
+        in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), ''),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'NONE')
+      )
     jobs:
       - job: RunUITests
         displayName: 'Run detected UI test categories'
         variables:
-          detectedCategories: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'] ]
+          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories']) ]
         # Use the SAME platform-pool selection logic as the CopilotReview
         # job — the deep-test agent should be the right OS for the
         # requested target platform.
