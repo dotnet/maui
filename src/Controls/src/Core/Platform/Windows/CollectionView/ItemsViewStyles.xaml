@@ -381,11 +381,35 @@
                 </ScrollViewer>
 
                 <!-- Transparent overlay canvas for the between-items drop indicator line.
-                     IsHitTestVisible=False so it never intercepts pointer events. -->
+                     IsHitTestVisible=False so it never intercepts pointer events.
+                     The two named children are template parts retrieved in OnApplyTemplate;
+                     their Canvas.Left/Top and Width/Height are set in code during DragOver. -->
                 <Canvas x:Name="PART_DropIndicatorCanvas"
                         IsHitTestVisible="False"
                         HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"/>
+                        VerticalAlignment="Stretch">
+
+                    <!-- Hollow circle head at the leading edge of the insertion line. -->
+                    <Border x:Name="PART_DropIndicatorHead"
+                            Width="12"
+                            Height="12"
+                            CornerRadius="6"
+                            Background="Transparent"
+                            BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                            BorderThickness="2"
+                            IsHitTestVisible="False"
+                            Visibility="Collapsed"
+                            Opacity="0"/>
+
+                    <!-- Accent-coloured line extending from the circle to the far edge. -->
+                    <Rectangle x:Name="PART_DropIndicatorLine"
+                               Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                               Height="2"
+                               IsHitTestVisible="False"
+                               Visibility="Collapsed"
+                               Opacity="0"/>
+
+                </Canvas>
 
                 </Grid>
 

@@ -219,18 +219,61 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		var count = args.NewItems.Count;
 		if (args.OldStartingIndex > args.NewStartingIndex)
 		{
-			for (int index = 0; index < count; index++)
+			for (int n = 0; n < count; n++)
 			{
-				Move(args.OldStartingIndex + index, args.NewStartingIndex + index);
+				Move(args.OldStartingIndex + n, args.NewStartingIndex + n);
 			}
 
 			return;
 		}
 
-		for (int index = count - 1; index >= 0; index--)
+		for (int n = count - 1; n >= 0; n--)
 		{
-			Move(args.OldStartingIndex + index, args.NewStartingIndex + index);
+			Move(args.OldStartingIndex + n, args.NewStartingIndex + n);
 		}
+	}
+
+	/// <summary>
+	/// Overrides <see cref="ObservableCollection{T}.MoveItem"/> to fire
+	/// <see cref="NotifyCollectionChangedAction.Remove"/> followed by
+	/// <see cref="NotifyCollectionChangedAction.Add"/> instead of the default
+	/// <see cref="NotifyCollectionChangedAction.Move"/> event.
+	/// <para>
+	/// CsWinRT projects <c>CollectionChanged(Move)</c> as <c>VectorChanged(Reset)</c>
+	/// because WinRT's <c>IVectorChangedEventArgs.CollectionChange</c> has no Move value.
+	/// When ItemsRepeater receives Reset it clears all realized containers, momentarily
+	/// collapses its height to zero, and the ScrollViewer auto-clamps its offset to zero —
+	/// the scroll-to-top bug.
+	/// </para>
+	/// <para>
+	/// Firing Remove + Add instead causes CsWinRT to emit
+	/// <c>VectorChanged(ItemRemoved)</c> + <c>VectorChanged(ItemInserted)</c>, which
+	/// ItemsRepeater handles by recycling only the moved container while preserving the
+	/// ScrollViewer offset. <see cref="_innerCollectionChange"/> (set by
+	/// <see cref="InnerCollectionChanged(NotifyCollectionChangedEventArgs)"/>) prevents
+	/// <see cref="TemplateCollectionChanged"/> from back-propagating these events to source.
+	/// </para>
+	/// </summary>
+	protected override void MoveItem(int oldIndex, int newIndex)
+	{
+		CheckReentrancy();
+
+		var item = this[oldIndex];
+
+		// Update the underlying list directly — same as the base class does before
+		// firing CollectionChanged(Move). We avoid calling base.MoveItem() so we
+		// control which events are raised.
+		Items.RemoveAt(oldIndex);
+		Items.Insert(newIndex, item);
+
+		// Fire Remove + Add in place of the default Move event.
+		// CollectionChanged(Remove) → CsWinRT → VectorChanged(ItemRemoved)
+		// CollectionChanged(Add)    → CsWinRT → VectorChanged(ItemInserted)
+		// Neither triggers VectorChanged(Reset), so ItemsRepeater preserves scroll position.
+		OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+			NotifyCollectionChangedAction.Remove, item, oldIndex));
+		OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+			NotifyCollectionChangedAction.Add, item, newIndex));
 	}
 
 	void Remove(NotifyCollectionChangedEventArgs args)

@@ -28,6 +28,14 @@ internal partial class MauiItemsView
 	bool _dragDropWired;
 	ItemsView? _mauiVirtualView;
 
+	/// <summary>
+	/// True while a drag/drop reorder mutation is in progress. Used by
+	/// <see cref="ItemsViewHandler2{TItemsView}"/> to skip <c>ApplyItemsUpdatingScrollMode</c>
+	/// during the collection change that results from the reorder, so the scroll position
+	/// is not reset to the first or last item by the items-updating scroll mode logic.
+	/// </summary>
+	internal bool IsReordering { get; private set; }
+
 	// Between-items drop indicator — circle head with "+" and a colored line on _dropIndicatorCanvas.
 	Border? _dropIndicatorHead;    // filled circle with "+" at the leading edge
 	Rectangle? _dropIndicatorLine; // accent-colored line extending from the circle
@@ -193,6 +201,7 @@ internal partial class MauiItemsView
 				{
 					ic.CanDrag = false;
 					ic.DragStarting -= ItemContainer_DragStarting;
+					ic.DropCompleted -= ItemContainer_DropCompleted;
 				}
 			}
 		}
@@ -224,20 +233,9 @@ internal partial class MauiItemsView
 		// can't keep this instance alive past disconnect.
 		ReorderCompleted = null;
 
-		// Remove indicator visuals from the canvas so they don't linger.
-		if (_dropIndicatorCanvas is not null)
-		{
-			if (_dropIndicatorHead is not null)
-			{
-				_dropIndicatorCanvas.Children.Remove(_dropIndicatorHead);
-				_dropIndicatorHead = null;
-			}
-			if (_dropIndicatorLine is not null)
-			{
-				_dropIndicatorCanvas.Children.Remove(_dropIndicatorLine);
-				_dropIndicatorLine = null;
-			}
-		}
+		// Hide the indicator visuals. They are template parts owned by the control
+		// template (declared in XAML), so we only need to collapse them — not remove.
+		HideInsertionIndicator();
 
 		_mauiVirtualView = null;
 		CleanupDragState();
@@ -304,6 +302,10 @@ internal partial class MauiItemsView
 		{
 			itemContainer.CanDrag = false;
 			itemContainer.DragStarting -= ItemContainer_DragStarting;
+			// Unsubscribe DropCompleted — it is a one-shot handler wired during
+			// DragStarting and must be removed here so that a recycled container
+			// doesn't carry a stale subscription into its next use.
+			itemContainer.DropCompleted -= ItemContainer_DropCompleted;
 			itemContainer.Tag = null;
 
 			// If the container being cleared is the one currently hidden as the drag
@@ -700,13 +702,26 @@ internal partial class MauiItemsView
 		// ObservableItemTemplateCollection2.InnerCollectionChanged relays this as a single Move
 		// on itself, which ItemsRepeater handles by repositioning the *existing* container without
 		// recycling it — no item refresh, no scroll position reset.
-		if (!TryMoveObservableCollection(itemsList, oldIndex, adjustedInsertionIndex))
+		//
+		// Additionally, IsReordering suppresses ItemsUpdatingScrollMode adjustments in
+		// ItemsViewHandler2.ItemsChanged. CollectionViewSource may convert the Move event
+		// to VectorChanged(Reset), which would otherwise cause StartBringItemIntoView(0)
+		// to fire and scroll the list back to the top.
+		IsReordering = true;
+		try
 		{
-			// Fallback for plain IList sources that don't expose Move.
-			var itemToMove = itemsList[oldIndex];
-			itemsList.RemoveAt(oldIndex);
-			adjustedInsertionIndex = Math.Clamp(adjustedInsertionIndex, 0, itemsList.Count);
-			itemsList.Insert(adjustedInsertionIndex, itemToMove);
+			if (!TryMoveObservableCollection(itemsList, oldIndex, adjustedInsertionIndex))
+			{
+				// Fallback for plain IList sources that don't expose Move.
+				var itemToMove = itemsList[oldIndex];
+				itemsList.RemoveAt(oldIndex);
+				adjustedInsertionIndex = Math.Clamp(adjustedInsertionIndex, 0, itemsList.Count);
+				itemsList.Insert(adjustedInsertionIndex, itemToMove);
+			}
+		}
+		finally
+		{
+			IsReordering = false;
 		}
 
 		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
@@ -870,22 +885,38 @@ internal partial class MauiItemsView
 				return false;
 			}
 
-			// Use Move when possible to fire a single CollectionChanged(Move) event,
-			// preventing ItemsRepeater from recycling containers and resetting scroll.
-			if (!TryMoveObservableCollection(sourceGroup, sourceItemIndex, adjustedTargetIndex))
+			IsReordering = true;
+			try
 			{
-				var item = sourceGroup[sourceItemIndex];
-				sourceGroup.RemoveAt(sourceItemIndex);
-				adjustedTargetIndex = Math.Clamp(adjustedTargetIndex, 0, sourceGroup.Count);
-				sourceGroup.Insert(adjustedTargetIndex, item);
+				// Use Move when possible to fire a single CollectionChanged(Move) event,
+				// preventing ItemsRepeater from recycling containers and resetting scroll.
+				if (!TryMoveObservableCollection(sourceGroup, sourceItemIndex, adjustedTargetIndex))
+				{
+					var item = sourceGroup[sourceItemIndex];
+					sourceGroup.RemoveAt(sourceItemIndex);
+					adjustedTargetIndex = Math.Clamp(adjustedTargetIndex, 0, sourceGroup.Count);
+					sourceGroup.Insert(adjustedTargetIndex, item);
+				}
+			}
+			finally
+			{
+				IsReordering = false;
 			}
 		}
 		else
 		{
-			var item = sourceGroup[sourceItemIndex];
-			sourceGroup.RemoveAt(sourceItemIndex);
-			targetItemIndex = Math.Clamp(targetItemIndex, 0, targetGroup.Count);
-			targetGroup.Insert(targetItemIndex, item);
+			IsReordering = true;
+			try
+			{
+				var item = sourceGroup[sourceItemIndex];
+				sourceGroup.RemoveAt(sourceItemIndex);
+				targetItemIndex = Math.Clamp(targetItemIndex, 0, targetGroup.Count);
+				targetGroup.Insert(targetItemIndex, item);
+			}
+			finally
+			{
+				IsReordering = false;
+			}
 		}
 
 		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
@@ -1217,6 +1248,7 @@ internal partial class MauiItemsView
 		_draggedItem = null;
 		_insertionIndex = -1;
 		_insertAfter = false;
+		IsReordering = false;
 		StopAutoScroll();
 	}
 
@@ -1394,7 +1426,7 @@ internal partial class MauiItemsView
 	/// </summary>
 	void UpdateInsertionIndicator(ItemContainer target, bool insertAfter)
 	{
-		if (_dropIndicatorCanvas is null)
+		if (_dropIndicatorHead is null || _dropIndicatorLine is null)
 			return;
 
 		// Skip the source slot itself.
@@ -1402,40 +1434,6 @@ internal partial class MauiItemsView
 		{
 			HideInsertionIndicator();
 			return;
-		}
-
-		var accentBrush = TryGetAccentBrush();
-
-		// ── Lazily build the indicator visuals once ───────────────────────────
-		if (_dropIndicatorHead is null || _dropIndicatorLine is null)
-		{
-			// Hollow circle (outline only, transparent fill) — matches Teams/Notion drag indicator style.
-			_dropIndicatorHead = new Border
-			{
-				Width = IndicatorHeadSize,
-				Height = IndicatorHeadSize,
-				CornerRadius = new CornerRadius(IndicatorHeadSize / 2),
-				Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
-				BorderBrush = accentBrush,
-				BorderThickness = new Thickness(IndicatorHeadStroke),
-				IsHitTestVisible = false,
-			};
-
-			_dropIndicatorLine = new Rectangle
-			{
-				Fill = accentBrush,
-				Height = IndicatorLineThickness,
-				IsHitTestVisible = false,
-			};
-
-			_dropIndicatorCanvas.Children.Add(_dropIndicatorHead);
-			_dropIndicatorCanvas.Children.Add(_dropIndicatorLine);
-		}
-		else
-		{
-			// Refresh brushes on every update so theme changes are reflected.
-			_dropIndicatorHead.BorderBrush = accentBrush;
-			_dropIndicatorLine.Fill = accentBrush;
 		}
 
 		// ── Calculate position in canvas coordinates ──────────────────────────
@@ -1548,37 +1546,8 @@ internal partial class MauiItemsView
 
 	// Indicator geometry constants.
 	const double IndicatorHeadSize = 12.0;    // hollow circle outer diameter in px
-	const double IndicatorHeadStroke = 2.0;   // circle border/stroke thickness
 	const double IndicatorHeadGap = 2.0;      // gap between circle and line
 	const double IndicatorLineThickness = 2.0;
-
-	static Microsoft.UI.Xaml.Media.Brush TryGetAccentBrush()
-	{
-		try
-		{
-			var resources = Microsoft.UI.Xaml.Application.Current.Resources;
-
-			// Prefer the WinUI 3 semantic brush — automatically adapts to the user's
-			// accent color and light/dark theme (Windows 11 design language).
-			if (resources.TryGetValue("AccentFillColorDefaultBrush", out var brush) &&
-				brush is Microsoft.UI.Xaml.Media.SolidColorBrush accentBrush)
-			{
-				return accentBrush;
-			}
-
-			// Secondary fallback: raw accent color token.
-			if (resources.TryGetValue("SystemAccentColor", out var raw) &&
-				raw is global::Windows.UI.Color accentColor)
-			{
-				return new Microsoft.UI.Xaml.Media.SolidColorBrush(accentColor);
-			}
-		}
-		catch { }
-
-		// Final fallback: Windows 11 default accent blue.
-		return new Microsoft.UI.Xaml.Media.SolidColorBrush(
-			global::Windows.UI.Color.FromArgb(255, 0, 95, 184)); // #005FB8
-	}
 
 	#endregion
 

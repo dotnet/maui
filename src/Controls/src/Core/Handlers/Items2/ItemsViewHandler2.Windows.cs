@@ -513,6 +513,18 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			_lastRemainingItemsThresholdIndex = -1;
 		}
 
+		// During a drag/drop reorder, suppress ApplyItemsUpdatingScrollMode.
+		// The reorder mutates the collection via Move (or Remove+Insert fallback), which can
+		// cause CollectionViewSource to fire VectorChanged(Reset) to ItemsRepeater. If the
+		// ItemsUpdatingScrollMode is KeepItemsInView or KeepLastItemInView, that would trigger
+		// StartBringItemIntoView(0) or StartBringItemIntoView(lastIndex) and scroll the list.
+		// The reorder already handles layout via its own UpdateLayout() + UpdateAllContainerIndices()
+		// dispatcher callback, so skipping the scroll adjustment here is safe.
+		if ((PlatformView as MauiItemsView)?.IsReordering == true)
+		{
+			return;
+		}
+
 		if (!_scrollUpdatePending && PlatformView is not null)
 		{
 			_scrollUpdatePending = true;

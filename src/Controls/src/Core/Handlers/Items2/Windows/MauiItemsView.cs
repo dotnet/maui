@@ -179,6 +179,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
 		_dropIndicatorCanvas = GetTemplateChild("PART_DropIndicatorCanvas") as Canvas;
+		_dropIndicatorHead = GetTemplateChild("PART_DropIndicatorHead") as Border;
+		_dropIndicatorLine = GetTemplateChild("PART_DropIndicatorLine") as Rectangle;
 
 		// Also null out the inner ItemsRepeater's own provider directly — the
 		// TemplateBinding {x:Null} in XAML may be evaluated before WinUI assigns
