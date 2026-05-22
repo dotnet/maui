@@ -87,6 +87,97 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
+		public async Task Recovered_Results_Public_Read_Prunes_Record_With_Missing_File()
+		{
+			var missingPath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+			MediaPickerRecoveryStore.WriteRecoveredResults([
+				new RecoveredMediaPickerRecord("missing", RecoveredMediaPickerResultKind.CapturePhoto, [missingPath])
+			]);
+
+			var results = await MediaPicker.GetRecoveredMediaPickerResultsAsync();
+
+			Assert.Empty(results);
+			Assert.Empty(MediaPickerRecoveryStore.ReadRecoveredResults());
+			Assert.Null(Preferences.Get(RecoveredResultsPreferenceKey, null, RecoveryPreferencesSharedName));
+		}
+
+		[Fact]
+		public async Task Recovered_Results_Public_Read_Prunes_Missing_File_Paths_From_Record()
+		{
+			var availablePath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var missingPath = CreateMissingMediaFilePath(FileExtensions.Jpg);
+			MediaPickerRecoveryStore.WriteRecoveredResults([
+				new RecoveredMediaPickerRecord(
+					"partial",
+					RecoveredMediaPickerResultKind.PickPhotos,
+					[missingPath, availablePath])
+			]);
+
+			var results = await MediaPicker.GetRecoveredMediaPickerResultsAsync();
+
+			var result = Assert.Single(results);
+			Assert.Equal("partial", result.Id);
+			Assert.Equal(availablePath, GetSingleRecoveredFile(result).FullPath);
+
+			var storedResult = Assert.Single(MediaPickerRecoveryStore.ReadRecoveredResults());
+			Assert.Equal("partial", storedResult.Id);
+			Assert.Equal(availablePath, Assert.Single(storedResult.FilePaths));
+		}
+
+		[Fact]
+		public async Task Recovered_Results_Public_Read_Caps_Stored_Records_To_Newest()
+		{
+			var records = Enumerable.Range(0, MediaPickerRecoveryManager.MaxRecoveredResultCount + 3)
+				.Select(index => new RecoveredMediaPickerRecord(
+					$"result-{index}",
+					RecoveredMediaPickerResultKind.CaptureVideo,
+					[CreateNonEmptyMediaFile(FileExtensions.Mp4)]))
+				.ToList();
+			MediaPickerRecoveryStore.WriteRecoveredResults(records);
+
+			var results = await MediaPicker.GetRecoveredMediaPickerResultsAsync();
+
+			var expectedIds = records
+				.Skip(3)
+				.Select(record => record.Id)
+				.ToArray();
+			Assert.Equal(expectedIds, results.Select(result => result.Id).ToArray());
+			Assert.Equal(expectedIds, MediaPickerRecoveryStore.ReadRecoveredResults().Select(result => result.Id).ToArray());
+		}
+
+		[Fact]
+		public async Task Recovered_Result_Publish_Caps_Stored_Records_To_Newest()
+		{
+			var existingRecords = Enumerable.Range(0, MediaPickerRecoveryManager.MaxRecoveredResultCount)
+				.Select(index => new RecoveredMediaPickerRecord(
+					$"existing-{index}",
+					RecoveredMediaPickerResultKind.CaptureVideo,
+					[CreateNonEmptyMediaFile(FileExtensions.Mp4)]))
+				.ToList();
+			MediaPickerRecoveryStore.WriteRecoveredResults(existingRecords);
+
+			var capturePath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pendingCapture = MediaPickerRecoveryManager.BeginOperation(
+				RecoveredMediaPickerResultKind.CapturePhoto,
+				[capturePath],
+				PersistedPhotoProcessingOptions.Default);
+
+			MediaPickerRecoveryManager.RecordCaptureCallbackResult(RecoveredMediaPickerResultKind.CapturePhoto, true);
+			SimulateProcessRecreation();
+
+			var results = await MediaPicker.GetRecoveredMediaPickerResultsAsync();
+
+			Assert.Equal(MediaPickerRecoveryManager.MaxRecoveredResultCount, results.Count);
+			Assert.DoesNotContain(results, result => result.Id == existingRecords[0].Id);
+			Assert.Equal(pendingCapture.Id, results[results.Count - 1].Id);
+
+			var storedResults = MediaPickerRecoveryStore.ReadRecoveredResults();
+			Assert.Equal(MediaPickerRecoveryManager.MaxRecoveredResultCount, storedResults.Count);
+			Assert.DoesNotContain(storedResults, result => result.Id == existingRecords[0].Id);
+			Assert.Equal(pendingCapture.Id, storedResults[storedResults.Count - 1].Id);
+		}
+
+		[Fact]
 		public async Task Canceled_Capture_Clears_Active_State_Without_Recovered_Result()
 		{
 			var capturePath = CreateNonEmptyMediaFile(FileExtensions.Mp4);
@@ -667,7 +758,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		public void Pick_Callback_Lost_Active_Operation_Race_Releases_Persisted_Uri_Access()
 		{
 			var pickUri = AndroidUri.Parse("content://maui-test/picked-media") ?? throw new InvalidOperationException("Unable to create picker URI.");
-			PendingMediaPickerOperation? pendingPick = null;
+			PendingMediaPickerOperation pendingPick = null;
 			using var permissions = TrackPickerUriPermissions(_ =>
 			{
 				if (pendingPick is not null)
@@ -1726,7 +1817,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		static System.Collections.IList GetRecoveryWaiters()
 			=> GetPrivateStaticField<System.Collections.IList>("RecoveryWaiters");
 
-		static PickerUriPermissionTracker TrackPickerUriPermissions(Action<AndroidUri>? onPersist = null)
+		static PickerUriPermissionTracker TrackPickerUriPermissions(Action<AndroidUri> onPersist = null)
 		{
 			var tracker = new PickerUriPermissionTracker(onPersist);
 			MediaPickerRecoveryManager.SetPickerUriPermissionHandlersForTests(tracker.Persist, tracker.Release);
@@ -1753,11 +1844,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 		sealed class PickerUriPermissionTracker : IDisposable
 		{
-			readonly Action<AndroidUri>? onPersist;
+			readonly Action<AndroidUri> onPersist;
 			readonly List<string> persisted = [];
 			readonly List<string> released = [];
 
-			public PickerUriPermissionTracker(Action<AndroidUri>? onPersist)
+			public PickerUriPermissionTracker(Action<AndroidUri> onPersist)
 			{
 				this.onPersist = onPersist;
 			}

@@ -27,6 +27,8 @@ enum PendingMediaPickerState
 /// </summary>
 internal static class MediaPickerRecoveryManager
 {
+	internal const int MaxRecoveredResultCount = 32;
+
 	static readonly Lock Locker = new();
 	static readonly HashSet<string> InProcessOperationIds = new(StringComparer.Ordinal);
 	static readonly List<MediaPickerRecoveryWaiter> RecoveryWaiters = [];
@@ -692,7 +694,7 @@ internal static class MediaPickerRecoveryManager
 			recoveredResults.RemoveAll(result => string.Equals(result.Id, recoveredResult.Id, StringComparison.Ordinal));
 			recoveredResults.Add(recoveredResult);
 
-			MediaPickerRecoveryStore.WriteRecoveredResults(recoveredResults);
+			MediaPickerRecoveryStore.WriteRecoveredResults(NormalizeRecoveredResults(recoveredResults));
 			_ = ClearActiveOperationUnderLock(operation);
 		}
 	}
@@ -717,9 +719,70 @@ internal static class MediaPickerRecoveryManager
 	}
 
 	static IReadOnlyList<RecoveredMediaPickerResult> ReadPublicRecoveredResultsUnderLock()
-		=> MediaPickerRecoveryStore.ReadRecoveredResults()
+		=> ReadNormalizedRecoveredResultsUnderLock()
 			.Select(result => result.ToPublicResult())
 			.ToArray();
+
+	static List<RecoveredMediaPickerRecord> ReadNormalizedRecoveredResultsUnderLock()
+	{
+		var results = MediaPickerRecoveryStore.ReadRecoveredResults();
+		var normalizedResults = NormalizeRecoveredResults(results);
+
+		if (!AreRecoveredResultsEqual(results, normalizedResults))
+		{
+			MediaPickerRecoveryStore.WriteRecoveredResults(normalizedResults);
+		}
+
+		return normalizedResults;
+	}
+
+	static List<RecoveredMediaPickerRecord> NormalizeRecoveredResults(IReadOnlyList<RecoveredMediaPickerRecord> results)
+	{
+		var normalizedResults = new List<RecoveredMediaPickerRecord>();
+
+		foreach (var result in results)
+		{
+			var availableFilePaths = result.FilePaths
+				.Where(IsFileAvailable)
+				.ToArray();
+
+			if (availableFilePaths.Length > 0)
+			{
+				normalizedResults.Add(new RecoveredMediaPickerRecord(result.Id, result.Kind, availableFilePaths));
+			}
+		}
+
+		var excessCount = normalizedResults.Count - MaxRecoveredResultCount;
+		if (excessCount > 0)
+		{
+			normalizedResults.RemoveRange(0, excessCount);
+		}
+
+		return normalizedResults;
+	}
+
+	static bool AreRecoveredResultsEqual(IReadOnlyList<RecoveredMediaPickerRecord> first, IReadOnlyList<RecoveredMediaPickerRecord> second)
+	{
+		if (first.Count != second.Count)
+		{
+			return false;
+		}
+
+		for (var i = 0; i < first.Count; i++)
+		{
+			var firstResult = first[i];
+			var secondResult = second[i];
+
+			if (!string.Equals(firstResult.Id, secondResult.Id, StringComparison.Ordinal) ||
+				firstResult.Kind != secondResult.Kind ||
+				!firstResult.FilePaths.SequenceEqual(secondResult.FilePaths))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 	static long GetRecoveryReconciliationGeneration()
 	{

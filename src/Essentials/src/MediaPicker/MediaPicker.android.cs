@@ -135,8 +135,8 @@ namespace Microsoft.Maui.Media
 			if (!PlatformUtils.IsIntentSupported(captureIntent))
 				throw new FeatureNotSupportedException($"Either there was no camera on the device or '{captureIntent.Action}' was not added to the <queries> element in the app's manifest file. See more: https://developer.android.com/about/versions/11/privacy/package-visibility");
 
-			captureIntent.AddFlags(ActivityFlags.GrantReadUriPermission);
-			captureIntent.AddFlags(ActivityFlags.GrantWriteUriPermission);
+			captureIntent.AddFlags(global::Android.Content.ActivityFlags.GrantReadUriPermission);
+			captureIntent.AddFlags(global::Android.Content.ActivityFlags.GrantWriteUriPermission);
 
 			try
 			{
