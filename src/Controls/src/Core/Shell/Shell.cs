@@ -942,7 +942,7 @@ namespace Microsoft.Maui.Controls
 			shellContent = shellContent ?? shellSection?.CurrentItem;
 
 			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
-				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+				SetValueFromRenderer(FlyoutIsPresentedProperty, BooleanBoxes.FalseBox);
 
 			if (shellSection == null)
 				shellItem.PropertyChanged += OnShellItemPropertyChanged;
