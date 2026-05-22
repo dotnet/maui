@@ -40,22 +40,25 @@ namespace Microsoft.Maui.Platform
 
             var state = s_stateTable.GetOrCreateValue(view);
 
+            // Single ancestor walk up front — bail early if no AppBarLayout exists.
+            // This avoids registering a ViewTreeObserver listener on pages without an app bar.
+            var appBar = FindAppBarLayout(view, out bool hasAncestorScrollView);
+            if (hasAncestorScrollView || appBar is null)
+            {
+                return;
+            }
+
             // When inside a CarouselView, ViewPager2 pre-loads adjacent off-screen pages,
             // so their ScrollViews also attach. Only the on-screen page's ScrollView should
             // claim the lift target. GetGlobalVisibleRect returns false if the view is
             // entirely outside the clipped viewport (e.g. a pre-loaded carousel page).
-            if (!view.GetGlobalVisibleRect(state.VisibleRect))
+            if (view.GetGlobalVisibleRect(state.VisibleRect))
             {
-                // Off-screen — start listening for parent scroll changes so we
-                // can claim the lift target when the page scrolls into view.
-                StartListeningForParentScrollChanges(view, state);
-                return;
+                SetAppBarLiftTarget(view, state, appBar);
             }
 
-            TrySetAppBarLiftTarget(view, state);
-
-            // Listen for parent scroll changes to detect when we go off-screen
-            // (e.g. user swipes to another carousel page).
+            // Listen for parent scroll changes to detect carousel page transitions.
+            // We only reach here when an AppBarLayout was found above.
             StartListeningForParentScrollChanges(view, state);
         }
 
@@ -89,7 +92,7 @@ namespace Microsoft.Maui.Platform
 
         static void TrySetAppBarLiftTarget(View view, AppBarLiftState state)
         {
-            // Single ancestor walk: find the AppBarLayout while also checking
+            // Ancestor walk to find the AppBarLayout while also checking
             // whether a MauiScrollView ancestor exists (which should own the
             // lift target instead of this view).
             var appBar = FindAppBarLayout(view, out bool hasAncestorScrollView);
@@ -98,6 +101,11 @@ namespace Microsoft.Maui.Platform
                 return;
             }
 
+            SetAppBarLiftTarget(view, state, appBar);
+        }
+
+        static void SetAppBarLiftTarget(View view, AppBarLiftState state, AppBarLayout appBar)
+        {
             if (view.Id == View.NoId)
             {
                 // LiftOnScrollTargetViewId requires a non-NoId view id.

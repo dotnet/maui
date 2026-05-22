@@ -75,12 +75,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void OnDetachedFromWindow()
 		{
-			base.OnDetachedFromWindow();
-
+			// Clean up AppBar listener while the ViewTreeObserver is still valid.
 			if (RuntimeFeature.IsMaterial3Enabled)
 			{
 				ClearAppBarLiftTargetAndPendingPost();
 			}
+
+			base.OnDetachedFromWindow();
 		}
 
 		protected override void OnVisibilityChanged(AView changedView, ViewStates visibility)

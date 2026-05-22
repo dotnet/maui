@@ -85,16 +85,18 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnDetachedFromWindow()
 		{
+			// Clean up AppBar listener while the ViewTreeObserver is still valid.
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				ClearAppBarLiftTargetAndPendingPost();
+			}
+
 			base.OnDetachedFromWindow();
 			if (_isInsetListenerSet)
 				MauiWindowInsetListenerExtensions.RemoveMauiWindowInsetListener(this, _context);
 
 			_isInsetListenerSet = false;
 			_didSafeAreaEdgeConfigurationChange = true;
-			if (RuntimeFeature.IsMaterial3Enabled)
-			{
-				ClearAppBarLiftTargetAndPendingPost();
-			}
 		}
 
 		protected override void OnVisibilityChanged(View changedView, ViewStates visibility)
