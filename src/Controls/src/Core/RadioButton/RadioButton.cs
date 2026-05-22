@@ -472,7 +472,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (IsEnabled)
 			{
-				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+				SetValue(IsCheckedProperty, BooleanBoxes.TrueBox, specificity: SetterSpecificity.FromHandler);
 			}
 		}
 

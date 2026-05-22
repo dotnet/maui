@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (page is IFlyoutPageController fpc && fpc.ShouldShowSplitMode)
 			{
-				page.SetValue(IsPresentedProperty, true);
+				page.SetValue(IsPresentedProperty, BooleanBoxes.TrueBox);
 				if (page.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default)
 					fpc.CanChangeIsPresented = false;
 			}
