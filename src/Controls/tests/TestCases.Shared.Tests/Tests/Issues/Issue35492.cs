@@ -17,10 +17,10 @@ public class Issue35492 : _IssuesUITest
 		App.WaitForElement("PushPageButton");
 		App.Tap("PushPageButton");
 		App.WaitForElement("TestCollectionView");
-		App.Back();
+		App.TapBackArrow();
 		App.WaitForElement("PushPageButton");
 		App.Tap("ForceGCButton");
-		Thread.Sleep(1000); // Wait a moment for the GC to do its work
+		Thread.Sleep(3000); // Wait a moment for the GC to do its work
 		var summaryText = App.FindElement("SummaryLabel").GetText();
 		Assert.That(summaryText, Is.EqualTo($"Alive count: 0/1"), "Expected all pushed pages to be collectable after forcing GC.");
 	}

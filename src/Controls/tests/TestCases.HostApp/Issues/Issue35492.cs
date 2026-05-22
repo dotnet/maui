@@ -28,7 +28,6 @@ sealed class Issue35492MainPage : ContentPage
  
     public Issue35492MainPage()
     {
-        Title = "Issue 35492";
         BackgroundColor = Colors.White;
  
         _pageCountLabel = new Label
@@ -112,7 +111,7 @@ sealed class Issue35492MainPage : ContentPage
     {
         GC.Collect();
         GC.WaitForPendingFinalizers();
-        GC.Collect();
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: false);
         UpdateAliveCount();
     }
  
@@ -135,7 +134,6 @@ sealed class Issue35492CollectionPage : ContentPage
  
     public Issue35492CollectionPage()
     {
-        Title = "CollectionView Border Repro";
         Content = BuildCollectionView(attachPageHandler: true);
     }
  
