@@ -528,24 +528,45 @@ internal partial class MauiItemsView
 
 	/// <summary>
 	/// Attempts to call <see cref="System.Collections.ObjectModel.ObservableCollection{T}.Move(int, int)"/>
-	/// without reflection. We pattern-match against the closed generic types the
-	/// MAUI codebase realistically encounters (object and common reference types)
-	/// so the call is trim-safe — no dynamic member lookup is needed.
+	/// on the list. Using <c>Move</c> fires a single <c>CollectionChanged(Action=Move)</c> event
+	/// instead of two separate Remove + Add events, which allows <see cref="ItemsRepeater"/> to
+	/// reposition the existing container in-place without recycling it — preventing item refresh
+	/// and scroll position resets on drop.
 	///
-	/// Returning <c>false</c> is harmless: the caller falls back to
-	/// <c>RemoveAt</c> + <c>Insert</c>, which produces correct results but emits
-	/// two NotifyCollectionChanged events instead of one.
+	/// The fast path handles <c>ObservableCollection&lt;object&gt;</c> without reflection.
+	/// The general path uses reflection to call <c>Move(int, int)</c> on any
+	/// <c>ObservableCollection&lt;T&gt;</c> type. This is intentional for a drag/drop handler
+	/// in Windows-specific code where AOT trimming is not a concern.
+	///
+	/// Returns <c>false</c> when the collection does not expose <c>Move</c>; the caller
+	/// falls back to <c>RemoveAt</c> + <c>Insert</c>.
 	/// </summary>
 	static bool TryMoveObservableCollection(IList list, int oldIndex, int newIndex)
 	{
-		switch (list)
+		// Fast path: no reflection needed for the common MAUI binding source type.
+		if (list is System.Collections.ObjectModel.ObservableCollection<object> oc)
 		{
-			case System.Collections.ObjectModel.ObservableCollection<object> oc:
-				oc.Move(oldIndex, newIndex);
-				return true;
-			default:
-				return false;
+			oc.Move(oldIndex, newIndex);
+			return true;
 		}
+
+		// General path: ObservableCollection<T> for any T.
+		// Reflection is used intentionally here — ObservableCollection<T>.Move is a
+		// public, stable API and this code runs only during interactive drag/drop on Windows.
+		var moveMethod = list.GetType().GetMethod(
+			"Move",
+			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+			null,
+			new[] { typeof(int), typeof(int) },
+			null);
+
+		if (moveMethod is not null)
+		{
+			moveMethod.Invoke(list, new object[] { oldIndex, newIndex });
+			return true;
+		}
+
+		return false;
 	}
 
 	void ScrollViewer_DragLeave(object sender, UI.Xaml.DragEventArgs e)
@@ -668,22 +689,30 @@ internal partial class MauiItemsView
 			return false;
 		}
 
-		var itemToMove = itemsList[oldIndex];
-		itemsList.RemoveAt(oldIndex);
-		adjustedInsertionIndex = Math.Clamp(adjustedInsertionIndex, 0, itemsList.Count);
-		itemsList.Insert(adjustedInsertionIndex, itemToMove);
+		// Prefer Move over RemoveAt + Insert.
+		//
+		// RemoveAt fires CollectionChanged(Remove) → ObservableItemTemplateCollection2 relays it to
+		// ItemsRepeater which *recycles* the container at that index.
+		// Insert fires CollectionChanged(Add)    → ItemsRepeater *creates a brand-new* container,
+		// re-binds the item from scratch, and may scroll to bring the new item into view.
+		//
+		// ObservableCollection<T>.Move fires a *single* CollectionChanged(Move) event.
+		// ObservableItemTemplateCollection2.InnerCollectionChanged relays this as a single Move
+		// on itself, which ItemsRepeater handles by repositioning the *existing* container without
+		// recycling it — no item refresh, no scroll position reset.
+		if (!TryMoveObservableCollection(itemsList, oldIndex, adjustedInsertionIndex))
+		{
+			// Fallback for plain IList sources that don't expose Move.
+			var itemToMove = itemsList[oldIndex];
+			itemsList.RemoveAt(oldIndex);
+			adjustedInsertionIndex = Math.Clamp(adjustedInsertionIndex, 0, itemsList.Count);
+			itemsList.Insert(adjustedInsertionIndex, itemToMove);
+		}
 
-		// Capture the moved item by reference so the async callback can find its
-		// container by identity. Using the index is unsafe — another reorder or
-		// collection change between now and the callback makes it stale.
-		var movedItem = itemToMove is ItemTemplateContext2 itc ? itc.Item : itemToMove;
 		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
 		{
 			ItemsRepeaterControl?.UpdateLayout();
 			UpdateAllContainerIndices();
-
-			var container = FindContainerByItem(movedItem);
-			container?.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = true });
 		});
 
 		return true;
@@ -841,10 +870,15 @@ internal partial class MauiItemsView
 				return false;
 			}
 
-			var item = sourceGroup[sourceItemIndex];
-			sourceGroup.RemoveAt(sourceItemIndex);
-			adjustedTargetIndex = Math.Clamp(adjustedTargetIndex, 0, sourceGroup.Count);
-			sourceGroup.Insert(adjustedTargetIndex, item);
+			// Use Move when possible to fire a single CollectionChanged(Move) event,
+			// preventing ItemsRepeater from recycling containers and resetting scroll.
+			if (!TryMoveObservableCollection(sourceGroup, sourceItemIndex, adjustedTargetIndex))
+			{
+				var item = sourceGroup[sourceItemIndex];
+				sourceGroup.RemoveAt(sourceItemIndex);
+				adjustedTargetIndex = Math.Clamp(adjustedTargetIndex, 0, sourceGroup.Count);
+				sourceGroup.Insert(adjustedTargetIndex, item);
+			}
 		}
 		else
 		{
