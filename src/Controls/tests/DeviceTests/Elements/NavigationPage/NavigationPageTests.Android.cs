@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AndroidX.CoordinatorLayout.Widget;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -12,6 +13,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using AndroidX.Core.View;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
@@ -109,6 +111,102 @@ namespace Microsoft.Maui.DeviceTests
 					fragmentManagerField.GetValue(tab2SnManager) == null,
 					message: "StackNavigationManager fields were not cleared after Disconnect()");
 			});
+		}
+
+		[Fact(DisplayName = "NavigationPage push to hidden navigation bar clears app bar inset padding")]
+		public async Task PushingToPageWithoutNavigationBarClearsAppBarInsetPadding()
+		{
+			SetupBuilder();
+			const int statusBarTopInset = 24;
+			const int displayCutoutTopInset = 96;
+
+			var rootPage = new ContentPage
+			{
+				Title = "Visible Page",
+				Content = new Label { Text = "Root Content" }
+			};
+
+			var hiddenNavBarPage = new ContentPage
+			{
+				Title = "Hidden Page",
+				Content = new Label { Text = "Hidden Content" }
+			};
+
+			NavigationPage.SetHasNavigationBar(hiddenNavBarPage, false);
+
+			var syntheticInsets = CreateTopCutoutInsets(statusBarTopInset, displayCutoutTopInset);
+			var navPage = new NavigationPage(rootPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnLoadedAsync(rootPage);
+				await OnNavigatedToAsync(rootPage);
+
+				var platformToolbar = GetPlatformToolbar(handler);
+				var rootCoordinator = handler.MauiContext?.GetNavigationRootManager()?.RootView as CoordinatorLayout;
+				var appBar = rootCoordinator?.FindViewById<AppBarLayout>(Resource.Id.navigationlayout_appbar);
+				var listener = new MauiWindowInsetListener();
+
+				Assert.NotNull(platformToolbar);
+				Assert.NotNull(rootCoordinator);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => platformToolbar.LayoutParameters?.Height > 0,
+					timeout: 2000,
+					message: "Toolbar did not render before navigating to the page with the navigation bar hidden.");
+
+				var insetsWhenVisible = listener.OnApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => appBar.PaddingTop == displayCutoutTopInset,
+					timeout: 2000,
+					message: "AppBar never received the synthetic display cutout top inset while the NavigationPage navigation bar was visible.");
+
+				AssertTopInsets(insetsWhenVisible, expectedSystemBarsTop: 0, expectedDisplayCutoutTop: 0,
+					message: "Visible NavigationPage app bar should consume the synthetic top insets.");
+
+				await navPage.Navigation.PushAsync(hiddenNavBarPage);
+				await OnLoadedAsync(hiddenNavBarPage);
+				await OnNavigatedToAsync(hiddenNavBarPage);
+
+				await AssertEventually(() =>
+				{
+					var currentToolbar = GetPlatformToolbar(handler);
+					return currentToolbar?.LayoutParameters?.Height == 0 && currentToolbar.Height == 0;
+				},
+					timeout: 2000,
+					message: "Toolbar did not fully collapse after navigating to a page with NavigationPage.HasNavigationBar set to false.");
+
+				var insetsWhenHidden = listener.OnApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => appBar.PaddingTop == 0,
+					timeout: 2000,
+					message: "AppBar retained top inset padding after navigating to a page with the NavigationPage navigation bar hidden.");
+
+				AssertTopInsets(insetsWhenHidden,
+					expectedSystemBarsTop: statusBarTopInset,
+					expectedDisplayCutoutTop: displayCutoutTopInset,
+					message: "Hidden NavigationPage app bar should stop consuming the synthetic top insets.");
+			});
+		}
+
+		static WindowInsetsCompat CreateTopCutoutInsets(int statusBarTopInset, int displayCutoutTopInset)
+		{
+			return new WindowInsetsCompat.Builder()
+				.SetInsets(WindowInsetsCompat.Type.SystemBars(), AndroidX.Core.Graphics.Insets.Of(0, statusBarTopInset, 0, 0))
+				.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), AndroidX.Core.Graphics.Insets.Of(0, displayCutoutTopInset, 0, 0))
+				.Build();
+		}
+
+		static void AssertTopInsets(WindowInsetsCompat insets, int expectedSystemBarsTop, int expectedDisplayCutoutTop, string message)
+		{
+			Assert.NotNull(insets);
+
+			var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
+			var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
+
+			Assert.True(
+				(systemBars?.Top ?? 0) == expectedSystemBarsTop && (displayCutout?.Top ?? 0) == expectedDisplayCutoutTop,
+				$"{message} Actual SystemBars.Top={(systemBars?.Top ?? 0)}, DisplayCutout.Top={(displayCutout?.Top ?? 0)}.");
 		}
 	}
 }

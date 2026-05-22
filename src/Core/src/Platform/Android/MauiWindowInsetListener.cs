@@ -307,12 +307,6 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			var measuredContentHeight = Math.Max(0, appBarLayout.MeasuredHeight - appBarLayout.PaddingTop - appBarLayout.PaddingBottom);
-			if (measuredContentHeight > 0)
-			{
-				return true;
-			}
-
 			for (int i = 0; i < appBarLayout.ChildCount; i++)
 			{
 				var child = appBarLayout.GetChildAt(i);
@@ -323,10 +317,16 @@ namespace Microsoft.Maui.Platform
 
 				var childLayoutHeight = child.LayoutParameters?.Height ?? 0;
 				var childContentHeight = Math.Max(0, child.MeasuredHeight - child.PaddingTop - child.PaddingBottom);
-				if (childContentHeight > 0 || child.Height > 0 || childLayoutHeight != 0)
+				if (childContentHeight > 0 || child.Height > 0 || childLayoutHeight > 0)
 				{
 					return true;
 				}
+
+				if (child is MaterialToolbar && childLayoutHeight != 0)
+				{
+					return true;
+				}
+
 			}
 
 			return false;
