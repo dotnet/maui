@@ -316,13 +316,13 @@ namespace Microsoft.Maui.Platform
 				}
 
 				var childLayoutHeight = child.LayoutParameters?.Height ?? 0;
-				var childContentHeight = Math.Max(0, child.MeasuredHeight - child.PaddingTop - child.PaddingBottom);
-				if (childContentHeight > 0 || child.Height > 0 || childLayoutHeight > 0)
+				if (child is MaterialToolbar && childLayoutHeight == 0)
 				{
-					return true;
+					continue;
 				}
 
-				if (child is MaterialToolbar && childLayoutHeight != 0)
+				var childContentHeight = Math.Max(0, child.MeasuredHeight - child.PaddingTop - child.PaddingBottom);
+				if (childContentHeight > 0 || child.Height > 0 || childLayoutHeight > 0)
 				{
 					return true;
 				}
