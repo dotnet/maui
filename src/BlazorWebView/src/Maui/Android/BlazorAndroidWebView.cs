@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	internal class BlazorAndroidWebView : AWebView
 	{
+		internal bool BackNavigationHandled { get; set; }
+
 		/// <summary>
 		/// Initializes a new instance of <see cref="BlazorAndroidWebView"/>
 		/// </summary>
@@ -22,8 +24,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (keyCode == Keycode.Back && CanGoBack() && e?.RepeatCount == 0)
 			{
 				GoBack();
+				BackNavigationHandled = true;
 				return true;
 			}
+			BackNavigationHandled = false;
 			return false;
 		}
 	}

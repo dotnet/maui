@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,13 +12,14 @@ public partial class Bz54717 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[TearDown] public void TearDown() => Application.Current = null;
+		public void Dispose() => Application.Current = null;
 
-		[Test]
-		public void FooBz54717([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void FooBz54717(XamlInflator inflator)
 		{
 			Application.Current = new MockApplication
 			{
@@ -27,10 +29,10 @@ public partial class Bz54717 : ContentPage
 				}
 			};
 			var layout = new Bz54717(inflator);
-			Assert.That(layout.Resources.Count, Is.EqualTo(1));
+			Assert.Single(layout.Resources);
 			var array = layout.Resources["SomeColors"] as Color[];
-			Assert.That(array[0], Is.EqualTo(Colors.Red));
-			Assert.That(array[1], Is.EqualTo(Colors.Blue));
+			Assert.Equal(Colors.Red, array[0]);
+			Assert.Equal(Colors.Blue, array[1]);
 		}
 	}
 }

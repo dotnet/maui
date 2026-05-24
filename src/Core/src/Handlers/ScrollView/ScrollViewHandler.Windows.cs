@@ -78,7 +78,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-				handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
+				var targetHorizontalOffset = Math.Clamp(request.HorizontalOffset, 0, handler.PlatformView.ScrollableWidth);
+				var targetVerticalOffset = Math.Clamp(request.VerticalOffset, 0, handler.PlatformView.ScrollableHeight);
+
+				if (targetVerticalOffset == handler.PlatformView.VerticalOffset && targetHorizontalOffset == handler.PlatformView.HorizontalOffset)
+				{
+				   handler.VirtualView.ScrollFinished();
+				   return;
+				}
+
+				handler.PlatformView.ChangeView(targetHorizontalOffset, targetVerticalOffset, null, request.Instant);
 			}
 		}
 
@@ -125,21 +134,34 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateContentPanel(IScrollView scrollView, IScrollViewHandler handler, ICrossPlatformLayout crossPlatformLayout)
 		{
-			if (scrollView.PresentedContent == null || handler.MauiContext == null)
+			if (handler.MauiContext is null)
 			{
 				return;
 			}
 
 			var scrollViewer = handler.PlatformView;
+			var currentPaddingLayer = GetContentPanel(scrollViewer);
+
+			// If PresentedContent is null, clean up any existing content and return
+			if (scrollView.PresentedContent is null)
+			{
+				if (currentPaddingLayer is not null)
+				{
+					currentPaddingLayer.CachedChildren.Clear();
+				}
+				
+				return;
+			}
+
 			var nativeContent = scrollView.PresentedContent.ToPlatform(handler.MauiContext);
 
-			if (GetContentPanel(scrollViewer) is ContentPanel currentPaddingLayer)
+			if (currentPaddingLayer is not null)
 			{
+				// Only update if content has changed or is missing
 				if (currentPaddingLayer.CachedChildren.Count == 0 || currentPaddingLayer.CachedChildren[0] != nativeContent)
 				{
 					currentPaddingLayer.CachedChildren.Clear();
 					currentPaddingLayer.CachedChildren.Add(nativeContent);
-
 				}
 			}
 			else

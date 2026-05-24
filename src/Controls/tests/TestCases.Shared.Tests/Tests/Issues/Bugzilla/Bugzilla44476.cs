@@ -14,8 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
-
 		public void Issue44476TestUnwantedMargin()
 		{
 			App.WaitForElement("This should be visible.");

@@ -392,12 +392,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnBindingContextChanged()
 		{
 			BindingContextChanged?.Invoke(this, EventArgs.Empty);
-
-			if (Shell.GetBackButtonBehavior(this) is BackButtonBehavior buttonBehavior)
-				SetInheritedBindingContext(buttonBehavior, BindingContext);
-
-			if (Shell.GetSearchHandler(this) is SearchHandler searchHandler)
-				SetInheritedBindingContext(searchHandler, BindingContext);
 		}
 
 		/// <summary>
@@ -430,6 +424,25 @@ namespace Microsoft.Maui.Controls
 
 			BindablePropertyContext bpcontext = GetContext(targetProperty);
 			return bpcontext != null && bpcontext.Bindings.Count > 0;
+		}
+
+		/// <summary>
+		/// Forces the binding for the specified property to apply immediately.
+		/// This is used when one property depends on another and needs the dependent
+		/// property's binding to resolve before proceeding.
+		/// See https://github.com/dotnet/maui/issues/31939
+		/// </summary>
+		internal void ForceBindingApply(BindableProperty targetProperty)
+		{
+			if (targetProperty == null)
+				throw new ArgumentNullException(nameof(targetProperty));
+
+			BindablePropertyContext bpcontext = GetContext(targetProperty);
+			if (bpcontext == null || bpcontext.Bindings.Count == 0)
+				return;
+
+			// Force the binding to apply now
+			ApplyBinding(bpcontext, fromBindingContextChanged: false);
 		}
 
 		internal virtual void OnRemoveDynamicResource(BindableProperty property)

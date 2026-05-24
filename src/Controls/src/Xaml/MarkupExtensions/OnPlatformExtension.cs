@@ -7,6 +7,9 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that returns different values depending on the platform the app is running on.
+	/// </summary>
 	[ContentProperty(nameof(Default))]
 	[RequireService(
 		[typeof(IProvideValueTarget),
@@ -18,20 +21,56 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		static object s_notset = new object();
 
+		/// <summary>
+		/// Gets or sets the default value to use if no platform-specific value is set.
+		/// </summary>
 		public object Default { get; set; } = s_notset;
+
+		/// <summary>
+		/// Gets or sets the value to use on Android.
+		/// </summary>
 		public object Android { get; set; } = s_notset;
+
 		internal object GTK { get; set; } = s_notset;
+
+		/// <summary>
+		/// Gets or sets the value to use on iOS.
+		/// </summary>
 		public object iOS { get; set; } = s_notset;
+
 		internal object macOS { get; set; } = s_notset;
+
+		/// <summary>
+		/// Gets or sets the value to use on Mac Catalyst.
+		/// </summary>
 		public object MacCatalyst { get; set; } = s_notset;
+
+		/// <summary>
+		/// Gets or sets the value to use on Tizen.
+		/// </summary>
 		public object Tizen { get; set; } = s_notset;
+
+		/// <summary>
+		/// Gets or sets the value to use on UWP. Use <see cref="WinUI"/> instead.
+		/// </summary>
 		[Obsolete("Use WinUI instead.")]
 		public object UWP { get; set; } = s_notset;
+
 		internal object WPF { get; set; } = s_notset;
+
+		/// <summary>
+		/// Gets or sets the value to use on Windows (WinUI).
+		/// </summary>
 		public object WinUI { get; set; } = s_notset;
 
+		/// <summary>
+		/// Gets or sets a converter to apply to the platform-specific value.
+		/// </summary>
 		public IValueConverter Converter { get; set; }
 
+		/// <summary>
+		/// Gets or sets a parameter to pass to the converter.
+		/// </summary>
 		public object ConverterParameter { get; set; }
 
 		public object ProvideValue(IServiceProvider serviceProvider)

@@ -360,7 +360,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return _emptyUIView.Frame.Size.ToSize();
 			}
 
-			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+			var contentSize = CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+
+			// For horizontal layouts, items use the CollectionView frame height as their height
+			// (ConstrainedDimension = frame height). When no items are loaded (Width == 0),
+			// contentSize.Height reflects the container's frame height rather than actual content.
+			// This creates a circular sizing issue in Auto-height containers: the frame grows
+			// based on the incorrect content height and locks in at an excessive value even after
+			// items load. Reset to 0 so MinimumHeight / HeightRequest can determine the correct size.
+			if (IsHorizontal && contentSize.Width == 0)
+			{
+				contentSize.Height = 0;
+			}
+
+			return contentSize;
 		}
 
 		void ConstrainItemsToBounds()

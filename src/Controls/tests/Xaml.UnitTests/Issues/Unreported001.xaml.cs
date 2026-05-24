@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -16,16 +17,18 @@ public partial class Unreported001 : TabbedPage
 {
 	public Unreported001() => InitializeComponent();
 
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void DoesNotThrow([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DoesNotThrow(XamlInflator inflator)
 		{
 			var p = new Unreported001(inflator);
-			Assert.That(p.navpage.CurrentPage, Is.TypeOf<U001Page>());
+			Assert.IsType<U001Page>(p.navpage.CurrentPage);
 		}
 	}
 }

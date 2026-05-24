@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(UseDefaultPaddingProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultPadding'][1]/Docs/*" />
+		/// <summary>Sets whether the button uses Android's default padding.</summary>
+		/// <param name="element">The button element.</param>
+		/// <param name="value"><see langword="true"/> to use default padding; otherwise, <see langword="false"/>.</param>
 		public static void SetUseDefaultPadding(BindableObject element, bool value)
 		{
 			element.SetValue(UseDefaultPaddingProperty, value);
@@ -33,7 +35,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetUseDefaultPadding(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultPadding'][2]/Docs/*" />
+		/// <summary>Sets whether the button uses Android's default padding.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to use default padding; otherwise, <see langword="false"/>.</param>
+		/// <returns>The platform configuration for fluent API chaining.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> SetUseDefaultPadding(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetUseDefaultPadding(config.Element, value);
@@ -53,7 +58,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return (bool)element.GetValue(UseDefaultShadowProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultShadow'][1]/Docs/*" />
+		/// <summary>Sets whether the button uses Android's default elevation shadow.</summary>
+		/// <param name="element">The button element.</param>
+		/// <param name="value"><see langword="true"/> to use default shadow; otherwise, <see langword="false"/>.</param>
 		public static void SetUseDefaultShadow(BindableObject element, bool value)
 		{
 			element.SetValue(UseDefaultShadowProperty, value);
@@ -67,7 +74,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return GetUseDefaultShadow(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetUseDefaultShadow'][2]/Docs/*" />
+		/// <summary>Sets whether the button uses Android's default elevation shadow.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to use default shadow; otherwise, <see langword="false"/>.</param>
+		/// <returns>The platform configuration for fluent API chaining.</returns>
 		public static IPlatformElementConfiguration<Android, FormsElement> SetUseDefaultShadow(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetUseDefaultShadow(config.Element, value);

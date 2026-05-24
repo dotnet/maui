@@ -1,6 +1,7 @@
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,14 +9,15 @@ public partial class Gh6192 : ContentPage
 {
 	public Gh6192() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void XamlCDoesntFail([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void XamlCDoesntFail(XamlInflator inflator)
 		{
 			var layout = new Gh6192(inflator);
 			layout.BindingContext = new

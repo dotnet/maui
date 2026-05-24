@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -12,67 +12,74 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		[TestFixture]
-		class Tests
+		[Collection("Issue")]
+		public class Tests
 		{
-			[Test]
-			public void AllowNullableIntProperties([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowNullableIntProperties(XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control0;
-				Assert.AreEqual(1, control.NullableInt);
+				Assert.Equal(1, control.NullableInt);
 			}
 
-			[Test]
-			public void AllowNullableDoubleProperties([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowNullableDoubleProperties(XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control0;
-				Assert.AreEqual(2.2d, control.NullableDouble);
+				Assert.Equal(2.2d, control.NullableDouble);
 			}
 
-			[Test]
-			public void ConversionForNullable([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void ConversionForNullable(XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control1;
-				Assert.AreEqual(2d, control.NullableDouble);
+				Assert.Equal(2d, control.NullableDouble);
 			}
 
-			[Test]
-			public void AllowNull([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowNull(XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control2;
 				Assert.Null(control.NullableInt);
 			}
 
-			[Test]
-			public void AllowBindingToNullable([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowBindingToNullable(XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control3;
 				Assert.Null(control.NullableInt);
 
 				page.BindingContext = 2;
-				Assert.AreEqual(2, control.NullableInt);
+				Assert.Equal(2, control.NullableInt);
 			}
 
-			[Test]
-			public void NullableAttachedBPs([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void NullableAttachedBPs(XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control4;
-				Assert.AreEqual(3, Bz24910Control.GetAttachedNullableInt(control));
+				Assert.Equal(3, Bz24910Control.GetAttachedNullableInt(control));
 			}
 
-			[Test]
-			public void AllowNonBindableNullable([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void AllowNonBindableNullable(XamlInflator inflator)
 			{
 				var page = new Bz24910(inflator);
 				var control = page.control5;
 
-				Assert.AreEqual(5, control.NullableIntProp);
+				Assert.Equal(5, control.NullableIntProp);
 			}
 		}
 	}

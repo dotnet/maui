@@ -203,4 +203,34 @@
     <value>{0} 具有 "required" 关键字。目前 XAML 对此支持有限，建议避免使用。我们仍在尽力提供一个值。</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>绑定编译失败</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>绑定编译警告</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>绑定: 索引器未包含右方括号。</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>绑定: 索引器未包含参数。</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>绑定: 不受支持的索引器索引类型:“{0}”。</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>绑定: 在“{1}”上找不到属性“{0}”。绑定将在运行时使用较慢的基于反射的方式。如果此属性由其他源生成器生成，请考虑在 https://github.com/dotnet/maui/issues 报告，以帮助我们改进源生成器的互操作性。</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>绑定可能编译不正确，因为 x:DataType 批注来自外部范围。请确保使用正确的 x:DataType 批注所有 DataTemplate XAML 元素。有关详细信息，请参阅 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings。</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Namescope 错误</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>此 NameScope 中已存在名为“{0}”的元素。</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

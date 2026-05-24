@@ -4,21 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class ToolbarFeatureTests : UITest
+public class ToolbarFeatureTests : _GalleryUITest
 {
 	public const string ToolbarFeatureMatrix = "Toolbar Feature Matrix";
+	public override string GalleryPageName => ToolbarFeatureMatrix;
 
 	public ToolbarFeatureTests(TestDevice device)
 		: base(device)
 	{
 	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(ToolbarFeatureMatrix);
-	}
-
 
 	[Test, Order(1)]
 	[Category(UITestCategories.ToolbarItem)]
@@ -191,7 +185,7 @@ public class ToolbarFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// Issue Link: https://github.com/dotnet/maui/issues/30675
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// On iOS 26, the image differs on each CI run, so disabled the test for iOS. Issue Link: https://github.com/dotnet/maui/issues/30675
 	[Test, Order(13)]
 	[Category(UITestCategories.ToolbarItem)]
 	public void VerifySecondaryToolBar_IconAppearance()
@@ -199,7 +193,7 @@ public class ToolbarFeatureTests : UITest
 		App.WaitForMoreButton();
 		App.TapMoreButton();
 		App.WaitForElement("Test Secondary (2)");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 

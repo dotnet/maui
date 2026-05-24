@@ -6,13 +6,22 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that loads a CSS style sheet from a source or inline content.
+	/// </summary>
 	[ContentProperty(nameof(Style))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StyleSheetProvider")]
 	[RequireService([typeof(IXmlLineInfoProvider), typeof(IRootObjectProvider)])]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
+		/// <summary>
+		/// Gets or sets the inline CSS style sheet content.
+		/// </summary>
 		public string Style { get; set; }
 
+		/// <summary>
+		/// Gets or sets the URI to the CSS style sheet resource.
+		/// </summary>
 		[System.ComponentModel.TypeConverter(typeof(UriTypeConverter))]
 		public Uri Source { get; set; }
 

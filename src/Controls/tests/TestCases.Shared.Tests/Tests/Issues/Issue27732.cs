@@ -15,7 +15,7 @@ public class Issue27732 : _IssuesUITest
 	const string ToggleShadowButton = "ToggleShadowButton";
 
 	[Test]
-	[Category(UITestCategories.Visual)]
+	[Category(UITestCategories.Shadow)]
 	public void ViewShouldNotShiftOnShadowChanged()
 	{
 		App.WaitForElement(ToggleShadowButton);

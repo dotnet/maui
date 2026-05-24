@@ -16,6 +16,10 @@ public class Issue29740 : _IssuesUITest
 	[Category(UITestCategories.Stepper)]
 	public void GestureRecognizersOnLabelSpanShouldWork()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to Stepper Increment issue in iOS 26."); // Issue Link: https://github.com/dotnet/maui/issues/33769
+		}
 		var initialvalue = App.WaitForElement("29740StepperValueLabel").GetText();
 		Assert.That(initialvalue, Is.EqualTo("Stepper Value: 0"));
 		for (int i = 0; i < 4; i++)

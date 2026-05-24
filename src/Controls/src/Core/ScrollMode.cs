@@ -1,13 +1,13 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollMode']/Docs/*" />
+	/// <summary>Specifies scrolling behavior for a <see cref="ScrollView"/>.</summary>
 	public enum ScrollMode
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollMode.xml" path="//Member[@MemberName='Disabled']/Docs/*" />
+		/// <summary>Scrolling is disabled in this direction.</summary>
 		Disabled = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollMode.xml" path="//Member[@MemberName='Enabled']/Docs/*" />
+		/// <summary>Scrolling is always enabled in this direction.</summary>
 		Enabled = 1,
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollMode.xml" path="//Member[@MemberName='Auto']/Docs/*" />
+		/// <summary>Scrolling is enabled only when content exceeds the viewport.</summary>
 		Auto = 2
 	}
 }

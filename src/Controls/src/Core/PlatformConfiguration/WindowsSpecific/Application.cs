@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	using Microsoft.Extensions.DependencyInjection;
 	using FormsElement = Maui.Controls.Application;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Application']/Docs/*" />
+	/// <summary>Provides Windows-specific configuration for the application's image directory.</summary>
 	public static class Application
 	{
 		/// <summary>Bindable property for attached property <c>ImageDirectory</c>.</summary>
@@ -12,25 +12,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			BindableProperty.Create("ImageDirectory", typeof(string), typeof(FormsElement), string.Empty,
 				propertyChanged: OnImageDirectoryChanged);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory'][1]/Docs/*" />
+		/// <summary>Sets the directory path for application images on Windows.</summary>
+		/// <param name="element">The element to set the image directory on.</param>
+		/// <param name="value">The directory path.</param>
 		public static void SetImageDirectory(BindableObject element, string value)
 		{
 			element.SetValue(ImageDirectoryProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory'][2]/Docs/*" />
+		/// <summary>Gets the directory path for application images on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The image directory path.</returns>
 		public static string GetImageDirectory(this IPlatformElementConfiguration<Windows, FormsElement> config)
 		{
 			return (string)config.Element.GetValue(ImageDirectoryProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='GetImageDirectory'][1]/Docs/*" />
+		/// <summary>Gets the directory path for application images on Windows.</summary>
+		/// <param name="element">The element to get the image directory from.</param>
+		/// <returns>The image directory path.</returns>
 		public static string GetImageDirectory(BindableObject element)
 		{
 			return (string)element.GetValue(ImageDirectoryProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='SetImageDirectory'][2]/Docs/*" />
+		/// <summary>Sets the directory path for application images on Windows.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The directory path.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetImageDirectory(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, string value)
 		{

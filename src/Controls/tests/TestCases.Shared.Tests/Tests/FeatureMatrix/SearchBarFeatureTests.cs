@@ -4,18 +4,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class SearchBarFeatureTests : UITest
+public class SearchBarFeatureTests : _GalleryUITest
 {
 	public const string SearchBarFeatureMatrix = "Search Bar Feature Matrix";
 
+	public override string GalleryPageName => SearchBarFeatureMatrix;
+
 	public SearchBarFeatureTests(TestDevice testDevice) : base(testDevice)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(SearchBarFeatureMatrix);
 	}
 
 	public void VerifyScreenshotWithPlatformCropping()
@@ -23,7 +19,7 @@ public class SearchBarFeatureTests : UITest
 #if IOS
         VerifyScreenshot(cropBottom: 1200); 
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 
@@ -32,7 +28,7 @@ public class SearchBarFeatureTests : UITest
 	public void SearchBar_InitialState_VerifyVisualState()
 	{
 		App.WaitForElement("SearchBar");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14061

@@ -24,34 +24,42 @@
 				Margin = new Thickness(12)
 			};
 
+			// Use flat Background to disable ripple/animation artifacts in screenshots
+			var buttonBackground = new SolidColorBrush(Colors.LightGray);
+
 			var openLeftButton = new Button
 			{
 				AutomationId = OpenLeftId,
-				Text = "Open Left SwipeItem"
+				Text = "Open Left SwipeItem",
+				Background = buttonBackground
 			};
 
 			var openRightButton = new Button
 			{
 				AutomationId = OpenRightId,
-				Text = "Open Right SwipeItem"
+				Text = "Open Right SwipeItem",
+				Background = buttonBackground
 			};
 
 			var openTopButton = new Button
 			{
 				AutomationId = OpenTopId,
-				Text = "Open Top SwipeItem"
+				Text = "Open Top SwipeItem",
+				Background = buttonBackground
 			};
 
 			var openBottomButton = new Button
 			{
 				AutomationId = OpenBottomId,
-				Text = "Open Bottom SwipeItem"
+				Text = "Open Bottom SwipeItem",
+				Background = buttonBackground
 			};
 
 			var closeButton = new Button
 			{
 				AutomationId = CloseId,
-				Text = "Close SwipeView"
+				Text = "Close SwipeView",
+				Background = buttonBackground
 			};
 
 			swipeLayout.Children.Add(openLeftButton);

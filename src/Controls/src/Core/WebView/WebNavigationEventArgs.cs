@@ -3,7 +3,9 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigationEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebNavigationEventArgs']/Docs/*" />
+	/// <summary>
+	/// Base event arguments for <see cref="WebView"/> navigation events.
+	/// </summary>
 	public class WebNavigationEventArgs : EventArgs
 	{
 		protected WebNavigationEventArgs(WebNavigationEvent navigationEvent, WebViewSource source, string url)
@@ -13,13 +15,19 @@ namespace Microsoft.Maui.Controls
 			Url = url;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigationEventArgs.xml" path="//Member[@MemberName='NavigationEvent']/Docs/*" />
+		/// <summary>
+		/// Gets the type of navigation event that occurred.
+		/// </summary>
 		public WebNavigationEvent NavigationEvent { get; internal set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigationEventArgs.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>
+		/// Gets the source of the web view content.
+		/// </summary>
 		public WebViewSource Source { get; internal set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebNavigationEventArgs.xml" path="//Member[@MemberName='Url']/Docs/*" />
+		/// <summary>
+		/// Gets the URL associated with the navigation event.
+		/// </summary>
 		public string Url { get; internal set; }
 	}
 }

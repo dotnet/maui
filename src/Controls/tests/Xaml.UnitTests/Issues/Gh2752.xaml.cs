@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -22,14 +22,15 @@ public partial class Gh2752 : ContentPage
 
 	public Gh2752() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void FallbackToDefaultValueCreator([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void FallbackToDefaultValueCreator(XamlInflator inflator)
 		{
 			var layout = new Gh2752(inflator) { BindingContext = null };
-			Assert.That(layout.My, Is.EqualTo("default created value"));
+			Assert.Equal("default created value", layout.My);
 		}
 	}
 }

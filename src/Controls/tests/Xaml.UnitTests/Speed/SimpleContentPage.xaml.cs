@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -20,11 +20,10 @@ public partial class SimpleContentPage : ContentPage
 {
 	public SimpleContentPage() => InitializeComponent();
 
-	[TestFixture]
+	[Collection("Xaml Inflation")]
 	public class Tests
 	{
-		[Test]
-		[Ignore(nameof(XamlCIs20TimesFasterThanXaml))]
+		[Fact(Skip = nameof(XamlCIs20TimesFasterThanXaml))]
 		public void XamlCIs20TimesFasterThanXaml()
 		{
 			var swXamlC = new Stopwatch();
@@ -40,11 +39,10 @@ public partial class SimpleContentPage : ContentPage
 				new SimpleContentPage(XamlInflator.Runtime);
 			swXaml.Stop();
 
-			Assert.Less(swXamlC.ElapsedMilliseconds * 20, swXaml.ElapsedMilliseconds);
+			Assert.True(swXamlC.ElapsedMilliseconds * 20 < swXaml.ElapsedMilliseconds);
 		}
 
-		[Test]
-		[Ignore(nameof(XamlCIsNotMuchSlowerThanCode))]
+		[Fact(Skip = nameof(XamlCIsNotMuchSlowerThanCode))]
 		public void XamlCIsNotMuchSlowerThanCode()
 		{
 			var swXamlC = new Stopwatch();
@@ -60,7 +58,7 @@ public partial class SimpleContentPage : ContentPage
 				new SimpleContentPageCode();
 			swCode.Stop();
 
-			Assert.LessOrEqual(swXamlC.ElapsedMilliseconds * .2, swCode.ElapsedMilliseconds);
+			Assert.True(swXamlC.ElapsedMilliseconds * .2 <= swCode.ElapsedMilliseconds);
 		}
 	}
 }

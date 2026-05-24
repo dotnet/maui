@@ -5,13 +5,13 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="Type[@FullName='Microsoft.Maui.Controls.Span']/Docs/*" />
+	/// <summary>Represents a portion of formatted text for use in a FormattedString.</summary>
 	[ContentProperty("Text")]
 	public class Span : GestureElement, IFontElement, IStyleElement, ITextElement, ILineHeightElement, IDecorableTextElement
 	{
 		internal readonly MergedStyle _mergedStyle;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new Span instance.</summary>
 		public Span()
 		{
 			_mergedStyle = new MergedStyle(GetType(), this);
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="TextTransform"/>.</summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='Style']/Docs/*" />
+		/// <summary>Gets or sets the style for the span. This is a bindable property.</summary>
 		public Style Style
 		{
 			get { return (Style)GetValue(StyleProperty); }
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundColorProperty
 			= BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(Span), default(Color), defaultBindingMode: BindingMode.OneWay);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='BackgroundColor']/Docs/*" />
+		/// <summary>Gets or sets the background color for the span. This is a bindable property.</summary>
 		public Color BackgroundColor
 		{
 			get { return (Color)GetValue(BackgroundColorProperty); }
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>Gets or sets the text color for the span. This is a bindable property.</summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
@@ -58,21 +58,24 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
+		/// <summary>Gets or sets the character spacing for the span. This is a bindable property.</summary>
 		public double CharacterSpacing
 		{
 			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='TextTransform']/Docs/*" />
+		/// <summary>Gets or sets the text transform for the span. This is a bindable property.</summary>
 		public TextTransform TextTransform
 		{
 			get => (TextTransform)GetValue(TextTransformProperty);
 			set => SetValue(TextTransformProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <summary>Transforms the source text using the specified text transform.</summary>
+		/// <param name="source">The source text to transform.</param>
+		/// <param name="textTransform">The text transformation to apply.</param>
+		/// <returns>The transformed text.</returns>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
@@ -80,7 +83,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextProperty
 			= BindableProperty.Create(nameof(Text), typeof(string), typeof(Span), "", defaultBindingMode: BindingMode.OneWay);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>Gets or sets the text content of the span. This is a bindable property.</summary>
 		public string Text
 		{
 			get { return (string)GetValue(TextProperty); }
@@ -102,21 +105,21 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="LineHeight"/>.</summary>
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>Gets or sets the font attributes for the span. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontElement.FontAttributesProperty); }
 			set { SetValue(FontElement.FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>Gets or sets the font family for the span. This is a bindable property.</summary>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontElement.FontFamilyProperty); }
 			set { SetValue(FontElement.FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>Gets or sets the font size for the span. This is a bindable property.</summary>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -130,14 +133,14 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='TextDecorations']/Docs/*" />
+		/// <summary>Gets or sets the text decorations for the span. This is a bindable property.</summary>
 		public TextDecorations TextDecorations
 		{
 			get { return (TextDecorations)GetValue(TextDecorationsProperty); }
 			set { SetValue(TextDecorationsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='LineHeight']/Docs/*" />
+		/// <summary>Gets or sets the line height multiplier for the span. This is a bindable property.</summary>
 		public double LineHeight
 		{
 			get { return (double)GetValue(LineHeightElement.LineHeightProperty); }
@@ -146,7 +149,12 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnBindingContextChanged()
 		{
-			this.PropagateBindingContext(GestureRecognizers);
+			var gestureRecognizers = GestureRecognizers;
+			if (gestureRecognizers.Count > 0)
+			{
+				this.PropagateBindingContext(gestureRecognizers);
+			}
+
 			base.OnBindingContextChanged();
 		}
 

@@ -13,7 +13,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.SearchBar)]
 		public void SearchHandlerFocusAndUnfocusEventsShouldWork()
 		{

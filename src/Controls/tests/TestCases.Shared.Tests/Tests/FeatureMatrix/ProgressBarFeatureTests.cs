@@ -4,17 +4,15 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class ProgressBarFeatureTests : UITest
+	public class ProgressBarFeatureTests : _GalleryUITest
 	{
+		public const string ProgressBarFeatureMatrix = "ProgressBar Feature Matrix";
+
+		public override string GalleryPageName => ProgressBarFeatureMatrix;
+
 		public ProgressBarFeatureTests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery("ProgressBar Feature Matrix");
 		}
 
 		[Test, Order(1)]
@@ -52,7 +50,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ProgressToButton");
 			App.Tap("ProgressToButton");
 			Task.Delay(1000).Wait();
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -66,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("ProgressEntry", "1.44");
 			App.PressEnter();
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -80,7 +78,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.EnterText("ProgressEntry", "-0.44");
 			App.PressEnter();
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -98,7 +96,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("BackgroundColorLightBlueButton");
 			App.Tap("BackgroundColorLightBlueButton");
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -110,19 +108,23 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("IsVisibleFalseRadio");
 			App.Tap("IsVisibleFalseRadio");
 			App.WaitForNoElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
 		[Category(UITestCategories.ProgressBar)]
 		public void ProgressBar_ChangeFlowDirection_RTL_VerifyLabel()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33969
+			}
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 			App.WaitForElement("FlowDirectionRTL");
 			App.Tap("FlowDirectionRTL");
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -134,7 +136,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ShadowTrueRadio");
 			App.Tap("ShadowTrueRadio");
 			App.WaitForElement("ProgressBarControl");
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }

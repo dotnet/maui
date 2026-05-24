@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ImageSourceConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageSourceConverter']/Docs/*" />
+	/// <summary>A <see cref="TypeConverter"/> that converts strings and URIs to <see cref="ImageSource"/> objects.</summary>
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.ImageSourceTypeConverter")]
 	public sealed class ImageSourceConverter : TypeConverter
 	{

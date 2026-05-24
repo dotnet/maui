@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,39 +9,43 @@ public partial class Maui32924 : ContentPage
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void ExplicitFindAncestorBindingContextMode([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExplicitFindAncestorBindingContextMode(XamlInflator inflator)
 		{
 			// Test with explicit Mode=FindAncestorBindingContext (issue #32924)
 			var page = new Maui32924(inflator);
-			Assert.That(page.ExplicitModeLabel.Text, Is.EqualTo("TestName"));
+			Assert.Equal("TestName", page.ExplicitModeLabel.Text);
 		}
 
-		[Test]
-		public void ImplicitFindAncestorBindingContextMode([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ImplicitFindAncestorBindingContextMode(XamlInflator inflator)
 		{
 			// Test with implicit mode (non-Element type should infer FindAncestorBindingContext)
 			var page = new Maui32924(inflator);
-			Assert.That(page.ImplicitModeLabel.Text, Is.EqualTo("TestName"));
+			Assert.Equal("TestName", page.ImplicitModeLabel.Text);
 		}
 
-		[Test]
-		public void FindAncestorMode([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void FindAncestorMode(XamlInflator inflator)
 		{
 			// Test with FindAncestor mode (Element type)
 			var page = new Maui32924(inflator);
-			Assert.That(page.FindAncestorLabel.Text, Is.EqualTo("Stack1"));
+			Assert.Equal("Stack1", page.FindAncestorLabel.Text);
 		}
 
-		[Test]
-		public void SelfMode([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void SelfMode(XamlInflator inflator)
 		{
 			// Test with Self mode
 			var page = new Maui32924(inflator);
-			Assert.That(page.SelfLabel.Text, Is.EqualTo("SelfTest"));
+			Assert.Equal("SelfTest", page.SelfLabel.Text);
 		}
 	}
 }

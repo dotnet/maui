@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (valueString != null && valueString.Trim().StartsWith("{}", StringComparison.Ordinal))
 			{
 				return new ValueNode(valueString.Substring(2), (IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber,
-					((IXmlLineInfo)reader).LinePosition);
+					((IXmlLineInfo)reader).LinePosition) { IsEscaped = true };
 			}
 			if (valueString != null && valueString.Trim().StartsWith("{", StringComparison.Ordinal))
 			{

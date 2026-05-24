@@ -38,6 +38,18 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, Context.TypeCache, out var type) || type is null)
 			return;
 
+		// Handle OnPlatform default value nodes - generate default(T) instead of instantiation
+		// This is used when OnPlatform has no matching platform and no Default specified
+		if (node.IsOnPlatformDefaultValue)
+		{
+			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
+			// Reference-type defaults are null; use default! so generated code does not emit nullable warnings.
+			var defaultValue = type.IsReferenceType ? "default!" : "default";
+			writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {defaultValue};");
+			variables[node] = new LocalVariable(type, variableName);
+			return;
+		}
+
 		//x:Array
 		if (type.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 		{

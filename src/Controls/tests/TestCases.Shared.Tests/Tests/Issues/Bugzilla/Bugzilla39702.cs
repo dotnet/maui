@@ -17,8 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Focus)]
-		[Category(UITestCategories.Compatibility)]
 		public void ControlCanBeFocusedByUnfocusedEvent()
 		{
 			App.WaitForElementTillPageNavigationSettled(TheEntry);

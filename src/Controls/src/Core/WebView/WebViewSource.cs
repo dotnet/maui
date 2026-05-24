@@ -5,7 +5,9 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/WebViewSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebViewSource']/Docs/*" />
+	/// <summary>
+	/// Abstract class representing the source content for a <see cref="WebView"/>.
+	/// </summary>
 	[TypeConverter(typeof(WebViewSourceTypeConverter))]
 	public abstract class WebViewSource : BindableObject, IWebViewSource
 	{
@@ -26,7 +28,10 @@ namespace Microsoft.Maui.Controls
 				eh(this, EventArgs.Empty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebViewSource.xml" path="//Member[@MemberName='Load']/Docs/*" />
+		/// <summary>
+		/// Loads the source content into the specified <paramref name="renderer"/>.
+		/// </summary>
+		/// <param name="renderer">The web view delegate that handles loading.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public abstract void Load(IWebViewDelegate renderer);
 

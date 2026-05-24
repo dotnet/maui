@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -17,15 +17,16 @@ public partial class Gh3260 : ContentPage
 {
 	public Gh3260() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void AssignContentWithNoContentAttributeDoesNotThrow([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void AssignContentWithNoContentAttributeDoesNotThrow(XamlInflator inflator)
 		{
 			var layout = new Gh3260(inflator);
-			Assert.That(layout.mylayout.Children.Count, Is.EqualTo(1));
-			Assert.That(layout.mylayout.Children[0], Is.EqualTo(layout.label));
+			Assert.Single(layout.mylayout.Children);
+			Assert.Equal(layout.label, layout.mylayout.Children[0]);
 		}
 	}
 }

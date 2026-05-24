@@ -1,5 +1,5 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -32,18 +32,19 @@ public partial class Bz57574
 		notification = args.Message;
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[TearDown] public void TearDown() => Application.Current = null;
+		public void Dispose() => Application.Current = null;
 
-		[Test]
-		public void EventWithGenericEventHandlers([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void EventWithGenericEventHandlers(XamlInflator inflator)
 		{
 			var layout = new Bz57574(inflator);
-			Assume.That(layout.notification, Is.Null);
+			Assert.Null(layout.notification);
 			layout.notificator.Notify("Foo");
-			Assert.That(layout.notification, Is.EqualTo("Foo"));
+			Assert.Equal("Foo", layout.notification);
 		}
 	}
 }

@@ -66,6 +66,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				RemoveView(platformView);
 			}
 
+			// Capture the current platform view before disconnecting handlers, because
+			// DisconnectHandlers() may null out the handler's PlatformView/ContainerView.
+			View?.DisconnectHandlers();
+
 			Content = null;
 			_pixelSize = null;
 			_reportMeasure = null;
@@ -151,8 +155,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						_pixelSize = null;
 					}
-
-					_pixelSize = null;
 				}
 			}
 

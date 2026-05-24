@@ -15,12 +15,12 @@ class XmlType(string namespaceUri, string name, IList<XmlType> typeArguments)
 
 	public override bool Equals(object obj)
 	{
-		if (obj is not XmlType other)		
+		if (obj is not XmlType other)
 			return false;
-		
+
 		return NamespaceUri == other.NamespaceUri
 			&& Name == other.Name
-			&& (   TypeArguments == null && other.TypeArguments == null
+			&& (TypeArguments == null && other.TypeArguments == null
 				|| TypeArguments != null && other.TypeArguments != null && TypeArguments.SequenceEqual(other.TypeArguments));
 	}
 

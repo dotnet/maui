@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,11 +9,12 @@ public partial class Maui32879 : ContentPage
 {
 	public Maui32879() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void StyleSetterWithAttachedPropertyContentSyntax([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void StyleSetterWithAttachedPropertyContentSyntax(XamlInflator inflator)
 		{
 			// This test reproduces issue #32879:
 			// Style with setter on AbsoluteLayout.LayoutBounds and SourceGen fails
@@ -23,12 +24,12 @@ public partial class Maui32879 : ContentPage
 			// var setter90 = new global::Microsoft.Maui.Controls.Setter {...};
 			var page = new Maui32879(inflator);
 
-			Assert.That(page, Is.Not.Null);
-			Assert.That(page.testImage, Is.Not.Null);
+			Assert.NotNull(page);
+			Assert.NotNull(page.testImage);
 
 			// Verify the style was applied correctly
 			var bounds = AbsoluteLayout.GetLayoutBounds(page.testImage);
-			Assert.That(bounds, Is.EqualTo(new Rect(10, 10, 20, 20)));
+			Assert.Equal(new Rect(10, 10, 20, 20), bounds);
 		}
 	}
 }

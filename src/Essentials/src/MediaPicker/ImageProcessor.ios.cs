@@ -32,38 +32,60 @@ internal static partial class ImageProcessor
 			return inputStream;
 		}
 
-		// Create a new image with corrected orientation metadata (no pixel manipulation)
-		// This preserves the original image data while fixing the display orientation
-		var correctedImage = UIImage.FromImage(image.CGImage, image.CurrentScale, UIImageOrientation.Up);
-		
-		// Write the corrected image back to a stream, preserving original quality
+		// image.Size on iOS is already orientation-corrected.
+		// Draw into a new context to normalize pixel orientation.
+		// End the context before any await to avoid thread-affinity issues with
+		// UIGraphics' thread-local context stack.
+		UIGraphics.BeginImageContextWithOptions(image.Size, false, image.CurrentScale);
+		UIImage? rotatedImage;
+		try
+		{
+			image.Draw(new CGRect(CGPoint.Empty, image.Size));
+			rotatedImage = UIGraphics.GetImageFromCurrentImageContext();
+		}
+		finally
+		{
+			UIGraphics.EndImageContext();
+		}
+
+		if (rotatedImage is null)
+		{
+			return inputStream;
+		}
+
+		// Write the rotated image back to a stream, preserving original quality
 		var outputStream = new MemoryStream();
-		
+
 		// Determine output format based on original file
-		NSData? imageData = null;
+		NSData? imageData;
 		if (!string.IsNullOrEmpty(originalFileName))
 		{
 			var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
 			if (extension == ".png")
 			{
-				imageData = correctedImage.AsPNG();
+				imageData = rotatedImage.AsPNG();
 			}
 			else
 			{
 				// For JPEG and other formats, use maximum quality (1.0)
-				// People can downscale themselves through the MediaPickerOptions
-				imageData = correctedImage.AsJPEG(1f);
+				imageData = rotatedImage.AsJPEG(1f);
 			}
 		}
 		else
 		{
 			// Default to JPEG with maximum quality (1.0)
-			imageData = correctedImage.AsJPEG(1f);
+			imageData = rotatedImage.AsJPEG(1f);
 		}
-		
+
+		rotatedImage.Dispose();
+
 		if (imageData is not null)
 		{
-			await imageData.AsStream().CopyToAsync(outputStream);
+			using (imageData)
+			using (var encodedStream = imageData.AsStream())
+			{
+				await encodedStream.CopyToAsync(outputStream);
+			}
 			outputStream.Position = 0;
 			return outputStream;
 		}
@@ -129,7 +151,7 @@ internal static partial class ImageProcessor
 				return Task.FromResult(processedStream);
 
 			// Create mutable data for output
-			var outputData = NSMutableData.FromCapacity(0);
+			using var outputData = NSMutableData.FromCapacity(0);
 			if (outputData == null)
 				return Task.FromResult(processedStream);
 
@@ -154,7 +176,8 @@ internal static partial class ImageProcessor
 				destination.AddImage(image, restoredMetadata);
 				destination.Close();
 
-				return Task.FromResult<Stream>(outputData.AsStream());
+				// Copy bytes before outputData is disposed at end of using scope
+				return Task.FromResult<Stream>(new MemoryStream(outputData.ToArray()));
 			}
 
 			return Task.FromResult(processedStream);

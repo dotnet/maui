@@ -35,18 +35,16 @@
                         SemanticProperties.Hint="Indicates if this task is completed" />
                 </sf:SfTextInputLayout>
 
-                 <sf:SfTextInputLayout
+              <sf:SfTextInputLayout
                     IsVisible="{Binding IsExistingProject}"
-                    SemanticProperties.Description="ComboBox to select Project"
-                    SemanticProperties.Hint="State Collapsed"
+                    SemanticProperties.Description="ComboBox to select a project. Activate to browse and select a project"
                     Hint="Project">
                     <Picker 
                         ItemsSource="{Binding Projects}"
                         ItemDisplayBinding="{Binding Name, x:DataType=models:Project}"
                         SelectedItem="{Binding Project}"
                         SelectedIndex="{Binding SelectedProjectIndex}"
-                        SemanticProperties.Description="Project State Expanded"
-                        SemanticProperties.Hint="Which project this task belongs to"/>
+                        IsOpen="{Binding IsProjectPickerExpanded, Mode=TwoWay}"/>
                 </sf:SfTextInputLayout>
 
                 <Button 

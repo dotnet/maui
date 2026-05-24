@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,23 +13,24 @@ public partial class Maui24384 : ContentPage
 
 	public Maui24384() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void ImmutableToIList([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ImmutableToIList(XamlInflator inflator)
 		{
 			var page = new Maui24384(inflator);
 			var picker = page.Content as Picker;
-			Assert.That(picker.ItemsSource, Is.EquivalentTo(Maui24384.StaticLetters));
+			Assert.Equivalent(Maui24384.StaticLetters, picker.ItemsSource);
 		}
 	}
 }

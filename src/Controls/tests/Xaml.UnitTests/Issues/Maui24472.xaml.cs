@@ -1,4 +1,4 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,17 +12,18 @@ public partial class Maui24472 : ContentPage
 {
 	public Maui24472() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
+		[Theory]
+		[XamlInflatorData]
 		// https://github.com/dotnet/maui/issues/24472
 		// XamlC was throwing "Value cannot be null. (Parameter 'key')" when compiling
 		// XAML with x:Array containing custom objects in CollectionView.ItemsSource
-		public void XArrayInCollectionViewItemsSourceDoesNotCrash([Values] XamlInflator inflator)
+		internal void XArrayInCollectionViewItemsSourceDoesNotCrash(XamlInflator inflator)
 		{
 			var page = new Maui24472(inflator);
-			Assert.That(page, Is.Not.Null);
+			Assert.NotNull(page);
 		}
 	}
 }

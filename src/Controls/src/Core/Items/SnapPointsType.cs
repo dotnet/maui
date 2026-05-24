@@ -1,13 +1,30 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/SnapPointsType.xml" path="Type[@FullName='Microsoft.Maui.Controls.SnapPointsType']/Docs/*" />
+	/// <summary>
+	/// Specifies the snap points behavior when scrolling through items in an items layout.
+	/// </summary>
+	/// <remarks>
+	/// Snap points control how scrolling behaves when the user stops interacting with the view.
+	/// They create discrete stopping points, commonly used for paging or carousel-style navigation.
+	/// </remarks>
 	public enum SnapPointsType
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SnapPointsType.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>
+		/// No snap points. Scrolling stops wherever the user releases, with standard inertia.
+		/// </summary>
 		None,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SnapPointsType.xml" path="//Member[@MemberName='Mandatory']/Docs/*" />
+		
+		/// <summary>
+		/// Scrolling snaps to the nearest snap point, but the user can scroll past multiple snap points in a single gesture.
+		/// After scrolling stops, the view snaps to the nearest item.
+		/// </summary>
 		Mandatory,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SnapPointsType.xml" path="//Member[@MemberName='MandatorySingle']/Docs/*" />
+		
+		/// <summary>
+		/// Scrolling snaps to exactly one adjacent snap point per gesture.
+		/// The user can only advance or go back by one item at a time, regardless of scroll velocity.
+		/// This is commonly used for <see cref="CarouselView"/> to ensure precise item-by-item navigation.
+		/// </summary>
 		MandatorySingle
 	}
 }

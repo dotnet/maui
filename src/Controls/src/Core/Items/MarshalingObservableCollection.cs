@@ -12,11 +12,19 @@ namespace Microsoft.Maui.Controls
 	// collection which are made off of the main thread remain invisible to consumers on the main thread
 	// until they have been processed by the main thread.
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/MarshalingObservableCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.MarshalingObservableCollection']/Docs/*" />
+	/// <summary>
+	/// A thread-safe observable collection that marshals all collection changes to the main thread.
+	/// </summary>
+	/// <remarks>
+	/// This collection wraps an <see cref="INotifyCollectionChanged"/> collection and ensures that all collection change notifications
+	/// are processed on the main UI thread, making it safe to bind to UI controls even when the underlying collection is modified from background threads.
+	/// </remarks>
 	public class MarshalingObservableCollection : List<object>, INotifyCollectionChanged
 	{
 		readonly IList _internalCollection;
 		readonly IDispatcher _dispatcher;
+		readonly WeakNotifyCollectionChangedProxy _proxy;
+		readonly NotifyCollectionChangedEventHandler _internalCollectionChanged;
 
 		/// <param name="list">The list parameter.</param>
 		public MarshalingObservableCollection(IList list)
@@ -26,8 +34,8 @@ namespace Microsoft.Maui.Controls
 
 			_internalCollection = list;
 			_dispatcher = Dispatcher.GetForCurrentThread();
-
-			incc.CollectionChanged += InternalCollectionChanged;
+			_internalCollectionChanged = InternalCollectionChanged;
+			_proxy = new WeakNotifyCollectionChangedProxy(incc, _internalCollectionChanged);
 
 			foreach (var item in _internalCollection)
 			{
@@ -150,6 +158,11 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnCollectionChanged(args);
+		}
+
+		internal void Dispose()
+		{
+			_proxy.Unsubscribe();
 		}
 	}
 }
