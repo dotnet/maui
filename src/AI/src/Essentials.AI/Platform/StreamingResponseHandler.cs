@@ -8,27 +8,47 @@ namespace Microsoft.Maui.Essentials.AI;
 /// Handles the channel, chunker, and update processing for streaming responses.
 /// Extracted from the platform-specific chat client for testability.
 /// </summary>
+/// <remarks>
+/// When a <see cref="StreamChunkerBase"/> is provided, <see cref="ProcessContent"/> expects
+/// cumulative snapshots and the chunker computes deltas (used by Apple Intelligence).
+/// When no chunker is provided, <see cref="ProcessContent"/> expects pre-chunked deltas
+/// and passes them through directly (used by Windows Phi Silica).
+/// </remarks>
 internal sealed class StreamingResponseHandler
 {
 	private readonly Channel<ChatResponseUpdate> _channel;
-	private readonly StreamChunkerBase _chunker;
+	private readonly StreamChunkerBase? _chunker;
 
-	public StreamingResponseHandler(StreamChunkerBase chunker)
+	/// <summary>
+	/// Creates a handler that passes content through directly (no chunking).
+	/// Use when the AI model already provides incremental deltas.
+	/// </summary>
+	public StreamingResponseHandler()
 	{
 		_channel = Channel.CreateUnbounded<ChatResponseUpdate>(
 			new UnboundedChannelOptions { SingleReader = true });
+	}
+
+	/// <summary>
+	/// Creates a handler with a chunker for computing deltas from cumulative snapshots.
+	/// Use when the AI model provides progressively longer complete responses.
+	/// </summary>
+	public StreamingResponseHandler(StreamChunkerBase chunker) : this()
+	{
 		_chunker = chunker;
 	}
 
 	/// <summary>
 	/// Processes a content (text) streaming update.
+	/// If a chunker is configured, <paramref name="text"/> should be the cumulative response.
+	/// If no chunker, <paramref name="text"/> should be the incremental delta.
 	/// </summary>
 	public void ProcessContent(string? text)
 	{
 		if (text is null)
 			return;
 
-		var delta = _chunker.Process(text);
+		var delta = _chunker is not null ? _chunker.Process(text) : text;
 		if (!string.IsNullOrEmpty(delta))
 		{
 			_channel.Writer.TryWrite(new ChatResponseUpdate
@@ -44,17 +64,19 @@ internal sealed class StreamingResponseHandler
 	/// </summary>
 	public void ProcessToolCall(string? toolCallId, string? toolCallName, string? toolCallArguments)
 	{
-		// Flush any pending content before resetting for tool call
-		var pendingContent = _chunker.Flush();
-		if (!string.IsNullOrEmpty(pendingContent))
+		if (_chunker is not null)
 		{
-			_channel.Writer.TryWrite(new ChatResponseUpdate
+			var pendingContent = _chunker.Flush();
+			if (!string.IsNullOrEmpty(pendingContent))
 			{
-				Role = ChatRole.Assistant,
-				Contents = { new TextContent(pendingContent) }
-			});
+				_channel.Writer.TryWrite(new ChatResponseUpdate
+				{
+					Role = ChatRole.Assistant,
+					Contents = { new TextContent(pendingContent) }
+				});
+			}
+			_chunker.Reset();
 		}
-		_chunker.Reset();
 
 		var args = toolCallArguments is null
 			? null
@@ -86,14 +108,17 @@ internal sealed class StreamingResponseHandler
 	/// </summary>
 	public void Complete()
 	{
-		var finalChunk = _chunker.Flush();
-		if (!string.IsNullOrEmpty(finalChunk))
+		if (_chunker is not null)
 		{
-			_channel.Writer.TryWrite(new ChatResponseUpdate
+			var finalChunk = _chunker.Flush();
+			if (!string.IsNullOrEmpty(finalChunk))
 			{
-				Role = ChatRole.Assistant,
-				Contents = { new TextContent(finalChunk) }
-			});
+				_channel.Writer.TryWrite(new ChatResponseUpdate
+				{
+					Role = ChatRole.Assistant,
+					Contents = { new TextContent(finalChunk) }
+				});
+			}
 		}
 
 		_channel.Writer.TryComplete();

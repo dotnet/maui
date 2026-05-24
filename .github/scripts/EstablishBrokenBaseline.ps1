@@ -64,6 +64,9 @@ $script:TestPathPatterns = @(
     "*.Tests/*",
     "*.UnitTests/*",
     "*TestCases*",
+    "*TestUtils*",
+    "*DeviceTests.Runners*",
+    "*DeviceTests.Shared*",
     "*snapshots*",
     "*.png",
     "*.jpg",
@@ -336,10 +339,30 @@ if ($Restore) {
 }
 
 # ============================================================
+# AUTO-RESTORE: If a previous baseline is still active, restore it first
+# ============================================================
+# This prevents the Establish→fail→Establish loop that caused build #13539436
+# to waste 3.7 hours. Instead of erroring on a dirty tree, we detect that a
+# prior baseline was never restored and clean it up automatically.
+
+$existingState = Get-BaselineState
+if ($existingState) {
+    Write-Host "⚠️  Previous baseline still active — auto-restoring before re-establishing..." -ForegroundColor Yellow
+
+    foreach ($file in $existingState.RevertedFiles) {
+        Write-Host "  Restoring: $file" -ForegroundColor Gray
+        git checkout HEAD -- $file 2>&1 | Out-Null
+    }
+
+    Remove-BaselineState
+    Write-Host "  Previous baseline restored." -ForegroundColor Green
+}
+
+# ============================================================
 # FAIL-FAST: Require clean working directory
 # ============================================================
-# This check ensures every successful baseline establishment started from a clean state.
-# If this script completes without error, the baseline was valid - no checkpoint logging needed.
+# After auto-restore above, the tree should be clean. If it's still dirty,
+# something else is wrong (manual edits, uncommitted work, etc.).
 
 $dirtyFiles = git status --porcelain --untracked-files=no 2>$null
 if ($dirtyFiles) {

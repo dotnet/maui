@@ -4,17 +4,36 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Views.Itinerary.DayView"
     x:Name="DayViewControl"
     x:DataType="viewModels:DayPlanViewModel">
 
     <Border Padding="0" StrokeShape="RoundRectangle 16" StrokeThickness="0"
-            BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource Gray900}}"
+            Background="{AppThemeBinding Light=White, Dark={StaticResource Gray900}}"
             Shadow="{Shadow Brush=Black, Offset='0,2', Radius=8, Opacity=0.2}">
         <VerticalStackLayout Spacing="0">
             <Border HeightRequest="300" StrokeShape="RoundRectangle 12" StrokeThickness="0" Margin="4">
                 <Grid>
-                    <views:LandmarkDetailMapView BindingContext="{Binding Landmark}" />
+                    <!-- Map on platforms that support it; placeholder on Windows -->
+                    <ContentView>
+                        <ContentView.Content>
+                            <OnPlatform x:TypeArguments="View">
+                                <On Platform="WinUI">
+                                    <Grid BackgroundColor="{AppThemeBinding Light=#E8EAF6, Dark=#1A1A2E}">
+                                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                                            <Label Text="🗺️" FontSize="40" HorizontalTextAlignment="Center" />
+                                            <Label Text="{Binding Landmark.Name}" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                                            <Label Text="{Binding Landmark.Continent}" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" HorizontalTextAlignment="Center" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </On>
+                                <On Platform="iOS,MacCatalyst,Android">
+                                    <views:LandmarkDetailMapView BindingContext="{Binding Landmark}" />
+                                </On>
+                            </OnPlatform>
+                        </ContentView.Content>
+                    </ContentView>
                     
                     <VerticalStackLayout VerticalOptions="End" Padding="15" Spacing="5">
                         <VerticalStackLayout.Background>
@@ -24,8 +43,14 @@
                             </LinearGradientBrush>
                         </VerticalStackLayout.Background>
 
-                        <Label Text="{Binding WeatherForecast}" FontSize="14" 
-                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="{Binding WeatherIcon}" FontFamily="FluentUI" FontSize="14"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
+                                   VerticalOptions="Center" />
+                            <Label Text="{Binding WeatherForecast}" FontSize="14" 
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
                         <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" 
                                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         <Label Text="{Binding Subtitle}" FontSize="14" 
