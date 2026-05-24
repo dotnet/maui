@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Handlers
 							}
 						});
 
-					// iOS 26+ resets ThumbTintColor after initial layout, so re-apply the custom ThumbColor here.
+					// iOS 26+ resets custom switch colors after initial layout, so re-apply them here.
 					UpdateThumbAndTrackColor(platformView);
 				}
 			}
@@ -142,26 +142,14 @@ namespace Microsoft.Maui.Handlers
 
 			void UpdateThumbAndTrackColor(UISwitch platformView)
 			{
-				DispatchQueue.MainQueue.DispatchAsync(async () =>
+				DispatchQueue.MainQueue.DispatchAsync(() =>
 				{
-					if (VirtualView is null || PlatformView is null)
+					if (VirtualView is not ISwitch view || PlatformView is null)
 						return;
 
-					await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
-
-					if (VirtualView is ISwitch view)
-					{
-						// iOS 26+ "Liquid Glass" resets TrackColor during post-connect layout. Re-apply both.
-						if (view.TrackColor is not null)
-						{
-							platformView.UpdateTrackColor(view);
-						}
-
-						if (view.ThumbColor is not null)
-						{
-							platformView.UpdateThumbColor(view);
-						}
-					}
+					platformView.UpdateTrackColor(view);
+					platformView.UpdateThumbColor(view);
+					(platformView as MauiSwitch)?.SetNeedsColorReapply();
 				});
 			}
 

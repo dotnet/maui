@@ -38,7 +38,10 @@ namespace Microsoft.Maui.Platform
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
-			QueueColorReapply();
+			if (Window is not null)
+			{
+				SetNeedsColorReapply();
+			}
 		}
 
 		public override void LayoutSubviews()

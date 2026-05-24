@@ -251,6 +251,79 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(UISwitchStyle.Automatic, style);
 		}
 
+		[Fact(DisplayName = "Thumb Color Clears When Reset On iOS 26")]
+		public async Task ThumbColorClearsWhenResetOniOS26()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return;
+			}
+
+			var switchStub = new SwitchStub
+			{
+				TrackColor = Colors.Red,
+				ThumbColor = Colors.Orange
+			};
+
+			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
+			{
+				var nativeSwitch = GetNativeSwitch(handler);
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, Colors.Orange.ToPlatform(), tolerance: 0.1))
+					.AssertEventually(message: "Native switch thumb color did not update to the custom color.");
+
+				switchStub.ThumbColor = null;
+				handler.UpdateValue(nameof(ISwitch.ThumbColor));
+
+				Assert.Equal(UISwitchStyle.Sliding, nativeSwitch.PreferredStyle);
+				Assert.Null(nativeSwitch.ThumbTintColor);
+			});
+		}
+
+		[Fact(DisplayName = "Custom Colors Reapply After Moved To Window On iOS 26")]
+		public async Task CustomColorsReapplyAfterMovedToWindowOniOS26()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return;
+			}
+
+			var switchStub = new SwitchStub
+			{
+				IsOn = false,
+				TrackColor = Colors.Red,
+				ThumbColor = Colors.Orange
+			};
+
+			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
+			{
+				var nativeSwitch = GetNativeSwitch(handler);
+
+				await new Func<bool>(() => nativeSwitch.IsReadyForColorReapply())
+					.AssertEventually(message: "Native switch was not ready for color reapply.");
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), Colors.Red.ToPlatform(), tolerance: 0.1))
+					.AssertEventually(message: "Native switch track color did not initially apply.");
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, Colors.Orange.ToPlatform(), tolerance: 0.1))
+					.AssertEventually(message: "Native switch thumb color did not initially apply.");
+
+				var trackSubview = nativeSwitch.GetTrackSubview();
+				Assert.NotNull(trackSubview);
+
+				trackSubview.BackgroundColor = UIColor.Clear;
+				nativeSwitch.ThumbTintColor = UIColor.Purple;
+
+				nativeSwitch.MovedToWindow();
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), Colors.Red.ToPlatform(), tolerance: 0.1))
+					.AssertEventually(message: "Native switch track color did not reapply after moving to a window.");
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, Colors.Orange.ToPlatform(), tolerance: 0.1))
+					.AssertEventually(message: "Native switch thumb color did not reapply after moving to a window.");
+			});
+		}
+
 		[Fact(DisplayName = "Custom Colors Update After App Theme Change On iOS 26")]
 		public async Task CustomColorsUpdateAfterAppThemeChangeOniOS26()
 		{
