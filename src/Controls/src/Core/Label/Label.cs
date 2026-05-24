@@ -373,11 +373,22 @@ namespace Microsoft.Maui.Controls
 		{
 			var label = (Label)bindable;
 
-			if (TextChangedShouldInvalidateMeasure(label))
+			var wasEmpty = string.IsNullOrEmpty(oldvalue as string);
+			var isEmpty = string.IsNullOrEmpty(newvalue as string);
+
+			// Always invalidate when text transitions between empty and non-empty
+			// for labels that can grow in at least one direction (IsLabelSizeable),
+			// even for single-line horizontally-fixed labels (e.g. TailTruncation in
+			// a VerticalStackLayout), because the label height changes from 0 to line height.
+			if (TextChangedShouldInvalidateMeasure(label) || (wasEmpty != isEmpty && IsLabelSizeable(label)))
+			{
 				label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			}
 
 			if (newvalue != null)
+			{
 				label.FormattedText = null;
+			}
 		}
 
 		/// <inheritdoc/>

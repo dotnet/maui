@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static partial void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFlowDirection(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 
 		}
