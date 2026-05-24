@@ -9,6 +9,19 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly UIDatePickerProxy _proxy = new();
 
+		static DatePickerHandler()
+		{
+			// IDatePicker does not implement IPicker, so Focus/Unfocus overrides must
+			// run through an IView mapper instead of DatePickerHandler.CommandMapper entries.
+			var macCatalystOverrides = new CommandMapper<IView, IViewHandler>(CommandMapper.Chained ?? ViewCommandMapper)
+			{
+				[nameof(IView.Focus)] = MapMacCatalystFocus,
+				[nameof(IView.Unfocus)] = MapMacCatalystUnfocus,
+			};
+
+			CommandMapper.Chained = macCatalystOverrides;
+		}
+
 		protected override UIDatePicker CreatePlatformView()
 		{
 			return new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
@@ -77,7 +90,38 @@ namespace Microsoft.Maui.Handlers
 
 		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
+			handler.PlatformView?.UpdateIsOpen(datePicker);
+		}
 
+		static void MapMacCatalystFocus(IViewHandler handler, IView view, object? args)
+		{
+			if (args is not FocusRequest request)
+				return;
+
+			if (handler is not DatePickerHandler datePickerHandler ||
+				datePickerHandler.VirtualView is not IDatePicker datePicker)
+			{
+				request.TrySetResult(false);
+				return;
+			}
+
+			datePicker.IsOpen = true;
+			datePickerHandler.PlatformView?.UpdateIsOpen(datePicker);
+
+			// UIDatePicker can report false from BecomeFirstResponder on MacCatalyst.
+			request.TrySetResult(true);
+		}
+
+		static void MapMacCatalystUnfocus(IViewHandler handler, IView view, object? args)
+		{
+			if (handler is not DatePickerHandler datePickerHandler ||
+				datePickerHandler.VirtualView is not IDatePicker datePicker)
+			{
+				return;
+			}
+
+			datePicker.IsOpen = false;
+			datePickerHandler.PlatformView?.UpdateIsOpen(datePicker);
 		}
 
 		void SetVirtualViewDate()
@@ -120,19 +164,19 @@ namespace Microsoft.Maui.Handlers
 					handler.SetVirtualViewDate();
 
 				if (VirtualView is IDatePicker virtualView)
-					virtualView.IsFocused = true;
+					virtualView.IsFocused = virtualView.IsOpen = true;
 			}
 
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IDatePicker virtualView)
-					virtualView.IsFocused = true;
+					virtualView.IsFocused = virtualView.IsOpen = true;
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is IDatePicker virtualView)
-					virtualView.IsFocused = false;
+					virtualView.IsFocused = virtualView.IsOpen = false;
 			}
 		}
 	}
