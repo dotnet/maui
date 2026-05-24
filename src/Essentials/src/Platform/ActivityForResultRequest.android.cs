@@ -154,7 +154,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
 			                """);
 			ClearActiveLaunchCompletionSource(completionSource);
-			completionSource.SetCanceled();
+			completionSource.TrySetCanceled();
 			return completionSource.Task;
 		}
 
@@ -165,7 +165,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		catch (Exception ex)
 		{
 			ClearActiveLaunchCompletionSource(completionSource);
-			completionSource.SetException(ex);
+			completionSource.TrySetException(ex);
 		}
 
 		return completionSource.Task;

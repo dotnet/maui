@@ -215,6 +215,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		public async Task Wait_For_Recovered_Results_Returns_Existing_Result()
 		{
 			var capturePath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			using var cancellationTokenSource = new CancellationTokenSource();
 
 			var pendingCapture = MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.CapturePhoto,
@@ -224,7 +225,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			SimulateProcessRecreation();
 			await MediaPickerRecoveryManager.RecoverOrphanedCaptureResultAsync(RecoveredMediaPickerResultKind.CapturePhoto, true);
 
-			var results = await MediaPicker.WaitForRecoveredMediaPickerResultsAsync(CancellationToken.None);
+			var results = await MediaPicker.WaitForRecoveredMediaPickerResultsAsync(cancellationTokenSource.Token);
 
 			var result = Assert.Single(results);
 			Assert.Equal(pendingCapture.Id, result.Id);
@@ -314,13 +315,37 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
-		public async Task Wait_For_Recovered_Results_Requires_Cancellable_Token_When_Waiting()
+		public async Task Wait_For_Recovered_Results_Throws_When_Token_Is_Already_Canceled()
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			await cancellationTokenSource.CancelAsync();
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+				MediaPicker.WaitForRecoveredMediaPickerResultsAsync(cancellationTokenSource.Token));
+
+			Assert.Equal(0, GetPendingWaiterCount());
+		}
+
+		[Fact]
+		public async Task Wait_For_Recovered_Results_Requires_Cancellable_Token()
 		{
 			var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
 				MediaPicker.WaitForRecoveredMediaPickerResultsAsync(CancellationToken.None));
 
 			Assert.Equal("cancellationToken", exception.ParamName);
 			Assert.Equal(0, GetPendingWaiterCount());
+
+			var capturePath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			MediaPickerRecoveryStore.WriteRecoveredResults([
+				new RecoveredMediaPickerRecord("queued", RecoveredMediaPickerResultKind.CapturePhoto, [capturePath])
+			]);
+
+			exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+				MediaPicker.WaitForRecoveredMediaPickerResultsAsync(CancellationToken.None));
+
+			Assert.Equal("cancellationToken", exception.ParamName);
+			Assert.Equal(0, GetPendingWaiterCount());
+			Assert.Equal("queued", Assert.Single(MediaPickerRecoveryStore.ReadRecoveredResults()).Id);
 		}
 
 		[Fact]
@@ -823,6 +848,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		public async Task Accepted_Pick_Materialization_Failure_Clears_Active_State_And_Completes_Waiter_Empty()
 		{
 			var invalidPickerUri = AndroidUri.Parse("content://maui-test/missing-picked-media") ?? throw new InvalidOperationException("Unable to create invalid picker URI.");
+			using var cancellationTokenSource = new CancellationTokenSource();
 			MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.PickPhoto,
 				[],
@@ -831,7 +857,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			Assert.True(MediaPickerRecoveryManager.RecordSinglePickCallbackResult(invalidPickerUri));
 			SimulateProcessRecreation();
 
-			var results = await MediaPicker.WaitForRecoveredMediaPickerResultsAsync(CancellationToken.None);
+			var results = await MediaPicker.WaitForRecoveredMediaPickerResultsAsync(cancellationTokenSource.Token);
 
 			Assert.Empty(results);
 			Assert.Null(GetActiveOperation());
@@ -943,6 +969,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			activeLaunchCompletionSourceField.SetValue(captureForResult, activeTaskCompletionSource);
 
 			await Assert.ThrowsAsync<InvalidOperationException>(() => captureForResult.Launch(AndroidUri.Empty));
+		}
+
+		[Fact]
+		public async Task ActivityForResultRequest_Unregistered_Launch_Returns_Canceled_Task()
+		{
+			var captureForResult = new TestMediaCaptureForResult(RecoveredMediaPickerResultKind.CapturePhoto);
+
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => captureForResult.Launch(AndroidUri.Empty));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => captureForResult.Launch(AndroidUri.Empty));
 		}
 
 		[Fact]
@@ -1496,6 +1531,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		public async Task Accepted_Result_From_Recreated_Process_Completes_Wait()
 		{
 			var capturePath = CreateNonEmptyMediaFile(FileExtensions.Mp4);
+			using var cancellationTokenSource = new CancellationTokenSource();
 
 			var pendingCapture = MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.CaptureVideo,
@@ -1505,7 +1541,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			MediaPickerRecoveryManager.RecordCaptureCallbackResult(RecoveredMediaPickerResultKind.CaptureVideo, true);
 			SimulateProcessRecreation();
 
-			var results = await MediaPicker.WaitForRecoveredMediaPickerResultsAsync(CancellationToken.None);
+			var results = await MediaPicker.WaitForRecoveredMediaPickerResultsAsync(cancellationTokenSource.Token);
 
 			var result = Assert.Single(results);
 			Assert.Equal(pendingCapture.Id, result.Id);

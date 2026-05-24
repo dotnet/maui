@@ -9,7 +9,7 @@ namespace Microsoft.Maui.ApplicationModel;
 
 internal class PickMultipleVisualMediaForResult : ActivityForResultRequest<PickMultipleVisualMedia, JavaList>
 {
-	static readonly Lazy<PickMultipleVisualMediaForResult> LazyInstance = new(new PickMultipleVisualMediaForResult());
+	static readonly Lazy<PickMultipleVisualMediaForResult> LazyInstance = new(() => new PickMultipleVisualMediaForResult());
 
 	public static PickMultipleVisualMediaForResult Instance => LazyInstance.Value;
 

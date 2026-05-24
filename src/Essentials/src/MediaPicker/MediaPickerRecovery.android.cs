@@ -98,11 +98,11 @@ namespace Microsoft.Maui.Media
 		/// <summary>
 		/// Waits for Android MediaPicker recovery to reconcile a pending result.
 		/// </summary>
-		/// <param name="cancellationToken">A token that cancels the wait and removes the recovery listener. If no result is immediately available, this token must be cancellable.</param>
+		/// <param name="cancellationToken">A cancellable token that cancels the wait and removes the recovery listener.</param>
 		/// <returns>A non-consuming list of recovered MediaPicker results.</returns>
-		/// <exception cref="ArgumentException">Thrown when no result is immediately available and <paramref name="cancellationToken"/> cannot be canceled.</exception>
+		/// <exception cref="ArgumentException">Thrown when <paramref name="cancellationToken"/> cannot be canceled.</exception>
 		/// <remarks>
-		/// <para>If recovered results are already available, this method returns them immediately. Otherwise, it waits until AndroidX result replay publishes or terminally clears a pending MediaPicker result. This method is one-shot; apps that need continuous observation should call it again with a lifecycle-scoped cancellation token.</para>
+		/// <para>With a cancellable token, if recovered results are already available, this method returns them immediately. Otherwise, it waits until AndroidX result replay publishes or terminally clears a pending MediaPicker result. This method is one-shot; apps that need continuous observation should call it again with a lifecycle-scoped cancellation token.</para>
 		/// <para>If AndroidX does not replay or reconcile a pending result, this method may wait until <paramref name="cancellationToken"/> is canceled.</para>
 		/// </remarks>
 		public static Task<IReadOnlyList<RecoveredMediaPickerResult>> WaitForRecoveredMediaPickerResultsAsync(CancellationToken cancellationToken)

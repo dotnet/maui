@@ -70,7 +70,8 @@ internal static class MediaPickerRecoveryManager
 
 		try
 		{
-			while (true)
+			// Retry once for a callback that records an accepted recreated result after the first recovery pass.
+			for (var attempt = 0; attempt < 2; attempt++)
 			{
 				var reconciliation = await RecoverOperationIfAvailableUnderSemaphoreAsync().ConfigureAwait(false);
 				if (reconciliation.WasReconciled)
@@ -88,12 +89,14 @@ internal static class MediaPickerRecoveryManager
 						return BeginOperationUnderLock(kind, filePaths, photoProcessingOptions);
 					}
 
-					if (!ShouldPromoteRecreatedOperation(activeOperation))
+					if (!ShouldPromoteRecreatedOperation(activeOperation) || attempt == 1)
 					{
 						ThrowIfActiveOperationBlocksNewOperation(activeOperation);
 					}
 				}
 			}
+
+			throw new InvalidOperationException("A MediaPicker result is pending recovery.");
 		}
 		finally
 		{
@@ -131,9 +134,15 @@ internal static class MediaPickerRecoveryManager
 	internal static async Task<IReadOnlyList<RecoveredMediaPickerResult>> WaitForRecoveredResultsAsync(CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
+		if (!cancellationToken.CanBeCanceled)
+		{
+			throw new ArgumentException(
+				"A cancellable token is required when waiting for MediaPicker recovery.",
+				nameof(cancellationToken));
+		}
 
 		var observedReconciliationGeneration = GetRecoveryReconciliationGeneration();
-		var reconciliation = await RecoverOperationIfAvailableCoreAsync().ConfigureAwait(false);
+		var reconciliation = await RecoverOperationIfAvailableCoreAsync(cancellationToken).ConfigureAwait(false);
 		if (reconciliation.WasReconciled || reconciliation.Results.Count > 0)
 		{
 			return reconciliation.Results;
@@ -157,13 +166,6 @@ internal static class MediaPickerRecoveryManager
 			if (cancellationToken.IsCancellationRequested)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
-			}
-
-			if (!cancellationToken.CanBeCanceled)
-			{
-				throw new ArgumentException(
-					"A cancellable token is required when waiting for MediaPicker recovery.",
-					nameof(cancellationToken));
 			}
 
 			RecoveryWaiters.Add(waiter);
@@ -338,9 +340,9 @@ internal static class MediaPickerRecoveryManager
 
 	// Promotes a recreated-process operation only after AndroidX has accepted the result.
 	// A Pending record means the result callback has not been replayed yet.
-	static async Task<MediaPickerRecoveryReconciliation> RecoverOperationIfAvailableCoreAsync()
+	static async Task<MediaPickerRecoveryReconciliation> RecoverOperationIfAvailableCoreAsync(CancellationToken cancellationToken = default)
 	{
-		await RecoveryPromotionSemaphore.WaitAsync().ConfigureAwait(false);
+		await RecoveryPromotionSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
 		try
 		{

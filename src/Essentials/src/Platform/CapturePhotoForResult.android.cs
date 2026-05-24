@@ -8,7 +8,7 @@ namespace Microsoft.Maui.ApplicationModel;
 // registered launcher, while shared recovery behavior lives in MediaCaptureForResult<TContract>.
 internal class CapturePhotoForResult : MediaCaptureForResult<TakePicture>
 {
-	static readonly Lazy<CapturePhotoForResult> LazyInstance = new(new CapturePhotoForResult());
+	static readonly Lazy<CapturePhotoForResult> LazyInstance = new(() => new CapturePhotoForResult());
 
 	public static CapturePhotoForResult Instance => LazyInstance.Value;
 
