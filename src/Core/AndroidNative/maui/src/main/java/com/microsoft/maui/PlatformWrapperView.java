@@ -149,6 +149,28 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     @Override
+    public void onDescendantInvalidated(@NonNull View child, @NonNull View target) {
+        // API 26+: On modern Android, when a hardware-accelerated child view calls invalidate()
+        // (e.g., SwitchCompat animating its thumb), the framework calls onDescendantInvalidated()
+        // on the parent instead of invalidateChildInParent().
+        //
+        // CRITICAL: In hardware-accelerated mode, each view has its own RenderNode display list.
+        // When a child invalidates, only the CHILD's RenderNode is re-recorded — the parent's
+        // display list is replayed from cache (including the stale shadow draw call baked in).
+        // Setting shadowInvalidated=true is useless unless this view's own display list is also
+        // re-recorded, which requires invalidating THIS view explicitly.
+        //
+        // Without invalidate(): SwitchCompat redraws (thumb moves) but PlatformWrapperView's
+        // display list is replayed unchanged → shadow stays at its original OFF/ON position.
+        // With invalidate(): PlatformWrapperView's display list is marked dirty → dispatchDraw()
+        // is re-invoked next frame → shadow is redrawn at the correct current thumb position.
+        this.shadowInvalidated = true;
+        super.onDescendantInvalidated(child, target);
+        // Force this view's display list to be re-recorded so dispatchDraw() is called next frame.
+        invalidate();
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (getChildCount() == 0) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
