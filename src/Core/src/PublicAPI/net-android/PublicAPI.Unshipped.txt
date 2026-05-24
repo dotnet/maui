@@ -1,3 +1,280 @@
 ﻿#nullable enable
+Microsoft.Maui.Handlers.ActivityIndicatorHandler2
+Microsoft.Maui.Handlers.ActivityIndicatorHandler2.ActivityIndicatorHandler2() -> void
+Microsoft.Maui.Handlers.DatePickerHandler2
+Microsoft.Maui.Handlers.DatePickerHandler2.DatePickerHandler2() -> void
+Microsoft.Maui.Handlers.EditorHandler2
+Microsoft.Maui.Handlers.EditorHandler2.EditorHandler2() -> void
+Microsoft.Maui.Handlers.EntryHandler2
+Microsoft.Maui.Handlers.EntryHandler2.EntryHandler2() -> void
+Microsoft.Maui.Handlers.ImageHandler2
+Microsoft.Maui.Handlers.ImageHandler2.ImageHandler2() -> void
+Microsoft.Maui.Handlers.LabelHandler2
+Microsoft.Maui.Handlers.LabelHandler2.LabelHandler2() -> void
+Microsoft.Maui.Handlers.MaterialDatePickerDismissListener
+Microsoft.Maui.Handlers.MaterialDatePickerDismissListener.MaterialDatePickerDismissListener(Microsoft.Maui.Handlers.DatePickerHandler2! handler) -> void
+Microsoft.Maui.Handlers.MaterialDatePickerDismissListener.OnDismiss(Android.Content.IDialogInterface? dialog) -> void
+Microsoft.Maui.Handlers.MaterialDatePickerPositiveButtonClickListener
+Microsoft.Maui.Handlers.MaterialDatePickerPositiveButtonClickListener.MaterialDatePickerPositiveButtonClickListener(Microsoft.Maui.Handlers.DatePickerHandler2! handler) -> void
+Microsoft.Maui.Handlers.MaterialDatePickerPositiveButtonClickListener.OnPositiveButtonClick(Java.Lang.Object? selection) -> void
+Microsoft.Maui.Handlers.MaterialTimePickerDismissListener
+Microsoft.Maui.Handlers.MaterialTimePickerDismissListener.MaterialTimePickerDismissListener(Microsoft.Maui.Handlers.TimePickerHandler2! handler) -> void
+Microsoft.Maui.Handlers.MaterialTimePickerDismissListener.OnDismiss(Android.Content.IDialogInterface? dialog) -> void
+Microsoft.Maui.Handlers.MaterialTimePickerPositiveButtonClickListener
+Microsoft.Maui.Handlers.MaterialTimePickerPositiveButtonClickListener.MaterialTimePickerPositiveButtonClickListener(Microsoft.Maui.Handlers.TimePickerHandler2! handler) -> void
+Microsoft.Maui.Handlers.MaterialTimePickerPositiveButtonClickListener.OnClick(Android.Views.View? v) -> void
+Microsoft.Maui.Handlers.PickerHandler._dialog -> AndroidX.AppCompat.App.AlertDialog?
+Microsoft.Maui.Handlers.PickerHandler2
+Microsoft.Maui.Handlers.PickerHandler2.PickerHandler2() -> void
+Microsoft.Maui.Handlers.ProgressBarHandler2
+Microsoft.Maui.Handlers.ProgressBarHandler2.ProgressBarHandler2() -> void
+Microsoft.Maui.Handlers.RadioButtonHandler2
+Microsoft.Maui.Handlers.RadioButtonHandler2.RadioButtonHandler2() -> void
+Microsoft.Maui.Handlers.SearchBarHandler2
+Microsoft.Maui.Handlers.SearchBarHandler2.QueryEditor.get -> Android.Widget.EditText?
+Microsoft.Maui.Handlers.SearchBarHandler2.SearchBarHandler2() -> void
+Microsoft.Maui.Handlers.SliderHandler2
+Microsoft.Maui.Handlers.SliderHandler2.SliderHandler2() -> void
+Microsoft.Maui.Handlers.SwitchHandler2
+Microsoft.Maui.Handlers.SwitchHandler2.SwitchHandler2() -> void
+Microsoft.Maui.Handlers.TimePickerHandler2
+Microsoft.Maui.Handlers.TimePickerHandler2.TimePickerHandler2() -> void
 Microsoft.Maui.IPicker.BorderColor.get -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.IPicker.BorderThickness.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Platform.MaterialActivityIndicator
+Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper
+Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper.MauiMaterialContextThemeWrapper(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialDatePicker
+Microsoft.Maui.Platform.MauiMaterialDatePicker.HidePicker.get -> System.Action?
+Microsoft.Maui.Platform.MauiMaterialDatePicker.HidePicker.set -> void
+Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiMaterialDatePicker.MauiMaterialDatePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiMaterialDatePicker.OnClick(Android.Views.View? v) -> void
+Microsoft.Maui.Platform.MauiMaterialDatePicker.ShowPicker.get -> System.Action?
+Microsoft.Maui.Platform.MauiMaterialDatePicker.ShowPicker.set -> void
+Microsoft.Maui.Platform.MauiMaterialEditText
+Microsoft.Maui.Platform.MauiMaterialEditText.MauiMaterialEditText(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialEditText.MauiMaterialEditText(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiMaterialEditText.MauiMaterialEditText(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiMaterialEditText.MauiMaterialEditText(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiMaterialEditText.SelectionChanged -> System.EventHandler?
+Microsoft.Maui.Platform.MauiMaterialPicker
+Microsoft.Maui.Platform.MauiMaterialPicker.MauiMaterialPicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialPickerBase
+Microsoft.Maui.Platform.MauiMaterialPickerBase.MauiMaterialPickerBase(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText
+Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.MauiMaterialSearchBarTextInputEditText(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.SelectionChanged -> System.EventHandler?
+Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout
+Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout.MauiMaterialSearchBarTextInputLayout(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout.UpdateCloseButtonVisibility(bool hasText) -> void
+Microsoft.Maui.Platform.MauiMaterialTextInputLayout
+Microsoft.Maui.Platform.MauiMaterialTextInputLayout.MauiMaterialTextInputLayout(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialTextInputLayout.MauiMaterialTextInputLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiMaterialTextInputLayout.MauiMaterialTextInputLayout(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiMaterialTextInputLayout.MauiMaterialTextInputLayout(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiMaterialTextView
+Microsoft.Maui.Platform.MauiMaterialTextView.MauiMaterialTextView(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialTimePicker
+Microsoft.Maui.Platform.MauiMaterialTimePicker.HidePicker.get -> System.Action?
+Microsoft.Maui.Platform.MauiMaterialTimePicker.HidePicker.set -> void
+Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiMaterialTimePicker.OnClick(Android.Views.View? v) -> void
+Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.get -> System.Action?
+Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.set -> void
+Microsoft.Maui.PlatformDrawable
+Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
+Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
+override Microsoft.Maui.Handlers.ActivityIndicatorHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MaterialActivityIndicator!
+override Microsoft.Maui.Handlers.ActivityIndicatorHandler2.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Handlers.DatePickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialDatePicker! platformView) -> void
+override Microsoft.Maui.Handlers.DatePickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialDatePicker!
+override Microsoft.Maui.Handlers.DatePickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialDatePicker! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialEditText!
+override Microsoft.Maui.Handlers.EditorHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler2.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Handlers.EditorHandler2.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.EntryHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialTextInputLayout! platformView) -> void
+override Microsoft.Maui.Handlers.EntryHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialTextInputLayout!
+override Microsoft.Maui.Handlers.EntryHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialTextInputLayout! platformView) -> void
+override Microsoft.Maui.Handlers.EntryHandler2.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.ImageHandler2.CreatePlatformView() -> Google.Android.Material.ImageView.ShapeableImageView!
+override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Handlers.LabelHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialTextView!
+override Microsoft.Maui.Handlers.PickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialPicker! platformView) -> void
+override Microsoft.Maui.Handlers.PickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialPicker!
+override Microsoft.Maui.Handlers.PickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialPicker! platformView) -> void
+override Microsoft.Maui.Handlers.ProgressBarHandler2.CreatePlatformView() -> Google.Android.Material.ProgressIndicator.LinearProgressIndicator!
+override Microsoft.Maui.Handlers.RadioButtonHandler2.CreatePlatformView() -> Google.Android.Material.RadioButton.MaterialRadioButton!
+override Microsoft.Maui.Handlers.SearchBarHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout! platformView) -> void
+override Microsoft.Maui.Handlers.SearchBarHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout!
+override Microsoft.Maui.Handlers.SearchBarHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout! platformView) -> void
+override Microsoft.Maui.Handlers.SliderHandler2.ConnectHandler(Google.Android.Material.Slider.Slider! platformView) -> void
+override Microsoft.Maui.Handlers.SliderHandler2.CreatePlatformView() -> Google.Android.Material.Slider.Slider!
+override Microsoft.Maui.Handlers.SliderHandler2.DisconnectHandler(Google.Android.Material.Slider.Slider! platformView) -> void
+override Microsoft.Maui.Handlers.SwitchHandler2.CreatePlatformView() -> Google.Android.Material.MaterialSwitch.MaterialSwitch!
+override Microsoft.Maui.Handlers.TimePickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialTimePicker! platformView) -> void
+override Microsoft.Maui.Handlers.TimePickerHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MauiMaterialTimePicker!
+override Microsoft.Maui.Handlers.TimePickerHandler2.DisconnectHandler(Microsoft.Maui.Platform.MauiMaterialTimePicker! platformView) -> void
+override Microsoft.Maui.Platform.ContentViewGroup.HasOverlappingRendering.get -> bool
+override Microsoft.Maui.Platform.LayoutViewGroup.HasOverlappingRendering.get -> bool
+override Microsoft.Maui.Platform.MaterialActivityIndicator.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+override Microsoft.Maui.Platform.MauiHybridWebView.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.MauiMaterialDatePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiMaterialEditText.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+override Microsoft.Maui.Platform.MauiMaterialEditText.OnSelectionChanged(int selStart, int selEnd) -> void
+override Microsoft.Maui.Platform.MauiMaterialPicker.Dispose(bool disposing) -> void
+override Microsoft.Maui.Platform.MauiMaterialPickerBase.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+override Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputEditText.OnSelectionChanged(int selStart, int selEnd) -> void
+override Microsoft.Maui.Platform.MauiMaterialSearchBarTextInputLayout.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+override Microsoft.Maui.Platform.MauiMaterialTextInputLayout.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+override Microsoft.Maui.Platform.MauiMaterialTextView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
+override Microsoft.Maui.Platform.MauiMaterialTextView.SetText(Java.Lang.ICharSequence? text, Android.Widget.TextView.BufferType? type) -> void
+override Microsoft.Maui.Platform.MauiMaterialTimePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
+override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
+override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
+override Microsoft.Maui.PlatformDrawable.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
+static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
+static Microsoft.Maui.Handlers.DatePickerHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IDatePicker!, Microsoft.Maui.Handlers.DatePickerHandler2!>!
+static Microsoft.Maui.Handlers.DatePickerHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.IDatePicker!, Microsoft.Maui.Handlers.DatePickerHandler2!>!
+static Microsoft.Maui.Handlers.EditorHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IEditor!, Microsoft.Maui.Handlers.EditorHandler2!>!
+static Microsoft.Maui.Handlers.EditorHandler2.MapBackground(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapCharacterSpacing(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapCursorPosition(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.ITextInput! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapFont(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapHorizontalTextAlignment(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapIsReadOnly(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapIsTextPredictionEnabled(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapKeyboard(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapMaxLength(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapPlaceholder(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapPlaceholderColor(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapSelectionLength(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.ITextInput! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapText(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapTextColor(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.MapVerticalTextAlignment(Microsoft.Maui.Handlers.EditorHandler2! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Handlers.EditorHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.IEditor!, Microsoft.Maui.Handlers.EditorHandler2!>!
+static Microsoft.Maui.Handlers.EntryHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IEntry!, Microsoft.Maui.Handlers.EntryHandler2!>!
+static Microsoft.Maui.Handlers.EntryHandler2.MapBackground(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapCharacterSpacing(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapClearButtonVisibility(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapCursorPosition(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapFlowDirection(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapFont(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapHorizontalTextAlignment(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapIsPassword(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapIsReadOnly(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapIsTextPredictionEnabled(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapKeyboard(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapMaxLength(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapPlaceholder(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapPlaceholderColor(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapReturnType(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapSelectionLength(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapText(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapTextColor(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.MapVerticalTextAlignment(Microsoft.Maui.Handlers.EntryHandler2! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.EntryHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.IEntry!, Microsoft.Maui.Handlers.EntryHandler2!>!
+static Microsoft.Maui.Handlers.PickerHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.PickerHandler2!>!
+static Microsoft.Maui.Handlers.PickerHandler2.MapBackground(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapCharacterSpacing(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapFocus(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker, object? args) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapFont(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapHorizontalTextAlignment(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapIsOpen(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapItems(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapSelectedIndex(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapTextColor(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapTitle(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapTitleColor(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapUnfocus(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker, object? args) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.MapVerticalTextAlignment(Microsoft.Maui.Handlers.PickerHandler2! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.PickerHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.IPicker!, Microsoft.Maui.Handlers.PickerHandler2!>!
+static Microsoft.Maui.Handlers.SearchBarHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISearchBar!, Microsoft.Maui.Handlers.SearchBarHandler2!>!
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapBackground(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapCancelButtonColor(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapCharacterSpacing(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapCursorPosition(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapFlowDirection(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapFocus(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar, object? args) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapFont(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapHorizontalTextAlignment(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapIsEnabled(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapIsReadOnly(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapIsTextPredictionEnabled(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapKeyboard(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapMaxLength(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapPlaceholder(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapPlaceholderColor(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapReturnType(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapSearchIconColor(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapSelectionLength(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapText(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapTextColor(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.MapVerticalTextAlignment(Microsoft.Maui.Handlers.SearchBarHandler2! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.ISearchBar!, Microsoft.Maui.Handlers.SearchBarHandler2!>!
+static Microsoft.Maui.Handlers.SliderHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISlider!, Microsoft.Maui.Handlers.SliderHandler2!>!
+static Microsoft.Maui.Handlers.SliderHandler2.MapMaximum(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Handlers.SliderHandler2.MapMaximumTrackColor(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Handlers.SliderHandler2.MapMinimum(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Handlers.SliderHandler2.MapMinimumTrackColor(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Handlers.SliderHandler2.MapThumbColor(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Handlers.SliderHandler2.MapThumbImageSource(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Handlers.SliderHandler2.MapValue(Microsoft.Maui.Handlers.SliderHandler2! handler, Microsoft.Maui.ISlider! slider) -> void
+static Microsoft.Maui.Handlers.SliderHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.ISlider!, Microsoft.Maui.Handlers.SliderHandler2!>!
+static Microsoft.Maui.Handlers.SwitchHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISwitch!, Microsoft.Maui.Handlers.SwitchHandler2!>!
+static Microsoft.Maui.Handlers.SwitchHandler2.MapThumbColor(Microsoft.Maui.Handlers.ISwitchHandler! handler, Microsoft.Maui.ISwitch! view) -> void
+static Microsoft.Maui.Handlers.SwitchHandler2.MapTrackColor(Microsoft.Maui.Handlers.ISwitchHandler! handler, Microsoft.Maui.ISwitch! view) -> void
+static Microsoft.Maui.Handlers.SwitchHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.ISwitch!, Microsoft.Maui.Handlers.SwitchHandler2!>!
+static Microsoft.Maui.Handlers.TimePickerHandler2.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ITimePicker!, Microsoft.Maui.Handlers.TimePickerHandler2!>!
+static Microsoft.Maui.Handlers.TimePickerHandler2.MapBackground(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler2.MapCharacterSpacing(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler2.MapFont(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler2.MapFormat(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler2.MapIsOpen(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler2.MapTextColor(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler2.MapTime(Microsoft.Maui.Handlers.TimePickerHandler2! handler, Microsoft.Maui.ITimePicker! picker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.ITimePicker!, Microsoft.Maui.Handlers.TimePickerHandler2!>!
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateDate(this Microsoft.Maui.Platform.MauiMaterialDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateFormat(this Microsoft.Maui.Platform.MauiMaterialDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateTextColor(this Microsoft.Maui.Platform.MauiMaterialDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
+static Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper.Create(Android.Content.Context! context) -> Microsoft.Maui.Platform.MauiMaterialContextThemeWrapper!
+static Microsoft.Maui.Platform.PickerExtensions.UpdateFlowDirectionCore(this AndroidX.AppCompat.App.AlertDialog! alertDialog, AndroidX.AppCompat.Widget.AppCompatEditText! platformPicker) -> void
+static Microsoft.Maui.Platform.PickerExtensions.UpdatePickerCore(this AndroidX.AppCompat.Widget.AppCompatEditText! platformPicker, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Platform.PickerExtensions.UpdateSelectedIndex(this Microsoft.Maui.Platform.MauiMaterialPicker! platformPicker, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Platform.PickerExtensions.UpdateTitle(this Microsoft.Maui.Platform.MauiMaterialPicker! platformPicker, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Platform.PickerExtensions.UpdateTitleColor(this Microsoft.Maui.Platform.MauiMaterialPicker! platformPicker, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Platform.PickerExtensions.UpdateTitleColorCore(this AndroidX.AppCompat.Widget.AppCompatEditText! platformPicker, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Platform.SearchViewExtensions.UpdateBackground(this Google.Android.Material.TextField.TextInputLayout! textInputLayout, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SearchViewExtensions.UpdateCancelButtonColor(this Google.Android.Material.TextField.TextInputLayout! textInputLayout, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SearchViewExtensions.UpdateReturnType(this Android.Widget.EditText! editText, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SearchViewExtensions.UpdateText(this Android.Widget.EditText! editText, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SwitchExtensions.UpdateThumbColor(this Google.Android.Material.MaterialSwitch.MaterialSwitch! materialSwitch, Microsoft.Maui.ISwitch! view) -> void
+static Microsoft.Maui.Platform.SwitchExtensions.UpdateTrackColor(this Google.Android.Material.MaterialSwitch.MaterialSwitch! materialSwitch, Microsoft.Maui.ISwitch! view) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateFormat(this Microsoft.Maui.Platform.MauiMaterialTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTextColor(this Microsoft.Maui.Platform.MauiMaterialTimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateTime(this Microsoft.Maui.Platform.MauiMaterialTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
+virtual Microsoft.Maui.Handlers.DatePickerHandler2.CreateDatePickerDialog(int year, int month, int day) -> Google.Android.Material.DatePicker.MaterialDatePicker?
+virtual Microsoft.Maui.Handlers.TimePickerHandler2.CreateTimePickerDialog(int hour, int minute) -> Google.Android.Material.TimePicker.MaterialTimePicker?
