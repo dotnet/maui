@@ -1,5 +1,5 @@
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -16,15 +16,16 @@ public partial class Gh2483 : ContentPage
 {
 	public Gh2483() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
 
-		[Test]
-		public void DupeKeyRd([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DupeKeyRd(XamlInflator inflator)
 		{
 			var layout = new Gh2483(inflator);
-			Assert.Pass();
+			// Test passes if no exception is thrown
 		}
 	}
 }

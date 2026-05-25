@@ -4,7 +4,8 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,79 +13,79 @@ public partial class Issue10255 : ContentPage
 {
 	public Issue10255() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void GenericConverterWithGridLengthWorks([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void GenericConverterWithGridLengthWorks(XamlInflator inflator)
 		{
 #if !NET11_0_OR_GREATER
 			if (inflator == XamlInflator.XamlC)
-				Assert.Ignore("XamlC compilation of implicit string to GridLength cast requires .NET 11 or greater");
+				return; // Skip: XamlC compilation of implicit string to GridLength cast requires .NET 11 or greater
 #endif
 			var page = new Issue10255(inflator);
 			
 			// Test that the converters were created successfully
 			var failedConverter = page.Resources["FailedConverter"] as Issue10255BoolToObjectConverter<GridLength>;
-			Assert.IsNotNull(failedConverter, "FailedConverter should not be null");
-			Assert.That(failedConverter.TrueObject.IsStar, Is.True, "TrueObject should be Star");
-			Assert.That(failedConverter.TrueObject.Value, Is.EqualTo(1.0), "Star value should be 1.0");
-			Assert.That(failedConverter.FalseObject.IsAbsolute, Is.True, "FalseObject should be Absolute");
-			Assert.That(failedConverter.FalseObject.Value, Is.EqualTo(80.0), "Absolute value should be 80.0");
+			Assert.NotNull(failedConverter);
+			Assert.True(failedConverter.TrueObject.IsStar, "TrueObject should be Star");
+			Assert.Equal(1.0, failedConverter.TrueObject.Value);
+			Assert.True(failedConverter.FalseObject.IsAbsolute, "FalseObject should be Absolute");
+			Assert.Equal(80.0, failedConverter.FalseObject.Value);
 
 			var starConverter = page.Resources["StarConverter"] as Issue10255BoolToObjectConverter<GridLength>;
-			Assert.IsNotNull(starConverter, "StarConverter should not be null");
-			Assert.That(starConverter.TrueObject.IsStar, Is.True, "TrueObject should be Star");
-			Assert.That(starConverter.TrueObject.Value, Is.EqualTo(2.0), "Star value should be 2.0");
-			Assert.That(starConverter.FalseObject.IsAuto, Is.True, "FalseObject should be Auto");
+			Assert.NotNull(starConverter);
+			Assert.True(starConverter.TrueObject.IsStar, "TrueObject should be Star");
+			Assert.Equal(2.0, starConverter.TrueObject.Value);
+			Assert.True(starConverter.FalseObject.IsAuto, "FalseObject should be Auto");
 
 			var workingConverter = page.Resources["WorkingConverter"] as Issue10255BoolToObjectConverter<int>;
-			Assert.IsNotNull(workingConverter, "WorkingConverter should not be null");
-			Assert.That(workingConverter.TrueObject, Is.EqualTo(10));
-			Assert.That(workingConverter.FalseObject, Is.EqualTo(80));
+			Assert.NotNull(workingConverter);
+			Assert.Equal(10, workingConverter.TrueObject);
+			Assert.Equal(80, workingConverter.FalseObject);
 		}
 
 #if NET11_0_OR_GREATER
-		[Test]
+		[Fact]
 		public void ImplicitStringCastWorks()
 		{
 			// Test implicit cast from string to GridLength
 			GridLength star = "*";
-			Assert.That(star.IsStar, Is.True);
-			Assert.That(star.Value, Is.EqualTo(1.0));
+			Assert.True(star.IsStar);
+			Assert.Equal(1.0, star.Value);
 
 			GridLength twoStar = "2*";
-			Assert.That(twoStar.IsStar, Is.True);
-			Assert.That(twoStar.Value, Is.EqualTo(2.0));
+			Assert.True(twoStar.IsStar);
+			Assert.Equal(2.0, twoStar.Value);
 
 			GridLength auto = "auto";
-			Assert.That(auto.IsAuto, Is.True);
+			Assert.True(auto.IsAuto);
 
 			GridLength absolute = "80";
-			Assert.That(absolute.IsAbsolute, Is.True);
-			Assert.That(absolute.Value, Is.EqualTo(80.0));
+			Assert.True(absolute.IsAbsolute);
+			Assert.Equal(80.0, absolute.Value);
 
 			GridLength absoluteWithDecimal = "45.5";
-			Assert.That(absoluteWithDecimal.IsAbsolute, Is.True);
-			Assert.That(absoluteWithDecimal.Value, Is.EqualTo(45.5));
+			Assert.True(absoluteWithDecimal.IsAbsolute);
+			Assert.Equal(45.5, absoluteWithDecimal.Value);
 		}
 
-		[Test]
+		[Fact]
 		public void ImplicitStringCastThrowsOnNull()
 		{
 			Assert.Throws<ArgumentNullException>(() => { GridLength gl = (string)null; });
 		}
 
-		[Test]
+		[Fact]
 		public void ImplicitStringCastThrowsOnInvalidFormat()
 		{
 			Assert.Throws<FormatException>(() => { GridLength gl = "invalid"; });

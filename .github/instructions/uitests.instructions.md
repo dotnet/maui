@@ -8,7 +8,7 @@ applyTo: "src/Controls/tests/TestCases.Shared.Tests/**,src/Controls/tests/TestCa
 
 This document provides specific guidance for GitHub Copilot when writing UI tests for the .NET MAUI repository.
 
-**Common Command Patterns**: For UDID extraction, device boot, builds, and error checking patterns, see [Common Testing Patterns](common-testing-patterns.md).
+
 
 **Critical Principle**: UI tests should run on all applicable platforms (iOS, Android, Windows, MacCatalyst) by default unless there is a specific technical limitation.
 
@@ -20,16 +20,17 @@ This document provides specific guidance for GitHub Copilot when writing UI test
 
 1. **HostApp UI Test Page** (`src/Controls/tests/TestCases.HostApp/Issues/`)
    - Create the actual UI page that demonstrates the feature or reproduces the issue
-   - Use XAML with proper `AutomationId` attributes on interactive controls for test automation
-   - Follow naming convention: `IssueXXXXX.xaml` and `IssueXXXXX.xaml.cs`
+   - **Prefer C# only** (`.cs` file) unless testing XAML-specific features (bindings, templates, styles)
+   - Add `AutomationId` attributes on interactive controls for test automation
+   - Follow naming convention: `IssueXXXXX.cs` (C# only) or `IssueXXXXX.xaml` + `IssueXXXXX.xaml.cs` (when XAML required)
    - XXXXX should correspond to a GitHub issue number when applicable
    - Ensure the UI provides clear visual feedback for the behavior being tested
-   - Code-behind must include `[Issue()]` attribute with tracker, number, description, and platform
+   - Class must include `[Issue()]` attribute with tracker, number, description, and platform
 
 2. **NUnit Test Implementation** (`src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/`)
    - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
    - Use the `AutomationId` values to locate and interact with UI elements
-   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp XAML file)
+   - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp page file)
    - Include appropriate `[Category(UITestCategories.XYZ)]` attributes (only ONE per test)
    - Test should validate expected behavior through UI interactions and assertions
 
@@ -46,7 +47,7 @@ This document provides specific guidance for GitHub Copilot when writing UI test
 
 **Test Files:**
 - Pattern: `IssueXXXXX.cs` where XXXXX corresponds to a GitHub issue number
-- Must match the corresponding XAML file in TestCases.HostApp
+- Must match the corresponding HostApp page file name in TestCases.HostApp (either `.cs` only or `.xaml`)
 
 **Test Methods:**
 - Use descriptive names that clearly explain what behavior is being verified
@@ -55,26 +56,86 @@ This document provides specific guidance for GitHub Copilot when writing UI test
 
 **AutomationId Values:**
 - Always use unique, descriptive `AutomationId` values
-- Reference the same `AutomationId` in both XAML and test code
+- Reference the same `AutomationId` in both C# code (or XAML if used) and test code
 - Use PascalCase for AutomationId values
 
 ## Complete Test Example
 
-**HostApp Code-Behind** (`TestCases.HostApp/Issues/Issue12345.xaml.cs`):
+### Example 1: C# Only (Preferred for Most Tests)
+
+**HostApp Page** (`TestCases.HostApp/Issues/Issue12345.cs`):
 ```csharp
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 12345, "Description of the issue being tested", PlatformAffected.All)]
-public partial class Issue12345 : ContentPage
+[Issue(IssueTracker.Github, 12345, "Button click updates label text", PlatformAffected.All)]
+public class Issue12345 : ContentPage
 {
     public Issue12345()
     {
-        InitializeComponent();
+        var resultLabel = new Label
+        {
+            Text = "Initial Text",
+            AutomationId = "ResultLabel"
+        };
+
+        Content = new VerticalStackLayout
+        {
+            Children =
+            {
+                new Button
+                {
+                    Text = "Click Me",
+                    AutomationId = "TestButton",
+                    Command = new Command(() => resultLabel.Text = "Expected Text")
+                },
+                resultLabel
+            }
+        };
     }
 }
 ```
 
-**NUnit Test** (`TestCases.Shared.Tests/Tests/Issues/Issue12345.cs`):
+### Example 2: XAML (When Testing XAML-Specific Features)
+
+**HostApp XAML** (`TestCases.HostApp/Issues/Issue12346.xaml`):
+```xaml
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue12346">
+    <VerticalStackLayout>
+        <Button Text="Click Me" 
+                AutomationId="TestButton"
+                Clicked="OnButtonClicked" />
+        <Label Text="Initial Text" 
+               x:Name="ResultLabel"
+               AutomationId="ResultLabel" />
+    </VerticalStackLayout>
+</ContentPage>
+```
+
+**HostApp Code-Behind** (`TestCases.HostApp/Issues/Issue12346.xaml.cs`):
+```csharp
+namespace Maui.Controls.Sample.Issues;
+
+[Issue(IssueTracker.Github, 12346, "Testing XAML binding behavior", PlatformAffected.All)]
+public partial class Issue12346 : ContentPage
+{
+    public Issue12346()
+    {
+        InitializeComponent();
+    }
+
+    void OnButtonClicked(object sender, EventArgs e)
+    {
+        ResultLabel.Text = "Expected Text";
+    }
+}
+```
+
+### NUnit Test (Same for Both Examples)
+
+**NUnit Test** (`TestCases.Shared.Tests/Tests/Issues/Issue12345.cs` or `Issue12346.cs`):
 ```csharp
 public class Issue12345 : _IssuesUITest
 {
@@ -130,9 +191,161 @@ VerifyScreenshot();
 // With custom name
 VerifyScreenshot("CustomTestName");
 
+// With tolerance (0.0-100.0 percentage) - use sparingly
+VerifyScreenshot(tolerance: 0.5); // Allow 0.5% difference for cross-machine rendering variance
+
+// PREFERRED: Keep retrying for up to 2 seconds (for animations)
+VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+
+// Combined: tolerance for rendering variance + retryTimeout for timing
+VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+
 // Manual screenshot for debugging
 App.Screenshot("TestStep1");
 ```
+
+**CRITICAL - VerifyScreenshot() Built-in Features:**
+
+`VerifyScreenshot()` **already includes** stability mechanisms. Do NOT add redundant delays:
+
+| Feature | Behavior | Parameter |
+|---------|----------|-----------|
+| **Android delay** | Automatic 350ms wait for animations | Built-in, cannot override |
+| **Retry logic** | Default: retries once; with retryTimeout: keeps retrying | Built-in |
+| **Retry delay** | 500ms delay between retry attempts | `retryDelay: TimeSpan` (customizable) |
+| **Retry timeout** | Total time to keep retrying | `retryTimeout: TimeSpan` (PREFERRED for flaky tests) |
+| **Tolerance** | Allow percentage difference (0-100) | `tolerance: double` (default: 0.0) |
+
+**When to customize:**
+- ✅ Use `retryTimeout` parameter for animations with variable timing (PREFERRED approach)
+- ✅ Use small `tolerance` (0.5%) for cross-machine rendering variance, NOT to hide timing issues
+- ✅ Use `retryDelay` if you need to change the delay between retry attempts
+- ❌ **DO NOT** add `Task.Delay()` or `Thread.Sleep()` before `VerifyScreenshot()` - use `retryTimeout` instead
+
+## Writing Robust UI Tests
+
+### Best Practices for Screenshot Tests
+
+When writing tests that use `VerifyScreenshot()`, follow these patterns to avoid flakiness:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. UNDERSTAND TEST INFRASTRUCTURE                               │
+│    - Read UITest.cs base class implementation                   │
+│    - Understand built-in retry/delay/tolerance mechanisms       │
+│    - Check what helpers/extensions already exist                │
+├─────────────────────────────────────────────────────────────────┤
+│ 2. USE PROPER WAITING PATTERNS                                  │
+│    - Use WaitForElement before interacting with elements        │
+│    - Use retryTimeout for screenshots after animations          │
+│    - Never use arbitrary Task.Delay() before VerifyScreenshot   │
+├─────────────────────────────────────────────────────────────────┤
+│ 3. APPLY MINIMAL TOLERANCES                                     │
+│    - Use retryTimeout for timing issues (preferred)             │
+│    - Use small tolerance (0.5%) only for rendering variance     │
+│    - Never use tolerance > 5% without justification             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Common Flaky Test Patterns
+
+| Symptom | Root Cause | Fix Pattern | Anti-Pattern |
+|---------|------------|-------------|--------------|
+| **Visual diff in screenshot** | Animation not finished | `VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2))` | ❌ Adding `Task.Delay()` before |
+| **Element not found** | Element not rendered yet | `App.WaitForElement("Id", timeout: TimeSpan.FromSeconds(10))` | ❌ `Thread.Sleep()` then `FindElement()` |
+| **Timeout on interaction** | Page not fully loaded | Wait for specific element that indicates ready state | ❌ Arbitrary 3-second delay |
+| **Inconsistent rect/position** | Layout not settled | Multiple `GetRect()` calls with comparison | ❌ Single `GetRect()` after delay |
+| **WebView failures** | External URL/network | Use mock URLs instead of external URLs | ❌ Adding longer timeouts |
+
+### Anti-Patterns (DO NOT DO)
+
+| Anti-Pattern | Why It's Wrong | Better Alternative |
+|--------------|----------------|-------------------|
+| ❌ `Task.Delay(500).Wait()` before `VerifyScreenshot()` | VerifyScreenshot already has built-in retry; use retryTimeout instead | Use `VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2))` |
+| ❌ `Thread.Sleep(2000)` before element interaction | Arbitrary wait; doesn't guarantee element is ready | `App.WaitForElement("Id", timeout: ...)` |
+| ❌ Adding tolerance > 5% without justification | Hides real bugs; too permissive | Use `retryTimeout` for timing issues; small tolerance (0.5%) for rendering variance |
+| ❌ Using external URLs in WebView tests | External dependency; unreliable | Use mock URLs or local content |
+| ❌ Fixing symptoms without understanding infrastructure | Redundant fixes; doesn't address root cause | Read `UITest.cs` first (step 1 above) |
+
+### When to Use What
+
+**VerifyScreenshot() parameters (preferred):**
+```csharp
+// Animation timing issues - keep retrying for up to 2 seconds
+// This is the PREFERRED approach for flaky screenshot tests
+VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+
+// Small tolerance for cross-machine rendering variance + retryTimeout for timing
+// Use 0.5% tolerance as safety margin, NOT to hide timing issues
+VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+
+// Legacy: retryDelay only changes delay BETWEEN retries (default 500ms)
+// retryTimeout is preferred because it keeps trying until success
+VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(1));
+```
+
+**Key difference: retryDelay vs retryTimeout:**
+- `retryDelay`: Delay between retry attempts (default 500ms). Only retries ONCE.
+- `retryTimeout`: Total time to keep retrying. Retries every `retryDelay` until timeout.
+- **Prefer `retryTimeout`** for animations with variable completion times.
+
+**WaitForElement (for element readiness):**
+```csharp
+// Wait up to 10 seconds for element to appear
+App.WaitForElement("ButtonId", timeout: TimeSpan.FromSeconds(10));
+
+// Then interact
+App.Tap("ButtonId");
+```
+
+**Task.Delay/Thread.Sleep (avoid if possible):**
+```csharp
+// AVOID: With retryTimeout, you rarely need explicit delays anymore
+// 
+// Old pattern (before retryTimeout):
+// Task.Delay(300).Wait();
+// VerifyScreenshot(tolerance: 2.0);
+//
+// New pattern (preferred):
+VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+
+// ONLY use explicit delays when:
+// 1. Waiting for non-element state with no screenshot (rare)
+// 2. External system delay that can't be detected otherwise
+// 3. After exhausting other options AND documenting why
+```
+
+### Understanding Test Infrastructure
+
+**Key files to understand when writing UI tests:**
+
+1. **UITest.cs** - Base class with `VerifyScreenshot()` implementation
+   - Path: `src/Controls/tests/TestCases.Shared.Tests/UITest.cs`
+   - Contains: retry logic, tolerance parsing, platform-specific delays
+
+2. **_IssuesUITest.cs** - Issues test base class
+   - Path: `src/Controls/tests/TestCases.Shared.Tests/_IssuesUITest.cs`
+   - Contains: Navigation helpers, common patterns
+
+3. **Extension methods** - Platform-specific helpers
+   - Path: `src/Controls/tests/TestCases.Shared.Tests/` (various extension files)
+   - Contains: Existing helpers for common operations
+
+**Find existing patterns:**
+```bash
+# See VerifyScreenshot implementation (including retryTimeout)
+grep -A 30 "public void VerifyScreenshot" src/Controls/tests/TestCases.Shared.Tests/UITest.cs
+
+# Find existing tests using retryTimeout (preferred pattern)
+grep -r "retryTimeout" src/Controls/tests/TestCases.Shared.Tests/Tests/
+
+# Find existing tolerance patterns
+grep -r "tolerance:" src/Controls/tests/TestCases.Shared.Tests/Tests/
+```
+
+### Infrastructure Notes
+
+**Tolerance regex handles multiple locales:** The tolerance parsing uses regex pattern `\d+[.,]\d+` to match both `.` and `,` as decimal separators (e.g., "2.5%" or "2,5%"). If tolerance appears to not be applied, verify the regex patterns in `UITest.cs` `VerifyWithTolerance()` method.
 
 ## Test Categories
 
@@ -167,52 +380,81 @@ grep -E "public const string [A-Za-z]+ = " src/Controls/tests/TestCases.Shared.T
 
 ### Default Behavior
 
-**DO NOT** use platform-specific conditional compilation directives (`#if ANDROID`, `#if IOS`, `#if WINDOWS`, `#if MACCATALYST`, etc.) unless there is a specific reason.
+Tests should run on all applicable platforms by default. The test infrastructure handles platform detection automatically.
 
-Tests in the `TestCases.Shared.Tests` project should run on all applicable platforms by default. The test infrastructure automatically handles platform detection.
+### No Inline #if Directives in Test Methods
 
-### When Platform Directives Are Acceptable
+**Do NOT use `#if ANDROID`, `#if IOS`, etc. directly in test methods.** Platform-specific behavior must be hidden behind extension methods for readability.
 
-Only use platform-specific directives when:
+**Note:** This rule is about **code cleanliness**, not platform scope. Using `#if ANDROID ... #else ...` still compiles for all platforms - the issue is that inline directives make test logic hard to read and maintain.
 
-1. **Platform-specific API is being tested** - The test validates behavior that only exists on one platform
-2. **Known platform limitation** - There is a documented bug or limitation that prevents the test from running on a specific platform
-3. **Different expected behavior** - The platforms are expected to behave differently for valid reasons
-
-### Examples
-
-**✅ Correct - Runs on all platforms:**
 ```csharp
+// ❌ BAD - inline #if in test method (hard to read)
 [Test]
-[Category(UITestCategories.SafeAreaEdges)]
-public void SoftInputBehaviorTest()
+public void MyTest()
 {
-    // This test runs on all applicable platforms
-    App.WaitForElement("ContentGrid");
-    // Test code...
-}
-```
-
-**❌ Incorrect - Unnecessarily limits to one platform:**
-```csharp
 #if ANDROID
-[Test]
-[Category(UITestCategories.SafeAreaEdges)]
-public void SoftInputBehaviorTest()
-{
-    // This unnecessarily limits the test to Android only
-    // Unless there's a specific reason, tests should run on all platforms
-    App.WaitForElement("ContentGrid");
-    // Test code...
-}
+    App.TapCoordinates(100, 200);
+#else
+    App.Tap("MyElement");
 #endif
+}
+
+// ✅ GOOD - platform logic in extension method (clean test)
+[Test]
+public void MyTest()
+{
+    App.TapElementCrossPlatform("MyElement");
+}
 ```
+
+Move platform-specific logic to extension methods to keep test code clean and readable.
 
 ## Running UI Tests Locally
 
+**CRITICAL: ALWAYS use the BuildAndRunHostApp.ps1 script to run UI tests. NEVER run `dotnet test` or `dotnet build` commands manually.**
+
+### BuildAndRunHostApp.ps1 Script (ONLY Way to Run Tests)
+
+**Script location**: `.github/scripts/BuildAndRunHostApp.ps1`
+
+**Usage:**
+```powershell
+# Run specific test on Android
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~Issue12345"
+
+# Run specific test on iOS
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~Issue12345"
+
+# Run specific test on MacCatalyst
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform maccatalyst -TestFilter "FullyQualifiedName~Issue12345"
+
+# Run tests by category
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -Category "SafeAreaEdges"
+
+# Run specific test with custom device (iOS only)
+pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue12345" -DeviceUdid "12345678-1234567890ABCDEF"
+```
+
+**What the script handles automatically:**
+- ✅ Automatic device detection and boot (iPhone Xs for iOS, first available for Android)
+- ✅ Building TestCases.HostApp (always fresh build)
+- ✅ App installation and deployment
+- ✅ Running your NUnit test via `dotnet test`
+- ✅ Complete log capture to `CustomAgentLogsTmp/UITests/` directory:
+  - `android-device.log` or `ios-device.log` - Device logs filtered to HostApp
+  - `test-output.log` - Test execution output
+
+**Why you must use the script:**
+- The script ensures correct device targeting and environment variables
+- It handles platform-specific quirks and setup requirements
+- It provides consistent test execution across all platforms
+- It captures logs automatically for debugging
+- Manual `dotnet` commands often fail due to missing environment setup
+
 ### Prerequisites: Kill Existing Appium Processes
 
-**CRITICAL**: Before running UITests, always kill any existing Appium processes. The UITest framework needs to start its own Appium server, and having a stale process running will cause the tests to fail with an error like:
+**CRITICAL**: Before running UITests with BuildAndRunHostApp.ps1, always kill any existing Appium processes. The UITest framework needs to start its own Appium server, and having a stale process running will cause the tests to fail with an error like:
 
 ```
 AppiumServerHasNotBeenStartedLocallyException: The local appium server has not been started.
@@ -228,244 +470,6 @@ lsof -i :4723 | grep LISTEN | awk '{print $2}' | xargs kill -9 2>/dev/null && ec
 
 **Why this is needed:** The UITest framework automatically starts and manages its own Appium server. If there's already an Appium process running (from a previous test run or manual testing), the framework will timeout trying to start a new one.
 
-### Quick Test Execution (for rapid development)
-
-When developing and debugging a specific test:
-
-**Android:**
-
-**IMPORTANT**: Like iOS, Android tests also require the `DEVICE_UDID` environment variable to be set to target the correct device/emulator.
-
-1. Deploy the TestCases.HostApp:
-   ```bash
-   # Use local dotnet if available, otherwise use global dotnet
-   ./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
-   # OR:
-   dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run
-
-   # Check build/deploy succeeded
-   if [ $? -ne 0 ]; then
-       echo "❌ ERROR: Build or deployment failed"
-       exit 1
-   fi
-   ```
-
-2. Run your specific test:
-   ```bash
-   # Set DEVICE_UDID environment variable so Appium tests know which device to use
-   # Get the device ID from: adb devices
-   export DEVICE_UDID=$(adb devices | grep -v "List" | grep "device" | awk '{print $1}' | head -1)
-
-   # Check device was found
-   if [ -z "$DEVICE_UDID" ]; then
-       echo "❌ ERROR: No Android device/emulator found. Start an emulator or connect a device."
-       exit 1
-   fi
-
-   # Verify device is set
-   echo "Using Android device: $DEVICE_UDID"
-
-   # Run the test
-   dotnet test src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj --filter "FullyQualifiedName~Issue12345"
-   ```
-
-**iOS (4-step process):**
-
-**Important: Device and iOS Version Selection**
-
-When the user requests to run tests on iOS:
-- **Default behavior (no device, no iOS version specified)**: Use iPhone Xs with the highest available iOS version
-- **User specifies iOS version only** (e.g., "iOS 26.0", "iOS 18.4"): 
-  - First, try to find iPhone Xs with that iOS version
-  - If iPhone Xs not available for that iOS version, use ANY available device with that iOS version
-  - Set `IOS_VERSION` variable, leave `DEVICE_NAME` empty to allow fallback
-- **User specifies device only** (e.g., "iPhone 16 Pro", "iPhone 15"): 
-  - Set `DEVICE_NAME` variable with the specified device
-  - Use highest available iOS version for that device
-- **User specifies both device AND iOS version**: Set both `IOS_VERSION` and `DEVICE_NAME` variables
-
-Examples of interpreting user requests:
-- "Run on iOS 26.0" → Set `IOS_VERSION="26.0"`, leave `DEVICE_NAME` empty (will try iPhone Xs first, then fallback to any iOS 26.0 device)
-- "Run on iPhone 16 Pro" → Set `DEVICE_NAME="iPhone 16 Pro"`, use highest iOS version
-- "Run on iPhone 15 with iOS 18.0" → Set both `DEVICE_NAME="iPhone 15"` and `IOS_VERSION="18.0"`
-- No specific request → Use defaults (iPhone Xs with highest iOS)
-
-**Step 1: Find iOS Simulator**
-
-```bash
-# Set device name and iOS version based on user request
-# Leave DEVICE_NAME empty when user only specifies iOS version (to allow fallback)
-DEVICE_NAME="${DEVICE_NAME:-}"
-IOS_VERSION="${IOS_VERSION:-}"
-
-# Determine search strategy
-if [ -z "$IOS_VERSION" ]; then
-    # No iOS version specified - use iPhone Xs with highest available iOS
-    DEVICE_NAME="${DEVICE_NAME:-iPhone Xs}"
-    JQ_FILTER='
-      .devices 
-      | to_entries 
-      | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) 
-      | map({
-          key: .key,
-          version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)),
-          devices: .value
-        })
-      | sort_by(.version)
-      | reverse
-      | map(select(.devices | any(.name == "'"$DEVICE_NAME"'")))
-      | first
-      | .devices[]
-      | select(.name == "'"$DEVICE_NAME"'")
-      | .udid'
-else
-    # Specific iOS version requested
-    IOS_VERSION_FILTER="iOS-${IOS_VERSION//./-}"
-    
-    if [ -z "$DEVICE_NAME" ]; then
-        # iOS version specified, but no device - try iPhone Xs first, then fallback to any device
-        JQ_FILTER='
-          .devices 
-          | to_entries 
-          | map(select(.key | contains("'"$IOS_VERSION_FILTER"'"))) 
-          | first
-          | .value
-          | (map(select(.name == "iPhone Xs")) + .)[0]
-          | .udid'
-    else
-        # Both iOS version and device specified
-        JQ_FILTER='
-          .devices 
-          | to_entries 
-          | map(select(.key | contains("'"$IOS_VERSION_FILTER"'"))) 
-          | map(.value)
-          | flatten
-          | map(select(.name == "'"$DEVICE_NAME"'"))
-          | first
-          | .udid'
-    fi
-fi
-
-# Extract UDID using the constructed filter
-UDID=$(xcrun simctl list devices available --json | jq -r "$JQ_FILTER")
-
-# Get the actual device name that was found
-if [ ! -z "$UDID" ] && [ "$UDID" != "null" ]; then
-    FOUND_DEVICE=$(xcrun simctl list devices available --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .name')
-fi
-
-# Verify UDID was found and is not empty
-if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-    if [ -z "$IOS_VERSION" ]; then
-        DEVICE_NAME="${DEVICE_NAME:-iPhone Xs}"
-        echo "ERROR: No $DEVICE_NAME simulator found. Please create a $DEVICE_NAME simulator before running iOS tests."
-    elif [ -z "$DEVICE_NAME" ]; then
-        echo "ERROR: No simulator found for iOS $IOS_VERSION. Please install iOS $IOS_VERSION runtime."
-    else
-        echo "ERROR: No $DEVICE_NAME simulator found for iOS $IOS_VERSION. Please create one before running iOS tests."
-    fi
-    exit 1
-fi
-
-echo "Using $FOUND_DEVICE with UDID: $UDID"
-```
-
-**Examples of device/version selection:**
-```bash
-# Default: iPhone Xs with highest iOS version
-# (no environment variables needed)
-
-# Specific iOS version (will try iPhone Xs first, then any device):
-export IOS_VERSION="26.0"
-# Leave DEVICE_NAME unset
-
-# Specific device with highest iOS version:
-export DEVICE_NAME="iPhone 16 Pro"
-# Leave IOS_VERSION unset
-
-# Specific device AND specific iOS version:
-export DEVICE_NAME="iPhone 15"
-export IOS_VERSION="18.0"
-```
-
-**Step 2: Build the iOS app**
-```bash
-# Use local dotnet if available, otherwise use global dotnet
-./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
-# OR:
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios
-
-# Check build succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: Build failed"
-    exit 1
-fi
-
-# If the app crashes on launch, rebuild with --no-incremental:
-# dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios --no-incremental
-```
-
-**Step 3: Boot simulator and install app**
-```bash
-# Boot the simulator (will error if already booted, which is fine)
-xcrun simctl boot $UDID 2>/dev/null || true
-
-# Verify simulator is booted
-STATE=$(xcrun simctl list devices --json | jq -r --arg udid "$UDID" '.devices[][] | select(.udid == $udid) | .state')
-if [ "$STATE" != "Booted" ]; then
-    echo "❌ ERROR: Simulator failed to boot. Current state: $STATE"
-    exit 1
-fi
-echo "Simulator is booted and ready"
-
-# Install the app to the simulator
-xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
-
-# Check install succeeded
-if [ $? -ne 0 ]; then
-    echo "❌ ERROR: App installation failed"
-    exit 1
-fi
-```
-
-**Step 4: Run your specific test**
-```bash
-# Set DEVICE_UDID environment variable so Appium tests know which device to use
-export DEVICE_UDID=$UDID
-
-# Run the test
-dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
-```
-
-**Important Note on Device Targeting:**
-
-The UI test infrastructure automatically reads the `DEVICE_UDID` environment variable to target the correct iOS simulator. You must set this before running tests:
-
-```bash
-# Set the device UDID (from Step 1)
-export DEVICE_UDID=$UDID
-
-# Run the test
-dotnet test src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj --filter "FullyQualifiedName~Issue12345"
-```
-
-Without `DEVICE_UDID` set, Appium will randomly select a device, which may not have your app installed.
-
-**MacCatalyst:**
-
-**Step 1: Deploy TestCases.HostApp to MacCatalyst**
-```bash
-# Use local dotnet if available, otherwise use global dotnet
-./bin/dotnet/dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
-# OR:
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-maccatalyst -t:Run
-```
-
-**Step 2: Run your specific test**
-```bash
-dotnet test src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj --filter "FullyQualifiedName~Issue12345"
-```
-
 ### Troubleshooting
 
 **Android App Crashes on Launch:**
@@ -475,47 +479,72 @@ If you encounter navigation fragment errors or resource ID issues:
 java.lang.IllegalArgumentException: No view found for id 0x7f0800f8 (com.microsoft.maui.uitests:id/inward) for fragment NavigationRootManager_ElementBasedFragment
 ```
 
-**Solution:** Build with `--no-incremental` to force a clean build:
+**Solution:** Read the crash logs to find the actual exception:
 ```bash
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-android -t:Run --no-incremental
+# Monitor logcat for the crash
+adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"
 ```
 
-**Other debugging steps:**
-1. Monitor logcat: `adb logcat | grep -E "(FATAL|AndroidRuntime|Exception|Error|Crash)"`
-2. Try clean build: `dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj`
-3. Check emulator: `adb devices`
+**Debugging steps:**
+1. **Find the exception** in logcat - look for the stack trace
+2. **Investigate the root cause** - What line of code is throwing? Why?
+3. **Check for null references** - Are required resources missing?
+4. **Verify resource IDs exist** - Check if the ID referenced actually exists in the app
+5. If you can't determine the fix, **ask for guidance** with the full exception details
 
 **iOS App Crashes on Launch or Won't Start with Appium:**
 
-If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`, the issue is often related to incremental builds:
+If the iOS app crashes when launched by Appium or manually with `xcrun simctl launch`:
 
-**Solution:** Clean and rebuild with `--no-incremental`:
+**Solution:** Read the crash logs to find the actual exception:
 ```bash
-# Clean first
-dotnet clean src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj
+# Capture crash logs
+xcrun simctl spawn booted log stream --predicate 'processImagePath contains "TestCases.HostApp"' --level=debug > /tmp/ios_crash.log 2>&1 &
+LOG_PID=$!
 
-# Rebuild with no-incremental
-dotnet build src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj -f net10.0-ios --no-incremental
+# Try to launch the app
+xcrun simctl launch $UDID com.microsoft.maui.uitests
 
-# Reinstall to simulator
-UDID=$(xcrun simctl list devices available --json | jq -r '.devices | to_entries | map(select(.key | startswith("com.apple.CoreSimulator.SimRuntime.iOS"))) | map({key: .key, version: (.key | sub("com.apple.CoreSimulator.SimRuntime.iOS-"; "") | split("-") | map(tonumber)), devices: .value}) | sort_by(.version) | reverse | map(select(.devices | any(.name == "iPhone Xs"))) | first | .devices[] | select(.name == "iPhone Xs") | .udid')
-xcrun simctl install $UDID artifacts/bin/Controls.TestCases.HostApp/Debug/net10.0-ios/iossimulator-arm64/Controls.TestCases.HostApp.app
+# Wait a moment for crash
+sleep 3
+
+# Stop log capture
+kill $LOG_PID
+
+# Review the crash log
+cat /tmp/ios_crash.log | grep -A 20 -B 5 "Exception"
 ```
 
-**Why this happens:** Incremental builds can sometimes leave the app bundle in an inconsistent state, especially after making changes to XAML files or project structure. The `--no-incremental` flag forces a complete rebuild.
+**Debugging steps:**
+1. **Find the exception** in the crash log - look for stack traces
+2. **Investigate the root cause** - What's causing the crash?
+3. **Check for missing resources** - Are all required files included in the bundle?
+4. **Verify Info.plist** - Are required keys present?
+5. **Check for platform-specific issues** - iOS version compatibility, permissions, etc.
+6. If you can't determine the fix, **ask for guidance** with the full exception details
+
+### Dangerous System Commands (Never Run)
+
+**🚨 NEVER run these commands — they cause destructive system-wide side effects:**
+
+- **`tccutil reset`** — Wipes ALL macOS permissions (Accessibility, Camera, etc.) system-wide. This breaks Appium/WebDriverAgent, Xcode, and other tools. Once reset, permissions must be manually re-granted through System Settings.
+- **`csrutil disable`** — Disables System Integrity Protection
+- **`networksetup`** — Modifies network configuration
+- **`defaults delete`** on system domains — Resets system preferences
+
+**General rule:** Do not run commands that modify macOS system-level privacy, security, or permission settings. If you need to check permissions, read them — never reset or modify them.
 
 ## Before Committing
 
 Verify the following checklist before committing UI tests:
 
 - [ ] Compile both the HostApp project and TestCases.Shared.Tests project successfully
-- [ ] Verify AutomationId references match between XAML and test code
+- [ ] Verify AutomationId references match between HostApp UI (C# or XAML) and test code
 - [ ] Ensure file names follow the `IssueXXXXX` pattern and match between projects
 - [ ] Ensure test methods have descriptive names
 - [ ] Verify test inherits from `_IssuesUITest`
-- [ ] Confirm only ONE `[Category]` attribute is used per test
-- [ ] Verify tests run on all applicable platforms (iOS, Android, Windows, MacCatalyst) unless platform-specific
-- [ ] Document any platform-specific limitations with clear comments
+- [ ] Confirm only ONE `[Category]` attribute per test
+- [ ] No inline `#if` directives in test code (use extension methods)
 - [ ] Test passes locally on at least one platform
 
 ### Test State Management
@@ -524,3 +553,223 @@ Verify the following checklist before committing UI tests:
 - The test infrastructure handles navigation to the test page and basic cleanup
 - If your test modifies global app state, consider whether cleanup is needed
 - Most tests don't require explicit cleanup as each test gets a fresh page instance
+
+## Best Practices
+
+### Default: C# Over XAML
+
+**Use C# files (`.cs`) for UI tests. Only use XAML files (`.xaml`) when the test scenario requires XAML-specific features.**
+
+**When to use C# only (`.cs` file):**
+- ✅ Simple control tests (Button, Label, Entry, etc.)
+- ✅ Layout tests (Grid, StackLayout, FlexLayout, etc.)
+- ✅ Navigation tests
+- ✅ Event handling tests
+- ✅ Property tests
+- ✅ Most UI behavior tests
+
+**When XAML is required (`.xaml` + `.xaml.cs` files):**
+- ✅ Testing XAML binding syntax
+- ✅ Testing XAML templates (DataTemplate, ControlTemplate)
+- ✅ Testing XAML styles and resources
+- ✅ Testing XAML markup extensions
+- ✅ Testing XamlC compilation behavior
+- ✅ Testing XAML-specific parsing or compilation issues
+
+**Examples:**
+
+```csharp
+// ✅ GOOD: C# only test (most common pattern)
+public class Issue12345 : ContentPage
+{
+    public Issue12345()
+    {
+        Content = new StackLayout
+        {
+            Children =
+            {
+                new Label { Text = "Hello", AutomationId = "MyLabel" },
+                new Button { Text = "Click Me", AutomationId = "MyButton" }
+            }
+        };
+    }
+}
+```
+
+```xaml
+<!-- ❌ AVOID unless testing XAML bindings/templates/styles -->
+<ContentPage ...>
+    <StackLayout>
+        <Label Text="Hello" AutomationId="MyLabel" />
+        <Button Text="Click Me" AutomationId="MyButton" />
+    </StackLayout>
+</ContentPage>
+```
+
+### Use Test Helper Base Classes
+
+**ALWAYS check for and use existing test helper base classes instead of creating from scratch:**
+
+| Base Class | Use For | Example |
+|------------|---------|---------|
+| `TestShell` | Shell-related tests | `public class Issue12345 : TestShell` |
+| `TestContentPage` | ContentPage tests needing `Init()` pattern | `public class Issue12345 : TestContentPage` |
+| `TestNavigationPage` | NavigationPage tests | `public class Issue12345 : TestNavigationPage` |
+| `ContentPage` | Simple page tests (direct inheritance) | `public class Issue12345 : ContentPage` |
+
+**TestShell provides:**
+- Platform-specific automation IDs for flyout and back buttons
+- Helper methods: `AddContentPage()`, `AddBottomTab()`, `AddTopTab()`, `AddFlyoutItem()`
+- Abstract `Init()` method for setup
+- `DisplayedPage` property for accessing current page
+
+**TestContentPage/TestNavigationPage provide:**
+- Abstract `Init()` method for deferred initialization
+- Cleaner separation of setup logic
+
+**Example:**
+
+```csharp
+// ✅ GOOD: Using TestShell for Shell tests
+[Issue(IssueTracker.Github, 12345, "Shell navigation bug", PlatformAffected.All)]
+public class Issue12345 : TestShell
+{
+    protected override void Init()
+    {
+        AddContentPage(new ContentPage 
+        { 
+            Content = new Label { Text = "Test" } 
+        });
+    }
+}
+
+// ❌ BAD: Creating Shell from scratch
+public class Issue12345 : Shell
+{
+    public Issue12345()
+    {
+        Items.Add(new ShellItem { ... }); // Verbose, error-prone
+    }
+}
+```
+
+### Avoid Obsolete APIs
+
+**NEVER use obsolete APIs in new tests. Use modern equivalents:**
+
+| ❌ Obsolete API | ✅ Modern API | Notes |
+|----------------|--------------|-------|
+| `Application.MainPage` | `Window.Page` | Access via `this.Window.Page` in ContentPage |
+| `Application.MainPage` | `Application.Current.Windows[0].Page` | When not in Page context |
+| `Frame` | `Border` | Frame is deprecated, use Border instead |
+| `Device.BeginInvokeOnMainThread` | `Dispatcher.Dispatch` or `MainThread.BeginInvokeOnMainThread` | Modern threading APIs |
+
+**Examples:**
+
+```csharp
+// ✅ GOOD: Modern Window API
+this.Window.Page = new NavigationPage(new MyPage());
+
+// ❌ BAD: Obsolete Application.MainPage
+Application.MainPage = new NavigationPage(new MyPage());
+
+// ✅ GOOD: Border
+new Border { Content = new Label { Text = "Hello" } }
+
+// ❌ BAD: Frame (deprecated)
+new Frame { Content = new Label { Text = "Hello" } }
+```
+
+### Use UITest Optimized Controls for Screenshot Tests
+
+**For tests that use `VerifyScreenshot()`, use UITest optimized controls instead of standard text input controls.** These controls provide `IsCursorVisible` to prevent cursor blinking from causing flaky screenshot comparisons.
+
+| Standard Control | UITest Control | Purpose |
+|------------------|----------------|---------|
+| `Entry` | `UITestEntry` | Text input without cursor blink |
+| `Editor` | `UITestEditor` | Multi-line input without cursor blink |
+| `SearchBar` | `UITestSearchBar` | Search input without cursor blink |
+
+**Example:**
+
+```csharp
+// For screenshot tests, use UITest controls (UITestEntry, UITestEditor, UITestSearchBar)
+var entry = new UITestEntry
+{
+    Placeholder = "Enter text",
+    IsCursorVisible = false,  // Prevents flaky screenshots
+    AutomationId = "TestEntry"
+};
+
+// For non-screenshot tests, standard Entry is fine
+var entry = new Entry { Placeholder = "Enter text", AutomationId = "TestEntry" };
+```
+
+**Location:** `src/Controls/tests/TestCases.HostApp/Controls/UITest*.cs`
+
+### Check Similar Tests for Patterns
+
+**Before creating a new test, search for similar tests to reuse patterns:**
+
+```bash
+# Find similar control tests
+grep -r "class.*Issue.*Button" src/Controls/tests/TestCases.HostApp/Issues/*.cs
+
+# Find Shell tests
+grep -r "TestShell" src/Controls/tests/TestCases.HostApp/Issues/*.cs
+
+# Find tests for specific control
+grep -r "CollectionView" src/Controls/tests/TestCases.HostApp/Issues/*.cs
+
+# Find tests using UITest optimized controls
+grep -r "UITestEntry\|UITestEditor\|UITestSearchBar" src/Controls/tests/TestCases.HostApp/Issues/*.cs
+```
+
+**Reuse established patterns:**
+- AutomationId naming conventions
+- Test structure and layout
+- Common helper methods
+- Platform-specific workarounds
+- UITest optimized control usage
+
+### Safe Area Testing (iOS/MacCatalyst)
+
+**⚠️ CRITICAL for macCatalyst safe area tests:**
+
+Safe area behavior differs significantly between macOS versions. Tests must account for this variability.
+
+| macOS Version | Title Bar Safe Area | CI Environment |
+|---------------|---------------------|----------------|
+| **macOS 14/15** | ~28px top inset | ✅ Used by CI |
+| **macOS 26 (Liquid Glass)** | ~0px top inset | ❌ Local dev only |
+
+**Rules for safe area tests:**
+
+1. **Use tolerances for safe area measurements** - Exact pixel values vary by macOS version
+2. **Test behavior, not exact values** - Verify content is NOT obscured, rather than checking exact padding pixels
+3. **Use `GetRect()` for child content position** - Measure where content actually appears, not parent size
+4. **Never hardcode safe area expectations** - Tests should pass on macOS 14/15 AND macOS 26
+
+**Example patterns:**
+
+```csharp
+// ❌ BAD: Hardcoded safe area value (breaks across macOS versions)
+var safeArea = element.GetRect();
+Assert.That(safeArea.Y, Is.EqualTo(28)); // Fails on macOS 26
+
+// ✅ GOOD: Test that content is not obscured by title bar
+var contentRect = App.WaitForElement("MyContent").GetRect();
+var titleBarRect = App.WaitForElement("TitleBar").GetRect();
+Assert.That(contentRect.Y, Is.GreaterThanOrEqualTo(titleBarRect.Height), 
+    "Content should not be obscured by title bar");
+
+// ✅ GOOD: Use tolerance for safe area (accounts for OS differences)
+Assert.That(contentRect.Y, Is.GreaterThan(0).And.LessThan(50), 
+    "Content should have some top padding but not excessive");
+```
+
+**Test category**: Use `UITestCategories.SafeAreaEdges` for safe area tests.
+
+**Platform scope**: Safe area tests should typically run on iOS and MacCatalyst (not just one).
+
+**See also**: `.github/instructions/safe-area-debugging.instructions.md` for investigation guidelines

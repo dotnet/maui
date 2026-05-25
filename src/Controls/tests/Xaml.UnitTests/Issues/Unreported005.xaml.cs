@@ -1,5 +1,6 @@
 using System;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 using Constraint = Microsoft.Maui.Controls.Compatibility.Constraint;
 using RelativeLayout = Microsoft.Maui.Controls.Compatibility.RelativeLayout;
@@ -49,13 +50,15 @@ public partial class Unreported005 : ContentPage
 {
 	public Unreported005() => InitializeComponent();
 
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void CustomMarkupExtensionWorks([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CustomMarkupExtensionWorks(XamlInflator inflator)
 		{
 			var page = new Unreported005(inflator);
-			Assert.That(RelativeLayout.GetXConstraint(page.after), Is.TypeOf<Constraint>());
+			Assert.IsType<Constraint>(RelativeLayout.GetXConstraint(page.after));
 			Assert.NotNull(RelativeLayout.GetXConstraint(page.after));
 		}
 	}

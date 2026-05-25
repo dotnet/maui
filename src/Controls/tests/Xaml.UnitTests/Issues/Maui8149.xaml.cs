@@ -1,7 +1,8 @@
+using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -9,13 +10,15 @@ public partial class Maui8149 : ContentView
 {
 	public Maui8149() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public Test() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void NamescopeWithXamlC([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void NamescopeWithXamlC(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
 			{
@@ -43,7 +46,7 @@ public partial class Maui8149View : ContentView
 				compilation.RunMauiSourceGenerator(typeof(Maui8149));
 			}
 			var page = new Maui8149(inflator);
-			Assert.That((page.Content as Maui8149View).Text, Is.EqualTo("Microsoft.Maui.Controls.Xaml.UnitTests.Maui8149"));
+			Assert.Equal("Microsoft.Maui.Controls.Xaml.UnitTests.Maui8149", (page.Content as Maui8149View).Text);
 		}
 	}
 }

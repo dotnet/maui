@@ -409,7 +409,10 @@ namespace Microsoft.Maui.Controls
 					return false;
 				}
 
-				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+				// Preserve AlwaysTemplate if explicitly set (e.g., by a tint behavior),
+				// otherwise use AlwaysOriginal to prevent unwanted default tinting
+				if (image?.RenderingMode != UIImageRenderingMode.AlwaysTemplate)
+					image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				platformButton.SetImage(image, UIControlState.Normal);
 

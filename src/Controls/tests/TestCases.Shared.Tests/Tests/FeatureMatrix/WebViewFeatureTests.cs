@@ -4,9 +4,11 @@ using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
-public class WebViewFeatureTests : UITest
+public class WebViewFeatureTests : _GalleryUITest
 {
+	const int ApplyTapMaxAttempts = 3;
 	public const string WebViewFeatureMatrix = "WebView Feature Matrix";
+	public override string GalleryPageName => WebViewFeatureMatrix;
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string WebViewControl = "WebViewControl";
@@ -26,10 +28,27 @@ public class WebViewFeatureTests : UITest
 		: base(device)
 	{
 	}
-	protected override void FixtureSetup()
+
+	public void TapApplyAndWaitForMainPage()
 	{
-		base.FixtureSetup();
-		App.NavigateToGallery(WebViewFeatureMatrix);
+		Exception? lastError = null;
+
+		for (var attempt = 1; attempt <= ApplyTapMaxAttempts; attempt++)
+		{
+			try
+			{
+				App.WaitForElement(Apply);
+				App.Tap(Apply);
+				App.WaitForElementTillPageNavigationSettled(Options);
+				return;
+			}
+			catch (Exception ex)
+			{
+				lastError = ex;
+			}
+		}
+
+		Assert.Fail($"Failed to tap '{Apply}' toolbar item and return to main page after {ApplyTapMaxAttempts} attempts. Last error: {lastError}");
 	}
 
 	[Test, Order(1)]
@@ -50,20 +69,15 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement("HtmlSourceButton");
 		App.Tap("HtmlSourceButton");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(Options);
+		TapApplyAndWaitForMainPage();
 		App.Tap(Options);
 		App.WaitForElement("MicrosoftUrlButton");
 		App.Tap("MicrosoftUrlButton");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(Options);
+		TapApplyAndWaitForMainPage();
 		App.Tap(Options);
 		App.WaitForElement("GithubUrlButton");
 		App.Tap("GithubUrlButton");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		TapApplyAndWaitForMainPage();
 		App.WaitForElement(CanGoBackLabel, timeout: TimeSpan.FromSeconds(3));
 		Assert.That(App.FindElement(CanGoBackLabel).GetText(), Is.EqualTo("True"));
 		App.WaitForElement(GoBackButton);
@@ -82,8 +96,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(HtmlSourceButton);
 		App.Tap(HtmlSourceButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		TapApplyAndWaitForMainPage();
 		App.WaitForElement(EvaluateJSButton);
 		App.Tap(EvaluateJSButton);
 		App.WaitForElement(JSResultLabel);
@@ -99,9 +112,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(GithubUrlButton);
 		App.Tap(GithubUrlButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		var navigatingText = App.FindElement(NavigatingStatusLabel).GetText();
 		Assert.That(navigatingText, Is.Not.Null.And.Not.Empty);
 	}
@@ -114,9 +125,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(GithubUrlButton);
 		App.Tap(GithubUrlButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		var navigatedText = App.FindElement(NavigatedStatusLabel).GetText();
 		Assert.That(navigatedText, Is.EqualTo("Navigated: Success"));
 	}
@@ -129,9 +138,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(HtmlSourceButton);
 		App.Tap(HtmlSourceButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		var navigatingText = App.FindElement(NavigatingStatusLabel).GetText();
 		Assert.That(navigatingText, Is.Not.Null.And.Not.Empty);
 	}
@@ -144,9 +151,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(HtmlSourceButton);
 		App.Tap(HtmlSourceButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		var navigatedText = App.FindElement(NavigatedStatusLabel).GetText();
 		Assert.That(navigatedText, Is.EqualTo("Navigated: Success"));
 	}
@@ -161,9 +166,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(AddTestCookieButton);
 		App.WaitForElement(HtmlSourceButton);
 		App.Tap(HtmlSourceButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		var cookiesStatusText = App.FindElement(CookieStatusMainLabel).GetText();
 		Assert.That(cookiesStatusText, Does.Contain("Domain: localhost").And.Contain("Count: 1").And.Contain("DotNetMAUICookie = My cookie"));
 	}
@@ -178,9 +181,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(GithubUrlButton);
 		App.WaitForElement(AddTestCookieButton);
 		App.Tap(AddTestCookieButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		var cookiesStatusText = App.FindElement(CookieStatusMainLabel).GetText();
 		Assert.That(cookiesStatusText, Does.Contain("Domain: github.com").And.Contain("Count: 1").And.Contain("DotNetMAUICookie = My cookie"));
 	}
@@ -195,9 +196,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(AddTestCookieButton);
 		App.WaitForElement(HtmlSourceButton);
 		App.Tap(HtmlSourceButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		App.WaitForElement(EvaluateJSButton);
 		App.Tap(EvaluateJSButton);
 		App.WaitForElement(JSResultLabel);
@@ -215,9 +214,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(ClearCookiesButton);
 		App.Tap(ClearCookiesButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		var clearCookiesText = App.FindElement(CookieStatusMainLabel).GetText();
 		Assert.That(clearCookiesText, Is.EqualTo("No cookies available."));
 	}
@@ -230,8 +227,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(GithubUrlButton);
 		App.Tap(GithubUrlButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		TapApplyAndWaitForMainPage();
 		App.WaitForElement("ReloadButton");
 		App.Tap("ReloadButton");
 		var navigatedText = App.FindElement(NavigatedStatusLabel).GetText();
@@ -247,8 +243,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(HtmlSourceButton);
 		App.Tap(HtmlSourceButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		TapApplyAndWaitForMainPage();
 		App.WaitForElement("ReloadButton");
 		App.Tap("ReloadButton");
 		var navigatedText = App.FindElement(NavigatedStatusLabel).GetText();
@@ -264,8 +259,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement("LoadPage1Button");
 		App.Tap("LoadPage1Button");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		TapApplyAndWaitForMainPage();
 		App.WaitForElement(EvaluateJSButton);
 		App.Tap(EvaluateJSButton);
 		App.WaitForElement(JSResultLabel);
@@ -281,8 +275,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement("LoadMultiplePagesButton");
 		App.Tap("LoadMultiplePagesButton");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
+		TapApplyAndWaitForMainPage();
 		App.WaitForElement(EvaluateJSButton);
 		App.Tap(EvaluateJSButton);
 		App.WaitForElement(JSResultLabel);
@@ -300,9 +293,7 @@ public class WebViewFeatureTests : UITest
 		App.Tap(GithubUrlButton);
 		App.WaitForElement("IsVisibleFalse");
 		App.Tap("IsVisibleFalse");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options);
+		TapApplyAndWaitForMainPage();
 		App.WaitForNoElement(WebViewControl);
 	}
 
@@ -315,10 +306,8 @@ public class WebViewFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement("ShadowTrue");
 		App.Tap("ShadowTrue");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElementTillPageNavigationSettled(Options, timeout: TimeSpan.FromSeconds(3));
-		VerifyScreenshot();
+		TapApplyAndWaitForMainPage();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 }

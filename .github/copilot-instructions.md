@@ -6,9 +6,9 @@ description: "Guidance for GitHub Copilot when working on the .NET MAUI reposito
 
 This document provides specific guidance for GitHub Copilot when working on the .NET MAUI repository. It serves as context for understanding the project structure, development workflow, and best practices.
 
-**🔄 IMPORTANT: Synchronization with AGENTS.md**
+## Code Review Instructions
 
-When updating this file, you MUST also update `AGENTS.md` (in repository root) to ensure both instruction files remain synchronized. AGENTS.md provides universal guidance for all AI coding assistants, while this file is specifically for GitHub Copilot.
+When performing a code review on PRs that change functional code, run the pr-finalize skill to verify that the PR title and description accurately match the actual implementation. This ensures proper documentation and helps maintain high-quality commit messages.
 
 ## Repository Overview
 
@@ -17,61 +17,27 @@ When updating this file, you MUST also update `AGENTS.md` (in repository root) t
 ### Key Technologies
 
 - **.NET SDK** - Version is **ALWAYS** defined in `global.json` at repository root
-  - **main branch**: Use the latest stable version of .NET to build (currently .NET 10)
-  - **net10.0 branch**: Use the latest .NET 10 SDK
-  - **Feature branches**: Each feature branch (e.g., `net11.0`, `net12.0`) correlates to its respective .NET version
-- **C#** and **XAML** for application development
-- **Cake build system** for compilation and packaging
-- **MSBuild** with custom build tasks
-- **xUnit + NUnit** for testing (xUnit for unit tests, NUnit for UI tests)
-- **Appium WebDriver** for UI test automation
-
-**🚨 CRITICAL**: Before any build operation, verify .NET SDK version:
-```bash
-# Check required version
-cat global.json | grep -A 1 '"dotnet"'
-
-# Verify installed version matches
-dotnet --version
-```
+  - **main branch**: Latest stable .NET version
+  - **Feature branches**: Each `netN.0` branch targets the .NET N SDK. By convention, the highest `netN.0` branch is the current development branch for new features and API changes.
+- **Cake build system** for compilation and packaging (`dotnet cake`)
+- **MSBuild** with custom build tasks (must build `Microsoft.Maui.BuildTasks.slnf` first)
+- **Testing frameworks**:
+  - **xUnit** - Unit tests (`*.UnitTests.csproj`)
+  - **NUnit** - UI tests (`TestCases.Shared.Tests`)
+  - **Appium WebDriver** - UI test automation
 
 ## Development Environment Setup
 
-### Prerequisites
+This guidance assumes:
+- Repository is already cloned and tools are restored (`dotnet tool restore` completed)
+- Build tasks are compiled (`Microsoft.Maui.BuildTasks.slnf` built successfully)
+- Correct .NET SDK version installed (verify with `dotnet --version` against `global.json`)
 
-#### Linux Development (Current Environment)
-For .NET installation on Linux, follow the official Microsoft documentation:
-* https://learn.microsoft.com/en-us/dotnet/core/install/linux
+### Platform-Specific Requirements
 
-#### Additional Requirements
-- **OpenJDK 17** for Android development
-- **VS Code** with .NET MAUI Dev Kit extension
-- **Android SDK** for Android development
-
-### Initial Repository Setup
-
-**🚀 Mandatory Setup Sequence** - Run these in exact order:
-
-1. **Clone and navigate to repository:**
-   ```bash
-   git clone https://github.com/dotnet/maui.git
-   cd maui
-   ```
-
-2. **Restore tools and build tasks (REQUIRED before opening IDE):**
-   ```bash
-   dotnet tool restore
-   dotnet build ./Microsoft.Maui.BuildTasks.slnf
-   ```
-
-**⚠️ FAILURE RECOVERY**: If restore or build fails:
-```bash
-# Clean and retry
-dotnet clean
-rm -rf bin/ obj/
-dotnet tool restore --force
-dotnet build ./Microsoft.Maui.BuildTasks.slnf --verbosity normal
-```
+- **Android**: OpenJDK 17 + Android SDK (install via `android` command after `dotnet tool restore`)
+- **iOS/macOS**: Xcode (current stable version)
+- **Windows**: Windows SDK
 
 ## Project Structure
 
@@ -105,19 +71,6 @@ Platform-specific files use naming conventions to control compilation:
 **Example**: If you have both `CollectionView.ios.cs` and `CollectionView.maccatalyst.cs`, both will compile for MacCatalyst builds. The `.maccatalyst.cs` file won't compile for iOS, but the `.ios.cs` file will compile for both iOS and MacCatalyst.
 
 ### Sample Projects
-```
-├── Controls
-│   ├── samples
-│   │   ├── Maui.Controls.Sample
-│   │   ├── Maui.Controls.Sample.Sandbox
-├── Essentials
-│   ├── samples
-│   │   ├── Essentials.Sample
-├── BlazorWebView
-│   ├── samples
-│   │   ├── BlazorWinFormsApp
-│   │   ├── BlazorWpfApp
-```
 
 - `src/Controls/samples/Maui.Controls.Sample` - Full gallery sample with all controls and features
 - `src/Controls/samples/Maui.Controls.Sample.Sandbox` - Empty project for testing/reproduction
@@ -126,71 +79,59 @@ Platform-specific files use naming conventions to control compilation:
 
 ## Development Workflow
 
-### Building
+### Testing
 
-#### Using Cake (Recommended)
-```bash
-# Build everything
-dotnet cake
+Major test projects:
+- **Core**: `src/Core/tests/UnitTests/Core.UnitTests.csproj`
+- **Essentials**: `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
+- **Controls**: `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
+- **XAML**: `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
 
-# Pack NuGet packages
-dotnet cake --target=dotnet-pack
-```
+Find all tests: `find . -name "*.UnitTests.csproj"`
 
-### Testing and Debugging
+### CI Pipelines (Azure DevOps)
 
-#### Testing Guidelines
-- Add tests for new functionality
-- Ensure existing tests pass for modified areas (major test projects):
-  - **Core tests**: `src/Core/tests/UnitTests/Core.UnitTests.csproj`
-  - **Essentials tests**: `src/Essentials/test/UnitTests/Essentials.UnitTests.csproj`
-  - **Controls tests**: `src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj`
-  - **XAML tests**: `src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj`
-  - **To find other test projects**: `find . -name "*.UnitTests.csproj"` or check the solution file
+When referencing or triggering CI pipelines, use these current pipeline names:
 
-#### UI Testing
+| Pipeline | Name | Purpose |
+|----------|------|---------|
+| Overall CI | `maui-pr` | Full PR validation build |
+| Device Tests | `maui-pr-devicetests` | Helix-based device tests |
+| UI Tests | `maui-pr-uitests` | Appium-based UI tests |
 
-UI tests use Appium WebDriver with NUnit. See [UI Testing Guide](../docs/UITesting-Guide.md) for comprehensive documentation.
+**⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
+
+### Investigating CI Failures
+
+**🚨 ALWAYS use the `azdo-build-investigator` skill when investigating CI failures or assessing merge readiness.** Its instructions direct you to invoke the `ci-analysis` skill first for the core investigation workflow, then apply MAUI-specific corrections (correct pipeline names, XHarness quirks, binlog guidance).
+
+Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
+
+**When to use it:**
+- "How does CI look?" / "Is CI green?" / "Can we merge?"
+- "What's failing?" / "Are these known failures?"
+- "Is this PR safe to merge?" / "Any CI concerns?"
+- After any PR push to verify the build
+
+**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", query the **actual AzDO test results** — do NOT infer whether a test ran by inspecting code attributes. Class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
+
+**Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines. The skills handle Helix work item details, known issue cross-referencing, and test result aggregation that manual approaches miss.
+
+### Gradle / Maven Dependency Failures (CFSClean)
+
+The official CI build uses CFSClean network isolation which blocks `repo.maven.apache.org`. All Gradle/Maven dependencies resolve through the `dotnet-public-maven` Azure Artifacts feed.
+
+**If CI fails with Gradle 401 errors** like `"No local versions of package"` or `"Please provide authentication to save package from upstream"`, it means a Maven package hasn't been ingested into the feed yet. **Fix:** run `./eng/ingest-maven-deps.sh` locally to pre-populate the feed. See `src/Core/AndroidNative/settings.gradle` for details.
+
+**Do NOT upgrade Gradle past 8.x** — the Android SDK's `net.android.init.gradle.kts` is incompatible with Gradle 9.x (`dotnet/android#10738`).
 
 ### Code Formatting
 
-Before committing any changes, format the codebase using the following command to ensure consistent code style:
+Always format code before committing:
 
 ```bash
 dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
-
-This command:
-- Formats all code files according to the repository's `.editorconfig` settings
-- Excludes the Templates/src directory from formatting
-- Excludes the CA1822 diagnostic (member can be marked as static)
-- Uses `--no-restore` for faster execution when dependencies are already restored
-
-### Local Development with Branch-Specific .NET
-
-For compatibility with specific branches:
-```bash
-# Use branch-specific .NET version
-./dotnet-local.sh build    # Linux/macOS
-./dotnet-local.cmd build   # Windows
-```
-
-## Platform-Specific Development
-
-### Android
-- Requires Android SDK and OpenJDK 17
-- Install missing Android SDKs via [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk)
-- Android SDK Manager available via: `android` command (after dotnet tool restore)
-
-### iOS (requires macOS)
-- Requires current stable Xcode installation from [App Store](https://apps.apple.com/us/app/xcode/id497799835?mt=12) or [Apple Developer portal](https://developer.apple.com/download/more/?name=Xcode)
-- Pair to Mac required when developing on Windows
-
-### Windows
-- Requires Windows SDK
-
-### macOS/Mac Catalyst
-- Requires Xcode installation
 
 ## Contribution Guidelines
 
@@ -198,50 +139,69 @@ For compatibility with specific branches:
 
 **🚨 CRITICAL REQUIREMENT: Always develop your own solution first, then compare with existing PRs.**
 
-When working on an issue:
+1. **Develop your own solution first** - Analyze the issue independently and design your approach without looking at existing PRs
+2. **Search for existing PRs** - After developing your solution, search for open PRs addressing the same issue
+3. **Compare and evaluate** - Examine existing PR approaches and decide which solution better addresses the issue
+4. **Document your decision** - In your PR description, compare your solution to existing PRs and explain why you chose your approach, including concerns with alternatives
+5. **Improve either solution** - Whether using your solution or an existing one, enhance with better tests, code quality, error handling, or documentation
 
-1. **FIRST: Develop your own solution** - Come up with your own implementation approach without looking at existing PRs. Analyze the issue, understand the requirements, and design your solution independently
-2. **THEN: Search for existing PRs** - After you have developed your solution approach, search for open PRs that address the same issue using GitHub search or issue links
-3. **Compare solutions thoroughly** - Examine the existing PR's proposed changes, implementation approach, and any discussion in comments. Compare this to your own solution
-4. **Evaluate and choose the best approach** - Decide which solution (yours or the existing PR's) better addresses the issue and follows best practices
-5. **Always document your decision** - In your PR description, always include a summary comparing your solution to any other open PRs for the issue you are working on, and explain why you chose your approach over the alternatives
-6. **Report on why you didn't choose other solutions** - Always make sure to explain the specific reasons why you didn't go with other existing solutions, including any concerns or issues you identified
-7. **It's OK to abandon existing PRs** - If you're not confident enough in the existing PR's approach, it's completely acceptable to abandon it and implement your own solution
-8. **Pull existing changes when you prefer them** - If you determine the existing solution is better than your approach, pull those changes into your PR as the foundation for your work, then find areas to improve and add tests
-9. **Identify improvement opportunities** - Whether you use your solution or an existing one, look for areas where you can enhance it, such as:
-   - Adding comprehensive test coverage
-   - Improving code quality, performance, or maintainability
-   - Enhancing error handling or edge case coverage
-   - Better documentation or code comments
-   - More robust implementation patterns
+### Auto-Generated Files (Never Commit)
 
-### Files to Never Commit
-- **Never** check in changes to `cgmanifest.json` files
-- **Never** check in changes to `templatestrings.json` files
-- These files are automatically generated and should not be modified manually
+These files are auto-generated and must NOT be committed:
+- `cgmanifest.json` - Generated during CI builds
+- `templatestrings.json` - Auto-generated localization
 
-### File Reset Guidelines for AI Agents
-Since coding agents function as both CI and pair programmers, they need to handle CI-generated files appropriately:
-
-- **Always reset changes to `cgmanifest.json` files** - These are generated during CI builds and should not be committed by coding agents
-- **Always reset changes to `templatestrings.json` files** - These localization files are auto-generated and should not be committed by coding agents
+**For AI agents:** Always reset changes to these files before committing.
 
 ### PublicAPI.Unshipped.txt File Management
-When working with public API changes, proper handling of PublicAPI.Unshipped.txt files is critical:
 
-- **Never turn off analyzers or set no warn** to fix PublicAPI.Unshipped.txt file issues
-- **Always work to fix the PublicAPI.Unshipped.txt files properly** by adding the correct API entries
-- **Use `dotnet format analyzers`** if having trouble fixing PublicAPI.Unshipped.txt file issues
-- **Revert and re-add approach when files are incorrect:**
-  1. First, revert all changes to PublicAPI.Unshipped.txt files to their original state
-  2. Then, make only the necessary additions required for your new public APIs
-  3. This ensures clean, minimal changes that accurately reflect the new APIs being introduced
+When working with public API changes:
+- **Never disable analyzers** to bypass PublicAPI.Unshipped.txt issues
+- **Always add correct API entries** to PublicAPI.Unshipped.txt files
+- **Use `dotnet format analyzers`** if having trouble
+- **If files are incorrect**: Revert all changes, then add only the necessary new API entries
 
 ### Branching
 - `main` - For bug fixes without API changes
-- `net10.0` - For new features and API changes
+- The highest `netN.0` branch (by convention) - For new features and API changes. To find it, run `git fetch origin` then: `git for-each-ref --sort=-version:refname --count=1 --format='%(refname:lstrip=3)' refs/remotes/origin/net*.0`
 
-**Note:** The main branch is always pinned to the latest stable release of the .NET SDK, regardless of whether it's a long-term support (LTS) release. Ensure you have that version installed to build the codebase.
+### Git Workflow (Copilot CLI Rules)
+
+**🚨 CRITICAL Git Rules for Copilot CLI:**
+
+1. **NEVER commit directly to `main`** - Always create a feature branch for your work. Direct commits to `main` are strictly prohibited.
+
+2. **When amending an existing PR, work on the PR's branch directly** - Do NOT create a separate branch off a PR branch. The PR branch already IS a feature branch. Creating a new branch off it means CI won't run on the original PR, defeating the purpose. Use `gh pr checkout` to switch to the PR branch, make your changes, commit, **then** ask before pushing so the user can review locally first.
+
+3. **Do NOT rebase, squash, or force-push** unless explicitly requested by the user. These operations rewrite git history and can cause problems for other contributors. Default behavior should be regular commits and pushes.
+
+**Safe Git Workflow:**
+```bash
+# Create a feature branch (NEVER work directly on main)
+git checkout -b feature/issue-12345
+
+# Make commits normally
+git add .
+git commit -m "Fix: Description of the change"
+
+# Push to remote (for new branches)
+git push -u origin feature/issue-12345
+
+# For subsequent pushes on the same branch
+git push
+```
+
+**When asked to update an existing PR:**
+```bash
+# Check out the PR branch directly (do NOT create a new branch off it)
+gh pr checkout 12345
+
+# Make fixes and commit to the PR branch
+git add .
+git commit -m "Fix: Description of the change"
+```
+1. **STOP and ask the user** before pushing: "Changes are committed locally. Would you like me to push these changes to the PR?"
+2. Exception: If the user's instructions explicitly include pushing, proceed without asking.
 
 ### Documentation
 - Update XML documentation for public APIs
@@ -259,69 +219,143 @@ All PRs are required to have this at the top of the description:
 > It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
 ```
 
-Always put that at the top, without the block quotes. Without it, the users will NOT be able to try the PR and your work will have been in vain!
+Always put that at the top, without the block quotes. Without it, users will NOT be able to try the PR and your work will have been in vain!
 
-## Troubleshooting
 
-### Common Build Issues
 
-**Issue: "Build tasks not found"**
-```bash
-# Solution: Rebuild build tasks
-dotnet clean ./Microsoft.Maui.BuildTasks.slnf
-dotnet build ./Microsoft.Maui.BuildTasks.slnf
-```
+## Custom Agents and Skills
 
-**Issue: "Dependency version conflicts"**
-```bash
-# Solution: Full clean and restore
-dotnet clean Microsoft.Maui.sln
-rm -rf bin/ obj/
-dotnet restore Microsoft.Maui.sln --force
-```
+The repository includes specialized custom agents and reusable skills for specific tasks.
 
-**Issue: "Android SDK not found"**
-```bash
-# Solution: Check and install Android components
-android # Opens Android SDK Manager
-# Or set environment variable: export ANDROID_HOME=/path/to/android-sdk
-```
+### Skills vs Agents
 
-**Issue: "PublicAPI analyzer failures"**
-```bash
-# Solution: Use format analyzers first
-dotnet format analyzers Microsoft.Maui.sln
-# If still failing, check build output for required API entries
-```
+| Aspect | Skills | Agents |
+|--------|--------|--------|
+| **Invoke** | `/skill-name` or direct request | Delegate to agent |
+| **Output** | Analysis, recommendations | Actions, changes applied |
+| **Interaction** | Interactive discussion | Autonomous workflow |
+| **Example** | `/learn-from-pr` → recommendations | learn-from-pr agent → applies changes |
 
-### Platform-Specific Troubleshooting
+### Available Custom Agents
 
-**iOS/Mac Build Issues:**
-- Verify Xcode command line tools: `xcode-select --install`
-- Check Xcode version compatibility with .NET MAUI version
-- Ensure provisioning profiles are current (for device testing)
+1. **pr** - Sequential 4-phase workflow for reviewing and working on PRs
+   - **Use when**: A PR already exists and needs review or work, OR an issue needs a fix
+   - **Capabilities**: PR review, test verification, fix exploration, alternative comparison
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
 
-**Android Build Issues:**
-- Verify OpenJDK 17 installation: `java -version`
-- Check ANDROID_HOME environment variable
-- Update Android SDK components via Android SDK Manager
+2. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
+   - **Use when**: Creating new tests for issues or PRs
+   - **Capabilities**: Test type determination (UI and XAML), skill invocation, test verification
+   - **Trigger phrases**: "write tests for #XXXXX", "create tests", "add test coverage"
 
-**Windows Build Issues:**
-- Ensure Windows SDK is installed
-- Verify Visual Studio workloads include .NET MAUI development
-- Check for missing NuGet packages: `dotnet restore --force`
+3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
+   - **Use when**: User wants to manually test PR functionality or reproduce issues
+   - **Capabilities**: Sandbox app setup, Appium-based manual testing, PR functional validation
+   - **Trigger phrases**: "test this PR", "validate PR #XXXXX in Sandbox", "reproduce issue #XXXXX", "try out in Sandbox"
+   - **Do NOT use for**: Code review (use pr agent), writing automated tests (use write-tests-agent)
 
-## Additional Resources
+4. **learn-from-pr** - Extracts lessons from PRs and applies improvements to the repository
+   - **Use when**: After complex PR, want to improve instruction files/skills based on lessons learned
+   - **Capabilities**: Analyzes PR, identifies failure modes, applies improvements to instruction files, skills, code comments
+   - **Trigger phrases**: "learn from PR #XXXXX and apply improvements", "improve repo based on what we learned", "update skills based on PR"
+   - **Output**: Applied changes to instruction files, skills, architecture docs, code comments
+   - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
 
-- [Common Testing Patterns](/.github/instructions/common-testing-patterns.md) - Common command patterns for UDID extraction, builds, deploys, and error checking
-- [UI Testing Guide](../docs/UITesting-Guide.md)
-- [UI Testing Architecture](../docs/design/UITesting-Architecture.md)
-- [PR Test Validation Guide](../docs/PR-Test-Validation-Guide.md) - Procedures for validating UI tests in PRs
-- [SafeArea Testing Guide](/.github/instructions/safearea-testing.instructions.md) - Specialized guide for testing SafeArea changes (measure children, not parents)
-- [Instrumentation Guide](/.github/instructions/instrumentation.instructions.md) - Patterns for instrumenting MAUI code for debugging and testing
-- [Appium Control Scripts](/.github/instructions/appium-control.instructions.md) - Create standalone scripts for manual Appium-based debugging and exploration
-- [Development Guide](/.github/DEVELOPMENT.md)
-- [Development Tips](/docs/DevelopmentTips.md)
-- [Contributing Guidelines](/.github/CONTRIBUTING.md)
-- [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
-- [.NET MAUI Documentation](https://docs.microsoft.com/dotnet/maui)
+### Reusable Skills
+
+Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
+
+#### User-Facing Skills
+
+1. **pr-review** (`.github/skills/pr-review/SKILL.md`)
+   - **Purpose**: End-to-end PR review orchestrator — 3 phases: pr-preflight, try-fix, pr-report. Gate runs separately before this skill via Review-PR.ps1.
+   - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
+   - **Capabilities**: Multi-model fix exploration, alternative comparison, PR review recommendation
+   - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
+   - **Phase instructions** (in `.github/pr-review/`):
+     - `pr-preflight.md` — Context gathering from issue/PR
+     - `pr-report.md` — Final recommendation
+   - **Phase skill**: `try-fix` — Multi-model fix exploration
+   - **Note**: Gate (test verification) runs as a script step in `Review-PR.ps1` before this skill is invoked. Gate result is passed in the prompt.
+
+2. **issue-triage** (`.github/skills/issue-triage/SKILL.md`)
+   - **Purpose**: Query and triage open issues that need milestones, labels, or investigation
+   - **Trigger phrases**: "find issues to triage", "show me old Android issues", "what issues need attention"
+   - **Scripts**: `init-triage-session.ps1`, `query-issues.ps1`, `record-triage.ps1`
+
+2. **find-reviewable-pr** (`.github/skills/find-reviewable-pr/SKILL.md`)
+   - **Purpose**: Finds open PRs in dotnet/maui and dotnet/docs-maui that need review
+   - **Trigger phrases**: "find PRs to review", "show milestoned PRs", "find partner PRs"
+   - **Scripts**: `query-reviewable-prs.ps1`
+   - **Categories**: P/0, milestoned, partner, community, recent, docs-maui
+
+3. **pr-finalize** (`.github/skills/pr-finalize/SKILL.md`)
+   - **Purpose**: Verifies PR title and description match actual implementation, AND performs code review for best practices before merge.
+   - **Trigger phrases**: "finalize PR #XXXXX", "check PR description for #XXXXX", "review commit message"
+   - **Used by**: Before merging any PR, when description may be stale
+   - **Note**: Does NOT require agent involvement or session markdown - works on any PR
+   - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` - only post comments. Approval is a human decision.
+
+4. **code-review** (`.github/skills/code-review/SKILL.md`)
+   - **Purpose**: Reviews PR code changes for correctness, safety, and consistency with MAUI conventions. Walks through a MAUI-specific checklist covering handler lifecycle, platform code, safe area, threading, public API, and test patterns.
+   - **Trigger phrases**: "review code for PR #XXXXX", "code review PR #XXXXX", "review this PR's code"
+   - **Note**: Standalone skill — uses independence-first assessment (reads code before PR description to avoid anchoring bias). Can be used by any agent or invoked directly.
+   - **🚨 CRITICAL**: NEVER use `--approve` or `--request-changes` — only post comments. Approval is a human decision.
+
+5. **learn-from-pr** (`.github/skills/learn-from-pr/SKILL.md`)
+   - **Purpose**: Analyzes completed PR to identify repository improvements (analysis only, no changes applied)
+   - **Trigger phrases**: "what can we learn from PR #XXXXX?", "how can we improve agents based on PR #XXXXX?"
+   - **Used by**: After complex PRs, when agent struggled to find solution
+   - **Output**: Prioritized recommendations for instruction files, skills, code comments
+   - **Note**: For applying changes automatically, use the learn-from-pr agent instead
+
+6. **write-ui-tests** (`.github/skills/write-ui-tests/SKILL.md`)
+   - **Purpose**: Creates UI tests for GitHub issues and verifies they reproduce the bug
+   - **Trigger phrases**: "write UI tests for #XXXXX", "create UI test for issue", "add UI test coverage"
+   - **Output**: Test files that fail without fix, pass with fix
+
+7. **write-xaml-tests** (`.github/skills/write-xaml-tests/SKILL.md`)
+   - **Purpose**: Creates XAML unit tests for XAML parsing, compilation, and source generation
+   - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
+   - **Output**: Test files for Controls.Xaml.UnitTests
+
+9. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+   - **Purpose**: Verifies tests catch the bug before fix and pass with fix. Auto-detects test type (UI, device, unit, XAML) and dispatches to the appropriate runner.
+   - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
+   - **Used by**: After creating tests, before considering PR complete
+
+10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+   - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
+   - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
+   - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
+   - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
+
+11. **dependency-flow** (`.github/skills/dependency-flow/SKILL.md`)
+    - **Purpose**: MAUI-specific dependency flow rules, channel conventions, and feed lookup workflows
+    - **Trigger phrases**: "feeds for .NET MAUI X.Y.Z", "where is MAUI build", "promote build to public feed", "what channels is MAUI on", "subscription health for MAUI"
+    - **Wraps**: `maestro-cli` skill (from `dotnet-dnceng@dotnet-arcade-skills` plugin) and maestro MCP tools
+    - **Note**: Provides MAUI-specific guardrails on top of core Maestro/darc operations — channel naming, safety deny-list, input validation, and prompt injection defense
+
+#### Internal Skills (Used by Agents)
+
+12. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+   - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
+   - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
+   - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
+   - **Output**: Updates session markdown with attempt results and failure analysis
+
+### Using Custom Agents
+
+**Delegation Policy**: When user request matches agent trigger phrases, **ALWAYS delegate to the appropriate agent immediately**. Do not ask for permission or explain alternatives unless the request is ambiguous.
+
+**Examples of correct delegation**:
+- User: "Review PR #12345" → Immediately invoke **pr** agent
+- User: "Test this PR" → Immediately invoke **sandbox-agent**
+- User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
+- User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
+
+**When NOT to delegate**:
+- User asks "What does PR #12345 do?" → Informational query, handle yourself
+- User asks "How do I test PRs?" → Documentation query, handle yourself
+- User has follow-up questions after agent completes → Continue the conversation yourself

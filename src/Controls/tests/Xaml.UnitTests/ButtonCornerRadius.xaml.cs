@@ -1,5 +1,6 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -7,17 +8,18 @@ public partial class ButtonCornerRadius : ContentPage
 {
 	public ButtonCornerRadius() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => Application.Current = new MockApplication();
-		[TearDown] public void TearDown() => Application.Current = null;
+		public Tests() => Application.Current = new MockApplication();
+		public void Dispose() => Application.Current = null;
 
-		[Test]
-		public void EscapedStringsAreTreatedAsLiterals([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void EscapedStringsAreTreatedAsLiterals(XamlInflator inflator)
 		{
 			var layout = new ButtonCornerRadius(inflator);
-			Assert.AreEqual(0, layout.Button0.CornerRadius);
+			Assert.Equal(0, layout.Button0.CornerRadius);
 		}
 	}
 }

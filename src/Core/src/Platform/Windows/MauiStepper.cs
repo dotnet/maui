@@ -258,6 +258,12 @@ namespace Microsoft.Maui.Platform
 		void UpdateValue(double delta)
 		{
 			double newValue = Value + delta;
+
+			// Minimum check
+			newValue = Math.Max(newValue, Minimum);
+			// Maximum check
+			newValue = Math.Min(newValue, Maximum);
+
 			Value = newValue;
 		}
 

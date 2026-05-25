@@ -203,4 +203,34 @@
     <value>{0} tiene la palabra clave 'required'. El soporte para esto en XAML es limitado por ahora, por lo que se recomienda evitar su uso. Seguimos haciendo todo lo posible para proporcionar un valor.</value>
     <comment>0 is a property identifier</comment>
   </data>
+  <data name="BindingCompilationFailed" xml:space="preserve">
+    <value>Error de compilación de enlace</value>
+  </data>
+  <data name="BindingCompilationWarning" xml:space="preserve">
+    <value>Advertencia de compilación de enlace</value>
+  </data>
+  <data name="BindingIndexerNotClosed" xml:space="preserve">
+    <value>Enlace: el indizador no contenía un corchete de cierre.</value>
+  </data>
+  <data name="BindingIndexerEmpty" xml:space="preserve">
+    <value>Enlace: el indizador no contenía argumentos.</value>
+  </data>
+  <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
+    <value>Enlace: tipo de índice del indizador no admitido: "{0}".</value>
+    <comment>0 is indexer type name</comment>
+  </data>
+  <data name="BindingPropertyNotFound" xml:space="preserve">
+    <value>Enlace: no se encontró la propiedad "{0}" en "{1}". El enlace usará un método más lento basado en reflexión en tiempo de ejecución. Si otro generador de origen genera esta propiedad, considere la posibilidad de notificarlo en https://github.com/dotnet/maui/issues para ayudarnos a mejorar la interoperabilidad del generador de origen.</value>
+    <comment>0 is property name, 1 is type name</comment>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>El enlace podría compilarse incorrectamente porque la anotación x:DataType procede de un ámbito externo. Asegúrese de anotar todos los elementos XAML DataTemplate con el x:DataType correcto. Consulte https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para más información.</value>
+  </data>
+  <data name="NamescopeError" xml:space="preserve">
+    <value>Error de ámbito de nombres</value>
+  </data>
+  <data name="NamescopeDuplicate" xml:space="preserve">
+    <value>Ya existe un elemento con el nombre "{0}" en este elemento NameScope.</value>
+    <comment>0 is the duplicated key</comment>
+  </data>
 </root>

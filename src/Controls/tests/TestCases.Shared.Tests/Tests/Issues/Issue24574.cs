@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
 		public void TapThenDoubleTap()
 		{
 			App.Screenshot("I am at Issue 24574");
@@ -26,8 +25,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.DoubleTap("TapLabel");
 
-#if ANDROID
-			// In CI Double tap does not effective sometimes so retry once before failing to resolve the flakiness.
+#if ANDROID || IOS // In CI Double tap does not effective sometimes so retry once before failing to resolve the flakiness.
+
 			try
 			{
 				App.WaitForElement("Double");

@@ -33,8 +33,33 @@ static class CodeBehindCodeWriter
 		{
 			if (xamlItem.Exception != null)
 			{
-				var location = projItem!.RelativePath is not null ? Location.Create(projItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
+				IXmlLineInfo lineInfo;
+				string errorMessage;
+
+				if (xamlItem.Exception is XamlParseException xpe)
+				{
+					lineInfo = xpe.XmlInfo;
+					errorMessage = xpe.UnformattedMessage;
+				}
+				else if (xamlItem.Exception is XmlException xmlEx)
+				{
+					lineInfo = new XmlLineInfo(xmlEx.LineNumber, xmlEx.LinePosition);
+					errorMessage = StripLineInfoFromXmlExceptionMessage(xmlEx.Message);
+				}
+				else if (xamlItem.Exception.InnerException is XmlException innerXmlEx)
+				{
+					lineInfo = new XmlLineInfo(innerXmlEx.LineNumber, innerXmlEx.LinePosition);
+					errorMessage = StripLineInfoFromXmlExceptionMessage(innerXmlEx.Message);
+				}
+				else
+				{
+					// Try to extract line info from message if present
+					lineInfo = ExtractLineInfoFromMessage(xamlItem.Exception.Message);
+					errorMessage = StripLineInfoFromXmlExceptionMessage(xamlItem.Exception.Message);
+				}
+
+				var location = projItem!.RelativePath is not null ? LocationHelpers.LocationCreate(projItem.RelativePath, lineInfo, string.Empty) : null;
+				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
 			}
 			return "";
 		}
@@ -73,7 +98,7 @@ static class CodeBehindCodeWriter
 
 		var generateInflatorSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests" && !generateDefaultCtor;
 		var xamlInflators = projItem.Inflator;
-		
+
 		//if there's only the XamlC inflator, prevent non-assigned errors
 		if (xamlInflators == XamlInflator.XamlC)
 			sb.AppendLine("#pragma warning disable CS0649");
@@ -149,7 +174,8 @@ static class CodeBehindCodeWriter
 				InitComp("InitializeComponent");
 			else if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponent");
-			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen) {
+			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			{
 				InitComp("InitializeComponent", partialsignature: true);
 				//generate InitCompRuntime for HotReload fallback
 				if (projItem.EnableDiagnostics)
@@ -174,7 +200,7 @@ static class CodeBehindCodeWriter
 			if (namedFields != null && namedFields.Any())
 			{
 				sb.AppendLine($"#if NET5_0_OR_GREATER");
-				foreach ((var fname, _, _) in namedFields)				
+				foreach ((var fname, _, _) in namedFields)
 					sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({EscapeIdentifier(fname)}))]");
 
 				sb.AppendLine($"#endif");
@@ -449,5 +475,46 @@ static class CodeBehindCodeWriter
 			return attr.Value;
 		}
 		return null;
+	}
+
+	static string StripLineInfoFromXmlExceptionMessage(string message)
+	{
+		// XmlException messages typically end with " Line X, position Y."
+		// We want to strip that since we're reporting location separately
+		var lineIndex = message.LastIndexOf(" Line ");
+		if (lineIndex > 0)
+		{
+			// Strip both the trailing period after the line info and any double periods
+			return message.Substring(0, lineIndex).TrimEnd('.', ' ');
+		}
+		return message;
+	}
+
+	static IXmlLineInfo ExtractLineInfoFromMessage(string message)
+	{
+		// Try to extract "Line X, position Y" from the message
+		var lineIndex = message.LastIndexOf(" Line ");
+		if (lineIndex > 0)
+		{
+			try
+			{
+				var lineInfoPart = message.Substring(lineIndex + 6); // Skip " Line "
+				var parts = lineInfoPart.Split(new[] { ", position " }, StringSplitOptions.None);
+				if (parts.Length == 2)
+				{
+					var lineStr = parts[0].Trim();
+					var posStr = parts[1].TrimEnd('.', ' ');
+					if (int.TryParse(lineStr, out int lineNumber) && int.TryParse(posStr, out int linePosition))
+					{
+						return new XmlLineInfo(lineNumber, linePosition);
+					}
+				}
+			}
+			catch
+			{
+				// Ignore parsing errors
+			}
+		}
+		return new XmlLineInfo();
 	}
 }

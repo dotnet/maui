@@ -91,6 +91,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal static void MapBackgroundColor(ISliderHandler handler, ISlider slider)
+		{
+			if (handler.PlatformView is MauiSlider mauiSlider)
+			{
+				mauiSlider.UpdateBackgroundColor(slider);
+			}
+		}
+
 		void OnPlatformViewLoaded(object sender, RoutedEventArgs e)
 		{
 			var platformView = sender as Slider;
@@ -108,8 +116,10 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
 		{
-			if (VirtualView != null)
+			if (VirtualView != null && VirtualView.Value != e.NewValue)
+			{
 				VirtualView.Value = e.NewValue;
+			}
 		}
 
 		void OnPointerPressed(object? sender, PointerRoutedEventArgs e)

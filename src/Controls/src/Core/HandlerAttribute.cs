@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 			Priority = 0;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/HandlerAttribute.xml" path="//Member[@MemberName='Priority']/Docs/*" />
+		/// <summary>Gets or sets the priority of this handler registration.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public short Priority { get; set; }
 		internal Type[] SupportedVisuals { get; private set; }

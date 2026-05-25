@@ -32,8 +32,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
-    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.46-beta" />
-    <PackageReference Include="VisualTestUtils" Version="0.9.46-beta" />
+    <ProjectReference Include="..\..\..\TestUtils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\VisualTestUtils\VisualTestUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">

@@ -4,7 +4,8 @@
              x:Class="Maui.Controls.Sample.Issues.Issue25724"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
-             Title="Main Page">
+             Title="Main Page"
+             x:DataType="local:Issue25724+Issue25724ViewModel">
 
   <Grid RowDefinitions="Auto,*">
 
@@ -28,7 +29,7 @@
       </CollectionView.Header>
 
       <CollectionView.ItemTemplate>
-        <DataTemplate>
+        <DataTemplate x:DataType="x:String">
           <Label Padding="20,5,5,5" Text="{Binding .}" />
         </DataTemplate>
       </CollectionView.ItemTemplate>

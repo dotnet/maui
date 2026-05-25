@@ -17,6 +17,7 @@ public class Issue2883 : _IssuesUITest
 	public void Issue2883TestDisabled()
 	{
 		App.WaitForElement("btnCustomCellTable");
+		Thread.Sleep(500); // Add a small delay after WaitForElement to let the UI fully settle before attempting the tap
 		App.Tap("btnCustomCellTable");
 		App.WaitForNoElement("Clicked");
 

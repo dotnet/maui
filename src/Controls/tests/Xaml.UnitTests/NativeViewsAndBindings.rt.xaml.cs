@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,8 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Xaml.Internals;
-using NUnit.Framework;
-using NUnit.Framework.Internal;
+using Xunit;
 using static System.String;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
@@ -278,22 +277,27 @@ public partial class NativeViewsAndBindings : ContentPage
 
 	public NativeViewsAndBindings() => InitializeComponent();
 
-	[TestFixture]
-	class Test
+	[Collection("Xaml Inflation")]
+	public class Test : BaseTestFixture
 	{
-		[SetUp]
-		public void Setup()
+		protected internal override void Setup()
 		{
+			base.Setup();
 			AppInfo.SetCurrent(new Core.UnitTests.MockAppInfo());
 			DependencyService.Register<INativeValueConverterService, MockNativeValueConverterService>();
 			DependencyService.Register<INativeBindingService, MockNativeBindingService>();
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void NativeInContentView([Values(XamlInflator.Runtime)] XamlInflator inflator)
+		protected internal override void TearDown()
 		{
+			AppInfo.SetCurrent(null);
+			base.TearDown();
+		}
+
+		[Fact]
+		public void NativeInContentView()
+		{
+			var inflator = XamlInflator.Runtime;
 			var layout = new NativeViewsAndBindings(inflator);
 			layout.BindingContext = new
 			{
@@ -303,12 +307,12 @@ public partial class NativeViewsAndBindings : ContentPage
 			var nativeView = layout.view0 as MockNativeView;
 
 			var wrapper = layout.stack.Children.First();
-			Assert.That(wrapper, Is.TypeOf<MockNativeViewWrapper>());
-			Assert.That(((MockNativeViewWrapper)wrapper).NativeView, Is.EqualTo(nativeView));
+			Assert.IsType<MockNativeViewWrapper>(wrapper);
+			Assert.Equal(nativeView, ((MockNativeViewWrapper)wrapper).NativeView);
 
-			Assert.AreEqual("foo", nativeView.Foo);
-			Assert.AreEqual(42, nativeView.Bar);
-			Assert.AreEqual("Bound Value", nativeView.Baz);
+			Assert.Equal("foo", nativeView.Foo);
+			Assert.Equal(42, nativeView.Bar);
+			Assert.Equal("Bound Value", nativeView.Baz);
 		}
 	}
 }

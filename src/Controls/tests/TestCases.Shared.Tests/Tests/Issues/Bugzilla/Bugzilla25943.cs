@@ -19,7 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
 		public void VerifyNestedStacklayoutTapsBubble()
 		{
 			App.WaitForElement(InnerLayout);

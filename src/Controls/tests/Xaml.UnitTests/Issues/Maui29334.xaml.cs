@@ -1,37 +1,33 @@
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 public partial class Maui29334 : ContentPage
 {
 
 	public Maui29334() => InitializeComponent();
 
-	public Maui29334(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void OnIdiomGridLength([Values] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void OnIdiomGridLength(XamlInflator inflator)
 		{
-			var page = new Maui29334(useCompiledXaml);
+			var page = new Maui29334(inflator);
 			
 		}
 	}

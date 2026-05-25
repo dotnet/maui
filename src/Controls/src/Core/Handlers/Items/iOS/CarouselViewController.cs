@@ -61,20 +61,45 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			UICollectionViewCell cell;
 
-			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
+			if (ItemsView?.Loop == true)
 			{
-				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
-				cell = cellAndCorrectedIndex.cell;
-				var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
-
-				if (cell is DefaultCell defaultCell)
+				// In iOS 15 and 16, when the ItemsSource of the CarouselView is updated from another page
+				// via the ViewModel (or similar), GetCell is called immediately—while _carouselViewLoopManager
+				// is still null. As a result, an invalid index is passed to base.GetCell, leading to an ArgumentNullException.
+				// 
+				// However, in iOS 17 and 18, GetCell is only called after navigating back to the page containing
+				// the CarouselView. By that time, CarouselViewLoopManager has been properly initialized during
+				// the window attachment, so the issue does not occur.
+				// 
+				// This fix ensures proper handling across all iOS versions by initializing the loop manager
+				// when needed and providing a fallback implementation, making navigation scenarios work consistently.
+				if (_carouselViewLoopManager is null)
 				{
-					UpdateDefaultCell(defaultCell, correctedIndexPath);
+					InitializeCarouselViewLoopManager();
 				}
 
-				if (cell is TemplatedCell templatedCell)
+				if (_carouselViewLoopManager is not null)
 				{
-					UpdateTemplatedCell(templatedCell, correctedIndexPath);
+					var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
+					cell = cellAndCorrectedIndex.cell;
+					var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
+
+					if (cell is DefaultCell defaultCell)
+					{
+						UpdateDefaultCell(defaultCell, correctedIndexPath);
+					}
+
+					if (cell is TemplatedCell templatedCell)
+					{
+						UpdateTemplatedCell(templatedCell, correctedIndexPath);
+					}
+				}
+				else
+				{
+					// Fallback case: If _carouselViewLoopManager is still null after attempted initialization,
+					// we bypass loop-specific behavior and use base implementation directly.
+
+					cell = base.GetCell(collectionView, indexPath);
 				}
 			}
 			else
@@ -464,6 +489,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
+			{
+				return;
+			}
+
 			if (carousel.Loop)
 			{
 				carouselPosition = _carouselViewLoopManager?.GetCorrectPositionForCenterItem(CollectionView) ?? -1;
@@ -530,9 +560,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			if (currentItemIndex.Row < 0)
+			{
+				return;
+			}
 
-			ScrollToPosition(currentItemPosition, carousel.Position, carousel.AnimateCurrentItemChanges);
+			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);
 
 			UpdateVisualStates();
 		}
@@ -555,7 +589,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			var currentItemPosition = currentItemIndex.Row;
 			var carouselPosition = carousel.Position;
 			if (carouselPosition == _gotoPosition)
 			{

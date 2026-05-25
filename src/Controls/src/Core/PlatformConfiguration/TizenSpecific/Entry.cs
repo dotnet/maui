@@ -9,25 +9,34 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <summary>Bindable property for <see cref="FontWeight"/>.</summary>
 		public static readonly BindableProperty FontWeightProperty = BindableProperty.Create("FontWeight", typeof(string), typeof(FormsElement), FontWeight.None);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="//Member[@MemberName='GetFontWeight'][1]/Docs/*" />
+		/// <summary>Gets the font weight for the entry.</summary>
+		/// <param name="element">The entry element whose font weight to get.</param>
+		/// <returns>The font weight value.</returns>
 		public static string GetFontWeight(BindableObject element)
 		{
 			return (string)element.GetValue(FontWeightProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="//Member[@MemberName='SetFontWeight'][1]/Docs/*" />
+		/// <summary>Sets the font weight for the entry.</summary>
+		/// <param name="element">The entry element whose font weight to set.</param>
+		/// <param name="weight">The font weight value.</param>
 		public static void SetFontWeight(BindableObject element, string weight)
 		{
 			element.SetValue(FontWeightProperty, weight);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="//Member[@MemberName='GetFontWeight'][2]/Docs/*" />
+		/// <summary>Gets the font weight for the entry.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The font weight value.</returns>
 		public static string GetFontWeight(this IPlatformElementConfiguration<Tizen, FormsElement> config)
 		{
 			return GetFontWeight(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Entry.xml" path="//Member[@MemberName='SetFontWeight'][2]/Docs/*" />
+		/// <summary>Sets the font weight for the entry.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="weight">The font weight value.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<Tizen, FormsElement> SetFontWeight(this IPlatformElementConfiguration<Tizen, FormsElement> config, string weight)
 		{
 			SetFontWeight(config.Element, weight);

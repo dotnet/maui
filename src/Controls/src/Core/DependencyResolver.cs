@@ -12,13 +12,15 @@ namespace Microsoft.Maui.Controls.Internals
 		static Type _defaultVisualType = typeof(VisualMarker.DefaultVisual);
 		static Func<Type, object[], object> Resolver { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DependencyResolver.xml" path="//Member[@MemberName='ResolveUsing'][1]/Docs/*" />
+		/// <summary>Sets a resolver function that takes a type and constructor arguments.</summary>
+		/// <param name="resolver">The resolver function.</param>
 		public static void ResolveUsing(Func<Type, object[], object> resolver)
 		{
 			Resolver = resolver;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/DependencyResolver.xml" path="//Member[@MemberName='ResolveUsing'][2]/Docs/*" />
+		/// <summary>Sets a resolver function that takes only a type.</summary>
+		/// <param name="resolver">The resolver function.</param>
 		public static void ResolveUsing(Func<Type, object> resolver)
 		{
 			Resolver = (type, objects) => resolver.Invoke(type);

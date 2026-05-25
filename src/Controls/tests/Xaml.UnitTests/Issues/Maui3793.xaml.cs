@@ -1,6 +1,8 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -8,16 +10,19 @@ public partial class Maui3793 : ContentPage
 {
 	public Maui3793() => InitializeComponent();
 
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public Tests() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void ControlTemplateFromStyle([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ControlTemplateFromStyle(XamlInflator inflator)
 		{
 			Maui3793 page;
-			Assert.DoesNotThrow(() => page = new Maui3793(inflator));
+			var ex = Record.Exception(() => page = new Maui3793(inflator));
+			Assert.Null(ex);
 		}
 	}
 }

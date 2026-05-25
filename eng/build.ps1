@@ -112,6 +112,7 @@ if ($env:TreatWarningsAsErrors -eq 'false') {
 
 Write-Host "& `"$PSScriptRoot/common/build.ps1`" $arguments"
 Invoke-Expression "& `"$PSScriptRoot/common/build.ps1`" $arguments"
+$buildExitCode = $LASTEXITCODE
 
 
 # Perform code coverage as the last operation, this enables the following scenarios:
@@ -143,4 +144,8 @@ if ($testCoverage) {
   }
 }
 
+# Exit with the build exit code (don't always exit 0)
+if ($buildExitCode -ne 0) {
+  exit $buildExitCode
+}
 exit 0

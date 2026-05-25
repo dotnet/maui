@@ -77,6 +77,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.EvaluateJavaScript(request);
 		}
 
+		internal static void MapFlowDirection(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
+		{
+			// Update the WKWebView itself so SemanticContentAttribute is set correctly
+			handler.PlatformView?.UpdateFlowDirection(hybridWebView);
+
+			// Also update the internal ScrollView so the scrollbar aligns with the flow direction
+			var scrollView = handler.PlatformView?.ScrollView;
+			if (scrollView == null)
+				return;
+
+			scrollView.UpdateFlowDirectionForScrollView(hybridWebView);
+		}
+
 		public static void MapSendRawMessage(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
 			if (arg is not HybridWebViewRawMessage hybridWebViewRawMessage || handler.PlatformView is not IHybridPlatformWebView hybridPlatformWebView)
@@ -227,7 +240,12 @@ namespace Microsoft.Maui.Handlers
 
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
 				{
-					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
+					var relativePath = WebUtils.ResolveRelativePath(AppOriginUri, uri);
+					if (relativePath is null)
+					{
+						logger?.LogDebug("Request for {Url} resolved to an invalid path.", url);
+						return (null, ContentType: null, StatusCode: 404);
+					}
 
 					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
 
@@ -298,10 +316,13 @@ namespace Microsoft.Maui.Handlers
 						}
 					}
 
-					var assetPath = Path.Combine(bundleRootDir, relativePath!);
-					assetPath = FileSystemUtils.NormalizePath(assetPath);
+					var assetPath = FileSystemUtils.Combine(bundleRootDir, relativePath!);
+					if (assetPath is not null)
+					{
+						assetPath = FileSystemUtils.NormalizePath(assetPath);
+					}
 
-					if (File.Exists(assetPath))
+					if (assetPath is not null && File.Exists(assetPath))
 					{
 						// 2.a. If something was found, return the content
 						logger?.LogDebug("Request for {Url} will return an app package file.", url);

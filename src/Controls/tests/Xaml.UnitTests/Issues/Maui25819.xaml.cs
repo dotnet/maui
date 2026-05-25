@@ -1,10 +1,12 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,29 +14,29 @@ public partial class Maui25819 : ContentPage
 {
 	public Maui25819() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 		}
 
 
-		[Test]
-		public void DoesntThrow([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void DoesntThrow(XamlInflator inflator)
 		{
 			MockCompiler.Compile(typeof(Maui25819));
 			var layout = new Maui25819(inflator);
 			layout.BindingContext = new Maui25819UserDataViewModel();
-			Assert.That(layout.label0.Text, Is.EqualTo("2023"));
+			Assert.Equal("2023", layout.label0.Text);
 		}
 	}
 }

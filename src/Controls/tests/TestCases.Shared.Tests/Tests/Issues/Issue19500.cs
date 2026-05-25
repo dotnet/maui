@@ -18,8 +18,14 @@ public class Issue19500 : _IssuesUITest
 	[Category(UITestCategories.Editor)]
 	public void TextInEditorShouldScroll()
 	{
+#if IOS
+		if (!OperatingSystem.IsMacOSVersionAtLeast(26)) // Issue Link: https://github.com/dotnet/maui/issues/33879
+		{
+			Assert.Ignore("Ignored the test on iOS if it runs on macOS version less than 26 due to known visual differences");
+		}
+#endif
 		var yPosLabel = App.WaitForElement(yPositionLabel);
-		App.ScrollDown("editor");
+		App.ScrollDown("editor", ScrollStrategy.Gesture, withInertia: false);
 #if MACCATALYST
 		App.ScrollDown("editor"); // To make sure the editor is scrolled down
 		var yPos = yPosLabel.GetText();

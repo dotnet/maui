@@ -26,19 +26,25 @@
         Title="Dashboard"
         Icon="{StaticResource IconDashboard}"
         ContentTemplate="{DataTemplate pages:MainPage}"
-        Route="main" />
+        Route="main"
+        SemanticProperties.Description="Dashboard"
+        SemanticProperties.Hint="Navigate to dashboard"/>
 
     <ShellContent
         Title="Projects"
         Icon="{StaticResource IconProjects}"
         ContentTemplate="{DataTemplate pages:ProjectListPage}"
-        Route="projects" />
+        Route="projects"
+        SemanticProperties.Description="Projects"
+        SemanticProperties.Hint="Navigate to projects"/>
 
     <ShellContent
         Title="Manage Meta"
         Icon="{StaticResource IconMeta}"
         ContentTemplate="{DataTemplate pages:ManageMetaPage}"
-        Route="manage" />
+        Route="manage"
+        SemanticProperties.Description="Manage Meta"
+        SemanticProperties.Hint="Navigate to manage meta"/>
 
     <Shell.FlyoutFooter>
         <Grid Padding="15">

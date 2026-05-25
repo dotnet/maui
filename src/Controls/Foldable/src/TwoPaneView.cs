@@ -221,6 +221,9 @@ namespace Microsoft.Maui.Controls.Foldable
 			set { SetValue(PanePriorityProperty, value); }
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="TwoPaneView"/> class.
+		/// </summary>
 		public TwoPaneView() : this(null)
 		{
 		}

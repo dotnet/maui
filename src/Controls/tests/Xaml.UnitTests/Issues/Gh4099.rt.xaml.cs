@@ -1,6 +1,6 @@
 using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -10,11 +10,13 @@ public partial class Gh4099 : ContentPage
 {
 	public Gh4099() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void BetterExceptionReport([Values] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.XamlC)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void BetterExceptionReport(XamlInflator inflator)
 		{
 			switch (inflator)
 			{
@@ -25,10 +27,10 @@ public partial class Gh4099 : ContentPage
 					}
 					catch (BuildException xpe)
 					{
-						Assert.That(xpe.XmlInfo.LineNumber, Is.EqualTo(5));
-						Assert.Pass();
+						Assert.Equal(5, xpe.XmlInfo.LineNumber);
+						return;
 					}
-					Assert.Fail();
+					Assert.Fail("Expected BuildException to be thrown");
 					break;
 				case XamlInflator.SourceGen:
 					var result = CreateMauiCompilation()
@@ -43,11 +45,8 @@ public partial class Gh4099 : ContentPage
 }
 """)
 						.RunMauiSourceGenerator(typeof(Gh4099));
-					Assert.That(result.Diagnostics.Any());
+					Assert.True(result.Diagnostics.Any());
 					return;
-				default:
-					Assert.Ignore();
-					break;
 			}
 		}
 	}

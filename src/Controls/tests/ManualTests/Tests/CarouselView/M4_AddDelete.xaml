@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Microsoft.Maui.ManualTests.ViewModels"
+             x:Class="Microsoft.Maui.ManualTests.Tests.CarouselView.M4_AddDelete"
+             Title="M4_AddDelete">
+    <VerticalStackLayout Margin="10" Spacing="5">
+        <VerticalStackLayout Spacing="5" Margin="0,10,0,10">
+            <Label Text="1. Click 'Add New Item' to create a new monkey entry." />
+            <Label Text="2. Tap on any monkey image to view details and delete." />
+            <Label Text="3. Verify that the carousel updates after adding or deleting items." />
+        </VerticalStackLayout>
+        
+        <Button Text="Add New Item"
+                TextColor="White"
+                BackgroundColor="#176515"
+                Clicked="OnAddItemClicked"
+                HorizontalOptions="Center"
+                Margin="0,5"
+                Padding="15,8" />
+        
+        <CarouselView x:Name="carousel"
+                      ItemsSource="{Binding Monkeys}"
+                      WidthRequest="350"
+                      HeightRequest="550"
+                      HorizontalOptions="Center"
+                      VerticalOptions="Start"
+                      Margin="0,5"
+                      Loop="False">
+            <CarouselView.ItemTemplate>
+                <DataTemplate x:DataType="{x:Null}">
+                    <Grid RowDefinitions="*"
+                          ColumnDefinitions="*"
+                          Padding="0,0,10,0"
+                          WidthRequest="340"
+                          HorizontalOptions="Fill"
+                          VerticalOptions="Fill"
+                          SemanticProperties.Description="{Binding Name}">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnImageTapped" />
+                        </Grid.GestureRecognizers>
+                        
+                        <Image Source="{Binding ImageUrl}"
+                               Aspect="AspectFill"
+                               VerticalOptions="Fill"
+                               HorizontalOptions="Fill"
+                               AutomationProperties.IsInAccessibleTree="False" />
+                        
+                        <Label Text="{Binding Name}"
+                               Padding="10"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               BackgroundColor="White"
+                               LineBreakMode="WordWrap"
+                               MaxLines="3"
+                               FontSize="16" />
+                    </Grid>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+    </VerticalStackLayout>
+</ContentPage>

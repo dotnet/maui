@@ -34,5 +34,25 @@ namespace UITest.Appium
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
+
+		protected override CommandResponse SendTabKey(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				// https://developer.apple.com/documentation/xctest/xcuikeyboardkey?language=objc
+				string[] keys = ["XCUIKeyboardKeyTab"]; // Tab Key
+
+				_appiumApp.Driver.ExecuteScript("macos: keys", new Dictionary<string, object>
+ 				{
+ 					{ "keys", keys },
+ 				});
+			}
+			catch (InvalidElementStateException)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
 	}
 }

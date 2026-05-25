@@ -4,8 +4,12 @@ using Controls.Core.Design;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for Thickness values.
+	/// </summary>
 	public class ThicknessTypeDesignConverter : StringConverter
 	{
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			// MUST MATCH ThicknessTypeConverter.ConvertFrom

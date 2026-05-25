@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -54,20 +55,21 @@ public partial class Gh5510 : ContentPage
 {
 	public Gh5510() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
-		public void CompileBindingWithIndexer([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void CompileBindingWithIndexer(XamlInflator inflator)
 		{
 			var vm = new Gh5510VM();
 			var layout = new Gh5510(inflator) { BindingContext = vm };
-			Assert.That(layout.entry.TextColor, Is.EqualTo(Colors.Red));
+			Assert.Equal(Colors.Red, layout.entry.TextColor);
 			vm.ClearErrorForPerson();
-			Assert.That(layout.entry.TextColor, Is.EqualTo(Colors.Black));
+			Assert.Equal(Colors.Black, layout.entry.TextColor);
 		}
 	}
 }

@@ -55,6 +55,7 @@ public partial class TestPage : ContentPage
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Test;
 
@@ -88,10 +89,6 @@ public partial class TestPage
 			return;
 		}
 
-		var setter = new global::Microsoft.Maui.Controls.Setter();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
-		var setter1 = new global::Microsoft.Maui.Controls.Setter();
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
 		var style1 = new global::Microsoft.Maui.Controls.Style(typeof(global::Microsoft.Maui.Controls.Label));
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(style1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 7, 10);
 		var __root = this;
@@ -108,29 +105,17 @@ public partial class TestPage
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope2 = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
+		var setter = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Pink};
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
 #line 8 "{{testXamlFilePath}}"
-		setter.Property = global::Microsoft.Maui.Controls.Label.TextColorProperty;
+		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter);
 #line default
-#line 8 "{{testXamlFilePath}}"
-		setter.Value = "Pink ";
-#line default
-		var setter2 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Colors.Pink};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter2!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter2!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 14);
-#line 8 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter2);
-#line default
+		var setter1 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty, Value = (bool)new global::Microsoft.Maui.Controls.VisualElement.VisibilityConverter().ConvertFromInvariantString("True")!};
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter1!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter1!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
 #line 9 "{{testXamlFilePath}}"
-		setter1.Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty;
-#line default
-#line 9 "{{testXamlFilePath}}"
-		setter1.Value = "True";
-#line default
-		var setter3 = new global::Microsoft.Maui.Controls.Setter {Property = global::Microsoft.Maui.Controls.VisualElement.IsVisibleProperty, Value = (bool)new global::Microsoft.Maui.Controls.VisualElement.VisibilityConverter().ConvertFromInvariantString("True")!};
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(setter3!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(setter3!, new global::System.Uri(@"Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 9, 14);
-#line 9 "{{testXamlFilePath}}"
-		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter3);
+		((global::System.Collections.Generic.ICollection<global::Microsoft.Maui.Controls.Setter>)style1.Setters).Add((global::Microsoft.Maui.Controls.Setter)setter1);
 #line default
 		__root.Resources["style"] = style1;
 	}
@@ -351,5 +336,103 @@ public partial class TestPage : ContentPage
 		// Should contain Android style (Red), not iOS style (Blue)
 		Assert.Contains("Red", generated, StringComparison.Ordinal);
 		Assert.DoesNotContain("Blue", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void OnPlatformWithMissingTargetPlatformShouldUseDefault()
+	{
+		// Reproduces Bugzilla39636: When MacCatalyst is not defined in OnPlatform,
+		// SourceGen should use default(T) instead of throwing an exception.
+		// The SimplifyOnPlatformVisitor marks the node as IsOnPlatformDefaultValue,
+		// and CreateValuesVisitor generates default(T) for it.
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<ContentPage.Resources>
+		<OnPlatform x:Key="SizeMedium" x:TypeArguments="x:Double">
+			<On Platform="iOS" Value="40"/>
+			<On Platform="Android" Value="30"/>
+			<On Platform="UWP" Value="60"/>
+		</OnPlatform>
+	</ContentPage.Resources>
+	<Label Text="Test" WidthRequest="{StaticResource SizeMedium}" />
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		// Test with MacCatalyst where platform is not defined
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-maccatalyst");
+		
+		// Should not have any errors (no TargetInvocationException)
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		
+		// Should generate default(double) for the value since no matching platform
+		// The generated code should include: double double0 = default;
+		Assert.Contains("double double0 = default;", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void OnPlatformViewWithMissingTargetPlatformShouldNotEmitNullabilityWarnings()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<OnPlatform x:TypeArguments="View">
+		<On Platform="WinUI">
+			<Label Text="WinUI only" />
+		</On>
+	</OnPlatform>
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "net10.0-android");
+
+		Assert.DoesNotContain(result.Diagnostics, d => d.Id == "CS8600" || d.Id == "CS8602");
+		Assert.Contains("global::Microsoft.Maui.Controls.View", generated, StringComparison.Ordinal);
+		Assert.Contains("default!;", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain(".transientNamescope", generated, StringComparison.Ordinal);
 	}
 }

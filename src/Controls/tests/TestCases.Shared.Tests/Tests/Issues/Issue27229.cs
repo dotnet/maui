@@ -1,4 +1,5 @@
-#if TEST_FAILS_ON_ANDROID
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+//In iOS and Mac , https://github.com/dotnet/maui/issues/33201 takes large horizonal spacing on collectionView2.
 // This test started failing on the safe area edges changes because the safe area edges changes
 // cause a second measure pass which exposes a bug that already existed in CollectionView on Android.
 // You can replicate this bug on NET10 by rotating the device and rotating back, and then you will see that the
