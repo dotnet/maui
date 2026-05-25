@@ -1543,7 +1543,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// isn't clipped at the old tab bar boundary.
 				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 					&& TabBarController is { } tbc
-					&& !tbc.TabBar.Hidden)
+					&& !tbc.TabBar.Hidden
+					&& tbc.TabBar.Translucent)
 				{
 					edges |= UIRectEdge.Bottom;
 				}
