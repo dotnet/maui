@@ -379,7 +379,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-#if IOS 
+#if IOS
 		[Theory(Skip = "Test doesn't work on iOS yet; probably because of https://github.com/dotnet/maui/issues/10591")]
 #elif WINDOWS
 		[Theory(Skip = "Test doesn't work on Windows")]
@@ -551,8 +551,9 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PopModalAsync();
 			});
 
-			// After full GC the renderer/manager should be collected.
+			// After full GC the renderer/manager and the page itself should be collected.
 			await AssertionExtensions.WaitForGC(handlerRef);
+			await AssertionExtensions.WaitForGC(tabbedPageRef);
 
 			// The shared brush must have zero subscribers to InvalidateGradientBrushRequested.
 			// If the renderer/manager leaked, it would still be subscribed here.

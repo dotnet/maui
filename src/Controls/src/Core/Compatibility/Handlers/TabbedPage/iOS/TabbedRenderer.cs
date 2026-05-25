@@ -156,7 +156,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_currentBarBackground is GradientBrush currentGradientBrush)
 				{
-					currentGradientBrush.Parent = null;
+					if (ReferenceEquals(currentGradientBrush.Parent, Tabbed))
+					{
+						currentGradientBrush.Parent = null;
+					}
 					currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 				}
 				_currentBarBackground = null;

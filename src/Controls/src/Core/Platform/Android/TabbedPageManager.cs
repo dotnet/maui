@@ -132,7 +132,10 @@ public class TabbedPageManager
 
 			if (_currentBarBackground is GradientBrush currentGradientBrush)
 			{
-				currentGradientBrush.Parent = null;
+				if (ReferenceEquals(currentGradientBrush.Parent, Element))
+				{
+					currentGradientBrush.Parent = null;
+				}
 				currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
 			_currentBarBackground = null;
