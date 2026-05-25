@@ -381,6 +381,8 @@ namespace Microsoft.Maui.Layouts
 			void MeasureCells()
 			{
 				FirstMeasurePass();
+				MeasureDeferredAutoCells();
+				FitAutoDefinitionsToConstraints();
 
 				if (!_isStarWidthPrecomputable)
 				{
@@ -396,9 +398,8 @@ namespace Microsoft.Maui.Layouts
 					ResolveStarRows(_gridHeightConstraint);
 				}
 
-				AdjustDefinitions();
-
 				SecondMeasurePass();
+				FitAutoDefinitionsToConstraints();
 
 				ResolveSpans();
 
@@ -457,8 +458,6 @@ namespace Microsoft.Maui.Layouts
 							TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
 						}
 					}
-
-					AdjustDefinitions();
 				}
 			}
 
@@ -530,43 +529,96 @@ namespace Microsoft.Maui.Layouts
 							_rows[cell.Row].Update(measure.Height);
 						}
 					}
-
-					AdjustDefinitions();
 				}
 			}
 
-			void AdjustDefinitions()
+			void MeasureDeferredAutoCells()
 			{
-				AdjustDefinitions(_rows, _gridHeightConstraint, _rowSpacing, _padding.VerticalThickness);
-				AdjustDefinitions(_columns, _gridWidthConstraint, _columnSpacing, _padding.HorizontalThickness);
+				var fallbackWidth = double.IsInfinity(_gridWidthConstraint)
+					? double.PositiveInfinity
+					: Math.Max(0, _gridWidthConstraint - _padding.HorizontalThickness);
+				var fallbackHeight = double.IsInfinity(_gridHeightConstraint)
+					? double.PositiveInfinity
+					: Math.Max(0, _gridHeightConstraint - _padding.VerticalThickness);
+
+				for (int n = 0; n < _cells.Length; n++)
+				{
+					var cell = _cells[n];
+
+					if (!cell.NeedsSecondPass)
+					{
+						continue;
+					}
+
+					var measureWidthAsAuto = cell.ColumnSpan == 1 && TreatCellWidthAsAuto(cell);
+					var measureHeightAsAuto = cell.RowSpan == 1 && TreatCellHeightAsAuto(cell);
+
+					if (!measureWidthAsAuto && !measureHeightAsAuto)
+					{
+						continue;
+					}
+
+					var width = double.IsNaN(cell.MeasureWidth) ? fallbackWidth : cell.MeasureWidth;
+					var height = double.IsNaN(cell.MeasureHeight) ? fallbackHeight : cell.MeasureHeight;
+					var measure = MeasureCell(cell, width, height);
+
+					if (measureWidthAsAuto)
+					{
+						_columns[cell.Column].Update(measure.Width);
+					}
+
+					if (measureHeightAsAuto)
+					{
+						_rows[cell.Row].Update(measure.Height);
+					}
+				}
 			}
 
-			static void AdjustDefinitions(Definition[] definitions, double constraint, double spacing, double paddingThickness)
+			void FitAutoDefinitionsToConstraints()
 			{
-				var total = SumDefinitions(definitions, spacing);
-				if (total <= constraint - paddingThickness)
+				FitAutoDefinitionsToConstraint(_rows, _gridHeightConstraint, _rowSpacing, _padding.VerticalThickness);
+				FitAutoDefinitionsToConstraint(_columns, _gridWidthConstraint, _columnSpacing, _padding.HorizontalThickness);
+			}
+
+			static void FitAutoDefinitionsToConstraint(Definition[] definitions, double constraint, double spacing, double paddingThickness)
+			{
+				if (double.IsInfinity(constraint))
 				{
 					return;
 				}
-				
-				var overflow = total - (constraint - paddingThickness);
-				
-				// Find the largest Auto or Star definition to absorb the overflow.
-				int biggestIndex = -1;
-				double biggestSize = 0;
+
+				var target = Math.Max(0, constraint - paddingThickness);
+				var total = SumDefinitions(definitions, spacing);
+
+				if (total <= target)
+				{
+					return;
+				}
+
+				double autoTotal = 0;
 				for (int n = 0; n < definitions.Length; n++)
 				{
-					var def = definitions[n];
-					if ((def.IsAuto || def.IsStar) && def.Size > biggestSize)
+					if (definitions[n].IsAuto)
 					{
-						biggestSize = def.Size;
-						biggestIndex = n;
+						autoTotal += definitions[n].Size;
 					}
 				}
-				
-				if (biggestIndex >= 0)
+
+				if (autoTotal <= 0)
 				{
-					definitions[biggestIndex].Size = Math.Max(0, definitions[biggestIndex].Size - overflow);
+					return;
+				}
+
+				var overflow = total - target;
+				for (int n = 0; n < definitions.Length; n++)
+				{
+					var definition = definitions[n];
+
+					if (definition.IsAuto)
+					{
+						var reduction = overflow * (definition.Size / autoTotal);
+						definition.Size = Math.Max(0, definition.Size - reduction);
+					}
 				}
 			}
 
