@@ -242,14 +242,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						// Use ReconfigureItems (iOS 15+) which is designed for size changes
 						// without full cell recreation - more efficient than ReloadItems
-						collectionView.ReconfigureItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
+						collectionView.ReconfigureItems(invalidatedIndexPaths);
 					});
-
-					return;
 				}
 
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
+				layoutInvalidationContext.InvalidateItems(invalidatedIndexPaths);
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
 		}
