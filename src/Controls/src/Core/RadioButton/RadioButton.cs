@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -383,6 +384,29 @@ namespace Microsoft.Maui.Controls
 
 			base.ChangeVisualState();
 		}
+
+#if ANDROID || WINDOWS
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			// The handler's mapper is keyed by IButtonStroke property names, but the
+			// bindable properties on RadioButton use the BorderElement names. Forward
+			// runtime changes to the matching mapper keys so the platform view updates.
+			if (propertyName == BorderColorProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeColor));
+			}
+			else if (propertyName == BorderWidthProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
+			}
+			else if (propertyName == CornerRadiusProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.CornerRadius));
+			}
+		}
+#endif
 
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
