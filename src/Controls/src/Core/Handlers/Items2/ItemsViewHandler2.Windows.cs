@@ -517,6 +517,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
+		// During drag-drop reorder, MoveItemAndSyncSource fires CollectionChanged(Remove) then
+		// CollectionChanged(Add) on the template collection. Without this guard those events would
+		// trigger ApplyItemsUpdatingScrollMode → StartBringItemIntoView(0), scrolling the list
+		// to the top (KeepItemsInView is the default mode = 0). IsReordering is set synchronously
+		// before any collection mutation, so this check reliably catches those spurious events.
+		if (PlatformView is MauiItemsView { IsReordering: true })
+		{
+			return;
+		}
+
 		UpdateEmptyViewVisibility();
 
 		if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset)
