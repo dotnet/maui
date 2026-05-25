@@ -27,7 +27,7 @@ public class Issue23329 : ContentPage
 		};
 	}
 
-	void OnTextBoxFocused(object? sender, FocusEventArgs e)
+	void OnTextBoxFocused(object sender, FocusEventArgs e)
 	{
 		if (_textBox.Text != null)
 		{
