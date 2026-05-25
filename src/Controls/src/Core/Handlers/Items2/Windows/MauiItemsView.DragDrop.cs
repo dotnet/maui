@@ -29,6 +29,15 @@ internal partial class MauiItemsView
 	ItemsView? _mauiVirtualView;
 
 	/// <summary>
+	/// Set by <see cref="ItemsViewHandler2{TItemsView}.UpdateItemsSource"/> when a flat (non-grouped)
+	/// <see cref="ObservableItemTemplateCollection2"/> is active. Allows <see cref="PerformReorder"/>
+	/// to call <see cref="ObservableItemTemplateCollection2.MoveItemAndSyncSource"/> — which atomically
+	/// moves the item in both the source and the template collection without reflection — instead of
+	/// falling back to plain <c>RemoveAt</c> + <c>Insert</c> on the raw source.
+	/// </summary>
+	internal ObservableItemTemplateCollection2? FlatTemplateCollection { get; set; }
+
+	/// <summary>
 	/// True while a drag/drop reorder mutation is in progress. Used by
 	/// <see cref="ItemsViewHandler2{TItemsView}"/> to skip <c>ApplyItemsUpdatingScrollMode</c>
 	/// during the collection change that results from the reorder, so the scroll position
@@ -248,6 +257,7 @@ internal partial class MauiItemsView
 		HideInsertionIndicator();
 
 		_mauiVirtualView = null;
+		FlatTemplateCollection = null;
 		CleanupDragState();
 	}
 
@@ -537,18 +547,20 @@ internal partial class MauiItemsView
 
 	/// <summary>
 	/// Attempts to call <see cref="System.Collections.ObjectModel.ObservableCollection{T}.Move(int, int)"/>
-	/// on the list. Using <c>Move</c> fires a single <c>CollectionChanged(Action=Move)</c> event
-	/// instead of two separate Remove + Add events, which allows <see cref="ItemsRepeater"/> to
-	/// reposition the existing container in-place without recycling it — preventing item refresh
-	/// and scroll position resets on drop.
+	/// on a grouped source collection. Used only for same-group drag-drop reorder in grouped lists.
+	///
+	/// <b>Not used for flat lists.</b> For flat lists, <see cref="PerformReorder"/> uses
+	/// <see cref="ObservableItemTemplateCollection2.MoveItemAndSyncSource"/> (when a template
+	/// collection is active) or plain <c>RemoveAt</c> + <c>Insert</c> (no-template case).
+	/// Calling <c>Move</c> on a source that is directly bound to <see cref="ItemsRepeater"/>
+	/// (no <see cref="ObservableItemTemplateCollection2"/> wrapping) fires
+	/// <c>CollectionChanged(Move)</c> which CsWinRT maps to <c>VectorChanged(Reset)</c>,
+	/// causing ItemsRepeater to clear all containers and scroll to the top.
 	///
 	/// The fast path handles <c>ObservableCollection&lt;object&gt;</c> without reflection.
 	/// The general path uses reflection to call <c>Move(int, int)</c> on any
-	/// <c>ObservableCollection&lt;T&gt;</c> type. This is intentional for a drag/drop handler
-	/// in Windows-specific code where AOT trimming is not a concern.
-	///
-	/// Returns <c>false</c> when the collection does not expose <c>Move</c>; the caller
-	/// falls back to <c>RemoveAt</c> + <c>Insert</c>.
+	/// <c>ObservableCollection&lt;T&gt;</c> type. Returns <c>false</c> when the collection
+	/// does not expose <c>Move</c>; the caller falls back to <c>RemoveAt</c> + <c>Insert</c>.
 	/// </summary>
 	static bool TryMoveObservableCollection(IList list, int oldIndex, int newIndex)
 	{
@@ -700,26 +712,34 @@ internal partial class MauiItemsView
 
 		// Prefer Move over RemoveAt + Insert.
 		//
-		// RemoveAt fires CollectionChanged(Remove) → ObservableItemTemplateCollection2 relays it to
-		// ItemsRepeater which *recycles* the container at that index.
-		// Insert fires CollectionChanged(Add)    → ItemsRepeater *creates a brand-new* container,
-		// re-binds the item from scratch, and may scroll to bring the new item into view.
+		// When FlatTemplateCollection is set (ItemTemplate is active), MoveItemAndSyncSource:
+		//   1. Mutates the source silently (_observeChanges=false suppresses InnerCollectionChanged).
+		//   2. Calls Move on the template collection; MoveItem fires Remove+Add (not Move) so
+		//      CsWinRT emits VectorChanged(ItemRemoved + ItemInserted) — not VectorChanged(Reset).
+		//      ItemsRepeater repositions the existing container without recycling it.
 		//
-		// ObservableCollection<T>.Move fires a *single* CollectionChanged(Move) event.
-		// ObservableItemTemplateCollection2.InnerCollectionChanged relays this as a single Move
-		// on itself, which ItemsRepeater handles by repositioning the *existing* container without
-		// recycling it — no item refresh, no scroll position reset.
+		// When there is no ItemTemplate the raw source is the ItemsRepeater's data directly.
+		// In that case we must use RemoveAt+Insert, NOT ObservableCollection.Move:
+		//   Move → CollectionChanged(Move) → CsWinRT → VectorChanged(Reset)
+		//       → ItemsRepeater clears all realized containers → scroll to top.
+		//   RemoveAt+Insert → CollectionChanged(Remove+Add) → VectorChanged(ItemRemoved+ItemInserted)
+		//       → ItemsRepeater repositions without resetting the scroll position.
 		//
-		// Additionally, IsReordering suppresses ItemsUpdatingScrollMode adjustments in
-		// ItemsViewHandler2.ItemsChanged. CollectionViewSource may convert the Move event
-		// to VectorChanged(Reset), which would otherwise cause StartBringItemIntoView(0)
-		// to fire and scroll the list back to the top.
+		// IsReordering guards ItemsChanged in ItemsViewHandler2 so ApplyItemsUpdatingScrollMode
+		// does not call StartBringItemIntoView(0) (KeepItemsInView default) during the mutation.
 		IsReordering = true;
 		try
 		{
-			if (!TryMoveObservableCollection(itemsList, oldIndex, adjustedInsertionIndex))
+			if (FlatTemplateCollection is not null)
 			{
-				// Fallback for plain IList sources that don't expose Move.
+				// Template-collection path: atomically moves source item and repositions
+				// the existing ItemTemplateContext2 wrapper — no new wrapper, no BringIntoView.
+				FlatTemplateCollection.MoveItemAndSyncSource(oldIndex, adjustedInsertionIndex);
+			}
+			else
+			{
+				// No-template path: source IS the ItemsRepeater's data. Must NOT use Move
+				// (would cause VectorChanged(Reset) via CsWinRT). RemoveAt+Insert is safe.
 				var itemToMove = itemsList[oldIndex];
 				itemsList.RemoveAt(oldIndex);
 				adjustedInsertionIndex = Math.Clamp(adjustedInsertionIndex, 0, itemsList.Count);
