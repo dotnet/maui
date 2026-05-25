@@ -1278,9 +1278,14 @@ internal partial class MauiItemsView
 		// fire (e.g. drop handled outside the source element, or disconnect).
 		if (_sourceContainer is not null)
 		{
-			// Remove ghost appearance defensively — the deferred block in DragStarting
-			// may not have run yet if drag was cancelled immediately.
-			RemoveDragGhostAppearance(_sourceContainer);
+			// Restore only the drag-source-specific overrides (opacity + hit-testing).
+			// Do NOT call RemoveDragGhostAppearance here — that would clear the card
+			// Background set by ApplyDragAffordance.  A same-location drop leaves the
+			// container in place (not recycled), so ApplyDragAffordance won't run again;
+			// clearing the Background here would expose the transparent ThemeResource
+			// and leave the item visually broken for subsequent drags.
+			// Background is cleared in ElementClearing (recycle) and UnwireDragDropEvents
+			// (drag-reorder disabled) — the two paths that actually require the cleanup.
 			_sourceContainer.Opacity = 1;
 			_sourceContainer.IsHitTestVisible = true;
 			_sourceContainer.DropCompleted -= ItemContainer_DropCompleted;
