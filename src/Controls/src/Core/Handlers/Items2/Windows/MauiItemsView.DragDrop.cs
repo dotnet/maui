@@ -8,7 +8,10 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
+using WApp = Microsoft.UI.Xaml.Application;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 
@@ -46,7 +49,7 @@ internal partial class MauiItemsView
 	internal bool IsReordering { get; private set; }
 
 	// Between-items drop indicator — circle head with "+" and a colored line on _dropIndicatorCanvas.
-	Border? _dropIndicatorHead;    // filled circle with "+" at the leading edge
+	WBorder? _dropIndicatorHead;    // hollow circle at the leading edge
 	Rectangle? _dropIndicatorLine; // accent-colored line extending from the circle
 
 	// Dim overlay opacity applied to non-source containers during a drag so the
@@ -63,6 +66,16 @@ internal partial class MauiItemsView
 	const double ScrollAcceleration = 0.3;
 
 	RoutedEventHandler? _deferredWireHandler;
+
+	// Cached insertion-indicator fade-in animation (created once in OnApplyTemplate).
+	Microsoft.UI.Xaml.Media.Animation.Storyboard? _insertionFadeStoryboard;
+	Microsoft.UI.Xaml.Media.Animation.DoubleAnimation? _insertionHeadFadeIn;
+	Microsoft.UI.Xaml.Media.Animation.DoubleAnimation? _insertionLineFadeIn;
+
+	// Per-type cache for ObservableCollection<T>.Move(int,int) MethodInfo lookups.
+	// Keyed by concrete collection type so each closed generic variant is cached once.
+	static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, System.Reflection.MethodInfo?>
+		s_moveMethodCache = new();
 
 	/// <summary>
 	/// Event fired when a reorder operation completes successfully.
@@ -211,6 +224,9 @@ internal partial class MauiItemsView
 					ic.CanDrag = false;
 					ic.DragStarting -= ItemContainer_DragStarting;
 					ic.DropCompleted -= ItemContainer_DropCompleted;
+					// Clear the card Background set in ApplyDragAffordance so the
+					// container falls back to the transparent ThemeResource (#13197).
+					RemoveDragGhostAppearance(ic);
 				}
 			}
 		}
@@ -298,6 +314,20 @@ internal partial class MauiItemsView
 		if (!isHeaderOrFooter)
 		{
 			itemContainer.DragStarting += ItemContainer_DragStarting;
+		}
+
+		// Set the Fluent card background as a LOCAL dependency-property value so that:
+		//   1. The drag ghost (captured by the compositor BEFORE DragStarting fires)
+		//      always carries a visible card background regardless of DataTemplate content.
+		//   2. The local value takes precedence over the transparent ThemeResource override
+		//      set in the constructor (fix #13197) without changing that global default.
+		// RemoveDragGhostAppearance calls ClearValue(BackgroundProperty) to undo this,
+		// letting the transparent ThemeResource resume when drag-reorder is disabled.
+		if (!isHeaderOrFooter
+			&& WApp.Current?.Resources?.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg) == true
+			&& cardBg is Brush cardBrush)
+		{
+			itemContainer.Background = cardBrush;
 		}
 	}
 
@@ -398,18 +428,15 @@ internal partial class MauiItemsView
 		if (sender is ItemContainer itemContainer)
 		{
 			itemContainer.DropCompleted -= ItemContainer_DropCompleted;
-			itemContainer.Opacity = 1;
-			itemContainer.IsHitTestVisible = true;
 		}
 
-		// Restore all containers — dim + source hide
-		foreach (var container in FindAllContainers())
-		{
-			container.Opacity = 1;
-			container.IsHitTestVisible = true;
-		}
-
-		_sourceContainer = null;
+		// DropCompleted fires on ALL drag-end paths: success (drop inside list),
+		// cancel/ESC, and drop outside the window. On the success path,
+		// ScrollViewer_Drop already called CleanupDragState() and unsubscribed this
+		// handler — so DropCompleted typically only fires here for cancel/ESC/outside.
+		// CleanupDragState() is idempotent, so calling it again on the success path
+		// is harmless. This guarantees the auto-scroll timer is always stopped.
+		CleanupDragState();
 	}
 
 	void ScrollViewer_DragEnter(object sender, UI.Xaml.DragEventArgs e)
@@ -517,10 +544,24 @@ internal partial class MauiItemsView
 			return true;
 		}
 
-		// For any other ObservableCollection<T> fall back to RemoveAt+Insert.
-		// Reflection was previously used here but it poses trimming/AOT risks and adds
-		// complexity. The caller's RemoveAt+Insert fallback is equivalent and safe for
-		// grouped sources (the source group is NOT directly bound to ItemsRepeater).
+		// General path: ObservableCollection<T> for any T.
+		// Reflection is used intentionally here — ObservableCollection<T>.Move is a
+		// public, stable API and this code runs only during interactive drag/drop on Windows.
+#pragma warning disable IL2070 // 't' parameter doesn't need trimmer annotation — Move is always preserved on ObservableCollection<T>
+		var moveMethod = s_moveMethodCache.GetOrAdd(list.GetType(), t => t.GetMethod(
+			"Move",
+			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+			null,
+			new[] { typeof(int), typeof(int) },
+			null));
+#pragma warning restore IL2070
+
+		if (moveMethod is not null)
+		{
+			moveMethod.Invoke(list, new object[] { oldIndex, newIndex });
+			return true;
+		}
+
 		return false;
 	}
 
@@ -1046,22 +1087,18 @@ internal partial class MauiItemsView
 	IEnumerable<FrameworkElement> FindAllContainers()
 	{
 		var repeater = ItemsRepeaterControl;
-		// Use ItemsSourceView.Count (the repeater's own flat count) rather than
-		// GetSourceList().Count. For grouped lists GetSourceList() returns the
-		// MAUI-side groups collection (count = number of groups), whereas
-		// ItemsSourceView.Count is the full flat count — headers + items + footers
-		// — which maps correctly to TryGetElement(i) repeater indices.
-		int count = repeater?.ItemsSourceView?.Count ?? 0;
-		if (repeater is not null && count > 0)
+		if (repeater is null)
+			yield break;
+
+		// Walk the ItemsRepeater's visual children directly: only realized containers
+		// exist in the visual tree, so this is O(realized) rather than O(total items).
+		// The previous approach (TryGetElement(i) for i in 0..ItemsSourceView.Count)
+		// was O(N) over ALL items even though only ~20 are realized at any time.
+		int childCount = VisualTreeHelper.GetChildrenCount(repeater);
+		for (int i = 0; i < childCount; i++)
 		{
-			for (int i = 0; i < count; i++)
-			{
-				var container = repeater.TryGetElement(i);
-				if (container is FrameworkElement fe)
-				{
-					yield return fe;
-				}
-			}
+			if (VisualTreeHelper.GetChild(repeater, i) is FrameworkElement fe)
+				yield return fe;
 		}
 	}
 
@@ -1194,9 +1231,14 @@ internal partial class MauiItemsView
 		// fire (e.g. drop handled outside the source element, or disconnect).
 		if (_sourceContainer is not null)
 		{
-			// Remove ghost appearance defensively — the deferred block in DragStarting
-			// may not have run yet if drag was cancelled immediately.
-			RemoveDragGhostAppearance(_sourceContainer);
+			// Restore only the drag-source-specific overrides (opacity + hit-testing).
+			// Do NOT call RemoveDragGhostAppearance here — that would clear the card
+			// Background set by ApplyDragAffordance.  A same-location drop leaves the
+			// container in place (not recycled), so ApplyDragAffordance won't run again;
+			// clearing the Background here would expose the transparent ThemeResource
+			// and leave the item visually broken for subsequent drags.
+			// Background is cleared in ElementClearing (recycle) and UnwireDragDropEvents
+			// (drag-reorder disabled) — the two paths that actually require the cleanup.
 			_sourceContainer.Opacity = 1;
 			_sourceContainer.IsHitTestVisible = true;
 			_sourceContainer.DropCompleted -= ItemContainer_DropCompleted;
@@ -1379,6 +1421,46 @@ internal partial class MauiItemsView
 	#region Drop Target Indicator
 
 	/// <summary>
+	/// Builds and caches the Storyboard + DoubleAnimations used to fade in the
+	/// insertion indicator. Called once from <see cref="MauiItemsView.OnApplyTemplate"/>
+	/// after the template parts are resolved. Caching avoids allocating new animation
+	/// objects on every DragOver event that transitions Collapsed → Visible.
+	/// </summary>
+	void InitInsertionFadeStoryboard()
+	{
+		if (_dropIndicatorHead is null || _dropIndicatorLine is null)
+			return;
+
+		var ease = new Microsoft.UI.Xaml.Media.Animation.CubicEase
+		{
+			EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut
+		};
+		var duration = new Duration(TimeSpan.FromMilliseconds(80));
+
+		_insertionHeadFadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+		{
+			To = 1.0,
+			Duration = duration,
+			EasingFunction = ease,
+		};
+		_insertionLineFadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+		{
+			To = 1.0,
+			Duration = duration,
+			EasingFunction = ease,
+		};
+
+		_insertionFadeStoryboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+		_insertionFadeStoryboard.Children.Add(_insertionHeadFadeIn);
+		_insertionFadeStoryboard.Children.Add(_insertionLineFadeIn);
+
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(_insertionHeadFadeIn, _dropIndicatorHead);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(_insertionHeadFadeIn, "Opacity");
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(_insertionLineFadeIn, _dropIndicatorLine);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(_insertionLineFadeIn, "Opacity");
+	}
+
+	/// <summary>
 	/// Shows a 2 px accent-coloured line on <see cref="_dropIndicatorCanvas"/> at the
 	/// boundary between items — "insert before <paramref name="target"/>" or "insert
 	/// after <paramref name="target"/>".  The line is positioned in the canvas coordinate
@@ -1398,7 +1480,7 @@ internal partial class MauiItemsView
 
 		// ── Calculate position in canvas coordinates ──────────────────────────
 		var origin = target.TransformToVisual(_dropIndicatorCanvas)
-			.TransformPoint(new Windows.Foundation.Point(0, 0));
+			.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
 		if (_isHorizontalLayout)
 		{
@@ -1408,7 +1490,8 @@ internal partial class MauiItemsView
 				: origin.X;
 
 			double lineHeight = target.ActualHeight - IndicatorHeadSize - IndicatorHeadGap;
-			if (lineHeight < 0) lineHeight = 0;
+			if (lineHeight < 0)
+				lineHeight = 0;
 
 			// Head at top-center of the insertion edge.
 			Canvas.SetLeft(_dropIndicatorHead, lineX - IndicatorHeadSize / 2);
@@ -1429,7 +1512,8 @@ internal partial class MauiItemsView
 
 			// Circle sits at the left edge of the item; line fills the remaining width.
 			double lineWidth = target.ActualWidth - IndicatorHeadSize - IndicatorHeadGap;
-			if (lineWidth < 0) lineWidth = 0;
+			if (lineWidth < 0)
+				lineWidth = 0;
 
 			// Head: vertically centered on the insertion line, pinned to item left edge.
 			Canvas.SetLeft(_dropIndicatorHead, origin.X);
@@ -1446,7 +1530,7 @@ internal partial class MauiItemsView
 		// Starting a new Storyboard on every DragOver mouse-move (while already visible)
 		// causes multiple animations to compete on Opacity, producing a visible flicker.
 		// Only fade in when transitioning from Collapsed → Visible.
-		bool wasCollapsed = _dropIndicatorHead.Visibility == Visibility.Collapsed;
+		bool wasCollapsed = _dropIndicatorHead.Visibility == WVisibility.Collapsed;
 
 		if (wasCollapsed)
 		{
@@ -1454,36 +1538,24 @@ internal partial class MauiItemsView
 			_dropIndicatorLine.Opacity = 0;
 		}
 
-		_dropIndicatorHead.Visibility = Visibility.Visible;
-		_dropIndicatorLine.Visibility = Visibility.Visible;
+		_dropIndicatorHead.Visibility = WVisibility.Visible;
+		_dropIndicatorLine.Visibility = WVisibility.Visible;
 
 		if (wasCollapsed)
 		{
-			// One-shot fade-in only on first show.
-			var fadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+			// One-shot fade-in only on first show. Use the pre-built cached storyboard
+			// so we don't allocate a new Storyboard + 2 DoubleAnimations on every DragOver.
+			if (_insertionFadeStoryboard is not null)
 			{
-				To = 1.0,
-				Duration = new Duration(TimeSpan.FromMilliseconds(80)),
-				EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
-				{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
-			};
-			var storyboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
-			storyboard.Children.Add(fadeIn);
-			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn, _dropIndicatorHead);
-			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn, "Opacity");
-
-			var fadeIn2 = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+				_insertionFadeStoryboard.Begin();
+			}
+			else
 			{
-				To = 1.0,
-				Duration = new Duration(TimeSpan.FromMilliseconds(80)),
-				EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
-				{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
-			};
-			storyboard.Children.Add(fadeIn2);
-			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn2, _dropIndicatorLine);
-			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn2, "Opacity");
-
-			storyboard.Begin();
+				// Fallback if the storyboard couldn't be built in OnApplyTemplate
+				// (e.g. template parts missing). Snap to full opacity immediately.
+				_dropIndicatorHead.Opacity = 1;
+				_dropIndicatorLine.Opacity = 1;
+			}
 		}
 		else
 		{
@@ -1498,10 +1570,13 @@ internal partial class MauiItemsView
 	/// </summary>
 	void HideInsertionIndicator()
 	{
-		if (_dropIndicatorHead is not null)
-			_dropIndicatorHead.Visibility = Visibility.Collapsed;
-		if (_dropIndicatorLine is not null)
-			_dropIndicatorLine.Visibility = Visibility.Collapsed;
+		// Type-pattern variables let us assign the field to a local before setting
+		// the property — null-conditional (?.) cannot appear on the left side of an
+		// assignment, so a local capture is the idiomatic null-safe setter pattern.
+		if (_dropIndicatorHead is WBorder head)
+			head.Visibility = WVisibility.Collapsed;
+		if (_dropIndicatorLine is Rectangle line)
+			line.Visibility = WVisibility.Collapsed;
 	}
 
 	// Indicator geometry constants.

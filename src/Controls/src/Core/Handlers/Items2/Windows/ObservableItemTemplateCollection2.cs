@@ -267,7 +267,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	/// </para>
 	/// <para>
 	/// This method avoids that by suppressing <see cref="InnerCollectionChanged(object?, NotifyCollectionChangedEventArgs)"/>
-	/// while mutating the source (via <see cref="_observeChanges"/>), then calling <see cref="Move(int,int)"/>
+	/// while mutating the source (via <see cref="_observeChanges"/>), then calling <c>Move(int, int)</c>
 	/// on the template collection directly. <see cref="MoveItem"/> fires Remove + Add on the
 	/// <em>existing</em> wrapper — ItemsRepeater repositions the container in-place without recycling.
 	/// </para>
@@ -370,14 +370,25 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		Items.RemoveAt(oldIndex);
 		Items.Insert(newIndex, item);
 
-		// Fire Remove + Add in place of the default Move event.
-		// CollectionChanged(Remove) → CsWinRT → VectorChanged(ItemRemoved)
-		// CollectionChanged(Add)    → CsWinRT → VectorChanged(ItemInserted)
-		// Neither triggers VectorChanged(Reset), so ItemsRepeater preserves scroll position.
-		OnCollectionChanged(new NotifyCollectionChangedEventArgs(
-			NotifyCollectionChangedAction.Remove, item, oldIndex));
-		OnCollectionChanged(new NotifyCollectionChangedEventArgs(
-			NotifyCollectionChangedAction.Add, item, newIndex));
+		// Notify indexer bindings that indexed items have changed — required by the
+		// ObservableCollection<T> contract. Count is unchanged, so no Count notification.
+		OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("Item[]"));
+
+		// Wrap both events in BlockReentrancy so no mutation can slip between them.
+		// Each OnCollectionChanged call already increments the reentrancy monitor
+		// internally, but without an outer block a handler of Remove could trigger
+		// a second MoveItem before Add fires.
+		using (BlockReentrancy())
+		{
+			// Fire Remove + Add in place of the default Move event.
+			// CollectionChanged(Remove) → CsWinRT → VectorChanged(ItemRemoved)
+			// CollectionChanged(Add)    → CsWinRT → VectorChanged(ItemInserted)
+			// Neither triggers VectorChanged(Reset), so ItemsRepeater preserves scroll position.
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Remove, item, oldIndex));
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Add, item, newIndex));
+		}
 	}
 
 	void Remove(NotifyCollectionChangedEventArgs args)
