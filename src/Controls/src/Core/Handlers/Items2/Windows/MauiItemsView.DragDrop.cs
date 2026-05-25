@@ -55,6 +55,16 @@ internal partial class MauiItemsView
 
 	RoutedEventHandler? _deferredWireHandler;
 
+	// Cached insertion-indicator fade-in animation (created once in OnApplyTemplate).
+	Microsoft.UI.Xaml.Media.Animation.Storyboard? _insertionFadeStoryboard;
+	Microsoft.UI.Xaml.Media.Animation.DoubleAnimation? _insertionHeadFadeIn;
+	Microsoft.UI.Xaml.Media.Animation.DoubleAnimation? _insertionLineFadeIn;
+
+	// Per-type cache for ObservableCollection<T>.Move(int,int) MethodInfo lookups.
+	// Keyed by concrete collection type so each closed generic variant is cached once.
+	static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, System.Reflection.MethodInfo?>
+		s_moveMethodCache = new();
+
 	/// <summary>
 	/// Event fired when a reorder operation completes successfully.
 	/// </summary>
@@ -388,18 +398,15 @@ internal partial class MauiItemsView
 		if (sender is ItemContainer itemContainer)
 		{
 			itemContainer.DropCompleted -= ItemContainer_DropCompleted;
-			itemContainer.Opacity = 1;
-			itemContainer.IsHitTestVisible = true;
 		}
 
-		// Restore all containers — dim + source hide
-		foreach (var container in FindAllContainers())
-		{
-			container.Opacity = 1;
-			container.IsHitTestVisible = true;
-		}
-
-		_sourceContainer = null;
+		// DropCompleted fires on ALL drag-end paths: success (drop inside list),
+		// cancel/ESC, and drop outside the window. On the success path,
+		// ScrollViewer_Drop already called CleanupDragState() and unsubscribed this
+		// handler — so DropCompleted typically only fires here for cancel/ESC/outside.
+		// CleanupDragState() is idempotent, so calling it again on the success path
+		// is harmless. This guarantees the auto-scroll timer is always stopped.
+		CleanupDragState();
 	}
 
 	void ScrollViewer_DragEnter(object sender, UI.Xaml.DragEventArgs e)
@@ -555,12 +562,12 @@ internal partial class MauiItemsView
 		// General path: ObservableCollection<T> for any T.
 		// Reflection is used intentionally here — ObservableCollection<T>.Move is a
 		// public, stable API and this code runs only during interactive drag/drop on Windows.
-		var moveMethod = list.GetType().GetMethod(
+		var moveMethod = s_moveMethodCache.GetOrAdd(list.GetType(), t => t.GetMethod(
 			"Move",
 			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
 			null,
 			new[] { typeof(int), typeof(int) },
-			null);
+			null));
 
 		if (moveMethod is not null)
 		{
@@ -1085,22 +1092,18 @@ internal partial class MauiItemsView
 	IEnumerable<FrameworkElement> FindAllContainers()
 	{
 		var repeater = ItemsRepeaterControl;
-		// Use ItemsSourceView.Count (the repeater's own flat count) rather than
-		// GetSourceList().Count. For grouped lists GetSourceList() returns the
-		// MAUI-side groups collection (count = number of groups), whereas
-		// ItemsSourceView.Count is the full flat count — headers + items + footers
-		// — which maps correctly to TryGetElement(i) repeater indices.
-		int count = repeater?.ItemsSourceView?.Count ?? 0;
-		if (repeater is not null && count > 0)
+		if (repeater is null)
+			yield break;
+
+		// Walk the ItemsRepeater's visual children directly: only realized containers
+		// exist in the visual tree, so this is O(realized) rather than O(total items).
+		// The previous approach (TryGetElement(i) for i in 0..ItemsSourceView.Count)
+		// was O(N) over ALL items even though only ~20 are realized at any time.
+		int childCount = VisualTreeHelper.GetChildrenCount(repeater);
+		for (int i = 0; i < childCount; i++)
 		{
-			for (int i = 0; i < count; i++)
-			{
-				var container = repeater.TryGetElement(i);
-				if (container is FrameworkElement fe)
-				{
-					yield return fe;
-				}
-			}
+			if (VisualTreeHelper.GetChild(repeater, i) is FrameworkElement fe)
+				yield return fe;
 		}
 	}
 
@@ -1419,6 +1422,46 @@ internal partial class MauiItemsView
 	#region Drop Target Indicator
 
 	/// <summary>
+	/// Builds and caches the Storyboard + DoubleAnimations used to fade in the
+	/// insertion indicator. Called once from <see cref="MauiItemsView.OnApplyTemplate"/>
+	/// after the template parts are resolved. Caching avoids allocating new animation
+	/// objects on every DragOver event that transitions Collapsed → Visible.
+	/// </summary>
+	void InitInsertionFadeStoryboard()
+	{
+		if (_dropIndicatorHead is null || _dropIndicatorLine is null)
+			return;
+
+		var ease = new Microsoft.UI.Xaml.Media.Animation.CubicEase
+		{
+			EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut
+		};
+		var duration = new Duration(TimeSpan.FromMilliseconds(80));
+
+		_insertionHeadFadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+		{
+			To = 1.0,
+			Duration = duration,
+			EasingFunction = ease,
+		};
+		_insertionLineFadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+		{
+			To = 1.0,
+			Duration = duration,
+			EasingFunction = ease,
+		};
+
+		_insertionFadeStoryboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+		_insertionFadeStoryboard.Children.Add(_insertionHeadFadeIn);
+		_insertionFadeStoryboard.Children.Add(_insertionLineFadeIn);
+
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(_insertionHeadFadeIn, _dropIndicatorHead);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(_insertionHeadFadeIn, "Opacity");
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(_insertionLineFadeIn, _dropIndicatorLine);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(_insertionLineFadeIn, "Opacity");
+	}
+
+	/// <summary>
 	/// Shows a 2 px accent-coloured line on <see cref="_dropIndicatorCanvas"/> at the
 	/// boundary between items — "insert before <paramref name="target"/>" or "insert
 	/// after <paramref name="target"/>".  The line is positioned in the canvas coordinate
@@ -1499,31 +1542,19 @@ internal partial class MauiItemsView
 
 		if (wasCollapsed)
 		{
-			// One-shot fade-in only on first show.
-			var fadeIn = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+			// One-shot fade-in only on first show. Use the pre-built cached storyboard
+			// so we don't allocate a new Storyboard + 2 DoubleAnimations on every DragOver.
+			if (_insertionFadeStoryboard is not null)
 			{
-				To = 1.0,
-				Duration = new Duration(TimeSpan.FromMilliseconds(80)),
-				EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
-				{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
-			};
-			var storyboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
-			storyboard.Children.Add(fadeIn);
-			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn, _dropIndicatorHead);
-			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn, "Opacity");
-
-			var fadeIn2 = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+				_insertionFadeStoryboard.Begin();
+			}
+			else
 			{
-				To = 1.0,
-				Duration = new Duration(TimeSpan.FromMilliseconds(80)),
-				EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase
-				{ EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut },
-			};
-			storyboard.Children.Add(fadeIn2);
-			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeIn2, _dropIndicatorLine);
-			Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeIn2, "Opacity");
-
-			storyboard.Begin();
+				// Fallback if the storyboard couldn't be built in OnApplyTemplate
+				// (e.g. template parts missing). Snap to full opacity immediately.
+				_dropIndicatorHead.Opacity = 1;
+				_dropIndicatorLine.Opacity = 1;
+			}
 		}
 		else
 		{

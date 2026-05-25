@@ -39,7 +39,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
-		// viewport during scroll. This is unexpected for a data list in MAUI.
+		// viewport during scroll. This is unexpected for a data list in MAUI and is
+		// intentionally suppressed for ALL CV2 instances (not just drag-reorder ones).
+		// See also OnApplyTemplate where this is re-applied after template inflation.
 		ItemTransitionProvider = null;
 
 		// Suppress the native WinUI ItemContainer visual states (PointerOver,
@@ -57,20 +59,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Override theme resources that control corner radius for ItemsView and its children
 		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
-		// ItemContainer background — use the Fluent card surface colour so that:
-		//   1. The drag ghost (a pre-DragStarting compositor snapshot) always shows
-		//      a visible card, matching the expected reorder UX.
-		//   2. Items look like distinct elevated cards in the list at rest.
-		// CardBackgroundFillColorDefaultBrush = white in light theme, dark-card in
-		// dark theme — the same surface colour used by WinUI's own list controls.
-		if (WApp.Current.Resources.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg)
-			&& cardBg is Microsoft.UI.Xaml.Media.Brush cardBrush)
-		{
-			Resources["ItemContainerBackground"] = cardBrush;
-		}
-
 		// Suppress the gray hover/press overlay (PART_CommonVisual.Fill) so it does
 		// not interfere with MAUI's own VisualStateManager states. Fixes: #13197
+		Resources["ItemContainerBackground"] = transparent;
 		Resources["ItemContainerPointerOverBackground"] = transparent;
 		Resources["ItemContainerPressedBackground"] = transparent;
 
@@ -209,6 +200,13 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		// Apply orientation if it was set before template was applied
 		ApplyLayoutOrientation();
+
+		// Build the cached insertion-indicator fade-in animations now that
+		// the template parts (_dropIndicatorHead / _dropIndicatorLine) are resolved.
+		// Re-creating the Storyboard on every first-appearance (inside UpdateInsertionIndicator)
+		// allocates a Storyboard + 2 DoubleAnimations per drag gesture; caching one instance
+		// avoids the repeated allocations.
+		InitInsertionFadeStoryboard();
 	}
 
 	/// <summary>Gets whether the items are arranged horizontally (along-axis = width) or vertically (along-axis = height).</summary>

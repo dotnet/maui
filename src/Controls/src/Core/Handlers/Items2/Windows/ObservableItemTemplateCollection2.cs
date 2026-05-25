@@ -158,12 +158,18 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 
 	void InnerCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
 	{
+		// Short-circuit on the calling thread before allocating any closure.
 		if (!_observeChanges)
-		{
 			return;
-		}
 
-		_container.Dispatcher.DispatchIfRequired(() => InnerCollectionChanged(args));
+		_container.Dispatcher.DispatchIfRequired(() =>
+		{
+			// Re-check on the UI thread: _observeChanges may have been set to false
+			// by TemplateCollectionChanged between when this closure was queued and
+			// when the dispatcher runs it.
+			if (_observeChanges)
+				InnerCollectionChanged(args);
+		});
 	}
 
 	void InnerCollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -277,14 +283,25 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		Items.RemoveAt(oldIndex);
 		Items.Insert(newIndex, item);
 
-		// Fire Remove + Add in place of the default Move event.
-		// CollectionChanged(Remove) → CsWinRT → VectorChanged(ItemRemoved)
-		// CollectionChanged(Add)    → CsWinRT → VectorChanged(ItemInserted)
-		// Neither triggers VectorChanged(Reset), so ItemsRepeater preserves scroll position.
-		OnCollectionChanged(new NotifyCollectionChangedEventArgs(
-			NotifyCollectionChangedAction.Remove, item, oldIndex));
-		OnCollectionChanged(new NotifyCollectionChangedEventArgs(
-			NotifyCollectionChangedAction.Add, item, newIndex));
+		// Notify indexer bindings that indexed items have changed — required by the
+		// ObservableCollection<T> contract. Count is unchanged, so no Count notification.
+		OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("Item[]"));
+
+		// Wrap both events in BlockReentrancy so no mutation can slip between them.
+		// Each OnCollectionChanged call already increments the reentrancy monitor
+		// internally, but without an outer block a handler of Remove could trigger
+		// a second MoveItem before Add fires.
+		using (BlockReentrancy())
+		{
+			// Fire Remove + Add in place of the default Move event.
+			// CollectionChanged(Remove) → CsWinRT → VectorChanged(ItemRemoved)
+			// CollectionChanged(Add)    → CsWinRT → VectorChanged(ItemInserted)
+			// Neither triggers VectorChanged(Reset), so ItemsRepeater preserves scroll position.
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Remove, item, oldIndex));
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Add, item, newIndex));
+		}
 	}
 
 	void Remove(NotifyCollectionChangedEventArgs args)
