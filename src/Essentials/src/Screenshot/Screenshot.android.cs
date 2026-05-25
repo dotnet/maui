@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Media
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
-				var bitmap = await RenderUsingPixelCopyAsync(view).ConfigureAwait(false);
+				var bitmap = await RenderUsingPixelCopyAsync(view);
 				if (bitmap is not null)
 					return bitmap;
 			}
@@ -87,8 +87,9 @@ namespace Microsoft.Maui.Media
 
 			try
 			{
+				var listener = new PixelCopyFinishedListener(tcs, bitmap);
 				PixelCopy.Request(window, rect, bitmap,
-					new PixelCopyFinishedListener(tcs, bitmap),
+					listener,
 					new Handler(Looper.MainLooper!));
 			}
 			catch (Exception)
@@ -124,7 +125,8 @@ namespace Microsoft.Maui.Media
 
 			public void OnPixelCopyFinished(int copyResult)
 			{
-				if (copyResult == (int)PixelCopyResult.Success)
+				// PixelCopy.SUCCESS == 0
+				if (copyResult == 0)
 				{
 					_tcs.TrySetResult(_bitmap);
 				}

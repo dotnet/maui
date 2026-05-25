@@ -18,17 +18,12 @@ public class Issue30010 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void Issue30010_TakeScreenshotFunctionality()
 	{
-		// Wait for WebView to finish loading
-		App.WaitForElement("StatusLabel");
-		App.WaitForElement("TakeScreenshotButton");
-
-		// The button is enabled only after WebView.Navigated fires
-		App.WaitForElement("TakeScreenshotButton");
+		// Wait for WebView to finish loading before tapping the button
+		App.WaitForTextToBePresentInElement("StatusLabel", "WebView loaded");
 		App.Tap("TakeScreenshotButton");
 
 		// Wait for the screenshot to be captured and displayed
-		var statusLabel = App.WaitForElement("StatusLabel");
-		App.WaitForElement("ResultImage");
+		App.WaitForTextToBePresentInElement("StatusLabel", "Screenshot captured");
 
 		VerifyScreenshot("Issue30010TakeScreenshotFunctionality");
 	}

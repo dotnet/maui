@@ -64,7 +64,7 @@ public class Issue30010 : ContentPage
 		try
 		{
 			var screenshot = await Screenshot.CaptureAsync();
-			var stream = await screenshot.OpenReadAsync(ScreenshotFormat.Png);
+			using var stream = await screenshot.OpenReadAsync(ScreenshotFormat.Png);
 
 			// Read into a byte array so the stream can be consumed multiple times
 			using var ms = new MemoryStream();

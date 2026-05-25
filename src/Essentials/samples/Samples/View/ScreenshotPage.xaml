@@ -19,7 +19,7 @@
                 <Label Text="Some Controls" />
                 <Switch OnColor="Orange"
                         ThumbColor="Green" />
-                <WebView>
+                <WebView HeightRequest="200">
                   <WebView.Source>
                     <HtmlWebViewSource>
                       <HtmlWebViewSource.Html>
