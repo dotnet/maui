@@ -14,8 +14,6 @@ public class Issue35326 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void GroupedCollectionViewScrollToIndexScrollsToCorrectItem()
 	{
-		App.WaitForElement("GroupedCollectionView");
-
 		// Initially the first item of the first group should be visible
 		App.WaitForElement("Item_G1_I1");
 

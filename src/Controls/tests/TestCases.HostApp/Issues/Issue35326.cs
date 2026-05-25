@@ -22,7 +22,6 @@ public class Issue35326 : ContentPage
 
 		var collectionView = new CollectionView
 		{
-			AutomationId = "GroupedCollectionView",
 			IsGrouped = true,
 			ItemsSource = groups,
 			GroupHeaderTemplate = new DataTemplate(() =>

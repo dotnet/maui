@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			static NSIndexPath ConvertFlatIndexToGroupedIndexPath(int flatIndex, IItemsViewSource itemsSource)
 			{
-				if (flatIndex < 0 || flatIndex >= itemsSource.ItemCount)
+				if (flatIndex < 0)
 				{
 					return null;
 				}
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected bool IsIndexPathValid(NSIndexPath indexPath)
 		{
-			if (indexPath.Item < 0 || indexPath.Section < 0)
+			if (indexPath is null || indexPath.Item < 0 || indexPath.Section < 0)
 			{
 				return false;
 			}

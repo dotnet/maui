@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			static NSIndexPath ConvertFlatIndexToGroupedIndexPath(int flatIndex, Items.IItemsViewSource itemsSource)
 			{
-				if (flatIndex < 0 || flatIndex >= itemsSource.ItemCount)
+				if (flatIndex < 0)
 				{
 					return null;
 				}
