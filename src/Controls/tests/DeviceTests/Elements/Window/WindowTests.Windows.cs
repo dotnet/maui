@@ -170,13 +170,24 @@ namespace Microsoft.Maui.DeviceTests
 				presenter.Maximize();
 				var appWindow = handler.PlatformView.GetWindow();
 				Assert.NotNull(appWindow);
-				// X and Y should be >= 0 (on a multi-monitor setup the maximized window may
-				// land on a non-primary monitor, giving a non-zero but still non-negative position).
-				await AssertEventually(() => appWindow.X >= 0);
-				await AssertEventually(() => appWindow.Y >= 0);
-				// Verify width and height are non-zero (regression: Height was reported as 0 when maximized)
-				await AssertEventually(() => appWindow.Width > 0);
+				// Wait for MAUI frame to be updated with the maximized bounds
+				// (regression guard: Height was reported as 0 when maximized).
 				await AssertEventually(() => appWindow.Height > 0);
+
+				// Compare against the monitor's work area. This correctly handles negative
+				// coordinates when the window is on a monitor positioned left of or above
+				// the primary display, and catches regressions beyond a simple > 0 check.
+				var displayArea = DisplayArea.GetFromWindowId(appWindowPlatform.Id, DisplayAreaFallback.Nearest);
+				var workArea = displayArea.WorkArea;
+				var density = handler.PlatformView.GetDisplayDensity();
+				Assert.True(Math.Abs(appWindow.X - workArea.X / density) < 2,
+					$"X should be near work area X ({workArea.X / density:F2}) but was {appWindow.X}");
+				Assert.True(Math.Abs(appWindow.Y - workArea.Y / density) < 2,
+					$"Y should be near work area Y ({workArea.Y / density:F2}) but was {appWindow.Y}");
+				Assert.True(Math.Abs(appWindow.Width - workArea.Width / density) < 2,
+					$"Width should match work area width ({workArea.Width / density:F2}) but was {appWindow.Width}");
+				Assert.True(Math.Abs(appWindow.Height - workArea.Height / density) < 2,
+					$"Height should match work area height ({workArea.Height / density:F2}) but was {appWindow.Height}");
 			});
 		}
 
@@ -205,17 +216,20 @@ namespace Microsoft.Maui.DeviceTests
 				 destroyingHeight = window.Height;
 			 };
 
-				// Maximize the window and wait until the frame update reflects the maximized bounds
+				// Maximize the window and wait until the frame update reflects the maximized bounds.
+				// Do not assert window.Y == 0: on monitors positioned above the primary display
+				// Y is legitimately negative.
 				presenter.Maximize();
-				await AssertEventually(() => window.Y == 0);
 				await AssertEventually(() => window.Height > 0);
 			});
 
 			// The window is destroyed during CreateHandlerAndAddToWindow cleanup.
-			// Verify that the Y and Height values at Destroying time were non-negative / non-zero.
+			// Verify Height > 0 at Destroying time (regression: it was reported as 0 when closing a maximized window).
+			// Y is not asserted to be non-negative: on monitors positioned above the primary display it is legitimately negative.
 			Assert.False(double.IsNaN(destroyingHeight), "Window.Destroying event was not raised");
 			Assert.True(destroyingHeight > 0, $"Height should be > 0 when closing a maximized window, but was {destroyingHeight}");
-			Assert.True(destroyingY >= 0, $"Y should be >= 0 when closing a maximized window, but was {destroyingY}");
+			Assert.True(!double.IsNaN(destroyingY) && !double.IsInfinity(destroyingY),
+				$"Y should be a valid finite number when closing a maximized window, but was {destroyingY}");
 		}
 
 		[Fact]

@@ -10,6 +10,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UI.Xaml.Window>
 	{
+		// The HWND never changes after the window is created; cache it once to avoid
+		// a COM/marshalling round-trip on every OnWindowChanged (move/resize) event.
+		IntPtr _hwnd = IntPtr.Zero;
+
 		protected override void ConnectHandler(UI.Xaml.Window platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -20,6 +24,8 @@ namespace Microsoft.Maui.Handlers
 			// update the platform window with the user size/position
 			platformView.UpdatePosition(VirtualView);
 			platformView.UpdateSize(VirtualView);
+
+			_hwnd = platformView.GetWindowHandle();
 
 			var appWindow = platformView.GetAppWindow();
 			if (appWindow is not null)
@@ -68,6 +74,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				appWindow.Changed -= OnWindowChanged;
 			}
+
+			_hwnd = IntPtr.Zero;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -200,21 +208,22 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateVirtualViewFrame(sender);
 		}
+
 		void UpdateVirtualViewFrame(AppWindow appWindow)
 		{
-			var hwnd = WindowNative.GetWindowHandle(PlatformView);
-			// GetWindowHandle returns IntPtr.Zero only when the underlying HWND has not yet been
-			// created. In practice ConnectHandler only calls this after GetAppWindow() succeeds,
-			// which requires a valid HWND, so this guard is a safety net for unexpected edge cases.
-			if (hwnd == IntPtr.Zero)
+			// Use the HWND cached at ConnectHandler — it never changes and this method
+			// runs on every move/resize event, so avoid the COM round-trip each time.
+			if (_hwnd == IntPtr.Zero)
+			{
 				return;
+			}
 
 			var size = appWindow.Size;
 			var pos = appWindow.Position;
 
 			if (appWindow.Presenter is OverlappedPresenter presenter &&
 				presenter.State == OverlappedPresenterState.Maximized &&
-				PlatformMethods.TryGetExtendedFrameBounds(hwnd, out var dwmRect))
+				PlatformMethods.TryGetExtendedFrameBounds(_hwnd, out var dwmRect))
 			{
 				size = new SizeInt32(dwmRect.Right - dwmRect.Left, dwmRect.Bottom - dwmRect.Top);
 				pos = new PointInt32(dwmRect.Left, dwmRect.Top);
