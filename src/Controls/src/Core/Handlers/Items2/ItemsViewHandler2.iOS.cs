@@ -159,13 +159,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					if (args.GroupIndex == -1)
 					{
-						// When the source is grouped, convert the flat index into the correct section/item NSIndexPath.
-						// Without this, NSIndexPath.Create(0, flatIndex) always targets section 0, which is invalid
-						// for flat indices that exceed the item count of the first group.
-						var itemsSource = Controller.ItemsSource;
-						if (itemsSource != null && itemsSource.GroupCount > 1)
+						// When IsGrouped is set and no explicit group index is provided,
+						// convert the flat index to the correct section/item index path.
+						if (ItemsView is GroupableItemsView groupable && groupable.IsGrouped)
 						{
-							return ConvertFlatIndexToGroupedIndexPath(args.Index, itemsSource);
+							var itemsSource = Controller.ItemsSource;
+							if (itemsSource is not null)
+							{
+								return ConvertFlatIndexToGroupedIndexPath(args.Index, itemsSource);
+							}
+
+							return null;
 						}
 
 						return NSIndexPath.Create(0, args.Index);
@@ -179,6 +183,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			static NSIndexPath ConvertFlatIndexToGroupedIndexPath(int flatIndex, Items.IItemsViewSource itemsSource)
 			{
+				if (flatIndex < 0 || flatIndex >= itemsSource.ItemCount)
+				{
+					return null;
+				}
+
 				int remaining = flatIndex;
 				int groupCount = itemsSource.GroupCount;
 				for (int section = 0; section < groupCount; section++)
