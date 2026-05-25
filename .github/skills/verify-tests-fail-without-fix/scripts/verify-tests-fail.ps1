@@ -622,8 +622,42 @@ function Get-TestResultFromOutput {
     }
 
     # Check for build failures (before any test results)
+    # Mark these explicitly with BuildError = $true so Write-MarkdownReport can
+    # surface them as "Fix does not compile" instead of "Fix does not pass the tests".
     if ($content -match "Build FAILED" -or $content -match "Build failed with exit code" -or $content -match "error MSB\d+" -or $content -match "error CS\d+") {
-        return @{ Passed = $false; Error = "Build failed before tests could run"; FailCount = 0; Failed = 0; Total = 0; Skipped = 0 }
+        # Capture the first compile error so the diagnosis is concrete.
+        $buildErrorExcerpt = $null
+        $errMatch = [regex]::Match($content, '(?m)^.*\b(error CS\d+|error MSB\d+)\b.*$')
+        if ($errMatch.Success) {
+            $excerpt = $errMatch.Value.Trim()
+            if ($excerpt.Length -gt 200) { $excerpt = $excerpt.Substring(0, 200) + "..." }
+            $buildErrorExcerpt = $excerpt
+        }
+        return @{
+            Passed = $false; BuildError = $true
+            Error = if ($buildErrorExcerpt) { "Build failed: $buildErrorExcerpt" } else { "Build failed before tests could run" }
+            FailureMessage = $buildErrorExcerpt
+            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+        }
+    }
+
+    # Check for filter mismatch — the test runner ran successfully but the supplied
+    # -filter expression matched zero test cases. Without this branch the gate
+    # would treat "0 tests ran" as ENV ERROR (or worse, silently as a failed
+    # test) — both misclassifications. The fix is to surface this as a separate
+    # "FilterMismatch" outcome so Write-MarkdownReport can label it accurately.
+    if ($content -match 'No test matches the given testcase filter' -or
+        $content -match '(?im)^\s*Test count:\s*0\b') {
+        $attemptedFilter = $null
+        $fmMatch = [regex]::Match($content, "No test matches the given testcase filter '([^']+)'")
+        if ($fmMatch.Success) { $attemptedFilter = $fmMatch.Groups[1].Value }
+        elseif ($TestFilter) { $attemptedFilter = $TestFilter }
+        return @{
+            Passed = $false; FilterMismatch = $true
+            Error = if ($attemptedFilter) { "Test filter '$attemptedFilter' matched 0 tests" } else { "Test filter matched 0 tests" }
+            FailureMessage = $attemptedFilter
+            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+        }
     }
 
     # --- Device test output: [PASS]/[FAIL] markers from xharness ---
@@ -1153,11 +1187,74 @@ function Write-MarkdownReport {
     $status = if ($hasEnvError) { "⚠️ ENV ERROR" } elseif ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
+    # ─── Improvement #2: classify the failure mode so the headline matches the cause ───
+    # Without this, every non-PASSED gate just says "tests did not behave as expected".
+    # Map the without/with-fix outcomes per test into a concrete diagnosis the
+    # downstream Try-Fix×4 stage and the human reader can act on.
+    #
+    # Reliability extensions:
+    # - BuildError flag → headline says "Fix does not compile" (was conflated
+    #   with "Fix does not pass the tests" because the test runner can't load
+    #   an assembly that doesn't compile, so every test in it appears to fail).
+    # - FilterMismatch flag → headline says "Test filter matched 0 tests"
+    #   (was misclassified as ENV ERROR or as a generic FAIL because zero
+    #   tests ran but exit code was non-zero).
+    $failureClassification = $null
+    if (-not $hasEnvError -and -not $VerificationPassed -and $WithoutFixResultsList -and $WithFixResultsList) {
+        # Build error in the with-fix run trumps every other classification — if
+        # the fix doesn't compile, no per-test outcome is meaningful.
+        $wBuildError    = @($WithFixResultsList    | Where-Object { $_.BuildError })
+        $woBuildError   = @($WithoutFixResultsList | Where-Object { $_.BuildError })
+        $wFilterMiss    = @($WithFixResultsList    | Where-Object { $_.FilterMismatch })
+        $woFilterMiss   = @($WithoutFixResultsList | Where-Object { $_.FilterMismatch })
+
+        $woStates = @($WithoutFixResultsList | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
+        $wStates  = @($WithFixResultsList    | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
+
+        $allWoPass   = ($woStates | Where-Object { $_ -ne "PASS" }).Count -eq 0
+        $allWoFail   = ($woStates | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $allWFail    = ($wStates  | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $hasRegression = $false
+        # Regression: at least one test fixes (FAIL→PASS) AND at least one regresses (FAIL→FAIL)
+        for ($i = 0; $i -lt $woStates.Count -and $i -lt $wStates.Count; $i++) {
+            if ($woStates[$i] -eq "FAIL" -and $wStates[$i] -eq "FAIL") { $hasRegression = $true }
+        }
+        $hasFixedTest = $false
+        for ($i = 0; $i -lt $woStates.Count -and $i -lt $wStates.Count; $i++) {
+            if ($woStates[$i] -eq "FAIL" -and $wStates[$i] -eq "PASS") { $hasFixedTest = $true }
+        }
+
+        if ($wBuildError.Count -gt 0) {
+            $excerpt = ($wBuildError | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
+            $excerptLine = if ($excerpt) { "`n> ``$excerpt``" } else { "" }
+            $failureClassification = "🩺 **Fix does not compile** — applying the PR's fix produces a build error before tests can run. The earlier-than-test failure is the root cause; the per-test ❌ FAIL marks are downstream effects, not real test failures.$excerptLine"
+        } elseif ($woBuildError.Count -gt 0) {
+            $failureClassification = "🩺 **Base branch does not compile** — the without-fix build failed. The gate's ""does the test fail without the fix"" check is unreliable here; this usually means ``main`` is broken or a merge-base file went missing. Investigate before trusting this gate."
+        } elseif ($wFilterMiss.Count -gt 0 -or $woFilterMiss.Count -gt 0) {
+            $missing = ($wFilterMiss + $woFilterMiss | ForEach-Object { $_.FailureMessage } | Where-Object { $_ } | Select-Object -First 1)
+            $hint = if ($missing) { " — filter ``$missing`` matched 0 tests" } else { "" }
+            $failureClassification = "🩺 **Test filter mismatch**$hint. The test runner produced zero results because no test class or method matched the filter. Common causes: the gate filter was derived from the file name but the actual test class is named differently, or the test was renamed/moved without updating the auto-detection. Verify the test class name matches what the gate is searching for."
+        } elseif ($allWoPass) {
+            $failureClassification = "🩺 **Test does not reproduce the bug** — ran the same in both states (PASS without fix, PASS with fix). The repro test is not exercising the issue. Strengthen the test before reviewing the fix."
+        } elseif ($allWoFail -and $allWFail) {
+            $failureClassification = "🩺 **Fix does not pass the tests** — every test still fails after applying the fix. The PR's change does not resolve the failure(s)."
+        } elseif ($hasFixedTest -and $hasRegression) {
+            $failureClassification = "🩺 **Regression in another test** — at least one test goes FAIL→PASS (fix works there), but another test FAILs both with and without the fix. The fix breaks a pre-existing or sibling test."
+        } elseif ($hasRegression -and -not $hasFixedTest) {
+            $failureClassification = "🩺 **Fix breaks tests** — one or more tests fail with the fix applied, and none of the failures are resolved by the fix."
+        }
+        # else: leave $failureClassification unset; the per-test table + Failure Details below tell the story.
+    }
+
     $lines = @()
     $lines += "### Gate Result: $status"
     $lines += ""
     $platformDisplay = if ($ReportPlatform) { $ReportPlatform.ToUpper() } else { "N/A" }
     $lines += "**Platform:** $platformDisplay · **Base:** $ReportBaseBranch · **Merge base:** ``$mergeBaseShort``"
+    if ($failureClassification) {
+        $lines += ""
+        $lines += $failureClassification
+    }
     $lines += ""
 
     # ── Side-by-side per-test comparison table ──
@@ -1172,6 +1269,10 @@ function Write-MarkdownReport {
         $woDur = if ($woResult.Duration) { "$([math]::Round($woResult.Duration.TotalSeconds))s" } else { "" }
         if ($woResult.EnvError) {
             $woCell = "⚠️ ENV ERROR"
+        } elseif ($woResult.BuildError) {
+            $woCell = "🛠️ BUILD ERROR"
+        } elseif ($woResult.FilterMismatch) {
+            $woCell = "🔍 NO MATCH"
         } elseif (-not $woResult.Passed) {
             $woCell = "✅ FAIL — $woDur"
         } else {
@@ -1182,6 +1283,10 @@ function Write-MarkdownReport {
         $wDur = if ($wResult.Duration) { "$([math]::Round($wResult.Duration.TotalSeconds))s" } else { "" }
         if ($wResult.EnvError) {
             $wCell = "⚠️ ENV ERROR"
+        } elseif ($wResult.BuildError) {
+            $wCell = "🛠️ BUILD ERROR"
+        } elseif ($wResult.FilterMismatch) {
+            $wCell = "🔍 NO MATCH"
         } elseif ($wResult.Passed) {
             $wCell = "✅ PASS — $wDur"
         } else {
@@ -1203,7 +1308,7 @@ function Write-MarkdownReport {
 
         # Without fix log
         $woLogFile = Join-Path $OutputPath "test-without-fix-$sanitizedName.log"
-        $woStatus = if ($woResult.EnvError) { "⚠️ ENV ERROR" } elseif (-not $woResult.Passed) { "FAIL ✅" } else { "PASS ❌" }
+        $woStatus = if ($woResult.EnvError) { "⚠️ ENV ERROR" } elseif ($woResult.BuildError) { "🛠️ BUILD ERROR" } elseif ($woResult.FilterMismatch) { "🔍 NO MATCH" } elseif (-not $woResult.Passed) { "FAIL ✅" } else { "PASS ❌" }
         $woDur = if ($woResult.Duration) { " · $([math]::Round($woResult.Duration.TotalSeconds))s" } else { "" }
         $lines += ""
         $lines += "<details>"
@@ -1232,7 +1337,7 @@ function Write-MarkdownReport {
 
         # With fix log
         $wLogFile = Join-Path $OutputPath "test-with-fix-$sanitizedName.log"
-        $wStatus = if ($wResult.EnvError) { "⚠️ ENV ERROR" } elseif ($wResult.Passed) { "PASS ✅" } else { "FAIL ❌" }
+        $wStatus = if ($wResult.EnvError) { "⚠️ ENV ERROR" } elseif ($wResult.BuildError) { "🛠️ BUILD ERROR" } elseif ($wResult.FilterMismatch) { "🔍 NO MATCH" } elseif ($wResult.Passed) { "PASS ✅" } else { "FAIL ❌" }
         $wDur = if ($wResult.Duration) { " · $([math]::Round($wResult.Duration.TotalSeconds))s" } else { "" }
         $lines += ""
         $lines += "<details>"
@@ -1262,13 +1367,31 @@ function Write-MarkdownReport {
     # ── Failure details (shown directly — not collapsed) ──
     $failureLines = @()
     foreach ($r in $WithoutFixResultsList) {
-        if ($r.Passed) {
+        if ($r.BuildError) {
+            $failureLines += "- 🛠️ **$($r.TestName)** without fix: build failed before tests could run"
+            if ($r.FailureMessage) {
+                $msg = if ($r.FailureMessage.Length -gt 300) { $r.FailureMessage.Substring(0, 300) + "..." } else { $r.FailureMessage }
+                $failureLines += "  - ``$msg``"
+            }
+        } elseif ($r.FilterMismatch) {
+            $failureLines += "- 🔍 **$($r.TestName)** without fix: test filter matched 0 tests"
+            if ($r.FailureMessage) { $failureLines += "  - filter: ``$($r.FailureMessage)``" }
+        } elseif ($r.Passed) {
             $failureLines += "- ❌ **$($r.TestName)** PASSED without fix (should fail) — tests don't catch the bug"
         }
         if ($r.EnvError) { $failureLines += "- ⚠️ **$($r.TestName)** without fix: ``$($r.Error)``" }
     }
     foreach ($r in $WithFixResultsList) {
-        if (-not $r.Passed -and -not $r.EnvError) {
+        if ($r.BuildError) {
+            $failureLines += "- 🛠️ **$($r.TestName)** with fix: build failed (fix does not compile)"
+            if ($r.FailureMessage) {
+                $msg = if ($r.FailureMessage.Length -gt 300) { $r.FailureMessage.Substring(0, 300) + "..." } else { $r.FailureMessage }
+                $failureLines += "  - ``$msg``"
+            }
+        } elseif ($r.FilterMismatch) {
+            $failureLines += "- 🔍 **$($r.TestName)** with fix: test filter matched 0 tests"
+            if ($r.FailureMessage) { $failureLines += "  - filter: ``$($r.FailureMessage)``" }
+        } elseif (-not $r.Passed -and -not $r.EnvError) {
             $failureLines += "- ❌ **$($r.TestName)** FAILED with fix (should pass)"
             if ($r.FailureReason) { $failureLines += "  - ``$($r.FailureReason)``" }
             if ($r.FailureMessage) {
@@ -1280,10 +1403,10 @@ function Write-MarkdownReport {
     }
 
     if ($failureLines.Count -gt 0) {
-        # Count actual failed tests (lines beginning with "- ❌" or "- ⚠️") to decide
-        # whether to collapse. Sub-bullets (FailureReason / FailureMessage) start with
-        # two leading spaces so they don't match.
-        $failedTestCount = @($failureLines | Where-Object { $_ -match '^- (❌|⚠️)' }).Count
+        # Count actual failed tests (lines beginning with "- ❌"/"- ⚠️"/"- 🛠️"/"- 🔍")
+        # to decide whether to collapse. Sub-bullets (FailureReason / FailureMessage)
+        # start with two leading spaces so they don't match.
+        $failedTestCount = @($failureLines | Where-Object { $_ -match '^- (❌|⚠️|🛠️|🔍)' }).Count
         # Threshold: if more than 5 tests failed, collapse the section so the gate
         # summary stays visible above the fold in PR comments. Below the threshold,
         # show details inline so reviewers don't need an extra click.
