@@ -9,6 +9,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class StreamImageSourceServiceTests
 	{
+		const int OversizeMargin = 500;
+
 		[Theory]
 		[InlineData(typeof(FileImageSourceStub))]
 		[InlineData(typeof(FontImageSourceStub))]
@@ -53,8 +55,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var service = new StreamImageSourceService();
 			var expectedColor = Color.FromArgb("#FF0000").ToPlatform();
-			var sourceWidth = metrics.WidthPixels + 500;
-			var sourceHeight = metrics.HeightPixels + 500;
+			var sourceWidth = metrics.WidthPixels + OversizeMargin;
+			var sourceHeight = metrics.HeightPixels + OversizeMargin;
 			var imageSource = new StreamImageSourceStub(CreateBitmapStream(sourceWidth, sourceHeight, expectedColor));
 
 			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);

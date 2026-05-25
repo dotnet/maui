@@ -346,8 +346,11 @@ public class PlatformInterop {
             return builder;
         }
 
-        int width = Math.max(1, metrics.widthPixels);
-        int height = Math.max(1, metrics.heightPixels);
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+        if (width <= 0 || height <= 0) {
+            return builder;
+        }
 
         return builder.override(width, height);
     }
