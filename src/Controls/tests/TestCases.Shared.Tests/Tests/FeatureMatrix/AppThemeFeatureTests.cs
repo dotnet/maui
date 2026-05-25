@@ -43,14 +43,10 @@ public class AppThemeFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
-	[Test, Order(3)]
+	[Test, Order(4)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_CheckBox_VerifyVisualState()
 	{
-		App.WaitForElement("DefaultLightThemeButton");
-		App.Tap("DefaultLightThemeButton");
-		App.WaitForElement("AppThemePage");
-		App.Tap("AppThemePage");
 		App.WaitForElement("LightThemeButton");
 		App.Tap("LightThemeButton");
 		App.WaitForElement("CheckBox");
@@ -59,10 +55,14 @@ public class AppThemeFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(4)]
+	[Test, Order(3)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_CheckBox_VerifyVisualState()
 	{
+		App.WaitForElement("DefaultDarkThemeButton");
+		App.Tap("DefaultDarkThemeButton");
+		App.WaitForElement("AppThemePage");
+		App.Tap("AppThemePage");
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("CheckBox");
