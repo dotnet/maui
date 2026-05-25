@@ -8,8 +8,10 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
+using WApp = Microsoft.UI.Xaml.Application;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -149,6 +151,21 @@ internal partial class MauiItemsView
 			return;
 		}
 
+		// Elevate the item-container background to the Fluent card surface colour while
+		// drag-reorder is active.  This ensures:
+		//   • Items look like distinct elevated cards (visual separation at rest).
+		//   • The drag ghost (a pre-DragStarting compositor snapshot) carries a visible
+		//     background regardless of what the DataTemplate provides.
+		// CardBackgroundFillColorDefaultBrush = white in light theme, dark-card in dark
+		// theme — the same surface used by WinUI's own list controls.
+		// Scoped here (not in the constructor) so apps that never enable CanReorderItems
+		// keep the transparent background required by fix #13197.
+		if (WApp.Current?.Resources?.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg) == true
+			&& cardBg is Brush cardBrush)
+		{
+			Resources["ItemContainerBackground"] = cardBrush;
+		}
+
 		_scrollViewer.AllowDrop = true;
 		_scrollViewer.DragEnter -= ScrollViewer_DragEnter;
 		_scrollViewer.DragOver -= ScrollViewer_DragOver;
@@ -228,6 +245,12 @@ internal partial class MauiItemsView
 		}
 
 		StopAutoScroll();
+
+		// Restore the transparent item-container background that #13197 requires.
+		// WireUpDragDropEvents elevated it to CardBackgroundFillColorDefaultBrush;
+		// we undo that here so non-reorder views are unaffected.
+		Resources["ItemContainerBackground"] = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
+
 		_dragDropWired = false;
 	}
 
@@ -1595,12 +1618,13 @@ internal partial class MauiItemsView
 	/// </summary>
 	void HideInsertionIndicator()
 	{
-#pragma warning disable IDE0031 // Null propagation — not applicable to property setters
-		if (_dropIndicatorHead is not null)
-			_dropIndicatorHead.Visibility = WVisibility.Collapsed;
-		if (_dropIndicatorLine is not null)
-			_dropIndicatorLine.Visibility = WVisibility.Collapsed;
-#pragma warning restore IDE0031
+		// Type-pattern variables let us assign the field to a local before setting
+		// the property — null-conditional (?.) cannot appear on the left side of an
+		// assignment, so a local capture is the idiomatic null-safe setter pattern.
+		if (_dropIndicatorHead is WBorder head)
+			head.Visibility = WVisibility.Collapsed;
+		if (_dropIndicatorLine is Rectangle line)
+			line.Visibility = WVisibility.Collapsed;
 	}
 
 	// Indicator geometry constants.
