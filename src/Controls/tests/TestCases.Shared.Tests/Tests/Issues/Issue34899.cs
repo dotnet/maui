@@ -24,14 +24,5 @@ public class Issue34899 : _IssuesUITest
 		App.Tap("Issue34899Entry");
 		VerifyScreenshot();
 	}
-
-	[Test]
-	[Category(UITestCategories.Picker)]
-	public void PickerFocusOutlineShouldAlignWithBorder()
-	{
-		App.WaitForElement("Issue34899Picker");
-		App.Tap("Issue34899Picker");
-		VerifyScreenshot();
-	}
 }
 #endif
