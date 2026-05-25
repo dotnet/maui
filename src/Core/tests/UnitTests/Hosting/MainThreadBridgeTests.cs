@@ -229,6 +229,34 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			}
 		}
 
+		[Fact]
+		public void MauiAppBuild_DispatchReturnsFalse_Throws()
+		{
+			// Regression: if IDispatcher.Dispatch returns false (dispatch refused),
+			// MainThread.BeginInvokeOnMainThread must throw rather than silently dropping
+			// the action (which would hang InvokeOnMainThreadAsync forever).
+			var dispatcherStub = new DispatcherStub(
+				isInvokeRequired: () => true,
+				invokeOnMainThread: null,
+				dispatchReturnValue: false);
+
+			var dispatcherProvider = new TestDispatcherProvider(dispatcherStub);
+			DispatcherProvider.SetCurrent(dispatcherProvider);
+
+			try
+			{
+				var builder = MauiApp.CreateBuilder();
+				using var app = builder.Build();
+
+				Assert.Throws<InvalidOperationException>(
+					() => MainThread.BeginInvokeOnMainThread(() => { }));
+			}
+			finally
+			{
+				DispatcherProvider.SetCurrent(null);
+			}
+		}
+
 		class TestDispatcherProvider : IDispatcherProvider
 		{
 			readonly IDispatcher _dispatcher;

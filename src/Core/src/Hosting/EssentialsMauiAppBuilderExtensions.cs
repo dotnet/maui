@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Hosting
 	{
 		internal static MauiAppBuilder UseEssentials(this MauiAppBuilder builder)
 		{
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
 			// Register MainThreadBridgeInitializer FIRST so MainThread.SetCustomImplementation
 			// runs before EssentialsInitializer resolves DI-registered services. Order matters:
 			// IMauiInitializeService instances are executed in DI registration order
@@ -47,6 +48,7 @@ namespace Microsoft.Maui.Hosting
 			// Essentials implementation whose constructor touched MainThread would fail during
 			// the very bridge call meant to enable it.
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
+#endif
 
 			// Register the EssentialsInitializer unconditionally so DI-registered Essentials
 			// implementations are bridged to the static facades during app startup, even when
@@ -150,6 +152,7 @@ namespace Microsoft.Maui.Hosting
 		/// on custom platform backends / external TFMs where no native
 		/// MainThread implementation exists.
 		/// </summary>
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
 		class MainThreadBridgeInitializer : IMauiInitializeService
 		{
 			public void Initialize(IServiceProvider services)
@@ -160,9 +163,14 @@ namespace Microsoft.Maui.Hosting
 
 				MainThread.SetCustomImplementation(
 					isMainThread: () => !dispatcher.IsDispatchRequired,
-					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
+					beginInvokeOnMainThread: action =>
+					{
+						if (!dispatcher.Dispatch(action))
+							throw new InvalidOperationException("The dispatcher failed to queue the action on the main thread.");
+					});
 			}
 		}
+#endif
 
 		class EssentialsInitializer : IMauiInitializeService
 		{
@@ -256,13 +264,25 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.SetDefault);
 				BridgeIfRegistered<IVibration>(services, Vibration.SetDefault);
 				BridgeIfRegistered<IWebAuthenticator>(services, WebAuthenticator.SetDefault);
-#if WINDOWS || __IOS__ || MACCATALYST
+#if WINDOWS || __IOS__ || __MACCATALYST__
 				BridgeIfRegistered<IWindowStateManager>(services, WindowStateManager.SetDefault);
 #endif
 				BridgeIfRegistered<IAppleSignInAuthenticator>(services, AppleSignInAuthenticator.SetDefault);
 
 				// SetCurrent pattern types
-				BridgeIfRegistered<IAppActions>(services, AppActions.SetCurrent);
+				// IAppActions: On native platforms, lifecycle hooks cast AppActions.Current to
+				// IPlatformAppActions via AsPlatform(). Only bridge if the DI implementation
+				// supports it, to prevent PlatformNotSupportedException at runtime.
+				var appActions = services.GetService<IAppActions>();
+				if (appActions is not null)
+				{
+#if WINDOWS || __IOS__ || __MACCATALYST__ || ANDROID
+					if (appActions is IPlatformAppActions)
+						AppActions.SetCurrent(appActions);
+#else
+					AppActions.SetCurrent(appActions);
+#endif
+				}
 				BridgeIfRegistered<IAppInfo>(services, AppInfo.SetCurrent);
 				BridgeIfRegistered<IConnectivity>(services, Connectivity.SetCurrent);
 				BridgeIfRegistered<IDeviceDisplay>(services, DeviceDisplay.SetCurrent);

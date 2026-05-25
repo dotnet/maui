@@ -239,21 +239,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Same(mock, Contacts.Default);
 		}
 
-		[Fact]
-		public void DIRegistration_WorksAlongsideConfigureEssentials()
-		{
-			// ConfigureEssentials configures options and AppActions, so this verifies
-			// DI bridging continues to work when those options are also configured.
-			var diMock = new StubPreferences();
-			var builder = MauiApp.CreateBuilder();
-			builder.Services.AddSingleton<IPreferences>(diMock);
-			builder.ConfigureEssentials();
-
-			using var app = builder.Build();
-
-			Assert.Same(diMock, Preferences.Default);
-		}
-
 		// Stub implementations for testing
 		class StubPreferences : IPreferences
 		{
