@@ -264,7 +264,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	/// </para>
 	/// <para>
 	/// This method avoids that by suppressing <see cref="InnerCollectionChanged(object?, NotifyCollectionChangedEventArgs)"/>
-	/// while mutating the source (via <see cref="_observeChanges"/>), then calling <see cref="Move(int,int)"/>
+	/// while mutating the source (via <see cref="_observeChanges"/>), then calling <c>Move(int, int)</c>
 	/// on the template collection directly. <see cref="MoveItem"/> fires Remove + Add on the
 	/// <em>existing</em> wrapper — ItemsRepeater repositions the container in-place without recycling.
 	/// </para>

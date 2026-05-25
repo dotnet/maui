@@ -4,7 +4,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
+using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
@@ -170,8 +172,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
 		_dropIndicatorCanvas = GetTemplateChild("PART_DropIndicatorCanvas") as Canvas;
-		_dropIndicatorHead = GetTemplateChild("PART_DropIndicatorHead") as Border;
-		_dropIndicatorLine = GetTemplateChild("PART_DropIndicatorLine") as Rectangle;
+		_dropIndicatorHead = GetTemplateChild("PART_DropIndicatorHead") as WBorder;
+		_dropIndicatorLine = GetTemplateChild("PART_DropIndicatorLine") as WRectangle;
 
 		// Also null out the inner ItemsRepeater's own provider directly — the
 		// TemplateBinding {x:Null} in XAML may be evaluated before WinUI assigns

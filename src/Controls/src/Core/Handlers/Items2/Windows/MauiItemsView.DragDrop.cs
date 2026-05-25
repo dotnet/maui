@@ -8,7 +8,9 @@ using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 
@@ -46,7 +48,7 @@ internal partial class MauiItemsView
 	internal bool IsReordering { get; private set; }
 
 	// Between-items drop indicator — circle head with "+" and a colored line on _dropIndicatorCanvas.
-	Border? _dropIndicatorHead;    // filled circle with "+" at the leading edge
+	WBorder? _dropIndicatorHead;    // hollow circle at the leading edge
 	Rectangle? _dropIndicatorLine; // accent-colored line extending from the circle
 
 	// Dim overlay opacity applied to non-source containers during a drag so the
@@ -574,12 +576,14 @@ internal partial class MauiItemsView
 		// General path: ObservableCollection<T> for any T.
 		// Reflection is used intentionally here — ObservableCollection<T>.Move is a
 		// public, stable API and this code runs only during interactive drag/drop on Windows.
+#pragma warning disable IL2070 // 't' parameter doesn't need trimmer annotation — Move is always preserved on ObservableCollection<T>
 		var moveMethod = s_moveMethodCache.GetOrAdd(list.GetType(), t => t.GetMethod(
 			"Move",
 			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
 			null,
 			new[] { typeof(int), typeof(int) },
 			null));
+#pragma warning restore IL2070
 
 		if (moveMethod is not null)
 		{
@@ -1501,7 +1505,7 @@ internal partial class MauiItemsView
 
 		// ── Calculate position in canvas coordinates ──────────────────────────
 		var origin = target.TransformToVisual(_dropIndicatorCanvas)
-			.TransformPoint(new Windows.Foundation.Point(0, 0));
+			.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
 		if (_isHorizontalLayout)
 		{
@@ -1511,7 +1515,8 @@ internal partial class MauiItemsView
 				: origin.X;
 
 			double lineHeight = target.ActualHeight - IndicatorHeadSize - IndicatorHeadGap;
-			if (lineHeight < 0) lineHeight = 0;
+			if (lineHeight < 0)
+				lineHeight = 0;
 
 			// Head at top-center of the insertion edge.
 			Canvas.SetLeft(_dropIndicatorHead, lineX - IndicatorHeadSize / 2);
@@ -1532,7 +1537,8 @@ internal partial class MauiItemsView
 
 			// Circle sits at the left edge of the item; line fills the remaining width.
 			double lineWidth = target.ActualWidth - IndicatorHeadSize - IndicatorHeadGap;
-			if (lineWidth < 0) lineWidth = 0;
+			if (lineWidth < 0)
+				lineWidth = 0;
 
 			// Head: vertically centered on the insertion line, pinned to item left edge.
 			Canvas.SetLeft(_dropIndicatorHead, origin.X);
@@ -1549,7 +1555,7 @@ internal partial class MauiItemsView
 		// Starting a new Storyboard on every DragOver mouse-move (while already visible)
 		// causes multiple animations to compete on Opacity, producing a visible flicker.
 		// Only fade in when transitioning from Collapsed → Visible.
-		bool wasCollapsed = _dropIndicatorHead.Visibility == Visibility.Collapsed;
+		bool wasCollapsed = _dropIndicatorHead.Visibility == WVisibility.Collapsed;
 
 		if (wasCollapsed)
 		{
@@ -1557,8 +1563,8 @@ internal partial class MauiItemsView
 			_dropIndicatorLine.Opacity = 0;
 		}
 
-		_dropIndicatorHead.Visibility = Visibility.Visible;
-		_dropIndicatorLine.Visibility = Visibility.Visible;
+		_dropIndicatorHead.Visibility = WVisibility.Visible;
+		_dropIndicatorLine.Visibility = WVisibility.Visible;
 
 		if (wasCollapsed)
 		{
@@ -1589,10 +1595,12 @@ internal partial class MauiItemsView
 	/// </summary>
 	void HideInsertionIndicator()
 	{
+#pragma warning disable IDE0031 // Null propagation — not applicable to property setters
 		if (_dropIndicatorHead is not null)
-			_dropIndicatorHead.Visibility = Visibility.Collapsed;
+			_dropIndicatorHead.Visibility = WVisibility.Collapsed;
 		if (_dropIndicatorLine is not null)
-			_dropIndicatorLine.Visibility = Visibility.Collapsed;
+			_dropIndicatorLine.Visibility = WVisibility.Collapsed;
+#pragma warning restore IDE0031
 	}
 
 	// Indicator geometry constants.
