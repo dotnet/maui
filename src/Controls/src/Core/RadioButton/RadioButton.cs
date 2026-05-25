@@ -390,9 +390,6 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			// The handler's mapper is keyed by IButtonStroke property names, but the
-			// bindable properties on RadioButton use the BorderElement names. Forward
-			// runtime changes to the matching mapper keys so the platform view updates.
 			if (propertyName == BorderColorProperty.PropertyName)
 			{
 				Handler?.UpdateValue(nameof(IRadioButton.StrokeColor));
@@ -400,10 +397,6 @@ namespace Microsoft.Maui.Controls
 			else if (propertyName == BorderWidthProperty.PropertyName)
 			{
 				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
-			}
-			else if (propertyName == CornerRadiusProperty.PropertyName)
-			{
-				Handler?.UpdateValue(nameof(IRadioButton.CornerRadius));
 			}
 		}
 #endif
