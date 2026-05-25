@@ -225,6 +225,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (invalidatedCells is not null)
 			{
+				var invalidatedIndexPaths = invalidatedCells
+					.Select(collectionView.IndexPathForCell)
+					.ToArray();
+
+				if (invalidatedIndexPaths.Length == 0)
+					return;
+
 				// Workaround for layout issue observed on iPadOS 18+ with UICollectionViewCompositionalLayout
 				// where self-sizing cells can cause scroll position jumps during invalidation
 				if (ShouldApplyCellReConfiguration())
