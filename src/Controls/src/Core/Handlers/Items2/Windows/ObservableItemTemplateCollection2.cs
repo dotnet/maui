@@ -159,11 +159,14 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 
 	void InnerCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
 	{
-		// Guard is re-evaluated on the UI thread (inside the lambda) rather than here.
-		// Checking here only would create a race: if _observeChanges is true when this
-		// fires on a background thread but is then set to false by MoveItemAndSyncSource
-		// on the UI thread before the dispatched action runs, the stale handler would
-		// still apply a double-update.
+		// Synchronous short-circuit: skip the dispatch entirely when observation is already
+		// suppressed. This is the common hot path during MoveItemAndSyncSource where the source
+		// fires Remove+Insert and we must not relay those back to the template collection.
+		// The check is kept INSIDE the lambda as well to handle the rare race where a background
+		// thread fires this handler while the UI thread is mid-way through clearing _observeChanges.
+		if (!_observeChanges)
+			return;
+
 		_container.Dispatcher.DispatchIfRequired(() =>
 		{
 			if (!_observeChanges)
@@ -323,22 +326,38 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	/// <see cref="NotifyCollectionChangedAction.Remove"/> followed by
 	/// <see cref="NotifyCollectionChangedAction.Add"/> instead of the default
 	/// <see cref="NotifyCollectionChangedAction.Move"/> event.
-	/// <para>
-	/// CsWinRT projects <c>CollectionChanged(Move)</c> as <c>VectorChanged(Reset)</c>
-	/// because WinRT's <c>IVectorChangedEventArgs.CollectionChange</c> has no Move value.
-	/// When ItemsRepeater receives Reset it clears all realized containers, momentarily
-	/// collapses its height to zero, and the ScrollViewer auto-clamps its offset to zero —
-	/// the scroll-to-top bug.
-	/// </para>
-	/// <para>
-	/// Firing Remove + Add instead causes CsWinRT to emit
-	/// <c>VectorChanged(ItemRemoved)</c> + <c>VectorChanged(ItemInserted)</c>, which
-	/// ItemsRepeater handles by recycling only the moved container while preserving the
-	/// ScrollViewer offset. <see cref="_innerCollectionChange"/> (set by
-	/// <see cref="InnerCollectionChanged(NotifyCollectionChangedEventArgs)"/>) prevents
-	/// <see cref="TemplateCollectionChanged"/> from back-propagating these events to source.
-	/// </para>
 	/// </summary>
+	/// <remarks>
+	/// <b>⚠ CONTRACT VIOLATION — intentional and load-bearing.</b>
+	/// <para>
+	/// Normal <see cref="ObservableCollection{T}"/> contract: <c>Move(old, new)</c> raises a single
+	/// <c>CollectionChanged(Move)</c> event. This override intentionally violates that contract by
+	/// raising <c>CollectionChanged(Remove)</c> + <c>CollectionChanged(Add)</c> instead.
+	/// </para>
+	/// <para>
+	/// <b>Why:</b> CsWinRT projects <c>CollectionChanged(Move)</c> as <c>VectorChanged(Reset)</c>
+	/// because WinRT's <c>IVectorChangedEventArgs.CollectionChange</c> has no Move value.
+	/// When <see cref="ItemsRepeater"/> receives Reset it clears all realized containers,
+	/// momentarily collapses its height to zero, and the ScrollViewer auto-clamps its offset
+	/// to zero — the visible scroll-to-top bug.
+	/// </para>
+	/// <para>
+	/// <b>Why Remove+Add is safe:</b> Firing Remove + Add causes CsWinRT to emit
+	/// <c>VectorChanged(ItemRemoved)</c> + <c>VectorChanged(ItemInserted)</c>, which
+	/// ItemsRepeater handles by repositioning only the affected container while preserving
+	/// the ScrollViewer offset.
+	/// <see cref="_innerCollectionChange"/> (set by the caller) prevents
+	/// <see cref="TemplateCollectionChanged"/> from back-propagating these synthetic Remove/Add
+	/// events back to the source.
+	/// </para>
+	/// <para>
+	/// <b>Callers:</b> Only <see cref="MoveItemAndSyncSource"/> and
+	/// <see cref="Move(NotifyCollectionChangedEventArgs)"/> invoke this method. Both set
+	/// <c>_innerCollectionChange = true</c> before calling and restore it in a finally block.
+	/// External code must NOT call <see cref="ObservableCollection{T}.Move(int,int)"/> directly
+	/// on this collection — use <see cref="MoveItemAndSyncSource"/> instead.
+	/// </para>
+	/// </remarks>
 	protected override void MoveItem(int oldIndex, int newIndex)
 	{
 		CheckReentrancy();

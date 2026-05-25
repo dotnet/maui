@@ -472,51 +472,6 @@ internal partial class MauiItemsView
 		e.Handled = true;
 	}
 
-	/// <summary>
-	/// Walks every realized container and sets Opacity = 0 on whichever one is
-	/// currently bound to the dragged item, Opacity = 1 on all others. Idempotent
-	/// and self-healing — a stale hidden container left over from a previous
-	/// reorder is restored automatically.
-	/// </summary>
-	void ReconcileSourceOpacity(object? draggedItem)
-	{
-		if (draggedItem is null)
-		{
-			return;
-		}
-
-		// Always walk every realized container so that any container left at
-		// Opacity < 1 from a previous pass (e.g. a race between ElementPrepared
-		// and a rapid live-reorder) is unconditionally restored. A fast-path that
-		// returns early would silently skip this restoration and leave items
-		// permanently invisible.
-		ItemContainer? newSource = null;
-		foreach (var c in FindAllContainers())
-		{
-			if (c is not ItemContainer ic)
-			{
-				continue;
-			}
-
-			if (IsContainerBoundToItem(ic, draggedItem))
-			{
-				ic.Opacity = 0;
-				ic.IsHitTestVisible = false;
-				newSource = ic;
-			}
-			else if (ic.Opacity < 1)
-			{
-				ic.Opacity = 1;
-				ic.IsHitTestVisible = true;
-			}
-		}
-
-		if (newSource is not null)
-		{
-			_sourceContainer = newSource;
-		}
-	}
-
 	bool IsContainerBoundToDraggedItem(ItemContainer container)
 	{
 		return _draggedItem is not null && IsContainerBoundToItem(container, _draggedItem);
@@ -550,10 +505,8 @@ internal partial class MauiItemsView
 	/// <c>CollectionChanged(Move)</c> which CsWinRT maps to <c>VectorChanged(Reset)</c>,
 	/// causing ItemsRepeater to clear all containers and scroll to the top.
 	///
-	/// The fast path handles <c>ObservableCollection&lt;object&gt;</c> without reflection.
-	/// The general path uses reflection to call <c>Move(int, int)</c> on any
-	/// <c>ObservableCollection&lt;T&gt;</c> type. Returns <c>false</c> when the collection
-	/// does not expose <c>Move</c>; the caller falls back to <c>RemoveAt</c> + <c>Insert</c>.
+	/// Only <c>ObservableCollection&lt;object&gt;</c> is handled directly; all other types
+	/// return <c>false</c> and the caller falls back to <c>RemoveAt</c> + <c>Insert</c>.
 	/// </summary>
 	static bool TryMoveObservableCollection(IList list, int oldIndex, int newIndex)
 	{
@@ -564,22 +517,10 @@ internal partial class MauiItemsView
 			return true;
 		}
 
-		// General path: ObservableCollection<T> for any T.
-		// Reflection is used intentionally here — ObservableCollection<T>.Move is a
-		// public, stable API and this code runs only during interactive drag/drop on Windows.
-		var moveMethod = list.GetType().GetMethod(
-			"Move",
-			System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
-			null,
-			new[] { typeof(int), typeof(int) },
-			null);
-
-		if (moveMethod is not null)
-		{
-			moveMethod.Invoke(list, new object[] { oldIndex, newIndex });
-			return true;
-		}
-
+		// For any other ObservableCollection<T> fall back to RemoveAt+Insert.
+		// Reflection was previously used here but it poses trimming/AOT risks and adds
+		// complexity. The caller's RemoveAt+Insert fallback is equivalent and safe for
+		// grouped sources (the source group is NOT directly bound to ItemsRepeater).
 		return false;
 	}
 
@@ -1268,7 +1209,6 @@ internal partial class MauiItemsView
 		_draggedItem = null;
 		_insertionIndex = -1;
 		_insertAfter = false;
-		IsReordering = false;
 		StopAutoScroll();
 	}
 

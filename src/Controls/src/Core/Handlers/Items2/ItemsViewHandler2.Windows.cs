@@ -430,6 +430,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		if (PlatformView is MauiItemsView mauiItemsViewFlat)
 		{
+			// The 'as ObservableItemTemplateCollection2' cast intentionally returns null for
+			// grouped sources (which use GroupedItemTemplateCollection2, not
+			// ObservableItemTemplateCollection2). Null is the correct sentinel for
+			// PerformReorder to skip the MoveItemAndSyncSource fast path for grouped lists.
 			mauiItemsViewFlat.FlatTemplateCollection =
 				_collectionViewSource?.Source as ObservableItemTemplateCollection2;
 		}
