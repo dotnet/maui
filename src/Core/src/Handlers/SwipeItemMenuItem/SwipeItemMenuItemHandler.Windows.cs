@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Handlers
 			try
 			{
 				var service = imageSourceServiceProvider.GetRequiredImageSourceService(source);
-				var result = await service.GetImageSourceAsync(source, scale).ConfigureAwait(false);
+				// Do not use ConfigureAwait(false): WinUI DependencyProperty writes require the UI thread.
+				var result = await service.GetImageSourceAsync(source, scale);
 				if (item.Source == source)
 				{
 					swipeItem.IconSource = result?.Value is WImageSource platformImage
@@ -73,11 +74,11 @@ namespace Microsoft.Maui.Handlers
 						: null;
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
+				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.LogWarning(ex, "Cannot load SwipeItem Icon");
 				swipeItem.IconSource = null;
 			}
-			return;
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter

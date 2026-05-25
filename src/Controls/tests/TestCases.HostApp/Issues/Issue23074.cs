@@ -15,7 +15,7 @@ public class Issue23074 : ContentPage
 			{
 				Glyph = "\u2605", // \u2605 star
 				FontFamily = "OpenSansRegular",
-				Size = 24,
+				Size = 30,
 				Color = Colors.Yellow
 			}
 		};
