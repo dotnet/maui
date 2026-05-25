@@ -428,6 +428,12 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		PlatformView.ItemsSource = _collectionViewSource?.View;
 
+		if (PlatformView is MauiItemsView mauiItemsViewFlat)
+		{
+			mauiItemsViewFlat.FlatTemplateCollection =
+				_collectionViewSource?.Source as ObservableItemTemplateCollection2;
+		}
+
 		// Now safely null the old Source — PlatformView no longer references it,
 		// so the CollectionChanged(Reset) it fires won't cause WinUI side effects.
 		if (oldCollectionViewSource is not null)
@@ -444,6 +450,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	void CleanUpCollectionViewSource()
 	{
+		if (PlatformView is MauiItemsView mauiItemsViewClean)
+		{
+			mauiItemsViewClean.FlatTemplateCollection = null;
+		}
+
 		// Clean up the recycle pool in the old ItemFactory to release pooled elements
 		_itemFactory?.CleanUp();
 		_itemFactory = null;

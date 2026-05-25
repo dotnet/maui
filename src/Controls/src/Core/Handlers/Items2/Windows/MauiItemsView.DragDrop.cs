@@ -29,6 +29,15 @@ internal partial class MauiItemsView
 	ItemsView? _mauiVirtualView;
 
 	/// <summary>
+	/// Set by <see cref="ItemsViewHandler2{TItemsView}.UpdateItemsSource"/> when a flat (non-grouped)
+	/// <see cref="ObservableItemTemplateCollection2"/> is active. Allows <see cref="PerformReorder"/>
+	/// to call <see cref="ObservableItemTemplateCollection2.MoveItemAndSyncSource"/> — which atomically
+	/// moves the item in both the source and the template collection without reflection — instead of
+	/// falling back to the reflection-based <see cref="TryMoveObservableCollection"/>.
+	/// </summary>
+	internal ObservableItemTemplateCollection2? FlatTemplateCollection { get; set; }
+
+	/// <summary>
 	/// True while a drag/drop reorder mutation is in progress. Used by
 	/// <see cref="ItemsViewHandler2{TItemsView}"/> to skip <c>ApplyItemsUpdatingScrollMode</c>
 	/// during the collection change that results from the reorder, so the scroll position
@@ -238,6 +247,7 @@ internal partial class MauiItemsView
 		HideInsertionIndicator();
 
 		_mauiVirtualView = null;
+		FlatTemplateCollection = null;
 		CleanupDragState();
 	}
 
@@ -710,7 +720,15 @@ internal partial class MauiItemsView
 		IsReordering = true;
 		try
 		{
-			if (!TryMoveObservableCollection(itemsList, oldIndex, adjustedInsertionIndex))
+			if (FlatTemplateCollection is not null)
+			{
+				// FlatTemplateCollection.MoveItemAndSyncSource atomically:
+				//   1. Moves the item in the source without triggering InnerCollectionChanged feedback loops.
+				//   2. Calls Move on the template collection so ItemsRepeater repositions the existing
+				//      container instead of recycling and recreating it — no scroll position reset.
+				FlatTemplateCollection.MoveItemAndSyncSource(oldIndex, adjustedInsertionIndex);
+			}
+			else if (!TryMoveObservableCollection(itemsList, oldIndex, adjustedInsertionIndex))
 			{
 				// Fallback for plain IList sources that don't expose Move.
 				var itemToMove = itemsList[oldIndex];
