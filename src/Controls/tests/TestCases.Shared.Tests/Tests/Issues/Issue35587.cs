@@ -20,6 +20,6 @@ public class Issue35587 : _IssuesUITest
 		App.Tap("ApplyBorderButton");
 
 		// Verify the border is visually applied
-		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
+		VerifyScreenshot();
 	}
 }

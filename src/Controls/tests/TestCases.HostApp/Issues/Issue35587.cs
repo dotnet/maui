@@ -19,9 +19,8 @@ public class Issue35587 : ContentPage
 
 		applyBorderButton.Clicked += (s, e) =>
 		{
-			radioButton.BorderColor = Colors.Red;
+			radioButton.BorderColor = Colors.Green;
 			radioButton.BorderWidth = 3;
-			radioButton.CornerRadius = 10;
 		};
 
 		Content = new VerticalStackLayout
