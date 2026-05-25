@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml.Shapes;
 using WApp = Microsoft.UI.Xaml.Application;
 using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WDataTransfer = Windows.ApplicationModel.DataTransfer;
-using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -151,21 +150,6 @@ internal partial class MauiItemsView
 			return;
 		}
 
-		// Elevate the item-container background to the Fluent card surface colour while
-		// drag-reorder is active.  This ensures:
-		//   • Items look like distinct elevated cards (visual separation at rest).
-		//   • The drag ghost (a pre-DragStarting compositor snapshot) carries a visible
-		//     background regardless of what the DataTemplate provides.
-		// CardBackgroundFillColorDefaultBrush = white in light theme, dark-card in dark
-		// theme — the same surface used by WinUI's own list controls.
-		// Scoped here (not in the constructor) so apps that never enable CanReorderItems
-		// keep the transparent background required by fix #13197.
-		if (WApp.Current?.Resources?.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg) == true
-			&& cardBg is Brush cardBrush)
-		{
-			Resources["ItemContainerBackground"] = cardBrush;
-		}
-
 		_scrollViewer.AllowDrop = true;
 		_scrollViewer.DragEnter -= ScrollViewer_DragEnter;
 		_scrollViewer.DragOver -= ScrollViewer_DragOver;
@@ -240,17 +224,14 @@ internal partial class MauiItemsView
 					ic.CanDrag = false;
 					ic.DragStarting -= ItemContainer_DragStarting;
 					ic.DropCompleted -= ItemContainer_DropCompleted;
+					// Clear the card Background set in ApplyDragAffordance so the
+					// container falls back to the transparent ThemeResource (#13197).
+					RemoveDragGhostAppearance(ic);
 				}
 			}
 		}
 
 		StopAutoScroll();
-
-		// Restore the transparent item-container background that #13197 requires.
-		// WireUpDragDropEvents elevated it to CardBackgroundFillColorDefaultBrush;
-		// we undo that here so non-reorder views are unaffected.
-		Resources["ItemContainerBackground"] = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
-
 		_dragDropWired = false;
 	}
 
@@ -333,6 +314,20 @@ internal partial class MauiItemsView
 		if (!isHeaderOrFooter)
 		{
 			itemContainer.DragStarting += ItemContainer_DragStarting;
+		}
+
+		// Set the Fluent card background as a LOCAL dependency-property value so that:
+		//   1. The drag ghost (captured by the compositor BEFORE DragStarting fires)
+		//      always carries a visible card background regardless of DataTemplate content.
+		//   2. The local value takes precedence over the transparent ThemeResource override
+		//      set in the constructor (fix #13197) without changing that global default.
+		// RemoveDragGhostAppearance calls ClearValue(BackgroundProperty) to undo this,
+		// letting the transparent ThemeResource resume when drag-reorder is disabled.
+		if (!isHeaderOrFooter
+			&& WApp.Current?.Resources?.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg) == true
+			&& cardBg is Brush cardBrush)
+		{
+			itemContainer.Background = cardBrush;
 		}
 	}
 
