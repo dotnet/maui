@@ -53,8 +53,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected IShellContext ShellContext => _shellContext;
 		protected AView FooterView => _footerView?.PlatformView;
 		protected AView View => _rootView;
-		ShellFlyoutWindowInsetListener _shellFlyoutListener;
-
 
 		public ShellFlyoutTemplatedContentRenderer(IShellContext shellContext)
 		{
