@@ -44,5 +44,24 @@ namespace Microsoft.Maui.DeviceTests
 
 			await bitmap.AssertContainsColor(expectedColor).ConfigureAwait(false);
 		}
+
+		[Fact]
+		public async Task GetDrawableAsyncLimitsLargeStreamToDisplaySize()
+		{
+			var metrics = MauiProgram.DefaultContext?.Resources?.DisplayMetrics;
+			Assert.NotNull(metrics);
+
+			var service = new StreamImageSourceService();
+			var expectedColor = Color.FromArgb("#FF0000").ToPlatform();
+			var sourceWidth = metrics.WidthPixels + 500;
+			var sourceHeight = metrics.HeightPixels + 500;
+			var imageSource = new StreamImageSourceStub(CreateBitmapStream(sourceWidth, sourceHeight, expectedColor));
+
+			using var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
+
+			Assert.True(bitmapDrawable.Bitmap.Width <= metrics.WidthPixels);
+			Assert.True(bitmapDrawable.Bitmap.Height <= metrics.HeightPixels);
+		}
 	}
 }

@@ -336,11 +336,36 @@ public class PlatformInterop {
         prepare(builder, target, cachingEnabled, callback);
     }
 
+    private static RequestBuilder<Drawable> limitToDisplaySize(RequestBuilder<Drawable> builder, Context context) {
+        if (context == null) {
+            return builder;
+        }
+
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        if (metrics == null) {
+            return builder;
+        }
+
+        int width = Math.max(1, metrics.widthPixels);
+        int height = Math.max(1, metrics.heightPixels);
+
+        return builder.override(width, height);
+    }
+
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(file);
+        builder = limitToDisplaySize(builder, imageView.getContext());
         loadInto(builder, imageView, true, callback, file);
+    }
+
+    public static void loadImageFromResource(ImageView imageView, int resourceId, ImageLoaderCallback callback) {
+        RequestBuilder<Drawable> builder = Glide
+            .with(imageView)
+            .load(resourceId);
+        builder = limitToDisplaySize(builder, imageView.getContext());
+        loadInto(builder, imageView, true, callback, resourceId);
     }
 
     public static void loadImageFromUri(ImageView imageView, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -352,14 +377,15 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(androidUri);
+        builder = limitToDisplaySize(builder, imageView.getContext());
         loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
-            .load(inputStream)
-            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+            .load(inputStream);
+        builder = limitToDisplaySize(builder, imageView.getContext());
         loadInto(builder, imageView, false, callback, inputStream);
     }
 
@@ -380,7 +406,20 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
+        builder = limitToDisplaySize(builder, context);
         load(builder, context, true, callback, file);
+    }
+
+    public static void loadImageFromResource(Context context, int resourceId, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
+        RequestBuilder<Drawable> builder = Glide
+            .with(context)
+            .load(resourceId);
+        builder = limitToDisplaySize(builder, context);
+        load(builder, context, true, callback, resourceId);
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -396,6 +435,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(androidUri);
+        builder = limitToDisplaySize(builder, context);
         load(builder, context, cachingEnabled, callback, androidUri);
     }
 
@@ -406,8 +446,8 @@ public class PlatformInterop {
         }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
-            .load(inputStream)
-            .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
+            .load(inputStream);
+        builder = limitToDisplaySize(builder, context);
         load(builder, context, false, callback, inputStream);
     }
 
