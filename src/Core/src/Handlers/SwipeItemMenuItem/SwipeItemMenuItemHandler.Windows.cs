@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -74,10 +76,14 @@ namespace Microsoft.Maui.Handlers
 						: null;
 				}
 			}
-			catch (Exception ex)
+			catch (System.Exception ex)
 			{
-				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.LogWarning(ex, "Cannot load SwipeItem Icon");
-				swipeItem.IconSource = null;
+				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.Log(
+					LogLevel.Warning,
+					new EventId(),
+					"Cannot load SwipeItem Icon",
+					ex,
+					static (state, _) => state);
 			}
 		}
 

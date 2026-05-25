@@ -26,7 +26,7 @@ public class Issue23074 : ContentPage
 			Text = "Cancel",
 			AutomationId = "SvgSwipeItem",
 			BackgroundColor = Colors.LightGray,
-			IconImageSource = "cancel_red.svg"
+			IconImageSource = "cancel_red.png"
 		};
 
 		var swipeContent = new Grid
