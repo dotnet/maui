@@ -85,7 +85,13 @@ namespace Microsoft.Maui.Animations
 			_lastUpdate = now;
 
 			var animations = new List<Animation>(_animations);
-			animations.ForEach(OnAnimationTick);
+
+			foreach(var animation in animations)
+			{
+				OnAnimationTick(animation);
+			}
+
+			//animations.ForEach(OnAnimationTick);
 
 			if (_animations.Count == 0)
 				End();
@@ -130,7 +136,13 @@ namespace Microsoft.Maui.Animations
 		void ForceFinishAnimations()
 		{
 			var animations = new List<Animation>(_animations);
-			animations.ForEach(ForceFinish);
+			
+			foreach(var animation in animations)
+			{
+				ForceFinish(animation);
+			}
+			
+			//animations.ForEach(ForceFinish);
 			End();
 
 			void ForceFinish(Animation animation)
