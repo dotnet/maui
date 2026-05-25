@@ -356,7 +356,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (position >= sourceCount)
 				{
 					position = 0;
-					Carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
+					if (Carousel.Position != 0)
+						Carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
 				}
 
 				if (Carousel.Loop && position == 0)
@@ -578,8 +579,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var centerPosition = GetCarouselViewCurrentIndex(carouselPosition);
 			if (!Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
 			{
-				if (_initialized)
+				if (_initialized && Carousel.AnimatePositionChanges)
 				{
+					// Only set the guard for animated scrolls — non-animated jumps
+					// don't transition through ScrollStateDragging→ScrollStateIdle,
+					// so OnProgrammaticScrollIdle may never fire to clear it (#21480).
 					_gotoPosition = carouselPosition;
 				}
 

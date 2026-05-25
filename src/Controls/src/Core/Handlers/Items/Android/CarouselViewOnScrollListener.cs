@@ -18,14 +18,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnScrollStateChanged(recyclerView, state);
 
+			if (state == RecyclerView.ScrollStateDragging)
+			{
+				// Clear the programmatic-scroll guard on any drag start, even when
+				// swipe is disabled (e.g. assistive-tech touch injection in tests).
+				(recyclerView as MauiCarouselRecyclerView)?.OnUserDragStarted();
+			}
+
 			if (_carouselView.IsSwipeEnabled)
 			{
 				if (state == RecyclerView.ScrollStateDragging)
-				{
 					_carouselView.SetIsDragging(true);
-					// Let user gesture take over from any in-flight programmatic scroll
-					(recyclerView as MauiCarouselRecyclerView)?.OnUserDragStarted();
-				}
 				else
 					_carouselView.SetIsDragging(false);
 			}
@@ -34,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (state == RecyclerView.ScrollStateIdle)
 			{
-				// Programmatic scroll animation has fully settled — clear the guard
+				// Any scroll (programmatic or user) has settled — clear the guard
 				(recyclerView as MauiCarouselRecyclerView)?.OnProgrammaticScrollIdle();
 			}
 		}

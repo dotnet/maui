@@ -8,6 +8,12 @@ namespace Maui.Controls.Sample.Issues
 		"Programmatic Position/CurrentItem set bounces back; ItemsSource reset to 0",
 		PlatformAffected.Android | PlatformAffected.iOS
 	)]
+	[Issue(
+		IssueTracker.Github,
+		23023,
+		"CarouselView CurrentItem reports changed but view still shows first item",
+		PlatformAffected.Android | PlatformAffected.iOS
+	)]
 	public class CarouselViewProgrammaticPositionBounceBack : ContentPage
 	{
 		const string CarouselId = "carousel";
