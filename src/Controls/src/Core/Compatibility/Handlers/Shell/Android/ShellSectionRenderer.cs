@@ -169,6 +169,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					adapter.InvalidateShellContent(changedContent);
 					SafeNotifyDataSetChanged();
+
+					// Keep toolbar state in sync when the active tab's content page is replaced.
+					if (ShellSection?.CurrentItem == changedContent && _toolbarTracker is not null)
+					{
+						var page = ((IShellContentController)changedContent).GetOrCreateContent();
+						if (page is not null)
+						{
+							_toolbarTracker.Page = page;
+						}
+					}
 				}
 			}
 		}
