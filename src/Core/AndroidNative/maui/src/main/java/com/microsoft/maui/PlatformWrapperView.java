@@ -48,6 +48,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     private Shader shadowShader;
     private boolean shadowInvalidated = true;
     private boolean hasClip = false;
+    private boolean hasShadow = false;
 
     private float offsetX = 0;
     private float offsetY = 0;
@@ -97,7 +98,8 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     private void onShadowStyleChanged() {
-        if (this.shadowStyle.getPaintType() == PlatformPaintType.NONE) {
+        this.hasShadow = (this.shadowStyle.getPaintType() != PlatformPaintType.NONE);
+        if (!this.hasShadow) {
             this.shadowPaint = null;
             this.shadowCanvas = null;
             if (this.shadowBitmap != null) {
@@ -157,17 +159,18 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
         // CRITICAL: In hardware-accelerated mode, each view has its own RenderNode display list.
         // When a child invalidates, only the CHILD's RenderNode is re-recorded — the parent's
         // display list is replayed from cache (including the stale shadow draw call baked in).
-        // Setting shadowInvalidated=true is useless unless this view's own display list is also
-        // re-recorded, which requires invalidating THIS view explicitly.
         //
         // Without invalidate(): SwitchCompat redraws (thumb moves) but PlatformWrapperView's
         // display list is replayed unchanged → shadow stays at its original OFF/ON position.
         // With invalidate(): PlatformWrapperView's display list is marked dirty → dispatchDraw()
         // is re-invoked next frame → shadow is redrawn at the correct current thumb position.
-        this.shadowInvalidated = true;
+        //
+        // Guard: only force re-invalidation when this wrapper has an active shadow — avoids
+        // unnecessary redraws for clip/border-only wrappers.
         super.onDescendantInvalidated(child, target);
-        // Force this view's display list to be re-recorded so dispatchDraw() is called next frame.
-        invalidate();
+        if (this.hasShadow) {
+            invalidate();
+        }
     }
 
     @Override
