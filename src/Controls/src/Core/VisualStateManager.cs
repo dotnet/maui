@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -34,13 +35,22 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is VisualStateGroupList { VisualElement: { } oldElement } oldVisualStateGroupList)
 			{
 				var vsgSpecificity = oldVisualStateGroupList.Specificity;
-				var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+				var baseSpecificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 				foreach (var group in oldVisualStateGroupList)
 				{
 					if (group.CurrentState is { } state)
+					{
+						// Only promote system-driven states (Disabled, Focused, etc.) to full VSM priority.
+						// Custom developer-defined states keep downgraded priority.
+						var unapplySpecificity = IsSystemDrivenState(state.Name)
+							? baseSpecificity.WithFullVsmPriority()
+							: baseSpecificity;
 						foreach (var setter in state.Setters)
-							setter.UnApply(oldElement, specificity);
+						{
+							setter.UnApply(oldElement, unapplySpecificity);
+						}
+					}
 				}
 				oldVisualStateGroupList.VisualElement = null;
 			}
@@ -60,8 +70,8 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="visualElement">The visual element to get visual state groups from.</param>
 		/// <returns>The collection of visual state groups.</returns>
-		public static IList<VisualStateGroup> GetVisualStateGroups(VisualElement visualElement)
-			=> (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
+		public static VisualStateGroupList GetVisualStateGroups(VisualElement visualElement)
+			=> (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 
 		/// <summary>
 		/// Sets the collection of <see cref="VisualStateGroup"/> objects for the specified <paramref name="visualElement"/>.
@@ -95,7 +105,7 @@ namespace Microsoft.Maui.Controls
 			var vsgSpecificity = vsgSpecificityValue.Key;
 			groups.Specificity = vsgSpecificity;
 
-			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+			var baseSpecificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 			foreach (VisualStateGroup group in groups)
 			{
@@ -115,19 +125,30 @@ namespace Microsoft.Maui.Controls
 				// If we've got a new state to transition to, unapply the setters from the current state
 				if (group.CurrentState != null)
 				{
+					// Mirror the apply logic: use the same promoted specificity for system-driven states.
+					var unapplySpecificity = IsSystemDrivenState(group.CurrentState.Name)
+						? baseSpecificity.WithFullVsmPriority()
+						: baseSpecificity;
 					foreach (Setter setter in group.CurrentState.Setters)
 					{
-						setter.UnApply(visualElement, specificity);
+						setter.UnApply(visualElement, unapplySpecificity);
 					}
 				}
 
 				// Update the current state
 				group.CurrentState = target;
 
+				// For system-driven states (Disabled, Focused, Selected, PointerOver, Unfocused),
+				// promote implicit VSM to full VSM priority so it can override locally-set values.
+				// Normal state and custom developer-defined states keep downgraded priority (#18103, #34363).
+				var applySpecificity = IsSystemDrivenState(name)
+					? baseSpecificity.WithFullVsmPriority()
+					: baseSpecificity;
+
 				// Apply the setters from the new state
 				foreach (Setter setter in target.Setters)
 				{
-					setter.Apply(visualElement, specificity);
+					setter.Apply(visualElement, applySpecificity);
 				}
 
 				return true;
@@ -135,6 +156,20 @@ namespace Microsoft.Maui.Controls
 
 			return false;
 		}
+
+		/// <summary>
+		/// Returns <see langword="true"/> for states that the MAUI framework drives automatically
+		/// (Disabled, Focused, Unfocused, Selected, PointerOver, Pressed).
+		/// Only these states promote an implicit-style VSM setter to full VSM priority (fix for #34363),
+		/// preventing custom developer-defined states from unexpectedly overriding manually-set values.
+		/// </summary>
+		static bool IsSystemDrivenState(string stateName) =>
+			stateName == CommonStates.Disabled ||
+			stateName == CommonStates.Focused ||
+			stateName == CommonStates.Unfocused ||
+			stateName == CommonStates.Selected ||
+			stateName == CommonStates.PointerOver ||
+			stateName == ButtonElement.PressedVisualState;
 
 		/// <summary>
 		/// Determines whether the specified <paramref name="element"/> has any visual state groups defined.
@@ -152,9 +187,54 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <summary>
+		/// Forces unapply and reapply of the current visual state setters for the specified <paramref name="visualElement"/>.
+		/// This method is intended for infrastructure use (e.g., Hot Reload) and should not be used in application code.
+		/// </summary>
+		/// <param name="visualElement">The visual element whose visual states should be reapplied.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void InvalidateVisualStates(VisualElement visualElement)
+		{
+			var context = visualElement.GetContext(VisualStateGroupsProperty);
+			if (context is null)
+			{
+				return;
+			}
+
+			var vsgSpecificityValue = context.Values.GetSpecificityAndValue();
+			var groups = (VisualStateGroupList)vsgSpecificityValue.Value;
+			if (groups?.IsDefault != false)
+			{
+				return;
+			}
+
+			var vsgSpecificity = vsgSpecificityValue.Key;
+			// Build a VSM setter specificity that preserves the style origin so setters
+			// are unapplied/reapplied at the correct priority level.
+			var specificity = vsgSpecificity.CopyStyle(extras: 1, manual: 0, isDynamicResource: 0, isBinding: 0);
+
+			foreach (VisualStateGroup group in groups)
+			{
+				if (group.CurrentState is not { } state)
+				{
+					continue;
+				}
+
+				foreach (Setter setter in state.Setters)
+				{
+					setter.UnApply(visualElement, specificity);
+				}
+
+				foreach (Setter setter in state.Setters)
+				{
+					setter.Apply(visualElement, specificity);
+				}
+			}
+		}
+
 		internal static void UpdateStateTriggers(VisualElement visualElement)
 		{
-			var groups = (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
+			var groups = (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 
 			foreach (VisualStateGroup group in groups)
 			{
@@ -751,7 +831,7 @@ namespace Microsoft.Maui.Controls
 				group.VisualElement = clone.VisualElement;
 				clone.Add(group.Clone());
 			}
-			
+
 			// Preserve specificity when cloning (issue #27202)
 			if (groups is VisualStateGroupList sourceList)
 			{

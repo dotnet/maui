@@ -101,6 +101,22 @@ When referencing or triggering CI pipelines, use these current pipeline names:
 
 **⚠️ Old pipeline names** (e.g., `MAUI-UITests-public`, `MAUI-public`) are **outdated** and should NOT be used. Always use the names above.
 
+### Investigating CI Failures
+
+**🚨 ALWAYS use the `azdo-build-investigator` skill when investigating CI failures or assessing merge readiness.** Its instructions direct you to invoke the `ci-analysis` skill first for the core investigation workflow, then apply MAUI-specific corrections (correct pipeline names, XHarness quirks, binlog guidance).
+
+Do NOT default to manually querying AzDO APIs or rely solely on `gh pr checks` pass/fail counts.
+
+**When to use it:**
+- "How does CI look?" / "Is CI green?" / "Can we merge?"
+- "What's failing?" / "Are these known failures?"
+- "Is this PR safe to merge?" / "Any CI concerns?"
+- After any PR push to verify the build
+
+**Verifying specific tests:** When asked "did test X pass?" or "did the new test run?", query the **actual AzDO test results** — do NOT infer whether a test ran by inspecting code attributes. Class-level traits, base class categories, and assembly-level attributes can all cause a test to run even when the method itself has no visible category. Check the evidence, not the code.
+
+**Anti-pattern:** Writing ad-hoc scripts to parse AzDO build timelines. The skills handle Helix work item details, known issue cross-referencing, and test result aggregation that manual approaches miss.
+
 ### Gradle / Maven Dependency Failures (CFSClean)
 
 The official CI build uses CFSClean network isolation which blocks `repo.maven.apache.org`. All Gradle/Maven dependencies resolve through the `dotnet-public-maven` Azure Artifacts feed.
@@ -308,11 +324,6 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Purpose**: Verifies tests catch the bug before fix and pass with fix. Auto-detects test type (UI, device, unit, XAML) and dispatches to the appropriate runner.
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
-
-9. **pr-build-status** (`.github/skills/pr-build-status/SKILL.md`)
-   - **Purpose**: Retrieves Azure DevOps build information for PRs (build IDs, stage status, failed jobs)
-   - **Trigger phrases**: "check build for PR #XXXXX", "why did PR build fail", "get build status"
-   - **Used by**: When investigating CI failures
 
 10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally

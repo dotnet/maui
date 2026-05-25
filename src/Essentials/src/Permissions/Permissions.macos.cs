@@ -9,7 +9,7 @@ namespace Microsoft.Maui.ApplicationModel
 	public static partial class Permissions
 	{
 		public static bool IsKeyDeclaredInInfoPlist(string usageKey) =>
-			NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString(usageKey));
+			NSBundle.MainBundle.InfoDictionary?.ContainsKey(new NSString(usageKey)) == true;
 
 		public static TimeSpan LocationTimeout { get; set; } = TimeSpan.FromSeconds(10);
 

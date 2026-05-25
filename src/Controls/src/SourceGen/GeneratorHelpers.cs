@@ -36,15 +36,6 @@ static class GeneratorHelpers
 			: $"@{identifier}";
 	}
 
-	/// <summary>
-	/// Returns true if the node is an x:Code element, which is handled by the x:Code pipeline
-	/// and should be ignored by IC visitors.
-	/// </summary>
-	internal static bool IsXCodeElement(INode node)
-		=> node is ElementNode en
-			&& en.XmlType.Name == "Code"
-			&& (en.NamespaceURI == XamlParser.X2006Uri || en.NamespaceURI == XamlParser.X2009Uri);
-
 	public static ProjectItem? ComputeProjectItem((AdditionalText additionalText, AnalyzerConfigOptionsProvider optionsProvider) tuple, CancellationToken cancellationToken)
 	{
 		if (cancellationToken.IsCancellationRequested)
@@ -78,14 +69,12 @@ static class GeneratorHelpers
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
-		if (assemblyCaches.AllowImplicitXmlns)
-		{
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-		}
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 		using var reader = XmlReader.Create(new StringReader(xaml),
-											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 		{
 			while (reader.Read())
@@ -165,93 +154,17 @@ static class GeneratorHelpers
 		return new XamlProjectItemForCB(projectItem, root, nsmgr);
 	}
 
-	/// <summary>
-	/// Extracts x:Code blocks from a XAML file. Returns null if no x:Code elements are found
-	/// or if the XAML doesn't meet the requirements (x:Class, EnablePreviewFeatures).
-	/// </summary>
-	public static (ProjectItem ProjectItem, string Source, List<Diagnostic> Diagnostics)? ComputeXCodeSource(
-		(XamlProjectItemForCB?, AssemblyAttributes) input,
-		CancellationToken cancellationToken)
-	{
-		var (xamlItem, xmlnsCache) = input;
-		if (xamlItem?.Root == null || xamlItem.ProjectItem == null)
-			return null;
-
-		var root = xamlItem.Root;
-		var nsmgr = xamlItem.Nsmgr;
-		var projItem = xamlItem.ProjectItem;
-		var diagnostics = new List<Diagnostic>();
-
-		// Find all x:Code child elements of the root
-		var codeBlocks = new List<string>();
-
-		foreach (XmlNode child in root.ChildNodes)
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-
-			if (child.LocalName != "Code")
-				continue;
-			if (child.NamespaceURI != XamlParser.X2006Uri && child.NamespaceURI != XamlParser.X2009Uri)
-				continue;
-
-			codeBlocks.Add(child.InnerText);
-		}
-
-		if (codeBlocks.Count == 0)
-			return null;
-
-		// Gate: EnablePreviewFeatures required
-		if (!projItem.EnablePreviewFeatures)
-		{
-			if (projItem.RelativePath is string path)
-			{
-				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
-				diagnostics.Add(Diagnostic.Create(Descriptors.CSharpExpressionsRequirePreviewFeatures, location));
-			}
-			return (projItem, string.Empty, diagnostics);
-		}
-
-		// Gate: x:Class must be present
-		var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
-						?? root.Attributes["Class", XamlParser.X2009Uri];
-		if (rootClass == null)
-		{
-			if (projItem.RelativePath is string path)
-			{
-				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
-				diagnostics.Add(Diagnostic.Create(Descriptors.XCodeRequiresXClass, location));
-			}
-			return (projItem, string.Empty, diagnostics);
-		}
-
-		XmlnsHelper.ParseXmlns(rootClass.Value, out var rootType, out var rootClrNamespace, out _, out _);
-		if (rootType == null || rootClrNamespace == null)
-		{
-			if (projItem.RelativePath is string path)
-			{
-				var location = LocationHelpers.LocationCreate(path, new XmlLineInfo(), string.Empty);
-				diagnostics.Add(Diagnostic.Create(Descriptors.XCodeRequiresXClass, location));
-			}
-			return (projItem, string.Empty, diagnostics);
-		}
-
-		var source = XCodeCodeWriter.GenerateXCode(rootClrNamespace, rootType, codeBlocks.ToArray());
-		return (projItem, source, diagnostics);
-	}
-
 	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, AssemblyAttributes assemblyCaches, CancellationToken cancellationToken)
 	{
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
-		if (assemblyCaches.AllowImplicitXmlns)
-		{
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-		}
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in assemblyCaches.XmlnsPrefixes)
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 		using var reader = XmlReader.Create(new StringReader(text.ToString()),
-											new XmlReaderSettings { ConformanceLevel = assemblyCaches.AllowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
 											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
 
 
@@ -283,10 +196,6 @@ static class GeneratorHelpers
 		INamedTypeSymbol? xmlnsPrefixAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsPrefixAttribute).FullName)
 			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
 
-		// [assembly: AllowImplicitXmlnsDeclaration]
-		INamedTypeSymbol? allowImplicitXmlnsAttribute = compilation.GetTypesByMetadataName(typeof(Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName)
-			.FirstOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
-
 		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
 			return AssemblyAttributes.Empty;
 
@@ -294,10 +203,6 @@ static class GeneratorHelpers
 		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		var internalsVisible = new List<IAssemblySymbol>();
 		var xmlnsPrefixes = new List<XmlnsPrefixAttribute>();
-		var allowImplicitXmlns = compilation.Assembly.GetAttributes()
-			.Any(a =>
-				   SymbolEqualityComparer.Default.Equals(a.AttributeClass, allowImplicitXmlnsAttribute)
-				&& (a.ConstructorArguments.Length == 0 || a.ConstructorArguments[0].Value is bool b && b));
 		internalsVisible.Add(compilation.Assembly);
 
 		IList<IAssemblySymbol> assemblies = [compilation.Assembly];
@@ -377,7 +282,7 @@ static class GeneratorHelpers
 			}
 		}
 
-		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns, allowImplicitXmlns);
+		return new AssemblyAttributes(xmlnsDefinitionsList, xmlnsPrefixes, [.. globalGeneratedXmlnsDefinitions.Distinct()], internalsVisible, clrNamespacesForXmlns);
 	}
 
 	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)

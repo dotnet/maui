@@ -63,14 +63,20 @@ public partial class __TypeDBD64C1C77CDA760
 			return;
 		}
 
-		var color = new global::Microsoft.Maui.Graphics.Color(1f, 0.29411766f, 0.078431375f, 1f) /* #FF4B14 */;
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(color!, new global::System.Uri(@"Styles.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 4);
 		var __root = this;
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri(@"Styles.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
 #if !_MAUIXAML_SG_NAMESCOPE_DISABLE
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = new global::Microsoft.Maui.Controls.Internals.NameScope();
 #endif
-		__root["AccentColor"] = color;
+		__root.AddFactory("AccentColor", () =>
+		{
+			var color = new global::Microsoft.Maui.Graphics.Color(1f, 0.29411766f, 0.078431375f, 1f) /* #FF4B14 */;
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(color!, new global::System.Uri(@"Styles.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 4);
+#if !_MAUIXAML_SG_NAMESCOPE_DISABLE
+			global::Microsoft.Maui.Controls.Internals.INameScope iNameScope1 = new global::Microsoft.Maui.Controls.Internals.NameScope();
+#endif
+			return color;
+		}, shared: true);
 	}
 }
 

@@ -8,6 +8,8 @@
     <MauiTestProject>true</MauiTestProject>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Enable CSS support even though this project doesn't have MauiCss items, since some tests use CSS -->
+    <MauiCssEnabled>true</MauiCssEnabled>
     <!-- On CI, build universal binaries for iOS/MacCatalyst to support both x64 and arm64 test agents -->
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-maccatalyst')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-ios')) and ('$(CI)' == 'true' or '$(TF_BUILD)' == 'true')">iossimulator-x64;iossimulator-arm64</RuntimeIdentifiers>
@@ -33,7 +35,7 @@
     <PublishAot>true</PublishAot>
     <_IsPublishing>true</_IsPublishing>
     <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
-    <WarningsNotAsErrors>IL3050</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);IL3050</WarningsNotAsErrors>
     <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
@@ -60,6 +62,7 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\Images\Challenges\*" LogicalName="challenges/%(Filename)%(Extension)" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiImage Update="Resources\Images\dotnet_bot_resized.svg" Color="#FFFFFF" BaseSize="20,20" />
     <MauiImage Update="Resources\Images\dotnet_bot_resized2.svg" Color="#FFFFFF" BaseSize="40,40" />

@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly MauiPickerProxy _proxy = new();
 		UIPickerView? _pickerView;
+		UITapGestureRecognizer? _tapGestureRecognizer;
 
 #if MACCATALYST
 		UIAlertController? _pickerController;
@@ -145,6 +146,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
 			_proxy.Disconnect(platformView);
+			RemoveTouchDismissGesture();
 
 #if MACCATALYST
 			if (_pickerController != null)
@@ -262,7 +264,8 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || pickerView == null)
 				return;
 
-			var source = (PickerSource)pickerView.Model;
+			if (pickerView.Model is not PickerSource source)
+				return;
 			source.SelectedIndex = formsIndex;
 			pickerView.Select(Math.Max(formsIndex, 0), 0, true);
 		}
@@ -276,6 +279,60 @@ namespace Microsoft.Maui.Handlers
 
 			UpdatePickerFromPickerSource(pickerSource);
 			textField.ResignFirstResponder();
+		}
+
+		void SetupTouchDismissGesture()
+		{
+			// Don't setup if window isn't available yet
+			if (PlatformView?.Window is null)
+			{
+    			return;
+			}
+
+			// Don't setup if already configured
+			if (_tapGestureRecognizer is not null)
+			{
+    			return;
+			}
+			var weakHandler = new WeakReference<PickerHandler>(this);
+			_tapGestureRecognizer = new UITapGestureRecognizer(() =>
+			{
+				if (weakHandler.TryGetTarget(out var handler))
+				{
+					handler.DismissPicker();
+				}
+			});
+			_tapGestureRecognizer.CancelsTouchesInView = false;
+			PlatformView.Window.AddGestureRecognizer(_tapGestureRecognizer);
+		}
+		
+		void DismissPicker()
+		{
+#if MACCATALYST
+			// On MacCatalyst, dismiss the UIAlertController and clean up the tap gesture directly,
+			// since ResignFirstResponder is not called here and OnEnded will not fire.
+			if (_pickerController is not null)
+			{
+				_pickerController.DismissViewController(true, null);
+				if (VirtualView is IPicker virtualView)
+					virtualView.IsFocused = virtualView.IsOpen = false;
+			}
+			RemoveTouchDismissGesture();
+#else
+			// On iOS, dismiss by ending editing
+			PlatformView?.EndEditing(true);
+#endif
+		}
+  
+
+		void RemoveTouchDismissGesture()
+		{
+			if (_tapGestureRecognizer is not null)
+			{
+				_tapGestureRecognizer.View?.RemoveGestureRecognizer(_tapGestureRecognizer);
+				_tapGestureRecognizer.Dispose();
+				_tapGestureRecognizer = null;
+			}
 		}
 
 		class MauiPickerProxy
@@ -299,6 +356,7 @@ namespace Microsoft.Maui.Handlers
 
 			public void Disconnect(MauiPicker platformView)
 			{
+				Handler?.RemoveTouchDismissGesture();
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.EditingChanged -= OnEditing;
@@ -331,15 +389,17 @@ namespace Microsoft.Maui.Handlers
 				int selectedIndex = handler.VirtualView?.SelectedIndex ?? 0;
 				handler.DisplayAlert(handler.PlatformView, selectedIndex);
 #endif
+				Handler?.SetupTouchDismissGesture();
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
+				Handler?.RemoveTouchDismissGesture();
 				if (Handler is not PickerHandler handler || handler._pickerView is not UIPickerView pickerView)
 					return;
 
-				PickerSource? model = (PickerSource)pickerView.Model;
-				if (model.SelectedIndex != -1 && model.SelectedIndex != pickerView.SelectedRowInComponent(0))
+				var model = pickerView.Model as PickerSource;
+				if (model is not null && model.SelectedIndex != -1 && model.SelectedIndex != pickerView.SelectedRowInComponent(0))
 				{
 					pickerView.Select(model.SelectedIndex, 0, false);
 				}

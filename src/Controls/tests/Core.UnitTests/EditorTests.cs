@@ -1,3 +1,4 @@
+using System.Windows.Input;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -48,6 +49,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			Editor editor = new Editor();
 			Assert.False(editor.IsReadOnly);
+		}
+
+		[Fact]
+		public void CompletedCommandTest()
+		{
+			var editor = new Editor();
+			var parameter = new object();
+			object commandExecuted = null;
+			ICommand cmd = new Command(() => commandExecuted = parameter);
+
+			editor.ReturnCommand = cmd;
+			editor.ReturnCommandParameter = parameter;
+			editor.SendCompleted();
+
+			Assert.Equal(commandExecuted, parameter);
+		}
+
+		[Fact]
+		public void CompletedCommandNotExecutedWhenDisabled()
+		{
+			int counter = 0;
+			var editor = new Editor();
+			Command cmd = new Command(() => counter++);
+
+			editor.ReturnCommand = cmd;
+			editor.IsEnabled = false;
+			editor.SendCompleted();
+
+			Assert.Equal(0, counter);
+		}
+
+		[Fact]
+		public void CompletedCommandNotExecutedWhenCanExecuteReturnsFalse()
+		{
+			int counter = 0;
+			var editor = new Editor();
+			Command cmd = new Command(() => counter++, () => false);
+
+			editor.ReturnCommand = cmd;
+			editor.SendCompleted();
+
+			Assert.Equal(0, counter);
+		}
+
+		[Fact]
+		public void CompletedEventAndCommandBothFire()
+		{
+			var editor = new Editor();
+			int eventFired = 0;
+			int commandFired = 0;
+
+			editor.Completed += (s, e) => eventFired++;
+			editor.ReturnCommand = new Command(() => commandFired++);
+
+			editor.SendCompleted();
+
+			Assert.Equal(1, eventFired);
+			Assert.Equal(1, commandFired);
 		}
 	}
 }
