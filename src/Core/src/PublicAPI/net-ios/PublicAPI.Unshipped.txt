@@ -3,6 +3,7 @@ override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstra
 override Microsoft.Maui.Handlers.ProgressBarHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.MauiUIApplicationDelegate.ValidateCommand(UIKit.UICommand! command) -> void
 override Microsoft.Maui.Platform.MauiTextField.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
