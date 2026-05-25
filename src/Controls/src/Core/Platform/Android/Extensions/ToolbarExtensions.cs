@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -13,7 +14,9 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 using AGraphics = Android.Graphics;
 using ATextView = global::Android.Widget.TextView;
@@ -27,6 +30,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		static ColorStateList? _defaultTitleTextColor;
 		static int? _defaultNavigationIconColor;
+		static readonly ConditionalWeakTable<AppBarLayout, AppBarBackgroundState> _defaultAppBarBackgrounds = new();
 		
 		// Track which ToolbarItem should currently be associated with each MenuItem ID to prevent race conditions
 		// This prevents stale async icon loading callbacks from updating the wrong toolbar items during navigation
@@ -176,6 +180,99 @@ namespace Microsoft.Maui.Controls.Platform
 				if (Brush.IsNullOrEmpty(barBackground))
 					nativeToolbar.BackgroundTintMode = null;
 			}
+
+			if (!nativeToolbar.TryUpdateAppBarBackground(toolbar))
+			{
+				nativeToolbar.Post(() => nativeToolbar.TryUpdateAppBarBackground(toolbar));
+			}
+		}
+
+		static bool TryUpdateAppBarBackground(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			var appBarLayout = nativeToolbar.Parent?.GetParentOfType<AppBarLayout>();
+			if (appBarLayout is null)
+				return false;
+
+			var backgroundState = GetOrCreateDefaultAppBarBackgroundState(appBarLayout);
+			var barBackground = toolbar.BarBackground;
+
+			if (Brush.IsNullOrEmpty(barBackground))
+			{
+				RestoreDefaultAppBarBackground(appBarLayout, backgroundState);
+				return true;
+			}
+
+			if (barBackground is SolidColorBrush solidColor)
+			{
+				if (solidColor.Color is Color tintColor)
+				{
+					var platformColor = tintColor.ToPlatform();
+					appBarLayout.BackgroundTintMode = null;
+					appBarLayout.BackgroundTintList = null;
+					appBarLayout.Background = new ColorDrawable(platformColor);
+					appBarLayout.StatusBarForeground = new ColorDrawable(platformColor);
+				}
+				else
+				{
+					RestoreDefaultAppBarBackground(appBarLayout, backgroundState);
+				}
+
+				return true;
+			}
+
+			appBarLayout.BackgroundTintMode = null;
+			appBarLayout.BackgroundTintList = null;
+			appBarLayout.UpdateBackground(barBackground);
+			appBarLayout.StatusBarForeground = CloneDrawable(appBarLayout.Background);
+			return true;
+		}
+
+		static AppBarBackgroundState GetOrCreateDefaultAppBarBackgroundState(AppBarLayout appBarLayout)
+		{
+			if (_defaultAppBarBackgrounds.TryGetValue(appBarLayout, out var backgroundState))
+				return backgroundState;
+
+			backgroundState = new AppBarBackgroundState(
+				CloneDrawable(appBarLayout.Background),
+				CloneDrawable(appBarLayout.StatusBarForeground),
+				appBarLayout.BackgroundTintList,
+				appBarLayout.BackgroundTintMode);
+
+			_defaultAppBarBackgrounds.Add(appBarLayout, backgroundState);
+			return backgroundState;
+		}
+
+		static void RestoreDefaultAppBarBackground(AppBarLayout appBarLayout, AppBarBackgroundState backgroundState)
+		{
+			appBarLayout.Background = CloneDrawable(backgroundState.DefaultBackground);
+			appBarLayout.StatusBarForeground = CloneDrawable(backgroundState.DefaultStatusBarForeground);
+			appBarLayout.BackgroundTintMode = backgroundState.DefaultBackgroundTintMode;
+			appBarLayout.BackgroundTintList = backgroundState.DefaultBackgroundTintList;
+		}
+
+		static Drawable? CloneDrawable(Drawable? drawable)
+		{
+			if (drawable is null)
+				return null;
+
+			using var constantState = drawable.GetConstantState();
+			return constantState?.NewDrawable()?.Mutate();
+		}
+
+		sealed class AppBarBackgroundState
+		{
+			public AppBarBackgroundState(Drawable? defaultBackground, Drawable? defaultStatusBarForeground, ColorStateList? defaultBackgroundTintList, PorterDuff.Mode? defaultBackgroundTintMode)
+			{
+				DefaultBackground = defaultBackground;
+				DefaultStatusBarForeground = defaultStatusBarForeground;
+				DefaultBackgroundTintList = defaultBackgroundTintList;
+				DefaultBackgroundTintMode = defaultBackgroundTintMode;
+			}
+
+			public Drawable? DefaultBackground { get; }
+			public Drawable? DefaultStatusBarForeground { get; }
+			public ColorStateList? DefaultBackgroundTintList { get; }
+			public PorterDuff.Mode? DefaultBackgroundTintMode { get; }
 		}
 
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)

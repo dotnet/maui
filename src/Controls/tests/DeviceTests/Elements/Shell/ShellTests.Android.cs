@@ -16,6 +16,7 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -568,6 +569,32 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Verify no exception was thrown - validates (_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);
 				Assert.Null(exception);
+			});
+		}
+
+		[Fact(DisplayName = "Shell background colors the edge-to-edge top inset area")]
+		public async Task ShellBackgroundColorsEdgeToEdgeTopInsetArea()
+		{
+			SetupBuilder();
+
+			var expectedColor = Colors.OrangeRed;
+			var page = new ContentPage
+			{
+				Title = "Page Title",
+				Content = new Label { Text = "Shell content" }
+			};
+
+			Shell.SetBackgroundColor(page, expectedColor);
+
+			var shell = new Shell
+			{
+				CurrentItem = page
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Controls.Window(shell), async (handler) =>
+			{
+				await OnLoadedAsync(page);
+				await AssertAppBarTopInsetUsesColor(handler, expectedColor);
 			});
 		}
 
