@@ -54,6 +54,9 @@ namespace Microsoft.Maui.Controls
 						navigationView.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
 						break;
 				}
+			}
+		}
+
 		internal static void MapCollapsedPaneWidth(IFlyoutViewHandler handler, IFlyoutView view)
 		{
 			{
@@ -61,5 +64,7 @@ namespace Microsoft.Maui.Controls
 				navigationView.CompactPaneLength = collapsedPaneWidth;
 			}
 		}
+
+#endif
 	}
 }
