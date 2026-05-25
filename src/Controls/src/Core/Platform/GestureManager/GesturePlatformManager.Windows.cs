@@ -115,6 +115,9 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						_control.DoubleTapped -= HandleDoubleTapped;
 					}
+
+					// Ensure KeyDown handler on the old ContentPanel (Border) is detached before reassigning _control.
+					UpdateContentPanelIsTapStop(false);
 				}
 
 				_control = value;
@@ -438,6 +441,11 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (Element is View view)
 				{
+					if (!view.IsEnabled)
+					{
+						return;
+					}
+
 					IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(recognizer =>
 						recognizer.NumberOfTapsRequired == 1 &&
 						(recognizer.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
@@ -1036,11 +1044,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
 
-			bool hasSelfTapGestures = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g =>
+			bool hasSelfSingleTap = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g =>
+				g.NumberOfTapsRequired == 1);
+
+			bool hasSelfPrimarySingleTap = gestures.HasAnyGesturesFor<TapGestureRecognizer>(g =>
 				g.NumberOfTapsRequired == 1 &&
 				(g.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
 
-			if (hasSelfTapGestures
+			if (hasSelfSingleTap
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
@@ -1057,9 +1068,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_container.RightTapped += OnTap;
 
-				// Only enable tab stop when the border itself has tap gestures (not just children).
-				// Children should handle their own keyboard focus independently.
-				UpdateContentPanelIsTapStop(hasSelfTapGestures);
+				// Only enable tab stop when the border itself has a primary-button single-tap gesture.
+				// Children should handle their own keyboard focus independently, and secondary-only
+				// gestures are not activated via Enter/Space.
+				UpdateContentPanelIsTapStop(hasSelfPrimarySingleTap);
 			}
 			else
 			{
