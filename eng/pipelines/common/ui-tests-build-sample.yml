@@ -113,15 +113,6 @@ steps:
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), succeeded())
   artifact: ui-tests-samples-material3-shell-coreclr
 
-# Material3 only artifacts (for backward compatibility)
-- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'), succeeded())
-  artifact: ui-tests-samples-material3
-
-- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'), succeeded())
-  artifact: ui-tests-samples-material3-coreclr
-
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(eq('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.useWindowsCV1 }}', 'false'), succeeded())
   artifact: ui-tests-samples-windows
