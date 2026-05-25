@@ -45,8 +45,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// intentionally suppressed for ALL CV2 instances (not just drag-reorder ones).
 		// See also OnApplyTemplate where this is re-applied after template inflation.
 		// viewport during scroll. This is unexpected for a data list in MAUI.
-		// This is intentionally applied to ALL MauiItemsView instances (not just
-		// those with drag-reorder enabled) — the animation is universally unwanted.
 		ItemTransitionProvider = null;
 
 		// Suppress the native WinUI ItemContainer visual states (PointerOver,
@@ -387,6 +385,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			var newMin = remaining > 0 ? remaining : 0;
 			if (_emptyViewContentControl.MinHeight == newMin)
 			{
+
 				return false;
 			}
 			_emptyViewContentControl.MinHeight = newMin;
