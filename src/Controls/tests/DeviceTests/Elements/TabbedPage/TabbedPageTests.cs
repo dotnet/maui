@@ -605,6 +605,52 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Empty(brushInvocationList);
 		}
 
+
+		// https://github.com/dotnet/maui/issues/35469
+		// Verifies that after a modal TabbedPage is popped, the shared GradientBrush
+		// has zero subscribers. DisconnectHandlers is NOT called on modal pop, so the
+		// fix must explicitly unsubscribe via the Disappearing/ViewDidDisappear lifecycle hook.
+		[Fact(DisplayName = "TabbedPage GradientBrush subscriber is removed after modal pop")]
+		public async Task TabbedPageGradientBrushSubscriberRemovedAfterModalPop()
+		{
+			SetupBuilder();
+
+			var sharedBrush = new LinearGradientBrush(
+				new GradientStopCollection
+				{
+					new GradientStop(Colors.Purple, 0f),
+					new GradientStop(Colors.Orange, 1f)
+				},
+				new Graphics.Point(0, 0),
+				new Graphics.Point(1, 1));
+
+			var navPage = new NavigationPage(new ContentPage { Title = "Home" });
+
+			await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+			{
+				var tabbedPage = new TabbedPage
+				{
+					Title = "Tabbed",
+					BarBackground = sharedBrush,
+				};
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 1" });
+				tabbedPage.Children.Add(new ContentPage { Title = "Tab 2" });
+
+				await navPage.Navigation.PushModalAsync(tabbedPage);
+				await OnLoadedAsync(tabbedPage.Children[0]);
+
+				// Confirm the brush has exactly one subscriber while the page is live.
+				Assert.Single(GetGradientBrushInvocationList(sharedBrush));
+
+				await navPage.Navigation.PopModalAsync();
+
+				// After pop completes, Disappearing/ViewDidDisappear must have fired
+				// and explicitly unsubscribed from the brush.
+				var invocationList = GetGradientBrushInvocationList(sharedBrush);
+				Assert.Empty(invocationList);
+			});
+		}
+
 		static System.Delegate[] GetGradientBrushInvocationList(GradientBrush brush)
 		{
 			var field = typeof(GradientBrush).GetField(
