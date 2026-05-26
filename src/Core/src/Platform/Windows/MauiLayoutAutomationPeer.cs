@@ -54,7 +54,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var accessibilityView = panel.ReadLocalValue(AutomationProperties.AccessibilityViewProperty);
-			if (accessibilityView is AccessibilityView.Control or AccessibilityView.Content)
+
+			if (accessibilityView is AccessibilityView.Raw)
+			{
+				return false;
+			}
+			else if (accessibilityView is AccessibilityView.Control or AccessibilityView.Content)
 			{
 				return true;
 			}
