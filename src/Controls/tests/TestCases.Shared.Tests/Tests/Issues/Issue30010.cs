@@ -22,10 +22,8 @@ public class Issue30010 : _IssuesUITest
 		App.WaitForTextToBePresentInElement("StatusLabel", "WebView loaded");
 		App.Tap("TakeScreenshotButton");
 
-		// Wait for the screenshot to be captured and displayed
+		// Wait for the screenshot to be captured and validated by the test page
 		App.WaitForTextToBePresentInElement("StatusLabel", "Screenshot captured");
-
-		VerifyScreenshot("Issue30010TakeScreenshotFunctionality");
 	}
 }
 #endif

@@ -34,27 +34,33 @@ namespace Microsoft.Maui.Media
 
 		public async Task<IScreenshotResult> CaptureAsync(Activity activity)
 		{
-			var view = activity?.Window?.DecorView?.RootView;
+			var window = activity?.Window;
+			var view = window?.DecorView?.RootView;
 			if (view == null)
 				throw new InvalidOperationException("Unable to find the main window.");
 
-			var result = await CaptureAsync(view).ConfigureAwait(false);
+			var result = await CaptureAsync(view, window).ConfigureAwait(false);
 			return result ?? throw new InvalidOperationException("Unable to capture screenshot.");
 		}
 
 		public async Task<IScreenshotResult?> CaptureAsync(View view)
 		{
+			return await CaptureAsync(view, GetActivity(view.Context)?.Window).ConfigureAwait(false);
+		}
+
+		async Task<IScreenshotResult?> CaptureAsync(View view, Window? window)
+		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
-			var bitmap = await RenderAsync(view).ConfigureAwait(false);
+			var bitmap = await RenderAsync(view, window).ConfigureAwait(false);
 			return bitmap is null ? null : new ScreenshotResult(bitmap);
 		}
 
-		static async Task<Bitmap?> RenderAsync(View view)
+		static async Task<Bitmap?> RenderAsync(View view, Window? window)
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
-				var bitmap = await RenderUsingPixelCopyAsync(view);
+				var bitmap = await RenderUsingPixelCopyAsync(view, window);
 				if (bitmap is not null)
 					return bitmap;
 			}
@@ -62,18 +68,17 @@ namespace Microsoft.Maui.Media
 			return RenderUsingCanvasDrawing(view) ?? RenderUsingDrawingCache(view);
 		}
 
-		static Task<Bitmap?> RenderUsingPixelCopyAsync(View view)
+		static async Task<Bitmap?> RenderUsingPixelCopyAsync(View view, Window? window)
 		{
 			if (view.Width <= 0 || view.Height <= 0 || !view.IsAttachedToWindow)
-				return Task.FromResult<Bitmap?>(null);
+				return null;
 
-			var window = GetActivity(view.Context)?.Window;
 			if (window is null)
-				return Task.FromResult<Bitmap?>(null);
+				return null;
 
 			var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888!);
 			if (bitmap is null)
-				return Task.FromResult<Bitmap?>(null);
+				return null;
 
 			var location = new int[2];
 			view.GetLocationInWindow(location);
@@ -91,14 +96,21 @@ namespace Microsoft.Maui.Media
 				PixelCopy.Request(window, rect, bitmap,
 					listener,
 					new Handler(Looper.MainLooper!));
+
+				try
+				{
+					return await tcs.Task.ConfigureAwait(true);
+				}
+				finally
+				{
+					GC.KeepAlive(listener);
+				}
 			}
 			catch (Exception)
 			{
 				bitmap.Dispose();
-				return Task.FromResult<Bitmap?>(null);
+				return null;
 			}
-
-			return tcs.Task;
 		}
 
 		static Activity? GetActivity(Context? context)
