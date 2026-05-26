@@ -1,6 +1,12 @@
 ---
 description: "Security rules for the Copilot PR-review pipeline. Read before editing."
-applyTo: "eng/pipelines/ci-copilot.yml, .github/scripts/**, .github/skills/pr-review/**, .github/skills/verify-tests-fail-without-fix/**, .github/skills/try-fix/**, .github/skills/run-device-tests/scripts/**, .github/pr-review/**, .github/workflows/review-trigger.yml, .github/workflows/pr-review-queue.yml, .github/workflows/copilot-evaluate-tests.md, .github/workflows/copilot-evaluate-tests.lock.yml, eng/scripts/detect-ui-test-categories.ps1"
+applyTo:
+  - "eng/pipelines/ci-copilot.yml"
+  - "eng/scripts/detect-ui-test-categories.ps1"
+  - ".github/scripts/**"
+  - ".github/pr-review/**"
+  - ".github/skills/{pr-review,verify-tests-fail-without-fix,try-fix,run-device-tests}/**"
+  - ".github/workflows/{review-trigger,pr-review-queue,copilot-evaluate-tests}.*"
 ---
 
 # CI Copilot pipeline — security rules
