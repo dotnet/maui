@@ -21,25 +21,18 @@ namespace Microsoft.Maui.Controls
 	{
 		float[]? _strokeDashPattern;
 
-		readonly WeakNotifyPropertyChangedProxy _strokeShapeProxy = new();
-		readonly PropertyChangedEventHandler _strokeShapeChanged;
-		readonly WeakNotifyPropertyChangedProxy _strokeProxy = new();
-		readonly PropertyChangedEventHandler _strokeChanged;
-		readonly WeakNotifyCollectionChangedProxy _strokeDashArrayProxy = new();
-		readonly NotifyCollectionChangedEventHandler _strokeDashArrayChanged;
-
-		public Border()
-		{
-			_strokeShapeChanged = OnStrokeShapePropertyChanged;
-			_strokeChanged = OnStrokePropertyChanged;
-			_strokeDashArrayChanged = OnStrokeDashArrayChanged;
-		}
+		WeakNotifyPropertyChangedProxy? _strokeShapeProxy;
+		PropertyChangedEventHandler? _strokeShapeChanged;
+		WeakNotifyPropertyChangedProxy? _strokeProxy;
+		PropertyChangedEventHandler? _strokeChanged;
+		WeakNotifyCollectionChangedProxy? _strokeDashArrayProxy;
+		NotifyCollectionChangedEventHandler? _strokeDashArrayChanged;
 
 		~Border()
 		{
-			_strokeShapeProxy.Unsubscribe();
-			_strokeProxy.Unsubscribe();
-			_strokeDashArrayProxy.Unsubscribe();
+			_strokeShapeProxy?.Unsubscribe();
+			_strokeProxy?.Unsubscribe();
+			_strokeDashArrayProxy?.Unsubscribe();
 		}
 
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
@@ -107,6 +100,8 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				AddLogicalChild(visualElement);
+				_strokeShapeProxy ??= new WeakNotifyPropertyChangedProxy();
+				_strokeShapeChanged ??= OnStrokeShapePropertyChanged;
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
 			}
 		}
@@ -118,7 +113,7 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				RemoveLogicalChild(visualElement);
-				_strokeShapeProxy.Unsubscribe();
+				_strokeShapeProxy?.Unsubscribe();
 			}
 		}
 
@@ -155,6 +150,8 @@ namespace Microsoft.Maui.Controls
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, BindingContext);
+				_strokeProxy ??= new WeakNotifyPropertyChangedProxy();
+				_strokeChanged ??= OnStrokePropertyChanged;
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
 
 				OnParentResourcesChanged(this.GetMergedResources());
@@ -174,7 +171,7 @@ namespace Microsoft.Maui.Controls
 				((IElementDefinition)this).RemoveResourcesChangedListener(stroke.OnParentResourcesChanged);
 
 				SetInheritedBindingContext(stroke, null);
-				_strokeProxy.Unsubscribe();
+				_strokeProxy?.Unsubscribe();
 			}
 		}
 
@@ -204,13 +201,15 @@ namespace Microsoft.Maui.Controls
 		{
 			if (StrokeDashArray is INotifyCollectionChanged collection)
 			{
+				_strokeDashArrayProxy ??= new WeakNotifyCollectionChangedProxy();
+				_strokeDashArrayChanged ??= OnStrokeDashArrayChanged;
 				_strokeDashArrayProxy.Subscribe(collection, _strokeDashArrayChanged);
 			}
 		}
 
 		void StopNotifyingStrokeDashArrayChanges()
 		{
-			_strokeDashArrayProxy.Unsubscribe();
+			_strokeDashArrayProxy?.Unsubscribe();
 		}
 
 		/// <summary>Bindable property for <see cref="StrokeDashOffset"/>.</summary>
@@ -344,6 +343,8 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
+				// Ensure we subscribe to the default collection from defaultValueCreator.
+				NotifyStrokeDashArrayChanges();
 				_strokeDashPattern = StrokeDashArray?.ToFloatArray();
 				return _strokeDashPattern;
 			}
