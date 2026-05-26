@@ -7,12 +7,12 @@ public class Issue13323 : ContentPage
 {
 	public Issue13323()
 	{
-		var items = new[] { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+		var items = Enumerable.Range(0, 5).ToArray();
 
 		var positionLabel = new Label
 		{
 			AutomationId = "PositionLabel",
-			Text = "Position:2",
+			Text = "Position:0",
 			HorizontalOptions = LayoutOptions.Center,
 		};
 
@@ -21,13 +21,11 @@ public class Issue13323 : ContentPage
 			AutomationId = "CarouselView13323",
 			ItemsSource = items,
 			Loop = false,
-			Position = 2,
 			HeightRequest = 250,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var label = new Label
 				{
-					AutomationId = "SwipeArea",
 					HeightRequest = 100,
 					HorizontalOptions = LayoutOptions.Fill,
 					VerticalOptions = LayoutOptions.Start,
@@ -35,15 +33,15 @@ public class Issue13323 : ContentPage
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalTextAlignment = TextAlignment.Center,
 				};
-				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(Label.TextProperty, ".", stringFormat: "Item {0}");
 
 				var entry = new Entry
 				{
-					AutomationId = "CenterEntry",
 					Placeholder = "Tap me",
 					HorizontalTextAlignment = TextAlignment.Center,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 				};
+				entry.SetBinding(AutomationIdProperty, ".", stringFormat: "CenterEntry_{0}");
 
 				return new VerticalStackLayout
 				{
@@ -51,6 +49,13 @@ public class Issue13323 : ContentPage
 				};
 			})
 		};
+
+		var goToItem2Button = new Button
+		{
+			AutomationId = "GoToItem2",
+			Text = "Go to Item 2",
+		};
+		goToItem2Button.Clicked += (s, e) => carousel.ScrollTo(2, animate: false);
 
 		carousel.PositionChanged += (s, e) =>
 		{
@@ -60,7 +65,7 @@ public class Issue13323 : ContentPage
 		var loopPositionLabel = new Label
 		{
 			AutomationId = "LoopPositionLabel",
-			Text = "LoopPosition:2",
+			Text = "LoopPosition:0",
 			HorizontalOptions = LayoutOptions.Center,
 		};
 
@@ -69,13 +74,11 @@ public class Issue13323 : ContentPage
 			AutomationId = "LoopCarouselView13323",
 			ItemsSource = items,
 			Loop = true,
-			Position = 2,
 			HeightRequest = 250,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var label = new Label
 				{
-					AutomationId = "LoopSwipeArea",
 					HeightRequest = 100,
 					HorizontalOptions = LayoutOptions.Fill,
 					VerticalOptions = LayoutOptions.Start,
@@ -83,15 +86,15 @@ public class Issue13323 : ContentPage
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalTextAlignment = TextAlignment.Center,
 				};
-				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(Label.TextProperty, ".", stringFormat: "Loop Item {0}");
 
 				var entry = new Entry
 				{
-					AutomationId = "LoopCenterEntry",
 					Placeholder = "Tap me",
 					HorizontalTextAlignment = TextAlignment.Center,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 				};
+				entry.SetBinding(AutomationIdProperty, ".", stringFormat: "LoopCenterEntry_{0}");
 
 				return new VerticalStackLayout
 				{
@@ -99,6 +102,13 @@ public class Issue13323 : ContentPage
 				};
 			})
 		};
+
+		var loopGoToItem2Button = new Button
+		{
+			AutomationId = "LoopGoToItem2",
+			Text = "Go to Loop Item 2",
+		};
+		loopGoToItem2Button.Clicked += (s, e) => loopCarousel.ScrollTo(2, animate: false);
 
 		loopCarousel.PositionChanged += (s, e) =>
 		{
@@ -109,7 +119,7 @@ public class Issue13323 : ContentPage
 		{
 			Content = new VerticalStackLayout
 			{
-				Children = { positionLabel, carousel, loopPositionLabel, loopCarousel }
+				Children = { positionLabel, goToItem2Button, carousel, loopPositionLabel, loopGoToItem2Button, loopCarousel }
 			}
 		};
 	}
