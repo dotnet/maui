@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -38,6 +38,12 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
+
+		/// <summary>
+		/// Gets the explicit value of <see cref="IsEnabled"/> set directly on this element,
+		/// before coercion by <see cref="IsEnabledCore"/> which factors in parent state.
+		/// </summary>
+		internal bool IsExplicitlyEnabled => _isEnabledExplicit;
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
@@ -588,9 +594,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the current rendered height of this element. This is a read-only bindable property.
+		/// Gets the current rendered height of this element in device-independent units. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The height of an element is set during layout.</remarks>
+		/// <value>
+		/// The height of the element in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>The height of an element is set during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double Height
 		{
 			get { return _mockHeight == -1 ? (double)GetValue(HeightProperty) : _mockHeight; }
@@ -598,11 +613,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the desired height override of this element. This is a bindable property.
+		/// Gets or sets the desired height override of this element in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The desired height in device-independent units (DIUs), or -1 if unset.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset; the effective minimum height will be zero.</para>
 		/// <para><see cref="HeightRequest"/> does not immediately change the <see cref="Bounds"/> of an element; setting the <see cref="HeightRequest"/> will change the resulting height of the element during the next layout pass.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double HeightRequest
 		{
@@ -662,13 +684,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// This value represents the cumulative InputTransparent value.
-		/// All types that override this property need to also invoke
-		/// the RefreshInputTransparentProperty() method if the value will change.
 		/// 
 		/// This method is not virtual as none of the derived types actually need
 		/// to change the calculation. If this ever needs to change, then the
-		/// RefreshInputTransparentProperty() method should also call the
-		/// RefreshPropertyValue() method - just like how the
+		/// InputTransparentContainerElement.OnCascadeInputTransparentPropertyChanged
+		/// method should also call the RefreshPropertyValue() method - just like how the
 		/// RefreshIsEnabledProperty() method does.
 		/// </summary>
 		private protected bool InputTransparentCore
@@ -712,11 +732,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the minimum height the element will request during layout. This is a bindable property.
+		/// Gets or sets the minimum height the element will request during layout in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The minimum height in device-independent units (DIUs), or -1 if unset.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset and a height will be determined automatically.</para>
 		/// <para><see cref="MinimumHeightRequest"/> is used to ensure that the element has at least the specified height during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double MinimumHeightRequest
 		{
@@ -725,11 +752,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the minimum width the element will request during layout. This is a bindable property.
+		/// Gets or sets the minimum width the element will request during layout in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The minimum width in device-independent units (DIUs), or -1 if unset.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset; the effective minimum width will be zero.</para>
 		/// <para><see cref="MinimumWidthRequest"/> is used to ensure that the element has at least the specified width during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double MinimumWidthRequest
 		{
@@ -738,11 +772,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the maximum height the element will request during layout. This is a bindable property.
+		/// Gets or sets the maximum height the element will request during layout in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The maximum height in device-independent units (DIUs). The default is <see cref="double.PositiveInfinity"/>.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is <see cref="double.PositiveInfinity"/>.</para>
 		/// <para><see cref="MaximumHeightRequest"/> is used to ensure that the element has no more than the specified height during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double MaximumHeightRequest
 		{
@@ -751,11 +792,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the maximum width the element will request during layout. This is a bindable property.
+		/// Gets or sets the maximum width the element will request during layout in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The maximum width in device-independent units (DIUs). The default is <see cref="double.PositiveInfinity"/>.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is <see cref="double.PositiveInfinity"/>.</para>
 		/// <para><see cref="MaximumWidthRequest"/> is used to ensure the element has no more than the specified width during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double MaximumWidthRequest
 		{
@@ -842,9 +890,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the X translation delta of the element. This is a bindable property.
+		/// Gets or sets the X translation delta of the element in device-independent units. This is a bindable property.
 		/// </summary>
-		/// <remarks>Translation is applied post layout. It is particularly good for applying animations. Translating an element outside the bounds of its parent container may prevent inputs from working.</remarks>
+		/// <value>
+		/// The X translation offset in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>Translation is applied post layout. It is particularly good for applying animations. Translating an element outside the bounds of its parent container may prevent inputs from working.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double TranslationX
 		{
 			get { return (double)GetValue(TranslationXProperty); }
@@ -852,9 +909,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the Y translation delta of the element. This is a bindable property.
+		/// Gets or sets the Y translation delta of the element in device-independent units. This is a bindable property.
 		/// </summary>
-		/// <remarks>Translation is applied post layout. It is particularly good for applying animations. Translating an element outside the bounds of its parent container may prevent inputs from working.</remarks>
+		/// <value>
+		/// The Y translation offset in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>Translation is applied post layout. It is particularly good for applying animations. Translating an element outside the bounds of its parent container may prevent inputs from working.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double TranslationY
 		{
 			get { return (double)GetValue(TranslationYProperty); }
@@ -867,9 +933,18 @@ namespace Microsoft.Maui.Controls
 		public IList<TriggerBase> Triggers => (IList<TriggerBase>)GetValue(TriggersProperty);
 
 		/// <summary>
-		/// Gets the current width of this element. This is a read-only bindable property.
+		/// Gets the current width of this element in device-independent units. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The width value of an element is set during the layout cycle.</remarks>
+		/// <value>
+		/// The width of the element in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>The width value of an element is set during the layout cycle.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double Width
 		{
 			get { return _mockWidth == -1 ? (double)GetValue(WidthProperty) : _mockWidth; }
@@ -877,11 +952,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the desired width override of this element. This is a bindable property.
+		/// Gets or sets the desired width override of this element in device-independent units. This is a bindable property.
 		/// </summary>
+		/// <value>
+		/// The desired width in device-independent units (DIUs), or -1 if unset.
+		/// </value>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset and a width will be determined automatically.</para>
 		/// <para><see cref="WidthRequest"/> does not immediately change the <see cref="Bounds"/> of an element; setting the <see cref="WidthRequest"/> will change the resulting width of the element during the next layout pass.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
 		/// </remarks>
 		public double WidthRequest
 		{
@@ -890,9 +972,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the current X position of this element. This is a read-only bindable property.
+		/// Gets the current X position of this element in device-independent units. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The position of an element is set during layout.</remarks>
+		/// <value>
+		/// The X coordinate of the element's position in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>The position of an element is set during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double X
 		{
 			get { return _mockX == -1 ? (double)GetValue(XProperty) : _mockX; }
@@ -900,9 +991,18 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the current Y position of this element. This is a read-only bindable property.
+		/// Gets the current Y position of this element in device-independent units. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The position of an element is set during layout.</remarks>
+		/// <value>
+		/// The Y coordinate of the element's position in device-independent units (DIUs).
+		/// </value>
+		/// <remarks>
+		/// <para>The position of an element is set during layout.</para>
+		/// <para>
+		/// Device-independent units (DIUs) provide a consistent unit of measurement across different screen densities.
+		/// One device-independent unit equals one pixel on a 96-DPI display.
+		/// </para>
+		/// </remarks>
 		public double Y
 		{
 			get { return _mockY == -1 ? (double)GetValue(YProperty) : _mockY; }
@@ -1280,7 +1380,7 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
-				ComputeConstraintForView(view);
+				view.ComputedConstraint = ComputeConstraintForView(view);
 			}
 		}
 
@@ -1349,12 +1449,11 @@ namespace Microsoft.Maui.Controls
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				if (LogicalChildrenInternal[i] is View child)
-					ComputeConstraintForView(child);
+					child.ComputedConstraint = ComputeConstraintForView(child);
 			}
 		}
 
-		// TODO: .NET10 this should be made public so whoever implements a custom layout can leverage this
-		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
+		protected virtual LayoutConstraint ComputeConstraintForView(View view) => LayoutConstraint.None;
 
 		/// <summary>
 		/// Occurs when a focus change is requested.
@@ -1392,7 +1491,7 @@ namespace Microsoft.Maui.Controls
 				case InvalidationTrigger.VerticalOptionsChanged:
 					if (this is View thisView && Parent is VisualElement visualParent)
 					{
-						visualParent.ComputeConstraintForView(thisView);
+						thisView.ComputedConstraint = visualParent.ComputeConstraintForView(thisView);
 					}
 
 					// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
@@ -1579,13 +1678,13 @@ namespace Microsoft.Maui.Controls
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
 			}
-			else if (IsPointerOver)
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			}
 			else
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+				bool isSelected = this.IsElementInSelectedState();
+				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+
+				VisualStateManager.GoToState(this, targetState);
 			}
 
 			if (IsEnabled)
@@ -1742,20 +1841,6 @@ namespace Microsoft.Maui.Controls
 		protected void RefreshIsEnabledProperty() =>
 			this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
 
-		/// <summary>
-		/// This method must always be called if some event occurs and the value of
-		/// the InputTransparentCore property will change.
-		/// </summary>
-		private protected void RefreshInputTransparentProperty()
-		{
-			// This method does not need to call the
-			// this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
-			// method because none of the derived types will affect this view. All we
-			// need to do is propagate the new value to all the children.
-
-			(this as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.InputTransparentProperty.PropertyName);
-		}
-
 		void UpdateBoundsComponents(Rect bounds)
 		{
 			if (_frame == bounds)
@@ -1782,6 +1867,7 @@ namespace Microsoft.Maui.Controls
 #nullable enable
 		Semantics? _semantics;
 		bool _isLoadedFired;
+		internal bool IsLoadedFired => _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
@@ -1910,6 +1996,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
+			using var _ = DiagnosticInstrumentation.StartLayoutArrange(this);
 			return ArrangeOverride(bounds);
 		}
 
@@ -1931,9 +2018,18 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <remarks>Calling this method will trigger a layout cycle for the sub-tree of this element.</remarks>
+		[Obsolete("Use ArrangeOverride instead. This method will be removed in a future version.")]
 		public void Layout(Rect bounds)
 		{
-			Bounds = bounds;
+			if (Handler is null)
+			{
+				Bounds = bounds;
+				return;
+			}
+
+			// This forces any call to Layout to use the newer Arrange passes
+			// This should make it so legacy code that calls Layout will still work, but will use the new Measure and Arrange passes.
+			Arrange(bounds);
 		}
 
 		/// <inheritdoc/>
@@ -1955,6 +2051,7 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
+			using var _ = DiagnosticInstrumentation.StartLayoutMeasure(this);
 			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
 			return DesiredSize;
 		}
@@ -2321,8 +2418,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
-			// This VE gets connected to the xplat Window before wiring up any events
-			if (!_watchingPlatformLoaded && newWindow is null)
+			// This VE gets connected to the xplat Window before wiring up any events.
+			// Exception: if a handler with a MauiContext is present (e.g., added to a native view via
+			// ToPlatform), we still wire up so the Loaded/Unloaded events can fire correctly.
+			if (!_watchingPlatformLoaded && newWindow is null && Handler?.MauiContext is null)
 				return;
 
 			if (_unloaded is null && _loaded is null)

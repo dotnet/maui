@@ -14,7 +14,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs/*" />
+	/// <summary>
+	/// A view control for picking an element from a list.
+	/// </summary>
+	/// <remarks>
+	/// The Picker displays a list of items for the user to select from. 
+	/// Users can select a single item, which is stored in the <see cref="SelectedItem"/> property with its index in <see cref="SelectedIndex"/>.
+	/// The visual representation is similar to an <see cref="Entry"/>, but displays a picker interface instead of a keyboard.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
@@ -65,29 +72,36 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
+		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
+		public static readonly BindableProperty IsOpenProperty =
+			BindableProperty.Create(nameof(IPicker.IsOpen), typeof(bool), typeof(Picker), default, BindingMode.TwoWay,
+				propertyChanged: OnIsOpenPropertyChanged);
+
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the Picker class.</summary>
 		public Picker()
 		{
 			((INotifyCollectionChanged)Items).CollectionChanged += OnItemsCollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Picker>>(() => new PlatformConfigurationRegistry<Picker>(this));
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
+		/// <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontFamily']/Docs/*" />
+		/// <summary>Gets or sets the font family for the picker text. This is a bindable property.</summary>
+		/// <value>The name of the font family.</value>
 		public string FontFamily
 		{
 			get { return (string)GetValue(FontFamilyProperty); }
 			set { SetValue(FontFamilyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontSize']/Docs/*" />
+		/// <summary>Gets or sets the size of the font for the text in the picker. This is a bindable property.</summary>
+		/// <value>A <see cref="double"/> representing the font size.</value>
 		[System.ComponentModel.TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
@@ -95,6 +109,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		/// <summary>Gets or sets a value indicating whether font auto-scaling is enabled. This is a bindable property.</summary>
+		/// <value><see langword="true"/> if font auto-scaling is enabled; otherwise, <see langword="false"/>.</value>
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
@@ -107,9 +123,10 @@ namespace Microsoft.Maui.Controls
 			set { }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <param name="source">The source parameter.</param>
+		/// <param name="textTransform">The textTransform parameter.</param>
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
@@ -135,66 +152,73 @@ namespace Microsoft.Maui.Controls
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='Items']/Docs/*" />
+		/// <summary>Gets the list of choices.</summary>
+		/// <remarks>This property is read-only, but exposes the IList interface, so items can be added using Add().</remarks>
 		public IList<string> Items { get; } = new LockableObservableListWrapper();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='ItemsSource']/Docs/*" />
+		/// <summary>Gets or sets the source list of items to template and display. This is a bindable property.</summary>
 		public IList ItemsSource
 		{
 			get { return (IList)GetValue(ItemsSourceProperty); }
 			set { SetValue(ItemsSourceProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='SelectedIndex']/Docs/*" />
+		/// <summary>Gets or sets the index of the selected item of the picker. This is a bindable property.</summary>
+		/// <remarks>A value of -1 represents no item selected.</remarks>
 		public int SelectedIndex
 		{
 			get { return (int)GetValue(SelectedIndexProperty); }
 			set { SetValue(SelectedIndexProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='SelectedItem']/Docs/*" />
+		/// <summary>Gets or sets the selected item. This is a bindable property.</summary>
 		public object SelectedItem
 		{
 			get { return GetValue(SelectedItemProperty); }
 			set { SetValue(SelectedItemProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>Gets or sets the text color. This is a bindable property.</summary>
 		public Color TextColor
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
 			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
+		/// <summary>Gets or sets the character spacing for the picker text. This is a bindable property.</summary>
+		/// <value>A <see cref="double"/> representing the spacing between characters.</value>
 		public double CharacterSpacing
 		{
 			get { return (double)GetValue(TextElement.CharacterSpacingProperty); }
 			set { SetValue(TextElement.CharacterSpacingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='Title']/Docs/*" />
+		/// <summary>Gets or sets the title for the Picker. This is a bindable property.</summary>
+		/// <remarks>Depending on the platform, the Title is shown as a placeholder, headline, or not showed at all.</remarks>
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TitleColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the title text. This is a bindable property.</summary>
+		/// <value>The <see cref="Color"/> of the title text.</value>
 		public Color TitleColor
 		{
 			get { return (Color)GetValue(TitleColorProperty); }
 			set { SetValue(TitleColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the horizontal text alignment. This is a bindable property.</summary>
+		/// <value>A <see cref="TextAlignment"/> value representing the horizontal alignment.</value>
 		public TextAlignment HorizontalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='VerticalTextAlignment']/Docs/*" />
+		/// <summary>Gets or sets the vertical text alignment. This is a bindable property.</summary>
+		/// <value>A <see cref="TextAlignment"/> value representing the vertical alignment.</value>
 		public TextAlignment VerticalTextAlignment
 		{
 			get { return (TextAlignment)GetValue(TextAlignmentElement.VerticalTextAlignmentProperty); }
@@ -202,7 +226,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		BindingBase _itemDisplayBinding;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='ItemDisplayBinding']/Docs/*" />
+		/// <summary>Gets or sets a binding that selects the property that will be displayed for each object in the list of items.</summary>
 		[DoesNotInheritDataType]
 		public BindingBase ItemDisplayBinding
 		{
@@ -220,7 +244,22 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>Gets or sets a value indicating whether the picker is open. This is a bindable property.</summary>
+		/// <value><see langword="true"/> if the picker is open; otherwise, <see langword="false"/>.</value>
+		public bool IsOpen
+		{
+			get => (bool)GetValue(IsOpenProperty);
+			set => SetValue(IsOpenProperty, value);
+		}
+
+		static void OnIsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((Picker)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
+		}
+
 		public event EventHandler SelectedIndexChanged;
+		public event EventHandler<PickerOpenedEventArgs> Opened;
+		public event EventHandler<PickerClosedEventArgs> Closed;
 
 		static readonly BindableProperty s_displayProperty =
 			BindableProperty.Create("Display", typeof(string), typeof(Picker), default(string));
@@ -253,7 +292,8 @@ namespace Microsoft.Maui.Controls
 			if (((LockableObservableListWrapper)Items).IsLocked)
 				return;
 
-			ClampSelectedIndex();
+			int index = GetSelectedIndex();
+			ClampSelectedIndex(index);
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
@@ -287,6 +327,43 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+
+		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+			if (Handler?.VirtualView is Picker)
+			{
+				HandleIsOpenChanged();
+			}
+			else
+			{
+				_pendingIsOpenActions.Enqueue(HandleIsOpenChanged);
+			}
+		}
+
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+
+			// Process any pending actions when handler becomes available
+			while (_pendingIsOpenActions.Count > 0 && Handler != null)
+			{
+				var action = _pendingIsOpenActions.Dequeue();
+				action.Invoke();
+			}
+		}
+
+		void HandleIsOpenChanged()
+		{
+			if (Handler?.VirtualView is not Picker picker)
+				return;
+
+			if (picker.IsOpen)
+				picker.Opened?.Invoke(picker, PickerOpenedEventArgs.Empty);
+			else
+				picker.Closed?.Invoke(picker, PickerClosedEventArgs.Empty);
+		}
+
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			switch (e.Action)
@@ -311,8 +388,13 @@ namespace Microsoft.Maui.Controls
 			int index = insertIndex;
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
-			if (insertIndex <= SelectedIndex)
-				UpdateSelectedItem(SelectedIndex);
+
+			index = GetSelectedIndex();
+			if (insertIndex <= index)
+			{
+				// When an item is inserted before the current selection, the selected item changes because the selected index is not properly updated.
+				ClampSelectedIndex(index);
+			}
 		}
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
@@ -336,10 +418,23 @@ namespace Microsoft.Maui.Controls
 
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
-			if (removeStart <= SelectedIndex)
+
+			index = GetSelectedIndex();
+			if (removeStart <= index)
 			{
-				ClampSelectedIndex();
+				ClampSelectedIndex(index);
 			}
+		}
+
+		int GetSelectedIndex()
+		{
+			if (SelectedItem is null)
+			{
+				return SelectedIndex;
+			}
+
+			int newIndex = ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1;
+			return newIndex >= 0 ? newIndex : SelectedIndex;
 		}
 
 		void ResetItems()
@@ -351,7 +446,7 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			ClampSelectedIndex();
+			ClampSelectedIndex(SelectedIndex);
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
@@ -367,10 +462,10 @@ namespace Microsoft.Maui.Controls
 			picker.UpdateSelectedIndex(newValue);
 		}
 
-		void ClampSelectedIndex()
+		void ClampSelectedIndex(int selectedIndex)
 		{
-			var oldIndex = SelectedIndex;
-			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+			var oldIndex = selectedIndex;
+			var newIndex = selectedIndex.Clamp(-1, Items.Count - 1);
 			//FIXME use the specificity of the caller
 			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
 			// If the index has not changed, still need to change the selected item

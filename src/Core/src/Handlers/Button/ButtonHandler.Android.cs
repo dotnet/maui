@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			MaterialButton platformButton = new MauiMaterialButton(Context)
 			{
 				IconGravity = MaterialButton.IconGravityTextStart,
-				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
+				IconTintMode = global::Android.Graphics.PorterDuff.Mode.Add,
 				IconTint = TransparentColorStateList,
 				SoundEffectsEnabled = false
 			};
@@ -85,6 +85,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCornerRadius(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView?.UpdateCornerRadius(button);
+			
+			if (button.Shadow is not null)
+			{
+				handler.UpdateValue(nameof(IButton.Shadow));
+			}
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)

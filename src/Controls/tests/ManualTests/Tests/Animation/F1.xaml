@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.F1"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="F1">
+    <VerticalStackLayout>
+        <Label Text="1. Enable developer options (Settings -&gt; About -&gt; Click Build number 7 times)." />
+        <Label Text="2. Disable suspension of execution for cached apps (Settings -&gt; Developer options -&gt; Suspend execution for cached apps)" />
+        <Label Text="3. Once the page appears, you have 120 seconds to enable Battery Saver (Settings -&gt; Battery -&gt; Battery Saver -&gt; Use Battery Saver)." />
+        <Label Text="4. Enabling Battery Saver should make both labels below (Label 1, Label 2) fully visible immediately." />
+        <Label Text="5. If either label is not fully visible, this test has failed." />
+        <Label Text="6. Navigate back to the category screen and then return to this test to reset it." />
+        <Label Text="7. The labels should be full visible immediately upon returning to the test." />
+        <Label Text="8. If either label is not fully visible, this test has failed." />
+        <Label Text="9. Disable Battery Saver (Settings -&gt; Battery -&gt; Battery Saver -&gt; Use Battery Saver)." />
+
+        <Label x:Name="Label1"
+               Margin="0,12,0,0"
+               FontSize="36"
+               Opacity="0"
+               Text="Label 1" />
+        <Label x:Name="Label2"
+               FontSize="36"
+               IsVisible="false"
+               Text="Label 2" />
+    </VerticalStackLayout>
+</ContentPage>

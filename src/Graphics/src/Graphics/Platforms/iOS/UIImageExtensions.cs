@@ -1,3 +1,4 @@
+using System;
 using CoreGraphics;
 using UIKit;
 
@@ -7,22 +8,50 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static UIImage ScaleImage(this UIImage target, float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			float originalWidth = (float)target.Size.Width;
-			float originalHeight = (float)target.Size.Height;
-
-			float scale = originalWidth / maxWidth;
-
-			float targetWidth = originalWidth / scale;
-			float targetHeight = originalHeight / scale;
-
-			if (targetHeight > maxHeight)
+			if (maxWidth <= 0 || maxHeight <= 0)
 			{
-				scale = targetHeight / maxHeight;
-				targetHeight = targetHeight / scale;
-				targetWidth = targetWidth / scale;
+				return target;
 			}
 
-			return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
+			if (target.Size.Width > maxWidth || target.Size.Height > maxHeight)
+			{
+				float factorX = maxWidth / (float)target.Size.Width;
+				float factorY = maxHeight / (float)target.Size.Height;
+
+				float factor = Math.Min(factorX, factorY);
+
+				float targetWidth = factor * (float)target.Size.Width;
+				float targetHeight = factor * (float)target.Size.Height;
+
+				return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
+			}
+
+			return target;
+		}
+
+		internal static UIImage ResizeImageSource(this UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)
+		{
+			if (sourceImage?.CGImage is null)
+			{
+				return null;
+			}
+
+			maxWidth = (nfloat)Math.Min(maxWidth, originalImageSize.Width);
+			maxHeight = (nfloat)Math.Min(maxHeight, originalImageSize.Height);
+
+			var sourceSize = sourceImage.Size;
+
+			float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+			if (maxResizeFactor > 1 && !shouldScaleUp)
+				return sourceImage;
+
+			var resizedImage = UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
+
+			// Preserve the rendering mode to maintain color behavior
+			resizedImage = resizedImage.ImageWithRenderingMode(sourceImage.RenderingMode);
+
+			return resizedImage;
 		}
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
@@ -57,6 +86,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				target.Draw(CGPoint.Empty);
 			});
+
 
 			if (disposeOriginal)
 			{

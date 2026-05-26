@@ -132,7 +132,7 @@
     <comment>0 is indexer value, 1 is property name</comment>
   </data>
   <data name="BindingIndexerTypeUnsupported" xml:space="preserve">
-    <value>Vazba: Nepodporovaný typ indexu indexeru: {0}</value>
+    <value>Vazba: Nepodporovaný typ indexu indexeru: {0}.</value>
     <comment>0 is indexer type name</comment>
   </data>
   <data name="BindingWithoutDataType" xml:space="preserve">
@@ -180,7 +180,7 @@
     <comment>0 is enum value</comment>
   </data>
   <data name="InvalidXaml" xml:space="preserve">
-    <value>Neplatný kód XAML: {0}</value>
+    <value>Neplatný kód XAML: {0}.</value>
     <comment>0 is the invalid xaml snippet</comment>
   </data>
   <data name="MarkupNotClosed" xml:space="preserve">
@@ -224,7 +224,7 @@
     <value>Prostředky v ResourceDictionary vyžadují atribut x:Key.</value>
   </data>
   <data name="ResourceMissing" xml:space="preserve">
-    <value>Prostředek {0} se nenašel.</value>
+    <value>Prostředek {0} se nepovedlo najít.</value>
     <comment>0 is a resourceId</comment>
   </data>
   <data name="SByteEnums" xml:space="preserve">
@@ -254,15 +254,15 @@
     <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
-    <value>Nedeklarovaná předpona xmlns: {0}</value>
+    <value>Nedeklarovaná předpona xmlns: „{0}“.</value>
     <comment>0 is the xmlns prefix</comment>
   </data>
   <data name="XStaticResolution" xml:space="preserve">
-    <value>x:Static: nejde najít veřejné nebo přístupné interní statické pole, statickou vlastnost, konstantu nebo hodnotu výčtu s názvem {0} v typu {1}.</value>
+    <value>x:Static: nejde najít veřejné nebo přístupné interní statické pole, statickou vlastnost, konstantu nebo hodnotu výčtu s názvem „{0}“ v typu „{1}“.</value>
     <comment>0 is membername, 1 is type name</comment>
   </data>
   <data name="XStaticSyntax" xml:space="preserve">
-    <value>Syntaxe pro x:Static je [Člen=][předpona:]názevTypu.názevStatickéhoČlenu.</value>
+    <value>Syntaxe pro x:Static je [Member=][prefix:]typeName.staticMemberName.</value>
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key očekává řetězcový literál.</value>

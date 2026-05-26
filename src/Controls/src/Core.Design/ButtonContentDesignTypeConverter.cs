@@ -3,6 +3,9 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for button content layout values.
+	/// </summary>
 	public class ButtonContentDesignTypeConverter : StringConverter
 	{
 		private static readonly char[] Separators = { ',' };
@@ -15,6 +18,7 @@ namespace Microsoft.Maui.Controls.Design
 		// ButtonContentLayout((ImagePorition)15, DefaultSpacing/*10*/)
 		private enum ImagePosition { Left, Top, Right, Bottom };
 
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			// MUST MATCH ButtonContentConverter.ConvertFrom

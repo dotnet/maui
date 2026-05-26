@@ -9,14 +9,22 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			var date = datePicker.Date;
-			platformDatePicker.UpdateDate(date);
+			if (datePicker.Date is null)
+			{
+				platformDatePicker.Date = null;
+			}
+			else
+			{
+				platformDatePicker.UpdateDate(datePicker.Date.Value);
+			}
 
 			var format = datePicker.Format;
 			var dateFormat = format.ToDateFormat();
 
 			if (!string.IsNullOrEmpty(dateFormat))
+			{
 				platformDatePicker.DateFormat = dateFormat;
+			}
 
 			platformDatePicker.UpdateTextColor(datePicker);
 		}
@@ -28,19 +36,62 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MinDate = datePicker.MinimumDate;
+			if (datePicker?.MinimumDate is not null)
+			{
+				platformDatePicker.MinDate = datePicker.MinimumDate.Value;
+			}
+			else
+			{
+				// Matches WinUI default MinDate behavior by jumping 100 years back if MinDate is null.
+				// Ref: https://github.com/microsoft/microsoft-ui-xaml/blob/2aa50f0dff795cbd948588ee0e62cac7da3a396f/src/dxaml/xcp/components/DependencyObject/DependencyProperty.cpp#L253
+				platformDatePicker.MinDate = DateTime.Now.AddYears(-100);
+			}
 		}
 
 		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MaxDate = datePicker.MaximumDate;
+			platformDatePicker.MaxDate = datePicker?.MaximumDate ?? DateTime.MaxValue;
 		}
 
 		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
+			// Store the character spacing value to apply it when ready
+			var characterSpacing = datePicker.CharacterSpacing;
+
+			// Apply immediately if loaded, otherwise wait for load
+			if (platformDatePicker.IsLoaded)
+			{
+				ApplyCharacterSpacingToTextBlocks(platformDatePicker, characterSpacing);
+			}
+			else
+			{
+				// Clean up any existing handler to prevent memory leaks
+				platformDatePicker.Loaded -= OnDatePickerLoaded;
+				
+				void OnDatePickerLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+				{
+					if (sender is CalendarDatePicker picker)
+					{
+						// Clean up handler immediately
+						picker.Loaded -= OnDatePickerLoaded;
+						ApplyCharacterSpacingToTextBlocks(picker, characterSpacing);
+					}
+				}
+				
+				platformDatePicker.Loaded += OnDatePickerLoaded;
+			}
 		}
 
+		static void ApplyCharacterSpacingToTextBlocks(CalendarDatePicker platformDatePicker, double characterSpacing)
+		{
+			var characterSpacingEm = characterSpacing.ToEm();
+			var dateTextBlock = platformDatePicker.GetDescendantByName<TextBlock>("DateText");
+			if (dateTextBlock is not null)
+			{
+				dateTextBlock.CharacterSpacing = characterSpacingEm;
+			}
+		}
+		
 		public static void UpdateFont(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
 			platformDatePicker.UpdateFont(datePicker.Font, fontManager);
 
@@ -81,8 +132,7 @@ namespace Microsoft.Maui.Platform
 			"CalendarDatePickerCalendarGlyphForegroundDisabled",
 		};
 
-		// TODO NET8 add to public API
-		internal static void UpdateBackground(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
+		public static void UpdateBackground(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			var brush = datePicker?.Background?.ToPlatform();
 
@@ -108,5 +158,10 @@ namespace Microsoft.Maui.Platform
 			"CalendarDatePickerBackgroundDisabled",
 			"CalendarDatePickerBackgroundFocused",
 		};
+
+		internal static void UpdateIsOpen(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+			platformDatePicker.IsCalendarOpen = datePicker.IsOpen;
+		}
 	}
 }

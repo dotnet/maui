@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.GlobalXmlnsWithDataTemplate"
+             Title="GlobalXmlnsWithDataTemplate">
+    <VerticalStackLayout>
+        <Entry Text="{Binding Color}" Grid.Column="1" x:Name="ColorEntry"/>
+        <HorizontalStackLayout>
+            <BindableLayout.ItemTemplate>
+                <DataTemplate>
+                    <Entry Text="{Binding Color}" Grid.Column="1" x:Name="ColorEntry"/>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</ContentPage>

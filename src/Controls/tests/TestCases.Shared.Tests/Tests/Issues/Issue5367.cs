@@ -17,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue5367Test()
 		{
 			App.WaitForElement(MaxLengthEditor);

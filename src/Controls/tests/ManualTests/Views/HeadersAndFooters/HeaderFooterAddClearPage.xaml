@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Views.HeaderFooterAddClearPage"
+             Title="Header and Footer (Add Clear)">
+    <Grid Margin="20" RowDefinitions="Auto, Auto, *">
+        <StackLayout Grid.Row="0">
+            <Label Text="1.The test passes if the button is able to trigger the onClicked event handler and the page displays normally." />
+        </StackLayout>
+        <Button Grid.Row="1"
+                Text="Add 2 Items"
+                FontAttributes="Bold"
+                SemanticProperties.Hint="Counts the number of times you click"
+                Margin="20"
+                HorizontalOptions="Start"
+                Clicked="Add_click"/>
+        <Button Grid.Row="1"
+                Text="Clear All Items"
+                Margin="20"
+                HorizontalOptions="End"
+                FontAttributes="Bold"
+                SemanticProperties.Hint="Counts the number of times you click"
+                Clicked="Clear_click" />
+        <CollectionView Grid.Row="2" x:Name="CollectionView" VerticalOptions="FillAndExpand">
+            <CollectionView.Header>
+                <StackLayout BackgroundColor="LightGray">
+                    <Label Margin="10,0,0,0"
+                           Text="Header"
+                           FontSize="12"
+                           FontAttributes="Bold" />
+                </StackLayout>
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ContentView>
+                            <Frame Margin="2,6"
+                                   CornerRadius="20">
+                                <Label Text="{Binding }" FontSize="Title"/>
+                            </Frame>
+                        </ContentView>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <StackLayout BackgroundColor="LightGray">
+                    <Label Margin="10,0,0,0"
+                           Text="Footer"
+                           FontSize="12"
+                           FontAttributes="Bold" />
+                </StackLayout>
+            </CollectionView.Footer>
+        </CollectionView>
+    </Grid>
+</ContentPage>

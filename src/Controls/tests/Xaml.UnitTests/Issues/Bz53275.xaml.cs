@@ -1,46 +1,39 @@
 using System;
 using System.Reflection;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[RequireService([typeof(IProvideValueTarget)])]
+public class TargetPropertyExtension : IMarkupExtension
 {
-	[RequireService([typeof(IProvideValueTarget)])]
-	public class TargetPropertyExtension : IMarkupExtension
+	public object ProvideValue(IServiceProvider serviceProvider)
 	{
-		public object ProvideValue(IServiceProvider serviceProvider)
-		{
-			var targetProperty = (serviceProvider?.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget)?.TargetProperty;
-			return (targetProperty as BindableProperty)?.PropertyName ?? (targetProperty as PropertyInfo)?.Name;
-		}
+		var targetProperty = (serviceProvider?.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget)?.TargetProperty;
+		return (targetProperty as BindableProperty)?.PropertyName ?? (targetProperty as PropertyInfo)?.Name;
+	}
+}
+
+public partial class Bz53275 : ContentPage
+{
+	public Bz53275()
+	{
+		InitializeComponent();
 	}
 
-	public partial class Bz53275 : ContentPage
+	public string ANonBindableProperty { get; set; }
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Bz53275()
+		[Theory]
+		[XamlInflatorData]
+		internal void TargetPropertyIsSetOnMarkups(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Bz53275(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		public string ANonBindableProperty { get; set; }
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void TargetPropertyIsSetOnMarkups(bool useCompiledXaml)
-			{
-				var page = new Bz53275(useCompiledXaml);
-				Assert.AreEqual("ANonBindableProperty", page.ANonBindableProperty);
-				var l0 = page.label;
-				Assert.AreEqual("Text", l0.Text);
-			}
+			var page = new Bz53275(inflator);
+			Assert.Equal("ANonBindableProperty", page.ANonBindableProperty);
+			var l0 = page.label;
+			Assert.Equal("Text", l0.Text);
 		}
 	}
 }

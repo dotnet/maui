@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PropertyPropagationExtensions']/Docs/*" />
+	/// <summary>Extension methods for propagating property values through the visual tree.</summary>
 	public static class PropertyPropagationExtensions
 	{
 		[Obsolete]
@@ -38,6 +38,9 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
+			if (propertyName == null || propertyName == Shell.NavBarVisibilityAnimationEnabledProperty.PropertyName)
+				BaseShellItem.PropagateFromParent(Shell.NavBarVisibilityAnimationEnabledProperty, element);
+
 			foreach (var child in children.ToArray())
 			{
 				if (child is IPropertyPropagationController view)
@@ -47,7 +50,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="//Member[@MemberName='PropagatePropertyChanged']/Docs/*" />
+		/// <param name="propertyName">The propertyName parameter.</param>
+		/// <param name="target">The target parameter.</param>
+		/// <param name="source">The source parameter.</param>
 		public static void PropagatePropertyChanged(string propertyName, Element target, Element source)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)

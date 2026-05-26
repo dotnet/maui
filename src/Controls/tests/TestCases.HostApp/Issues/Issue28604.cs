@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 28604, "Footer Not Displayed at the Bottom When EmptyView is Active in CV2", PlatformAffected.iOS)]
 public class Issue28604 : ContentPage
 {

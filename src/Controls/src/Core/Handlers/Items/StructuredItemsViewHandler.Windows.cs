@@ -18,6 +18,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		View _currentFooter;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
+		const string ListViewItemStyleKey = "DefaultListViewItemStyle";
+		const string GridViewItemStyleKey = "DefaultGridViewItemStyle";
+		static WStyle _listViewItemStyle;
+		static WStyle _gridViewItemStyle;
 
 		~StructuredItemsViewHandler() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -32,9 +36,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_layoutPropertyChanged ??= LayoutPropertyChanged;
 				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
 			}
-			else if (_layoutPropertyChangedProxy is not null)
+			else
 			{
-				_layoutPropertyChangedProxy.Unsubscribe();
+				_layoutPropertyChangedProxy?.Unsubscribe();
 				_layoutPropertyChangedProxy = null;
 			}
 		}
@@ -43,11 +47,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.DisconnectHandler(platformView);
 
-			if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChangedProxy = null;
-			}
+			_layoutPropertyChangedProxy?.Unsubscribe();
+			_layoutPropertyChangedProxy = null;
 		}
 
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -82,6 +83,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override ListViewBase SelectListViewBase()
 		{
+			_listViewItemStyle = GetDefaultStyle(ListViewItemStyleKey);
+			_gridViewItemStyle = GetDefaultStyle(GridViewItemStyleKey);
+
 			switch (VirtualView.ItemsLayout)
 			{
 				case GridItemsLayout gridItemsLayout:
@@ -105,6 +109,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_currentHeader != null)
 			{
 				Element.RemoveLogicalChild(_currentHeader);
+				_currentHeader.Cleanup();
 				_currentHeader = null;
 			}
 
@@ -154,6 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_currentFooter != null)
 			{
 				Element.RemoveLogicalChild(_currentFooter);
+				_currentFooter.Cleanup();
 				_currentFooter = null;
 			}
 
@@ -245,11 +251,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var style = new WStyle(typeof(GridViewItem));
 
+			if (_gridViewItemStyle is not null)
+			{
+				style.BasedOn = _gridViewItemStyle;
+			}
+
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
 
 			return style;
+		}
+
+		static WStyle GetDefaultStyle(string resourceKey)
+		{
+			return Microsoft.UI.Xaml.Application.Current.Resources[resourceKey] as WStyle;
 		}
 
 		static WStyle GetVerticalItemContainerStyle(LinearItemsLayout layout)
@@ -258,6 +274,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var margin = WinUIHelpers.CreateThickness(0, v, 0, v);
 
 			var style = new WStyle(typeof(ListViewItem));
+
+			if (_listViewItemStyle is not null)
+			{
+				style.BasedOn = _listViewItemStyle;
+			}
 
 			style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0));
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
@@ -273,6 +294,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var padding = WinUIHelpers.CreateThickness(h, 0, h, 0);
 
 			var style = new WStyle(typeof(ListViewItem));
+
+			if (_listViewItemStyle is not null)
+			{
+				style.BasedOn = _listViewItemStyle;
+			}
 
 			style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0));
 			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
@@ -301,7 +327,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				switch (ListViewBase)
 				{
 					case FormsListView formsListView:
-						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
+						// Set the ItemContainerStyle based on the orientation
+						formsListView.ItemContainerStyle = (linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+							? GetHorizontalItemContainerStyle(linearItemsLayout)
+							: GetVerticalItemContainerStyle(linearItemsLayout);
 						break;
 					case WListView listView:
 						listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);

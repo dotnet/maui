@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Xaml;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Microsoft.Maui.Controls.XamlC
@@ -17,7 +14,9 @@ namespace Microsoft.Maui.Controls.XamlC
 			do
 			{
 				if (string.IsNullOrEmpty(value))
+				{
 					break;
+				}
 
 				value = value.Trim();
 

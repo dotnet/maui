@@ -12,5 +12,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		// implement these explicitly
 		void CanExecuteChanged(object? sender, EventArgs e);
+
+		WeakCommandSubscription? CleanupTracker { get; set; }
 	}
 }

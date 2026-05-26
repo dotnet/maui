@@ -14,7 +14,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No Add() method defined on "{0}{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nie zdefiniowano metody Add() dla elementu „{0}{1}”.]]></Val>
+            <Val><![CDATA[Nie zdefiniowano metody Add() dla „{0}{1}”.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -23,7 +23,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing a "public static Get{0}" method or a public instance property getter for the attached property "{1}.{0}Property".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Brak metody „public static get{0}” lub metody pobierającej właściwość wystąpienia publicznego dla dołączonej właściwości „{1}.{0}Property”.]]></Val>
+            <Val><![CDATA[Brak metody „public static Get{0}” lub metody pobierającej właściwość wystąpienia publicznego dla dołączonej właściwości „{1}.{0}Property”.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -149,7 +149,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot convert value "{0}" to "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nie można przekonwertować wartości „{0}” na typ „{1}”.]]></Val>
+            <Val><![CDATA[Nie można przekonwertować wartości „{0}” na „{1}”.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -167,7 +167,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Invalid Xaml "{0}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nieprawidłowy kod XAML „{0}”]]></Val>
+            <Val><![CDATA[Nieprawidłowy kod XAML „{0}”.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -203,7 +203,7 @@
         <Str Cat="Text">
           <Val><![CDATA[No static method found for "{0}::{1} ({2})".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nie znaleziono żadnej metody statycznej dla elementu „{0}::{1} ({2})”.]]></Val>
+            <Val><![CDATA[Nie znaleziono żadnej metody statycznej dla „{0}::{1} ({2})”.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -239,7 +239,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Missing mandatory property "{0}" on "{1}".]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Brak obowiązkowej właściwości „{0}” w typie „{1}”.]]></Val>
+            <Val><![CDATA[Brak właściwości obowiązkowej „{0}” w typie „{1}”.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -257,7 +257,7 @@
         <Str Cat="Text">
           <Val><![CDATA["A resource with the key "{0}" is already present in the ResourceDictionary.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[„Zasób z kluczem „{0}” już znajduje się w elemencie ResourceDictionary.]]></Val>
+            <Val><![CDATA[„Zasób z kluczem „{0}” już znajduje się w ResourceDictionary.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -371,7 +371,7 @@
         <Str Cat="Text">
           <Val><![CDATA[x:Key expects a string literal.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[x: Klawisz oczekuje dosłownego ciągu.]]></Val>
+            <Val><![CDATA[x: klawisz oczekuje dosłownego ciągu.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

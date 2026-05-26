@@ -1,0 +1,16 @@
+{"description": "Mount Fuji, Japan's tallest and most iconic 
+mountain, is an active volcano with a history dating back over 
+500,000 years. Its symmetrical, snow-capped profile rises more than 12,000 
+feet into the sky, and on clear days, it can be seen as far as Tokyo. Visitors can 
+experience its serene beauty and volcanic history.", "destinationName": "
+Mount Fuji", "title": "Mount Fuji Itinerary", "days": [{"activities
+": [{"title": "Mount Fuji Sunrise Viewing", "description": 
+"Witness Mount Fuji's breathtaking sunrise from a scenic viewpoint. 
+This is a quintessential Mount Fuji experience that many visitors 
+cherish.", "type": 
+"Sightseeing"}], "title": "
+Day 1: Arrival and Exploration", "subtitle": "Discover the Mountain's 
+Beauty and Culture", "destination": "Mount Fuji"}], "rationale": "
+Mount Fuji offers a unique blend of natural beauty, cultural heritage, 
+and adventure. Its active status adds a layer of excitement, and its 
+proximity to Tokyo makes it an accessible yet extraordinary destination."}

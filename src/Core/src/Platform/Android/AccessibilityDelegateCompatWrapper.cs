@@ -1,4 +1,5 @@
 ﻿using Android.OS;
+using Android.Views;
 using Android.Views.Accessibility;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Platform
 			_originalDelegate.OnInitializeAccessibilityEvent(host, e);
 		}
 
-		public override bool OnRequestSendAccessibilityEvent(Android.Views.ViewGroup? host, PlatformView? child, AccessibilityEvent? e)
+		public override bool OnRequestSendAccessibilityEvent(global::Android.Views.ViewGroup? host, PlatformView? child, AccessibilityEvent? e)
 		{
 			return _originalDelegate.OnRequestSendAccessibilityEvent(host, child, e);
 		}

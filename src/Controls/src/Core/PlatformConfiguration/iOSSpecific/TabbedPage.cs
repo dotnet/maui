@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.TabbedPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TabbedPage']/Docs/*" />
+	/// <summary>Provides iOS-specific configuration for TabbedPage tab bar translucency.</summary>
 	public static class TabbedPage
 	{
 		/// <summary>Bindable property for <see cref="TranslucencyMode"/>.</summary>
@@ -11,20 +11,29 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			BindableProperty.Create("TranslucencyMode",
 				typeof(TranslucencyMode), typeof(TabbedPage), TranslucencyMode.Default);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTranslucencyMode'][1]/Docs/*" />
+		/// <summary>Gets the tab bar translucency mode on iOS.</summary>
+		/// <param name="element">The element to get the value from.</param>
+		/// <returns>The translucency mode.</returns>
 		public static TranslucencyMode GetTranslucencyMode(BindableObject element)
 			=> (TranslucencyMode)element.GetValue(TranslucencyModeProperty);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTranslucencyMode'][1]/Docs/*" />
+		/// <summary>Sets the tab bar translucency mode on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">The translucency mode to apply.</param>
 		public static void SetTranslucencyMode(BindableObject element, TranslucencyMode value)
 			=> element.SetValue(TranslucencyModeProperty, value);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTranslucencyMode'][2]/Docs/*" />
+		/// <summary>Gets the tab bar translucency mode on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The translucency mode.</returns>
 		public static TranslucencyMode GetTranslucencyMode(
 			this IPlatformElementConfiguration<iOS, FormsElement> config)
 			=> GetTranslucencyMode(config.Element);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='SetTranslucencyMode'][2]/Docs/*" />
+		/// <summary>Sets the tab bar translucency mode on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The translucency mode to apply.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetTranslucencyMode(
 			this IPlatformElementConfiguration<iOS, FormsElement> config, TranslucencyMode value)
 		{

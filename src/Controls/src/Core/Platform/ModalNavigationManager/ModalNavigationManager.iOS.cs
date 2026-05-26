@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnWindowPropertyChanging(object sender, PropertyChangingEventArgs e)
 		{
 			if (e.PropertyName != Window.PageProperty.PropertyName)
+			{
 				return;
+			}
 
 			if (_currentPage is not null &&
 				_currentPage.Handler is IPlatformViewHandler pvh &&
@@ -108,7 +110,9 @@ namespace Microsoft.Maui.Controls.Platform
 			_platformModalPages.Add(modal);
 
 			if (_window?.Page?.Handler is not null)
+			{
 				return PresentModal(modal, animated && _window.IsActivated);
+			}
 
 			return Task.CompletedTask;
 		}
@@ -142,8 +146,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (WindowViewController is not null)
 				{
-					await WindowViewController.PresentViewControllerAsync(wrapper, animated);
-					await Task.Delay(5);
+					// This is branched, because if the modal is a popover and can't display correctly for some reason, we want it to fail
+					if (wrapper.ModalPresentationStyle == UIKit.UIModalPresentationStyle.Popover)
+					{
+						if (wrapper.PopoverPresentationController is not null && WindowViewController.View is not null)
+						{
+							await WindowViewController.PresentViewControllerAsync(wrapper, animated);
+							await Task.Delay(5);
+						}
+						else
+						{
+							failed = true;
+						}
+					}
+					else
+					{
+						await WindowViewController.PresentViewControllerAsync(wrapper, animated);
+						await Task.Delay(5);
+					}
 				}
 			}
 			catch
@@ -157,7 +177,9 @@ namespace Microsoft.Maui.Controls.Platform
 				presentFinished.SetResult();
 
 				if (!failed)
+				{
 					SyncModalStackWhenPlatformIsReady();
+				}
 			}
 
 		}

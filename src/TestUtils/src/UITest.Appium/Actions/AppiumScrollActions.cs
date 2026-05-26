@@ -287,7 +287,7 @@ namespace UITest.Appium
 
 			AppiumElement? result = ScrollUpUntilPresent(driver, target, element, strategy, swipePercentage, swipeSpeed, withInertia);
 
-			while (result is not null)
+			while (result is null)
 			{
 				long elapsed = DateTime.Now.Subtract(start).Ticks;
 				if (elapsed >= timeout.Ticks)

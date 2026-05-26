@@ -8,6 +8,8 @@ namespace Microsoft.Maui.TestCases.Tests
 	public class ScrollToUITests : CoreGalleryBasePageTest
 	{
 		const string LayoutGallery = "ScrollView Gallery";
+		public override string GalleryPageName => LayoutGallery;
+		
 		protected override bool ResetAfterEachTest => true;
 		public ScrollToUITests(TestDevice device)
 			: base(device)
@@ -77,9 +79,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ScrollToYTwice (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\ScrollViewUITests.cs)
 		[Test]
 		[Description("ScrollTo Y = 100")]
-		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
-		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
 		public void ScrollToYTwice()
 		{
 			App.WaitForElement("WaitForStubControl");

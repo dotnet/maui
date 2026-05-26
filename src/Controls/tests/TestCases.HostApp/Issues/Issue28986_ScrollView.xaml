@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28986_ScrollView"
+             x:Name="TestPage"
+             Title="SafeArea ScrollView Test"
+             SafeAreaEdges="None">
+    
+    <Grid x:Name="MainGrid" BackgroundColor="Blue" SafeAreaEdges="None">
+        <!-- ScrollView that spans the entire screen -->
+        <ScrollView x:Name="TestScrollView" SafeAreaEdges="All" AutomationId="TestScrollView" BackgroundColor="White">
+            <StackLayout Spacing="20" Padding="20,0,20,20" AutomationId="ScrollViewContent">
+                <Label Text="SafeArea ScrollView Test Page" 
+                       FontSize="24" 
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="DarkBlue" />
+                
+                <Label Text="This page tests ScrollView SafeAreaEdges behavior. The blue background shows areas outside safe area."
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       TextColor="DarkBlue" />
+                
+                <Label x:Name="CurrentSettingsLabel"
+                       Text="Current ScrollView SafeAreaEdges: All"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="DarkBlue"
+                       AutomationId="CurrentSettings" />
+                
+                <!-- ScrollView SafeArea Control -->
+                <Border BackgroundColor="LightBlue" Stroke="DarkBlue" StrokeThickness="2" Padding="20" Margin="10">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="ScrollView Safe Area Control:" 
+                               FontSize="18" 
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center" />
+                        
+                        <Label Text="Test different SafeAreaEdges values on the ScrollView"
+                               FontSize="12"
+                               HorizontalOptions="Center"
+                               TextColor="Gray" />
+                        
+                        <Button Text="Set ScrollView to None (Edge-to-edge)"
+                                Clicked="OnScrollViewSetNoneClicked"
+                                BackgroundColor="LightBlue"
+                                AutomationId="ScrollViewResetNoneButton" />
+                        
+                        <Button Text="Set ScrollView to Container"
+                                Clicked="OnScrollViewSetContainerClicked"
+                                BackgroundColor="LightGreen"
+                                AutomationId="ScrollViewSetContainerButton" />
+                        
+                        <Button Text="Set ScrollView to All (Full safe area)"
+                                Clicked="OnScrollViewSetAllClicked"
+                                BackgroundColor="LightCoral"
+                                AutomationId="ScrollViewResetAllButton" />
+                        
+                        <Button Text="Set ScrollView to SoftInput"
+                                Clicked="OnScrollViewSetSoftInputClicked"
+                                BackgroundColor="LightYellow"
+                                AutomationId="ScrollViewSetSoftInputButton" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Test content to enable scrolling -->
+                <Label Text="--- SCROLLABLE CONTENT BELOW ---" 
+                       FontSize="16" 
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="Red" />
+
+                <!-- Add enough content to make scrolling possible -->
+                <StackLayout Spacing="20">
+                    <Label Text="Test Item 1" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 2" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 3" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 4" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 5" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 6" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 7" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 8" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 9" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 10" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 11" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 12" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 13" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 14" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 15" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 16" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 17" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 18" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 19" FontSize="18" BackgroundColor="LightGray" Padding="10" />
+                    <Label Text="Test Item 20 - BOTTOM" FontSize="18" BackgroundColor="Red" Padding="10" />
+                </StackLayout>
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

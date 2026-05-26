@@ -26,7 +26,7 @@ namespace Microsoft.Maui.UnitTests
 		/// elements, instead of failing the test when something is missing, the strings without
 		/// translations will be stored in a txt file for viewing: artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/ResxLocalizationMissingTargets.txt
 		/// </summary>
-		[Fact]
+		[Fact(Skip = "Skipped because doesn t work on helix")]
 		public void ResxLocalizationStringsAreTranslated()
 		{
 			string lclFilePath = Path.Combine(_mauiRoot, "loc");
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.UnitTests
 		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/ResxLocalizationTranslationsNotDisplayed_<locale>.txt
 		/// NOTE: Link any new resx files as EmbeddedResource in the Core.UnitTests.csproj file.
 		/// </summary>
-		[Theory]
+		[Theory(Skip = "Skipped because doesn t work on helix")]
 		[InlineData("cs", "cs-CZ")]
 		[InlineData("de", "de-DE")]
 		[InlineData("es", "es-ES")]
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.UnitTests
 		/// Keys that are not included will be stored in a txt file for viewing:
 		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/LclFilesMissingJsonKeys_<locale>.txt
 		/// </summary>
-		[Theory]
+		[Theory(Skip = "Skipped because doesn t work on helix")]
 		[InlineData("cs")]
 		[InlineData("de")]
 		[InlineData("es")]

@@ -47,6 +47,7 @@ public class Bugzilla43663 : TestNavigationPage
 		};
 
 		var modalPage = new ContentPage();
+		modalPage.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		modalPage.Content = new StackLayout
 		{
 			Children =
@@ -99,11 +100,11 @@ public class Bugzilla43663 : TestNavigationPage
 
 	void ModalPushed(object sender, ModalPushedEventArgs e)
 	{
-		DisplayAlert("Pushed", Message, Cancel);
+		DisplayAlertAsync("Pushed", Message, Cancel);
 	}
 
 	void ModalPopped(object sender, ModalPoppedEventArgs e)
 	{
-		DisplayAlert("Popped", Message, Cancel);
+		DisplayAlertAsync("Popped", Message, Cancel);
 	}
 }

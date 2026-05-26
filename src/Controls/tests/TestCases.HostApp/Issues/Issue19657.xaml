@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue19657"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
     <ScrollView>
         <Grid x:Name="contentGrid">
@@ -20,7 +21,7 @@
 
             <Label HorizontalOptions="Center" x:Name="WaitHere" Text="Check if the Carousel items all show up" AutomationId="WaitHere" Background="Red"/>
          
-            <CarouselView x:Name="carousel"
+            <local:CarouselView2 x:Name="carousel"
                          ItemTemplate="{StaticResource SampleItemTemplate}"
                          Loop="False"
                          HeightRequest="220"

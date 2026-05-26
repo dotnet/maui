@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BindableObjectExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableObjectExtensions']/Docs/*" />
+	/// <summary>Contains convenience extension methods for <see cref="Microsoft.Maui.Controls.BindableObject"/>.</summary>
 	public static class BindableObjectExtensions
 	{
 		internal static void RefreshPropertyValue(this BindableObject self, BindableProperty property, object value)
@@ -49,7 +49,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObjectExtensions.xml" path="//Member[@MemberName='SetBinding']/Docs/*" />
+		/// <summary>Creates and applies a binding to a property.</summary>
+		/// <param name="self">The <see cref="Microsoft.Maui.Controls.BindableObject"/>.</param>
+		/// <param name="targetProperty">The BindableProperty on which to set a binding.</param>
+		/// <param name="path">A <see cref="System.String"/> indicating the property path to bind to.</param>
+		/// <param name="mode">The <see cref="Microsoft.Maui.Controls.BindingMode"/> for the binding. This parameter is optional. Default is <see cref="Microsoft.Maui.Controls.BindingMode.Default"/>.</param>
+		/// <param name="converter">An <see cref="Microsoft.Maui.Controls.IValueConverter"/> for the binding. This parameter is optional. Default is <see langword="null"/>.</param>
+		/// <param name="stringFormat">A string used as stringFormat for the binding. This parameter is optional. Default is <see langword="null"/>.</param>
+		/// <remarks>The following example shows how to use the extension method to set a binding.</remarks>
 		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 		public static void SetBinding(this BindableObject self, BindableProperty targetProperty, string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null,
 									  string stringFormat = null)
@@ -115,10 +122,10 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		/// <typeparam name="TSource">The source type.</typeparam>
 		/// <typeparam name="TProperty">The property type.</typeparam>
-		/// <param name="self">The <see cref="T:Microsoft.Maui.Controls.BindableObject" />.</param>
-		/// <param name="targetProperty">The <see cref="T:Microsoft.Maui.Controls.BindableProperty" /> on which to set a binding.</param>
+		/// <param name="self">The <see cref="Microsoft.Maui.Controls.BindableObject"/>.</param>
+		/// <param name="targetProperty">The <see cref="Microsoft.Maui.Controls.BindableProperty"/> on which to set a binding.</param>
 		/// <param name="getter">An getter method used to retrieve the source property.</param>
-		/// <param name="mode">The binding mode. This property is optional. Default is <see cref="F:Microsoft.Maui.Controls.BindingMode.Default" />.</param>
+		/// <param name="mode">The binding mode. This property is optional. Default is <see cref="Microsoft.Maui.Controls.BindingMode.Default"/>.</param>
 		/// <param name="converter">The converter. This parameter is optional. Default is <see langword="null" />.</param>
 		/// <param name="converterParameter">An user-defined parameter to pass to the converter. This parameter is optional. Default is <see langword="null" />.</param>
 		/// <param name="stringFormat">A String format. This parameter is optional. Default is <see langword="null" />.</param>
@@ -211,7 +218,10 @@ namespace Microsoft.Maui.Controls
 
 		public static void SetAppTheme<T>(this BindableObject self, BindableProperty targetProperty, T light, T dark) => self.SetBinding(targetProperty, new AppThemeBinding { Light = light, Dark = dark });
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObjectExtensions.xml" path="//Member[@MemberName='SetAppThemeColor']/Docs/*" />
+		/// <param name="self">The object instance.</param>
+		/// <param name="targetProperty">The targetProperty parameter.</param>
+		/// <param name="light">The light parameter.</param>
+		/// <param name="dark">The dark parameter.</param>
 		public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, Color light, Color dark)
 			=> SetAppTheme(self, targetProperty, light, dark);
 	}

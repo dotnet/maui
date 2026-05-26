@@ -48,6 +48,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
+		internal void UpdateHeaderView()
+		{
+			// Clean up header view if no header content
+			if (ItemsView.Header is null && ItemsView.HeaderTemplate is null)
+			{
+				var headerView = CollectionView.ViewWithTag(HeaderTag);
+				headerView?.RemoveFromSuperview();
+			}
+		}
+
+		internal void UpdateFooterView()
+		{
+			// Clean up footer view if no footer content
+			if (ItemsView.Footer is null && ItemsView.FooterTemplate is null)
+			{
+				var footerView = CollectionView.ViewWithTag(FooterTag);
+				footerView?.RemoveFromSuperview();
+			}
+		}
+
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView, NSString elementKind, NSIndexPath indexPath)
 		{
 			// We don't have a header or footer, so we don't need to do anything
@@ -64,6 +84,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				case DefaultCell2 defaultCell:
 					UpdateDefaultSupplementaryView(defaultCell, elementKind);
+					defaultCell.Label.UpdateFlowDirection(ItemsView);
 					break;
 				case TemplatedCell2 templatedCell:
 					UpdateTemplatedSupplementaryView(templatedCell, elementKind);
@@ -110,6 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			bool isHeader = elementKind == UICollectionElementKindSectionKey.Header;
 			cell.isHeaderOrFooterChanged = true;
+			cell.isSupplementaryView = true;
 
 			if (isHeader)
 			{
@@ -236,6 +258,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						return;
 					}
 				}
+			}
+		}
+
+		public override void UpdateFlowDirection()
+		{
+			base.UpdateFlowDirection();
+
+			// Update DefaultCell2 string-based header/footer flow direction via tag lookup
+			if (CollectionView.ViewWithTag(HeaderTag) is DefaultCell2 headerCell)
+			{
+				headerCell.Label.UpdateFlowDirection(ItemsView);
+			}
+
+			if (CollectionView.ViewWithTag(FooterTag) is DefaultCell2 footerCell)
+			{
+				footerCell.Label.UpdateFlowDirection(ItemsView);
 			}
 		}
 	}

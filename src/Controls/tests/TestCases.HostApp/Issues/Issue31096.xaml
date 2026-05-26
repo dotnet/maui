@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue31096">
+    <Grid RowDefinitions="Auto, *">
+        <Switch
+            IsToggled="False"
+            AutomationId="Switch"
+            x:Name="switch"/>
+        <CollectionView
+            Grid.Row="1"
+            ItemsSource="{Binding Animals}"
+            IsGrouped="{Binding Source={x:Reference switch}, Path=IsToggled}"
+            x:Name="cv">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid
+                        Padding="10"
+                        RowDefinitions="Auto, Auto">
+                        <Label
+                            Text="{Binding Name}"
+                            FontAttributes="Bold"/>
+                        <Label
+                            Grid.Row="1"
+                            Text="{Binding Location}"
+                            VerticalOptions="End"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <Label
+                        Text="{Binding Name}"
+                        AutomationId="GroupHeader"
+                        FontAttributes="Bold"/>
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+            <CollectionView.GroupFooterTemplate>
+                <DataTemplate>
+                    <Label
+                        Text="Footer"
+                        AutomationId="GroupFooter"
+                        FontAttributes="Bold"/>
+                </DataTemplate>
+            </CollectionView.GroupFooterTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

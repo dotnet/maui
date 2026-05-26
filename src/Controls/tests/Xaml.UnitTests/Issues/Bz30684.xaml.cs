@@ -3,36 +3,30 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz30684 : ContentPage
 {
-	public partial class Bz30684 : ContentPage
+	public Bz30684()
 	{
-		public Bz30684()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public Bz30684(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[TestFixture]
-		class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void XReferenceFindObjectsInParentNamescopes(XamlInflator inflator)
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(true)]
-			[TestCase(false)]
-			public void XReferenceFindObjectsInParentNamescopes(bool useCompiledXaml)
-			{
-				var layout = new Bz30684(useCompiledXaml);
-				var cell = (TextCell)layout.listView.TemplatedItems.GetOrCreateContent(0, null);
-				Assert.AreEqual("Foo", cell.Text);
-			}
+			var layout = new Bz30684(inflator);
+			var cell = (TextCell)layout.listView.TemplatedItems.GetOrCreateContent(0, null);
+			Assert.Equal("Foo", cell.Text);
 		}
 	}
 }

@@ -14,8 +14,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static PropertyMapper<CarouselView, CarouselViewHandler> Mapper = new(ItemsViewMapper)
 		{
-#if TIZEN
+#if TIZEN || ANDROID
 			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+#endif
+#if IOS || MACCATALYST
+			[Controls.VisualElement.IsEnabledProperty.PropertyName] = MapIsEnabled,
 #endif
 			[Controls.CarouselView.IsSwipeEnabledProperty.PropertyName] = MapIsSwipeEnabled,
 			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,

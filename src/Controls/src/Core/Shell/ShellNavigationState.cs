@@ -7,7 +7,9 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellNavigationState']/Docs/*" />
+	/// <summary>
+	/// Represents the current navigation state of a <see cref="Shell"/>, expressed as a URI.
+	/// </summary>
 	[DebuggerDisplay("Location = {Location}")]
 	[TypeConverter(typeof(ShellNavigationStateTypeConverter))]
 	public class ShellNavigationState
@@ -23,16 +25,23 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='Location']/Docs/*" />
+		/// <summary>
+		/// Gets the URI representing the current navigation location in the Shell.
+		/// </summary>
 		public Uri Location
 		{
 			get;
 			private set;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ShellNavigationState"/> class.
+		/// </summary>
 		public ShellNavigationState() { }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ShellNavigationState"/> class with the specified location string.
+		/// </summary>
+		/// <param name="location">A string representing the navigation location URI.</param>
 		public ShellNavigationState(string location) : this(location, true)
 		{
 		}
@@ -52,7 +61,10 @@ namespace Microsoft.Maui.Controls
 				Location = FullLocation;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigationState.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ShellNavigationState"/> class with the specified URI.
+		/// </summary>
+		/// <param name="location">A <see cref="Uri"/> representing the navigation location.</param>
 		public ShellNavigationState(Uri location)
 		{
 			FullLocation = location;

@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Image)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue1908Test()
 		{
 			App.WaitForElement("OASIS1");

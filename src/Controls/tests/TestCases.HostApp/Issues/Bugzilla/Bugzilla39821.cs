@@ -63,19 +63,19 @@ namespace Maui.Controls.Sample.Issues
 			var currentX = box.X;
 			var currentY = box.Y;
 
-			await box.TranslateTo(currentX, currentY + 100);
-			await box.TranslateTo(currentX, currentY);
+			await box.TranslateToAsync(currentX, currentY + 100);
+			await box.TranslateToAsync(currentX, currentY);
 		}
 
 		static async Task AnimateScale(BoxView box)
 		{
-			await box.ScaleTo(2);
-			await box.ScaleTo(0.5);
+			await box.ScaleToAsync(2);
+			await box.ScaleToAsync(0.5);
 		}
 
 		static async Task Rotate(BoxView box)
 		{
-			await box.RelRotateTo(360);
+			await box.RelRotateToAsync(360);
 		}
 
 #pragma warning disable 1998 // considered for removal

@@ -167,6 +167,37 @@ namespace Microsoft.Maui.Layouts
 			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
 		}
 
+		internal static Size MeasureContent(
+			this IContentView contentView,
+			Thickness inset,
+			double widthConstraint,
+			double heightConstraint,
+			bool constrainPresentedContentWidthToExplicitDimsOnContentView,
+			bool constrainPresentedContentHeightToExplicitDimsOnContentView)
+		{
+			var content = contentView.PresentedContent;
+
+			if (Dimension.IsExplicitSet(contentView.Width) && constrainPresentedContentWidthToExplicitDimsOnContentView)
+			{
+				widthConstraint = contentView.Width;
+			}
+
+			if (Dimension.IsExplicitSet(contentView.Height) && constrainPresentedContentHeightToExplicitDimsOnContentView)
+			{
+				heightConstraint = contentView.Height;
+			}
+
+			var contentSize = Size.Zero;
+
+			if (content != null)
+			{
+				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
+					heightConstraint - inset.VerticalThickness);
+			}
+
+			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
+		}
+
 		public static void ArrangeContent(this IContentView contentView, Rect bounds)
 		{
 			if (contentView.PresentedContent == null)

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.CSharpExpressions"
+             Title="{PageTitle}">
+    <ContentPage.Resources>
+        <x:String x:Key="StaticText">Static Resource Value</x:String>
+        <Color x:Key="TestColor">#FF0000</Color>
+    </ContentPage.Resources>
+    <VerticalStackLayout>
+        <!-- Explicit "=" prefix syntax (test this once) -->
+        <Label x:Name="explicitPropertyLabel" Text="{= ExplicitProperty}" />
+        
+        <!-- Implicit expression - method call -->
+        <Label x:Name="methodCallLabel" Text="{GetText()}" />
+        
+        <!-- Implicit expression - operators -->
+        <Label x:Name="additionLabel" Text="{FirstName + ' ' + LastName}" />
+        
+        <!-- Implicit expression - negation -->
+        <Label x:Name="negationLabel" IsVisible="{!IsHidden}" />
+        
+        <!-- Implicit expression - ternary -->
+        <Label x:Name="ternaryLabel" Text="{IsActive ? 'Active' : 'Inactive'}" />
+        
+        <!-- Implicit expression - null-coalescing -->
+        <Label x:Name="nullCoalescingLabel" Text="{NullableValue ?? 'Default'}" />
+        
+        <!-- Implicit expression - comparison -->
+        <Label x:Name="comparisonLabel" IsVisible="{Count == 0}" />
+        
+        <!-- Implicit expression - boolean AND -->
+        <Label x:Name="booleanAndLabel" IsVisible="{IsDataLoaded &amp;&amp; HasProducts}" />
+        
+        <!-- Implicit expression - boolean OR -->
+        <Label x:Name="booleanOrLabel" IsVisible="{IsEmpty || HasError}" />
+        
+        <!-- Char literal (single char) -->
+        <Label x:Name="charLabel" Text="{GetChar('x').ToString()}" />
+        
+        <!-- Escaped single quotes inside string -->
+        <Label x:Name="escapedSingleQuotesLabel" Text="{value ?? 'it\'s working'}" />
+        
+        <!-- Static method call -->
+        <Label x:Name="staticMethodLabel" Text="{string.Format('Count: {0}', Count)}" />
+        
+        <!-- Bare identifier - no markup extension exists, treated as property -->
+        <Label x:Name="bareIdentifierLabel" Text="{BareProperty}" />
+        
+        <!-- DISAMBIGUATION TESTS: Known markup extensions should work normally -->
+        
+        <!-- Binding markup extension -->
+        <Label x:Name="bindingLabel" Text="{Binding BindableText}" />
+        
+        <!-- StaticResource markup extension -->
+        <Label x:Name="staticResourceLabel" Text="{StaticResource StaticText}" />
+        
+        <!-- OnPlatform markup extension (even with operators inside) -->
+        <Label x:Name="onPlatformLabel" Text="{OnPlatform Default=PlatformDefault, iOS=iOS Value}" />
+        
+        <!-- OnIdiom markup extension -->
+        <Label x:Name="onIdiomLabel" Text="{OnIdiom Default=IdiomDefault, Phone=Phone Value}" />
+        
+        <!-- x:Static markup extension -->
+        <Label x:Name="xStaticLabel" Text="{x:Static Member=x:String.Empty}" />
+        
+        <!-- Nested: Expression inside property that also has Binding -->
+        <Label x:Name="mixedMarkupLabel" 
+               Text="{Binding MixedText}"
+               IsVisible="{IsVisibleProp}" />
+        
+        <!-- LAMBDA EVENT TESTS -->
+        
+        <!-- Lambda event - inline statement -->
+        <Button x:Name="inlineLambdaButton" Text="Inline" Clicked="{(s, e) => ClickCount++}" />
+        
+        <!-- Lambda event - method call -->
+        <Button x:Name="methodLambdaButton" Text="Method" Clicked="{(s, e) => OnButtonClicked()}" />
+        
+        <!-- Lambda event - with sender -->
+        <Button x:Name="senderLambdaButton" Text="Sender" Clicked="{(sender, e) => OnButtonClickedWithSender(sender)}" />
+        
+        <!-- Lambda event - explicit "=" syntax (test this once) -->
+        <Button x:Name="explicitLambdaButton" Text="Explicit" Clicked="{= (s, e) => ClickCount++}" />
+        
+        <!-- Lambda event - TextChanged (different signature) -->
+        <Entry x:Name="lambdaEntry" Text="Test" TextChanged="{(s, e) => OnTextChanged(e.NewTextValue)}" />
+        
+        <!-- STRING INTERPOLATION TESTS -->
+        
+        <!-- Basic string interpolation -->
+        <Label x:Name="interpolationLabel" Text="{$'Hello {FirstName}'}" />
+        
+        <!-- String interpolation with expression -->
+        <Label x:Name="interpolationExprLabel" Text="{$'{FirstName} {LastName}'}" />
+        
+        <!-- String interpolation with method call -->
+        <Label x:Name="interpolationMethodLabel" Text="{$'Result: {GetText()}'}" />
+        
+        <!-- TYPED BINDING TESTS (using separate x:DataType) -->
+        <VerticalStackLayout x:DataType="local:SimpleViewModel">
+            <!-- Simple binding expression: property only on x:DataType -->
+            <Label x:Name="vmLabel" Text="{Name}" />
+            
+            <!-- Explicit binding with dot prefix -->
+            <Label x:Name="dotPrefixLabel" Text="{.Name}" />
+            
+            <!-- Explicit binding with BindingContext prefix -->
+            <Label x:Name="bcPrefixLabel" Text="{BindingContext.Name}" />
+            
+            <!-- Explicit local with this prefix (test this once) -->
+            <Label x:Name="thisPrefixLabel" Text="{this.LocalProperty}" />
+            
+            <!-- Nested property binding -->
+            <Label x:Name="nestedLabel" Text="{User.DisplayName}" />
+            
+            <!-- Method call on BindingContext with explicit dot prefix -->
+            <Label x:Name="vmMethodLabel" Text="{.GetDisplayName()}" />
+            
+            <!-- Method call on BindingContext without prefix (should auto-resolve) -->
+            <Label x:Name="vmMethodBareLabel" Text="{GetDisplayName()}" />
+            
+            <!-- Mixed local+binding: Price from VM, TaxRate from this (auto-detected) -->
+            <Label x:Name="mixedExprLabel" Text="{(Price * TaxRate).ToString('F2')}" />
+            
+            <!-- Mixed for capture test: binding + local method -->
+            <Label x:Name="captureTestLabel" Text="{$'{Price} x {GetMultiplier()}'}" />
+            
+            <!-- Same method with different args in mixed expression: each invocation captured separately -->
+            <Label x:Name="multiMethodArgsLabel" Text="{$'{Price}: {GetFormattedValue(1)} and {GetFormattedValue(2)}'}" />
+            
+            <!-- Duplicate capture: two bindings using same local member with explicit this. prefix -->
+            <Label x:Name="mixedExprLabel2" Text="{(Quantity * this.TaxRate).ToString('F2')}" />
+            <Label x:Name="mixedExprLabel3" Text="{(Price * this.TaxRate).ToString('F2')}" />
+            
+            <!-- Multi-root: two properties from VM -->
+            <Label x:Name="multiRootLabel" Text="{(Price * Quantity).ToString()}" />
+            
+            <!-- String interpolation with binding -->
+            <Label x:Name="vmInterpolationLabel" Text="{$'Hello {Name}!'}" />
+            
+            <!-- String interpolation with multiple bindings and format -->
+            <Label x:Name="vmInterpolationMultiLabel" Text="{$'{Quantity}x at {Price:C2}'}" />
+            
+            <!-- Two-way binding: Entry.Text (string) to decimal property via C# expression -->
+            <Entry x:Name="twoWayDecimalEntry" Text="{Price}" />
+        </VerticalStackLayout>
+        
+        <!-- CDATA EXPRESSION TESTS -->
+        <!-- CDATA allows natural C# syntax without XML escaping -->
+        
+        <!-- CDATA - boolean AND with natural && syntax -->
+        <Label x:Name="cdataBooleanAndLabel">
+            <Label.IsVisible><![CDATA[{IsDataLoaded && HasProducts}]]></Label.IsVisible>
+        </Label>
+        
+        <!-- CDATA - comparison with natural < > syntax -->
+        <Label x:Name="cdataComparisonLabel">
+            <Label.IsVisible><![CDATA[{Count > 0 && Count < 100}]]></Label.IsVisible>
+        </Label>
+        
+        <!-- CDATA - string with double quotes (no single-quote transformation) -->
+        <Label x:Name="cdataDoubleQuotesLabel">
+            <Label.Text><![CDATA[{value ?? "Default Text"}]]></Label.Text>
+        </Label>
+        
+        <!-- CDATA - string interpolation with double quotes -->
+        <Label x:Name="cdataInterpolationLabel">
+            <Label.Text><![CDATA[{$"Hello {FirstName}!"}]]></Label.Text>
+        </Label>
+        
+        <!-- Test nested this. - method that takes another this. value -->
+        <Label x:Name="nestedThisLabel" Text="{this.CalculateWithRate(this.TaxRate).ToString()}" />
+        
+        <!-- CODE REVIEW EDGE CASE TESTS -->
+        
+        <!-- Test: Escaped double quotes inside single-quoted string -->
+        <Label x:Name="escapedDoubleQuotesLabel" Text="{value ?? 'he said \&quot;hi\&quot;'}" />
+        
+        <!-- Test: Escaped newline char literal -->
+        <Label x:Name="escapedNewlineLabel" Text="{GetChar('\n').ToString()}" />
+        
+        <!-- Test: Escaped tab char literal -->
+        <Label x:Name="escapedTabLabel" Text="{GetChar('\t').ToString()}" />
+    </VerticalStackLayout>
+</ContentPage>

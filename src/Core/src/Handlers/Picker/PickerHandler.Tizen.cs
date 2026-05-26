@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		// TODO Uncomment me on NET8 [Obsolete]
+		[Obsolete("Use Microsoft.Maui.Handlers.PickerHandler.MapItems instead")]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
@@ -73,6 +73,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView.UpdateCharacterSpacing(picker);
 		}
+
+		[MissingMapper]
+		internal static void MapIsOpen(IPickerHandler handler, IPicker picker) { }
+
 
 		static void Reload(IPickerHandler handler)
 		{

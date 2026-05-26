@@ -3,22 +3,34 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides a XAML markup extension that returns a <see cref="RelativeBindingSource"/> for relative bindings.
+	/// </summary>
 	[ContentProperty("Mode")]
 	[AcceptEmptyServiceProvider]
 	public sealed class RelativeSourceExtension : IMarkupExtension<RelativeBindingSource>
 	{
+		/// <summary>
+		/// Gets or sets the mode of the relative binding source.
+		/// </summary>
 		public RelativeBindingSourceMode Mode
 		{
 			get;
 			set;
 		}
 
+		/// <summary>
+		/// Gets or sets the level of ancestor to look for when Mode is FindAncestor or FindAncestorBindingContext.
+		/// </summary>
 		public int AncestorLevel
 		{
 			get;
 			set;
 		}
 
+		/// <summary>
+		/// Gets or sets the type of ancestor to look for when Mode is FindAncestor or FindAncestorBindingContext.
+		/// </summary>
 		public Type AncestorType
 		{
 			get;

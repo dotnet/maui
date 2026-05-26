@@ -1,0 +1,10 @@
+{
+  "author": "Microsoft",
+  "name": ".NET MAUI for .NET Aspire 服务默认值",
+  "description": "一个项目模板，用于为 .NET MAUI 创建“.NET Aspire 服务默认值”项目。",
+  "symbols/Framework/description": "项目的目标框架。",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目标 DOTNET_TFM_VALUE",
+  "symbols/skipRestore/description": "如果已指定，则在创建时跳过项目的自动还原。",
+  "postActions/restore/description": "还原此项目所需的 NuGet 包。",
+  "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
+}

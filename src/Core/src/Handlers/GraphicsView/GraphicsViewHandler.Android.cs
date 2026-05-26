@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics.Platform;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -6,11 +7,11 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override PlatformTouchGraphicsView CreatePlatformView() => new(Context);
 
-		// TODO : The modifier needs to be changed to public in the future.
-		internal static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
+		public static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
 			if (graphicsView.Background is not null)
 			{
+				handler.PlatformView?.UpdateBackground(graphicsView);
 				handler.PlatformView?.Invalidate();
 			}
 		}

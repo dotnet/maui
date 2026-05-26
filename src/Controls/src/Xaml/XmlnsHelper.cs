@@ -19,8 +19,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public static void ParseXmlns(string xmlns, out string typeName, out string ns, out string asm, out string targetPlatform)
 		{
-			typeName = ns = asm = targetPlatform = null;
-
 			xmlns = xmlns.Trim();
 
 			if (xmlns.StartsWith("using:", StringComparison.Ordinal))

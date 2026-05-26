@@ -36,5 +36,31 @@ namespace Microsoft.Maui.Controls
 		{
 			return new StackLayoutManager(this);
 		}
+
+		protected override LayoutConstraint ComputeConstraintForView(View view)
+		{
+			if (Orientation == StackOrientation.Horizontal)
+			{
+				if ((Constraint & LayoutConstraint.VerticallyFixed) != 0 && view.VerticalOptions.Alignment == LayoutAlignment.Fill)
+				{
+					return LayoutConstraint.VerticallyFixed;
+				}
+				else
+				{
+					return LayoutConstraint.None;
+				}
+			}
+			else
+			{
+				if ((Constraint & LayoutConstraint.HorizontallyFixed) != 0 && view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+				{
+					return LayoutConstraint.HorizontallyFixed;
+				}
+				else
+				{
+					return LayoutConstraint.None;
+				}
+			}
+		}
 	}
 }

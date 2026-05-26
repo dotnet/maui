@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.SafeAreaEdgesTests">
+	<Grid>
+		<!-- Test single value -->
+		<Grid x:Name="singleValueNone" SafeAreaEdges="None" />
+		<Grid x:Name="singleValueAll" SafeAreaEdges="All" />
+		<Grid x:Name="singleValueSoftInput" SafeAreaEdges="SoftInput" />
+		<Grid x:Name="singleValueContainer" SafeAreaEdges="Container" />
+		<Grid x:Name="singleValueDefault" SafeAreaEdges="Default" />
+		
+		<!-- Test two values -->
+		<Grid x:Name="twoValueHorVert" SafeAreaEdges="SoftInput,Container" />
+		<Grid x:Name="twoValueMixed" SafeAreaEdges="None,All" />
+		
+		<!-- Test four values -->
+		<Grid x:Name="fourValueMixed" SafeAreaEdges="None,SoftInput,Container,All" />
+		<Grid x:Name="fourValueDefault" SafeAreaEdges="Default,None,Default,All" />
+		
+		<!-- Test ContentView -->
+		<ContentView x:Name="contentViewTest" SafeAreaEdges="Container,SoftInput" />
+		
+		<!-- Test Border -->
+		<Border x:Name="borderTest" SafeAreaEdges="SoftInput" />
+		
+		<!-- Test ScrollView -->
+		<ScrollView x:Name="scrollViewTest" SafeAreaEdges="Container,Default,All,None" />
+	</Grid>
+</ContentPage>

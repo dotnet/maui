@@ -1,61 +1,56 @@
 using System;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh11335 : ContentPage
 {
-	public partial class Gh11335 : ContentPage
+	public Gh11335() => InitializeComponent();
+
+	void Remove(object sender, EventArgs e) => stack.Children.Remove(label);
+
+	void Add(object sender, EventArgs e)
 	{
-		public Gh11335() => InitializeComponent();
-		public Gh11335(bool useCompiledXaml)
+		int index = stack.Children.IndexOf(label);
+		Label newLabel = new Label { Text = "New Inserted Label" };
+		stack.Children.Insert(index + 1, newLabel);
+	}
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		bool enableDiagnosticsInitialState;
+		bool eventTriggered;
+
+		public Tests()
 		{
-			//this stub will be replaced at compile time
+			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
-		void Remove(object sender, EventArgs e) => stack.Children.Remove(label);
-
-		void Add(object sender, EventArgs e)
+		public void Dispose()
 		{
-			int index = stack.Children.IndexOf(label);
-			Label newLabel = new Label { Text = "New Inserted Label" };
-			stack.Children.Insert(index + 1, newLabel);
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
+			VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
 		}
 
-		[TestFixture]
-		class Tests
+		void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
 		{
-			bool _debuggerinitialstate;
+			Assert.Equal(VisualTreeChangeType.Add, e.ChangeType);
+			Assert.Equal(1, e.ChildIndex);
+			eventTriggered = true;
+		}
 
-			[SetUp]
-			public void Setup()
-			{
-				_debuggerinitialstate = DebuggerHelper._mockDebuggerIsAttached;
-				DebuggerHelper._mockDebuggerIsAttached = true;
-			}
 
-			[TearDown]
-			public void TearDown()
-			{
-				DebuggerHelper._mockDebuggerIsAttached = _debuggerinitialstate;
-				VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
-			}
-
-			void OnVTChanged(object sender, VisualTreeChangeEventArgs e)
-			{
-				Assert.That(e.ChangeType, Is.EqualTo(VisualTreeChangeType.Add));
-				Assert.That(e.ChildIndex, Is.EqualTo(1));
-				Assert.Pass();
-			}
-
-			[Test]
-			public void ChildIndexOnAdd([Values(false, true)] bool useCompiledXaml)
-			{
-				var layout = new Gh11335(useCompiledXaml);
-				VisualDiagnostics.VisualTreeChanged += OnVTChanged;
-				layout.Add(null, EventArgs.Empty);
-				Assert.Fail();
-			}
+		[Theory]
+		[XamlInflatorData]
+		internal void ChildIndexOnAdd(XamlInflator inflator)
+		{
+			eventTriggered = false;
+			var layout = new Gh11335(inflator);
+			VisualDiagnostics.VisualTreeChanged += OnVTChanged;
+			layout.Add(null, EventArgs.Empty);
+			Assert.True(eventTriggered, "VisualTreeChanged event was not triggered");
 		}
 	}
 }

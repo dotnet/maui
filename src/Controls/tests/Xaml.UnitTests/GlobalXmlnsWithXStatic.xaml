@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.GlobalXmlnsWithXStatic"
+             Title="GlobalXmlnsWithXStatic">
+	<Label x:Name="label0"
+			Text="{x:Static MockxStatic.MockConstant}"/>
+</ContentPage>

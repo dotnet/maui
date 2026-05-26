@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -34,11 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 		static int GetPlatformSelectionLength(EditorHandler editorHandler)
 		{
 			var textView = GetPlatformControl(editorHandler);
-
-			if (textView != null)
-				return textView.SelectionEnd - textView.SelectionStart;
-
-			return -1;
+			return textView?.GetSelectedTextLength() ?? -1;
 		}
 
 		Task<float> GetPlatformOpacity(EditorHandler editorHandler)
@@ -55,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(editorHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
 
@@ -140,6 +137,33 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Description("The SelectionLength property should handle right-to-left text selection correctly and not return negative values")]
+		public async Task SelectionLengthRightToLeft()
+		{
+			var editor = new Editor()
+			{
+				Text = "Hello World"
+			};
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var platformControl = GetPlatformControl(handler);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				platformControl.SetSelection(5, 0);  // SelectionStart=5, SelectionEnd=0
+				int platformSelectionLength = GetPlatformSelectionLength(handler);
+				Assert.True(platformSelectionLength >= 0,
+					$"Platform selection length should never be negative, but got: {platformSelectionLength}");
+				Assert.Equal(5, platformSelectionLength);
+
+				// The virtual view should also show positive selection length
+				Assert.True(editor.SelectionLength >= 0,
+					$"Virtual view selection length should never be negative, but got: {editor.SelectionLength}");
+				Assert.Equal(5, editor.SelectionLength);
+			});
+		}
+
+		[Fact]
 		[Description("The Rotation property of a Editor should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
@@ -168,6 +192,26 @@ namespace Microsoft.Maui.DeviceTests
 				var isEnabled = nativeView.Enabled;
 
 				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Editor should match with native Translation")]
+		public async Task EditorTranslationConsistent()
+		{
+			var editor = new Editor()
+			{
+				Text = "Editor Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, editor.TranslationX, editor.TranslationY);
 			});
 		}
 	}

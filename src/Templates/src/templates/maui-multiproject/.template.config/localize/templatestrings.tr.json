@@ -7,11 +7,11 @@
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Hedef DOTNET_TFM_VALUE",
   "symbols/android/displayName": "Android",
-  "symbols/android/description": "Android uygulama başı projesini dahil et",
+  "symbols/android/description": "Android uygulama ana projesini dahil edin",
   "symbols/ios/displayName": "iOS",
-  "symbols/ios/description": "iOS uygulama başı projesini dahil et",
-  "symbols/maccatalyst/displayName": "Mac Mac'i kullanarak macOS",
-  "symbols/maccatalyst/description": "macOS uygulama başı projesini dahil et (Mac Yerkörü kullanarak)",
+  "symbols/ios/description": "iOS uygulama ana projesini dahil edin",
+  "symbols/maccatalyst/displayName": "Mac Catalyst kullanan macOS",
+  "symbols/maccatalyst/description": "macOS uygulama ana projesini dahil edin (Mac Catalyst kullanarak)",
   "symbols/winui/displayName": "WinUI 3 kullanan Windows",
-  "symbols/winui/description": "Windows uygulama kafası projesini dahil et (WinUI 3 kullanarak)"
+  "symbols/winui/description": "Windows uygulaması ana projesini dahil edin (WinUI 3 kullanarak)"
 }

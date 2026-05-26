@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+              x:Class="Maui.Controls.Sample.Issues.Issue19197">
+  <ContentPage.Resources>
+    <ResourceDictionary>
+
+      <Style TargetType="Label">
+        <Setter Property="VisualStateManager.VisualStateGroups">
+          <VisualStateGroupList>
+            <VisualStateGroup>
+              <VisualState x:Name="Vertical">
+                <VisualState.StateTriggers>
+                  <AdaptiveTrigger MinWindowWidth="0" />
+                </VisualState.StateTriggers>
+                <VisualState.Setters>
+                  <Setter Property="Text" Value="Vertical" />
+                </VisualState.Setters>
+              </VisualState>
+              <VisualState x:Name="Horizontal">
+                <VisualState.StateTriggers>
+                  <AdaptiveTrigger MinWindowWidth="800" />
+                </VisualState.StateTriggers>
+                <VisualState.Setters>
+                  <Setter Property="Text" Value="Horizontal" />
+                </VisualState.Setters>
+              </VisualState>
+            </VisualStateGroup>
+          </VisualStateGroupList>
+        </Setter>
+      </Style>
+    </ResourceDictionary>
+  </ContentPage.Resources>
+  <Grid>
+    <Label
+       AutomationId="WaitForStubControl"
+       HorizontalOptions="Center"
+       VerticalOptions="Center" />
+  </Grid>
+</ContentPage> 

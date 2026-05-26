@@ -1,26 +1,20 @@
-using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class DO817710 : ContentPage
 {
-	public partial class DO817710 : ContentPage
-	{
-		public DO817710() => InitializeComponent();
-		public DO817710(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public DO817710() => InitializeComponent();
 
-		[TestFixture]
-		class Tests
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void EmptyResourcesElement(XamlInflator inflator)
 		{
-			[Test]
-			public void EmptyResourcesElement([Values(false, true)] bool useCompiledXaml)
-			{
-				Assert.DoesNotThrow(() => new DO817710(useCompiledXaml: useCompiledXaml));
-			}
+			var ex = Record.Exception(() => new DO817710(inflator));
+			Assert.Null(ex);
 		}
 	}
 }

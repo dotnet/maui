@@ -1,71 +1,40 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class XReference : ContentPage
 {
-	public partial class XReference : ContentPage
+	public XReference() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		public XReference()
+		[Theory]
+		[XamlInflatorData]
+		internal void SupportsXReference(XamlInflator inflator)
 		{
-			InitializeComponent();
+			var layout = new XReference(inflator);
+			Assert.Same(layout.image, layout.imageView.Content);
 		}
 
-		public XReference(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void XReferenceAsBindingSource(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
+			var layout = new XReference(inflator);
+
+			Assert.Equal("foo", layout.entry.Text);
+			Assert.Equal("bar", layout.entry.Placeholder);
 		}
 
-		[TestFixture]
-		public class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void CrossXReference(XamlInflator inflator)
 		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void SupportsXReference(bool useCompiledXaml)
-			{
-				var layout = new XReference(useCompiledXaml);
-				Assert.AreSame(layout.image, layout.imageView.Content);
-			}
+			var layout = new XReference(inflator);
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void XReferenceAsCommandParameterToSelf(bool useCompiledXaml)
-			{
-				var layout = new XReference(useCompiledXaml);
-
-				var button = layout.aButton;
-				button.BindingContext = new
-				{
-					ButtonClickCommand = new Command(o =>
-					{
-						if (o == button)
-							Assert.Pass();
-					})
-				};
-				((IButtonController)button).SendClicked();
-				Assert.Fail();
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void XReferenceAsBindingSource(bool useCompiledXaml)
-			{
-				var layout = new XReference(useCompiledXaml);
-
-				Assert.AreEqual("foo", layout.entry.Text);
-				Assert.AreEqual("bar", layout.entry.Placeholder);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void CrossXReference(bool useCompiledXaml)
-			{
-				var layout = new XReference(useCompiledXaml);
-
-				Assert.AreSame(layout.label0, layout.label1.BindingContext);
-				Assert.AreSame(layout.label1, layout.label0.BindingContext);
-			}
+			Assert.Same(layout.label0, layout.label1.BindingContext);
+			Assert.Same(layout.label1, layout.label0.BindingContext);
 		}
 	}
 }

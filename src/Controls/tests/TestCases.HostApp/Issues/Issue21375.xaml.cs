@@ -96,6 +96,11 @@ public partial class Issue21375 : ContentPage
 		Output.Text = sb.ToString();
 	}
 
+	void ClearSelection(object sender, EventArgs e)
+	{
+		collectionView.SelectedItem = null;
+	}
+
 	public class Item
 	{
 		public string Name { get; set; }

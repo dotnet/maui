@@ -302,8 +302,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			UpdateMode();
 
-			if (_commandBarTcs != null)
-				_commandBarTcs.SetResult(_commandBar);
+			_commandBarTcs?.SetResult(_commandBar);
 
 			_titleViewManager = new TitleViewManager(this);
 		}

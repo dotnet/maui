@@ -15,7 +15,7 @@ public class Bugzilla57749 : TestContentPage
 
 	private void Button1_Clicked1(object sender, EventArgs e)
 	{
-		this.DisplayAlert("Button test", "Button was clicked", "Ok");
+		this.DisplayAlertAsync("Button test", "Button was clicked", "Ok");
 	}
 
 	protected override async void OnAppearing()

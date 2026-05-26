@@ -7,6 +7,7 @@ namespace UITest.Appium
 		const string IsKeyboardShownCommand = "isKeyboardShown";
 		const string HideKeyboardCommand = "dismissKeyboard";
 		const string PressEnterCommand = "pressEnter";
+		const string SendTabKeyCommand = "sendTabKey";
 		const string PressVolumeDownCommand = "pressVolumeDown";
 		const string PressVolumeUpCommand = "pressVolumeUp";
 
@@ -16,6 +17,7 @@ namespace UITest.Appium
 			IsKeyboardShownCommand,
 			HideKeyboardCommand,
 			PressEnterCommand,
+			SendTabKeyCommand,
 			PressVolumeDownCommand,
 			PressVolumeUpCommand,
 		};
@@ -37,6 +39,7 @@ namespace UITest.Appium
 				IsKeyboardShownCommand => IsKeyboardShown(parameters),
 				HideKeyboardCommand => DismissKeyboard(parameters),
 				PressEnterCommand => PressEnter(parameters),
+				SendTabKeyCommand => SendTabKey(parameters),
 				PressVolumeDownCommand => PressVolumeDown(parameters),
 				PressVolumeUpCommand => PressVolumeUp(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
@@ -54,6 +57,11 @@ namespace UITest.Appium
 		}
 
 		protected virtual CommandResponse PressEnter(IDictionary<string, object> parameters)
+		{
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		protected virtual CommandResponse SendTabKey(IDictionary<string, object> parameters)
 		{
 			return CommandResponse.SuccessEmptyResponse;
 		}

@@ -1,6 +1,8 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Views;
+using Android.Views.Accessibility;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -20,6 +22,10 @@ namespace Microsoft.Maui.Platform
 
 		IIndicatorView? _indicatorView;
 
+		bool _isTemplateIndicator;
+		
+		static readonly IndicatorAccessibilityDelegate _accessibilityDelegate = new();
+
 		public MauiPageControl(Context? context) : base(context)
 		{
 		}
@@ -37,6 +43,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_pageShape = null;
 			_currentPageShape = null;
+			_isTemplateIndicator = false;
 
 			if ((_indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
 				UpdateShapes();
@@ -58,12 +65,15 @@ namespace Microsoft.Maui.Platform
 				var drawableToUse = index == i ? _currentPageShape : _pageShape;
 				if (drawableToUse != view.Drawable)
 					view.SetImageDrawable(drawableToUse);
+
+				// Update accessibility information
+				UpdateIndicatorAccessibility(view, i, index);
 			}
 		}
 
 		public void UpdateIndicatorCount()
 		{
-			if (_indicatorView == null || Context == null)
+			if (_indicatorView == null || Context == null || _isTemplateIndicator)
 				return;
 
 			var index = GetIndexFromPosition();
@@ -88,12 +98,15 @@ namespace Microsoft.Maui.Platform
 
 				imageView.SetOnClickListener(new TEditClickListener(view =>
 				{
-					if (view?.Tag != null)
+					if (_indicatorView.IsEnabled && view?.Tag != null)
 					{
 						var position = (int)view.Tag;
 						_indicatorView.Position = position;
 					}
 				}));
+
+				// Set up accessibility after click listener so Clickable state is set correctly
+				SetupIndicatorAccessibility(imageView, i, index);
 
 				AddView(imageView);
 			}
@@ -107,6 +120,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			AView? handler = layout.ToPlatform(_indicatorView.Handler.MauiContext);
+			_isTemplateIndicator = true;
 
 			RemoveAllViews();
 			AddView(handler);
@@ -133,6 +147,51 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		void SetupIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
+		{
+			if (_indicatorView is null)
+			{
+				return;
+			}
+
+			imageView.ImportantForAccessibility = ImportantForAccessibility.Yes;
+			
+			// Set accessibility delegate to prevent "button" announcement
+			imageView.SetAccessibilityDelegate(_accessibilityDelegate);
+			
+			// Set the accessibility content description
+			UpdateIndicatorAccessibility(imageView, position, selectedPosition);
+		}
+
+		void UpdateIndicatorAccessibility(ImageView imageView, int position, int selectedPosition)
+		{
+			if (_indicatorView is null || Context is null)
+			{
+				return;
+			}
+
+			var itemNumber = position + 1;
+			var totalItems = _indicatorView.GetMaximumVisible();
+			var isSelected = position == selectedPosition;
+
+			// Use localized string resources for TalkBack announcements
+			var contentDescription = isSelected
+				? Context.GetString(Resource.String.indicator_item_accessible_description_selected, new Java.Lang.Integer(itemNumber), new Java.Lang.Integer(totalItems))
+				: Context.GetString(Resource.String.indicator_item_accessible_description, new Java.Lang.Integer(itemNumber), new Java.Lang.Integer(totalItems));
+
+			imageView.ContentDescription = contentDescription;
+
+			// Prevent "double tap to activate" announcement for the already-selected indicator
+			imageView.Clickable = !isSelected;
+
+			// Force TalkBack to announce the updated description for the selected item
+			if (isSelected && imageView.IsAccessibilityFocused)
+			{
+				// Send accessibility event to make TalkBack re-announce the updated content
+				imageView.SendAccessibilityEvent(EventTypes.ViewAccessibilityFocused);
+			}
+		}
+
 		AShapeDrawable? GetShape(AColor color)
 		{
 			if (_indicatorView == null || Context == null)
@@ -150,9 +209,7 @@ namespace Microsoft.Maui.Platform
 			shape.SetIntrinsicHeight((int)Context.ToPixels(indicatorSize));
 			shape.SetIntrinsicWidth((int)Context.ToPixels(indicatorSize));
 
-			if (shape.Paint != null)
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-				shape.Paint.Color = color;
+			shape.Paint?.Color = color;
 #pragma warning restore CA1416
 
 			return shape;
@@ -170,7 +227,11 @@ namespace Microsoft.Maui.Platform
 
 		void RemoveViews(int startAt)
 		{
-			for (int i = startAt; i < ChildCount; i++)
+			if (_isTemplateIndicator)
+				return;
+
+			var count = ChildCount;
+			for (int i = startAt; i < count; i++)
 			{
 				var imageView = GetChildAt(ChildCount - 1);
 				imageView?.SetOnClickListener(null);
@@ -198,6 +259,22 @@ namespace Microsoft.Maui.Platform
 					_command = null;
 				}
 				base.Dispose(disposing);
+			}
+		}
+
+		class IndicatorAccessibilityDelegate : AccessibilityDelegate
+		{
+			public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfo? info)
+			{
+				if (host is null || info is null)
+				{
+					return;
+				}
+	
+				base.OnInitializeAccessibilityNodeInfo(host, info);
+
+				// Set class name to avoid "button" announcement
+				info.ClassName = "android.view.View";
 			}
 		}
 	}

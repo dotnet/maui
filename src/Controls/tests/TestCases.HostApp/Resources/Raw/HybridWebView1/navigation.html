@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>HybridWebView Navigation Page</title>
+    <meta charset="UTF-8" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .nav-section {
+            padding: 20px;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .nav-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-3px);
+            border-color: #007bff;
+        }
+
+        .nav-card.active {
+            border-color: #28a745;
+            background: #e8f5e8;
+        }
+
+        .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .page-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            min-height: 150px;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn.home {
+            background: #28a745;
+        }
+
+        .status {
+            background: #f0f8ff;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧭 Navigation Page</h1>
+        </div>
+
+        <div class="nav-section">
+            <!-- Navigation Cards -->
+            <div class="nav-grid">
+                <div class="nav-card active" onclick="showPage('main')" id="main-card">
+                    <div class="icon">🏠</div>
+                    <h4>Main</h4>
+                </div>
+
+                <div class="nav-card" onclick="showPage('settings')" id="settings-card">
+                    <div class="icon">⚙️</div>
+                    <h4>Settings</h4>
+                </div>
+
+                <div class="nav-card" onclick="showPage('about')" id="about-card">
+                    <div class="icon">ℹ️</div>
+                    <h4>About</h4>
+                </div>
+
+                <div class="nav-card" onclick="showPage('help')" id="help-card">
+                    <div class="icon">❓</div>
+                    <h4>Help</h4>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-section active" id="main-page">
+                    <h3>🏠 Main Page</h3>
+                    <p>Welcome to the navigation hub. Click the cards above to explore different sections.</p>
+                    <button class="btn" onclick="sendMessage('Main page message')">📤 Send to C#</button>
+                </div>
+
+                <div class="page-section" id="settings-page">
+                    <h3>⚙️ Settings</h3>
+                    <p>Configuration options:</p>
+                    <label><input type="checkbox" id="option1"> Enable Feature 1</label><br>
+                    <label><input type="checkbox" id="option2"> Enable Feature 2</label><br>
+                    <button class="btn" onclick="sendMessage('Settings saved')">💾 Save</button>
+                </div>
+
+                <div class="page-section" id="about-page">
+                    <h3>ℹ️ About</h3>
+                    <p><strong>HybridWebView Demo</strong></p>
+                    <p>Version: 1.0.0</p>
+                    <p>A simple navigation demonstration.</p>
+                    <button class="btn" onclick="sendMessage('About page viewed')">📤 Send to C#</button>
+                </div>
+
+                <div class="page-section" id="help-page">
+                    <h3>❓ Help</h3>
+                    <p>Quick help guide:</p>
+                    <ul>
+                        <li>Click cards to switch sections</li>
+                        <li>Use buttons to send messages to C#</li>
+                        <li>Click "Back to Home" to return</li>
+                    </ul>
+                    <button class="btn" onclick="sendMessage('Help accessed')">Send to C#</button>
+                </div>
+            </div>
+
+            <div class="status" id="status">Ready - Main page loaded</div>
+        </div>
+    </div>
+
+    <script>
+        // HybridWebView bridge
+        window.HybridWebView = {
+            SendRawMessage: function (msg) {
+                try {
+                    if (window.chrome && window.chrome.webview) {
+                        window.chrome.webview.postMessage("__RawMessage|" + msg);
+                        return true;
+                    } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
+                        window.webkit.messageHandlers.webwindowinterop.postMessage("__RawMessage|" + msg);
+                        return true;
+                    } else if (window.hybridWebViewHost) {
+                        window.hybridWebViewHost.sendMessage("__RawMessage|" + msg);
+                        return true;
+                    }
+                    return false;
+                } catch (error) {
+                    document.getElementById('status').textContent = `Error: ${error.message}`;
+                    return false;
+                }
+            }
+        };
+
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Remove active from all cards
+            document.querySelectorAll('.nav-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageId + '-page').classList.add('active');
+            document.getElementById(pageId + '-card').classList.add('active');
+
+            document.getElementById('status').textContent = `Switched to ${pageId} section`;
+            sendMessage(`PAGE:${pageId}`);
+        }
+
+        function goHome() {
+            window.HybridWebView.SendRawMessage('NAVIGATE:index.html');
+            document.getElementById('status').textContent = 'Going back to Home';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 300);
+        }
+
+        function sendMessage(msg) {
+            if (window.HybridWebView.SendRawMessage(msg)) {
+                document.getElementById('status').textContent = `✅ Sent: ${msg}`;
+            } else {
+                document.getElementById('status').textContent = `❌ Failed to send`;
+            }
+        }
+
+        // Receive messages from C#
+        window.receiveMessageFromCSharp = function (message) {
+            document.getElementById('status').textContent = `📨 C# says: ${message}`;
+            return 'Message received';
+        };
+    </script>
+</body>
+
+</html>

@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI 应用",
-  "description": "用于创建适用于 iOS、Android、Mac Catalyst、WinUI 和 Tizen 的 .NET MAUI 应用程序的项目",
+  "description": "一个项目，用于创建适用于 iOS、Android、Mac Catalyst 和 WinUI 的 .NET MAUI 应用程序",
   "postActions/openInEditor/description": "在编辑器中打开 MainPage.xaml。",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\"",

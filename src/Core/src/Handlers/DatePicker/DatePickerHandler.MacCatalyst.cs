@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Connect(this, VirtualView, platformView);
 
 			var date = VirtualView?.Date;
-			if (date is DateTime dt)
+			if (date is not null && date is DateTime dt)
 			{
 				platformView.Date = dt.ToNSDate();
 			}
@@ -70,17 +70,24 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		public static partial void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFlowDirection(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+
+		}
+
+		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 
 		}
 
 		void SetVirtualViewDate()
 		{
-			if (VirtualView == null)
+			if (VirtualView is null)
+			{
 				return;
+			}
 
-			VirtualView.Date = PlatformView.Date.ToDateTime().Date;
+			VirtualView.Date = PlatformView.Date.ToDateTime();
 		}
 
 		class UIDatePickerProxy

@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = AnimationReadyHandler.Prepare(new View());
 
-			await view.FadeTo(0.1);
+			await view.FadeToAsync(0.1);
 
 			Assert.True(Math.Abs(0.1 - view.Opacity) < 0.001);
 		}
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = AnimationReadyHandler.Prepare(new View());
 
-			await view.TranslateTo(100, 50);
+			await view.TranslateToAsync(100, 50);
 
 			Assert.Equal(100, view.TranslationX);
 			Assert.Equal(50, view.TranslationY);
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = AnimationReadyHandler.Prepare(new View());
 
-			await view.ScaleTo(2);
+			await view.ScaleToAsync(2);
 
 			Assert.Equal(2, view.Scale);
 		}
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = AnimationReadyHandler.Prepare(new View());
 
-			await view.RotateTo(25);
+			await view.RotateToAsync(25);
 
 			AssertEqualWithTolerance(view.Rotation, 25, 0.001);
 		}
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = AnimationReadyHandler.Prepare(new View());
 
-			await view.RotateYTo(25);
+			await view.RotateYToAsync(25);
 
 			AssertEqualWithTolerance(view.RotationY, 25, 0.001);
 		}
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = AnimationReadyHandler.Prepare(new View());
 
-			await view.RotateXTo(25);
+			await view.RotateXToAsync(25);
 
 			AssertEqualWithTolerance(view.RotationX, 25, 0.001);
 		}
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = AnimationReadyHandler.Prepare(new View { Rotation = 30 });
 
-			await view.RelRotateTo(20);
+			await view.RelRotateToAsync(20);
 
 			AssertEqualWithTolerance(view.Rotation, 50, 0.001);
 		}
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = AnimationReadyHandler.Prepare(new View { Scale = 1 });
 
-			await view.RelScaleTo(1);
+			await view.RelScaleToAsync(1);
 
 			AssertEqualWithTolerance(view.Scale, 2, 0.001);
 		}

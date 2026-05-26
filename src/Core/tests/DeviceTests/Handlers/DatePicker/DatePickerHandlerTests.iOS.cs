@@ -85,12 +85,178 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "Date Format Shows Four Digit Year")]
+		public async Task DateFormatShowsFourDigitYear()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = new DateTime(2024, 6, 15),
+				Format = "d" // Short date format
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text ?? string.Empty;
+				// The text should contain "2024" not "24"
+				Assert.Contains("2024", text, StringComparison.OrdinalIgnoreCase);
+				return datePicker.Date;
+			}, datePicker.Date);
+		}
+
+		[Fact(DisplayName = "Date Format With Empty Format Shows Four Digit Year")]
+		public async Task DateFormatWithEmptyFormatShowsFourDigitYear()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = new DateTime(2024, 6, 15),
+				Format = string.Empty // Empty format (default)
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text ?? string.Empty;
+				// The text should contain "2024" not "24"
+				Assert.Contains("2024", text, StringComparison.OrdinalIgnoreCase);
+				return datePicker.Date;
+			}, datePicker.Date);
+		}
+
+		[Fact(DisplayName = "Date Format With Null Format Shows Four Digit Year")]
+		public async Task DateFormatWithNullFormatShowsFourDigitYear()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = new DateTime(2024, 6, 15),
+				Format = null // Null format (default)
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text ?? string.Empty;
+				// The text should contain "2024" not "24"  
+				Assert.Contains("2024", text, StringComparison.OrdinalIgnoreCase);
+				return datePicker.Date;
+			}, datePicker.Date);
+		}
+
+		[Fact(DisplayName = "Long Date Format Uses Full Format")]
+		public async Task LongDateFormatUsesFullFormat()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = new DateTime(2024, 6, 15),
+				Format = "D" // Long date format
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text ?? string.Empty;
+				// Long format should contain the full year
+				Assert.Contains("2024", text, StringComparison.OrdinalIgnoreCase);
+				// And should be a longer format (contains month name)
+				Assert.True(text.Length > 10, $"Long date format should be longer than short format, got: {text}");
+				return datePicker.Date;
+			}, datePicker.Date);
+		}
+
+		[Fact(DisplayName = "Custom Format With Slash Shows Four Digit Year")]
+		public async Task CustomFormatWithSlashShowsFourDigitYear()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = new DateTime(2024, 6, 15),
+				Format = "MM/dd/yyyy" // Custom format with slash
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text ?? string.Empty;
+				// Should show the exact format specified
+				Assert.Equal("06/15/2024", text);
+				return datePicker.Date;
+			}, datePicker.Date);
+		}
+
+		[Fact(DisplayName = "Custom Format Without Slash Shows Four Digit Year")]
+		public async Task CustomFormatWithoutSlashShowsFourDigitYear()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = new DateTime(2024, 6, 15),
+				Format = "yyyy-MM-dd" // Custom format without slash
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text ?? string.Empty;
+				// Should show the exact format specified
+				Assert.Equal("2024-06-15", text);
+				return datePicker.Date;
+			}, datePicker.Date);
+		}
+
+		[Fact(DisplayName = "Null Date Shows Empty Text")]
+		public async Task NullDateShowsEmptyText()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = null,
+				Format = "d"
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text;
+				// Should show empty text for null date
+				Assert.Equal(string.Empty, text, StringComparer.OrdinalIgnoreCase);
+				return datePicker.Date;
+			}, datePicker.Date);
+		}
+
+		[Fact(DisplayName = "Case Insensitive Short Format Shows Four Digit Year")]
+		public async Task CaseInsensitiveShortFormatShowsFourDigitYear()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = new DateTime(2024, 6, 15),
+				Format = "D" // Uppercase D should use long format, not short format with year fix
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text ?? string.Empty;
+				// Should use long date format, not short format
+				Assert.Contains("2024", text, StringComparison.OrdinalIgnoreCase);
+				// Should be longer than a typical short format
+				Assert.True(text.Length > 15, $"Expected long format to be longer, got: {text}");
+				return datePicker.Date;
+			}, datePicker.Date);
+		}
+
+		[Fact(DisplayName = "Custom Format With Existing Four Digit Year Works")]
+		public async Task CustomFormatWithExistingFourDigitYearWorks()
+		{
+			var datePicker = new DatePickerStub()
+			{
+				Date = new DateTime(2024, 6, 15),
+				Format = "dd/MM/yyyy" // Already has yyyy
+			};
+
+			await ValidatePropertyInitValue(datePicker, () => datePicker.Date, (handler) =>
+			{
+				var text = GetNativeDatePicker(handler).Text ?? string.Empty;
+				// Should maintain the 4-digit year
+				Assert.Equal("15/06/2024", text);
+				return datePicker.Date;
+			}, datePicker.Date);
+ 		}
+		
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
 			datePickerHandler.PlatformView;
 
-		DateTime GetNativeDate(DatePickerHandler datePickerHandler)
+		DateTime? GetNativeDate(DatePickerHandler datePickerHandler)
 		{
-			var dateString = GetNativeDatePicker(datePickerHandler).Text;
+			var dateString = GetNativeDatePicker(datePickerHandler).Text ?? string.Empty;
 			DateTime.TryParse(dateString, out DateTime result);
 
 			return result;

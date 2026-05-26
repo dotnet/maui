@@ -1,0 +1,71 @@
+{
+    "$schema": "https://json.schemastore.org/template",
+    "author": "Microsoft",
+    "classifications": [
+      "MAUI",
+      "Aspire",
+      "Cloud",
+      "Web",
+      "Web API",
+      "API",
+      "Service"
+    ],
+    "name": ".NET MAUI for Aspire Service Defaults",
+    "defaultName": "MauiAspire1.ServiceDefaults",
+    "description": "A project template for creating an Aspire service defaults project for .NET MAUI.",
+    "shortName": "maui-aspire-servicedefaults",
+    "sourceName": "MauiAspire.1.ServiceDefaults",
+    "preferNameDirectory": true,
+    "tags": {
+      "language": "C#",
+      "type": "project"
+    },
+    "precedence": "9000",
+    "identity": "MauiAspire.ServiceDefaults.CSharp.8.0",
+    "thirdPartyNotices": "https://aka.ms/dotnet/aspire/third-party-notices",
+    "groupIdentity": "MauiAspire.ServiceDefaults",
+    "symbols": {
+      "Framework": {
+        "type": "parameter",
+        "description": "The target framework for the project.",
+        "datatype": "choice",
+        "choices": [
+          {
+            "choice": "DOTNET_TFM_VALUE",
+            "description": "Target DOTNET_TFM_VALUE"
+          }
+        ],
+        "replaces": "DOTNET_TFM",
+        "defaultValue": "DOTNET_TFM_VALUE"
+      },
+      "hostIdentifier": {
+        "type": "bind",
+        "binding": "HostIdentifier"
+      },
+      "skipRestore": {
+        "type": "parameter",
+        "datatype": "bool",
+        "description": "If specified, skips the automatic restore of the project on create.",
+        "defaultValue": "false"
+      }
+    },
+    "primaryOutputs": [
+      {
+        "path": "MauiAspire.1.ServiceDefaults.csproj"
+      }
+    ],
+    "postActions": [
+      {
+        "id": "restore",
+        "condition": "(!skipRestore)",
+        "description": "Restore NuGet packages required by this project.",
+        "manualInstructions": [
+          {
+            "text": "Run 'dotnet restore'"
+          }
+        ],
+        "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+        "continueOnError": true
+      }
+    ]
+  }

@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ItemTemplateContext
+	public class ItemTemplateContext
 	{
 		readonly WeakReference<BindableObject> _container;
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public double ItemWidth { get; }
 		public Thickness ItemSpacing { get; }
 
-		public ItemTemplateContext(DataTemplate formsDataTemplate, object item, BindableObject container,
+		internal ItemTemplateContext(DataTemplate formsDataTemplate, object item, BindableObject container,
 			double? height = null, double? width = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null)
 		{
 			FormsDataTemplate = formsDataTemplate;

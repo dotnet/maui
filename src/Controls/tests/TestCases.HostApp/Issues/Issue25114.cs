@@ -1,4 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
+
 using Microsoft.Maui.Controls;
 
 [Issue(IssueTracker.Github, 25114, "NullReferenceException when setting BarBackgroundColor for a NavigationPage", PlatformAffected.All)]

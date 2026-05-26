@@ -29,6 +29,8 @@ namespace Microsoft.Maui.DeviceTests
 		// There's definitely a chance that the code written to manage this process could be improved		
 		public const string RunInNewWindowCollection = "Serialize test because it has to add itself to the main window";
 
+		public const string WebViewsCollection = "Webviews sometimes don't allow configuration to vary in the same process";
+
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
 			mauiAppBuilder.Services.AddSingleton<IApplication>((_) => new ApplicationStub());

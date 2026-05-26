@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (FireLifeCycleEvents)
 			{
-				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
+				modal.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, NavigationType.Pop));
 			}
 
 			modal.SendDisappearing();
@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (FireLifeCycleEvents)
 			{
 				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Pop));
-				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(modal));
+				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(modal, NavigationType.Pop));
 			}
 
 			if (!isPlatformReady)
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (FireLifeCycleEvents)
 			{
-				previousPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+				previousPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, NavigationType.Push));
 			}
 
 			if (_window.Page is Shell shell)
@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (FireLifeCycleEvents)
 			{
 				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Push));
-				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push));
 			}
 
 			_window.OnModalPushed(modal);

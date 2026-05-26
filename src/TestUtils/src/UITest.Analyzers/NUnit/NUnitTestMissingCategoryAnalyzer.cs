@@ -13,25 +13,45 @@ namespace UITest.Analyzers.NUnit
 	[DiagnosticAnalyzer(LanguageNames.CSharp)]
 	public class NUnitTestMissingCategoryAnalyzer : DiagnosticAnalyzer
 	{
-		public const string DiagnosticId = "NUnitTestMissingCategoryAnalyzer";
+		public const string MissingCategoryDiagnosticId = "MAUI0001";
+		public const string MultipleCategoriesDiagnosticId = "MAUI0002";
 
-		const string Title = "Test methods should have a Category";
-		const string MessageFormat = "Test method '{0}' should be marked with a `[Category]` attribute on the method or its parent class";
-		const string Description = "Test methods should be marked with a `[Category]` attribute on the method or its parent class.";
+		const string MissingCategoryTitle = "Test methods should have exactly one Category";
+		const string MissingCategoryMessageFormat = "Test method '{0}' should be marked with exactly one `[Category]` attribute on the method or its parent class";
+		const string MissingCategoryDescription = "Test methods should be marked with exactly one `[Category]` attribute on the method or its parent class.";
+
+		const string MultipleCategoriesTitle = "Test methods should have exactly one Category";
+		const string MultipleCategoriesMessageFormat = "Test method '{0}' has {1} `[Category]` attributes but should have exactly one";
+		const string MultipleCategoriesDescription = "Test methods should have exactly one `[Category]` attribute, either on the method or its parent class.";
 
 		private const string Category = "Testing";
 
-		private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+		private static readonly DiagnosticDescriptor MissingCategoryRule = new DiagnosticDescriptor(
+			MissingCategoryDiagnosticId,
+			MissingCategoryTitle,
+			MissingCategoryMessageFormat,
+			Category,
+			DiagnosticSeverity.Error,
+			isEnabledByDefault: true,
+			description: MissingCategoryDescription);
 
-		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get { return ImmutableArray.Create(Rule); } }
+		private static readonly DiagnosticDescriptor MultipleCategoriesRule = new DiagnosticDescriptor(
+			MultipleCategoriesDiagnosticId,
+			MultipleCategoriesTitle,
+			MultipleCategoriesMessageFormat,
+			Category,
+			DiagnosticSeverity.Error,
+			isEnabledByDefault: true,
+			description: MultipleCategoriesDescription);
+
+		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
+			=> ImmutableArray.Create(MissingCategoryRule, MultipleCategoriesRule);
 
 		public override void Initialize(AnalysisContext context)
 		{
 			context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 			context.EnableConcurrentExecution();
 
-			// TODO: Consider registering other actions that act on syntax instead of or in addition to symbols
-			// See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
 			context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Method);
 		}
 
@@ -42,21 +62,96 @@ namespace UITest.Analyzers.NUnit
 			// Check if the method has the [Test] attribute.
 			var hasTestAttribute = methodSymbol.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "TestAttribute");
 
-			// Check if the method has the [Category] attribute.
-			var hasCategoryAttribute = methodSymbol.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "CategoryAttribute");
-			if (!hasCategoryAttribute)
+			if (!hasTestAttribute)
 			{
-				// If the method does not have a [Category] attribute, check the containing class
-				var containingClass = methodSymbol.ContainingType;
-				hasCategoryAttribute = containingClass.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "CategoryAttribute");
+				return;
 			}
 
-			// If it has [Test] but not [Category], report a diagnostic.
-			if (hasTestAttribute && !hasCategoryAttribute)
+			// Count category attributes on the method
+			int methodCategoryCount = CountCategoryAttributes(methodSymbol.GetAttributes());
+
+			// Count category attributes on the containing class
+			var containingClass = methodSymbol.ContainingType;
+			int classCategoryCount = CountCategoryAttributes(containingClass.GetAttributes());
+
+			int totalCategoryCount = methodCategoryCount + classCategoryCount;
+
+			// If it has [Test] but no [Category], report missing category diagnostic.
+			if (totalCategoryCount == 0)
 			{
-				var diagnostic = Diagnostic.Create(Rule, methodSymbol.Locations[0], methodSymbol.Name);
+				var diagnostic = Diagnostic.Create(MissingCategoryRule, methodSymbol.Locations[0], methodSymbol.Name);
 				context.ReportDiagnostic(diagnostic);
 			}
+			// If it has more than one [Category], report multiple categories diagnostic.
+			else if (totalCategoryCount > 1)
+			{
+				var diagnostic = Diagnostic.Create(MultipleCategoriesRule, methodSymbol.Locations[0], methodSymbol.Name, totalCategoryCount);
+				context.ReportDiagnostic(diagnostic);
+			}
+		}
+
+		/// <summary>
+		/// Counts the number of Category attributes, considering both direct [Category] attributes
+		/// and attributes that derive from CategoryAttribute (but excluding conditional ignore attributes).
+		/// </summary>
+		private static int CountCategoryAttributes(ImmutableArray<AttributeData> attributes)
+		{
+			int count = 0;
+			foreach (var attr in attributes)
+			{
+				if (attr?.AttributeClass == null)
+				{
+					continue;
+				}
+
+				// Check if it's a direct [Category] attribute
+				if (attr.AttributeClass.Name == "CategoryAttribute")
+				{
+					count++;
+					continue;
+				}
+
+				// Check if it derives from CategoryAttribute (but exclude platform-specific ignore attributes)
+				// These attributes conditionally derive from CategoryAttribute or IgnoreAttribute based on platform,
+				// so we should not count them as category attributes
+				var attributeName = attr.AttributeClass.Name;
+				if (IsPlatformIgnoreAttribute(attributeName))
+				{
+					continue;
+				}
+
+				// Check the base type hierarchy for CategoryAttribute
+				var baseType = attr.AttributeClass.BaseType;
+				while (baseType != null)
+				{
+					if (baseType.Name == "CategoryAttribute")
+					{
+						count++;
+						break;
+					}
+					baseType = baseType.BaseType;
+				}
+			}
+			return count;
+		}
+
+		/// <summary>
+		/// Returns true if the attribute is a platform-specific ignore attribute that conditionally
+		/// derives from CategoryAttribute based on the target platform.
+		/// </summary>
+		private static bool IsPlatformIgnoreAttribute(string attributeName)
+		{
+			return attributeName == "FailsOnAndroidWhenRunningOnXamarinUITestAttribute" ||
+				   attributeName == "FailsOnIOSWhenRunningOnXamarinUITestAttribute" ||
+				   attributeName == "FailsOnMacWhenRunningOnXamarinUITestAttribute" ||
+				   attributeName == "FailsOnWindowsWhenRunningOnXamarinUITestAttribute" ||
+				   attributeName == "FailsOnAllPlatformsWhenRunningOnXamarinUITestAttribute" ||
+				   // Also check without the "Attribute" suffix
+				   attributeName == "FailsOnAndroidWhenRunningOnXamarinUITest" ||
+				   attributeName == "FailsOnIOSWhenRunningOnXamarinUITest" ||
+				   attributeName == "FailsOnMacWhenRunningOnXamarinUITest" ||
+				   attributeName == "FailsOnWindowsWhenRunningOnXamarinUITest" ||
+				   attributeName == "FailsOnAllPlatformsWhenRunningOnXamarinUITest";
 		}
 	}
 }

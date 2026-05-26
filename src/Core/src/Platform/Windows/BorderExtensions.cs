@@ -60,8 +60,7 @@ namespace Microsoft.Maui.Platform
 			if (borderPath == null)
 				return;
 
-			if (borderPath.StrokeDashArray != null)
-				borderPath.StrokeDashArray.Clear();
+			borderPath.StrokeDashArray?.Clear();
 
 			if (borderDashArray != null && borderDashArray.Length > 0)
 			{

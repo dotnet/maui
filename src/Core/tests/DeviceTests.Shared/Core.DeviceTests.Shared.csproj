@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <SingleProject>true</SingleProject>
+    <MauiTestProject>true</MauiTestProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.DeviceTests.Shared</AssemblyName>
     <!--<Nullable>enable</Nullable>-->

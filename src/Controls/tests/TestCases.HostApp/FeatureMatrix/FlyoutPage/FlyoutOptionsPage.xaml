@@ -1,0 +1,231 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.FlyoutOptionsPage"
+             Title="Flyout Options">
+        <ContentPage.ToolbarItems>
+                <ToolbarItem Text="Apply"
+                             Clicked="ApplyButton_Clicked"
+                             AutomationId="Apply"/>
+        </ContentPage.ToolbarItems>
+        <Grid Padding="16"
+              RowSpacing="18"
+              ColumnSpacing="24">
+                <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Text="IsVisible"
+                       FontAttributes="Bold"
+                       Grid.Row="0"
+                       Grid.Column="0"
+                       AutomationId="IsVisibleLabel"/>
+                <HorizontalStackLayout Grid.Row="1"
+                                       Grid.Column="0">
+                        <RadioButton Content="True"
+                                     IsChecked="True"
+                                     GroupName="IsVisibleGroup"
+                                     CheckedChanged="IsVisibleRadio_CheckedChanged"
+                                     AutomationId="IsVisibleTrue"/>
+                        <RadioButton Content="False"
+                                     GroupName="IsVisibleGroup"
+                                     CheckedChanged="IsVisibleRadio_CheckedChanged"
+                                     AutomationId="IsVisibleFalse"/>
+                </HorizontalStackLayout>
+                <Label Text="Flow Direction"
+                       FontAttributes="Bold"
+                       Grid.Row="2"
+                       Grid.Column="0"
+                       AutomationId="FlowDirectionLabel"/>
+                <HorizontalStackLayout Grid.Row="3"
+                                       Grid.Column="0">
+                        <RadioButton x:Name="FlowDirectionLTR"
+                                     AutomationId="FlowDirectionLTR"
+                                     GroupName="FlowDirection"
+                                     Content="LTR"
+                                     IsChecked="True"
+                                     FontSize="14"
+                                     CheckedChanged="OnFlowDirectionChanged"/>
+                        <RadioButton x:Name="FlowDirectionRTL"
+                                     AutomationId="FlowDirectionRTL"
+                                     GroupName="FlowDirection"
+                                     Content="RTL"
+                                     FontSize="14"
+                                     CheckedChanged="OnFlowDirectionChanged"/>
+                </HorizontalStackLayout>
+
+                <Label Text="IsEnabled"
+                       FontAttributes="Bold"
+                       Grid.Row="0"
+                       Grid.Column="1"
+                       AutomationId="IsEnabledLabel"/>
+                <HorizontalStackLayout Grid.Row="1"
+                                       Grid.Column="1">
+                        <RadioButton Content="True"
+                                     IsChecked="True"
+                                     GroupName="IsEnabledGroup"
+                                     CheckedChanged="IsEnabledRadio_CheckedChanged"
+                                     AutomationId="IsEnabledTrue"/>
+                        <RadioButton Content="False"
+                                     GroupName="IsEnabledGroup"
+                                     CheckedChanged="IsEnabledRadio_CheckedChanged"
+                                     AutomationId="IsEnabledFalse"/>
+                </HorizontalStackLayout>
+                <Label Text="IsPresented"
+                       FontAttributes="Bold"
+                       Grid.Row="2"
+                       Grid.Column="1"
+                       AutomationId="IsPresentedLabel"/>
+                <HorizontalStackLayout Grid.Row="3"
+                                       Grid.Column="1">
+                        <RadioButton Content="True"
+                                     GroupName="IsPresentedGroup"
+                                     CheckedChanged="IsPresentedRadio_CheckedChanged"
+                                     AutomationId="IsPresentedTrue"/>
+                        <RadioButton Content="False"
+                                     IsChecked="True"
+                                     GroupName="IsPresentedGroup"
+                                     CheckedChanged="IsPresentedRadio_CheckedChanged"
+                                     AutomationId="IsPresentedFalse"/>
+                </HorizontalStackLayout>
+
+                <Label Text="IsGestureEnabled"
+                       FontAttributes="Bold"
+                       Grid.Row="4"
+                       Grid.Column="0"
+                       AutomationId="IsGestureEnabledLabel"/>
+                <HorizontalStackLayout Grid.Row="5"
+                                       Grid.Column="0">
+                        <RadioButton Content="True"
+                                     IsChecked="True"
+                                     GroupName="IsGestureEnabledGroup"
+                                     CheckedChanged="IsGestureEnabledRadio_CheckedChanged"
+                                     AutomationId="IsGestureEnabledTrue"/>
+                        <RadioButton Content="False"
+                                     GroupName="IsGestureEnabledGroup"
+                                     CheckedChanged="IsGestureEnabledRadio_CheckedChanged"
+                                     AutomationId="IsGestureEnabledFalse"/>
+                </HorizontalStackLayout>
+                <Label Text="Title"
+                       FontAttributes="Bold"
+                       Grid.Row="4"
+                       Grid.Column="1"
+                       AutomationId="TitleLabel"/>
+                <Entry Placeholder="Enter FlyoutPage Title"
+                       TextChanged="OnTitleEntryTextChanged"
+                       Grid.Row="5"
+                       Grid.Column="1"
+                       AutomationId="TitleEntry"/>
+
+                <Label Text="FlyoutLayoutBehavior"
+                       FontAttributes="Bold"
+                       Grid.Row="6"
+                       Grid.Column="0"
+                       AutomationId="FlyoutLayoutBehaviorLabel"/>
+                <Grid Grid.Row="7"
+                      Grid.ColumnSpan="2"
+                      RowSpacing="5"
+                      ColumnSpacing="5">
+                        <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                        </Grid.ColumnDefinitions>
+                        <Button Text="Default"
+                                Clicked="OnFlyoutLayoutBehaviorButtonClicked"
+                                CommandParameter="Default"
+                                AutomationId="FlyoutLayoutBehaviorDefault"
+                                Grid.Row="0"
+                                Grid.Column="0"/>
+                        <Button Text="Split"
+                                Clicked="OnFlyoutLayoutBehaviorButtonClicked"
+                                CommandParameter="Split"
+                                AutomationId="FlyoutLayoutBehaviorSplit"
+                                Grid.Row="0"
+                                Grid.Column="1"/>
+                        <Button Text="Popover"
+                                Clicked="OnFlyoutLayoutBehaviorButtonClicked"
+                                CommandParameter="Popover"
+                                AutomationId="FlyoutLayoutBehaviorPopover"
+                                Grid.Row="0"
+                                Grid.Column="2"/>
+                        <Button Text="SplitOnLandscape"
+                                Clicked="OnFlyoutLayoutBehaviorButtonClicked"
+                                CommandParameter="SplitOnLandscape"
+                                AutomationId="FlyoutLayoutBehaviorSplitOnLandscape"
+                                Grid.Row="1"
+                                Grid.Column="0"/>
+                        <Button Text="SplitOnPortrait"
+                                Clicked="OnFlyoutLayoutBehaviorButtonClicked"
+                                CommandParameter="SplitOnPortrait"
+                                AutomationId="FlyoutLayoutBehaviorSplitOnPortrait"
+                                Grid.Row="1"
+                                Grid.Column="1"/>
+                </Grid>
+
+                <Label Text="BackgroundColor"
+                       FontAttributes="Bold"
+                       Grid.Row="8"
+                       Grid.Column="0"
+                       AutomationId="BackgroundColorLabel"/>
+                <HorizontalStackLayout Grid.Row="9"
+                                       Grid.ColumnSpan="2"
+                                       Spacing="5">
+                        <Button Text="Red"
+                                Clicked="OnBackgroundColorChanged"
+                                AutomationId="BackgroundColorRedButton"/>
+                        <Button Text="Gray"
+                                Clicked="OnBackgroundColorChanged"
+                                AutomationId="BackgroundColorGrayButton"/>
+                        <Button Text="LightYellow"
+                                Clicked="OnBackgroundColorChanged"
+                                AutomationId="BackgroundColorLightYellowButton"/>
+                </HorizontalStackLayout>
+
+                <Label Text="Icon Selection"
+                       FontAttributes="Bold"
+                       Grid.Row="10"
+                       Grid.Column="0"
+                       AutomationId="IconSelectionLabel"/>
+                <Grid Grid.Row="11"
+                      Grid.ColumnSpan="2"
+                      RowSpacing="5"
+                      ColumnSpacing="5">
+                        <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Text="Coffee"
+                                Clicked="OnIconSelected"
+                                Grid.Column="0"
+                                AutomationId="IconCoffeeButton"/>
+                        <Button Text="FontIcon"
+                                Clicked="OnIconSelected"
+                                Grid.Column="1"
+                                AutomationId="IconFontIconButton"/>
+
+                </Grid>
+        </Grid>
+</ContentPage>

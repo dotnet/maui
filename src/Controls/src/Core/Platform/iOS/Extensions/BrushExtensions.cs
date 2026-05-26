@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var backgroundLayer = control.GetBackgroundLayer(brush);
 
-			if (backgroundLayer is null)
+			if (backgroundLayer is null || backgroundLayer.Bounds.Size.Width <= 0 || backgroundLayer.Bounds.Size.Height <= 0)
 			{
 				return null;
 			}

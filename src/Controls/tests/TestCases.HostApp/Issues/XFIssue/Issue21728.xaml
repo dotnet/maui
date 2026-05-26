@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue21728"
-             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
+			 SafeAreaEdges="Container">
   <CollectionView x:Name="collectionview" AutomationId="collectionview" ItemsLayout="VerticalGrid, 2">
 		<CollectionView.ItemTemplate>
 			<DataTemplate>

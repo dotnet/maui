@@ -18,9 +18,11 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public bool IsListeningForeground { get => listeningManager != null; }
 
+		public bool IsEnabled => CLLocationManager.LocationServicesEnabled;
+
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
-			if (!CLLocationManager.LocationServicesEnabled)
+			if (!IsEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		{
 			ArgumentNullException.ThrowIfNull(request);
 
-			if (!CLLocationManager.LocationServicesEnabled)
+			if (!IsEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();
@@ -119,7 +121,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location changes.");
 
-			if (!CLLocationManager.LocationServicesEnabled)
+			if (!IsEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
 			await Permissions.EnsureGrantedAsync<Permissions.LocationWhenInUse>();

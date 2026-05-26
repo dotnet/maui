@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Handlers
 #if __ANDROID__ || WINDOWS
 			[nameof(IPicker.Background)] = MapBackground,
 #endif
+#if __ANDROID__
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
+#endif
 			[nameof(IPicker.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IPicker.Font)] = MapFont,
 			[nameof(IPicker.SelectedIndex)] = MapSelectedIndex,
@@ -28,10 +31,17 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITextAlignment.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IPicker.Items)] = MapItems,
+			[nameof(IPicker.IsOpen)] = MapIsOpen,
 		};
 
 		public static CommandMapper<IPicker, IPickerHandler> CommandMapper = new(ViewCommandMapper)
 		{
+#if ANDROID
+			[nameof(IPicker.Focus)] = MapFocus,
+			[nameof(IPicker.Unfocus)] = MapUnfocus
+#elif MACCATALYST
+			[nameof(IPicker.Unfocus)] = MapUnfocus
+#endif
 		};
 
 		public PickerHandler() : base(Mapper, CommandMapper)

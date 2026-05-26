@@ -7,6 +7,6 @@
     x:TypeArguments="local:VM25172"
     BackgroundColor="{StaticResource BackgroundColor}">
     <ContentPage.Resources>
-        <ResourceDictionary Source="../AppResources/Colors.xaml" x:Key="Colors" />
+        <ResourceDictionary Source="../AppResources/Colors.rtxc.xaml" x:Key="Colors" />
     </ContentPage.Resources>
 </local:CoreContentPage>

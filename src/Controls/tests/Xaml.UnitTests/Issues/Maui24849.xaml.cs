@@ -1,72 +1,58 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui24849 : ContentPage
 {
-	public Maui24849()
-	{
-		InitializeComponent();
-	}
+	public Maui24849() => InitializeComponent();
 
-	public Maui24849(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void VSGReturnsToNormal([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void VSGReturnsToNormal(XamlInflator inflator)
 		{
 			var app = new MockApplication();
 			app.Resources.Add(new Style24849());
-			var page = new Maui24849(useCompiledXaml);
+			var page = new Maui24849(inflator);
 
 			app.MainPage = page;
 
-			Assert.That(page.button.IsEnabled, Is.False);
-			Assert.That(page.button.TextColor, Is.EqualTo(Color.FromHex("#3c3c3b")));
+			Assert.False(page.button.IsEnabled);
+			Assert.Equal(Color.FromHex("#3c3c3b"), page.button.TextColor);
 
 			page.button.IsEnabled = true;
-			Assert.That(page.button.IsEnabled, Is.True);
-			Assert.That(page.button.TextColor, Is.EqualTo(Colors.White));
+			Assert.True(page.button.IsEnabled);
+			Assert.Equal(Colors.White, page.button.TextColor);
 
 			page.button.IsEnabled = false;
-			Assert.That(page.button.IsEnabled, Is.False);
-			Assert.That(page.button.TextColor, Is.EqualTo(Color.FromHex("#3c3c3b")));
+			Assert.False(page.button.IsEnabled);
+			Assert.Equal(Color.FromHex("#3c3c3b"), page.button.TextColor);
 		}
 	}
 }

@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			await Navigation.PushModalAsync(new ContentPage());
 			await Navigation.PushModalAsync(new ContentPage());
-			await this.DisplayAlert("hello", "message", "Cancel");
+			await this.DisplayAlertAsync("hello", "message", "Cancel");
 			await Navigation.PopModalAsync();
 			await Navigation.PopModalAsync();
 		}
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			await Navigation.PushModalAsync(new ContentPage());
 			await Navigation.PushModalAsync(new ContentPage());
-			await this.DisplayActionSheet("hello", "message", "Cancel", "Option 1", "Option 2");
+			await this.DisplayActionSheetAsync("hello", "message", "Cancel", "Option 1", "Option 2");
 			await Navigation.PopModalAsync();
 			await Navigation.PopModalAsync();
 		}
@@ -46,8 +46,19 @@ namespace Maui.Controls.Sample.Issues
 
 		async void OpenPrompt(System.Object sender, System.EventArgs e, Func<Page, Task> promptAction)
 		{
-			var uIWindow = new UIWindow();
 			var keyWindow = (this.Window.Handler.PlatformView as UIWindow);
+
+			UIWindow uIWindow;
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && keyWindow?.WindowScene is not null)
+			{
+				uIWindow = new UIWindow(keyWindow.WindowScene);
+			}
+			else
+			{
+#pragma warning disable CA1422 // This call site is reachable on iOS < 13.0
+				uIWindow = new UIWindow();
+#pragma warning restore CA1422
+			}
 			if (keyWindow?.WindowLevel == UIWindowLevel.Normal)
 				keyWindow.WindowLevel = -1;
 
@@ -84,7 +95,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			OpenPrompt(sender, e, (page) =>
 			{
-				return page.DisplayAlert("hello", "message", "Cancel");
+				return page.DisplayAlertAsync("hello", "message", "Cancel");
 			});
 		}
 
@@ -93,18 +104,18 @@ namespace Maui.Controls.Sample.Issues
 		{
 			OpenPrompt(sender, e, (page) =>
 			{
-				return page.DisplayActionSheet("hello", "message", "Cancel", "Option 1", "Option 2");
+				return page.DisplayActionSheetAsync("hello", "message", "Cancel", "Option 1", "Option 2");
 			});
 		}
 #else
 		async void OpenActionSheetWithNewUIWindow(System.Object sender, System.EventArgs e)
 		{
-			await this.DisplayActionSheet("hello", "message", "Cancel", "Option 1", "Option 2");
+			await this.DisplayActionSheetAsync("hello", "message", "Cancel", "Option 1", "Option 2");
 		}
 
 		async void OpenAlertWithNewUIWindow(System.Object sender, System.EventArgs e)
 		{
-			await this.DisplayAlert("hello", "message", "Cancel");
+			await this.DisplayAlertAsync("hello", "message", "Cancel");
 		}
 #endif
 	}

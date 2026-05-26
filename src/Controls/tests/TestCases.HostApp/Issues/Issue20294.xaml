@@ -3,54 +3,69 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="Issue 20294"
              x:Class="Maui.Controls.Sample.Issues.Issue20294">
-     <CollectionView SelectionMode="Single" Margin="10.0" AutomationId="theCollectionView">
-        <CollectionView.ItemsSource>
-            <x:Array Type="{x:Type x:String}">
-                <x:String>ONE</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>asdf</x:String>
-                <x:String>LAST</x:String>
-            </x:Array>
-        </CollectionView.ItemsSource>
-        <CollectionView.ItemsLayout>
-            <LinearItemsLayout 
-                Orientation="Vertical"
-                ItemSpacing="15"/>
-        </CollectionView.ItemsLayout>
-        <CollectionView.Footer>
-            <Label HeightRequest="45" Text="FOOTER" AutomationId="FOOTER"/>
-        </CollectionView.Footer> 
-        <CollectionView.ItemTemplate>
-            <DataTemplate x:DataType="x:String">
-                <Border AutomationId="{Binding}" StrokeThickness="0.2">
-                    <Label Text="{Binding}" FontSize="20"/>
-                </Border>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
-    </CollectionView>
+    <Grid RowDefinitions="Auto,*">
+        <Button Text="Scroll To Footer"
+                VerticalOptions="Center"
+                Clicked="OnButtonClicked"
+                AutomationId="ScrollToFooterButton"
+                HorizontalOptions="Center"/>
+        <CollectionView SelectionMode="Single"
+                        Grid.Row="1"
+                        Margin="10.0"
+                        x:Name="collectionView"
+                        AutomationId="theCollectionView">
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>ONE</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>asdf</x:String>
+                    <x:String>LAST</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout
+                    Orientation="Vertical"
+                    ItemSpacing="15"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.Footer>
+                <Label HeightRequest="45"
+                       Text="FOOTER"
+                       AutomationId="FOOTER"/>
+            </CollectionView.Footer>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Border AutomationId="{Binding}"
+                            StrokeThickness="0.2">
+                        <Label Text="{Binding}"
+                               FontSize="20"/>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>

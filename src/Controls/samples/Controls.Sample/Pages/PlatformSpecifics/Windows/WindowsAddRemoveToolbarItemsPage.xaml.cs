@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 #if WINDOWS
-			_action = () => ParentPage.DisplayAlert(WindowsPlatformSpecificsHelpers.Title, WindowsPlatformSpecificsHelpers.Message, WindowsPlatformSpecificsHelpers.Dismiss);
+			_action = () => ParentPage.DisplayAlertAsync(WindowsPlatformSpecificsHelpers.Title, WindowsPlatformSpecificsHelpers.Message, WindowsPlatformSpecificsHelpers.Dismiss);
 #else
 			_action = null;
 #endif

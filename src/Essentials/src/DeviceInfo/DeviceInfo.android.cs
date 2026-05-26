@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Devices
 				var currentIdiom = DeviceIdiom.Unknown;
 
 				// first try UIModeManager
-				using var uiModeManager = UiModeManager.FromContext(Application.Context);
+				var uiModeManager = UiModeManager.FromContext(Application.Context);
 
 				try
 				{
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Devices
 					else
 					{
 						// start clutching at straws
-						using var metrics = Application.Context.Resources?.DisplayMetrics;
+						var metrics = Application.Context.Resources?.DisplayMetrics;
 						if (metrics != null)
 						{
 							var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);

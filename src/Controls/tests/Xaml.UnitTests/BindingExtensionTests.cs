@@ -1,14 +1,14 @@
-﻿using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[TestFixture]
+[Collection("Xaml Inflation")]
 public class BindingExtensionTests
 {
-	[Test]
+	[Fact]
 	public void ProvideValue_Null()
 	{
-		IMarkupExtension<BindingBase> binding = new BindingExtension { Path = "Foo" };
-		binding.ProvideValue(null); // This should not throw
+		BindingExtension binding = new BindingExtension { Path = "Foo" };
+		((IMarkupExtension<BindingBase>)binding).ProvideValue(null); // This should not throw
 	}
 }

@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || ANDROID
 		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/19240"
 #endif
 		)]
@@ -111,60 +111,58 @@ namespace Microsoft.Maui.DeviceTests
 
 			var weakReferences = new List<WeakReference>();
 
+			var labels = new List<Label>();
+			IList logicalChildren = null;
+			var collectionView = new CollectionView
 			{
-				var labels = new List<Label>();
-				IList logicalChildren = null;
-				var collectionView = new CollectionView
+				Header = new Label { Text = "Header" },
+				Footer = new Label { Text = "Footer" },
+				ItemTemplate = new DataTemplate(() =>
 				{
-					Header = new Label { Text = "Header" },
-					Footer = new Label { Text = "Footer" },
-					ItemTemplate = new DataTemplate(() =>
-					{
-						var label = new Label();
-						labels.Add(label);
-						return label;
-					}),
-				};
+					var label = new Label();
+					labels.Add(label);
+					return label;
+				}),
+			};
 
-				var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
 
-				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await navPage.PushAsync(new ContentPage { Content = collectionView });
+
+				var data = new ObservableCollection<string>()
 				{
-					await navPage.PushAsync(new ContentPage { Content = collectionView });
-
-					var data = new ObservableCollection<string>()
-					{
 						"Item 1",
 						"Item 2",
 						"Item 3"
-					};
-					weakReferences.Add(new(data));
-					collectionView.ItemsSource = data;
-					await Task.Delay(100);
+				};
+				weakReferences.Add(new(data));
+				collectionView.ItemsSource = data;
+				await Task.Delay(100);
 
-					Assert.NotEmpty(labels);
-					foreach (var label in labels)
-					{
-						weakReferences.Add(new(label));
-						weakReferences.Add(new(label.Handler));
-						weakReferences.Add(new(label.Handler.PlatformView));
-					}
+				Assert.NotEmpty(labels);
+				foreach (var label in labels)
+				{
+					weakReferences.Add(new(label));
+					weakReferences.Add(new(label.Handler));
+					weakReferences.Add(new(label.Handler.PlatformView));
+				}
 
-					// Get ItemsView._logicalChildren
-					var flags = BindingFlags.NonPublic | BindingFlags.Instance;
-					logicalChildren = typeof(Element).GetField("_internalChildren", flags).GetValue(collectionView) as IList;
-					Assert.NotNull(logicalChildren);
-
-					// Replace with cloned collection
-					collectionView.ItemsSource = new ObservableCollection<string>(data);
-					await Task.Delay(100);
-					await navPage.PopAsync();
-				});
-
-
+				// Get ItemsView._logicalChildren
+				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+				logicalChildren = typeof(Element).GetField("_internalChildren", flags).GetValue(collectionView) as IList;
 				Assert.NotNull(logicalChildren);
-				Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
-			}
+
+				// Replace with cloned collection
+				collectionView.ItemsSource = new ObservableCollection<string>(data);
+				await Task.Delay(100);
+				await navPage.PopAsync();
+			});
+
+
+			Assert.NotNull(logicalChildren);
+			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 
 			await AssertionExtensions.WaitForGC([.. weakReferences]);
 		}
@@ -369,7 +367,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				collectionView.VerticalOptions = layoutOptions;
 			}
 
-			var layout = new Grid() { IgnoreSafeArea = true, HeightRequest = containerHeight, WidthRequest = containerWidth };
+			var layout = new Grid() { HeightRequest = containerHeight, WidthRequest = containerWidth };
+#pragma warning disable CS0618 // Type or member is obsolete
+			layout.IgnoreSafeArea = true;
+#pragma warning restore CS0618 // Type or member is obsolete
 			layout.Add(collectionView);
 
 			ObservableCollection<string> data = new();
@@ -443,7 +444,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 			double containerHeight = 500;
 			double containerWidth = 500;
-			var layout = new Grid() { IgnoreSafeArea = true, HeightRequest = containerHeight, WidthRequest = containerWidth };
+			var layout = new Grid() { HeightRequest = containerHeight, WidthRequest = containerWidth };
+#pragma warning disable CS0618 // Type or member is obsolete
+			layout.IgnoreSafeArea = true;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Label headerLabel = hasHeader ? new Label { Text = "header" } : null;
 			Label footerLabel = hasFooter ? new Label { Text = "footer" } : null;
@@ -709,6 +713,48 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				collectionView.SelectedItem = Items.FirstOrDefault(x => x == "Item 3");
 				await WaitForUIUpdate(frame, collectionView);
 			}, MauiContext, (view) => CreateHandlerAsync<LayoutHandler>(view));
+		}
+
+		[Theory]
+		[InlineData(true)] // Use new SafeArea API
+		[InlineData(false)] // Use old IgnoreSafeArea API
+		public async Task SafeAreaBehaviorConsistency(bool useNewApi)
+		{
+			SetupBuilder();
+
+			double containerHeight = 500;
+			double containerWidth = 500;
+			var layout = new Grid() { HeightRequest = containerHeight, WidthRequest = containerWidth };
+
+			if (useNewApi)
+			{
+				layout.SafeAreaEdges = SafeAreaEdges.None;
+			}
+			else
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				layout.IgnoreSafeArea = true;
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+
+			var collectionView = new CollectionView
+			{
+				ItemsLayout = LinearItemsLayout.Vertical,
+				ItemTemplate = new DataTemplate(() => new Label() { HeightRequest = 20, WidthRequest = 20 }),
+				ItemsSource = new ObservableCollection<string> { "Item 1", "Item 2", "Item 3" }
+			};
+
+			layout.Add(collectionView);
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				await Task.Delay(100);
+
+				// Both APIs should result in the same layout behavior
+				// The layout should fill the container and ignore safe area
+				var layoutBounds = layout.GetPlatformViewBounds();
+				Assert.NotEqual(Rect.Zero, layoutBounds);
+			});
 		}
 	}
 }

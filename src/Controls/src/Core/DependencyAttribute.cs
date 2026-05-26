@@ -4,11 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/DependencyAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.DependencyAttribute']/Docs/*" />
+	/// <summary>An attribute that indicates that the specified type provides a concrete implementation of a needed interface.</summary>
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public sealed class DependencyAttribute : Attribute
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/DependencyAttribute.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.DependencyAttribute"/> with default values.</summary>
+		/// <param name="implementorType">The type of the implementor of the dependency.</param>
 		public DependencyAttribute(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type implementorType)
 		{

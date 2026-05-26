@@ -16,7 +16,6 @@ public class Issue12213 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Entry)]
-	[Category(UITestCategories.Gestures)]
 	public void TapGestureRecognizerNotWorkingOnEntry()
 	{
 		// The button is placed on a stack layout. Button is tapped but the stack layout itself must NOT be tapped.

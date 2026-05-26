@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
+    xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Landmarks"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
+    x:Class="Maui.Controls.Sample.Pages.LandmarksPage"
+    x:DataType="viewModels:LandmarksViewModel"
+    SafeAreaEdges="None"
+    Title=".NET MAUI Trip Planner">
+
+    <Grid SafeAreaEdges="None">
+        <ScrollView>
+            <VerticalStackLayout Padding="0,20,0,80" Spacing="20">
+
+                <!-- Search Bar -->
+                <Border
+                    Margin="20,0"
+                    Padding="12,4"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Background="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                    <Entry
+                        x:Name="SearchEntry"
+                        Placeholder="Search destinations..."
+                        Text="{Binding SearchQuery}"
+                        FontSize="20"
+                        ReturnType="Search"
+                        ClearButtonVisibility="WhileEditing"
+                        BackgroundColor="Transparent"
+                        TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
+                        PlaceholderColor="{StaticResource Gray400}" />
+                </Border>
+
+                <!-- Featured Section (hidden when searching) -->
+                <VerticalStackLayout
+                    Padding="20,0"
+                    IsVisible="{Binding IsSearching, Converter={StaticResource InvertedBoolConverter}}"
+                    Spacing="12">
+                    <Label 
+                        Text="Featured"
+                        FontSize="24"
+                        FontAttributes="Bold"
+                        TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+
+                    <views:LandmarkFeaturedItemView
+                        Landmark="{Binding FeaturedLandmark}"
+                        IsVisible="{Binding FeaturedLandmark, Converter={StaticResource IsNotNullConverter}}"
+                        LandmarkTapped="OnLandmarkTapped" />
+                </VerticalStackLayout>
+
+                <!-- Continent Groups (filtered when searching) -->
+                <VerticalStackLayout 
+                    BindableLayout.ItemsSource="{Binding ContinentGroups}"
+                    Spacing="25">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:ContinentGroup">
+                            <VerticalStackLayout Spacing="12">
+                                <Label
+                                    Text="{Binding Name}"
+                                    Padding="20,0"
+                                    FontSize="24"
+                                    FontAttributes="Bold" />
+                                
+                                <views:LandmarkHorizontalListView
+                                    Landmarks="{Binding Landmarks}"
+                                    LandmarkTapped="OnLandmarkTapped" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <ActivityIndicator
+                    IsVisible="{Binding IsLoading}"
+                    IsRunning="{Binding IsLoading}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Margin="0,50,0,0" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Floating Chat Button (bottom right) -->
+        <Button
+            x:Name="ChatFab"
+            AutomationId="ChatFab"
+            Text="{x:Static f:FluentUI.chat_24_regular}"
+            FontFamily="FluentUI"
+            Clicked="OnChatButtonClicked"
+            VerticalOptions="End"
+            HorizontalOptions="End"
+            Margin="0,0,20,20"
+            HeightRequest="56"
+            WidthRequest="56"
+            CornerRadius="28"
+            Padding="0"
+            FontSize="24"
+            Background="{StaticResource Primary}"
+            TextColor="White"
+            Shadow="{Shadow Brush=Black, Offset='0,4', Radius=8, Opacity=0.3}" />
+
+        <!-- Loading Overlay — blocks interaction until embeddings are ready -->
+        <Grid
+            IsVisible="{Binding IsGeneratingEmbeddings}"
+            Background="{AppThemeBinding Light=#E0FFFFFF, Dark=#E0000000}"
+            InputTransparent="False"
+            CascadeInputTransparent="False">
+            <VerticalStackLayout
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Spacing="16"
+                Padding="40">
+                <ActivityIndicator
+                    IsRunning="{Binding IsGeneratingEmbeddings}"
+                    Color="{StaticResource Primary}"
+                    HeightRequest="48"
+                    WidthRequest="48" />
+                <Label
+                    Text="{Binding EmbeddingStatusText}"
+                    FontSize="15"
+                    HorizontalTextAlignment="Center"
+                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                <ProgressBar
+                    Progress="{Binding EmbeddingProgress}"
+                    ProgressColor="{StaticResource Primary}"
+                    WidthRequest="220"
+                    HeightRequest="4" />
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+
+</ContentPage>

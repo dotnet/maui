@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using CoreGraphics;
+using Foundation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Items;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -81,7 +85,7 @@ internal static class LayoutFactory2
 		return [];
 	}
 
-	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo layoutHeaderFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc)
+	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo layoutHeaderFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc, ItemsLayout itemsLayout)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
@@ -89,7 +93,7 @@ internal static class LayoutFactory2
 		//create global header and footer
 		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, layoutHeaderFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
@@ -125,6 +129,10 @@ internal static class LayoutFactory2
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
 			section.InterGroupSpacing = new NFloat(itemSpacing);
+			// Disable section-level safe area insets — MAUI handles safe area via CellSafeAreaOverride.
+			// On iOS 26.1+, the default (.automatic → .safeArea) actively insets cells at section level.
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				section.ContentInsetsReference = UIContentInsetsReference.None;
 
 			// Create header and footer for group
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
@@ -135,19 +143,19 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration);
+		}, layoutConfiguration, itemsLayout);
 
 		return layout;
 	}
 
 
 
-	static UICollectionViewLayout CreateGridLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double verticalItemSpacing, double horizontalItemSpacing, int columns)
+	static UICollectionViewLayout CreateGridLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double verticalItemSpacing, double horizontalItemSpacing, int columns, ItemsLayout itemsLayout)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
 		{
 			// Each item has a size
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
@@ -172,6 +180,8 @@ internal static class LayoutFactory2
 
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				section.ContentInsetsReference = UIContentInsetsReference.None;
 
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
 				section.InterGroupSpacing = new NFloat(verticalItemSpacing);
@@ -187,7 +197,7 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration);
+		}, layoutConfiguration, itemsLayout);
 
 		return layout;
 	}
@@ -205,7 +215,8 @@ internal static class LayoutFactory2
 			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
 			NSCollectionLayoutDimension.CreateEstimated(30f),
 			linearItemsLayout.ItemSpacing,
-			null);
+			null,
+			linearItemsLayout);
 
 
 	public static UICollectionViewLayout CreateHorizontalList(LinearItemsLayout linearItemsLayout,
@@ -221,7 +232,8 @@ internal static class LayoutFactory2
 			NSCollectionLayoutDimension.CreateEstimated(30f),
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
 			linearItemsLayout.ItemSpacing,
-			null);
+			null,
+			linearItemsLayout);
 
 	public static UICollectionViewLayout CreateVerticalGrid(GridItemsLayout gridItemsLayout,
 		LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo)
@@ -239,7 +251,8 @@ internal static class LayoutFactory2
 			NSCollectionLayoutDimension.CreateEstimated(30f),
 			gridItemsLayout.VerticalItemSpacing,
 			gridItemsLayout.HorizontalItemSpacing,
-			gridItemsLayout.Span);
+			gridItemsLayout.Span,
+			gridItemsLayout);
 
 
 	public static UICollectionViewLayout CreateHorizontalGrid(GridItemsLayout gridItemsLayout,
@@ -258,15 +271,288 @@ internal static class LayoutFactory2
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
 			gridItemsLayout.VerticalItemSpacing,
 			gridItemsLayout.HorizontalItemSpacing,
-			gridItemsLayout.Span);
+			gridItemsLayout.Span,
+			gridItemsLayout);
 
 
+#nullable disable
+	public static UICollectionViewLayout CreateCarouselLayout(
+		WeakReference<CarouselView> weakItemsView,
+		WeakReference<CarouselViewController2> weakController)
+	{
+		// Keep the typed layout around so the final layout selection can opt vertical carousels
+		// into the custom snap-aware compositional layout.
+		var linearItemsLayout = weakItemsView.TryGetTarget(out var carouselView)
+			? carouselView.ItemsLayout as LinearItemsLayout
+			: null;
+
+		NSCollectionLayoutDimension itemWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
+		NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
+		NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
+		NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
+		NSCollectionLayoutGroup group = null;
+		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
+
+		var sectionProvider = new UICollectionViewCompositionalLayoutSectionProvider((sectionIndex, environment) =>
+		{
+			if (!weakItemsView.TryGetTarget(out var itemsView))
+			{
+				return null;
+			}
+
+			bool isHorizontal = itemsView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+			var peekAreaInsets = itemsView.PeekAreaInsets;
+
+			double sectionMargin = 0.0;
+
+			if (!isHorizontal)
+			{
+				sectionMargin = peekAreaInsets.VerticalThickness / 2;
+				var newGroupHeight = environment.Container.ContentSize.Height - peekAreaInsets.VerticalThickness;
+				groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
+				groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
+			}
+			else
+			{
+				sectionMargin = peekAreaInsets.HorizontalThickness / 2;
+				var newGroupWidth = environment.Container.ContentSize.Width - peekAreaInsets.HorizontalThickness;
+				groupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
+				groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
+			}
+
+			// Each item has a size
+			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
+			// Create the item itself from the size
+			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
+
+			//item.ContentInsets = new NSDirectionalEdgeInsets(0, itemInset, 0, 0);
+
+			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
+
+			if (OperatingSystem.IsIOSVersionAtLeast(16))
+			{
+				group = isHorizontal
+					? NSCollectionLayoutGroup.GetHorizontalGroup(groupSize, item, 1)
+					: NSCollectionLayoutGroup.GetVerticalGroup(groupSize, item, 1);
+			}
+			else
+			{
+				group = isHorizontal
+					? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, 1)
+					: NSCollectionLayoutGroup.CreateVertical(groupSize, item, 1);
+			}
+
+			var section = NSCollectionLayoutSection.Create(group: group);
+			if (OperatingSystem.IsIOSVersionAtLeast(26))
+				section.ContentInsetsReference = UIContentInsetsReference.None;
+
+			if (itemsView.ItemsLayout is LinearItemsLayout linearItemsLayout)
+			{
+				section.InterGroupSpacing = (nfloat)linearItemsLayout.ItemSpacing;
+			}
+			section.OrthogonalScrollingBehavior = isHorizontal
+				? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered
+				: UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
+
+			section.VisibleItemsInvalidationHandler = (items, offset, env) =>
+			{
+				if (!weakItemsView.TryGetTarget(out var itemsView) || !weakController.TryGetTarget(out var cv2Controller))
+				{
+					return;
+				}
+
+				// Calculate page index accounting for ItemSpacing
+				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
+
+				var effectiveItemWidth = env.Container.ContentSize.Width - sectionMargin * 2 + itemSpacing;
+
+				if (effectiveItemWidth <= 0)
+				{
+					return;
+				}
+
+				var pageOffset = isHorizontal ? offset.X : offset.Y;
+				var pageSize = isHorizontal
+					? env.Container.ContentSize.Width
+					: env.Container.ContentSize.Height;
+				double page = (pageOffset + sectionMargin) / effectiveItemWidth;
+
+				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
+				{
+					return;
+				}
+
+				var pageIndex = (int)page;
+				var carouselPosition = pageIndex;
+
+				if (itemsView.Loop && cv2Controller.ItemsSource is ILoopItemsViewSource loopSource)
+				{
+					var maxIndex = loopSource.LoopCount - 1;
+
+					//To mimic looping, we needed to modify the ItemSource and inserted a new item at the beginning and at the end
+					if (pageIndex == maxIndex)
+					{
+						//When at last item, we need to change to 2nd item, so we can scroll right or left
+						pageIndex = 1;
+					}
+					else if (pageIndex == 0)
+					{
+						//When at first item, need to change to one before last, so we can scroll right or left
+						pageIndex = maxIndex - 1;
+					}
+
+					//since we added one item at the beginning of our ItemSource, we need to subtract one
+					carouselPosition = pageIndex - 1;
+
+					if (itemsView.Position != carouselPosition)
+					{
+						//If we are updating the ItemsSource, we don't want to scroll the CollectionView
+						if (cv2Controller.IsUpdating())
+						{
+							return;
+						}
+
+						var goToIndexPath = cv2Controller.GetScrollToIndexPath(carouselPosition);
+
+						if (!IsIndexPathValid(goToIndexPath, cv2Controller.CollectionView))
+						{
+							return;
+						}
+
+						// Keep the loop correction aligned with the active axis so vertical carousels
+						// jump back into the real range using Top instead of a horizontal anchor.
+						//This will move the carousel to fake the loop
+						cv2Controller.CollectionView.ScrollToItem(
+							NSIndexPath.FromItemSection(pageIndex, 0),
+							isHorizontal ? UICollectionViewScrollPosition.Left : UICollectionViewScrollPosition.Top,
+							false);
+					}
+				}
+
+				if (cv2Controller.IsRotating())
+				{
+					return;
+				}
+
+				//Update the CarouselView position
+				cv2Controller?.SetPosition(carouselPosition);
+			};
+
+			return section;
+		});
+
+		// Route vertical CarouselView layouts with snap points through the custom compositional
+		// layout so MandatorySingle snapping uses the existing TargetContentOffset pipeline.
+		// Vertical carousels without snap points continue to use the standard layout to avoid
+		// unintended behavior changes.
+		var layout = linearItemsLayout?.Orientation == ItemsLayoutOrientation.Vertical
+				&& linearItemsLayout.SnapPointsType != SnapPointsType.None
+			? new CustomUICollectionViewCompositionalLayout(
+				new LayoutSnapInfo
+				{
+					SnapType = linearItemsLayout.SnapPointsType,
+					SnapAligment = linearItemsLayout.SnapPointsAlignment
+				},
+				null,
+				null,
+				sectionProvider,
+				layoutConfiguration,
+				linearItemsLayout)
+			: new UICollectionViewCompositionalLayout(sectionProvider, layoutConfiguration);
+
+		return layout;
+	}
+#nullable enable
+
+	public static bool IsIndexPathValid(NSIndexPath indexPath, UICollectionView collectionView)
+	{
+		try
+		{
+			if (indexPath is null || collectionView is null || collectionView.Handle == IntPtr.Zero || collectionView.Superview is null)
+			{
+				return false;
+			}
+
+			if (indexPath.Item < 0 || indexPath.Section < 0)
+			{
+				return false;
+			}
+
+			if (indexPath.Section >= collectionView.NumberOfSections())
+			{
+				return false;
+			}
+
+			if (indexPath.Item >= collectionView.NumberOfItemsInSection(indexPath.Section))
+			{
+				return false;
+			}
+
+			return true;
+		}
+		catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+		{
+			var logger = Application.Current?.FindMauiContext()?.Services?.GetService<ILoggerFactory>()?.CreateLogger("Microsoft.Maui.Controls.Handlers.Items2.LayoutFactory2");
+			logger?.LogWarning($"IsIndexPathValid caught exception: {ex.GetType().Name} - {ex.Message}");
+			return false;
+		}
+	}
 	class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;
-		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration) : base(sectionProvider, configuration)
+		ItemsLayout? _itemsLayout;
+		LayoutGroupingInfo? _groupingInfo;
+		LayoutHeaderFooterInfo? _headerFooterInfo;
+
+		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
+			_itemsLayout = itemsLayout;
+			_groupingInfo = groupingInfo;
+			_headerFooterInfo = headerFooterInfo;
+		}
+
+		public override void FinalizeCollectionViewUpdates()
+		{
+			base.FinalizeCollectionViewUpdates();
+
+			if (_itemsLayout?.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				ForceScrollToLastItem(CollectionView);
+			}
+		}
+
+		void ForceScrollToLastItem(UICollectionView collectionView)
+		{
+			var sections = (int)collectionView.NumberOfSections();
+
+			if (sections == 0)
+			{
+				return;
+			}
+
+			for (int section = sections - 1; section >= 0; section--)
+			{
+				var itemCount = collectionView.NumberOfItemsInSection(section);
+				if (itemCount > 0)
+				{
+					var lastIndexPath = NSIndexPath.FromItemSection(itemCount - 1, section);
+					if (Configuration.ScrollDirection == UICollectionViewScrollDirection.Vertical)
+					{
+						collectionView.ScrollToItem(lastIndexPath, UICollectionViewScrollPosition.Bottom, true);
+					}
+					else
+					{
+						// Adjust scroll position for RTL layouts
+						var layoutDirection = collectionView.EffectiveUserInterfaceLayoutDirection;
+						var scrollPosition = layoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+							? UICollectionViewScrollPosition.Left
+							: UICollectionViewScrollPosition.Right;
+						collectionView.ScrollToItem(lastIndexPath, scrollPosition, true);
+					}
+					return;
+				}
+			}
 		}
 
 		public override CGPoint TargetContentOffset(CGPoint proposedContentOffset, CGPoint scrollingVelocity)
@@ -325,6 +611,33 @@ internal static class LayoutFactory2
 			// none of them fit at least half in the viewport. So just fall back to the first item
 			return Items.SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport, alignment,
 					Configuration.ScrollDirection);
+		}
+
+		public override CGSize CollectionViewContentSize
+		{
+			get
+			{
+				if (CollectionView != null)
+				{
+					bool hasGlobalHeaders = _headerFooterInfo?.HasHeader == true || _headerFooterInfo?.HasFooter == true;
+					bool hasGroupHeaders = _groupingInfo?.HasHeader == true || _groupingInfo?.HasFooter == true;
+
+					if (hasGlobalHeaders || hasGroupHeaders)
+					{
+						return base.CollectionViewContentSize;
+					}
+
+					if (CollectionView.NumberOfSections() > 0 &&
+				CollectionView.NumberOfItemsInSection(0) > 0)
+					{
+						return base.CollectionViewContentSize;
+					}
+
+					return CGSize.Empty;
+				}
+
+				return base.CollectionViewContentSize;
+			}
 		}
 
 		CGPoint ScrollSingle(SnapPointsAlignment alignment, CGPoint proposedContentOffset, CGPoint scrollingVelocity)

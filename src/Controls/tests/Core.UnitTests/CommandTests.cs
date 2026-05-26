@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -250,6 +254,111 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			command.Execute(null); // "null is not a valid value for int"
 			Assert.True(executions == 0, "the command should not have executed");
+		}
+
+		[Theory]
+		[InlineData(typeof(Button), true)]
+		[InlineData(typeof(Button), false)]
+		[InlineData(typeof(RefreshView), true)]
+		[InlineData(typeof(RefreshView), false)]
+		[InlineData(typeof(TextCell), true)]
+		[InlineData(typeof(TextCell), false)]
+		[InlineData(typeof(ImageButton), true)]
+		[InlineData(typeof(ImageButton), false)]
+		[InlineData(typeof(MenuItem), true)]
+		[InlineData(typeof(MenuItem), false)]
+		[InlineData(typeof(SearchBar), true)]
+		[InlineData(typeof(SearchBar), false)]
+		[InlineData(typeof(SearchHandler), true)]
+		[InlineData(typeof(SearchHandler), false)]
+		public async Task CommandsSubscribedToCanExecuteCollect(Type controlType, bool useWeakEventHandler)
+		{
+			// Create a view model with a Command
+			ICommand command;
+
+			if (!useWeakEventHandler)
+				command = new CommandWithoutWeakEventHandler();
+			else
+				command = new Command(() => { });
+
+			List<WeakReference> weakReferences = new List<WeakReference>();
+
+			// Create a button in a separate scope to ensure no references remain
+			{
+				var control = (BindableObject)Activator.CreateInstance(controlType);
+				switch (control)
+				{
+					case Button b:
+						b.Command = command;
+						break;
+					case RefreshView r:
+						r.Command = command;
+						break;
+					case TextCell t:
+						t.Command = command;
+						break;
+					case ImageButton i:
+						i.Command = command;
+						break;
+					case MenuItem m:
+						m.Command = command;
+						break;
+					case SearchBar s:
+						s.SearchCommand = command;
+						break;
+					case SearchHandler sh:
+						sh.Command = command;
+						sh.ClearPlaceholderCommand = command;
+						break;
+				}
+
+				// Create a weak reference to the button
+				weakReferences.Add(new WeakReference(control));
+
+				if (control is ICommandElement commandElement)
+				{
+					// Add weak references to the command and its cleanup tracker
+					weakReferences.Add(new WeakReference(commandElement.CleanupTracker));
+					weakReferences.Add(new WeakReference(commandElement.CleanupTracker.Proxy));
+				}
+				else if (control is SearchHandler searchHandler)
+				{
+					// Add weak references to the command and its cleanup tracker
+					weakReferences.Add(new WeakReference(searchHandler.CommandSubscription));
+					weakReferences.Add(new WeakReference(searchHandler.CommandSubscription.Proxy));
+					weakReferences.Add(new WeakReference(searchHandler.ClearPlaceholderCommandSubscription));
+					weakReferences.Add(new WeakReference(searchHandler.ClearPlaceholderCommandSubscription.Proxy));
+				}
+
+				await TestHelpers.Collect();
+				await TestHelpers.Collect();
+
+				// Make sure everything is still alive if the button is still in scope
+				// We need to reference the button here again to keep it alive 
+				// awaiting a Task appears to move us to a new scope and causes the button to be collected
+				Assert.NotNull(control);
+
+				foreach (var weakRef in weakReferences)
+				{
+					Assert.True(weakRef.IsAlive);
+				}
+			}
+
+			foreach (var weakRef in weakReferences)
+			{
+				Assert.False(await weakRef.WaitForCollect());
+			}
+		}
+
+		class CommandWithoutWeakEventHandler : ICommand
+		{
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter) => true;
+
+			public void Execute(object parameter) { }
+
+			public void ChangeCanExecute() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

@@ -14,6 +14,7 @@
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.READ_CONTACTS" />
   <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
 	<queries>
 		<!-- Email -->
 		<intent>

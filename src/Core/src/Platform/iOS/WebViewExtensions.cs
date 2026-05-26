@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Foundation;
 using WebKit;
 
 namespace Microsoft.Maui.Platform
@@ -64,6 +65,29 @@ namespace Microsoft.Maui.Platform
 			webView.CanGoForward = platformWebView.CanGoForward;
 		}
 
+		internal static void UpdateFlowDirectionForScrollView(this UIKit.UIScrollView scrollView, IView view)
+		{
+			scrollView.UpdateFlowDirection(view);
+
+			// On macOS, we need to refresh the scroll indicators when flow direction changes
+			// But only for runtime changes, not during initial load
+			// The view.IsLoadedOnPlatform() check ensures that this code is executed
+			// only after the view has been loaded on the platform. During the initial load,
+			// the scroll indicators do not need to be refreshed as they are set up correctly
+			// by default. This avoids unnecessary operations during the initial load phase.
+			if (OperatingSystem.IsMacCatalyst() && view.IsLoadedOnPlatform())
+			{
+				bool showsVertical = scrollView.ShowsVerticalScrollIndicator;
+				bool showsHorizontal = scrollView.ShowsHorizontalScrollIndicator;
+
+				scrollView.ShowsVerticalScrollIndicator = false;
+				scrollView.ShowsHorizontalScrollIndicator = false;
+
+				scrollView.ShowsVerticalScrollIndicator = showsVertical;
+				scrollView.ShowsHorizontalScrollIndicator = showsHorizontal;
+			}
+		}
+
 		public static void Eval(this WKWebView platformWebView, IWebView webView, string script)
 		{
 			platformWebView.EvaluateJavaScriptAsync(script);
@@ -77,7 +101,45 @@ namespace Microsoft.Maui.Platform
 		static async Task<string> EvaluateJavaScript(WKWebView webView, string script)
 		{
 			var result = await webView.EvaluateJavaScriptAsync(script);
-			return result?.ToString() ?? "null";
+			return HandleWKWebViewResult(result);
+		}
+
+		internal static string HandleWKWebViewResult(NSObject? result)
+		{
+			if (result == null || result is NSNull)
+			{
+				return "null";
+			}
+
+			if (result is NSString nsString)
+			{
+				return nsString.ToString();
+			}
+
+			if (result is NSNumber nsNumber)
+			{
+				return nsNumber.ToString();
+			}
+
+			// For other types (NSDictionary, NSArray, etc.), use JSON serialization
+			// This matches the behavior that would come from JSON.stringify() on the web side
+			try
+			{
+				var jsonData = NSJsonSerialization.Serialize(result, NSJsonWritingOptions.PrettyPrinted, out var error);
+				if (error == null && jsonData != null)
+				{
+					var jsonString = NSString.FromData(jsonData, NSStringEncoding.UTF8);
+					return jsonString?.ToString() ?? "null";
+				}
+			}
+			catch (Exception)
+			{
+				// Fall back to ToString if JSON serialization fails
+				// Note: Exception is caught but not logged to avoid performance overhead in the hot path
+				// If debugging is needed, consider adding conditional logging based on a flag
+			}
+
+			return result.ToString() ?? "null";
 		}
 	}
 }

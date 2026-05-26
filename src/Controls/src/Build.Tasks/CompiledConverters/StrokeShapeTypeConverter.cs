@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Controls.Xaml;

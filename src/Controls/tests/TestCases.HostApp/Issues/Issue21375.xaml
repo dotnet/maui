@@ -20,5 +20,6 @@
         <Button Text="Multiple" Clicked="MultipleSelectionMode" AutomationId="multipleButton" />
         <Button Text="Calculate" Clicked="Calculate" x:Name="calculateButton" AutomationId="calculateButton"/>
         <Editor x:Name="Output" HeightRequest="400"/>
+        <Button Text="Clear Selection" Clicked="ClearSelection" AutomationId="clearButton"/>
     </VerticalStackLayout>
 </ContentPage>

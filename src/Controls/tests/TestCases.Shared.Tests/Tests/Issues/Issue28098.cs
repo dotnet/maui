@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue28098 : _IssuesUITest
 {
 	public override string Issue => "Returning back from navigation to MainPage would result in a blank screen";
@@ -18,10 +19,6 @@ public class Issue28098 : _IssuesUITest
 		App.Tap("Button");
 		App.WaitForElement("BackButton");
 		App.Tap("BackButton");
-#if WINDOWS
-        VerifyScreenshot(cropBottom: 250);
-#else
 		VerifyScreenshot();
-#endif
 	}
 }

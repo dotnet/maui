@@ -1,4 +1,3 @@
-#nullable disable
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MauiApp._1.Data;
@@ -14,6 +13,9 @@ public partial class ProjectListPageModel : ObservableObject
 	[ObservableProperty]
 	private List<Project> _projects = [];
 
+	[ObservableProperty]
+	private Project? selectedProject;
+
 	public ProjectListPageModel(ProjectRepository projectRepository)
 	{
 		_projectRepository = projectRepository;
@@ -26,8 +28,8 @@ public partial class ProjectListPageModel : ObservableObject
 	}
 
 	[RelayCommand]
-	Task NavigateToProject(Project project)
-		=> Shell.Current.GoToAsync($"project?id={project.ID}");
+	Task? NavigateToProject(Project project)
+		=> project is null ? Task.CompletedTask : Shell.Current.GoToAsync($"project?id={project.ID}");
 
 	[RelayCommand]
 	async Task AddProject()

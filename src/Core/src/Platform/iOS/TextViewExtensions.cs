@@ -128,6 +128,11 @@ namespace Microsoft.Maui.Platform
 			textView.TextAlignment = editor.HorizontalTextAlignment.ToPlatformHorizontal(textView.EffectiveUserInterfaceLayoutDirection);
 		}
 
+		internal static void UpdateHorizontalTextAlignment(this MauiTextView textView, IEditor editor)
+		{
+			textView.TextAlignment = editor.HorizontalTextAlignment.ToPlatformHorizontal(textView.EffectiveUserInterfaceLayoutDirection);
+		}
+
 		public static void UpdateVerticalTextAlignment(this MauiTextView textView, IEditor editor)
 		{
 			textView.VerticalTextAlignment = editor.VerticalTextAlignment;
@@ -176,6 +181,25 @@ namespace Microsoft.Maui.Platform
 				editor.SelectionLength = newSelectionLength;
 
 			return end;
+		}
+
+		internal static void AddMauiDoneAccessoryView(this UITextView textView, IViewHandler handler)
+		{
+#if !MACCATALYST
+			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.SetDataContext(handler);
+			accessoryView.SetDoneClicked(OnDoneClicked);
+			textView.InputAccessoryView = accessoryView;
+#endif
+		}
+
+		static void OnDoneClicked(object sender)
+		{
+			if (sender is IEditorHandler entryHandler)
+			{
+				entryHandler.PlatformView.ResignFirstResponder();
+				entryHandler.VirtualView.Completed();
+			}
 		}
 	}
 }

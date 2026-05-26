@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			monkeyButton.Clicked += (sender, args) =>
 			{
 				var selectedMonkey = monkeyPicker.SelectedItem ?? "None";
-				DisplayAlert("Selected Monkey", $"{selectedMonkey}", "Ok");
+				DisplayAlertAsync("Selected Monkey", $"{selectedMonkey}", "Ok");
 			};
 
 			swipeItemContent.Children.Add(monkeyPicker);

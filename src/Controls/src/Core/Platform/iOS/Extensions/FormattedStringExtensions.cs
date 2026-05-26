@@ -28,29 +28,47 @@ namespace Microsoft.Maui.Controls.Platform
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform);
+				label.TextTransform,
+				label.LineBreakMode,
+				label.CharacterSpacing);
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
 			IFontManager fontManager,
-			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for net6
+			double defaultLineHeight = -1,
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
+
+		internal static NSAttributedString ToNSAttributedString(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			LineBreakMode lineBreakMode,
+			double defaultCharacterSpacing = 0d)
 		{
 			if (formattedString == null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var attributed = new NSMutableAttributedString();
 			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
 				Span span = formattedString.Spans[i];
 				if (span.Text == null)
+				{
 					continue;
+				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
-					defaultFont, defaultColor, defaultTextTransform));
+					defaultFont, defaultColor, defaultTextTransform, lineBreakMode, defaultCharacterSpacing));
 			}
 
 			return attributed;
@@ -59,19 +77,33 @@ namespace Microsoft.Maui.Controls.Platform
 		public static NSAttributedString ToNSAttributedString(
 			this Span span,
 			IFontManager fontManager,
-			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for NET8
+			double defaultLineHeight = -1,
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
+
+		internal static NSAttributedString ToNSAttributedString(
+			this Span span,
+			IFontManager fontManager,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			LineBreakMode lineBreakMode,
+			double defaultCharacterSpacing = 0d)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
 			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
-			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
+			var text = TextTransformUtilities.GetTransformedText(span.Text, transform);
 			if (text is null)
+			{
 				return new NSAttributedString(string.Empty);
+			}
 
 			var style = new NSMutableParagraphStyle();
 			var lineHeight = span.LineHeight >= 0
@@ -91,10 +123,18 @@ namespace Microsoft.Maui.Controls.Platform
 				_ => UITextAlignment.Left
 			};
 
-			var font = span.ToFont(defaultFontSize);
-			if (font.IsDefault && defaultFont.HasValue)
-				font = defaultFont.Value;
+			style.LineBreakMode = lineBreakMode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => UILineBreakMode.WordWrap
+			};
 
+			var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 			var hasUnderline = false;
 			var hasStrikethrough = false;
 			if (span.IsSet(Span.TextDecorationsProperty))
@@ -106,6 +146,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
 
+			// CharacterSpacing with validation
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
+				? span.CharacterSpacing 
+				: defaultCharacterSpacing;
+			characterSpacing = Math.Max(0, characterSpacing);
+
 #if !MACOS
 			var attrString = new NSAttributedString(
 				text,
@@ -115,7 +161,7 @@ namespace Microsoft.Maui.Controls.Platform
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
-				kerning: (float)span.CharacterSpacing);
+				kerning: (float)characterSpacing);
 #else
 			var attrString = new NSAttributedString(
 				text,
@@ -125,7 +171,7 @@ namespace Microsoft.Maui.Controls.Platform
 				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
 				paragraphStyle: style,
-				kerningAdjustment: (float)span.CharacterSpacing);
+				kerningAdjustment: (float)characterSpacing);
 #endif
 
 			return attrString;

@@ -17,7 +17,7 @@ public class Issue7290 : TestShell
 
 		displayAlertPage.Appearing += async (_, __) =>
 		{
-			await displayAlertPage.DisplayAlert("Title", "Close Alert", "Cancel");
+			await displayAlertPage.DisplayAlertAsync("Title", "Close Alert", "Cancel");
 			this.CurrentItem = Items[1];
 		};
 
@@ -33,7 +33,7 @@ public class Issue7290 : TestShell
 
 		actionSheetPage.Appearing += async (_, __) =>
 		{
-			await actionSheetPage.DisplayActionSheet("Title", "Cancel", "Close Action Sheet", "Button");
+			await actionSheetPage.DisplayActionSheetAsync("Title", "Cancel", "Close Action Sheet", "Button");
 		};
 
 		AddContentPage(displayAlertPage);

@@ -88,8 +88,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 
-			if (swipeView != null)
-				swipeView.UpdateIsVisibleSwipeItem(view);
+			swipeView?.UpdateIsVisibleSwipeItem(view);
 
 			handler.PlatformView.UpdateVisibility(view.Visibility);
 		}
@@ -119,10 +118,15 @@ namespace Microsoft.Maui.Handlers
 					try
 					{
 						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
-						var tintColor = item.GetTextColor();
 
-						if (tintColor != null)
-							button.TintColor = tintColor.ToPlatform();
+						if (item.Source is IFontImageSource fontImageSource && fontImageSource.Color != null)
+							button.TintColor = fontImageSource.Color.ToPlatform();
+						else
+						{
+							var tintColor = item.GetTextColor();
+							if (tintColor != null)
+								button.TintColor = tintColor.ToPlatform();
+						}
 					}
 					catch (Exception)
 					{

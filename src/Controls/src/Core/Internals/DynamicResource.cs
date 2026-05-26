@@ -3,13 +3,13 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/DynamicResource.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.DynamicResource']/Docs/*" />
+	/// <summary>Represents a reference to a dynamic resource by key.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class DynamicResource
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/DynamicResource.xml" path="//Member[@MemberName='Key']/Docs/*" />
+		/// <summary>Gets the resource dictionary key.</summary>
 		public string Key { get; private set; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/DynamicResource.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new DynamicResource with the specified key.</summary>
 		public DynamicResource(string key) => Key = key;
 	}
 }

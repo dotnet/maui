@@ -12,12 +12,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return !methodDef.HasParameters;
 
 			var arguments = new List<INode>();
-			var node = enode.Properties[XmlName.xArguments] as ElementNode;
-			if (node != null)
+			if (enode.Properties[XmlName.xArguments] is ElementNode node)
 				arguments.Add(node);
 
-			var list = enode.Properties[XmlName.xArguments] as ListNode;
-			if (list != null)
+			if (enode.Properties[XmlName.xArguments] is ListNode list)
 				foreach (var n in list.CollectionItems)
 					arguments.Add(n);
 
@@ -27,13 +25,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			for (var i = 0; i < methodDef.Parameters.Count; i++)
 			{
 				var paramType = methodDef.Parameters[i].ParameterType;
-				var genParam = paramType as GenericParameter;
-				if (genParam != null)
+				if (paramType is GenericParameter genParam)
 				{
 					var index = genParam.DeclaringType.GenericParameters.IndexOf(genParam);
 					paramType = (declaringTypeRef as GenericInstanceType).GenericArguments[index];
 				}
-				var argType = context.Variables[arguments[i] as IElementNode].VariableType;
+				var argType = context.Variables[arguments[i] as ElementNode].VariableType;
 				if (!argType.InheritsFromOrImplements(context.Cache, paramType))
 					return false;
 			}

@@ -67,7 +67,9 @@ namespace Microsoft.Maui.DeviceTests
 #pragma warning disable CS0618 // Type or member is obsolete
 					var logicalChildrenCount = swipeView.LogicalChildren.Count;
 #pragma warning restore CS0618 // Type or member is obsolete
-					Assert.Equal(1, logicalChildrenCount);
+
+					// Verify SwipeView maintains Content and all four SwipeItems as logical children
+					Assert.Equal(5, logicalChildrenCount);
 				});
 			});
 		}

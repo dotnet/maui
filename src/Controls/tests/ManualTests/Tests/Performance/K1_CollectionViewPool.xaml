@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Tests.Performance.K1_CollectionViewPool"
+             Title="K1_CollectionViewPool">
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="10">
+            <Label Text="1. This test is to check the performance of CollectionView with a large number of items on each platform." />
+            <Label Text="2. Click button 'Pool App' to enter next page and scroll to bottom in the app. On Windows and macOS platform, scroll using both mouse and scroll bar on the right." />
+            <Label Text="3. Verify the scrolling performance hasn't degraded between MAUI versions." />
+            <Button Text="Pool App" Clicked="Button_Clicked" HorizontalOptions="Fill" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,62 +1,81 @@
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[ContentProperty("Content")]
+public class MockBindableForArray : View
 {
-	[ContentProperty("Content")]
-	public class MockBindableForArray : View
-	{
-		public object Content { get; set; }
-	}
+	public object Content { get; set; }
+}
 
-	public partial class XArray : MockBindableForArray
+public partial class XArray : MockBindableForArray
+{
+	public XArray() => InitializeComponent();
+
+	[Collection("Xaml Inflation")]
+	public class Tests
 	{
-		public XArray()
+		[Theory]
+		[XamlInflatorData]
+		internal void SupportsXArray(XamlInflator inflator)
 		{
-			InitializeComponent();
+			if (inflator == XamlInflator.SourceGen)
+			{
+				var result = CreateMauiCompilation().WithAdditionalSource(
+"""
+using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Xunit;
+
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[ContentProperty("Content")]
+public class MockBindableForArray : View
+{
+	public object Content { get; set; }
+}
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class XArray : MockBindableForArray
+{
+	public XArray() => InitializeComponent();
+}
+""").RunMauiSourceGenerator(typeof(XArray));
+				Assert.Empty(result.Diagnostics);
+				return;
+			}
+			var layout = new XArray(inflator);
+			var array = layout.Content;
+			Assert.NotNull(array);
+			Assert.IsType<string[]>(array);
+			Assert.Equal(2, ((string[])layout.Content).Length);
+			Assert.Equal("Hello", ((string[])layout.Content)[0]);
+			Assert.Equal("World", ((string[])layout.Content)[1]);
 		}
 
-		public XArray(bool useCompiledXaml)
+		[Fact]
+		public void ArrayExtensionNotPresentInGeneratedCode()
 		{
-			//this stub will be replaced at compile time
+			MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
+			Assert.False(hasLoggedErrors);
+			Assert.False(methodDef.Body.Instructions.Any(instr => InstructionIsArrayExtensionCtor(methodDef, instr)), "This Xaml still generates a new ArrayExtension()");
 		}
 
-		[TestFixture]
-		public class Tests
+		static bool InstructionIsArrayExtensionCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
 		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void SupportsXArray(bool useCompiledXaml)
-			{
-				var layout = new XArray(useCompiledXaml);
-				var array = layout.Content;
-				Assert.NotNull(array);
-				Assert.That(array, Is.TypeOf<string[]>());
-				Assert.AreEqual(2, ((string[])layout.Content).Length);
-				Assert.AreEqual("Hello", ((string[])layout.Content)[0]);
-				Assert.AreEqual("World", ((string[])layout.Content)[1]);
-			}
-
-			[Test]
-			public void ArrayExtensionNotPresentInGeneratedCode([Values(false)] bool useCompiledXaml)
-			{
-				MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
-				Assert.That(!hasLoggedErrors);
-				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsArrayExtensionCtor(methodDef, instr)), "This Xaml still generates a new ArrayExtension()");
-			}
-
-			bool InstructionIsArrayExtensionCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
-			{
-				if (instruction.OpCode != OpCodes.Newobj)
-					return false;
-				if (instruction.Operand is not MethodReference methodRef)
-					return false;
-				if (!Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(ArrayExtension))))
-					return false;
-				return true;
-			}
+			if (instruction.OpCode != OpCodes.Newobj)
+				return false;
+			if (instruction.Operand is not MethodReference methodRef)
+				return false;
+			if (!Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(ArrayExtension))))
+				return false;
+			return true;
 		}
 	}
 }

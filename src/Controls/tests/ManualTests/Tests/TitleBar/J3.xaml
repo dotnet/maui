@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Tests.TitleBar.J3"
+             xmlns:local="clr-namespace:Microsoft.Maui.ManualTests.Tests.TitleBar"
+             Title="J3">
+    <VerticalStackLayout>
+        <Label Text="1. Confirm the window TitleBar disaplay normally.(Titlebar is only available on Net9 and later. And it is only available on Windows. Mac Catalyst support will be added in a future release.)" />
+        <Label Text="2. Click button 'Assign New Page'" />
+        <Label Text="3. Confirm that the App TitleBar is not missing and displayed normally." />
+        <Label Text="4. Click button 'Show First Page'" />
+        <Label Text="5. Back to main TitleBar test page, confirm the windows title bar change to default behavior." />
+        <Button Text="Assign New Page" Clicked="AssignNewPage"/>
+        <Button x:Name="ShowFirstPageBtn" Text="Show First Page" Clicked="ShowFirstPage"/>
+    </VerticalStackLayout>
+</ContentPage>

@@ -74,6 +74,18 @@ Use ‘main’ for bug fixes that don’t require API changes. For new features 
 
 - [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
 
+## Generating PublicAPI Files
+
+If you've added new public APIs and are getting build errors about missing API declarations, you'll need to update the PublicAPI files. You can generate the PublicAPI files manually by building a project with the `PublicApiType=Generate` property:
+
+```dotnetcli
+dotnet build ./src/Controls/src/Core/Controls.Core.csproj /p:PublicApiType=Generate
+```
+
+This approach will generate the `PublicAPI.Unshipped.txt` files for that specific project. You may need to run this for each project that has new public APIs.
+
+**Note:** If you're still having troubles with PublicAPI errors, you can delete all the content in the relevant `PublicAPI.Unshipped.txt` files and then run the command above to regenerate them completely.
+
 
 ## Stats
 

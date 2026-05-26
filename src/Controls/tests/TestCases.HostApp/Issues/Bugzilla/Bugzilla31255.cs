@@ -21,7 +21,7 @@
 					Text = "Page 1",
 					AutomationId = "MauiLabel"
 				});
-
+				SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 				Content = stack;
 
 			}

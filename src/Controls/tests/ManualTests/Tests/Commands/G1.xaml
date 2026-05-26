@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.Commands.G1"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.ManualTests.Tests.Commands"
+             Title="G1">
+    <ContentPage.BindingContext>
+        <local:ViewModel />
+    </ContentPage.BindingContext>
+
+    <VerticalStackLayout>
+        <Label Text="1. Confirm that the button below is disabled." />
+        <Label Text="2. The test fails if the button is enabled and clickable." />
+        <Button Clicked="Button_Clicked"
+                Command="{Binding Command}"
+                IsEnabled="{Binding IsButtonEnabled}"
+                Text="Button" />
+    </VerticalStackLayout>
+</ContentPage>

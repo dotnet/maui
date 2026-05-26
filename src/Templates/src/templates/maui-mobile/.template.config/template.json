@@ -1,12 +1,12 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Mobile" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Mobile" ],
     "identity": "Microsoft.Maui.MauiApp.CSharp.DOTNET_TFM_VERSION_VALUE",
     "groupIdentity": "Microsoft.Maui.App",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI App",
-    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen",
+    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI",
     "shortName": "maui",
     "tags": {
       "language": "C#",
@@ -60,6 +60,7 @@
         {
           "condition": "(!IncludeSampleContent)",
           "exclude": [
+            "Converter/**",
             "Data/**",
             "GlobalUsings.cs",
             "Messages/**",
@@ -72,7 +73,7 @@
             "Resources/Fonts/FluentUI.cs",
             "Services/**",
             "Resources/Styles/AppStyles.xaml",
-            "Utilities/**"
+            "Utilities/**",
           ]
         },
         {

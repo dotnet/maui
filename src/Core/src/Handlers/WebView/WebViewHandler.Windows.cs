@@ -96,6 +96,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateUserAgent(webView);
 		}
 
+		//TODO: Make it public in .NET 11.
+		internal static void MapBackground(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView?.UpdateBackground(webView);
+		}
+
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.PlatformView.CanGoBack && handler is WebViewHandler w)
@@ -320,6 +326,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal static void MapFlowDirection(IWebViewHandler handler, IWebView webView)
+		{
+			// Explicitly do nothing here to override the base ViewHandler.MapFlowDirection behavior
+			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
+		}
+
 		class WebView2Proxy
 		{
 			WeakReference<Window>? _window;
@@ -380,6 +392,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler)
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
+					sender.UpdateBackground(handler.VirtualView);
 					if (sender.Source is not null)
 					{
 						handler.SyncPlatformCookies(sender.Source.ToString()).FireAndForget();

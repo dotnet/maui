@@ -17,21 +17,44 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this UITextField textField, ITextStyle textStyle)
 		{
 			var textColor = textStyle.TextColor;
-			if (textColor != null)
+
+			if (textColor is not null)
+			{
 				textField.TextColor = textColor.ToPlatform(ColorExtensions.LabelColor);
+			}
+			else
+			{
+				textField.TextColor = ColorExtensions.LabelColor;
+			}
 		}
 
 		public static void UpdateIsPassword(this UITextField textField, IEntry entry)
 		{
 			if (entry.IsPassword && textField.IsFirstResponder)
 			{
+				var currentText = textField.Text;
 				textField.Enabled = false;
 				textField.SecureTextEntry = true;
 				textField.Enabled = entry.IsEnabled;
 				textField.BecomeFirstResponder();
+				if (!string.IsNullOrEmpty(currentText) && textField is MauiTextField mauiTextField)
+				{
+					mauiTextField.SuppressTextPropertySet(true);
+					try
+					{
+						textField.Text = string.Empty;
+						textField.InsertText(currentText);
+					}
+					finally
+					{
+						mauiTextField.SuppressTextPropertySet(false);
+					}
+				}
 			}
 			else
+			{
 				textField.SecureTextEntry = entry.IsPassword;
+			}
 #if MACCATALYST
 			textField.TextContentType = UITextContentType.OneTimeCode;
 #endif
@@ -208,8 +231,8 @@ namespace Microsoft.Maui.Platform
 
 				if (entry.TextColor is null)
 				{
-					clearButton.SetImage(defaultClearImage, UIControlState.Normal);
-					clearButton.SetImage(defaultClearImage, UIControlState.Highlighted);
+					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
+					clearButton.TintColor = null;
 				}
 				else
 				{
@@ -245,6 +268,25 @@ namespace Microsoft.Maui.Platform
 				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
 				context?.FillRect(rect, CGBlendMode.SourceIn);
 			});
+		}
+
+		internal static void AddMauiDoneAccessoryView(this UITextField textField, IViewHandler handler)
+		{
+#if !MACCATALYST
+			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.SetDataContext(handler);
+			accessoryView.SetDoneClicked(OnDoneClicked);
+			textField.InputAccessoryView = accessoryView;
+#endif
+		}
+
+		static void OnDoneClicked(object sender)
+		{
+			if (sender is IEntryHandler entryHandler)
+			{
+				entryHandler.PlatformView.ResignFirstResponder();
+				entryHandler.VirtualView.Completed();
+			}
 		}
 	}
 }

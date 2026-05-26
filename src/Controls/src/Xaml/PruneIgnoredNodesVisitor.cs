@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				var prefix = node.NamespaceResolver.LookupPrefix(propertyKvp.Key.NamespaceURI);
 				if (node.SkipPrefix(prefix))
 					node.Properties.Remove(propertyKvp.Key);
-				var propNs = (propertyKvp.Value as IElementNode)?.NamespaceURI ?? "";
+				var propNs = (propertyKvp.Value as ElementNode)?.NamespaceURI ?? "";
 				var propPrefix = node.NamespaceResolver.LookupPrefix(propNs);
 				if (node.SkipPrefix(propPrefix))
 					node.Properties.Remove(propertyKvp.Key);
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			foreach (var prop in node.CollectionItems.ToList())
 			{
-				var propNs = (prop as IElementNode)?.NamespaceURI ?? "";
+				var propNs = (prop as ElementNode)?.NamespaceURI ?? "";
 				var propPrefix = node.NamespaceResolver.LookupPrefix(propNs);
 				if (node.SkipPrefix(propPrefix))
 					node.CollectionItems.Remove(prop);
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			foreach (var prop in node.CollectionItems.ToList())
 			{
-				var propNs = (prop as IElementNode)?.NamespaceURI ?? "";
+				var propNs = (prop as ElementNode)?.NamespaceURI ?? "";
 				var propPrefix = node.NamespaceResolver.LookupPrefix(propNs);
 				if (node.SkipPrefix(propPrefix))
 					node.CollectionItems.Remove(prop);

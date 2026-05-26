@@ -1,36 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh6996 : ContentPage
 {
-	public partial class Gh6996 : ContentPage
+	public Gh6996() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Gh6996() => InitializeComponent();
-		public Gh6996(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void FontImageSourceColorWithDynamicResource(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
+			var layout = new Gh6996(inflator);
+			Image image = layout.image;
+			var fis = image.Source as FontImageSource;
+			Assert.Equal(Colors.Orange, fis.Color);
 
-		[TestFixture]
-		class Tests
-		{
-			[Test]
-			public void FontImageSourceColorWithDynamicResource([Values(false, true)] bool useCompiledXaml)
-			{
-				var layout = new Gh6996(useCompiledXaml);
-				Image image = layout.image;
-				var fis = image.Source as FontImageSource;
-				Assert.That(fis.Color, Is.EqualTo(Colors.Orange));
-
-				layout.Resources["imcolor"] = layout.Resources["notBlue"];
-				Assert.That(fis.Color, Is.EqualTo(Colors.Lime));
-			}
+			layout.Resources["imcolor"] = layout.Resources["notBlue"];
+			Assert.Equal(Colors.Lime, fis.Color);
 		}
 	}
 }

@@ -413,5 +413,158 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(swipeItemView.Content);
 			Assert.NotEmpty(swipeView.LeftItems);
 		}
+
+		[Fact]
+		public void SwipeItemsRemainInLogicalTreeWhenContentIsSet()
+		{
+			var swipeView = new SwipeView();
+			var testCommand = new Command(() => { });
+			var viewModel = new TestViewModel { TestCommand = testCommand };
+
+			var rightSwipeItem = new SwipeItem { Text = "Action" };
+			rightSwipeItem.SetBinding(SwipeItem.CommandProperty,
+				new Binding("TestCommand",
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext,
+						ancestorType: typeof(TestViewModel))));
+
+			var leftSwipeItem = new SwipeItem { Text = "Delete" };
+			leftSwipeItem.SetBinding(SwipeItem.CommandProperty,
+				new Binding("TestCommand",
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext,
+						ancestorType: typeof(TestViewModel))));
+
+			var topSwipeItem = new SwipeItem { Text = "Top" };
+			topSwipeItem.SetBinding(SwipeItem.CommandProperty,
+				new Binding("TestCommand",
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext,
+						ancestorType: typeof(TestViewModel))));
+
+			var bottomSwipeItem = new SwipeItem { Text = "Bottom" };
+			bottomSwipeItem.SetBinding(SwipeItem.CommandProperty,
+				new Binding("TestCommand",
+					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext,
+						ancestorType: typeof(TestViewModel))));
+
+			swipeView.RightItems = new SwipeItems { rightSwipeItem };
+			swipeView.LeftItems = new SwipeItems { leftSwipeItem };
+			swipeView.TopItems = new SwipeItems { topSwipeItem };
+			swipeView.BottomItems = new SwipeItems { bottomSwipeItem };
+
+			swipeView.BindingContext = viewModel;
+			swipeView.Content = new Grid();
+
+			// Verify SwipeItems remain in logical tree
+			Assert.Contains(swipeView.RightItems, swipeView.LogicalChildrenInternal);
+			Assert.Contains(swipeView.LeftItems, swipeView.LogicalChildrenInternal);
+			Assert.Contains(swipeView.TopItems, swipeView.LogicalChildrenInternal);
+			Assert.Contains(swipeView.BottomItems, swipeView.LogicalChildrenInternal);
+
+			// Verify parent relationships
+			Assert.Equal(swipeView, swipeView.RightItems.Parent);
+			Assert.Equal(swipeView, swipeView.LeftItems.Parent);
+			Assert.Equal(swipeView, swipeView.TopItems.Parent);
+			Assert.Equal(swipeView, swipeView.BottomItems.Parent);
+
+			// Verify BindingContext propagation
+			Assert.Equal(viewModel, swipeView.RightItems.BindingContext);
+			Assert.Equal(viewModel, swipeView.LeftItems.BindingContext);
+			Assert.Equal(viewModel, swipeView.TopItems.BindingContext);
+			Assert.Equal(viewModel, swipeView.BottomItems.BindingContext);
+			Assert.Equal(viewModel, ((BindableObject)swipeView.RightItems[0]).BindingContext);
+			Assert.Equal(viewModel, ((BindableObject)swipeView.LeftItems[0]).BindingContext);
+			Assert.Equal(viewModel, ((BindableObject)swipeView.TopItems[0]).BindingContext);
+			Assert.Equal(viewModel, ((BindableObject)swipeView.BottomItems[0]).BindingContext);
+
+			// Verify RelativeSource bindings resolved correctly
+			Assert.Equal(testCommand, rightSwipeItem.Command);
+			Assert.Equal(testCommand, leftSwipeItem.Command);
+			Assert.Equal(testCommand, topSwipeItem.Command);
+			Assert.Equal(testCommand, bottomSwipeItem.Command);
+		}
+
+		class TestViewModel
+		{
+			public Command TestCommand { get; set; }
+		}
+
+		static object GetPrivateField(object obj, string fieldName)
+		{
+			var field = obj.GetType().GetField(fieldName,
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+			return field?.GetValue(obj);
+		}
+
+		[Fact]
+		public void SwipeViewFindsScrollParentDirectlyWhenTreeIsConnected()
+		{
+			// Non-DataTemplate scenario: SwipeView added to an already-connected ScrollView
+			var scrollView = new ScrollView();
+			var contentView = new ContentView();
+			scrollView.Content = contentView;
+
+			var swipeView = new SwipeView();
+			contentView.Content = swipeView;
+
+			// SwipeView should find the ScrollView via direct parent walk
+			Assert.Equal(scrollView, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewFindsScrollParentAfterTemplateParentConnected()
+		{
+			// DataTemplate scenario: SwipeView inside ContentView (template root with no parent)
+			var swipeView = new SwipeView();
+			var contentView = new ContentView { Content = swipeView };
+
+			// At this point contentView.Parent is null, simulating an unattached template root.
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Connect the template root to a ScrollView (simulating CollectionView adding the item)
+			var scrollView = new ScrollView { Content = contentView };
+
+			// SwipeView should now have discovered the ScrollView via deferred discovery
+			Assert.Equal(scrollView, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewResubscribesToScrollParentAfterRemovalAndReaddition()
+		{
+			var swipeView = new SwipeView();
+			var contentView1 = new ContentView { Content = swipeView };
+			var scrollView1 = new ScrollView { Content = contentView1 };
+
+			Assert.Equal(scrollView1, GetPrivateField(swipeView, "_scrollParent"));
+
+			// Remove SwipeView from the tree entirely
+			contentView1.Content = null;
+
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Re-add SwipeView to a different tree with a different ScrollView
+			var contentView2 = new ContentView { Content = swipeView };
+			var scrollView2 = new ScrollView { Content = contentView2 };
+
+			// SwipeView should discover the new ScrollView, not remain stuck on the old one
+			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewRediscoversScrollParentWhenTemplateRootIsReparented()
+		{
+			// Simulate virtualization: template root is detached then reattached
+			var swipeView = new SwipeView();
+			var contentView = new ContentView { Content = swipeView };
+
+			var scrollView1 = new ScrollView { Content = contentView };
+			Assert.Equal(scrollView1, GetPrivateField(swipeView, "_scrollParent"));
+
+			// Detach the template root (virtualization removal)
+			scrollView1.Content = null;
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Reattach to a different ScrollView (virtualization re-use)
+			var scrollView2 = new ScrollView { Content = contentView };
+			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
+		}
 	}
 }

@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Diagnostics;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui.Hosting
@@ -12,21 +15,32 @@ namespace Microsoft.Maui.Hosting
 	/// <summary>
 	/// A builder for .NET MAUI cross-platform applications and services.
 	/// </summary>
-	public sealed class MauiAppBuilder
+	public sealed class MauiAppBuilder : IHostApplicationBuilder
 	{
 		private readonly ServiceCollection _services = new();
 		private Func<IServiceProvider>? _createServiceProvider;
 		private readonly Lazy<ConfigurationManager> _configuration;
+		private readonly Lazy<MauiHostEnvironment> _hostEnvironment;
+		private readonly Lazy<MauiMetricsBuilder> _metricsBuilder;
 		private ILoggingBuilder? _logging;
+		private IDictionary<object, object> _properties;
 
 		internal MauiAppBuilder(bool useDefaults)
 		{
-			// Lazy-load the ConfigurationManager, so it isn't created if it is never used.
+			// Lazy-load these classes, so they aren't created if they are never used.
 			// Don't capture the 'this' variable in AddSingleton, so MauiAppBuilder can be GC'd.
 			var configuration = new Lazy<ConfigurationManager>(() => new ConfigurationManager());
+			var hostEnvironment = new Lazy<MauiHostEnvironment>(() => new MauiHostEnvironment());
+			var metricsBuilder = new Lazy<MauiMetricsBuilder>(() => new MauiMetricsBuilder(Services));
 			Services.AddSingleton<IConfiguration>(sp => configuration.Value);
+			Services.AddSingleton<IHostEnvironment>(sp => hostEnvironment.Value);
+			Services.AddSingleton<IMetricsBuilder>(sp => metricsBuilder.Value);
 
 			_configuration = configuration;
+			_hostEnvironment = hostEnvironment;
+			_metricsBuilder = metricsBuilder;
+
+			_properties = new Dictionary<object, object>();
 
 			if (useDefaults)
 			{
@@ -39,6 +53,8 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureCrossPlatformLifecycleEvents();
 				this.ConfigureWindowEvents();
 				this.ConfigureDispatching();
+				this.ConfigureEnvironmentVariables();
+				this.ConfigureMauiDiagnostics();
 
 				this.UseEssentials();
 
@@ -86,6 +102,8 @@ namespace Microsoft.Maui.Hosting
 		/// </summary>
 		public ConfigurationManager Configuration => _configuration.Value;
 
+		IConfigurationManager IHostApplicationBuilder.Configuration => Configuration;
+
 		/// <summary>
 		/// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
 		/// </summary>
@@ -103,6 +121,27 @@ namespace Microsoft.Maui.Hosting
 				}
 			}
 		}
+
+		/// <summary>
+		/// Gets a central location for sharing state between components during the host building process.
+		/// </summary>
+		public IDictionary<object, object> Properties => _properties;
+
+		IDictionary<object, object> IHostApplicationBuilder.Properties => Properties;
+
+		/// <summary>
+		/// Information about the environment an application is running in.
+		/// </summary>
+		public MauiHostEnvironment Environment => _hostEnvironment.Value;
+
+		IHostEnvironment IHostApplicationBuilder.Environment => Environment;
+
+		/// <summary>
+		/// Gets a builder for configuring metrics services.
+		/// </summary>
+		internal MauiMetricsBuilder Metrics => _metricsBuilder.Value;
+
+		IMetricsBuilder IHostApplicationBuilder.Metrics => Metrics;
 
 		/// <summary>
 		/// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.

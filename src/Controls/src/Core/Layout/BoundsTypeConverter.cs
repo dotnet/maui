@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.ComponentModel;
 using System.Globalization;
@@ -6,22 +5,22 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/BoundsTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoundsTypeConverter']/Docs/*" />
+	/// <summary>A <see cref="System.ComponentModel.TypeConverter"/> that converts strings into <see cref="Microsoft.Maui.Controls.Shapes.Rectangle"/>s for use with <see cref="Microsoft.Maui.Controls.AbsoluteLayout"/>s.</summary>
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BoundsTypeConverter")]
 	public sealed class BoundsTypeConverter : TypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			// IMPORTANT! Update BoundsDesignTypeConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
-			if (strValue != null)
+			if (strValue is not null)
 			{
 				double x = -1, y = -1, w = -1, h = -1;
 				string[] xywh = strValue.Split(',');
@@ -45,18 +44,26 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (hasX && hasY && xywh.Length == 2)
+				{
 					return new Rect(x, y, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize);
+				}
+
 				if (hasX && hasY && hasW && hasH && xywh.Length == 4)
+				{
 					return new Rect(x, y, w, h);
+				}
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Rect)}");
 		}
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not Rect rect)
+			{
 				throw new NotSupportedException();
+			}
+
 			return $"{rect.X.ToString(CultureInfo.InvariantCulture)}, {rect.Y.ToString(CultureInfo.InvariantCulture)}, {(rect.Width == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Width.ToString(CultureInfo.InvariantCulture))}, {(rect.Height == AbsoluteLayout.AutoSize ? nameof(AbsoluteLayout.AutoSize) : rect.Height.ToString(CultureInfo.InvariantCulture))}";
 		}
 	}

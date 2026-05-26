@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue24520">
+
+  <VerticalStackLayout>
+    <Label Text="Labels without spans" FontAttributes="Bold" />
+
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <Grid.RowDefinitions>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+      </Grid.RowDefinitions>
+
+      <Label Grid.Row="0" Grid.Column="0" BackgroundColor="Gray" Text="1. No LineHeight Specified" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="0" Grid.Column="1" BackgroundColor="Green" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="2" Grid.Column="0" BackgroundColor="Gray" Text="2. LineHeight=0.8" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="2" Grid.Column="1" BackgroundColor="Red" LineHeight="0.8" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="4" Grid.Column="0" BackgroundColor="Gray" Text="3. LineHeight=0.2" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="4" Grid.Column="1" BackgroundColor="Green" LineHeight="0.2" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="6" Grid.Column="0" BackgroundColor="Gray" Text="4. LineHeight=0.4" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="6" Grid.Column="1" BackgroundColor="Red" LineHeight="0.4" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="8" Grid.Column="0" BackgroundColor="Gray" Text="5. LineHeight=1.0" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="8" Grid.Column="1" BackgroundColor="Green" LineHeight="1.0" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="10" Grid.Column="0" BackgroundColor="Gray" Text="6. LineHeight=1.2" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="10" Grid.Column="1" BackgroundColor="Red" LineHeight="1.2" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="12" Grid.Column="0" BackgroundColor="Gray" Text="7. LineHeight=1.4" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="12" Grid.Column="1" BackgroundColor="Green" LineHeight="1.4" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="14" Grid.Column="0" BackgroundColor="Gray" Text="8. LineHeight=1.6" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="14" Grid.Column="1" BackgroundColor="Red" LineHeight="1.6" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="16" Grid.Column="0" BackgroundColor="Gray" Text="9. LineHeight=2.0" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="16" Grid.Column="1" BackgroundColor="Green" LineHeight="2.0" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+
+      <Label Grid.Row="18" Grid.Column="0" BackgroundColor="Gray" Text="10. LineHeight=4.6" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="18" Grid.Column="1" BackgroundColor="Red" LineHeight="4.6" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+    </Grid>
+
+    <Label Text="Labels with span" FontAttributes="Bold" Margin="0,5,0,0" />
+
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <Grid.RowDefinitions>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="30"/>
+        <RowDefinition Height="5"/>
+        <RowDefinition Height="150"/>
+      </Grid.RowDefinitions>
+
+      <Label Grid.Row="0" Grid.Column="0" BackgroundColor="Gray" Text="1. No LineHeight Specified" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="0" Grid.Column="1" BackgroundColor="Green" LineHeight="0.8" FontSize="20">
+        <Label.FormattedText>
+          <FormattedString>
+            <Span Text="Normal" FontFamily="Arial"/>
+            <Span Text="Special" FontFamily="OpenSansRegular"/>
+          </FormattedString>
+        </Label.FormattedText>
+      </Label>
+
+      <Label Grid.Row="2" Grid.Column="0" BackgroundColor="Gray" Text="2. LineHeight=0.4" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="2" Grid.Column="1" BackgroundColor="Red" LineHeight="0.4" FontSize="20">
+        <Label.FormattedText>
+          <FormattedString>
+            <Span Text="Normal" FontFamily="Arial"/>
+            <Span Text="Special" FontFamily="OpenSansRegular"/>
+          </FormattedString>
+        </Label.FormattedText>
+      </Label>
+
+      <Label Grid.Row="4" Grid.Column="0" BackgroundColor="Gray" Text="3. LineHeight=1.2" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="4" Grid.Column="1" BackgroundColor="Green" LineHeight="1.2" FontSize="20">
+        <Label.FormattedText>
+          <FormattedString>
+            <Span Text="Normal" FontFamily="Arial"/>
+            <Span Text="Special" FontFamily="OpenSansRegular"/>
+          </FormattedString>
+        </Label.FormattedText>
+      </Label>
+
+      <Label Grid.Row="6" Grid.Column="0" BackgroundColor="Gray" Text="3. LineHeight=1.6" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="6" Grid.Column="1" BackgroundColor="Red" LineHeight="1.6" FontSize="20">
+        <Label.FormattedText>
+          <FormattedString>
+            <Span Text="Normal" FontFamily="Arial"/>
+            <Span Text="Special" FontFamily="OpenSansRegular"/>
+          </FormattedString>
+        </Label.FormattedText>
+      </Label>
+
+      <Label Grid.Row="8" Grid.Column="0" BackgroundColor="Gray" Text="3. LineHeight=2.0" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="8" Grid.Column="1" BackgroundColor="Green" LineHeight="2.0" FontSize="20">
+        <Label.FormattedText>
+          <FormattedString>
+            <Span Text="Normal" FontFamily="Arial"/>
+            <Span Text="Special" FontFamily="OpenSansRegular"/>
+          </FormattedString>
+        </Label.FormattedText>
+      </Label>
+
+      <Label Grid.Row="10" Grid.Column="0" BackgroundColor="Gray" Text="3. LineHeight=2.0" FontSize="10" VerticalTextAlignment="Center" />
+      <Label Grid.Row="10" Grid.Column="1" LineHeight="2" LineBreakMode="WordWrap" Background="Blue">
+        <Label.FormattedText>
+          <FormattedString>
+            <Span>Lorem ipsum </Span>
+            <Span FontSize="30">dolor sit</Span>
+            <Span> amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. Iaculis massa nisl malesuada lacinia integer nunc </Span>
+            <Span FontSize="20">posuere</Span>
+            <Span>. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.</Span>
+          </FormattedString>
+        </Label.FormattedText>
+      </Label>
+    </Grid>
+  </VerticalStackLayout>
+</ContentPage>

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -110,6 +111,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				WebView = webview
 			});
+
+			// Disable bounce scrolling to make Blazor apps feel more native
+			if (webview.ScrollView != null)
+			{
+				webview.ScrollView.Bounces = false;
+				webview.ScrollView.AlwaysBounceVertical = false;
+				webview.ScrollView.AlwaysBounceHorizontal = false;
+			}
 
 			Logger.CreatedWebKitWKWebView();
 
@@ -259,12 +268,29 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
-				var responseBytes = GetResponseBytes(urlSchemeTask.Request.Url?.AbsoluteString ?? "", out var contentType, statusCode: out var statusCode);
+				var url = urlSchemeTask.Request.Url.AbsoluteString;
+				if (string.IsNullOrEmpty(url))
+				{
+					return;
+				}
+
+				var logger = _webViewHandler.Logger;
+
+				logger.LogDebug("Intercepting request for {Url}.", url);
+
+				// 1. First check if the app wants to modify or override the request.
+				if (WebRequestInterceptingWebView.TryInterceptResponseStream(_webViewHandler, webView, urlSchemeTask, url, logger))
+				{
+					return;
+				}
+
+				// 2. If this is an app request, then assume the request is for a Blazor resource.
+				var responseBytes = GetResponseBytes(url, out var contentType, statusCode: out var statusCode);
 				if (statusCode == 200)
 				{
 					using (var dic = new NSMutableDictionary<NSString, NSString>())
 					{
-						dic.Add((NSString)"Content-Length", (NSString)(responseBytes.Length.ToString(CultureInfo.InvariantCulture)));
+						dic.Add((NSString)"Content-Length", (NSString)responseBytes.Length.ToString(CultureInfo.InvariantCulture));
 						dic.Add((NSString)"Content-Type", (NSString)contentType);
 						// Disable local caching. This will prevent user scripts from executing correctly.
 						dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
@@ -278,6 +304,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					urlSchemeTask.DidReceiveData(NSData.FromArray(responseBytes));
 					urlSchemeTask.DidFinish();
 				}
+
+				// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
+				//    handle the request as it would normally do. This means that it will try to load the resource
+				//    from the internet or from the local cache.
+
+				logger.LogDebug("Request for {Url} was not handled.", url);
 			}
 
 			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
@@ -303,7 +335,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 				else
 				{
-					_webViewHandler?.Logger.ReponseContentNotFound(url);
+					_webViewHandler?.Logger.ResponseContentNotFound(url);
 
 					statusCode = 404;
 					contentType = string.Empty;

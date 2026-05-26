@@ -1,0 +1,49 @@
+{"title":"Maui Getaway
+"
+,"destinationName":"Maui","days":[{"activities":[{"title":"Explore Haleakal
+ā National Park","description":"Witness breathtaking
+ sunrise views and unique high-altitude ecosystems.","type":"
+HotelAndLodging"},{"title":"
+Visit Road to Hana","description":"Experience
+ tropical paradise, waterfalls, bamboo forests, and dramatic
+ ocean vistas.","type":"Hote
+lAndLodging"},{"title":"
+Relax at a Local Beach","description":"
+Enjoy pristine beaches and vibrant coral reefs.","type":"
+HotelAndLodging
+"}],"destination":"Maui","title":"Mau
+i Getaway","subtitle":"Discover
+ Maui's natural beauty and relaxation spots.
+"},{"activities":[{"title":"Visit a
+ Local Cafe","description":"Enjoy a leisurely
+ breakfast or coffee.","type":"Hote
+lAndLodging"},{"title":"
+Explore a Museum","description":"Learn about
+ Maui's history and culture.","type":"
+HotelAndLodging"},{"title":"
+Enjoy a Scenic Drive","description":"Take
+ in the island's stunning landscapes.","type":"
+HotelAndLodging
+"}],"destination":"Maui","title":"Mau
+i Getaway","subtitle":"Discover
+ Maui's natural beauty and relaxation spots.
+"},{"activities":[{"title":"Visit a
+ Local Restaurant","description":"Enjoy fresh seafood
+ and local cuisine.","type":"Hote
+lAndLodging"},{"title":"
+Relax at a Local Beach","description":"
+Enjoy pristine beaches and vibrant coral reefs.","type":"
+HotelAndLodging"},{"title":"
+Watch the Sunset","description":"End your
+ day with a stunning sunset view.","type":"
+HotelAndLodging
+"}],"destination":"Maui","title":"Mau
+i Getaway","subtitle":"Discover
+ Maui's natural beauty and relaxation spots.
+"}],"rationale":"This itinerary offers a perfect
+ blend of adventure, relaxation, and cultural exploration,
+ making it ideal for anyone visiting Maui.","description":"
+This itinerary offers a perfect blend of adventure, relaxation
+, and cultural exploration, making it ideal for anyone
+ visiting Maui.
+"}

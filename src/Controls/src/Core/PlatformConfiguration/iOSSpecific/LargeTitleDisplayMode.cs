@@ -1,14 +1,14 @@
 using System;
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/LargeTitleDisplayMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode']/Docs/*" />
+	/// <summary>Enumerates preferences for displaying large titles.</summary>
 	public enum LargeTitleDisplayMode
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/LargeTitleDisplayMode.xml" path="//Member[@MemberName='Automatic']/Docs/*" />
+		/// <summary>Display large titles if the previous screen had displayed large titles.</summary>
 		Automatic,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/LargeTitleDisplayMode.xml" path="//Member[@MemberName='Always']/Docs/*" />
+		/// <summary>Always display large titles.</summary>
 		Always,
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/LargeTitleDisplayMode.xml" path="//Member[@MemberName='Never']/Docs/*" />
+		/// <summary>Never display large titles.</summary>
 		Never
 	}
 }

@@ -13,6 +13,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		bool _disposed;
 		UILongPressGestureRecognizer _longPressGestureRecognizer;
+		nint _lastMoveSourceSection = -1;
+		nint _lastMoveDestinationSection = -1;
+
+		/// <summary>
+		/// Indicates whether the user has actively moved during the current drag gesture.
+		/// Used by the delegator to avoid redirecting to empty groups before movement has occurred.
+		/// </summary>
+		internal bool HasInteractivelyMoved { get; private set; }
+
+#if MACCATALYST
+		const double defaultMacCatalystPressDuration = 0.1;
+#endif
 
 		public ReorderableItemsViewController2(TItemsView reorderableItemsView, UICollectionViewLayout layout)
 			: base(reorderableItemsView, layout)
@@ -40,14 +52,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
-			if (ItemsSource != null)
-			{
-				// There's a bug in the current Maui Controls library.
-				// It will call "CreateItemsViewSource" 2x in a row when opening a page.
-				// It's invoked from both ViewDidLoad & UpdateItemsSource
-				// For the time being, until the issue is fixed, we need to dispose of the current source if one already exist.
-				ItemsSource.Dispose();
-			}
+			// There's a bug in the current Maui Controls library.
+			// It will call "CreateItemsViewSource" 2x in a row when opening a page.
+			// It's invoked from both ViewDidLoad & UpdateItemsSource
+			// For the time being, until the issue is fixed, we need to dispose of the current source if one already exist.
+			ItemsSource?.Dispose();
 			return base.CreateItemsViewSource();
 		}
 
@@ -86,15 +95,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						return;
 					}
+					HasInteractivelyMoved = false;
 					gestureRecognizer.CancelsTouchesInView = false;
 					collectionView.BeginInteractiveMovementForItem(indexPath);
 					break;
 				case UIGestureRecognizerState.Changed:
+					HasInteractivelyMoved = true;
 					gestureRecognizer.CancelsTouchesInView = true;
 					collectionView.UpdateInteractiveMovement(location);
 					break;
 				case UIGestureRecognizerState.Ended:
 					collectionView.EndInteractiveMovement();
+					// UICollectionView doesn't refresh supplementary views after interactive movement.
+					// Reload only the affected sections so group headers reflect updated data (e.g. item counts).
+					if (ItemsView?.IsGrouped == true && _lastMoveSourceSection >= 0)
+					{
+						var indexSet = new NSMutableIndexSet();
+						indexSet.Add((nuint)_lastMoveSourceSection);
+						if (_lastMoveDestinationSection >= 0 && _lastMoveDestinationSection != _lastMoveSourceSection)
+						{
+							indexSet.Add((nuint)_lastMoveDestinationSection);
+						}
+						UIView.PerformWithoutAnimation(() =>
+							collectionView.ReloadSections(indexSet));
+						_lastMoveSourceSection = -1;
+						_lastMoveDestinationSection = -1;
+					}
 					break;
 				default:
 					collectionView.CancelInteractiveMovement();
@@ -104,6 +130,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void MoveItem(UICollectionView collectionView, NSIndexPath sourceIndexPath, NSIndexPath destinationIndexPath)
 		{
+			_lastMoveSourceSection = sourceIndexPath.Section;
+			_lastMoveDestinationSection = destinationIndexPath.Section;
+
 			var itemsSource = ItemsSource;
 			var itemsView = ItemsView;
 
@@ -114,6 +143,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (itemsView.IsGrouped)
 			{
+				// Validate that the destination section exists
+				if (destinationIndexPath.Section >= itemsSource.GroupCount)
+				{
+					return;
+				}
+
 				var fromList = itemsSource.Group(sourceIndexPath) as IList;
 				var fromItemsSource = fromList is INotifyCollectionChanged ? itemsSource.GroupItemsViewSource(sourceIndexPath) : null;
 				var fromItemIndex = sourceIndexPath.Row;
@@ -122,17 +157,51 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var toItemsSource = toList is INotifyCollectionChanged ? itemsSource.GroupItemsViewSource(destinationIndexPath) : null;
 				var toItemIndex = destinationIndexPath.Row;
 
-				if (fromList != null && toList != null)
+				// Validate source indices
+				if (fromList == null || fromItemIndex < 0 || fromItemIndex >= fromList.Count)
 				{
-					var fromItem = fromList[fromItemIndex];
-					SetObserveChanges(fromItemsSource, false);
-					SetObserveChanges(toItemsSource, false);
-					fromList.RemoveAt(fromItemIndex);
-					toList.Insert(toItemIndex, fromItem);
-					SetObserveChanges(fromItemsSource, true);
-					SetObserveChanges(toItemsSource, true);
-					itemsView.SendReorderCompleted();
+					return;
 				}
+
+				if (toList == null)
+				{
+					return;
+				}
+
+				// For empty groups, ensure we insert at index 0
+				if (toList.Count == 0)
+				{
+					toItemIndex = 0;
+				}
+				else if (toItemIndex > toList.Count)
+				{
+					toItemIndex = toList.Count;
+				}
+				else if (toItemIndex < 0)
+				{
+					toItemIndex = 0;
+				}
+
+				var fromItem = fromList[fromItemIndex];
+				SetObserveChanges(fromItemsSource, false);
+				SetObserveChanges(toItemsSource, false);
+				fromList.RemoveAt(fromItemIndex);
+
+				// When moving within the same group, removing the source item
+				// shrinks the list, so the destination index may now be out of range.
+				// Adjust it to stay within bounds of the post-removal list.
+				if (ReferenceEquals(fromList, toList) && toItemIndex > fromItemIndex)
+				{
+					toItemIndex--;
+				}
+
+				// Final safety clamp against the (possibly shrunk) destination list
+				toItemIndex = Math.Max(0, Math.Min(toItemIndex, toList.Count));
+
+				toList.Insert(toItemIndex, fromItem);
+				SetObserveChanges(fromItemsSource, true);
+				SetObserveChanges(toItemsSource, true);
+				itemsView.SendReorderCompleted();
 			}
 			else if (itemsView.ItemsSource is IList list)
 			{
@@ -162,6 +231,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (_longPressGestureRecognizer == null)
 				{
 					_longPressGestureRecognizer = new UILongPressGestureRecognizer(HandleLongPress);
+#if MACCATALYST
+					// On Mac Catalyst, we disable the default drag interaction and instead handle dragging using a long press gesture recognizer.
+					// Since a long press typically takes more time to trigger than the system's default drag interaction, 
+					// we reduce the minimum press duration to 0.1 seconds to better match the previous behavior.
+					_longPressGestureRecognizer.MinimumPressDuration = defaultMacCatalystPressDuration;
+#endif
 					CollectionView.AddGestureRecognizer(_longPressGestureRecognizer);
 				}
 			}

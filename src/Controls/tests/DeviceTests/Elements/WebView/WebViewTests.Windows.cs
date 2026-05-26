@@ -7,6 +7,9 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.WebView)]
+#if WINDOWS
+	[Collection(WebViewsCollection)]
+#endif
 	public partial class WebViewTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "Evaluate JavaScript returning a String value"

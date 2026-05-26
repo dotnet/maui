@@ -6,19 +6,19 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributes.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontAttributes']/Docs/*" />
+	/// <summary>Enumerates values that describe font styles.</summary>
 	[Flags]
 	public enum FontAttributes
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributes.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>The font is unmodified.</summary>
 		None = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributes.xml" path="//Member[@MemberName='Bold']/Docs/*" />
+		/// <summary>The font is bold.</summary>
 		Bold = 1 << 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributes.xml" path="//Member[@MemberName='Italic']/Docs/*" />
+		/// <summary>The font is italic.</summary>
 		Italic = 1 << 1
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/FontAttributesConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontAttributesConverter']/Docs/*" />
+	/// <summary>Converts a string into a <see cref="Microsoft.Maui.Controls.FontAttributes"/> object.</summary>
 	public sealed class FontAttributesConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)

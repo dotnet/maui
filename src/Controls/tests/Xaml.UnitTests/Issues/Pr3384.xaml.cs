@@ -1,50 +1,38 @@
 using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
+using System.Linq;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Pr3384 : ContentPage
 {
-	public partial class Pr3384 : ContentPage
+	public Pr3384() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Pr3384()
+		public Tests()
 		{
-			InitializeComponent();
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
 		}
 
-		public Pr3384(bool useCompiledXaml)
+		public void Dispose()
 		{
-			//this stub will be replaced at compile time
+			DispatcherProvider.SetCurrent(null);
+			DeviceInfo.SetCurrent(null);
 		}
 
-		[TestFixture]
-		public class Tests
+		[Theory]
+		[XamlInflatorData]
+		internal void RecyclingStrategyIsHandled(XamlInflator inflator)
 		{
-			[SetUp]
-			public void Setup()
-			{
-				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-				DeviceInfo.SetCurrent(new MockDeviceInfo(platform: DevicePlatform.iOS));
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				DispatcherProvider.SetCurrent(null);
-				DeviceInfo.SetCurrent(null);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void RecyclingStrategyIsHandled(bool useCompiledXaml)
-			{
-				var p = new Pr3384(useCompiledXaml);
-				Assert.AreEqual(ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);
-			}
+			var p = new Pr3384(inflator);
+			Assert.Equal(ListViewCachingStrategy.RecycleElement, p.listView.CachingStrategy);
 		}
 	}
 }

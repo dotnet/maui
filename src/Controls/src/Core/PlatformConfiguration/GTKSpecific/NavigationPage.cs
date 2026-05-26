@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 {
 	using FormsElement = Maui.Controls.NavigationPage;
 
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.NavigationPage']/Docs/*" />
+	/// <summary>Provides access to the back button icon on navigation pages on the GTK platform.</summary>
 	public static class NavigationPage
 	{
 		/// <summary>Bindable property for attached property <c>BackButtonIcon</c>.</summary>
@@ -11,26 +11,35 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 			BindableProperty.Create("BackButtonIcon", typeof(string),
 				typeof(NavigationPage), default(string));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonIcon'][1]/Docs/*" />
+		/// <summary>Gets the icon used for the back button.</summary>
+		/// <param name="element">The platform-specific element.</param>
+		/// <returns>The icon used for the back button.</returns>
 		public static string GetBackButtonIcon(BindableObject element)
 		{
 			return (string)element.GetValue(BackButtonIconProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='SetBackButtonIcon'][1]/Docs/*" />
+		/// <summary>Sets the icon used for the back button.</summary>
+		/// <param name="element">The platform-specific element.</param>
+		/// <param name="backButtonIcon">The new back button icon value.</param>
 		public static void SetBackButtonIcon(BindableObject element, string backButtonIcon)
 		{
 			element.SetValue(BackButtonIconProperty, backButtonIcon);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonIcon'][2]/Docs/*" />
+		/// <summary>Gets the icon used for the back button.</summary>
+		/// <param name="config">The platform-specific configuration.</param>
+		/// <returns>The icon used for the back button.</returns>
 		public static string GetBackButtonIcon(
 			this IPlatformElementConfiguration<GTK, FormsElement> config)
 		{
 			return GetBackButtonIcon(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='SetBackButtonIcon'][2]/Docs/*" />
+		/// <summary>Sets the icon used for the back button.</summary>
+		/// <param name="config">The platform-specific configuration.</param>
+		/// <param name="value">The new back button icon value.</param>
+		/// <returns>The updated configuration object.</returns>
 		public static IPlatformElementConfiguration<GTK, FormsElement> SetBackButtonIcon(
 			this IPlatformElementConfiguration<GTK, FormsElement> config, string value)
 		{

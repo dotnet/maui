@@ -1,50 +1,38 @@
+using System;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Bz58922 : ContentPage
 {
-	public partial class Bz58922 : ContentPage
+	public Bz58922()
 	{
-		public Bz58922()
+		InitializeComponent();
+	}
+
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
+	{
+		MockDeviceInfo mockDeviceInfo;
+
+		public Tests() => DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
+
+		public void Dispose() => DeviceInfo.SetCurrent(null);
+
+		[Theory]
+		[XamlInflatorData]
+		internal void OnIdiomXDouble(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
+			mockDeviceInfo.Idiom = DeviceIdiom.Phone;
+			var layout = new Bz58922(inflator);
+			Assert.Equal(320, layout.grid.HeightRequest);
 
-		public Bz58922(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			MockDeviceInfo mockDeviceInfo;
-
-			[SetUp]
-			public void Setup()
-			{
-				DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			}
-
-			[TearDown]
-			public void TearDown()
-			{
-				DeviceInfo.SetCurrent(null);
-			}
-
-			[TestCase(true)]
-			[TestCase(false)]
-			public void OnIdiomXDouble(bool useCompiledXaml)
-			{
-				mockDeviceInfo.Idiom = DeviceIdiom.Phone;
-				var layout = new Bz58922(useCompiledXaml);
-				Assert.That(layout.grid.HeightRequest, Is.EqualTo(320));
-
-				mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
-				layout = new Bz58922(useCompiledXaml);
-				Assert.That(layout.grid.HeightRequest, Is.EqualTo(480));
-			}
+			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
+			layout = new Bz58922(inflator);
+			Assert.Equal(480, layout.grid.HeightRequest);
 		}
 	}
 }

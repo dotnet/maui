@@ -1,46 +1,34 @@
 using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class U001Page : ContentPage
 {
-	public class U001Page : ContentPage
+	public U001Page()
 	{
-		public U001Page()
-		{
-			;
-		}
-
 	}
 
-	public partial class Unreported001 : TabbedPage
+}
+
+public partial class Unreported001 : TabbedPage
+{
+	public Unreported001() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Unreported001()
-		{
-			InitializeComponent();
-		}
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		public Unreported001(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void DoesNotThrow(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void DoesNotThrow(bool useCompiledXaml)
-			{
-				var p = new Unreported001(useCompiledXaml);
-				Assert.That(p.navpage.CurrentPage, Is.TypeOf<U001Page>());
-			}
+			var p = new Unreported001(inflator);
+			Assert.IsType<U001Page>(p.navpage.CurrentPage);
 		}
 	}
 }

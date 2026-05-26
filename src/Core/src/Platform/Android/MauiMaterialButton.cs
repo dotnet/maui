@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		internal const int IconGravityBottom = 0x1000;
 
 		public MauiMaterialButton(Context context)
-			: base(context)
+			: base(MauiMaterialContextThemeWrapper.Create(context))
 		{
 		}
 
@@ -31,11 +31,11 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		public MauiMaterialButton(Context context, IAttributeSet? attrs) : base(context, attrs)
+		public MauiMaterialButton(Context context, IAttributeSet? attrs) : base(MauiMaterialContextThemeWrapper.Create(context), attrs)
 		{
 		}
 
-		public MauiMaterialButton(Context context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+		public MauiMaterialButton(Context context, IAttributeSet? attrs, int defStyleAttr) : base(MauiMaterialContextThemeWrapper.Create(context), attrs, defStyleAttr)
 		{
 		}
 
