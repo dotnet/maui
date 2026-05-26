@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.WebView.Maui;
-namespace MauiBlazorWebView.UnitTests;
+
+namespace Microsoft.Maui.MauiBlazorWebView.UnitTests;
 
 public class UriExtensions_Tests
 {
@@ -66,7 +67,7 @@ public class UriExtensions_Tests
 	}
 
 	[Fact]
-	public void IsBaseOfPage_IgnoresDotInQuery_AndReturnsFalse_WhenNotBase()
+	public void IsBaseOfPage_IgnoresDotInQuery_WhenBaseUriMatches()
 	{
 		var uri = "https://example.com/page?foo=1.2.3";
 		Assert.True(_baseUri.IsBaseOfPage(uri));
