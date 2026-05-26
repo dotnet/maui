@@ -93,25 +93,26 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="view">The view to find a listener for</param>
 		/// <returns>The local listener if view is in a registered view hierarchy, null otherwise</returns>
-		internal static MauiWindowInsetListener? FindListenerForView(AView view)
+		internal static MauiWindowInsetListener? FindListenerForView(AView view, bool applyRecyclerViewGate = false)
 		{
-			// Walk up the view hierarchy looking for a registered view
+			// Walk up the view hierarchy looking for a registered view.
+			// applyRecyclerViewGate=true (attachment only): skips RecyclerView items with default SafeAreaEdges
+			// to prevent recycled views retaining stale inset padding (#34634/#34635).
+			// Cleanup paths pass the default false so they always find listeners to reset.
 			var parent = view.Parent;
 			while (parent is not null)
 			{
-				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
-				// We want the layout listener logic to get applied to the MaterialToolbar itself
-				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView).
-				//
-				// For RecyclerView item templates, the same AView is reused across different bound MAUI elements
-				// during scrolling. Attaching the inset listener unconditionally caused recycled item views to
-				// carry stale inset-derived padding, which manifested as a progressive bottom gap (#34634/#34635).
-				// We therefore only attach when SafeAreaEdges is explicitly customized on the currently bound
-				// element — preserving per-item SafeAreaEdges customization while keeping recycle behavior safe.
+				// Skip views inside AppBarLayout or MauiScrollView (except MaterialToolbar itself).
 				if (view is not MaterialToolbar &&
-					(parent is AppBarLayout ||
-					parent is MauiScrollView ||
-					(parent is IMauiRecyclerView && !HasExplicitSafeAreaEdges(view))))
+					(parent is AppBarLayout || parent is MauiScrollView))
+				{
+					return null;
+				}
+
+				// Attachment gate: skip RecyclerView items with default SafeAreaEdges.
+				if (applyRecyclerViewGate &&
+					parent is IMauiRecyclerView &&
+					!HasExplicitSafeAreaEdges(view))
 				{
 					return null;
 				}
@@ -509,8 +510,8 @@ internal static class MauiWindowInsetListenerExtensions
 	/// <param name="context">The Android context to get the listener from</param>
 	public static bool TrySetMauiWindowInsetListener(this View view, Context context)
 	{
-		// Check if this view is contained within a registered view first
-		if (MauiWindowInsetListener.FindListenerForView(view) is MauiWindowInsetListener localListener)
+		// applyRecyclerViewGate=true: skips RecyclerView items with default SafeAreaEdges (#34634/#34635).
+		if (MauiWindowInsetListener.FindListenerForView(view, applyRecyclerViewGate: true) is MauiWindowInsetListener localListener)
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
