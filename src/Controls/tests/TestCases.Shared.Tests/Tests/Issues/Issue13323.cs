@@ -17,10 +17,7 @@ public class Issue13323 : _IssuesUITest
 	{
 		App.WaitForElement("CarouselView13323", timeout: TimeSpan.FromSeconds(30));
 
-		// Swipe on the Label area (not the Entry) to avoid gesture interception
-		App.SwipeRightToLeft("SwipeArea");
-		App.SwipeRightToLeft("SwipeArea");
-
+		// Page starts at position 2 — no swipes needed
 		App.WaitForElement("Position:2", timeout: TimeSpan.FromSeconds(15));
 
 		App.Tap("CenterEntry");
@@ -40,9 +37,7 @@ public class Issue13323 : _IssuesUITest
 	{
 		App.WaitForElement("LoopCarouselView13323", timeout: TimeSpan.FromSeconds(30));
 
-		App.SwipeRightToLeft("LoopSwipeArea");
-		App.SwipeRightToLeft("LoopSwipeArea");
-
+		// Page starts at position 2 — no swipes needed
 		App.WaitForElement("LoopPosition:2", timeout: TimeSpan.FromSeconds(15));
 
 		App.Tap("LoopCenterEntry");

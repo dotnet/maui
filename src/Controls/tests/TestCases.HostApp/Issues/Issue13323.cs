@@ -12,7 +12,7 @@ public class Issue13323 : ContentPage
 		var positionLabel = new Label
 		{
 			AutomationId = "PositionLabel",
-			Text = "Position:0",
+			Text = "Position:2",
 			HorizontalOptions = LayoutOptions.Center,
 		};
 
@@ -21,6 +21,7 @@ public class Issue13323 : ContentPage
 			AutomationId = "CarouselView13323",
 			ItemsSource = items,
 			Loop = false,
+			Position = 2,
 			HeightRequest = 250,
 			ItemTemplate = new DataTemplate(() =>
 			{
@@ -59,7 +60,7 @@ public class Issue13323 : ContentPage
 		var loopPositionLabel = new Label
 		{
 			AutomationId = "LoopPositionLabel",
-			Text = "LoopPosition:0",
+			Text = "LoopPosition:2",
 			HorizontalOptions = LayoutOptions.Center,
 		};
 
@@ -68,6 +69,7 @@ public class Issue13323 : ContentPage
 			AutomationId = "LoopCarouselView13323",
 			ItemsSource = items,
 			Loop = true,
+			Position = 2,
 			HeightRequest = 250,
 			ItemTemplate = new DataTemplate(() =>
 			{
