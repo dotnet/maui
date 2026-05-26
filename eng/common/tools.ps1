@@ -817,9 +817,9 @@ function MSBuild-Core() {
 
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
-  if ($ci -and $buildTool.Tool -eq 'dotnet') {
-    $cmdArgs += ' /p:MSBuildEnableWorkloadResolver=false'
-  }
+  # if ($ci -and $buildTool.Tool -eq 'dotnet') {
+  #   $cmdArgs += ' /p:MSBuildEnableWorkloadResolver=false'
+  # }
 
   # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
   if ($env:MSBUILD_MT_ENABLED -eq "1") {
