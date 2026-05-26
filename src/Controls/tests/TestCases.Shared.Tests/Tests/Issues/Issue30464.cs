@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // PR Link - https://github.com/dotnet/maui/pull/34974
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,6 +19,8 @@ public class Issue30464 : _IssuesUITest
 	{
 		App.WaitForElement("Issue30464DescriptionLabel");
 		App.Tap("Issue30464Btn");
+		App.Tap("Issue30464ChangeSelectionBtn");
 		VerifyScreenshot();
 	}
 }
+#endif

@@ -32,16 +32,40 @@ public class Issue30464 : ContentPage
 		Label descriptionLabel = new Label
 		{
 			AutomationId = "Issue30464DescriptionLabel",
-			Text = "The test case passes only if character spacing is correctly applied to both the Picker title and items; otherwise, it fails.",
+			Text = "The test case passes only if character spacing is correctly applied to both the Picker title and items, and is maintained after selecting a different item; otherwise, it fails.",
 		};
 
-		VerticalStackLayout stackLayout = new VerticalStackLayout
+		Picker pickerSelectionChange = new Picker
+		{
+			ItemsSource = new List<string> { "Item 1", "Item 2" },
+			SelectedIndex = 0,
+			CharacterSpacing = 14,
+			AutomationId = "Issue30464SelectionChangePicker"
+		};
+
+		Button changeSelectionBtn = new Button
+		{
+			Text = "Change selection",
+			AutomationId = "Issue30464ChangeSelectionBtn"
+		};
+		changeSelectionBtn.Clicked += (sender, e) =>
+		{
+			pickerSelectionChange.SelectedIndex = 1;
+		};
+
+		Content = new VerticalStackLayout
 		{
 			Spacing = 20,
 			Padding = 20,
-			Children = { pickerTitleCharacterSpacing, pickerItemCharacterSpacing, applyCharacterSpacingBtn, descriptionLabel }
+			Children =
+			{
+				pickerTitleCharacterSpacing,
+				pickerItemCharacterSpacing,
+				applyCharacterSpacingBtn,
+				pickerSelectionChange,
+				changeSelectionBtn,
+				descriptionLabel,
+			}
 		};
-
-		Content = stackLayout;
 	}
 }

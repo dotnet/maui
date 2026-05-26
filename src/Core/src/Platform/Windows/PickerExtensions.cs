@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -77,6 +78,8 @@ namespace Microsoft.Maui.Platform
 			var characterSpacing = picker.CharacterSpacing.ToEm();
 			nativeComboBox.CharacterSpacing = characterSpacing;
 
+			// Apply directly to the selected item's TextBlock so the closed picker reflects spacing.
+			// If the control isn't loaded yet, defer until Loaded so the visual tree exists.
 			if (nativeComboBox.IsLoaded)
 			{
 				ApplyCharacterSpacingToSelectedItem(nativeComboBox, characterSpacing);
@@ -84,23 +87,18 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				nativeComboBox.OnLoaded(() =>
-				{
-					ApplyCharacterSpacingToSelectedItem(nativeComboBox, characterSpacing);
-				});
+					ApplyCharacterSpacingToSelectedItem(nativeComboBox, nativeComboBox.CharacterSpacing));
 			}
 		}
 
-		static void ApplyCharacterSpacingToSelectedItem(ComboBox nativeComboBox, int characterSpacing)
+		internal static void ApplyCharacterSpacingToSelectedItem(this ComboBox nativeComboBox, int characterSpacing)
 		{
 			var contentPresenter = nativeComboBox.GetDescendantByName<ContentPresenter>("ContentPresenter");
+			var textBlock = contentPresenter?.GetFirstDescendant<TextBlock>();
 
-			if (contentPresenter is not null)
+			if (textBlock is not null)
 			{
-				var textBlock = contentPresenter.GetFirstDescendant<TextBlock>();
-				if (textBlock is not null)
-				{
-					textBlock.CharacterSpacing = characterSpacing;
-				}
+				textBlock.CharacterSpacing = characterSpacing;
 			}
 		}
 
