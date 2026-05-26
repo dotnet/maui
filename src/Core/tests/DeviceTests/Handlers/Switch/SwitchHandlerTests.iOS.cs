@@ -112,6 +112,15 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
+		async Task AssertSwitchColorsApplied(UISwitch nativeSwitch, Color trackColor, Color thumbColor, string messageSuffix)
+		{
+			await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), trackColor.ToPlatform(), tolerance: 0.1))
+				.AssertEventually(message: $"Native switch track color did not apply before {messageSuffix}.");
+
+			await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, thumbColor.ToPlatform(), tolerance: 0.1))
+				.AssertEventually(message: $"Native switch thumb color did not apply before {messageSuffix}.");
+		}
+
 		/// <summary>
 		/// If a UISwitch grows beyond 101 pixels it's no longer
 		/// clickable via Voice Over
@@ -231,6 +240,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
 			{
+				var nativeSwitch = GetNativeSwitch(handler);
+				await AssertSwitchColorsApplied(nativeSwitch, Colors.Red, Colors.Orange, "initial bitmap capture");
+
 				var bitmap = CaptureRenderedSwitch(handler);
 				await bitmap.AssertContainsColor(Colors.Red, tolerance: 0.1);
 			});
@@ -354,8 +366,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var nativeSwitch = GetNativeSwitch(handler);
 
+					await AssertSwitchColorsApplied(nativeSwitch, Colors.Red, Colors.Orange, "initial theme bitmap capture");
 					await CaptureRenderedSwitch(handler).AssertContainsColor(Colors.Red, tolerance: 0.1);
-					Assert.Equal(Colors.Orange, nativeSwitch.ThumbTintColor.ToColor());
 
 					application.UserAppTheme = AppTheme.Dark;
 					application.UpdateUserInterfaceStyle();
