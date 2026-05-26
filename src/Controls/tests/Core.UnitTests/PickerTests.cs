@@ -929,5 +929,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Y", picker.SelectedItem);
 			Assert.Equal(2, picker.SelectedIndex);
 		}
+
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerRetainsSelectionWhenDuplicateSelectedItemIsRemoved()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "A", "B", "B" };
+
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "B"
+			};
+
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Remove the first matching selected item
+			items.RemoveAt(1);
+
+			// Assert: Selection should remain because another equal item still exists
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+		}
 	}
 }

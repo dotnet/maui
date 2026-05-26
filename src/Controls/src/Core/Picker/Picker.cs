@@ -418,12 +418,7 @@ namespace Microsoft.Maui.Controls
 
 			index = GetSelectedIndexForCollectionMutation();
 
-			bool selectedItemWasRemoved =
-				SelectedItem != null &&
-				e.OldItems != null &&
-				e.OldItems.Cast<object>().Contains(SelectedItem);
-
-			if (selectedItemWasRemoved)
+			if (index == -1)
 			{
 				ClampSelectedIndex(-1);
 			}
