@@ -24,18 +24,52 @@ namespace Microsoft.Maui.Platform
 			return nameof(Panel);
 		}
 
-		protected override bool IsControlElementCore() => true;
-
-		protected override bool IsContentElementCore() => HasAutomationId();
-
-		bool HasAutomationId()
+		// Border is a structural container — excluded from the Control view by default so screen
+		// readers don't stop on every nested Border. Opt in via AutomationProperties.IsInAccessibleTree
+		// or SemanticProperties.Description / Hint. See MauiLayoutAutomationPeer for rationale.
+		protected override bool IsControlElementCore()
 		{
-			if (Owner is not ContentPanel contentPanel)
+			if (Owner is not ContentPanel panel)
 			{
 				return false;
 			}
 
-			return !string.IsNullOrEmpty(AutomationProperties.GetAutomationId(contentPanel));
+			var accessibilityView = panel.ReadLocalValue(AutomationProperties.AccessibilityViewProperty);
+
+			// Explicit opt-out (IsInAccessibleTree="False" -> AccessibilityView.Raw) wins over any opt-in signal.
+			if (accessibilityView is AccessibilityView.Raw)
+			{
+				return false;
+			}
+			else if (accessibilityView is AccessibilityView.Control or AccessibilityView.Content)
+			{
+				return true;
+			}
+
+			if (!string.IsNullOrEmpty(AutomationProperties.GetName(panel)))
+			{
+				return true;
+			}
+
+			if (!string.IsNullOrEmpty(AutomationProperties.GetHelpText(panel)))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		// Content view requires explicit opt-in via AutomationProperties.IsInAccessibleTree="True".
+		// AutomationId alone is treated as a test-only hook (visible in the raw view only).
+		protected override bool IsContentElementCore()
+		{
+			if (Owner is not ContentPanel panel)
+			{
+				return false;
+			}
+
+			var accessibilityView = panel.ReadLocalValue(AutomationProperties.AccessibilityViewProperty);
+			return accessibilityView is AccessibilityView.Content;
 		}
 	}
 }

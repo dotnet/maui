@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
 using Xunit;
 
@@ -80,6 +81,37 @@ namespace Microsoft.Maui.DeviceTests
 
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
+
+		[Fact(DisplayName = "Border is excluded from Control view by default (AutomationId alone does not opt in)")]
+		public async Task BorderExcludedFromControlViewByDefault()
+		{
+			SetupBuilder();
+
+			var border = new Border { AutomationId = "TestBorder" };
+
+			await AttachAndRun(border, (BorderHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+
+				Assert.Equal("TestBorder", peer.GetAutomationId());
+				Assert.False(peer.IsControlElement());
+			});
+		}
+
+		[Fact(DisplayName = "Border opts into Control view when SemanticProperties.Description is set")]
+		public async Task BorderOptsIntoControlViewWhenDescriptionIsSet()
+		{
+			SetupBuilder();
+
+			var border = new Border();
+			SemanticProperties.SetDescription(border, "Welcome card");
+
+			await AttachAndRun(border, (BorderHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.True(peer.IsControlElement());
+			});
+		}
 
 	}
 }

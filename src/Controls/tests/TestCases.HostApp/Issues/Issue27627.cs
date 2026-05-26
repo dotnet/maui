@@ -15,6 +15,8 @@ public partial class Issue27627 : ContentPage
 			Padding = new Thickness(10),
 			Stroke = Colors.Red
 		};
+		SemanticProperties.SetDescription(border, "Outer test border");
+		AutomationProperties.SetIsInAccessibleTree(border, true);
 
 		var label = new Label
 		{
@@ -33,6 +35,8 @@ public partial class Issue27627 : ContentPage
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center,
 		};
+		SemanticProperties.SetDescription(nestedBorder, "Nested test border");
+		AutomationProperties.SetIsInAccessibleTree(nestedBorder, true);
 
 		nestedBorder.Content = label;
 		border.Content = nestedBorder;
