@@ -49,7 +49,7 @@ public class Issue29420 : ContentPage
 			AutomationId = "InsertButton",
 			Margin = new Thickness(20),
 		};
-		
+
 		var addButton = new Button
 		{
 			Text = "Add item at end",
