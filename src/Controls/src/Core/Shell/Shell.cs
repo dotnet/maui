@@ -89,10 +89,49 @@ namespace Microsoft.Maui.Controls
 				// Notify about the property change
 				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 				
-				// Explicitly propagate the property change to all children
-				if (shell is IPropertyPropagationController controller)
+				if (shell == null)
 				{
-					controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
+					return;
+				}
+
+				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+
+				if (bindable.IsSet(NavBarIsVisibleProperty))
+				{
+					// Value explicitly set — propagate down so iOS/Mac compatibility renderers
+					// (which call Shell.GetNavBarIsVisible(page) directly) also see the change.
+					if (shell is IPropertyPropagationController controller)
+					{
+						controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
+					}
+				}
+				else
+				{
+					// Value was cleared — also clear the propagated copies from visual children
+					// so GetEffectiveValue and platform handlers reflect the reverted state.
+					if (bindable is IVisualTreeElement element)
+					{
+						ClearPropagatedNavBarIsVisible(element, (bool)oldValue);
+					}
+				}
+			}
+		}
+
+		static void ClearPropagatedNavBarIsVisible(IVisualTreeElement element, bool propagatedValue)
+		{
+			foreach (var child in element.GetVisualChildren())
+			{
+				if (child is BindableObject bo
+					&& bo.IsSet(NavBarIsVisibleProperty)
+					&& (bool)bo.GetValue(NavBarIsVisibleProperty) == propagatedValue)
+				{
+					// ClearValue fires OnNavBarIsVisibleChanged on the child, which
+					// recursively clears further down the tree automatically.
+					bo.ClearValue(NavBarIsVisibleProperty);
+				}
+				else if (child is IVisualTreeElement childElement)
+				{
+					ClearPropagatedNavBarIsVisible(childElement, propagatedValue);
 				}
 			}
 		}
@@ -782,9 +821,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 #if ANDROID
-		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
-		static readonly Color DefaultForegroundColor = Colors.White;
-		static readonly Color DefaultTitleColor = Colors.White;
+		static Color DefaultBackgroundColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
+		static Color DefaultForegroundColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
+		static Color DefaultTitleColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 
 		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
 
@@ -1282,10 +1327,29 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 
-			if (Application.Current != null)
+			if (Application.Current is not null)
 			{
+				Color light;
+				Color dark;
+
+				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
+				{
+					light = Color.FromArgb("#FEF7FF");
+					dark = Color.FromArgb("#141218");
+				}
+				else
+				{
+					light = Colors.White;
+					dark = Colors.Black;
+				}
+
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
-					new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
+					new AppThemeBinding
+					{
+						Light = light,
+						Dark = dark,
+						Mode = BindingMode.OneWay
+					});
 			}
 
 			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
@@ -1717,6 +1781,7 @@ namespace Microsoft.Maui.Controls
 				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			(this.Window as Window)?.NotifyNavigationStateChanged();
 		}
 
 		void OnCurrentPageLoaded(object sender, EventArgs e)
@@ -1742,8 +1807,10 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// On Windows, the Loaded event has already fired (IsLoaded=true), so SendNavigatedTo runs immediately without altering the flow.
-			if (CurrentPage.IsLoaded)
+			// Check if the Loaded event has actually been fired (not just IsLoaded which checks platform attachment).
+			// On iOS 26.1+, IsLoaded (view attached) can be true before the Loaded event is dispatched.
+			// On Windows, the Loaded event fires synchronously so IsLoadedFired is already true here.
+			if (CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
 			}
@@ -1781,7 +1848,7 @@ namespace Microsoft.Maui.Controls
 			}
       
       // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
-			if (CurrentPage != null && !CurrentPage.IsLoaded)
+			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.Loaded -= OnCurrentPageLoaded;
 			}
@@ -2171,7 +2238,11 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
+				// Refresh Enabled on the predictive back callback; flyout state affects whether back is consumed here.
+				(this.Window as Window)?.NotifyNavigationStateChanged();
+			}
 		}
 
 		#region Shell Flyout Content

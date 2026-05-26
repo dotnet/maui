@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.IsReadOnly);
+			MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.MaxLength == 0 || searchBar.IsReadOnly);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)

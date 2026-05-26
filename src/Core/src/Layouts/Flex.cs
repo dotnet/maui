@@ -534,10 +534,29 @@ namespace Microsoft.Maui.Layouts.Flex
 					child.Frame[layout.frame_size_i] = basis - child.MarginThickness(layout.vertical);
 				}
 
+#if ANDROID || WINDOWS
+				// A small tolerance value used to account for floating-point precision errors
+				// when determining whether a child item fits on the current line during flex wrapping.
+				// Without this tolerance, items that should fit may be incorrectly wrapped to a new line
+				// due to minor rounding discrepancies in size calculations.
+				// 0.1f accounts for sub-pixel rounding errors introduced by DPI scaling factors
+				// (e.g., 1.25x on Windows, 2.625x density on Android). Values below 1.0f have
+				// no meaningful effect on intentional layout gaps which are always >= 1dp.
+				const float FlexWrapTolerance = 0.1f;
+
+				// The issue was originally reported on Windows, related to device density or
+				// scaling factor. It has also been reproduced on Android due to density variations.
+				// The tolerance is applied unconditionally across all platforms as a conservative fix;
+				// it has no adverse effects on layout behavior.
+				float flex_tolerance = layout.flex_dim + FlexWrapTolerance;
+#else
+				// On other platforms, we haven't observed the same precision issues, so we can use the actual available space as the tolerance.
+				float flex_tolerance = layout.flex_dim;
+#endif
 				float child_size = child.Frame[layout.frame_size_i];
 				if (layout.wrap)
 				{
-					if (layout.flex_dim < child_size)
+					if (flex_tolerance < child_size)
 					{
 						// Not enough space for this child on this line, layout the
 						// remaining items and move it to a new line.
@@ -604,13 +623,6 @@ namespace Microsoft.Maui.Layouts.Flex
 
 					flex_layout.flex_layout_line line = layout.lines![i];
 
-					if (layout.reverse2)
-					{
-						pos -= line.size;
-						pos -= spacing;
-						old_pos -= line.size;
-					}
-
 					// Re-position the children of this line, honoring any child
 					// alignment previously set within the line.
 					for (int j = line.child_begin; j < line.child_end; j++)
@@ -632,7 +644,13 @@ namespace Microsoft.Maui.Layouts.Flex
 						child.Frame[layout.frame_pos2_i] = pos + (child.Frame[layout.frame_pos2_i] - old_pos);
 					}
 
-					if (!layout.reverse2)
+					if (layout.reverse2)
+					{
+						pos -= line.size;
+						pos -= spacing;
+						old_pos -= line.size;
+					}
+					else
 					{
 						pos += line.size;
 						pos += spacing;

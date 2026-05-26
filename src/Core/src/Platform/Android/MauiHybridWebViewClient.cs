@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Web;
+using Android.Graphics;
 using Android.Webkit;
 using Java.Net;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,32 @@ namespace Microsoft.Maui.Platform
 		}
 
 		private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+
+		// OnPageStarted — calls Reset() to clear stale scroll state.
+		public override void OnPageStarted(AWebView? view, string? url, Bitmap? favicon)
+		{
+			RefreshViewWebViewScrollCapture.Reset(view);
+			base.OnPageStarted(view, url, favicon);
+		}
+
+		// OnPageFinished — calls InjectObserver() to inject JS bridge when page loads.
+		public override void OnPageFinished(AWebView? view, string? url)
+		{
+			if (string.IsNullOrWhiteSpace(url))
+			{
+				base.OnPageFinished(view, url);
+				return;
+			}
+
+			// Only inject the scroll-capture observer when the WebView is hosted inside
+			// a RefreshView – avoids unnecessary JS overhead for standalone HybridWebViews.
+			if (RefreshViewWebViewScrollCapture.IsAttached(view))
+			{
+				RefreshViewWebViewScrollCapture.InjectObserver(view);
+			}
+
+			base.OnPageFinished(view, url);
+		}
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
 		{
@@ -76,7 +103,12 @@ namespace Microsoft.Maui.Platform
 
 			logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", fullUrl);
 
-			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString();
+			var relativePath = WebUtils.ResolveRelativePath(HybridWebViewHandler.AppOriginUri, uri);
+			if (relativePath is null)
+			{
+				logger?.LogDebug("Request for {Url} resolved to an invalid path.", fullUrl);
+				return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), new MemoryStream());
+			}
 
 			// 1.a. Try the special "_framework/hybridwebview.js" path
 			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)
@@ -138,8 +170,8 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
-			var contentStream = PlatformOpenAppPackageFile(assetPath);
+			var assetPath = FileSystemUtils.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
+			var contentStream = assetPath is not null ? PlatformOpenAppPackageFile(assetPath) : null;
 
 			if (contentStream is not null)
 			{

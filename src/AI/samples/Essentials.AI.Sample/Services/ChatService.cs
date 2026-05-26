@@ -14,7 +14,6 @@ public class ChatService
 		- Find nearby hotels, restaurants, cafes, and museums
 		- Check weather forecasts
 		- Generate social media hashtags for trips
-		- Change the AI response language
 		- Start planning a trip by navigating to the trip planner
 
 		Today's date is {DateTime.Now:yyyy-MM-dd} ({DateTime.Now:dddd}).
@@ -28,7 +27,7 @@ public class ChatService
 	readonly DataService _dataService;
 	readonly WeatherService _weatherService;
 	readonly TaggingService _taggingService;
-	readonly LanguagePreferenceService _languageService;
+	readonly IDispatcher _dispatcher;
 	readonly IList<AITool> _tools;
 
 	public event Action<Landmark>? NavigateToTripRequested;
@@ -38,12 +37,12 @@ public class ChatService
 		DataService dataService,
 		WeatherService weatherService,
 		TaggingService taggingService,
-		LanguagePreferenceService languageService)
+		IDispatcher dispatcher)
 	{
 		_dataService = dataService;
 		_weatherService = weatherService;
 		_taggingService = taggingService;
-		_languageService = languageService;
+		_dispatcher = dispatcher;
 
 		_tools =
 		[
@@ -53,13 +52,9 @@ public class ChatService
 			AIFunctionFactory.Create(SearchPointsOfInterestAsync),
 			AIFunctionFactory.Create(GetWeatherAsync),
 			AIFunctionFactory.Create(GenerateTagsAsync),
-			AIFunctionFactory.Create(SetLanguage),
 			AIFunctionFactory.Create(PlanTripAsync),
 		];
 
-		// Don't use FunctionInvokingChatClient here — Apple Intelligence handles
-		// tool calling natively at the Swift layer. The tools are passed via ChatOptions
-		// and invoked directly by FoundationModels through AIFunctionToolAdapter.
 		_toolClient = chatClient;
 	}
 
@@ -172,10 +167,10 @@ public class ChatService
 		if (dateOnly > today.AddDays(7))
 			return $"Cannot get weather for {dateOnly:yyyy-MM-dd} — too far ahead. The forecast supports today ({today:yyyy-MM-dd}) through {today.AddDays(7):yyyy-MM-dd}.";
 
-		var weather = await _weatherService.GetWeatherForecastAsync(
+		var (_, weatherText) = await _weatherService.GetWeatherForecastAsync(
 			landmark.Latitude, landmark.Longitude, dateOnly);
 
-		return $"Weather at {landmark.Name} on {dateOnly:yyyy-MM-dd} ({dateOnly:dddd}): {weather}";
+		return $"Weather at {landmark.Name} on {dateOnly:yyyy-MM-dd} ({dateOnly:dddd}): {weatherText}";
 	}
 
 	[Description("Generate social media hashtags for a trip description or destination.")]
@@ -193,20 +188,6 @@ public class ChatService
 		}
 	}
 
-	[Description("Change the language for AI-generated responses. Supported: English, French, Spanish, German, Chinese, Japanese, Korean, Arabic, Indonesian, Italian, Portuguese.")]
-	string SetLanguage(
-		[Description("The language name to switch to, e.g. 'Spanish', 'French', 'Japanese'")] string language)
-	{
-		var match = _languageService.SupportedLanguages.Keys.FirstOrDefault(k =>
-			k.Equals(language, StringComparison.OrdinalIgnoreCase));
-
-		if (match is null)
-			return $"Language '{language}' is not supported. Available: {string.Join(", ", _languageService.SupportedLanguages.Keys)}";
-
-		_languageService.SelectedLanguage = match;
-		return $"Language changed to {match}. AI-generated itineraries will now be in {match}.";
-	}
-
 	[Description("Navigate the user to the trip planning page to generate a detailed multi-day itinerary for a landmark. Use this when the user wants to plan or start a trip.")]
 	async Task<string> PlanTripAsync(
 		[Description("The name of the landmark to plan a trip to")] string landmarkName)
@@ -216,7 +197,7 @@ public class ChatService
 		if (landmark is null)
 			return $"Landmark '{landmarkName}' not found. Try searching with search_landmarks first.";
 
-		MainThread.BeginInvokeOnMainThread(() => NavigateToTripRequested?.Invoke(landmark));
+		_dispatcher.Dispatch(() => NavigateToTripRequested?.Invoke(landmark));
 		return $"Navigating to trip planner for {landmark.Name}! A multi-day itinerary will be generated for you.";
 	}
 

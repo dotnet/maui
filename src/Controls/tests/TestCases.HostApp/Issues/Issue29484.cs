@@ -10,7 +10,6 @@ public class Issue29484 : TestContentPage
 
 		Grid grid = new Grid
 		{
-			HorizontalOptions = LayoutOptions.Center,
 			RowDefinitions =
 				{
 					new RowDefinition { Height = GridLength.Auto },

@@ -5,6 +5,7 @@
     xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
     xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Views.Itinerary"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Views.Itinerary.ItineraryView"
     x:DataType="viewModels:TripPlanningViewModel">
 
@@ -16,12 +17,12 @@
         </VerticalStackLayout>
         
         <Border Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0"
-                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+                Background="{AppThemeBinding Light=#F0F4FF, Dark=#1A1A2E}">
             <Grid ColumnSpacing="10" ColumnDefinitions="Auto, *">
-                <Label Text="✨" FontSize="20" VerticalOptions="Start" />
+                <Label Text="{x:Static f:FluentUI.sparkle_20_regular}" FontFamily="FluentUI" FontSize="20" VerticalOptions="Start" />
                 <Label
                     Text="{Binding Itinerary.Rationale}" FontSize="14" LineBreakMode="WordWrap" Grid.Column="1"
-                    TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" />
+                    TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
             </Grid>
         </Border>
         

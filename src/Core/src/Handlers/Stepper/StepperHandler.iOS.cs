@@ -8,9 +8,9 @@ namespace Microsoft.Maui.Handlers
 	public partial class StepperHandler : ViewHandler<IStepper, UIStepper>
 	{
 		// Trailing glass pill overflow (pts) added to UIStepper width in landscape on iOS 26+.
-		// No UIKit API exposes this value; measured empirically on iOS 26.1.
+		// No UIKit API exposes this value; measured empirically on iOS 26.4 with a small safety margin.
 		// If it changes in a future iOS release, update and re-verify. See: https://github.com/dotnet/maui/issues/34273
-		const double iOSLiquidGlassStepperOverflow = 20;
+		const double iOSLiquidGlassStepperOverflow = 36;
 
 		readonly StepperProxy _proxy = new();
 
@@ -29,9 +29,10 @@ namespace Microsoft.Maui.Handlers
 			// pre-glass logical size (94×32 pts). Apple does not expose the glass overflow extent
 			// as a measurable value; this compensation was determined empirically.
 			//
-			// In landscape orientation the trailing glass overflow is ~20 pts, causing controls
+			// In landscape orientation the trailing glass overflow can extend past the logical size, causing controls
 			// adjacent in a HorizontalStackLayout to appear inside the visible glass pill.
 			// Portrait orientation has negligible overflow and needs no compensation.
+			// The compensation includes a small safety margin and was re-verified on iOS 26.4.
 			//
 			// If this value changes in a future iOS release, update iOSLiquidGlassStepperOverflow
 			// and re-verify on the new OS version. See: https://github.com/dotnet/maui/issues/34273
@@ -204,6 +205,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (VirtualView is IStepper virtualView && sender is UIStepper platformView)
 				{
+					var oldValue = virtualView.Value;
+					var newValue = platformView.Value;
+
 					// iOS 26+ fix: Adjust stepValue for boundary handling
 					if (OperatingSystem.IsIOSVersionAtLeast(26)
 						&& NeedsStepValueAdjustment(virtualView, platformView))
@@ -211,7 +215,30 @@ namespace Microsoft.Maui.Handlers
 						AdjustStepValueForBoundaries(virtualView, platformView);
 					}
 
-					virtualView.Value = platformView.Value;
+					// iOS 26+ fix: Correct partial steps caused by boundary adjustment.
+					// If the step was partial (stepValue was reduced for a boundary) but the
+					// full step still fits within [min, max], it was NOT an intentional
+					// boundary reach — correct to the full increment.
+					if (OperatingSystem.IsIOSVersionAtLeast(26))
+					{
+						const double epsilon = 1e-10;
+						var actualStep = newValue - oldValue;
+						var interval = virtualView.Interval;
+
+						if (Math.Abs(actualStep) > epsilon
+							&& Math.Abs(Math.Abs(actualStep) - interval) > epsilon)
+						{
+							var fullStep = oldValue + (actualStep > 0 ? interval : -interval);
+							if (fullStep >= virtualView.Minimum && fullStep <= virtualView.Maximum)
+							{
+								platformView.Value = fullStep;
+								platformView.StepValue = interval;
+								newValue = fullStep;
+							}
+						}
+					}
+
+					virtualView.Value = newValue;
 				}
 			}
 		}

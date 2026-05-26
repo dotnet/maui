@@ -1,5 +1,4 @@
 #nullable disable
-using System;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -23,7 +22,11 @@ namespace Microsoft.Maui.Controls
 		{
 			Platform.LabelExtensions.UpdateText(handler.PlatformView, label);
 
-			MapFormatting(handler, label);
+			if (!handler.IsConnectingHandler())
+			{
+				// Any text update requires that we update any attributed string formatting
+				MapFormatting(handler, label);
+			}
 		}
 
 		public static void MapLineBreakMode(ILabelHandler handler, Label label)
@@ -46,6 +49,9 @@ namespace Microsoft.Maui.Controls
 			{
 				handler.UpdateValue(nameof(ILabel.TextColor));
 				handler.UpdateValue(nameof(ILabel.Font));
+				handler.UpdateValue(nameof(ILabel.LineHeight));
+				handler.UpdateValue(nameof(ILabel.TextDecorations));
+				handler.UpdateValue(nameof(ILabel.CharacterSpacing));
 			}
 		}
 

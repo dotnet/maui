@@ -33,15 +33,26 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			handler.PlatformView?.UpdateBackground(label);
+			// Gradient sublayers cover UILabel text, so route them to WrapperView; solid colors stay on PlatformView for correct Clip masking.
+			if (label.Background is GradientPaint)
+			{
+				handler.ToPlatform()?.UpdateBackground(label);
+			}
+			else
+			{
+				handler.PlatformView?.UpdateBackground(label);
+			}
 		}
 
 		public static void MapText(ILabelHandler handler, ILabel label)
 		{
 			handler.PlatformView?.UpdateTextPlainText(label);
 
-			// Any text update requires that we update any attributed string formatting
-			MapFormatting(handler, label);
+			if (!handler.IsConnectingHandler())
+			{
+				// Any text update requires that we update any attributed string formatting
+				MapFormatting(handler, label);
+			}
 		}
 
 		public static void MapTextColor(ILabelHandler handler, ILabel label)

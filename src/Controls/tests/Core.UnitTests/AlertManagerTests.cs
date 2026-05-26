@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -10,13 +13,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class AlertManagerTests : BaseTestFixture
 	{
-		private static (Window, AlertManager.IAlertManagerSubscription) CreateStubbedWindow(Action<IServiceProvider> builder = null)
+		private static (Window, IAlertManagerSubscription) CreateStubbedWindow(Action<IServiceProvider> builder = null)
 		{
-			var stub = Substitute.For<AlertManager.IAlertManagerSubscription>();
+			var stub = Substitute.For<IAlertManagerSubscription>();
 
 			var window = CreateWindow(services =>
 			{
-				services.GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription))).Returns(stub);
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription))).Returns(stub);
 				builder?.Invoke(services);
 			});
 
@@ -25,7 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		private static Window CreateWindow(Action<IServiceProvider> builder = null)
 		{
-			var services = Substitute.For<IServiceProvider>();
+			var services = Substitute.For<IServiceProvider, IKeyedServiceProvider>();
 			builder?.Invoke(services);
 
 			var mauiContext = Substitute.For<IMauiContext>();
@@ -43,6 +46,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return window;
 		}
 
+		private static void RegisterKeyedService<TService>(IServiceProvider services, object serviceKey, TService service)
+			where TService : class
+		{
+			((IKeyedServiceProvider)services)
+				.GetKeyedService(Arg.Is<Type>(x => x == typeof(TService)), Arg.Is<object>(x => Equals(x, serviceKey)))
+				.Returns(service);
+		}
+
 		[Fact]
 		public void TestsAreSetUpCorrectly()
 		{
@@ -50,7 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(window);
 			Assert.NotNull(window.AlertManager);
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 		}
 
 		[Fact]
@@ -60,8 +71,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			window.Page = new ContentPage();
 
-			Assert.Null(window.AlertManager.Subscription);
-			window.MauiContext.Services.DidNotReceive().GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription)));
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
+			window.MauiContext.Services.DidNotReceive().GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription)));
 		}
 
 		[Fact]
@@ -71,9 +82,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
-			Assert.NotNull(window.AlertManager.Subscription);
-			Assert.Equal(sub, window.AlertManager.Subscription);
-			window.MauiContext.Services.Received().GetService(Arg.Is<Type>(x => x == typeof(AlertManager.IAlertManagerSubscription)));
+			Assert.NotNull(((AlertManager)window.AlertManager).Subscription);
+			Assert.Equal(sub, ((AlertManager)window.AlertManager).Subscription);
+			window.MauiContext.Services.Received().GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription)));
 		}
 
 		[Fact]
@@ -84,7 +95,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var page = new ContentPage { IsBusy = true };
 			window.Page = page;
 
-			Assert.Null(window.AlertManager.Subscription);
+			Assert.Null(((AlertManager)window.AlertManager).Subscription);
 		}
 
 		[Fact]
@@ -203,6 +214,323 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			continueTask.Wait();
 			sub.Received().OnActionSheetRequested(Arg.Is(page), Arg.Is(args));
 			Assert.True(completed);
+		}
+
+		[Fact]
+		public async Task DelegateFuncInterceptsDisplayAlert()
+		{
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromResult(true);
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			// No explicit IAlertManagerSubscription -> delegate convention kicks in.
+			Assert.NotNull(((AlertManager)window.AlertManager).Subscription);
+
+			var result = await page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			Assert.True(result);
+		}
+
+		[Fact]
+		public void UnkeyedDelegateFuncDoesNotUseDelegateConvention()
+		{
+			bool alertDelegateInvoked = false;
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) =>
+			{
+				alertDelegateInvoked = true;
+				return Task.FromResult(true);
+			};
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(Func<Page, AlertArguments, Task<bool>>))).Returns(alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var resultTask = page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			Assert.False(alertDelegateInvoked);
+			Assert.False(resultTask.IsCompleted);
+		}
+
+		[Fact]
+		public async Task DelegateFuncFallsThroughForUnregisteredOperation()
+		{
+			// Register ONLY the alert delegate. Prompt requests should fall through to the platform
+			// default (the Standard no-op AlertRequestHelper in the test environment) and must NOT
+			// invoke the alert delegate. We assert that deterministically by tracking invocation
+			// of the alert delegate rather than racing a wall-clock timer against the prompt task.
+			bool alertDelegateInvoked = false;
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) =>
+			{
+				alertDelegateInvoked = true;
+				return Task.FromResult(true);
+			};
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			// Sanity: the alert delegate IS invoked for alert requests.
+			var alertResult = await page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+			Assert.True(alertResult);
+			Assert.True(alertDelegateInvoked);
+
+			alertDelegateInvoked = false;
+
+			// Prompt has no delegate registered, so the alert delegate must NOT fire when a prompt
+			// is requested. The platform default no-op fallback is invoked instead, leaving the
+			// returned task pending forever (we don't await it).
+			_ = page.DisplayPromptAsync("Title", "Message");
+			Assert.False(alertDelegateInvoked);
+		}
+
+		[Fact]
+		public async Task DelegateFuncInterceptsDisplayActionSheet()
+		{
+			Func<Page, ActionSheetArguments, Task<string>> actionSheetFunc = (page, args) => Task.FromResult("Other 1");
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayActionSheetServiceKey, actionSheetFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			Assert.NotNull(((AlertManager)window.AlertManager).Subscription);
+
+			var result = await page.DisplayActionSheet("Title", "Cancel", "Destruction", "Other 1", "Other 2");
+
+			Assert.Equal("Other 1", result);
+		}
+
+		[Fact]
+		public async Task DelegateFuncInterceptsDisplayPrompt()
+		{
+			Func<Page, PromptArguments, Task<string>> promptFunc = (page, args) => Task.FromResult("user input");
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayPromptServiceKey, promptFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			Assert.NotNull(((AlertManager)window.AlertManager).Subscription);
+
+			var result = await page.DisplayPromptAsync("Title", "Message");
+
+			Assert.Equal("user input", result);
+		}
+
+		[Fact]
+		public async Task ExplicitSubscriptionWinsOverDelegateFuncs()
+		{
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromResult(true);
+
+			var stub = Substitute.For<IAlertManagerSubscription>();
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManagerSubscription))).Returns(stub);
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			Assert.Same(stub, ((AlertManager)window.AlertManager).Subscription);
+
+			AlertArguments args = null;
+			stub.When(x => x.OnAlertRequested(Arg.Any<Page>(), Arg.Any<AlertArguments>())).Do(x => args = x.Arg<AlertArguments>());
+
+			var resultTask = page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			stub.Received().OnAlertRequested(Arg.Is(page), Arg.Is(args));
+			args.SetResult(true);
+			Assert.True(await resultTask);
+		}
+
+		[Fact]
+		public async Task DelegateFuncExceptionPropagatesToCaller()
+		{
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => throw new InvalidOperationException("boom");
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Equal("boom", ex.Message);
+		}
+
+		[Fact]
+		public async Task DelegateFuncAsynchronousFaultPropagatesToCaller()
+		{
+			// Delegate returns a Task that faults asynchronously (after a yield), exercising the
+			// ContinueWith path in DelegateAlertSubscription.Invoke rather than the synchronous
+			// throw path covered by DelegateFuncExceptionPropagatesToCaller.
+			Func<Page, AlertArguments, Task<bool>> alertFunc = async (page, args) =>
+			{
+				await Task.Yield();
+				throw new InvalidOperationException("async boom");
+			};
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Equal("async boom", ex.Message);
+		}
+
+		[Fact]
+		public async Task DelegateFuncCancellationPropagatesToCaller()
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			cancellationTokenSource.Cancel();
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromCanceled<bool>(cancellationTokenSource.Token);
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var ex = await Assert.ThrowsAsync<TaskCanceledException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Equal(cancellationTokenSource.Token, ex.CancellationToken);
+		}
+
+		[Fact]
+		public async Task DelegateFuncSynchronousCancellationCompletesCallerAsCanceled()
+		{
+			using var cancellationTokenSource = new CancellationTokenSource();
+			cancellationTokenSource.Cancel();
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => throw new OperationCanceledException(cancellationTokenSource.Token);
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var resultTask = page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			var ex = await Assert.ThrowsAsync<TaskCanceledException>(() => resultTask);
+			Assert.True(resultTask.IsCanceled);
+			Assert.False(resultTask.IsFaulted);
+			Assert.Equal(cancellationTokenSource.Token, ex.CancellationToken);
+		}
+
+		[Fact]
+		public async Task DelegateFuncReturningNullTaskFaultsTheCaller()
+		{
+			// A delegate that returns null is a contract violation; the caller must observe it as
+			// an InvalidOperationException rather than hang forever waiting on the TCS.
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => null;
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+				page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel"));
+			Assert.Contains("null Task", ex.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public async Task DelegateFuncReturningResultCompletesCallerWithoutSetResult()
+		{
+			Func<Page, AlertArguments, Task<bool>> alertFunc = (page, args) => Task.FromResult(false);
+
+			var window = CreateWindow(services =>
+			{
+				RegisterKeyedService(services, AlertManager.DisplayAlertServiceKey, alertFunc);
+			});
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
+
+			var result = await page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
+
+			Assert.False(result);
+		}
+
+		[Fact]
+		public void CustomIAlertManagerResolvedFromDI()
+		{
+			var customAlertManager = Substitute.For<IAlertManager>();
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManager))).Returns(customAlertManager);
+			});
+
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = page;
+
+			Assert.Same(customAlertManager, window.AlertManager);
+			customAlertManager.Received().Subscribe();
+		}
+
+		[Fact]
+		public void DefaultAlertManagerUsedWhenNoDIRegistration()
+		{
+			var window = CreateWindow();
+
+			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = page;
+
+			Assert.IsType<AlertManager>(window.AlertManager);
+		}
+
+		[Fact]
+		public void ReplacingPageWithHandledPageCallsUnsubscribeBeforeSubscribe()
+		{
+			// Arrange: custom IAlertManager so we can track call order
+			var callOrder = new List<string>();
+			var customAlertManager = Substitute.For<IAlertManager>();
+			customAlertManager.When(x => x.Unsubscribe()).Do(_ => callOrder.Add("Unsubscribe"));
+			customAlertManager.When(x => x.Subscribe()).Do(_ => callOrder.Add("Subscribe"));
+
+			var window = CreateWindow(services =>
+			{
+				services.GetService(Arg.Is<Type>(x => x == typeof(IAlertManager))).Returns(customAlertManager);
+			});
+
+			// First page with handler to establish subscription
+			var firstPage = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = firstPage;
+			callOrder.Clear(); // reset after initial subscribe
+
+			// Replace with a second page that already has a handler attached
+			var secondPage = new ContentPage { Handler = Substitute.For<IViewHandler>() };
+			window.Page = secondPage;
+
+			// Unsubscribe must come before Subscribe
+			Assert.Equal(2, callOrder.Count);
+			Assert.Equal("Unsubscribe", callOrder[0]);
+			Assert.Equal("Subscribe", callOrder[1]);
 		}
 	}
 }

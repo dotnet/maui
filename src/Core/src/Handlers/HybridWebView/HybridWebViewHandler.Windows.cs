@@ -5,6 +5,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -167,7 +168,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
-				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
+				var relativePath = WebUtils.ResolveRelativePath(AppOriginUri, uri);
+				if (relativePath is null)
+				{
+					logger?.LogDebug("Request for {Url} resolved to an invalid path.", url);
+					return (Stream: null, ContentType: null, StatusCode: 404, Reason: "Not Found");
+				}
 
 				// 1.a. Try the special "_framework/hybridwebview.js" path
 				if (relativePath == HybridWebViewDotJsPath)
@@ -238,8 +244,8 @@ namespace Microsoft.Maui.Handlers
 					}
 				}
 
-				var assetPath = Path.Combine(VirtualView.HybridRoot!, relativePath!);
-				using var contentStream = await GetAssetStreamAsync(assetPath);
+				var assetPath = FileSystemUtils.Combine(VirtualView.HybridRoot!, relativePath!);
+				using var contentStream = assetPath is not null ? await GetAssetStreamAsync(assetPath) : null;
 
 				if (contentStream is not null)
 				{
@@ -301,17 +307,38 @@ namespace Microsoft.Maui.Handlers
 				var initializingArgs = new WebViewInitializationStartedEventArgs();
 				VirtualView?.WebViewInitializationStarted(initializingArgs);
 
-				var env = await CoreWebView2Environment.CreateWithOptionsAsync(
-					browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
-					userDataFolder: initializingArgs.UserDataFolder,
-					options: initializingArgs.EnvironmentOptions);
+				// Only create a custom CoreWebView2Environment when the user has provided custom
+				// settings. Creating a separate environment with all-default settings conflicts with
+				// other WebView2 controls (e.g., regular WebView) in the same app that use the
+				// default environment, because WebView2 requires all controls sharing the same user
+				// data folder to use compatible environments. When no customizations are needed,
+				// use EnsureCoreWebView2Async() so this control joins the default shared environment.
+				bool hasCustomSettings =
+					initializingArgs.BrowserExecutableFolder != null ||
+					initializingArgs.UserDataFolder != null ||
+					initializingArgs.EnvironmentOptions != null ||
+					!string.IsNullOrEmpty(initializingArgs.ScriptLocale) ||
+					initializingArgs.IsInPrivateModeEnabled ||
+					!string.IsNullOrEmpty(initializingArgs.ProfileName);
 
-				var options = env.CreateCoreWebView2ControllerOptions();
-				options.ScriptLocale = initializingArgs.ScriptLocale;
-				options.IsInPrivateModeEnabled = initializingArgs.IsInPrivateModeEnabled;
-				options.ProfileName = initializingArgs.ProfileName;
+				if (hasCustomSettings)
+				{
+					var env = await CoreWebView2Environment.CreateWithOptionsAsync(
+						browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
+						userDataFolder: initializingArgs.UserDataFolder,
+						options: initializingArgs.EnvironmentOptions);
 
-				await webView.EnsureCoreWebView2Async(env, options);
+					var options = env.CreateCoreWebView2ControllerOptions();
+					options.ScriptLocale = initializingArgs.ScriptLocale;
+					options.IsInPrivateModeEnabled = initializingArgs.IsInPrivateModeEnabled;
+					options.ProfileName = initializingArgs.ProfileName;
+
+					await webView.EnsureCoreWebView2Async(env, options);
+				}
+				else
+				{
+					await webView.EnsureCoreWebView2Async();
+				}
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;

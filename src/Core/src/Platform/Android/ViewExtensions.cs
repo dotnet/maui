@@ -659,6 +659,12 @@ namespace Microsoft.Maui.Platform
 						action();
 						localDisposable.Dispose();
 					}
+					else if (localDisposable is not null)
+					{
+						// View was detached before Post ran (e.g., ViewPager2 detach/re-attach cycle).
+						// Restore disposable so the next ViewAttachedToWindow can retry.
+						disposable = localDisposable;
+					}
 				});
 			};
 
@@ -898,6 +904,27 @@ namespace Microsoft.Maui.Platform
 				default:
 					return false;
 			}
+		}
+
+		/// <summary>
+		/// Resets the transform of a view's layer to identity.
+		/// This is used when a WrapperView is created to prevent transform compounding
+		/// between the WrapperView and its child.
+		/// </summary>
+		internal static void ResetTransform(this AView? platformView)
+		{
+			if (platformView is null)
+				return;
+
+			platformView.TranslationX = 0;
+			platformView.TranslationY = 0;
+			platformView.ScaleX = 1;
+			platformView.ScaleY = 1;
+			platformView.Rotation = 0;
+			platformView.RotationX = 0;
+			platformView.RotationY = 0;
+			platformView.PivotX = platformView.Width / 2f;
+			platformView.PivotY = platformView.Height / 2f;
 		}
 	}
 }
