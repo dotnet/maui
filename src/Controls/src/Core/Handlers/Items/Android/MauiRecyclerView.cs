@@ -383,6 +383,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			// We need to observe the adapter for changes for the ItemsUpdatingScrollMode.
+			_itemsUpdateScrollObserver.Stop(ItemsViewAdapter);
 			_itemsUpdateScrollObserver.Start(ItemsViewAdapter);
 		}
 

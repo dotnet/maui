@@ -30,6 +30,10 @@ public partial class Issue26810Vertical : ContentPage
 		{
 			CollectionView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView;
 		}
+		else if (button.Text == "KeepItemsInView")
+		{
+			CollectionView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepItemsInView;
+		}
 	}
 
 	private void AddButton_Clicked(object sender, EventArgs e)
