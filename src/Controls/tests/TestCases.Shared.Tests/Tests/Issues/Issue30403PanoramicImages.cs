@@ -37,10 +37,9 @@ public class Issue30403PanoramicImages : _IssuesUITest
 
 	[Test, Order(4)]
 	[Category(UITestCategories.Image)]
-	public void AllPanoramicImages_ShouldLoadAndDisplay()
+	public void PanoramicImageFillAlignment_ShouldUseAvailableLayoutSlot()
 	{
-		foreach (var resultId in new[] { "PanoramicCenterResult", "PanoramicStartResult", "PanoramicEndResult" })
-			AssertScenarioPassed(resultId);
+		AssertScenarioPassed("PanoramicFillResult");
 	}
 
 	[Test, Order(5)]
@@ -75,6 +74,7 @@ public class Issue30403PanoramicImages : _IssuesUITest
 
 	void AssertScenarioPassed(string automationId)
 	{
+		App.WaitForElement("PanoramicScroll");
 		App.ScrollTo(automationId);
 
 		var passed = App.WaitForTextToBePresentInElement(automationId, "PASS", TimeSpan.FromSeconds(10));

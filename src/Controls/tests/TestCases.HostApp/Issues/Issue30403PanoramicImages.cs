@@ -156,6 +156,18 @@ public class Issue30403PanoramicImages : ContentPage
 
 	View CreateFillAlignmentTest()
 	{
+		var image = CreatePanoramicImage(
+			"PanoramicFill",
+			LayoutOptions.Fill,
+			LayoutOptions.Fill,
+			Colors.Yellow);
+		var container = new Grid
+		{
+			HeightRequest = 200,
+			BackgroundColor = Colors.Orange,
+			Children = { image }
+		};
+
 		return new StackLayout
 		{
 			Children =
@@ -173,19 +185,8 @@ public class Issue30403PanoramicImages : ContentPage
 					FontSize = 12,
 					TextColor = Colors.Gray
 				},
-				new Grid
-				{
-					HeightRequest = 200,
-					BackgroundColor = Colors.Orange,
-					Children =
-					{
-						CreatePanoramicImage(
-							"PanoramicFill",
-							LayoutOptions.Fill,
-							LayoutOptions.Fill,
-							Colors.Yellow)
-					}
-				}
+				container,
+				CreateFillResultLabel("PanoramicFillResult", image, container)
 			}
 		};
 	}
@@ -437,6 +438,36 @@ public class Issue30403PanoramicImages : ContentPage
 			resultLabel.Text = fitsSize && alignsHorizontally && alignsVertically
 				? $"PASS width={image.Width:F1} height={image.Height:F1} x={image.X:F1} y={image.Y:F1}"
 				: $"FAIL expected={expectedWidth:F1}x{expectedHeight:F1} actual={image.Width:F1}x{image.Height:F1} x={image.X:F1} y={image.Y:F1} container={container.Width:F1}x{container.Height:F1}";
+		}
+
+		image.SizeChanged += (_, _) => UpdateResult();
+		container.SizeChanged += (_, _) => UpdateResult();
+
+		return resultLabel;
+	}
+
+	Label CreateFillResultLabel(
+		string automationId,
+		Image image,
+		VisualElement container)
+	{
+		var resultLabel = new Label
+		{
+			AutomationId = automationId,
+			Text = "PENDING",
+			FontSize = 12
+		};
+
+		void UpdateResult()
+		{
+			if (container.Width <= 0 || container.Height <= 0 || image.Width <= 0 || image.Height <= 0)
+				return;
+
+			var fillsLayoutSlot = IsClose(image.Width, container.Width) && IsClose(image.Height, container.Height);
+
+			resultLabel.Text = fillsLayoutSlot
+				? $"PASS width={image.Width:F1} height={image.Height:F1} container={container.Width:F1}x{container.Height:F1}"
+				: $"FAIL expected fill slot {container.Width:F1}x{container.Height:F1} actual={image.Width:F1}x{image.Height:F1} x={image.X:F1} y={image.Y:F1}";
 		}
 
 		image.SizeChanged += (_, _) => UpdateResult();

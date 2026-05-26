@@ -75,6 +75,7 @@ public class Issue30403SmallImages : _IssuesUITest
 
 	void AssertScenarioPassed(string automationId)
 	{
+		App.WaitForElement("SmallScroll");
 		App.ScrollTo(automationId);
 
 		var passed = App.WaitForTextToBePresentInElement(automationId, "PASS", TimeSpan.FromSeconds(10));
