@@ -55,12 +55,16 @@ namespace Microsoft.Maui.Handlers
 		internal static async Task LoadFileIconAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem item)
 		{
 			if (handler.PlatformView is not WSwipeItem swipeItem || handler.MauiContext is null)
+			{
 				return;
+			}
+
 			if (item.Source is null)
 			{
 				swipeItem.IconSource = null;
 				return;
 			}
+
 			var imageSourceServiceProvider = handler.MauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
 			var scale = handler.MauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 			var source = item.Source;
@@ -71,19 +75,12 @@ namespace Microsoft.Maui.Handlers
 				var result = await service.GetImageSourceAsync(source, scale);
 				if (item.Source == source)
 				{
-					swipeItem.IconSource = result?.Value is WImageSource platformImage
-						? new ImageIconSource { ImageSource = platformImage }
-						: null;
+					swipeItem.IconSource = result?.Value is WImageSource platformImage ? new ImageIconSource { ImageSource = platformImage } : null;
 				}
 			}
 			catch (System.Exception ex)
 			{
-				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.Log(
-					LogLevel.Warning,
-					new EventId(),
-					"Cannot load SwipeItem Icon",
-					ex,
-					static (state, _) => state);
+				handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.Log(LogLevel.Warning, new EventId(), "Cannot load SwipeItem Icon", ex, static (state, _) => state);
 			}
 		}
 

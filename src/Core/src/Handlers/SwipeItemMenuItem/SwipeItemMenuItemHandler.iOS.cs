@@ -125,15 +125,17 @@ namespace Microsoft.Maui.Handlers
 
 						if (fontImageSource is not null)
 						{
-							if (fontImageSource.Color != null)
+							if (fontImageSource.Color is not null)
 							{
 								button.TintColor = fontImageSource.Color.ToPlatform();
 							}
 							else
 							{
 								var tintColor = item.GetTextColor();
-								if (tintColor != null)
+								if (tintColor is not null)
+								{
 									button.TintColor = tintColor.ToPlatform();
+								}
 							}
 						}
 						else

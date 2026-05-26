@@ -184,14 +184,18 @@ namespace Microsoft.Maui.Handlers
 
 					if (item.Source is IFontImageSource fontImageSource)
 					{
-						if (fontImageSource.Color != null)
+						if (fontImageSource.Color is not null)
+						{
 							platformImage.SetColorFilter(fontImageSource.Color.ToPlatform(), FilterMode.SrcAtop);
+						}
 						else
 						{
 							var textColor = item.GetTextColor()?.ToPlatform();
 
-							if (textColor != null)
+							if (textColor is not null)
+							{
 								platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
+							}
 						}
 					}
 				}
