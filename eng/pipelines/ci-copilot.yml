@@ -619,6 +619,7 @@ stages:
               mkdir -p "$TRUSTED"
               cp -r .github/scripts "$TRUSTED/scripts"
               cp -r .github/skills  "$TRUSTED/skills"
+              chmod -R a-w "$TRUSTED"
               echo "Trusted scripts copied to $TRUSTED"
 
               # Run Setup phase (branch checkout + PR merge)
@@ -855,6 +856,7 @@ stages:
         steps:
           - checkout: self
             fetchDepth: 0
+            persistCredentials: false
 
           # Bring in .NET + workloads + tasks DLL — same prerequisites the
           # CopilotReview job used. Reusing the install-dotnet template
@@ -1326,6 +1328,7 @@ stages:
         timeoutInMinutes: 30
         steps:
           - checkout: self
+            persistCredentials: false
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
