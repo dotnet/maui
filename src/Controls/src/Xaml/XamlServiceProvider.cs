@@ -320,7 +320,18 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public void Add(string prefix, string ns) => namespaces.Add(prefix, ns);
 	}
 
-	public class XamlDataTypeProvider : IXamlDataTypeProvider
+	/// <summary>
+	/// Extended internal interface for <see cref="IXamlDataTypeProvider"/> implementations
+	/// that can report whether the x:DataType was declared directly on the binding node
+	/// (as opposed to being inherited from an ancestor such as a DataTemplate).
+	/// This avoids a concrete cast to <see cref="XamlDataTypeProvider"/> in consumers.
+	/// </summary>
+	internal interface IXamlDataTypeProviderWithBindingNodeInfo : IXamlDataTypeProvider
+	{
+		bool IsDataTypeOnBindingNode { get; }
+	}
+
+	public class XamlDataTypeProvider : IXamlDataTypeProviderWithBindingNodeInfo
 	{
 		public XamlDataTypeProvider(string dataType) => this.dataType = dataType;
 
@@ -404,6 +415,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		}
 		string dataType;
 		string IXamlDataTypeProvider.BindingDataType => dataType;
+		bool IXamlDataTypeProviderWithBindingNodeInfo.IsDataTypeOnBindingNode => IsDataTypeOnBindingNode;
 		internal HydrationContext Context { get; }
 
 		/// <summary>

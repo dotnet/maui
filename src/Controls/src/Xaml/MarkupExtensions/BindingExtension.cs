@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					//       the template item, not the ancestor — set DataType to null to avoid false
 					//       mismatch failures (see https://github.com/dotnet/maui/issues/35564).
 					DataType = Source is null || (Source is RelativeBindingSource
-						&& dataTypeProvider is XamlDataTypeProvider { IsDataTypeOnBindingNode: true })
+						&& dataTypeProvider is IXamlDataTypeProviderWithBindingNodeInfo { IsDataTypeOnBindingNode: true })
 						? bindingXDataType
 						: null,
 				};

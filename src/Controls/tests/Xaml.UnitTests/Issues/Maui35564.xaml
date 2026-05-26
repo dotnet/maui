@@ -41,5 +41,21 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+        <!-- Scenario C: {RelativeSource Self} inside a DataTemplate with inherited x:DataType.
+             The DataTemplate's x:DataType (Maui35564Item) must NOT be applied to Self bindings
+             — the item type is never the type of the View itself (Label).
+             Before the fix, the inherited type would fail the IsAssignableFrom check and null
+             out the source; after the fix DataType = null for Self bindings with inherited type. -->
+        <CollectionView x:Name="TheCollectionView3"
+            ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui35564Item">
+                    <VerticalStackLayout>
+                        <Label AutomationId="scenario-c"
+                               Text="{Binding AutomationId, Source={RelativeSource Self}}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
     </VerticalStackLayout>
 </ContentPage>

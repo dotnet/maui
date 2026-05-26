@@ -22,6 +22,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 ///   The binding has x:DataType=local:Maui35564 directly on it, alongside
 ///   Source={RelativeSource AncestorType=...}.  SourceGen must compile this to a
 ///   TypedBinding (no reflection) so the binding survives AOT/linker trimming.
+///
+/// Scenario C (Regression guard — RelativeSource Self with inherited x:DataType):
+///   A {RelativeSource Self} binding inside a DataTemplate that has x:DataType=
+///   "local:Maui35564Item". The inherited item type must NOT be applied to Self
+///   bindings — before the fix, Maui35564Item.IsAssignableFrom(Label) = false
+///   would null out the source; after the fix DataType = null for inherited-type
+///   RelativeSource bindings, so Self resolves to the Label correctly.
 /// </summary>
 public partial class Maui35564 : ContentPage
 {
@@ -124,6 +131,41 @@ public partial class Maui35564 : ContentPage
 					var binding = tapGesture.GetContext(TapGestureRecognizer.CommandProperty).Bindings.GetValue();
 					Assert.IsAssignableFrom<TypedBindingBase>(binding);
 				}
+			}
+			finally
+			{
+				AppContext.SetSwitch(FeatureSwitch, false);
+			}
+		}
+		/// <summary>
+		/// Scenario C: {RelativeSource Self} inside a DataTemplate that has x:DataType="Maui35564Item".
+		/// The inherited item type (Maui35564Item) must NOT be applied to the Self binding —
+		/// Self resolves to the Label itself, not to the DataTemplate item.
+		/// Before the fix: inherited DataType caused IsAssignableFrom(Label)=false → source=null.
+		/// After the fix: DataType=null for inherited-type RelativeSource bindings → Self resolves.
+		/// </summary>
+		[Theory]
+		[XamlInflatorData]
+		internal void RelativeSourceSelfInsideDataTemplateWithInheritedXDataType(XamlInflator inflator)
+		{
+			AppContext.SetSwitch(FeatureSwitch, true);
+			try
+			{
+				var page = new Maui35564(inflator);
+				page.BindingContext = page;
+
+				var itemLayout = page.TheCollectionView3.ItemTemplate.CreateContent() as VerticalStackLayout;
+				Assert.NotNull(itemLayout);
+
+				itemLayout.BindingContext = new Maui35564Item { Name = "Test" };
+
+				var label = itemLayout.Children[0] as Label;
+				Assert.NotNull(label);
+
+				// Label.Text must equal the Label's own AutomationId ("scenario-c"), bound via {RelativeSource Self}.
+				// If the inherited x:DataType were applied, the Self source would be nulled out
+				// and Text would be null or empty.
+				Assert.Equal("scenario-c", label.Text);
 			}
 			finally
 			{
