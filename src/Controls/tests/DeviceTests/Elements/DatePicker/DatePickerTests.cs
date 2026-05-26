@@ -5,6 +5,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests;
 
@@ -64,6 +65,72 @@ public partial class DatePickerTests : ControlsHandlerTestBase
 			Assert.Equal(revertedNullText, string.Empty);
 
 			return Task.CompletedTask;
+		});
+	}
+#endif
+
+#if MACCATALYST
+	[Fact(DisplayName = "Focus Opens DatePicker When Virtual Focus Is Stale")]
+	public async Task FocusOpensDatePickerWhenVirtualFocusIsStale()
+	{
+		SetupBuilder();
+
+		var datePicker = new DatePicker
+		{
+			Date = new DateTime(2026, 5, 20),
+			WidthRequest = 200,
+			HeightRequest = 44
+		};
+
+		await CreateHandlerAndAddToWindow<DatePickerHandler>(datePicker, async handler =>
+		{
+			((IView)datePicker).IsFocused = true;
+			datePicker.IsOpen = false;
+
+			var focusResult = datePicker.Focus();
+
+			Assert.True(focusResult);
+			await AssertEventually(
+				() => datePicker.IsFocused && datePicker.IsOpen,
+				message: "DatePicker focus did not open the picker when virtual focus was stale.");
+
+			handler.Invoke(nameof(IView.Unfocus), null);
+		});
+	}
+
+	[Fact(DisplayName = "IsOpen Raises Single Opened And Closed Events")]
+	public async Task IsOpenRaisesSingleOpenedAndClosedEvents()
+	{
+		SetupBuilder();
+
+		var openedCount = 0;
+		var closedCount = 0;
+		var datePicker = new DatePicker
+		{
+			Date = new DateTime(2026, 5, 20),
+			WidthRequest = 200,
+			HeightRequest = 44
+		};
+
+		datePicker.Opened += (_, _) => openedCount++;
+		datePicker.Closed += (_, _) => closedCount++;
+
+		await CreateHandlerAndAddToWindow<DatePickerHandler>(datePicker, async handler =>
+		{
+			datePicker.IsOpen = true;
+
+			await AssertEventually(
+				() => datePicker.IsFocused && datePicker.IsOpen,
+				message: "DatePicker did not enter the focused/open state.");
+
+			datePicker.IsOpen = false;
+
+			await AssertEventually(
+				() => !datePicker.IsFocused && !datePicker.IsOpen,
+				message: "DatePicker did not leave the focused/open state.");
+
+			Assert.Equal(1, openedCount);
+			Assert.Equal(1, closedCount);
 		});
 	}
 #endif

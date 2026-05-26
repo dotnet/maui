@@ -35,6 +35,52 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Focus Can Be Repeated While Open")]
+		public async Task FocusCanBeRepeatedWhileOpen()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = new DateTime(2026, 5, 20),
+				Width = 200,
+				Height = 44
+			};
+
+			await AttachAndRun<DatePickerHandler>(datePicker, async handler =>
+			{
+				var firstFocusResult = handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+
+				Assert.True(firstFocusResult);
+				await AssertEventually(
+					() => datePicker.IsFocused && datePicker.IsOpen,
+					message: "DatePicker did not enter the focused/open state.");
+
+				var secondFocusResult = handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+
+				Assert.True(secondFocusResult);
+				await AssertEventually(
+					() => datePicker.IsFocused && datePicker.IsOpen,
+					message: "DatePicker did not remain in the focused/open state after repeated focus.");
+			});
+		}
+
+		[Fact(DisplayName = "IsOpen Can Reopen DatePicker")]
+		public async Task IsOpenCanReopenDatePicker()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = new DateTime(2026, 5, 20),
+				Width = 200,
+				Height = 44
+			};
+
+			await AttachAndRun<DatePickerHandler>(datePicker, async handler =>
+			{
+				await AssertOpenState(datePicker, handler, true);
+				await AssertOpenState(datePicker, handler, false);
+				await AssertOpenState(datePicker, handler, true);
+			});
+		}
+
 		static async Task AssertFocusCycle(DatePickerStub datePicker, DatePickerHandler handler)
 		{
 			var focusResult = handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
@@ -49,6 +95,16 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertEventually(
 				() => !datePicker.IsFocused && !datePicker.IsOpen,
 				message: "DatePicker did not leave the focused/open state.");
+		}
+
+		static async Task AssertOpenState(DatePickerStub datePicker, DatePickerHandler handler, bool isOpen)
+		{
+			datePicker.IsOpen = isOpen;
+			handler.UpdateValue(nameof(IDatePicker.IsOpen));
+
+			await AssertEventually(
+				() => datePicker.IsFocused == isOpen && datePicker.IsOpen == isOpen,
+				message: $"DatePicker did not update focused/open state to {isOpen}.");
 		}
 	}
 }

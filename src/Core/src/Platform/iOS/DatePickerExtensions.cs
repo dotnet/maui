@@ -169,26 +169,4 @@ public static class DatePickerExtensions
 		else
 			platformDatePicker.ResignFirstResponder();
 	}
-
-	internal static void UpdateIsOpen(this UIDatePicker picker, IDatePicker datePicker)
-	{
-		if (picker is null || datePicker is null)
-			return;
-
-		var desired = datePicker.IsOpen;
-
-		if (desired)
-		{
-			if (!picker.IsFirstResponder)
-				picker.BecomeFirstResponder();
-		}
-		else
-		{
-			if (picker.IsFirstResponder)
-				picker.ResignFirstResponder();
-		}
-
-		if (datePicker.IsFocused != desired)
-			datePicker.IsFocused = desired;
-	}
 }

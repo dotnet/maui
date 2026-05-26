@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIDatePicker CreatePlatformView()
 		{
-			return new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
+			return new MauiMacCatalystDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 		}
 
 		internal bool UpdateImmediately { get; set; } = true;
@@ -90,7 +90,11 @@ namespace Microsoft.Maui.Handlers
 
 		internal static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateIsOpen(datePicker);
+			var platformView = handler.PlatformView;
+			if (datePicker.IsOpen)
+				platformView.BecomeFirstResponder();
+			else
+				platformView.ResignFirstResponder();
 		}
 
 		static void MapMacCatalystFocus(IViewHandler handler, IView view, object? args)
@@ -98,30 +102,22 @@ namespace Microsoft.Maui.Handlers
 			if (args is not FocusRequest request)
 				return;
 
-			if (handler is not DatePickerHandler datePickerHandler ||
-				datePickerHandler.VirtualView is not IDatePicker datePicker)
+			if (handler is not DatePickerHandler datePickerHandler)
 			{
 				request.TrySetResult(false);
 				return;
 			}
 
-			datePicker.IsOpen = true;
-			datePickerHandler.PlatformView?.UpdateIsOpen(datePicker);
-
-			// UIDatePicker can report false from BecomeFirstResponder on MacCatalyst.
+			datePickerHandler.PlatformView.BecomeFirstResponder();
 			request.TrySetResult(true);
 		}
 
 		static void MapMacCatalystUnfocus(IViewHandler handler, IView view, object? args)
 		{
-			if (handler is not DatePickerHandler datePickerHandler ||
-				datePickerHandler.VirtualView is not IDatePicker datePicker)
-			{
+			if (handler is not DatePickerHandler datePickerHandler)
 				return;
-			}
 
-			datePicker.IsOpen = false;
-			datePickerHandler.PlatformView?.UpdateIsOpen(datePicker);
+			datePickerHandler.PlatformView.ResignFirstResponder();
 		}
 
 		void SetVirtualViewDate()
@@ -132,6 +128,53 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			VirtualView.Date = PlatformView.Date.ToDateTime();
+		}
+
+		sealed class MauiMacCatalystDatePicker : UIDatePicker
+		{
+			bool _updatingFirstResponder;
+
+			public override bool BecomeFirstResponder()
+			{
+				if (_updatingFirstResponder)
+					return true;
+
+				_updatingFirstResponder = true;
+				try
+				{
+					if (IsFirstResponder)
+					{
+						base.ResignFirstResponder();
+						SendActionForControlEvents(UIControlEvent.EditingDidEnd);
+					}
+
+					base.BecomeFirstResponder();
+					SendActionForControlEvents(UIControlEvent.EditingDidBegin);
+					return true;
+				}
+				finally
+				{
+					_updatingFirstResponder = false;
+				}
+			}
+
+			public override bool ResignFirstResponder()
+			{
+				if (_updatingFirstResponder)
+					return true;
+
+				_updatingFirstResponder = true;
+				try
+				{
+					var result = base.ResignFirstResponder();
+					SendActionForControlEvents(UIControlEvent.EditingDidEnd);
+					return result;
+				}
+				finally
+				{
+					_updatingFirstResponder = false;
+				}
+			}
 		}
 
 		class UIDatePickerProxy
