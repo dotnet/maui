@@ -28,14 +28,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapSource(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			var iconSource = view.Source?.ToIconSource(handler.MauiContext!);
-
-			// Ensure MenuFlyoutItem icons preserve original colors instead of showing as monochrome silhouettes
-			if (iconSource is BitmapIconSource bitmapIconSource)
-			{
-				bitmapIconSource.ShowAsMonochrome = false;
-			}
-
+			// Preserve original image colors for MenuFlyoutItem icons (BitmapIconSource renders monochrome by default in WinUI).
+			var iconSource = view.Source?.ToIconSource(handler.MauiContext!, preserveWebColors: true);
 			handler.PlatformView.Icon = iconSource?.CreateIconElement();
 		}
 
