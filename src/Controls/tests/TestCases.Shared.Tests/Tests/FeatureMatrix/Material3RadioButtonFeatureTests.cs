@@ -40,7 +40,7 @@ public class Material3RadioButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID // This test fails on Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
+#if TEST_FAILS_ON_ANDROID // This test fails on Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/35587
 	[Test, Order(3)]
 	public void Material3RadioButton_SetTextColorAndBorderColor_VerifyVisualState()
 	{
@@ -93,7 +93,7 @@ public class Material3RadioButtonFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_ANDROID // This test fails on Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
+#if TEST_FAILS_ON_ANDROID // This test fails on Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/35587
 	[Test, Order(6)]
 	public void Material3RadioButton_SetBorderWidthAndCornerRadius_VerifyVisualState()
 	{
