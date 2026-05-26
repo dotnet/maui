@@ -22,15 +22,24 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.MaxLength)] = MapMaxLength,
 		};
 
-		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(ViewHandler.ViewMapper, EntryPriorityMapper)
+		private static readonly IPropertyMapper<IEntry, IEntryHandler> TextMapper = new PropertyMapper<IEntry, IEntryHandler>
 		{
-			[nameof(IEntry.Background)] = MapBackground,
-			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
-			[nameof(IEntry.Font)] = MapFont,
-			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
+			// Ensure Text is mapped before LineHeight/Decorations/CharacterSpacing/HorizontalTextAlignment/TextColor/Font
+			// due to them being applied to the native object (i.e. AttributedText on iOS) created by mapping Text
+			[nameof(IEntry.Text)] = MapText,
+			[nameof(IEntry.MaxLength)] = MapMaxLength,
+			[nameof(IEntry.Font)] = MapFont,
+			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
+			[nameof(IEntry.TextColor)] = MapTextColor
+		};
+
+		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(TextMapper, ViewHandler.ViewMapper)
+		{
+			[nameof(IEntry.Background)] = MapBackground,
+			[nameof(IEntry.IsPassword)] = MapIsPassword,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
 			[nameof(IEntry.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
@@ -38,8 +47,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEntry.ReturnType)] = MapReturnType,
-			[nameof(IEntry.Text)] = MapText,
-			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
 			[nameof(IEntry.SelectionLength)] = MapSelectionLength
 		};
