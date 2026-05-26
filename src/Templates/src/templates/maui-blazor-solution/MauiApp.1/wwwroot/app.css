@@ -3,7 +3,7 @@
     position: sticky;
     top: 0;
     height: env(safe-area-inset-top, 0px);
-    background-color: rgb(3, 23, 62);
+    background-color: var(--maui-status-bar-safe-area-background, transparent);
     width: 100%;
     z-index: 1;
 }
