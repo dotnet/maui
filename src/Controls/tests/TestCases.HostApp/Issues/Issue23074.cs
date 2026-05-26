@@ -20,6 +20,20 @@ public class Issue23074 : ContentPage
 			}
 		};
 
+		// FontImageSource SwipeItem without explicit Color: should fall back to text color for tinting
+		var noColorFontSwipeItem = new SwipeItem
+		{
+			Text = "FontNoColor",
+			AutomationId = "FontNoColorSwipeItem",
+			BackgroundColor = Colors.LightYellow,
+			IconImageSource = new FontImageSource
+			{
+				Glyph = "\u2605",
+				FontFamily = "OpenSansRegular",
+				Size = 30
+			}
+		};
+
 		// SVG SwipeItem: SVG image should preserve its original colors (red cancel icon, not tinted blue)
 		var svgSwipeItem = new SwipeItem
 		{
@@ -45,7 +59,7 @@ public class Issue23074 : ContentPage
 		var swipeView = new SwipeView
 		{
 			AutomationId = "SwipeViewWithIcons",
-			RightItems = new SwipeItems { fontSwipeItem, svgSwipeItem },
+			RightItems = new SwipeItems { fontSwipeItem, noColorFontSwipeItem, svgSwipeItem },
 			Content = swipeContent
 		};
 
