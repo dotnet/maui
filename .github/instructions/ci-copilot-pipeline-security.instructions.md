@@ -21,7 +21,7 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 
 3. **Trusted-copy scripts before merging the PR.** Setup task (still on `main`) copies `.github/scripts`, `.github/skills`, `eng/scripts` to `$(Build.ArtifactStagingDirectory)/trusted-github/`, then `chmod -R a-w`. Later tasks invoke scripts from `$TRUSTED/...`, never from the merged worktree. In PowerShell use `$ScriptsDir` / `$SkillsDir` / `$EngScriptsDir` (canonical impl in `Review-PR.ps1`). New post-merge scripts must be added to the Setup copy block.
 
-4. **Strip tokens before invoking PR-controlled code.** Wrap every `dotnet build|test|run|pack`, `msbuild`, `dotnet cake`, `BuildAndRun*.ps1`, `Run-DeviceTests.ps1`, `verify-tests-fail.ps1`, `Invoke-UITestWithRetry.ps1` in `Invoke-WithoutGhTokens { ... }` (defined in `Review-PR.ps1` — saves/clears/restores `GH_TOKEN`, `GITHUB_TOKEN`, `COPILOT_GITHUB_TOKEN`). Exception: trusted scripts that only call `gh` for PR metadata (`Detect-TestsInDiff.ps1`, `Find-RegressionRisks.ps1`, `detect-ui-test-categories.ps1`) keep the token.
+4. **Strip tokens before invoking PR-controlled code.** Wrap every `dotnet build|test|run|pack`, `msbuild`, `dotnet cake`, `BuildAndRun*.ps1`, `Run-DeviceTests.ps1`, `Invoke-UITestWithRetry.ps1` in `Invoke-WithoutGhTokens { ... }` (defined in `Review-PR.ps1` and `verify-tests-fail.ps1` — saves/clears/restores `GH_TOKEN`, `GITHUB_TOKEN`, `COPILOT_GITHUB_TOKEN`). **Wrap as close to the subprocess as possible, not at the outer trusted-script boundary** — a trusted script may itself need `gh` for metadata (e.g., `verify-tests-fail.ps1` calls `Detect-TestsInDiff.ps1` which uses `gh api`), so wrapping the whole script breaks its detection path. Wrap only the line that launches the PR-controlled process. Exception: scripts that ONLY call `gh` for PR metadata (`Detect-TestsInDiff.ps1`, `Find-RegressionRisks.ps1`, `detect-ui-test-categories.ps1`) don't need wrapping at all — they keep the token.
 
 5. **Cross-phase signal files in `$(Agent.TempDirectory)`** (or `$TRUSTED`), never `$RepoRoot/...`. PR code can overwrite anything in the worktree, including a gate verdict. Readers must not silently fall back to a worktree path if the trusted one is missing.
 
@@ -36,7 +36,7 @@ Once the PR is merged into the worktree, the author controls every `.csproj`, `D
 - [ ] New `checkout: self` has `persistCredentials: false`.
 - [ ] New `env:` block lists only the tokens that task needs; Copilot task has no `GH_TOKEN`.
 - [ ] New post-merge script invoked via `$ScriptsDir` / `$SkillsDir` / `$EngScriptsDir`, not `$RepoRoot/...`, AND added to Setup copy block.
-- [ ] New invocation of PR-controlled code (`dotnet test|build|run`, `BuildAndRun*`, `Run-DeviceTests`, `verify-tests-fail`, `Invoke-UITestWithRetry`) is wrapped in `Invoke-WithoutGhTokens`.
+- [ ] New invocation of PR-controlled code (`dotnet test|build|run`, `BuildAndRun*`, `Run-DeviceTests`, `Invoke-UITestWithRetry`) is wrapped in `Invoke-WithoutGhTokens` AT THE CALL SITE (not at an outer boundary).
 - [ ] New cross-phase state file lives under `$(Agent.TempDirectory)` / `$TRUSTED`.
 - [ ] New PR-stdout pipe uses `tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'`.
 - [ ] Edited `.github/workflows/*.md` has matching `.lock.yml` regenerated in same commit.

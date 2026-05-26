@@ -1509,7 +1509,11 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # PR like a regression repro), it falls back to "verify failure only" mode
     # and reports whether the new tests fail without any fix. Passing the flag
     # would force the script to error out for those PRs.
-    $gateOutput = Invoke-WithoutGhTokens { & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1 }
+    # Note: NOT wrapped in Invoke-WithoutGhTokens here — verify-tests-fail.ps1
+    # itself needs GH_TOKEN to invoke Detect-TestsInDiff.ps1 (which calls `gh api`
+    # to enumerate PR files). The script wraps its OWN dotnet/host-app/device-test
+    # subprocess invocations internally to strip the token before PR code runs.
+    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
 
