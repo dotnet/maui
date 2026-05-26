@@ -17,6 +17,7 @@ import android.graphics.Shader;
 
 
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 
@@ -171,6 +172,17 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
         if (this.hasShadow) {
             invalidate();
         }
+    }
+
+    // API 25 and below: invalidateChildInParent() is the legacy path called when a
+    // descendant calls invalidate() in software or pre-26 hardware-accelerated mode.
+    // Same shadow-stale problem applies — force wrapper redraw when shadow is active.
+    @Override
+    public ViewParent invalidateChildInParent(int[] location, Rect dirty) {
+        if (this.hasShadow) {
+            invalidate();
+        }
+        return super.invalidateChildInParent(location, dirty);
     }
 
     @Override
