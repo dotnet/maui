@@ -29,9 +29,13 @@ public class Issue7580 : _IssuesUITest
 
 		App.DragCoordinates(startX, centerY, endX, centerY);
 
+#if WINDOWS
+		App.WaitForElement("InvokeCount: 1");
+#else
 		var afterFirstSwipe = App.FindElement("InvokeCountLabel").GetText();
 		Assert.That(afterFirstSwipe, Is.EqualTo("InvokeCount: 1"),
 			"SwipeItem command should be invoked exactly once per swipe");
+#endif
 
 		var status = App.FindElement("StatusLabel").GetText();
 		Assert.That(status, Is.EqualTo("Status: IsCompleted=False"),

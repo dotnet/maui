@@ -7,7 +7,7 @@ public class Issue19866 : TestShell
 	{
 		var items = Enumerable.Range(0, 100).Select(i => $"Item {i}").ToList();
 
-		var collectionView = new CollectionView
+		var collectionView = new CollectionView2
 		{
 			AutomationId = "TestCollectionView",
 			ItemsSource = items,
