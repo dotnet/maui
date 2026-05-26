@@ -3,7 +3,6 @@ using CoreFoundation;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -69,7 +68,6 @@ namespace Microsoft.Maui.Handlers
 
 			NSObject? _willEnterForegroundObserver;
 			NSObject? _windowDidBecomeKeyObserver;
-			IUITraitChangeRegistration? _traitChangeRegistration;
 
 			public void Connect(ISwitch virtualView, UISwitch platformView)
 			{
@@ -102,25 +100,10 @@ namespace Microsoft.Maui.Handlers
 					});
 #endif
 
-				// iOS/MacCatalyst 26+ resets ThumbTintColor when theme changes (light/dark mode).
-				// Register for trait changes to re-apply ThumbColor after UIKit completes its styling.
+				// iOS/MacCatalyst 26+ can reset custom switch colors during initial UIKit styling.
+				// Re-apply after connect; MauiSwitch handles later trait/layout/window reapply paths.
 				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
 				{
-					if (_traitChangeRegistration is not null)
-					{
-						platformView.UnregisterForTraitChanges(_traitChangeRegistration);
-					}
-
-					_traitChangeRegistration = platformView.RegisterForTraitChanges<UITraitUserInterfaceStyle>(
-						(IUITraitEnvironment view, UITraitCollection _) =>
-						{
-							if (view is UISwitch uiSwitch)
-							{
-								UpdateThumbAndTrackColor(uiSwitch);
-							}
-						});
-
-					// iOS 26+ resets custom switch colors after initial layout, so re-apply them here.
 					UpdateThumbAndTrackColor(platformView);
 				}
 			}
@@ -167,11 +150,6 @@ namespace Microsoft.Maui.Handlers
 				{
 					NSNotificationCenter.DefaultCenter.RemoveObserver(_windowDidBecomeKeyObserver);
 					_windowDidBecomeKeyObserver = null;
-				}
-				if (_traitChangeRegistration is not null)
-				{
-					platformView.UnregisterForTraitChanges(_traitChangeRegistration);
-					_traitChangeRegistration = null;
 				}
 			}
 
