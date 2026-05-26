@@ -10,7 +10,7 @@ variables:
 - name: REQUIRED_XCODE
   value: 26.4.0
 - name: XCODE
-  value: 26.4
+  value: 26.5
 - name: POWERSHELL_VERSION
   value: 7.4.0
 # Localization variables
