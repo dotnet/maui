@@ -531,6 +531,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return false;
 			}
 
+			// When the binding has an explicit RelativeSource or x:Reference source, x:DataType
+			// inherited from an ancestor (e.g. a DataTemplate) describes the template-item type,
+			// not the actual binding source. Attempting to compile against that type would produce
+			// a false XC0045 "property not found" warning and a broken TypedBinding.
+			// Only compile if x:DataType was written directly on the binding node itself,
+			// where the developer explicitly annotates the source type.
+			// Mirrors the same logic in KnownMarkups.ProvideValueForBindingExtension.
+			bool xDataTypeIsOnBindingNode = n == node;
+			if (HasRelativeOrReferenceSource(node) && !xDataTypeIsOnBindingNode)
+				return false;
+
 			if (xDataTypeIsInOuterScope)
 			{
 				context.LoggingHelper.LogWarningOrError(BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
@@ -638,6 +649,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					&& node.TryGetPropertyName(parentNode, out var propertyName)
 					&& propertyName.NamespaceURI == ""
 					&& propertyName.LocalName == nameof(BindableObject.BindingContext);
+			}
+
+			// Returns true when the binding's Source property is a RelativeSource or x:Reference.
+			// When Source is explicitly set, x:DataType inherited from an ancestor DataTemplate
+			// describes template items — not the actual binding source type.
+			static bool HasRelativeOrReferenceSource(ElementNode bindingNode)
+			{
+				if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode))
+					return false;
+
+				return sourceNode is ElementNode sourceElementNode
+					&& sourceElementNode.XmlType.Name is "RelativeSourceExtension"
+						or "RelativeSource"
+						or "ReferenceExtension"
+						or "Reference";
 			}
 
 			bool DoesNotInheritDataType(ElementNode node)

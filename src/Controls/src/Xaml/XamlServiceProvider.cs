@@ -369,6 +369,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			INode dataTypeNode = null;
 			ElementNode n = node as ElementNode;
+			var firstNode = n;
 
 			// Special handling for BindingContext={Binding ...}
 			// The order of checks is:
@@ -396,9 +397,20 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 			if (dataTypeNode is ValueNode valueNode)
 				this.dataType = valueNode.Value as string;
+			// Track whether x:DataType was found directly on the binding node, not inherited from
+			// an ancestor (e.g. a DataTemplate). This lets BindingExtension correctly skip the
+			// DataType for RelativeSource bindings whose DataType is only the DataTemplate item type.
+			IsDataTypeOnBindingNode = dataTypeNode != null && n == firstNode;
 		}
 		string dataType;
 		string IXamlDataTypeProvider.BindingDataType => dataType;
 		internal HydrationContext Context { get; }
+
+		/// <summary>
+		/// Gets whether the x:DataType was found directly on the binding node itself
+		/// (as opposed to being inherited from an ancestor element such as a DataTemplate).
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal bool IsDataTypeOnBindingNode { get; }
 	}
 }

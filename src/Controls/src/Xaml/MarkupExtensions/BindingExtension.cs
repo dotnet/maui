@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -83,11 +84,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			BindingBase CreateBinding()
 			{
 				Type bindingXDataType = null;
+				IXamlDataTypeProvider dataTypeProvider = null;
 				if (serviceProvider is not null &&
 					(serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
-					&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dataTypeProvider)
-					&& dataTypeProvider.BindingDataType != null)
+					&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dtProvider)
+					&& dtProvider.BindingDataType != null)
 				{
+					dataTypeProvider = dtProvider;
 					typeResolver.TryResolve(dataTypeProvider.BindingDataType, out bindingXDataType);
 				}
 				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
@@ -95,17 +98,25 @@ namespace Microsoft.Maui.Controls.Xaml
 					UpdateSourceEventName = UpdateSourceEventName,
 					FallbackValue = FallbackValue,
 					TargetNullValue = TargetNullValue,
-					// When Source is set to a concrete element reference (e.g. x:Reference), the
-					// DataType from IXamlDataTypeProvider reflects the DataTemplate item type, not
-					// the explicit source type. Assigning that mismatched DataType causes
-					// BindingExpression.Apply to null-out the binding source when
-					// IsXamlCBindingWithSourceCompilationEnabled is true (.NET 10 default for
-					// AOT/trimmed builds). See https://github.com/dotnet/maui/issues/33291.
+					// When Source is set to any explicit source, the DataType from
+					// IXamlDataTypeProvider may reflect the DataTemplate item type (inherited from an
+					// ancestor DataTemplate) rather than the explicit source type. Assigning that
+					// mismatched DataType causes BindingExpression.Apply to null-out the binding
+					// source when IsXamlCBindingWithSourceCompilationEnabled is true (.NET 10 default
+					// for AOT/trimmed builds).
 					//
-					// RelativeBindingSource is excluded: the developer likely set x:DataType on
-					// the binding to describe the expected type of the resolved ancestor, and
-					// that validation should be preserved.
-					DataType = (Source is null || Source is RelativeBindingSource) ? bindingXDataType : null,
+					// - Source=null           → DataType applies (BindingContext IS described by x:DataType)
+					// - Source={x:Reference}  → DataType must be null (see https://github.com/dotnet/maui/issues/33291)
+					// - Source={RelativeSource AncestorType=...}
+					//     • x:DataType was set *directly* on the Binding itself: the developer explicitly
+					//       typed the binding source, so preserve DataType for the type-mismatch check.
+					//     • x:DataType was *inherited* from a DataTemplate ancestor: the type describes
+					//       the template item, not the ancestor — set DataType to null to avoid false
+					//       mismatch failures (see https://github.com/dotnet/maui/issues/35564).
+					DataType = Source is null || (Source is RelativeBindingSource
+						&& dataTypeProvider is XamlDataTypeProvider { IsDataTypeOnBindingNode: true })
+						? bindingXDataType
+						: null,
 				};
 			}
 		}
