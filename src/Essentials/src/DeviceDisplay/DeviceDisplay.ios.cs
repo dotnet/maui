@@ -10,7 +10,33 @@ namespace Microsoft.Maui.Devices
 	partial class DeviceDisplayImplementation : IDeviceDisplay
 	{
 		NSObject? observer;
+
 #if MACCATALYST
+		static readonly NSString ScreenParametersChangedNotification =
+			new NSString("NSApplicationDidChangeScreenParametersNotification");
+
+		// Core Graphics P/Invoke declarations for Mac Catalyst
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern uint CGMainDisplayID();
+
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern IntPtr CGDisplayCopyDisplayMode(uint display);
+
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern void CGDisplayModeRelease(IntPtr mode);
+
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern nuint CGDisplayModeGetWidth(IntPtr mode);
+
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern nuint CGDisplayModeGetHeight(IntPtr mode);
+
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern double CGDisplayModeGetRefreshRate(IntPtr mode);
+
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		static extern double CGDisplayRotation(uint display);
+
 		readonly object locker = new object();
 		NSObject? keepScreenOnActivity;
 
@@ -45,43 +71,6 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 #else
-#if MACCATALYST
-		static readonly NSString ScreenParametersChangedNotification =
-			new NSString("NSApplicationDidChangeScreenParametersNotification");
-#endif
-
-#if MACCATALYST
-		// Core Graphics P/Invoke declarations for Mac Catalyst
-		// Returns the display ID of the main display
-		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern uint CGMainDisplayID();
-
-		// Returns information about a display’s current configuration
-		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern IntPtr CGDisplayCopyDisplayMode(uint display);
-
-		// Releases a Core Graphics display mode
-		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern void CGDisplayModeRelease(IntPtr mode);
-
-		// Returns the width of the specified display mode
-		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern nuint CGDisplayModeGetWidth(IntPtr mode);
-
-		// Returns the height of the specified display mode
-		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern nuint CGDisplayModeGetHeight(IntPtr mode);
-
-		// Returns the refresh rate of the specified display mode
-		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern double CGDisplayModeGetRefreshRate(IntPtr mode);
-
-		// Returns the rotation angle of a display in degrees
-		[DllImport(Constants.CoreGraphicsLibrary)]
-		static extern double CGDisplayRotation(uint display);
-
-#endif
-
 		protected override bool GetKeepScreenOn() => UIApplication.SharedApplication.IdleTimerDisabled;
 
 		protected override void SetKeepScreenOn(bool keepScreenOn) => UIApplication.SharedApplication.IdleTimerDisabled = keepScreenOn;
