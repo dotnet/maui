@@ -1,12 +1,6 @@
 ---
 description: "Security rules for the Copilot PR-review pipeline. Read before editing."
-applyTo:
-  - "eng/pipelines/ci-copilot.yml"
-  - "eng/scripts/detect-ui-test-categories.ps1"
-  - ".github/scripts/**"
-  - ".github/pr-review/**"
-  - ".github/skills/{pr-review,verify-tests-fail-without-fix,try-fix,run-device-tests}/**"
-  - ".github/workflows/{review-trigger,pr-review-queue,copilot-evaluate-tests}.*"
+applyTo: "eng/pipelines/ci-copilot.yml,eng/scripts/detect-ui-test-categories.ps1,.github/scripts/**,.github/pr-review/**,.github/skills/pr-review/**,.github/skills/verify-tests-fail-without-fix/**,.github/skills/try-fix/**,.github/skills/run-device-tests/**,.github/workflows/review-trigger.yml,.github/workflows/pr-review-queue.yml,.github/workflows/copilot-evaluate-tests.*"
 ---
 
 # CI Copilot pipeline — security rules
@@ -17,7 +11,7 @@ This pipeline runs **untrusted PR code** on AzDO agents with these tokens in sco
 - `COPILOT_GITHUB_TOKEN` — Copilot CLI install token
 - AzDO GitHub service-connection PAT — repo contents, PRs, checks, workflows
 
-Exfil of any of these = account/repo takeover. Once the PR is merged into the worktree, the author controls every `.csproj`, `Directory.Build.targets`, source generator, analyzer, test, `.ps1`, and `.yml` the pipeline subsequently runs.
+Once the PR is merged into the worktree, the author controls every `.csproj`, `Directory.Build.targets`, source generator, analyzer, test, `.ps1`, and `.yml` the pipeline subsequently runs.
 
 ## Rules
 
