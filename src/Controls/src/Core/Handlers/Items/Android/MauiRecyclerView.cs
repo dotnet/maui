@@ -38,6 +38,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		readonly DataChangeObserver _emptyCollectionObserver;
 		readonly DataChangeObserver _itemsUpdateScrollObserver;
 
+		// IMauiRecyclerView (Core) — true while the EmptyView adapter is active so that
+		// SafeArea inset logic can allow listeners on EmptyView items (#34634 gate exception).
+		bool IMauiRecyclerView.IsShowingEmptyView => _emptyViewAdapter != null && GetAdapter() == _emptyViewAdapter;
+
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = ScrollBarVisibility.Default;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = ScrollBarVisibility.Default;
 
