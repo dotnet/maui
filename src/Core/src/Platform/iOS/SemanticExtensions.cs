@@ -81,8 +81,21 @@ namespace Microsoft.Maui.Platform
 		{
 			var semantics = view?.Semantics;
 
+			// Null semantics (e.g. ClearValue): reverse any previous promotion so the layout
+			// stops announcing stale content and its children become navigable again.
 			if (semantics is null)
 			{
+				if (view is ILayout && platformView is not UIControl && platformView.IsAccessibilityElement)
+				{
+					platformView.IsAccessibilityElement = false;
+					platformView.AccessibilityLabel = null;
+					platformView.AccessibilityHint = null;
+					if (platformView is MauiView clearedMauiView)
+					{
+						clearedMauiView.SynthesizeAccessibilityLabelFromChildren = false;
+					}
+				}
+
 				return;
 			}
 
@@ -102,11 +115,21 @@ namespace Microsoft.Maui.Platform
 				{
 					// Explicit Description wins — honor the developer's curated label.
 					platformView.AccessibilityLabel = semantics.Description;
+					if (platformView is MauiView mauiViewWithDesc)
+					{
+						mauiViewWithDesc.SynthesizeAccessibilityLabelFromChildren = false;
+					}
+				}
+				else if (platformView is MauiView mauiViewLayout)
+				{
+					// Defer synthesis to MauiView.AccessibilityLabel's getter so child text changes
+					// are picked up on each VoiceOver focus (avoids stale one-shot snapshot).
+					mauiViewLayout.SynthesizeAccessibilityLabelFromChildren = true;
+					mauiViewLayout.AccessibilityLabel = null;
 				}
 				else
 				{
-					// No explicit Description; synthesize from children so VoiceOver isn't left
-					// reading only the Hint (which would silence the layout's actual content).
+					// Non-MauiView platform view (rare for ILayout): fall back to one-shot snapshot.
 					var synthesizedLabel = SynthesizeAccessibilityLabelFromChildren(layout);
 					platformView.AccessibilityLabel = !string.IsNullOrWhiteSpace(synthesizedLabel)
 						? synthesizedLabel
@@ -145,6 +168,10 @@ namespace Microsoft.Maui.Platform
 				&& platformView.IsAccessibilityElement)
 			{
 				platformView.IsAccessibilityElement = false;
+				if (platformView is MauiView demotedMauiView)
+				{
+					demotedMauiView.SynthesizeAccessibilityLabelFromChildren = false;
+				}
 			}
 
 			UpdateSemantics(platformView, semantics);
@@ -213,7 +240,7 @@ namespace Microsoft.Maui.Platform
 		/// Synthesizes an accessibility label by collecting text from all IText children in the layout.
 		/// Uses the MAUI virtual view tree (not platform subviews) to avoid timing issues.
 		/// </summary>
-		static string? SynthesizeAccessibilityLabelFromChildren(ILayout layout)
+		internal static string? SynthesizeAccessibilityLabelFromChildren(ILayout layout)
 		{
 			var sb = new StringBuilder();
 			CollectChildrenText(layout, sb, depth: 0);
@@ -230,6 +257,13 @@ namespace Microsoft.Maui.Platform
 			for (int i = 0; i < layout.Count; i++)
 			{
 				var child = layout[i];
+
+				// Skip non-visible children: once the parent is a leaf accessibility element,
+				// the platform only sees the synthesized string, so hidden text must be filtered here.
+				if (child.Visibility != Visibility.Visible)
+				{
+					continue;
+				}
 
 				// Prefer explicit SemanticProperties.Description over raw text
 				if (child.Semantics?.Description is string childDesc && !string.IsNullOrWhiteSpace(childDesc))

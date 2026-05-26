@@ -909,6 +909,36 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
+		/// When true, <see cref="AccessibilityLabel"/>'s getter synthesizes the label on demand
+		/// from the layout's children instead of returning a stored snapshot. Set by
+		/// <see cref="SemanticExtensions.UpdateSemantics(UIView, IView)"/> when this layout was
+		/// promoted to an accessibility element with a Hint but no explicit Description, so that
+		/// child text changes are picked up on each VoiceOver focus. See PR #35590 review
+		/// comment r3291149230.
+		/// </summary>
+		internal bool SynthesizeAccessibilityLabelFromChildren { get; set; }
+
+		/// <inheritdoc/>
+		public override string? AccessibilityLabel
+		{
+			get
+			{
+				if (SynthesizeAccessibilityLabelFromChildren
+					&& CrossPlatformLayout is ILayout layout)
+				{
+					var synthesized = SemanticExtensions.SynthesizeAccessibilityLabelFromChildren(layout);
+					if (!string.IsNullOrWhiteSpace(synthesized))
+					{
+						return synthesized;
+					}
+				}
+
+				return base.AccessibilityLabel;
+			}
+			set => base.AccessibilityLabel = value;
+		}
+
+		/// <summary>
 		/// Optional callback invoked by <see cref="AccessibilityActivate"/> when VoiceOver activates this view.
 		/// Set by GesturePlatformManager for container layouts with tap gestures to bypass UIKit's
 		/// simulated-touch path, which can be intermittently unreliable on macOS Catalyst.
