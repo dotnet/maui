@@ -307,17 +307,38 @@ namespace Microsoft.Maui.Handlers
 				var initializingArgs = new WebViewInitializationStartedEventArgs();
 				VirtualView?.WebViewInitializationStarted(initializingArgs);
 
-				var env = await CoreWebView2Environment.CreateWithOptionsAsync(
-					browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
-					userDataFolder: initializingArgs.UserDataFolder,
-					options: initializingArgs.EnvironmentOptions);
+				// Only create a custom CoreWebView2Environment when the user has provided custom
+				// settings. Creating a separate environment with all-default settings conflicts with
+				// other WebView2 controls (e.g., regular WebView) in the same app that use the
+				// default environment, because WebView2 requires all controls sharing the same user
+				// data folder to use compatible environments. When no customizations are needed,
+				// use EnsureCoreWebView2Async() so this control joins the default shared environment.
+				bool hasCustomSettings =
+					initializingArgs.BrowserExecutableFolder != null ||
+					initializingArgs.UserDataFolder != null ||
+					initializingArgs.EnvironmentOptions != null ||
+					!string.IsNullOrEmpty(initializingArgs.ScriptLocale) ||
+					initializingArgs.IsInPrivateModeEnabled ||
+					!string.IsNullOrEmpty(initializingArgs.ProfileName);
 
-				var options = env.CreateCoreWebView2ControllerOptions();
-				options.ScriptLocale = initializingArgs.ScriptLocale;
-				options.IsInPrivateModeEnabled = initializingArgs.IsInPrivateModeEnabled;
-				options.ProfileName = initializingArgs.ProfileName;
+				if (hasCustomSettings)
+				{
+					var env = await CoreWebView2Environment.CreateWithOptionsAsync(
+						browserExecutableFolder: initializingArgs.BrowserExecutableFolder,
+						userDataFolder: initializingArgs.UserDataFolder,
+						options: initializingArgs.EnvironmentOptions);
 
-				await webView.EnsureCoreWebView2Async(env, options);
+					var options = env.CreateCoreWebView2ControllerOptions();
+					options.ScriptLocale = initializingArgs.ScriptLocale;
+					options.IsInPrivateModeEnabled = initializingArgs.IsInPrivateModeEnabled;
+					options.ProfileName = initializingArgs.ProfileName;
+
+					await webView.EnsureCoreWebView2Async(env, options);
+				}
+				else
+				{
+					await webView.EnsureCoreWebView2Async();
+				}
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;

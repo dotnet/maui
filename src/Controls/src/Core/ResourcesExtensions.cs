@@ -8,15 +8,26 @@ namespace Microsoft.Maui.Controls
 	{
 		public static IEnumerable<KeyValuePair<string, object>> GetMergedResources(this IElementDefinition element)
 		{
+			return GetMergedResources(element, null);
+		}
+
+		static IEnumerable<KeyValuePair<string, object>> GetMergedResources(this IElementDefinition element, HashSet<string> requestedKeys)
+		{
 			Dictionary<string, object> resources = null;
 			while (element != null)
 			{
 				var ve = element as IResourcesProvider;
 				if (ve != null && ve.IsResourcesCreated)
 				{
-					resources = resources ?? new(StringComparer.Ordinal);
+					if (requestedKeys == null)
+						resources = resources ?? new(StringComparer.Ordinal);
+
 					foreach (KeyValuePair<string, object> res in ve.Resources.MergedResources)
 					{
+						if (requestedKeys != null && !requestedKeys.Contains(res.Key))
+							continue;
+
+						resources = resources ?? new(StringComparer.Ordinal);
 						// If a MergedDictionary value is overridden for a DynamicResource, 
 						// it comes out later in the enumeration of MergedResources
 						// TryGetValue ensures we pull the up-to-date value for the key
@@ -33,8 +44,15 @@ namespace Microsoft.Maui.Controls
 				var app = element as Application;
 				if (app != null && app.SystemResources != null)
 				{
-					resources = resources ?? new Dictionary<string, object>(8, StringComparer.Ordinal);
+					if (requestedKeys == null)
+						resources = resources ?? new Dictionary<string, object>(8, StringComparer.Ordinal);
+
 					foreach (KeyValuePair<string, object> res in app.SystemResources)
+					{
+						if (requestedKeys != null && !requestedKeys.Contains(res.Key))
+							continue;
+
+						resources = resources ?? new Dictionary<string, object>(8, StringComparer.Ordinal);
 						if (!resources.ContainsKey(res.Key))
 							resources.Add(res.Key, res.Value);
 						else if (res.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
@@ -43,8 +61,9 @@ namespace Microsoft.Maui.Controls
 							mergedClassStyles.AddRange(res.Value as List<Style>);
 							resources[res.Key] = mergedClassStyles;
 						}
+					}
 				}
-				if (app != null)
+				if (app != null && (requestedKeys == null || requestedKeys.Contains(AppThemeBinding.AppThemeResource)))
 				{
 					resources = resources ?? new(StringComparer.Ordinal);
 					resources[AppThemeBinding.AppThemeResource] = app.RequestedTheme;
@@ -53,6 +72,35 @@ namespace Microsoft.Maui.Controls
 				element = element.Parent;
 			}
 			return resources;
+		}
+
+		internal static IEnumerable<KeyValuePair<string, object>> GetMergedResourcesForKeys(this IElementDefinition element, IEnumerable<string> keys)
+		{
+			if (element == null || keys == null)
+				return null;
+
+			HashSet<string> requestedKeys = null;
+			foreach (var key in keys)
+			{
+				if (string.IsNullOrEmpty(key))
+					continue;
+
+				requestedKeys ??= new HashSet<string>(StringComparer.Ordinal);
+				requestedKeys.Add(key);
+			}
+
+			if (requestedKeys == null || requestedKeys.Count == 0)
+				return null;
+
+			return GetMergedResourcesForKeys(element, requestedKeys);
+		}
+
+		internal static IEnumerable<KeyValuePair<string, object>> GetMergedResourcesForKeys(this IElementDefinition element, HashSet<string> requestedKeys)
+		{
+			if (element == null || requestedKeys == null || requestedKeys.Count == 0)
+				return null;
+
+			return GetMergedResources(element, requestedKeys);
 		}
 
 		public static bool TryGetResource(this IElementDefinition element, string key, out object value)
