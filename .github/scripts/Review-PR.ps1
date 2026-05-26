@@ -112,6 +112,11 @@ $ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts
 $SkillsDir     = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'skills' }      else { Join-Path $PSScriptRoot '../skills' }
 $EngScriptsDir = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'eng-scripts' } else { Join-Path $PSScriptRoot '../../eng/scripts' }
 
+$commentCleanupScript = Join-Path $ScriptsDir "shared/Remove-StaleMauiBotComments.ps1"
+if (Test-Path $commentCleanupScript) {
+    . $commentCleanupScript
+}
+
 # Gate has GH_TOKEN in env so trusted code (Detect-TestsInDiff, Find-RegressionRisks,
 # detect-ui-test-categories) can fetch PR metadata via `gh` CLI. Any subprocess that
 # executes PR-controlled code (MSBuild targets, test code, source generators, host-app
@@ -307,6 +312,13 @@ if ($DryRun) {
         } else {
             Write-Host "  ⚠️ No changes to merge (PR may already be up to date)" -ForegroundColor Yellow
         }
+
+        if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+            Remove-StaleMauiBotIssueComments `
+                -PRNumber $PRNumber `
+                -IncludeMergeConflict `
+                -Reason "resolved merge-conflict notice"
+        }
     } else {
         Write-Host "  ❌ Squash-merge had conflicts." -ForegroundColor Red
         git merge --abort 2>$null
@@ -317,8 +329,18 @@ if ($DryRun) {
         git branch -D $reviewBranch 2>$null
         git branch -D $tempBranch 2>$null
 
+        if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+            Remove-StaleMauiBotIssueComments `
+                -PRNumber $PRNumber `
+                -IncludeMergeConflict `
+                -Reason "stale merge-conflict notice"
+        }
+
         # Post a comment on the PR about merge conflicts
-        $conflictBody = "⚠️ **Merge Conflict Detected** — This PR has merge conflicts with its target branch. Please rebase onto the target branch and resolve the conflicts."
+        $conflictBody = @"
+<!-- MAUI_BOT_MERGE_CONFLICT -->
+⚠️ **Merge Conflict Detected** — This PR has merge conflicts with its target branch. Please rebase onto the target branch and resolve the conflicts.
+"@
         try {
             gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null
             Write-Host "  📝 Posted merge conflict comment on PR" -ForegroundColor Cyan
@@ -2165,6 +2187,19 @@ if (Test-Path $winnerFile) {
 
 $isPRWinner = (-not $winner) -or ($winner.isPRFix -eq $true)
 
+if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+    Remove-StaleMauiBotIssueComments `
+        -PRNumber $PRNumber `
+        -IncludeTryFix `
+        -Reason "stale try-fix notice"
+}
+
+if (Get-Command Dismiss-StaleMauiBotTryFixReviews -ErrorAction SilentlyContinue) {
+    Dismiss-StaleMauiBotTryFixReviews `
+        -PRNumber $PRNumber `
+        -Reason "stale try-fix review"
+}
+
 if ($isPRWinner) {
     # Post inline review comments (file:line findings from expert-reviewer agent)
     $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
@@ -2223,6 +2258,7 @@ if ($isPRWinner) {
 
     $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
     $reviewBody = @"
+<!-- MAUI_BOT_TRY_FIX -->
 🤖 **Automated review — alternative fix proposed**
 
 The expert-reviewer evaluation compared the PR fix against $($winner.winner -replace 'try-fix-','#') automatically generated candidates and selected ``$($winner.winner)`` as the strongest fix.

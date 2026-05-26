@@ -1,12 +1,14 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Posts or updates the AI review summary comment on a GitHub Pull Request.
+    Posts the AI review summary comment on a GitHub Pull Request.
 
 .DESCRIPTION
     Maintains ONE comment per PR, identified by <!-- AI Summary --> marker.
+    Before posting a fresh comment, any older generated AI Summary comments are
+    removed. Existing session blocks are preserved in the newly posted comment.
     Each review run adds an expandable session keyed by HEAD commit SHA.
-    - Same commit SHA → replaces that session in-place.
+    - Same commit SHA → replaces that session in the newly posted comment.
     - New commit SHA  → prepends a new session (latest first).
     Older sessions stay collapsed; the newest is expanded by default.
 
@@ -22,7 +24,7 @@
     (gate-only update) and once after the review phases finish (full update).
 
     Any standalone legacy "<!-- AI Gate -->" comment from older versions of
-    the script is deleted after a successful post to avoid duplicates.
+    the script is deleted before the fresh comment is posted to avoid duplicates.
 
 .PARAMETER PRNumber
     The pull request number (required)
@@ -47,6 +49,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 $MARKER = "<!-- AI Summary -->"
+
+$commentCleanupScript = Join-Path $PSScriptRoot "shared/Remove-StaleMauiBotComments.ps1"
+if (Test-Path $commentCleanupScript) {
+    . $commentCleanupScript
+}
 
 # ============================================================================
 # LOAD PHASE CONTENT
@@ -244,24 +251,23 @@ function Merge-Sessions {
 # ============================================================================
 
 Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
-$existingCommentId = $null
 $existingBody = $null
+$existingCommentIds = @()
 
 $existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
-$existingObj = $null
 if ($existingRaw) {
     try {
         $allComments = $existingRaw | ConvertFrom-Json
-        $existingObj = @($allComments | Where-Object { $_.body -and $_.body.Contains($MARKER) }) | Select-Object -Last 1
+        $existingObjs = @($allComments | Where-Object { $_.body -and $_.body.Contains($MARKER) })
+        if ($existingObjs.Count -gt 0) {
+            $existingCommentIds = @($existingObjs | ForEach-Object { $_.id })
+            $existingBodies = @($existingObjs | ForEach-Object { [string]$_.body })
+            $existingBody = $existingBodies -join "`n`n---`n`n"
+            Write-Host "✓ Found existing AI Summary comment(s): $($existingCommentIds -join ', ')" -ForegroundColor Green
+        }
     } catch {
         Write-Host "⚠️ Could not parse comments: $_" -ForegroundColor Yellow
     }
-}
-
-if ($existingObj -and $existingObj.id) {
-    $existingCommentId = $existingObj.id
-    $existingBody = $existingObj.body
-    Write-Host "✓ Found existing comment (ID: $existingCommentId)" -ForegroundColor Green
 }
 
 $authorPing = ""
@@ -269,16 +275,22 @@ if ($prAuthor) {
     $authorPing = "> 👋 @$prAuthor — new AI review results are available. Please review the latest session below."
 }
 
-if ($existingBody) {
-    # Merge new session into existing body
-    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7
-
-    # Preserve any PR-FINALIZE section that may already exist
-    $finalizeSection = ""
-    $finalizePattern = '(?s)(<!-- SECTION:PR-FINALIZE -->.*?<!-- /SECTION:PR-FINALIZE -->)'
-    if ($existingBody -match $finalizePattern) {
-        $finalizeSection = "`n`n" + $Matches[1]
+$finalizeSection = ""
+$finalizePattern = '(?s)(<!-- SECTION:PR-FINALIZE -->.*?<!-- /SECTION:PR-FINALIZE -->)'
+if ($existingBodies -and $existingBodies.Count -gt 0) {
+    for ($i = $existingBodies.Count - 1; $i -ge 0; $i--) {
+        if ($existingBodies[$i] -match $finalizePattern) {
+            $finalizeSection = "`n`n" + $Matches[1]
+            break
+        }
     }
+}
+
+if ($existingBody) {
+    # Merge new session into all existing AI Summary bodies before deleting the
+    # old comments. This keeps prior session history even if retries created
+    # multiple generated comments.
+    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7
 
     $commentBody = @"
 $MARKER
@@ -319,56 +331,35 @@ if ($DryRun) {
 }
 
 # ============================================================================
-# POST OR UPDATE COMMENT
+# DELETE STALE GENERATED COMMENTS, THEN POST COMMENT
 # ============================================================================
 
 $tempFile = [System.IO.Path]::GetTempFileName()
 try {
     @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
 
-    if ($existingCommentId) {
-        Write-Host "Updating comment (ID: $existingCommentId)..." -ForegroundColor Yellow
-        try {
-            gh api --method PATCH "repos/dotnet/maui/issues/comments/$existingCommentId" --input $tempFile 2>&1 | Out-Null
-            if ($LASTEXITCODE -ne 0) { throw "PATCH failed" }
-            Write-Host "✅ Review comment updated" -ForegroundColor Green
-            Write-Output "COMMENT_ID=$existingCommentId"
-        } catch {
-            Write-Host "⚠️ Could not update comment $existingCommentId : $_" -ForegroundColor Yellow
-            $newJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
-            $newId = ($newJson | ConvertFrom-Json).id
-            Write-Host "✅ Review comment posted (ID: $newId)" -ForegroundColor Green
-            Write-Output "COMMENT_ID=$newId"
-        }
-    } else {
-        Write-Host "Creating new review comment..." -ForegroundColor Yellow
-        $newJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
-        $newId = ($newJson | ConvertFrom-Json).id
-        Write-Host "✅ Review comment posted (ID: $newId)" -ForegroundColor Green
-        Write-Output "COMMENT_ID=$newId"
+    if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+        Remove-StaleMauiBotIssueComments `
+            -PRNumber $PRNumber `
+            -IncludeAISummary `
+            -IncludeLegacyGate `
+            -IncludeMergeConflict `
+            -IncludeTryFix `
+            -Reason "stale generated PR review comment"
     }
+
+    if (Get-Command Dismiss-StaleMauiBotTryFixReviews -ErrorAction SilentlyContinue) {
+        Dismiss-StaleMauiBotTryFixReviews -PRNumber $PRNumber
+    }
+
+    Write-Host "Creating new review comment..." -ForegroundColor Yellow
+    $newJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to post AI Summary comment"
+    }
+    $newId = ($newJson | ConvertFrom-Json).id
+    Write-Host "✅ Review comment posted (ID: $newId)" -ForegroundColor Green
+    Write-Output "COMMENT_ID=$newId"
 } finally {
     Remove-Item $tempFile -ErrorAction SilentlyContinue
-}
-
-# ============================================================================
-# CLEAN UP LEGACY STANDALONE GATE COMMENTS
-# ============================================================================
-# Earlier versions of this workflow posted gate results in a separate comment
-# marked with <!-- AI Gate -->. Now that the gate is included as a section in
-# this unified comment, those legacy comments are duplicates and should go.
-
-try {
-    $legacyMarker = "<!-- AI Gate -->"
-    $allRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
-    if ($allRaw) {
-        $allComments = $allRaw | ConvertFrom-Json
-        $legacy = @($allComments | Where-Object { $_.body -and $_.body.Contains($legacyMarker) })
-        foreach ($lc in $legacy) {
-            Write-Host "🧹 Deleting legacy gate comment (ID: $($lc.id))..." -ForegroundColor Gray
-            gh api --method DELETE "repos/dotnet/maui/issues/comments/$($lc.id)" 2>&1 | Out-Null
-        }
-    }
-} catch {
-    Write-Host "⚠️ Legacy gate-comment cleanup failed (non-fatal): $_" -ForegroundColor Yellow
 }

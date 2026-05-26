@@ -1511,15 +1511,10 @@ stages:
               } # end if ($byCat.Count -gt 0)
 
               if ($isDeferred) {
-                # ── DEFERRED MODE: Post full comment with deep results included ──
-                # Guard against duplicate comments on pipeline retry: check if
-                # an AI Summary comment already exists for this PR.
-                $existingComment = gh api "repos/dotnet/maui/issues/$prNumber/comments?per_page=100" --paginate --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -Last 1
-                if ($existingComment) {
-                  Write-Host "Existing AI Summary comment found ($existingComment) — will PATCH instead of creating new"
-                  $commentId = $existingComment
-                  $isDeferred = $false
-                }
+                # Keep deferred mode even if a prior AI Summary exists. The
+                # posting script preserves existing sessions, deletes stale
+                # generated comments, then posts a fresh unified comment.
+                Write-Host "Deferred AI Summary posting will clean up any stale generated comments before posting"
               }
 
               if ($isDeferred) {
