@@ -179,6 +179,15 @@ namespace Microsoft.Maui.DeviceTests
 					timeout: 2000,
 					message: "Shell.NavBarIsVisible did not trigger an inset redispatch that cleared the AppBar top padding.");
 
+				// Re-dispatch the synthetic insets now that the nav bar is hidden so we can assert
+				// with known values that the app bar no longer consumes the top insets.
+				var hiddenInsetsInvocationCount = capturingListener.InvocationCount;
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > hiddenInsetsInvocationCount,
+					timeout: 2000,
+					message: "Expected an additional inset dispatch after re-injecting synthetic insets post-nav-bar-hide.");
+
 				AssertTopInsets(capturingListener.LastAppliedInsets,
 					expectedSystemBarsTop: statusBarTopInset,
 					expectedDisplayCutoutTop: displayCutoutTopInset,
