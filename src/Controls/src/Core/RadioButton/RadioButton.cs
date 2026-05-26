@@ -398,6 +398,22 @@ namespace Microsoft.Maui.Controls
 			base.ChangeVisualState();
 		}
 
+#if ANDROID || WINDOWS
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == BorderColorProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeColor));
+			}
+			else if (propertyName == BorderWidthProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
+			}
+		}
+#endif
+
 		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
