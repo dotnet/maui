@@ -6,6 +6,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue32279 : _IssuesUITest
 {
+	const string TapAnchorNoBackground = "TapAnchorNoBackground";
+	const string TapAnchorWithBackground = "TapAnchorWithBackground";
+	const string ResultLabelNoBackground = "ResultLabelNoBackground";
+	const string ResultLabelWithBackground = "ResultLabelWithBackground";
+
 	public Issue32279(TestDevice device) : base(device) { }
 
 	public override string Issue => "TapGestureRecognizer does not work on layouts without a Background on Windows";
@@ -14,9 +19,13 @@ public class Issue32279 : _IssuesUITest
 	[Category(UITestCategories.Gestures)]
 	public void TapOnLayoutWithNoBackgroundShouldWork()
 	{
-		App.WaitForElement("TapTargetNoBackground");
-		App.Tap("TapTargetNoBackground");
-		var result = App.FindElement("ResultLabelNoBackground").GetText();
+		var anchor = App.WaitForElement(TapAnchorNoBackground).GetRect();
+
+		// Tap below the label, inside the ContentView surface
+		App.TapCoordinates(anchor.CenterX(), anchor.Y + anchor.Height + 50);
+
+		var result = App.FindElement(ResultLabelNoBackground).GetText();
+
 		Assert.That(result, Is.EqualTo("Tapped"));
 	}
 
@@ -24,9 +33,13 @@ public class Issue32279 : _IssuesUITest
 	[Category(UITestCategories.Gestures)]
 	public void TapOnLayoutWithBackgroundShouldWork()
 	{
-		App.WaitForElement("TapTargetWithBackground");
-		App.Tap("TapTargetWithBackground");
-		var result = App.FindElement("ResultLabelWithBackground").GetText();
+		var anchor = App.WaitForElement(TapAnchorWithBackground).GetRect();
+
+		// Tap below the label, inside the ContentView surface
+		App.TapCoordinates(anchor.CenterX(), anchor.Y + anchor.Height + 50);
+
+		var result = App.FindElement(ResultLabelWithBackground).GetText();
+
 		Assert.That(result, Is.EqualTo("Tapped"));
 	}
 }

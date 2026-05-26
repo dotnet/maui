@@ -3,14 +3,18 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 32279, "TapGestureRecognizer does not work on layouts without a Background on Windows", PlatformAffected.UWP)]
 public class Issue32279 : TestContentPage
 {
-	const string TapTargetNoBackground = "TapTargetNoBackground";
-	const string TapTargetWithBackground = "TapTargetWithBackground";
+	const string TapAnchorNoBackground = "TapAnchorNoBackground";
+	const string TapAnchorWithBackground = "TapAnchorWithBackground";
 	const string ResultLabelNoBackground = "ResultLabelNoBackground";
 	const string ResultLabelWithBackground = "ResultLabelWithBackground";
 
 	protected override void Init()
 	{
-		var layout = new StackLayout { Spacing = 20, Padding = new Thickness(20) };
+		var layout = new StackLayout
+		{
+			Spacing = 20,
+			Padding = new Thickness(20)
+		};
 
 		// ContentView with NO background
 		var resultLabelNoBackground = new Label
@@ -22,16 +26,15 @@ public class Issue32279 : TestContentPage
 
 		var contentViewNoBackground = new ContentView
 		{
-			HeightRequest = 100,
+			HeightRequest = 200,
 			WidthRequest = 300,
 			Content = new Label
 			{
-				Text = "Tap me (no background)",
-				AutomationId = TapTargetNoBackground,
-				VerticalOptions = LayoutOptions.Fill,
+				Text = "Tap below me (no background)",
+				AutomationId = TapAnchorNoBackground,
+				VerticalOptions = LayoutOptions.Start,
 				HorizontalOptions = LayoutOptions.Fill,
 				HorizontalTextAlignment = TextAlignment.Center,
-				VerticalTextAlignment = TextAlignment.Center,
 			}
 		};
 
@@ -50,17 +53,16 @@ public class Issue32279 : TestContentPage
 
 		var contentViewWithBackground = new ContentView
 		{
-			HeightRequest = 100,
+			HeightRequest = 200,
 			WidthRequest = 300,
 			BackgroundColor = Colors.LightGray,
 			Content = new Label
 			{
-				Text = "Tap me (with background)",
-				AutomationId = TapTargetWithBackground,
-				VerticalOptions = LayoutOptions.Fill,
+				Text = "Tap below me (with background)",
+				AutomationId = TapAnchorWithBackground,
+				VerticalOptions = LayoutOptions.Start,
 				HorizontalOptions = LayoutOptions.Fill,
 				HorizontalTextAlignment = TextAlignment.Center,
-				VerticalTextAlignment = TextAlignment.Center,
 			}
 		};
 
