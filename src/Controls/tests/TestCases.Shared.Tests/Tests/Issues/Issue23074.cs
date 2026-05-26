@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS //The AutomationId for SwipeView items does not function as expected on the Windows platform. Additionally, programmatic swiping is currently not working. For reference:  https://github.com/dotnet/maui/issues/14777.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,7 +15,7 @@ public class Issue23074(TestDevice device) : _IssuesUITest(device)
 	{
 		App.WaitForElement("SwipeContent");
 		App.SwipeRightToLeft("SwipeViewWithIcons");
-		App.WaitForElement("FontSwipeItem");
 		VerifyScreenshot();
 	}
 }
+#endif
