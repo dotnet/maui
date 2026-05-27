@@ -36,6 +36,11 @@ Microsoft.Maui.Controls.Handlers.ShellSectionWrapperFragment.ShellSectionWrapper
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.IsSwipeEnabled.get -> bool
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.IsSwipeEnabled.set -> void
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.UpdateFromCurrentItem() -> void
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.UpdateFromPosition() -> void
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer
