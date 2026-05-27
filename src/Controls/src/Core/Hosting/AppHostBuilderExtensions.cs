@@ -203,7 +203,14 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if IOS || MACCATALYST
-		handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
+		if (RuntimeFeature.UseiOSNavigationViewHandler)
+		{
+			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
+		}
+		else
+		{
+			handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
+		}
 		handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
 		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
@@ -335,6 +342,16 @@ public static partial class AppHostBuilderExtensions
 		ImageButton.RemapForControls();
 
 		Slider.RemapForControls();
+
+#if IOS || MACCATALYST
+		if (RuntimeFeature.UseiOSNavigationViewHandler)
+		{
+			NavigationPage.RemapForControls();
+			NavigationViewHandler.NavigationBarType = typeof(MauiNavigationBar);
+			NavigationViewHandler.CreateViewControllerForPage = NavigationViewHandlerToolbarHelper.CreateViewControllerForPage;
+		}
+#endif
+
 		return builder;
 	}
 }

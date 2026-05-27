@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls
 		partial void Init();
 
 #if IOS || MACCATALYST
-		const bool UseMauiHandler = false;
+		static bool UseMauiHandler => RuntimeFeature.UseiOSNavigationViewHandler;
 #else
 		const bool UseMauiHandler = true;
 #endif
