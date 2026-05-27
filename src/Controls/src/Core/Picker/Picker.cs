@@ -83,7 +83,6 @@ namespace Microsoft.Maui.Controls
 		public Picker()
 		{
 			((INotifyCollectionChanged)Items).CollectionChanged += OnItemsCollectionChanged;
-			ParentSet += OnPickerParentSet;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Picker>>(() => new PlatformConfigurationRegistry<Picker>(this));
 		}
 		/// <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither. This is a bindable property.</summary>
@@ -381,13 +380,6 @@ namespace Microsoft.Maui.Controls
 				var action = _pendingIsOpenActions.Dequeue();
 				action.Invoke();
 			}
-
-			TryApplyPendingSelectedIndex(forceClamp: true);
-		}
-
-		void OnPickerParentSet(object sender, EventArgs e)
-		{
-			TryApplyPendingSelectedIndex(forceClamp: true);
 		}
 
 		void HandleIsOpenChanged()

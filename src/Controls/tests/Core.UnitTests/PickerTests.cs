@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -143,6 +144,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			picker.SelectedIndex = 2;
 
 			picker.Items.Add("John");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeInlineItemsSurvivesParentSetUntilIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+			picker.Items.Add("John");
+
+			var layout = new VerticalStackLayout();
+			layout.Children.Add(picker);
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeInlineItemsSurvivesHandlerAttachmentUntilIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+			picker.Items.Add("John");
+
+			picker.Handler = Substitute.For<IViewHandler>();
+
 			Assert.Equal(-1, picker.SelectedIndex);
 			Assert.Null(picker.SelectedItem);
 
