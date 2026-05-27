@@ -25,6 +25,10 @@
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <UseiOSNavigationViewHandler>true</UseiOSNavigationViewHandler>
+  </PropertyGroup>
+
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png"  BaseSize="23,23" />
