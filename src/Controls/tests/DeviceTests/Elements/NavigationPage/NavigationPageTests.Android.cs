@@ -10,6 +10,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -110,6 +111,30 @@ namespace Microsoft.Maui.DeviceTests
 					fragmentContainerViewField.GetValue(tab2SnManager) == null &&
 					fragmentManagerField.GetValue(tab2SnManager) == null,
 					message: "StackNavigationManager fields were not cleared after Disconnect()");
+			});
+		}
+
+		[Fact(DisplayName = "NavigationPage bar background colors the edge-to-edge top inset area")]
+		public async Task BarBackgroundColorColorsEdgeToEdgeTopInsetArea()
+		{
+			SetupBuilder();
+
+			var expectedColor = Colors.OrangeRed;
+			var rootPage = new ContentPage
+			{
+				Title = "Page Title",
+				Content = new Label { Text = "NavigationPage content" }
+			};
+
+			var navPage = new NavigationPage(rootPage)
+			{
+				BarBackgroundColor = expectedColor
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnLoadedAsync(rootPage);
+				await AssertAppBarTopInsetUsesColor(handler, expectedColor);
 			});
 		}
 
