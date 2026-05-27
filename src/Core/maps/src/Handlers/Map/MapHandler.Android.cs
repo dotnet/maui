@@ -614,11 +614,13 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polylines == null)
 				_polylines = new List<APolyline>();
 
-			var options = polyline.ToHandler(MauiContext!)?.PlatformView as PolylineOptions;
-			if (options != null)
-			{
-				var nativePolyline = map.AddPolyline(options);
+			var nativePolyline = MapElementPlatformOptions.InvokeWithOptions<PolylineOptions, APolyline>(
+				polyline,
+				MauiContext!,
+				options => map.AddPolyline(options));
 
+			if (nativePolyline != null)
+			{
 				polyline.MapElementId = nativePolyline.Id;
 				TrackMapElement(nativePolyline.Id, polyline);
 
@@ -635,12 +637,15 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_polygons == null)
 				_polygons = new List<APolygon>();
 
-			var options = polygon.ToHandler(MauiContext!)?.PlatformView as PolygonOptions;
-			if (options is null)
+			var nativePolygon = MapElementPlatformOptions.InvokeWithOptions<PolygonOptions, APolygon>(
+				polygon,
+				MauiContext!,
+				options => map.AddPolygon(options));
+
+			if (nativePolygon is null)
 			{
 				throw new System.Exception("PolygonOptions is null");
 			}
-			var nativePolygon = map.AddPolygon(options);
 
 			polygon.MapElementId = nativePolygon.Id;
 			TrackMapElement(nativePolygon.Id, polygon);
@@ -657,12 +662,15 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (_circles == null)
 				_circles = new List<ACircle>();
 
-			var options = circle.ToHandler(MauiContext!)?.PlatformView as CircleOptions;
-			if (options is null)
+			var nativeCircle = MapElementPlatformOptions.InvokeWithOptions<CircleOptions, ACircle>(
+				circle,
+				MauiContext!,
+				options => map.AddCircle(options));
+
+			if (nativeCircle is null)
 			{
 				throw new System.Exception("CircleOptions is null");
 			}
-			var nativeCircle = map.AddCircle(options);
 
 			circle.MapElementId = nativeCircle.Id;
 			TrackMapElement(nativeCircle.Id, circle);
