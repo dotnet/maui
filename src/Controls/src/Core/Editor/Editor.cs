@@ -1,17 +1,38 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>A control that can edit multiple lines of text.</summary>
+#if ANDROID
+	[EditorHandler]
+#else
+	[ElementHandler(typeof(EditorHandler))]
+#endif
 	public partial class Editor : InputView, IEditorController, ITextAlignmentElement, IElementConfiguration<Editor>, IEditor
 	{
+#if ANDROID
+		internal sealed class EditorHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(EditorHandler2);
+
+				return typeof(EditorHandler);
+			}
+		}
+#endif
+
 		/// <summary>Identifies the Text bindable property.</summary>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
@@ -244,6 +265,12 @@ namespace Microsoft.Maui.Controls
 				return width == otherWidth ||
 					(width - otherWidth) < double.Epsilon;
 			}
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			Text = text;
+			return true;
 		}
 	}
 }

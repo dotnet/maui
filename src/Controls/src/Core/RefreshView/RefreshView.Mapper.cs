@@ -11,10 +11,11 @@ namespace Microsoft.Maui.Controls
 			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
 			// See https://github.com/dotnet/maui/issues/31939
 			CommandProperty.DependsOn(CommandParameterProperty);
-		}
 
-		internal static new void RemapForControls()
-		{
+			// Force VisualElement's static constructor to run first so base-level
+			// mapper remappings are applied before these Control-specific ones.
+			RemappingHelper.EnsureBaseTypeRemapped(typeof(RefreshView), typeof(VisualElement));
+
 			// Adjust the mappings to preserve Controls.RefreshView legacy behaviors
 #if WINDOWS
 			RefreshViewHandler.Mapper.ReplaceMapping<RefreshView, IRefreshViewHandler>(PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName, MapRefreshPullDirection);

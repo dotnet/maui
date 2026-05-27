@@ -8,6 +8,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
+using NSubstitute;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -81,6 +82,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void PlatformContainerViewChangedFiresWhenContainerViewIsMapped()
+		{
+			var visualElement = new VisualElement();
+			var handler = Substitute.For<IViewHandler>();
+			var fired = false;
+
+			((IControlsVisualElement)visualElement).PlatformContainerViewChanged += (_, _) => fired = true;
+
+			ViewHandler.ViewMapper.UpdateProperty(handler, visualElement, nameof(IViewHandler.ContainerView));
+
+			Assert.True(fired);
+		}
+
+		[Fact]
 		public void FocusedElementGetsFocusedVisualState()
 		{
 			var vsgList = CreateTestStateGroups();
@@ -90,23 +105,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
 			Assert.Equal(FocusedStateName, stateGroup.CurrentState.Name);
-		}
-
-		[Fact]
-		public void ContainerChangedFiresWhenMapContainerIsCalled()
-		{
-			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper);
-			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
-
-			VisualElement.RemapForControls(mapper, commandMapper);
-			var handlerStub = new HandlerStub(mapper);
-			var button = new Button();
-			button.Handler = handlerStub;
-
-			bool fired = false;
-			(button as IControlsView).PlatformContainerViewChanged += (_, _) => fired = true;
-			handlerStub.UpdateValue(nameof(IViewHandler.ContainerView));
-			Assert.True(fired);
 		}
 
 		[Theory, Category(TestCategory.Memory)]

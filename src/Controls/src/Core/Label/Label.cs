@@ -5,18 +5,39 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	[ContentProperty(nameof(Text))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+#if ANDROID
+	[LabelHandler]
+#else
+	[ElementHandler(typeof(LabelHandler))]
+#endif
 	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement, ILabel
 	{
+#if ANDROID
+		internal sealed class LabelHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(LabelHandler2);
+
+				return typeof(LabelHandler);
+			}
+		}
+#endif
+
 		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
@@ -508,6 +529,12 @@ namespace Microsoft.Maui.Controls
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Text), Text);
 			return $"{base.GetDebuggerDisplay()}, {debugText}";
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			Text = text;
+			return true;
 		}
 	}
 }

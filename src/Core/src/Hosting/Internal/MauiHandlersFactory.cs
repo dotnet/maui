@@ -3,12 +3,14 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
 		readonly ConcurrentDictionary<Type, Type?> _serviceCache = new();
+		readonly ConcurrentDictionary<Type, ElementHandlerAttribute?> _elementHandlerAttributeCache = new();
 
 		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
 
@@ -20,15 +22,33 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public IElementHandler? GetHandler(Type type)
 		{
-			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
-				&& GetService(serviceType) is IElementHandler handler)
+			// 1. Exact DI registration (allows overriding attribute-based defaults)
+			if (InternalCollection.TryGetService(type, out _)
+				&& GetService(type) is IElementHandler exactHandler)
 			{
-				return handler;
+				return exactHandler;
 			}
 
+			// 2. Assignable DI registration. This preserves base/interface override behavior, e.g.
+			// AddHandler<Button, CustomButtonHandler>() must also win for FancyButton : Button
+			// instead of falling through to Button's inherited ElementHandler attribute.
+			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
+				&& GetService(serviceType) is IElementHandler assignedHandler)
+			{
+				return assignedHandler;
+			}
+
+			// 3. ElementHandler attribute. Built-in controls use this as their trimmable default
+			// when no user DI registration overrides the view type.
 			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
 			{
-				return elementHandlerAttribute.CreateHandler();
+				return CreateAttributeHandler(type, elementHandlerAttribute);
+			}
+
+			// 4. ContentView fallback
+			if (typeof(IContentView).IsAssignableFrom(type))
+			{
+				return new ContentViewHandler();
 			}
 
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
@@ -40,37 +60,92 @@ namespace Microsoft.Maui.Hosting.Internal
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
-			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
-				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
-				&& serviceDescriptor?.ImplementationType is Type type)
+			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
+			if (TryGetRegisteredHandlerType(iview, out Type? type))
 			{
 				return type;
 			}
 
+			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
+				&& TryGetRegisteredHandlerType(serviceType, out type))
+			{
+				return type;
+			}
+
+			// Keep GetHandlerType in the same order as GetHandler so injection fallback paths see
+			// the user-registered override type instead of the inherited ElementHandler default.
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
 			{
-				return GetHandlerType(elementHandlerAttribute);
+				return elementHandlerAttribute.GetHandlerType();
+			}
+
+			// ContentViewHandler is the default/fallback handler for any IContentView
+			if (typeof(IContentView).IsAssignableFrom(iview))
+			{
+				return typeof(ContentViewHandler);
 			}
 
 			return null;
-
-			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2073",
-				Justification = "There is no need to create instances of the handlers for types with this attribute using reflection."
-					+ "We intentionally avoid annotating these handler types with DAM.")]
-			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-			static Type GetHandlerType(ElementHandlerAttribute elementHandlerAttribute)
-				=> elementHandlerAttribute.HandlerType;
 		}
 
-		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
+		private bool TryGetRegisteredHandlerType(Type serviceType, [NotNullWhen(returnValue: true), DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] out Type? handlerType)
 		{
-			elementHandlerAttribute = viewType.GetCustomAttribute<ElementHandlerAttribute>();
+			if (InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
+				&& serviceDescriptor?.ImplementationType is Type type)
+			{
+				handlerType = type;
+				return true;
+			}
+
+			handlerType = null;
+			return false;
+		}
+
+		private bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
+		{
+			elementHandlerAttribute = _elementHandlerAttributeCache.GetOrAdd(viewType, static type => FindElementHandlerAttribute(type));
 			return elementHandlerAttribute is not null;
+		}
+
+		private static ElementHandlerAttribute? FindElementHandlerAttribute(Type viewType)
+		{
+			Type? type = viewType;
+
+			while (type is not null)
+			{
+				var elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>();
+				if (elementHandlerAttribute is not null)
+				{
+					return elementHandlerAttribute;
+				}
+
+				type = type.BaseType;
+			}
+
+			return null;
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
+
+		private static IElementHandler? CreateAttributeHandler(Type viewType, ElementHandlerAttribute elementHandlerAttribute)
+		{
+			var handlerType = elementHandlerAttribute.GetHandlerType();
+
+			try
+			{
+				return (IElementHandler?)Activator.CreateInstance(handlerType);
+			}
+			catch (MissingMethodException ex)
+			{
+				throw new HandlerNotFoundException(
+					$"Unable to create the {nameof(IElementHandler)} {handlerType} declared by {nameof(ElementHandlerAttribute)} for {viewType}. " +
+					$"Handlers declared with {nameof(ElementHandlerAttribute)} must have a public parameterless constructor. " +
+					$"Use `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` to register handlers that require constructor arguments.",
+					ex);
+			}
+		}
 	}
 }

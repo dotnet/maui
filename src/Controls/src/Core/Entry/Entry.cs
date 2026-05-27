@@ -1,16 +1,38 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
 	/// Entry is a single line text entry. It is best used for collecting small discrete pieces of information, like usernames and passwords.
 	/// </summary>
+#if ANDROID
+	[EntryHandler]
+#else
+	[ElementHandler(typeof(EntryHandler))]
+#endif
 	public partial class Entry : InputView, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>, IEntry
 	{
+#if ANDROID
+		internal sealed class EntryHandlerAttribute : ElementHandlerAttribute
+		{
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			public override Type GetHandlerType()
+			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+					return typeof(EntryHandler2);
+
+				return typeof(EntryHandler);
+			}
+		}
+#endif
+
 		/// <summary>
 		/// Backing store for the <see cref="ReturnType"/> property.
 		/// </summary>
@@ -199,6 +221,12 @@ namespace Microsoft.Maui.Controls
 		void IEntry.Completed()
 		{
 			(this as IEntryController).SendCompleted();
+		}
+
+		internal override bool TrySetValue(string text)
+		{
+			Text = text;
+			return true;
 		}
 	}
 }
