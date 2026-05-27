@@ -35,6 +35,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			PreviousHorizontalOffset = (float)scrollView.ContentOffset.X;
 			PreviousVerticalOffset = (float)scrollView.ContentOffset.Y;
+
+			// Ensure base behavior runs (e.g., Mac Catalyst scroll-restore cancellation in ItemsViewDelegator2).
+			base.DraggingStarted(scrollView);
 		}
 
 		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)

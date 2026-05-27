@@ -23,7 +23,8 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	// (horizontal CollectionView) behavior.
 
 	// True while we're watching for a silent UIKit contentOffset reset after a programmatic scroll.
-	// Cleared by DraggingStarted (user intent) or after a restore fires.
+	// Stays armed across multiple silent clamps; cleared by DraggingStarted (user intent),
+	// view detach, Dispose, or a new ScrollTo request.
 	bool _isTrackingScrollRestore;
 
 	// The section, item, and alignment to re-scroll to if a silent reset is detected.
@@ -75,7 +76,13 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 			return;
 		}
 
-		// Y dropped more than 10px — silent UIKit reset detected
+		// Y dropped more than 10px — silent UIKit reset detected.
+		// Guard: if the last known reference Y is at or below 0, the original target was already
+		// at the top of the list (or never moved away from it). In that case there is nothing
+		// meaningful to "restore" — UIKit ending up at Y=0 IS the target state, so we skip the
+		// async ScrollToItem to avoid an unnecessary scroll and a potential restore loop.
+		// `<= 0` (rather than `< 0` or `== 0`) covers any negative bounce/overscroll values
+		// UIKit may briefly report.
 		if (_lastKnownOffsetY <= 0)
 		{
 			return;
@@ -85,7 +92,12 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		var item = _pendingScrollRestoreItem;
 		var scrollPosition = _pendingScrollRestorePosition;
 
-		ClearPendingScrollRestore();
+		// NOTE: Do NOT clear the pending restore here. A single window interaction
+		// (Picker hover/select, resize, minimize/restore) can cause UIKit to recalculate
+		// bounds multiple times, producing several silent clamps in succession. Keeping the
+		// target armed allows each subsequent clamp to be restored.
+		// The pending restore is cleared on: user drag (DraggingStarted), view detach
+		// (MovedToWindow with Window == null), Dispose, or a new ScrollTo request.
 
 		DispatchQueue.MainQueue.DispatchAsync(() =>
 		{
@@ -107,6 +119,13 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 			}
 
 			ScrollToItem(indexPath, scrollPosition, false);
+
+			// Refresh the reference Y so subsequent KVO callbacks measure
+			// the next drop against the restored offset, not the pre-restore one.
+			if (_isTrackingScrollRestore)
+			{
+				_lastKnownOffsetY = ContentOffset.Y;
+			}
 		});
 	}
 
