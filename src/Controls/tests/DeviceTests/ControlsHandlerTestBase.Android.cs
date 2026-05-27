@@ -159,6 +159,16 @@ namespace Microsoft.Maui.DeviceTests
 		protected string GetToolbarTitle(IElementHandler handler) =>
 			GetPlatformToolbar(handler).Title;
 
+		protected AppBarLayout GetPlatformAppBarLayout(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+
+			if (toolbar == null)
+				return null;
+
+			return toolbar.Parent.GetParentOfType<AppBarLayout>();
+		}
+
 		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();
@@ -210,6 +220,31 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return GetPlatformToolbar(mauiContext)?
 					.LayoutParameters?.Height > 0;
+		}
+
+		protected async Task AssertAppBarTopInsetUsesColor(IElementHandler handler, Color expectedColor)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			Assert.NotNull(toolbar);
+
+			var appBar = GetPlatformAppBarLayout(handler);
+			Assert.NotNull(appBar);
+
+			var platformColor = expectedColor.ToPlatform();
+
+			await AssertHelpers.AssertEventually(() =>
+			{
+				var backgroundTintList = toolbar.BackgroundTintList;
+
+				return backgroundTintList != null &&
+					backgroundTintList.DefaultColor == platformColor.ToArgb() &&
+					appBar.PaddingTop > 0 &&
+					appBar.Width > 0 &&
+					appBar.Height > appBar.PaddingTop;
+			}, message: "Toolbar background or AppBarLayout top inset did not update.");
+
+			var bitmap = await appBar.ToBitmap(handler.MauiContext);
+			await bitmap.AssertContainsColor(platformColor, rect => new RectF(0, 0, rect.Width, appBar.PaddingTop));
 		}
 
 		protected static WindowInsetsCompat CreateTopCutoutInsets(int statusBarTopInset, int displayCutoutTopInset)
