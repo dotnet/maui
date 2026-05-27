@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		StackNavigationManager? _navigationManager;
 		WeakReference? _lastShell;
+		readonly HashSet<ShellContent> _trackedShellContents = new();
 
 		public ShellSectionHandler() : base(Mapper, CommandMapper)
 		{
@@ -63,13 +64,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					shell.RemoveAppearanceObserver(this);
 				}
 
-				foreach (var item in _shellSection.Items)
-				{
-					if (item is ShellContent shellContent)
-					{
-						shellContent.PropertyChanged -= OnShellContentPropertyChanged;
-					}
-				}
+				UnsubscribeAllShellContent();
 				_lastShell = null;
 			}
 
@@ -103,12 +98,9 @@ namespace Microsoft.Maui.Controls.Handlers
 					shell.AddAppearanceObserver(this, _shellSection);
 				}
 
-				foreach (var item in _shellSection.Items)
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
 				{
-					if (item is ShellContent shellContent)
-					{
-						shellContent.PropertyChanged += OnShellContentPropertyChanged;
-					}
+					SubscribeToShellContent(item);
 				}
 			}
 		}
@@ -130,19 +122,45 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (e.OldItems is not null)
 			{
-				foreach (ShellContent item in e.OldItems)
+				foreach (var item in e.OldItems)
 				{
-					item.PropertyChanged -= OnShellContentPropertyChanged;
+					UnsubscribeFromShellContent(item);
 				}
 			}
 
 			if (e.NewItems is not null)
 			{
-				foreach (ShellContent item in e.NewItems)
+				foreach (var item in e.NewItems)
 				{
-					item.PropertyChanged += OnShellContentPropertyChanged;
+					SubscribeToShellContent(item);
 				}
 			}
+		}
+
+		void SubscribeToShellContent(object? item)
+		{
+			if (item is ShellContent shellContent && _trackedShellContents.Add(shellContent))
+			{
+				shellContent.PropertyChanged += OnShellContentPropertyChanged;
+			}
+		}
+
+		void UnsubscribeFromShellContent(object? item)
+		{
+			if (item is ShellContent shellContent && _trackedShellContents.Remove(shellContent))
+			{
+				shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+			}
+		}
+
+		void UnsubscribeAllShellContent()
+		{
+			foreach (var shellContent in _trackedShellContents)
+			{
+				shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+			}
+
+			_trackedShellContents.Clear();
 		}
 
 		void OnShellContentPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
