@@ -380,6 +380,10 @@
                                       Condition="'$(UseMaterial3)' != ''"
                                       Value="$(UseMaterial3)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.UseiOSNavigationViewHandler"
+                                      Condition="'$(UseiOSNavigationViewHandler)' != ''"
+                                      Value="$(UseiOSNavigationViewHandler)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 
