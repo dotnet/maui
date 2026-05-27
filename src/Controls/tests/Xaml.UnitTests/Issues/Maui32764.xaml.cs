@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -40,11 +40,12 @@ public partial class Maui32764 : ContentPage
 {
 	public Maui32764() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void XArgumentsWithInterfaceParameterShouldWork([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void XArgumentsWithInterfaceParameterShouldWork(XamlInflator inflator)
 		{
 			// This test reproduces issue #32764
 			// The bug was that MatchXArguments incorrectly checked class inheritance
@@ -55,8 +56,8 @@ public partial class Maui32764 : ContentPage
 			// Just verifying the page loads without throwing is sufficient
 			// The original bug would throw MAUIX2003: "No method found for 'TestCarouselView'"
 			// because the source generator couldn't match the constructor taking ITestProcessor
-			Assert.That(page, Is.Not.Null);
-			Assert.That(page.carouselView, Is.Not.Null);
+			Assert.NotNull(page);
+			Assert.NotNull(page.carouselView);
 		}
 	}
 }

@@ -23,6 +23,7 @@ public class Bugzilla59718 : _IssuesUITest
 	public void Bugzilla59718Test()
 	{
 		App.WaitForElement(Target1);
+		Thread.Sleep(500); // Add a small delay after WaitForElement to let the UI fully settle before attempting the tap
 		App.Tap(Target1);
 
 		App.WaitForElementTillPageNavigationSettled(Target1b);

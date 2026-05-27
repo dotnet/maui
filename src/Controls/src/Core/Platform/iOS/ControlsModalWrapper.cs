@@ -31,10 +31,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 					if (result == UIKit.UIModalPresentationStyle.FullScreen)
 					{
-						Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
+						var modalPage = (Page)_modal.VirtualView;
+						Color modalBkgndColor = modalPage.BackgroundColor;
+						Brush modalBackground = modalPage.Background;
 
-						if (modalBkgndColor?.Alpha < 1)
+						bool shouldUseOverFullScreen = !Brush.IsNullOrEmpty(modalBackground)
+							? Brush.HasTransparency(modalBackground)
+							: modalBkgndColor?.Alpha < 1;
+
+						if (shouldUseOverFullScreen)
+						{
 							result = UIKit.UIModalPresentationStyle.OverFullScreen;
+						}
 					}
 					ModalPresentationStyle = result;
 				}
@@ -149,7 +157,13 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
+			
+			// Defensive check to prevent crashes during iOS snapshot creation
+			// when VirtualView may be disposed during app state transitions
+			if (_modal?.VirtualView is Page)
+			{
+				_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)

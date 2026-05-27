@@ -21,9 +21,13 @@ namespace Microsoft.Maui.Controls
 		const byte ExtrasVsm = 0x01;
 		const byte ExtrasHandler = 0xFF;
 
+		const ulong VsmMask = 0x0100000000000000UL;
+		const ulong ImplicitVsmMask = 0x0000000004000000UL;
+
 		public const ushort ManualTriggerBaseline = 2;
 
 		public const ushort StyleImplicit = 0x080;
+		public const ushort StyleBasedOn = 0x0C0;  // Base styles via BasedOn: between implicit and local
 		public const ushort StyleLocal = 0x100;
 
 		public static readonly SetterSpecificity DefaultValue = new SetterSpecificity(0);
@@ -44,8 +48,8 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsDefault => _value == 0ul;
 		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF;
-		public bool IsVsm => (_value & 0x0100000000000000) != 0;
-		public bool IsVsmImplicit => (_value & 0x0000000004000000) != 0;
+		public bool IsVsm => (_value & VsmMask) != 0;
+		public bool IsVsmImplicit => (_value & ImplicitVsmMask) != 0;
 		public bool IsManual => ((_value >> 28) & 0xFFFF) == 1;
 		public ushort TriggerIndex => GetTriggerIndex();
 		public bool IsDynamicResource => ((_value >> 24) & 0x02) != 0;
@@ -141,7 +145,9 @@ namespace Microsoft.Maui.Controls
 
 			// Implicit style VSM has less priority than manually set values
 			// See https://github.com/dotnet/maui/issues/18103
-			const int styleImplicitUpperBound = StyleLocal - 1;
+			// Only truly implicit styles (below StyleBasedOn) should have VSM downgraded
+			// BasedOn styles (>= StyleBasedOn) keep full VSM priority (issue #27202)
+			const int styleImplicitUpperBound = StyleBasedOn;
 			if (vsm != 0 && style < styleImplicitUpperBound)
 			{
 				implicitVsm = 0x04;
@@ -177,6 +183,22 @@ namespace Microsoft.Maui.Controls
 			_value = value;
 		}
 
+		/// <summary>
+		/// Returns a new specificity with full VSM priority, promoting implicit VSM to regular VSM.
+		/// Used for non-Normal visual states (Disabled, Focused, etc.) where the VSM setter
+		/// should override locally-set values even when originating from an implicit style.
+		/// </summary>
+		internal SetterSpecificity WithFullVsmPriority()
+		{
+			if (!IsVsmImplicit)
+			{
+				return this;
+			}
+
+			var newValue = (_value & ~ImplicitVsmMask) | VsmMask;
+			return new SetterSpecificity(newValue);
+		}
+
 		public SetterSpecificity CopyStyle(byte extras, ushort manual, byte isDynamicResource, byte isBinding)
 		{
 			return new SetterSpecificity(
@@ -192,7 +214,27 @@ namespace Microsoft.Maui.Controls
 
 		public SetterSpecificity AsBaseStyle()
 		{
-			return new SetterSpecificity(_value - 0x0000100000000000);
+			// Extract current style value
+			var currentStyle = (ushort)((_value >> 44) & 0xFFF);
+			
+			// If already at or below StyleBasedOn, don't reduce further (issue #27202)
+			if (currentStyle <= StyleBasedOn)
+			{
+				return this;
+			}
+			
+			// Subtract one style level for base style priority
+			var newValue = _value - 0x0000100000000000;
+			var styleValue = (ushort)((newValue >> 44) & 0xFFF);
+			
+			// Clamp to StyleBasedOn to preserve local VSM behavior
+			// This keeps base styles above implicit styles but below explicit local styles
+			if (styleValue < StyleBasedOn)
+			{
+				newValue = (newValue & 0xFFF000FFFFFFFFFF) | ((ulong)StyleBasedOn << 44);
+			}
+			
+			return new SetterSpecificity(newValue);
 		}
 
 		public override bool Equals(object obj) => obj is SetterSpecificity s && s._value == _value;

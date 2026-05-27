@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -38,17 +38,18 @@ public partial class GrialIssue02 : ContentPage
 {
 	public GrialIssue02() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void BoxValueTypes([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void BoxValueTypes(XamlInflator inflator)
 		{
 			var layout = new GrialIssue02(inflator);
 			var res = (GrialIssue02Converter)layout.Resources["converter"];
 
-			Assert.AreEqual(FontAttributes.None, res.TrueValue);
-			Assert.AreEqual(FontAttributes.Bold, res.FalseValue);
+			Assert.Equal(FontAttributes.None, res.TrueValue);
+			Assert.Equal(FontAttributes.Bold, res.FalseValue);
 		}
 	}
 }

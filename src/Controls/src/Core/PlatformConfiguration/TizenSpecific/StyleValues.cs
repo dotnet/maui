@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		public const string Toggle = "toggle";
 		/// <summary>Indicates a favorite, or star, UI.</summary>
 		public const string Favorite = "favorite";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/SwitchStyle.xml" path="//Member[@MemberName='OnOff']/Docs/*" />
+		/// <summary>Indicates an on/off toggle UI.</summary>
 		public const string OnOff = "on&off";
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/SwitchStyle.xml" path="//Member[@MemberName='Small']/Docs/*" />
+		/// <summary>Indicates a small switch UI.</summary>
 		public const string Small = "small";
 	}
 

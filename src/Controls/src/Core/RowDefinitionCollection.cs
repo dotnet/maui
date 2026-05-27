@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinitionCollection.xml" path="Type[@FullName='Microsoft.Maui.Controls.RowDefinitionCollection']/Docs/*" />
+	/// <summary>A collection of <see cref="RowDefinition"/> objects that define the rows of a <see cref="Grid"/>.</summary>
 	public sealed class RowDefinitionCollection : DefinitionCollection<RowDefinition>
 	{
 		public RowDefinitionCollection() : base()

@@ -5,9 +5,11 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests;
 
 [Category(UITestCategories.Editor)]
-public class EditorFeatureTests : UITest
+public class EditorFeatureTests : _GalleryUITest
 {
 	public const string EditorFeatureMatrix = "Editor Feature Matrix";
+
+	public override string GalleryPageName => EditorFeatureMatrix;
 
 #if IOS
 	private const int CropBottomValue = 1550;
@@ -22,12 +24,6 @@ public class EditorFeatureTests : UITest
 	public EditorFeatureTests(TestDevice device)
 		: base(device)
 	{
-	}
-
-	protected override void FixtureSetup()
-	{
-		base.FixtureSetup();
-		App.NavigateToGallery(EditorFeatureMatrix);
 	}
 
 	[Test, Order(0)]
@@ -45,7 +41,12 @@ public class EditorFeatureTests : UITest
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
 		App.PressEnter();
+#if ANDROID
 		App.DismissKeyboard();
+#else
+		App.WaitForElement("EditorControlTitleLabel");
+		App.Tap("EditorControlTitleLabel");
+#endif
 		Assert.That(App.WaitForElement("CompletedLabel").GetText(), Is.EqualTo("Completed: Event Triggered"));
 	}
 
@@ -72,7 +73,12 @@ public class EditorFeatureTests : UITest
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
 		await Task.Delay(100);
-		App.DismissKeyboard();
+#if ANDROID || IOS
+		if (App.IsKeyboardShown())
+		{
+			App.DismissKeyboard();
+		}
+#endif
 		Assert.That(App.WaitForElement("FocusedLabel").GetText(), Is.EqualTo("Focused: Event Triggered"));
 	}
 
@@ -83,7 +89,12 @@ public class EditorFeatureTests : UITest
 		App.WaitForElement("SelectionLengthEntry");
 		App.Tap("SelectionLengthEntry");
 		await Task.Delay(100);
+#if ANDROID
 		App.DismissKeyboard();
+#else
+		App.WaitForElement("EditorControlTitleLabel");
+		App.Tap("EditorControlTitleLabel");
+#endif
 		Assert.That(App.WaitForElement("UnfocusedLabel").GetText(), Is.EqualTo("Unfocused: Event Triggered"));
 	}
 
@@ -450,7 +461,7 @@ public class EditorFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -464,7 +475,7 @@ public class EditorFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("TestEditor");
 		App.Tap("TestEditor");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #endif

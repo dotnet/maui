@@ -40,6 +40,7 @@ public class MultiBindingElementSyntaxTest : SourceGenXamlInitializeComponentTes
 		var code =
 """
 #nullable enable
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;

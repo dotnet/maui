@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Fails sometimes")]
 		[FailsOnMacWhenRunningOnXamarinUITest("Fails sometimes")]
 		public void Bugzilla35736Test()

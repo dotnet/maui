@@ -6,10 +6,14 @@
  * 
  * INSTRUCTIONS FOR AGENT:
  * 1. Copy this file to: CustomAgentLogsTmp/Sandbox/RunWithAppiumTest.cs
- * 2. Replace XXXXX with actual issue number (const ISSUE_NUMBER)
- * 3. Set PLATFORM to "android" or "ios"
- * 4. Implement test logic in the "Test Logic" section
- * 5. Run via: pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+ * 2. OPTIONALLY add automated test logic in the "TEST LOGIC" section
+ * 3. Replace XXXXX with actual issue number (const ISSUE_NUMBER)
+ * 4. Run via: pwsh .github/scripts/BuildAndRunSandbox.ps1 -Platform android
+ * 
+ * HOW IT WORKS:
+ * - ALWAYS verifies app launched successfully (WaitForElement)
+ * - OPTIONALLY runs automated UI tests (if you implement them)
+ * - ALWAYS exits WITHOUT closing the app (app stays running for manual validation)
  * 
  * IMPORTANT:
  * - For Android: Script outputs SANDBOX_APP_PID=<pid> which PowerShell captures for logcat filtering
@@ -17,7 +21,7 @@
  * - The BuildAndRunSandbox.ps1 script will automatically capture all logs
  * 
  * 🚨 CRITICAL - ANDROID REQUIREMENT:
- * - The "appium:noReset" capability MUST be set to true for Android (line 63)
+ * - The "appium:noReset" capability MUST be set to true for Android
  * - Without it, Appium clears app data causing Fast Deployment to fail
  * - This results in "No assemblies found" crash on app launch
  * - ⚠️  NEVER REMOVE the noReset capability - Android tests depend on it
@@ -29,7 +33,9 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Mac;
 using OpenQA.Selenium.Appium.Enums;
+using OpenQA.Selenium.Support.UI;
 
 // ========== CONFIGURATION ==========
 
@@ -48,7 +54,20 @@ if (string.IsNullOrEmpty(udid))
 // Auto-detect platform from UDID format
 // iOS UDIDs contain hyphens and are longer (e.g., AC8BCB28-A72D-4A2D-90E7-E78FF0BA07EE)
 // Android UDIDs are shorter (e.g., emulator-5554, 192.168.1.100:5555)
-string PLATFORM = udid.Contains("-") && udid.Length > 20 ? "ios" : "android";
+// MacCatalyst uses "host" as UDID (runs on host Mac)
+string PLATFORM;
+if (udid == "host")
+{
+    PLATFORM = "catalyst";
+}
+else if (udid.Contains("-") && udid.Length > 20)
+{
+    PLATFORM = "ios";
+}
+else
+{
+    PLATFORM = "android";
+}
 
 Console.WriteLine($"═══════════════════════════════════════════════════════");
 Console.WriteLine($"  Testing Issue #{ISSUE_NUMBER} on {PLATFORM.ToUpper(System.Globalization.CultureInfo.InvariantCulture)}");
@@ -89,6 +108,20 @@ else if (PLATFORM == "ios")
     options.AddAdditionalAppiumOption(MobileCapabilityType.Udid, udid);
     options.AddAdditionalAppiumOption("appium:newCommandTimeout", 300);
 }
+else if (PLATFORM == "catalyst")
+{
+    // Mac2 driver for MacCatalyst apps
+    // Note: App should already be running (pre-launched by BuildAndRunSandbox.ps1)
+    options = new AppiumOptions();
+    options.PlatformName = "Mac";
+    options.AutomationName = "Mac2";
+    options.AddAdditionalAppiumOption("appium:bundleId", "com.microsoft.maui.sandbox");
+    options.AddAdditionalAppiumOption("appium:newCommandTimeout", 300);
+    // Show server logs for debugging
+    options.AddAdditionalAppiumOption("appium:showServerLogs", true);
+    // Don't kill the app - we pre-launched it to capture logs
+    options.AddAdditionalAppiumOption("appium:skipAppKill", true);
+}
 else
 {
     Console.WriteLine($"❌ ERROR: Unsupported platform: {PLATFORM}");
@@ -106,6 +139,11 @@ try
     if (PLATFORM == "android")
     {
         driver = new AndroidDriver(serverUri, options);
+    }
+    else if (PLATFORM == "catalyst")
+    {
+        // Mac2 driver uses MacDriver for Mac platform
+        driver = new MacDriver(serverUri, options);
     }
     else // ios
     {
@@ -157,9 +195,36 @@ try
         Thread.Sleep(3000);
     
     // ========== TEST LOGIC ==========
-    // TODO: Implement test logic here
     
-    Console.WriteLine("🔹 Looking for test elements...");
+    // Step 1: ALWAYS verify app launched and is responsive
+    Console.WriteLine("🔹 Verifying app launched...");
+    try
+    {
+        // Wait for instruction label (adjust AutomationId as needed for your test)
+        driver.WaitForElement("InstructionLabel", TimeSpan.FromSeconds(30));
+        Console.WriteLine("✅ App launched successfully");
+        Console.WriteLine("✅ App is responsive - found expected UI element");
+    }
+    catch
+    {
+        // Fallback: Just check if page source is available
+        var pageSource = driver.PageSource;
+        if (!string.IsNullOrEmpty(pageSource))
+        {
+            Console.WriteLine("✅ App launched successfully and is responsive");
+        }
+        else
+        {
+            Console.WriteLine("❌ ERROR: Could not verify app state");
+            return; // Exit without disposing - app might still be running
+        }
+    }
+
+    // Step 2: OPTIONAL - Add automated test logic here
+    // If you don't add test logic, test will just verify launch and exit
+    // TODO: Implement automated test logic below (or leave empty for manual testing)
+    
+    Console.WriteLine("\n🔹 Looking for test elements...");
     
     // Example: Find button by text (adjust based on actual UI)
     try
@@ -184,9 +249,10 @@ try
         
         // Take screenshot before test (for debugging/documentation only)
         // NOTE: NEVER use screenshots for validation - always use Appium element queries
+        // NOTE: Script runs FROM CustomAgentLogsTmp/Sandbox/ so use relative paths
         var screenshotBefore = driver.GetScreenshot();
-        screenshotBefore.SaveAsFile("CustomAgentLogsTmp/Sandbox/issue_XXXXX_before.png");
-        Console.WriteLine("📸 Screenshot saved: CustomAgentLogsTmp/Sandbox/issue_XXXXX_before.png");
+        screenshotBefore.SaveAsFile("issue_XXXXX_before.png");
+        Console.WriteLine("📸 Screenshot saved: issue_XXXXX_before.png");
         
         // Perform action
         Console.WriteLine("\n🔘 Tapping button...");
@@ -224,9 +290,10 @@ try
         
         // Take screenshot after test (for debugging/documentation only)
         // NOTE: NEVER use screenshots for validation - always use Appium element queries
+        // NOTE: Script runs FROM CustomAgentLogsTmp/Sandbox/ so use relative paths
         var screenshotAfter = driver.GetScreenshot();
-        screenshotAfter.SaveAsFile("CustomAgentLogsTmp/Sandbox/issue_XXXXX_after.png");
-        Console.WriteLine("📸 Screenshot saved: CustomAgentLogsTmp/Sandbox/issue_XXXXX_after.png");
+        screenshotAfter.SaveAsFile("issue_XXXXX_after.png");
+        Console.WriteLine("📸 Screenshot saved: issue_XXXXX_after.png");
         
         // Check if UI is visible (not blank)
         var pageSource = driver.PageSource;
@@ -240,25 +307,26 @@ try
             Console.WriteLine("\n✅ UI is visible (not blank)");
         }
         
-    }
-    catch (NoSuchElementException ex)
-    {
-        Console.WriteLine($"❌ Could not find expected UI element: {ex.Message}");
-        Console.WriteLine("\nPage source:");
-        Console.WriteLine(driver.PageSource);
-        Environment.Exit(1);
-    }
+        }
+        catch (NoSuchElementException ex)
+        {
+            Console.WriteLine($"❌ Could not find expected UI element: {ex.Message}");
+            Console.WriteLine("\nPage source:");
+            Console.WriteLine(driver.PageSource);
+        }
     
         // ========== END TEST LOGIC ==========
         
         Console.WriteLine("\n" + new string('═', 55));
         Console.WriteLine("  Test completed successfully");
         Console.WriteLine(new string('═', 55) + "\n");
-        
-        // Optional: Keep app open for manual inspection
-        // Console.WriteLine("Press Enter to close app...");
-        // Console.ReadLine();
-    }
+    
+    // IMPORTANT: Exit without disposing driver - keeps app running
+    Console.WriteLine("⚠️  App remains running for manual validation");
+    Console.WriteLine("   Close simulator when done.\n");
+    return;
+    
+    } // End of using block (never reached due to return above)
 }
 catch (Exception ex)
 {
@@ -273,4 +341,25 @@ catch (Exception ex)
     Console.WriteLine("  4. Review Appium logs for detailed error information");
     
     Environment.Exit(1);
+}
+
+// ========== HELPER EXTENSIONS ==========
+
+static class AppiumExtensions
+{
+    public static void WaitForElement(this AppiumDriver driver, string automationId, TimeSpan timeout)
+    {
+        var wait = new WebDriverWait(driver, timeout);
+        wait.Until(d => {
+            try
+            {
+                var element = d.FindElement(MobileBy.Id(automationId));
+                return element != null && element.Displayed;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+    }
 }

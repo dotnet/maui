@@ -18,7 +18,6 @@ public class Issue1769 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	[Category(UITestCategories.Compatibility)]
 	public void Issue1769Test()
 	{
 		App.WaitForElement(GoToPageTwoButtonText);

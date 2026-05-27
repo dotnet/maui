@@ -19,7 +19,6 @@ public class Issue1704 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.TabbedPage)]
-	[Category(UITestCategories.ManualReview)]
 	public void Issue1704Test()
 	{
 		App.WaitForTabElement(OnLoad);

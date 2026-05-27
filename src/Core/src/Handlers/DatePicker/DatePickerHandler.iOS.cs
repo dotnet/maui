@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
-		public static partial void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFlowDirection(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFlowDirection(datePicker);
 			handler.PlatformView?.UpdateTextAlignment(datePicker);
@@ -106,13 +106,26 @@ namespace Microsoft.Maui.Handlers
 		static void OnStarted(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
+			{
 				datePickerHandler.VirtualView.IsFocused = datePickerHandler.VirtualView.IsOpen = true;
+
+				// Notify VoiceOver that the date picker popup has appeared
+				if (datePickerHandler.PlatformView?.InputView is not null)
+				{
+					datePickerHandler.PlatformView.PostAccessibilityFocusNotification(datePickerHandler.PlatformView.InputView);
+				}
+			}
 		}
 
 		static void OnEnded(object? sender)
 		{
 			if (sender is IDatePickerHandler datePickerHandler && datePickerHandler.VirtualView != null)
+			{
 				datePickerHandler.VirtualView.IsFocused = datePickerHandler.VirtualView.IsOpen = false;
+
+				// Restore VoiceOver focus to the date picker field when the popup closes
+				datePickerHandler.PlatformView?.PostAccessibilityFocusNotification();
+			}
 		}
 
 		static void OnDoneClicked(object? sender)

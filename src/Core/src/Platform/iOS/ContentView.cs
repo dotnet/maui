@@ -63,7 +63,10 @@ namespace Microsoft.Maui.Platform
 
 		void RemoveContentMask()
 		{
-			_contentMask?.RemoveFromSuperLayer();
+			if (_contentMask is not null && _contentMask.Handle != IntPtr.Zero)
+			{
+				_contentMask.RemoveFromSuperLayer();
+			}
 			_contentMask = null;
 		}
 

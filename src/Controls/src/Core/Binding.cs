@@ -7,7 +7,9 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="Type[@FullName='Microsoft.Maui.Controls.Binding']/Docs/*" />
+	/// <summary>
+	/// A binding that connects a property on a source object to a property on a target object.
+	/// </summary>
 	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	public sealed class Binding : BindingBase
 	{
@@ -20,12 +22,22 @@ namespace Microsoft.Maui.Controls
 		object _source;
 		string _updateSourceEventName;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Binding"/> class.
+		/// </summary>
 		public Binding()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Binding"/> class with the specified path, mode, converter, and source.
+		/// </summary>
+		/// <param name="path">The property path to bind to.</param>
+		/// <param name="mode">The binding mode.</param>
+		/// <param name="converter">The value converter to use.</param>
+		/// <param name="converterParameter">The parameter to pass to the converter.</param>
+		/// <param name="stringFormat">The string format to apply to the bound value.</param>
+		/// <param name="source">The source object for the binding.</param>
 		public Binding(string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null, string stringFormat = null, object source = null)
 		{
 			if (path == null)
@@ -41,7 +53,9 @@ namespace Microsoft.Maui.Controls
 			Source = source;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='Converter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the converter used to convert values between the source and target.
+		/// </summary>
 		public IValueConverter Converter
 		{
 			get { return _converter; }
@@ -53,7 +67,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter passed to the converter.
+		/// </summary>
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -65,7 +81,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='Path']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the property path to bind to on the source object.
+		/// </summary>
 		public string Path
 		{
 			get { return _path; }
@@ -78,7 +96,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the source object for this binding.
+		/// </summary>
 		public object Source
 		{
 			get { return _source; }
@@ -91,10 +111,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='DoNothing']/Docs/*" />
+		/// <summary>
+		/// A value returned from a converter to indicate that the binding should not update the target property.
+		/// </summary>
 		public static readonly object DoNothing = MultiBinding.DoNothing; // the instance was moved to MultiBinding because the Binding class is annotated with [RequiresUnreferencedCode]
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='UpdateSourceEventName']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name of the event that triggers the source update in <see cref="BindingMode.OneWayToSource"/> bindings.
+		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public string UpdateSourceEventName
 		{

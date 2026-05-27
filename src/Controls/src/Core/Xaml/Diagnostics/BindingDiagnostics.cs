@@ -8,7 +8,9 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.Xaml.Diagnostics/BindingDiagnostics.xml" path="Type[@FullName='Microsoft.Maui.Controls.Xaml.Diagnostics.BindingDiagnostics']/Docs/*" />
+	/// <summary>
+	/// Provides diagnostic events for debugging data binding failures.
+	/// </summary>
 	public class BindingDiagnostics
 	{
 		public static event EventHandler<BindingBaseErrorEventArgs> BindingFailed;

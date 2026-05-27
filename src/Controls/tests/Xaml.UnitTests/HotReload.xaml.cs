@@ -1,9 +1,10 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -11,18 +12,16 @@ public partial class HotReload : ContentPage
 {
 	public HotReload() => InitializeComponent();
 	
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup()
+		public Tests()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			Controls.Internals.ResourceLoader.ResourceProvider2 = null;
@@ -30,11 +29,13 @@ public partial class HotReload : ContentPage
 		}
 
 #if DEBUG
-		[Test]
-		public void HotReloadWorks([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
+		[Theory]
+		[InlineData(XamlInflator.Runtime)]
+		[InlineData(XamlInflator.SourceGen)]
+		internal void HotReloadWorks(XamlInflator inflator)
 		{
 			var page = new HotReload(inflator);
-			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.Lime));
+			Assert.Equal(Colors.Lime, page.label0.BackgroundColor);
 
 			var updatedXaml =
 """
@@ -69,7 +70,7 @@ public partial class HotReload : ContentPage
 
 			page = new HotReload(inflator);
 
-			Assert.That(page.label0.BackgroundColor, Is.EqualTo(Colors.HotPink));
+			Assert.Equal(Colors.HotPink, page.label0.BackgroundColor);
 
 		}
 #endif

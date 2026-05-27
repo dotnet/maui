@@ -4,15 +4,25 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Design
 {
+	/// <summary>
+	/// Provides design-time type conversion for visibility values.
+	/// </summary>
 	public class VisibilityDesignTypeConverter : StringConverter
 	{
 		private static readonly string[] validValues = ["Collapse", "Hidden", bool.FalseString, bool.TrueString, "Visible"];
 		private static readonly HashSet<string> supportedValues = new HashSet<string>(validValues, StringComparer.OrdinalIgnoreCase);
 		private static readonly StandardValuesCollection standardValues = new StandardValuesCollection(validValues);
 
+		/// <inheritdoc/>
 		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) => true;
+
+		/// <inheritdoc/>
 		override public bool GetStandardValuesSupported(ITypeDescriptorContext context) => true;
+
+		/// <inheritdoc/>
 		override public StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) => standardValues;
+
+		/// <inheritdoc/>
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
 			// MUST MATCH VisibilityConverter.ConvertFrom

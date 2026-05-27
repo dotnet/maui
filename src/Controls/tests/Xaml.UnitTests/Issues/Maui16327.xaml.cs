@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -10,27 +11,27 @@ public partial class Maui16327 : ContentPage
 {
 	public Maui16327() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			AppInfo.SetCurrent(new MockAppInfo());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
 
 		}
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			DeviceInfo.SetCurrent(mockDeviceInfo = null);
 			AppInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void ConversionOfResources([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ConversionOfResources(XamlInflator inflator)
 		{
 			mockDeviceInfo.Platform = DevicePlatform.iOS;
 
@@ -38,7 +39,7 @@ public partial class Maui16327 : ContentPage
 			var border = page.border;
 
 			var shape = border.StrokeShape as RoundRectangle;
-			Assert.That(shape.CornerRadius.BottomLeft, Is.EqualTo(10));
+			Assert.Equal(10, shape.CornerRadius.BottomLeft);
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
@@ -278,6 +279,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
+#if IOS || MACCATALYST
+			// iOS 26 changed UISearchBar internal structure, making cancel button color verification unreliable
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				return;
+#endif
+
 			var searchBar = new SearchBarStub()
 			{
 				Text = "Search",
@@ -491,6 +498,33 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position) =>
 				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
+
+			// Regression test for https://github.com/dotnet/maui/issues/30779
+			// SearchBar.CursorPosition was not updated when the user typed (native text changed)
+			[Fact(DisplayName = "CursorPosition Updates After Typing Via Native Input")]
+			public async Task CursorPositionUpdatesAfterTypingViaNativeInput()
+			{
+				var searchBar = new SearchBarStub();
+
+				await AttachAndRun(searchBar, async (handler) =>
+				{
+#if IOS || MACCATALYST
+					// On iOS/Mac, CursorPosition only updates when the SearchBar is focused
+					// (IsFirstResponder = true). Focus the QueryEditor before setting text
+					// to simulate the real user flow: tap → type.
+					handler.QueryEditor.BecomeFirstResponder();
+#endif
+					// Simulate user typing by setting text via the native platform method
+					SetNativeText(handler, "Hello");
+
+					// On Android the fix uses Post() to defer cursor reads; wait for it.
+					// On iOS/Windows the update fires via DidChangeSelection on the focused field.
+					await AssertEventually(() => searchBar.CursorPosition == 5);
+				});
+
+				// After typing "Hello" (5 chars), the cursor should be at the end
+				Assert.Equal(5, searchBar.CursorPosition);
+			}
 		}
 
 		// TODO: only iOS is working with the search bar focus tests

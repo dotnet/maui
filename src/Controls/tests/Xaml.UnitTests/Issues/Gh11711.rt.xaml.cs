@@ -1,5 +1,5 @@
 using Microsoft.Maui.Controls.Build.Tasks;
-using NUnit.Framework;
+using Xunit;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
@@ -9,11 +9,12 @@ public partial class Gh11711 : ContentPage
 {
 	public Gh11711() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests
 	{
-		[Test]
-		public void FormatExceptionAreCaught([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void FormatExceptionAreCaught(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh11711)));
@@ -32,7 +33,7 @@ public partial class Gh11711 : ContentPage
 """)
 					.RunMauiSourceGenerator(typeof(Gh11711));
 
-				Assert.That(result.Diagnostics, Is.Not.Empty);
+				Assert.NotEmpty(result.Diagnostics);
 			}
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new Gh11711(inflator));

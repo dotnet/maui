@@ -1,7 +1,8 @@
+using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -12,28 +13,27 @@ public partial class Bz53381 : ContentView
 		InitializeComponent();
 	}
 
-	[TestFixture]
-	class Tests
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			Application.Current = null;
 			DispatcherProvider.SetCurrent(null);
 		}
 
-		public void ControlTemplateAsImplicitAppLevelStyles([Values] XamlInflator inflator)
+		internal void ControlTemplateAsImplicitAppLevelStyles(XamlInflator inflator)
 		{
 			Application.Current = new Bz53381App();
 			var view = new Bz53381(inflator);
 			Application.Current.LoadPage(new ContentPage { Content = view });
 			var presenter = ((StackLayout)((IVisualTreeElement)view).GetVisualChildren()[0]).Children[1] as ContentPresenter;
-			Assume.That(presenter, Is.Not.Null);
+			Assert.NotNull(presenter);
 			var grid = presenter.Content as Grid;
-			Assert.That(grid, Is.Not.Null);
-			Assert.That(grid.BackgroundColor, Is.EqualTo(Colors.Green));
+			Assert.NotNull(grid);
+			Assert.Equal(Colors.Green, grid.BackgroundColor);
 		}
 	}
 }

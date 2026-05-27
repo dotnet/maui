@@ -134,6 +134,10 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var actual = File.ReadAllText(actualFilename);
 				var expected = File.ReadAllText(expectedFilename);
 
+				// Normalize line endings for cross-platform comparison
+				actual = actual.Replace("\r\n", "\n", StringComparison.Ordinal);
+				expected = expected.Replace("\r\n", "\n", StringComparison.Ordinal);
+
 				Assert.Equal(expected, actual);
 			}
 			else

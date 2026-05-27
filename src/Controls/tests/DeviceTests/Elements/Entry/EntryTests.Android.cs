@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -33,13 +34,8 @@ namespace Microsoft.Maui.DeviceTests
 		static int GetPlatformSelectionLength(EntryHandler entryHandler)
 		{
 			var editText = GetPlatformControl(entryHandler);
-
-			if (editText != null)
-				return editText.SelectionEnd - editText.SelectionStart;
-
-			return -1;
+			return editText?.GetSelectedTextLength() ?? -1;
 		}
-
 		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
 		{
 			return InvokeOnMainThreadAsync(() =>
@@ -163,6 +159,33 @@ namespace Microsoft.Maui.DeviceTests
 			var platformEntry = GetPlatformControl(handler);
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformEntry.Rotation);
 			Assert.Equal(expected, platformRotation);
+		}
+
+		[Fact]
+		[Description("The SelectionLength property should handle right-to-left text selection correctly and not return negative values")]
+		public async Task SelectionLengthRightToLeft()
+		{
+			var entry = new Entry()
+			{
+				Text = "Hello World"
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformControl = GetPlatformControl(handler);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				platformControl.SetSelection(5, 0);
+				int platformSelectionLength = GetPlatformSelectionLength(handler);
+				Assert.True(platformSelectionLength >= 0,
+					$"Platform selection length should never be negative, but got: {platformSelectionLength}");
+				Assert.Equal(5, platformSelectionLength);
+
+				// The virtual view should also show positive selection length
+				Assert.True(entry.SelectionLength >= 0,
+					$"Virtual view selection length should never be negative, but got: {entry.SelectionLength}");
+				Assert.Equal(5, entry.SelectionLength);
+			});
 		}
 
 		//src/Compatibility/Core/tests/Android/TranslationTests.cs

@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -13,12 +13,12 @@ public partial class Maui18697 : ContentPage
 {
 	public Maui18697() => InitializeComponent();
 
-	class Test
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
@@ -26,19 +26,19 @@ public partial class Maui18697 : ContentPage
 		}
 
 
-		[TearDown]
-		public void TearDown()
+		public void Dispose()
 		{
 			AppInfo.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
 		}
 
-		[Test]
-		public void OnBindingRelease([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void OnBindingRelease(XamlInflator inflator)
 		{
 			mockDeviceInfo.Idiom = DeviceIdiom.Desktop;
 			var page = new Maui18697(inflator);
-			Assert.That(page.ToolbarItems[0].Text, Is.EqualTo("_ProfileToolBarText"));
+			Assert.Equal("_ProfileToolBarText", page.ToolbarItems[0].Text);
 		}
 	}
 }

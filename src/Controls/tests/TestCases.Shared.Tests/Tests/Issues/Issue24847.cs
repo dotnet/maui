@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[iOS] Background layer frame mapping has poor performance";
 
 		[Test]
-		[Category(UITestCategories.Visual)]
+		[Category(UITestCategories.Brush)]
 		public void BackgroundFrameResizesFastAndCorrectly()
 		{
 			App.WaitForElement("ChangeSizeBtn");

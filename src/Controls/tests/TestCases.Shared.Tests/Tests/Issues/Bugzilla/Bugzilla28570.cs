@@ -6,7 +6,6 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	[Category(UITestCategories.ScrollView)]
-	[Category(UITestCategories.Compatibility)]
 	public class Bugzilla28570UITests : _IssuesUITest
 	{
 		public Bugzilla28570UITests(TestDevice device)

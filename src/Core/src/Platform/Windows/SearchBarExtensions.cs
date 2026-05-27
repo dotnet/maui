@@ -27,7 +27,29 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			platformControl.CharacterSpacing = searchBar.CharacterSpacing.ToEm();
+			var characterSpacing = searchBar.CharacterSpacing.ToEm();
+			platformControl.CharacterSpacing = characterSpacing;
+
+			if (platformControl.IsLoaded)
+			{
+				ApplyCharacterSpacing(platformControl, characterSpacing);
+			}
+			else
+			{
+				platformControl.OnLoaded(() =>
+				{
+					ApplyCharacterSpacing(platformControl, characterSpacing);
+				});
+			}
+		}
+
+		static void ApplyCharacterSpacing(AutoSuggestBox platformControl, int characterSpacing)
+		{
+			var placeholderContentControl = platformControl.GetDescendantByName<ContentControl>("PlaceholderTextContentPresenter");
+			if (placeholderContentControl?.ContentTemplateRoot is TextBlock textBlock)
+			{
+				textBlock.CharacterSpacing = characterSpacing;
+			}
 		}
 
 		public static void UpdatePlaceholder(this AutoSuggestBox platformControl, ISearchBar searchBar)
@@ -112,7 +134,9 @@ namespace Microsoft.Maui.Platform
 			var maxLength = searchBar.MaxLength;
 
 			if (maxLength == -1)
+			{
 				maxLength = int.MaxValue;
+			}
 
 			var children = platformControl.GetChildren<TextBox>();
 			if (children is not null)
@@ -146,7 +170,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.IsReadOnly);
+			MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.MaxLength == 0 || searchBar.IsReadOnly);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)

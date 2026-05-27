@@ -1,17 +1,17 @@
 using System;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
-	public class Issue1794
+	[Collection("Issue")]
+	public class Issue1794 : IDisposable
 	{
-		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
+		public Issue1794() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[Test]
+		[Fact]
 		public void FindNameInDT()
 		{
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
@@ -57,7 +57,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var list = layout.FindByName<ListView>("listView");
 			var item0 = list.TemplatedItems.GetOrCreateContent(0, null);
 			var item1 = list.TemplatedItems.GetOrCreateContent(1, null);
-			Assert.Pass();
+			Assert.NotNull(item0);
+			Assert.NotNull(item1);
 		}
 	}
 }

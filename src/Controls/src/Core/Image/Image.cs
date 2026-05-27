@@ -6,7 +6,13 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary><see cref="Microsoft.Maui.Controls.View"/> that holds an image.</summary>
+	/// <summary>
+	/// A view control that displays an image.
+	/// </summary>
+	/// <remarks>
+	/// The Image control supports various image sources including files, URIs, streams, and embedded resources.
+	/// Use the <see cref="Source"/> property to specify the image, and the <see cref="Aspect"/> property to control how the image is scaled.
+	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement, IImage
 	{
@@ -30,13 +36,13 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Image>> _platformConfigurationRegistry;
 
 		/// <summary>Initializes a new instance of the Image class.</summary>
-		/// <remarks>The following example creates a new image from a file</remarks>
 		public Image()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Image>>(() => new PlatformConfigurationRegistry<Image>(this));
 		}
 
 		/// <summary>Gets or sets the scaling mode for the image. This is a bindable property.</summary>
+		/// <value>An <see cref="Microsoft.Maui.Aspect"/> value that determines how the image is scaled. The default is <see cref="Microsoft.Maui.Aspect.AspectFit"/>.</value>
 		public Aspect Aspect
 		{
 			get { return (Aspect)GetValue(AspectProperty); }
@@ -44,23 +50,25 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets the loading status of the image. This is a bindable property.</summary>
-		/// <remarks>The following example illustrates running a</remarks>
+		/// <value>A <see cref="bool"/> indicating whether the image is currently loading. The default is <see langword="false"/>.</value>
+		/// <remarks>This property can be used to show loading indicators while images are being loaded from remote sources.</remarks>
 		public bool IsLoading
 		{
 			get => (bool)GetValue(IsLoadingProperty);
 			private set => SetValue(IsLoadingPropertyKey, value);
 		}
 
-		/// <summary>Gets or sets a Boolean value that, if <see langword="true"/> hints to the rendering engine that it may safely omit drawing visual elements behind the image.</summary>
-		/// <remarks>When this property is
-		/// Setting this property does not change the opacity of the image. Instead, it indicates whether the rendering engine may treat the image as opaque while rendering.</remarks>
+		/// <summary>Gets or sets a Boolean value that hints to the rendering engine that it may safely omit drawing visual elements behind the image. This is a bindable property.</summary>
+		/// <value>A <see cref="bool"/> that indicates whether the image is opaque. The default is <see langword="false"/>.</value>
+		/// <remarks>Setting this property does not change the visual opacity of the image. Instead, it provides a hint to the rendering engine that may improve performance by skipping the rendering of elements behind the image.</remarks>
 		public bool IsOpaque
 		{
 			get { return (bool)GetValue(IsOpaqueProperty); }
 			set { SetValue(IsOpaqueProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='IsAnimationPlaying']/Docs/*" />
+		/// <summary>Gets or sets a value that indicates whether animated images should play. This is a bindable property.</summary>
+		/// <value>A <see cref="bool"/> that indicates whether animated images (such as GIFs) should play. The default is <see langword="true"/>.</value>
 		public bool IsAnimationPlaying
 		{
 			get { return (bool)GetValue(IsAnimationPlayingProperty); }

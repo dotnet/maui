@@ -38,6 +38,18 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (!node.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, Context.TypeCache, out var type) || type is null)
 			return;
 
+		// Handle OnPlatform default value nodes - generate default(T) instead of instantiation
+		// This is used when OnPlatform has no matching platform and no Default specified
+		if (node.IsOnPlatformDefaultValue)
+		{
+			var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
+			// Reference-type defaults are null; use default! so generated code does not emit nullable warnings.
+			var defaultValue = type.IsReferenceType ? "default!" : "default";
+			writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {defaultValue};");
+			variables[node] = new LocalVariable(type, variableName);
+			return;
+		}
+
 		//x:Array
 		if (type.Equals(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
 		{
@@ -292,7 +304,25 @@ class CreateValuesVisitor : IXamlNodeVisitor
 					if (prop.Value is ValueNode && !node.SkipProperties.Contains(prop.Key))
 						node.SkipProperties.Add(prop.Key);
 				}
-				
+
+				// Also skip the content property when the value is specified as a collection item.
+				// This handles the content property syntax like:
+				//   <Setter Property="...">10,10,20,20</Setter>
+				// where the value is a collection item instead of a property.
+				// Without skipping this, SetPropertiesVisitor would try to process the
+				// collection item and generate invalid code like ".Value = ..." 
+				// (with an empty variable name).
+				if (node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode)
+				{
+					var contentPropertyName = type.GetContentPropertyName(Context);
+					if (!string.IsNullOrEmpty(contentPropertyName))
+					{
+						var contentPropertyXmlName = new XmlName(node.NamespaceURI, contentPropertyName);
+						if (!node.SkipProperties.Contains(contentPropertyXmlName))
+							node.SkipProperties.Add(contentPropertyXmlName);
+					}
+				}
+
 				// Register placeholder - TryProvideValue will create the actual variable
 				// Use empty string as placeholder name since it will be replaced
 				variables[node] = new LocalVariable(type, string.Empty);
@@ -314,7 +344,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 				writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(writer, Context) ?? [])});");
 			variables[node] = new LocalVariable(type, variableName);
 			node.RegisterSourceInfo(Context, writer);
-			
+
 			return;
 		}
 	}

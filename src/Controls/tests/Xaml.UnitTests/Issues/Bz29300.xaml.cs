@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -68,15 +68,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		[TestFixture]
-		class Tests
+		[Collection("Issue")]
+		public class Tests
 		{
-			[Test]
-			public void AccessUserDefinedBindableProperties([Values] XamlInflator inflator)
+			[Theory]
+			[XamlInflatorData]
+			internal void AccessUserDefinedBindableProperties(XamlInflator inflator)
 			{
 				var layout = new Bz29300(inflator);
-				Assert.AreEqual(4, layout.dummy.NumOfRepeat);
-				Assert.AreEqual("Test", layout.dummy.Text);
+				Assert.Equal(4, layout.dummy.NumOfRepeat);
+				Assert.Equal("Test", layout.dummy.Text);
 			}
 		}
 	}

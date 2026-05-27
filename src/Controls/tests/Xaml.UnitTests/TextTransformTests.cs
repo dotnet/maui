@@ -1,15 +1,16 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[TestFixture]
+	[Collection("Xaml Inflation")]
 	public class TextTransformTests : BaseTestFixture
 	{
-		[TestCase(TextTransform.None)]
-		[TestCase(TextTransform.Lowercase)]
-		[TestCase(TextTransform.Uppercase)]
+		[Theory]
+		[InlineData(TextTransform.None)]
+		[InlineData(TextTransform.Lowercase)]
+		[InlineData(TextTransform.Uppercase)]
 		public void LabelTextTransform(TextTransform result)
 		{
 			var xaml = @"
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			var label = new Label().LoadFromXaml(xaml);
 
-			Assert.AreEqual(result, label.TextTransform);
+			Assert.Equal(result, label.TextTransform);
 		}
 	}
 }
