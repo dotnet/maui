@@ -9,15 +9,13 @@ public static class TimePickerExtensions
 	public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
-	// TODO: Material3: Make it public in .NET 11
-	internal static void UpdateFormat(this MauiMaterialTimePicker mauiTimePicker, ITimePicker timePicker)
+	public static void UpdateFormat(this MauiMaterialTimePicker mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
 	public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
-	// TODO: Material3: Make it public in .NET 11
-	internal static void UpdateTime(this MauiMaterialTimePicker mauiTimePicker, ITimePicker timePicker)
+	public static void UpdateTime(this MauiMaterialTimePicker mauiTimePicker, ITimePicker timePicker)
 		=> SetTimeImpl(mauiTimePicker, timePicker);
 
 	internal static void SetTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
@@ -29,8 +27,7 @@ public static class TimePickerExtensions
 	public static void UpdateTextColor(this MauiTimePicker platformTimePicker, ITimePicker timePicker)
 		=> UpdateTextColorImpl(platformTimePicker, timePicker);
 
-	// TODO: Material3: Make it public in .NET 11
-	internal static void UpdateTextColor(this MauiMaterialTimePicker platformTimePicker, ITimePicker timePicker)
+	public static void UpdateTextColor(this MauiMaterialTimePicker platformTimePicker, ITimePicker timePicker)
 		=> UpdateTextColorImpl(platformTimePicker, timePicker);
 
 	static void SetTimeImpl(AppCompatEditText editText, ITimePicker timePicker)

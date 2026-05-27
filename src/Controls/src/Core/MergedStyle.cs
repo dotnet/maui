@@ -127,6 +127,13 @@ namespace Microsoft.Maui.Controls
 			ImplicitStyle?.UnApply(bindable);
 		}
 
+		/// <summary>Unconditionally unapplies and reapplies all style layers on the target.</summary>
+		internal void Reapply()
+		{
+			UnApply(Target);
+			Apply(Target);
+		}
+
 		void OnClassStyleChanged()
 		{
 			ClassStyles = _classStyleProperties.Select(p => (Target.GetValue(p) as IList<Style>)?.FirstOrDefault(s => s.CanBeAppliedTo(TargetType))).ToList();

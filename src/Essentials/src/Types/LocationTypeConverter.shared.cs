@@ -16,15 +16,25 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// </remarks>
 	public class LocationTypeConverter : TypeConverter
 	{
-		/// <inheritdoc/>
+		/// <summary>Determines whether conversion is possible from the specified type to <see cref="Location"/>.</summary>
+		/// <param name="context">The format context.</param>
+		/// <param name="sourceType">The source type to check.</param>
+		/// <returns><see langword="true"/> if the source type is <see cref="string"/>; otherwise, <see langword="false"/>.</returns>
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		/// <inheritdoc/>
+		/// <summary>Determines whether conversion is possible from <see cref="Location"/> to the specified type.</summary>
+		/// <param name="context">The format context.</param>
+		/// <param name="destinationType">The destination type to check.</param>
+		/// <returns><see langword="true"/> if the destination type is <see cref="string"/>; otherwise, <see langword="false"/>.</returns>
 		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
-		/// <inheritdoc/>
+		/// <summary>Converts a string representation of latitude and longitude to a <see cref="Location"/> object.</summary>
+		/// <param name="context">The format context.</param>
+		/// <param name="culture">The culture info.</param>
+		/// <param name="value">The value to convert, expected in the format <c>"latitude,longitude"</c>.</param>
+		/// <returns>A <see cref="Location"/> object parsed from the string value.</returns>
 		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var strValue = value?.ToString()?.Trim();
@@ -44,7 +54,12 @@ namespace Microsoft.Maui.Devices.Sensors
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Location)}");
 		}
 
-		/// <inheritdoc/>
+		/// <summary>Converts a <see cref="Location"/> object to a string representation.</summary>
+		/// <param name="context">The format context.</param>
+		/// <param name="culture">The culture info.</param>
+		/// <param name="value">The <see cref="Location"/> value to convert.</param>
+		/// <param name="destinationType">The destination type (must be <see cref="string"/>).</param>
+		/// <returns>A string in the format <c>"latitude,longitude"</c>.</returns>
 		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not Location location)

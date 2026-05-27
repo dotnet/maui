@@ -8,7 +8,6 @@
     <AssemblyName>Microsoft.Maui.Graphics</AssemblyName>
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
     <Product>Microsoft.Maui.Graphics</Product>
-    <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);RS0026;RS0027;RS0041</NoWarn>
     <WarningsAsErrors>CS1591</WarningsAsErrors>
