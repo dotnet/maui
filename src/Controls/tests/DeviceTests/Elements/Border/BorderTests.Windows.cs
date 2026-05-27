@@ -93,6 +93,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
 
+				// Prove the new MauiBorderAutomationPeer is in use, not the default ContentPanel peer.
+				Assert.Equal("Border", peer.GetClassName());
+				Assert.Equal(AutomationControlType.Pane, peer.GetAutomationControlType());
+
 				Assert.Equal("TestBorder", peer.GetAutomationId());
 				Assert.False(peer.IsControlElement());
 			});
@@ -109,6 +113,11 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRun(border, (BorderHandler handler) =>
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+
+				// Prove the new MauiBorderAutomationPeer is in use, not the default ContentPanel peer.
+				Assert.Equal("Border", peer.GetClassName());
+				Assert.Equal(AutomationControlType.Pane, peer.GetAutomationControlType());
+
 				Assert.True(peer.IsControlElement());
 			});
 		}
