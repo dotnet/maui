@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Win32;
 using Windows.Storage;
 using Package = Windows.ApplicationModel.Package;
 
@@ -88,83 +85,19 @@ namespace Microsoft.Maui.Storage
 
 	public partial class FileBase
 	{
-		// Static mapping for file extensions to MIME types
-		// Used as fallback when Windows StorageFile.ContentType doesn't provide correct MIME type
-		static readonly FrozenDictionary<string, string> ExtensionToMimeTypeMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-		{
-			// Image formats
-			{ ".jpg", MediaTypeNames.Image.Jpeg },
-			{ ".jpeg", MediaTypeNames.Image.Jpeg },
-			{ ".png", "image/png" },
-			{ ".gif", MediaTypeNames.Image.Gif },
-			{ ".bmp", "image/bmp" },
-			{ ".svg", "image/svg+xml" },
-			{ ".webp", "image/webp" },
-			{ ".tiff", MediaTypeNames.Image.Tiff },
-			{ ".tif", MediaTypeNames.Image.Tiff },
-			{ ".ico", "image/x-icon" },
-			
-			// Audio formats
-			{ ".mp3", "audio/mpeg" },
-			{ ".wav", "audio/wav" },
-			{ ".flac", "audio/flac" },
-			{ ".aac", "audio/aac" },
-			{ ".ogg", "audio/ogg" },
-			{ ".wma", "audio/x-ms-wma" },
-			
-			// Video formats
-			{ ".mp4", "video/mp4" },
-			{ ".avi", "video/x-msvideo" },
-			{ ".mov", "video/quicktime" },
-			{ ".wmv", "video/x-ms-wmv" },
-			{ ".webm", "video/webm" },
-			{ ".mkv", "video/x-matroska" },
-			{ ".flv", "video/x-flv" },
-			
-			// Document formats
-			{ ".pdf", MediaTypeNames.Application.Pdf },
-			{ ".doc", "application/msword" },
-			{ ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
-			{ ".xls", "application/vnd.ms-excel" },
-			{ ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
-			{ ".ppt", "application/vnd.ms-powerpoint" },
-			{ ".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
-			{ ".txt", MediaTypeNames.Text.Plain },
-			{ ".rtf", MediaTypeNames.Application.Rtf },
-			
-			// Web formats
-			{ ".html", MediaTypeNames.Text.Html },
-			{ ".htm", MediaTypeNames.Text.Html },
-			{ ".css", "text/css" },
-			{ ".js", "application/javascript" },
-			{ ".json", "application/json" },
-			{ ".xml", MediaTypeNames.Text.Xml },
-			
-			// Archive formats
-			{ ".zip", MediaTypeNames.Application.Zip },
-			{ ".rar", "application/x-rar-compressed" },
-			{ ".7z", "application/x-7z-compressed" },
-			{ ".tar", "application/x-tar" },
-			{ ".tar.gz", "application/gzip" },
-			{ ".gz", "application/gzip" }
-		}.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
-
 		internal FileBase(IStorageFile file)
 			: this(file?.Path)
 		{
 			File = file;
-			
-			// Set the ContentType, but prefer our mapping for known problematic extensions
+
 			var fileContentType = file?.ContentType;
-			var extension = Path.GetExtension(file?.Path ?? "");
-			
-			// If Windows provides a generic "application/octet-stream" or empty ContentType,
-			// try to get a more specific MIME type from our extension mapping
-			if (string.IsNullOrWhiteSpace(fileContentType) || 
-			    fileContentType == "application/octet-stream")
+			if (string.IsNullOrWhiteSpace(fileContentType) ||
+				string.Equals(fileContentType, FileMimeTypes.OctetStream, StringComparison.OrdinalIgnoreCase))
 			{
-				var betterContentType = PlatformGetContentType(extension);
-				ContentType = betterContentType ?? fileContentType;
+				var registryContentType = PlatformGetContentType(Path.GetExtension(file?.Path ?? string.Empty));
+				ContentType = !string.IsNullOrWhiteSpace(registryContentType)
+					? registryContentType
+					: fileContentType;
 			}
 			else
 			{
@@ -179,35 +112,30 @@ namespace Microsoft.Maui.Storage
 
 		internal IStorageFile File { get; set; }
 
-		// Use extension mapping as fallback when Windows doesn't provide correct MIME type
-		string PlatformGetContentType(string extension)
+		static string PlatformGetContentType(string extension)
 		{
 			if (string.IsNullOrWhiteSpace(extension))
 				return null;
 
-			// Trim whitespace and convert to lowercase for consistent matching
-			extension = extension.Trim().ToLowerInvariant();
-			if (string.IsNullOrEmpty(extension))
-				return null;
+			extension = extension.Trim();
 
 			if (!extension.StartsWith("."))
 				extension = "." + extension;
 
-			// Try exact match first
-			if (ExtensionToMimeTypeMap.TryGetValue(extension, out var mimeType))
-				return mimeType;
-
-			var fileName = Path.GetFileNameWithoutExtension(extension);
-			if (!string.IsNullOrEmpty(fileName) && fileName.Contains('.', StringComparison.Ordinal))
+			try
 			{
-				// Try progressively longer extensions (e.g., .tar.gz, then .gz)
-				var parts = fileName.Split('.');
-				for (int i = parts.Length - 1; i >= 0; i--)
+#pragma warning disable CA1416 // Validate platform compatibility
+                using var key = Registry.ClassesRoot.OpenSubKey(extension);
+                if (key?.GetValue("Content Type") is string contentType &&
+					!string.IsNullOrWhiteSpace(contentType))
 				{
-					var compoundExtension = "." + string.Join(".", parts.Skip(i)) + extension;
-					if (ExtensionToMimeTypeMap.TryGetValue(compoundExtension, out mimeType))
-						return mimeType;
+					return contentType;
 				}
+#pragma warning restore CA1416 // Validate platform compatibility
+            }
+			catch
+			{
+				// Registry access can fail in sandboxed environments; fall through to default content type.
 			}
 
 			return null;
