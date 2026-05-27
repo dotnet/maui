@@ -9,11 +9,14 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Google.Android.Material.AppBar;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 using AGraphics = Android.Graphics;
 using ATextView = global::Android.Widget.TextView;
@@ -54,7 +57,26 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			nativeToolbar.LayoutParameters = lp;
-			AndroidX.Core.View.ViewCompat.RequestApplyInsets(nativeToolbar);
+
+			var appBarLayout = nativeToolbar.Parent.GetParentOfType<AppBarLayout>();
+			var rootCoordinator = appBarLayout?.Parent.GetParentOfType<CoordinatorLayout>();
+
+			nativeToolbar.MaybeRequestLayout();
+			appBarLayout?.MaybeRequestLayout();
+			rootCoordinator?.MaybeRequestLayout();
+
+			if (rootCoordinator is not null)
+			{
+				ViewCompat.RequestApplyInsets(rootCoordinator);
+			}
+			else if (appBarLayout is not null)
+			{
+				ViewCompat.RequestApplyInsets(appBarLayout);
+			}
+			else
+			{
+				ViewCompat.RequestApplyInsets(nativeToolbar);
+			}
 		}
 
 		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)

@@ -117,6 +117,84 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Hidden Shell navigation bar clears app bar inset padding")]
+		public async Task HiddenShellNavigationBarClearsAppBarInsetPadding()
+		{
+			SetupBuilder();
+			const int statusBarTopInset = 24;
+			const int displayCutoutTopInset = 96;
+
+			var contentPage = new ContentPage()
+			{
+				Title = "Test",
+				Content = new Label { Text = "Content" }
+			};
+
+			var syntheticInsets = CreateTopCutoutInsets(statusBarTopInset, displayCutoutTopInset);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { contentPage } };
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(contentPage);
+				await OnNavigatedToAsync(contentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				var rootCoordinator = appBar?.Parent.GetParentOfType<CoordinatorLayout>();
+				var capturingListener = AttachCapturingWindowInsetsListener(rootCoordinator, platformToolbar);
+
+				Assert.NotNull(appBar);
+				Assert.NotNull(rootCoordinator);
+
+				await AssertEventually(() => platformToolbar.LayoutParameters?.Height > 0,
+					timeout: 2000,
+					message: "Toolbar did not render before Shell.NavBarIsVisible was toggled.");
+
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > 0,
+					timeout: 2000,
+					message: "The Shell root did not receive the initial synthetic window insets dispatch.");
+
+				await AssertEventually(() => appBar.PaddingTop == displayCutoutTopInset,
+					timeout: 2000,
+					message: "AppBar never received the synthetic display cutout top inset before the Shell navigation bar was hidden.");
+
+				AssertTopInsets(capturingListener.LastAppliedInsets, expectedSystemBarsTop: 0, expectedDisplayCutoutTop: 0,
+					message: "Visible Shell app bar should consume the synthetic top insets.");
+
+				var visibleInsetsInvocationCount = capturingListener.InvocationCount;
+
+				Shell.SetNavBarIsVisible(contentPage, false);
+
+				await AssertEventually(() => platformToolbar.LayoutParameters?.Height == 0 && platformToolbar.Height == 0,
+					timeout: 2000,
+					message: "Toolbar did not fully collapse after Shell.NavBarIsVisible was set to false.");
+
+				await AssertEventually(() => capturingListener.InvocationCount > visibleInsetsInvocationCount && appBar.PaddingTop == 0,
+					timeout: 2000,
+					message: "Shell.NavBarIsVisible did not trigger an inset redispatch that cleared the AppBar top padding.");
+
+				// Re-dispatch the synthetic insets now that the nav bar is hidden so we can assert
+				// with known values that the app bar no longer consumes the top insets.
+				var hiddenInsetsInvocationCount = capturingListener.InvocationCount;
+				ViewCompat.DispatchApplyWindowInsets(rootCoordinator, syntheticInsets);
+
+				await AssertEventually(() => capturingListener.InvocationCount > hiddenInsetsInvocationCount,
+					timeout: 2000,
+					message: "Expected an additional inset dispatch after re-injecting synthetic insets post-nav-bar-hide.");
+
+				AssertTopInsets(capturingListener.LastAppliedInsets,
+					expectedSystemBarsTop: statusBarTopInset,
+					expectedDisplayCutoutTop: displayCutoutTopInset,
+					message: "Hidden Shell app bar should stop consuming the synthetic top insets.");
+			});
+		}
+
 		protected async Task CheckFlyoutState(ShellRenderer handler, bool desiredState)
 		{
 			var drawerLayout = GetDrawerLayout(handler);
