@@ -6,11 +6,8 @@
 .DESCRIPTION
     Maintains ONE comment per PR, identified by <!-- AI Summary --> marker.
     Before posting a fresh comment, any older generated AI Summary comments are
-    removed. Existing session blocks are preserved in the newly posted comment.
-    Each review run adds an expandable session keyed by HEAD commit SHA.
-    - Same commit SHA → replaces that session in the newly posted comment.
-    - New commit SHA  → prepends a new session (latest first).
-    Older sessions stay collapsed; the newest is expanded by default.
+    removed. The replacement comment contains only the latest review session,
+    keyed by the current HEAD commit SHA.
 
     After posting, the PR author is @-mentioned so they know to review.
 
@@ -197,62 +194,12 @@ $sessionMarkerEnd
 "@
 
 # ============================================================================
-# MERGE WITH EXISTING SESSIONS
-# ============================================================================
-
-function Merge-Sessions {
-    param(
-        [string]$ExistingBody,
-        [string]$NewSession,
-        [string]$CommitSha7
-    )
-
-    # Extract all session blocks from existing body
-    $sessionPattern = '(?s)<!-- SESSION:([a-f0-9]+) START -->.*?<!-- SESSION:\1 END -->'
-    $existingSessions = [regex]::Matches($ExistingBody, $sessionPattern)
-
-    $sessions = [ordered]@{}
-    foreach ($match in $existingSessions) {
-        $sha = $match.Groups[1].Value
-        $sessions[$sha] = $match.Value
-    }
-
-    # Replace or prepend new session
-    $sessions[$CommitSha7] = $NewSession
-
-    # Rebuild: newest session first (the one we just added/replaced)
-    $orderedKeys = @($CommitSha7) + @($sessions.Keys | Where-Object { $_ -ne $CommitSha7 })
-
-    $allSessions = @()
-    $isFirst = $true
-    foreach ($sha in $orderedKeys) {
-        $block = $sessions[$sha]
-        if ($isFirst) {
-            # Ensure ONLY the outer (session-wrapping) details tag is open. Inner
-            # phase tags must keep their original open/collapsed state — we used
-            # to re-open all of them via a global regex replace, which forced
-            # every phase to expand on each new session.
-            $rx = [regex]::new('<details(?:\s+open)?>')
-            $block = $rx.Replace($block, '<details open>', 1)
-            $isFirst = $false
-        } else {
-            # Collapse the outer details of older sessions; leave inner phases alone.
-            $rx = [regex]::new('<details\s+open>')
-            $block = $rx.Replace($block, '<details>', 1)
-        }
-        $allSessions += $block
-    }
-
-    return ($allSessions -join "`n`n---`n`n")
-}
-
-# ============================================================================
 # FIND EXISTING COMMENT & BUILD FINAL BODY
 # ============================================================================
 
 Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
-$existingBody = $null
 $existingCommentIds = @()
+$existingBodies = @()
 
 $existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
 if ($existingRaw) {
@@ -262,7 +209,6 @@ if ($existingRaw) {
         if ($existingObjs.Count -gt 0) {
             $existingCommentIds = @($existingObjs | ForEach-Object { $_.id })
             $existingBodies = @($existingObjs | ForEach-Object { [string]$_.body })
-            $existingBody = $existingBodies -join "`n`n---`n`n"
             Write-Host "✓ Found existing AI Summary comment(s): $($existingCommentIds -join ', ')" -ForegroundColor Green
         }
     } catch {
@@ -286,32 +232,15 @@ if ($existingBodies -and $existingBodies.Count -gt 0) {
     }
 }
 
-if ($existingBody) {
-    # Merge new session into all existing AI Summary bodies before deleting the
-    # old comments. This keeps prior session history even if retries created
-    # multiple generated comments.
-    $mergedSessions = Merge-Sessions -ExistingBody $existingBody -NewSession $newSessionBlock -CommitSha7 $commitSha7
-
-    $commentBody = @"
+$commentBody = @"
 $MARKER
 
 ## 🤖 AI Summary
 
 $authorPing
 
-$mergedSessions$finalizeSection
+$newSessionBlock$finalizeSection
 "@
-} else {
-    $commentBody = @"
-$MARKER
-
-## 🤖 AI Summary
-
-$authorPing
-
-$newSessionBlock
-"@
-}
 
 # Clean up excessive blank lines
 $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
