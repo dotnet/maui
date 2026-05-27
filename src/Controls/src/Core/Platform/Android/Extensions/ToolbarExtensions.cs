@@ -10,6 +10,7 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
+using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
@@ -58,7 +59,26 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			nativeToolbar.LayoutParameters = lp;
-			AndroidX.Core.View.ViewCompat.RequestApplyInsets(nativeToolbar);
+
+			var appBarLayout = nativeToolbar.Parent.GetParentOfType<AppBarLayout>();
+			var rootCoordinator = appBarLayout?.Parent.GetParentOfType<CoordinatorLayout>();
+
+			nativeToolbar.MaybeRequestLayout();
+			appBarLayout?.MaybeRequestLayout();
+			rootCoordinator?.MaybeRequestLayout();
+
+			if (rootCoordinator is not null)
+			{
+				ViewCompat.RequestApplyInsets(rootCoordinator);
+			}
+			else if (appBarLayout is not null)
+			{
+				ViewCompat.RequestApplyInsets(appBarLayout);
+			}
+			else
+			{
+				ViewCompat.RequestApplyInsets(nativeToolbar);
+			}
 		}
 
 		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -110,13 +130,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			var context =
+			if (toolbar.BackButtonVisible)
+			{
+				var context =
 					nativeToolbar.Context?.GetThemedContext() ??
 					nativeToolbar.Context ??
 					toolbar.Handler?.MauiContext?.Context;
 
-			if (toolbar.BackButtonVisible)
-			{
 				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
 				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
 					iconDrawable.Progress = 1;
@@ -142,9 +162,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					// Reinitialize navigation icon to display flyout (hamburger) menu
-    				// This ensures the icon is shown when back button is not visible
-					nativeToolbar.NavigationIcon = new DrawerArrowDrawable(context!);
 					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
 						iconDrawable.Progress = 0;
 
