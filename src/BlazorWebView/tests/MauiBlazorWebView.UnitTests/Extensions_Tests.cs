@@ -74,7 +74,7 @@ public class UriExtensions_Tests
 	}
 
 	[Fact]
-	public void IsBaseOfPage_ReturnsFalse_WhenSchemeIsNotHttpOrHttps()
+	public void IsBaseOfPage_ReturnsFalse_WhenSchemeDiffersFromBase()
 	{
 		var uri = "ftp://example.com/page";
 		Assert.False(_baseUri.IsBaseOfPage(uri));
