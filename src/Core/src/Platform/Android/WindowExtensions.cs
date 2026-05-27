@@ -1,6 +1,7 @@
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.Res;
+using Android.Util;
 using System.Runtime.CompilerServices;
 using Android.Views;
 using AndroidX.Core.View;
@@ -141,7 +142,12 @@ namespace Microsoft.Maui
 		{
 			if (backgroundColor?.Alpha > 0)
 			{
-				return backgroundColor.GetLuminosity() > 0.5;
+				// HSL luminosity misclassifies perceptually-bright hues (yellow, cyan, lime) as dark
+				// because it averages max/min channel values and lands at exactly 0.5 for these colours.
+				// Use ITU-R BT.601 perceptual luminance with a gamma-2.0 approximation instead:
+				//   L = 0.299R² + 0.587G² + 0.114B²  (squaring approximates linear-light encoding)
+				// Threshold 0.25 ≈ 50% perceived brightness.
+				return IsPerceptuallyLight(backgroundColor);
 			}
 
 			if (foregroundColor?.Alpha > 0)
@@ -150,6 +156,16 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		// ITU-R BT.601 perceptual luminance with gamma-2.0 approximation.
+		// Returns true when the colour is bright enough to need dark (black) system bar icons.
+		static bool IsPerceptuallyLight(Color color)
+		{
+			float r = color.Red * color.Red;
+			float g = color.Green * color.Green;
+			float b = color.Blue * color.Blue;
+			return 0.299f * r + 0.587f * g + 0.114f * b > 0.25f;
 		}
 
 		sealed class OriginalSystemBarColors
@@ -172,7 +188,24 @@ namespace Microsoft.Maui
 
 			public void RestoreNavigationBarColor(Window window)
 			{
-				window.SetNavigationBarColor(new AColor(_navigationBarColor));
+				var restoreColor = new AColor(_navigationBarColor);
+
+				// System-default nav bar colors appear as black with edge-to-edge enabled:
+				//   • Transparent  (0x00000000) — Material3 theme + SetDecorFitsSystemWindows(false)
+				//   • Opaque black (0xFF000000) — older API / emulator default
+				// Both have RGB = 0. Use the theme's window background color instead so that
+				// Shell→ShellContent and Shell→TabBar get the same white surface nav bar.
+				if ((_navigationBarColor & 0x00FFFFFF) == 0 && window.Context?.Theme is { } theme)
+				{
+					var typedValue = new TypedValue();
+					if (theme.ResolveAttribute(global::Android.Resource.Attribute.ColorBackground, typedValue, true)
+						&& typedValue.Data != 0)
+					{
+						restoreColor = new AColor(typedValue.Data);
+					}
+				}
+
+				window.SetNavigationBarColor(restoreColor);
 			}
 		}
 	}
