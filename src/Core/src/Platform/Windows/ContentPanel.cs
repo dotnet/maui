@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Shapes;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -74,6 +75,9 @@ namespace Microsoft.Maui.Platform
 			EnsureBorderPath(containsCheck: false);
 
 			SizeChanged += ContentPanelSizeChanged;
+
+			RegisterPropertyChangedCallback(BackgroundProperty, OnBackgroundPropertyChanged);
+			EnsureHitTestBackground();
 		}
 
 		// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
@@ -128,6 +132,22 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				CachedChildren.Add(_borderPath);
+			}
+		}
+
+		static void OnBackgroundPropertyChanged(DependencyObject dependencyObject, DependencyProperty dependencyProperty)
+		{
+			if (dependencyObject is ContentPanel contentPanel)
+			{
+				contentPanel.EnsureHitTestBackground();
+			}
+		}
+
+		void EnsureHitTestBackground()
+		{
+			if (Background == null)
+			{
+				Background = new SolidColorBrush(UI.Colors.Transparent);
 			}
 		}
 
