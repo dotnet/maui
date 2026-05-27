@@ -297,11 +297,21 @@ public class TabbedPageManager
 
 						_tabplacementId = id;
 
-						fm
+						var transaction = fm
 							.BeginTransactionEx()
 							.ReplaceEx(id, _tabLayoutFragment)
-							.SetReorderingAllowed(true)
-							.Commit();
+							.SetReorderingAllowed(true);
+
+						// Re-apply top chrome after the fragment transaction completes so that
+						// UpdateTopChrome runs with the TabLayout already parented under the
+						// AppBarLayout. RunOnCommit fires after OnCreateView returns and the
+						// view is attached to its container — no race window.
+						if (!IsBottomTabPlacement)
+						{
+							transaction.RunOnCommit(new Java.Lang.Runnable(UpdateSystemChrome));
+						}
+
+						transaction.Commit();
 					});
 		}
 	}

@@ -27,6 +27,27 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		[Description("TabbedPage BarBackgroundColor should be applied to AppBar immediately after handler creation, before the fragment transaction completes")]
+		public async Task TopTabbedPageBarBackgroundColorAppliedOnInitialLoad()
+		{
+			SetupBuilder();
+
+			// Set BarBackgroundColor before the handler is created to exercise the path where
+			// UpdateTopChrome is called during initialization (async fragment transaction).
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = Colors.LightGreen;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				// The AppBar background must be applied even on initial load (timing race fix).
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == Colors.LightGreen.ToPlatform().ToArgb());
+			});
+		}
+
 		[Fact(DisplayName = "Using SelectedTab Color doesnt crash")]
 		public async Task SelectedTabColorNoDoesntCrash()
 		{
