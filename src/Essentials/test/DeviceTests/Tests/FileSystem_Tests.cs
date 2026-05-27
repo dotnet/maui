@@ -115,8 +115,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData(" .jpg ", "image/jpeg")] // Leading and trailing spaces
 		[InlineData(".png", "image/png")]
 		[InlineData(".PNG", "image/png")]
-		[InlineData(".tar.gz", "application/gzip")]
-		[InlineData(".TAR.GZ", "application/gzip")]
+		[InlineData(".tar.gz", "application/x-gzip")]
+		[InlineData(".TAR.GZ", "application/x-gzip")]
 		public async Task EnsureFileResultContentType(string extension, string expectedMimeType)
 		{
 			string filePath = Path.Combine(FileSystem.CacheDirectory, $"test{extension}");
