@@ -34,6 +34,14 @@ namespace Microsoft.Maui.Platform
 			// https://github.com/dotnet/maui/issues/31475
 			_clipRect = new Rect(0, 0, 0, 0);
 			ClipBounds = _clipRect;
+
+			// Pre-register the JS bridge BEFORE any page loads.
+			// Android WebView only exposes addJavascriptInterface bindings for pages that
+			// start loading AFTER the call is made. If Attach is deferred to
+			// OnAttachedToWindow, cold-start apps load their page before the view enters
+			// the window hierarchy, so the bridge is invisible to JS.
+			// Attach is idempotent, so later calls from OnAttachedToWindow are safe no-ops.
+			RefreshViewWebViewScrollCapture.Attach(this);
 		}
 
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
@@ -59,6 +67,13 @@ namespace Microsoft.Maui.Platform
 				{
 					RefreshViewWebViewScrollCapture.InjectObserver(this);
 				}
+			}
+			else
+			{
+				// Not inside a RefreshView — remove the bridge that was pre-registered
+				// in the constructor so it is not exposed to untrusted page content
+				// loaded in standalone HybridWebViews.
+				RefreshViewWebViewScrollCapture.Detach(this);
 			}
 		}
 
