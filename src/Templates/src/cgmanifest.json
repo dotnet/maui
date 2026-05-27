@@ -132,7 +132,7 @@
         "type": "nuget",
         "nuget": {
           "name": "xunit",
-          "version": "2.9.0"
+          "version": "2.9.3"
         }
       }
     },
@@ -141,7 +141,7 @@
         "type": "nuget",
         "nuget": {
           "name": "xunit.analyzer",
-          "version": "1.15.0"
+          "version": "1.18.0"
         }
       }
     },
