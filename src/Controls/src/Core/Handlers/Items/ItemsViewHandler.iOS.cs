@@ -97,6 +97,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			Controller?.UpdateLayout(_layout);
 		}
 
+		internal static void MapIsEnabled(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			(handler.Controller as SelectableItemsViewController<ReorderableItemsView>)?.UpdateSelectionMode();
+		}
+
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
 			using (var indexPath = DetermineIndex(args))
