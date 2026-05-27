@@ -55,6 +55,51 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "MenuFlyoutItem MapSource sets ShowAsMonochrome to false for UriImageSource")]
+		public async Task MenuFlyoutItemMapSourceSetsShowAsMonochromeToFalseForUriImageSource()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				MenuFlyoutItem menuFlyoutItem = new MenuFlyoutItem()
+				{
+					Text = "TestItem",
+					IconImageSource = new UriImageSource { Uri = new System.Uri("https://raw.githubusercontent.com/dotnet/maui/main/src/Compatibility/ControlGallery/src/Android/Resources/drawable/coffee.png") }
+				};
+
+				var handler = CreateHandler<MenuFlyoutItemHandler>(menuFlyoutItem);
+				var platformItem = handler.PlatformView;
+
+				Assert.NotNull(platformItem.Icon);
+				var bitmapIcon = Assert.IsType<Microsoft.UI.Xaml.Controls.BitmapIcon>(platformItem.Icon);
+				Assert.False(bitmapIcon.ShowAsMonochrome);
+			});
+		}
+
+		[Fact(DisplayName = "MenuFlyoutSubItem MapSource sets ShowAsMonochrome to false for UriImageSource")]
+		public async Task MenuFlyoutSubItemMapSourceSetsShowAsMonochromeToFalseForUriImageSource()
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				MenuFlyoutSubItem menuFlyoutSubItem = new MenuFlyoutSubItem()
+				{
+					Text = "SubMenu",
+					IconImageSource = new UriImageSource { Uri = new System.Uri("https://raw.githubusercontent.com/dotnet/maui/main/src/Compatibility/ControlGallery/src/Android/Resources/drawable/coffee.png") }
+				};
+				menuFlyoutSubItem.Add(new MenuFlyoutItem() { Text = "ChildItem" });
+
+				var handler = CreateHandler<MenuFlyoutSubItemHandler>(menuFlyoutSubItem);
+				var platformItem = handler.PlatformView;
+
+				Assert.NotNull(platformItem.Icon);
+				var bitmapIcon = Assert.IsType<Microsoft.UI.Xaml.Controls.BitmapIcon>(platformItem.Icon);
+				Assert.False(bitmapIcon.ShowAsMonochrome);
+			});
+		}
+
 		[Fact(DisplayName = "Context flyout creates expected WinUI elements")]
 		public async Task ContextFlyoutCreatesExpectedWinUIElements()
 		{
