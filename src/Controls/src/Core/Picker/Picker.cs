@@ -426,8 +426,6 @@ namespace Microsoft.Maui.Controls
 			{
 				ClampSelectedIndex(index);
 			}
-
-			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
 		int GetSelectedIndex()
