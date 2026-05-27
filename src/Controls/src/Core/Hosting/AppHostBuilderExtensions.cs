@@ -97,6 +97,8 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<Slider, SliderHandler2>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
             handlersCollection.AddHandler<Entry, EntryHandler2>();
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+			handlersCollection.AddHandler<CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
 		}
 		else
 		{
@@ -113,6 +115,8 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<Slider, SliderHandler>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
             handlersCollection.AddHandler<Entry, EntryHandler>();
+			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();

@@ -15,6 +15,11 @@ Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, Sy
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 Microsoft.Maui.Controls.BoxView.~BoxView() -> void
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.IsSwipeEnabled.get -> bool
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.IsSwipeEnabled.set -> void
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.UpdateFromCurrentItem() -> void
+Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.UpdateFromPosition() -> void
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer
 Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.get -> double
