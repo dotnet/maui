@@ -129,15 +129,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void UsesCustomGesturePlatformManagerWhenServiceRegistered()
+		public void UsesCustomGesturePlatformManagerWhenFactoryRegistered()
 		{
 			var handler = Substitute.For<IViewHandler>();
 			var view = Substitute.For<IControlsView>();
 			var mauiContext = Substitute.For<IMauiContext>();
 			var customManager = Substitute.For<IGesturePlatformManager>();
+			var customFactory = Substitute.For<IGesturePlatformManagerFactory>();
+			customFactory.CreateGesturePlatformManager(handler).Returns(customManager);
 
 			var services = new ServiceCollection()
-				.AddSingleton(customManager)
+				.AddSingleton(customFactory)
 				.BuildServiceProvider();
 
 			mauiContext.Services.Returns(services);
@@ -148,18 +150,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(gestureManager.GesturePlatformManager);
 			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+			customFactory.Received(1).CreateGesturePlatformManager(handler);
 		}
 
 		[Fact]
-		public void DIProvidedSingletonIsNotDisposedOnDisconnect()
+		public void FactoryProvidedManagerIsDisposedOnDisconnect()
 		{
 			var handler = Substitute.For<IViewHandler>();
 			var view = Substitute.For<IControlsView>();
 			var mauiContext = Substitute.For<IMauiContext>();
 			var customManager = Substitute.For<IGesturePlatformManager>();
+			var customFactory = Substitute.For<IGesturePlatformManagerFactory>();
+			customFactory.CreateGesturePlatformManager(handler).Returns(customManager);
 
 			var services = new ServiceCollection()
-				.AddSingleton(customManager)
+				.AddSingleton(customFactory)
 				.BuildServiceProvider();
 
 			mauiContext.Services.Returns(services);
@@ -172,20 +177,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.Handler.Returns((IViewHandler)null);
 			view.HandlerChanging += Raise.Event<EventHandler<HandlerChangingEventArgs>>(view, new HandlerChangingEventArgs(handler, null));
 
-			// The DI-provided singleton must NOT have been disposed
-			customManager.DidNotReceive().Dispose();
+			customManager.Received(1).Dispose();
 		}
 
 		[Fact]
-		public void DIProvidedSingletonIsReusedAfterReconnect()
+		public void FactoryCreatesNewManagerAfterReconnect()
 		{
 			var handler = Substitute.For<IViewHandler>();
 			var view = Substitute.For<IControlsView>();
 			var mauiContext = Substitute.For<IMauiContext>();
 			var customManager = Substitute.For<IGesturePlatformManager>();
+			var customManager2 = Substitute.For<IGesturePlatformManager>();
+			var customFactory = Substitute.For<IGesturePlatformManagerFactory>();
+			customFactory.CreateGesturePlatformManager(Arg.Any<IViewHandler>()).Returns(customManager, customManager2);
 
 			var services = new ServiceCollection()
-				.AddSingleton(customManager)
+				.AddSingleton(customFactory)
 				.BuildServiceProvider();
 
 			mauiContext.Services.Returns(services);
@@ -206,11 +213,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.Handler.Returns(handler2);
 			view.HandlerChanged += Raise.Event<EventHandler>(view, EventArgs.Empty);
 
-			// Same singleton instance should be used again (not disposed, not recreated)
-			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
-			customManager.DidNotReceive().Dispose();
-			// SetupHandler should have been called for the new handler
-			customManager.Received().SetupHandler(handler2);
+			Assert.Equal(customManager2, gestureManager.GesturePlatformManager);
+			customFactory.Received(1).CreateGesturePlatformManager(handler);
+			customFactory.Received(1).CreateGesturePlatformManager(handler2);
+			customManager.Received(1).Dispose();
+			customManager2.DidNotReceive().Dispose();
 		}
 	}
 }

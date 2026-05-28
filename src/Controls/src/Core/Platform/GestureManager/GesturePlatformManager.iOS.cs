@@ -74,11 +74,6 @@ namespace Microsoft.Maui.Controls.Platform
 				ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 		}
 
-		public void SetupHandler(IViewHandler handler)
-		{
-			// Handler is already set via constructor on locally-created instances
-		}
-
 		public void Dispose()
 		{
 			if (_disposed)

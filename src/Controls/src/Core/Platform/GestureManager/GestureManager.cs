@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls.Platform
 		object? _platformView;
 		object? _handler;
 		bool _didHaveWindow;
-		bool _gestureManagerFromDI;
 
 		public bool IsConnected => GesturePlatformManager != null;
 		public IGesturePlatformManager? GesturePlatformManager { get; private set; }
@@ -48,11 +47,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void DisconnectGestures()
 		{
-			// Only dispose if we own the instance (not DI-provided — the container manages its lifetime)
-			if (!_gestureManagerFromDI)
-				GesturePlatformManager?.Dispose();
+			GesturePlatformManager?.Dispose();
 			GesturePlatformManager = null;
-			_gestureManagerFromDI = false;
 			_handler = null;
 			_didHaveWindow = false;
 			_containerView = null;
@@ -81,20 +77,17 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			// Try to get IGesturePlatformManager from services first, fallback to default implementation
-			var context = handler.MauiContext;
-			var customManager = context?.Services.GetService<IGesturePlatformManager>();
-			if (customManager is not null)
+			var factory = handler.MauiContext?.Services.GetService<IGesturePlatformManagerFactory>();
+			if (factory is null)
 			{
-				GesturePlatformManager = customManager;
-				_gestureManagerFromDI = true; // Set before SetupHandler so DisconnectGestures won't dispose the singleton on exception
-				GesturePlatformManager.SetupHandler(handler);
+				GesturePlatformManager = new GesturePlatformManager(handler);
 			}
 			else
 			{
-				GesturePlatformManager = new GesturePlatformManager(handler);
-				_gestureManagerFromDI = false;
+				GesturePlatformManager = factory.CreateGesturePlatformManager(handler)
+					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerFactory)}.{nameof(IGesturePlatformManagerFactory.CreateGesturePlatformManager)} cannot return null.");
 			}
+
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
