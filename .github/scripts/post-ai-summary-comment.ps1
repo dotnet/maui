@@ -79,6 +79,34 @@ $phases = [ordered]@{
     "report"           = @{ File = "report/content.md";             Icon = "📋"; Title = "Report — Final Recommendation" }
 }
 
+function Test-PhaseContentIsNoOp {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PhaseKey,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Content
+    )
+
+    $normalized = ($Content -replace "`r`n", "`n").Trim()
+
+    switch ($PhaseKey) {
+        "uitests" {
+            return $normalized -match '^No UI test categories needed for this PR \(no UI-relevant changes\)\.?$'
+        }
+        "regression-check" {
+            $withoutHeading = ($normalized -replace '(?m)^##\s+.*Regression Cross-Reference\s*\n+', '').Trim()
+            return (
+                $withoutHeading -match '^🟢\s+No implementation files modified\s+[—-]\s+skipping regression cross-reference\.\s*$' -or
+                $withoutHeading -match '^🟢\s+No regression risks detected\.\s+No labeled bug-fix PRs in the last \d+ months touched the modified files\.\s*$'
+            )
+        }
+        default {
+            return $false
+        }
+    }
+}
+
 # ─── Gate content (rendered first, always open) ───
 $gateSection = $null
 $gateFilePath = Join-Path $PRAgentDir "gate/content.md"
@@ -111,6 +139,11 @@ foreach ($key in $phases.Keys) {
     if (Test-Path $filePath) {
         $content = Get-Content $filePath -Raw -Encoding UTF8
         if (-not [string]::IsNullOrWhiteSpace($content)) {
+            if (Test-PhaseContentIsNoOp -PhaseKey $key -Content $content) {
+                Write-Host "  ⏭️  $key (no actionable content)" -ForegroundColor Gray
+                continue
+            }
+
             Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
             # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
             $phaseTitle = "$($phase.Icon) $($phase.Title)"
