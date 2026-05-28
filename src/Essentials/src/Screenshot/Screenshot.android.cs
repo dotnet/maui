@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -5,6 +7,7 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Graphics;
+using Android.OS;
 using Android.Views;
 using Java.Nio;
 using Microsoft.Maui.ApplicationModel;
@@ -13,7 +16,7 @@ namespace Microsoft.Maui.Media
 {
 	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
-		static IWindowManager WindowManager =>
+		static IWindowManager? WindowManager =>
 			Application.Context.GetSystemService(Context.WindowService) as IWindowManager;
 
 		public bool IsCaptureSupported => true;
@@ -23,41 +26,131 @@ namespace Microsoft.Maui.Media
 			if (WindowManager?.DefaultDisplay?.Flags.HasFlag(DisplayFlags.Secure) == true)
 				throw new UnauthorizedAccessException("Unable to take a screenshot of a secure window.");
 
-			var activity = ActivityStateManager.Default.GetCurrentActivity(true);
+			var activity = ActivityStateManager.Default.GetCurrentActivity(true)
+				?? throw new InvalidOperationException("Unable to find the current activity.");
 
 			return CaptureAsync(activity);
 		}
 
-		public Task<IScreenshotResult> CaptureAsync(Activity activity)
+		public async Task<IScreenshotResult> CaptureAsync(Activity activity)
 		{
-			var view = activity?.Window?.DecorView?.RootView;
+			var window = activity?.Window;
+			var view = window?.DecorView?.RootView;
 			if (view == null)
 				throw new InvalidOperationException("Unable to find the main window.");
 
-			return CaptureAsync(view);
+			var result = await CaptureAsync(view, window).ConfigureAwait(false);
+			return result ?? throw new InvalidOperationException("Unable to capture screenshot.");
 		}
 
-		public Task<IScreenshotResult> CaptureAsync(View view)
+		public async Task<IScreenshotResult?> CaptureAsync(View view)
+		{
+			return await CaptureAsync(view, GetActivity(view.Context)?.Window).ConfigureAwait(false);
+		}
+
+		async Task<IScreenshotResult?> CaptureAsync(View view, Window? window)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
-			var bitmap = Render(view);
-			var result = bitmap is null ? null : new ScreenshotResult(bitmap);
-
-			return Task.FromResult<IScreenshotResult>(result);
+			var bitmap = await RenderAsync(view, window).ConfigureAwait(false);
+			return bitmap is null ? null : new ScreenshotResult(bitmap);
 		}
 
-		static Bitmap Render(View view)
+		static async Task<Bitmap?> RenderAsync(View view, Window? window)
 		{
-			var bitmap = RenderUsingCanvasDrawing(view);
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				var bitmap = await RenderUsingPixelCopyAsync(view, window);
+				if (bitmap is not null)
+					return bitmap;
+			}
 
-			if (bitmap == null)
-				bitmap = RenderUsingDrawingCache(view);
-
-			return bitmap;
+			return RenderUsingCanvasDrawing(view) ?? RenderUsingDrawingCache(view);
 		}
 
-		static Bitmap RenderUsingCanvasDrawing(View view)
+		static async Task<Bitmap?> RenderUsingPixelCopyAsync(View view, Window? window)
+		{
+			if (view.Width <= 0 || view.Height <= 0 || !view.IsAttachedToWindow)
+				return null;
+
+			if (window is null)
+				return null;
+
+			var bitmap = Bitmap.CreateBitmap(view.Width, view.Height, Bitmap.Config.Argb8888!);
+			if (bitmap is null)
+				return null;
+
+			var location = new int[2];
+			view.GetLocationInWindow(location);
+			var rect = new Rect(
+				location[0],
+				location[1],
+				location[0] + view.Width,
+				location[1] + view.Height);
+
+			var tcs = new TaskCompletionSource<Bitmap?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			try
+			{
+				var listener = new PixelCopyFinishedListener(tcs, bitmap);
+				PixelCopy.Request(window, rect, bitmap,
+					listener,
+					new Handler(Looper.MainLooper!));
+
+				try
+				{
+					return await tcs.Task.ConfigureAwait(true);
+				}
+				finally
+				{
+					GC.KeepAlive(listener);
+				}
+			}
+			catch (Exception)
+			{
+				bitmap.Dispose();
+				return null;
+			}
+		}
+
+		static Activity? GetActivity(Context? context)
+		{
+			while (context is ContextWrapper wrapper)
+			{
+				if (context is Activity activity)
+					return activity;
+				context = wrapper.BaseContext;
+			}
+			return context as Activity;
+		}
+
+		sealed class PixelCopyFinishedListener : Java.Lang.Object, PixelCopy.IOnPixelCopyFinishedListener
+		{
+			readonly TaskCompletionSource<Bitmap?> _tcs;
+			readonly Bitmap _bitmap;
+
+			public PixelCopyFinishedListener(TaskCompletionSource<Bitmap?> tcs, Bitmap bitmap)
+			{
+				_tcs = tcs;
+				_bitmap = bitmap;
+			}
+
+			public void OnPixelCopyFinished(int copyResult)
+			{
+				// PixelCopy.SUCCESS == 0
+				if (copyResult == 0)
+				{
+					_tcs.TrySetResult(_bitmap);
+				}
+				else
+				{
+					_bitmap.Dispose();
+					_tcs.TrySetResult(null);
+				}
+			}
+		}
+
+		static Bitmap? RenderUsingCanvasDrawing(View view)
 		{
 			try
 			{
@@ -67,7 +160,7 @@ namespace Microsoft.Maui.Media
 				var height = view.Height;
 
 				var bitmap = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
-				if (bitmap == null)
+				if (bitmap is null)
 					return null;
 
 				using (var canvas = new Canvas(bitmap))
@@ -81,7 +174,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		static Bitmap RenderUsingDrawingCache(View view)
+		static Bitmap? RenderUsingDrawingCache(View view)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CA1416 // Validate platform compatibility
