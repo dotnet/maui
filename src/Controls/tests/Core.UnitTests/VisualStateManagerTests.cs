@@ -141,16 +141,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GroupWithDuplicateNameReplacesExisting()
+		public void GroupNamesMustBeUniqueWithinGroupList()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
 			var secondGroup = new VisualStateGroup { Name = CommonStatesGroupName };
-			secondGroup.States.Add(new VisualState { Name = NormalStateName });
 
-			// Adding a group with the same name should replace the existing one, not throw
-			vsgs.Add(secondGroup);
-			Assert.Single(vsgs);
-			Assert.Same(secondGroup, vsgs[0]);
+			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
 		}
 
 		[Fact]

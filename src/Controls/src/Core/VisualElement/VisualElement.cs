@@ -1674,37 +1674,26 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			try
+			if (!IsEnabled)
 			{
-				if (!IsEnabled)
-				{
-					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
-				}
-				else
-				{
-					bool isSelected = this.IsElementInSelectedState();
-					string targetState = isSelected ? VisualStateManager.CommonStates.Selected
-													: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
-
-					VisualStateManager.GoToState(this, targetState);
-				}
-
-				if (IsEnabled)
-				{
-					// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-					// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-					// exits and the control still has focus.
-					VisualStateManager.GoToState(this,
-						IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
-				}
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
 			}
-			catch (InvalidOperationException)
+			else
 			{
-				// Swallow "PlatformView cannot be null here" thrown when a visual state cascade fans out
-				// during handler disconnect (e.g. on Windows: navigating away from a focused control runs
-				// UpdateIsFocused(false) inside DisconnectHandler -> ChangeVisualState -> VSM Setter ->
-				// mapper -> strongly-typed PlatformView accessor). The handler/PlatformView has already
-				// been released, so there is nothing for the mapper to update. See dotnet/maui#27101.
+				bool isSelected = this.IsElementInSelectedState();
+				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+
+				VisualStateManager.GoToState(this, targetState);
+			}
+
+			if (IsEnabled)
+			{
+				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+				// exits and the control still has focus.
+				VisualStateManager.GoToState(this,
+					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
 			}
 		}
 
@@ -2252,10 +2241,13 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				shadow.Parent = this;
+				SetInheritedBindingContext(shadow, BindingContext);
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
 				_shadowProxy.Subscribe(shadow, _shadowChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(shadow.OnParentResourcesChanged);
 			}
 		}
 
@@ -2265,13 +2257,10 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(shadow.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(shadow, null);
 				_shadowProxy?.Unsubscribe();
-
-				if (shadow.Parent == this)
-				{
-					shadow.Parent = null;
-				}
 			}
 		}
 

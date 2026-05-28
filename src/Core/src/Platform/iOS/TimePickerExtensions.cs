@@ -91,9 +91,7 @@ public static class TimePickerExtensions
 
 	public static void UpdateTextAlignment(this MauiTimePicker textField, ITimePicker timePicker)
 	{
-		UISemanticContentAttribute updateValue = textField.SemanticContentAttribute;
-
-		textField.TextAlignment = (updateValue == UISemanticContentAttribute.ForceRightToLeft) ? UITextAlignment.Right : UITextAlignment.Left;
+		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 	}
 
 	internal static void UpdateIsOpen(this UIDatePicker picker, ITimePicker timePicker)

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Platform
 		{
 			Action<Result, Intent> callback;
 
-			if (ActivityResultCallbacks.TryRemove(requestCode, out callback))
+			if (ActivityResultCallbacks.TryGetValue(requestCode, out callback))
 			{
 				callback(resultCode, data);
 			}

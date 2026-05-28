@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Controls
 	[TypeConverter(typeof(WebViewSourceTypeConverter))]
 	public abstract class WebViewSource : BindableObject, IWebViewSource
 	{
-		readonly WeakEventManager _weakEventManager = new WeakEventManager();
-
 		public static implicit operator WebViewSource(Uri url)
 		{
 			return new UrlWebViewSource { Url = url?.AbsoluteUri };
@@ -25,7 +23,9 @@ namespace Microsoft.Maui.Controls
 
 		protected void OnSourceChanged()
 		{
-			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(SourceChanged));
+			EventHandler eh = SourceChanged;
+			if (eh != null)
+				eh(this, EventArgs.Empty);
 		}
 
 		/// <summary>
@@ -35,11 +35,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public abstract void Load(IWebViewDelegate renderer);
 
-		internal event EventHandler SourceChanged
-		{
-			add { _weakEventManager.AddEventHandler(value); }
-			remove { _weakEventManager.RemoveEventHandler(value); }
-		}
+		internal event EventHandler SourceChanged;
 
 		private sealed class WebViewSourceTypeConverter : TypeConverter
 		{

@@ -60,7 +60,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				(ItemsSource.IsGroupFooter(position) || ItemsSource.IsGroupHeader(position)))
 			{
 				BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(position));
-				return;
 			}
 
 			base.OnBindViewHolder(holder, position);

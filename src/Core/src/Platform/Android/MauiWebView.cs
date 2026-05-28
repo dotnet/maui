@@ -1,7 +1,6 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics;
-using Android.Views;
 using Android.Webkit;
 
 namespace Microsoft.Maui.Platform
@@ -23,12 +22,8 @@ namespace Microsoft.Maui.Platform
 			_clipRect = new Rect(0, 0, 0, 0);
 			ClipBounds = _clipRect;
 
-			// Pre-register the JS bridge BEFORE any page loads.
-			// Android WebView only exposes addJavascriptInterface bindings for pages that
-			// start loading AFTER the call is made.  If Attach is deferred to
-			// OnAttachedToWindow, cold-start apps (e.g. the Sandbox) load their page before
-			// the view enters the window hierarchy, so the bridge is invisible to JS.
-			// Attach is idempotent, so later calls from OnAttachedToWindow are safe no-ops.
+			// Register the JS bridge before any page loads. Android only exposes
+			// addJavascriptInterface bindings to pages that start loading after the call.
 			RefreshViewWebViewScrollCapture.Attach(this);
 		}
 
@@ -59,9 +54,6 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// Not inside a RefreshView — remove the bridge that was pre-registered
-				// in the constructor so it is not exposed to untrusted page content
-				// loaded in standalone WebViews.
 				RefreshViewWebViewScrollCapture.Detach(this);
 			}
 		}
@@ -97,27 +89,6 @@ namespace Microsoft.Maui.Platform
 				_clipRect.Set(0, 0, 0, 0);
 				ClipBounds = _clipRect;
 			}
-		}
-
-		public override bool OnTouchEvent(MotionEvent? e)
-		{
-			if (e == null)
-				return false;
-
-			switch (e.Action)
-			{
-				case MotionEventActions.Down:
-				case MotionEventActions.Move:
-					Parent?.RequestDisallowInterceptTouchEvent(true);
-					break;
-
-				case MotionEventActions.Up:
-				case MotionEventActions.Cancel:
-					Parent?.RequestDisallowInterceptTouchEvent(false);
-					break;
-			}
-
-			return base.OnTouchEvent(e);
 		}
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
