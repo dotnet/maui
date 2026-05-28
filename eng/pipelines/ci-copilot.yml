@@ -1278,6 +1278,7 @@ stages:
                 # from running.
                 Write-Host "##vso[task.logissue type=warning]One or more deep UI test categories failed (see TRX in drop-deep-uitests artifact)"
               }
+              exit 0
             displayName: 'Run deep UI tests (per-category loop)'
             timeoutInMinutes: 220
 
@@ -1412,6 +1413,7 @@ stages:
 
               # Render the new STEP 3 section.
               $totalPassed = 0; $totalFailed = 0
+              $setupFailureCategories = 0; $setupImpactedTests = 0; $emptyCategories = 0
               $sb = [System.Text.StringBuilder]::new()
               [void]$sb.AppendLine()
               [void]$sb.AppendLine("### 🧪 UI Test Execution Results (deep, platform pool)")
@@ -1419,6 +1421,7 @@ stages:
               [void]$sb.AppendLine("| Category | Tests | Snapshot diffs |")
               [void]$sb.AppendLine("|---|---|---|")
               $perCategoryFailures = [ordered]@{}
+              $perCategorySetupFailures = [ordered]@{}
               foreach ($k in ($byCat.Keys | Sort-Object)) {
                 $b = $byCat[$k]
                 $totalPassed += [int]$b.Passed
@@ -1426,7 +1429,16 @@ stages:
                 $tCount = [int]$b.Total
                 $tPass  = [int]$b.Passed
                 $tFail  = [int]$b.Failed
-                $col = if ($tCount -eq 0) { '—' }
+                $isSetupFailure = ($b.ContainsKey('SetupFailure') -and [bool]$b.SetupFailure)
+                if ($isSetupFailure) {
+                  $setupFailureCategories++
+                  $setupImpactedTests += [int]$b.SetupFailureCount
+                }
+                if ($tCount -eq 0) {
+                  $emptyCategories++
+                }
+                $col = if ($tCount -eq 0) { '0 tests' }
+                       elseif ($isSetupFailure) { "$tPass/$tCount (setup failed; $tFail marked failed)" }
                        elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
                        else { "$tPass/$tCount ✓" }
                 # Count snapshot-diff PNGs we shipped in this artifact subdir
@@ -1441,6 +1453,15 @@ stages:
                 # Capture failed test entries from the parsed TRX so we can
                 # render a per-category disclosure section listing the actual
                 # failing test names + the first line of their error message.
+                if ($isSetupFailure) {
+                  $perCategorySetupFailures[$k] = [pscustomobject]@{
+                    Count          = [int]$b.SetupFailureCount
+                    Message        = $b.SetupFailureMessage -as [string]
+                    Stack          = $b.SetupFailureStack -as [string]
+                    SignatureCount = [int]$b.SetupFailureSignatureCount
+                  }
+                  continue
+                }
                 $catFailed = @()
                 foreach ($r in @($b.Results)) {
                   if ($r.status -eq 'Failed') {
@@ -1453,6 +1474,41 @@ stages:
                 }
                 if ($catFailed.Count -gt 0) {
                   $perCategoryFailures[$k] = $catFailed
+                }
+              }
+
+              # Fixture setup failures usually mark every test in the fixture as
+              # failed even though no individual test body ran. Render one
+              # representative setup error instead of dozens of duplicate tests.
+              if ($perCategorySetupFailures.Count -gt 0) {
+                [void]$sb.AppendLine()
+                foreach ($cat in $perCategorySetupFailures.Keys) {
+                  $info = $perCategorySetupFailures[$cat]
+                  $setupCount = [int]$info.Count
+                  $setupTestText = if ($setupCount -eq 1) { '1 test' } else { "$setupCount tests" }
+                  [void]$sb.AppendLine("<details><summary>⚠️ <code>$cat</code> — fixture setup failed for $setupTestText</summary>")
+                  [void]$sb.AppendLine("<br/>")
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("NUnit reported a `OneTimeSetUp`/fixture setup failure before test bodies ran; the TRX marked each affected test failed.")
+                  if ([int]$info.SignatureCount -gt 1) {
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("_Multiple setup failure signatures were present; showing the first one. See the TRX artifact for all details._")
+                  }
+                  $errText = if (-not [string]::IsNullOrWhiteSpace($info.Message)) { $info.Message.Trim() } else { '' }
+                  $stackText = if (-not [string]::IsNullOrWhiteSpace($info.Stack)) { $info.Stack.Trim() } else { '' }
+                  $combined = $errText
+                  if ($stackText) { $combined = $combined + [Environment]::NewLine + $stackText }
+                  if ($combined.Length -gt 1500) { $combined = $combined.Substring(0, 1500) + [Environment]::NewLine + '...' }
+                  if ($combined) {
+                    [void]$sb.AppendLine()
+                    $fence = [string]::new([char]96, 3)
+                    [void]$sb.AppendLine($fence)
+                    [void]$sb.AppendLine($combined)
+                    [void]$sb.AppendLine($fence)
+                  }
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("</details>")
+                  [void]$sb.AppendLine()
                 }
               }
 
@@ -1503,7 +1559,23 @@ stages:
               [void]$sb.AppendLine()
 
               $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
-              $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $($byCat.Count) categor$(if ($byCat.Count -eq 1) {'y'} else {'ies'}) on platform-pool agent (replaces in-process counts above)."
+              $categoryText = if ($byCat.Count -eq 1) { '1 category' } else { "$($byCat.Count) categories" }
+              $regularFailed = [Math]::Max(0, $totalFailed - $setupImpactedTests)
+              if ($setupFailureCategories -gt 0) {
+                $setupCategoryText = if ($setupFailureCategories -eq 1) { '1 category setup failure' } else { "$setupFailureCategories category setup failures" }
+                $setupImpactedText = if ($setupImpactedTests -eq 1) { '1 impacted test' } else { "$setupImpactedTests impacted tests" }
+                if ($regularFailed -eq 0) {
+                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed; $setupCategoryText ($setupImpactedText marked failed by TRX) across $categoryText on platform-pool agent (replaces in-process counts above)."
+                } else {
+                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed, plus $setupCategoryText ($setupImpactedText marked failed by TRX) across $categoryText on platform-pool agent (replaces in-process counts above)."
+                }
+              } else {
+                $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $categoryText on platform-pool agent (replaces in-process counts above)."
+              }
+              if ($emptyCategories -gt 0) {
+                $emptyText = if ($emptyCategories -eq 1) { '1 category reported 0 tests.' } else { "$emptyCategories categories reported 0 tests." }
+                $headerLine = "$headerLine $emptyText"
+              }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
