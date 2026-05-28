@@ -18,6 +18,30 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Same(DatePickerHandler.CommandMapper, handler._commandMapper);
 		}
 
+		[Fact(DisplayName = "Focus Opens DatePicker When Virtual Focus Is Stale")]
+		public async Task FocusOpensDatePickerWhenVirtualFocusIsStale()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = new DateTime(2026, 5, 20),
+				Width = 200,
+				Height = 44
+			};
+
+			await AttachAndRun<DatePickerHandler>(datePicker, async handler =>
+			{
+				datePicker.IsFocused = true;
+				datePicker.IsOpen = false;
+
+				var focusResult = handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+
+				Assert.True(focusResult);
+				await AssertEventually(
+					() => datePicker.IsFocused && datePicker.IsOpen,
+					message: "DatePicker focus did not open when virtual focus was stale.");
+			});
+		}
+
 		[Fact(DisplayName = "Focus Can Be Repeated After Unfocus")]
 		public async Task FocusCanBeRepeatedAfterUnfocus()
 		{
