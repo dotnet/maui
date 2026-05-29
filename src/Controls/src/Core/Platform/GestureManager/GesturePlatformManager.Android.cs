@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -79,13 +79,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var eventConsumed = false;
-			if (ViewHasPinchGestures())
+
+			bool hasPinchGestures = ViewHasPinchGestures();
+
+			if (hasPinchGestures)
 			{
 				eventConsumed = _scaleDetector.Value.OnTouchEvent(e);
 			}
 
-			if (!ViewHasPinchGestures() || !_scaleDetector.Value.IsInProgress)
+			if (!hasPinchGestures || !_scaleDetector.Value.IsInProgress)
+			{
 				eventConsumed = _tapAndPanAndSwipeDetector.Value.OnTouchEvent(e) || eventConsumed;
+			}
 
 			return eventConsumed;
 		}
@@ -182,7 +187,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SetupGestures()
 		{
-			if (View == null)
+			var view = View;
+			if (view is null)
 				return;
 
 			var platformView = Control;
@@ -192,45 +198,27 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool shouldAddTouchEvent = false;
 
-			// This change is probably not 100 percent correct.
-			// The main purpose right now is to maintain the behavior of this code
-			// prior to this change
-			// https://github.com/dotnet/maui/commit/2c301d7988a06c3b41c2992bbee557aca04c9388#diff-2d78f02242798d0f2863f679e4dfdee230944be37db5e1a1446bfa4c6c43a5c6R183
-			// If the only CompositeGestureRecognizers is a PointerGestureRecognizer
-			//
-			// Most likely we should just not subscribe to Touch at all if the only gesture is a PGR
-			// But that will be re-evaluated for preview6
-			if (View.GestureRecognizers.Count == 0)
+			var recognizers = view.GestureController?.CompositeGestureRecognizers;
+
+			if (recognizers != null)
 			{
-				var recognizers = View.GestureController.CompositeGestureRecognizers;
-				foreach (var recognizer in recognizers)
+				int count = recognizers.Count;
+				for (int i = 0; i < count; i++)
 				{
-					if (recognizer is not PointerGestureRecognizer)
+					if (recognizers[i] is not PointerGestureRecognizer)
 					{
 						shouldAddTouchEvent = true;
 						break;
 					}
 				}
 			}
-			else
-			{
-				shouldAddTouchEvent = true;
-			}
 
-			// Always unsubscribe first to avoid duplicates
 			ClearRecyclerViewTouchListener(platformView);
 			platformView.Touch -= OnPlatformViewTouched;
 			platformView.KeyPress -= OnKeyPress;
 
-
 			if (shouldAddTouchEvent)
 			{
-				// For RecyclerView-based views (e.g., CollectionView), use AddOnItemTouchListener
-				// instead of the Touch event. Child item views (made clickable by SelectableViewHolder's
-				// SetOnClickListener) consume touch events, preventing them from reaching the
-				// Touch event handler. OnItemTouchListener.OnInterceptTouchEvent fires BEFORE children
-				// get the event, ensuring TapGestureRecognizers on the CollectionView receive
-				// all touch events regardless of child handling.
 				if (platformView is RecyclerView recyclerView)
 				{
 					_recyclerViewTouchListener = new GestureItemTouchListener(this);
@@ -241,8 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 					platformView.Touch += OnPlatformViewTouched;
 				}
 
-				// If we have a TapGestureRecognizer, we need to handle key presses
-				if (View.HasAccessibleTapGesture())
+				if (view.HasAccessibleTapGesture())
 				{
 					platformView.KeyPress += OnKeyPress;
 					_focusableDefaultValue ??= platformView.Focusable;
@@ -424,6 +411,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_isEnabled = Element.IsEnabled;
 		}
 
+		
+		
 		void ClearRecyclerViewTouchListener(AView platformView)
 		{
 			if (_recyclerViewTouchListener is not null && platformView is RecyclerView recyclerView)
