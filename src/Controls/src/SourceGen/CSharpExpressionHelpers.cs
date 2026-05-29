@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -181,8 +183,12 @@ static class CSharpExpressionHelpers
 		var colonIndex = identifier.IndexOf(':');
 		if (colonIndex >= 0)
 		{
-			// Any prefix:Name pattern is a markup extension (custom or known)
-			// C# doesn't use this syntax, so it's safe to treat as markup
+			// If prefix:Name is followed by '.', it's a type reference in an expression
+			// (e.g., {local:Helper.GetValue()} or {this.(ios:Page.Prop)}), not a markup extension
+			if (end < trimmed.Length && trimmed[end] == '.')
+				return false;
+
+			// Otherwise, prefix:Name is a markup extension (custom or known)
 			return true;
 		}
 
@@ -888,5 +894,68 @@ static class CSharpExpressionHelpers
 	{
 		// Use same extraction as expressions
 		return GetExpressionCode(value);
+	}
+
+	// Pattern to match xmlns prefix usage: prefix:TypeName (not at start of expression where it's a markup ext)
+	static readonly Regex XmlnsPrefixPattern = new Regex(
+		@"(?<![a-zA-Z0-9_])([a-zA-Z_]\w*):([A-Z]\w*)",
+		RegexOptions.Compiled);
+
+	/// <summary>
+	/// Resolves xmlns prefixes in expression code to fully qualified CLR type names.
+	/// E.g., "local:ExprHelper.GetValue()" → "Microsoft.Maui.Controls.Xaml.UnitTests.ExprHelper.GetValue()"
+	/// </summary>
+	public static string ResolveXmlnsPrefixes(string code, IXmlNamespaceResolver nsResolver, SourceGenContext context)
+	{
+		return XmlnsPrefixPattern.Replace(code, match =>
+		{
+			var prefix = match.Groups[1].Value;
+			var typeName = match.Groups[2].Value;
+
+			// Skip the "x" prefix (x:Static, etc.) and known C# patterns
+			if (prefix == "x" || prefix == "global")
+				return match.Value;
+
+			var namespaceUri = nsResolver.LookupNamespace(prefix);
+			if (namespaceUri == null)
+				return match.Value;
+
+			// Resolve to CLR type
+			var xmlType = new XmlType(namespaceUri, typeName, null);
+			if (xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol))
+			{
+				return $"global::{typeSymbol!.ContainingNamespace}.{typeName}";
+			}
+
+			return match.Value;
+		});
+	}
+
+	// Pattern to match attached bindable property syntax: target.(Type.Property) or standalone (Type.Property)
+	static readonly Regex AttachedPropertyPattern = new Regex(
+		@"(?:(\w+)\.)?\(([A-Z]\w*)\.(\w+)\)",
+		RegexOptions.Compiled);
+
+	/// <summary>
+	/// Transforms attached bindable property syntax to static Get method calls.
+	/// E.g., "gridChild.(Grid.Row)" → "Grid.GetRow(gridChild)"
+	/// E.g., "this.(Grid.Row)" → "Grid.GetRow(this)"
+	/// </summary>
+	public static string TransformAttachedProperties(string code)
+	{
+		return AttachedPropertyPattern.Replace(code, match =>
+		{
+			var target = match.Groups[1].Value; // "gridChild", "this", or empty
+			var typeName = match.Groups[2].Value; // "Grid"
+			var propertyName = match.Groups[3].Value; // "Row"
+
+			if (string.IsNullOrEmpty(target))
+			{
+				// Standalone (Type.Prop) — source will be determined by expression analyzer
+				return $"{typeName}.Get{propertyName}(__source)";
+			}
+
+			return $"{typeName}.Get{propertyName}({target})";
+		});
 	}
 }
