@@ -65,5 +65,129 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+		// ── ComputeSafeArea unit tests (Issue #35410) ──────────────────────────────────
+		// These tests call the static helper directly with controlled inputs, verifying
+		// that each CIAB mode picks the correct edge ownership without requiring a live
+		// UIScrollView or a notch device.
+
+		[Fact]
+		public void ComputeSafeArea_Never_UsesDeviceInsetForAllEdges()
+		{
+			// landscape-left scenario: notch is on the left
+			var aci = new UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0);
+			var deviceInset = new UIEdgeInsets(top: 20, left: 44, bottom: 0, right: 0);
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Never,
+				deviceInset);
+
+			Assert.Equal(44, result.Left);
+			Assert.Equal(20, result.Top);
+			Assert.Equal(0, result.Bottom);
+			Assert.Equal(0, result.Right);
+		}
+
+		[Fact]
+		public void ComputeSafeArea_Automatic_AciZero_UsesDeviceInset()
+		{
+			var aci = UIEdgeInsets.Zero;
+			var deviceInset = new UIEdgeInsets(top: 20, left: 44, bottom: 0, right: 0);
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Automatic,
+				deviceInset);
+
+			Assert.Equal(44, result.Left);
+			Assert.Equal(20, result.Top);
+		}
+
+		[Fact]
+		public void ComputeSafeArea_Automatic_LandscapeLeft_UsesDeviceInsetForHorizontal()
+		{
+			// In landscape-left with CIAB.Automatic:
+			//   UIKit does NOT add left/right to ACI → SACI.Left = 0
+			//   but device SafeAreaInsets.Left = 44 (notch)
+			var aci = new UIEdgeInsets(top: 20, left: 0, bottom: 0, right: 0); // UIKit-reported
+			var deviceInset = new UIEdgeInsets(top: 20, left: 44, bottom: 0, right: 0); // actual notch
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Automatic,
+				deviceInset);
+
+			// Left must come from deviceInset (44), not aci (0) — this is the bug fix
+			Assert.Equal(44, result.Left);
+			Assert.Equal(0, result.Right);
+			// Top/Bottom come from aci (UIKit-owned)
+			Assert.Equal(20, result.Top);
+			Assert.Equal(0, result.Bottom);
+		}
+
+		[Fact]
+		public void ComputeSafeArea_Automatic_LandscapeRight_UsesDeviceInsetForRight()
+		{
+			var aci = new UIEdgeInsets(top: 20, left: 0, bottom: 0, right: 0);
+			var deviceInset = new UIEdgeInsets(top: 20, left: 0, bottom: 0, right: 44);
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Automatic,
+				deviceInset);
+
+			Assert.Equal(0, result.Left);
+			Assert.Equal(44, result.Right);
+			Assert.Equal(20, result.Top);
+		}
+
+		[Fact]
+		public void ComputeSafeArea_Always_UsesAciForAllEdges()
+		{
+			// With CIAB.Always UIKit puts left/right into ACI, so SACI.Left == SafeAreaInsets.Left
+			var aci = new UIEdgeInsets(top: 20, left: 44, bottom: 0, right: 0);
+			var deviceInset = new UIEdgeInsets(top: 20, left: 44, bottom: 0, right: 0);
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Always,
+				deviceInset);
+
+			Assert.Equal(44, result.Left);
+			Assert.Equal(20, result.Top);
+		}
+
+		[Fact]
+		public void ComputeSafeArea_Always_AciZero_UsesDeviceInset()
+		{
+			var aci = UIEdgeInsets.Zero;
+			var deviceInset = new UIEdgeInsets(top: 20, left: 44, bottom: 0, right: 0);
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Always,
+				deviceInset);
+
+			Assert.Equal(44, result.Left);
+			Assert.Equal(20, result.Top);
+		}
+
+		[Fact]
+		public void ComputeSafeArea_Automatic_Portrait_NoNotchEdge()
+		{
+			var aci = new UIEdgeInsets(top: 44, left: 0, bottom: 34, right: 0);
+			var deviceInset = new UIEdgeInsets(top: 44, left: 0, bottom: 34, right: 0);
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Automatic,
+				deviceInset);
+
+			Assert.Equal(0, result.Left);
+			Assert.Equal(0, result.Right);
+			Assert.Equal(44, result.Top);
+			Assert.Equal(34, result.Bottom);
+		}
 	}
 }
