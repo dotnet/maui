@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using ARect = Android.Graphics.Rect;
+using AView = Android.Views.View;
 using AViewCompat = AndroidX.Core.View.ViewCompat;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -615,7 +616,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			readonly MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> _owner;
 			readonly int[] _targetLocation = new int[2];
 			MotionEvent _downEvent;
-			global::Android.Views.View _parentScrollTarget;
+			AView _parentScrollTarget;
 			float _touchStartX;
 			float _touchStartY;
 			int? _scaledTouchSlop;
@@ -732,7 +733,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return true;
 			}
 
-			global::Android.Views.View FindParentScrollTarget(MotionEvent e, bool recyclerViewScrollsHorizontally)
+			AView FindParentScrollTarget(MotionEvent e, bool recyclerViewScrollsHorizontally)
 			{
 				var scrollDirection = recyclerViewScrollsHorizontally
 					? Math.Sign(_touchStartY - e.RawY)
@@ -747,7 +748,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				while (parent is not null)
 				{
-					if (parent is global::Android.Views.View view)
+					if (parent is AView view)
 					{
 						var canScroll = recyclerViewScrollsHorizontally
 							? view.CanScrollVertically(scrollDirection)
