@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		EmptyViewAdapter _emptyViewAdapter;
 		readonly DataChangeObserver _emptyCollectionObserver;
 		readonly DataChangeObserver _itemsUpdateScrollObserver;
+		readonly Func<MotionEvent, bool> _dispatchTouchEventToRecyclerView;
 		ParentScrollGestureDispatcher _parentScrollGestureDispatcher;
 
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = ScrollBarVisibility.Default;
@@ -59,6 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
+			_dispatchTouchEventToRecyclerView = DispatchTouchEventToRecyclerView;
 			_parentScrollGestureDispatcher = new ParentScrollGestureDispatcher(this);
 		}
 
@@ -550,6 +552,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return base.OnTouchEvent(e);
 		}
 
+		bool DispatchTouchEventToRecyclerView(MotionEvent e) => base.DispatchTouchEvent(e);
+
 		public override bool DispatchTouchEvent(MotionEvent e)
 		{
 			if (ItemsView?.IsEnabled == false && !ItemsView.IsExplicitlyEnabled)
@@ -557,7 +561,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return base.DispatchTouchEvent(e);
 			}
 
-			if (_parentScrollGestureDispatcher?.TryDispatchToParent(e, touchEvent => base.DispatchTouchEvent(touchEvent), out var handled) == true)
+			if (_parentScrollGestureDispatcher?.TryDispatchToParent(e, _dispatchTouchEventToRecyclerView, out var handled) == true)
 			{
 				return handled;
 			}
@@ -620,7 +624,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			float _touchStartX;
 			float _touchStartY;
 			int? _scaledTouchSlop;
-			bool _forwardingToParent;
+			GestureOwner _gestureOwner;
 
 			public ParentScrollGestureDispatcher(MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> owner)
 			{
@@ -631,7 +635,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				handled = false;
 
-				if (_forwardingToParent)
+				if (_gestureOwner == GestureOwner.Parent)
 				{
 					ForwardToParent(e);
 
@@ -642,6 +646,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 					handled = true;
 					return true;
+				}
+
+				if (_gestureOwner == GestureOwner.RecyclerView)
+				{
+					if (IsTouchEnd(e))
+					{
+						Reset();
+					}
+
+					return false;
 				}
 
 				switch (e.ActionMasked)
@@ -707,6 +721,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (movesInOwnScrollDirection)
 				{
+					_gestureOwner = GestureOwner.RecyclerView;
 					_owner.Parent?.RequestDisallowInterceptTouchEvent(_owner.CanHandleOwnScrollDirection);
 					return false;
 				}
@@ -719,7 +734,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				_parentScrollTarget = target;
-				_forwardingToParent = true;
+				_gestureOwner = GestureOwner.Parent;
 				_owner.Parent?.RequestDisallowInterceptTouchEvent(false);
 				CancelRecyclerViewGesture(e, dispatchToRecyclerView);
 
@@ -806,7 +821,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_owner.Parent?.RequestDisallowInterceptTouchEvent(false);
 				_parentScrollTarget = null;
-				_forwardingToParent = false;
+				_gestureOwner = GestureOwner.Undecided;
 
 				if (_downEvent is not null)
 				{
@@ -819,6 +834,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			static bool IsTouchEnd(MotionEvent e) =>
 				e.ActionMasked == MotionEventActions.Up || e.ActionMasked == MotionEventActions.Cancel;
+
+			enum GestureOwner
+			{
+				Undecided,
+				RecyclerView,
+				Parent
+			}
 		}
 
 		internal void UpdateEmptyViewVisibility()
