@@ -93,10 +93,31 @@ internal static class LayoutFactory2
 		//create global header and footer
 		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, layoutHeaderFooterInfo, (sectionIndex, environment) =>
+		CustomUICollectionViewCompositionalLayout? layout = null;
+		layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, layoutHeaderFooterInfo, (sectionIndex, environment) =>
 		{
+			var effectiveItemHeight = itemHeight;
+			var effectiveGroupHeight = groupHeight;
+			var effectiveItemWidth = itemWidth;
+			var effectiveGroupWidth = groupWidth;
+
+			if (layout?.MeasuredEstimatedItemSize is nfloat measuredSize)
+			{
+				var estimatedDimension = NSCollectionLayoutDimension.CreateEstimated(measuredSize);
+				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+				{
+					effectiveItemHeight = estimatedDimension;
+					effectiveGroupHeight = estimatedDimension;
+				}
+				else
+				{
+					effectiveItemWidth = estimatedDimension;
+					effectiveGroupWidth = estimatedDimension;
+				}
+			}
+
 			// Each item has a size
-			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
+			var itemSize = NSCollectionLayoutSize.Create(effectiveItemWidth, effectiveItemHeight);
 			// Create the item itself from the size
 			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
 
@@ -105,16 +126,16 @@ internal static class LayoutFactory2
 				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
 				{
 					var newGroupHeight = environment.Container.ContentSize.Height - peekAreaInsets.Top - peekAreaInsets.Bottom;
-					groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
+					effectiveGroupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
 				}
 				else
 				{
 					var newGroupWidth = environment.Container.ContentSize.Width - peekAreaInsets.Left - peekAreaInsets.Right;
-					groupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
+					effectiveGroupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
 				}
 			}
 			// Each group of items (for grouped collections) has a size
-			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
+			var groupSize = NSCollectionLayoutSize.Create(effectiveGroupWidth, effectiveGroupHeight);
 
 			// Create the group
 			// If vertical list, we want the group to layout horizontally (eg: grid columns go left to right)
@@ -155,15 +176,36 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
-		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
+		CustomUICollectionViewCompositionalLayout? layout = null;
+		layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
 		{
+			var effectiveItemHeight = itemHeight;
+			var effectiveGroupHeight = groupHeight;
+			var effectiveItemWidth = itemWidth;
+			var effectiveGroupWidth = groupWidth;
+
+			if (layout?.MeasuredEstimatedItemSize is nfloat measuredSize)
+			{
+				var estimatedDimension = NSCollectionLayoutDimension.CreateEstimated(measuredSize);
+				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+				{
+					effectiveItemHeight = estimatedDimension;
+					effectiveGroupHeight = estimatedDimension;
+				}
+				else
+				{
+					effectiveItemWidth = estimatedDimension;
+					effectiveGroupWidth = estimatedDimension;
+				}
+			}
+
 			// Each item has a size
-			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
+			var itemSize = NSCollectionLayoutSize.Create(effectiveItemWidth, effectiveItemHeight);
 			// Create the item itself from the size
 			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
 
 			// Each group of items (for grouped collections) has a size
-			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
+			var groupSize = NSCollectionLayoutSize.Create(effectiveGroupWidth, effectiveGroupHeight);
 
 			// Create the group
 			// If vertical list, we want the group to layout horizontally (eg: grid columns go left to right)
@@ -497,12 +539,16 @@ internal static class LayoutFactory2
 			return false;
 		}
 	}
-	class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
+	internal class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;
 		ItemsLayout? _itemsLayout;
 		LayoutGroupingInfo? _groupingInfo;
 		LayoutHeaderFooterInfo? _headerFooterInfo;
+
+		// Tracks actual measured item size so the section provider can use it
+		// instead of the hardcoded estimated=30 after cells have been measured.
+		internal nfloat? MeasuredEstimatedItemSize { get; set; }
 
 		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout) : base(sectionProvider, configuration)
 		{

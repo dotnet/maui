@@ -251,6 +251,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				handler.SetCachedFirstItemSize(CoreGraphics.CGSize.Empty);
 			}
 
+			// Reset measured estimated item size so the section provider
+			// uses fresh measurements from the new data
+			if (CollectionView.CollectionViewLayout is LayoutFactory2.CustomUICollectionViewCompositionalLayout compLayout)
+			{
+				compLayout.MeasuredEstimatedItemSize = null;
+			}
+
 			CollectionView.ReloadData();
 		}
 

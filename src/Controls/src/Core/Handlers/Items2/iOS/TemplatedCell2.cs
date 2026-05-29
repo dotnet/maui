@@ -126,6 +126,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 							// If this is the first item being measured, cache it for MeasureFirstItem strategy
 							SetCachedFirstItemSizeToHandler(_measuredSize.ToCGSize());
 						}
+
+						UpdateLayoutEstimatedItemSize();
 					}
 					else
 					{
@@ -174,6 +176,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		private void SetCachedFirstItemSizeToHandler(CGSize size)
 		{
 			CollectionViewHandler?.SetCachedFirstItemSize(size);
+		}
+
+		/// <summary>
+		/// Updates the layout's estimated item size with the actual measured size.
+		/// Called once after the first non-supplementary cell is measured, so that
+		/// subsequent section provider calls use a realistic estimate instead of
+		/// the hardcoded 30px default.
+		/// </summary>
+		private void UpdateLayoutEstimatedItemSize()
+		{
+			if (CollectionViewHandler?.Controller?.CollectionView?.CollectionViewLayout
+				is LayoutFactory2.CustomUICollectionViewCompositionalLayout compLayout
+				&& compLayout.MeasuredEstimatedItemSize is null)
+			{
+				var measuredDimension = ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? (nfloat)_measuredSize.Height
+					: (nfloat)_measuredSize.Width;
+
+				if (measuredDimension > 0 && !nfloat.IsNaN(measuredDimension) && !nfloat.IsInfinity(measuredDimension))
+				{
+					compLayout.MeasuredEstimatedItemSize = measuredDimension;
+				}
+			}
 		}
 
 		public override void LayoutSubviews()
