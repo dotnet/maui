@@ -108,8 +108,8 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			datePickerHandler.SyncOpenState(shouldBeOpen: true, refreshIfAlreadyFirstResponder: !datePicker.IsOpen);
-			request.TrySetResult(true);
+			var didOpen = datePickerHandler.SyncOpenState(shouldBeOpen: true, refreshIfAlreadyFirstResponder: !datePicker.IsOpen);
+			request.TrySetResult(didOpen);
 		}
 
 		static void MapMacCatalystUnfocus(IViewHandler handler, IView view, object? args)
@@ -120,29 +120,43 @@ namespace Microsoft.Maui.Handlers
 			datePickerHandler.SyncOpenState(shouldBeOpen: false, refreshIfAlreadyFirstResponder: false);
 		}
 
-		void SyncOpenState(bool shouldBeOpen, bool refreshIfAlreadyFirstResponder)
+		bool SyncOpenState(bool shouldBeOpen, bool refreshIfAlreadyFirstResponder)
 		{
 			if (_syncingOpenState)
-				return;
+				return PlatformView.IsFirstResponder;
 
 			_syncingOpenState = true;
 			try
 			{
 				var platformView = PlatformView;
+				bool actualOpen;
 				if (shouldBeOpen)
 				{
 					if (platformView.IsFirstResponder && refreshIfAlreadyFirstResponder)
 						platformView.ResignFirstResponder();
 
+					var didBecomeFirstResponder = platformView.IsFirstResponder;
 					if (!platformView.IsFirstResponder)
-						platformView.BecomeFirstResponder();
+						didBecomeFirstResponder = platformView.BecomeFirstResponder();
+
+					// Stock UIDatePicker on MacCatalyst does not reliably report first-responder
+					// state from a programmatic open request; custom platform views use native results.
+					var canAssumeStockPickerOpened = platformView.GetType() == typeof(UIDatePicker) &&
+						platformView.Enabled &&
+						platformView.UserInteractionEnabled;
+
+					actualOpen = platformView.IsFirstResponder || didBecomeFirstResponder || canAssumeStockPickerOpened;
 				}
-				else if (platformView.IsFirstResponder)
+				else
 				{
-					platformView.ResignFirstResponder();
+					if (platformView.IsFirstResponder)
+						platformView.ResignFirstResponder();
+
+					actualOpen = platformView.IsFirstResponder;
 				}
 
-				SetVirtualOpenState(shouldBeOpen);
+				SetVirtualOpenState(actualOpen);
+				return actualOpen;
 			}
 			finally
 			{

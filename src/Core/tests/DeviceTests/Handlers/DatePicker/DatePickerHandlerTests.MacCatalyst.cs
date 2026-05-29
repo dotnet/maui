@@ -1,7 +1,9 @@
 #if MACCATALYST
 using System;
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Maui.DeviceTests.Stubs;
+using UIKit;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -105,6 +107,43 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Native Focus Refusal Keeps DatePicker Closed")]
+		public async Task NativeFocusRefusalKeepsDatePickerClosed()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = new DateTime(2026, 5, 20),
+				Width = 200,
+				Height = 44
+			};
+
+			DatePickerHandler.PlatformViewFactory = _ => new NonFocusableDatePicker();
+
+			try
+			{
+				await AttachAndRun<DatePickerHandler>(datePicker, async handler =>
+				{
+					var focusResult = handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+
+					Assert.False(focusResult);
+					Assert.False(handler.PlatformView.IsFirstResponder);
+					Assert.False(datePicker.IsFocused);
+					Assert.False(datePicker.IsOpen);
+
+					datePicker.IsOpen = true;
+					handler.UpdateValue(nameof(IDatePicker.IsOpen));
+
+					await AssertEventually(
+						() => !handler.PlatformView.IsFirstResponder && !datePicker.IsFocused && !datePicker.IsOpen,
+						message: "DatePicker should remain closed when native focus is refused.");
+				});
+			}
+			finally
+			{
+				DatePickerHandler.PlatformViewFactory = null;
+			}
+		}
+
 		static async Task AssertFocusCycle(DatePickerStub datePicker, DatePickerHandler handler)
 		{
 			var focusResult = handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
@@ -129,6 +168,19 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertEventually(
 				() => datePicker.IsFocused == isOpen && datePicker.IsOpen == isOpen,
 				message: $"DatePicker did not update focused/open state to {isOpen}.");
+		}
+
+		class NonFocusableDatePicker : UIDatePicker
+		{
+			public NonFocusableDatePicker()
+			{
+				Mode = UIDatePickerMode.Date;
+				TimeZone = new NSTimeZone("UTC");
+			}
+
+			public override bool CanBecomeFirstResponder => false;
+
+			public override bool BecomeFirstResponder() => false;
 		}
 	}
 }
