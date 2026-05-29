@@ -361,23 +361,24 @@ internal static class LayoutFactory2
 					return;
 				}
 
-				// Calculate page index accounting for ItemSpacing
+				// Calculate page index accounting for ItemSpacing on the active axis.
 				var itemSpacing = itemsView.ItemsLayout is LinearItemsLayout linearLayout ? linearLayout.ItemSpacing : 0;
+				var effectivePageSize = (isHorizontal
+					? env.Container.ContentSize.Width
+					: env.Container.ContentSize.Height) - sectionMargin * 2 + itemSpacing;
 
-				var effectiveItemWidth = env.Container.ContentSize.Width - sectionMargin * 2 + itemSpacing;
-
-				if (effectiveItemWidth <= 0)
+				if (effectivePageSize <= 0)
 				{
 					return;
 				}
 
 				var pageOffset = isHorizontal ? offset.X : offset.Y;
-				var pageSize = isHorizontal
-					? env.Container.ContentSize.Width
-					: env.Container.ContentSize.Height;
-				double page = (pageOffset + sectionMargin) / effectiveItemWidth;
+				double page = (pageOffset + sectionMargin) / effectivePageSize;
 
-				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
+				// Vertical: Scroll stops wherever touch is released (no auto-centering), so use 0.1 (10%) threshold
+				//           to accept positions near page boundaries where scroll naturally settles
+				double pageThreshold = isHorizontal ? (double.Epsilon * 100) : 0.1;
+				if (Math.Abs(page % 1) > pageThreshold || cv2Controller.ItemsSource.ItemCount <= 0)
 				{
 					return;
 				}
