@@ -540,7 +540,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			// Mirrors the same logic in KnownMarkups.ProvideValueForBindingExtension (SourceGen).
 			bool xDataTypeIsOnBindingNode = n == node;
 			if (HasRelativeOrReferenceSource(node) && !xDataTypeIsOnBindingNode)
+			{
 				return false;
+			}
 
 			if (xDataTypeIsInOuterScope)
 			{
@@ -661,7 +663,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode)
 					&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
+				{
 					return false;
+				}
 
 				return sourceNode is ElementNode sourceElementNode
 					&& sourceElementNode.XmlType.Name is "RelativeSourceExtension"
