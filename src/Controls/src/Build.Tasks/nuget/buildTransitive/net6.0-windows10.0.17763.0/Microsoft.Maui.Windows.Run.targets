@@ -1,0 +1,82 @@
+<Project>
+
+	<!--
+	***********************************************************************************************
+	Microsoft.Maui.Windows.Run.targets
+
+	Enables 'dotnet run' for MSIX-packaged .NET MAUI Windows apps.
+
+	Implements the extensibility points from the dotnet-run-for-maui spec:
+	  - DeployToDevice: Registers the MSIX package from the loose file layout
+	  - ComputeRunArguments: Sets RunCommand/RunArguments to activate the packaged app
+
+	See: https://github.com/dotnet/sdk/blob/main/documentation/specs/dotnet-run-for-maui.md
+	***********************************************************************************************
+	-->
+
+	<PropertyGroup Condition="'$(WindowsPackageType)' == 'MSIX'">
+		<!--
+			Path to the run tool DLL, placed alongside this .targets file.
+			Invoked via 'dotnet exec' so it runs on any architecture (x64/ARM64).
+		-->
+		<_MauiWindowsRunToolPath Condition="'$(_MauiWindowsRunToolPath)' == ''">$(MSBuildThisFileDirectory)Microsoft.Maui.Windows.Run.dll</_MauiWindowsRunToolPath>
+		<!-- Use the SDK's dotnet host when available, fall back to PATH -->
+		<_MauiDotNetHostPath Condition="'$(DOTNET_HOST_PATH)' != ''">$(DOTNET_HOST_PATH)</_MauiDotNetHostPath>
+		<_MauiDotNetHostPath Condition="'$(_MauiDotNetHostPath)' == ''">dotnet</_MauiDotNetHostPath>
+	</PropertyGroup>
+
+	<!--
+	***********************************************************************************************
+	_ComputeWindowsMsixRunProperties
+
+	Helper target to locate the AppxManifest.xml from the build output.
+	***********************************************************************************************
+	-->
+	<Target Name="_ComputeWindowsMsixRunProperties"
+			Condition="'$(WindowsPackageType)' == 'MSIX'">
+		<PropertyGroup>
+			<_MsixAppxManifestPath Condition="'$(_MsixAppxManifestPath)' == ''">$(TargetDir)AppxManifest.xml</_MsixAppxManifestPath>
+		</PropertyGroup>
+
+		<Error Condition="!Exists('$(_MauiWindowsRunToolPath)')"
+			   Text="Microsoft.Maui.Windows.Run tool not found at '$(_MauiWindowsRunToolPath)'. Build the build tasks first: dotnet build Microsoft.Maui.BuildTasks.slnf" />
+
+		<Error Condition="!Exists('$(_MsixAppxManifestPath)')"
+			   Text="AppxManifest.xml not found at '$(_MsixAppxManifestPath)'. Build the project first." />
+	</Target>
+
+	<!--
+	***********************************************************************************************
+	DeployToDevice
+
+	Registers the MSIX package from the loose file layout using PackageManager API.
+	Called by 'dotnet run' during the deploy step. Runs even with no-build.
+	Requires Windows Developer Mode to be enabled.
+	***********************************************************************************************
+	-->
+	<Target Name="DeployToDevice"
+			Condition="'$(WindowsPackageType)' == 'MSIX'"
+			DependsOnTargets="_ComputeWindowsMsixRunProperties">
+		<Exec Command="&quot;$(_MauiDotNetHostPath)&quot; exec &quot;$(_MauiWindowsRunToolPath)&quot; register --manifest &quot;$(_MsixAppxManifestPath)&quot;" />
+	</Target>
+
+	<!--
+	***********************************************************************************************
+	_WindowsMsixComputeRunArguments
+
+	Sets RunCommand and RunArguments so that 'dotnet run' launches the registered MSIX app
+	via the IApplicationActivationManager COM interface.
+	***********************************************************************************************
+	-->
+	<Target Name="_WindowsMsixComputeRunArguments"
+			BeforeTargets="ComputeRunArguments"
+			Condition="'$(WindowsPackageType)' == 'MSIX'"
+			DependsOnTargets="_ComputeWindowsMsixRunProperties">
+		<PropertyGroup>
+			<RunCommand>$(_MauiDotNetHostPath)</RunCommand>
+			<RunArguments>exec &quot;$(_MauiWindowsRunToolPath)&quot; run --manifest &quot;$(_MsixAppxManifestPath)&quot;</RunArguments>
+			<RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+		</PropertyGroup>
+	</Target>
+
+</Project>

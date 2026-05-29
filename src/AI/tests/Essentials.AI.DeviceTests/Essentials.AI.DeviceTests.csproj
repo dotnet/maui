@@ -15,6 +15,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>$(NoWarn);MAUIAI0001</NoWarn>
     <UserSecretsId>808cc184-141a-409e-addd-565c973dbce6</UserSecretsId>
+    <!-- Prevent MSBuild from overriding our MaxVersionTested (needed for systemAIModels capability) -->
+    <AppxOSMinVersionReplaceManifestVersion>false</AppxOSMinVersionReplaceManifestVersion>
+    <AppxOSMaxVersionTestedReplaceManifestVersion>false</AppxOSMaxVersionTestedReplaceManifestVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -31,6 +34,12 @@
       from "MsixPackage" to "Project".
     -->
     <!--<WindowsPackageType>None</WindowsPackageType>-->
+  </PropertyGroup>
+
+  <!-- Bundle .NET runtime and Windows App SDK into the MSIX to prevent dependency issues -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <ItemGroup>
@@ -53,6 +62,11 @@
     <MauiFont Include="Resources\Fonts\*" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- File-link PhiSilicaToolsAndSchemaClient from the sample for Windows tests -->
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <Compile Include="..\..\samples\Essentials.AI.Sample\Services\PhiSilicaToolsAndSchemaClient.cs" Link="Services\PhiSilicaToolsAndSchemaClient.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -79,6 +93,7 @@
     </ItemGroup>
   </Target>
 
+  <Import Project="$(MauiSrcDirectory)Microsoft.Maui.TestUtils.DeviceTests.Runners.props" />
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

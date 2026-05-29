@@ -11,4 +11,7 @@
     <PublishAppXPackage Condition=" '$(PublishAppXPackage)' == '' and '$(EnableMsixTooling)' == 'true' and '$(WindowsPackageType)' == 'MSIX' ">true</PublishAppXPackage>
   </PropertyGroup>
 
+  <!-- Enable 'dotnet run' for MSIX-packaged apps -->
+  <Import Project="Microsoft.Maui.Windows.Run.targets" Condition="'$(WindowsPackageType)' == 'MSIX'" />
+
 </Project>

@@ -52,6 +52,12 @@
 		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Remove="$(OutputPath)*.xml" />
 		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
+		<!-- Microsoft.Maui.Windows.Run tool for 'dotnet run' MSIX support (framework-dependent, AnyCPU) -->
+		<None Include="$(ArtifactsBinDir)Controls.Build.Tasks.Windows.Run\$(Configuration)\net10.0-windows10.0.19041.0\Microsoft.Maui.Windows.Run.dll" Visible="false" Pack="true" PackagePath="buildTransitive\net6.0-windows10.0.17763.0" />
+		<None Include="$(ArtifactsBinDir)Controls.Build.Tasks.Windows.Run\$(Configuration)\net10.0-windows10.0.19041.0\Microsoft.Maui.Windows.Run.deps.json" Visible="false" Pack="true" PackagePath="buildTransitive\net6.0-windows10.0.17763.0" />
+		<None Include="$(ArtifactsBinDir)Controls.Build.Tasks.Windows.Run\$(Configuration)\net10.0-windows10.0.19041.0\Microsoft.Maui.Windows.Run.runtimeconfig.json" Visible="false" Pack="true" PackagePath="buildTransitive\net6.0-windows10.0.17763.0" />
+		<None Include="$(ArtifactsBinDir)Controls.Build.Tasks.Windows.Run\$(Configuration)\net10.0-windows10.0.19041.0\Microsoft.Windows.SDK.NET.dll" Visible="false" Pack="true" PackagePath="buildTransitive\net6.0-windows10.0.17763.0" />
+		<None Include="$(ArtifactsBinDir)Controls.Build.Tasks.Windows.Run\$(Configuration)\net10.0-windows10.0.19041.0\WinRT.Runtime.dll" Visible="false" Pack="true" PackagePath="buildTransitive\net6.0-windows10.0.17763.0" />
 	</ItemGroup>
 
 	<ItemGroup>

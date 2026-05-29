@@ -207,6 +207,7 @@
 
             <Button
                 Grid.Column="1"
+
                 FontSize="16"
                 Padding="16,12"
                 CornerRadius="12"
