@@ -187,7 +187,7 @@ stages:
 
   - stage: android_ui_tests_material3
     displayName: Android UITests Material3
-    dependsOn: build_ui_tests_material3_shell
+    dependsOn: build_ui_tests_material3
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -225,10 +225,10 @@ stages:
                       platform: 'Android Material3'
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  # Shell Handlers Test Stage - Tests using Material3 + Shell handlers build (shares screenshots with regular Android)
+  # Shell Handlers Test Stage - Tests using Shell handlers build (shares screenshots with regular Android)
   - stage: android_ui_tests_shell
     displayName: Android UITests Shell Handlers
-    dependsOn: build_ui_tests_material3_shell
+    dependsOn: build_ui_tests_shell
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -254,7 +254,6 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      useMaterial3: true
                       useAndroidShellHandlers: true
                       testFilter: "Shell"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
