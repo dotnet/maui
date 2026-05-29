@@ -425,7 +425,7 @@ internal class KnownMarkups
 				expression += $", source:global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent";
 			}
 			else
-			{
+            {
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "Source"), out var sourceNode))
 					expression += $", source: {getNodeValue(sourceNode, context.Compilation.GetTypeByMetadataName("System.String")!).ValueAccessor}";
 				expression += ") {";
@@ -435,7 +435,7 @@ internal class KnownMarkups
 					expression += $"FallbackValue = {getNodeValue(fallbackValueNode, context.Compilation.GetTypeByMetadataName("System.Object")!).ValueAccessor}, ";
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "TargetNullValue"), out var targetNullValueNode))
 					expression += $"TargetNullValue = {getNodeValue(targetNullValueNode, context.Compilation.GetTypeByMetadataName("System.Object")!).ValueAccessor}, ";
-			}
+            }
 
 			expression += "}";
 			value = expression;
@@ -896,6 +896,7 @@ internal class KnownMarkups
 
 				var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
 				var converter = typeandconverter?.converter;
+				
 				// If no converter from BP, check the property's TypeConverter attribute
 				if (converter == null && propertySymbol != null)
 				{
@@ -924,6 +925,7 @@ internal class KnownMarkups
 				return true;
 			}
 		}
+		
 		// If we get here and getNodeValue is provided, use it as fallback
 		if (getNodeValue != null)
 		{
