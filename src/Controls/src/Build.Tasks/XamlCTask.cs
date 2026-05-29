@@ -106,6 +106,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
+		public static void LogXamlCError(this TaskLoggingHelper loggingHelper, BuildExceptionCode code, string xamlFilePath, int lineNumber, int linePosition, int endLineNumber, int endLinePosition, params object[] messageArgs)
+		{
+			if (Context == null)
+				Context = new LoggingHelperContext();
+			if (Context.NoWarn != null && Context.NoWarn.Contains(code.CodeCode))
+				return;
+			xamlFilePath = loggingHelper.GetXamlFilePath(xamlFilePath);
+			loggingHelper.LogError("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+			LoggedErrors ??= new();
+			LoggedErrors.Add(new BuildException(code, new XmlLineInfo(lineNumber, linePosition), innerException: null, messageArgs));
+		}
+
 		public static string GetXamlFilePath(this TaskLoggingHelper loggingHelper, string xamlFilePath)
 		{
 			Context ??= new LoggingHelperContext();

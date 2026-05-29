@@ -56,8 +56,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			if (!props.Add(propertyName))
 			{
-				// Property is being set multiple times
-				Context.LoggingHelper.LogWarningOrError(
+				// Property is being set multiple times — always an error (honors NoWarn)
+				Context.LoggingHelper.LogXamlCError(
 					DuplicatePropertyAssignment,
 					Context.XamlFilePath,
 					lineInfo.LineNumber,

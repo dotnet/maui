@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			title: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
-			defaultSeverity: DiagnosticSeverity.Warning,
+			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
