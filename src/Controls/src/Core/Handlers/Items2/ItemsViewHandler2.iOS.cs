@@ -79,6 +79,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			MapItemsUpdatingScrollMode(handler, itemsView);
+#if MACCATALYST
+			// ItemsSource replacement: saved index may now resolve to different content even
+			// if still in range. Clear before applying the new source.
+			ClearMacCatalystPendingScrollRestore(handler);
+#endif
 			handler.Controller?.UpdateItemsSource();
 		}
 
@@ -141,7 +146,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_layout = SelectLayout();
 			Controller?.UpdateLayout(_layout);
+
+#if MACCATALYST
+			// Layout swap (ItemTemplate / FlowDirection / etc.) may remap the saved
+			// section/item to a different visual position. Clear to avoid stale restore.
+			ClearMacCatalystPendingScrollRestore(this);
+#endif
 		}
+
+#if MACCATALYST
+		static void ClearMacCatalystPendingScrollRestore(ItemsViewHandler2<TItemsView> handler)
+		{
+			if (handler?.Controller?.CollectionView is MauiCollectionView mauiCV)
+			{
+				mauiCV.ClearPendingScrollRestore();
+			}
+		}
+#endif
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{

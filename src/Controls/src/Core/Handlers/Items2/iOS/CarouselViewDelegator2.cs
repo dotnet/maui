@@ -36,8 +36,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			PreviousHorizontalOffset = (float)scrollView.ContentOffset.X;
 			PreviousVerticalOffset = (float)scrollView.ContentOffset.Y;
 
-			// Ensure base behavior runs (e.g., Mac Catalyst scroll-restore cancellation in ItemsViewDelegator2).
+#if MACCATALYST
+			// Run ItemsViewDelegator2's Mac Catalyst override (clears pending scroll restore).
+			// iOS-guarded: on iOS the parent has no managed override, so base.DraggingStarted
+			// forwards to UIKit's native delegate via Obj-C and disrupts CarouselView gestures
+			// (IsSwipeEnabled*, MandatorySingleSnap, BounceTest).
 			base.DraggingStarted(scrollView);
+#endif
 		}
 
 		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
