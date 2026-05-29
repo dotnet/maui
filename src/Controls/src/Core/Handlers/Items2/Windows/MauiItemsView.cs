@@ -4,7 +4,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WApp = Microsoft.UI.Xaml.Application;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WControlTemplate = Microsoft.UI.Xaml.Controls.ControlTemplate;
+using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
@@ -31,10 +33,19 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	FrameworkElement? _itemsRepeater;
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
+	Canvas? _dropIndicatorCanvas;
 
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
+
+		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
+		// staggered top-to-bottom cascade animation as virtualized items enter the
+		// viewport during scroll. This is unexpected for a data list in MAUI and is
+		// intentionally suppressed for ALL CV2 instances (not just drag-reorder ones).
+		// See also OnApplyTemplate where this is re-applied after template inflation.
+		// viewport during scroll. This is unexpected for a data list in MAUI.
+		ItemTransitionProvider = null;
 
 		// Suppress the native WinUI ItemContainer visual states (PointerOver,
 		// Pressed, Selected, and their combinations) so they don't overlay
@@ -44,16 +55,15 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Fixes: https://github.com/dotnet/maui/issues/13197
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 		var zeroCornerRadius = new Microsoft.UI.Xaml.CornerRadius(0);
-		
+
 		// Set the control's CornerRadius property directly
 		CornerRadius = zeroCornerRadius;
-		
+
 		// Override theme resources that control corner radius for ItemsView and its children
 		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
-		// Background fills (PART_CommonVisual.Fill) — suppress the gray overlay
-		// that WinUI shows on PointerOver/Pressed so it doesn't interfere with
-		// MAUI's own VisualStateManager states. Fixes: #13197
+		// Suppress the gray hover/press overlay (PART_CommonVisual.Fill) so it does
+		// not interfere with MAUI's own VisualStateManager states. Fixes: #13197
 		Resources["ItemContainerBackground"] = transparent;
 		Resources["ItemContainerPointerOverBackground"] = transparent;
 		Resources["ItemContainerPressedBackground"] = transparent;
@@ -151,12 +161,26 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		base.OnApplyTemplate();
 
+		// WinUI's base.OnApplyTemplate() re-assigns ItemTransitionProvider to its
+		// default StackLayoutItemCollectionTransitionProvider (cascade animation).
+		// Override it again here so it stays null regardless of template application order.
+		ItemTransitionProvider = null;
+
 		_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
 		_headerContentControl = GetTemplateChild("HeaderContentControl") as ContentControl;
 		_footerContentControl = GetTemplateChild("FooterContentControl") as ContentControl;
 		_containerPanel = GetTemplateChild("PART_ContainerStack") as WStackPanel;
 		_itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as FrameworkElement;
 		_scrollViewer = GetTemplateChild("PART_ScrollViewer") as ScrollViewer;
+		_dropIndicatorCanvas = GetTemplateChild("PART_DropIndicatorCanvas") as Canvas;
+		_dropIndicatorHead = GetTemplateChild("PART_DropIndicatorHead") as WBorder;
+		_dropIndicatorLine = GetTemplateChild("PART_DropIndicatorLine") as WRectangle;
+
+		// Also null out the inner ItemsRepeater's own provider directly — the
+		// TemplateBinding {x:Null} in XAML may be evaluated before WinUI assigns
+		// defaults, so a direct code assignment is the reliable approach.
+		if (_itemsRepeater is ItemsRepeater repeater)
+			repeater.ItemTransitionProvider = null;
 
 		if (_emptyViewContentControl is not null)
 		{
@@ -179,6 +203,13 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		// Apply orientation if it was set before template was applied
 		ApplyLayoutOrientation();
+
+		// Build the cached insertion-indicator fade-in animations now that
+		// the template parts (_dropIndicatorHead / _dropIndicatorLine) are resolved.
+		// Re-creating the Storyboard on every first-appearance (inside UpdateInsertionIndicator)
+		// allocates a Storyboard + 2 DoubleAnimations per drag gesture; caching one instance
+		// avoids the repeated allocations.
+		InitInsertionFadeStoryboard();
 	}
 
 	/// <summary>Gets whether the items are arranged horizontally (along-axis = width) or vertically (along-axis = height).</summary>
@@ -354,6 +385,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			var newMin = remaining > 0 ? remaining : 0;
 			if (_emptyViewContentControl.MinHeight == newMin)
 			{
+
 				return false;
 			}
 			_emptyViewContentControl.MinHeight = newMin;

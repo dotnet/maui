@@ -23,6 +23,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 
 	bool _innerCollectionChange = false;
 	bool _observeChanges = true;
+	bool _isMoving = false;
 
 	~ObservableItemTemplateCollection2() => _proxy.Unsubscribe();
 
@@ -158,12 +159,21 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 
 	void InnerCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
 	{
+		// Synchronous short-circuit: skip the dispatch entirely when observation is already
+		// suppressed. This is the common hot path during MoveItemAndSyncSource where the source
+		// fires Remove+Insert and we must not relay those back to the template collection.
+		// The check is kept INSIDE the lambda as well to handle the rare race where a background
+		// thread fires this handler while the UI thread is mid-way through clearing _observeChanges.
 		if (!_observeChanges)
-		{
 			return;
-		}
 
-		_container.Dispatcher.DispatchIfRequired(() => InnerCollectionChanged(args));
+		_container.Dispatcher.DispatchIfRequired(() =>
+		{
+			if (!_observeChanges)
+				return;
+
+			InnerCollectionChanged(args);
+		});
 	}
 
 	void InnerCollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -230,17 +240,147 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		var count = args.NewItems.Count;
 		if (args.OldStartingIndex > args.NewStartingIndex)
 		{
-			for (int index = 0; index < count; index++)
+			for (int n = 0; n < count; n++)
 			{
-				Move(args.OldStartingIndex + index, args.NewStartingIndex + index);
+				Move(args.OldStartingIndex + n, args.NewStartingIndex + n);
 			}
 
 			return;
 		}
 
-		for (int index = count - 1; index >= 0; index--)
+		for (int n = count - 1; n >= 0; n--)
 		{
-			Move(args.OldStartingIndex + index, args.NewStartingIndex + index);
+			Move(args.OldStartingIndex + n, args.NewStartingIndex + n);
+		}
+	}
+
+	/// <summary>
+	/// Atomically moves an item in the underlying source <em>and</em> the template collection
+	/// without triggering feedback loops or creating new <see cref="ItemTemplateContext2"/> wrappers.
+	/// <para>
+	/// Using <see cref="System.Collections.IList.RemoveAt"/> + <see cref="System.Collections.IList.Insert"/>
+	/// on the source would fire two separate <see cref="System.Collections.Specialized.NotifyCollectionChangedAction"/> events.
+	/// <see cref="InnerCollectionChanged(NotifyCollectionChangedEventArgs)"/> relays these to the template collection
+	/// as Remove + Add, which creates a brand-new <see cref="ItemTemplateContext2"/> on Insert.
+	/// <c>ItemsRepeater</c> treats a new item as freshly added and may call
+	/// <c>BringIntoView</c>, resetting the scroll position.
+	/// </para>
+	/// <para>
+	/// This method avoids that by suppressing <see cref="InnerCollectionChanged(object?, NotifyCollectionChangedEventArgs)"/>
+	/// while mutating the source (via <see cref="_observeChanges"/>), then calling <c>Move(int, int)</c>
+	/// on the template collection directly. <see cref="MoveItem"/> fires Remove + Add on the
+	/// <em>existing</em> wrapper — ItemsRepeater repositions the container in-place without recycling.
+	/// </para>
+	/// </summary>
+	internal void MoveItemAndSyncSource(int oldIndex, int newIndex)
+	{
+		// Prevent re-entrant calls (e.g. if a CollectionChanged subscriber on the source
+		// somehow triggers another reorder while we are mid-mutation).
+		if (_isMoving)
+			return;
+
+		// Guard against stale indices (e.g. external collection changes between drag-over
+		// and drop). Return early rather than throw so a mis-timed drop is a silent no-op.
+		if (oldIndex < 0 || oldIndex >= _itemsSource.Count)
+			return;
+
+		_isMoving = true;
+		try
+		{
+			// Suppress InnerCollectionChanged so the Remove+Insert we fire on the source
+			// doesn't cause the template collection to apply the change a second time.
+			_observeChanges = false;
+			try
+			{
+				var sourceItem = _itemsSource[oldIndex];
+				_itemsSource.RemoveAt(oldIndex);
+				// After RemoveAt the count is one less; clamp so Insert never throws.
+				newIndex = Math.Clamp(newIndex, 0, _itemsSource.Count);
+				_itemsSource.Insert(newIndex, sourceItem);
+			}
+			finally
+			{
+				_observeChanges = true;
+			}
+
+			// Suppress TemplateCollectionChanged so the Remove+Add we fire below does not
+			// attempt to back-propagate changes to the source again.
+			_innerCollectionChange = true;
+			try
+			{
+				Move(oldIndex, newIndex); // → MoveItem override → fires Remove+Add (not Move)
+			}
+			finally
+			{
+				_innerCollectionChange = false;
+			}
+		}
+		finally
+		{
+			_isMoving = false;
+		}
+	}
+
+	/// <summary>
+	/// Overrides <see cref="ObservableCollection{T}.MoveItem"/> to fire
+	/// <see cref="NotifyCollectionChangedAction.Remove"/> followed by
+	/// <see cref="NotifyCollectionChangedAction.Add"/> instead of the default
+	/// <see cref="NotifyCollectionChangedAction.Move"/> event.
+	/// </summary>
+	/// <remarks>
+	/// <b>⚠ CONTRACT VIOLATION — intentional and load-bearing.</b>
+	/// <para>
+	/// Normal <see cref="ObservableCollection{T}"/> contract: <c>Move(old, new)</c> raises a single
+	/// <c>CollectionChanged(Move)</c> event. This override intentionally violates that contract by
+	/// raising <c>CollectionChanged(Remove)</c> + <c>CollectionChanged(Add)</c> instead.
+	/// </para>
+	/// <para>
+	/// <b>Why Remove+Add is safe:</b> Firing Remove + Add causes CsWinRT to emit
+	/// <c>VectorChanged(ItemRemoved)</c> + <c>VectorChanged(ItemInserted)</c>, which
+	/// <c>ItemsRepeater</c> handles by repositioning only the affected container while preserving
+	/// the ScrollViewer offset.
+	/// <see cref="_innerCollectionChange"/> (set by the caller) prevents
+	/// <see cref="TemplateCollectionChanged"/> from back-propagating these synthetic Remove/Add
+	/// events back to the source.
+	/// </para>
+	/// <para>
+	/// <b>Callers:</b> Only <see cref="MoveItemAndSyncSource"/> and
+	/// <see cref="Move(NotifyCollectionChangedEventArgs)"/> invoke this method. Both set
+	/// <c>_innerCollectionChange = true</c> before calling and restore it in a finally block.
+	/// External code must NOT call <see cref="ObservableCollection{T}.Move(int,int)"/> directly
+	/// on this collection — use <see cref="MoveItemAndSyncSource"/> instead.
+	/// </para>
+	/// </remarks>
+	protected override void MoveItem(int oldIndex, int newIndex)
+	{
+		CheckReentrancy();
+
+		var item = this[oldIndex];
+
+		// Update the underlying list directly — same as the base class does before
+		// firing CollectionChanged(Move). We avoid calling base.MoveItem() so we
+		// control which events are raised.
+		Items.RemoveAt(oldIndex);
+		Items.Insert(newIndex, item);
+
+		// Notify indexer bindings that indexed items have changed — required by the
+		// ObservableCollection<T> contract. Count is unchanged, so no Count notification.
+		OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("Item[]"));
+
+		// Wrap both events in BlockReentrancy so no mutation can slip between them.
+		// Each OnCollectionChanged call already increments the reentrancy monitor
+		// internally, but without an outer block a handler of Remove could trigger
+		// a second MoveItem before Add fires.
+		using (BlockReentrancy())
+		{
+			// Fire Remove + Add in place of the default Move event.
+			// CollectionChanged(Remove) → CsWinRT → VectorChanged(ItemRemoved)
+			// CollectionChanged(Add)    → CsWinRT → VectorChanged(ItemInserted)
+			// Neither triggers VectorChanged(Reset), so ItemsRepeater preserves scroll position.
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Remove, item, oldIndex));
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+				NotifyCollectionChangedAction.Add, item, newIndex));
 		}
 	}
 

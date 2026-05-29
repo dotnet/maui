@@ -428,6 +428,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 		PlatformView.ItemsSource = _collectionViewSource?.View;
 
+		if (PlatformView is MauiItemsView mauiItemsViewFlat)
+		{
+			// The 'as ObservableItemTemplateCollection2' cast intentionally returns null for
+			// grouped sources (which use GroupedItemTemplateCollection2, not
+			// ObservableItemTemplateCollection2). Null is the correct sentinel for
+			// PerformReorder to skip the MoveItemAndSyncSource fast path for grouped lists.
+			mauiItemsViewFlat.FlatTemplateCollection =
+				_collectionViewSource?.Source as ObservableItemTemplateCollection2;
+		}
+
 		// Now safely null the old Source — PlatformView no longer references it,
 		// so the CollectionChanged(Reset) it fires won't cause WinUI side effects.
 		if (oldCollectionViewSource is not null)
@@ -444,6 +454,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 
 	void CleanUpCollectionViewSource()
 	{
+		if (PlatformView is MauiItemsView mauiItemsViewClean)
+		{
+			mauiItemsViewClean.FlatTemplateCollection = null;
+		}
+
 		// Clean up the recycle pool in the old ItemFactory to release pooled elements
 		_itemFactory?.CleanUp();
 		_itemFactory = null;
@@ -502,6 +517,16 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	{
 		// Skip if handler is disconnected
 		if (PlatformView is null || VirtualView is null)
+		{
+			return;
+		}
+
+		// During drag-drop reorder, MoveItemAndSyncSource fires CollectionChanged(Remove) then
+		// CollectionChanged(Add) on the template collection. Without this guard those events would
+		// trigger ApplyItemsUpdatingScrollMode → StartBringItemIntoView(0), scrolling the list
+		// to the top (KeepItemsInView is the default mode = 0). IsReordering is set synchronously
+		// before any collection mutation, so this check reliably catches those spurious events.
+		if (PlatformView is MauiItemsView { IsReordering: true })
 		{
 			return;
 		}
