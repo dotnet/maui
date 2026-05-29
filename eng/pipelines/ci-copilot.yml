@@ -35,6 +35,8 @@ parameters:
     type: object
     default:
       name: AcesShared
+      demands:
+        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
 
   - name: macPool
     type: object
@@ -73,7 +75,7 @@ stages:
         ${{ elseif eq(parameters.Platform, 'windows') }}:
           pool: ${{ parameters.windowsPool }}
         ${{ else }}:
-          pool: ${{ parameters.windowsPool }}  # fallback — should not be reached; AzDO parameter validation prevents unknown values
+          pool: ${{ parameters.androidPool }}  # fallback to android pool
         timeoutInMinutes: 360
         steps:
           - checkout: self
@@ -81,18 +83,30 @@ stages:
             persistCredentials: true
 
           # Validate Parameters
+          # PRNumber is received via env var to avoid compile-time shell injection.
+          # Anyone triggering this pipeline directly (AzDO UI/REST) could pass arbitrary
+          # strings — so we validate before any further use.
           - bash: |
               echo "Validating PR Number parameter..."
-              if [ -z "${{ parameters.PRNumber }}" ]; then
+              PR_NUM="${PARAM_PR_NUMBER}"
+              if [ -z "${PR_NUM}" ]; then
                 echo "##vso[task.logissue type=error]PRNumber parameter is required"
                 exit 1
               fi
-              echo "PR Number: ${{ parameters.PRNumber }}"
+              if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "##vso[task.logissue type=error]PRNumber must be a positive integer, got: '${PR_NUM}'"
+                exit 1
+              fi
+              echo "PR Number: ${PR_NUM}"
             displayName: 'Validate Parameters'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           - bash: |
-              echo "##vso[build.updatebuildnumber]PR ${{ parameters.PRNumber }} ${{ parameters.Platform }}"
+              echo "##vso[build.updatebuildnumber]PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
             displayName: 'Set Pipeline Run Title'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
           - ${{ if eq(parameters.Platform, 'android') }}:
@@ -108,7 +122,7 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: true
+              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
@@ -185,6 +199,15 @@ stages:
                 fi
                 
                 echo "=== Starting Emulator ==="
+                # Kill ALL stale emulator processes from previous step retries
+                for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                  echo "Killing stale emulator PID $STALE_PID"
+                  kill "$STALE_PID" 2>/dev/null || true
+                done
+                sleep 2
+                for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                  kill -9 "$STALE_PID" 2>/dev/null || true
+                done
                 # Kill any stale adb server and restart
                 adb kill-server 2>/dev/null || true
                 sleep 1
@@ -217,7 +240,12 @@ stages:
                   echo "Waiting for emulator device (adb wait-for-device, 120s timeout)..."
                   timeout 120 adb wait-for-device
                   if [ $? -eq 0 ]; then
-                    echo "Device detected: $(adb devices -l | grep emulator)"
+                    # Capture device ID immediately while it's responsive
+                    DETECTED_DEVICE=$(adb devices | grep "emulator.*device" | awk '{print $1}' | head -1)
+                    if [ -z "$DETECTED_DEVICE" ]; then
+                      DETECTED_DEVICE="emulator-5554"
+                    fi
+                    echo "Device detected: $DETECTED_DEVICE ($(adb devices -l | grep emulator || true))"
                     break
                   fi
 
@@ -269,7 +297,11 @@ stages:
                   fi
                 done
 
-                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}')
+                DEVICE_ID="${DETECTED_DEVICE:-$(adb devices | grep 'emulator.*device' | awk '{print $1}' | head -1)}"
+                if [ -z "$DEVICE_ID" ]; then
+                  DEVICE_ID="emulator-5554"
+                  echo "##[warning]Could not detect device ID, defaulting to $DEVICE_ID"
+                fi
                 echo "✅ Emulator fully booted: $DEVICE_ID"
 
                 # Prepare emulator for CI use — keeps device responsive during idle period
@@ -374,16 +406,22 @@ stages:
               echo "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
-
           # Boot iOS Simulator (only for iOS platform)
-          # UI test baseline screenshots are captured on iPhone Xs - must use same device
+          # Match main CI ui-tests pipeline: defaultiOSVersion: '26.0'
+          # Snapshots are at src/Controls/tests/TestCases.iOS.Tests/snapshots/ios-26
+          # UITest.cs picks ios-26 baseline when platformVersion starts with "26."
           - bash: |
               echo "=== Booting iOS Simulator ==="
               
-              # Find the latest stable iOS runtime (prefer 18.x, fallback to 17.x)
+              # Prefer iOS 26 (main pipeline default), fallback to 18.x then 17.x
               RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
-                [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
+                [.runtimes[] | select(.name | test("iOS 26"))] | sort_by(.version) | last | .identifier // empty
               ')
+              if [ -z "$RUNTIME" ]; then
+                RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
+                  [.runtimes[] | select(.name | test("iOS 18"))] | sort_by(.version) | last | .identifier // empty
+                ')
+              fi
               if [ -z "$RUNTIME" ]; then
                 RUNTIME=$(xcrun simctl list runtimes available --json | jq -r '
                   [.runtimes[] | select(.name | test("iOS 17"))] | sort_by(.version) | last | .identifier // empty
@@ -486,7 +524,13 @@ stages:
                 sleep 2
                 adb start-server
                 sleep 2
-                timeout 60 adb wait-for-device
+                timeout 90 adb wait-for-device
+                # Wait for boot to complete after ADB reconnect
+                waited=0
+                while [ "$(adb -s "$DEVICE_ID" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                  sleep 5; waited=$((waited+5))
+                  [ $waited -ge 90 ] && { echo "##[warning]Emulator still not booted after ADB restart"; break; }
+                done
               fi
 
               # Dismiss ANR dialogs and wake screen — run twice for reliability
@@ -528,12 +572,12 @@ stages:
               echo "✅ Emulator warmed up and responsive"
             displayName: 'Warm Up Android Emulator'
             condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
-            timeoutInMinutes: 3
+            timeoutInMinutes: 6
+            retryCountOnTaskFailure: 2
 
           - bash: |
               echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
               echo "Reviewing PR #${{ parameters.PRNumber }}..."
-              
               # Ensure copilot CLI is accessible to pwsh subprocess.
               # npm global install on Linux goes to UseNode@1 toolcache path which may not
               # be on PATH inside pwsh even when exported from bash. Create a symlink in
@@ -586,8 +630,10 @@ stages:
               # Invoke the PR reviewer using our PowerShell script
               # The script will merge the PR into the current branch
               # -PostSummaryComment and -RunFinalize handle posting comments
+              echo "Review platform: ${{ parameters.Platform }}"
+              
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber ${{ parameters.PRNumber }} -Platform ${{ parameters.Platform }} -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               COPILOT_EXIT_CODE=$?
               set -e
               
@@ -608,25 +654,10 @@ stages:
                 fi
               done
               
-              # Copy any Copilot session files
+              # Copy any Copilot session files (bash — works on Linux/macOS)
               if [ -d "$HOME/.copilot" ]; then
                 echo "Copying Copilot session state..."
                 cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state || true
-              fi
-              
-              # Copy CustomAgentLogsTmp if it exists
-              if [ -d "CustomAgentLogsTmp" ]; then
-                echo "Copying CustomAgentLogsTmp..."
-                cp -r CustomAgentLogsTmp $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
-              fi
-              
-              # Copy any Review_Feedback files
-              find . -name "Review_Feedback_*.md" -type f -exec cp {} $(Build.ArtifactStagingDirectory)/copilot-logs/ \; 2>/dev/null || true
-              
-              # Copy any .github/agent-pr-session files
-              if [ -d ".github/agent-pr-session" ]; then
-                echo "Copying agent-pr-session..."
-                cp -r .github/agent-pr-session $(Build.ArtifactStagingDirectory)/copilot-logs/ || true
               fi
               
               # Check for failure indicators in output
@@ -644,12 +675,46 @@ stages:
               fi
               
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
+            name: RunReview                       # referenceable name so the new RunDeepUITests / UpdateAISummaryComment stages can read this step's output variables (detectedCategories, detectedPlatform) via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.<var>'])
             displayName: 'Run PR Reviewer Agent'
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
+              DEFER_COMMENT_TO_STAGE3: "true"
+
+          # Copy review artifacts into the CopilotLogs staging dir.
+          # Uses pwsh (not bash) so paths resolve correctly on Windows.
+          - pwsh: |
+              $logsDir = "$(Build.ArtifactStagingDirectory)/copilot-logs"
+              if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Path $logsDir -Force | Out-Null }
+
+              # CustomAgentLogsTmp (PRAgent content files for Stage 3 comment)
+              if (Test-Path "CustomAgentLogsTmp") {
+                Write-Host "Copying CustomAgentLogsTmp..."
+                Copy-Item -Path "CustomAgentLogsTmp" -Destination $logsDir -Recurse -Force -ErrorAction SilentlyContinue
+              } else {
+                Write-Host "##[warning]CustomAgentLogsTmp not found — Stage 3 comment may be incomplete"
+              }
+
+              # agent-pr-session files
+              if (Test-Path ".github/agent-pr-session") {
+                Write-Host "Copying agent-pr-session..."
+                Copy-Item -Path ".github/agent-pr-session" -Destination $logsDir -Recurse -Force -ErrorAction SilentlyContinue
+              }
+
+              # Review_Feedback files
+              Get-ChildItem -Path . -Filter "Review_Feedback_*.md" -Recurse -ErrorAction SilentlyContinue |
+                ForEach-Object { Copy-Item $_.FullName $logsDir -ErrorAction SilentlyContinue }
+
+              Write-Host "Artifacts staged in $logsDir"
+              Get-ChildItem $logsDir -Recurse -File | Select-Object -First 20 | ForEach-Object {
+                Write-Host "  $($_.FullName.Substring($logsDir.Length))"
+              }
+            displayName: 'Copy review artifacts to staging'
+            condition: succeededOrFailed()
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
@@ -677,3 +742,817 @@ stages:
               fi
             displayName: 'Check Copilot Result'
             condition: succeededOrFailed()
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  #  STAGE: RunDeepUITests
+  # ─────────────────────────────────────────────────────────────────────────────
+  # After the Copilot review agent has detected UI test categories and posted
+  # an initial AI summary comment with in-process per-category results, this
+  # stage re-runs those same categories on a real platform-appropriate pool
+  # (Tahoe iOS sim / Ubuntu Android emu / Windows-2022 / macOS-14) instead of
+  # whatever VM the Copilot agent happened to land on. Each category becomes
+  # a sequential `BuildAndRunHostApp.ps1` invocation inside ONE job per
+  # platform; we can't matrix-fan-out at runtime because matrix expansion is
+  # compile-time in AzDO. The TRX files land in the drop-deep-uitests
+  # artifact for the next stage to consume.
+  #
+  # Skipped via `condition:` when:
+  #   - ReviewPR didn't emit detectedCategories (script crashed pre-STEP 2)
+  #   - detectedCategories == 'NONE' (no UI-relevant changes)
+  #
+  # Note: this runs AFTER ReviewPR completes, not in parallel. Parallel
+  # execution would require splitting STEP 2 (detection) into its own
+  # pre-stage; that's a follow-up. The first cut is sequential to keep the
+  # change small and incremental.
+  - stage: RunDeepUITests
+    displayName: 'Deep UI Tests (platform pool)'
+    dependsOn: ReviewPR
+    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], 'NONE'))
+    jobs:
+      - job: RunUITests
+        displayName: 'Run detected UI test categories'
+        variables:
+          detectedCategories: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'] ]
+        # Use the SAME platform-pool selection logic as the CopilotReview
+        # job — the deep-test agent should be the right OS for the
+        # requested target platform.
+        ${{ if eq(parameters.Platform, 'android') }}:
+          pool: ${{ parameters.androidPool }}
+        ${{ elseif eq(parameters.Platform, 'ios') }}:
+          pool: ${{ parameters.iosPool }}
+        ${{ elseif eq(parameters.Platform, 'catalyst') }}:
+          pool: ${{ parameters.macPool }}
+        ${{ elseif eq(parameters.Platform, 'windows') }}:
+          pool: ${{ parameters.windowsPool }}
+        ${{ else }}:
+          pool: ${{ parameters.windowsPool }}
+        timeoutInMinutes: 240
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          # Bring in .NET + workloads + tasks DLL — same prerequisites the
+          # CopilotReview job used. Reusing the install-dotnet template
+          # keeps the SDK version pinned to global.json.
+          - template: common/provision.yml
+            parameters:
+              skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
+              skipProvisionator: true
+              skipJdk: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidPlatformApis: true
+              onlyAndroidPlatformDefaultApis: true
+              skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
+              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
+              androidEmulatorApiLevel: '30'
+              skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
+              skipCertificates: true
+              ${{ if eq(parameters.Platform, 'catalyst') }}:
+                openSslArgs: ''
+
+          # Enable KVM for Android emulator on Linux agents (matches main CI)
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - template: common/enable-kvm.yml
+            # Free disk space on hosted Ubuntu agents — the emulator + SDK +
+            # workloads + AVD need ~15 GB but hosted agents start with limited
+            # free space. Remove pre-installed tools we don't need.
+            - bash: |
+                echo "=== Disk before cleanup ==="
+                df -h /
+                sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk/ndk /usr/local/share/boost /opt/ghc /usr/local/.ghcup \
+                  /usr/share/swift /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/go /opt/hostedtoolcache/node \
+                  /usr/local/lib/android/sdk/build-tools/[0-2]* /usr/local/lib/android/sdk/platforms/android-[0-2]* \
+                  2>/dev/null || true
+                sudo apt-get clean 2>/dev/null || true
+                echo "=== Disk after cleanup ==="
+                df -h /
+              displayName: 'Free disk space for Android emulator'
+            # Boot Android emulator with proper partition size and ADB setup.
+            # Same step as ReviewPR stage — creates AVD, reduces partition to
+            # 2048m (fits on hosted agents), pre-authorizes ADB keys, waits
+            # for full boot + package manager. The emulator stays running for
+            # BuildAndRunHostApp.ps1 which will find it via 'adb devices'.
+            - script: |
+                export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}"
+                export PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+                echo "=== Creating AVD ==="
+                echo "no" | avdmanager create avd -n Emulator_30 -k "system-images;android-30;google_apis_playstore;x86_64" --device "Nexus 5X" --force
+                AVD_CONFIG="$HOME/.android/avd/Emulator_30.avd/config.ini"
+                [ -f "$AVD_CONFIG" ] && sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=2048m/' "$AVD_CONFIG"
+
+                mkdir -p "$HOME/.android"
+                [ ! -f "$HOME/.android/adbkey" ] && adb keygen "$HOME/.android/adbkey" 2>/dev/null || true
+                ADB_KEY_PUB="$HOME/.android/adbkey.pub"
+                AVD_DIR="$HOME/.android/avd/Emulator_30.avd"
+                [ -f "$ADB_KEY_PUB" ] && [ -d "$AVD_DIR" ] && cp "$ADB_KEY_PUB" "$AVD_DIR/adbkey.pub"
+
+                # Kill ALL stale emulator processes from previous step retries
+                for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                  echo "Killing stale emulator PID $STALE_PID"
+                  kill "$STALE_PID" 2>/dev/null || true
+                done
+                sleep 2
+                for STALE_PID in $(pgrep -f "qemu-system" 2>/dev/null || true); do
+                  kill -9 "$STALE_PID" 2>/dev/null || true
+                done
+
+                adb kill-server 2>/dev/null || true; sleep 1; adb start-server
+                nohup emulator -avd Emulator_30 -gpu swiftshader_indirect -no-window -no-snapshot -no-audio -no-boot-anim -partition-size 2048 > /tmp/emulator.log 2>&1 &
+                echo "Emulator PID: $!"
+
+                echo "Waiting for device..."
+                timeout 120 adb wait-for-device || { echo "##[error]adb wait-for-device timed out"; tail -30 /tmp/emulator.log; exit 1; }
+
+                echo "Waiting for boot_completed..."
+                waited=0
+                while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                  sleep 5; waited=$((waited+5))
+                  [ $waited -ge 300 ] && { echo "##[error]Boot timeout"; exit 1; }
+                  [ $waited -eq 90 ] && { adb kill-server; sleep 2; adb start-server; sleep 2; }
+                done
+
+                echo "Waiting for package manager..."
+                waited=0
+                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                  sleep 5; waited=$((waited+5))
+                  [ $waited -ge 120 ] && { echo "##[error]PM timeout"; exit 1; }
+                done
+
+                DEVICE_ID=$(adb devices | grep "emulator.*device" | awk '{print $1}' | head -1)
+                if [ -z "$DEVICE_ID" ]; then
+                  DEVICE_ID="emulator-5554"
+                  echo "##[warning]Could not detect device ID, defaulting to $DEVICE_ID"
+                fi
+                echo "✅ Emulator booted: $DEVICE_ID"
+                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                adb -s $DEVICE_ID shell svc power stayon true || true
+                adb -s $DEVICE_ID shell input keyevent 82 || true
+                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
+                echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
+              displayName: 'Create AVD and Boot Android Emulator'
+              retryCountOnTaskFailure: 3
+              timeoutInMinutes: 15
+
+          # ios-26 snapshot baselines were captured on iOS 26.4 (PR #35061).
+          # Tahoe agents (macOS 26.4) have Xcode 26.3 which can download
+          # iOS 26.4 simulator. provision.yml only installs 26.0 (for build).
+          # Explicitly download 26.4 so visual tests match baselines exactly.
+          - ${{ if eq(parameters.Platform, 'ios') }}:
+            - script: |
+                set -x
+                echo "=== Current runtimes ==="
+                xcrun simctl list runtimes
+
+                echo "=== Trying to install iOS 26.4 ==="
+                LATEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                if [ -n "$LATEST_XCODE" ]; then
+                  echo "Using $LATEST_XCODE"
+                  sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+                fi
+
+                # Attempt 1: download latest iOS platform (no version specified)
+                echo "--- Attempt 1: latest iOS ---"
+                sudo xcodebuild -downloadPlatform iOS 2>&1 || true
+
+                # Attempt 2: with universal architecture variant
+                echo "--- Attempt 2: iOS 26.4 universal ---"
+                sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion 26.4 2>&1 || true
+
+                # Attempt 3: exact Apple build number
+                echo "--- Attempt 3: build 23E244 ---"
+                sudo xcodebuild -downloadPlatform iOS -buildVersion 23E244 2>&1 || true
+
+                # Restore Xcode for build step
+                RESTORE_XCODE=$(ls -d /Applications/Xcode_$(REQUIRED_XCODE)*.app 2>/dev/null | head -1)
+                [ -n "$RESTORE_XCODE" ] && sudo xcode-select -s "$RESTORE_XCODE/Contents/Developer"
+
+                echo "=== Final runtimes ==="
+                xcrun simctl list runtimes
+              displayName: 'Install iOS 26.4 simulator'
+              continueOnError: true
+
+          # Catalyst (MacCatalyst) runs directly on the Mac host — no device needed.
+          # Mirrors main CI ui-tests-steps.yml: disable Notification Center
+          # (intercepts UI interactions) and macOS text autocorrect.
+          - ${{ if eq(parameters.Platform, 'catalyst') }}:
+            - bash: |
+                chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+                $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+              displayName: 'Disable Notification Center'
+              continueOnError: true
+              timeoutInMinutes: 5
+
+          # Disable macOS text autocorrect for iOS and Catalyst (mirrors main CI).
+          # Autocapitalize/spellcheck can interfere with Appium text entry tests.
+          - ${{ if or(eq(parameters.Platform, 'ios'), eq(parameters.Platform, 'catalyst')) }}:
+            - task: PowerShell@2
+              inputs:
+                targetType: 'inline'
+                script: |
+                  defaults write -g NSAutomaticCapitalizationEnabled -bool false
+                  defaults write -g NSAutomaticTextCompletionEnabled -bool false
+                  defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
+              displayName: 'Disable macOS text autocorrect'
+              continueOnError: true
+
+          # Windows UI tests run on the host desktop. Set screen resolution
+          # to 1920x1080 (AzDO hosted agents default to 1024x768) so
+          # controls are fully visible during Appium interactions.
+          - ${{ if eq(parameters.Platform, 'windows') }}:
+            - pwsh: |
+                $scriptPath = Join-Path "$(System.DefaultWorkingDirectory)" "eng" "scripts" "Set-ScreenResolution.ps1"
+                if (Test-Path $scriptPath) {
+                  & $scriptPath -Width 1920 -Height 1080
+                } else {
+                  Write-Host "##[warning]Set-ScreenResolution.ps1 not found — using default resolution"
+                }
+              displayName: 'Set screen resolution (1920x1080)'
+              continueOnError: true
+
+          # Install .NET workloads (same as ReviewPR stage) — without this,
+          # dotnet build fails with NETSDK1147 because the ios/android workloads
+          # are not present after provision.yml (which only installs the SDK).
+          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+            displayName: 'Install .NET and workloads'
+            retryCountOnTaskFailure: 2
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Add .NET to PATH'
+
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - pwsh: |
+                $sdk = $env:ANDROID_SDK_ROOT
+                if (-not $sdk) { $sdk = $env:ANDROID_HOME }
+                if (-not $sdk) { $sdk = "$env:HOME/Library/Android/sdk" }
+                $pt = Join-Path $sdk "platform-tools"
+                $em = Join-Path $sdk "emulator"
+                Write-Host "Adding Android tools to PATH: $pt, $em"
+                echo "##vso[task.prependpath]$pt"
+                echo "##vso[task.prependpath]$em"
+              displayName: 'Add Android SDK tools to PATH'
+
+          - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --verbosity=diagnostic
+            displayName: 'Build MSBuild Tasks'
+            retryCountOnTaskFailure: 1
+            env:
+              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+              PRIVATE_BUILD: $(PrivateBuild)
+
+          # Install Node.js and Appium — required by the UITest.Appium
+          # AppiumServerContext to boot a local Appium server. Same setup
+          # the existing CopilotReview job uses (see lines 316-329 of this
+          # file). Without these the test process throws
+          # InvalidServerInstanceException("There is no installed nodes")
+          # at the OneTimeSetUp boundary and ALL discovered tests fail.
+          - task: UseNode@1
+            inputs:
+              version: "24.x"
+            displayName: 'Install Node.js'
+
+          - pwsh: |
+              $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+              dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
+            displayName: 'Install Appium'
+            retryCountOnTaskFailure: 2
+            timeoutInMinutes: 10
+            env:
+              APPIUM_HOME: $(APPIUM_HOME)
+
+          - bash: |
+              set -e
+              git config user.email "copilot-ci@microsoft.com"
+              git config user.name  "Copilot CI"
+              # Merge the PR head commit so we run tests against the same
+              # tree the Copilot reviewer saw. Mirror Review-PR.ps1 STEP 1
+              # logic (squash-merge, fall back to head checkout on
+              # conflict — but in the conflict case the ReviewPR stage
+              # would have already failed and we wouldn't reach here).
+              git fetch origin pull/${{ parameters.PRNumber }}/head:pr-${{ parameters.PRNumber }}
+              git checkout -b deep-uitests-pr-${{ parameters.PRNumber }}
+              git merge --squash pr-${{ parameters.PRNumber }} || {
+                echo "Squash merge had conflicts — falling back to direct head checkout"
+                git merge --abort 2>/dev/null || true
+                git checkout pr-${{ parameters.PRNumber }}
+              }
+              git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
+            displayName: 'Merge PR for testing'
+
+          # Bypass the iOS/MacCatalyst SDK's strict Xcode-version check.
+          # Same patch the CopilotReview job performs (see lines ~571-580
+          # of this file). Without it, .NET 10 iOS workload (which pins
+          # to e.g. Xcode 26.0) refuses to build on agents that have
+          # Xcode 26.1.1 selected — even though the produced app runs
+          # fine on the simulator.
+          - bash: |
+              set -e
+              if [ -f Directory.Build.Override.props.in ]; then
+                cp Directory.Build.Override.props.in Directory.Build.Override.props
+              fi
+              if [ ! -f Directory.Build.Override.props ]; then
+                printf '<?xml version="1.0" encoding="utf-8"?>\n<Project>\n</Project>\n' > Directory.Build.Override.props
+              fi
+              if [[ "$(uname)" == "Linux" ]]; then
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              elif [[ "$(uname)" == "Darwin" ]]; then
+                sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              else
+                sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
+              fi
+              echo "===== Directory.Build.Override.props ====="
+              cat Directory.Build.Override.props
+            displayName: 'Disable Xcode version validation'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $cats = "$(detectedCategories)"
+              $platform = "${{ parameters.Platform }}"
+              Write-Host "Detected categories from ReviewPR stage: $cats"
+              Write-Host "Platform: $platform"
+
+              if ([string]::IsNullOrWhiteSpace($cats) -or $cats -eq 'NONE') {
+                Write-Host "Nothing to run — skipping"
+                exit 0
+              }
+
+              $isRunAll = ($cats -eq 'ALL')
+              if ($isRunAll) {
+                Write-Host "Run-all mode detected — running without category filter"
+                # Single-element list with empty string triggers one iteration
+                # of the loop below without passing -Category to the runner.
+                $catList = @('')
+              } else {
+                # Same per-category loop the in-process STEP 3 does, only
+                # this time on a proper platform-pool agent. Each TRX lands
+                # in its own subdir so the aggregator can split per category.
+                $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+              }
+              $outputRoot = "$(Build.ArtifactStagingDirectory)/deep-uitests"
+              New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
+
+              # Dot-source the shared retry wrapper so Stage 2 gets the same
+              # env-error detection, device recovery, and retry logic as Stage 1.
+              $retryScript = ".github/scripts/shared/Invoke-UITestWithRetry.ps1"
+              $hasRetryWrapper = Test-Path $retryScript
+
+              $hadFailure = $false
+              foreach ($cat in $catList) {
+                $safeCat = if ([string]::IsNullOrEmpty($cat)) { 'ALL' } else { $cat -replace '[^A-Za-z0-9_.-]', '_' }
+                $catDir = Join-Path $outputRoot "drop-${platform}_ui_tests-controls-$safeCat"
+                New-Item -ItemType Directory -Force -Path $catDir | Out-Null
+                $displayCat = if ([string]::IsNullOrEmpty($cat)) { '(all tests)' } else { $cat }
+                Write-Host "============================================================"
+                Write-Host " Running category: $displayCat (platform=$platform)"
+                Write-Host "============================================================"
+                $catLog = Join-Path $catDir "build-output.log"
+                # Diagnostic: dump exact args before invocation so any quoting
+                # issue or stray characters in the category value are visible
+                # in the log.
+                Write-Host "DEBUG: cat='$cat' (length=$($cat.Length))"
+                Write-Host "DEBUG: platform='$platform' (length=$($platform.Length))"
+                Write-Host "DEBUG: PWD='$(Get-Location)'"
+                Write-Host "DEBUG: BuildAndRunHostApp.ps1 exists: $(Test-Path '.github/scripts/BuildAndRunHostApp.ps1')"
+                try {
+                  if ($hasRetryWrapper) {
+                    # Use Invoke-UITestWithRetry for env-error retry + device recovery.
+                    # Only pass -Category when we have a specific category (not run-all).
+                    $retryParams = @{
+                      Platform = $platform
+                      RepoRoot = (Get-Location).Path
+                      LogFile  = $catLog
+                    }
+                    if (-not [string]::IsNullOrEmpty($cat)) { $retryParams.Category = $cat }
+                    if ($env:DEVICE_UDID) { $retryParams.DeviceUdid = $env:DEVICE_UDID }
+                    $runResult = & $retryScript @retryParams
+                    $exitCode = if ($runResult) { $runResult.ExitCode } else { -1 }
+                    Write-Host "Attempts: $(if ($runResult) { $runResult.Attempts } else { '?' }) · Exit: $exitCode · EnvError: $(if ($runResult) { $runResult.EnvErrorHit } else { 'N/A' })"
+
+                    # Copy the specific TRX file from the result into the category dir
+                    if ($runResult -and $runResult.TrxResultFile -and (Test-Path $runResult.TrxResultFile)) {
+                      $dest = Join-Path $catDir (Split-Path -Leaf $runResult.TrxResultFile)
+                      if (-not (Test-Path $dest)) { Copy-Item $runResult.TrxResultFile $dest -ErrorAction SilentlyContinue }
+                    }
+
+                    if ($exitCode -ne 0) {
+                      Write-Host "Category $cat exited with code $exitCode" -ForegroundColor Yellow
+                      $hadFailure = $true
+                    }
+                  } else {
+                    # Fallback: call BuildAndRunHostApp.ps1 directly
+                    $argList = @(
+                      '-NoProfile',
+                      '-File', '.github/scripts/BuildAndRunHostApp.ps1',
+                      '-Platform', $platform
+                    )
+                    if (-not [string]::IsNullOrEmpty($cat)) {
+                      $argList += @('-Category', $cat)
+                    }
+                    if ($env:DEVICE_UDID) {
+                      $argList += @('-DeviceUdid', $env:DEVICE_UDID)
+                    }
+                    Write-Host "DEBUG: invoking pwsh with args: $($argList -join ' | ')"
+                    & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object { Write-Host $_ }
+                    if ($LASTEXITCODE -ne 0) {
+                      Write-Host "Category $cat exited with code $LASTEXITCODE" -ForegroundColor Yellow
+                      $hadFailure = $true
+                    }
+                  }
+                } catch {
+                  Write-Host "Test runner threw: $_" -ForegroundColor Red
+                  $hadFailure = $true
+                }
+                # If the retry wrapper didn't produce a TRX (or we used fallback),
+                # scan the TRX results directory for this category's TRX only.
+                # Use filename matching instead of a time-based filter to avoid
+                # picking up TRX files from other categories or missing slow runs.
+                $existingTrx = @(Get-ChildItem -Path $catDir -Filter "*.trx" -ErrorAction SilentlyContinue)
+                if ($existingTrx.Count -eq 0) {
+                  # Look for TRX by category name pattern in common output locations
+                  $trxSearchDirs = @(".", "TestResults", "src/Controls/tests/TestCases.Shared.Tests/TestResults")
+                  foreach ($searchDir in $trxSearchDirs) {
+                    if (Test-Path $searchDir) {
+                      $found = Get-ChildItem -Path $searchDir -Filter "*$safeCat*.trx" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+                      if ($found) {
+                        $dest = Join-Path $catDir $found.Name
+                        if (-not (Test-Path $dest)) { Copy-Item $found.FullName $dest -ErrorAction SilentlyContinue }
+                        break
+                      }
+                    }
+                  }
+                }
+
+                # Capture snapshot-diff PNGs that VisualRegressionTester writes
+                # to $BUILD_ARTIFACTSTAGINGDIRECTORY/Controls.TestCases.Shared.Tests/snapshots-diff
+                # (see ui-tests-collect-snapshot-diffs.yml for reference impl).
+                # Move them into the per-category folder so they ship in the
+                # drop-deep-uitests artifact alongside the TRX. Move (not copy)
+                # so the next category's run starts with a clean diff folder.
+                $snapDiffSrc = Join-Path "$(Build.ArtifactStagingDirectory)" "Controls.TestCases.Shared.Tests/snapshots-diff"
+                if (Test-Path $snapDiffSrc) {
+                  $snapDiffDest = Join-Path $catDir "snapshots-diff"
+                  Write-Host "Moving snapshot-diffs from $snapDiffSrc -> $snapDiffDest"
+                  Move-Item -Path $snapDiffSrc -Destination $snapDiffDest -Force -ErrorAction SilentlyContinue
+                }
+              }
+
+              if ($hadFailure) {
+                # Don't fail the stage — the AI summary comment is the
+                # deliverable; failed tests get reported there. Stage-level
+                # failure would prevent the UpdateAISummaryComment stage
+                # from running.
+                Write-Host "##vso[task.logissue type=warning]One or more deep UI test categories failed (see TRX in drop-deep-uitests artifact)"
+              }
+            displayName: 'Run deep UI tests (per-category loop)'
+            timeoutInMinutes: 220
+
+          # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
+          - ${{ if eq(parameters.Platform, 'catalyst') }}:
+            - bash: |
+                chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+                $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+              displayName: 'Re-enable Notification Center'
+              condition: succeededOrFailed()
+              continueOnError: true
+              timeoutInMinutes: 5
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish drop-deep-uitests'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/deep-uitests'
+              artifact: 'drop-deep-uitests'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  #  STAGE: PostAISummaryComment
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Final stage. Depends on both ReviewPR (which posted the initial AI
+  # summary comment and emitted aiSummaryCommentId) and RunDeepUITests
+  # (which produced the TRX artifacts on the right pool). Downloads the
+  # artifacts, parses them via Aggregate-UITestArtifacts.ps1, and edits
+  # the existing PR comment to replace the in-process STEP 3 section
+  # with the deep-test results.
+  - stage: UpdateAISummaryComment
+    displayName: 'Post AI Summary Comment'
+    dependsOn:
+      - ReviewPR
+      - RunDeepUITests
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    jobs:
+      - job: UpdateComment
+        displayName: 'Post AI summary with review + deep test results'
+        # Job-level variables can use $[ stageDependencies... ] (cross-stage,
+        # job context). The stage condition above already gated emptiness;
+        # this just makes the value available as $(aiSummaryCommentId)
+        # inside the steps.
+        variables:
+          aiSummaryCommentId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.aiSummaryCommentId'] ]
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download CopilotLogs'
+            inputs:
+              buildType: 'current'
+              artifactName: 'CopilotLogs'
+              targetPath: '$(Pipeline.Workspace)/CopilotLogs'
+            # Continue if ReviewPR crashed before publishing CopilotLogs —
+            # the DEFERRED fallback can still post deep test results alone.
+            continueOnError: true
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download drop-deep-uitests'
+            inputs:
+              buildType: 'current'
+              artifactName: 'drop-deep-uitests'
+              targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
+            # Always attempt download — continueOnError handles the case where
+            # RunDeepUITests was skipped and no artifact exists. The previous
+            # condition-based skip using deepTestsRan was unreliable because
+            # AzDO's $[ in() ] expression can return unexpected values depending
+            # on stage result propagation timing.
+            continueOnError: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
+              $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
+              $prNumber = "${{ parameters.PRNumber }}"
+              $commentId = "$(aiSummaryCommentId)"
+              $isDeferred = ($commentId -eq 'DEFERRED')
+
+              # Diagnostic logging for Stage 3 debugging
+              Write-Host "=== Stage 3 Diagnostics ===" -ForegroundColor Cyan
+              Write-Host "  commentId: '$commentId'"
+              Write-Host "  isDeferred: $isDeferred"
+              Write-Host "  artDir exists: $(Test-Path $artDir)"
+              Write-Host "  copilotLogsDir exists: $(Test-Path $copilotLogsDir)"
+              if (Test-Path $artDir) {
+                $trxCount = @(Get-ChildItem -Path $artDir -Filter "*.trx" -Recurse -ErrorAction SilentlyContinue).Count
+                Write-Host "  TRX files in artDir: $trxCount"
+                Get-ChildItem -Path $artDir -Recurse -ErrorAction SilentlyContinue | Select-Object -First 10 | ForEach-Object {
+                  Write-Host "    $($_.FullName.Substring($artDir.Length))" -ForegroundColor Gray
+                }
+              }
+
+              if ([string]::IsNullOrWhiteSpace($commentId)) {
+                # Reviewer crashed before posting the initial comment. If deep
+                # tests produced results, fall back to DEFERRED mode to post
+                # a degraded comment with test results only.
+                if (Test-Path $artDir) {
+                  Write-Host "No AI summary comment ID but deep test artifacts exist — falling back to DEFERRED mode"
+                  $commentId = 'DEFERRED'
+                  $isDeferred = $true
+                } else {
+                  Write-Host "No AI summary comment ID and no deep test artifacts — nothing to do"
+                  exit 0
+                }
+              }
+
+              # Aggregator returns @{ category -> @{ Total/Passed/Failed/.../Results } }
+              # using the SAME shape the in-process STEP 3 renderer expects
+              # so we can reuse the markdown generation pattern directly.
+              $aggScript = ".github/scripts/shared/Aggregate-UITestArtifacts.ps1"
+              if (-not (Test-Path $aggScript)) { throw "$aggScript missing" }
+
+              # Dot-source shared functions (no Invoke-Expression)
+              . .github/scripts/shared/Get-TrxResults.ps1
+              . .github/scripts/shared/Get-CategoryFromArtifactName.ps1
+              . .github/scripts/shared/Get-AggregatedTrxFromDirectory.ps1
+              $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
+              if (-not $byCat -or $byCat.Count -eq 0) {
+                Write-Host "Aggregator returned no categories"
+                # No deep test results — but in DEFERRED mode we still need to
+                # post the review-only comment (without deep section).
+              }
+
+              $deepBlock = ''
+              if ($byCat -and $byCat.Count -gt 0) {
+
+              # Render the new STEP 3 section.
+              $totalPassed = 0; $totalFailed = 0
+              $sb = [System.Text.StringBuilder]::new()
+              [void]$sb.AppendLine()
+              [void]$sb.AppendLine("### 🧪 UI Test Execution Results (deep, platform pool)")
+              [void]$sb.AppendLine()
+              [void]$sb.AppendLine("| Category | Tests | Snapshot diffs |")
+              [void]$sb.AppendLine("|---|---|---|")
+              $perCategoryFailures = [ordered]@{}
+              foreach ($k in ($byCat.Keys | Sort-Object)) {
+                $b = $byCat[$k]
+                $totalPassed += [int]$b.Passed
+                $totalFailed += [int]$b.Failed
+                $tCount = [int]$b.Total
+                $tPass  = [int]$b.Passed
+                $tFail  = [int]$b.Failed
+                $col = if ($tCount -eq 0) { '—' }
+                       elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
+                       else { "$tPass/$tCount ✓" }
+                # Count snapshot-diff PNGs we shipped in this artifact subdir
+                $catDir = Join-Path $artDir $b.ArtifactName
+                $diffCount = 0
+                if (Test-Path $catDir) {
+                  $diffCount = @(Get-ChildItem -Path $catDir -Filter "*-diff.png" -Recurse -ErrorAction SilentlyContinue).Count
+                }
+                $diffCol = if ($diffCount -gt 0) { "$diffCount diff PNG$(if ($diffCount -eq 1) {'' } else {'s'})" } else { '—' }
+                [void]$sb.AppendLine("| ``$k`` | $col | $diffCol |")
+
+                # Capture failed test entries from the parsed TRX so we can
+                # render a per-category disclosure section listing the actual
+                # failing test names + the first line of their error message.
+                $catFailed = @()
+                foreach ($r in @($b.Results)) {
+                  if ($r.status -eq 'Failed') {
+                    $catFailed += [pscustomobject]@{
+                      Name  = $r.name
+                      Error = $r.error -as [string]
+                      Stack = $r.stack -as [string]
+                    }
+                  }
+                }
+                if ($catFailed.Count -gt 0) {
+                  $perCategoryFailures[$k] = $catFailed
+                }
+              }
+
+              # Per-category failed-test disclosure sections (collapsed by
+              # default to keep the comment compact).
+              if ($perCategoryFailures.Count -gt 0) {
+                [void]$sb.AppendLine()
+                foreach ($cat in $perCategoryFailures.Keys) {
+                  $items = $perCategoryFailures[$cat]
+                  [void]$sb.AppendLine("<details><summary>❌ <code>$cat</code> — $($items.Count) failed test$(if ($items.Count -eq 1) {''} else {'s'})</summary>")
+                  [void]$sb.AppendLine("<br/>")
+                  [void]$sb.AppendLine()
+                  foreach ($it in $items | Select-Object -First 30) {
+                    $errText = if (-not [string]::IsNullOrWhiteSpace($it.Error)) { $it.Error.Trim() } else { '' }
+                    $stackText = if (-not [string]::IsNullOrWhiteSpace($it.Stack)) { $it.Stack.Trim() } else { '' }
+                    $combined = $errText
+                    if ($stackText) { $combined = $combined + [Environment]::NewLine + $stackText }
+                    if ($combined.Length -gt 1000) { $combined = $combined.Substring(0, 1000) + [Environment]::NewLine + '...' }
+                    [void]$sb.AppendLine("<details><summary><code>$($it.Name)</code></summary>")
+                    [void]$sb.AppendLine('<br/>')
+                    [void]$sb.AppendLine()
+                    if ($combined) {
+                      $fence = [string]::new([char]96, 3)
+                      [void]$sb.AppendLine($fence)
+                      [void]$sb.AppendLine($combined)
+                      [void]$sb.AppendLine($fence)
+                    }
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("</details>")
+                    [void]$sb.AppendLine()
+                  }
+                  if ($items.Count -gt 30) {
+                    [void]$sb.AppendLine("_(+$($items.Count - 30) more — see TRX in artifact)_")
+                    [void]$sb.AppendLine()
+                  }
+                  [void]$sb.AppendLine("</details>")
+                  [void]$sb.AppendLine()
+                }
+              }
+
+              # Link to the published artifact so reviewers can download the
+              # snapshot-diff PNGs to triage visual regressions.
+              $buildId = "$(Build.BuildId)"
+              $orgUri  = "$(System.CollectionUri)".TrimEnd('/')
+              $project = "$(System.TeamProject)"
+              $artifactUrl = "$orgUri/$project/_build/results?buildId=$buildId&view=artifacts&pathAsName=false&type=publishedArtifacts"
+              [void]$sb.AppendLine("📎 [Download ``drop-deep-uitests`` artifact (TRX + snapshot diffs)]($artifactUrl)")
+              [void]$sb.AppendLine()
+
+              $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
+              $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $($byCat.Count) categor$(if ($byCat.Count -eq 1) {'y'} else {'ies'}) on platform-pool agent (replaces in-process counts above)."
+
+              $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
+              $endMarker   = '<!-- DEEP_UITESTS_END -->'
+              $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
+              } # end if ($byCat.Count -gt 0)
+
+              if ($isDeferred) {
+                # ── DEFERRED MODE: Post full comment with deep results included ──
+                # Guard against duplicate comments on pipeline retry: check if
+                # an AI Summary comment already exists for this PR.
+                $existingComment = gh api "repos/dotnet/maui/issues/$prNumber/comments?per_page=100" --paginate --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -Last 1
+                if ($existingComment) {
+                  Write-Host "Existing AI Summary comment found ($existingComment) — will PATCH instead of creating new"
+                  $commentId = $existingComment
+                  $isDeferred = $false
+                }
+              }
+
+              if ($isDeferred) {
+                # ── DEFERRED MODE (first run): Post full comment ──
+                # Find the PRAgent content dir from CopilotLogs artifact
+                $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
+                if (-not $prAgentDir) {
+                  Write-Host "PRAgent directory not found in CopilotLogs — falling back to posting deep results only"
+                } else {
+                  # Replace in-process results with deep results in uitests/content.md (if available)
+                  if ($deepBlock) {
+                    $uitestContent = Join-Path $prAgentDir.FullName "uitests/content.md"
+                    if (Test-Path $uitestContent) {
+                      $existing = Get-Content $uitestContent -Raw
+                      # Strip in-process "SKIPPED" section — search for the header
+                      $idx = -1
+                      foreach ($marker in @('UI Test Execution Results', 'SKIPPED')) {
+                        $found = $existing.IndexOf($marker)
+                        if ($found -gt 0) {
+                          # Back up to start of line
+                          $lineStart = $existing.LastIndexOf([char]10, $found)
+                          if ($lineStart -lt 0) { $lineStart = 0 } else { $lineStart++ }
+                          $idx = $lineStart
+                          break
+                        }
+                      }
+                      if ($idx -gt 0) {
+                        $existing = $existing.Substring(0, $idx).TrimEnd()
+                      }
+                      $existing = ($existing -split [Environment]::NewLine | Where-Object {
+                        $_ -notmatch 'DEEP_UITESTS_BEGIN|DEEP_UITESTS_END'
+                      }) -join [Environment]::NewLine
+                      ($existing.TrimEnd() + [Environment]::NewLine + [Environment]::NewLine + $deepBlock) | Set-Content $uitestContent -Encoding UTF8
+                      Write-Host "Replaced in-process results with deep results"
+                    }
+                  } else {
+                    Write-Host "No deep results — posting review-only comment"
+                  }
+
+                  # Copy PRAgent dir to expected location for post-ai-summary-comment.ps1
+                  $targetDir = "CustomAgentLogsTmp/PRState/$prNumber/PRAgent"
+                  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetDir) | Out-Null
+                  Copy-Item -Path $prAgentDir.FullName -Destination $targetDir -Recurse -Force
+
+                  # Post the full comment
+                  $postScript = ".github/scripts/post-ai-summary-comment.ps1"
+                  if (Test-Path $postScript) {
+                    Write-Host "Posting full AI summary comment with deep results..."
+                    $output = & $postScript -PRNumber $prNumber
+                    $output | ForEach-Object { Write-Host $_ }
+                    Write-Host "✅ Full AI summary comment posted with deep results"
+                  }
+
+                  # Apply labels
+                  $labelScript = ".github/scripts/shared/Update-AgentLabels.ps1"
+                  if (Test-Path $labelScript) {
+                    try {
+                      . $labelScript
+                      Apply-AgentLabels -PRNumber $prNumber -RepoRoot (Get-Location).Path
+                      Write-Host "✅ Labels applied"
+                    } catch {
+                      Write-Host "⚠️ Label application failed: $_"
+                    }
+                  }
+                }
+              } else {
+                # ── PATCH MODE: Update existing comment with deep results ──
+                if (-not $deepBlock) {
+                  Write-Host "No deep results and comment already exists — nothing to patch"
+                  exit 0
+                }
+                $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join [Environment]::NewLine
+                if ([string]::IsNullOrWhiteSpace($existing)) {
+                  Write-Host "Could not fetch comment body — aborting"
+                  exit 0
+                }
+
+                $beginIdx = $existing.IndexOf($beginMarker)
+                $endIdx   = $existing.IndexOf($endMarker)
+                if ($beginIdx -ge 0 -and $endIdx -gt $beginIdx) {
+                  $before = $existing.Substring(0, $beginIdx).TrimEnd()
+                  $after  = $existing.Substring($endIdx + $endMarker.Length).TrimStart()
+                  $newBody = $before + ([Environment]::NewLine + [Environment]::NewLine) + $deepBlock + $(if ($after) { ([Environment]::NewLine + [Environment]::NewLine) + $after } else { "" })
+                } else {
+                  $cleaned = $existing -split [Environment]::NewLine | Where-Object {
+                    $_ -notmatch '^\s*[❌✅⏭️]\s*\*\*Deep UI tests\*\*'
+                  }
+                  $cleanedBody = ($cleaned -join [Environment]::NewLine)
+                  $legacyMarker = '### 🧪 UI Test Execution Results'
+                  $idx = $cleanedBody.IndexOf($legacyMarker)
+                  $newBody = if ($idx -ge 0) {
+                    $cleanedBody.Substring(0, $idx).TrimEnd() + ([Environment]::NewLine + [Environment]::NewLine) + $deepBlock
+                  } else {
+                    $cleanedBody.TrimEnd() + ([Environment]::NewLine + [Environment]::NewLine) + $deepBlock
+                  }
+                }
+
+                $tmp = New-TemporaryFile
+                @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
+                gh api -X PATCH "repos/dotnet/maui/issues/comments/$commentId" --input $tmp.FullName | Out-Null
+                Write-Host "✅ Patched comment $commentId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
+              }
+            displayName: 'Post AI summary comment'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
