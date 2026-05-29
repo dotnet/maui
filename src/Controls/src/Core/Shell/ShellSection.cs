@@ -208,7 +208,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellContent), typeof(ShellSection), null, BindingMode.TwoWay,
-				propertyChanged: OnCurrentItemChanged);
+				propertyChanged: OnCurrentItemChanged,
+				propertyChanging: OnCurrentItemChanging);
 
 		/// <summary>Bindable property for <see cref="Items"/>.</summary>
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
@@ -1029,21 +1030,73 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			var shellSection = (ShellSection)bindable;
+
+			if (newValue is not ShellContent newContent)
+				return;
+
+			if (shellSection.Parent?.Parent is Shell parentShell && shellSection.IsVisibleSection)
+			{
+				// canCancel: false because propertyChanging cannot veto a property commit.
+				// Mirrors Shell.OnCurrentItemChanging which uses the same pattern.
+				parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
+					ShellNavigationSource.ShellContentChanged,
+					parentShell.CurrentItem,
+					shellSection,
+					newContent,
+					shellSection.Stack,
+					canCancel: false,
+					isAnimated: true);
+			}
+		}
+
 		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shellSection = (ShellSection)bindable;
 
-			if (oldValue is ShellContent oldShellItem)
-				oldShellItem.SendDisappearing();
-
 			if (newValue == null)
 				return;
 
-			shellSection.PresentedPageAppearing();
-
-			if (shellSection.Parent?.Parent is IShellController shell && shellSection.IsVisibleSection)
+			if (shellSection.Parent?.Parent is Shell parentShell && shellSection.IsVisibleSection)
 			{
-				shell.UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
+				var navigationManager = parentShell.NavigationManager;
+
+				var sectionStack = shellSection.Stack;
+				var modalStack = shellSection.Navigation.ModalStack;
+
+				var proposedState = ShellNavigationManager.GetNavigationState(
+					parentShell.CurrentItem,
+					shellSection,
+					(ShellContent)newValue,
+					sectionStack,
+					modalStack);
+
+				var navArgs = new ShellNavigatingEventArgs(
+					parentShell.CurrentState,
+					proposedState,
+					ShellNavigationSource.ShellContentChanged,
+					true);
+
+				navigationManager.HandleNavigating(navArgs);
+
+				if (navArgs.Cancelled)
+					return;
+
+				if (oldValue is ShellContent oldShellItem)
+					oldShellItem.SendDisappearing();
+
+				shellSection.PresentedPageAppearing();
+
+				((IShellController)parentShell).UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
+			}
+			else
+			{
+				if (oldValue is ShellContent oldShellItem)
+					oldShellItem.SendDisappearing();
+
+				shellSection.PresentedPageAppearing();
 			}
 
 			shellSection.SendStructureChanged();
