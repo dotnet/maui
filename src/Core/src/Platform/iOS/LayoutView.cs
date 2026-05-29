@@ -7,6 +7,41 @@ namespace Microsoft.Maui.Platform
 	{
 		bool _userInteractionEnabled;
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			// When children are allowed to overflow this layout's bounds, we raise the
+			// zPosition of this view's layer so that overflowing children render on top
+			// of any sibling views that would otherwise be drawn over them due to z-order.
+			Layer.ZPosition = (!ClipsToBounds && HasSubviewsOutsideBounds()) ? 1 : 0;
+		}
+
+		bool HasSubviewsOutsideBounds()
+		{
+			if (CrossPlatformLayout is not ILayout layout)
+				return false;
+
+			var width = Bounds.Width;
+			var height = Bounds.Height;
+
+			// Use a small tolerance (1.0 DIU) to absorb sub-pixel rounding
+			// differences from layout calculations, consistent with Android/Windows.
+			const double tolerance = 1.0;
+
+			for (int i = 0; i < layout.Count; i++)
+			{
+				var frame = layout[i].Frame;
+				if (frame.Right > width + tolerance || frame.Bottom > height + tolerance
+					|| frame.Left < -tolerance || frame.Top < -tolerance)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		public override void SubviewAdded(UIView uiview)
 		{
 			InvalidateConstraintsCache();
