@@ -512,6 +512,8 @@ namespace Microsoft.Maui.Controls
 		{
 			//FIXME use the specificity of the caller
 
+			ClearPendingSelectedIndex();
+
 			if (ItemsSource != null)
 			{
 				SetSelectedIndexFromHandler(ItemsSource.IndexOf(selectedItem));
