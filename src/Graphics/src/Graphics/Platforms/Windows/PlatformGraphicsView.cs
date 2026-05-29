@@ -1,4 +1,5 @@
-﻿using Microsoft.Graphics.Canvas.UI.Xaml;
+﻿using System;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 #if NETFX_CORE
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -79,16 +80,45 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (_drawable == null)
 				return;
 
+			var actualWidth = (float)sender.ActualWidth;
+			var actualHeight = (float)sender.ActualHeight;
+
+			var logicalWidth = MathF.Round(actualWidth);
+			var logicalHeight = MathF.Round(actualHeight);
+
+			float adjustedScaleX = 1f, adjustedScaleY = 1f;
+			if (logicalWidth > 0 && logicalHeight > 0)
+			{
+				adjustedScaleX = actualWidth / logicalWidth;
+				adjustedScaleY = actualHeight / logicalHeight;
+				_dirty.Width = logicalWidth;
+				_dirty.Height = logicalHeight;
+			}
+			else
+			{
+				_dirty.Width = actualWidth;
+				_dirty.Height = actualHeight;
+			}
+
 			_dirty.X = 0f;
 			_dirty.Y = 0f;
-			_dirty.Width = (float)sender.ActualWidth;
-			_dirty.Height = (float)sender.ActualHeight;
 
 			PlatformGraphicsService.ThreadLocalCreator = sender;
 			try
 			{
 				_canvas.Session = args.DrawingSession;
 				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
+				// Apply adjusted scale via PlatformCanvas (not DrawingSession.Transform directly)
+				// so the scale is tracked in CurrentState.Matrix, allowing any transforms applied
+				// by the drawable to chain correctly on top of it. This maps the rounded logical
+				// dimensions back to exact physical dimensions, filling the view edge-to-edge
+				// without sub-pixel gaps. Uses epsilon to skip near-identity scales from
+				// double-to-float precision loss.
+				const float scaleEpsilon = 0.0001f;
+				if (MathF.Abs(adjustedScaleX - 1f) > scaleEpsilon || MathF.Abs(adjustedScaleY - 1f) > scaleEpsilon)
+				{
+					_canvas.Scale(adjustedScaleX, adjustedScaleY);
+				}
 				_drawable.Draw(_canvas, _dirty);
 			}
 			finally
