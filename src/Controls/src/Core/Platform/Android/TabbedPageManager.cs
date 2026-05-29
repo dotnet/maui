@@ -129,6 +129,16 @@ public class TabbedPageManager
 			
 			_viewPager.LayoutChange -= OnLayoutChanged;
 			_viewPager.Adapter = null;
+
+			if (_currentBarBackground is GradientBrush currentGradientBrush)
+			{
+				if (ReferenceEquals(currentGradientBrush.Parent, Element))
+				{
+					currentGradientBrush.Parent = null;
+				}
+				currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+			}
+			_currentBarBackground = null;
 		}
 
 		Element = tabbedPage;
