@@ -71,15 +71,13 @@ Task("GenerateMsixCert")
 	.WithCriteria(isPackagedTestRun)
 	.Does(() =>
 {
-	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key
+	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key.
+	// Open read-only first so we can detect an existing cert without requiring admin. Only escalate
+	// to ReadWrite (which requires admin on LocalMachine) when we actually need to create the cert.
 	var localTrustedPeopleStore = new X509Store("TrustedPeople", StoreLocation.LocalMachine);
-	localTrustedPeopleStore.Open(OpenFlags.ReadWrite);
-
-	// We need to have the key also in CurrentUser -> My so that the msix can be built and signed
-	// with the key by passing the key's thumbprint to the build
-	var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
-	currentUserMyStore.Open(OpenFlags.ReadWrite);
+	localTrustedPeopleStore.Open(OpenFlags.ReadOnly);
 	certificateThumbprint = localTrustedPeopleStore.Certificates.FirstOrDefault(c => c.Subject.Contains(certCN))?.Thumbprint;
+	localTrustedPeopleStore.Close();
 
 	if (string.IsNullOrEmpty(certificateThumbprint))
 	{
@@ -111,14 +109,59 @@ Task("GenerateMsixCert")
 			cert.FriendlyName = certCN;
 		}
 
-		var tmpCert = new X509Certificate2(cert.Export(X509ContentType.Pfx), "", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
+		// Store the private key in the *user* key container (not the machine container) so the
+		// current non-elevated user can use it to sign. LocalMachine\TrustedPeople only needs the
+		// cert's public key for sideload trust validation, so a user-scope private key is enough.
+		// Using MachineKeySet here would put the key in C:\ProgramData\Microsoft\Crypto\...
+		// which is unreadable from a non-admin process — signtool then fails with "No certificates
+		// were found that met all the given criteria" even though the cert is visible in the store.
+		var tmpCert = new X509Certificate2(cert.Export(X509ContentType.Pfx), "", X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.PersistKeySet);
 		certificateThumbprint = tmpCert.Thumbprint;
-		localTrustedPeopleStore.Add(tmpCert);
-		currentUserMyStore.Add(tmpCert);
-	}
 
-	localTrustedPeopleStore.Close();
-	currentUserMyStore.Close();
+		// Writing to LocalMachine\TrustedPeople requires admin. If we don't have it, fail with a
+		// clear message rather than the raw "Access is denied" from the store.
+		try
+		{
+			localTrustedPeopleStore.Open(OpenFlags.ReadWrite);
+			localTrustedPeopleStore.Add(tmpCert);
+			localTrustedPeopleStore.Close();
+		}
+		catch (System.Security.Cryptography.CryptographicException ex)
+		{
+			throw new Exception(
+				"Failed to install signing cert into LocalMachine\\TrustedPeople. " +
+				"This step requires an elevated (administrator) shell on first run. " +
+				"After the cert is created once, subsequent runs can be performed without elevation.",
+				ex);
+		}
+
+		// CurrentUser\My only needs admin if the process doesn't own the profile, so do it after
+		// the LocalMachine write succeeded.
+		var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
+		currentUserMyStore.Open(OpenFlags.ReadWrite);
+		currentUserMyStore.Add(tmpCert);
+		currentUserMyStore.Close();
+	}
+	else
+	{
+		// Cert already exists in LocalMachine\TrustedPeople. Make sure it's also in CurrentUser\My
+		// so the build can sign with it. CurrentUser\My is writable without admin.
+		var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
+		currentUserMyStore.Open(OpenFlags.ReadOnly);
+		var alreadyInMyStore = currentUserMyStore.Certificates
+			.Cast<X509Certificate2>()
+			.Any(c => c.Thumbprint == certificateThumbprint);
+		currentUserMyStore.Close();
+
+		if (!alreadyInMyStore)
+		{
+			Warning(
+				"Cert {0} is in LocalMachine\\TrustedPeople but not in CurrentUser\\My. " +
+				"The build will not be able to sign the MSIX. Run this task elevated once to " +
+				"reinstall the cert into both stores.",
+				certificateThumbprint);
+		}
+	}
 
 	Information("Cert thumbprint: " + certificateThumbprint ?? "null");
 });
