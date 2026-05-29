@@ -169,20 +169,19 @@ internal partial class MauiItemsView
 			repeater.ElementPrepared += ItemsRepeater_ElementPrepared;
 			repeater.ElementClearing += ItemsRepeater_ElementClearing;
 
-			// Apply drag affordance to already-realized containers. ItemsRepeater
-			// virtualizes containers, so TryGetElement returns null for unrealized
-			// indices — we must iterate over the full source range to avoid missing
-			// realized containers that sit past an unrealized gap.
-			// Use ItemsSourceView.Count (the repeater's own flat count) rather than
-			// GetSourceList().Count: for grouped lists GetSourceList() returns the
-			// MAUI-side groups collection whose Count equals the number of groups, not
-			// the flat total of headers + items + footers.
-			int flatCount = repeater.ItemsSourceView?.Count ?? 0;
-			for (int i = 0; i < flatCount; i++)
+			// Apply drag affordance to already-realized containers. Walk the
+			// ItemsRepeater's visual children directly — only realized containers
+			// exist in the visual tree, so this is O(realized) rather than
+			// O(total items). GetElementIndex returns the authoritative flat index
+			// for each realized element (consistent with how FindAllContainers works).
+			int childCount = VisualTreeHelper.GetChildrenCount(repeater);
+			for (int i = 0; i < childCount; i++)
 			{
-				if (repeater.TryGetElement(i) is ItemContainer ic)
+				if (VisualTreeHelper.GetChild(repeater, i) is ItemContainer ic)
 				{
-					ApplyDragAffordance(ic, i);
+					int index = repeater.GetElementIndex(ic);
+					if (index >= 0)
+						ApplyDragAffordance(ic, index);
 				}
 			}
 		}
@@ -212,14 +211,13 @@ internal partial class MauiItemsView
 			repeater.ElementPrepared -= ItemsRepeater_ElementPrepared;
 			repeater.ElementClearing -= ItemsRepeater_ElementClearing;
 
-			// Iterate the full source range; TryGetElement returns null for unrealized
-			// indices so we can't stop at the first gap and assume we've cleared every
-			// realized container. Use ItemsSourceView.Count for the same reason as
-			// WireDragDropEvents — GetSourceList().Count is wrong for grouped data.
-			int flatCount = repeater.ItemsSourceView?.Count ?? 0;
-			for (int i = 0; i < flatCount; i++)
+			// Walk the ItemsRepeater's visual children directly (O(realized))
+			// to clear drag affordance from every realized container. Only
+			// realized containers exist in the visual tree, so no index loop needed.
+			int childCount = VisualTreeHelper.GetChildrenCount(repeater);
+			for (int i = 0; i < childCount; i++)
 			{
-				if (repeater.TryGetElement(i) is ItemContainer ic)
+				if (VisualTreeHelper.GetChild(repeater, i) is ItemContainer ic)
 				{
 					ic.CanDrag = false;
 					ic.DragStarting -= ItemContainer_DragStarting;
@@ -1468,7 +1466,7 @@ internal partial class MauiItemsView
 	/// </summary>
 	void UpdateInsertionIndicator(ItemContainer target, bool insertAfter)
 	{
-		if (_dropIndicatorHead is null || _dropIndicatorLine is null)
+		if (_dropIndicatorHead is null || _dropIndicatorLine is null || _dropIndicatorCanvas is null)
 			return;
 
 		// Skip the source slot itself.
