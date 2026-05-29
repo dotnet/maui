@@ -1,0 +1,68 @@
+﻿<local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            mc:Ignorable="d"
+            xmlns:local="using:Maui.Controls.Sample.Issues"
+            x:Class="Maui.Controls.Sample.Issues.Issue27998"
+            x:Name="Test"
+            Title="Issue27998">
+
+  <Grid x:Name="rootGrid">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+    
+    <VerticalStackLayout  x:Name="notScrollableStack"
+                          Background="Beige"
+                          Grid.ColumnSpan="2">
+      <Label FontSize="36">First line</Label>
+      <Label FontSize="30">Second line</Label>
+    </VerticalStackLayout>
+
+    <ScrollView AutomationId="ItemsId"
+                Grid.Row="1">
+      <VerticalStackLayout>
+        <Label AutomationId="FirstItemId" FontSize="28">INSIDE SCROLL 1</Label>
+        <Label FontSize="28">INSIDE SCROLL 2</Label>
+        <Label FontSize="28">INSIDE SCROLL 3</Label>
+        <Label FontSize="28">INSIDE SCROLL 4</Label>
+        <Label FontSize="28">INSIDE SCROLL 5</Label>
+        <Label FontSize="28">INSIDE SCROLL 6</Label>
+        <Label FontSize="28">INSIDE SCROLL 7</Label>
+        <Label FontSize="28">INSIDE SCROLL 8</Label>
+        <Label FontSize="28">INSIDE SCROLL 9</Label>
+        <Label FontSize="28">INSIDE SCROLL 10</Label>
+        <Label FontSize="28">INSIDE SCROLL 11</Label>
+        <Label FontSize="28">INSIDE SCROLL 12</Label>
+        <Label FontSize="28">INSIDE SCROLL 13</Label>
+        <Label FontSize="28">INSIDE SCROLL 14</Label>
+        <Label FontSize="28">INSIDE SCROLL 15</Label>
+        <Label FontSize="28">INSIDE SCROLL 16</Label>
+        <Label FontSize="28">INSIDE SCROLL 17</Label>
+        <Label FontSize="28">INSIDE SCROLL 18</Label>
+        <Label FontSize="28">INSIDE SCROLL 19</Label>
+        <Label FontSize="28">INSIDE SCROLL 20</Label>
+        <Label FontSize="28">INSIDE SCROLL 21</Label>
+        <Label FontSize="28">INSIDE SCROLL 22</Label>
+        <Label FontSize="28">INSIDE SCROLL 23</Label>
+        <Label FontSize="28">INSIDE SCROLL 24</Label>
+        <Label FontSize="28">INSIDE SCROLL 25</Label>
+        <Label FontSize="28">INSIDE SCROLL 26</Label>
+        <Label AutomationId="LastItemId" FontSize="28">INSIDE SCROLL 27</Label>
+      </VerticalStackLayout>
+    </ScrollView>
+    
+    <Border x:Name="InvisibleBorder"
+        WidthRequest="50"
+        Background="Red"
+        Grid.Row="1"
+        Grid.Column="1">
+    </Border>
+  </Grid>
+</local:TestContentPage>
