@@ -164,9 +164,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!_collectionViewController.TryGetTarget(out var controller))
 				return;
 
-			// Force UICollectionView to get the internal accounting straight
 			var collectionView = controller.CollectionView;
-			UpdateSection(collectionView);
+
+			// Force UICollectionView to get the internal accounting straight.
+			// Skip for Remove: standard INotifyCollectionChanged semantics require the item to be
+			// already removed from the backing collection before CollectionChanged fires. This means
+			// _groupSource has N-1 items when we receive Remove, but UIKit still has N sections.
+			// Calling UpdateSection here triggers GetGroupCount with UIKit's stale section index
+			// (N-1), which is out of range on the already-mutated _groupSource → ArgumentOutOfRangeException.
+			// The post-processing UpdateSection call below handles reconciliation after DeleteSections.
+			if (args.Action != NotifyCollectionChangedAction.Remove)
+			{
+				UpdateSection(collectionView);
+			}
 
 			switch (args.Action)
 			{
@@ -360,6 +370,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GetGroupCount(int groupIndex)
 		{
+			// Defensive bounds check: UIKit can call back synchronously during DeleteSections,
+			// and other re-entrancy scenarios may present a stale groupIndex. Return 0 instead
+			// of throwing ArgumentOutOfRangeException.
+			if ((uint)groupIndex >= (uint)_groupSource.Count)
+				return 0;
+
 			switch (_groupSource[groupIndex])
 			{
 				case IList list:

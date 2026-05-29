@@ -49,6 +49,125 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// Regression tests for https://github.com/dotnet/maui/issues/34691
+		// ObservableGroupedSource.CollectionChanged() called UpdateSection() before Remove,
+		// causing GetGroupCount to access a stale section index → ArgumentOutOfRangeException.
+		// Each test forces a synchronous UIKit layout pass after removal to exercise the fix.
+
+		[Fact(DisplayName = "Removing last section from grouped CollectionView does not crash (Handler2)")]
+		public async Task ItemsSourceGroupedRemoveLastSectionDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var data = new List<string> { "item 1", "item 2", "item 3" };
+			var groupData = new ObservableCollection<CollectionViewStringGroup>
+			{
+				new("Header 1", data),
+				new("Header 2", data),
+				new("Header 3", data),
+			};
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groupData,
+				ItemTemplate = new DataTemplate(() => new Label()),
+			};
+
+			var initialFrame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(initialFrame, collectionView);
+				var uiCollectionView = handler.Controller.CollectionView;
+
+				groupData.RemoveAt(groupData.Count - 1);
+
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+			});
+		}
+
+		[Fact(DisplayName = "Removing first section from grouped CollectionView does not crash (Handler2)")]
+		public async Task ItemsSourceGroupedRemoveFirstSectionDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var data = new List<string> { "item 1", "item 2" };
+			var groupData = new ObservableCollection<CollectionViewStringGroup>
+			{
+				new("Header 1", data),
+				new("Header 2", data),
+				new("Header 3", data),
+			};
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groupData,
+				ItemTemplate = new DataTemplate(() => new Label()),
+			};
+
+			var initialFrame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(initialFrame, collectionView);
+				var uiCollectionView = handler.Controller.CollectionView;
+
+				groupData.RemoveAt(0);
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+
+				groupData.RemoveAt(0);
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+			});
+		}
+
+		[Fact(DisplayName = "Removing all sections one by one from grouped CollectionView does not crash (Handler2)")]
+		public async Task ItemsSourceGroupedRemoveAllSectionsOneByOneDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var data = new List<string> { "item 1", "item 2" };
+			var groupData = new ObservableCollection<CollectionViewStringGroup>
+			{
+				new("Header 1", data),
+				new("Header 2", data),
+				new("Header 3", data),
+			};
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groupData,
+				ItemTemplate = new DataTemplate(() => new Label()),
+			};
+
+			var initialFrame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(initialFrame, collectionView);
+				var uiCollectionView = handler.Controller.CollectionView;
+
+				while (groupData.Count > 0)
+				{
+					groupData.RemoveAt(groupData.Count - 1);
+					uiCollectionView.SetNeedsLayout();
+					uiCollectionView.LayoutIfNeeded();
+					Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+				}
+
+				Assert.Empty(groupData);
+			});
+		}
+
 		class CollectionViewStringGroup : List<string>
 		{
 			public string GroupHeader { get; private set; }
