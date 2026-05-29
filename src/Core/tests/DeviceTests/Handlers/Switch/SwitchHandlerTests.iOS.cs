@@ -121,6 +121,45 @@ namespace Microsoft.Maui.DeviceTests
 				.AssertEventually(message: $"Native switch thumb color did not apply before {messageSuffix}.");
 		}
 
+		static bool IsIOSOrMacCatalyst26OrNewer()
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
+		}
+
+		static UIColor GetDefaultOffTrackColor()
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : UIColor.FromRGBA(120, 120, 128, 40);
+		}
+
+		async Task AssertDefaultSwitchDoesNotReapplyColors(UISwitch nativeSwitch)
+		{
+			var trackSubview = nativeSwitch.GetTrackSubview();
+			Assert.NotNull(trackSubview);
+
+			var preservedTrackColor = UIColor.FromRGBA(12, 34, 56, 255);
+			var preservedOnTintColor = UIColor.FromRGBA(78, 90, 123, 255);
+			var preservedThumbColor = UIColor.FromRGBA(45, 67, 89, 255);
+
+			trackSubview.BackgroundColor = preservedTrackColor;
+			nativeSwitch.OnTintColor = preservedOnTintColor;
+			nativeSwitch.ThumbTintColor = preservedThumbColor;
+
+			nativeSwitch.MovedToWindow();
+			await Task.Delay(100);
+
+			Assert.True(
+				ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), preservedTrackColor, tolerance: 0.1),
+				"Default switch track color was unexpectedly reapplied.");
+
+			Assert.True(
+				ColorComparison.ARGBEquivalent(nativeSwitch.OnTintColor, preservedOnTintColor, tolerance: 0.1),
+				"Default switch on tint color was unexpectedly cleared or reapplied.");
+
+			Assert.True(
+				ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, preservedThumbColor, tolerance: 0.1),
+				"Default switch thumb tint color was unexpectedly cleared or reapplied.");
+		}
+
 		/// <summary>
 		/// If a UISwitch grows beyond 101 pixels it's no longer
 		/// clickable via Voice Over
@@ -165,6 +204,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Track Color's view is default color when toggled off")]
 		public async Task OffTrackColorSetToDefaultColor()
 		{
+			if (IsIOSOrMacCatalyst26OrNewer())
+			{
+				return;
+			}
+
 			var switchStub = new SwitchStub()
 			{
 				IsOn = true,
@@ -179,9 +223,45 @@ namespace Microsoft.Maui.DeviceTests
 					expectedSetValue: false,
 					expectedUnsetValue: true);
 
-				var color = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : UIColor.FromRGBA(120, 120, 128, 40);
+				await ValidateVisualTrackColor(switchStub, GetDefaultOffTrackColor());
+			});
+		}
 
-				await ValidateVisualTrackColor(switchStub, color);
+		[Fact(DisplayName = "Default Switch Reapplies Legacy Off Track Color Before iOS/MacCatalyst 26")]
+		public async Task DefaultSwitchReappliesLegacyOffTrackColorBeforeiOSOrMacCatalyst26()
+		{
+			if (IsIOSOrMacCatalyst26OrNewer())
+			{
+				return;
+			}
+
+			var switchStub = new SwitchStub
+			{
+				IsOn = false
+			};
+
+			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
+			{
+				var nativeSwitch = GetNativeSwitch(handler);
+
+				await new Func<bool>(() => nativeSwitch.IsReadyForColorReapply())
+					.AssertEventually(message: "Native switch was not ready for legacy color reapply.");
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), GetDefaultOffTrackColor(), tolerance: 0.1))
+					.AssertEventually(message: "Default switch did not apply the initial legacy off track color.");
+
+				var trackSubview = nativeSwitch.GetTrackSubview();
+				Assert.NotNull(trackSubview);
+
+				trackSubview.BackgroundColor = UIColor.Purple;
+				Assert.True(
+					ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), UIColor.Purple, tolerance: 0.1),
+					"Test setup failed to poison the default switch track color.");
+
+				nativeSwitch.MovedToWindow();
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), GetDefaultOffTrackColor(), tolerance: 0.1))
+					.AssertEventually(message: "Default switch did not reapply the legacy off track color after moving to a window.");
 			});
 		}
 
@@ -196,13 +276,13 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(DisplayName = "Custom Colors Use Sliding Style On iOS 26")]
+		[Theory(DisplayName = "Custom Colors Use Sliding Style On iOS/MacCatalyst 26")]
 		[InlineData(true, false)]
 		[InlineData(false, true)]
 		[InlineData(true, true)]
-		public async Task CustomColorsUseSlidingStyleOniOS26(bool hasTrackColor, bool hasThumbColor)
+		public async Task CustomColorsUseSlidingStyleOniOSOrMacCatalyst26(bool hasTrackColor, bool hasThumbColor)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			if (!IsIOSOrMacCatalyst26OrNewer())
 			{
 				return;
 			}
@@ -223,10 +303,10 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(UISwitchStyle.Sliding, styles.Style);
 		}
 
-		[Fact(DisplayName = "Custom Colors Render On Initial Off State On iOS 26")]
-		public async Task CustomColorsRenderOnInitialOffStateOniOS26()
+		[Fact(DisplayName = "Custom Colors Render On Initial Off State On iOS/MacCatalyst 26")]
+		public async Task CustomColorsRenderOnInitialOffStateOniOSOrMacCatalyst26()
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			if (!IsIOSOrMacCatalyst26OrNewer())
 			{
 				return;
 			}
@@ -248,25 +328,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Default Switch Uses Automatic Style On iOS 26")]
-		public async Task DefaultSwitchUsesAutomaticStyleOniOS26()
+		[Fact(DisplayName = "Default Switch Uses Automatic Style On iOS/MacCatalyst 26")]
+		public async Task DefaultSwitchUsesAutomaticStyleOniOSOrMacCatalyst26()
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			if (!IsIOSOrMacCatalyst26OrNewer())
 			{
 				return;
 			}
 
 			var switchStub = new SwitchStub();
 
-			var style = await GetValueAsync(switchStub, handler => GetNativeSwitch(handler).PreferredStyle);
+			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
+			{
+				var nativeSwitch = GetNativeSwitch(handler);
 
-			Assert.Equal(UISwitchStyle.Automatic, style);
+				Assert.Equal(UISwitchStyle.Automatic, nativeSwitch.PreferredStyle);
+				await AssertDefaultSwitchDoesNotReapplyColors(nativeSwitch);
+			});
 		}
 
-		[Fact(DisplayName = "Thumb Color Clears When Reset On iOS 26")]
-		public async Task ThumbColorClearsWhenResetOniOS26()
+		[Fact(DisplayName = "Thumb Color Clears When Reset On iOS/MacCatalyst 26")]
+		public async Task ThumbColorClearsWhenResetOniOSOrMacCatalyst26()
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			if (!IsIOSOrMacCatalyst26OrNewer())
 			{
 				return;
 			}
@@ -292,10 +376,47 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Custom Colors Reapply After Moved To Window On iOS 26")]
-		public async Task CustomColorsReapplyAfterMovedToWindowOniOS26()
+		[Fact(DisplayName = "Custom Colors Clear To Automatic Style On iOS/MacCatalyst 26")]
+		public async Task CustomColorsClearToAutomaticStyleOniOSOrMacCatalyst26()
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			if (!IsIOSOrMacCatalyst26OrNewer())
+			{
+				return;
+			}
+
+			var switchStub = new SwitchStub
+			{
+				IsOn = false,
+				TrackColor = Colors.Red,
+				ThumbColor = Colors.Orange
+			};
+
+			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
+			{
+				var nativeSwitch = GetNativeSwitch(handler);
+
+				await AssertSwitchColorsApplied(nativeSwitch, Colors.Red, Colors.Orange, "resetting custom colors");
+
+				switchStub.TrackColor = null;
+				switchStub.ThumbColor = null;
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				handler.UpdateValue(nameof(ISwitch.ThumbColor));
+
+				Assert.Equal(UISwitchStyle.Automatic, nativeSwitch.PreferredStyle);
+				Assert.Null(nativeSwitch.OnTintColor);
+				Assert.Null(nativeSwitch.ThumbTintColor);
+				Assert.False(
+					ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), Colors.Red.ToPlatform(), tolerance: 0.1),
+					"Native switch track color kept the stale custom color after custom colors were cleared.");
+
+				await AssertDefaultSwitchDoesNotReapplyColors(nativeSwitch);
+			});
+		}
+
+		[Fact(DisplayName = "Custom Colors Reapply After Moved To Window On iOS/MacCatalyst 26")]
+		public async Task CustomColorsReapplyAfterMovedToWindowOniOSOrMacCatalyst26()
+		{
+			if (!IsIOSOrMacCatalyst26OrNewer())
 			{
 				return;
 			}
@@ -336,10 +457,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Custom Colors Update After App Theme Change On iOS 26")]
-		public async Task CustomColorsUpdateAfterAppThemeChangeOniOS26()
+		[Fact(DisplayName = "Custom Colors Update After App Theme Change On iOS/MacCatalyst 26")]
+		public async Task CustomColorsUpdateAfterAppThemeChangeOniOSOrMacCatalyst26()
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			if (!IsIOSOrMacCatalyst26OrNewer())
 			{
 				return;
 			}

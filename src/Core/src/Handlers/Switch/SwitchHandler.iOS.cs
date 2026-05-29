@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				DispatchQueue.MainQueue.DispatchAsync(() =>
 				{
-					if (VirtualView is not ISwitch view || PlatformView is null)
+					if (VirtualView is not ISwitch view || PlatformView is null || !view.HasCustomColors())
 						return;
 
 					platformView.UpdateTrackColor(view);

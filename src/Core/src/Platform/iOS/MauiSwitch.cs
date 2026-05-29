@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 		bool _colorReapplyQueued;
 		bool _isReapplyingColors;
 		bool _needsColorReapply;
+		bool _hasMauiTrackColorOverride;
 
 		public MauiSwitch(CGRect frame) : base(frame)
 		{
@@ -30,6 +31,14 @@ namespace Microsoft.Maui.Platform
 
 		public void SetNeedsColorReapply()
 		{
+			var virtualView = VirtualView;
+
+			if (virtualView is null || virtualView.ShouldPreserveNativeDefaults())
+			{
+				_needsColorReapply = false;
+				return;
+			}
+
 			_needsColorReapply = true;
 			SetNeedsLayout();
 			QueueColorReapply();
@@ -74,12 +83,20 @@ namespace Microsoft.Maui.Platform
 
 		void TryReapplyColors()
 		{
-			if (_isReapplyingColors || !_needsColorReapply || !this.IsReadyForColorReapply())
+			if (_isReapplyingColors || !_needsColorReapply)
 			{
 				return;
 			}
 
-			if (_virtualView is null || !_virtualView.TryGetTarget(out var virtualView))
+			var virtualView = VirtualView;
+
+			if (virtualView is null || virtualView.ShouldPreserveNativeDefaults())
+			{
+				_needsColorReapply = false;
+				return;
+			}
+
+			if (!this.IsReadyForColorReapply())
 			{
 				return;
 			}
@@ -96,6 +113,21 @@ namespace Microsoft.Maui.Platform
 			{
 				_isReapplyingColors = false;
 			}
+		}
+
+		ISwitch? VirtualView =>
+			_virtualView is not null && _virtualView.TryGetTarget(out var virtualView) ? virtualView : null;
+
+		internal bool HasMauiTrackColorOverride => _hasMauiTrackColorOverride;
+
+		internal void MarkMauiTrackColorOverride()
+		{
+			_hasMauiTrackColorOverride = true;
+		}
+
+		internal void ClearMauiTrackColorOverride()
+		{
+			_hasMauiTrackColorOverride = false;
 		}
 	}
 }
