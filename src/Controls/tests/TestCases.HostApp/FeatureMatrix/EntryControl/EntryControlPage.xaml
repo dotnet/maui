@@ -39,6 +39,9 @@
                                  IsEnabled="{Binding IsEnabled}"
                                  FlowDirection="{Binding FlowDirection}"
                                  HeightRequest="{Binding HeightRequest}"
+                                 WidthRequest="{Binding WidthRequest}"
+                                 BackgroundColor="{Binding BackgroundColor}"
+                                 Opacity="{Binding Opacity}"
                                  FontAttributes="{Binding FontAttributes}"
                                  TextTransform="{Binding TextTransform}"
                                  TextChanged="EntryControl_TextChanged"
@@ -52,7 +55,7 @@
               <Button Text="Options"
                       FontSize="11"
                       Clicked="NavigateToOptionsPage_Clicked"
-                      AutomationId="OptionsButton"/>
+                      AutomationId="Options"/>
 
               <Grid ColumnSpacing="10"
                     Margin="0,10,0,10">
@@ -86,6 +89,7 @@
                      <local:UITestEntry x:Name="CursorPositionEntry"
                                         Text="{Binding CursorPosition}"
                                         AutomationId="CursorPositionEntry"
+                                        TextChanged="CursorPositionEntry_TextChanged"
                                         IsCursorVisible="False"
                                         Grid.Row="1"
                                         Grid.Column="1"/>
