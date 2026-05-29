@@ -350,19 +350,33 @@ Task("testOnly")
 		var cerPath = cerPaths.First();
 		Information($"Found MSIX, installing: {msixPath}");
 
+		int InstallAppxPackage(FilePath path) {
+			var absPath = MakeAbsolute(path).FullPath;
+			Information("Installing MSIX: {0}", absPath);
+			// $ProgressPreference='SilentlyContinue' suppresses Add-AppxPackage's
+			// progress output which otherwise chokes cake's stdout pipe.
+			return StartProcess("powershell",
+				"-NoProfile -Command \"$ProgressPreference='SilentlyContinue'; Add-AppxPackage -Path '" + absPath + "'; if (-not $?) { exit 1 }\"");
+		}
+
 		// Install dependencies
 		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
 		foreach (var dep in dependencies) {
-			Information("Installing Dependency MSIX: {0}", dep);
 			try {
-				StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
-			} catch { 
+				var depExit = InstallAppxPackage(dep);
+				if (depExit != 0) {
+					Warning($"Failed to install dependency (exit code {depExit}): {dep}");
+				}
+			} catch {
 				Warning($"Failed to install dependency: {dep}");
 			}
 		}
 
 		// Install the DeviceTests app
-		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
+		var installExit = InstallAppxPackage(msixPath);
+		if (installExit != 0) {
+			throw new Exception($"Failed to install app MSIX (exit code {installExit}): {msixPath}");
+		}
 
 		if (isControlsProjectTestRun)
 		{
