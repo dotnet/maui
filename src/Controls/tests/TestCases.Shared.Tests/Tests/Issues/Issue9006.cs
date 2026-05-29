@@ -10,6 +10,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #if ANDROID
 		const string Back = "";
 		const string Tab1 = "";
+#elif MACCATALYST
+		const string Back = "Back";
+		const string Tab1 = "BackButton";
 #else
 		const string Back = "Back";
 		const string Tab1 = "Tab 1";

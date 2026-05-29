@@ -24,7 +24,13 @@ public class Issue29740 : _IssuesUITest
 		Assert.That(initialvalue, Is.EqualTo("Stepper Value: 0"));
 		for (int i = 0; i < 4; i++)
 		{
+			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+			// See https://github.com/appium/appium/issues/22272
+#if MACCATALYST
+			App.DecreaseStepper("29740Stepper");
+#else
 			App.IncreaseStepper("29740Stepper");
+#endif
 		}
 		var finalvalue = App.WaitForElement("29740StepperValueLabel").GetText();
 		Assert.That(finalvalue, Is.EqualTo("Stepper Value: 10"));

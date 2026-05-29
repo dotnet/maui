@@ -137,7 +137,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31064
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31064, https://github.com/dotnet/maui/issues/35214
 	[Test, Order(5)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifySelectedIndicatorSize()
@@ -151,7 +151,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 	}
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31065
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31065, https://github.com/dotnet/maui/issues/35214
 	[Test, Order(6)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorShape()
@@ -361,6 +361,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/35214
 	[Test, Order(14)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorColorWithIndicatorSize()
@@ -388,6 +389,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(19)]
 	[Category(UITestCategories.IndicatorView)]
@@ -419,6 +421,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/35214
 	[Test, Order(22)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorHideSingleWithIndicatorSize()
@@ -437,6 +440,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		}
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Issue Link: https://github.com/dotnet/maui/issues/31140 , https://github.com/dotnet/maui/issues/29812
 	[Test, Order(23)]
@@ -454,6 +458,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 	}
 #endif
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/35214
 	[Test, Order(24)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorSizeWithFlowDirection()
@@ -480,6 +485,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
+#endif
 
 	[Test, Order(31)]
 	[Category(UITestCategories.IndicatorView)]
@@ -660,6 +666,14 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 			App.IncreaseStepper(stepperAutomationId);
 		else
 			App.DecreaseStepper(stepperAutomationId);
+#elif MACCATALYST
+		// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+		// See https://github.com/appium/appium/issues/22272
+		App.WaitForElement(stepperAutomationId);
+		if (increase)
+			App.DecreaseStepper(stepperAutomationId);
+		else
+			App.IncreaseStepper(stepperAutomationId);
 #else
 		App.WaitForElement(stepperAutomationId);
 		if (increase)

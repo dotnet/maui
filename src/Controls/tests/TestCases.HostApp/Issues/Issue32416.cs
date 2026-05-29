@@ -27,7 +27,8 @@ public class Issue32416 : TestShell
 		{
 			Items.Add(new MenuItem
 			{
-				Text = $"Item {i}"
+				Text = $"Item {i}",
+				AutomationId = $"Item {i}"
 			});
 		}
 	}
