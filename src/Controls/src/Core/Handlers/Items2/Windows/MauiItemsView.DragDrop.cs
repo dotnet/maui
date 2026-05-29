@@ -323,7 +323,7 @@ internal partial class MauiItemsView
 		// letting the transparent ThemeResource resume when drag-reorder is disabled.
 		if (!isHeaderOrFooter
 			&& WApp.Current?.Resources?.TryGetValue("CardBackgroundFillColorDefaultBrush", out var cardBg) == true
-			&& cardBg is Brush cardBrush)
+			&& cardBg is Microsoft.UI.Xaml.Media.Brush cardBrush)
 		{
 			itemContainer.Background = cardBrush;
 		}

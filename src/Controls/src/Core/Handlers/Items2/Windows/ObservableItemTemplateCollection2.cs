@@ -262,7 +262,7 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	/// on the source would fire two separate <see cref="System.Collections.Specialized.NotifyCollectionChangedAction"/> events.
 	/// <see cref="InnerCollectionChanged(NotifyCollectionChangedEventArgs)"/> relays these to the template collection
 	/// as Remove + Add, which creates a brand-new <see cref="ItemTemplateContext2"/> on Insert.
-	/// <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater"/> treats a new item as freshly added and may call
+	/// <c>ItemsRepeater</c> treats a new item as freshly added and may call
 	/// <c>BringIntoView</c>, resetting the scroll position.
 	/// </para>
 	/// <para>
@@ -335,16 +335,9 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 	/// raising <c>CollectionChanged(Remove)</c> + <c>CollectionChanged(Add)</c> instead.
 	/// </para>
 	/// <para>
-	/// <b>Why:</b> CsWinRT projects <c>CollectionChanged(Move)</c> as <c>VectorChanged(Reset)</c>
-	/// because WinRT's <c>IVectorChangedEventArgs.CollectionChange</c> has no Move value.
-	/// When <see cref="ItemsRepeater"/> receives Reset it clears all realized containers,
-	/// momentarily collapses its height to zero, and the ScrollViewer auto-clamps its offset
-	/// to zero — the visible scroll-to-top bug.
-	/// </para>
-	/// <para>
 	/// <b>Why Remove+Add is safe:</b> Firing Remove + Add causes CsWinRT to emit
 	/// <c>VectorChanged(ItemRemoved)</c> + <c>VectorChanged(ItemInserted)</c>, which
-	/// ItemsRepeater handles by repositioning only the affected container while preserving
+	/// <c>ItemsRepeater</c> handles by repositioning only the affected container while preserving
 	/// the ScrollViewer offset.
 	/// <see cref="_innerCollectionChange"/> (set by the caller) prevents
 	/// <see cref="TemplateCollectionChanged"/> from back-propagating these synthetic Remove/Add

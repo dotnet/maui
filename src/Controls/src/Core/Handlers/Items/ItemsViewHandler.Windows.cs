@@ -343,11 +343,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (emptyViewTemplate is DataTemplate template)
 			{
-				_emptyView = RealizeEmptyViewTemplate(emptyView, template);
+				_emptyView = ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, template, MauiContext, ref _formsEmptyView);
 			}
 			else if (emptyView is View view)
 			{
-				_emptyView = RealizeEmptyView(view);
+				_emptyView = ItemsViewExtensions.RealizeEmptyView(view, MauiContext, ref _formsEmptyView);
 			}
 			else
 			{
