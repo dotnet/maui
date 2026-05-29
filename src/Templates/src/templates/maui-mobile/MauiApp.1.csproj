@@ -26,7 +26,7 @@
 		       <MauiXaml Update="MyPage.xaml" Inflator="Default" /> (reverts to defaults: Runtime for Debug, XamlC for Release)
 		       <MauiXaml Update="MyPage.xaml" Inflator="Runtime" /> (force runtime inflation) -->
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
-<!--#if (IncludeSampleContent) -->
+<!--#if (EnableSampleContent) -->
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 <!--#endif -->
 
@@ -85,7 +85,13 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
 	</ItemGroup>
 
-<!--#if (IncludeSampleContent) -->
+<!--#if (UseCSharpUI) -->
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="7.0.1" />
+	</ItemGroup>
+<!--#endif -->
+
+<!--#if (EnableSampleContent) -->
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
 		<PackageReference Include="CommunityToolkit.Maui" Version="12.3.0" />
