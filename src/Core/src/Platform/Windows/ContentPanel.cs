@@ -69,6 +69,21 @@ namespace Microsoft.Maui.Platform
 			return size;
 		}
 
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			if (CrossPlatformLayout is IBorderView)
+			{
+				return new MauiBorderAutomationPeer(this);
+			}
+			else if (CrossPlatformLayout is IContentView)
+			{
+				// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
+				return new ContentPanelAutomationPeer(this);
+			}
+
+			return base.OnCreateAutomationPeer();
+		}
+
 		public ContentPanel()
 		{
 			_borderPath = new Path();
@@ -78,25 +93,6 @@ namespace Microsoft.Maui.Platform
 
 			RegisterPropertyChangedCallback(BackgroundProperty, OnBackgroundPropertyChanged);
 			EnsureHitTestBackground();
-		}
-
-		// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
-		protected override AutomationPeer OnCreateAutomationPeer() => new ContentPanelAutomationPeer(this);
-
-		internal partial class ContentPanelAutomationPeer : FrameworkElementAutomationPeer
-		{
-			internal ContentPanelAutomationPeer(ContentPanel owner) : base(owner) { }
-
-			bool HasDescription => !string.IsNullOrWhiteSpace(AutomationProperties.GetName(Owner));
-
-			protected override AutomationControlType GetAutomationControlTypeCore() =>
-				HasDescription ? AutomationControlType.Text : AutomationControlType.Custom;
-
-			protected override string GetLocalizedControlTypeCore() =>
-				HasDescription ? string.Empty : base.GetLocalizedControlTypeCore() ?? string.Empty;
-
-			protected override IList<AutomationPeer>? GetChildrenCore() =>
-				HasDescription ? null : base.GetChildrenCore();
 		}
 
 		void ContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
