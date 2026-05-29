@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IScrollView.HorizontalScrollBarVisibility)] = MapHorizontalScrollBarVisibility,
 			[nameof(IScrollView.VerticalScrollBarVisibility)] = MapVerticalScrollBarVisibility,
 			[nameof(IScrollView.Orientation)] = MapOrientation,
+#if ANDROID
+			[nameof(IView.FlowDirection)] = MapFlowDirection,
+#endif
 #if __IOS__
 			[nameof(IScrollView.IsEnabled)] = MapIsEnabled,
 #endif
