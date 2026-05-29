@@ -200,12 +200,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitle()
 		{
-			if (!ToolbarReady() || NavigationItem is null || _context?.Shell?.Toolbar is null)
+
+			if (NavigationItem is null)
 			{
 				return;
 			}
 
-			NavigationItem.Title = _context.Shell.Toolbar.Title;
+			if (ToolbarReady() && _context?.Shell?.Toolbar is not null)
+			{
+				NavigationItem.Title = _context.Shell.Toolbar.Title;
+			}
+			else if (Page?.IsSet(Page.TitleProperty) == true)
+			{
+				// Update back-stack pages so iOS back button/history menu reflects title changes
+				NavigationItem.Title = Page.Title;
+			}
 		}
 
 
