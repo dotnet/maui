@@ -387,6 +387,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			// - x:DataType on the binding itself
 			// - SKIP looking for x:DataType on the parent
 			// - continue looking for x:DataType on the parent's parent...
+			// Note: skipNode = GetParent(node), so skipNode CANNOT equal firstNode (= node).
+			// The first loop iteration always checks the binding node itself for x:DataType,
+			// regardless of whether it is a BindingContext binding.
 			ElementNode skipNode = null;
 			if (IsBindingContextBinding(node))
 			{

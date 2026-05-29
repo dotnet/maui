@@ -531,17 +531,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return false;
 			}
 
-			// When the binding has a RelativeSource (e.g. AncestorType), x:DataType inherited
-			// from an ancestor DataTemplate describes the template-item type, not the actual
-			// binding source. Attempting to compile against that type would produce a false
-			// XC0045 "property not found" warning and a broken TypedBinding.
+			// When the binding has a RelativeSource (e.g. AncestorType) or x:Reference Source,
+			// x:DataType inherited from an ancestor DataTemplate describes the template-item type,
+			// not the actual binding source. Attempting to compile against that type would produce
+			// a false XC0045 "property not found" warning and a broken TypedBinding.
 			// Only compile if x:DataType was written directly on the binding node itself,
 			// where the developer explicitly annotates the source type.
-			// Note: x:Reference bindings are NOT guarded here — the developer's x:DataType on
-			// the referenced element's ancestor intentionally describes the source type there.
-			// Mirrors the same logic in KnownMarkups.ProvideValueForBindingExtension.
+			// Mirrors the same logic in KnownMarkups.ProvideValueForBindingExtension (SourceGen).
 			bool xDataTypeIsOnBindingNode = n == node;
-			if (HasRelativeSource(node) && !xDataTypeIsOnBindingNode)
+			if (HasRelativeOrReferenceSource(node) && !xDataTypeIsOnBindingNode)
 				return false;
 
 			if (xDataTypeIsInOuterScope)
@@ -654,9 +652,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			// Returns true when the binding's Source property is a RelativeSource or x:Reference.
-			// When Source is explicitly set to a RelativeSource, x:DataType inherited from an
+			// When Source is a RelativeSource or x:Reference, x:DataType inherited from an
 			// ancestor DataTemplate describes template items — not the actual binding source type.
-			static bool HasRelativeSource(ElementNode bindingNode)
+			// This matches the behaviour in KnownMarkups.ProvideValueForBindingExtension (SourceGen)
+			// and the runtime BindingExtension.ProvideValue (which already sets DataType=null for
+			// all non-RelativeBindingSource sources, including x:Reference resolved objects).
+			static bool HasRelativeOrReferenceSource(ElementNode bindingNode)
 			{
 				if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode)
 					&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
@@ -664,7 +665,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				return sourceNode is ElementNode sourceElementNode
 					&& sourceElementNode.XmlType.Name is "RelativeSourceExtension"
-						or "RelativeSource";
+						or "RelativeSource"
+						or "ReferenceExtension"
+						or "Reference";
 			}
 
 			bool DoesNotInheritDataType(ElementNode node)
