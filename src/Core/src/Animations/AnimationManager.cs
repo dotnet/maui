@@ -86,12 +86,10 @@ namespace Microsoft.Maui.Animations
 
 			var animations = new List<Animation>(_animations);
 
-			foreach(var animation in animations)
+			foreach (var animation in animations)
 			{
 				OnAnimationTick(animation);
 			}
-
-			//animations.ForEach(OnAnimationTick);
 
 			if (_animations.Count == 0)
 				End();
@@ -135,14 +133,13 @@ namespace Microsoft.Maui.Animations
 
 		void ForceFinishAnimations()
 		{
-			var animations = new List<Animation>(_animations);
-			
-			foreach(var animation in animations)
+			var animations = _animations.ToArray();
+
+			foreach (var animation in animations)
 			{
 				ForceFinish(animation);
 			}
-			
-			//animations.ForEach(ForceFinish);
+
 			End();
 
 			void ForceFinish(Animation animation)
