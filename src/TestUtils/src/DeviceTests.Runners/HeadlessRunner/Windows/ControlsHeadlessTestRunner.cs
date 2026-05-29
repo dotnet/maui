@@ -85,6 +85,12 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				var allCategories = File.ReadAllLines(_categoriesFilePath);
 				var categoriesToRun = allCategories.Skip(_loopCount).Take(1).ToArray();
 
+				if (categoriesToRun.Length == 0)
+				{
+					_logger.WriteLine($"ERROR: Category index {_loopCount} out of range (categories file has {allCategories.Length} entries at '{_categoriesFilePath}').");
+					return null;
+				}
+
 				foreach (var test in allCategories.Except(categoriesToRun))
 				{
 					_categoriesToSkip.Add($"Category={test}");
