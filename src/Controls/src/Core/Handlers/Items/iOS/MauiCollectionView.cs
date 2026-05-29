@@ -32,6 +32,11 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	int _pendingScrollRestoreItem;
 	UICollectionViewScrollPosition _pendingScrollRestorePosition;
 
+	// Item count snapshot at arm time. If the count changes before restore, the source
+	// was mutated (Insert/Remove/Clear that bypass MapItemsSource) and the saved index
+	// is semantically stale — abort.
+	nint _pendingScrollRestoreItemCount;
+
 	// The last observed Y offset while tracking — used as the reference to detect a sudden drop.
 	nfloat _lastKnownOffsetY;
 
@@ -47,6 +52,9 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		_pendingScrollRestoreSection = section;
 		_pendingScrollRestoreItem = item;
 		_pendingScrollRestorePosition = position;
+		_pendingScrollRestoreItemCount = section >= 0 && section < NumberOfSections()
+			? NumberOfItemsInSection(section)
+			: 0;
 		_lastKnownOffsetY = ContentOffset.Y;
 		_isTrackingScrollRestore = true;
 	}
@@ -55,6 +63,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	{
 		_isTrackingScrollRestore = false;
 		_lastKnownOffsetY = 0;
+		_pendingScrollRestoreItemCount = 0;
 	}
 
 	void OnContentOffsetChanged(NSObservedChange change)
@@ -115,6 +124,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 
 			if (!IsIndexPathValidForRestore(indexPath))
 			{
+				ClearPendingScrollRestore();
 				return;
 			}
 
@@ -169,6 +179,13 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		}
 
 		var itemCount = NumberOfItemsInSection(indexPath.Section);
+
+		// Source-mutation guard: count changed → saved index is semantically stale.
+		if (itemCount != _pendingScrollRestoreItemCount)
+		{
+			return false;
+		}
+
 		return indexPath.Item >= 0 && indexPath.Item < itemCount;
 	}
 #endif
