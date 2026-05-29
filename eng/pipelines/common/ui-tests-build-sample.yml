@@ -106,14 +106,23 @@ steps:
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), succeeded())
   artifact: ui-tests-samples-coreclr
 
-# Material3 + Shell handlers artifacts (combined build)
+# Material3 artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), succeeded())
-  artifact: ui-tests-samples-material3-shell
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'), succeeded())
+  artifact: ui-tests-samples-material3
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), succeeded())
-  artifact: ui-tests-samples-material3-shell-coreclr
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'), succeeded())
+  artifact: ui-tests-samples-material3-coreclr
+
+# Shell handlers artifacts
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), succeeded())
+  artifact: ui-tests-samples-shell
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), succeeded())
+  artifact: ui-tests-samples-shell-coreclr
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(eq('${{ parameters.platform }}' , 'windows'), succeeded())
@@ -131,14 +140,23 @@ steps:
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), failed())
   artifact: ui-tests-samples-coreclr_failed_$(System.JobAttempt)
 
-# Material3 + Shell handlers failure artifacts
+# Material3 failure artifacts
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), failed())
-  artifact: ui-tests-samples-material3-shell_failed_$(System.JobAttempt)
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'), failed())
+  artifact: ui-tests-samples-material3_failed_$(System.JobAttempt)
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), failed())
-  artifact: ui-tests-samples-material3-shell-coreclr_failed_$(System.JobAttempt)
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'), failed())
+  artifact: ui-tests-samples-material3-coreclr_failed_$(System.JobAttempt)
+
+# Shell handlers failure artifacts
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), failed())
+  artifact: ui-tests-samples-shell_failed_$(System.JobAttempt)
+
+- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'), failed())
+  artifact: ui-tests-samples-shell-coreclr_failed_$(System.JobAttempt)
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(eq('${{ parameters.platform }}' , 'windows'), failed())

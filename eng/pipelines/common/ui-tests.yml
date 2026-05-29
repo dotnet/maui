@@ -115,14 +115,13 @@ stages:
                 platform: windows
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  # Material3 + Shell Handlers Build Stage - Combined build with both UseMaterial3=true and UseAndroidShellHandlers=true (Android-only)
-  # This single build is used for both Material3 tests and Shell tests (test filter determines which tests run)
-  - stage: build_ui_tests_material3_shell
-    displayName: Build UITests Material3 + Shell Handlers Sample App
+  # Material3 Build Stage - Build with UseMaterial3=true (Android-only)
+  - stage: build_ui_tests_material3
+    displayName: Build UITests Material3 Sample App
     dependsOn: []
     jobs:
-      - job: build_ui_tests_material3_shell
-        displayName: Build Sample App (Material3 + Shell)
+      - job: build_ui_tests_material3
+        displayName: Build Sample App (Material3)
         workspace:
           clean: all
         pool: ${{ parameters.androidPool }}
@@ -134,6 +133,25 @@ stages:
                 runtimeVariant: "Mono"
                 platform: android
                 useMaterial3: true
+                skipProvisioning: ${{ parameters.skipProvisioning }}
+
+  # Shell Handlers Build Stage - Build with UseAndroidShellHandlers=true (Android-only)
+  - stage: build_ui_tests_shell
+    displayName: Build UITests Shell Handlers Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_shell
+        displayName: Build Sample App (Shell Handlers)
+        workspace:
+          clean: all
+        pool: ${{ parameters.androidPool }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "Mono"
+                platform: android
                 useAndroidShellHandlers: true
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
@@ -227,7 +245,7 @@ stages:
 
   - stage: android_ui_tests_material3
     displayName: Android UITests Material3
-    dependsOn: build_ui_tests_material3_shell
+    dependsOn: build_ui_tests_material3
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -264,10 +282,10 @@ stages:
                       platform: 'Android Material3'
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  # Shell Handlers Test Stage - Tests using Material3 + Shell handlers build (shares screenshots with regular Android)
+  # Shell Handlers Test Stage - Tests using Shell handlers build (shares screenshots with regular Android)
   - stage: android_ui_tests_shell
     displayName: Android UITests Shell Handlers
-    dependsOn: build_ui_tests_material3_shell
+    dependsOn: build_ui_tests_shell
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -293,7 +311,6 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      useMaterial3: true
                       useAndroidShellHandlers: true
                       testFilter: "Shell"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
