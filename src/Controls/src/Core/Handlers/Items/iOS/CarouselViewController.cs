@@ -198,8 +198,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (InitialPositionSet && ItemsView is CarouselView carousel)
 			{
+				// Only reset CurrentItem — old item references are invalid for the new source.
+				// Do NOT reset Position here; the user may set an explicit Position right after
+				// assigning ItemsSource, and forcing it to 0 would clobber that value (#23023).
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
-				carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
+
+				// Clamp position to valid range after ItemsSource change (parity with Android #23023).
+				if (ItemsSource is not null && carousel.Position >= ItemsSource.ItemCount && carousel.Position != 0)
+				{
+					carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
+				}
 			}
 		}
 
