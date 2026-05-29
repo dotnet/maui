@@ -201,10 +201,38 @@ public partial class SearchBarOptionsPage : ContentPage
 		if (e.Value)
 		{
 			var radioButton = sender as RadioButton;
-			if (radioButton.Content.ToString() == "False")
-			{
-				_viewModel.FontAutoScalingEnabled = false;
-			}
+			_viewModel.FontAutoScalingEnabled = radioButton.Content.ToString() == "True";
+		}
+	}
+
+	private void OnSearchIconColorButtonClicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		if (button != null)
+		{
+			_viewModel.SearchIconColor = button.Text == "Blue" ? Colors.Blue : Colors.Red;
+		}
+	}
+
+	private void OnBackgroundColorButtonClicked(object sender, EventArgs e)
+	{
+		var button = sender as Button;
+		if (button != null)
+		{
+			_viewModel.Background = button.Text == "LightBlue"
+				? new SolidColorBrush(Colors.LightBlue)
+				: new SolidColorBrush(Colors.LightYellow);
+		}
+	}
+
+	private void OnReturnTypeRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton.IsChecked)
+		{
+			_viewModel.ReturnType = radioButton.Content.ToString() == "Search"
+				? ReturnType.Search
+				: ReturnType.Done;
 		}
 	}
 }

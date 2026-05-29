@@ -30,6 +30,9 @@ public class SearchBarViewModel : INotifyPropertyChanged
 	private TextAlignment _verticalTextAlignment = TextAlignment.Center;
 	private int _cursorPosition = 0;
 	private bool _fontAutoScalingEnabled = true;
+	private Color _searchIconColor;
+	private ReturnType _returnType = ReturnType.Default;
+	private Brush _background;
 
 	public SearchBarViewModel()
 	{
@@ -166,6 +169,24 @@ public class SearchBarViewModel : INotifyPropertyChanged
 	{
 		get => _isVisible;
 		set { _isVisible = value; OnPropertyChanged(); }
+	}
+
+	public Color SearchIconColor
+	{
+		get => _searchIconColor;
+		set { _searchIconColor = value; OnPropertyChanged(); }
+	}
+
+	public ReturnType ReturnType
+	{
+		get => _returnType;
+		set { _returnType = value; OnPropertyChanged(); }
+	}
+
+	public Brush Background
+	{
+		get => _background;
+		set { _background = value; OnPropertyChanged(); }
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;

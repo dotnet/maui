@@ -23,6 +23,17 @@ public class SearchBarFeatureTests : _GalleryUITest
 #endif
 	}
 
+	private string? GetSearchBarText()
+	{
+#if ANDROID
+		return App.WaitForElement("SearchBar").GetText();
+#elif IOS || MACCATALYST
+		return App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
+#else
+		return App.WaitForElement("TextBox").GetText();
+#endif
+	}
+
 	[Test, Order(1)]
 	[Category(UITestCategories.SearchBar)]
 	public void SearchBar_InitialState_VerifyVisualState()
@@ -58,14 +69,7 @@ public class SearchBarFeatureTests : _GalleryUITest
         App.ClearText("SearchBar");
         App.EnterText("SearchBar", "SearchCommand");
         App.PressEnter();
-        var text = string.Empty;
-#if ANDROID
-        text = App.WaitForElement("SearchBar").GetText();
-#elif IOS || MACCATALYST
-            text = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
-#else
-            text = App.WaitForElement("TextBox").GetText();
-#endif
+        var text = GetSearchBarText();
         Assert.That(text, Is.EqualTo("Search command executed"));
     }
 #endif
@@ -90,21 +94,21 @@ public class SearchBarFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID // Issue Link - https://github.com/dotnet/maui/issues/30367
 
-    [Test, Order(5)]
-    [Category(UITestCategories.SearchBar)]
-    public void SearchBar_SetFlowDirection_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("FlowDirectionRTL");
-        App.Tap("FlowDirectionRTL");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("SearchBar");
-        App.ClearText("SearchBar");
-        App.EnterText("SearchBar", "Search Text");
-        VerifyScreenshotWithPlatformCropping();
-    }
+	[Test, Order(5)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetFlowDirection_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FlowDirectionRTL");
+		App.Tap("FlowDirectionRTL");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		App.ClearText("SearchBar");
+		App.EnterText("SearchBar", "Search Text");
+		VerifyScreenshotWithPlatformCropping();
+	}
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/30368
@@ -343,30 +347,23 @@ public class SearchBarFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link - https://github.com/dotnet/maui/issues/14566
 
-    [Test, Order(19)]
-    [Category(UITestCategories.SearchBar)]
-    public void SearchBar_SetIsEnabledFalse_VerifyVisualState()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("IsEnabledFalseButton");
-        App.Tap("IsEnabledFalseButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("SearchBar");
-        App.ClearText("SearchBar");
-        App.EnterText("SearchBar", "ShouldNotAppear");
-        var text = string.Empty;
-#if ANDROID
-            text = App.WaitForElement("SearchBar").GetText();
-#elif IOS || MACCATALYST
-            text = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
-#else
-        text = App.WaitForElement("TextBox").GetText();
-#endif
-        Assert.That(text, Is.EqualTo(string.Empty));
-        VerifyScreenshotWithPlatformCropping();
-    }
+	[Test, Order(19)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetIsEnabledFalse_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("IsEnabledFalseButton");
+		App.Tap("IsEnabledFalseButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		App.ClearText("SearchBar");
+		App.EnterText("SearchBar", "ShouldNotAppear");
+		var text = GetSearchBarText();
+		Assert.That(text, Is.EqualTo(string.Empty));
+		VerifyScreenshotWithPlatformCropping();
+	}
 #endif
 
 	[Test, Order(20)]
@@ -397,14 +394,7 @@ public class SearchBarFeatureTests : _GalleryUITest
             App.WaitForElementTillPageNavigationSettled("SearchBar");
             App.ClearText("SearchBar");
             App.EnterText("SearchBar", "ReadOnly");
-            var text = string.Empty;
-#if ANDROID
-            text = App.WaitForElement("SearchBar").GetText();
-#elif IOS || MACCATALYST
-            text = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
-#else
-            text = App.WaitForElement("TextBox").GetText();
-#endif
+            var text = GetSearchBarText();
             Assert.That(text, Is.EqualTo(string.Empty));
             VerifyScreenshotWithPlatformCropping();
         }
@@ -478,14 +468,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 		App.ClearText("SearchBar");
 		App.EnterText("SearchBar", "SearchText");
 		App.WaitForElement("SearchBar");
-		var text = string.Empty;
-#if ANDROID
-		text = App.WaitForElement("SearchBar").GetText();
-#elif IOS || MACCATALYST
-            text = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
-#else
-        text = App.WaitForElement("TextBox").GetText();
-#endif
+		var text = GetSearchBarText();
 		var textLength = text?.Length;
 		Assert.That(textLength, Is.EqualTo(10));
 	}
@@ -631,14 +614,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("SearchBar");
 		App.ClearText("SearchBar");
 		App.EnterText("SearchBar", "SearchText");
-		var text = string.Empty;
-#if ANDROID
-		text = App.WaitForElement("SearchBar").GetText();
-#elif IOS || MACCATALYST
-            text = App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText();
-#else
-        text = App.WaitForElement("TextBox").GetText();
-#endif
+		var text = GetSearchBarText();
 		Assert.That(text, Is.EqualTo("SEARCHTEXT"));
 	}
 
@@ -665,4 +641,132 @@ public class SearchBarFeatureTests : _GalleryUITest
         VerifyScreenshotWithPlatformCropping();
     }
 #endif
+
+	[Test, Order(35)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetSearchIconColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SearchIconColorBlueButton");
+		App.Tap("SearchIconColorBlueButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		VerifyScreenshotWithPlatformCropping();
+	}
+
+	[Test, Order(36)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetSearchIconColorAndText_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SearchIconColorRedButton");
+		App.Tap("SearchIconColorRedButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		App.ClearText("SearchBar");
+		App.EnterText("SearchBar", "Search Text");
+		VerifyScreenshotWithPlatformCropping();
+	}
+
+	[Test, Order(37)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetBackgroundColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundLightBlueButton");
+		App.Tap("BackgroundLightBlueButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		App.ClearText("SearchBar");
+		App.EnterText("SearchBar", "Background Test");
+		VerifyScreenshotWithPlatformCropping();
+	}
+
+	[Test, Order(38)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetShadowAndBackground_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ShadowTrueButton");
+		App.Tap("ShadowTrueButton");
+		App.WaitForElement("BackgroundLightYellowButton");
+		App.Tap("BackgroundLightYellowButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		VerifyScreenshotWithPlatformCropping();
+	}
+
+	[Test, Order(39)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetSearchIconColorAndPlaceholder_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("SearchIconColorBlueButton");
+		App.Tap("SearchIconColorBlueButton");
+		App.WaitForElement("PlaceholderEntry");
+		App.EnterText("PlaceholderEntry", "Search here...");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		VerifyScreenshotWithPlatformCropping();
+	}
+
+	[Test, Order(40)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetBackgroundAndTextColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("BackgroundLightBlueButton");
+		App.Tap("BackgroundLightBlueButton");
+		App.WaitForElement("TextColorRedButton");
+		App.Tap("TextColorRedButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		App.ClearText("SearchBar");
+		App.EnterText("SearchBar", "Styled Text");
+		VerifyScreenshotWithPlatformCropping();
+	}
+
+	[Test, Order(41)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_TextChanged_VerifyEventTriggered()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		App.ClearText("SearchBar");
+		App.EnterText("SearchBar", "Hello");
+		var newText = App.WaitForElement("NewTextChangedLabel").GetText();
+		Assert.That(newText, Is.EqualTo("Hello"));
+	}
+
+	[Test, Order(42)]
+	[Category(UITestCategories.SearchBar)]
+	public void SearchBar_SetTextTransformLowercase_VerifyTextTransformed()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextTransformLowercaseButton");
+		App.Tap("TextTransformLowercaseButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("SearchBar");
+		App.ClearText("SearchBar");
+		App.EnterText("SearchBar", "SearchText");
+		var text = GetSearchBarText();
+		Assert.That(text, Is.EqualTo("searchtext"));
+	}
 }
