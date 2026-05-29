@@ -254,6 +254,12 @@ namespace Microsoft.Maui.Controls
 			return bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
 		}
 
+		internal bool IsSetExplicitly(BindableProperty targetProperty)
+		{
+			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));
+			return bpcontext is not null && bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
+		}
+
 
 		/// <summary>
 		/// Removes a previously set binding from a bindable property.

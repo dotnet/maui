@@ -1,17 +1,33 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Content;
+using Android.Widget;
+using AndroidX.Core.View;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using AInsets = AndroidX.Core.Graphics.Insets;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests : ControlsHandlerTestBase
 	{
+		public static TheoryData<System.Type> SafeAreaItemViewTypes
+		{
+			get
+			{
+				var data = new TheoryData<System.Type>();
+				data.Add(typeof(LayoutViewGroup));
+				data.Add(typeof(ContentViewGroup));
+				return data;
+			}
+		}
+
 		[Fact]
 		public async Task PushAndPopPageWithCollectionView()
 		{
@@ -243,6 +259,128 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[MemberData(nameof(SafeAreaItemViewTypes))]
+		public async Task RecyclerItemWithoutExplicitSafeAreaEdgesDoesNotUseInsetListener(System.Type itemViewType)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+				var root = CreateRecyclerSafeAreaHierarchy(itemViewType, layout, out var itemView, out _);
+
+				try
+				{
+					Assert.False(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+					Assert.False(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(itemView));
+					Assert.False(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(itemView, MauiContext.Context));
+					Assert.Null(MauiWindowInsetListener.FindListenerForView(itemView));
+				}
+				finally
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(root);
+				}
+			});
+		}
+
+		[Theory]
+		[MemberData(nameof(SafeAreaItemViewTypes))]
+		public async Task RecyclerItemWithExplicitSafeAreaEdgesUsesInsetListener(System.Type itemViewType)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid
+				{
+					SafeAreaEdges = SafeAreaEdges.None
+				};
+				var root = CreateRecyclerSafeAreaHierarchy(itemViewType, layout, out var itemView, out var listener);
+
+				try
+				{
+					Assert.True(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+					Assert.True(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(itemView));
+					Assert.True(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(itemView, MauiContext.Context));
+					Assert.Same(listener, MauiWindowInsetListener.FindListenerForView(itemView));
+				}
+				finally
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(root);
+				}
+			});
+		}
+
+		[Theory]
+		[MemberData(nameof(SafeAreaItemViewTypes))]
+		public async Task RecyclerItemSafeAreaRefreshAttachesWhenSafeAreaEdgesBecomesExplicit(System.Type itemViewType)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+				var root = CreateRecyclerSafeAreaHierarchy(itemViewType, layout, out var itemView, out var listener);
+
+				try
+				{
+					Assert.False(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(itemView, MauiContext.Context));
+
+					layout.SafeAreaEdges = SafeAreaEdges.None;
+
+					Assert.True(MauiWindowInsetListenerExtensions.RefreshMauiWindowInsetListener(itemView, MauiContext.Context));
+					Assert.Same(listener, MauiWindowInsetListener.FindListenerForView(itemView));
+				}
+				finally
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(root);
+				}
+			});
+		}
+
+		[Theory]
+		[MemberData(nameof(SafeAreaItemViewTypes))]
+		public async Task RecyclerItemSafeAreaRefreshResetsWhenSafeAreaEdgesIsCleared(System.Type itemViewType)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid
+				{
+					SafeAreaEdges = SafeAreaEdges.All
+				};
+				var root = CreateRecyclerSafeAreaHierarchy(itemViewType, layout, out var itemView, out _);
+
+				try
+				{
+					itemView.SetPadding(1, 2, 3, 4);
+					Assert.True(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(itemView, MauiContext.Context));
+
+					var insets = new WindowInsetsCompat.Builder()
+						.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(0, 20, 0, 0))
+						.Build();
+					((IHandleWindowInsets)itemView).HandleWindowInsets(itemView, insets);
+					Assert.NotEqual(2, itemView.PaddingTop);
+
+					layout.ClearValue(Layout.SafeAreaEdgesProperty);
+
+					Assert.False(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+					Assert.False(MauiWindowInsetListenerExtensions.RefreshMauiWindowInsetListener(itemView, MauiContext.Context));
+					Assert.Null(MauiWindowInsetListener.FindListenerForView(itemView));
+					Assert.Equal(1, itemView.PaddingLeft);
+					Assert.Equal(2, itemView.PaddingTop);
+					Assert.Equal(3, itemView.PaddingRight);
+					Assert.Equal(4, itemView.PaddingBottom);
+				}
+				finally
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(root);
+				}
+			});
+		}
+
 		class MockCollectionChangedNotifier : ICollectionChangedNotifier
 		{
 			public int InsertCount;
@@ -307,6 +445,39 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return cellContent.ToPlatform().GetParentOfType<ItemContentView>().GetBoundingBox();
+		}
+
+		FrameLayout CreateRecyclerSafeAreaHierarchy(System.Type itemViewType, ICrossPlatformLayout layout, out AView itemView, out MauiWindowInsetListener listener)
+		{
+			var context = MauiContext.Context;
+			var root = new FrameLayout(context);
+			var recyclerView = new TestRecyclerView(context);
+			itemView = CreateSafeAreaItemView(itemViewType, context, layout);
+
+			root.AddView(recyclerView);
+			recyclerView.AddView(itemView);
+			listener = MauiWindowInsetListener.RegisterParentForChildViews(root);
+
+			return root;
+		}
+
+		static AView CreateSafeAreaItemView(System.Type itemViewType, Context context, ICrossPlatformLayout layout)
+		{
+			AView itemView = itemViewType == typeof(LayoutViewGroup)
+				? new LayoutViewGroup(context)
+				: itemViewType == typeof(ContentViewGroup)
+					? new ContentViewGroup(context)
+					: throw new System.ArgumentOutOfRangeException(nameof(itemViewType), itemViewType, null);
+
+			((ICrossPlatformLayoutBacking)itemView).CrossPlatformLayout = layout;
+			return itemView;
+		}
+
+		class TestRecyclerView : FrameLayout, IMauiRecyclerView
+		{
+			public TestRecyclerView(Context context) : base(context)
+			{
+			}
 		}
 	}
 }
