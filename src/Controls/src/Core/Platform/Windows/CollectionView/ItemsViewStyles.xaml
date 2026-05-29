@@ -330,64 +330,100 @@
         <ControlTemplate x:Key="MauiItemsViewTemplate"
                          TargetType="items2:MauiItemsView">
 
-                <ScrollViewer x:Name="PART_ScrollViewer"
-                              Background="{TemplateBinding Background}"
-                              BorderBrush="{TemplateBinding BorderBrush}"
-                              BorderThickness="{TemplateBinding BorderThickness}"
-                              CornerRadius="{TemplateBinding CornerRadius}"
-                              TabNavigation="{TemplateBinding TabNavigation}"
-                              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                              IsHorizontalScrollChainingEnabled="True"
-                              IsVerticalScrollChainingEnabled="True"
-                              AutomationProperties.AccessibilityView="Raw">
-                        <controls:StackPanel x:Name="PART_ContainerStack">
-                                <ContentControl x:Name="HeaderContentControl"
-                                                HorizontalContentAlignment="Stretch"
-                                                VerticalContentAlignment="Stretch"/>
+                <!-- Grid wrapper so the drop-indicator Canvas can overlay the ScrollViewer -->
+                <Grid>
 
-                                <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
-                                                        ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
-                                                        HorizontalCacheLength="2"
-                                                        VerticalCacheLength="2"
-                                                        ItemsSource="{TemplateBinding ItemsSource}"
-                                                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                                                        Layout="{TemplateBinding Layout}"
-                                                        Margin="{TemplateBinding Padding}"
-                                                        HorizontalAlignment="Stretch"
-                                                        VerticalAlignment="Stretch"
-                                                        XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
+                        <ScrollViewer x:Name="PART_ScrollViewer"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
+                                      CornerRadius="{TemplateBinding CornerRadius}"
+                                      TabNavigation="{TemplateBinding TabNavigation}"
+                                      HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                      HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                      VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                      VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                      IsHorizontalScrollChainingEnabled="True"
+                                      IsVerticalScrollChainingEnabled="True"
+                                      AutomationProperties.AccessibilityView="Raw">
+                                <controls:StackPanel x:Name="PART_ContainerStack">
+                                        <ContentControl x:Name="HeaderContentControl"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        VerticalContentAlignment="Stretch"/>
+
+                                        <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
+                                                                ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
+                                                                HorizontalCacheLength="2"
+                                                                VerticalCacheLength="2"
+                                                                ItemsSource="{TemplateBinding ItemsSource}"
+                                                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                                                Layout="{TemplateBinding Layout}"
+                                                                Margin="{TemplateBinding Padding}"
+                                                                HorizontalAlignment="Stretch"
+                                                                VerticalAlignment="Stretch"
+                                                                XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
 
 
-                                <!-- EmptyView sits between the items and the footer in the StackPanel
+                                        <!-- EmptyView sits between the items and the footer in the StackPanel
                                      so the natural Header → Items → EmptyView → Footer order is preserved.
                                      Its MinHeight/MinWidth is set in code-behind so it fills the remaining
                                      viewport space (matching CV1's "fill available space" behavior). -->
-                                <ContentControl x:Name="EmptyViewContentControl"
-                                                HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                HorizontalContentAlignment="Stretch"
-                                                VerticalContentAlignment="Stretch"/>
+                                        <ContentControl x:Name="EmptyViewContentControl"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        VerticalContentAlignment="Stretch"/>
 
-                                <ContentControl x:Name="FooterContentControl"
-                                                HorizontalContentAlignment="Stretch"
-                                                VerticalContentAlignment="Stretch"/>
-                        </controls:StackPanel>
-                </ScrollViewer>
+                                        <ContentControl x:Name="FooterContentControl"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        VerticalContentAlignment="Stretch"/>
+                                </controls:StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Transparent overlay canvas for the between-items drop indicator line.
+                     IsHitTestVisible=False so it never intercepts pointer events.
+                     The two named children are template parts retrieved in OnApplyTemplate;
+                     their Canvas.Left/Top and Width/Height are set in code during DragOver. -->
+                        <Canvas x:Name="PART_DropIndicatorCanvas"
+                                IsHitTestVisible="False"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+
+                                <!-- Hollow circle head at the leading edge of the insertion line. -->
+                                <Border x:Name="PART_DropIndicatorHead"
+                                        Width="12"
+                                        Height="12"
+                                        CornerRadius="6"
+                                        Background="Transparent"
+                                        BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                                        BorderThickness="2"
+                                        IsHitTestVisible="False"
+                                        Visibility="Collapsed"
+                                        Opacity="0"/>
+
+                                <!-- Accent-coloured line extending from the circle to the far edge. -->
+                                <Rectangle x:Name="PART_DropIndicatorLine"
+                                           Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                                           Height="2"
+                                           IsHitTestVisible="False"
+                                           Visibility="Collapsed"
+                                           Opacity="0"/>
+
+                        </Canvas>
+
+                </Grid>
 
         </ControlTemplate>
 
-  <!-- A minimal ItemContainer template with no selection visuals (no checkbox,
+        <!-- A minimal ItemContainer template with no selection visuals (no checkbox,
          no selection indicator, no highlight). Applied to group header/footer
          containers in CV2 so they are never selectable. -->
-  <ControlTemplate x:Key="NonSelectableItemContainerTemplate"
-                     TargetType="controls:ItemContainer">
-    <ContentPresenter Content="{TemplateBinding Child}"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch" />
-  </ControlTemplate>
+        <ControlTemplate x:Key="NonSelectableItemContainerTemplate"
+                         TargetType="controls:ItemContainer">
+                <ContentPresenter Content="{TemplateBinding Child}"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"/>
+        </ControlTemplate>
 
         <!-- CV2 ItemContainer theme resource overrides:
              * multi-select checkbox sits on the LEFT (centered, no margin)
