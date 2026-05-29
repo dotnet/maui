@@ -64,6 +64,45 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(TextAlignment.Start, TextAlignment.Start)]
+		[InlineData(TextAlignment.Center, TextAlignment.Start)]
+		[InlineData(TextAlignment.End, TextAlignment.Start)]
+		[InlineData(TextAlignment.Start, TextAlignment.Center)]
+		[InlineData(TextAlignment.Center, TextAlignment.Center)]
+		[InlineData(TextAlignment.End, TextAlignment.Center)]
+		[InlineData(TextAlignment.Start, TextAlignment.End)]
+		[InlineData(TextAlignment.Center, TextAlignment.End)]
+		[InlineData(TextAlignment.End, TextAlignment.End)]
+		[Description("Editor height should honour HeightRequest for all text alignment combinations when placed in an infinite height constraint layout.")]
+		public async Task EditorHeightIsConsistentAcrossAllTextAlignments(TextAlignment horizontal, TextAlignment vertical)
+		{
+			SetupBuilder();
+
+			const double heightRequest = 100;
+
+			var editor = new Editor
+			{
+				Text = "testing",
+				HeightRequest = heightRequest,
+				HorizontalTextAlignment = horizontal,
+				VerticalTextAlignment = vertical,
+			};
+
+			var layout = new VerticalStackLayout
+			{
+				Children = { editor }
+			};
+
+			await AttachAndRun<LayoutHandler>(layout, async (_) =>
+			{
+				var frame = editor.Frame;
+				await WaitForUIUpdate(frame, editor);
+
+				Assert.Equal(heightRequest, editor.Height, tolerance: 1.0);
+			});
+		}
+
 		[Fact]
 		[Description("Editor with AutoSize=TextChanges should continue to grow after a simulated rotation (width constraint change)")]
 		public async Task AutoSizeTextChangesEditorGrowsAfterRotation()
