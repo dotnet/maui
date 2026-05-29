@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		bool _syncingOpenState;
+		bool _nativeOpenState;
 
 		internal bool UpdateImmediately { get; set; } = true;
 
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Handlers
 		bool SyncOpenState(bool shouldBeOpen, bool refreshIfAlreadyFirstResponder)
 		{
 			if (_syncingOpenState)
-				return PlatformView.IsFirstResponder;
+				return _nativeOpenState || PlatformView.IsFirstResponder;
 
 			_syncingOpenState = true;
 			try
@@ -149,7 +150,7 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
-					if (platformView.IsFirstResponder)
+					if (platformView.IsFirstResponder || _nativeOpenState)
 						platformView.ResignFirstResponder();
 
 					actualOpen = platformView.IsFirstResponder;
@@ -182,6 +183,8 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualOpenState(bool isOpen)
 		{
+			_nativeOpenState = isOpen;
+
 			if (VirtualView is IDatePicker virtualView)
 			{
 				virtualView.IsOpen = isOpen;

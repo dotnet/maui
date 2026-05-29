@@ -144,6 +144,42 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		[Fact(DisplayName = "Native Close Runs After Accepted Open Without First Responder")]
+		public async Task NativeCloseRunsAfterAcceptedOpenWithoutFirstResponder()
+		{
+			var datePicker = new DatePickerStub
+			{
+				Date = new DateTime(2026, 5, 20),
+				Width = 200,
+				Height = 44
+			};
+			var platformView = new NonFirstResponderOpenDatePicker();
+
+			DatePickerHandler.PlatformViewFactory = _ => platformView;
+
+			try
+			{
+				await AttachAndRun<DatePickerHandler>(datePicker, async handler =>
+				{
+					await AssertOpenState(datePicker, handler, true);
+
+					Assert.Equal(1, platformView.BecomeFirstResponderCount);
+					Assert.False(handler.PlatformView.IsFirstResponder);
+					Assert.Equal(0, platformView.ResignFirstResponderCount);
+
+					await AssertOpenState(datePicker, handler, false);
+
+					Assert.False(datePicker.IsFocused);
+					Assert.False(datePicker.IsOpen);
+					Assert.Equal(1, platformView.ResignFirstResponderCount);
+				});
+			}
+			finally
+			{
+				DatePickerHandler.PlatformViewFactory = null;
+			}
+		}
+
 		static async Task AssertFocusCycle(DatePickerStub datePicker, DatePickerHandler handler)
 		{
 			var focusResult = handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
@@ -181,6 +217,31 @@ namespace Microsoft.Maui.DeviceTests
 			public override bool CanBecomeFirstResponder => false;
 
 			public override bool BecomeFirstResponder() => false;
+		}
+
+		class NonFirstResponderOpenDatePicker : UIDatePicker
+		{
+			public NonFirstResponderOpenDatePicker()
+			{
+				Mode = UIDatePickerMode.Date;
+				TimeZone = new NSTimeZone("UTC");
+			}
+
+			public int BecomeFirstResponderCount { get; private set; }
+
+			public int ResignFirstResponderCount { get; private set; }
+
+			public override bool BecomeFirstResponder()
+			{
+				BecomeFirstResponderCount++;
+				return true;
+			}
+
+			public override bool ResignFirstResponder()
+			{
+				ResignFirstResponderCount++;
+				return true;
+			}
 		}
 	}
 }
