@@ -205,14 +205,23 @@ if %IS_PACKAGED%==1 (
         echo Test results file: %TEST_RESULTS_FILE%
         echo Category file path: %CATEGORY_FILE%
         call :launch_packaged "%PACKAGE_ID%" "%TEST_RESULTS_FILE%" -1
+        if !ERRORLEVEL! NEQ 0 (
+            echo ERROR: Packaged app launcher failed during category discovery ^(exit !ERRORLEVEL!^)
+            call :dump_diagnostics
+            set EXIT_CODE=1
+        )
         
         set RUN_CATEGORIES_NEXT=1
     ) else (
         REM Single test run for non-Controls projects
         echo Starting app for single test run...
         call :launch_packaged "%PACKAGE_ID%" "%TEST_RESULTS_FILE%"
-        
-        if not exist "%TEST_RESULTS_FILE%" (
+        set LAUNCH_EXIT=!ERRORLEVEL!
+        if !LAUNCH_EXIT! NEQ 0 (
+            echo ERROR: Packaged app launcher exited with code !LAUNCH_EXIT!
+            call :dump_diagnostics
+            set EXIT_CODE=1
+        ) else if not exist "%TEST_RESULTS_FILE%" (
             echo ERROR: Test results file was not created: %TEST_RESULTS_FILE%
             call :dump_diagnostics
             set EXIT_CODE=1
@@ -367,7 +376,12 @@ for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
         if /i "!CATEGORY_NAME!"=="%CATEGORY_FILTER%" (
             echo Running filtered category !CATEGORY_INDEX!: !CATEGORY_NAME!
             call :launch_packaged "%PACKAGE_ID%" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
-            if not exist "!EXPECTED_RESULT_FILE!" (
+            set LAUNCH_EXIT=!ERRORLEVEL!
+            if !LAUNCH_EXIT! NEQ 0 (
+                echo ERROR: Packaged app launcher exited with code !LAUNCH_EXIT! for !CATEGORY_NAME!
+                call :dump_diagnostics
+                set EXIT_CODE=1
+            ) else if not exist "!EXPECTED_RESULT_FILE!" (
                 echo ERROR: Result file not produced for !CATEGORY_NAME!: !EXPECTED_RESULT_FILE!
                 call :dump_diagnostics
                 set EXIT_CODE=1
@@ -378,7 +392,12 @@ for /f "usebackq delims=" %%c in ("%CATEGORY_FILE%") do (
     ) else (
         echo Running category !CATEGORY_INDEX!: !CATEGORY_NAME!
         call :launch_packaged "%PACKAGE_ID%" "%TEST_RESULTS_FILE%" !CATEGORY_INDEX!
-        if not exist "!EXPECTED_RESULT_FILE!" (
+        set LAUNCH_EXIT=!ERRORLEVEL!
+        if !LAUNCH_EXIT! NEQ 0 (
+            echo ERROR: Packaged app launcher exited with code !LAUNCH_EXIT! for !CATEGORY_NAME!
+            call :dump_diagnostics
+            set EXIT_CODE=1
+        ) else if not exist "!EXPECTED_RESULT_FILE!" (
             echo ERROR: Result file not produced for !CATEGORY_NAME!: !EXPECTED_RESULT_FILE!
             call :dump_diagnostics
             set EXIT_CODE=1
@@ -507,4 +526,4 @@ if defined LAUNCH_INDEX (
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Run-PackagedAppAndWait.ps1" -PackageName "!LAUNCH_PKG!" -AppArguments "!LAUNCH_APP_ARGS!" -TimeoutSeconds %CATEGORY_TIMEOUT_SECONDS%
 set LAUNCH_EXIT=!ERRORLEVEL!
 echo Packaged app launcher exited with code !LAUNCH_EXIT!
-goto :eof
+exit /b !LAUNCH_EXIT!
