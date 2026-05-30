@@ -364,11 +364,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Shell.CurrentItem == null)
 			{
-				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
-			}
-			else if (Shell.CurrentItem.CurrentItem == null)
-			{
-				throw new InvalidOperationException($"Content not found for active {Shell.CurrentItem}. Title: {Shell.CurrentItem.Title}. Route: {Shell.CurrentItem.Route}.");
+				return;
 			}
 			else if (_currentShellItemRenderer == null)
 			{

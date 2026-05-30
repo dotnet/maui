@@ -175,7 +175,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (!enabled)
 					{
-						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 
@@ -185,17 +184,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							command.Execute(commandParameter);
 						}
-						// Reset the iOS 26+ guard so subsequent back presses are not blocked.
-						_sendPopPending = false;
+						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 
-					// Route through Shell.OnBackButtonPressed so that Shell subclass overrides
-					// are invoked consistently for both the navigation bar back button and the
-					// hardware/system back button.
-					if (_context.Shell?.SendBackButtonPressed() == true)
+					// Allow the page to intercept back navigation via OnBackButtonPressed
+					if (tracker.Value.Page?.SendBackButtonPressed() == true)
 					{
-						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 

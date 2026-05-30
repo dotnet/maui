@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls
 {
@@ -15,13 +14,7 @@ namespace Microsoft.Maui.Controls
 	public class FormattedString : Element
 	{
 		readonly SpanCollection _spans = new SpanCollection();
-		readonly WeakEventManager _weakEventManager = new WeakEventManager();
-
-		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged
-		{
-			add => _weakEventManager.AddEventHandler(value, nameof(SpansCollectionChanged));
-			remove => _weakEventManager.RemoveEventHandler(value, nameof(SpansCollectionChanged));
-		}
+		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
 
 		/// <summary>Initializes a new instance of the FormattedString class.</summary>
 		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
@@ -76,7 +69,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnPropertyChanged(nameof(Spans));
-			_weakEventManager.HandleEvent(sender, e, nameof(SpansCollectionChanged));
+			SpansCollectionChanged?.Invoke(sender, e);
 		}
 
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));

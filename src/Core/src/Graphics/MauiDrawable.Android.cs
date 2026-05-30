@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Graphics
 
 			_background = linearGradientPaint;
 			
-			var gradientData = linearGradientPaint.GetGradientData(null);
+			var gradientData = linearGradientPaint.GetGradientData(1.0f);
 			
 			SetLinearGradientBackground(gradientData.X1, gradientData.Y1, gradientData.X2, gradientData.Y2, gradientData.Colors, gradientData.Offsets);
 		}
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Graphics
 
 			_background = radialGradientPaint;
 
-			var gradientData = radialGradientPaint.GetGradientData(null);
+			var gradientData = radialGradientPaint.GetGradientData(1.0f);
 
 			SetRadialGradientBackground(gradientData.CenterX, gradientData.CenterY, gradientData.Radius, gradientData.Colors, gradientData.Offsets);
 		}
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Graphics
 			
 			_stroke = linearGradientPaint;
 			
-			var gradientData = linearGradientPaint.GetGradientData(null);
+			var gradientData = linearGradientPaint.GetGradientData(1.0f);
 			
 			SetLinearGradientBorder(gradientData.X1, gradientData.Y1, gradientData.X2, gradientData.Y2, gradientData.Colors, gradientData.Offsets);
 		}
@@ -261,7 +261,7 @@ namespace Microsoft.Maui.Graphics
 			
 			_stroke = radialGradientPaint;
 
-			var gradientData = radialGradientPaint.GetGradientData(null);
+			var gradientData = radialGradientPaint.GetGradientData(1.0f);
 
 			SetRadialGradientBorder(gradientData.CenterX, gradientData.CenterY, gradientData.Radius, gradientData.Colors, gradientData.Offsets);
 		}

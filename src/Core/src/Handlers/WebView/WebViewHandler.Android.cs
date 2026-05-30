@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using Android.Views;
 using Android.Webkit;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
@@ -64,15 +63,12 @@ namespace Microsoft.Maui.Handlers
 					webChromeClient.Disconnect();
 			}
 
+			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
-			if (platformView.Parent is ViewGroup parent)
-				parent.RemoveView(platformView);
-			platformView.RemoveAllViews();
 
 			base.DisconnectHandler(platformView);
-			platformView.Destroy();
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(SwipeItem), null);
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
-		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(SwipeItem), true, propertyChanged: OnIsVisibleChanged);
+		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(SwipeItem), true);
 
 		/// <summary>
 		/// Gets or sets the background color of the swipe item. This is a bindable property.
@@ -39,12 +39,6 @@ namespace Microsoft.Maui.Controls
 		Paint ISwipeItemMenuItem.Background => new SolidPaint(BackgroundColor);
 
 		Visibility ISwipeItemMenuItem.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
-
-		static void OnIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var swipeItem = (SwipeItem)bindable;
-			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.Visibility));
-		}
 
 		void Maui.ISwipeItem.OnInvoked()
 		{

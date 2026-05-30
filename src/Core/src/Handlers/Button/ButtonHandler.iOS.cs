@@ -73,14 +73,8 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				handler.PlatformView?.UpdateBackground(button.Background);
+				handler.PlatformView?.UpdateBackground(button);
 			}
-		}
-#else
-		// TODO: Make this public in .NET 11
-		internal static void MapBackground(IButtonHandler handler, IButton button)
-		{
-			handler.PlatformView?.UpdateBackground(button.Background);
 		}
 #endif
 
@@ -103,11 +97,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(button);
 
-			if (!handler.IsConnectingHandler())
-			{
-				// Any text update requires that we update any attributed string formatting
-				MapFormatting(handler, button);
-			}
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, button);
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)

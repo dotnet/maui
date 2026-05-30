@@ -3,7 +3,6 @@ using Android.Graphics;
 using Android.Text;
 using Android.Util;
 using Android.Views;
-using ALayoutDirection = Android.Views.LayoutDirection;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
@@ -60,28 +59,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (_drawable == null)
 				return;
 
-			if (LayoutDirection == ALayoutDirection.Rtl)
-			{
-				int save = androidCanvas.Save();
-				androidCanvas.Translate(Width, 0);
-				androidCanvas.Scale(-1, 1);
-				try
-				{
-					DrawContent(androidCanvas);
-				}
-				finally
-				{
-					androidCanvas.RestoreToCount(save);
-				}
-			}
-			else
-			{
-				DrawContent(androidCanvas);
-			}
-		}
-
-		void DrawContent(Canvas androidCanvas)
-		{
 			var dirtyRect = new RectF(0, 0, _width, _height);
 
 			// Save the canvas state and clip to view bounds to prevent drawing outside

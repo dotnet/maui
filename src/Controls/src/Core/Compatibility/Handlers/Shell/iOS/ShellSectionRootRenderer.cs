@@ -105,9 +105,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
 			ShellSectionController.ItemsCollectionChanged += OnShellSectionItemsChanged;
 
-			foreach (var item in ShellSectionController.GetItems())
-				item.PropertyChanged += OnShellContentPropertyChanged;
-
 			_blurView = new UIView();
 			UIVisualEffect blurEffect = UIBlurEffect.FromStyle(UIBlurEffectStyle.ExtraLight);
 			_blurView = new UIVisualEffectView(blurEffect);
@@ -158,11 +155,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ShellSectionController != null)
 				ShellSectionController.ItemsCollectionChanged -= OnShellSectionItemsChanged;
 
-			var shellContents = ShellSectionController?.GetItems();
-			if (shellContents != null)
-				foreach (var item in shellContents)
-					item.PropertyChanged -= OnShellContentPropertyChanged;
-
 			if (_shellContext?.Shell != null)
 				_shellContext.Shell.PropertyChanged -= HandleShellPropertyChanged;
 
@@ -198,10 +190,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					oldRenderer.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
 					oldRenderer.ViewController?.RemoveFromParentViewController();
 
-					if (oldRenderer.VirtualView is IView view)
-						view.DisconnectHandlers();
-					else
-						oldRenderer?.DisconnectHandler();
+					var element = oldRenderer.VirtualView;
+					oldRenderer?.DisconnectHandler();
 				}
 
 				_renderers.Clear();
@@ -446,10 +436,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (oldRenderer.PlatformView is not null)
 						{
 							oldRenderer.ViewController.RemoveFromParentViewController();
-							if (oldRenderer.VirtualView is IView view)
-								view.DisconnectHandlers();
-							else
-								oldRenderer.DisconnectHandler();
+							oldRenderer.DisconnectHandler();
 						}
 					}
 				}
@@ -530,8 +517,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				foreach (ShellContent oldItem in e.OldItems)
 				{
-					oldItem.PropertyChanged -= OnShellContentPropertyChanged;
-
 					// if current item is removed will be handled by the currentitem property changed event
 					// That way the render is swapped out cleanly once the new current item is set
 					if (_currentContent == oldItem)
@@ -548,10 +533,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_renderers.Remove(oldItem);
 					oldRenderer.ViewController.ViewIfLoaded?.RemoveFromSuperview();
 					oldRenderer.ViewController.RemoveFromParentViewController();
-					if (oldRenderer.VirtualView is IView view)
-						view.DisconnectHandlers();
-					else
-						oldRenderer.DisconnectHandler();
+					oldRenderer.DisconnectHandler();
 				}
 			}
 
@@ -559,8 +541,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				foreach (ShellContent newItem in e.NewItems)
 				{
-					newItem.PropertyChanged += OnShellContentPropertyChanged;
-
 					if (_renderers.ContainsKey(newItem))
 						continue;
 
@@ -569,75 +549,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					AddChildViewController(renderer.ViewController);
 				}
-			}
-		}
-
-		void OnShellContentPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			if (_isDisposed)
-				return;
-
-			if (e.PropertyName == ShellContent.ContentProperty.PropertyName && sender is ShellContent shellContent)
-			{
-				// INotifyPropertyChanged.PropertyChanged fires AFTER the BindableProperty's
-				// propertyChanged callback (OnContentChanged) in BindableObject.SetValueCore.
-				// For a Page, ContentCache is already updated by the time we get here.
-				if (shellContent.Content is Page newPage)
-				{
-					// Content is a Page — available immediately, no deferral needed.
-					UpdateRendererForShellContent(shellContent, newPage);
-				}
-				else if (shellContent.Content is DataTemplate)
-				{
-					// Content is a DataTemplate — ContentCache is populated by OnContentChanged,
-					// which has already run before this PropertyChanged notification. However,
-					// defer to the next run-loop iteration to ensure any async post-processing
-					// in GetOrCreateContent() sees a fully settled ContentCache.
-					BeginInvokeOnMainThread(() =>
-					{
-						if (_isDisposed)
-							return;
-						var page = ((IShellContentController)shellContent).GetOrCreateContent();
-						UpdateRendererForShellContent(shellContent, page);
-					});
-				}
-			}
-		}
-
-		void UpdateRendererForShellContent(ShellContent shellContent, Page newPage)
-		{
-			if (newPage == null)
-				return;
-
-			if (!_renderers.TryGetValue(shellContent, out var oldRenderer))
-				return;
-
-			// If the existing renderer is already showing the new page, nothing to do.
-			if (oldRenderer.VirtualView == newPage)
-				return;
-
-			bool isCurrentContent = shellContent == _currentContent;
-
-			// Remove the old renderer
-			if (isCurrentContent)
-				oldRenderer.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
-
-			oldRenderer.ViewController?.RemoveFromParentViewController();
-			oldRenderer.DisconnectHandler();
-			_renderers.Remove(shellContent);
-
-			// Create a new renderer for the updated page
-			var renderer = SetPageRenderer(newPage, shellContent);
-			AddChildViewController(renderer.ViewController);
-
-			if (isCurrentContent)
-			{
-				_containerArea.AddSubview(renderer.ViewController.View);
-				renderer.ViewController.View.Frame = _containerArea.Bounds;
-				UpdateAdditionalSafeAreaInsets(renderer);
-
-				if (_tracker != null)
-					_tracker.Page = newPage;
 			}
 		}
 

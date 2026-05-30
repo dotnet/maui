@@ -21,18 +21,15 @@ namespace Microsoft.Maui.Controls
 	{
 		float[]? _strokeDashPattern;
 
-		WeakNotifyPropertyChangedProxy? _strokeShapeProxy;
+		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
 		PropertyChangedEventHandler? _strokeShapeChanged;
-		WeakNotifyPropertyChangedProxy? _strokeProxy;
+		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
 		PropertyChangedEventHandler? _strokeChanged;
-		WeakNotifyCollectionChangedProxy? _strokeDashArrayProxy;
-		NotifyCollectionChangedEventHandler? _strokeDashArrayChanged;
 
 		~Border()
 		{
 			_strokeShapeProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
-			_strokeDashArrayProxy?.Unsubscribe();
 		}
 
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
@@ -100,8 +97,15 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				AddLogicalChild(visualElement);
-				_strokeShapeProxy ??= new WeakNotifyPropertyChangedProxy();
-				_strokeShapeChanged ??= OnStrokeShapePropertyChanged;
+				_strokeShapeChanged ??= (sender, e) =>
+				{
+					if (e.PropertyName != nameof(Window) &&
+						e.PropertyName != nameof(Parent))
+					{
+						OnPropertyChanged(nameof(StrokeShape));
+					}
+				};
+				_strokeShapeProxy ??= new();
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
 			}
 		}
@@ -114,15 +118,6 @@ namespace Microsoft.Maui.Controls
 			{
 				RemoveLogicalChild(visualElement);
 				_strokeShapeProxy?.Unsubscribe();
-			}
-		}
-
-		void OnStrokeShapePropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName != nameof(Window) &&
-				e.PropertyName != nameof(Parent))
-			{
-				OnPropertyChanged(nameof(StrokeShape));
 			}
 		}
 
@@ -150,8 +145,8 @@ namespace Microsoft.Maui.Controls
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, BindingContext);
-				_strokeProxy ??= new WeakNotifyPropertyChangedProxy();
-				_strokeChanged ??= OnStrokePropertyChanged;
+				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
+				_strokeProxy ??= new();
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
 
 				OnParentResourcesChanged(this.GetMergedResources());
@@ -175,11 +170,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnStrokePropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			OnPropertyChanged(nameof(Stroke));
-		}
-
 		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
 		public static readonly BindableProperty StrokeThicknessProperty =
 			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Border), 1.0, propertyChanged: StrokeThicknessChanged);
@@ -187,30 +177,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="StrokeDashArray"/>.</summary>
 		public static readonly BindableProperty StrokeDashArrayProperty =
 			BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Border), null,
-				defaultValueCreator: bindable => new DoubleCollection(),
-				propertyChanging: (bindable, oldvalue, newvalue) =>
-				{
-					(bindable as Border)?.StopNotifyingStrokeDashArrayChanges();
-				},
-				propertyChanged: (bindable, oldvalue, newvalue) =>
-				{
-					(bindable as Border)?.NotifyStrokeDashArrayChanges();
-				});
-
-		void NotifyStrokeDashArrayChanges()
-		{
-			if (StrokeDashArray is INotifyCollectionChanged collection)
-			{
-				_strokeDashArrayProxy ??= new WeakNotifyCollectionChangedProxy();
-				_strokeDashArrayChanged ??= OnStrokeDashArrayChanged;
-				_strokeDashArrayProxy.Subscribe(collection, _strokeDashArrayChanged);
-			}
-		}
-
-		void StopNotifyingStrokeDashArrayChanges()
-		{
-			_strokeDashArrayProxy?.Unsubscribe();
-		}
+				defaultValueCreator: bindable => new DoubleCollection());
 
 		/// <summary>Bindable property for <see cref="StrokeDashOffset"/>.</summary>
 		public static readonly BindableProperty StrokeDashOffsetProperty =
@@ -343,9 +310,14 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				// Ensure we subscribe to the default collection from defaultValueCreator.
-				NotifyStrokeDashArrayChanges();
+				if (StrokeDashArray is INotifyCollectionChanged oldCollection)
+					oldCollection.CollectionChanged -= OnStrokeDashArrayChanged;
+
 				_strokeDashPattern = StrokeDashArray?.ToFloatArray();
+
+				if (StrokeDashArray is INotifyCollectionChanged newCollection)
+					newCollection.CollectionChanged += OnStrokeDashArrayChanged;
+
 				return _strokeDashPattern;
 			}
 		}

@@ -239,15 +239,4 @@ public partial class LabelOptionsPage : ContentPage
 		}
 	}
 
-	private void SimpleFormattedTextCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (e.Value)
-		{
-			_viewModel.FormattedText = new FormattedString
-			{
-				Spans = { new Span { Text = "This is a Basic Label" } }
-			};
-			_viewModel.Text = null;
-		}
-	}
 }

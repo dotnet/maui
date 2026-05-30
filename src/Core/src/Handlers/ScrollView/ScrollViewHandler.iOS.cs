@@ -48,21 +48,8 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(platformView);
 
-			if (PendingScrollToRequest is not null)
-			{
-				VirtualView?.ScrollFinished();
-				PendingScrollToRequest = null;
-			}
+			PendingScrollToRequest = null;
 			_eventProxy.Disconnect(platformView);
-		}
-
-		internal void ProcessPendingScrollRequest()
-		{
-			if (PendingScrollToRequest is { } pending)
-			{
-				MapRequestScrollTo(this, VirtualView, pending);
-				PendingScrollToRequest = null;
-			}
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)

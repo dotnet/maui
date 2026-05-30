@@ -8,7 +8,6 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.View.Menu;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
-using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
@@ -159,16 +158,6 @@ namespace Microsoft.Maui.DeviceTests
 		protected string GetToolbarTitle(IElementHandler handler) =>
 			GetPlatformToolbar(handler).Title;
 
-		protected AppBarLayout GetPlatformAppBarLayout(IElementHandler handler)
-		{
-			var toolbar = GetPlatformToolbar(handler);
-
-			if (toolbar == null)
-				return null;
-
-			return toolbar.Parent.GetParentOfType<AppBarLayout>();
-		}
-
 		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();
@@ -222,61 +211,6 @@ namespace Microsoft.Maui.DeviceTests
 					.LayoutParameters?.Height > 0;
 		}
 
-		protected async Task AssertAppBarTopInsetUsesColor(IElementHandler handler, Color expectedColor)
-		{
-			var toolbar = GetPlatformToolbar(handler);
-			Assert.NotNull(toolbar);
-
-			var appBar = GetPlatformAppBarLayout(handler);
-			Assert.NotNull(appBar);
-
-			var platformColor = expectedColor.ToPlatform();
-
-			await AssertHelpers.AssertEventually(() =>
-			{
-				var backgroundTintList = toolbar.BackgroundTintList;
-
-				return backgroundTintList != null &&
-					backgroundTintList.DefaultColor == platformColor.ToArgb() &&
-					appBar.PaddingTop > 0 &&
-					appBar.Width > 0 &&
-					appBar.Height > appBar.PaddingTop;
-			}, message: "Toolbar background or AppBarLayout top inset did not update.");
-
-			var bitmap = await appBar.ToBitmap(handler.MauiContext);
-			await bitmap.AssertContainsColor(platformColor, rect => new RectF(0, 0, rect.Width, appBar.PaddingTop));
-		}
-
-		protected static WindowInsetsCompat CreateTopCutoutInsets(int statusBarTopInset, int displayCutoutTopInset)
-		{
-			return new WindowInsetsCompat.Builder()
-				.SetInsets(WindowInsetsCompat.Type.SystemBars(), AndroidX.Core.Graphics.Insets.Of(0, statusBarTopInset, 0, 0))
-				.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), AndroidX.Core.Graphics.Insets.Of(0, displayCutoutTopInset, 0, 0))
-				.Build();
-		}
-
-		protected static void AssertTopInsets(WindowInsetsCompat insets, int expectedSystemBarsTop, int expectedDisplayCutoutTop, string message)
-		{
-			Assert.NotNull(insets);
-
-			var systemBars = insets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-			var displayCutout = insets.GetInsets(WindowInsetsCompat.Type.DisplayCutout());
-
-			Assert.True(
-				(systemBars?.Top ?? 0) == expectedSystemBarsTop && (displayCutout?.Top ?? 0) == expectedDisplayCutoutTop,
-				$"{message} Actual SystemBars.Top={(systemBars?.Top ?? 0)}, DisplayCutout.Top={(displayCutout?.Top ?? 0)}.");
-		}
-
-		protected static CapturingWindowInsetsListener AttachCapturingWindowInsetsListener(AView rootView, AView descendantView)
-		{
-			var originalListener = MauiWindowInsetListener.FindListenerForView(descendantView)
-				?? throw new InvalidOperationException("Unable to locate the MauiWindowInsetListener for the current test view hierarchy.");
-
-			var capturingListener = new CapturingWindowInsetsListener(originalListener);
-			ViewCompat.SetOnApplyWindowInsetsListener(rootView, capturingListener);
-			return capturingListener;
-		}
-
 		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
 			if (GetPlatformToolbar(handler)?.NavigationIcon is DrawerArrowDrawable dad)
@@ -294,28 +228,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			var expectedYInPixels = context.ToPixels(expectedTranslationY);
 			Assert.Equal(expectedYInPixels, nativeView.TranslationY, precision: 1);
-		}
-
-		protected sealed class CapturingWindowInsetsListener : Java.Lang.Object, IOnApplyWindowInsetsListener
-		{
-			readonly MauiWindowInsetListener _innerListener;
-
-			internal CapturingWindowInsetsListener(MauiWindowInsetListener innerListener)
-			{
-				_innerListener = innerListener ?? throw new ArgumentNullException(nameof(innerListener));
-			}
-
-			public int InvocationCount { get; private set; }
-
-			public WindowInsetsCompat LastAppliedInsets { get; private set; }
-
-			public WindowInsetsCompat OnApplyWindowInsets(AView v, WindowInsetsCompat insets)
-			{
-				var appliedInsets = _innerListener.OnApplyWindowInsets(v, insets) ?? insets;
-				LastAppliedInsets = appliedInsets;
-				InvocationCount++;
-				return appliedInsets;
-			}
 		}
 
 		class WindowTestFragment : Fragment
