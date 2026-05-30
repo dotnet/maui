@@ -54,6 +54,13 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			// When the height constraint is infinite, the handler substitutes a finite value.
+			// This flag tracks whether the substitute came from SizeThatFits (a content measurement,
+			// not a real bound). If so, the cap at the bottom must be skipped — the base already
+			// returns the correct size. When the substitute is Bounds.Height (a real frame bound),
+			// the flag stays false and the cap applies to preserve scrollability.
+			bool heightSubstitutedFromSizeThatFits = false;
+
 			if (double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint))
 			{
 				// If we drop an infinite value into base.GetDesiredSize for the Editor, we'll
@@ -69,11 +76,36 @@ namespace Microsoft.Maui.Handlers
 
 				if (double.IsInfinity(heightConstraint))
 				{
-					heightConstraint = sizeThatFits.Height;
+					var currentHeight = (double)PlatformView.Bounds.Height;
+
+					// When content overflows the current frame and auto-growth is disabled,
+					// use Bounds.Height as the constraint to preserve scrollability after rotation.
+					// Editors with AutoSize=TextChanges (AllowAutoGrowth=true) are exempt.
+					if (!PlatformView.AllowAutoGrowth
+						&& currentHeight > 0
+						&& PlatformView.ContentSize.Height > currentHeight)
+					{
+						heightConstraint = currentHeight; // real bound — cap will apply
+					}
+					else
+					{
+						heightConstraint = sizeThatFits.Height;
+						heightSubstitutedFromSizeThatFits = true; // not a real bound — cap will be skipped
+					}
 				}
 			}
 
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
+			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			// Clamp the result to the constraint only when it represents a real upper bound.
+			// UITextView (a UIScrollView subclass) ignores the height in SizeThatFits and always
+			// returns full content height, so clamping is needed for caller- or frame-derived bounds.
+			if (!heightSubstitutedFromSizeThatFits && result.Height > heightConstraint)
+			{
+				return new Size(result.Width, heightConstraint);
+			}
+
+			return result;
 		}
 
 		public static void MapText(IEditorHandler handler, IEditor editor)
@@ -82,6 +114,28 @@ namespace Microsoft.Maui.Handlers
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, editor);
+		}
+
+		public static void MapBackground(IEditorHandler handler, IEditor editor)
+		{
+			if (handler.PlatformView is not MauiTextView platformView)
+				return;
+
+			if (editor.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (editor.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+			}
+			else
+			{
+				platformView.UpdateBackground(editor);
+			}
 		}
 
 		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>
