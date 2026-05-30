@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is ComponentActivity activity)
 			{
 				var weakPlatformView = new WeakReference<AWebView>(platformView);
-				_backPressedCallback = new BlazorWebViewBackCallback(weakPlatformView, activity.OnBackPressedDispatcher);
+				_backPressedCallback = new BlazorWebViewBackCallback(weakPlatformView);
 				activity.OnBackPressedDispatcher.AddCallback(activity, _backPressedCallback);
 			}
 		}
@@ -248,12 +248,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		sealed class BlazorWebViewBackCallback : OnBackPressedCallback
 		{
 			readonly WeakReference<AWebView> _weakWebView;
-			readonly OnBackPressedDispatcher _dispatcher;
 
-			public BlazorWebViewBackCallback(WeakReference<AWebView> weakWebView, OnBackPressedDispatcher dispatcher) : base(false)
+			public BlazorWebViewBackCallback(WeakReference<AWebView> weakWebView) : base(false)
 			{
 				_weakWebView = weakWebView;
-				_dispatcher = dispatcher;
 			}
 
 			public override void HandleOnBackPressed()
@@ -273,10 +271,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// can't handle the press it must yield rather than silently consuming the event.
 				// UpdateBackNavigationState() will re-enable this callback on the next navigation.
 				Enabled = false;
-
-				// Redispatch this same back press so it is not swallowed when this callback was
-				// stale-enabled and no longer able to handle.
-				_dispatcher.OnBackPressed();
 			}
 		}
 	}

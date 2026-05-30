@@ -8,9 +8,6 @@ override Microsoft.Maui.Platform.MauiTextField.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.set -> void
-override Microsoft.Maui.Platform.MauiView.AccessibilityActivate() -> bool
-override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.get -> string?
-override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.set -> void
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapBackground(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapBackground(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
