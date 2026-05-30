@@ -233,13 +233,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			try
 			{
-				// Route through Shell.OnBackButtonPressed so that Shell subclass overrides
-				// are invoked consistently for both the navigation bar back button and the
-				// hardware/system back button (fixes dotnet/maui#9095).
-				if (_shell?.SendBackButtonPressed() == true)
-				{
+				// Call OnBackButtonPressed to allow the page to intercept navigation
+				if (Page?.SendBackButtonPressed() == true)
 					return;
-				}
 
 				await Page.Navigation.PopAsync();
 			}
@@ -462,11 +458,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (customIcon != null)
 				{
-					// Mutate() clones the drawable's ConstantState into a private copy so that
-					// SetTint() calls in Draw() don't bleed into the shared drawable cache and
-					// corrupt the tint across navigation cycles.
-					customIcon = customIcon.Mutate();
-
 					if (fid == null)
 					{
 						fid = new FlyoutIconDrawerDrawable(MauiContext.Context, tintColor, customIcon, text);
@@ -474,15 +465,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 					{
 						fid.TintColor = tintColor;
-						var previousIcon = fid.IconBitmap;
 						fid.IconBitmap = customIcon;
-						// Dispose the previous mutated drawable to release its native handle.
-						// The new customIcon is a fresh Mutate() clone so previousIcon != customIcon.
-						if (!ReferenceEquals(previousIcon, customIcon))
-						{
-							previousIcon?.Dispose();
-						}
-
 						fid.Text = text;
 					}
 

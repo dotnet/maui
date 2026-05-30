@@ -1,6 +1,7 @@
 using System;
 using Android.OS;
 using Android.Views;
+using Android.Window;
 using AndroidX.Activity;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.Content.Resources;
@@ -34,20 +35,27 @@ namespace Microsoft.Maui
 				this.CreatePlatformWindow(IPlatformApplication.Current.Application, savedInstanceState);
 			}
 
-			// Use OnBackPressedCallback (AndroidX) so the system predictive back-to-home
-			// animation plays when the app has nothing to handle (IsEnabled = false).
-			// IOnBackInvokedCallback (Android 13+ API) was avoided here because registering
-			// one always suppresses the back-to-home animation regardless of IsEnabled.
-			_mauiOnBackPressedCallback = new MauiOnBackPressedCallback(this);
-			OnBackPressedDispatcher.AddCallback(this, _mauiOnBackPressedCallback);
-			UpdatePredictiveBackRegistration();
+			// Register predictive back callback (Android 13+/API 33+) if available.
+			// This integrates MAUI lifecycle OnBackPressed events with the system back gesture animation.
+			// Guidance: route custom back handling through AndroidX OnBackPressedDispatcher so
+			// predictive back works correctly:
+			// https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture#update-custom
+			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is null)
+			{
+				_predictiveBackCallback = new PredictiveBackCallback(this);
+				// Priority 0 = PRIORITY_DEFAULT: callback invoked only when no higher-priority callback handles the event
+				OnBackInvokedDispatcher?.RegisterOnBackInvokedCallback(0, _predictiveBackCallback);
+			}
 		}
 
 		protected override void OnDestroy()
 		{
-			_mauiOnBackPressedCallback?.Remove();
-			_mauiOnBackPressedCallback?.Dispose();
-			_mauiOnBackPressedCallback = null;
+			if (OperatingSystem.IsAndroidVersionAtLeast(33) && _predictiveBackCallback is not null)
+			{
+				OnBackInvokedDispatcher?.UnregisterOnBackInvokedCallback(_predictiveBackCallback);
+				_predictiveBackCallback.Dispose();
+				_predictiveBackCallback = null;
+			}
 			base.OnDestroy();
 		}
 
@@ -67,49 +75,19 @@ namespace Microsoft.Maui
 			return handled || implHandled;
 		}
 
-		MauiOnBackPressedCallback? _mauiOnBackPressedCallback;
+		PredictiveBackCallback? _predictiveBackCallback;
 
-		// Must be called at every navigation state change so that Enabled reflects the current back
-		// stack before the predictive back drag preview starts (Android reads Enabled before commit).
-		// Call sites: Page.SendAppearing, Shell.SendNavigated, NavigationPage, Window.
-		internal void UpdatePredictiveBackRegistration()
-		{
-			if (_mauiOnBackPressedCallback is null)
-				return;
-
-			_mauiOnBackPressedCallback.Enabled = ShouldRegisterPredictiveBackCallback();
-		}
-
-		bool ShouldRegisterPredictiveBackCallback()
-		{
-			var services = IPlatformApplication.Current?.Services;
-			if (services is null)
-				return false;
-
-			// Early exit after the first match — avoids iterating all registered delegates unnecessarily.
-			bool hasAnyHandler = false;
-			foreach (var handler in services.GetLifecycleEventDelegates<AndroidLifecycle.OnBackPressed>())
-			{
-				hasAnyHandler = true;
-				break;
-			}
-
-			if (!hasAnyHandler)
-				return false;
-
-			return this.GetWindow() is IBackNavigationState { CanConsumeBackNavigation: true };
-		}
-
-		sealed class MauiOnBackPressedCallback : OnBackPressedCallback
+		sealed class PredictiveBackCallback : Java.Lang.Object, IOnBackInvokedCallback
 		{
 			readonly MauiAppCompatActivity _activity;
-			public MauiOnBackPressedCallback(MauiAppCompatActivity activity) : base(false)
+			public PredictiveBackCallback(MauiAppCompatActivity activity)
 			{
 				_activity = activity;
 			}
 
-			public override void HandleOnBackPressed()
+			public void OnBackInvoked()
 			{
+				// Reuse unified handling (will invoke lifecycle events and conditionally propagate).
 				_activity.HandleBackNavigation();
 			}
 		}

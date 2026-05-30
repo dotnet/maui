@@ -20,20 +20,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (orientation == ScrollOrientation.Neither)
 			{
-				// Use Hidden (not Disabled) so WinUI keeps the current ContentOffset instead of
-				// resetting it to (0,0). ScrollMode.Disabled prevents further user scrolling while
-				// the orientation is Neither.
-				scrollViewer.HorizontalScrollBarVisibility = WScrollBarVisibility.Hidden;
-				scrollViewer.VerticalScrollBarVisibility = WScrollBarVisibility.Hidden;
-				scrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
-				scrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+				scrollViewer.HorizontalScrollBarVisibility = scrollViewer.VerticalScrollBarVisibility = WScrollBarVisibility.Disabled;
 				return;
 			}
-
-			// When leaving Neither, restore scroll modes to Auto so that they follow
-			// the ScrollBarVisibility settings applied below.
-			scrollViewer.HorizontalScrollMode = ScrollMode.Auto;
-			scrollViewer.VerticalScrollMode = ScrollMode.Auto;
 
 			if (visibility == ScrollBarVisibility.Default)
 			{

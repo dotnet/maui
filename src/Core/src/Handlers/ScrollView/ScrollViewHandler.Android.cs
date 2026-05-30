@@ -161,16 +161,6 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (!handler.PlatformView.IsLaidOut || handler.PlatformView.IsLayoutRequested)
-			{
-				handler.PlatformView.Post(() =>
-				{
-					if (handler.IsConnected())
-						MapRequestScrollTo(handler, scrollView, args);
-				});
-				return;
-			}
-
 			var horizontalOffsetDevice = (int)context.ToPixels(request.HorizontalOffset);
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 

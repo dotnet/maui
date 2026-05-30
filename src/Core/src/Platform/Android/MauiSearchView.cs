@@ -1,6 +1,5 @@
 ﻿using Android.Content;
 using Android.Views;
-using Android.Views.InputMethods;
 using Android.Widget;
 using Java.IO;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -31,7 +30,6 @@ namespace Microsoft.Maui.Platform
 			if (_queryEditor is not null)
 			{
 				_queryEditor.SaveEnabled = false;
-				_queryEditor.EnsureNoFullscreenFlag();
 			}
 
 			if (_queryEditor?.LayoutParameters is LinearLayout.LayoutParams layoutParams)
