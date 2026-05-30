@@ -34,18 +34,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return new RippleDrawable(stateList, colorDrawable, null);
 		}
 
-		internal static Drawable CreateItemBackgroundDrawable(Context context)
-		{
-			if (!RuntimeFeature.IsMaterial3Enabled)
-			{
-				return CreateItemBackgroundDrawable();
-			}
-
-			var rippleColor = new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface, 0.10f));
-			var stateList = ColorStateList.ValueOf(rippleColor);
-			return new RippleDrawable(stateList, new ColorDrawable(AColor.Transparent), null);
-		}
-
 		internal static void UpdateEnabled(bool tabEnabled, IMenuItem menuItem)
 		{
 			if (menuItem.IsEnabled != tabEnabled)
@@ -199,7 +187,7 @@ namespace Microsoft.Maui.Controls.Platform
 				using (var innerLayout = new LinearLayout(context))
 				{
 					innerLayout.ClipToOutline = true;
-					innerLayout.SetBackground(CreateItemBackgroundDrawable(context));
+					innerLayout.SetBackground(CreateItemBackgroundDrawable());
 					innerLayout.SetPadding(0, (int)context.ToPixels(6), 0, (int)context.ToPixels(6));
 					innerLayout.Orientation = Orientation.Horizontal;
 					using (var param = new LP(LP.MatchParent, LP.WrapContent))
@@ -227,10 +215,7 @@ namespace Microsoft.Maui.Controls.Platform
 					image.LayoutParameters = lp;
 					lp.Dispose();
 
-					image.ImageTintList = ColorStateList.ValueOf(
-						RuntimeFeature.IsMaterial3Enabled
-							? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
-							: Colors.Black.MultiplyAlpha(0.6f).ToPlatform());
+					image.ImageTintList = ColorStateList.ValueOf(Colors.Black.MultiplyAlpha(0.6f).ToPlatform());
 
 					shellContent.icon.LoadImage(mauiContext, result =>
 					{
@@ -242,10 +227,7 @@ namespace Microsoft.Maui.Controls.Platform
 					using (var text = new TextView(context))
 					{
 						text.SetTypeface(Typeface.Create("sans-serif-medium", TypefaceStyle.Normal), TypefaceStyle.Normal);
-						text.SetTextColor(
-							RuntimeFeature.IsMaterial3Enabled
-								? new AColor(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
-								: AColor.Black);
+						text.SetTextColor(AColor.Black);
 						text.Text = shellContent.title;
 						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
 						{

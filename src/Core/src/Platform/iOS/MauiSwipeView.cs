@@ -295,12 +295,11 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_swipeItemsRect = new List<CGRect>();
-			_swipeItems.Clear();
 
 			double swipeItemsWidth;
 
 			if (_swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Right)
-				swipeItemsWidth = items.Count(GetIsVisible) * SwipeViewExtensions.SwipeItemWidth;
+				swipeItemsWidth = items.Count * SwipeViewExtensions.SwipeItemWidth;
 			else
 				swipeItemsWidth = _contentView.Frame.Width;
 
@@ -313,7 +312,6 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				UIView swipeItem = item.ToPlatform(Element.Handler.MauiContext);
-				swipeItem.Hidden = !GetIsVisible(item);
 				_actionView.AddSubview(swipeItem);
 				_swipeItems.Add(item, swipeItem);
 			}
@@ -344,11 +342,6 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var child in childs)
 			{
-				if (i >= items.Count)
-				{
-					break;
-				}
-
 				if (!child.Hidden)
 				{
 					var item = items[i];
@@ -378,10 +371,10 @@ namespace Microsoft.Maui.Platform
 						UpdateSwipeItemInsets(button);
 					}
 
+					i++;
 					previousWidth += swipeItemWidth;
 				}
 
-				i++;
 				_swipeItemsRect.Add(child.Frame);
 			}
 		}
@@ -633,12 +626,12 @@ namespace Microsoft.Maui.Platform
 					{
 						case SwipeDirection.Left:
 							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-							actionSize = Element.RightItems.Count(GetIsVisible) * SwipeViewExtensions.SwipeItemWidth;
+							actionSize = Element.RightItems.Count * SwipeViewExtensions.SwipeItemWidth;
 							_actionView.Frame = new CGRect(actionSize + offset, actionBounds.Y, actionBounds.Width, actionBounds.Height);
 							break;
 						case SwipeDirection.Right:
 							_contentView.Frame = new CGRect(_originalBounds.X + offset, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-							actionSize = Element.LeftItems.Count(GetIsVisible) * SwipeViewExtensions.SwipeItemWidth;
+							actionSize = Element.LeftItems.Count * SwipeViewExtensions.SwipeItemWidth;
 							_actionView.Frame = new CGRect(-actionSize + offset, actionBounds.Y, actionBounds.Width, actionBounds.Height);
 							break;
 						case SwipeDirection.Up:
@@ -780,13 +773,11 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItems.Mode == SwipeMode.Execute)
 				{
-					// Execute only the first visible item. In Execute mode, a swipe
-					// triggers a single action — matching WinUI behavior. Executing
-					// multiple items would cause side effects (e.g., visibility changes)
-					// that could trigger unintended additional executions. See #7580.
-					var itemToExecute = swipeItems.FirstOrDefault(GetIsVisible);
-					if (itemToExecute != null)
-						MauiSwipeView.ExecuteSwipeItem(itemToExecute);
+					foreach (var swipeItem in swipeItems)
+					{
+						if (GetIsVisible(swipeItem))
+							MauiSwipeView.ExecuteSwipeItem(swipeItem);
+					}
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 						ResetSwipe();
@@ -850,12 +841,12 @@ namespace Microsoft.Maui.Platform
 						{
 							case SwipeDirection.Left:
 								_contentView.Frame = new CGRect(_originalBounds.X - swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-								actionSize = Element.RightItems.Count(GetIsVisible) * SwipeViewExtensions.SwipeItemWidth;
+								actionSize = Element.RightItems.Count * SwipeViewExtensions.SwipeItemWidth;
 								_actionView.Frame = new CGRect(actionSize - swipeThreshold, actionBounds.Y, actionBounds.Width, actionBounds.Height);
 								break;
 							case SwipeDirection.Right:
 								_contentView.Frame = new CGRect(_originalBounds.X + swipeThreshold, _originalBounds.Y, _originalBounds.Width, _originalBounds.Height);
-								actionSize = Element.LeftItems.Count(GetIsVisible) * SwipeViewExtensions.SwipeItemWidth;
+								actionSize = Element.LeftItems.Count * SwipeViewExtensions.SwipeItemWidth;
 								_actionView.Frame = new CGRect(-actionSize + swipeThreshold, actionBounds.Y, actionBounds.Width, actionBounds.Height);
 								break;
 							case SwipeDirection.Up:
@@ -1174,6 +1165,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			Swipe(animated);
+
+			_swipeOffset = Math.Abs(_swipeOffset);
 		}
 
 		void UpdateOffset(double swipeOffset)

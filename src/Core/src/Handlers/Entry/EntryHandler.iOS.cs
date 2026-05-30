@@ -44,37 +44,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateText(entry);
 
-			if (!handler.IsConnectingHandler())
-			{
-				// If we're not connecting the handler, we need to update the text formatting
-				// This is because the text may have changed, and we need to ensure that
-				// any attributed string formatting is applied correctly.
-				MapFormatting(handler, entry);
-			}
-		}
-
-		public static void MapBackground(IEntryHandler handler, IEntry entry)
-		{
-			if (handler.PlatformView is not MauiTextField platformView)
-				return;
-
-			if (entry.Background is ImageSourcePaint image)
-			{
-				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
-					.FireAndForget(handler);
-				return;
-			}
-			else if (entry.Background.IsNullOrEmpty())
-			{
-				platformView.RemoveBackgroundLayer();
-				platformView.BackgroundColor = null;
-				return;
-			}
-			else
-			{
-				platformView.UpdateBackground(entry);
-			}
+			// Any text update requires that we update any attributed string formatting
+			MapFormatting(handler, entry);
 		}
 
 		public static void MapTextColor(IEntryHandler handler, IEntry entry)
@@ -136,14 +107,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFormatting(IEntryHandler handler, IEntry entry)
 		{
-			handler.UpdateValue(nameof(IEntry.MaxLength));
+			handler.PlatformView?.UpdateMaxLength(entry);
 
 			// Update all of the attributed text formatting properties
-			handler.UpdateValue(nameof(IEntry.CharacterSpacing));
+			handler.PlatformView?.UpdateCharacterSpacing(entry);
 
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.UpdateValue(nameof(IEntry.HorizontalTextAlignment));
+			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
 		}
 
 		protected virtual bool OnShouldReturn(UITextField view) =>
@@ -241,8 +212,8 @@ namespace Microsoft.Maui.Handlers
 
 					VirtualView.UpdateText(platformView.Text);
 				}
-			}
-
+			}	
+				
 			void OnEditingEnded(object? sender, EventArgs e)
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)

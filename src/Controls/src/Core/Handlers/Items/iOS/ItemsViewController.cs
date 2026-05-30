@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_isEmpty)
 			{
-				ClearMeasurementCells();
+				_measurementCells?.Clear();
 				ItemsViewLayout?.ClearCellSizeCache();
 			}
 
@@ -257,23 +257,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
 			var visibleCells = CollectionView.VisibleCells;
-			List<NSIndexPath> invalidatedIndexPaths = null;
+			List<TemplatedCell> invalidatedCells = null;
 
 			var visibleCellsLength = visibleCells.Length;
 			for (int n = 0; n < visibleCellsLength; n++)
 			{
 				if (visibleCells[n] is TemplatedCell { MeasureInvalidated: true } cell)
 				{
-					var indexPath = CollectionView.IndexPathForCell(cell);
-					if (indexPath is not null && ItemsSource.IsIndexPathValid(indexPath))
-					{
-						invalidatedIndexPaths ??= [];
-						invalidatedIndexPaths.Add(indexPath);
-					}
+					invalidatedCells ??= [];
+					invalidatedCells.Add(cell);
 				}
 			}
 
-			if (invalidatedIndexPaths is not null)
+			if (invalidatedCells is not null)
 			{
 				// GridLayout has a special positioning override when there's only one item
 				// so we have to invalidate the layout entirely to trigger that special case.
@@ -284,7 +280,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				else
 				{
 					var layoutInvalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
-					layoutInvalidationContext.InvalidateItems(invalidatedIndexPaths.ToArray());
+					layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
 					CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 				}
 			}
@@ -423,7 +419,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public virtual void UpdateItemsSource()
 		{
-			ClearMeasurementCells();
+			_measurementCells?.Clear();
 			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
@@ -431,21 +427,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
-			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
-			// ResetScrollTracking must run before the assignment so the UIKit-triggered
-			// scrollViewDidScroll callback computes delta from zero, not the stale previous offset.
-			if (CollectionView.ContentOffset != CoreGraphics.CGPoint.Empty)
-			{
-				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
-				CollectionView.ContentOffset = CoreGraphics.CGPoint.Empty;
-			}
-
 			(ItemsView as IView)?.InvalidateMeasure();
 		}
 
 		internal void DisposeItemsSource()
 		{
-			ClearMeasurementCells();
+			_measurementCells?.Clear();
 			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource?.Dispose();
 			ItemsSource = new EmptySource();
@@ -461,13 +448,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					foreach (var child in ItemsView.LogicalChildrenInternal)
 					{
-						// Skip the empty view element — its flow direction is handled
-						// separately in AlignEmptyView to avoid double application
-						if (child == _emptyViewFormsElement)
-						{
-							continue;
-						}
-
 						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
 						{
 							view.UpdateFlowDirection(ve);
@@ -532,17 +512,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			cell.LayoutAttributesChanged += CellLayoutAttributesChanged;
 
 			ItemsViewLayout.PrepareCellForLayout(cell);
-		}
-
-		void ClearMeasurementCells()
-		{
-			foreach (var measurementCell in _measurementCells.Values)
-			{
-				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
-				measurementCell.Unbind();
-			}
-
-			_measurementCells.Clear();
 		}
 
 		public virtual NSIndexPath GetIndexForItem(object item)
@@ -806,28 +775,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (_emptyViewFormsElement is not null)
+			bool isRtl;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
+				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
+			else
+				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
+
+			if (isRtl)
 			{
-				// The empty view's FlowDirection is handled here instead of in UpdateFlowDirection()
-				// to ensure proper alignment independent of the CollectionView's layout flip behavior.
-				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
+				if (_emptyUIView.Transform.A == -1)
 				{
-					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
+					return;
+				}
+
+				FlipEmptyView();
+			}
+			else
+			{
+				if (_emptyUIView.Transform.A == -1)
+				{
+					FlipEmptyView();
 				}
 			}
-			else if (_emptyUIView is UILabel label)
-			{
-				// For UILabel, set the text alignment to center to ensure consistent behavior with Windows and Android
-				label.TextAlignment = UITextAlignment.Center;
-				label.SemanticContentAttribute = ItemsView.FlowDirection switch
-				{
-					FlowDirection.RightToLeft => UISemanticContentAttribute.ForceRightToLeft,
-					FlowDirection.LeftToRight => UISemanticContentAttribute.ForceLeftToRight,
-					_ => CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
-						? UISemanticContentAttribute.ForceRightToLeft
-						: UISemanticContentAttribute.ForceLeftToRight
-				};
-			}
+		}
+
+		void FlipEmptyView()
+		{
+			// Flip the empty view 180 degrees around the X axis 
+			_emptyUIView.Transform = CGAffineTransform.Scale(_emptyUIView.Transform, -1, 1);
 		}
 
 		void ShowEmptyView()

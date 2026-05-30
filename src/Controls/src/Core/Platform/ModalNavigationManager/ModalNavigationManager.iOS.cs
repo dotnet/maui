@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
@@ -95,14 +94,12 @@ namespace Microsoft.Maui.Controls.Platform
 				modalWrapper.PresentingViewController is not null)
 			{
 				await modalWrapper.PresentingViewController.DismissViewControllerAsync(animated);
-				DisposeHelpers.DisposeModalAndChildHandlers(modal);
 				return modal;
 			}
 
 			// if the presenting VC is null that means the modal window was already dismissed
 			// this will usually happen as a result of swapping out the content on the window
 			// which is what was acting as the PresentingViewController
-			DisposeHelpers.DisposeModalAndChildHandlers(modal);
 			return modal;
 		}
 
