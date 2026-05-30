@@ -134,12 +134,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			var view = Substitute.For<IControlsView>();
 			var mauiContext = Substitute.For<IMauiContext>();
-			var customManager = Substitute.For<IGesturePlatformManager>();
-			var customFactory = Substitute.For<IGesturePlatformManagerFactory>();
-			customFactory.CreateGesturePlatformManager(handler).Returns(customManager);
+			var customManager = Substitute.For<IDisposable>();
+			GesturePlatformManagerCreator creator = h =>
+			{
+				Assert.Equal(handler, h);
+				return customManager;
+			};
 
 			var services = new ServiceCollection()
-				.AddSingleton(customFactory)
+				.AddSingleton(creator)
 				.BuildServiceProvider();
 
 			mauiContext.Services.Returns(services);
@@ -150,7 +153,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(gestureManager.GesturePlatformManager);
 			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
-			customFactory.Received(1).CreateGesturePlatformManager(handler);
 		}
 
 		[Fact]
@@ -159,12 +161,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			var view = Substitute.For<IControlsView>();
 			var mauiContext = Substitute.For<IMauiContext>();
-			var customManager = Substitute.For<IGesturePlatformManager>();
-			var customFactory = Substitute.For<IGesturePlatformManagerFactory>();
-			customFactory.CreateGesturePlatformManager(handler).Returns(customManager);
+			var customManager = Substitute.For<IDisposable>();
+			GesturePlatformManagerCreator creator = _ => customManager;
 
 			var services = new ServiceCollection()
-				.AddSingleton(customFactory)
+				.AddSingleton(creator)
 				.BuildServiceProvider();
 
 			mauiContext.Services.Returns(services);
@@ -186,13 +187,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			var view = Substitute.For<IControlsView>();
 			var mauiContext = Substitute.For<IMauiContext>();
-			var customManager = Substitute.For<IGesturePlatformManager>();
-			var customManager2 = Substitute.For<IGesturePlatformManager>();
-			var customFactory = Substitute.For<IGesturePlatformManagerFactory>();
-			customFactory.CreateGesturePlatformManager(Arg.Any<IViewHandler>()).Returns(customManager, customManager2);
+			var customManager = Substitute.For<IDisposable>();
+			var customManager2 = Substitute.For<IDisposable>();
+			var calls = 0;
+			GesturePlatformManagerCreator creator = _ => calls++ == 0 ? customManager : customManager2;
 
 			var services = new ServiceCollection()
-				.AddSingleton(customFactory)
+				.AddSingleton(creator)
 				.BuildServiceProvider();
 
 			mauiContext.Services.Returns(services);
@@ -214,8 +215,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.HandlerChanged += Raise.Event<EventHandler>(view, EventArgs.Empty);
 
 			Assert.Equal(customManager2, gestureManager.GesturePlatformManager);
-			customFactory.Received(1).CreateGesturePlatformManager(handler);
-			customFactory.Received(1).CreateGesturePlatformManager(handler2);
 			customManager.Received(1).Dispose();
 			customManager2.DidNotReceive().Dispose();
 		}

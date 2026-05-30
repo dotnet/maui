@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _didHaveWindow;
 
 		public bool IsConnected => GesturePlatformManager != null;
-		public IGesturePlatformManager? GesturePlatformManager { get; private set; }
+		public IDisposable? GesturePlatformManager { get; private set; }
 
 		public GestureManager(IControlsView view)
 		{
@@ -77,15 +77,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			var factory = handler.MauiContext?.Services.GetService<IGesturePlatformManagerFactory>();
-			if (factory is null)
+			var creator = handler.MauiContext?.Services.GetService<GesturePlatformManagerCreator>();
+			if (creator is null)
 			{
 				GesturePlatformManager = new GesturePlatformManager(handler);
 			}
 			else
 			{
-				GesturePlatformManager = factory.CreateGesturePlatformManager(handler)
-					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerFactory)}.{nameof(IGesturePlatformManagerFactory.CreateGesturePlatformManager)} cannot return null.");
+				GesturePlatformManager = creator(handler)
+					?? throw new InvalidOperationException($"{nameof(GesturePlatformManagerCreator)} cannot return null.");
 			}
 
 			_handler = handler;

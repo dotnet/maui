@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				// Optional services are probed via GetService<T>() and are expected to
 				// return null when not registered (per the IServiceProvider contract).
-				if (serviceType == typeof(IGesturePlatformManagerFactory))
+				if (serviceType == typeof(GesturePlatformManagerCreator))
 					return null;
 
 				throw new NotSupportedException($"Attempting to get service type {serviceType}");
