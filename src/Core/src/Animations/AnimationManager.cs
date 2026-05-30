@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Animations
 			var milliseconds = TimeSpan.FromMilliseconds(now - _lastUpdate).TotalMilliseconds;
 			_lastUpdate = now;
 
-			var animations = new List<Animation>(_animations);
+			Animation[] animations = [.._animations];
 
 			foreach (var animation in animations)
 			{
@@ -133,12 +133,13 @@ namespace Microsoft.Maui.Animations
 
 		void ForceFinishAnimations()
 		{
-			var animations = _animations.ToArray();
+			Animation[] animations = [.._animations];
 
 			foreach (var animation in animations)
 			{
 				ForceFinish(animation);
 			}
+
 
 			End();
 
