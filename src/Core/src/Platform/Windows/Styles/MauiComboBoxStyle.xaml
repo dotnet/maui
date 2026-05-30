@@ -6,7 +6,7 @@
     <DataTemplate x:Key="ComboBoxHeader">
         <TextBlock
             Text="{Binding Title}" 
-            CharacterSpacing="{Binding CharacterSpacing, Converter={StaticResource CharacterSpacingConverter}}"
+            CharacterSpacing="{Binding Path=CharacterSpacing, ElementName=HeaderContentPresenter}"
             Foreground="{Binding TitleColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}" />
     </DataTemplate>
 
