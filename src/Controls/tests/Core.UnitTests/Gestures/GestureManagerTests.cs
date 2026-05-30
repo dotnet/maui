@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Platform;
 using NSubstitute;
 using Xunit;
@@ -115,11 +114,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var handler = Substitute.For<IViewHandler>();
 			var view = Substitute.For<IControlsView>();
-			var mauiContext = Substitute.For<IMauiContext>();
-			var services = new ServiceCollection().BuildServiceProvider();
 
-			mauiContext.Services.Returns(services);
-			handler.MauiContext.Returns(mauiContext);
 			view.Handler.Returns(handler);
 
 			GestureManager gestureManager = new GestureManager(view);
@@ -131,45 +126,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void UsesCustomGesturePlatformManagerWhenFactoryRegistered()
 		{
-			var handler = Substitute.For<IViewHandler>();
+			var handler = Substitute.For<IViewHandler, ICustomGesturePlatformManagerProvider>();
+			var provider = (ICustomGesturePlatformManagerProvider)handler;
 			var view = Substitute.For<IControlsView>();
-			var mauiContext = Substitute.For<IMauiContext>();
 			var customManager = Substitute.For<IDisposable>();
-			GesturePlatformManagerCreator creator = h =>
-			{
-				Assert.Equal(handler, h);
-				return customManager;
-			};
 
-			var services = new ServiceCollection()
-				.AddSingleton(creator)
-				.BuildServiceProvider();
-
-			mauiContext.Services.Returns(services);
-			handler.MauiContext.Returns(mauiContext);
+			provider.CreateGesturePlatformManager().Returns(customManager);
 			view.Handler.Returns(handler);
 
 			GestureManager gestureManager = new GestureManager(view);
 
 			Assert.NotNull(gestureManager.GesturePlatformManager);
 			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+			provider.Received(1).CreateGesturePlatformManager();
 		}
 
 		[Fact]
 		public void FactoryProvidedManagerIsDisposedOnDisconnect()
 		{
-			var handler = Substitute.For<IViewHandler>();
+			var handler = Substitute.For<IViewHandler, ICustomGesturePlatformManagerProvider>();
+			var provider = (ICustomGesturePlatformManagerProvider)handler;
 			var view = Substitute.For<IControlsView>();
-			var mauiContext = Substitute.For<IMauiContext>();
 			var customManager = Substitute.For<IDisposable>();
-			GesturePlatformManagerCreator creator = _ => customManager;
 
-			var services = new ServiceCollection()
-				.AddSingleton(creator)
-				.BuildServiceProvider();
-
-			mauiContext.Services.Returns(services);
-			handler.MauiContext.Returns(mauiContext);
+			provider.CreateGesturePlatformManager().Returns(customManager);
 			view.Handler.Returns(handler);
 
 			GestureManager gestureManager = new GestureManager(view);
@@ -184,20 +164,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void FactoryCreatesNewManagerAfterReconnect()
 		{
-			var handler = Substitute.For<IViewHandler>();
+			var handler = Substitute.For<IViewHandler, ICustomGesturePlatformManagerProvider>();
+			var provider = (ICustomGesturePlatformManagerProvider)handler;
 			var view = Substitute.For<IControlsView>();
-			var mauiContext = Substitute.For<IMauiContext>();
 			var customManager = Substitute.For<IDisposable>();
 			var customManager2 = Substitute.For<IDisposable>();
-			var calls = 0;
-			GesturePlatformManagerCreator creator = _ => calls++ == 0 ? customManager : customManager2;
 
-			var services = new ServiceCollection()
-				.AddSingleton(creator)
-				.BuildServiceProvider();
-
-			mauiContext.Services.Returns(services);
-			handler.MauiContext.Returns(mauiContext);
+			provider.CreateGesturePlatformManager().Returns(customManager);
 			view.Handler.Returns(handler);
 
 			GestureManager gestureManager = new GestureManager(view);
@@ -209,8 +182,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(gestureManager.IsConnected);
 
 			// Reconnect with a new handler
-			var handler2 = Substitute.For<IViewHandler>();
-			handler2.MauiContext.Returns(mauiContext);
+			var handler2 = Substitute.For<IViewHandler, ICustomGesturePlatformManagerProvider>();
+			var provider2 = (ICustomGesturePlatformManagerProvider)handler2;
+			provider2.CreateGesturePlatformManager().Returns(customManager2);
 			view.Handler.Returns(handler2);
 			view.HandlerChanged += Raise.Event<EventHandler>(view, EventArgs.Empty);
 

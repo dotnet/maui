@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -77,15 +76,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			var creator = handler.MauiContext?.Services.GetService<GesturePlatformManagerCreator>();
-			if (creator is null)
+			if (handler is ICustomGesturePlatformManagerProvider provider)
 			{
-				GesturePlatformManager = new GesturePlatformManager(handler);
+				GesturePlatformManager = provider.CreateGesturePlatformManager()
+					?? throw new InvalidOperationException($"{nameof(ICustomGesturePlatformManagerProvider)}.{nameof(ICustomGesturePlatformManagerProvider.CreateGesturePlatformManager)} cannot return null.");
 			}
 			else
 			{
-				GesturePlatformManager = creator(handler)
-					?? throw new InvalidOperationException($"{nameof(GesturePlatformManagerCreator)} cannot return null.");
+				GesturePlatformManager = new GesturePlatformManager(handler);
 			}
 
 			_handler = handler;
