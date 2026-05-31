@@ -593,6 +593,7 @@ if ($existingRaw) {
 $authorPing = ""
 if ($prAuthor) {
     $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>.`n> **$commitTitle**"
+    $authorPing += ' To request a deterministic rerun after new comments or commits, comment `/review rerun`.'
 }
 
 $reviewStatus = switch ($reviewEvent) {
