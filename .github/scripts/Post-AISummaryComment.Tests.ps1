@@ -17,16 +17,18 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    $function = $ast.Find({
-        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-        $args[0].Name -eq 'Test-PhaseContentIsNoOp'
-    }, $true)
+    foreach ($functionName in @('Test-PhaseContentIsNoOp', 'Get-AIReviewEvent')) {
+        $function = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $functionName
+        }, $true)
 
-    if (-not $function) {
-        throw "Function 'Test-PhaseContentIsNoOp' not found"
+        if (-not $function) {
+            throw "Function '$functionName' not found"
+        }
+
+        Invoke-Expression $function.Extent.Text
     }
-
-    Invoke-Expression $function.Extent.Text
 }
 
 Describe 'Test-PhaseContentIsNoOp' {
@@ -71,5 +73,22 @@ Describe 'Test-PhaseContentIsNoOp' {
             -PhaseKey 'regression-check' `
             -Content '⚠️ Regression cross-reference failed: gh api failed' |
             Should -BeFalse
+    }
+}
+
+Describe 'Get-AIReviewEvent' {
+    It 'maps an exact approve recommendation to APPROVE' {
+        Get-AIReviewEvent -ReportContent "## ✅ Final Recommendation: APPROVE`n`nLooks good." |
+            Should -Be 'APPROVE'
+    }
+
+    It 'maps an exact request-changes recommendation to REQUEST_CHANGES' {
+        Get-AIReviewEvent -ReportContent "## ⚠️ Final Recommendation: REQUEST CHANGES`n`nNeeds the try-fix candidate." |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'falls back to COMMENT when the recommendation is missing or ambiguous' {
+        Get-AIReviewEvent -ReportContent '' | Should -Be 'COMMENT'
+        Get-AIReviewEvent -ReportContent 'Recommendation: APPROVE after manual review' | Should -Be 'COMMENT'
     }
 }

@@ -46,6 +46,85 @@ function Test-IsTryFixCommentBody {
         ($Body.Contains('try-fix-') -and $Body.Contains('Candidate diff'))
 }
 
+function Test-IsAISummaryCommentBody {
+    param([string]$Body)
+
+    if ([string]::IsNullOrWhiteSpace($Body)) {
+        return $false
+    }
+
+    return $Body.Contains($script:AiSummaryCommentMarker)
+}
+
+function Test-ShouldPreserveMauiBotArtifact {
+    param(
+        [object]$Artifact,
+        [string[]]$PreserveNodeIds = @(),
+        [string[]]$PreserveIds = @()
+    )
+
+    $nodeId = [string]$Artifact.node_id
+    $id = [string]$Artifact.id
+
+    return (
+        (-not [string]::IsNullOrWhiteSpace($nodeId) -and $PreserveNodeIds -contains $nodeId) -or
+        (-not [string]::IsNullOrWhiteSpace($id) -and $PreserveIds -contains $id)
+    )
+}
+
+function Invoke-GitHubMinimizeComment {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SubjectNodeId,
+
+        [ValidateSet('SPAM', 'ABUSE', 'OFF_TOPIC', 'OUTDATED', 'DUPLICATE', 'RESOLVED', 'LOW_QUALITY')]
+        [string]$Classifier = 'OUTDATED',
+
+        [string]$Reason = 'stale MauiBot artifact',
+
+        [switch]$DryRun
+    )
+
+    if ([string]::IsNullOrWhiteSpace($SubjectNodeId)) {
+        Write-Host "  Warning: cannot hide $Reason because node_id is empty" -ForegroundColor Yellow
+        return $false
+    }
+
+    if ($DryRun) {
+        Write-Host "  [DryRun] Would hide $Reason (node_id: $SubjectNodeId, classifier: $Classifier)" -ForegroundColor Magenta
+        return $true
+    }
+
+    $query = @'
+mutation MinimizeComment($subjectId: ID!, $classifier: ReportedContentClassifiers!) {
+  minimizeComment(input: { subjectId: $subjectId, classifier: $classifier }) {
+    minimizedComment {
+      isMinimized
+      minimizedReason
+    }
+  }
+}
+'@
+
+    try {
+        Write-Host "  Hiding $Reason (node_id: $SubjectNodeId, classifier: $Classifier)..." -ForegroundColor Gray
+        $output = gh api graphql `
+            -f query="$query" `
+            -F subjectId="$SubjectNodeId" `
+            -F classifier="$Classifier" 2>&1
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "minimizeComment failed (exit code $LASTEXITCODE): $output"
+        }
+
+        return $true
+    } catch {
+        Write-Host "  Warning: could not hide $Reason with node_id ${SubjectNodeId}: $_" -ForegroundColor Yellow
+        return $false
+    }
+}
+
 function Get-GitHubIssueComments {
     param([Parameter(Mandatory = $true)][int]$PRNumber)
 
@@ -62,7 +141,7 @@ function Get-GitHubIssueComments {
     }
 }
 
-function Remove-StaleMauiBotIssueComments {
+function Hide-StaleMauiBotIssueComments {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -72,6 +151,12 @@ function Remove-StaleMauiBotIssueComments {
         [switch]$IncludeLegacyGate,
         [switch]$IncludeMergeConflict,
         [switch]$IncludeTryFix,
+
+        [string[]]$PreserveNodeIds = @(),
+        [string[]]$PreserveIds = @(),
+
+        [ValidateSet('SPAM', 'ABUSE', 'OFF_TOPIC', 'OUTDATED', 'DUPLICATE', 'RESOLVED', 'LOW_QUALITY')]
+        [string]$Classifier = 'OUTDATED',
 
         [string]$Reason = 'stale MauiBot comment',
         [switch]$DryRun
@@ -84,13 +169,17 @@ function Remove-StaleMauiBotIssueComments {
 
     $staleComments = @()
     foreach ($comment in $comments) {
+        if (Test-ShouldPreserveMauiBotArtifact -Artifact $comment -PreserveNodeIds $PreserveNodeIds -PreserveIds $PreserveIds) {
+            continue
+        }
+
         $body = [string]$comment.body
         if ([string]::IsNullOrWhiteSpace($body)) {
             continue
         }
 
         $matchesGeneratedMarker =
-            ($IncludeAISummary -and $body.Contains($script:AiSummaryCommentMarker)) -or
+            ($IncludeAISummary -and (Test-IsAISummaryCommentBody $body)) -or
             ($IncludeLegacyGate -and $body.Contains($script:AiGateCommentMarker))
 
         $matchesBotOnlyContent =
@@ -105,21 +194,46 @@ function Remove-StaleMauiBotIssueComments {
     }
 
     foreach ($comment in $staleComments) {
-        if ($DryRun) {
-            Write-Host "  [DryRun] Would delete $Reason (comment ID: $($comment.id))" -ForegroundColor Magenta
-            continue
-        }
-
-        try {
-            Write-Host "  Deleting $Reason (comment ID: $($comment.id))..." -ForegroundColor Gray
-            $deleteOutput = gh api --method DELETE "repos/dotnet/maui/issues/comments/$($comment.id)" 2>&1
-            if ($LASTEXITCODE -ne 0) {
-                throw "DELETE failed (exit code $LASTEXITCODE): $deleteOutput"
-            }
-        } catch {
-            Write-Host "  Warning: could not delete $Reason comment $($comment.id): $_" -ForegroundColor Yellow
-        }
+        Invoke-GitHubMinimizeComment `
+            -SubjectNodeId ([string]$comment.node_id) `
+            -Classifier $Classifier `
+            -Reason "$Reason comment $($comment.id)" `
+            -DryRun:$DryRun | Out-Null
     }
+}
+
+function Remove-StaleMauiBotIssueComments {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$PRNumber,
+
+        [switch]$IncludeAISummary,
+        [switch]$IncludeLegacyGate,
+        [switch]$IncludeMergeConflict,
+        [switch]$IncludeTryFix,
+
+        [string[]]$PreserveNodeIds = @(),
+        [string[]]$PreserveIds = @(),
+
+        [ValidateSet('SPAM', 'ABUSE', 'OFF_TOPIC', 'OUTDATED', 'DUPLICATE', 'RESOLVED', 'LOW_QUALITY')]
+        [string]$Classifier = 'OUTDATED',
+
+        [string]$Reason = 'stale MauiBot comment',
+        [switch]$DryRun
+    )
+
+    Hide-StaleMauiBotIssueComments `
+        -PRNumber $PRNumber `
+        -IncludeAISummary:$IncludeAISummary `
+        -IncludeLegacyGate:$IncludeLegacyGate `
+        -IncludeMergeConflict:$IncludeMergeConflict `
+        -IncludeTryFix:$IncludeTryFix `
+        -PreserveNodeIds $PreserveNodeIds `
+        -PreserveIds $PreserveIds `
+        -Classifier $Classifier `
+        -Reason $Reason `
+        -DryRun:$DryRun
 }
 
 function Get-GitHubPullRequestReviews {
@@ -138,13 +252,63 @@ function Get-GitHubPullRequestReviews {
     }
 }
 
-function Dismiss-StaleMauiBotTryFixReviews {
+function Dismiss-MauiBotPullRequestReview {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [int]$PRNumber,
 
-        [string]$Reason = 'superseded MauiBot try-fix review',
+        [Parameter(Mandatory = $true)]
+        [object]$Review,
+
+        [string]$Reason = 'Superseded by a newer MauiBot review run.',
+        [switch]$DryRun
+    )
+
+    if ($DryRun) {
+        Write-Host "  [DryRun] Would dismiss stale review ID $($Review.id)" -ForegroundColor Magenta
+        return $true
+    }
+
+    $tmp = New-TemporaryFile
+    try {
+        @{ message = $Reason } |
+            ConvertTo-Json -Compress |
+            Set-Content -LiteralPath $tmp -Encoding UTF8 -NoNewline
+
+        Write-Host "  Dismissing stale review ID $($Review.id)..." -ForegroundColor Gray
+        $dismissOutput = gh api --method PUT "repos/dotnet/maui/pulls/$PRNumber/reviews/$($Review.id)/dismissals" --input $tmp.FullName 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "dismissal failed (exit code $LASTEXITCODE): $dismissOutput"
+        }
+
+        return $true
+    } catch {
+        Write-Host "  Warning: could not dismiss review $($Review.id): $_" -ForegroundColor Yellow
+        return $false
+    } finally {
+        Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Hide-StaleMauiBotPullRequestReviews {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$PRNumber,
+
+        [switch]$IncludeAISummary,
+        [switch]$IncludeTryFix,
+
+        [string[]]$PreserveNodeIds = @(),
+        [string[]]$PreserveIds = @(),
+
+        [ValidateSet('SPAM', 'ABUSE', 'OFF_TOPIC', 'OUTDATED', 'DUPLICATE', 'RESOLVED', 'LOW_QUALITY')]
+        [string]$Classifier = 'OUTDATED',
+
+        [string]$Reason = 'stale MauiBot review',
+        [switch]$DismissChangesRequested,
+        [switch]$DismissFormalReviews,
         [switch]$DryRun
     )
 
@@ -153,33 +317,68 @@ function Dismiss-StaleMauiBotTryFixReviews {
         return
     }
 
-    $staleReviews = @($reviews | Where-Object {
-        (Test-IsMauiBotCommentAuthor $_) -and
-        ([string]$_.state -ieq 'CHANGES_REQUESTED') -and
-        (Test-IsTryFixCommentBody ([string]$_.body))
-    })
-
-    foreach ($review in $staleReviews) {
-        if ($DryRun) {
-            Write-Host "  [DryRun] Would dismiss $Reason (review ID: $($review.id))" -ForegroundColor Magenta
+    $staleReviews = @()
+    foreach ($review in $reviews) {
+        if (Test-ShouldPreserveMauiBotArtifact -Artifact $review -PreserveNodeIds $PreserveNodeIds -PreserveIds $PreserveIds) {
             continue
         }
 
-        $tmp = New-TemporaryFile
-        try {
-            @{ message = 'Superseded by a newer MauiBot review run.' } |
-                ConvertTo-Json -Compress |
-                Set-Content -LiteralPath $tmp -Encoding UTF8 -NoNewline
+        $body = [string]$review.body
+        if ([string]::IsNullOrWhiteSpace($body) -or -not (Test-IsMauiBotCommentAuthor $review)) {
+            continue
+        }
 
-            Write-Host "  Dismissing $Reason (review ID: $($review.id))..." -ForegroundColor Gray
-            $dismissOutput = gh api --method PUT "repos/dotnet/maui/pulls/$PRNumber/reviews/$($review.id)/dismissals" --input $tmp.FullName 2>&1
-            if ($LASTEXITCODE -ne 0) {
-                throw "dismissal failed (exit code $LASTEXITCODE): $dismissOutput"
-            }
-        } catch {
-            Write-Host "  Warning: could not dismiss $Reason review $($review.id): $_" -ForegroundColor Yellow
-        } finally {
-            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+        $matchesReview =
+            ($IncludeAISummary -and (Test-IsAISummaryCommentBody $body)) -or
+            ($IncludeTryFix -and (Test-IsTryFixCommentBody $body))
+
+        if ($matchesReview) {
+            $staleReviews += $review
         }
     }
+
+    foreach ($review in $staleReviews) {
+        Invoke-GitHubMinimizeComment `
+            -SubjectNodeId ([string]$review.node_id) `
+            -Classifier $Classifier `
+            -Reason "$Reason review $($review.id)" `
+            -DryRun:$DryRun | Out-Null
+
+        $reviewState = [string]$review.state
+        $shouldDismiss =
+            ($DismissFormalReviews -and $reviewState -in @('APPROVED', 'CHANGES_REQUESTED')) -or
+            ($DismissChangesRequested -and $reviewState -ieq 'CHANGES_REQUESTED')
+
+        if ($shouldDismiss) {
+            Dismiss-MauiBotPullRequestReview `
+                -PRNumber $PRNumber `
+                -Review $review `
+                -Reason 'Superseded by a newer MauiBot review run.' `
+                -DryRun:$DryRun | Out-Null
+        }
+    }
+}
+
+function Dismiss-StaleMauiBotTryFixReviews {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$PRNumber,
+
+        [string[]]$PreserveNodeIds = @(),
+        [string[]]$PreserveIds = @(),
+
+        [string]$Reason = 'superseded MauiBot try-fix review',
+        [switch]$DryRun
+    )
+
+    Hide-StaleMauiBotPullRequestReviews `
+        -PRNumber $PRNumber `
+        -IncludeTryFix `
+        -PreserveNodeIds $PreserveNodeIds `
+        -PreserveIds $PreserveIds `
+        -Classifier OUTDATED `
+        -Reason $Reason `
+        -DismissChangesRequested `
+        -DryRun:$DryRun
 }

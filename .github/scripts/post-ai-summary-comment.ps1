@@ -1,13 +1,13 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Posts the AI review summary comment on a GitHub Pull Request.
+    Posts the AI review summary as a GitHub Pull Request review.
 
 .DESCRIPTION
-    Maintains ONE comment per PR, identified by <!-- AI Summary --> marker.
-    Before posting a fresh comment, any older generated AI Summary comments are
-    removed. The replacement comment contains only the latest review session,
-    keyed by the current HEAD commit SHA.
+    Creates a new PR review per run, identified by <!-- AI Summary --> marker.
+    Before posting a fresh review, older generated AI Summary artifacts are
+    hidden as outdated. The replacement review contains only the latest review
+    session, keyed by the current HEAD commit SHA.
 
     After posting, the PR author is @-mentioned so they know to review.
 
@@ -16,18 +16,18 @@
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/{pre-flight,try-fix,report}/content.md
     CustomAgentLogsTmp/PRState/<PRNumber>/PRAgent/pre-flight/code-review.md
 
-    Gate is included as a section inside this unified comment — the script may
+    Gate is included as a section inside this unified review body — the script may
     be called by Review-PR.ps1 twice per run: once after the gate completes
     (gate-only update) and once after the review phases finish (full update).
 
     Any standalone legacy "<!-- AI Gate -->" comment from older versions of
-    the script is deleted before the fresh comment is posted to avoid duplicates.
+    the script is hidden before the fresh review is posted to avoid duplicates.
 
 .PARAMETER PRNumber
     The pull request number (required)
 
 .PARAMETER DryRun
-    Print comment instead of posting
+    Print review body instead of posting
 
 .EXAMPLE
     ./post-ai-summary-comment.ps1 -PRNumber 12345
@@ -107,6 +107,82 @@ function Test-PhaseContentIsNoOp {
     }
 }
 
+function Get-AIReviewEvent {
+    param([string]$ReportContent)
+
+    if ([string]::IsNullOrWhiteSpace($ReportContent)) {
+        return 'COMMENT'
+    }
+
+    $normalized = $ReportContent -replace "`r`n", "`n"
+    if ($normalized -match '(?im)^\s*(?:##\s*)?(?:✅\s*)?Final\s+Recommendation:\s*APPROVE\s*$') {
+        return 'APPROVE'
+    }
+
+    if ($normalized -match '(?im)^\s*(?:##\s*)?(?:⚠️\s*)?Final\s+Recommendation:\s*REQUEST\s+CHANGES\s*$') {
+        return 'REQUEST_CHANGES'
+    }
+
+    return 'COMMENT'
+}
+
+function Get-PreservedMauiBotNodeIds {
+    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+
+    $files = @(
+        'try-fix-review-node-id.txt',
+        'ai-summary-review-node-id.txt',
+        'current-review-node-ids.txt'
+    )
+
+    $nodeIds = @()
+    foreach ($file in $files) {
+        $path = Join-Path $PRAgentDir $file
+        if (-not (Test-Path $path)) {
+            continue
+        }
+
+        $nodeIds += Get-Content $path -Encoding UTF8 | ForEach-Object {
+            $value = [string]$_
+            if (-not [string]::IsNullOrWhiteSpace($value)) {
+                $value.Trim()
+            }
+        }
+    }
+
+    return @($nodeIds | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+}
+
+function Invoke-PostPullRequestReview {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$PRNumber,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Body,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('APPROVE', 'REQUEST_CHANGES', 'COMMENT')]
+        [string]$Event
+    )
+
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    try {
+        @{ body = $Body; event = $Event } |
+            ConvertTo-Json -Depth 10 |
+            Set-Content -Path $tempFile -Encoding UTF8
+
+        $response = gh api --method POST "repos/dotnet/maui/pulls/$PRNumber/reviews" --input $tempFile 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "POST review failed (exit code $LASTEXITCODE): $response"
+        }
+
+        return (($response -join [Environment]::NewLine) | ConvertFrom-Json)
+    } finally {
+        Remove-Item $tempFile -ErrorAction SilentlyContinue
+    }
+}
+
 # ─── Gate content (rendered first, always open) ───
 $gateSection = $null
 $gateFilePath = Join-Path $PRAgentDir "gate/content.md"
@@ -131,6 +207,7 @@ $gateContent
 }
 
 $phaseSections = @()
+$phaseContentByKey = @{}
 
 foreach ($key in $phases.Keys) {
     $phase = $phases[$key]
@@ -144,6 +221,7 @@ foreach ($key in $phases.Keys) {
                 continue
             }
 
+            $phaseContentByKey[$key] = $content
             Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
             # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"
             $phaseTitle = "$($phase.Icon) $($phase.Title)"
@@ -173,6 +251,9 @@ $content
 if (-not $gateSection -and $phaseSections.Count -eq 0) {
     throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
 }
+
+$reviewEvent = Get-AIReviewEvent -ReportContent $phaseContentByKey['report']
+Write-Host "  🧾 PR review event: $reviewEvent" -ForegroundColor Cyan
 
 # ============================================================================
 # FETCH PR METADATA (commit + author)
@@ -227,11 +308,12 @@ $sessionMarkerEnd
 "@
 
 # ============================================================================
-# FIND EXISTING COMMENT & BUILD FINAL BODY
+# FIND EXISTING AI SUMMARY ARTIFACTS & BUILD FINAL BODY
 # ============================================================================
 
-Write-Host "Checking for existing review comment..." -ForegroundColor Yellow
+Write-Host "Checking for existing AI Summary artifacts..." -ForegroundColor Yellow
 $existingCommentIds = @()
+$existingReviewIds = @()
 $existingBodies = @()
 
 $existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
@@ -242,7 +324,16 @@ if ($existingRaw) {
         if ($existingObjs.Count -gt 0) {
             $existingCommentIds = @($existingObjs | ForEach-Object { $_.id })
             $existingBodies = @($existingObjs | ForEach-Object { [string]$_.body })
-            Write-Host "✓ Found existing AI Summary comment(s): $($existingCommentIds -join ', ')" -ForegroundColor Green
+            Write-Host "✓ Found existing AI Summary issue comment(s): $($existingCommentIds -join ', ')" -ForegroundColor Green
+        }
+
+        if (Get-Command Get-GitHubPullRequestReviews -ErrorAction SilentlyContinue) {
+            $existingReviewObjs = @(Get-GitHubPullRequestReviews -PRNumber $PRNumber | Where-Object { $_.body -and $_.body.Contains($MARKER) })
+            if ($existingReviewObjs.Count -gt 0) {
+                $existingReviewIds = @($existingReviewObjs | ForEach-Object { $_.id })
+                $existingBodies += @($existingReviewObjs | ForEach-Object { [string]$_.body })
+                Write-Host "✓ Found existing AI Summary review(s): $($existingReviewIds -join ', ')" -ForegroundColor Green
+            }
         }
     } catch {
         Write-Host "⚠️ Could not parse comments: $_" -ForegroundColor Yellow
@@ -278,7 +369,7 @@ $newSessionBlock$finalizeSection
 # Clean up excessive blank lines
 $commentBody = $commentBody -replace "`n{4,}", "`n`n`n"
 
-Write-Host "  ✅ Built comment ($($commentBody.Length) chars)" -ForegroundColor Green
+Write-Host "  ✅ Built review body ($($commentBody.Length) chars)" -ForegroundColor Green
 
 # ============================================================================
 # DRY RUN
@@ -286,6 +377,7 @@ Write-Host "  ✅ Built comment ($($commentBody.Length) chars)" -ForegroundColor
 
 if ($DryRun) {
     Write-Host ""
+    Write-Host "Review event: $reviewEvent" -ForegroundColor Cyan
     Write-Host "=== COMMENT PREVIEW ===" -ForegroundColor Cyan
     Write-Host $commentBody
     Write-Host "=== END PREVIEW ===" -ForegroundColor Cyan
@@ -293,35 +385,57 @@ if ($DryRun) {
 }
 
 # ============================================================================
-# DELETE STALE GENERATED COMMENTS, THEN POST COMMENT
+# HIDE STALE GENERATED ARTIFACTS, THEN POST REVIEW
 # ============================================================================
 
-$tempFile = [System.IO.Path]::GetTempFileName()
-try {
-    @{ body = $commentBody } | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+$preserveNodeIds = Get-PreservedMauiBotNodeIds -PRAgentDir $PRAgentDir
 
-    if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
-        Remove-StaleMauiBotIssueComments `
-            -PRNumber $PRNumber `
-            -IncludeAISummary `
-            -IncludeLegacyGate `
-            -IncludeMergeConflict `
-            -IncludeTryFix `
-            -Reason "stale generated PR review comment"
-    }
-
-    if (Get-Command Dismiss-StaleMauiBotTryFixReviews -ErrorAction SilentlyContinue) {
-        Dismiss-StaleMauiBotTryFixReviews -PRNumber $PRNumber
-    }
-
-    Write-Host "Creating new review comment..." -ForegroundColor Yellow
-    $newJson = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $tempFile
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to post AI Summary comment"
-    }
-    $newId = ($newJson | ConvertFrom-Json).id
-    Write-Host "✅ Review comment posted (ID: $newId)" -ForegroundColor Green
-    Write-Output "COMMENT_ID=$newId"
-} finally {
-    Remove-Item $tempFile -ErrorAction SilentlyContinue
+if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+    Hide-StaleMauiBotIssueComments `
+        -PRNumber $PRNumber `
+        -IncludeAISummary `
+        -IncludeLegacyGate `
+        -IncludeMergeConflict `
+        -IncludeTryFix `
+        -PreserveNodeIds $preserveNodeIds `
+        -Reason "stale generated PR review artifact"
 }
+
+if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
+    Hide-StaleMauiBotPullRequestReviews `
+        -PRNumber $PRNumber `
+        -IncludeAISummary `
+        -IncludeTryFix `
+        -PreserveNodeIds $preserveNodeIds `
+        -Reason "stale generated PR review" `
+        -DismissFormalReviews
+}
+
+Write-Host "Creating new AI Summary PR review ($reviewEvent)..." -ForegroundColor Yellow
+$postedEvent = $reviewEvent
+try {
+    $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+} catch {
+    if ($postedEvent -eq 'COMMENT') {
+        throw
+    }
+
+    Write-Host "⚠️ Formal $postedEvent review was rejected; retrying as COMMENT: $_" -ForegroundColor Yellow
+    $postedEvent = 'COMMENT'
+    $review = Invoke-PostPullRequestReview -PRNumber $PRNumber -Body $commentBody -Event $postedEvent
+}
+
+$reviewId = [string]$review.id
+$reviewNodeId = [string]$review.node_id
+
+if (-not [string]::IsNullOrWhiteSpace($reviewId)) {
+    Set-Content -Path (Join-Path $PRAgentDir "ai-summary-review-id.txt") -Value $reviewId -Encoding UTF8
+}
+if (-not [string]::IsNullOrWhiteSpace($reviewNodeId)) {
+    Set-Content -Path (Join-Path $PRAgentDir "ai-summary-review-node-id.txt") -Value $reviewNodeId -Encoding UTF8
+}
+
+Write-Host "✅ AI Summary PR review posted (ID: $reviewId, event: $postedEvent)" -ForegroundColor Green
+Write-Output "AI_SUMMARY_REVIEW_ID=$reviewId"
+Write-Output "AI_SUMMARY_REVIEW_NODE_ID=$reviewNodeId"
+Write-Output "AI_SUMMARY_REVIEW_EVENT=$postedEvent"
