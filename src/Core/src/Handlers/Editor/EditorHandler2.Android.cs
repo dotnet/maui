@@ -45,7 +45,7 @@ internal class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 
 	protected override MauiMaterialEditText CreatePlatformView()
 	{
-		var editText = new MauiMaterialEditText(Context)
+		var editText = new MauiMaterialEditText(MauiMaterialContextThemeWrapper.Create(Context))
 		{
 			ImeOptions = ImeAction.Done,
 			Gravity = GravityFlags.Top,
