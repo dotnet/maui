@@ -520,6 +520,14 @@ internal static class MauiWindowInsetListenerExtensions
 		return false;
 	}
 
+	/// <summary>
+	/// Refreshes the MauiWindowInsetListener attached to the specified view after SafeAreaEdges eligibility changes.
+	/// Unlike TrySetMauiWindowInsetListener, this finds the registered parent listener before applying
+	/// eligibility checks so it can detach the listener and reset applied safe areas when the view is
+	/// no longer eligible.
+	/// </summary>
+	/// <param name="view">The Android view to refresh the listener on</param>
+	/// <param name="context">The Android context to get the listener from</param>
 	public static bool RefreshMauiWindowInsetListener(this View view, Context context)
 	{
 		var listener = MauiWindowInsetListener.FindRegisteredListenerForView(view);
