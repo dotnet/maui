@@ -304,7 +304,10 @@ if ($ApplyLabel -and $result.Eligible) {
     if ($alreadyPresent) {
         Write-Host "  ✅ Already present: $ReadyForRerunLabel" -ForegroundColor Green
     } else {
-        if (Add-Label -PRNumber $PRNumber -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo) {
+        $addSucceeded = Add-Label -PRNumber $PRNumber -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo
+        $updatedLabels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>$null)
+        $labelIsPresent = @($updatedLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+        if ($addSucceeded -or $labelIsPresent) {
             Write-Host "  ✅ Applied: $ReadyForRerunLabel" -ForegroundColor Green
         } else {
             throw "Failed to apply label: $ReadyForRerunLabel"

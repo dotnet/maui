@@ -127,9 +127,9 @@ function Add-Label {
         [string]$Repo = 'maui'
     )
 
-    gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
+    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
         --method POST `
-        -f "labels[]=$LabelName" 2>$null | Out-Null
+        -f "labels[]=$LabelName" 1>$null 2>$null
     return $LASTEXITCODE -eq 0
 }
 
@@ -144,8 +144,8 @@ function Remove-Label {
         [string]$Repo = 'maui'
     )
 
-    gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
-        --method DELETE 2>$null | Out-Null
+    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
+        --method DELETE 1>$null 2>$null
     return $LASTEXITCODE -eq 0
 }
 
