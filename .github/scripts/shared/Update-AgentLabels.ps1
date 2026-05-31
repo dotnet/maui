@@ -127,10 +127,19 @@ function Add-Label {
         [string]$Repo = 'maui'
     )
 
-    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
-        --method POST `
-        -f "labels[]=$LabelName" 1>$null 2>$null
-    return $LASTEXITCODE -eq 0
+    $tmp = $null
+    try {
+        $tmp = New-TemporaryFile
+        @{ labels = @($LabelName) } | ConvertTo-Json -Compress | Set-Content -LiteralPath $tmp -Encoding utf8 -NoNewline
+        & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
+            --method POST `
+            --input $tmp 1>$null 2>$null
+        return $LASTEXITCODE -eq 0
+    } finally {
+        if ($tmp) {
+            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 # ============================================================
