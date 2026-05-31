@@ -17,7 +17,7 @@ internal static class UriExtensions
 			return false;
 		}
 
-		if (Path.HasExtension(uri.AbsolutePath))
+		if (Path.HasExtension(uri.GetComponents(UriComponents.Path, UriFormat.Unescaped)))
 		{
 			return false;
 		}
