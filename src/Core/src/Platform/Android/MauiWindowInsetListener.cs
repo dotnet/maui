@@ -125,14 +125,22 @@ namespace Microsoft.Maui.Platform
 		internal static bool ShouldSetMauiWindowInsetListener(AView view)
 		{
 			var parent = view.Parent;
+			var isInsideRecyclerEmptyView = false;
+
 			while (parent is not null)
 			{
-				// Skip setting listeners on views inside nested scroll containers or AppBarLayout (except MaterialToolbar).
-				// CollectionView/CarouselView item views only need listeners when SafeAreaEdges was explicitly set.
+				if (parent is IMauiRecyclerViewEmptyView)
+				{
+					isInsideRecyclerEmptyView = true;
+				}
+
+				// MaterialToolbar needs its own inset handling, so it is exempt from all listener-suppression branches.
+				// Skip listeners for views inside AppBarLayout/MauiScrollView, and for recycler item views
+				// unless SafeAreaEdges was explicitly set.
 				if (view is not MaterialToolbar &&
 					(parent is AppBarLayout ||
 						parent is MauiScrollView ||
-						(parent is IMauiRecyclerView && !HasExplicitSafeAreaEdges(view))))
+						(parent is IMauiRecyclerView && !isInsideRecyclerEmptyView && !HasExplicitSafeAreaEdges(view))))
 				{
 					return false;
 				}

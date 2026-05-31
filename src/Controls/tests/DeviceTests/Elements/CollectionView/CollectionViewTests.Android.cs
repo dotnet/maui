@@ -314,6 +314,31 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory]
 		[MemberData(nameof(SafeAreaItemViewTypes))]
+		public async Task RecyclerEmptyViewWithoutExplicitSafeAreaEdgesUsesInsetListener(System.Type itemViewType)
+		{
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+				var root = CreateRecyclerSafeAreaHierarchy(itemViewType, layout, out var itemView, out var listener, wrapInEmptyView: true);
+
+				try
+				{
+					Assert.False(((ISafeAreaView2)layout).HasExplicitSafeAreaEdges);
+					Assert.True(MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(itemView));
+					Assert.True(MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(itemView, MauiContext.Context));
+					Assert.Same(listener, MauiWindowInsetListener.FindListenerForView(itemView));
+				}
+				finally
+				{
+					MauiWindowInsetListener.RemoveViewWithLocalListener(root);
+				}
+			});
+		}
+
+		[Theory]
+		[MemberData(nameof(SafeAreaItemViewTypes))]
 		public async Task RecyclerItemSafeAreaRefreshAttachesWhenSafeAreaEdgesBecomesExplicit(System.Type itemViewType)
 		{
 			SetupBuilder();
@@ -447,7 +472,7 @@ namespace Microsoft.Maui.DeviceTests
 			return cellContent.ToPlatform().GetParentOfType<ItemContentView>().GetBoundingBox();
 		}
 
-		FrameLayout CreateRecyclerSafeAreaHierarchy(System.Type itemViewType, ICrossPlatformLayout layout, out AView itemView, out MauiWindowInsetListener listener)
+		FrameLayout CreateRecyclerSafeAreaHierarchy(System.Type itemViewType, ICrossPlatformLayout layout, out AView itemView, out MauiWindowInsetListener listener, bool wrapInEmptyView = false)
 		{
 			var context = MauiContext.Context;
 			var root = new FrameLayout(context);
@@ -455,7 +480,18 @@ namespace Microsoft.Maui.DeviceTests
 			itemView = CreateSafeAreaItemView(itemViewType, context, layout);
 
 			root.AddView(recyclerView);
-			recyclerView.AddView(itemView);
+
+			if (wrapInEmptyView)
+			{
+				var emptyView = new TestRecyclerEmptyView(context);
+				recyclerView.AddView(emptyView);
+				emptyView.AddView(itemView);
+			}
+			else
+			{
+				recyclerView.AddView(itemView);
+			}
+
 			listener = MauiWindowInsetListener.RegisterParentForChildViews(root);
 
 			return root;
@@ -476,6 +512,13 @@ namespace Microsoft.Maui.DeviceTests
 		class TestRecyclerView : FrameLayout, IMauiRecyclerView
 		{
 			public TestRecyclerView(Context context) : base(context)
+			{
+			}
+		}
+
+		class TestRecyclerEmptyView : FrameLayout, IMauiRecyclerViewEmptyView
+		{
+			public TestRecyclerEmptyView(Context context) : base(context)
 			{
 			}
 		}
