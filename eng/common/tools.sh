@@ -505,6 +505,8 @@ function MSBuild {
   local args=( "$@" )
 
   if [[ "$ci" == true ]]; then
+    InitializeToolset
+
     export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
     export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
     Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
