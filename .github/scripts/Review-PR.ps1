@@ -1774,88 +1774,10 @@ if ($isPRWinner) {
         }
     }
 } else {
-    # Non-PR candidate won — submit a REQUEST_CHANGES review with the candidate diff in the body
-    Write-Host "  📝 Non-PR candidate won — submitting REQUEST_CHANGES review with candidate diff..." -ForegroundColor Cyan
-
-    $maxDiffBytes = 55KB
-    $diff = [string]$winner.candidateDiff
-    $truncated = $false
-    # Truncate by binary-searching the largest character count whose UTF-8
-    # encoding fits within the byte budget (reserving room for the marker line).
-    # O(log n) and much cheaper than the previous O(n²) trim-512-and-recount loop.
-    $marker = "`n... [truncated]"
-    $markerBytes = [System.Text.Encoding]::UTF8.GetByteCount($marker)
-    $budget = $maxDiffBytes - $markerBytes
-    if ([System.Text.Encoding]::UTF8.GetByteCount($diff) -gt $maxDiffBytes) {
-        $lo = 0
-        $hi = $diff.Length
-        while ($lo -lt $hi) {
-            $mid = [int](($lo + $hi + 1) / 2)
-            $bytes = [System.Text.Encoding]::UTF8.GetByteCount($diff.Substring(0, $mid))
-            if ($bytes -le $budget) { $lo = $mid } else { $hi = $mid - 1 }
-        }
-        $diff = $diff.Substring(0, $lo) + $marker
-        $truncated = $true
-    }
-
-    # Compute an outer code fence longer than any backtick run inside the diff
-    # (minimum 4) so the diff content cannot accidentally close the fence and
-    # leak into the surrounding markdown. Preserves the diff text exactly.
-    $maxBacktickRun = 0
-    foreach ($m in [regex]::Matches($diff, '`+')) {
-        if ($m.Length -gt $maxBacktickRun) { $maxBacktickRun = $m.Length }
-    }
-    $fenceLen = [Math]::Max(4, $maxBacktickRun + 1)
-    $fence = '`' * $fenceLen
-
-    $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
-    $reviewBody = @"
-<!-- MAUI_BOT_TRY_FIX -->
-🤖 **Automated review — alternative fix proposed**
-
-The expert-reviewer evaluation compared the PR fix against $($winner.winner -replace 'try-fix-','#') automatically generated candidates and selected ``$($winner.winner)`` as the strongest fix.
-
-**Why:** $rationale
-
-Please consider applying the candidate diff below (or use it as guidance). Once you push an update, this workflow will re-trigger and re-evaluate.
-
-<details><summary>Candidate diff (``$($winner.winner)``)</summary>
-
-${fence}diff
-$diff
-$fence
-
-</details>
-$( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limit._" } )
-"@
-
-    if ($DryRun) {
-        Write-Host "  [DryRun] Would POST review state=REQUEST_CHANGES with body length $($reviewBody.Length)" -ForegroundColor Yellow
-    } else {
-        try {
-            $bodyJson = @{ body = $reviewBody; event = 'REQUEST_CHANGES' } | ConvertTo-Json -Compress -Depth 5
-            $tmp = New-TemporaryFile
-            Set-Content -LiteralPath $tmp -Value $bodyJson -Encoding utf8 -NoNewline
-            $resp = & gh api -X POST "repos/dotnet/maui/pulls/$PRNumber/reviews" --input $tmp 2>&1
-            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
-            if ($LASTEXITCODE -eq 0) {
-                $tryFixReview = (($resp -join [Environment]::NewLine) | ConvertFrom-Json)
-                $tryFixDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
-                New-Item -ItemType Directory -Force -Path $tryFixDir | Out-Null
-                if ($tryFixReview.id) {
-                    [string]$tryFixReview.id | Set-Content (Join-Path $tryFixDir "try-fix-review-id.txt") -Encoding UTF8
-                }
-                if ($tryFixReview.node_id) {
-                    [string]$tryFixReview.node_id | Set-Content (Join-Path $tryFixDir "try-fix-review-node-id.txt") -Encoding UTF8
-                }
-                Write-Host "  ✅ REQUEST_CHANGES review submitted" -ForegroundColor Green
-            } else {
-                Write-Host "  ⚠️ Failed to submit REQUEST_CHANGES review (non-fatal): $resp" -ForegroundColor Yellow
-            }
-        } catch {
-            Write-Host "  ⚠️ REQUEST_CHANGES submission threw (non-fatal): $_" -ForegroundColor Yellow
-        }
-    }
+    # Non-PR candidate details are now merged into the unified AI Summary
+    # Future Action section. Avoid a second MauiBot review so the PR has one
+    # source of truth for automated review guidance.
+    Write-Host "  ⏭️ Non-PR candidate selected; Future Action is included in AI Summary" -ForegroundColor Cyan
     Write-Host "  ⏭️ Skipping inline findings (winner is not the PR fix)" -ForegroundColor Gray
 }
 
