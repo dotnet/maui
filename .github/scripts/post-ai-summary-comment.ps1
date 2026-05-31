@@ -609,17 +609,6 @@ $statusChipRow = New-StatusChipRow `
     -Platform (Get-PlatformStatus -Contents $summaryContent)
 $futureActionSection = New-FutureActionSection -PRAgentDir $PRAgentDir
 
-$finalizeSection = ""
-$finalizePattern = '(?s)(<!-- SECTION:PR-FINALIZE -->.*?<!-- /SECTION:PR-FINALIZE -->)'
-if ($existingBodies -and $existingBodies.Count -gt 0) {
-    for ($i = $existingBodies.Count - 1; $i -ge 0; $i--) {
-        if ($existingBodies[$i] -match $finalizePattern) {
-            $finalizeSection = "`n`n" + $Matches[1]
-            break
-        }
-    }
-}
-
 $commentBody = @"
 $MARKER
 
@@ -631,7 +620,7 @@ $statusChipRow
 
 $newSessionBlock
 
-$futureActionSection$finalizeSection
+$futureActionSection
 "@
 
 # Clean up excessive blank lines

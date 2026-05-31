@@ -63,9 +63,8 @@ Review-PR.ps1
 │   ├── Validate   → writes content.md
 │   ├── Fix        → writes content.md
 │   └── Report     → writes content.md
-├── Phase 2: PR Finalize (optional)
-├── Phase 3: Post Comments (optional)
-└── Phase 4: Apply Labels  ← labels are applied here
+├── Phase 2: Post Comments (optional)
+└── Phase 3: Apply Labels  ← labels are applied here
     ├── Parse content.md files
     ├── Determine outcome + signal labels
     ├── Apply via GitHub REST API
