@@ -17,7 +17,13 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($functionName in @('Test-PhaseContentIsNoOp', 'Get-AIReviewEvent')) {
+    foreach ($functionName in @(
+        'Test-PhaseContentIsNoOp',
+        'Get-AIReviewEvent',
+        'Test-HasNonPRWinner',
+        'Get-AIReviewEventForRun',
+        'New-FutureActionSection'
+    )) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -90,5 +96,83 @@ Describe 'Get-AIReviewEvent' {
     It 'falls back to COMMENT when the recommendation is missing or ambiguous' {
         Get-AIReviewEvent -ReportContent '' | Should -Be 'COMMENT'
         Get-AIReviewEvent -ReportContent 'Recommendation: APPROVE after manual review' | Should -Be 'COMMENT'
+    }
+}
+
+Describe 'Get-AIReviewEventForRun' {
+    BeforeEach {
+        $script:testDir = Join-Path ([System.IO.Path]::GetTempPath()) "ai-summary-tests-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $script:testDir -Force | Out-Null
+    }
+
+    AfterEach {
+        Remove-Item -LiteralPath $script:testDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'requests changes when a non-PR try-fix candidate wins and the report is otherwise comment-only' {
+        @{
+            winner = 'try-fix-1'
+            isPRFix = $false
+            candidateDiff = 'diff --git a/file.cs b/file.cs'
+            summary = 'Candidate fixes the issue more directly.'
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent 'Report still in progress.' -PRAgentDir $script:testDir |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'does not override an exact approve recommendation' {
+        @{
+            winner = 'try-fix-1'
+            isPRFix = $false
+            candidateDiff = 'diff --git a/file.cs b/file.cs'
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+            Should -Be 'APPROVE'
+    }
+
+    It 'does not force changes for missing, malformed, or PR-fix winner files' {
+        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir |
+            Should -Be 'COMMENT'
+
+        'not json' | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir |
+            Should -Be 'COMMENT'
+
+        @{
+            winner = 'pr'
+            isPRFix = $true
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir |
+            Should -Be 'COMMENT'
+    }
+}
+
+Describe 'New-FutureActionSection' {
+    BeforeEach {
+        $script:testDir = Join-Path ([System.IO.Path]::GetTempPath()) "future-action-tests-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $script:testDir -Force | Out-Null
+    }
+
+    AfterEach {
+        Remove-Item -LiteralPath $script:testDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'renders selected try-fix candidate guidance in the AI Summary Future Action section' {
+        @{
+            winner = 'try-fix-2'
+            isPRFix = $false
+            summary = 'Candidate avoids the regression.'
+            candidateDiff = "diff --git a/file.cs b/file.cs`n+fixed"
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        $section = New-FutureActionSection -PRAgentDir $script:testDir
+
+        $section | Should -Match '<strong>Future Action</strong>'
+        $section | Should -Match 'alternative fix proposed'
+        $section | Should -Match 'try-fix-2'
+        $section | Should -Match 'Candidate avoids the regression'
+        $section | Should -Match 'diff --git a/file.cs b/file.cs'
     }
 }

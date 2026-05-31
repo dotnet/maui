@@ -390,31 +390,20 @@ function Test-HasNonPRWinner {
     }
 }
 
-function Get-PreservedMauiBotNodeIds {
-    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+function Get-AIReviewEventForRun {
+    param(
+        [string]$ReportContent,
 
-    $files = @(
-        'try-fix-review-node-id.txt',
-        'ai-summary-review-node-id.txt',
-        'current-review-node-ids.txt'
+        [Parameter(Mandatory = $true)]
+        [string]$PRAgentDir
     )
 
-    $nodeIds = @()
-    foreach ($file in $files) {
-        $path = Join-Path $PRAgentDir $file
-        if (-not (Test-Path $path)) {
-            continue
-        }
-
-        $nodeIds += Get-Content $path -Encoding UTF8 | ForEach-Object {
-            $value = [string]$_
-            if (-not [string]::IsNullOrWhiteSpace($value)) {
-                $value.Trim()
-            }
-        }
+    $reviewEvent = Get-AIReviewEvent -ReportContent $ReportContent
+    if ((Test-HasNonPRWinner -PRAgentDir $PRAgentDir) -and $reviewEvent -eq 'COMMENT') {
+        return 'REQUEST_CHANGES'
     }
 
-    return @($nodeIds | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+    return $reviewEvent
 }
 
 function Invoke-PostPullRequestReview {
@@ -517,10 +506,7 @@ if (-not $gateSection -and $phaseSections.Count -eq 0) {
     throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
 }
 
-$reviewEvent = Get-AIReviewEvent -ReportContent $phaseContentByKey['report']
-if ((Test-HasNonPRWinner -PRAgentDir $PRAgentDir) -and $reviewEvent -eq 'COMMENT') {
-    $reviewEvent = 'REQUEST_CHANGES'
-}
+$reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report'] -PRAgentDir $PRAgentDir
 Write-Host "  🧾 PR review event: $reviewEvent" -ForegroundColor Cyan
 
 # ============================================================================
@@ -669,8 +655,6 @@ if ($DryRun) {
 # HIDE STALE GENERATED ARTIFACTS, THEN POST REVIEW
 # ============================================================================
 
-$preserveNodeIds = Get-PreservedMauiBotNodeIds -PRAgentDir $PRAgentDir
-
 if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
     Hide-StaleMauiBotIssueComments `
         -PRNumber $PRNumber `
@@ -678,7 +662,6 @@ if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
         -IncludeLegacyGate `
         -IncludeMergeConflict `
         -IncludeTryFix `
-        -PreserveNodeIds $preserveNodeIds `
         -Reason "stale generated PR review artifact"
 }
 
@@ -687,7 +670,6 @@ if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinu
         -PRNumber $PRNumber `
         -IncludeAISummary `
         -IncludeTryFix `
-        -PreserveNodeIds $preserveNodeIds `
         -Reason "stale generated PR review" `
         -DismissFormalReviews
 }

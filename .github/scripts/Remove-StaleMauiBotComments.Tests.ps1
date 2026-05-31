@@ -30,6 +30,24 @@ Describe 'MauiBot artifact marker detection' {
         Test-IsTryFixCommentBody -Body 'Automated review — alternative fix proposed' |
             Should -BeTrue
     }
+
+    It 'does not treat the merged AI Summary Future Action section as a standalone try-fix artifact' {
+        $body = @'
+<!-- AI Summary -->
+
+<details>
+<summary><strong>Future Action</strong> — alternative fix proposed (<code>try-fix-1</code>)</summary>
+
+**Automated review — alternative fix proposed**
+
+<details><summary>Candidate diff (<code>try-fix-1</code>)</summary>
+</details>
+</details>
+'@
+
+        Test-IsTryFixCommentBody -Body $body |
+            Should -BeFalse
+    }
 }
 
 Describe 'Test-ShouldPreserveMauiBotArtifact' {

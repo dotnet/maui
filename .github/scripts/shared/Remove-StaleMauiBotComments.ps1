@@ -41,6 +41,10 @@ function Test-IsTryFixCommentBody {
         return $false
     }
 
+    if ($Body.Contains($script:AiSummaryCommentMarker)) {
+        return $false
+    }
+
     return $Body.Contains($script:TryFixCommentMarker) -or
         ($Body.Contains('Automated review') -and $Body.Contains('alternative fix proposed')) -or
         ($Body.Contains('try-fix-') -and $Body.Contains('Candidate diff'))
