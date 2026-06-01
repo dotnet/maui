@@ -83,6 +83,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_pixelSize = size;
 		}
 
+		/// <summary>
+		/// Invalidates the cached size so the next measure pass will re-measure the content.
+		/// Called when the parent RecyclerView's size changes (e.g., after orientation change).
+		/// </summary>
+		internal void InvalidateCachedSize()
+		{
+			_pixelSize = null;
+			_previousPixelWidth = -1;
+			_previousPixelHeight = -1;
+		}
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (Content == null)
