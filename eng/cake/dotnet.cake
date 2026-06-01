@@ -225,6 +225,13 @@ Task("uitests-apphost")
             properties.Add("UseMaterial3", "true");
         }
 
+        var useAndroidShellHandlers = Argument("useandroidshellhandlers", false);
+        if (useAndroidShellHandlers)
+        {
+            Information("Building with Android Shell handlers enabled");
+            properties.Add("UseAndroidShellHandlers", "true");
+        }
+
         if (useNuget)
         {
             properties.Add("UseWorkload", "true");

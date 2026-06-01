@@ -115,7 +115,7 @@ stages:
                 platform: windows
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
-  # Material3 Build Stage - Separate build with UseMaterial3=true (Android-only)
+  # Material3 Build Stage - Build with UseMaterial3=true (Android-only)
   - stage: build_ui_tests_material3
     displayName: Build UITests Material3 Sample App
     dependsOn: []
@@ -133,6 +133,26 @@ stages:
                 runtimeVariant: "Mono"
                 platform: android
                 useMaterial3: true
+                skipProvisioning: ${{ parameters.skipProvisioning }}
+
+  # Shell Handlers Build Stage - Build with UseAndroidShellHandlers=true (Android-only)
+  - stage: build_ui_tests_shell
+    displayName: Build UITests Shell Handlers Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_shell
+        displayName: Build Sample App (Shell Handlers)
+        workspace:
+          clean: all
+        pool: ${{ parameters.androidPool }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "Mono"
+                platform: android
+                useAndroidShellHandlers: true
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: android_ui_tests
@@ -261,6 +281,45 @@ stages:
                     parameters:
                       platform: 'Android Material3'
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
+  # Shell Handlers Test Stage - Tests using Shell handlers build (shares screenshots with regular Android)
+  - stage: android_ui_tests_shell
+    displayName: Android UITests Shell Handlers
+    dependsOn: build_ui_tests_shell
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: Shell_android_ui_tests_${{ project.name }}_${{ api }}
+                timeoutInMinutes: 240
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} Shell (API ${{ api }})
+                pool: ${{ parameters.androidLinuxPool }}
+                variables:
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.android }}
+                      app: ${{ project.app }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      useAndroidShellHandlers: true
+                      testFilter: "Shell"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Android Shell snapshot diffs (uses regular Android screenshot folder)
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android'
+                      artifactName: 'uitest-snapshot-results-android-shell-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_coreclr
     displayName: iOS UITests CoreCLR

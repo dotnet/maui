@@ -10,6 +10,7 @@ parameters:
   configuration: "Release"
   runtimeVariant: "Mono"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
+  useAndroidShellHandlers: false # NEW PARAMETER - Enable Android Shell handlers
   testFilter: ''
   headless: true
   testConfigurationArgs: ''
@@ -18,14 +19,21 @@ parameters:
 
 steps:
 - task: DownloadPipelineArtifact@2
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'))
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'))
   inputs:
     artifact: ui-tests-samples
 
+# Material3 tests use Material3-only build artifacts
 - task: DownloadPipelineArtifact@2
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'true'))
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'))
   inputs:
     artifact: ui-tests-samples-material3
+
+# Shell tests use Shell-only build artifacts
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'))
+  inputs:
+    artifact: ui-tests-samples-shell
 
 - task: DownloadPipelineArtifact@2
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
@@ -36,6 +44,18 @@ steps:
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
     artifact: ui-tests-samples-coreclr
+
+# Material3 CoreCLR tests use Material3-only build artifacts
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'))
+  inputs:
+    artifact: ui-tests-samples-material3-coreclr
+
+# Shell CoreCLR tests use Shell-only build artifacts
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellHandlers }}', 'true'))
+  inputs:
+    artifact: ui-tests-samples-shell-coreclr
 
 - task: DownloadPipelineArtifact@2
   condition: eq('${{ parameters.platform }}' , 'windows')

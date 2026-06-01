@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls
 #if WINDOWS
 			_drawerToggleVisible = flyoutBehavior is FlyoutBehavior.Flyout;
 #else
-			_drawerToggleVisible = stack.Count <= 1 && flyoutBehavior is FlyoutBehavior.Flyout;
+			_drawerToggleVisible = flyoutBehavior is FlyoutBehavior.Flyout && (stack.Count <= 1 || !backButtonVisible);
 #endif
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
 			BackButtonEnabled = _backButtonBehavior?.IsEnabled ?? true;
