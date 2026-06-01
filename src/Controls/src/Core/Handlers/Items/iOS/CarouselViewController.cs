@@ -492,9 +492,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView is CarouselView carousel)
 			{
-				var visibility = carousel.Loop ? ScrollBarVisibility.Never : ScrollBarVisibility.Always;
-        		CollectionView.UpdateHorizontalScrollBarVisibility(visibility);
-				CollectionView.UpdateVerticalScrollBarVisibility(visibility);
+				// When Loop is enabled, hide scrollbars for cross-platform parity with Windows.
+				// When Loop is disabled, restore the user-specified ScrollBarVisibility values
+				// instead of forcing them to Always.
+				var horizontalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.HorizontalScrollBarVisibility;
+				var verticalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.VerticalScrollBarVisibility;
+				CollectionView.UpdateHorizontalScrollBarVisibility(horizontalVisibility);
+				CollectionView.UpdateVerticalScrollBarVisibility(verticalVisibility);
 			}
 		}
 
@@ -507,7 +511,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			var targetIndexPath = GetScrollToIndexPath(position);
-			CollectionView.ScrollToItem(targetIndexPath, UICollectionViewScrollPosition.CenteredHorizontally, animate);
+			var scrollPosition = IsHorizontal
+				? UICollectionViewScrollPosition.CenteredHorizontally
+				: UICollectionViewScrollPosition.CenteredVertically;
+			CollectionView.ScrollToItem(targetIndexPath, scrollPosition, animate);
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)

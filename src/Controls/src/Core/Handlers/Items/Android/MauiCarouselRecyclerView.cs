@@ -323,8 +323,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// Preserve both the Position and the CurrentItem because UpdateAdapter() resets
+			// CarouselView.Position to 0 and CarouselView.CurrentItem to null on rebuild.
 			int currentPosition = Carousel.Position;
+			object currentItem = Carousel.CurrentItem;
+
 			UpdateAdapter();
+
+			// Restore the logical position and current item so bindings/MVVM observers
+			// see the same state after the loop change.
+			if (ItemsViewAdapter?.ItemsSource is not null && ItemsViewAdapter.ItemsSource.Count > 0)
+			{
+				if (currentPosition >= 0 && currentPosition < ItemsViewAdapter.ItemsSource.Count)
+				{
+					Carousel.SetValueFromRenderer(CarouselView.PositionProperty, currentPosition);
+
+					var restoredItem = currentItem ?? ItemsViewAdapter.ItemsSource.GetItem(currentPosition);
+					Carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, restoredItem);
+				}
+			}
 
 			// In Windows, the scrollbar is hidden when Loop is enabled.
 			// For platform consistency, apply the same behavior on Android.

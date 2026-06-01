@@ -450,9 +450,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				LoopItemsSource.Loop = carousel.Loop;
 			}
 
+			UpdateScrollBarVisibility();
 			CollectionView.ReloadData();
 
 			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+		}
+
+		void UpdateScrollBarVisibility()
+		{
+			if (ItemsView is CarouselView carousel)
+			{
+				// Mirror the legacy iOS controller and Android behavior: hide the scrollbars
+				// when Loop is enabled, otherwise honor the user's ScrollBarVisibility settings.
+				var horizontalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.HorizontalScrollBarVisibility;
+				var verticalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.VerticalScrollBarVisibility;
+				CollectionView.UpdateHorizontalScrollBarVisibility(horizontalVisibility);
+				CollectionView.UpdateVerticalScrollBarVisibility(verticalVisibility);
+			}
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
