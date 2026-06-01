@@ -11,9 +11,11 @@ namespace Microsoft.Maui.Controls
 	internal class RouteRequestBuilder
 	{
 		readonly List<string> _globalRouteMatches = new List<string>();
+		readonly List<string> _resolvedGlobalRoutes = new List<string>();
 		readonly List<string> _matchedSegments = new List<string>();
 		readonly List<string> _fullSegments = new List<string>();
 		readonly List<string> _allSegments = null;
+		readonly Dictionary<string, string> _pathParameters = new Dictionary<string, string>(StringComparer.Ordinal);
 		readonly static string _uriSeparator = "/";
 
 		public Shell Shell { get; private set; }
@@ -42,6 +44,9 @@ namespace Microsoft.Maui.Controls
 			_matchedSegments.AddRange(builder._matchedSegments);
 			_fullSegments.AddRange(builder._fullSegments);
 			_globalRouteMatches.AddRange(builder._globalRouteMatches);
+			_resolvedGlobalRoutes.AddRange(builder._resolvedGlobalRoutes);
+			foreach (var kvp in builder._pathParameters)
+				_pathParameters[kvp.Key] = kvp.Value;
 			Shell = builder.Shell;
 			Item = builder.Item;
 			Section = builder.Section;
@@ -50,12 +55,27 @@ namespace Microsoft.Maui.Controls
 
 		public void AddGlobalRoute(string routeName, string segment)
 		{
+			AddGlobalRoute(routeName, segment, null);
+		}
+
+		// Overload that records path parameters captured for this route.
+		// <paramref name="capturedParameters"/> may be null when the route had
+		// no template segments.
+		public void AddGlobalRoute(string routeName, string segment, IDictionary<string, string> capturedParameters)
+		{
 			_globalRouteMatches.Add(routeName);
+			_resolvedGlobalRoutes.Add(segment);
 
 			foreach (string path in ShellUriHandler.RetrievePaths(segment))
 			{
 				_fullSegments.Add(path);
 				_matchedSegments.Add(path);
+			}
+
+			if (capturedParameters != null)
+			{
+				foreach (var kvp in capturedParameters)
+					_pathParameters[kvp.Key] = kvp.Value;
 			}
 		}
 
@@ -104,7 +124,10 @@ namespace Microsoft.Maui.Controls
 			{
 				case ShellUriHandler.GlobalRouteItem globalRoute:
 					if (globalRoute.IsFinished)
+					{
 						_globalRouteMatches.Add(globalRoute.SourceRoute);
+						_resolvedGlobalRoutes.Add(userSegment ?? shellSegment);
+					}
 					break;
 				case Shell shell:
 					if (shell == Shell)
@@ -163,41 +186,187 @@ namespace Microsoft.Maui.Controls
 
 		public string GetNextSegmentMatch(string matchMe)
 		{
-			var segmentsToMatch = ShellUriHandler.RetrievePaths(matchMe).ToList();
-			// if matchMe is an absolute route then we only match 
-			// if there are no routes already present
-			if (matchMe.StartsWith("/", StringComparison.Ordinal) ||
-				matchMe.StartsWith("\\", StringComparison.Ordinal))
-			{
-				for (var i = 0; i < _matchedSegments.Count; i++)
-				{
-					var seg = _matchedSegments[i];
-					if (segmentsToMatch.Count <= i || segmentsToMatch[i] != seg)
-						return String.Empty;
-
-					segmentsToMatch.Remove(seg);
-				}
-			}
-
-			List<string> matches = new List<string>();
-			List<string> currentSet = new List<string>(_matchedSegments);
-
-			foreach (var split in segmentsToMatch)
-			{
-				string next = GetNextSegment(currentSet);
-				if (next == split)
-				{
-					currentSet.Add(split);
-					matches.Add(split);
-				}
-				else
-				{
-					return String.Empty;
-				}
-			}
-
-			return String.Join(_uriSeparator, matches);
+			return GetNextSegmentMatch(matchMe, null, null);
 		}
+
+// Template-aware overload. Handles optional params, catch-all,
+// constraints, mixed segments, and default values.
+public string GetNextSegmentMatch(string matchMe, IDictionary<string, string> capturedParameters)
+{
+	return GetNextSegmentMatch(matchMe, capturedParameters, null);
+}
+
+public string GetNextSegmentMatch(string matchMe, IDictionary<string, string> capturedParameters, RouteTemplate template)
+{
+var segmentsToMatch = ShellUriHandler.RetrievePaths(matchMe).ToList();
+if (matchMe.StartsWith("/", StringComparison.Ordinal) ||
+matchMe.StartsWith("\\", StringComparison.Ordinal))
+{
+for (var i = 0; i < _matchedSegments.Count; i++)
+{
+var seg = _matchedSegments[i];
+if (segmentsToMatch.Count <= i || segmentsToMatch[i] != seg)
+return String.Empty;
+
+segmentsToMatch.Remove(seg);
+}
+}
+
+List<string> matches = new List<string>();
+List<string> currentSet = new List<string>(_matchedSegments);
+Dictionary<string, string> localCaptures = null;
+
+// Use provided template, or fall back to lookup by matchMe key.
+// The caller should pass the template when available because
+// CollapsePath may have stripped prefix segments from matchMe,
+// making it different from the registered key.
+if (template == null)
+	Routing.TryGetRouteTemplate(matchMe, out template);
+int templateIdx = 0;
+
+// Template offset: when CollapsePath strips N prefix segments,
+// segmentsToMatch has fewer entries than the template.
+if (template != null && segmentsToMatch.Count < template.Segments.Count)
+templateIdx = template.Segments.Count - segmentsToMatch.Count;
+
+for (int si = 0; si < segmentsToMatch.Count; si++)
+{
+var split = segmentsToMatch[si];
+string next = GetNextSegment(currentSet);
+var seg = (template != null && templateIdx < template.Segments.Count)
+? template.Segments[templateIdx]
+: default;
+templateIdx++;
+
+if (next == split && !seg.IsParameter)
+{
+// Exact literal match
+currentSet.Add(split);
+matches.Add(split);
+}
+else if (seg.IsParameter && seg.IsCatchAll)
+{
+// Catch-all: consume all remaining URI segments
+var remaining = new List<string>();
+for (int ri = si; ; ri++)
+{
+var catchNext = (ri == si) ? next : GetNextSegment(currentSet);
+if (catchNext == null)
+break;
+remaining.Add(Uri.UnescapeDataString(catchNext));
+currentSet.Add(catchNext);
+matches.Add(catchNext);
+}
+
+var catchValue = String.Join("/", remaining);
+if (!string.IsNullOrEmpty(seg.Constraint) &&
+!RouteTemplate.SatisfiesConstraint(seg.Constraint, catchValue))
+return String.Empty;
+
+localCaptures ??= new Dictionary<string, string>(StringComparer.Ordinal);
+localCaptures[seg.Value] = catchValue;
+si = segmentsToMatch.Count; // consumed everything
+break;
+}
+else if (seg.IsParameter && seg.IsMixed && next != null)
+{
+// Mixed segment: check prefix/suffix and extract embedded value
+var decoded = Uri.UnescapeDataString(next);
+if (!decoded.StartsWith(seg.Prefix, StringComparison.Ordinal))
+return String.Empty;
+if (seg.Suffix.Length > 0 && !decoded.EndsWith(seg.Suffix, StringComparison.Ordinal))
+return String.Empty;
+
+var paramValue = decoded.Substring(seg.Prefix.Length,
+decoded.Length - seg.Prefix.Length - seg.Suffix.Length);
+
+if (!string.IsNullOrEmpty(seg.Constraint) &&
+!RouteTemplate.SatisfiesConstraint(seg.Constraint, paramValue))
+return String.Empty;
+
+currentSet.Add(next);
+matches.Add(next);
+
+localCaptures ??= new Dictionary<string, string>(StringComparer.Ordinal);
+localCaptures[seg.Value] = paramValue;
+}
+else if (seg.IsParameter && next != null)
+{
+// Standard or optional parameter: consume the actual URI segment
+var decoded = Uri.UnescapeDataString(next);
+
+if (!string.IsNullOrEmpty(seg.Constraint) &&
+!RouteTemplate.SatisfiesConstraint(seg.Constraint, decoded))
+return String.Empty;
+
+currentSet.Add(next);
+matches.Add(next);
+
+localCaptures ??= new Dictionary<string, string>(StringComparer.Ordinal);
+localCaptures[seg.Value] = decoded;
+}
+else if (seg.IsParameter && seg.IsOptional && next == null)
+{
+// Optional parameter with no URI segment — skip it.
+// Default value (if any) is applied in the trailing-segment
+// loop below.
+if (seg.DefaultValue != null)
+{
+localCaptures ??= new Dictionary<string, string>(StringComparer.Ordinal);
+localCaptures[seg.Value] = seg.DefaultValue;
+}
+}
+else if (next != null && RouteTemplate.IsTemplateSegment(split))
+{
+// Fallback for template segments without parsed RouteTemplate
+var paramName = RouteTemplate.GetSegmentParameterName(split);
+if (string.IsNullOrEmpty(paramName))
+return String.Empty;
+
+currentSet.Add(next);
+matches.Add(next);
+
+localCaptures ??= new Dictionary<string, string>(StringComparer.Ordinal);
+localCaptures[paramName] = Uri.UnescapeDataString(next);
+}
+else
+{
+return String.Empty;
+}
+}
+
+// Apply default values for trailing optional/default segments
+// that had no corresponding URI segment.
+if (template != null)
+{
+while (templateIdx < template.Segments.Count)
+{
+var trailingSeg = template.Segments[templateIdx];
+if (trailingSeg.IsParameter && (trailingSeg.IsOptional || trailingSeg.DefaultValue != null))
+{
+if (trailingSeg.DefaultValue != null)
+{
+localCaptures ??= new Dictionary<string, string>(StringComparer.Ordinal);
+localCaptures[trailingSeg.Value] = trailingSeg.DefaultValue;
+}
+templateIdx++;
+}
+else
+{
+break;
+}
+}
+}
+
+if (capturedParameters != null && localCaptures != null)
+{
+foreach (var kvp in localCaptures)
+capturedParameters[kvp.Key] = kvp.Value;
+}
+
+return String.Join(_uriSeparator, matches);
+}
+
 
 		string GetNextSegment(IReadOnlyList<string> matchedSegments)
 		{
@@ -268,8 +437,23 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsFullMatch => _matchedSegments.Count == _allSegments.Count;
 		public List<string> GlobalRouteMatches => _globalRouteMatches;
+		public List<string> ResolvedGlobalRoutes => _resolvedGlobalRoutes;
 		public List<string> SegmentsMatched => _matchedSegments;
 		public IReadOnlyList<string> FullSegments => _fullSegments;
+		public IReadOnlyDictionary<string, string> PathParameters => _pathParameters;
+
+		// Merges path parameters from another builder, keeping existing values.
+		public void MergePathParameters(IReadOnlyDictionary<string, string> other)
+		{
+			if (other == null)
+				return;
+			foreach (var kvp in other)
+			{
+				if (!_pathParameters.ContainsKey(kvp.Key))
+					_pathParameters[kvp.Key] = kvp.Value;
+			}
+		}
+
 		public ShellUriHandler.NodeLocation GetNodeLocation()
 		{
 			ShellUriHandler.NodeLocation nodeLocation = new ShellUriHandler.NodeLocation();
