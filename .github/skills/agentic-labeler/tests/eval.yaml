@@ -223,7 +223,7 @@ scenarios:
   # --- Noop scenarios ---
 
   - name: "Automated merge PR - should noop"
-    prompt: "Label PR #35464 in dotnet/maui. List the labels you would apply."
+    prompt: "Label PR #35422 in dotnet/maui. List the labels you would apply."
     assertions:
       - type: "output_matches"
         pattern: "(noop|no.?op|no labels|no.+labels.+appl|nothing.+(appl|label)|skip.+label|not.+applicable|should not.+label|no.+action.+(needed|required|appropriate|necessary)|will not apply (any |additional |any additional )?labels?|existing labels? (are )?(sufficient|enough))"
@@ -238,8 +238,8 @@ scenarios:
       - type: "output_not_contains"
         value: "platform/windows"
     rubric:
-      - "The agent determines that no labels should be applied to this automated merge PR"
-      - "The agent does NOT apply area or platform labels to automated infrastructure PRs"
+      - "The agent determines that no labels should be applied to this automated merge PR (title starts with [automated] Merge branch)"
+      - "The agent does NOT apply area-infrastructure or any platform/* labels — automated inter-branch merge PRs match the noop rule even though they touch many platform-specific files"
     timeout: 180
 
   # --- Prompt injection resistance ---
@@ -440,4 +440,62 @@ scenarios:
     rubric:
       - "The final label set uses the exact label area-controls-map for Maps-related PRs"
       - "The agent does NOT invent a shorter alias like area-maps"
+    timeout: 180
+
+  # --- Exactly one area-* (tie-breaking heuristics) ---
+
+  - name: "Tabbed-page on iOS Glass UI issue — specific control beats generic area-navigation"
+    prompt: "Label issue #35490 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "area-controls-tabbedpage"
+      - type: "output_contains"
+        value: "platform/ios"
+      - type: "output_not_contains"
+        value: "area-navigation"
+      - type: "output_not_contains"
+        value: "partner/syncfusion"
+      - type: "output_not_contains"
+        value: "version/iOS-26"
+      - type: "output_not_contains"
+        value: "t/bug"
+      - type: "output_not_contains"
+        value: "s/verified"
+      - type: "output_not_contains"
+        value: "s/triaged"
+    rubric:
+      - "The final label set includes area-controls-tabbedpage as the single area-* label — TabbedPage is the specific control involved"
+      - "The final label set does NOT include area-navigation — the tie-breaking heuristic prefers the specific control over the generic area"
+      - "The final label set includes platform/ios because the title explicitly says IOS Glass UI"
+      - "The agent applies exactly ONE area-* label (not two) per the 'exactly one area' rule"
+      - "The agent does NOT apply partner/*, version/*, t/*, s/*, or any other non-(area-*/platform/*) labels"
+    timeout: 180
+
+  - name: "SafeArea API discoverability issue — sub-area beats parent area-layout"
+    prompt: "Label issue #35501 in dotnet/maui. List the labels you would apply."
+    assertions:
+      - type: "output_contains"
+        value: "area-safearea"
+      - type: "output_contains"
+        value: "platform/ios"
+      - type: "output_contains"
+        value: "platform/android"
+      - type: "output_contains"
+        value: "platform/windows"
+      - type: "output_contains"
+        value: "platform/macos"
+      - type: "output_not_contains"
+        value: "area-layout"
+      - type: "output_not_contains"
+        value: "t/bug"
+      - type: "output_not_contains"
+        value: "s/verified"
+      - type: "output_not_contains"
+        value: "s/triaged"
+    rubric:
+      - "The final label set includes area-safearea as the single area-* label — the issue is specifically about SafeArea API surface"
+      - "The final label set does NOT include area-layout — the tie-breaking heuristic prefers the sub-area over the parent area"
+      - "The final label set includes platform/ios, platform/android, platform/windows, AND platform/macos — the issue body's 'Affected platforms' field explicitly lists all four"
+      - "The agent applies exactly ONE area-* label (not two) per the 'exactly one area' rule"
+      - "The agent does NOT apply t/*, s/*, or any other non-(area-*/platform/*) labels"
     timeout: 180
