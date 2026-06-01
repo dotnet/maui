@@ -17,18 +17,12 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
 	// This set of tests is for validating Microsoft.Maui.Controls.targets.
 	//
-	// Contract under test: SourceGen is the net11.0 default XAML inflator, and the legacy
-	// `XamlC` MSBuild target must NOT run on a default, no-flag-passed build. Every
-	// surviving test here is a *negative* test that locks down that contract using one of
-	// two patterns:
-	//   1. AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"))
-	//      — proves the XamlC target was skipped (BuildAProject, LinkedFile, RandomXml,
-	//      RandomEmbeddedResource).
-	//   2. Diagnostic-verbosity log scrape asserting `Building target "XamlC"` is absent
-	//      — proves the target wasn't even scheduled (NoXamlFiles).
-	// Tests that forced `-p:MauiXamlInflator=XamlC` to exercise the legacy path were
-	// intentionally removed in dotnet/maui#34972 — do not reintroduce that opt-in.
-	// See ~/.copilot/lessons/dotnet/maui/xamlc-test-opt-in.md for rationale.
+	// Contract under test: SourceGen is the default XAML inflator, and the legacy
+	// `XamlC` MSBuild target must NOT run on a default build. Tests verify:
+	//   1. XamlC is SKIPPED when all XAML uses SourceGen (BuildAProject, LinkedFile,
+	//      RandomXml, RandomEmbeddedResource, NoXamlFiles).
+	//   2. XamlC DOES run when files use the XamlC or Runtime inflator
+	//      (XamlCRunsWhenXamlCInflatorUsed).
 	[Trait("Category", "LongRunning")]
 	public class MSBuildTests : IDisposable
 	{
@@ -436,6 +430,26 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
 			Assert.False(log.Contains("Building target \"XamlC\"", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+		}
+
+		/// <summary>
+		/// Verifies that XamlC still runs when the deprecated XamlC inflator is explicitly requested.
+		/// This is the positive counterpart to BuildAProject — it proves the condition gate
+		/// correctly activates XamlC when _MauiXaml_XC is populated.
+		/// </summary>
+		[Fact]
+		public void XamlCRunsWhenXamlCInflatorUsed()
+		{
+			SetUp();
+			var project = NewProject();
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -warnaserror-:MAUI1001");
+
+			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
+			// With XamlC inflator, _MauiXaml_XC is populated so the XamlC target runs.
+			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		/// <summary>
