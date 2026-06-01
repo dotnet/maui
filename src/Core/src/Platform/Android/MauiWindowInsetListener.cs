@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
@@ -91,8 +92,14 @@ namespace Microsoft.Maui.Platform
 		/// Must be called on UI thread.
 		/// </summary>
 		/// <param name="view">The view to find a listener for</param>
+		/// <param name="applyRecyclerViewGate">
+		/// When true (attachment only), skips RecyclerView data-item views with default SafeAreaEdges
+		/// to prevent recycled views from retaining stale inset-derived padding (#34634/#34635).
+		/// Reset/cleanup callers must pass false (the default) so they can always find listeners
+		/// to clear stale padding regardless of the currently bound element's SafeAreaEdges.
+		/// </param>
 		/// <returns>The local listener if view is in a registered view hierarchy, null otherwise</returns>
-		internal static MauiWindowInsetListener? FindListenerForView(AView view)
+		internal static MauiWindowInsetListener? FindListenerForView(AView view, bool applyRecyclerViewGate = false)
 		{
 			// Walk up the view hierarchy looking for a registered view
 			var parent = view.Parent;
@@ -100,11 +107,25 @@ namespace Microsoft.Maui.Platform
 			{
 				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
 				// We want the layout listener logic to get applied to the MaterialToolbar itself
-				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
-				// CollectionView/CarouselView items are not excluded to enable per-item SafeAreaEdges control.
-				// Performance overhead is negligible due to early pass-through for items without insets.
+				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView).
 				if (view is not MaterialToolbar &&
-					(parent is AppBarLayout || parent is MauiScrollView))
+					(parent is AppBarLayout ||
+					parent is MauiScrollView))
+				{
+					return null;
+				}
+
+				// Attachment gate (applyRecyclerViewGate=true only): skip RecyclerView data-item views with default
+				// SafeAreaEdges to prevent recycled item views from carrying stale inset-derived padding (#34634/#34635).
+				// EmptyView items (IsShowingEmptyView=true) are exempt — they are never recycled across data rows
+				// so they safely receive the listener without risk of stale-padding accumulation.
+				// Reset/cleanup callers use the default applyRecyclerViewGate=false so they always find the listener
+				// needed to clear any previously applied padding when a view is detached or SafeAreaEdges changes.
+				if (applyRecyclerViewGate &&
+					view is not MaterialToolbar &&
+					parent is IMauiRecyclerView mauiRecyclerView &&
+					!mauiRecyclerView.IsShowingEmptyView &&
+					!HasExplicitSafeAreaEdges(view))
 				{
 					return null;
 				}
@@ -131,6 +152,34 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		// Per-element-type cache of SafeAreaEdges default values.
+		// The default value returned by ISafeAreaElement.SafeAreaEdgesDefaultValueCreator() is constant per
+		// implementing type (e.g. Layout -> Container, Border/ContentView/ContentPage -> None, ScrollView -> Default).
+		// The cache is therefore append-only and never needs invalidation. Caching by AView would be unsafe
+		// because RecyclerView rebinds the same AView to different MAUI elements during scrolling; caching
+		// by Type is independent of any individual instance.
+		static readonly ConcurrentDictionary<Type, SafeAreaEdges> _safeAreaEdgesDefaults = new();
+
+		static bool HasExplicitSafeAreaEdges(AView view)
+		{
+			if (view is not ICrossPlatformLayoutBacking { CrossPlatformLayout: ISafeAreaElement safeAreaElement })
+			{
+				return false;
+			}
+
+			// Hoist the current value into a local: SafeAreaEdges is a BindableProperty getter that may lazily
+			// initialize state on first read, so we read it exactly once.
+			var current = safeAreaElement.SafeAreaEdges;
+			var defaultEdges = _safeAreaEdgesDefaults.GetOrAdd(
+				safeAreaElement.GetType(),
+				static (_, element) => element.SafeAreaEdgesDefaultValueCreator(),
+				safeAreaElement);
+
+			// Use the typed IEquatable<SafeAreaEdges>.Equals to stay independent of operator overloads
+			// in case SafeAreaEdges evolves (e.g. into a flags-style struct) in the future.
+			return !current.Equals(defaultEdges);
 		}
 
 		/// <summary>
@@ -474,8 +523,9 @@ internal static class MauiWindowInsetListenerExtensions
 	/// <param name="context">The Android context to get the listener from</param>
 	public static bool TrySetMauiWindowInsetListener(this View view, Context context)
 	{
-		// Check if this view is contained within a registered view first
-		if (MauiWindowInsetListener.FindListenerForView(view) is MauiWindowInsetListener localListener)
+		// applyRecyclerViewGate=true: skip RecyclerView data-item views with default SafeAreaEdges
+		// to prevent recycled views from accumulating stale inset-derived padding (#34634/#34635).
+		if (MauiWindowInsetListener.FindListenerForView(view, applyRecyclerViewGate: true) is MauiWindowInsetListener localListener)
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
 			ViewCompat.SetWindowInsetsAnimationCallback(view, localListener);
