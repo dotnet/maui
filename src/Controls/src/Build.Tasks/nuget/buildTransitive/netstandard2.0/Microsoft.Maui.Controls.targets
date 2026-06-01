@@ -254,6 +254,57 @@
 		</ItemGroup>
 	</Target>
 
+	<PropertyGroup>
+		<EmitPartialR2RXamlProfile Condition=" '$(EmitPartialR2RXamlProfile)' == '' ">false</EmitPartialR2RXamlProfile>
+		<_MauiMibcProfilePath>$(IntermediateOutputPath)$(TargetName).mibc</_MauiMibcProfilePath>
+		<_MauiMibcMatchedListPath>$(IntermediateOutputPath)$(TargetName).mibc.matched</_MauiMibcMatchedListPath>
+		<_MibcProfileGeneratorPath>$(MSBuildThisFileDirectory)MibcProfileGenerator.dll</_MibcProfileGeneratorPath>
+		<_MibcInputListPath>$(IntermediateOutputPath)_mibc_inputs.txt</_MibcInputListPath>
+	</PropertyGroup>
+
+	<!-- Generate MIBC profile listing all InitializeComponent* methods for PGO.
+	     Scans all assemblies in PublishReadyToRunExclude for InitializeComponent* methods,
+	     generates a single MIBC profile, then moves only the assemblies that contributed
+	     methods from the exclude list to partial R2R compilation.
+	     Enabled by setting EmitPartialR2RXamlProfile=true.
+	     Runs after R2R assembly selection. -->
+	<Target Name="_MauiGenerateMibcProfile"
+		AfterTargets="_SelectR2RAssemblies"
+		Condition=" '$(EmitPartialR2RXamlProfile)' == 'true' AND ('$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' OR '$(TargetPlatformIdentifier)' == 'tvos') AND '$(Configuration)' != 'Release' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
+		DependsOnTargets="_MauiWriteMibcInputList;_MauiRunMibcProfileGenerator">
+
+		<!-- Read the list of assemblies that had InitializeComponent* methods -->
+		<ReadLinesFromFile File="$(_MauiMibcMatchedListPath)">
+			<Output TaskParameter="Lines" ItemName="_MibcMatchedAssemblies" />
+		</ReadLinesFromFile>
+
+		<ItemGroup>
+			<PublishReadyToRunPgoFiles Include="$(_MauiMibcProfilePath)" />
+			<FileWrites Include="$(_MauiMibcProfilePath);$(_MauiMibcMatchedListPath);$(_MibcInputListPath)" />
+			<!-- Only promote assemblies that contributed methods to the MIBC profile -->
+			<PublishReadyToRunPartialAssemblies Include="@(_MibcMatchedAssemblies)" />
+			<PublishReadyToRunCompositeExclusions Include="@(_MibcMatchedAssemblies)" />
+			<PublishReadyToRunExclude Remove="@(_MibcMatchedAssemblies)" />
+		</ItemGroup>
+	</Target>
+
+	<!-- Write the response file only when the assembly list changes.
+	     WriteOnlyWhenDifferent preserves the timestamp on no-change,
+	     allowing _MauiRunMibcProfileGenerator to skip via Inputs/Outputs. -->
+	<Target Name="_MauiWriteMibcInputList">
+		<WriteLinesToFile File="$(_MibcInputListPath)" Lines="@(PublishReadyToRunExclude)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+	</Target>
+
+	<!-- Run the MIBC generator when the input list or any input assembly is newer than the output.
+	     Both the .mibc and its .matched sidecar are declared in Outputs so MSBuild's incremental
+	     check requires both files to be present and up-to-date before skipping the generator;
+	     the parent target reads the sidecar to drive PublishReadyToRunPartialAssemblies. -->
+	<Target Name="_MauiRunMibcProfileGenerator"
+		Inputs="$(_MibcInputListPath);@(PublishReadyToRunExclude)"
+		Outputs="$(_MauiMibcProfilePath);$(_MauiMibcMatchedListPath)">
+		<Exec Command="dotnet exec &quot;$(_MibcProfileGeneratorPath)&quot; &quot;$(_MauiMibcProfilePath)&quot; @&quot;$(_MibcInputListPath)&quot;" />
+	</Target>
+
  <!--
     Platform Specific Targets.
     We can't use a framework specific targets file because it breaks shared projects i.e.  /build/MonoAndroid10/Microsoft.Maui.Controls.targets
