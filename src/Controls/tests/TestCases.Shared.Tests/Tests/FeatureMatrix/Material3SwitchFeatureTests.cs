@@ -51,6 +51,7 @@ public class Material3SwitchFeatureTests : _GalleryUITest
     }
 
     [Test]
+    [Order(4)]
     [Category(UITestCategories.Material3)]
     public void Material3Switch_SetToggledAndOnColor_VerifyVisualState()
     {
@@ -67,6 +68,7 @@ public class Material3SwitchFeatureTests : _GalleryUITest
     }
 
     [Test]
+    [Order(5)]
     [Category(UITestCategories.Material3)]
     public void Material3Switch_SetOnColorAndThumbColor_VerifyVisualState()
     {
@@ -84,6 +86,40 @@ public class Material3SwitchFeatureTests : _GalleryUITest
     }
 
     [Test]
+    [Order(6)]
+    [Category(UITestCategories.Material3)]
+    public void Material3Switch_SetOffColor_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("OffColorRedCheckBox");
+        App.Tap("OffColorRedCheckBox");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElement("SwitchControl");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test]
+    [Order(7)]
+    [Category(UITestCategories.Material3)]
+    public void Material3Switch_SetOffColorAndOnColor_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("OffColorRedCheckBox");
+        App.Tap("OffColorRedCheckBox");
+        App.WaitForElement("OnColorGreenCheckBox");
+        App.Tap("OnColorGreenCheckBox");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElement("SwitchControl");
+        App.Tap("SwitchControl");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test]
+    [Order(8)]
     [Category(UITestCategories.Material3)]
     public void Material3Switch_SetThumbColorAndOnColor_VerifyVisualState()
     {
