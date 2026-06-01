@@ -217,7 +217,7 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 48
 			};
 
-			await CreateHandlerAndAddToWindow<PickerHandler>(picker, handler =>
+			await AttachAndRun<PickerHandler>(picker, handler =>
 			{
 				var platformView = handler.PlatformView;
 
