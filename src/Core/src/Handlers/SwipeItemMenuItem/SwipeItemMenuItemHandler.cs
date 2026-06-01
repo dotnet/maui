@@ -64,13 +64,13 @@ namespace Microsoft.Maui.Handlers
 		public static Task MapSourceAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
 		{
 #if WINDOWS
-			// TODO: make the mapper use the loader and the image if this is a stream source
-			handler.PlatformView.IconSource = image.Source?.ToIconSource(handler.MauiContext!);
+			return LoadFileIconAsync(handler, image);
 #else
 			if (handler.SourceLoader is ImageSourcePartLoader loader)
 				return loader.UpdateImageSourceAsync();
-#endif
+
 			return Task.CompletedTask;
+#endif
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter : ImageSourcePartSetter<ISwipeItemMenuItemHandler>
