@@ -98,7 +98,7 @@ Notes:
 - If a PR touches **multiple platforms**, apply each matching `platform/*` label.
 - `.ios.cs` files compile for both iOS and MacCatalyst (see split table rows above).
 - `.maccatalyst.cs` files do **not** compile for iOS — apply only `platform/macos` for those.
-- **Tizen is excluded.** `*.tizen.cs` files and `/Platform/Tizen/` or `/Platforms/Tizen/` paths exist in the source tree, but `platform/tizen` is **never** auto-applied. If a PR touches **only** Tizen files (and no other product code), **noop** rather than apply any platform label.
+- **Tizen is excluded.** `*.tizen.cs` files and `/Platform/Tizen/` or `/Platforms/Tizen/` paths exist in the source tree, but `platform/tizen` is **never** auto-applied. Treat Tizen files as if they had **no** platform suffix for labeling purposes: pick an `area-*` label normally based on the code's subject matter (e.g., `TabbedPage.tizen.cs` → `area-controls-tabbedpage`) and apply **no** `platform/*` label for the Tizen content. Only noop if the global noop rules below (e.g., no `area-*` clearly fits) apply on their own merits.
 
 **For issues**, infer `platform/*` labels only for platforms the reporter explicitly identifies as **affected**: Android, iOS, macOS / Mac Catalyst, or Windows. This includes the issue-template's "Affected platforms" field, plus clear evidence in the title, body, or attached logs/stack traces. Do not guess.
 
