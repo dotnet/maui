@@ -14,7 +14,7 @@ public class Issue35613 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Navigation)]
-    public void VerifyNavigatingToAndNavigatingFromArgs()
+    public void VerifyNavigatingToAndNavigatingFromArgsForPopAndPopToRoot()
     {
         App.WaitForElement("Issue35613_NavigateButton");
 
@@ -34,6 +34,27 @@ public class Issue35613 : _IssuesUITest
         var secondNavigatingFromBeforePop = App.FindElement("Issue35613_Second_OnNavigatingFromLabel").GetText();
         Assert.That(secondNavigatingFromBeforePop, Is.EqualTo("-"));
 
+        App.Tap("Issue35613_NavigateToThirdButton");
+
+        App.WaitForElement("Issue35613_Third_OnNavigatingToLabel");
+        var thirdNavigatingToAfterPush = App.FindElement("Issue35613_Third_OnNavigatingToLabel").GetText();
+        Assert.That(thirdNavigatingToAfterPush, Is.EqualTo("PreviousPage: Issue35613SecondPage, NavigationType: Push"));
+
+        var secondNavigatingFromAfterPushToThird = App.FindElement("Issue35613_Second_OnNavigatingFromLabel").GetText();
+        Assert.That(secondNavigatingFromAfterPushToThird, Is.EqualTo("DestinationPage: Issue35613ThirdPage, NavigationType: Push"));
+
+        App.Tap("Issue35613_PopToRootButton");
+
+        App.WaitForElement("Issue35613_First_OnNavigatingToLabel");
+        var firstNavigatingToAfterPopToRoot = App.FindElement("Issue35613_First_OnNavigatingToLabel").GetText();
+        Assert.That(firstNavigatingToAfterPopToRoot, Is.EqualTo("PreviousPage: Issue35613ThirdPage, NavigationType: PopToRoot"));
+
+        var thirdNavigatingFromAfterPopToRoot = App.FindElement("Issue35613_Third_OnNavigatingFromLabel").GetText();
+        Assert.That(thirdNavigatingFromAfterPopToRoot, Is.EqualTo("DestinationPage: Issue35613FirstPage, NavigationType: PopToRoot"));
+
+        App.Tap("Issue35613_NavigateButton");
+
+        App.WaitForElement("Issue35613_Second_OnNavigatingToLabel");
         App.Tap("Issue35613_NavigateBackButton");
 
         App.WaitForElement("Issue35613_First_OnNavigatingToLabel");
