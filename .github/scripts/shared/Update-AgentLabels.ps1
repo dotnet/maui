@@ -37,6 +37,7 @@ $script:SignalLabels = @{
 
 $script:ManualLabels = @{
     's/agent-fix-implemented' = @{ Description = 'PR author implemented the agent suggested fix'; Color = '7B1FA2' }
+    's/agent-ready-for-rerun' = @{ Description = 'AI review has new PR activity and is ready for rerun'; Color = '5319E7' }
 }
 
 $script:TrackingLabel = @{
@@ -126,10 +127,19 @@ function Add-Label {
         [string]$Repo = 'maui'
     )
 
-    gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
-        --method POST `
-        -f "labels[]=$LabelName" 2>$null | Out-Null
-    return $LASTEXITCODE -eq 0
+    $tmp = $null
+    try {
+        $tmp = New-TemporaryFile
+        @{ labels = @($LabelName) } | ConvertTo-Json -Compress | Set-Content -LiteralPath $tmp -Encoding utf8 -NoNewline
+        & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
+            --method POST `
+            --input $tmp 1>$null 2>$null
+        return $LASTEXITCODE -eq 0
+    } finally {
+        if ($tmp) {
+            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 # ============================================================
@@ -143,8 +153,8 @@ function Remove-Label {
         [string]$Repo = 'maui'
     )
 
-    gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
-        --method DELETE 2>$null | Out-Null
+    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
+        --method DELETE 1>$null 2>$null
     return $LASTEXITCODE -eq 0
 }
 
