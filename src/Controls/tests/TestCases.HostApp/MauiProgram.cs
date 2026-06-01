@@ -89,7 +89,7 @@ namespace Maui.Controls.Sample
 		{
 			Page mainPage = null;
 			OverrideMainPage(ref mainPage);
-#if MACCATALYST
+#if IOS || MACCATALYST
 			// Check for startup test argument from environment variables (passed by test runner)
 			var testName = System.Environment.GetEnvironmentVariable("test");
 
