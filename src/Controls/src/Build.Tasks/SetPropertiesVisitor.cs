@@ -1280,9 +1280,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//			IL_0008:  ldarg.0 
 			//
 			//			IL_0009:  ldftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
-			//OR, if the handler is virtual
-			//			IL_000x:  ldarg.0 
-			//			IL_0009:  ldvirtftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+			//OR, if the handler is virtual (non-static)
+			//			IL_000x:  dup          ; copy target already on stack
+			//			IL_000y:  ldvirtftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
 			//
 			//			IL_000f:  newobj instance void class [mscorlib]System.EventHandler::'.ctor'(object, native int)
 			//			IL_0014:  callvirt instance void class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Button::add_Clicked(class [mscorlib]System.EventHandler)
@@ -1340,9 +1340,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					throw new InvalidProgramException();
 			}
 
-			if (methodDef.IsVirtual)
+			if (methodDef.IsVirtual && !methodDef.IsStatic)
 			{
-				yield return Create(Ldarg_0);
+				// ldvirtftn needs the object whose vtable drives virtual dispatch.
+				// In a DataTemplate context, Ldarg_0 is the anonymous nested class, not the root
+				// XAML element — using it causes iOS/Mac Full AOT to crash on virtual handlers.
+				// The delegate target (already on the stack) IS the correct vtable object, so
+				// dup it: stack goes [parent, target] → [parent, target, target], ldvirtftn pops one, leaving
+				// [parent, target, ftn] for the delegate ctor.
+				// Static methods (including C# 11+ interface static-abstract members) are never
+				// virtual-dispatched; fall through to ldftn below.
+				yield return Create(Dup);
 				yield return Create(Ldvirtftn, handlerRef);
 			}
 			else
