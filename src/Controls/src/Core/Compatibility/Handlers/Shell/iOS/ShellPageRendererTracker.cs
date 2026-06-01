@@ -579,8 +579,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						}
 					}
 				}
-				// Show hamburger icon if it's the root page, or if the back button is not visible.
-				else if (String.IsNullOrWhiteSpace(text) && (IsRootPage || !backButtonVisible) && _flyoutBehavior == FlyoutBehavior.Flyout)
+				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
 					icon = DrawHamburger();
 				}
@@ -588,7 +587,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (icon != null)
 				{
 					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, (IsRootPage || !backButtonVisible))) { Enabled = enabled };
+						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
 						
 					// For iOS 26+, explicitly set the tint color on the bar button item
 					// because the navigation bar's tint color is not automatically inherited
@@ -610,7 +609,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
-						if (IsRootPage || !backButtonVisible)
+						if (IsRootPage)
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
 							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
@@ -1037,6 +1036,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchBar.OnEditingStopped += OnSearchBarEditingStopped;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
+			searchBar.Text = SearchHandler.Query;
 			UpdateSearchIsEnabled(_searchController);
 			searchBar.SearchButtonClicked += SearchButtonClicked;
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
@@ -1237,14 +1237,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var navController = ViewController.NavigationController;
+
+			// The keyboard observer is global — every live tracker receives every UIKeyboard hide
+			// event. If a modal view controller is currently presented over this nav controller,
+			// the keyboard belongs to that modal (e.g. a transparent Shell page with an Entry
+			// presented via Shell.GoToAsync). Return WITHOUT consuming _pendingKeyboardNavigation:
+			// this modal is transient, and the flag must remain armed for a genuine keyboard hide
+			// on this tracker after the modal is dismissed. The correction gate below
+			// (currentFrame.Y == 0 and related checks) is what prevents false positives.
+			if (navController.PresentedViewController is not null)
+				return;
+
 			var navBar = navController.NavigationBar;
 
 			if (navBar.Hidden || navBar.Frame.Height <= 0)
+			{
+				// No nav bar means the misposition scenario cannot occur; consume the flag so a
+				// later unrelated keyboard hide does not re-trigger this correction.
+				_pendingKeyboardNavigation = false;
 				return;
+			}
 
-			// Don't interfere with SearchHandler's keyboard management when it's active
+			// Don't interfere with SearchHandler's keyboard management when it's active.
+			// Consume the flag here too — leaving it armed risks running the fix on a later,
+			// unrelated keyboard dismissal.
 			if (_searchController?.Active == true)
+			{
+				_pendingKeyboardNavigation = false;
 				return;
+			}
 
 			var currentFrame = ViewController.View.Frame;
 			var navBarBottom = navBar.Frame.Bottom;
@@ -1314,7 +1335,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
+				{
+					// Explicitly null out the native TitleView to break the UIKit reference chain
+					// that prevents the page from being garbage collected when x:Name is used
+					// together with Shell.TitleView. The NameScope attached to the TitleView
+					// children holds a reference back to the page (via the registered x:Name),
+					// so clearing this native reference is necessary to allow GC.
+					NavigationItem.TitleView = null;
 					tvc.Disconnect();
+				}
 
 				_keyboardWillHideObserver?.Dispose();
 				_keyboardWillHideObserver = null;

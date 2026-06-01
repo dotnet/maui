@@ -7,6 +7,19 @@ public class BlazorTemplateTest : BaseTemplateTests
 {
 	public BlazorTemplateTest(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
+	[Fact]
+	public void NewMauiBlazorWebSolutionIncludesGitIgnore()
+	{
+		SetTestIdentifier();
+		const string templateShortName = "maui-blazor-web";
+		var solutionProjectDir = TestDirectory;
+
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: solutionProjectDir, framework: DotNetCurrent, output: _output),
+			$"Unable to create template {templateShortName}. Check test output for errors.");
+
+		AssertIncludesRootGitIgnore(solutionProjectDir);
+	}
+
 	[Theory]
 	// Parameters:  target framework, build config, dotnet new additional parameters, use tricky project name, additional dotnet build parameters
 
