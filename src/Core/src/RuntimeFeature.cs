@@ -22,7 +22,6 @@ namespace Microsoft.Maui
 		const bool IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault = true;
 		const bool AreBindingInterceptorsSupportedByDefault = true;
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
-		const bool IsHybridWebViewSupportedByDefault = true;
 		const bool SupportNamescopesByDefault = true;
 		const bool EnableDiagnosticsByDefault = false;
 		const bool IsMeterSupportedByDefault = true;
@@ -82,16 +81,6 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsXamlCBindingWithSourceCompilationEnabled)}", out bool areSupported)
 				? areSupported
 				: IsXamlCBindingWithSourceCompilationEnabledByDefault;
-
-#if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewSupported)}")]
-		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
-		[FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
-#endif
-		public static bool IsHybridWebViewSupported =>
-			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewSupported)}", out bool isSupported)
-				? isSupported
-				: IsHybridWebViewSupportedByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(AreNamescopesSupported)}")]

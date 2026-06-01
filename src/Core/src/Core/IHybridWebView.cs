@@ -1,5 +1,7 @@
-﻿using System;
+using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
@@ -21,9 +23,16 @@ namespace Microsoft.Maui
 		string? HybridRoot { get; }
 
 		/// <summary>
-		/// For internal use only.
+		///  Sets the object that will be the target of JavaScript calls from the web view. The public methods on this object
+		///  are callable from JavaScript using the <c>window.HybridWebView.InvokeDotNet</c> method.
 		/// </summary>
-		object? InvokeJavaScriptTarget { get; set; }
+		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
+		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
+		[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
+#endif
+		void SetInvokeJavaScriptTarget<T>(T target) where T : class;
 
 		/// <summary>
 		///  Sets the object that will be the target of JavaScript calls from the web view. The public methods on this object
@@ -31,13 +40,14 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
 		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
-		void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class;
+		/// <param name="jsonSerializerContext">The source-generated JSON serializer context for parameter and return types used by the target methods.</param>
+		void SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) where T : class;
 
 		/// <summary>
-		/// For internal use only.
+		/// For internal use only. The invoker that handles JS-to-.NET method dispatch.
 		/// </summary>
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-		Type? InvokeJavaScriptType { get; set; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		IHybridWebViewInvoker? Invoker { get; set; }
 
 		void RawMessageReceived(string rawMessage);
 

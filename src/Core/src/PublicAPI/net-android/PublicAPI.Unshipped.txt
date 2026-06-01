@@ -1,4 +1,13 @@
 #nullable enable
+*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.get -> object?
+*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.set -> void
+*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.get -> System.Type?
+*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
+Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.IHybridWebViewInvoker?
+Microsoft.Maui.IHybridWebView.Invoker.set -> void
+Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.IHybridWebViewInvoker
+Microsoft.Maui.IHybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
