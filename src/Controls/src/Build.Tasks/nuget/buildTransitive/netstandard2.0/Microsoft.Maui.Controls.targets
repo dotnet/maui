@@ -270,7 +270,7 @@
 	     Runs after R2R assembly selection. -->
 	<Target Name="_MauiGenerateMibcProfile"
 		AfterTargets="_SelectR2RAssemblies"
-		Condition=" '$(EmitPartialR2RXamlProfile)' == 'true' AND '$(Configuration)' != 'Release' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
+		Condition=" '$(EmitPartialR2RXamlProfile)' == 'true' AND ('$(TargetPlatformIdentifier)' == 'ios' OR '$(TargetPlatformIdentifier)' == 'maccatalyst' OR '$(TargetPlatformIdentifier)' == 'tvos') AND '$(Configuration)' != 'Release' AND '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != '' "
 		DependsOnTargets="_MauiWriteMibcInputList;_MauiRunMibcProfileGenerator">
 
 		<!-- Read the list of assemblies that had InitializeComponent* methods -->
