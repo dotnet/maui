@@ -476,6 +476,14 @@ scenarios:
     assertions:
       - type: "output_contains"
         value: "area-safearea"
+      - type: "output_contains"
+        value: "platform/ios"
+      - type: "output_contains"
+        value: "platform/android"
+      - type: "output_contains"
+        value: "platform/windows"
+      - type: "output_contains"
+        value: "platform/macos"
       - type: "output_not_contains"
         value: "area-layout"
       - type: "output_not_contains"
@@ -487,6 +495,7 @@ scenarios:
     rubric:
       - "The final label set includes area-safearea as the single area-* label — the issue is specifically about SafeArea API surface"
       - "The final label set does NOT include area-layout — the tie-breaking heuristic prefers the sub-area over the parent area"
+      - "The final label set includes platform/ios, platform/android, platform/windows, AND platform/macos — the issue body's 'Affected platforms' field explicitly lists all four"
       - "The agent applies exactly ONE area-* label (not two) per the 'exactly one area' rule"
       - "The agent does NOT apply t/*, s/*, or any other non-(area-*/platform/*) labels"
     timeout: 180
