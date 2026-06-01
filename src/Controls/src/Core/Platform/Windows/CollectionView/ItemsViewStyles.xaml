@@ -203,14 +203,14 @@
         </Setter>
     </Style>
 
-    <!-- Custom version of the style which removes the horizontal rule below the header -->
+    <!-- Custom style: removes horizontal rule, stretches content to full width, and zeroes container padding so MAUI header templates control their own spacing -->
     <Style TargetType="ListViewHeaderItem">
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ListViewHeaderItemThemeFontSize}" />
         <Setter Property="Background" Value="{ThemeResource ListViewHeaderItemBackground}" />
         <Setter Property="Margin" Value="0,0,0,4" />
-        <Setter Property="Padding" Value="12,8,12,0" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Padding" Value="0,0,0,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="MinHeight" Value="{ThemeResource ListViewHeaderItemMinHeight}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
@@ -231,14 +231,14 @@
         </Setter>
     </Style>
 
-    <!-- Custom version of the style which removes the horizontal rule below the header -->
+    <!-- Custom style: removes horizontal rule, stretches content to full width, and zeroes container padding so MAUI header templates control their own spacing -->
     <Style TargetType="GridViewHeaderItem">
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource GridViewHeaderItemThemeFontSize}" />
         <Setter Property="Background" Value="{ThemeResource GridViewHeaderItemBackground}" />
         <Setter Property="Margin" Value="0,0,0,4" />
-        <Setter Property="Padding" Value="12,8,12,0" />
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Padding" Value="0,0,0,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="MinHeight" Value="{ThemeResource GridViewHeaderItemMinHeight}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
