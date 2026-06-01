@@ -226,11 +226,6 @@ public class Issue32724 : ContentPage
         _border.RotationY = _rotationY;
         _border.AnchorX = _anchorX;
         _border.AnchorY = _anchorY;
-        _border.Shadow = new Shadow
-        {
-            Brush = Brush.Transparent,
-            Opacity = 0f,
-            Offset = new Point(0, 0)
-        };
+        _border.Shadow = null;
     }
 }
