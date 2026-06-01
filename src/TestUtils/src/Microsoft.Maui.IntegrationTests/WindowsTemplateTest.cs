@@ -105,9 +105,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Theory]
 	[InlineData("maui", DotNetCurrent, "Release", false)]
-	//[InlineData("maui", DotNetPrevious, "Release", true)]
+	[InlineData("maui", DotNetPrevious, "Release", true)]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	//[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishUnpackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		SetTestIdentifier(id, framework, config, usesRidGraph);
@@ -148,9 +148,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Theory]
 	[InlineData("maui", DotNetCurrent, "Release", false)]
-	//[InlineData("maui", DotNetPrevious, "Release", true)]
+	[InlineData("maui", DotNetPrevious, "Release", true)]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	//[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishPackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		SetTestIdentifier(id, framework, config, usesRidGraph);
