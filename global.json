@@ -1,8 +1,11 @@
 {
   "tools": {
-    "dotnet": "10.0.100-rtm.25523.113"
+    "dotnet": "10.0.108"
   },
   "sdk": {
+    "version": "10.0.108",
+    "allowPrerelease": false,
+    "rollForward": "patch",
     "paths": [
       ".dotnet",
       "$host$"
