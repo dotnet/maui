@@ -32,6 +32,12 @@ namespace Microsoft.Maui.Handlers
 			ContainerView ??= new WrapperView(PlatformView.Bounds);
 			ContainerView.AddSubview(PlatformView);
 
+			// Transfer any existing transform to the wrapper and clear it from the child
+			// so transforms are preserved when container ownership changes.
+			ContainerView.Layer.AnchorPoint = PlatformView.Layer.AnchorPoint;
+			ContainerView.Layer.Transform = PlatformView.Layer.Transform;
+			PlatformView.ResetLayerTransform();
+
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.InsertSubview(ContainerView, idx);
 			else
@@ -50,6 +56,11 @@ namespace Microsoft.Maui.Handlers
 			var oldParent = (UIView?)ContainerView.Superview;
 
 			var oldIndex = oldParent?.IndexOfSubview(ContainerView);
+
+			// Move the current transform back to the child before removing the wrapper.
+			PlatformView.Layer.AnchorPoint = ContainerView.Layer.AnchorPoint;
+			PlatformView.Layer.Transform = ContainerView.Layer.Transform;
+
 			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
