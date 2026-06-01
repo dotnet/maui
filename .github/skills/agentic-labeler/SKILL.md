@@ -100,7 +100,11 @@ Notes:
 - `.ios.cs` files compile for both iOS and MacCatalyst (see split table rows above).
 - `.maccatalyst.cs` files do **not** compile for iOS — apply only `platform/macos` for those.
 
-**For issues**, infer `platform/*` labels only if the reporter clearly indicates a platform (explicit mention of Android / iOS / macOS / Windows / Tizen in the title, body, or attached logs/stack traces). Do not guess. If the report says "all platforms" or doesn't specify, apply no `platform/*` label.
+**For issues**, infer `platform/*` labels only for platforms the reporter explicitly identifies as **affected**: Android, iOS, macOS / Mac Catalyst, Windows, or Tizen. This includes the issue-template's "Affected platforms" field, plus clear evidence in the title, body, or attached logs/stack traces. Do not guess.
+
+- If the reporter explicitly lists named affected platforms, apply one `platform/*` label per named platform — even when the list covers every supported platform (e.g., "iOS, Android, Windows, macOS" → apply all four).
+- Generic phrases like "all platforms", "every platform", "any platform", or "cross-platform" do **not** by themselves justify any `platform/*` label. **If a generic phrase is accompanied by an explicit affected-platform list, the named list wins** — apply each named platform's label (e.g., "all platforms (iOS, Android, Windows, macOS)" → apply all four).
+- Do **not** apply labels for platforms mentioned incidentally ("tested on iOS"), as "not reproduced" / "not affected", or as label requests ("please add platform/android").
 
 ### When to noop (no labels)
 
