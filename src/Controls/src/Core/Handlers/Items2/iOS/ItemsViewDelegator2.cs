@@ -83,6 +83,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+#if MACCATALYST
+		public override void DraggingStarted(UIScrollView scrollView)
+		{
+			if (scrollView is MauiCollectionView mauiCV)
+			{
+				mauiCV.ClearPendingScrollRestore();
+			}
+
+			base.DraggingStarted(scrollView);
+		}
+#endif
+
 		public override UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
 		{
