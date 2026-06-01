@@ -1,3 +1,157 @@
-﻿<ContentPage x:Class="Maui.Controls.Sample.MainPage"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="XAML Incremental Hot Reload Sandbox"
+             BackgroundColor="White">
+
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="15">
+
+            <!-- Header -->
+            <Label Text="🔥 Incremental Hot Reload Sandbox"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="DarkSlateBlue" />
+
+            <Label Text="Edit this XAML while the app is running to test incremental hot reload. Property changes (text, colors, sizes) should apply without a full page reload."
+                   FontSize="14"
+                   TextColor="Gray"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Section 1: Simple property changes -->
+            <Label Text="1. Simple Properties"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="DarkSlateBlue" />
+
+            <Label x:Name="TestLabel"
+                   Text="Try changing this text!"
+                   FontSize="20"
+                   TextColor="CornflowerBlue"
+                   HorizontalOptions="Center" />
+
+            <Button x:Name="TestButton"
+                    Text="Button — change my text or color"
+                    BackgroundColor="MediumSlateBlue"
+                    TextColor="White"
+                    FontSize="16"
+                    CornerRadius="10"
+                    Padding="15,10"
+                    HorizontalOptions="Center"
+                    Clicked="OnTestButtonClicked" />
+
+            <Label x:Name="ClickCountLabel"
+                   Text="Clicks: 0"
+                   FontSize="14"
+                   TextColor="Gray"
+                   HorizontalOptions="Center" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Section 2: Numeric properties -->
+            <Label Text="2. Numeric Properties"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="DarkSlateBlue" />
+
+            <BoxView x:Name="ColorBox"
+                     HeightRequest="60"
+                     WidthRequest="200"
+                     CornerRadius="12"
+                     Color="Coral"
+                     HorizontalOptions="Center" />
+
+            <ProgressBar x:Name="TestProgress"
+                         Progress="0.65"
+                         ProgressColor="MediumSlateBlue"
+                         HorizontalOptions="Fill" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Section 3: Layout with children -->
+            <Label Text="3. Layout Children"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="DarkSlateBlue" />
+
+            <HorizontalStackLayout x:Name="ChipContainer"
+                                    Spacing="8"
+                                    HorizontalOptions="Center">
+                <Border BackgroundColor="LightCoral" StrokeShape="RoundRectangle 15" Stroke="Transparent" Padding="10,5">
+                    <Label Text="Chip A" TextColor="White" FontSize="12" />
+                </Border>
+                <Border BackgroundColor="CornflowerBlue" StrokeShape="RoundRectangle 15" Stroke="Transparent" Padding="10,5">
+                    <Label Text="Chip B" TextColor="White" FontSize="12" />
+                </Border>
+                <Border BackgroundColor="MediumSeaGreen" StrokeShape="RoundRectangle 15" Stroke="Transparent" Padding="10,5">
+                    <Label Text="Chip C" TextColor="White" FontSize="12" />
+                </Border>
+            </HorizontalStackLayout>
+
+            <Label Text="Try: add/remove/reorder chips above"
+                   FontSize="12"
+                   TextColor="Silver"
+                   HorizontalTextAlignment="Center"
+                   HorizontalOptions="Center" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Section 4: Grid layout -->
+            <Label Text="4. Grid Layout"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="DarkSlateBlue" />
+
+            <Grid ColumnDefinitions="*,*"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="10"
+                  RowSpacing="10">
+                <Border BackgroundColor="#F0F4FF" StrokeShape="RoundRectangle 8" Stroke="Transparent" Padding="15">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="📊" FontSize="28" HorizontalOptions="Center" />
+                        <Label Text="Card 1" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                        <Label Text="Change my text" FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" BackgroundColor="#FFF4F0" StrokeShape="RoundRectangle 8" Stroke="Transparent" Padding="15">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="🎨" FontSize="28" HorizontalOptions="Center" />
+                        <Label Text="Card 2" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                        <Label Text="Change my color" FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="1" BackgroundColor="#F0FFF4" StrokeShape="RoundRectangle 8" Stroke="Transparent" Padding="15">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="🚀" FontSize="28" HorizontalOptions="Center" />
+                        <Label Text="Card 3" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                        <Label Text="Change my emoji" FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="1" Grid.Column="1" BackgroundColor="#FFF0FF" StrokeShape="RoundRectangle 8" Stroke="Transparent" Padding="15">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="⚡" FontSize="28" HorizontalOptions="Center" />
+                        <Label Text="Card 4" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                        <Label Text="Add more cards!" FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Section 5: Version info -->
+            <Label x:Name="VersionLabel"
+                   Text="Version info will appear here"
+                   FontSize="12"
+                   TextColor="Silver"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
 </ContentPage>
