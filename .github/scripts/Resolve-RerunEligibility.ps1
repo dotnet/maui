@@ -14,11 +14,12 @@ param(
     [Parameter(Mandatory = $true)]
     [int]$PRNumber,
 
-    [Parameter(Mandatory = $true)]
-    [Int64]$CurrentCommentId,
+    [Int64]$CurrentCommentId = 0,
 
     [string]$Owner = 'dotnet',
     [string]$Repo = 'maui',
+
+    [string]$ContextOutputPath,
 
     [switch]$ApplyLabel
 )
@@ -92,6 +93,15 @@ function Get-LatestRerunCommentBefore {
         Select-Object -First 1)
 }
 
+function Get-LatestRerunComment {
+    param([object[]]$Comments)
+
+    return @($Comments |
+        Where-Object { Test-RerunCommand $_.body } |
+        Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true } |
+        Select-Object -First 1)
+}
+
 function Get-LatestReviewedSha {
     param([string]$AISummaryBody)
 
@@ -160,6 +170,18 @@ function Test-HasCommitAfter {
     } | Select-Object -First 1)
 }
 
+function Get-CommitDate {
+    param($Commit)
+
+    if ($Commit.commit -and $Commit.commit.committer -and $Commit.commit.committer.date) {
+        return ConvertTo-DateTimeOffset $Commit.commit.committer.date
+    }
+    if ($Commit.commit -and $Commit.commit.author -and $Commit.commit.author.date) {
+        return ConvertTo-DateTimeOffset $Commit.commit.author.date
+    }
+    return $null
+}
+
 function Test-HeadDiffersFromReviewedSha {
     param(
         [string]$CurrentHeadSha,
@@ -197,6 +219,136 @@ function ConvertTo-RerunActivityItem {
         updated_at = $updatedAt
         user       = $Item.user
     }
+}
+
+function Format-MarkdownCell {
+    param([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+
+    $singleLine = ($Value -replace '\r?\n', ' ').Trim()
+    if ($singleLine.Length -gt 180) {
+        $singleLine = $singleLine.Substring(0, 177) + '...'
+    }
+
+    return ($singleLine -replace '\|', '\|')
+}
+
+function New-RerunContextMarkdown {
+    param(
+        [object[]]$Comments,
+        [object[]]$Commits,
+        [string]$CurrentHeadSha,
+        [object[]]$CurrentLabels = @()
+    )
+
+    $latestSummary = Get-LatestAISummaryComment -Comments $Comments
+    $latestRerun = Get-LatestRerunComment -Comments $Comments
+    $checkpointRerun = if ($latestRerun) { Get-LatestRerunCommentBefore -Comments $Comments -CurrentCommentId ([Int64]$latestRerun.id) } else { $null }
+    $readyLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+
+    $latestReviewedSha = if ($latestSummary) { Get-LatestReviewedSha -AISummaryBody $latestSummary.body } else { $null }
+    $summaryUpdatedAt = if ($latestSummary) { Get-ObjectDate $latestSummary 'updated_at' } else { $null }
+
+    $checkpoint = $summaryUpdatedAt
+    $checkpointReason = if ($latestSummary) { 'latest AI Summary' } else { 'none' }
+    if ($checkpointRerun) {
+        $checkpointRerunCreatedAt = Get-ObjectDate $checkpointRerun 'created_at'
+        if (-not $checkpoint -or $checkpointRerunCreatedAt -gt $checkpoint) {
+            $checkpoint = $checkpointRerunCreatedAt
+            $checkpointReason = 'previous /review rerun'
+        }
+    }
+
+    $evidenceComments = @()
+    if ($checkpoint) {
+        $evidenceComments = @($Comments | Where-Object {
+            (Test-CommentIsEvidence -Comment $_ -CurrentCommentId 0) -and
+            (Get-ObjectDate $_ 'created_at') -gt $checkpoint
+        } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $false }, @{ Expression = { [Int64]$_.id }; Descending = $false })
+    }
+
+    $newCommits = @()
+    if ($checkpoint) {
+        $newCommits = @($Commits | Where-Object {
+            $date = Get-CommitDate $_
+            $date -and $date -gt $checkpoint
+        } | Sort-Object @{ Expression = { Get-CommitDate $_ }; Descending = $false })
+    }
+
+    $headDiffers = Test-HeadDiffersFromReviewedSha -CurrentHeadSha $CurrentHeadSha -LatestReviewedSha $latestReviewedSha
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add('# Rerun Context')
+    $lines.Add('')
+    $lines.Add('This file was generated deterministically before pre-flight. No AI was used to decide or summarize this context.')
+    $lines.Add('')
+    $lines.Add('## Checkpoint')
+    $lines.Add('')
+    if ($latestSummary) {
+        $lines.Add("- Latest AI Summary: $($latestSummary.kind) `#$($latestSummary.id)` updated $($summaryUpdatedAt.ToString('u'))")
+    } else {
+        $lines.Add('- Latest AI Summary: not found')
+    }
+    if ($latestRerun) {
+        $lines.Add("- Latest `/review rerun`: comment `#$($latestRerun.id)` created $((Get-ObjectDate $latestRerun 'created_at').ToString('u'))")
+    } else {
+        $lines.Add('- Latest `/review rerun`: not found')
+    }
+    if ($checkpointRerun) {
+        $lines.Add("- Previous `/review rerun` checkpoint: comment `#$($checkpointRerun.id)` created $((Get-ObjectDate $checkpointRerun 'created_at').ToString('u'))")
+    }
+    if ($checkpoint) {
+        $lines.Add("- Activity checkpoint: $checkpointReason at $($checkpoint.ToString('u'))")
+    } else {
+        $lines.Add('- Activity checkpoint: none')
+    }
+    $lines.Add("- Latest reviewed SHA: $(if ($latestReviewedSha) { $latestReviewedSha } else { 'unknown' })")
+    $lines.Add("- Current head SHA: $(if ($CurrentHeadSha) { $CurrentHeadSha } else { 'unknown' })")
+    $lines.Add("- Current head differs from latest reviewed SHA: $($headDiffers.ToString().ToLowerInvariant())")
+    $lines.Add("- ``$ReadyForRerunLabel`` present: $($readyLabelPresent.ToString().ToLowerInvariant())")
+    $lines.Add('')
+    $lines.Add('## New activity since checkpoint')
+    $lines.Add('')
+    $lines.Add("- New non-command comments: $($evidenceComments.Count)")
+    $lines.Add("- New commits: $($newCommits.Count)")
+    $lines.Add('')
+
+    if ($evidenceComments.Count -gt 0) {
+        $lines.Add('### New comments')
+        $lines.Add('')
+        $lines.Add('| Kind | Author | Created | Body |')
+        $lines.Add('|---|---|---|---|')
+        foreach ($comment in $evidenceComments) {
+            $author = if ($comment.user) { [string]$comment.user.login } else { '' }
+            $createdAt = (Get-ObjectDate $comment 'created_at').ToString('u')
+            $lines.Add("| $($comment.kind) | $(Format-MarkdownCell $author) | $createdAt | $(Format-MarkdownCell $comment.body) |")
+        }
+        $lines.Add('')
+    }
+
+    if ($newCommits.Count -gt 0) {
+        $lines.Add('### New commits')
+        $lines.Add('')
+        $lines.Add('| SHA | Author | Date | Message |')
+        $lines.Add('|---|---|---|---|')
+        foreach ($commit in $newCommits) {
+            $sha = if ($commit.sha) { ([string]$commit.sha).Substring(0, [Math]::Min(7, ([string]$commit.sha).Length)) } else { '' }
+            $author = if ($commit.commit -and $commit.commit.author) { [string]$commit.commit.author.name } else { '' }
+            $date = Get-CommitDate $commit
+            $message = if ($commit.commit -and $commit.commit.message) { ([string]$commit.commit.message -split "`n")[0] } else { '' }
+            $lines.Add("| $sha | $(Format-MarkdownCell $author) | $(if ($date) { $date.ToString('u') } else { '' }) | $(Format-MarkdownCell $message) |")
+        }
+        $lines.Add('')
+    }
+
+    if ($evidenceComments.Count -eq 0 -and $newCommits.Count -eq 0 -and -not $headDiffers) {
+        $lines.Add('No new deterministic activity was found since the checkpoint.')
+        $lines.Add('')
+    }
+
+    return ($lines -join "`n")
 }
 
 function Resolve-RerunEligibility {
@@ -274,6 +426,30 @@ $labels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 
 
 if ($pr.state -ne 'open') {
     throw "PR #$PRNumber is not open (state: $($pr.state))"
+}
+
+if ($ContextOutputPath) {
+    $context = New-RerunContextMarkdown `
+        -Comments $comments `
+        -Commits $commits `
+        -CurrentHeadSha $pr.head.sha `
+        -CurrentLabels $labels
+    $contextDir = Split-Path -Parent $ContextOutputPath
+    if ($contextDir) {
+        New-Item -ItemType Directory -Force -Path $contextDir | Out-Null
+    }
+    $context | Set-Content -LiteralPath $ContextOutputPath -Encoding UTF8
+    Write-Host "Wrote rerun context: $ContextOutputPath"
+    if ($env:GITHUB_OUTPUT) {
+        "context_output_path=$ContextOutputPath" >> $env:GITHUB_OUTPUT
+    }
+    if ($CurrentCommentId -eq 0 -and -not $ApplyLabel) {
+        exit 0
+    }
+}
+
+if ($CurrentCommentId -eq 0) {
+    throw "CurrentCommentId is required unless only writing ContextOutputPath."
 }
 
 $result = Resolve-RerunEligibility `

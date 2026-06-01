@@ -208,4 +208,25 @@ Describe 'Resolve-RerunEligibility' {
         $result.Eligible | Should -BeTrue
         $result.Reason | Should -Be 'label-already-present'
     }
+
+    It 'builds deterministic rerun context with new comments and commits' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 2 -Body 'New author context.' -CreatedAt '2026-05-31T09:45:00Z'
+            New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T09:50:00Z'
+        )
+        $commits = @(
+            New-TestCommit -Sha 'fedcba9876543210' -Date '2026-05-31T09:48:00Z'
+        )
+
+        $context = New-RerunContextMarkdown -Comments $comments -Commits $commits -CurrentHeadSha 'fedcba9876543210'
+
+        $context | Should -Match '# Rerun Context'
+        $context | Should -Match 'New non-command comments: 1'
+        $context | Should -Match 'New commits: 1'
+        $context | Should -Match '`s/agent-ready-for-rerun` present: false'
+        $context | Should -Match 'New author context'
+        $context | Should -Match 'fedcba9'
+        $context | Should -Not -Match '\| .*\/review rerun'
+    }
 }
