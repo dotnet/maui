@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.App;
+using AndroidX.Core.View;
 using AndroidX.AppCompat.App;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -66,6 +68,30 @@ namespace Microsoft.Maui.DeviceTests
 
 				WindowExtensions.UpdateTitle(activity, testWindow);
 				Assert.Equal(activity.Title, ApplicationModel.AppInfo.Current.Name);
+			});
+		}
+
+		[Fact]
+		public async Task SystemBarAppearancePrefersBackgroundForContrast()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var activity = (Activity)MauiProgramDefaults.DefaultContext;
+				var platformWindow = activity.Window;
+
+				platformWindow.UpdateSystemBarAppearance(
+					activity,
+					updateStatusBar: true,
+					updateNavigationBar: true,
+					statusBarBackgroundColor: Colors.LightGreen,
+					statusBarForegroundColor: Colors.White,
+					navigationBarBackgroundColor: Colors.LightGreen,
+					navigationBarForegroundColor: Colors.White);
+
+				var windowInsetsController = WindowCompat.GetInsetsController(platformWindow, platformWindow.DecorView);
+				Assert.NotNull(windowInsetsController);
+				Assert.True(windowInsetsController.AppearanceLightStatusBars);
+				Assert.True(windowInsetsController.AppearanceLightNavigationBars);
 			});
 		}
 	}
