@@ -6,8 +6,10 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -54,6 +56,179 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<PickerHandler>(picker);
 
 			await InvokeOnMainThreadAsync(() => Assert.Equal(UI.Xaml.VerticalAlignment.Bottom, GetPlatformVerticalOptions(handler.PlatformView)));
+		}
+
+		[Fact(DisplayName = "Title maps to PlaceholderText")]
+		public async Task TitleMapsToPlaceholderText()
+		{
+			var picker = new Picker()
+			{
+				Title = "Select Option",
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal("Select Option", handler.PlatformView.PlaceholderText);
+			});
+		}
+
+		[Fact(DisplayName = "Null title maps to empty PlaceholderText")]
+		public async Task NullTitleMapsToEmptyPlaceholderText()
+		{
+			var picker = new Picker()
+			{
+				Title = null,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal(string.Empty, handler.PlatformView.PlaceholderText);
+			});
+		}
+
+		[Fact(DisplayName = "Empty title maps to empty PlaceholderText")]
+		public async Task EmptyTitleMapsToEmptyPlaceholderText()
+		{
+			var picker = new Picker()
+			{
+				Title = string.Empty,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal(string.Empty, handler.PlatformView.PlaceholderText);
+			});
+		}
+
+		[Fact(DisplayName = "TitleColor maps to PlaceholderForeground")]
+		public async Task TitleColorMapsToPlaceholderForeground()
+		{
+			var picker = new Picker()
+			{
+				Title = "Select Option",
+				TitleColor = Colors.Red,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var placeholderBrush = Assert.IsType<WSolidColorBrush>(handler.PlatformView.PlaceholderForeground);
+				Assert.Equal(Colors.Red, placeholderBrush.Color.ToColor());
+			});
+		}
+
+		[Fact(DisplayName = "Null TitleColor clears local PlaceholderForeground")]
+		public async Task NullTitleColorClearsPlaceholderForegroundLocalValue()
+		{
+			var picker = new Picker()
+			{
+				Title = "Select Option",
+				TitleColor = Colors.Red,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.IsType<WSolidColorBrush>(handler.PlatformView.PlaceholderForeground);
+
+				picker.ClearValue(Picker.TitleColorProperty);
+
+				Assert.Equal(DependencyProperty.UnsetValue, handler.PlatformView.ReadLocalValue(ComboBox.PlaceholderForegroundProperty));
+			});
+		}
+
+		[Fact(DisplayName = "Title and TitleColor update after handler creation")]
+		public async Task TitleAndTitleColorUpdateAfterHandlerCreation()
+		{
+			var picker = new Picker()
+			{
+				Title = "First",
+				TitleColor = Colors.Red,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				picker.Title = "Second";
+				Assert.Equal("Second", handler.PlatformView.PlaceholderText);
+
+				picker.TitleColor = Colors.Blue;
+				var brush = Assert.IsType<WSolidColorBrush>(handler.PlatformView.PlaceholderForeground);
+				Assert.Equal(Colors.Blue, brush.Color.ToColor());
+			});
+		}
+
+		[Fact(DisplayName = "CharacterSpacing applies to placeholder TextBlock when Title is set")]
+		public async Task CharacterSpacingAppliesToPlaceholderWithTitle()
+		{
+			const string title = "Select Option";
+			const double characterSpacingPt = 8d;
+			var expectedEm = characterSpacingPt.ToEm();
+
+			var picker = new Picker()
+			{
+				Title = title,
+				CharacterSpacing = characterSpacingPt,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				},
+				WidthRequest = 200,
+				HeightRequest = 48
+			};
+
+			await AttachAndRun<PickerHandler>(picker, handler =>
+			{
+				var platformView = handler.PlatformView;
+
+				Assert.Equal(title, platformView.PlaceholderText);
+				Assert.Equal(expectedEm, platformView.CharacterSpacing);
+
+				var placeholderTextBlock = platformView.GetDescendantByName<TextBlock>("PlaceholderTextBlock");
+				Assert.NotNull(placeholderTextBlock);
+				Assert.Equal(title, placeholderTextBlock.Text);
+				Assert.Equal(expectedEm, placeholderTextBlock.CharacterSpacing);
+			});
 		}
 
 		protected Task<string> GetPlatformControlText(ComboBox platformView)
