@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components.Web;
@@ -62,6 +63,20 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			get { return (string)GetValue(StartPathProperty); }
 			set { SetValue(StartPathProperty, value); }
+		}
+
+		/// <summary>Bindable property for <see cref="AllowedDomains"/>.</summary>
+		public static readonly BindableProperty AllowedDomainsProperty = BindableProperty.Create(nameof(AllowedDomains), typeof(IList<string>), typeof(BlazorWebView), null);
+
+		/// <summary>
+		/// Gets or sets the list of domains that this web view is allowed to navigate to.
+		/// When <see langword="null"/> or empty, all domains are allowed.
+		/// </summary>
+		/// <seealso cref="IAllowedDomainsWebView"/>
+		public IList<string>? AllowedDomains
+		{
+			get { return (IList<string>?)GetValue(AllowedDomainsProperty); }
+			set { SetValue(AllowedDomainsProperty, value); }
 		}
 
 		/// <inheritdoc cref="IBlazorWebView.RootComponents" />

@@ -67,6 +67,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
 			{
+				// Check AllowedDomains before raising the Navigating event
+				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView.AllowedDomains))
+				{
+					args.Cancel = true;
+					_eventState = WebNavigationEvent.NewPage;
+					_navigationResult = WebNavigationResult.Cancel;
+					return;
+				}
+
 				bool cancel = VirtualView.Navigating(CurrentNavigationEvent, uri.AbsoluteUri);
 
 				args.Cancel = cancel;
@@ -80,6 +89,18 @@ namespace Microsoft.Maui.Handlers
 				else
 				{
 					_navigationResult = WebNavigationResult.Success;
+				}
+			}
+		}
+
+		void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+		{
+			// Block iframe navigations to disallowed domains
+			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
+			{
+				if (!WebViewDomainAllowlist.IsUrlAllowed(uri.AbsoluteUri, VirtualView.AllowedDomains))
+				{
+					args.Cancel = true;
 				}
 			}
 		}
@@ -360,6 +381,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					webView2.HistoryChanged -= OnHistoryChanged;
 					webView2.NavigationStarting -= OnNavigationStarting;
+					webView2.FrameNavigationStarting -= OnFrameNavigationStarting;
 					webView2.NavigationCompleted -= OnNavigationCompleted;
 					webView2.ProcessFailed -= OnProcessFailed;
 					webView2.Stop();
@@ -386,6 +408,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 				sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
+				sender.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
 				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
 				sender.CoreWebView2.ProcessFailed += OnProcessFailed;
 
@@ -424,6 +447,14 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler)
 				{
 					handler.OnNavigationStarting(sender, args);
+				}
+			}
+
+			void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.OnFrameNavigationStarting(sender, args);
 				}
 			}
 

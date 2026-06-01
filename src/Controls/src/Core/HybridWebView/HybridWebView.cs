@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -19,6 +20,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty HybridRootProperty =
 			BindableProperty.Create(nameof(HybridRoot), typeof(string), typeof(HybridWebView), defaultValue: "wwwroot");
 
+		/// <summary>Bindable property for <see cref="AllowedDomains"/>.</summary>
+		public static readonly BindableProperty AllowedDomainsProperty =
+			BindableProperty.Create(nameof(AllowedDomains), typeof(IList<string>), typeof(HybridWebView), null);
+
 
 		/// <inheritdoc/>
 		public string? DefaultFile
@@ -32,6 +37,17 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(HybridRootProperty); }
 			set { SetValue(HybridRootProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the list of domains that this web view is allowed to navigate to.
+		/// When <see langword="null"/> or empty, all domains are allowed.
+		/// </summary>
+		/// <seealso cref="IAllowedDomainsWebView"/>
+		public IList<string>? AllowedDomains
+		{
+			get { return (IList<string>?)GetValue(AllowedDomainsProperty); }
+			set { SetValue(AllowedDomainsProperty, value); }
 		}
 
 		/// <inheritdoc/>

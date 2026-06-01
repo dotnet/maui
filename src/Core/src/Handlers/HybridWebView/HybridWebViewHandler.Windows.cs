@@ -115,6 +115,14 @@ namespace Microsoft.Maui.Handlers
 
 			logger?.LogDebug("Intercepting request for {Url}.", url);
 
+			if (!WebViewDomainAllowlist.IsUrlAllowed(url, VirtualView?.AllowedDomains, AppOriginUri))
+			{
+				logger?.LogDebug("Request for {Url} blocked by AllowedDomains.", url);
+				eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+					Content: null, StatusCode: 403, ReasonPhrase: "Forbidden", Headers: "");
+				return;
+			}
+
 			// 1. First check if the app wants to modify or override the request.
 			if (WebRequestInterceptingWebView.TryInterceptResponseStream(this, sender, eventArgs, url, logger))
 			{

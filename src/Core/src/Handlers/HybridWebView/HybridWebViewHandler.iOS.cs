@@ -43,6 +43,18 @@ namespace Microsoft.Maui.Handlers
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
+			var allowedDomains = VirtualView?.AllowedDomains;
+			if (allowedDomains is not null && allowedDomains.Count > 0)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14))
+				{
+					config.LimitsNavigationsToAppBoundDomains = true;
+				}
+
+				var logger = MauiContext?.CreateLogger<HybridWebViewHandler>();
+				WebViewPlistValidator.ValidateAllowedDomainsAgainstPlist(allowedDomains, logger);
+			}
+
 			// Invoke the WebViewInitializing event to allow custom configuration of the web view
 			var initializingArgs = new WebViewInitializationStartedEventArgs(config);
 			VirtualView?.WebViewInitializationStarted(initializingArgs);

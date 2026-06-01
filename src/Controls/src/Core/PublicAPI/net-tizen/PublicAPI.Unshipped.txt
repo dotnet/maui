@@ -104,3 +104,9 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.WebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>!
+Microsoft.Maui.Controls.WebView.AllowedDomains.set -> void
+static readonly Microsoft.Maui.Controls.WebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.HybridWebView.AllowedDomains.get -> System.Collections.Generic.IList<string!>?
+Microsoft.Maui.Controls.HybridWebView.AllowedDomains.set -> void
+static readonly Microsoft.Maui.Controls.HybridWebView.AllowedDomainsProperty -> Microsoft.Maui.Controls.BindableProperty!
