@@ -15,7 +15,14 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
-	//This set of tests is for validating Microsoft.Maui.Controls.targets
+	// This set of tests is for validating Microsoft.Maui.Controls.targets.
+	//
+	// Contract under test: SourceGen is the default XAML inflator, and the legacy
+	// `XamlC` MSBuild target must NOT run on a default build. Tests verify:
+	//   1. XamlC is SKIPPED when all XAML uses SourceGen (BuildAProject, LinkedFile,
+	//      RandomXml, RandomEmbeddedResource, NoXamlFiles).
+	//   2. XamlC DOES run when files use the XamlC or Runtime inflator
+	//      (XamlCRunsWhenXamlCInflatorUsed).
 	[Trait("Category", "LongRunning")]
 	public class MSBuildTests : IDisposable
 	{
@@ -277,7 +284,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Theory]
@@ -347,57 +355,6 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.Contains("MainPage.xaml(7,6): XamlC error XC0000: Cannot resolve type \"http://schemas.microsoft.com/dotnet/2021/maui:NotARealThing\".", log, StringComparison.Ordinal);
 		}
 
-		/// <summary>
-		/// Tests that XamlG and XamlC targets skip, as well as checking IncrementalClean doesn't delete generated files
-		/// </summary>
-		[Fact]
-		public void TargetsShouldSkip()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Build(projectFile);
-
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(xamlCStamp);
-
-			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-
-			//Build again
-			Build(projectFile);
-			AssertExists(xamlCStamp);
-
-			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.Equal(expectedXamlC, actualXamlC);
-		}
-
-		/// <summary>
-		/// Checks that XamlG and XamlC files are cleaned
-		/// </summary>
-		[Fact]
-		public void Clean()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Build(projectFile);
-
-			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
-			var fooCssG = IOPath.Combine(intermediateDirectory, "Foo.css.g.cs");
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(xamlCStamp);
-
-			//Clean
-			Build(projectFile, "Clean");
-			AssertDoesNotExist(mainPageXamlG);
-			AssertDoesNotExist(fooCssG);
-			AssertDoesNotExist(xamlCStamp);
-		}
-
 		[Fact]
 		public void LinkedFile()
 		{
@@ -417,91 +374,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
-		}
-
-		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
-		//https://daveaglick.com/posts/running-a-design-time-build-with-msbuild-apis
-		[Fact]
-		public void DesignTimeBuild()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile(@"Pages\MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			var assembly = IOPath.Combine(intermediateDirectory, "test.dll");
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-
-			if (File.Exists(xamlCStamp))
-				System.IO.File.Delete(xamlCStamp);
-			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
-
-			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
-
-
-			//The assembly should not be compiled
-			//AssertDoesNotExist(assembly);
-			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
-
-			//Build again, a full build
-			Build(projectFile);
-			AssertExists(assembly, nonEmpty: true);
-			AssertExists(xamlCStamp);
-
-		}
-
-		[Fact]
-		public void AddNewFile()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Build(projectFile);
-
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(xamlCStamp);
-
-			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-
-			//Build again, after adding a file, this triggers a full XamlG and XamlC -- *not* CssG
-			project.Add(AddFile("CustomView.xaml", "MauiXaml", Xaml.CustomView));
-			project.Save(projectFile);
-			Build(projectFile);
-			AssertExists(xamlCStamp);
-
-			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.NotEqual(expectedXamlC, actualXamlC);
-		}
-
-		[Fact(Skip = "source gen changes")]
-		public void TouchXamlFile()
-		{
-			SetUp();
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
-			project.Add(AddFile("CustomView.xaml", "MauiXaml", Xaml.CustomView));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Build(projectFile);
-
-			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
-			var customViewXamlG = IOPath.Combine(intermediateDirectory, "CustomView.xaml.g.cs");
-			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
-			AssertExists(xamlCStamp);
-
-			var expectedCustomViewXamlG = new FileInfo(customViewXamlG).LastWriteTimeUtc;
-			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-
-			//Build again, after modifying the timestamp on a Xaml file, should trigger a partial XamlG and full XamlC
-			//https://github.com/xamarin/xamarin-android/blob/61851599fb1999964bd200ec1c373b6e395933f3/src/Microsoft.Maui.Controls.Android.Build.Tasks/Utilities/MonoAndroidHelper.cs#L342
-			Build(projectFile);
-			AssertExists(xamlCStamp);
-
-			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
-			Assert.NotEqual(expectedXamlC, actualXamlC);
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Fact]
@@ -515,7 +389,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		// [Fact]
@@ -542,7 +417,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
 			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "MainPage.txt.g.cs"));
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Fact]
@@ -554,6 +430,26 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 			var log = Build(projectFile, verbosity: "diagnostic");
 			Assert.False(log.Contains("Building target \"XamlC\"", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
+		}
+
+		/// <summary>
+		/// Verifies that XamlC still runs when the deprecated XamlC inflator is explicitly requested.
+		/// This is the positive counterpart to BuildAProject — it proves the condition gate
+		/// correctly activates XamlC when _MauiXaml_XC is populated.
+		/// </summary>
+		[Fact]
+		public void XamlCRunsWhenXamlCInflatorUsed()
+		{
+			SetUp();
+			var project = NewProject();
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -warnaserror-:MAUI1001");
+
+			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
+			// With XamlC inflator, _MauiXaml_XC is populated so the XamlC target runs.
+			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		/// <summary>
