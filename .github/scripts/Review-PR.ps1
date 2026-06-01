@@ -1355,35 +1355,6 @@ $gateStatusForPrompt = switch ($gateResult) {
     default { "Gate ❌ FAILED — tests did NOT behave as expected." }
 }
 
-$rerunContextInstruction = ""
-$rerunContextPath = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/rerun/context.md"
-$rerunContextScript = Join-Path $ScriptsDir "Resolve-RerunEligibility.ps1"
-if (Test-Path $rerunContextScript) {
-    try {
-        Write-Host "Generating deterministic rerun context..." -ForegroundColor Cyan
-        & pwsh -NoProfile -File $rerunContextScript `
-            -PRNumber $PRNumber `
-            -Owner 'dotnet' `
-            -Repo 'maui' `
-            -ContextOutputPath $rerunContextPath
-        if ($LASTEXITCODE -eq 0 -and (Test-Path $rerunContextPath)) {
-            Write-Host "  ✅ rerun context: $rerunContextPath" -ForegroundColor Green
-            $rerunContextInstruction = @"
-
-## Deterministic rerun context
-
-Before pre-flight, read ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/rerun/context.md`` if it exists. This file is generated without AI and lists new comments/commits since the latest AI Summary or previous ``/review rerun`` checkpoint.
-
-When the file has new activity, explicitly include a "New activity since previous AI Summary" subsection in ``pre-flight/content.md`` and prioritize that delta when deciding what changed since the previous review.
-"@
-        } else {
-            Write-Host "  ⚠️ rerun context generation exited with code $LASTEXITCODE" -ForegroundColor Yellow
-        }
-    } catch {
-        Write-Host "  ⚠️ rerun context generation failed: $_" -ForegroundColor Yellow
-    }
-}
-
 # Build regression test instruction for try-fix candidates
 $regressionTestInstruction = ""
 if ($risksData -and $regressionTests -and $regressionTests.Count -gt 0) {
@@ -1417,7 +1388,6 @@ Generate alternative fix candidates for PR #$PRNumber using an iterative expert-
 ## Phase 1 — Pre-Flight (context only)
 Use the pr-review skill's pre-flight phase to gather context about the issue and PR. Do NOT modify code.
 Write summary to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``.
-$rerunContextInstruction
 
 ## Phase 2 — Iterative Try-Fix loop
 For each candidate, follow this cycle:
