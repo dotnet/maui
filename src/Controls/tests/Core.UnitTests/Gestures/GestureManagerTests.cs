@@ -108,5 +108,89 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotEqual(gestureManager.GesturePlatformManager, platformManagerForHandler1);
 		}
+
+		[Fact]
+		public void UsesDefaultGesturePlatformManagerWhenNoServiceRegistered()
+		{
+			var handler = Substitute.For<IViewHandler>();
+			var view = Substitute.For<IControlsView>();
+
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			Assert.NotNull(gestureManager.GesturePlatformManager);
+			Assert.IsType<GesturePlatformManager>(gestureManager.GesturePlatformManager);
+		}
+
+		[Fact]
+		public void UsesCustomGesturePlatformManagerWhenFactoryRegistered()
+		{
+			var handler = Substitute.For<IViewHandler, ICustomGesturePlatformManagerProvider>();
+			var provider = (ICustomGesturePlatformManagerProvider)handler;
+			var view = Substitute.For<IControlsView>();
+			var customManager = Substitute.For<IDisposable>();
+
+			provider.CreateGesturePlatformManager().Returns(customManager);
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			Assert.NotNull(gestureManager.GesturePlatformManager);
+			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+			provider.Received(1).CreateGesturePlatformManager();
+		}
+
+		[Fact]
+		public void FactoryProvidedManagerIsDisposedOnDisconnect()
+		{
+			var handler = Substitute.For<IViewHandler, ICustomGesturePlatformManagerProvider>();
+			var provider = (ICustomGesturePlatformManagerProvider)handler;
+			var view = Substitute.For<IControlsView>();
+			var customManager = Substitute.For<IDisposable>();
+
+			provider.CreateGesturePlatformManager().Returns(customManager);
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			// Simulate a handler disconnect (e.g., navigation)
+			view.Handler.Returns((IViewHandler)null);
+			view.HandlerChanging += Raise.Event<EventHandler<HandlerChangingEventArgs>>(view, new HandlerChangingEventArgs(handler, null));
+
+			customManager.Received(1).Dispose();
+		}
+
+		[Fact]
+		public void FactoryCreatesNewManagerAfterReconnect()
+		{
+			var handler = Substitute.For<IViewHandler, ICustomGesturePlatformManagerProvider>();
+			var provider = (ICustomGesturePlatformManagerProvider)handler;
+			var view = Substitute.For<IControlsView>();
+			var customManager = Substitute.For<IDisposable>();
+			var customManager2 = Substitute.For<IDisposable>();
+
+			provider.CreateGesturePlatformManager().Returns(customManager);
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+
+			// Disconnect
+			view.Handler.Returns((IViewHandler)null);
+			view.HandlerChanging += Raise.Event<EventHandler<HandlerChangingEventArgs>>(view, new HandlerChangingEventArgs(handler, null));
+			Assert.False(gestureManager.IsConnected);
+
+			// Reconnect with a new handler
+			var handler2 = Substitute.For<IViewHandler, ICustomGesturePlatformManagerProvider>();
+			var provider2 = (ICustomGesturePlatformManagerProvider)handler2;
+			provider2.CreateGesturePlatformManager().Returns(customManager2);
+			view.Handler.Returns(handler2);
+			view.HandlerChanged += Raise.Event<EventHandler>(view, EventArgs.Empty);
+
+			Assert.Equal(customManager2, gestureManager.GesturePlatformManager);
+			customManager.Received(1).Dispose();
+			customManager2.DidNotReceive().Dispose();
+		}
 	}
 }
