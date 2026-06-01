@@ -357,7 +357,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="ClearPlaceholderEnabled"/>.</summary>
 		public static readonly BindableProperty ClearPlaceholderEnabledProperty =
-			BindableProperty.Create(nameof(ClearPlaceholderEnabled), typeof(bool), typeof(SearchHandler), false);
+			BindableProperty.Create(nameof(ClearPlaceholderEnabled), typeof(bool), typeof(SearchHandler), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="ClearPlaceholderHelpText"/>.</summary>
 		public static readonly BindableProperty ClearPlaceholderHelpTextProperty =
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsSearchEnabled"/>.</summary>
 		public static readonly BindableProperty IsSearchEnabledProperty =
-			BindableProperty.Create(nameof(IsSearchEnabled), typeof(bool), typeof(SearchHandler), true, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsSearchEnabled), typeof(bool), typeof(SearchHandler), BooleanBoxes.TrueBox, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty =
@@ -435,7 +435,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="ShowsResults"/>.</summary>
 		public static readonly BindableProperty ShowsResultsProperty =
-			BindableProperty.Create(nameof(ShowsResults), typeof(bool), typeof(SearchHandler), false, BindingMode.OneTime);
+			BindableProperty.Create(nameof(ShowsResults), typeof(bool), typeof(SearchHandler), BooleanBoxes.FalseBox, BindingMode.OneTime);
 
 		private ListProxy _listProxy;
 

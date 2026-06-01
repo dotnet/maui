@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	{
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
-			typeof(MenuBar), true);
+			typeof(MenuBar), BooleanBoxes.TrueBox);
 
 		public bool IsEnabled
 		{

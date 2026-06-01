@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Platform
 	class ShellFlyoutItemView : Frame
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
-		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemView), false, propertyChanged: (b, o, n) => ((ShellFlyoutItemView)b).UpdateSelectedState());
+		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemView), BooleanBoxes.FalseBox, propertyChanged: (b, o, n) => ((ShellFlyoutItemView)b).UpdateSelectedState());
 
 		Grid _grid;
 

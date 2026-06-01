@@ -2,6 +2,7 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using System;
+	using Microsoft.Maui.Controls.Internals;
 	using FormsCell = Maui.Controls.Cell;
 
 	/// <summary>Android-specific context actions behavior for ViewCell in ListView.</summary>
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		[Obsolete("With the deprecation of ListView, this class is obsolete. Please use CollectionView instead.")]
 		public static void SetIsContextActionsLegacyModeEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsContextActionsLegacyModeEnabledProperty, value);
+			element.SetValue(IsContextActionsLegacyModeEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets whether the legacy context actions mode is enabled on Android.</summary>

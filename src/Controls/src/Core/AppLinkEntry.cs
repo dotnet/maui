@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty AppLinkUriProperty = BindableProperty.Create(nameof(AppLinkUri), typeof(Uri), typeof(AppLinkEntry), null);
 
 		/// <summary>Bindable property for <see cref="IsLinkActive"/>.</summary>
-		public static readonly BindableProperty IsLinkActiveProperty = BindableProperty.Create(nameof(IsLinkActive), typeof(bool), typeof(AppLinkEntry), false);
+		public static readonly BindableProperty IsLinkActiveProperty = BindableProperty.Create(nameof(IsLinkActive), typeof(bool), typeof(AppLinkEntry), BooleanBoxes.FalseBox);
 
 		/// <summary>Gets or sets an application-specific URI that uniquely describes content within an app. This is a bindable property.</summary>
 		public Uri AppLinkUri

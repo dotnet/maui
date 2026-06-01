@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	public class DropGestureRecognizer : GestureRecognizer
 	{
 		/// <summary>Bindable property for <see cref="AllowDrop"/>.</summary>
-		public static readonly BindableProperty AllowDropProperty = BindableProperty.Create(nameof(AllowDrop), typeof(bool), typeof(DropGestureRecognizer), true);
+		public static readonly BindableProperty AllowDropProperty = BindableProperty.Create(nameof(AllowDrop), typeof(bool), typeof(DropGestureRecognizer), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="DragOverCommand"/>.</summary>
 		public static readonly BindableProperty DragOverCommandProperty = BindableProperty.Create(nameof(DragOverCommand), typeof(ICommand), typeof(DropGestureRecognizer), null);

@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Controls
 		class TabbedItem : Frame
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
-			static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(TabbedItem), false, propertyChanged: (b, o, n) => ((TabbedItem)b).UpdateSelectedState());
+			static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(TabbedItem), BooleanBoxes.FalseBox, propertyChanged: (b, o, n) => ((TabbedItem)b).UpdateSelectedState());
 			static readonly BindableProperty SelectedTabColorProperty = BindableProperty.Create(nameof(SelectedTabColor), typeof(GColor), typeof(TabbedItem), default(Color), propertyChanged: (b, o, n) => ((TabbedItem)b).UpdateSelectedState());
 			static readonly BindableProperty UnselectedTabColorProperty = BindableProperty.Create(nameof(UnselectedTabColor), typeof(GColor), typeof(TabbedItem), default(Color), propertyChanged: (b, o, n) => ((TabbedItem)b).UpdateSelectedState());
 

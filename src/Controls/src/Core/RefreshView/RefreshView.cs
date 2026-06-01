@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsRefreshing"/>.</summary>
 		public static readonly BindableProperty IsRefreshingProperty =
-			BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(RefreshView), false, BindingMode.TwoWay, coerceValue: OnIsRefreshingPropertyCoerced, propertyChanged: OnIsRefreshingPropertyChanged);
+			BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(RefreshView), BooleanBoxes.FalseBox, BindingMode.TwoWay, coerceValue: OnIsRefreshingPropertyCoerced, propertyChanged: OnIsRefreshingPropertyChanged);
 
 		static void OnIsRefreshingPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsRefreshEnabled"/>.</summary>
 		public static readonly BindableProperty IsRefreshEnabledProperty =
-			BindableProperty.Create(nameof(IsRefreshEnabled), typeof(bool), typeof(RefreshView), true, 
+			BindableProperty.Create(nameof(IsRefreshEnabled), typeof(bool), typeof(RefreshView), BooleanBoxes.TrueBox, 
 				propertyChanged: OnIsRefreshEnabledPropertyChanged, coerceValue: CoerceIsRefreshEnabledProperty);
 
 		bool _isRefreshEnabledExplicit = (bool)IsRefreshEnabledProperty.DefaultValue;
