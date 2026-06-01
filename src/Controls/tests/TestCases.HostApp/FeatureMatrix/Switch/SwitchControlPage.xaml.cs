@@ -23,7 +23,7 @@ public partial class SwitchControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new SwitchViewModel();
+		_viewModel.ResetToDefaults();
 		ReinitializeSwitch();
 		await Navigation.PushAsync(new SwitchOptionsPage(_viewModel));
 	}
@@ -50,6 +50,7 @@ public partial class SwitchControlMainPage : ContentPage
 		switchControl.SetBinding(Switch.IsVisibleProperty, new Binding(nameof(SwitchViewModel.IsVisible)));
 		switchControl.SetBinding(Switch.IsToggledProperty, new Binding(nameof(SwitchViewModel.IsToggled)));
 		switchControl.SetBinding(Switch.OnColorProperty, new Binding(nameof(SwitchViewModel.OnColor)));
+		switchControl.SetBinding(Switch.OffColorProperty, new Binding(nameof(SwitchViewModel.OffColor)));
 		switchControl.SetBinding(Switch.ShadowProperty, new Binding(nameof(SwitchViewModel.Shadow)));
 		switchControl.SetBinding(Switch.ThumbColorProperty, new Binding(nameof(SwitchViewModel.ThumbColor)));
 		SwitchGrid.Children.Add(switchControl);

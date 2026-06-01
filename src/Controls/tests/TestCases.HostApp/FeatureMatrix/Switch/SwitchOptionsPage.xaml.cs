@@ -85,6 +85,22 @@ public partial class SwitchOptionsPage : ContentPage
 		}
 	}
 
+	private void OnOffColorCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		if (!(sender is CheckBox changedBox) || !changedBox.IsChecked)
+			return;
+		if (changedBox == OffColorRedCheckBox)
+		{
+			OffColorGreenCheckBox.IsChecked = false;
+			_viewModel.OffColor = Colors.Red;
+		}
+		else if (changedBox == OffColorGreenCheckBox)
+		{
+			OffColorRedCheckBox.IsChecked = false;
+			_viewModel.OffColor = Colors.Green;
+		}
+	}
+
 	private void OnShadowCheckBoxCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (e.Value)

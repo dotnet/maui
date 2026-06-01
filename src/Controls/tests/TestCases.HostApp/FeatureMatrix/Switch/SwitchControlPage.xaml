@@ -20,6 +20,7 @@
                     IsVisible="{Binding IsVisible}"
                     IsToggled="{Binding IsToggled}"
                     OnColor="{Binding OnColor}"
+                    OffColor="{Binding OffColor}"
                     Shadow="{Binding Shadow}"
                     ThumbColor="{Binding ThumbColor}"
                     HorizontalOptions="Center"

@@ -30,6 +30,8 @@ public class SwitchFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("SwitchControl");
 		App.Tap("SwitchControl");
+		App.WaitForElement("ToggledEventLabel");
+		Assert.That(App.FindElement("ToggledEventLabel").GetText(), Is.EqualTo("True"));
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
@@ -115,7 +117,7 @@ public class SwitchFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/30046, https://github.com/dotnet/maui/issues/29812
     [Test]
     [Category(UITestCategories.Switch)]
-    public void Switch_SetShadowOpacityAndToggled_VerifyVisualState()
+    public void Switch_SetShadowAndToggled_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -182,6 +184,37 @@ public class SwitchFeatureTests : _GalleryUITest
 		App.Tap("Apply");
 		App.WaitForElement("SwitchControl");
 		App.Tap("SwitchControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Category(UITestCategories.Switch)]
+	public void Switch_SetOffColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OffColorRedCheckBox");
+		App.Tap("OffColorRedCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwitchControl"); // IsToggled=false by default → OffColor is visible
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test]
+	[Category(UITestCategories.Switch)]
+	public void Switch_SetOffColorAndOnColor_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("OffColorRedCheckBox");
+		App.Tap("OffColorRedCheckBox");
+		App.WaitForElement("OnColorGreenCheckBox");
+		App.Tap("OnColorGreenCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwitchControl");
+		App.Tap("SwitchControl"); // toggle to On → OnColor (green) should show
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

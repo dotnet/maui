@@ -13,7 +13,7 @@
 
        <Grid ColumnSpacing="10"
              RowSpacing="10"
-             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
              ColumnDefinitions="Auto,Auto"
              HorizontalOptions="Center"
              VerticalOptions="Center">
@@ -105,12 +105,34 @@
                             VerticalOptions="Center"/>
               </StackLayout>
 
-              <!-- Shadow -->
+              <!-- OffColor -->
               <Label Grid.Row="5"
+                     Grid.Column="0"
+                     Text="OffColor:"
+                     VerticalOptions="Center"/>
+              <StackLayout Grid.Row="5"
+                           Grid.Column="1"
+                           Orientation="Horizontal"
+                           Spacing="5"
+                           VerticalOptions="Center">
+                     <CheckBox x:Name="OffColorRedCheckBox"
+                               AutomationId="OffColorRedCheckBox"
+                               CheckedChanged="OnOffColorCheckBoxCheckedChanged"/>
+                     <Label Text="Red"
+                            VerticalOptions="Center"/>
+                     <CheckBox x:Name="OffColorGreenCheckBox"
+                               AutomationId="OffColorGreenCheckBox"
+                               CheckedChanged="OnOffColorCheckBoxCheckedChanged"/>
+                     <Label Text="Green"
+                            VerticalOptions="Center"/>
+              </StackLayout>
+
+              <!-- Shadow -->
+              <Label Grid.Row="6"
                      Grid.Column="0"
                      Text="Shadow:"
                      VerticalOptions="Center"/>
-              <HorizontalStackLayout Grid.Row="5"
+              <HorizontalStackLayout Grid.Row="6"
                                      Grid.Column="1"
                                      VerticalOptions="Center">
                      <CheckBox AutomationId="ShadowTrueCheckBox"
@@ -118,11 +140,11 @@
               </HorizontalStackLayout>
 
               <!-- ThumbColor -->
-              <Label Grid.Row="6"
+              <Label Grid.Row="7"
                      Grid.Column="0"
                      Text="ThumbColor:"
                      VerticalOptions="Center"/>
-              <StackLayout Grid.Row="6"
+              <StackLayout Grid.Row="7"
                            Grid.Column="1"
                            Orientation="Horizontal"
                            Spacing="5"
