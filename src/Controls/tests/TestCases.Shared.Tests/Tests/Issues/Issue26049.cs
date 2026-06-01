@@ -49,6 +49,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		void TabNavigationViewItemIfWindows()
 		{
 #if WINDOWS
+			App.WaitForElement("navViewItem");
 			App.Tap("navViewItem");
 #endif
 		}

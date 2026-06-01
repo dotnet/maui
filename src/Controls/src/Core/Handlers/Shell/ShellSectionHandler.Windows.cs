@@ -323,15 +323,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void DisconnectHandler(WFrame platformView)
 		{
-			if (_shellSection != null)
-			{
-				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
-				{
-					item.PropertyChanged -= OnShellContentPropertyChanged;
-				}
-				_subscribedItems?.Clear();
-			}
-				
+			UnsubscribeAllShellContent();
 			_navigationManager?.Disconnect(VirtualView, platformView);
 			base.DisconnectHandler(platformView);
 		}
