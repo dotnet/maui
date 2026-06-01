@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 35326, "CollectionView.ScrollTo(index) doesn't work correctly when IsGrouped=\"True\" on iOS, MacCatalyst, and Windows", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 35326, "CollectionView.ScrollTo(index) doesn't work correctly when IsGrouped=\"True\" on iOS and MacCatalyst", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue35326 : ContentPage
 {
 	public Issue35326()

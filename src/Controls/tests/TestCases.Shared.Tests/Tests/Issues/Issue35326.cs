@@ -8,7 +8,7 @@ public class Issue35326 : _IssuesUITest
 {
 	public Issue35326(TestDevice device) : base(device) { }
 
-	public override string Issue => "CollectionView.ScrollTo(index) doesn't work correctly when IsGrouped=\"True\" on iOS, MacCatalyst, and Windows";
+	public override string Issue => "CollectionView.ScrollTo(index) doesn't work correctly when IsGrouped=\"True\" on iOS and MacCatalyst";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
