@@ -38,7 +38,6 @@ jobs:
     timeout-minutes: 2
     outputs:
       matched: ${{ steps.check.outputs.matched }}
-      command: ${{ steps.check.outputs.command }}
     steps:
       - name: Match /review command
         id: check
@@ -47,72 +46,19 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
-            echo "command=review" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun$ ]]; then
-            echo "matched=true" >> "$GITHUB_OUTPUT"
-            echo "command=rerun" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if [[ "${TRIMMED_BODY}" =~ ^/review[[:space:]]+rerun([[:space:]]|$) ]]; then
-            echo "matched=false" >> "$GITHUB_OUTPUT"
-            echo "command=none" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # Match `/review` as the first non-whitespace token, optionally followed by args.
           # Allows arbitrary leading whitespace (spaces, tabs, newlines).
           if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
-            echo "command=review" >> "$GITHUB_OUTPUT"
           else
             echo "matched=false" >> "$GITHUB_OUTPUT"
-            echo "command=none" >> "$GITHUB_OUTPUT"
           fi
-
-  mark-rerun-ready:
-    needs: match
-    if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'rerun'
-    runs-on: ubuntu-latest
-    concurrency:
-      group: review-rerun-${{ github.event.issue.number }}
-      cancel-in-progress: false
-    timeout-minutes: 5
-    permissions:
-      contents: read
-      issues: write
-      pull-requests: write
-    steps:
-      - name: Checkout repository scripts
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Determine rerun eligibility and apply label
-        id: rerun
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: pwsh
-        run: |
-          .github/scripts/Resolve-RerunEligibility.ps1 `
-            -Owner '${{ github.repository_owner }}' `
-            -Repo '${{ github.event.repository.name }}' `
-            -PRNumber ${{ github.event.issue.number }} `
-            -CurrentCommentId ${{ github.event.comment.id }} `
-            -ApplyLabel
-
-      - name: Summarize rerun decision
-        shell: pwsh
-        run: |
-          "### /review rerun" >> $env:GITHUB_STEP_SUMMARY
-          "Eligible: ${{ steps.rerun.outputs.eligible }}" >> $env:GITHUB_STEP_SUMMARY
-          "Reason: ${{ steps.rerun.outputs.reason }}" >> $env:GITHUB_STEP_SUMMARY
-          "Label: ${{ steps.rerun.outputs.label }}" >> $env:GITHUB_STEP_SUMMARY
 
   trigger-review:
     needs: match
-    if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'review'
+    if: needs.match.outputs.matched == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: review-trigger-${{ github.event.issue.number || inputs.pr_number }}

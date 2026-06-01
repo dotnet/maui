@@ -41,14 +41,13 @@ Always applied on every completed agent run.
 |-------|-------|-------------|--------------|
 | `s/agent-reviewed` | 🔵 `#1565C0` | PR was reviewed by AI agent workflow (full 4-phase review) | Every completed agent run |
 
-### Manual / Queue Labels
+### Manual Label
 
-Manual labels are applied by MAUI maintainers. Queue labels are applied by deterministic automation, not by AI.
+Applied by MAUI maintainers, not by automation.
 
 | Label | Color | Description | Applied When |
 |-------|-------|-------------|--------------|
 | `s/agent-fix-implemented` | 🟣 `#7B1FA2` | PR author implemented the agent's suggested fix | Maintainer applies when PR author adopts agent's recommendation |
-| `s/agent-ready-for-rerun` | 🟣 `#5319E7` | AI review has new PR activity and is ready for rerun | `/review rerun` finds new comments or commits after the latest AI Summary / previous rerun request |
 
 ---
 
@@ -71,7 +70,7 @@ Review-PR.ps1
     └── Non-fatal: errors warn but don't fail the workflow
 ```
 
-Most review outcome labels are applied from `Review-PR.ps1` Phase 4. The exception is `s/agent-ready-for-rerun`, which is applied by the deterministic `/review rerun` GitHub Action path after checking for new comments or commits. The rerun path does not use AI to decide whether the label applies.
+Labels are applied exclusively from `Review-PR.ps1` Phase 4. No other script applies agent labels. This single-source design avoids label conflicts and simplifies debugging.
 
 ### How Labels Are Parsed
 
@@ -140,7 +139,6 @@ is:pr label:s/agent-reviewed
 |------|---------|
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
-| `.github/scripts/Resolve-RerunEligibility.ps1` | Deterministic `/review rerun` checker that can apply `s/agent-ready-for-rerun` |
 | `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |
 
 ### Key Functions
