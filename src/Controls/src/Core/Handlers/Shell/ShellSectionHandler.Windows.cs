@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 
 
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		StackNavigationManager? _navigationManager;
 		WeakReference? _lastShell;
+		readonly HashSet<ShellContent> _trackedShellContents = new();
 
 		public ShellSectionHandler() : base(Mapper, CommandMapper)
 		{
@@ -61,6 +63,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					shell.RemoveAppearanceObserver(this);
 				}
+
+				UnsubscribeAllShellContent();
 				_lastShell = null;
 			}
 
@@ -93,6 +97,11 @@ namespace Microsoft.Maui.Controls.Handlers
 					_lastShell = new WeakReference(shell);
 					shell.AddAppearanceObserver(this, _shellSection);
 				}
+
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					SubscribeToShellContent(item);
+				}
 			}
 		}
 
@@ -109,6 +118,59 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
 			{
 				shellItemHandler.MapMenuItems();
+			}
+
+			if (e.OldItems is not null)
+			{
+				foreach (var item in e.OldItems)
+				{
+					UnsubscribeFromShellContent(item);
+				}
+			}
+
+			if (e.NewItems is not null)
+			{
+				foreach (var item in e.NewItems)
+				{
+					SubscribeToShellContent(item);
+				}
+			}
+		}
+
+		void SubscribeToShellContent(object? item)
+		{
+			if (item is ShellContent shellContent && _trackedShellContents.Add(shellContent))
+			{
+				shellContent.PropertyChanged += OnShellContentPropertyChanged;
+			}
+		}
+
+		void UnsubscribeFromShellContent(object? item)
+		{
+			if (item is ShellContent shellContent && _trackedShellContents.Remove(shellContent))
+			{
+				shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+			}
+		}
+
+		void UnsubscribeAllShellContent()
+		{
+			foreach (var shellContent in _trackedShellContents)
+			{
+				shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+			}
+
+			_trackedShellContents.Clear();
+		}
+
+		void OnShellContentPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (sender is not ShellContent shellContent)
+				return;
+
+			if (e.PropertyName == nameof(ShellContent.Title))
+			{
+				shellContent.UpdateTitle();
 			}
 		}
 
@@ -159,6 +221,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void DisconnectHandler(WFrame platformView)
 		{
+			UnsubscribeAllShellContent();
 			_navigationManager?.Disconnect(VirtualView, platformView);
 			base.DisconnectHandler(platformView);
 		}

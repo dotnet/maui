@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -77,6 +78,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellToolbarTracker _toolbarTracker;
 		ViewPager2 _viewPager;
 		bool _disposed;
+		readonly HashSet<ShellContent> _trackedShellContents = new HashSet<ShellContent>();
 		IShellController ShellController => _shellContext.Shell;
 		public event EventHandler AnimationFinished;
 		Fragment IShellObservableFragment.Fragment => this;
@@ -280,6 +282,62 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				adapter.OnItemsCollectionChanged(sender, e);
 				SafeNotifyDataSetChanged();
 			}
+
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				// On Reset, OldItems/NewItems are both null. Detach every previously tracked
+				// subscription, then re-attach to whatever items the section currently exposes.
+				UnsubscribeAllShellContent();
+
+				foreach (var item in SectionController.GetItems())
+				{
+					SubscribeToShellContent(item);
+				}
+
+				return;
+			}
+
+			if (e.OldItems is not null)
+			{
+				foreach (ShellContent item in e.OldItems)
+				{
+					UnsubscribeFromShellContent(item);
+				}
+			}
+
+			if (e.NewItems is not null)
+			{
+				foreach (ShellContent item in e.NewItems)
+				{
+					SubscribeToShellContent(item);
+				}
+			}
+		}
+
+		void SubscribeToShellContent(ShellContent shellContent)
+		{
+			if (shellContent != null && _trackedShellContents.Add(shellContent))
+			{
+				shellContent.PropertyChanged += OnShellContentPropertyChanged;
+			}
+		}
+
+		void UnsubscribeFromShellContent(ShellContent shellContent)
+		{
+			if (shellContent != null && _trackedShellContents.Remove(shellContent))
+			{
+				shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+			}
+		}
+
+		void UnsubscribeAllShellContent()
+		{
+			foreach (var shellContent in _trackedShellContents)
+			{
+				shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+			}
+
+			_trackedShellContents.Clear();
 		}
 
 		void SafeNotifyDataSetChanged(int iteration = 0)
@@ -375,7 +433,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellSection.PropertyChanged += OnShellItemPropertyChanged;
 			foreach (var item in SectionController.GetItems())
 			{
-				item.PropertyChanged += OnShellContentPropertyChanged;
+				SubscribeToShellContent(item);
 			}
 		}
 
@@ -384,10 +442,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 			((IShellController)_shellContext?.Shell)?.RemoveAppearanceObserver(this);
 			ShellSection.PropertyChanged -= OnShellItemPropertyChanged;
-			foreach (var item in SectionController.GetItems())
-			{
-				item.PropertyChanged -= OnShellContentPropertyChanged;
-			}
+			UnsubscribeAllShellContent();
 		}
 
 		protected virtual void OnPageSelected(int position)
