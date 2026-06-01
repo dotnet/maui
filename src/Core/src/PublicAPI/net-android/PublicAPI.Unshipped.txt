@@ -1,7 +1,4 @@
-#nullable enable
-*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
-*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
-*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
+﻿#nullable enable
 Microsoft.Maui.Handlers.ActivityIndicatorHandler2
 Microsoft.Maui.Handlers.ActivityIndicatorHandler2.ActivityIndicatorHandler2() -> void
 Microsoft.Maui.Handlers.DatePickerHandler2
@@ -42,6 +39,8 @@ Microsoft.Maui.Handlers.SwitchHandler2
 Microsoft.Maui.Handlers.SwitchHandler2.SwitchHandler2() -> void
 Microsoft.Maui.Handlers.TimePickerHandler2
 Microsoft.Maui.Handlers.TimePickerHandler2.TimePickerHandler2() -> void
+Microsoft.Maui.IPicker.BorderColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.IPicker.BorderThickness.get -> Microsoft.Maui.Thickness
 Microsoft.Maui.Platform.MaterialActivityIndicator
 Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MaterialActivityIndicator.MaterialActivityIndicator(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
@@ -95,6 +94,9 @@ Microsoft.Maui.Platform.MauiMaterialTimePicker.ShowPicker.set -> void
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
+*REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.Handlers.ActivityIndicatorHandler2.CreatePlatformView() -> Microsoft.Maui.Platform.MaterialActivityIndicator!
 override Microsoft.Maui.Handlers.ActivityIndicatorHandler2.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.DatePickerHandler2.ConnectHandler(Microsoft.Maui.Platform.MauiMaterialDatePicker! platformView) -> void

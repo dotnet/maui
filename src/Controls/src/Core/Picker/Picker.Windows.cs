@@ -14,5 +14,19 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.PlatformView?.UpdateVerticalOptions(picker);
 		}
+
+		public static void MapBorderColor(IPickerHandler handler, Picker picker)
+		{
+			if (picker.BorderColor is null)
+			{
+				return;
+			}
+			handler.PlatformView.BorderBrush = picker.BorderColor.ToPlatform();
+		}
+
+		public static void MapBorderThickness(IPickerHandler handler, Picker picker)
+		{
+			handler.PlatformView.BorderThickness = picker.BorderThickness.ToPlatform();
+		}
 	}
 }
