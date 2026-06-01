@@ -308,6 +308,18 @@ namespace Microsoft.Maui.Controls
 				var currentValue = context.Values.GetValue();
 
 				context.Values.Remove(currentSpecificity);
+				// Also remove any ManualValueSetter entries that might interfere with binding value comparison.
+				// This fixes issue #29459 where switching bindings didn't trigger propertyChanged.
+				//
+				// Intentional trade-off: if a higher-priority setter (e.g. Trigger, VisualStateSetter) was
+				// the active specificity while a ManualValueSetter entry also existed, both are cleaned up
+				// here. The manual fallback value is discarded when switching bindings. This is acceptable
+				// because keeping stale TwoWay write-back values would silently suppress propertyChanged
+				// notifications on subsequent binding switches, which is the original bug.
+				if (currentSpecificity != SetterSpecificity.ManualValueSetter)
+				{
+					context.Values.Remove(SetterSpecificity.ManualValueSetter);
+				}
 				context.Values.SetValue(SetterSpecificity.FromBinding, currentValue);
 			}
 
