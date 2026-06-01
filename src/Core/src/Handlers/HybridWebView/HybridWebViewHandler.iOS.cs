@@ -123,10 +123,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -145,10 +141,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;

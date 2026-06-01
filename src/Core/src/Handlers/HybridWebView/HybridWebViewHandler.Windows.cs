@@ -281,10 +281,6 @@ namespace Microsoft.Maui.Handlers
 			return ras;
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class HybridWebView2Proxy
 		{
 			private WeakReference<Window>? _window;

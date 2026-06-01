@@ -21,6 +21,12 @@ namespace Microsoft.Maui
 		string? HybridRoot { get; }
 
 		/// <summary>
+		/// Gets the AOT-friendly method provider for JavaScript-to-.NET invocation.
+		/// For internal use only.
+		/// </summary>
+		IHybridWebViewDotNetMethodProvider? DotNetMethodProvider { get; }
+
+		/// <summary>
 		/// For internal use only.
 		/// </summary>
 		object? InvokeJavaScriptTarget { get; set; }
@@ -28,6 +34,9 @@ namespace Microsoft.Maui
 		/// <summary>
 		///  Sets the object that will be the target of JavaScript calls from the web view. The public methods on this object
 		///  are callable from JavaScript using the <c>window.HybridWebView.InvokeDotNet</c> method.
+		///  If <typeparamref name="T"/> implements <see cref="IHybridWebViewDotNetMethodProvider"/> (e.g. via the
+		///  <see cref="HybridWebViewDotNetMethodProviderAttribute"/> source generator), the AOT-safe path is used.
+		///  Otherwise, reflection-based dispatch is used (requires <c>MauiHybridWebViewSupported</c> to be enabled).
 		/// </summary>
 		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
 		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>

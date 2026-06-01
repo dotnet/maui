@@ -1,3 +1,17 @@
 #nullable enable
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.HybridWebViewCallableAttribute
+Microsoft.Maui.HybridWebViewCallableAttribute.HybridWebViewCallableAttribute() -> void
+Microsoft.Maui.HybridWebViewCallableAttribute.JsonSerializerContext.get -> System.Type?
+Microsoft.Maui.HybridWebViewCallableAttribute.JsonSerializerContext.set -> void
+Microsoft.Maui.HybridWebViewCallableAttribute.Name.get -> string?
+Microsoft.Maui.HybridWebViewCallableAttribute.Name.set -> void
+Microsoft.Maui.HybridWebViewDotNetMethodProviderAttribute
+Microsoft.Maui.HybridWebViewDotNetMethodProviderAttribute.ExposeAllPublicMethods.get -> bool
+Microsoft.Maui.HybridWebViewDotNetMethodProviderAttribute.ExposeAllPublicMethods.set -> void
+Microsoft.Maui.HybridWebViewDotNetMethodProviderAttribute.HybridWebViewDotNetMethodProviderAttribute(System.Type! jsonSerializerContextType) -> void
+Microsoft.Maui.HybridWebViewDotNetMethodProviderAttribute.JsonSerializerContextType.get -> System.Type!
+Microsoft.Maui.IHybridWebView.DotNetMethodProvider.get -> Microsoft.Maui.IHybridWebViewDotNetMethodProvider?
+Microsoft.Maui.IHybridWebViewDotNetMethodProvider
+Microsoft.Maui.IHybridWebViewDotNetMethodProvider.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!

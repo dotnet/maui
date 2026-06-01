@@ -6,10 +6,6 @@ using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.Maui.Platform
 {
-	[RequiresUnreferencedCode(HybridWebViewHandler.DynamicFeatures)]
-#if !NETSTANDARD
-	[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
-#endif
 	public partial class MauiHybridWebView : WebView2, IHybridPlatformWebView
 	{
 		private readonly WeakReference<HybridWebViewHandler> _handler;

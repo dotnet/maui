@@ -23,6 +23,7 @@ namespace Microsoft.Maui
 		const bool AreBindingInterceptorsSupportedByDefault = true;
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		const bool IsHybridWebViewSupportedByDefault = true;
+		const bool IsHybridWebViewReflectionSupportedByDefault = true;
 		const bool SupportNamescopesByDefault = true;
 		const bool EnableDiagnosticsByDefault = false;
 		const bool IsMeterSupportedByDefault = true;
@@ -92,6 +93,21 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewSupported)}", out bool isSupported)
 				? isSupported
 				: IsHybridWebViewSupportedByDefault;
+
+		/// <summary>
+		/// Controls whether reflection-based JavaScript-to-.NET method invocation is available in HybridWebView.
+		/// When <c>false</c>, only source-generated <see cref="IHybridWebViewDotNetMethodProvider"/> implementations
+		/// are supported (AOT-safe). The HybridWebView control itself remains fully functional.
+		/// </summary>
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewReflectionSupported)}")]
+		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+		[FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
+#endif
+		public static bool IsHybridWebViewReflectionSupported =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewReflectionSupported)}", out bool isSupported)
+				? isSupported
+				: IsHybridWebViewReflectionSupportedByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(AreNamescopesSupported)}")]

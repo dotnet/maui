@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -37,6 +38,11 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
 
+		/// <inheritdoc/>
+		IHybridWebViewDotNetMethodProvider? IHybridWebView.DotNetMethodProvider => _dotNetMethodProvider;
+
+		IHybridWebViewDotNetMethodProvider? _dotNetMethodProvider;
+
 		[UnconditionalSuppressMessage("Trimming", "IL2114", Justification = "Base type VisualElement specifies DynamicallyAccessedMemberTypes.NonPublicFields: https://github.com/dotnet/runtime/issues/108978#issuecomment-2420091986")]
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? _invokeJavaScriptType;
@@ -52,6 +58,22 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
 		{
+			if (target is IHybridWebViewDotNetMethodProvider provider)
+			{
+				_dotNetMethodProvider = provider;
+			}
+			else if (RuntimeFeature.IsHybridWebViewReflectionSupported)
+			{
+				_dotNetMethodProvider = new HybridWebViewReflectionDotNetMethodProvider(target, typeof(T));
+			}
+			else
+			{
+				throw new NotSupportedException(
+					$"Reflection-based HybridWebView method invocation is not supported in this configuration. " +
+					$"Apply [HybridWebViewDotNetMethodProvider] to '{typeof(T).Name}' and make it partial, " +
+					$"or implement IHybridWebViewDotNetMethodProvider directly.");
+			}
+
 			((IHybridWebView)this).InvokeJavaScriptTarget = target;
 			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
 		}
