@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -188,7 +187,7 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				// 1.b. Try special InvokeDotNet path
-				if (relativePath == InvokeDotNetPath)
+				if (relativePath == InvokeDotNetPath && RuntimeFeature.IsHybridWebViewSupported)
 				{
 					logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
 
@@ -281,10 +280,6 @@ namespace Microsoft.Maui.Handlers
 			return ras;
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class HybridWebView2Proxy
 		{
 			private WeakReference<Window>? _window;

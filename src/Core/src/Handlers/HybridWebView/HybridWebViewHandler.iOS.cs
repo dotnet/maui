@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
@@ -123,10 +122,6 @@ namespace Microsoft.Maui.Handlers
 		}
 
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -145,10 +140,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -261,7 +252,7 @@ namespace Microsoft.Maui.Handlers
 					}
 
 					// 1.b. Try special InvokeDotNet path
-					if (relativePath == InvokeDotNetPath)
+					if (relativePath == InvokeDotNetPath && RuntimeFeature.IsHybridWebViewSupported)
 					{
 						logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
 
