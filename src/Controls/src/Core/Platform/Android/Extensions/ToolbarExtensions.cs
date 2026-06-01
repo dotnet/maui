@@ -14,7 +14,9 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Google.Android.Material.AppBar;
 using Google.Android.Material.Badge;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using AGraphics = Android.Graphics;
@@ -166,26 +168,66 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBarBackground(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			Brush barBackground = toolbar.BarBackground;
-
-			if (barBackground is SolidColorBrush solidColor)
+			var appBar = nativeToolbar.Parent?.GetParentOfType<AppBarLayout>();
+			if (appBar is not null)
 			{
-				var tintColor = solidColor.Color;
-				if (tintColor == null)
+				if (RuntimeFeature.IsMaterial3Enabled)
 				{
-					nativeToolbar.BackgroundTintMode = null;
+					if (appBar.Background is MaterialShapeDrawable shapeDrawable
+						&& barBackground is SolidColorBrush solidBrush)
+					{
+						var tintColor = solidBrush.Color;
+						var platformTintColor = tintColor.ToPlatform();
+						shapeDrawable.FillColor = ColorStateList.ValueOf(platformTintColor);
+
+						// Re-set the background so AppBarLayout recaptures originalBackgroundFillColor
+						// with our custom color. Without this, scrolling back to top animates to
+						// the theme default instead of the custom color.
+						appBar.Background = null;
+						appBar.Background = shapeDrawable;
+					}
+					else if (appBar.Background is MaterialShapeDrawable shapeDrawableToReset
+						&& Brush.IsNullOrEmpty(barBackground))
+					{
+						// Reset to the theme default colorSurface
+						var context = nativeToolbar.Context;
+						if (context != null)
+						{
+							var defaultColor = ContextExtensions.GetThemeAttrColor(context, Resource.Attribute.colorSurface);
+							shapeDrawableToReset.FillColor = ColorStateList.ValueOf(new AGraphics.Color(defaultColor));
+							appBar.Background = null;
+							appBar.Background = shapeDrawableToReset;
+						}
+					}
+					// gradient and other complex brushes are not supported with Material3's dynamic color theming,
+					//  so we fall back to the non-Material3 path which sets the background on the Toolbar itself
 				}
 				else
 				{
-					nativeToolbar.BackgroundTintMode = PorterDuff.Mode.Src;
-					nativeToolbar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
-				}
-			}
-			else
-			{
-				nativeToolbar.UpdateBackground(barBackground);
+					if (barBackground is SolidColorBrush solidColor)
+					{
+						var tintColor = solidColor.Color;
+						if (tintColor == null)
+						{
+							appBar.BackgroundTintMode = null;
+						}
+						else
+						{
+							appBar.BackgroundTintMode = PorterDuff.Mode.Src;
+							appBar.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
+						}
+					}
+					else
+					{
+						appBar.UpdateBackground(barBackground);
 
-				if (Brush.IsNullOrEmpty(barBackground))
-					nativeToolbar.BackgroundTintMode = null;
+						if (Brush.IsNullOrEmpty(barBackground))
+						{
+							appBar.BackgroundTintMode = null;
+							appBar.BackgroundTintList = null;
+						}
+					}
+				}
 			}
 		}
 

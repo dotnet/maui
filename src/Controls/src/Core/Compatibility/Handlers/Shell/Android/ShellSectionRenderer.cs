@@ -113,6 +113,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellToolbarTracker.ApplyToolbarChanges(_shellContext.Shell.Toolbar, _shellToolbar);
 			_toolbar = (AToolbar)_shellToolbar.ToPlatform(_shellContext.Shell.FindMauiContext());
 			appbar.AddView(_toolbar);
+
+			// Re-apply bar background now that the toolbar is parented to the AppBarLayout.
+			// The initial MapBarBackground call runs during ToPlatform before the toolbar
+			// has a parent.
+			_shellToolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
+
 			_tablayout = PlatformInterop.CreateShellTabLayout(context, appbar, actionBarHeight);
 
 			var pagerContext = MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
