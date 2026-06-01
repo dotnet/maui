@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			if (ItemsView?.ItemsSource is null)
+			if (ItemsView?.ItemsSource is null || !ItemsView.IsExplicitlyEnabled)
 			{
 				return;
 			}
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			if (ItemsView?.ItemsSource is null)
+			if (ItemsView?.ItemsSource is null || !ItemsView.IsExplicitlyEnabled)
 			{
 				return;
 			}
@@ -186,6 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal void UpdateSelectionMode()
 		{
 			var mode = ItemsView.SelectionMode;
+			var isEnabled = ItemsView.IsExplicitlyEnabled;
 
 			switch (mode)
 			{
@@ -195,13 +196,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					ClearsSelectionOnViewWillAppear = true;
 					break;
 				case SelectionMode.Single:
-					CollectionView.AllowsSelection = true;
+					CollectionView.AllowsSelection = isEnabled;
 					CollectionView.AllowsMultipleSelection = false;
 					ClearsSelectionOnViewWillAppear = false;
 					break;
 				case SelectionMode.Multiple:
-					CollectionView.AllowsSelection = true;
-					CollectionView.AllowsMultipleSelection = true;
+					CollectionView.AllowsSelection = isEnabled;
+					CollectionView.AllowsMultipleSelection = isEnabled;
 					ClearsSelectionOnViewWillAppear = false;
 					break;
 			}

@@ -72,10 +72,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
+			// Set visibility before UpdateIsVisibleSwipeItem so LayoutSwipeItems
+			// reads the correct visibility when recalculating item positions.
+			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
+
 			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			swipeView?.UpdateIsVisibleSwipeItem(view);
-
-			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
 		}
 
 		protected override AView CreatePlatformElement()
@@ -166,7 +168,6 @@ namespace Microsoft.Maui.Handlers
 				if (platformImage is not null)
 				{
 					var iconSize = GetIconSize(Handler);
-					var textColor = item.GetTextColor()?.ToPlatform();
 					int drawableWidth = platformImage.IntrinsicWidth;
 					int drawableHeight = platformImage.IntrinsicHeight;
 
@@ -183,8 +184,22 @@ namespace Microsoft.Maui.Handlers
 						platformImage.SetBounds(0, 0, iconWidth, iconHeight);
 					}
 
-					if (textColor != null)
-						platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
+					if (item.Source is IFontImageSource fontImageSource)
+					{
+						if (fontImageSource.Color is not null)
+						{
+							platformImage.SetColorFilter(fontImageSource.Color.ToPlatform(), FilterMode.SrcAtop);
+						}
+						else
+						{
+							var textColor = item.GetTextColor()?.ToPlatform();
+
+							if (textColor is not null)
+							{
+								platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
+							}
+						}
+					}
 				}
 
 				button.SetCompoundDrawables(null, platformImage, null, null);

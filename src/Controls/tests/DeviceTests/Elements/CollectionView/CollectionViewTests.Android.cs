@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
@@ -466,6 +467,80 @@ namespace Microsoft.Maui.DeviceTests
 
 				ViewCompat.DispatchApplyWindowInsets(itemPlatformView, insets);
 				Assert.Equal(1, itemPlatformView.PaddingLeft);
+			});
+		}
+
+		[Fact(DisplayName = "Grouped CollectionView header rebind does not grow logical children")]
+		public async Task GroupHeaderRebindDoesNotGrowLogicalChildren()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				GroupHeaderTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = new[]
+				{
+					new List<string> { "Item 1", "Item 2" },
+					new List<string> { "Item 3", "Item 4" },
+				}
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
+				var adapter = handler.PlatformView.GetAdapter();
+				var initialCount = ((IElementController)collectionView).LogicalChildren.Count;
+
+				for (var n = 0; n < 5; n++)
+				{
+					adapter.OnViewRecycled(viewHolder);
+					adapter.OnBindViewHolder(viewHolder, 0);
+					Assert.Equal(initialCount, ((IElementController)collectionView).LogicalChildren.Count);
+				}
+			});
+		}
+
+		[Fact(DisplayName = "Grouped CollectionView footer rebind does not grow logical children")]
+		public async Task GroupFooterRebindDoesNotGrowLogicalChildren()
+		{
+			const int footerPosition = 2;
+
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				GroupFooterTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemTemplate = new DataTemplate(() => new Label { HeightRequest = 30 }),
+				ItemsSource = new[]
+				{
+					new List<string> { "Item 1", "Item 2" },
+					new List<string> { "Item 3", "Item 4" },
+				}
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				LayoutAndGetViewHolder(handler.PlatformView);
+
+				var adapter = handler.PlatformView.GetAdapter();
+				var footerViewType = adapter.GetItemViewType(footerPosition);
+				Assert.Equal(Microsoft.Maui.Controls.Handlers.Items.ItemViewType.GroupFooter, footerViewType);
+				var footerHolder = adapter.OnCreateViewHolder(handler.PlatformView, footerViewType);
+
+				adapter.OnBindViewHolder(footerHolder, footerPosition);
+				var initialCount = ((IElementController)collectionView).LogicalChildren.Count;
+
+				for (var n = 0; n < 5; n++)
+				{
+					adapter.OnViewRecycled(footerHolder);
+					adapter.OnBindViewHolder(footerHolder, footerPosition);
+					Assert.Equal(initialCount, ((IElementController)collectionView).LogicalChildren.Count);
+				}
 			});
 		}
 
