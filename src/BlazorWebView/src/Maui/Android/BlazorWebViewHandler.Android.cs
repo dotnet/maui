@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Android.Window;
 using Android.Webkit;
 using Android.Widget;
+using Android.Window;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_webViewClient = new WebKitWebViewClient(this);
 			blazorAndroidWebView.SetWebViewClient(_webViewClient);
 
-			_webChromeClient = new BlazorWebChromeClient();
+			_webChromeClient = new BlazorWebChromeClient(this);
 			blazorAndroidWebView.SetWebChromeClient(_webChromeClient);
 
 			Logger.CreatedAndroidWebkitWebView();

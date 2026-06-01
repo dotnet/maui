@@ -146,13 +146,27 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected internal bool NavigatingCanceled(string? url)
+		protected internal bool NavigatingCanceled(string? url, global::Android.Webkit.IWebResourceRequest? request = null)
 		{
 			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
 				return true;
 
 			SyncPlatformCookies(url);
-			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
+
+			bool cancel;
+
+			// Use the new INavigatingAwareWebView interface if supported (provides Target + PlatformArgs)
+			if (request is not null && VirtualView is INavigatingAwareWebView navAware)
+			{
+				Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri);
+				var target = (request.IsForMainFrame) ? WebNavigationTarget.MainFrame : WebNavigationTarget.Frame;
+				var args = new WebViewNavigatingEventArgs(uri, target, request);
+				cancel = navAware.Navigating(args);
+			}
+			else
+			{
+				cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
+			}
 
 			// if the user disconnects from the handler we want to exit
 			if (!PlatformView.IsAlive())

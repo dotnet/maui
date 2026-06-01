@@ -145,7 +145,28 @@ namespace Microsoft.Maui.Platform
 			var request = navigationAction.Request;
 			var lastUrl = request.Url.ToString();
 
-			bool cancel = virtualView.Navigating(navEvent, lastUrl);
+			bool cancel;
+
+			// Use INavigatingAwareWebView if available (provides Target + PlatformArgs)
+			if (virtualView is INavigatingAwareWebView navAware)
+			{
+				Uri.TryCreate(lastUrl, UriKind.RelativeOrAbsolute, out var uri);
+				WebNavigationTarget target;
+				if (navigationAction.TargetFrame == null)
+					target = WebNavigationTarget.NewWindow;
+				else if (navigationAction.TargetFrame.MainFrame)
+					target = WebNavigationTarget.MainFrame;
+				else
+					target = WebNavigationTarget.Frame;
+
+				var args = new WebViewNavigatingEventArgs(uri, target, navigationAction);
+				cancel = navAware.Navigating(args);
+			}
+			else
+			{
+				cancel = virtualView.Navigating(navEvent, lastUrl);
+			}
+
 			platformView.UpdateCanGoBackForward(virtualView);
 
 			// Handle target="_blank" links - when TargetFrame is null, the link is meant to open in a new window

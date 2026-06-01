@@ -2,18 +2,32 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
-using Android.Net;
 using Android.OS;
 using Android.Webkit;
 using Microsoft.Maui;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 using File = Java.IO.File;
+using Uri = Android.Net.Uri;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	class BlazorWebChromeClient : WebChromeClient
 	{
+		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
+		private static readonly System.Uri AppOriginUri = new(AppOrigin);
+
+		private readonly BlazorWebViewHandler? _handler;
+
+		public BlazorWebChromeClient()
+		{
+		}
+
+		public BlazorWebChromeClient(BlazorWebViewHandler handler)
+		{
+			_handler = handler;
+		}
+
 		public override bool OnCreateWindow(global::Android.Webkit.WebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
 		{
 			if (view?.Context is not null)
@@ -21,8 +35,37 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// Intercept _blank target <a> tags to always open in device browser
 				// regardless of UrlLoadingStrategy.OpenInWebview
 				var requestUrl = view.GetHitTestResult().Extra;
-				var intent = new Intent(Intent.ActionView, Uri.Parse(requestUrl));
-				view.Context.StartActivity(intent);
+
+				if (!string.IsNullOrEmpty(requestUrl) && System.Uri.TryCreate(requestUrl, System.UriKind.RelativeOrAbsolute, out var uri))
+				{
+					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(
+						uri,
+						AppOriginUri,
+						Microsoft.Maui.WebNavigationTarget.NewWindow);
+
+					if (_handler is not null)
+					{
+						_handler.UrlLoading(callbackArgs);
+						_handler.Logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
+					}
+
+					if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenExternally)
+					{
+						var intent = new Intent(Intent.ActionView, Uri.Parse(requestUrl));
+						view.Context.StartActivity(intent);
+					}
+					else if (callbackArgs.UrlLoadingStrategy == UrlLoadingStrategy.OpenInWebView)
+					{
+						view.LoadUrl(requestUrl!);
+					}
+					// CancelLoad: do nothing
+				}
+				else if (!string.IsNullOrEmpty(requestUrl))
+				{
+					// Fallback for non-parseable URIs: open externally
+					var intent = new Intent(Intent.ActionView, Uri.Parse(requestUrl));
+					view.Context.StartActivity(intent);
+				}
 			}
 
 			// We don't actually want to create a new WebView window so we just return false 

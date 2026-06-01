@@ -1,18 +1,35 @@
-#nullable enable
+﻿#nullable enable
+*REMOVED*Microsoft.Maui.Handlers.WebViewHandler.NavigatingCanceled(string? url) -> bool
+Microsoft.Maui.Handlers.WebViewHandler.NavigatingCanceled(string? url, Android.Webkit.IWebResourceRequest? request = null) -> bool
+Microsoft.Maui.INavigatingAwareWebView
+Microsoft.Maui.INavigatingAwareWebView.Navigating(Microsoft.Maui.WebViewNavigatingEventArgs! args) -> bool
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-override Microsoft.Maui.PlatformDrawable.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
-override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
-override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!
+Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.Frame = 1 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.MainFrame = 0 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.NewWindow = 2 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebViewNavigatingEventArgs
+Microsoft.Maui.WebViewNavigatingEventArgs.Cancel.get -> bool
+Microsoft.Maui.WebViewNavigatingEventArgs.Cancel.set -> void
+Microsoft.Maui.WebViewNavigatingEventArgs.Request.get -> Android.Webkit.IWebResourceRequest?
+Microsoft.Maui.WebViewNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebViewNavigatingEventArgs.Url.get -> System.Uri?
+Microsoft.Maui.WebViewNavigatingEventArgs.WebViewNavigatingEventArgs(System.Uri? url, Microsoft.Maui.WebNavigationTarget target, Android.Webkit.IWebResourceRequest? request) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.Dispose(bool disposing) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 *REMOVED*override Microsoft.Maui.Graphics.MauiDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Platform.ContentViewGroup.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.LayoutViewGroup.HasOverlappingRendering.get -> bool
-override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.Platform.MauiHybridWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiHybridWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.ShouldOverrideUrlLoading(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> bool
+~override Microsoft.Maui.Platform.MauiWebChromeClient.OnCreateWindow(Android.Webkit.WebView view, bool isDialog, bool isUserGesture, Android.OS.Message resultMsg) -> bool
 override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
+override Microsoft.Maui.PlatformDrawable.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformDrawable.ThresholdType.get -> System.Type!

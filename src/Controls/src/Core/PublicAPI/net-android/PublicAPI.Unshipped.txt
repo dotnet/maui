@@ -1,13 +1,28 @@
 ﻿#nullable enable
-*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
-*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
-~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
-override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
+Microsoft.Maui.Controls.HybridWebView.Navigating -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs!>?
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Cancel.get -> bool
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Cancel.set -> void
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.HybridWebViewNavigatingEventArgs(System.Uri? url, Microsoft.Maui.WebNavigationTarget target, Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs? platformArgs) -> void
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs?
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.Controls.HybridWebViewNavigatingEventArgs.Url.get -> System.Uri?
+Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs
+Microsoft.Maui.Controls.PlatformHybridWebViewNavigatingEventArgs.Request.get -> Android.Webkit.IWebResourceRequest?
+Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs
+Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs.Request.get -> Android.Webkit.IWebResourceRequest?
+~Microsoft.Maui.Controls.WebNavigatingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs
+Microsoft.Maui.Controls.WebNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+~Microsoft.Maui.Controls.WebNavigatingEventArgs.WebNavigatingEventArgs(Microsoft.Maui.WebNavigationEvent navigationEvent, Microsoft.Maui.Controls.WebViewSource source, string url, Microsoft.Maui.WebNavigationTarget target, Microsoft.Maui.Controls.PlatformWebNavigatingEventArgs platformArgs) -> void
+override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnInterceptTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
-override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
+override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
+*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
+*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color

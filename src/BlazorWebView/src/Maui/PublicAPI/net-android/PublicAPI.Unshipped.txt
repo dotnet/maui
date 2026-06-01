@@ -1,2 +1,3 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
 override Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void

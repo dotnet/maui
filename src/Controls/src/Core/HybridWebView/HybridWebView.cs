@@ -113,6 +113,22 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<WebViewWebResourceRequestedEventArgs>? WebResourceRequested;
 
+		/// <inheritdoc/>
+		bool INavigatingAwareWebView.Navigating(WebViewNavigatingEventArgs args)
+		{
+			var platformArgs = new PlatformHybridWebViewNavigatingEventArgs(args);
+			var e = new HybridWebViewNavigatingEventArgs(args.Url, args.Target, platformArgs);
+			Navigating?.Invoke(this, e);
+			return e.Cancel;
+		}
+
+		/// <summary>
+		/// Raised when the web view is about to navigate to a new URL. Set <see cref="HybridWebViewNavigatingEventArgs.Cancel"/>
+		/// to <c>true</c> to prevent the navigation.
+		/// </summary>
+		public event EventHandler<HybridWebViewNavigatingEventArgs>? Navigating;
+
+
 		/// <summary>
 		/// Sends a raw message to the code running in the web view. Raw messages have no additional processing.
 		/// </summary>

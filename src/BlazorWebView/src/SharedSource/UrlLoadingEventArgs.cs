@@ -20,11 +20,31 @@ namespace Microsoft.AspNetCore.Components.WebView
 			return new(urlToLoad, strategy);
 		}
 
+#if WEBVIEW2_MAUI
+		internal static UrlLoadingEventArgs CreateWithDefaultLoadingStrategy(Uri urlToLoad, Uri appOriginUri, Microsoft.Maui.WebNavigationTarget target)
+		{
+			var strategy = appOriginUri.IsBaseOf(urlToLoad) ?
+				UrlLoadingStrategy.OpenInWebView :
+				UrlLoadingStrategy.OpenExternally;
+
+			return new(urlToLoad, strategy, target);
+		}
+#endif
+
 		private UrlLoadingEventArgs(Uri url, UrlLoadingStrategy urlLoadingStrategy)
 		{
 			Url = url;
 			UrlLoadingStrategy = urlLoadingStrategy;
 		}
+
+#if WEBVIEW2_MAUI
+		private UrlLoadingEventArgs(Uri url, UrlLoadingStrategy urlLoadingStrategy, Microsoft.Maui.WebNavigationTarget target)
+		{
+			Url = url;
+			UrlLoadingStrategy = urlLoadingStrategy;
+			Target = target;
+		}
+#endif
 
 		/// <summary>
 		/// Gets the <see cref="Url">URL</see> to be loaded.
@@ -41,5 +61,12 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// </para>
 		/// </summary>
 		public UrlLoadingStrategy UrlLoadingStrategy { get; set; }
+
+#if WEBVIEW2_MAUI
+		/// <summary>
+		/// Gets the navigation target indicating which frame initiated the navigation (main frame, iframe, or new window).
+		/// </summary>
+		public Microsoft.Maui.WebNavigationTarget Target { get; }
+#endif
 	}
 }

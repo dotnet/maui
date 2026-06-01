@@ -109,6 +109,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
+			platformView.NavigationDelegate = new HybridWebViewNavigationDelegate(this);
+
 			using var nsUrl = new NSUrl(new Uri(AppOriginUri, "/").ToString());
 			using var request = new NSUrlRequest(nsUrl);
 
@@ -117,6 +119,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
+			platformView.NavigationDelegate = null!;
 			platformView.Configuration.UserContentController.RemoveScriptMessageHandler(ScriptMessageHandlerName);
 
 			base.DisconnectHandler(platformView);
@@ -339,6 +342,79 @@ namespace Microsoft.Maui.Handlers
 			[Export("webView:stopURLSchemeTask:")]
 			public void StopUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
+			}
+		}
+
+		private sealed class HybridWebViewNavigationDelegate : NSObject, IWKNavigationDelegate
+		{
+			private readonly WeakReference<HybridWebViewHandler?> _handler;
+
+			public HybridWebViewNavigationDelegate(HybridWebViewHandler handler)
+			{
+				_handler = new(handler);
+			}
+
+			private HybridWebViewHandler? Handler => _handler.TryGetTarget(out var h) ? h : null;
+
+			[Export("webView:decidePolicyForNavigationAction:decisionHandler:")]
+			public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
+			{
+				var handler = Handler;
+				if (handler is null)
+				{
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+					return;
+				}
+
+				var requestUrl = navigationAction.Request.Url?.ToString();
+
+				// Allow navigations to the app origin (local content) without raising the event
+#pragma warning disable IL2026, IL3050 // AppOriginUri is a static field on the annotated outer class
+				if (!string.IsNullOrEmpty(requestUrl) && new Uri(requestUrl) is Uri uri && AppOriginUri.IsBaseOf(uri))
+#pragma warning restore IL2026, IL3050
+				{
+					decisionHandler(WKNavigationActionPolicy.Allow);
+					return;
+				}
+
+				// Determine the navigation target
+				WebNavigationTarget target;
+				if (navigationAction.TargetFrame == null)
+				{
+					target = WebNavigationTarget.NewWindow;
+				}
+				else if (navigationAction.TargetFrame.MainFrame)
+				{
+					target = WebNavigationTarget.MainFrame;
+				}
+				else
+				{
+					target = WebNavigationTarget.Frame;
+				}
+
+				var navUri = string.IsNullOrEmpty(requestUrl) ? null : new Uri(requestUrl);
+				var args = new WebViewNavigatingEventArgs(navUri, target, navigationAction);
+
+				bool cancel = false;
+				if (handler.VirtualView is INavigatingAwareWebView navigatingView)
+				{
+					cancel = navigatingView.Navigating(args);
+				}
+
+				if (navigationAction.TargetFrame == null)
+				{
+					// For new window requests, if not cancelled, load in the same view
+					if (!cancel)
+					{
+						webView.LoadRequest(navigationAction.Request);
+					}
+					// Always cancel the original since WKWebView can't open new windows
+					decisionHandler(WKNavigationActionPolicy.Cancel);
+				}
+				else
+				{
+					decisionHandler(cancel ? WKNavigationActionPolicy.Cancel : WKNavigationActionPolicy.Allow);
+				}
 			}
 		}
 	}

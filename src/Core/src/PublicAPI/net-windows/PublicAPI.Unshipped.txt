@@ -1,2 +1,16 @@
 #nullable enable
+Microsoft.Maui.INavigatingAwareWebView
+Microsoft.Maui.INavigatingAwareWebView.Navigating(Microsoft.Maui.WebViewNavigatingEventArgs! args) -> bool
+Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.Frame = 1 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.MainFrame = 0 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebNavigationTarget.NewWindow = 2 -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebViewNavigatingEventArgs
+Microsoft.Maui.WebViewNavigatingEventArgs.Cancel.get -> bool
+Microsoft.Maui.WebViewNavigatingEventArgs.Cancel.set -> void
+Microsoft.Maui.WebViewNavigatingEventArgs.NavigationArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs?
+Microsoft.Maui.WebViewNavigatingEventArgs.NewWindowArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2NewWindowRequestedEventArgs?
+Microsoft.Maui.WebViewNavigatingEventArgs.Target.get -> Microsoft.Maui.WebNavigationTarget
+Microsoft.Maui.WebViewNavigatingEventArgs.Url.get -> System.Uri?
+Microsoft.Maui.WebViewNavigatingEventArgs.WebViewNavigatingEventArgs(System.Uri? url, Microsoft.Maui.WebNavigationTarget target, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs? navigationArgs, Microsoft.Web.WebView2.Core.CoreWebView2NewWindowRequestedEventArgs? newWindowArgs) -> void
 override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!

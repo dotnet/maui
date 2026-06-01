@@ -107,6 +107,50 @@ namespace Microsoft.Maui.Handlers
 			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
 		}
 
+		private void OnNavigationStarting(CoreWebView2NavigationStartingEventArgs args, WebNavigationTarget target)
+		{
+			var url = args.Uri;
+
+			// Don't intercept navigations to the app origin (local content)
+			if (!string.IsNullOrEmpty(url) && new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
+			{
+				return;
+			}
+
+			var navUri = string.IsNullOrEmpty(url) ? null : new Uri(url);
+			var navArgs = new WebViewNavigatingEventArgs(navUri, target, args, null);
+
+			if (VirtualView is INavigatingAwareWebView navigatingView)
+			{
+				if (navigatingView.Navigating(navArgs))
+				{
+					args.Cancel = true;
+				}
+			}
+		}
+
+		private void OnNewWindowRequested(CoreWebView2NewWindowRequestedEventArgs args)
+		{
+			var url = args.Uri;
+			var navUri = string.IsNullOrEmpty(url) ? null : new Uri(url);
+			var navArgs = new WebViewNavigatingEventArgs(navUri, WebNavigationTarget.NewWindow, null, args);
+
+			bool cancel = false;
+			if (VirtualView is INavigatingAwareWebView navigatingView)
+			{
+				cancel = navigatingView.Navigating(navArgs);
+			}
+
+			// Always mark as handled - either we cancelled it or we don't want a new window
+			args.Handled = true;
+
+			// If not cancelled, load in the same WebView
+			if (!cancel && PlatformView?.CoreWebView2 is CoreWebView2 coreWebView2)
+			{
+				coreWebView2.Navigate(url);
+			}
+		}
+
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			var url = eventArgs.Request.Uri;
@@ -330,6 +374,9 @@ namespace Microsoft.Maui.Handlers
 
 				webView.WebMessageReceived += OnWebMessageReceived;
 				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
+				webView.CoreWebView2.NavigationStarting += OnNavigationStarting;
+				webView.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
+				webView.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
 
 				return true;
 			}
@@ -337,6 +384,21 @@ namespace Microsoft.Maui.Handlers
 			private void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
 			{
 				Handler?.OnWebResourceRequested(sender, args);
+			}
+
+			private void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+			{
+				Handler?.OnNavigationStarting(args, WebNavigationTarget.MainFrame);
+			}
+
+			private void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+			{
+				Handler?.OnNavigationStarting(args, WebNavigationTarget.Frame);
+			}
+
+			private void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+			{
+				Handler?.OnNewWindowRequested(args);
 			}
 
 			public void Connect(Window window)
@@ -349,6 +411,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				platformView.WebMessageReceived -= OnWebMessageReceived;
 				platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
+				platformView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
+				platformView.CoreWebView2.FrameNavigationStarting -= OnFrameNavigationStarting;
+				platformView.CoreWebView2.NewWindowRequested -= OnNewWindowRequested;
 
 				if (platformView.CoreWebView2 is CoreWebView2 webView2)
 				{

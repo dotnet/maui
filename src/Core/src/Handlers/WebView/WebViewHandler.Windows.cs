@@ -67,7 +67,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
 			{
-				bool cancel = VirtualView.Navigating(CurrentNavigationEvent, uri.AbsoluteUri);
+				bool cancel;
+
+				// Use INavigatingAwareWebView if available (provides Target + PlatformArgs)
+				if (VirtualView is INavigatingAwareWebView navAware)
+				{
+					var navArgs = new WebViewNavigatingEventArgs(uri, WebNavigationTarget.MainFrame, args, null);
+					cancel = navAware.Navigating(navArgs);
+				}
+				else
+				{
+					cancel = VirtualView.Navigating(CurrentNavigationEvent, uri.AbsoluteUri);
+				}
 
 				args.Cancel = cancel;
 
@@ -81,6 +92,38 @@ namespace Microsoft.Maui.Handlers
 				{
 					_navigationResult = WebNavigationResult.Success;
 				}
+			}
+		}
+
+		void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+		{
+			if (VirtualView is INavigatingAwareWebView navAware && Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri))
+			{
+				var navArgs = new WebViewNavigatingEventArgs(uri, WebNavigationTarget.Frame, args, null);
+				bool cancel = navAware.Navigating(navArgs);
+				args.Cancel = cancel;
+			}
+		}
+
+		void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+		{
+			if (VirtualView is INavigatingAwareWebView navAware && Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri))
+			{
+				var navArgs = new WebViewNavigatingEventArgs(uri, WebNavigationTarget.NewWindow, null, args);
+				bool cancel = navAware.Navigating(navArgs);
+
+				if (!cancel)
+				{
+					// Load in the same WebView if not cancelled
+					PlatformView?.CoreWebView2?.Navigate(args.Uri);
+				}
+
+				// Always mark as handled — we don't want WebView2 opening a new window
+				args.Handled = true;
+			}
+			else
+			{
+				args.Handled = true;
 			}
 		}
 
@@ -360,6 +403,8 @@ namespace Microsoft.Maui.Handlers
 				{
 					webView2.HistoryChanged -= OnHistoryChanged;
 					webView2.NavigationStarting -= OnNavigationStarting;
+					webView2.FrameNavigationStarting -= OnFrameNavigationStarting;
+					webView2.NewWindowRequested -= OnNewWindowRequested;
 					webView2.NavigationCompleted -= OnNavigationCompleted;
 					webView2.ProcessFailed -= OnProcessFailed;
 					webView2.Stop();
@@ -386,6 +431,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 				sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
+				sender.CoreWebView2.FrameNavigationStarting += OnFrameNavigationStarting;
+				sender.CoreWebView2.NewWindowRequested += OnNewWindowRequested;
 				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
 				sender.CoreWebView2.ProcessFailed += OnProcessFailed;
 
@@ -424,6 +471,22 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler)
 				{
 					handler.OnNavigationStarting(sender, args);
+				}
+			}
+
+			void OnFrameNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.OnFrameNavigationStarting(sender, args);
+				}
+			}
+
+			void OnNewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.OnNewWindowRequested(sender, args);
 				}
 			}
 

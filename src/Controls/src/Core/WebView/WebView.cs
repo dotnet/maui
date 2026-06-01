@@ -21,15 +21,14 @@ namespace Microsoft.Maui.Controls
 	/// The WebView supports navigation events and JavaScript evaluation.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
+	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView, INavigatingAwareWebView
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create(nameof(Source), typeof(WebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
 				var source = oldvalue as WebViewSource;
-				if (source != null)
-					source.SourceChanged -= ((WebView)bindable).OnSourceChanged;
+				source?.SourceChanged -= ((WebView)bindable).OnSourceChanged;
 			}, propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				var source = newvalue as WebViewSource;
@@ -358,6 +357,21 @@ namespace Microsoft.Maui.Controls
 		bool IWebView.Navigating(WebNavigationEvent evnt, string url)
 		{
 			var args = new WebNavigatingEventArgs(evnt, new UrlWebViewSource { Url = url }, url);
+			(this as IWebViewController)?.SendNavigating(args);
+
+			return args.Cancel;
+		}
+
+		/// <inheritdoc/>
+		bool INavigatingAwareWebView.Navigating(WebViewNavigatingEventArgs coreArgs)
+		{
+			var platformArgs = new PlatformWebNavigatingEventArgs(coreArgs);
+			var args = new WebNavigatingEventArgs(
+				WebNavigationEvent.NewPage,
+				new UrlWebViewSource { Url = coreArgs.Url?.ToString() ?? string.Empty },
+				coreArgs.Url?.ToString() ?? string.Empty,
+				coreArgs.Target,
+				platformArgs);
 			(this as IWebViewController)?.SendNavigating(args);
 
 			return args.Cancel;
