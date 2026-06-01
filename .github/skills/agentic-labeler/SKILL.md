@@ -19,7 +19,7 @@ Labeling rules for the [dotnet/maui](https://github.com/dotnet/maui) repository.
 The labeler applies **only two label families**, and nothing else:
 
 1. **Exactly one `area-*`** — derived from the subject matter (control name, area like layout / navigation / xaml / infrastructure / etc.). Choose the single most specific match for the dominant subsystem; see the tie-breaking rules below.
-2. **One or more `platform/*`** — derived from changed-file platform conventions on PRs, or from explicit platform mentions on issues. Apply all that fit.
+2. **One or more `platform/*`** — derived from changed-file platform conventions on PRs, or from explicit platform mentions on issues. Apply all that fit. **Exception:** `platform/tizen` is **never** applied by this labeler under any circumstance, even when Tizen files are touched or Tizen is named in an issue (see the platform-label rules below).
 
 **The labeler must NOT apply any other label, ever.** Specifically, **do not** apply:
 
@@ -91,7 +91,6 @@ Note on iOS / MacCatalyst: file-extension patterns and directory patterns map di
 | Paths containing `/Platform/iOS/`, `/Platforms/iOS/`, or handler subdirectories like `/Handlers/*/iOS/` (directory pattern — these compile **only** for the iOS TFM) | `platform/ios` only |
 | `*.maccatalyst.cs`, `*.MacCatalyst.cs`, paths containing `/Platform/MacCatalyst/`, `/Platforms/MacCatalyst/`, or handler subdirectories like `/Handlers/*/MacCatalyst/` | `platform/macos` |
 | `*.windows.cs`, `*.Windows.cs`, paths containing `/Platform/Windows/`, `/Platforms/Windows/`, or handler subdirectories like `/Handlers/*/Windows/` | `platform/windows` |
-| `*.tizen.cs`, paths containing `/Platform/Tizen/`, `/Platforms/Tizen/` | `platform/tizen` |
 
 Notes:
 
@@ -99,12 +98,14 @@ Notes:
 - If a PR touches **multiple platforms**, apply each matching `platform/*` label.
 - `.ios.cs` files compile for both iOS and MacCatalyst (see split table rows above).
 - `.maccatalyst.cs` files do **not** compile for iOS — apply only `platform/macos` for those.
+- **Tizen is excluded.** `*.tizen.cs` files and `/Platform/Tizen/` or `/Platforms/Tizen/` paths exist in the source tree, but `platform/tizen` is **never** auto-applied. If a PR touches **only** Tizen files (and no other product code), **noop** rather than apply any platform label.
 
-**For issues**, infer `platform/*` labels only for platforms the reporter explicitly identifies as **affected**: Android, iOS, macOS / Mac Catalyst, Windows, or Tizen. This includes the issue-template's "Affected platforms" field, plus clear evidence in the title, body, or attached logs/stack traces. Do not guess.
+**For issues**, infer `platform/*` labels only for platforms the reporter explicitly identifies as **affected**: Android, iOS, macOS / Mac Catalyst, or Windows. This includes the issue-template's "Affected platforms" field, plus clear evidence in the title, body, or attached logs/stack traces. Do not guess.
 
 - If the reporter explicitly lists named affected platforms, apply one `platform/*` label per named platform — even when the list covers every supported platform (e.g., "iOS, Android, Windows, macOS" → apply all four).
 - Generic phrases like "all platforms", "every platform", "any platform", or "cross-platform" do **not** by themselves justify any `platform/*` label. **If a generic phrase is accompanied by an explicit affected-platform list, the named list wins** — apply each named platform's label (e.g., "all platforms (iOS, Android, Windows, macOS)" → apply all four).
 - Do **not** apply labels for platforms mentioned incidentally ("tested on iOS"), as "not reproduced" / "not affected", or as label requests ("please add platform/android").
+- **Never apply `platform/tizen`** — even when the reporter names Tizen, includes Tizen in an "Affected platforms" enumeration, or attaches Tizen logs. Tizen mentions are silently dropped from the platform set.
 
 ### When to noop (no labels)
 
@@ -119,6 +120,7 @@ Some items should **not** be labeled. If any of the following apply, skip labeli
 ### What NOT to do
 
 - Do **not** apply any label that is not literally `area-*` or `platform/*`. No `t/*`, `i/*`, `s/*`, `p/*`, `partner/*`, `perf/*`, `backport/*`, `regressed-in-*`, `version/*`, `untriaged`, `:watch: Not Triaged`, or anything else. See the "Scope" section at the top for the full prohibition.
+- Do **not** apply `platform/tizen` under any circumstance — Tizen is excluded from this labeler even when Tizen files are touched or Tizen is named in an issue body, title, or affected-platforms field.
 - Do **not** create new labels — apply only labels that already exist in the repository.
 - Do **not** add `platform/*` labels to PRs that don't touch platform-specific files.
 - Do **not** post a comment summarizing the labels — labels speak for themselves.
