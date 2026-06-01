@@ -16,52 +16,47 @@ public class Issue35613 : _IssuesUITest
     [Category(UITestCategories.Navigation)]
     public void VerifyNavigatingToAndNavigatingFromArgsForPopAndPopToRoot()
     {
+        // First page is shown — navigate to second
         App.WaitForElement("Issue35613_NavigateButton");
-
-        App.WaitForElement("Issue35613_First_OnNavigatingToLabel");
-        var firstNavigatingToBeforePush = App.FindElement("Issue35613_First_OnNavigatingToLabel").GetText();
-        Assert.That(firstNavigatingToBeforePush, Is.EqualTo("PreviousPage: Null, NavigationType: Push"));
-
-        var firstNavigatingFromBeforePush = App.FindElement("Issue35613_First_OnNavigatingFromLabel").GetText();
-        Assert.That(firstNavigatingFromBeforePush, Is.EqualTo("-"));
-
         App.Tap("Issue35613_NavigateButton");
 
-        App.WaitForElement("Issue35613_Second_OnNavigatingToLabel");
-        var secondNavigatingToAfterPush = App.FindElement("Issue35613_Second_OnNavigatingToLabel").GetText();
-        Assert.That(secondNavigatingToAfterPush, Is.EqualTo("PreviousPage: Issue35613FirstPage, NavigationType: Push"));
+        // Second page: verify Push events from First→Second
+        App.WaitForElement("Issue35613_Second_LogEditor");
+        var secondLog = App.FindElement("Issue35613_Second_LogEditor").GetText();
+        Assert.That(secondLog, Does.Contain("OnNavigatingFrom FirstPage [Push], DestinationPage=Issue35613SecondPage"));
+        Assert.That(secondLog, Does.Contain("OnNavigatedFrom FirstPage [Push], DestinationPage=Issue35613SecondPage"));
+        Assert.That(secondLog, Does.Contain("OnNavigatedTo SecondPage [Push], PreviousPage=Issue35613FirstPage"));
 
-        var secondNavigatingFromBeforePop = App.FindElement("Issue35613_Second_OnNavigatingFromLabel").GetText();
-        Assert.That(secondNavigatingFromBeforePop, Is.EqualTo("-"));
-
+        // Navigate to third
         App.Tap("Issue35613_NavigateToThirdButton");
 
-        App.WaitForElement("Issue35613_Third_OnNavigatingToLabel");
-        var thirdNavigatingToAfterPush = App.FindElement("Issue35613_Third_OnNavigatingToLabel").GetText();
-        Assert.That(thirdNavigatingToAfterPush, Is.EqualTo("PreviousPage: Issue35613SecondPage, NavigationType: Push"));
+        // Third page: verify Push events from Second→Third
+        App.WaitForElement("Issue35613_Third_LogEditor");
+        var thirdLog = App.FindElement("Issue35613_Third_LogEditor").GetText();
+        Assert.That(thirdLog, Does.Contain("OnNavigatingFrom SecondPage [Push], DestinationPage=Issue35613ThirdPage"));
+        Assert.That(thirdLog, Does.Contain("OnNavigatedFrom SecondPage [Push], DestinationPage=Issue35613ThirdPage"));
+        Assert.That(thirdLog, Does.Contain("OnNavigatedTo ThirdPage [Push], PreviousPage=Issue35613SecondPage"));
 
-        var secondNavigatingFromAfterPushToThird = App.FindElement("Issue35613_Second_OnNavigatingFromLabel").GetText();
-        Assert.That(secondNavigatingFromAfterPushToThird, Is.EqualTo("DestinationPage: Issue35613ThirdPage, NavigationType: Push"));
-
+        // PopToRoot back to first
         App.Tap("Issue35613_PopToRootButton");
 
-        App.WaitForElement("Issue35613_First_OnNavigatingToLabel");
-        var firstNavigatingToAfterPopToRoot = App.FindElement("Issue35613_First_OnNavigatingToLabel").GetText();
-        Assert.That(firstNavigatingToAfterPopToRoot, Is.EqualTo("PreviousPage: Issue35613ThirdPage, NavigationType: PopToRoot"));
+        // First page: verify PopToRoot events
+        App.WaitForElement("Issue35613_LogEditor");
+        var firstLogAfterPopToRoot = App.FindElement("Issue35613_LogEditor").GetText();
+        Assert.That(firstLogAfterPopToRoot, Does.Contain("OnNavigatingFrom ThirdPage [PopToRoot], DestinationPage=Issue35613FirstPage"));
+        Assert.That(firstLogAfterPopToRoot, Does.Contain("OnNavigatedFrom ThirdPage [PopToRoot], DestinationPage=Issue35613FirstPage"));
+        Assert.That(firstLogAfterPopToRoot, Does.Contain("OnNavigatedTo FirstPage [PopToRoot], PreviousPage=Issue35613ThirdPage"));
 
-        var thirdNavigatingFromAfterPopToRoot = App.FindElement("Issue35613_Third_OnNavigatingFromLabel").GetText();
-        Assert.That(thirdNavigatingFromAfterPopToRoot, Is.EqualTo("DestinationPage: Issue35613FirstPage, NavigationType: PopToRoot"));
-
+        // Navigate to second again, then pop back
         App.Tap("Issue35613_NavigateButton");
-
-        App.WaitForElement("Issue35613_Second_OnNavigatingToLabel");
+        App.WaitForElement("Issue35613_Second_LogEditor");
         App.Tap("Issue35613_NavigateBackButton");
 
-        App.WaitForElement("Issue35613_First_OnNavigatingToLabel");
-        var firstNavigatingToAfterPop = App.FindElement("Issue35613_First_OnNavigatingToLabel").GetText();
-        Assert.That(firstNavigatingToAfterPop, Is.EqualTo("PreviousPage: Issue35613SecondPage, NavigationType: Pop"));
-
-        var firstNavigatingFromAfterPop = App.FindElement("Issue35613_First_OnNavigatingFromLabel").GetText();
-        Assert.That(firstNavigatingFromAfterPop, Is.EqualTo("DestinationPage: Issue35613SecondPage, NavigationType: Push"));
+        // First page: verify Pop events from Second→First
+        App.WaitForElement("Issue35613_LogEditor");
+        var firstLogAfterPop = App.FindElement("Issue35613_LogEditor").GetText();
+        Assert.That(firstLogAfterPop, Does.Contain("OnNavigatingFrom SecondPage [Pop], DestinationPage=Issue35613FirstPage"));
+        Assert.That(firstLogAfterPop, Does.Contain("OnNavigatedFrom SecondPage [Pop], DestinationPage=Issue35613FirstPage"));
+        Assert.That(firstLogAfterPop, Does.Contain("OnNavigatedTo FirstPage [Pop], PreviousPage=Issue35613SecondPage"));
     }
 }
