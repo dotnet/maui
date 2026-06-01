@@ -1089,6 +1089,22 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     if ($gateAttempt -gt 1) {
         Write-Host "  🔄 Retry $gateAttempt/$maxGateAttempts — previous attempt hit environment error" -ForegroundColor Yellow
     }
+    if (-not $DryRun) {
+        # Each verification attempt mutates fix files while testing the without-fix
+        # state. If an attempt aborts before restoring those files, retries must
+        # start from the committed review branch or they fail immediately with
+        # "uncommitted changes detected in fix files".
+        git checkout $reviewBranch 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to checkout review branch '$reviewBranch' before gate attempt $gateAttempt."
+            exit 1
+        }
+        git reset --hard HEAD 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to reset review branch '$reviewBranch' before gate attempt $gateAttempt."
+            exit 1
+        }
+    }
     # Clear previous attempt's report so a crash mid-run doesn't leak its classification into this one.
     Remove-Item $gateContentFile -Force -ErrorAction SilentlyContinue
     # Note: -RequireFullVerification is intentionally OMITTED. The verify script
