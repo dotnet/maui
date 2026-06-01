@@ -208,6 +208,19 @@ namespace Microsoft.Maui.Controls
 			return bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
 		}
 
+		/// <summary>
+		/// Determines whether a bindable property has been set by a local value, style, binding, or other non-default specificity.
+		/// Unlike IsSet, default-value creation does not count as explicit.
+		/// </summary>
+		/// <param name="targetProperty">The bindable property to check if a value is explicitly set.</param>
+		/// <returns><see langword="true"/> if the target property exists and has been explicitly set. Otherwise <see langword="false"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="targetProperty"/> is <see langword="null"/>.</exception>
+		internal bool IsSetExplicitly(BindableProperty targetProperty)
+		{
+			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));
+			return bpcontext is not null && bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
+		}
+
 
 		/// <summary>
 		/// Removes a previously set binding from a bindable property.
