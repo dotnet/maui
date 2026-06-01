@@ -101,8 +101,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			File.Delete(filePath);
 		}
-	}
-}
 
 #if WINDOWS
 		[Theory]
@@ -126,3 +124,5 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			File.Delete(filePath);
 		}
 #endif
+	}
+}
