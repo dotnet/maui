@@ -141,12 +141,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GroupNamesMustBeUniqueWithinGroupList()
+		public void GroupWithDuplicateNameReplacesExisting()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
 			var secondGroup = new VisualStateGroup { Name = CommonStatesGroupName };
+			secondGroup.States.Add(new VisualState { Name = NormalStateName });
 
-			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
+			// Adding a group with the same name should replace the existing one, not throw
+			vsgs.Add(secondGroup);
+			Assert.Single(vsgs);
+			Assert.Same(secondGroup, vsgs[0]);
 		}
 
 		[Fact]
@@ -645,6 +649,139 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Transition to the custom state — custom state is NOT promoted, so ManualValueSetter still wins
 			VisualStateManager.GoToState(button, customStateName);
 			Assert.Equal(localColor, button.BackgroundColor);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void SelectHoverDeselectRestoresPointerOverState()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// 1. Select the item (simulates CollectionView selection)
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// 2. Simulate pointer hover while selected — Selected takes priority
+			SetIsPointerOver(element, true);
+			element.ChangeVisualState();
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// 3. Deselect while pointer is still hovering — should restore to PointerOver
+			element.IsItemSelected = false;
+			Assert.Equal(VisualStateManager.CommonStates.PointerOver, groups[0].CurrentState.Name);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void SelectedStatePreservedAcrossMouseHover()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// Select the item (simulates Shell flyout item selection)
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// Pointer enters — Selected should be preserved
+			SetIsPointerOver(element, true);
+			element.ChangeVisualState();
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// Pointer exits — Selected should still be preserved
+			SetIsPointerOver(element, false);
+			element.ChangeVisualState();
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void IsEnabledToggleWhileSelectedPreservesState()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// Select the item
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// Disable — should go to Disabled
+			element.IsEnabled = false;
+			Assert.Equal(DisabledStateName, groups[0].CurrentState.Name);
+			Assert.True(element.IsItemSelected); // selection flag preserved
+
+			// Re-enable — should restore to Selected since IsItemSelected is still true
+			element.IsEnabled = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void SelectingWhileDisabledStaysDisabledUntilReEnabled()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// Disable first
+			element.IsEnabled = false;
+			Assert.Equal(DisabledStateName, groups[0].CurrentState.Name);
+
+			// Select while disabled — visual state should remain Disabled
+			element.IsItemSelected = true;
+			Assert.Equal(DisabledStateName, groups[0].CurrentState.Name);
+
+			// Re-enable — now it should go to Selected
+			element.IsEnabled = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+		}
+
+		[Fact]
+		// https://github.com/dotnet/maui/issues/35399
+		public void AssigningSameIsItemSelectedValueIsNoOp()
+		{
+			var element = new Label();
+			var groups = CreateStateGroupsWithSelectedAndPointerOver();
+			VisualStateManager.SetVisualStateGroups(element, groups);
+
+			// Select the item
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Selected, groups[0].CurrentState.Name);
+
+			// Manually set to Normal to detect if ChangeVisualState fires again
+			VisualStateManager.GoToState(element, VisualStateManager.CommonStates.Normal);
+			Assert.Equal(VisualStateManager.CommonStates.Normal, groups[0].CurrentState.Name);
+
+			// Assign same value — should be a no-op (equality guard)
+			element.IsItemSelected = true;
+			Assert.Equal(VisualStateManager.CommonStates.Normal, groups[0].CurrentState.Name);
+		}
+
+		static VisualStateGroupList CreateStateGroupsWithSelectedAndPointerOver()
+		{
+			return new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States =
+					{
+						new VisualState { Name = NormalStateName },
+						new VisualState { Name = VisualStateManager.CommonStates.Selected },
+						new VisualState { Name = VisualStateManager.CommonStates.PointerOver },
+						new VisualState { Name = DisabledStateName },
+					}
+				}
+			};
+		}
+
+		static void SetIsPointerOver(VisualElement element, bool value)
+		{
+			var field = typeof(VisualElement).GetField("_isPointerOver", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+			field!.SetValue(element, value);
 		}
 	}
 }

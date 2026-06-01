@@ -39,8 +39,9 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default)
-			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
+			TextTransform defaultTextTransform = TextTransform.Default,
+			LineBreakMode defaultLineBreakMode = LineBreakMode.WordWrap)
+			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultLineBreakMode, defaultCharacterSpacing: 0d);
 
 		internal static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -81,8 +82,9 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default)
-			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
+			TextTransform defaultTextTransform = TextTransform.Default,
+			LineBreakMode defaultLineBreakMode = LineBreakMode.WordWrap)
+			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultLineBreakMode, defaultCharacterSpacing: 0d);
 
 		internal static NSAttributedString ToNSAttributedString(
 			this Span span,
@@ -92,7 +94,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont,
 			Color? defaultColor,
 			TextTransform defaultTextTransform,
-			LineBreakMode lineBreakMode,
+			LineBreakMode defaultLineBreakMode,
 			double defaultCharacterSpacing = 0d)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
@@ -123,16 +125,27 @@ namespace Microsoft.Maui.Controls.Platform
 				_ => UITextAlignment.Left
 			};
 
-			style.LineBreakMode = lineBreakMode switch
+			#if !MACOS
+			style.LineBreakMode = defaultLineBreakMode switch
 			{
 				LineBreakMode.NoWrap => UILineBreakMode.Clip,
-				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
 				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
 				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
-				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
 				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
 				_ => UILineBreakMode.WordWrap
 			};
+			#else
+			style.LineBreakMode = defaultLineBreakMode switch
+			{
+				LineBreakMode.NoWrap => NSLineBreakMode.Clipping,
+				LineBreakMode.CharacterWrap => NSLineBreakMode.CharWrapping,
+				LineBreakMode.HeadTruncation => NSLineBreakMode.TruncatingHead,
+				LineBreakMode.MiddleTruncation => NSLineBreakMode.TruncatingMiddle,
+				LineBreakMode.TailTruncation => NSLineBreakMode.TruncatingTail,
+				_ => NSLineBreakMode.ByWordWrapping
+			};
+			#endif
 
 			var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 			var hasUnderline = false;
@@ -226,8 +239,11 @@ namespace Microsoft.Maui.Controls.Platform
 			textStorage.AddLayoutManager(layoutManager);
 			layoutManager.AddTextContainer(textContainer);
 
-			textContainer.Size = new(control.Bounds.Width,
-				control.Lines == 0 ? nfloat.MaxValue : control.Bounds.Height);
+			// On iOS 26+ with NavigationPage, UILabel.Bounds may still be {0,0,0,0}
+			// during ArrangeOverride. Use finalSize (MAUI's computed size) as fallback.
+			var containerWidth = control.Bounds.Width > 0 ? control.Bounds.Width : (nfloat)finalSize.Width;
+			var containerHeight = control.Bounds.Height > 0 ? control.Bounds.Height : (nfloat)finalSize.Height;
+			textContainer.Size = new(containerWidth, control.Lines == 0 ? nfloat.MaxValue : containerHeight);
 
 			textStorage.SetString(attributedText);
 			layoutManager.EnsureLayoutForTextContainer(textContainer);
