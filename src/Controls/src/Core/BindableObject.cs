@@ -399,14 +399,14 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="propertyName">The name of the property that has changed.</param>
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			=> PropertyChanged?.Invoke(this, BindableProperty.GetCachedPropertyChangedEventArgs(propertyName));
 
 		/// <summary>
 		/// Raises the <see cref="PropertyChanging"/> event.
 		/// </summary>
 		/// <param name="propertyName">The name of the property that is changing.</param>
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
-			=> PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+			=> PropertyChanging?.Invoke(this, BindableProperty.GetCachedPropertyChangingEventArgs(propertyName));
 
 		/// <summary>
 		/// Removes all current bindings from the current context.
