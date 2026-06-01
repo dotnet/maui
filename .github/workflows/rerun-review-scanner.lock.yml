@@ -21,7 +21,7 @@
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"c34d40df6ec03f6a433327464ca48b5735e2cfbde1ac88823a6b07aa45406138","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"68374b6329915aefc6f2edfaeffdb2ccad2d2f3d697fb383c2e3c1fa576b4916","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot"}
 
 name: "Rerun Review Scanner"
 "on":
@@ -1061,12 +1061,12 @@ jobs:
         run: |
           find "${RUNNER_TEMP}/gh-aw/safe-jobs/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=${RUNNER_TEMP}/gh-aw/safe-jobs/agent_output.json" >> "$GITHUB_ENV"
-          echo "REPO_OWNER=dotnet" >> "$GITHUB_ENV"
-          echo "REPO_NAME=maui" >> "$GITHUB_ENV"
           echo "AZDO_TRIGGER_TENANT_ID=${{ secrets.AZDO_TRIGGER_TENANT_ID }}" >> "$GITHUB_ENV"
           echo "AZDO_TRIGGER_CLIENT_ID=${{ secrets.AZDO_TRIGGER_CLIENT_ID }}" >> "$GITHUB_ENV"
           echo "GH_TOKEN=${{ github.token }}" >> "$GITHUB_ENV"
           echo "DRY_RUN=${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}" >> "$GITHUB_ENV"
+          echo "REPO_OWNER=${{ github.repository_owner }}" >> "$GITHUB_ENV"
+          echo "REPO_NAME=maui" >> "$GITHUB_ENV"
       - name: Checkout repository scripts
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:

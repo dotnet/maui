@@ -35,7 +35,7 @@ safe-outputs:
       env:
         GH_TOKEN: ${{ github.token }}
         DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
-        REPO_OWNER: dotnet
+        REPO_OWNER: ${{ github.repository_owner }}
         REPO_NAME: maui
         AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
         AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
