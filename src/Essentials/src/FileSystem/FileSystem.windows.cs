@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Win32;
 using Windows.Storage;
 using Package = Windows.ApplicationModel.Package;
 
@@ -88,7 +89,20 @@ namespace Microsoft.Maui.Storage
 			: this(file?.Path)
 		{
 			File = file;
-			ContentType = file?.ContentType;
+
+			var fileContentType = file?.ContentType;
+			if (string.IsNullOrWhiteSpace(fileContentType) ||
+				string.Equals(fileContentType, FileMimeTypes.OctetStream, StringComparison.OrdinalIgnoreCase))
+			{
+				var registryContentType = PlatformGetContentType(Path.GetExtension(file?.Path ?? string.Empty));
+				ContentType = !string.IsNullOrWhiteSpace(registryContentType)
+					? registryContentType
+					: fileContentType;
+			}
+			else
+			{
+				ContentType = fileContentType;
+			}
 		}
 
 		void PlatformInit(FileBase file)
@@ -98,8 +112,34 @@ namespace Microsoft.Maui.Storage
 
 		internal IStorageFile File { get; set; }
 
-		// we can't do anything here, but Windows will take care of it
-		string PlatformGetContentType(string extension) => null;
+		static string PlatformGetContentType(string extension)
+		{
+			if (string.IsNullOrWhiteSpace(extension))
+				return null;
+
+			extension = extension.Trim();
+
+			if (!extension.StartsWith("."))
+				extension = "." + extension;
+
+			try
+			{
+#pragma warning disable CA1416 // Validate platform compatibility
+                using var key = Registry.ClassesRoot.OpenSubKey(extension);
+                if (key?.GetValue("Content Type") is string contentType &&
+					!string.IsNullOrWhiteSpace(contentType))
+				{
+					return contentType;
+				}
+#pragma warning restore CA1416 // Validate platform compatibility
+            }
+			catch
+			{
+				// Registry access can fail in sandboxed environments; fall through to default content type.
+			}
+
+			return null;
+		}
 
 		internal async virtual Task<Stream> PlatformOpenReadAsync()
 		{

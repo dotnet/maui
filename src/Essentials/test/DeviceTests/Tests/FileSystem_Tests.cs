@@ -101,5 +101,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			File.Delete(filePath);
 		}
+
+#if WINDOWS
+		[Theory]
+		[InlineData(".jpg", "image/jpeg")]
+		[InlineData(".JPG", "image/jpeg")]
+		[InlineData(".Jpg", "image/jpeg")]
+		[InlineData(".jPg", "image/jpeg")]
+		[InlineData(".jpg ", "image/jpeg")]  // Trailing space
+		[InlineData(" .jpg", "image/jpeg")]  // Leading space
+		[InlineData(" .jpg ", "image/jpeg")] // Leading and trailing spaces
+		[InlineData(".png", "image/png")]
+		[InlineData(".PNG", "image/png")]
+		[InlineData(".tar.gz", "application/x-gzip")]
+		[InlineData(".TAR.GZ", "application/x-gzip")]
+		public async Task EnsureFileResultContentType(string extension, string expectedMimeType)
+		{
+			string filePath = Path.Combine(FileSystem.CacheDirectory, $"test{extension}");
+			await File.WriteAllTextAsync(filePath, $"File Content type is {expectedMimeType}");
+			FileResult fileResult = new FileResult(filePath);
+			Assert.Equal(expectedMimeType, fileResult.ContentType);
+			File.Delete(filePath);
+		}
+#endif
 	}
 }
