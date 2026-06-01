@@ -11,8 +11,7 @@
 #>
 
 param(
-    [Parameter(Mandatory = $true)]
-    [int]$PRNumber,
+    [int]$PRNumber = 0,
 
     [Int64]$CurrentCommentId = 0,
 
@@ -414,6 +413,10 @@ function Resolve-RerunEligibility {
 
 if ($MyInvocation.InvocationName -eq '.') {
     return
+}
+
+if ($PRNumber -le 0) {
+    throw "PRNumber is required when running Resolve-RerunEligibility.ps1 directly."
 }
 
 $issueComments = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/comments?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'issue-comment' })

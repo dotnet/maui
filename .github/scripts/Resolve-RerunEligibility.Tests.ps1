@@ -1,5 +1,5 @@
 BeforeAll {
-    . "$PSScriptRoot/Resolve-RerunEligibility.ps1" -PRNumber 1 -CurrentCommentId 1
+    . "$PSScriptRoot/Resolve-RerunEligibility.ps1"
 
     function New-TestUser {
         param(
