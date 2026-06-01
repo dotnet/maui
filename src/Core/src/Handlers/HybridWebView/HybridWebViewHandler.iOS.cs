@@ -122,11 +122,6 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -145,10 +140,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
@@ -291,11 +282,21 @@ namespace Microsoft.Maui.Handlers
 							return (null, null, StatusCode: 400);
 						}
 
-						// Invoke the method
-						var contentBytes = await Handler.InvokeDotNetAsync(streamBody: requestBody);
-						if (contentBytes is not null)
+						// Invoke the method (gated by RuntimeFeature.IsHybridWebViewSupported so the trimmer
+						// can prove this trim/AOT-unsafe path is dead when the feature switch is disabled
+						// via $(MauiHybridWebViewSupported)=false, which is the default under
+						// PublishAot=true and TrimMode=full).
+						if (RuntimeFeature.IsHybridWebViewSupported)
 						{
-							return (NSData.FromArray(contentBytes), "application/json", StatusCode: 200);
+							var contentBytes = await Handler.InvokeDotNetAsync(streamBody: requestBody);
+							if (contentBytes is not null)
+							{
+								return (NSData.FromArray(contentBytes), "application/json", StatusCode: 200);
+							}
+						}
+						else
+						{
+							return (null, null, StatusCode: 404);
 						}
 					}
 

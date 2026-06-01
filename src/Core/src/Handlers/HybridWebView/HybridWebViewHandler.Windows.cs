@@ -218,12 +218,22 @@ namespace Microsoft.Maui.Handlers
 						return (Stream: null, ContentType: null, StatusCode: 400, Reason: "Bad Request");
 					}
 
-					// Invoke the method
-					var contentBytes = await InvokeDotNetAsync(streamBody: requestBody);
-					if (contentBytes is not null)
+					// Invoke the method (gated by RuntimeFeature.IsHybridWebViewSupported so the trimmer
+					// can prove this trim/AOT-unsafe path is dead when the feature switch is disabled
+					// via $(MauiHybridWebViewSupported)=false, which is the default under
+					// PublishAot=true and TrimMode=full).
+					if (RuntimeFeature.IsHybridWebViewSupported)
 					{
-						var ras = await CopyContentToRandomAccessStreamAsync(contentBytes.AsBuffer());
-						return (Stream: ras, ContentType: "application/json", StatusCode: 200, Reason: "OK");
+						var contentBytes = await InvokeDotNetAsync(streamBody: requestBody);
+						if (contentBytes is not null)
+						{
+							var ras = await CopyContentToRandomAccessStreamAsync(contentBytes.AsBuffer());
+							return (Stream: ras, ContentType: "application/json", StatusCode: 200, Reason: "OK");
+						}
+					}
+					else
+					{
+						return (Stream: null, ContentType: null, StatusCode: 404, Reason: "Not Found");
 					}
 				}
 
@@ -281,10 +291,6 @@ namespace Microsoft.Maui.Handlers
 			return ras;
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class HybridWebView2Proxy
 		{
 			private WeakReference<Window>? _window;

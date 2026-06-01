@@ -44,10 +44,6 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Maui.Handlers
 {
-	[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-	[RequiresDynamicCode(DynamicFeatures)]
-#endif
 	public partial class HybridWebViewHandler : IHybridWebViewHandler
 	{
 		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
@@ -184,6 +180,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		internal async Task<byte[]?> InvokeDotNetAsync(Stream? streamBody = null, string? stringBody = null)
 		{
 			try
@@ -225,6 +225,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private static DotNetInvokeResult CreateInvokeResult(object? result)
 		{
 			// null invoke result means an empty result
@@ -262,6 +266,10 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private static async Task<object?> InvokeDotNetMethodAsync(
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType,
 			object jsInvokeTarget,

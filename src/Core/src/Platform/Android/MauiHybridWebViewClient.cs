@@ -15,10 +15,6 @@ using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
 {
-	[RequiresUnreferencedCode(HybridWebViewHandler.DynamicFeatures)]
-#if !NETSTANDARD
-	[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
-#endif
 	public class MauiHybridWebViewClient : WebViewClient
 	{
 		private readonly WeakReference<HybridWebViewHandler?> _handler;
@@ -122,9 +118,18 @@ namespace Microsoft.Maui.Platform
 					return new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
 				}
 
-				var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
-				var responseStream = new AsyncStream(contentBytesTask, logger);
-				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
+				// Invoke the method (gated by RuntimeFeature.IsHybridWebViewSupported so the trimmer
+				// can prove this trim/AOT-unsafe path is dead when the feature switch is disabled
+				// via $(MauiHybridWebViewSupported)=false, which is the default under
+				// PublishAot=true and TrimMode=full).
+				if (RuntimeFeature.IsHybridWebViewSupported)
+				{
+					var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
+					var responseStream = new AsyncStream(contentBytesTask, logger);
+					return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
+				}
+
+				return new WebResourceResponse(null, "UTF-8", 404, "Not Found", null, null);
 			}
 
 			// 2. If nothing found yet, try to get static content from the asset path
