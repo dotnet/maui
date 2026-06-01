@@ -406,6 +406,69 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task RecyclerItemSafeAreaEdgesChangeThroughHandlerAppliesAndResetsPadding()
+		{
+			SetupBuilder();
+
+			Grid itemLayout = null;
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1" },
+				ItemTemplate = new DataTemplate(() =>
+				{
+					itemLayout = new Grid
+					{
+						HeightRequest = 60,
+						WidthRequest = 60
+					};
+					itemLayout.Add(new Label { Text = "Item 1" });
+					return itemLayout;
+				}),
+				HeightRequest = 120,
+				WidthRequest = 120
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				_ = LayoutAndGetViewHolder(handler.PlatformView);
+
+				Assert.NotNull(itemLayout);
+				var itemPlatformView = Assert.IsType<LayoutViewGroup>(itemLayout.ToPlatform());
+				Assert.NotNull(MauiWindowInsetListener.FindRegisteredListenerForView(itemPlatformView));
+				Assert.False(((ISafeAreaView2)itemLayout).HasExplicitSafeAreaEdges);
+				Assert.Null(MauiWindowInsetListener.FindListenerForView(itemPlatformView));
+
+				itemPlatformView.SetPadding(1, 2, 3, 4);
+				var insets = CreateLeftSystemBarInsetOverlapping(itemPlatformView, 20);
+
+				ViewCompat.DispatchApplyWindowInsets(itemPlatformView, insets);
+				Assert.Equal(1, itemPlatformView.PaddingLeft);
+
+				itemLayout.SafeAreaEdges = SafeAreaEdges.All;
+
+				Assert.True(((ISafeAreaView2)itemLayout).HasExplicitSafeAreaEdges);
+				Assert.NotNull(MauiWindowInsetListener.FindListenerForView(itemPlatformView));
+
+				ViewCompat.DispatchApplyWindowInsets(itemPlatformView, insets);
+				Assert.NotEqual(1, itemPlatformView.PaddingLeft);
+
+				itemLayout.ClearValue(Layout.SafeAreaEdgesProperty);
+
+				Assert.False(((ISafeAreaView2)itemLayout).HasExplicitSafeAreaEdges);
+				Assert.Null(MauiWindowInsetListener.FindListenerForView(itemPlatformView));
+				Assert.Equal(1, itemPlatformView.PaddingLeft);
+				Assert.Equal(2, itemPlatformView.PaddingTop);
+				Assert.Equal(3, itemPlatformView.PaddingRight);
+				Assert.Equal(4, itemPlatformView.PaddingBottom);
+
+				ViewCompat.DispatchApplyWindowInsets(itemPlatformView, insets);
+				Assert.Equal(1, itemPlatformView.PaddingLeft);
+			});
+		}
+
 		class MockCollectionChangedNotifier : ICollectionChangedNotifier
 		{
 			public int InsertCount;
@@ -507,6 +570,17 @@ namespace Microsoft.Maui.DeviceTests
 
 			((ICrossPlatformLayoutBacking)itemView).CrossPlatformLayout = layout;
 			return itemView;
+		}
+
+		static WindowInsetsCompat CreateLeftSystemBarInsetOverlapping(AView view, int overlap)
+		{
+			var location = new int[2];
+			view.GetLocationOnScreen(location);
+			var leftInset = System.Math.Max(overlap, location[0] + overlap);
+
+			return new WindowInsetsCompat.Builder()
+				.SetInsets(WindowInsetsCompat.Type.SystemBars(), AInsets.Of(leftInset, 0, 0, 0))
+				.Build();
 		}
 
 		class TestRecyclerView : FrameLayout, IMauiRecyclerView
