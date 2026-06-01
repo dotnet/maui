@@ -210,6 +210,7 @@ $script:UnitTestProjectMap = @{
     "SourceGen.UnitTests"              = "src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj"
     "Core.UnitTests"                   = "src/Core/tests/UnitTests/Core.UnitTests.csproj"
     "Essentials.UnitTests"             = "src/Essentials/test/UnitTests/Essentials.UnitTests.csproj"
+    "MauiBlazorWebView.UnitTests"      = "src/BlazorWebView/tests/MauiBlazorWebView.UnitTests/MauiBlazorWebView.UnitTests.csproj"
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
     "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
