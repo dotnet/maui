@@ -104,7 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(DisplayName = "LayoutPanel with AutomationId is exposed in automation tree")]
+		[Theory(DisplayName = "LayoutPanel AutomationId is exposed via the automation peer")]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task LayoutPanelWithAutomationIdIsExposedInTree(bool hasAutomationId)
@@ -118,7 +118,8 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRun(grid, (LayoutHandler handler) =>
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
-				Assert.Equal(hasAutomationId, peer.IsContentElement());
+				var expected = hasAutomationId ? "TestGrid" : string.Empty;
+				Assert.Equal(expected, peer.GetAutomationId());
 			});
 		}
 
@@ -136,7 +137,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "LayoutPanel IsControlElement and IsContentElement update when AutomationId is set at runtime")]
+		[Fact(DisplayName = "LayoutPanel is excluded from Control view by default (AutomationId alone does not opt in)")]
+		public async Task LayoutPanelExcludedFromControlViewByDefault()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid { AutomationId = "TestGrid" };
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+
+				// AutomationId is exposed in the UIA raw view (where UI testing libraries look)
+				// but the panel stays out of the Control view so screen readers skip past it.
+				Assert.Equal("TestGrid", peer.GetAutomationId());
+				Assert.False(peer.IsControlElement());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel opts into Control view when AutomationProperties.IsInAccessibleTree is true")]
+		public async Task LayoutPanelOptsIntoControlViewViaIsInAccessibleTree()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+			AutomationProperties.SetIsInAccessibleTree(grid, true);
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.True(peer.IsControlElement());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel opts into Control view when SemanticProperties.Description is set")]
+		public async Task LayoutPanelOptsIntoControlViewWhenDescriptionIsSet()
+		{
+			SetupLayoutBuilder();
+
+			var grid = new Grid();
+			SemanticProperties.SetDescription(grid, "Welcome card");
+
+			await AttachAndRun(grid, (LayoutHandler handler) =>
+			{
+				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
+				Assert.True(peer.IsControlElement());
+			});
+		}
+
+		[Fact(DisplayName = "LayoutPanel AutomationId is exposed via the peer when set at runtime")]
 		public async Task LayoutPanelAutomationPeerUpdatesWhenAutomationIdChangesAtRuntime()
 		{
 			SetupLayoutBuilder();
@@ -147,14 +196,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
 
-				// Initially no AutomationId — should NOT be exposed
-				Assert.False(peer.IsContentElement());
+				// Initially no AutomationId.
+				Assert.Equal(string.Empty, peer.GetAutomationId());
 
-				// Set AutomationId at runtime — should now be exposed.
+				// Set AutomationId at runtime -- peer should reflect the new value.
 				// Note: MAUI AutomationId is write-once (Element.cs enforces this),
-				// so we can only test the transition from unset → set, not set → cleared.
+				// so we can only test the transition from unset -> set, not set -> cleared.
 				grid.AutomationId = "DynamicGrid";
-				Assert.True(peer.IsContentElement());
+				Assert.Equal("DynamicGrid", peer.GetAutomationId());
 			});
 		}
 	}
