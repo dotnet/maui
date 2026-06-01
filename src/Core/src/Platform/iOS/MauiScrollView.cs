@@ -109,20 +109,6 @@ namespace Microsoft.Maui.Platform
 		internal ICrossPlatformLayout? CrossPlatformLayout => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
 
 		/// <summary>
-		/// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
-		/// </summary>
-		internal void OnOrientationChanged()
-		{
-			// Reset the previous layout direction to force re-evaluation of RTL layout
-			if (_previousEffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
-			{
-				_previousEffectiveUserInterfaceLayoutDirection = null;
-				SetNeedsLayout();
-				LayoutIfNeeded();
-			}
-		}
-
-		/// <summary>
 		/// Initializes a new instance of the MauiScrollView class.
 		/// </summary>
 		public MauiScrollView()
@@ -355,6 +341,13 @@ namespace Microsoft.Maui.Platform
 					// in case the ScrollView is configured to grow/shrink with its content.
 					this.InvalidateAncestorsMeasures();
 				}
+
+				// Now that layout is complete and ContentSize is set, process any pending scroll request
+				// that was deferred because ContentSize was empty when the request arrived.
+				if (ContentSize != CGSize.Empty && CrossPlatformLayout is ScrollViewHandler scrollViewHandler)
+				{
+					scrollViewHandler.ProcessPendingScrollRequest();
+				}
 			}
 
 			base.LayoutSubviews();
@@ -512,20 +505,29 @@ namespace Microsoft.Maui.Platform
 
 			contentSize = new Size(width, height);
 
-			// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
-			// to ensure the content is correctly aligned and scrolled. This involves a second layout
-			// arrangement with an adjusted starting point and recalculating the content offset.
-			if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
+			bool isDirectionChange = _previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection;
+
+			// For Right-To-Left (RTL) layouts, iOS natively handles visual mirroring via
+			// SemanticContentAttribute.ForceRightToLeft. Content should remain at normal (0,0) coordinates.
+			// We only set ContentOffset to position the scroll at the RTL "start" (maximum horizontal offset).
+			// Content at negative X coordinates would be outside the scrollable range and unreachable.
+			if (isDirectionChange)
 			{
 				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 				{
-					var horizontalOffset = contentSize.Width - bounds.Width;
-					
-					if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+					// In mac platform, Scrollbar is not updated based on FlowDirection, so resetting the scroll indicators.
+					// It's a native limitation; to maintain platform consistency, a hack fix is applied to show the Scrollbar based on the FlowDirection.
+					if (OperatingSystem.IsMacCatalyst() && _previousEffectiveUserInterfaceLayoutDirection is not null)
 					{
+						bool showsVertical = ShowsVerticalScrollIndicator;
+						bool showsHorizontal = ShowsHorizontalScrollIndicator;
+
+						ShowsVerticalScrollIndicator = false;
+						ShowsHorizontalScrollIndicator = false;
 
 						ShowsVerticalScrollIndicator = showsVertical;
 						ShowsHorizontalScrollIndicator = showsHorizontal;
+					}
 
 					var horizontalOffset = contentSize.Width - bounds.Width;
 					ContentOffset = new CGPoint(horizontalOffset, 0);
@@ -536,8 +538,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
-			// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
+			// Track the current direction so we can detect future changes.
 			_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 			return contentSize;

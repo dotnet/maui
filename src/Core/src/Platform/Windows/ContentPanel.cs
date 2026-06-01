@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Shapes;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -68,31 +69,30 @@ namespace Microsoft.Maui.Platform
 			return size;
 		}
 
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			if (CrossPlatformLayout is IBorderView)
+			{
+				return new MauiBorderAutomationPeer(this);
+			}
+			else if (CrossPlatformLayout is IContentView)
+			{
+				// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
+				return new ContentPanelAutomationPeer(this);
+			}
+
+			return base.OnCreateAutomationPeer();
+		}
+
 		public ContentPanel()
 		{
 			_borderPath = new Path();
 			EnsureBorderPath(containsCheck: false);
 
 			SizeChanged += ContentPanelSizeChanged;
-		}
 
-		// Custom automation peer prevents duplicate announcements when AutomationProperties.Name is set
-		protected override AutomationPeer OnCreateAutomationPeer() => new ContentPanelAutomationPeer(this);
-
-		internal partial class ContentPanelAutomationPeer : FrameworkElementAutomationPeer
-		{
-			internal ContentPanelAutomationPeer(ContentPanel owner) : base(owner) { }
-
-			bool HasDescription => !string.IsNullOrWhiteSpace(AutomationProperties.GetName(Owner));
-
-			protected override AutomationControlType GetAutomationControlTypeCore() =>
-				HasDescription ? AutomationControlType.Text : AutomationControlType.Custom;
-
-			protected override string GetLocalizedControlTypeCore() =>
-				HasDescription ? string.Empty : base.GetLocalizedControlTypeCore() ?? string.Empty;
-
-			protected override IList<AutomationPeer>? GetChildrenCore() =>
-				HasDescription ? null : base.GetChildrenCore();
+			RegisterPropertyChangedCallback(BackgroundProperty, OnBackgroundPropertyChanged);
+			EnsureHitTestBackground();
 		}
 
 		void ContentPanelSizeChanged(object sender, SizeChangedEventArgs e)
@@ -128,6 +128,22 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				CachedChildren.Add(_borderPath);
+			}
+		}
+
+		static void OnBackgroundPropertyChanged(DependencyObject dependencyObject, DependencyProperty dependencyProperty)
+		{
+			if (dependencyObject is ContentPanel contentPanel)
+			{
+				contentPanel.EnsureHitTestBackground();
+			}
+		}
+
+		void EnsureHitTestBackground()
+		{
+			if (Background == null)
+			{
+				Background = new SolidColorBrush(UI.Colors.Transparent);
 			}
 		}
 
@@ -204,6 +220,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
+
+			// Prevent clip collision: When ContentView is inside Border, let WrapperView handle 
+			// clipping to avoid Border overwriting ContentView's clip geometry during SizeChanged.
+			if (visual.Clip != null && Content.Parent is WrapperView)
+			{
+				return;
+			}
 			var compositor = visual.Compositor;
 
 			PathF? clipPath;
