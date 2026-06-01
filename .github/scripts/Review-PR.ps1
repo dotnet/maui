@@ -302,6 +302,16 @@ if ($DryRun) {
     Write-Host "  🔀 Merging PR commits (squashed)..." -ForegroundColor Cyan
     git merge --squash $tempBranch 2>&1 | Out-Null
     if ($LASTEXITCODE -eq 0) {
+        # Ensure both staged and unstaged merge output is committed. Some
+        # squash merges can leave tracked files modified in the worktree rather
+        # than only staged; Gate later requires fix files to be committed so it
+        # can restore them with `git checkout HEAD`.
+        git add -A 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            git branch -D $tempBranch 2>$null
+            Write-Error "Failed to stage squashed PR changes"; exit 1
+        }
+
         # Check if there's anything to commit (PR might already be merged)
         $staged = git diff --cached --quiet 2>$null; $hasStagedChanges = $LASTEXITCODE -ne 0
         if ($hasStagedChanges) {
@@ -313,6 +323,14 @@ if ($DryRun) {
             Write-Host "  ✅ Squash-merge succeeded" -ForegroundColor Green
         } else {
             Write-Host "  ⚠️ No changes to merge (PR may already be up to date)" -ForegroundColor Yellow
+        }
+
+        git diff --quiet 2>$null; $hasWorktreeChanges = $LASTEXITCODE -ne 0
+        git diff --cached --quiet 2>$null; $hasIndexChanges = $LASTEXITCODE -ne 0
+        if ($hasWorktreeChanges -or $hasIndexChanges) {
+            Write-Error "Review branch has uncommitted tracked changes after setup. Gate cannot proceed safely."
+            git status --short
+            exit 1
         }
 
         if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
@@ -392,6 +410,19 @@ if ($Phase -and $Phase -ne 'Setup') {
     if (-not (Test-Path $sentinelFile)) {
         Write-Error "Setup phase did not complete (sentinel not found at '$sentinelFile'). Cannot proceed with -Phase $Phase."
         exit 1
+    }
+
+    if (-not $DryRun) {
+        git checkout $reviewBranch 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to checkout review branch '$reviewBranch' before -Phase $Phase."
+            exit 1
+        }
+        git reset --hard HEAD 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to reset review branch '$reviewBranch' before -Phase $Phase."
+            exit 1
+        }
     }
 }
 
