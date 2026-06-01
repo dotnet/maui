@@ -627,11 +627,9 @@ namespace Microsoft.Maui.Platform
 		internal void OnOrientationChanged()
 		{
 			// Reset the previous layout direction to force re-evaluation of RTL layout
-			if (_previousEffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 			{
 				_previousEffectiveUserInterfaceLayoutDirection = null;
-				SetNeedsLayout();
-				LayoutIfNeeded();
 			}
 		}
 
