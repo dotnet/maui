@@ -61,6 +61,26 @@ namespace Microsoft.Maui.Controls
 				&& Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
 			{
 				return uiwindow.WindowScene?.FullScreen ?? false;
+			}
+
+			return false;
+		}
+
+		void ApplyMacCatalystMargin()
+		{
+			if (_templateRoot is not Grid contentGrid)
+				return;
+
+			if (IsMacCatalystFullScreen())
+			{
+				contentGrid.Margin = new Thickness(0);
+				return;
+			}
+
+			contentGrid.Margin = FlowDirection == FlowDirection.RightToLeft
+				? new Thickness(0, 0, GetMacCatalystLeadingMargin(), 0)
+				: new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0);
+		}
 #endif
 
 		// Margin space (150px) required for Windows title bar system buttons
@@ -339,22 +359,7 @@ namespace Microsoft.Maui.Controls
 #if MACCATALYST
 		void OnSizeChanged(object? sender, EventArgs e)
 		{
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
-			{
-				if (Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
-				{
-					var windowScene = uiwindow.WindowScene;
-					if (windowScene != null)
-					{
-						var fullScreen = windowScene.FullScreen;
-						if (_templateRoot is Grid contentGrid)
-						{
-							// If in fullscreen, remove left margin, otherwise set version-appropriate margin
-							contentGrid.Margin = fullScreen ? new Thickness(0) : new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0);
-						}
-					}
-				}
-			}
+			ApplyMacCatalystMargin();
 		}
 #endif
 
@@ -394,6 +399,7 @@ namespace Microsoft.Maui.Controls
 				: TitleBarLTRState;
 
 			ApplyVisibleState(flowDirectionState);
+
 #if MACCATALYST
 			ApplyMacCatalystMargin();
 #endif
