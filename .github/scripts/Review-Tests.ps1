@@ -272,16 +272,10 @@ $badges
 
 $sessionMarkerStart
 <details open>
-<summary><strong>Review Sessions</strong> — click to expand</summary>
-<br/>
-
-<details open>
 <summary>$verdictIcon <strong>Test Failure Review</strong> — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$prTitle</strong> · <em>$timestamp</em></summary>
 <br/>
 
 $ReportContent
-
-</details>
 
 </details>
 $sessionMarkerEnd

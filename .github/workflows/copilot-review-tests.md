@@ -182,10 +182,6 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 
 <!-- SESSION:[sha7] START -->
 <details open>
-<summary><strong>Review Sessions</strong> — click to expand</summary>
-<br/>
-
-<details open>
 <summary>[icon] <strong>Test Failure Review</strong> — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong> · <em>[UTC timestamp]</em></summary>
 <br/>
 
@@ -205,8 +201,6 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 <summary>Evidence details</summary>
 
 [Relevant checks, build IDs, test run IDs, log excerpts, PR-scope details, and limitations.]
-
-</details>
 
 </details>
 

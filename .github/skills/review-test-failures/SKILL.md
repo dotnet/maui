@@ -107,10 +107,6 @@ Use an AI-summary-style comment format. Start with a stable marker, a short stat
 
 <!-- SESSION:[sha7] START -->
 <details open>
-<summary><strong>Review Sessions</strong> — click to expand</summary>
-<br/>
-
-<details open>
 <summary>[icon] <strong>Test Failure Review</strong> — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong> · <em>[UTC timestamp]</em></summary>
 <br/>
 
@@ -130,8 +126,6 @@ Use an AI-summary-style comment format. Start with a stable marker, a short stat
 <summary>Evidence details</summary>
 
 [Relevant checks, build IDs, test run IDs, log excerpts, PR-scope details, and limitations.]
-
-</details>
 
 </details>
 
