@@ -54,6 +54,13 @@ namespace Microsoft.Maui.Controls
 #if MACCATALYST
 		static int GetMacCatalystLeadingMargin() =>
 			OperatingSystem.IsMacCatalystVersionAtLeast(26) ? MacCatalystMarginLiquidGlass : MacCatalystMargin;
+
+		bool IsMacCatalystFullScreen()
+		{
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16)
+				&& Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
+			{
+				return uiwindow.WindowScene?.FullScreen ?? false;
 #endif
 
 		// Margin space (150px) required for Windows title bar system buttons
@@ -387,6 +394,9 @@ namespace Microsoft.Maui.Controls
 				: TitleBarLTRState;
 
 			ApplyVisibleState(flowDirectionState);
+#if MACCATALYST
+			ApplyMacCatalystMargin();
+#endif
 		}
 
 		internal void ApplyVisibleState(string stateGroup)
@@ -457,7 +467,7 @@ namespace Microsoft.Maui.Controls
 			var contentGrid = new Grid()
 			{
 #if MACCATALYST
-				Margin = new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0),
+				Margin = new Thickness(0),
 #endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
@@ -659,30 +669,26 @@ namespace Microsoft.Maui.Controls
 
 			// Left-to-Right state (default)
 			var ltrState = new VisualState() { Name = TitleBarLTRState };
+#if !MACCATALYST
 			ltrState.Setters.Add(new Setter()
 			{
 				Property = MarginProperty,
 				TargetName = TemplateRootName,
-#if MACCATALYST
-				Value = new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0)  // System buttons on left in macOS
-#else
 				Value = new Thickness(0, 0, WindowsMargin, 0)  // System buttons on right in Windows
-#endif
 			});
+#endif
 			flowDirectionGroup.States.Add(ltrState);
 
 			// Right-to-Left state
 			var rtlState = new VisualState() { Name = TitleBarRTLState };
+#if !MACCATALYST
 			rtlState.Setters.Add(new Setter()
 			{
 				Property = MarginProperty,
 				TargetName = TemplateRootName,
-#if MACCATALYST
-				Value = new Thickness(0, 0, GetMacCatalystLeadingMargin(), 0)  // System buttons on right in macOS RTL
-#else
 				Value = new Thickness(WindowsMargin, 0, 0, 0)  // System buttons on left in Windows RTL
-#endif
 			});
+#endif
 			flowDirectionGroup.States.Add(rtlState);
 
 			visualStateGroups.Add(flowDirectionGroup);
