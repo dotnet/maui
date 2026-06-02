@@ -445,7 +445,10 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -warnaserror-:MAUI1001");
+			// MAUI1001 warns that the XamlC inflator is deprecated. WarningsNotAsErrors keeps
+			// the build green if a TreatWarningsAsErrors chain is ever introduced for these
+			// synthesized projects, without relying on the invalid `-warnaserror-:` switch syntax.
+			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -p:WarningsNotAsErrors=MAUI1001");
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
 			// With XamlC inflator, _MauiXaml_XC is populated so the XamlC target runs.
