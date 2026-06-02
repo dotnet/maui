@@ -202,23 +202,17 @@ steps:
         MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
         MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
 
-        # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
-        # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-        if [[ "${MAJOR}" == "26" && "${MINOR}" == "0" ]]; then
-          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion 26.0"
-        elif [[ "${MAJOR}" -ge "26" ]]; then
-          # Pin the simulator version to match the selected Xcode version.
-          # Without -buildVersion, xcodebuild downloads the LATEST available simulator
-          # runtime, which may not match the selected Xcode's SDK (e.g., Xcode 26.2
-          # ships iphonesimulator SDK 23C53 but -downloadPlatform iOS may install
-          # iOS 26.3.1 which is incompatible, causing actool/ibtool failures).
-          # Include -architectureVariant universal (carried forward from the 26.0
-          # block) for x64 simulator support on Apple Silicon CI agents.
-          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
-        else
-          # For Xcode < 26, iOS simulator version != Xcode version; download latest compatible
-          DOWNLOAD_ARGS="-downloadPlatform iOS"
-        fi
+
+        # Pin the simulator version to match the selected Xcode version.
+        # Without -buildVersion, xcodebuild downloads the LATEST available simulator
+        # runtime, which may not match the selected Xcode's SDK (e.g., Xcode 26.2
+        # ships iphonesimulator SDK 23C53 but -downloadPlatform iOS may install
+        # iOS 26.3.1 which is incompatible, causing actool/ibtool failures).
+        # Include -architectureVariant universal (carried forward from the 26.0
+        # block) for x64 simulator support on Apple Silicon CI agents.
+
+        echo "Installing iOS $MAJOR.$MINOR simulator runtime..."
+        DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
 
         RC=0
         sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
@@ -237,6 +231,12 @@ steps:
           echo "Re-trying simulator runtime installation..."
           sudo xcodebuild $DOWNLOAD_ARGS
         fi
+
+        # Also download the default/unpinned simulator version
+
+        echo "Installing the default iOS simulator runtime..."
+        RC=0
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal || RC=$?
 
         # Verify the simulator runtime was actually installed
         echo "Verifying simulator runtimes..."
