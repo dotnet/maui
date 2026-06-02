@@ -1166,6 +1166,12 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			_emptyViewDisplayed = false;
 		}
 
+		// Apply MAUI margin/layout options to the platform EmptyView element.
+		// The MAUI layout system does not handle these when the view is hosted
+		// outside a MAUI layout (i.e. inside a WinUI ContentControl), so we
+		// must transfer them manually — same as we do for Header and Footer.
+		ItemsViewExtensions.ApplyMauiLayoutProperties(_mauiEmptyView, _emptyView as Microsoft.UI.Xaml.FrameworkElement);
+
 		(PlatformView as IEmptyView)?.SetEmptyView(_emptyView, _mauiEmptyView);
 		UpdateEmptyViewVisibility();
 	}
@@ -1265,14 +1271,14 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				{
 					Text = text,
 					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
-					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
+					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Start,
 				},
 				View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiHeader),
 				_ => new TextBlock
 				{
 					Text = header.ToString(),
 					Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 10),
-					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
+					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Start,
 				}
 			};
 		}
@@ -1350,14 +1356,14 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				{
 					Text = text,
 					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0),
-					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
+					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Start,
 				},
 				View view => ItemsViewExtensions.RealizeHeaderFooterView(view, MauiContext!, ref _mauiFooter),
 				_ => new TextBlock
 				{
 					Text = footer.ToString(),
 					Margin = new Microsoft.UI.Xaml.Thickness(0, 10, 0, 0),
-					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Center,
+					TextAlignment = Microsoft.UI.Xaml.TextAlignment.Start,
 				}
 			};
 		}
