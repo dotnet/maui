@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
@@ -28,6 +29,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Initializes a new instance of the Cell class.</summary>
 		/// <remarks>Cell class is abstract, this constructor is never invoked directly.</remarks>
+#pragma warning disable CS0618 // Type or member is obsolete
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TextCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(EntryCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ImageCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(SwitchCell))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ViewCell))]
+#pragma warning restore CS0618 // Type or member is obsolete
 		public Cell()
 		{
 			_elementConfiguration = new Lazy<ElementConfiguration>(() => new ElementConfiguration(this));
@@ -106,7 +114,7 @@ namespace Microsoft.Maui.Controls
 			get { return _contextActions != null && _contextActions.Count > 0 && IsEnabled; }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsContextActionsLegacyModeEnabled']/Docs/*" />
+		/// <summary>Gets or sets whether context actions use legacy mode. Default is <see langword="false"/>.</summary>
 		public bool IsContextActionsLegacyModeEnabled { get; set; } = false;
 
 		/// <summary>Gets or sets the height of the Cell.</summary>

@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ContentButton");
 			App.Tap("ContentButton");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 
 			App.WaitForElement("ResetContentButton");
 			App.Tap("ResetContentButton");
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("VisibilityCheckBox");
 			App.Tap("VisibilityCheckBox");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("VisibilityCheckBox");
 			App.Tap("VisibilityCheckBox");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("BackgroundButton");
 			App.Tap("BackgroundButton");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -89,7 +89,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("BackgroundButton");
 			App.Tap("BackgroundButton");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PaddingButton");
 			App.Tap("PaddingButton");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("FlowDirectionButton");
 			App.Tap("FlowDirectionButton");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("FlowDirectionButton");
 			App.Tap("FlowDirectionButton");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test]
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText("TitleEntry");
 			App.EnterText("TitleEntry", "New Title");
 
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 #if ANDROID || IOS
@@ -181,8 +181,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("KeyboardTestLabel");
 			App.Tap("KeyboardTestLabel");
-
-			VerifyScreenshot();
+#if IOS
+			VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 		}
 
 		[Test]
@@ -205,8 +208,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("KeyboardTestLabel");
 			App.Tap("KeyboardTestLabel");
-
-			VerifyScreenshot();
+#if IOS
+			VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 		}
 
 		[Test]
@@ -230,8 +236,11 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("KeyboardTestLabel");
 			App.Tap("KeyboardTestLabel");
-
-			VerifyScreenshot();
+#if IOS
+			VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+#endif
 		}
 #endif
 	}

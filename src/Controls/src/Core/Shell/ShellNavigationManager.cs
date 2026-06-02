@@ -313,14 +313,27 @@ namespace Microsoft.Maui.Controls
 				var mergedData = MergeData(element, filteredQuery, isPopping);
 
 				//if we are pop or navigating back, we need to apply the query attributes to the ShellContent
-				if (isPopping)
+				if (isPopping && mergedData.Count > 0 )
 				{
 					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
 				}
-				baseShellItem.ApplyQueryAttributes(mergedData);
+
+				// Skip applying query attributes if the merged data is empty and we're popping back
+				// This respects when user calls query.Clear() - they don't want attributes applied on back navigation
+				if (mergedData.Count > 0 || !isPopping)
+				{
+					baseShellItem.ApplyQueryAttributes(mergedData);
+				}
 			}
 			else if (isLastItem)
-				element.SetValue(ShellContent.QueryAttributesProperty, MergeData(element, query, isPopping));
+			{
+				var mergedData = MergeData(element, query, isPopping);
+				// Skip setting query attributes if the merged data is empty and we're popping back
+				if (mergedData.Count > 0 || !isPopping)
+				{
+					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
+				}
+			}
 
 			ShellRouteParameters MergeData(Element shellElement, ShellRouteParameters data, bool isPopping)
 			{
@@ -574,6 +587,24 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
+
+#if IOS || MACCATALYST
+			if (Shell.Current?.CurrentState?.Location is not null)
+			{
+				var currentRoute = Shell.Current?.CurrentState?.Location?.ToString();
+				if (!string.IsNullOrEmpty(currentRoute))
+				{
+					var currentPaths = new List<string>(currentRoute.Split('/'));
+					// Indices 0 and 1 of both routeStack and currentPaths are dummy/empty values
+					// The first meaningful route segment is at index 2.
+					if (currentPaths.Count == routeStack.Count && currentPaths.Count > 3 && currentPaths[2] == routeStack[2])
+					{
+						// Current route is same as the new route, so remove the last elements of the routeStack
+						routeStack.RemoveRange(3, routeStack.Count - 3);
+					}
+				}
+			}
+#endif
 
 			if (routeStack.Count > 0)
 				routeStack.Insert(0, "/");

@@ -1,15 +1,17 @@
-﻿namespace Microsoft.Maui.IntegrationTests
+﻿using Xunit.Abstractions;
+
+namespace Microsoft.Maui.IntegrationTests
 {
 	public static class XHarness
 	{
 		static readonly string XHarnessTool = "xharness";
 		const int DEFAULT_TIMEOUT = 300;
 
-		public static bool RunAndroid(string packageName, string resultDir, int expectedExitCode, int launchTimeoutSeconds = 120)
+		public static bool RunAndroid(string packageName, string resultDir, int expectedExitCode, int launchTimeoutSeconds = 120, ITestOutputHelper? output = null)
 		{
 			var timeoutString = TimeSpan.FromSeconds(launchTimeoutSeconds).ToString();
 			var args = $"android run --package-name={packageName} --output-directory=\"{resultDir}\" --expected-exit-code={expectedExitCode} --timeout=\"{timeoutString}\" --verbosity=Debug";
-			return Run(args, launchTimeoutSeconds + 30);
+			return Run(args, launchTimeoutSeconds + 30, output: output);
 		}
 
 		/// <summary>
@@ -25,8 +27,9 @@
 		/// <param name="targetDevice">XHarness target device string (e.g., "ios-simulator-64_18.5")</param>
 		/// <param name="deviceUdid">Optional specific device UDID to use</param>
 		/// <param name="launchTimeoutSeconds">How long to let the app run before killing it (default: 15s)</param>
+		/// <param name="output">Optional test output helper for logging</param>
 		/// <returns>True if the app ran successfully (didn't crash), false otherwise</returns>
-		public static bool RunAppleForTimeout(string appPath, string resultDir, string targetDevice, string? deviceUdid = null, int launchTimeoutSeconds = 15)
+		public static bool RunAppleForTimeout(string appPath, string resultDir, string targetDevice, string? deviceUdid = null, int launchTimeoutSeconds = 15, ITestOutputHelper? output = null)
 		{
 			var timeoutString = TimeSpan.FromSeconds(launchTimeoutSeconds).ToString();
 			
@@ -37,7 +40,7 @@
 			}
 			
 			var args = $"apple run --app=\"{appPath}\" --output-directory=\"{resultDir}\" {deviceArg} --timeout=\"{timeoutString}\" --verbosity=Debug";
-			var xhOutput = RunForOutput(args, out int exitCode, launchTimeoutSeconds + 30);
+			var xhOutput = RunForOutput(args, out int exitCode, launchTimeoutSeconds + 30, output: output);
 
 			// XHarness exit codes - see https://github.com/dotnet/xharness/blob/main/src/Microsoft.DotNet.XHarness.Common/CLI/ExitCode.cs
 			// Success cases:
@@ -55,38 +58,38 @@
 
 			if (!isSuccess)
 			{
-				Console.WriteLine($"XHarness failed with exit code {exitCode}");
-				Console.WriteLine(xhOutput);
+				output?.WriteLine($"XHarness failed with exit code {exitCode}");
+				output?.WriteLine(xhOutput);
 			}
 
 			return isSuccess;
 		}
 
-		public static bool InstallSimulator(string targetDevice)
+		public static bool InstallSimulator(string targetDevice, ITestOutputHelper? output = null)
 		{
-			return Run($"apple simulators install \"{targetDevice}\" ");
+			return Run($"apple simulators install \"{targetDevice}\" ", output: output);
 		}
 
-		public static string GetSimulatorUDID(string targetDevice)
+		public static string GetSimulatorUDID(string targetDevice, ITestOutputHelper? output = null)
 		{
 			var logDir = TestEnvironment.GetLogDirectory();
 			Directory.CreateDirectory(logDir);
 			var diagnosticsPath = Path.Combine(logDir, $"xharness-device-{targetDevice.Replace("/", "-", StringComparison.Ordinal)}.log");
-			return RunForOutput($"apple device \"{targetDevice}\" --diagnostics=\"{diagnosticsPath}\"", out _, timeoutInSeconds: 30);
+			return RunForOutput($"apple device \"{targetDevice}\" --diagnostics=\"{diagnosticsPath}\"", out _, timeoutInSeconds: 30, output: output);
 		}
 
-		public static bool Run(string args, int timeoutInSeconds = DEFAULT_TIMEOUT)
+		public static bool Run(string args, int timeoutInSeconds = DEFAULT_TIMEOUT, ITestOutputHelper? output = null)
 		{
-			var xhOutput = RunForOutput(args, out int exitCode, timeoutInSeconds);
+			var xhOutput = RunForOutput(args, out int exitCode, timeoutInSeconds, output: output);
 			if (exitCode != 0)
-				Console.WriteLine(xhOutput);
+				output?.WriteLine(xhOutput);
 
 			return exitCode == 0;
 		}
 
-		public static string RunForOutput(string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
+		public static string RunForOutput(string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT, ITestOutputHelper? output = null)
 		{
-			return DotnetInternal.RunForOutput(XHarnessTool, args, out exitCode, timeoutInSeconds);
+			return DotnetInternal.RunForOutput(XHarnessTool, args, out exitCode, timeoutInSeconds, output: output);
 		}
 	}
 }

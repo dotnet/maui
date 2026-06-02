@@ -61,6 +61,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				if (TrySetRuntimeName(propertyName, source, value, node))
 					return;
+				if (propertyName == XmlName.xShared)
+					throw new XamlParseException("x:Shared is only supported with SourceGen inflator. Remove the attribute or switch to SourceGen.", node);
 				if (Skips.Contains(propertyName))
 					return;
 				if (parentElement.SkipProperties.Contains(propertyName))
@@ -281,6 +283,15 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 			catch (Exception e)
 			{
+				// StaticResourceExtension must always rethrow even when a handler is present —
+				// unlike other markup extensions, swallowing this exception would silently apply
+				// an invalid value to the property. Notify the handler first to log the error.
+				if (markupExtension is StaticResourceExtension)
+				{
+					Context.ExceptionHandler?.Invoke(e);
+					throw;
+				}
+
 				if (Context.ExceptionHandler != null)
 					Context.ExceptionHandler(e);
 				else

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -36,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 #if MACCATALYST || IOS
 		// Only Mac Catalyst and iOS needs the CancelButtonColor nuanced handling verifying
 		[Fact(DisplayName = "CancelButtonColor is set correctly")]
+		[SkipOnIOSVersion(26, "iOS 26 changed UISearchBar internal structure")]
 		public async Task CancelButtonColorSetCorrectly()
 		{
 			var expected = Graphics.Colors.Red;
@@ -128,6 +130,63 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override Task<string> GetPlatformText(SearchBarHandler handler) =>
 				SearchBarTests.GetPlatformText(handler);
+		}
+#endif
+
+#if MACCATALYST || IOS
+		[Theory(DisplayName = "SearchBar renders with specified WidthRequest on iOS/Mac")]
+		[InlineData(200)]
+		[InlineData(250)]
+		[InlineData(300)]
+		public async Task ValidateSearchBarWidthRequestRendering(double requestedWidth)
+		{
+			var searchBar = new SearchBar
+			{
+				WidthRequest = requestedWidth,
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<SearchBarHandler>(searchBar);
+				var platformControl = GetPlatformControl(handler);
+
+				double actualWidth = 0;
+
+				if (platformControl is UIKit.UISearchBar uiSearchBar)
+				{
+					actualWidth = uiSearchBar.Frame.Width;
+				}
+
+				Assert.Equal(requestedWidth, actualWidth);
+			});
+		}
+
+
+		[Theory(DisplayName = "SearchBar renders with specified HeightRequest on iOS/Mac")]
+		[InlineData(100)]
+		[InlineData(150)]
+		[InlineData(80)]
+		public async Task ValidateSearchBarHeightRequestRendering(double requestedHeight)
+		{
+			var searchBar = new SearchBar
+			{
+				HeightRequest = requestedHeight,
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<SearchBarHandler>(searchBar);
+				var platformControl = GetPlatformControl(handler);
+
+				double actualHeight = 0;
+
+				if (platformControl is UIKit.UISearchBar uiSearchBar)
+				{
+					actualHeight = uiSearchBar.Frame.Height;
+				}
+
+				Assert.Equal(requestedHeight, actualHeight);
+			});
 		}
 #endif
 	}

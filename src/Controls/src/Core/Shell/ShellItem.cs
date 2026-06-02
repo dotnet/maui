@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -12,43 +13,53 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutItem']/Docs/*" />
+	/// <summary>
+	/// Represents a flyout menu item in a <see cref="Shell"/> application.
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class FlyoutItem : ShellItem
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='LabelStyle']/Docs/*" />
+		/// <summary>The style class for flyout item labels.</summary>
 		public const string LabelStyle = "FlyoutItemLabelStyle";
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='ImageStyle']/Docs/*" />
+		/// <summary>The style class for flyout item images.</summary>
 		public const string ImageStyle = "FlyoutItemImageStyle";
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='LayoutStyle']/Docs/*" />
+		/// <summary>The style class for flyout item layouts.</summary>
 		public const string LayoutStyle = "FlyoutItemLayoutStyle";
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="FlyoutItem"/> class.</summary>
 		public FlyoutItem()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>IsVisible</c>. This is a bindable property.</summary>
 		public static readonly new BindableProperty IsVisibleProperty = BaseShellItem.IsVisibleProperty;
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='GetIsVisible']/Docs/*" />
+		/// <summary>Gets the value of the attached <c>IsVisible</c> property for the specified <paramref name="obj"/>.</summary>
+		/// <param name="obj">The object from which to read the property value.</param>
+		/// <returns><see langword="true"/> if the object is visible; otherwise, <see langword="false"/>.</returns>
 		public static bool GetIsVisible(BindableObject obj) => (bool)obj.GetValue(IsVisibleProperty);
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlyoutItem.xml" path="//Member[@MemberName='SetIsVisible']/Docs/*" />
+		/// <summary>Sets the value of the attached <c>IsVisible</c> property on the specified <paramref name="obj"/>.</summary>
+		/// <param name="obj">The object on which to set the property value.</param>
+		/// <param name="isVisible">The visibility value to set.</param>
 		public static void SetIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(IsVisibleProperty, isVisible);
 	}
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/TabBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.TabBar']/Docs/*" />
+	/// <summary>
+	/// Represents the bottom tab bar in a <see cref="Shell"/> application.
+	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Always)]
 	public class TabBar : ShellItem
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TabBar.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="TabBar"/> class.</summary>
 		public TabBar()
 		{
 		}
 	}
 
 
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellItem']/Docs/*" />
+	/// <summary>
+	/// Represents a top-level navigation item in a <see cref="Shell"/>. Contains one or more <see cref="ShellSection"/> items.
+	/// </summary>
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellItemConverter))]
@@ -126,7 +137,17 @@ namespace Microsoft.Maui.Controls
 					defaultShowTabs = false;
 #endif
 
-				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => defaultShowTabs, null, displayedPage);
+				// Get the ShellContent for the current tab
+				var shellContent = CurrentItem?.CurrentItem;
+				Element currentPage = displayedPage;
+
+				// If TabBarIsVisible is set on ShellContent, then pass the ShellContent
+				if (shellContent is not null && shellContent.IsSet(Shell.TabBarIsVisibleProperty))
+				{
+					currentPage = shellContent;
+				}
+
+				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => defaultShowTabs, null, currentPage);
 			}
 		}
 
@@ -150,7 +171,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 		Lazy<PlatformConfigurationRegistry<ShellItem>> _platformConfigurationRegistry;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="ShellItem"/> class.</summary>
 		public ShellItem()
 		{
 			((ShellElementCollection)Items).VisibleItemsChangedInternal += (_, args) =>
@@ -179,14 +200,14 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ShellItem>>(() => new PlatformConfigurationRegistry<ShellItem>(this));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='CurrentItem']/Docs/*" />
+		/// <summary>Gets or sets the currently selected <see cref="ShellSection"/>. This is a bindable property.</summary>
 		public ShellSection CurrentItem
 		{
 			get { return (ShellSection)GetValue(CurrentItemProperty); }
 			set { SetValue(CurrentItemProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="//Member[@MemberName='Items']/Docs/*" />
+		/// <summary>Gets the collection of <see cref="ShellSection"/> items. This is a bindable property.</summary>
 		public IList<ShellSection> Items => (IList<ShellSection>)GetValue(ItemsProperty);
 		internal override ShellElementCollection ShellElementCollection => (ShellElementCollection)Items;
 
@@ -242,6 +263,10 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator ShellItem(TemplatedPage page) => (ShellSection)(ShellContent)page;
 
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MenuShellItem))]
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("Trimming", "IL2111:ReflectionToDynamicallyAccessedMembers", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
 		public static implicit operator ShellItem(MenuItem menuItem) => new MenuShellItem(menuItem);
 
 		/// <inheritdoc/>

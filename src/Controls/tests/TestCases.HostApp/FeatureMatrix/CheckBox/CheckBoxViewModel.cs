@@ -6,12 +6,14 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample;
 
-public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
+public class CheckBoxViewModel : INotifyPropertyChanged
 {
 	private bool _isChecked = true;
 	private Color _color = null;
 	private bool _isEnabled = true;
 	private bool _isVisible = true;
+	private bool _hasShadow = false;
+	private Shadow _shadow = null;
 	private string _checkedChangedStatus = string.Empty;
 	private bool _isEventStatusLabelVisible = false;
 	private string _commandStatus = string.Empty;
@@ -20,10 +22,11 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
-	public CheckBoxFeatureMatrixViewModel()
+	public CheckBoxViewModel()
 	{
 		CheckedChangedCommand = new Command(OnCheckedChanged);
 		CheckBoxCommand = new Command<string>(OnCheckBoxCommand);
+		SetColorCommand = new Command<string>(OnSetColor);
 	}
 
 	public bool IsChecked
@@ -85,11 +88,8 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 		{
 			if (_checkedChangedStatus != value)
 			{
-				if (!string.IsNullOrEmpty(value))
-				{
-					IsEventStatusLabelVisible = true;
-				}
 				_checkedChangedStatus = value;
+				IsEventStatusLabelVisible = !string.IsNullOrEmpty(value);
 				OnPropertyChanged();
 			}
 		}
@@ -110,6 +110,7 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 
 	public ICommand CheckedChangedCommand { get; }
 	public ICommand CheckBoxCommand { get; }
+	public ICommand SetColorCommand { get; }
 
 	public string CommandParameter
 	{
@@ -131,11 +132,8 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 		{
 			if (_commandStatus != value)
 			{
-				if (!string.IsNullOrEmpty(value))
-				{
-					IsCommandStatusLabelVisible = true;
-				}
 				_commandStatus = value;
+				IsCommandStatusLabelVisible = !string.IsNullOrEmpty(value);
 				OnPropertyChanged();
 			}
 		}
@@ -152,6 +150,16 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 				OnPropertyChanged();
 			}
 		}
+	}
+
+	private void OnSetColor(string colorName)
+	{
+		Color = colorName switch
+		{
+			"Blue" => Colors.Blue,
+			"Green" => Colors.Green,
+			_ => null,
+		};
 	}
 
 	private void OnCheckedChanged()
@@ -171,8 +179,56 @@ public partial class CheckBoxFeatureMatrixViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public bool HasShadow
+	{
+		get => _hasShadow;
+		set
+		{
+			if (_hasShadow != value)
+			{
+				_hasShadow = value;
+				Shadow = value
+					? new Shadow
+					{
+						Radius = 10,
+						Opacity = 1.0f,
+						Brush = Colors.Black.AsPaint(),
+						Offset = new Point(5, 5)
+					}
+					: null;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public Shadow Shadow
+	{
+		get => _shadow;
+		set
+		{
+			if (_shadow != value)
+			{
+				_shadow = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public void Reset()
+	{
+		IsChecked = true;
+		Color = null;
+		IsEnabled = true;
+		IsVisible = true;
+		HasShadow = false;
+		CheckedChangedStatus = string.Empty;
+		CommandStatus = string.Empty;
+		CommandParameter = string.Empty;
+	}
+
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
+

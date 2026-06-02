@@ -18,7 +18,7 @@ public class MacTemplateTest : BaseTemplateTests
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent),
+		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
 		File.WriteAllText(Path.Combine(projectDir, "Resources", "testfile.txt"), "Something here :)");
@@ -35,7 +35,7 @@ public class MacTemplateTest : BaseTemplateTests
 		var extendedBuildProps = BuildProps;
 		extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-{framework}");
 
-		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -65,8 +65,8 @@ public class MacTemplateTest : BaseTemplateTests
 			$"EnableCodeSigning={sign}"
 		};
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
-		Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output), $"Unable to create template {id}. Check test output for errors.");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		List<string> expectedEntitlements =
@@ -124,8 +124,8 @@ public class MacTemplateTest : BaseTemplateTests
 			buildWithCodeSignProps.Add("EnableCodeSigning=true");
 		}
 
-		Assert.True(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
-		Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
+		Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output), $"Unable to create template {id}. Check test output for errors.");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		string manifestLocation = Path.Combine(appLocation, "PrivacyInfo.xcprivacy");

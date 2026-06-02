@@ -1,22 +1,20 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/PresentationMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.PresentationMode']/Docs/*" />
+	/// <summary>Specifies how pages are presented during navigation.</summary>
 	[Flags]
 	public enum PresentationMode
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PresentationMode.xml" path="//Member[@MemberName='NotAnimated']/Docs/*" />
+		/// <summary>Navigation occurs without animation.</summary>
 		NotAnimated = 1,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PresentationMode.xml" path="//Member[@MemberName='Animated']/Docs/*" />
+		/// <summary>Navigation occurs with animation.</summary>
 		Animated = 1 << 1,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PresentationMode.xml" path="//Member[@MemberName='Modal']/Docs/*" />
+		/// <summary>Page is presented modally.</summary>
 		Modal = 1 << 2,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PresentationMode.xml" path="//Member[@MemberName='ModalAnimated']/Docs/*" />
+		/// <summary>Page is presented modally with animation.</summary>
 		ModalAnimated = PresentationMode.Animated | PresentationMode.Modal,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/PresentationMode.xml" path="//Member[@MemberName='ModalNotAnimated']/Docs/*" />
+		/// <summary>Page is presented modally without animation.</summary>
 		ModalNotAnimated = PresentationMode.NotAnimated | PresentationMode.Modal
 	}
 }

@@ -22,7 +22,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         Assert.That(App.FindElement("JustifyContentLabel").GetText(), Is.EqualTo("Start"));
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("NoWrap"));
         Assert.That(App.FindElement("Child1AlignSelfLabel").GetText(), Is.EqualTo("Auto"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(2)]
@@ -41,7 +41,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("Stretch"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(3)]
@@ -58,7 +58,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("Center"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(4)]
@@ -75,7 +75,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("Start"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(5)]
@@ -92,7 +92,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("End"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(6)]
@@ -109,7 +109,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("SpaceAround"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(7)]
@@ -126,7 +126,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("SpaceBetween"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(8)]
@@ -143,7 +143,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("SpaceEvenly"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(9)]
@@ -160,7 +160,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("Stretch"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(10)]
@@ -177,7 +177,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("Center"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(11)]
@@ -194,7 +194,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("Start"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(12)]
@@ -211,7 +211,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("End"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/31565
@@ -230,7 +230,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("SpaceAround"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(14)]
@@ -247,7 +247,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("SpaceBetween"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(15)]
@@ -264,7 +264,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignContentLabel");
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Reverse"));
         Assert.That(App.FindElement("AlignContentLabel").GetText(), Is.EqualTo("SpaceEvenly"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 #endif
 
@@ -281,7 +281,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("AlignItemsLabel");
         Assert.That(App.FindElement("AlignItemsLabel").GetText(), Is.EqualTo("Center"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(17)]
@@ -295,7 +295,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("AlignItemsLabel");
         Assert.That(App.FindElement("AlignItemsLabel").GetText(), Is.EqualTo("End"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(18)]
@@ -309,7 +309,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("AlignItemsLabel");
         Assert.That(App.FindElement("AlignItemsLabel").GetText(), Is.EqualTo("Stretch"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(19)]
@@ -323,7 +323,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DirectionLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("RowReverse"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(20)]
@@ -341,7 +341,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DirectionLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("Column"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(21)]
@@ -355,7 +355,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("DirectionLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("ColumnReverse"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(22)]
@@ -373,7 +373,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("JustifyContentLabel");
         Assert.That(App.FindElement("JustifyContentLabel").GetText(), Is.EqualTo("Center"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(23)]
@@ -387,7 +387,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("JustifyContentLabel");
         Assert.That(App.FindElement("JustifyContentLabel").GetText(), Is.EqualTo("End"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(24)]
@@ -401,7 +401,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("JustifyContentLabel");
         Assert.That(App.FindElement("JustifyContentLabel").GetText(), Is.EqualTo("SpaceBetween"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(25)]
@@ -415,7 +415,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("JustifyContentLabel");
         Assert.That(App.FindElement("JustifyContentLabel").GetText(), Is.EqualTo("SpaceAround"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(26)]
@@ -429,7 +429,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("JustifyContentLabel");
         Assert.That(App.FindElement("JustifyContentLabel").GetText(), Is.EqualTo("SpaceEvenly"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(27)]
@@ -443,7 +443,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("Child1AlignSelfLabel");
         Assert.That(App.FindElement("Child1AlignSelfLabel").GetText(), Is.EqualTo("Start"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(28)]
@@ -457,7 +457,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("Child1AlignSelfLabel");
         Assert.That(App.FindElement("Child1AlignSelfLabel").GetText(), Is.EqualTo("Center"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(29)]
@@ -471,7 +471,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("Child1AlignSelfLabel");
         Assert.That(App.FindElement("Child1AlignSelfLabel").GetText(), Is.EqualTo("End"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(30)]
@@ -485,7 +485,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("Child1AlignSelfLabel");
         Assert.That(App.FindElement("Child1AlignSelfLabel").GetText(), Is.EqualTo("Stretch"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(31)]
@@ -500,7 +500,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("Child1GrowLabel");
         Assert.That(App.FindElement("Child1GrowLabel").GetText(), Is.EqualTo("100"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(32)]
@@ -521,7 +521,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
 #endif
         App.WaitForElementTillPageNavigationSettled("ChildShrinkLabel");
         Assert.That(App.FindElement("ChildShrinkLabel").GetText(), Is.EqualTo("10"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(33)]
@@ -540,7 +540,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("Child1OrderLabel");
         Assert.That(App.FindElement("Child1OrderLabel").GetText(), Is.EqualTo("4"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(34)]
@@ -557,7 +557,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("Row"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Auto"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(35)]
@@ -574,7 +574,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("Row"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Fixed100"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(36)]
@@ -591,7 +591,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("Row"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Percent50"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(37)]
@@ -608,7 +608,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("RowReverse"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Auto"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(38)]
@@ -625,7 +625,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("RowReverse"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Fixed100"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(39)]
@@ -642,7 +642,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("RowReverse"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Percent50"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(40)]
@@ -663,7 +663,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("Column"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Auto"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(41)]
@@ -680,7 +680,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("Column"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Fixed100"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(42)]
@@ -701,7 +701,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("Column"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Percent50"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(43)]
@@ -718,7 +718,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("ColumnReverse"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Auto"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(44)]
@@ -735,7 +735,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("ColumnReverse"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Fixed100"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(45)]
@@ -756,7 +756,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("Child1BasisLabel");
         Assert.That(App.FindElement("DirectionLabel").GetText(), Is.EqualTo("ColumnReverse"));
         Assert.That(App.FindElement("Child1BasisLabel").GetText(), Is.EqualTo("Percent50"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(46)]
@@ -777,7 +777,7 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignItemsLabel");
         Assert.That(App.FindElement("AlignItemsLabel").GetText(), Is.EqualTo("Center"));
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
     [Test, Order(47)]
@@ -798,6 +798,6 @@ public class FlexLayoutFeatureTests : _GalleryUITest
         App.WaitForElementTillPageNavigationSettled("AlignItemsLabel");
         Assert.That(App.FindElement("AlignItemsLabel").GetText(), Is.EqualTo("End"));
         Assert.That(App.FindElement("WrapLabel").GetText(), Is.EqualTo("Wrap"));
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 }

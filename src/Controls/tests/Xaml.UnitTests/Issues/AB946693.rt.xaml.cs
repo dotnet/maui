@@ -38,6 +38,15 @@ public partial class AB946693 : ContentPage
 	public AB946693() => InitializeComponent();
 }
 """)
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh6192Template : ContentView
+{
+	public Gh6192Template() { }
+}
+""", "Gh6192Template.cs")
 					.RunMauiSourceGenerator(typeof(AB946693));
 				Assert.NotEmpty(result.Diagnostics);
 			}

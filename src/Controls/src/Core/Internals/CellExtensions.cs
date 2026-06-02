@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/CellExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.CellExtensions']/Docs/*" />
+	/// <summary>Extension methods for working with cells in templated lists.</summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class CellExtensions
 	{
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Internals
 			return TemplatedItemsList<TView, TItem>.GetGroup(cell);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/CellExtensions.xml" path="//Member[@MemberName='GetPath']/Docs/*" />
+		/// <summary>Gets the section and row index path for the cell.</summary>
 #pragma warning disable CS0618 // Type or member is obsolete
 		public static Tuple<int, int> GetPath(this Cell cell)
 #pragma warning restore CS0618 // Type or member is obsolete

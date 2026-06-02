@@ -63,23 +63,24 @@ internal static class SafeAreaExtensions
 			var bottom = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(3, layout), baseSafeArea.Bottom, 3, isKeyboardShowing, keyboardInsets);
 
 			var globalWindowInsetsListener = MauiWindowInsetListener.FindListenerForView(view);
-            bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
+			bool hasTrackedViews = globalWindowInsetsListener?.HasTrackedView == true;
 
-            // If this view has no safe area padding to apply, pass insets through to children
-            // instead of consuming them. This allows child views with SafeAreaEdges set
-            // to properly handle the insets even when the parent has SafeAreaEdges.None
-            // However, if this view was previously tracked (had padding before), we need to
-            // continue processing to reset the padding to 0
-            if (left == 0 && right == 0 && top == 0 && bottom == 0)
-            {
-                // Only pass through if this view hasn't been tracked yet
-                // If it was tracked, we need to reset its padding
-                if (globalWindowInsetsListener?.IsViewTracked(view) != true)
-                {
-                    // Don't consume insets - pass them through for potential child views to handle
-                    return windowInsets;
-                }
-            }
+			// If this view has no safe area padding to apply, pass insets through to children
+			// instead of consuming them. This allows child views with SafeAreaEdges set
+			// to properly handle the insets even when the parent has SafeAreaEdges.None
+			// However, if this view was previously tracked (had padding before), we need to
+			// continue processing to reset the padding to 0
+			if (left == 0 && right == 0 && top == 0 && bottom == 0)
+			{
+				// Only pass through if this view hasn't been tracked yet
+				// If it was tracked, we need to reset its padding
+				bool isViewTracked = globalWindowInsetsListener?.IsViewTracked(view) == true;
+				if (!isViewTracked)
+				{
+					// Don't consume insets - pass them through for potential child views to handle
+					return windowInsets;
+				}
+			}
 
 
 			if (isKeyboardShowing &&
@@ -119,21 +120,9 @@ internal static class SafeAreaExtensions
 				var viewRight = viewLeft + viewWidth;
 				var viewBottom = viewTop + viewHeight;
 
-				// Adjust for view's position relative to parent (including margins) to calculate
-				// safe area insets relative to the parent's position, not the view's visual position.
-				// This ensures margins and safe area insets are additive rather than overlapping.
-				// For example: 20px margin + 30px safe area = 50px total offset
-				// We only take the margins into account if the Width and Height are set
-				// If the Width and Height aren't set it means the layout pass hasn't happen yet
-				if (view.Width > 0 && view.Height > 0)
-				{
-					viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
-					viewLeft = Math.Max(0, viewLeft - (int)context.ToPixels(margins.Left));
-					viewRight += (int)context.ToPixels(margins.Right);
-					viewBottom += (int)context.ToPixels(margins.Bottom);
-				}
-
 				// Get actual screen dimensions (including system UI)
+				// This must be done BEFORE margin adjustment so we can detect
+				// off-screen animation state from raw position values.
 				var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
 				if (windowManager?.DefaultDisplay is not null)
 				{
@@ -142,35 +131,58 @@ internal static class SafeAreaExtensions
 					var screenWidth = realMetrics.WidthPixels;
 					var screenHeight = realMetrics.HeightPixels;
 
-					// Check if view extends beyond screen bounds - this indicates the view
-					// is still being positioned (e.g., during Shell fragment transitions).
-					// In this case, consume all insets to prevent children from processing
-					// invalid data, and request a re-apply after the view settles.
-					bool viewExtendsBeyondScreen = viewRight > screenWidth || viewBottom > screenHeight ||
-												   viewLeft < 0 || viewTop < 0;
+					// Detect if view is off-screen BEFORE margin adjustment clamps negative positions
+					// to zero via Math.Max, destroying the animation signal.
+					// Horizontal: during Shell tab animation, viewLeft=-1 gets clamped to 0,
+					// making it impossible to detect animation for the RIGHT edge afterward.
+					var viewIsAnimatingHorizontally = viewLeft < 0 || viewRight > screenWidth;
 
-					if (viewExtendsBeyondScreen)
+					// Vertical: During Shell navigation animations, the view may be positioned
+					// beyond the status bar area (e.g., Y=126 when status bar is 63px) and also
+					// extend beyond the screen bottom. This happens because the fragment animation
+					// slides the view in from off-screen. We detect this animating state by checking:
+					// 1. viewTop > top (view is below the status bar area - normal case would be viewTop <= top)
+					// 2. viewBottom > screenHeight (view extends beyond screen - confirms it's not just a small view)
+					// 3. viewTop > 0 (view is not at origin)
+					// This is DIFFERENT from ScrollView where viewTop = 0 (at origin, not animating).
+					// When we detect animation state, apply the full top inset since view will settle at Y=0.
+					var viewIsAnimatingVertically = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
+
+					// Adjust for view's position relative to parent (including margins) to calculate
+					// safe area insets relative to the parent's position, not the view's visual position.
+					// This ensures margins and safe area insets are additive rather than overlapping.
+					// For example: 20px margin + 30px safe area = 50px total offset
+					// We only take the margins into account if the Width and Height are set
+					// If the Width and Height aren't set it means the layout pass hasn't happened yet
+					if (view.Width > 0 && view.Height > 0)
 					{
-						// Request insets to be reapplied after the next layout pass
-						// when the view should be properly positioned.
-						// Don't return early - let processing continue with current insets
-						// to avoid visual popping, the re-apply will correct any issues.
-						view.Post(() => ViewCompat.RequestApplyInsets(view));
+						viewTop = Math.Max(0, viewTop - (int)context.ToPixels(margins.Top));
+						viewLeft = Math.Max(0, viewLeft - (int)context.ToPixels(margins.Left));
+						viewRight += (int)context.ToPixels(margins.Right);
+						viewBottom += (int)context.ToPixels(margins.Bottom);
 					}
 
 					// Calculate actual overlap for each edge
 					// Top: how much the view extends into the top safe area
 					// If the viewTop is < 0 that means that it's most likely
 					// panned off the top of the screen so we don't want to apply any top inset
+
 					if (top > 0 && viewTop < top && viewTop >= 0)
 					{
 						// Calculate the actual overlap amount
 						top = Math.Min(top - viewTop, top);
 					}
+					else if (top > 0 && viewIsAnimatingVertically)
+					{
+						// View is animating - positioned beyond status bar but extends off-screen
+						// Apply full top inset since view will settle at Y=0
+					}
 					else
 					{
 						if (viewHeight > 0 || hasTrackedViews)
+						{
 							top = 0;
+						}
 					}
 
 					// Bottom: how much the view extends into the bottom safe area
@@ -185,11 +197,20 @@ internal static class SafeAreaExtensions
 						// if the view height is zero because it hasn't done the first pass
 						// and we don't have any tracked views yet then we will apply the bottom inset
 						if (viewHeight > 0 || hasTrackedViews)
+						{
 							bottom = 0;
+						}
 					}
 
 					// Left: how much the view extends into the left safe area
-					if (left > 0 && viewLeft < left)
+					// During Shell navigation animations, the view slides in from off-screen.
+					// We must check animation FIRST because near the end of animation
+					// (e.g., viewLeft=1), the overlap check would incorrectly reduce the inset.
+					if (left > 0 && viewIsAnimatingHorizontally && viewLeft > 0)
+					{
+						// View is animating - keep full inset since view will settle at X=0
+					}
+					else if (left > 0 && viewLeft < left)
 					{
 						// Calculate the actual overlap amount
 						left = Math.Min(left - viewLeft, left);
@@ -197,11 +218,19 @@ internal static class SafeAreaExtensions
 					else
 					{
 						if (viewWidth > 0 || hasTrackedViews)
+						{
 							left = 0;
+						}
 					}
 
 					// Right: how much the view extends into the right safe area
-					if (right > 0 && viewRight > (screenWidth - right))
+					// During animation, viewRight may be near screenWidth (e.g., 2991 vs 2992)
+					// causing incorrect partial overlap. Check animation before overlap.
+					if (right > 0 && viewIsAnimatingHorizontally)
+					{
+						// View is animating - keep full inset
+					}
+					else if (right > 0 && viewRight > (screenWidth - right))
 					{
 						// Calculate the actual overlap amount
 						var rightEdge = screenWidth - right;
@@ -210,7 +239,9 @@ internal static class SafeAreaExtensions
 					else
 					{
 						if (viewWidth > 0 || hasTrackedViews)
+						{
 							right = 0;
+						}
 					}
 				}
 
@@ -287,24 +318,24 @@ internal static class SafeAreaExtensions
 
 		// Handle SoftInput specifically - only apply keyboard insets for bottom edge when keyboard is showing
 		if (edge == 3)
-        {
-            if (SafeAreaEdges.IsOnlySoftInput(safeAreaRegion))
-            {
-                // SoftInput only applies padding when keyboard is showing
-                return isKeyboardShowing ? keyBoardInsets.Bottom : 0;
-            }
+		{
+			if (SafeAreaEdges.IsOnlySoftInput(safeAreaRegion))
+			{
+				// SoftInput only applies padding when keyboard is showing
+				return isKeyboardShowing ? keyBoardInsets.Bottom : 0;
+			}
 
-            if (isKeyboardShowing)
-            {
-                // Return keyboard insets for any region that includes SoftInput
-                if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
-                    return keyBoardInsets.Bottom;
+			if (isKeyboardShowing)
+			{
+				// Return keyboard insets for any region that includes SoftInput
+				if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
+					return keyBoardInsets.Bottom;
 
-                // if the keyboard is showing then we will just return 0 for the bottom inset
-                // because that part of the view is covered by the keyboard so we don't want to pad the view
-                return 0;
-            }
-        }
+				// if the keyboard is showing then we will just return 0 for the bottom inset
+				// because that part of the view is covered by the keyboard so we don't want to pad the view
+				return 0;
+			}
+		}
 
 		// All other regions respect safe area in some form
 		// This includes:

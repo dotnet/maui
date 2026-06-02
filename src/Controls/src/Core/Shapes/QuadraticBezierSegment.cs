@@ -3,16 +3,24 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.QuadraticBezierSegment']/Docs/*" />
+	/// <summary>
+	/// Represents a path segment that draws a quadratic Bezier curve.
+	/// </summary>
 	public class QuadraticBezierSegment : PathSegment
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="QuadraticBezierSegment"/> class.
+		/// </summary>
 		public QuadraticBezierSegment()
 		{
 
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="QuadraticBezierSegment"/> class with the specified control point and endpoint.
+		/// </summary>
+		/// <param name="point1">The control point of the curve.</param>
+		/// <param name="point2">The endpoint of the curve.</param>
 		public QuadraticBezierSegment(Point point1, Point point2)
 		{
 			Point1 = point1;
@@ -27,14 +35,18 @@ namespace Microsoft.Maui.Controls.Shapes
 		public static readonly BindableProperty Point2Property =
 			BindableProperty.Create(nameof(Point2), typeof(Point), typeof(QuadraticBezierSegment), new Point(0, 0));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='Point1']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the control point of the quadratic Bezier curve. This is a bindable property.
+		/// </summary>
 		public Point Point1
 		{
 			set { SetValue(Point1Property, value); }
 			get { return (Point)GetValue(Point1Property); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='Point2']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the endpoint of the quadratic Bezier curve. This is a bindable property.
+		/// </summary>
 		public Point Point2
 		{
 			set { SetValue(Point2Property, value); }

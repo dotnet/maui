@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.TabbedPage']/Docs/*" />
+	/// <summary>A <see cref="MultiPage{T}"/> that displays an array of tabs across the top of the screen, each of which loads content onto the screen.</summary>
 	[ContentProperty(nameof(Children))]
 	public partial class TabbedPage : MultiPage<Page>, IBarElement, IElementConfiguration<TabbedPage>, ITabbedView
 	{
@@ -25,34 +25,34 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<TabbedPage>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarBackgroundColor']/Docs/*" />
+		/// <summary>Gets or sets the background color of the tab bar. This is a bindable property.</summary>
 		public Color BarBackgroundColor
 		{
 			get => (Color)GetValue(BarElement.BarBackgroundColorProperty);
 			set => SetValue(BarElement.BarBackgroundColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarBackground']/Docs/*" />
+		/// <summary>Gets or sets the brush used for the tab bar background. This is a bindable property.</summary>
 		public Brush BarBackground
 		{
 			get => (Brush)GetValue(BarElement.BarBackgroundProperty);
 			set => SetValue(BarElement.BarBackgroundProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarTextColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the tab bar text. This is a bindable property.</summary>
 		public Color BarTextColor
 		{
 			get => (Color)GetValue(BarElement.BarTextColorProperty);
 			set => SetValue(BarElement.BarTextColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='UnselectedTabColor']/Docs/*" />
+		/// <summary>Gets or sets the color of unselected tabs. This is a bindable property.</summary>
 		public Color UnselectedTabColor
 		{
 			get => (Color)GetValue(UnselectedTabColorProperty);
 			set => SetValue(UnselectedTabColorProperty, value);
 		}
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='SelectedTabColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the selected tab. This is a bindable property.</summary>
 		public Color SelectedTabColor
 		{
 			get => (Color)GetValue(SelectedTabColorProperty);
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls
 			return page;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="TabbedPage"/> class.</summary>
 		public TabbedPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<TabbedPage>>(() => new PlatformConfigurationRegistry<TabbedPage>(this));

@@ -8,7 +8,9 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Setter']/Docs/*" />
+	/// <summary>
+	/// Sets a property value within a <see cref="Style"/> or <see cref="TriggerBase"/>.
+	/// </summary>
 	[ContentProperty(nameof(Value))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.SetterValueProvider")]
 	[RequireService(
@@ -16,13 +18,19 @@ namespace Microsoft.Maui.Controls
 		 typeof(IXmlLineInfoProvider)])]
 	public sealed class Setter : IValueProvider
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='TargetName']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name of the element to which the setter applies.
+		/// </summary>
 		public string TargetName { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='Property']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="BindableProperty"/> to set.
+		/// </summary>
 		public BindableProperty Property { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the value to apply to the property.
+		/// </summary>
 		public object Value { get; set; }
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
@@ -67,7 +75,7 @@ namespace Microsoft.Maui.Controls
 			var targetObject = target;
 
 			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
-				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new XamlParseException($"Cannot resolve '{TargetName}' as Setter Target for '{target}'.");
+				targetObject = FindTargetByName(element, TargetName) ?? throw new XamlParseException($"Cannot resolve '{TargetName}' as Setter Target for '{target}'.");
 
 			if (Property == null)
 				return;
@@ -90,7 +98,7 @@ namespace Microsoft.Maui.Controls
 			var targetObject = target;
 
 			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
-				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new ArgumentNullException(nameof(targetObject));
+				targetObject = FindTargetByName(element, TargetName) ?? throw new ArgumentNullException(nameof(targetObject));
 
 			if (Property == null)
 				return;
@@ -99,6 +107,26 @@ namespace Microsoft.Maui.Controls
 			else if (Value is DynamicResource dynamicResource)
 				targetObject.RemoveDynamicResource(Property, specificity);
 			targetObject.ClearValue(Property, specificity);
+		}
+
+		static BindableObject FindTargetByName(Element element, string name)
+		{
+			// Try standard lookup first (works for same or child namescopes)
+			if (element.FindByName(name) is BindableObject target)
+				return target;
+
+			// Walk up parent tree to handle ControlTemplate namescope boundaries
+			var current = element.Parent;
+			while (current != null)
+			{
+				var namescope = current.GetNameScope();
+				if (namescope?.FindByName(name) is BindableObject parentTarget)
+					return parentTarget;
+
+				current = current.Parent;
+			}
+
+			return null;
 		}
 	}
 }

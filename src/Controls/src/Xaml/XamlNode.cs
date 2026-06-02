@@ -51,14 +51,21 @@ class ValueNode(object value, IXmlNamespaceResolver namespaceResolver, int linen
 {
 	public object Value { get; set; } = value;
 
+	/// <summary>
+	/// Indicates that this ValueNode was created from an escaped markup string (e.g., "{}{Foo}").
+	/// When true, the Value should be treated as a literal and not processed as a C# expression.
+	/// </summary>
+	public bool IsEscaped { get; init; }
+
 	public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 		=> visitor.Visit(this, parentNode);
 
 	public override INode Clone()
 		=> new ValueNode(Value, NamespaceResolver, LineNumber, LinePosition)
-			{
-				IgnorablePrefixes = IgnorablePrefixes
-			};
+		{
+			IgnorablePrefixes = IgnorablePrefixes,
+			IsEscaped = IsEscaped
+		};
 }
 
 [DebuggerDisplay("{MarkupString}")]
@@ -71,13 +78,13 @@ class MarkupNode(string markupString, IXmlNamespaceResolver namespaceResolver, i
 
 	public override INode Clone()
 		=> new MarkupNode(MarkupString, NamespaceResolver, LineNumber, LinePosition)
-			{
-				IgnorablePrefixes = IgnorablePrefixes
-			};
+		{
+			IgnorablePrefixes = IgnorablePrefixes
+		};
 }
 
 static class XmlNameExtensions
-{ 
+{
 	public static bool TryGetValue(this Dictionary<XmlName, INode> properties, string name, out INode node, out XmlName xmlName)
 	{
 		xmlName = new XmlName("", name);

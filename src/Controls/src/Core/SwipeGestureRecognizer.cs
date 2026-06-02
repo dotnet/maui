@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeGestureRecognizer']/Docs/*" />
+	/// <summary>Recognizes swipe gestures on the attached element.</summary>
 	public sealed class SwipeGestureRecognizer : GestureRecognizer, ISwipeGestureController
 	{
 		// Default threshold in pixels before a swipe is detected.
@@ -12,46 +12,47 @@ namespace Microsoft.Maui.Controls
 
 		double _totalX, _totalY;
 
-		/// <summary>Bindable property for <see cref="Command"/>.</summary>
+		/// <summary>Bindable property for <see cref="Command"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(SwipeGestureRecognizer), null);
 
-		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
+		/// <summary>Bindable property for <see cref="CommandParameter"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SwipeGestureRecognizer), null);
 
-		/// <summary>Bindable property for <see cref="Direction"/>.</summary>
+		/// <summary>Bindable property for <see cref="Direction"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty DirectionProperty = BindableProperty.Create(nameof(Direction), typeof(SwipeDirection), typeof(SwipeGestureRecognizer), default(SwipeDirection));
 
-		/// <summary>Bindable property for <see cref="Threshold"/>.</summary>
+		/// <summary>Bindable property for <see cref="Threshold"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty ThresholdProperty = BindableProperty.Create(nameof(Threshold), typeof(uint), typeof(SwipeGestureRecognizer), DefaultSwipeThreshold);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeGestureRecognizer.xml" path="//Member[@MemberName='Command']/Docs/*" />
+		/// <summary>Gets or sets the command to invoke when the gesture is recognized. This is a bindable property.</summary>
 		public ICommand Command
 		{
 			get { return (ICommand)GetValue(CommandProperty); }
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeGestureRecognizer.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
+		/// <summary>Gets or sets the parameter to pass to the <see cref="Command"/>. This is a bindable property.</summary>
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeGestureRecognizer.xml" path="//Member[@MemberName='Direction']/Docs/*" />
+		/// <summary>Gets or sets the direction(s) of swipes to recognize. This is a bindable property.</summary>
 		public SwipeDirection Direction
 		{
 			get { return (SwipeDirection)GetValue(DirectionProperty); }
 			set { SetValue(DirectionProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeGestureRecognizer.xml" path="//Member[@MemberName='Threshold']/Docs/*" />
+		/// <summary>Gets or sets the minimum distance in pixels the swipe must travel to be recognized. Default is 100. This is a bindable property.</summary>
 		public uint Threshold
 		{
 			get { return (uint)GetValue(ThresholdProperty); }
 			set { SetValue(ThresholdProperty, value); }
 		}
 
+		/// <summary>Occurs when a swipe gesture is recognized on the element.</summary>
 		public event EventHandler<SwipedEventArgs> Swiped;
 
 		void ISwipeGestureController.SendSwipe(Element sender, double totalX, double totalY)
@@ -111,7 +112,9 @@ namespace Microsoft.Maui.Controls
 			return detected;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeGestureRecognizer.xml" path="//Member[@MemberName='SendSwiped']/Docs/*" />
+		/// <summary>Invokes the <see cref="Swiped"/> event and executes the <see cref="Command"/>.</summary>
+		/// <param name="sender">The view that detected the swipe.</param>
+		/// <param name="direction">The direction of the swipe.</param>
 		public void SendSwiped(View sender, SwipeDirection direction)
 		{
 			ICommand cmd = Command;

@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <RollForward>Major</RollForward>
+    <!-- Show Console.WriteLine output in real-time during test runs -->
+    <ShowLiveOutput>true</ShowLiveOutput>
   </PropertyGroup>
 
   <ItemGroup>

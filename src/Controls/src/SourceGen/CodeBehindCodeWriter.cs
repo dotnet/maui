@@ -98,7 +98,7 @@ static class CodeBehindCodeWriter
 
 		var generateInflatorSwitch = compilation.AssemblyName == "Microsoft.Maui.Controls.Xaml.UnitTests" && !generateDefaultCtor;
 		var xamlInflators = projItem.Inflator;
-		
+
 		//if there's only the XamlC inflator, prevent non-assigned errors
 		if (xamlInflators == XamlInflator.XamlC)
 			sb.AppendLine("#pragma warning disable CS0649");
@@ -107,12 +107,10 @@ static class CodeBehindCodeWriter
 		sb.AppendLine("{");
 		sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
 
-#if !_MAUIXAML_SOURCEGEN_BACKCOMPAT
-		if (addXamlCompilationAttribute && !alreadyHasXamlCompilationAttribute)
-			sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]");
-#endif
+#pragma warning disable CS0618 // XamlCompilation is deprecated but still generated for backcompat
 		if (!addXamlCompilationAttribute && (xamlInflators & XamlInflator.XamlC) == 0 && !alreadyHasXamlCompilationAttribute)
-			sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip)]");
+			sb.AppendLine($"\t#pragma warning disable CS0618\n\t[global::Microsoft.Maui.Controls.Xaml.XamlCompilation(global::Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip)]\n\t#pragma warning restore CS0618");
+#pragma warning restore CS0618
 
 		if (hideFromIntellisense)
 		{
@@ -174,7 +172,8 @@ static class CodeBehindCodeWriter
 				InitComp("InitializeComponent");
 			else if ((xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
 				InitComp("InitializeComponent");
-			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen) {
+			else if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			{
 				InitComp("InitializeComponent", partialsignature: true);
 				//generate InitCompRuntime for HotReload fallback
 				if (projItem.EnableDiagnostics)
@@ -199,7 +198,7 @@ static class CodeBehindCodeWriter
 			if (namedFields != null && namedFields.Any())
 			{
 				sb.AppendLine($"#if NET5_0_OR_GREATER");
-				foreach ((var fname, _, _) in namedFields)				
+				foreach ((var fname, _, _) in namedFields)
 					sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({EscapeIdentifier(fname)}))]");
 
 				sb.AppendLine($"#endif");
@@ -324,7 +323,7 @@ static class CodeBehindCodeWriter
 			return false;
 		}
 
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
+#if !NET12_0_OR_GREATER
 		// if the following xml processing instruction is present
 		//
 		// <?xaml-comp compile="true" ?>
@@ -340,7 +339,7 @@ static class CodeBehindCodeWriter
 		{
 			XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootClrNamespace, out _, out _);
 		}
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
+#if !NET12_0_OR_GREATER
 		else if (hasXamlCompilationProcessingInstruction
 				&& (root.NamespaceURI == XamlParser.MauiUri || root.NamespaceURI == XamlParser.MauiGlobalUri))
 #else
@@ -386,7 +385,7 @@ static class CodeBehindCodeWriter
 		return true;
 	}
 
-#if _MAUIXAML_SOURCEGEN_BACKCOMPAT
+#if !NET12_0_OR_GREATER
 	//true, unless explicitely false
 	static bool GetXamlCompilationProcessingInstruction(XmlDocument xmlDoc)
 	{

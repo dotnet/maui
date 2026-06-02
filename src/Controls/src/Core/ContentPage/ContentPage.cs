@@ -10,7 +10,7 @@ using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs/*" />
+	/// <summary>A <see cref="Page"/> that displays a single view as its content.</summary>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElement, ISafeAreaView2
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="//Member[@MemberName='Content']/Docs/*" />
+		/// <summary>Gets or sets the view that contains the content of the page. This is a bindable property.</summary>
 		public View Content
 		{
 			get { return (View)GetValue(ContentProperty); }
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this content page.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.None (edge-to-edge).
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the content page should obey safe area insets.

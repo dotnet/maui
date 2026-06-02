@@ -62,6 +62,20 @@ namespace Microsoft.Maui.TestCases.Tests
 			return rect.Y + rect.Height / 2;
 		}
 
+		/// <summary>
+		/// Taps at the center of an element using touch coordinates.
+		/// Use this instead of App.Tap() for elements with TapGestureRecognizer,
+		/// because App.Tap() uses element.Click() which triggers Android's accessibility
+		/// click (performClick). MAUI uses GestureDetector for tap recognition through
+		/// touch events, not OnClickListener, so element.Click() doesn't fire TapGestureRecognizer.
+		/// </summary>
+		public static void TapElement(this IApp app, string automationId)
+		{
+			var element = app.WaitForElement(automationId);
+			var rect = element.GetRect();
+			app.TapCoordinates(rect.CenterX(), rect.CenterY());
+		}
+
 		public static void AssertMemoryTest(this IApp app)
 		{
 			try
@@ -77,6 +91,21 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 
 				throw;
+			}
+		}
+
+		public static void TapFirstSearchResult(this IApp app, UITestContextBase context, IUIElement searchHandler, string searchResultIdentifier = "SearchResultName")
+		{
+			if (context.Device == TestDevice.Android)
+			{
+				// Android does not support selecting elements in SearchHandler results
+				var y = searchHandler.GetRect().Y + searchHandler.GetRect().Height;
+				app.TapCoordinates(searchHandler.GetRect().X + 10, y + 10);
+			}
+			else
+			{
+				var searchResults = app.FindElements(searchResultIdentifier);
+				searchResults.First().Tap();
 			}
 		}
 	}

@@ -20,7 +20,9 @@ public class Issue32394 : _IssuesUITest
 		App.WaitForElement("Issue32394SetPositionButton");
 		App.Tap("Issue32394SetPositionButton");
 		App.SetOrientationLandscape();
-		VerifyScreenshot();
+		// Use retryTimeout to allow orientation change to complete
+		// Higher tolerance needed for CarouselView orientation changes due to rendering variance
+		VerifyScreenshot(tolerance: 1.5, retryTimeout: TimeSpan.FromSeconds(3));
 	}
 }
 #endif

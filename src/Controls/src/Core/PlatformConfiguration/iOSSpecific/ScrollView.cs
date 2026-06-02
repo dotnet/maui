@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(ShouldDelayContentTouchesProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="//Member[@MemberName='SetShouldDelayContentTouches'][1]/Docs/*" />
+		/// <summary>Sets whether iOS delays touch events to determine scroll intent.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value"><see langword="true"/> to delay; <see langword="false"/> for immediate touch response.</param>
 		public static void SetShouldDelayContentTouches(BindableObject element, bool value)
 		{
 			element.SetValue(ShouldDelayContentTouchesProperty, value);
@@ -31,7 +33,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetShouldDelayContentTouches(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ScrollView.xml" path="//Member[@MemberName='SetShouldDelayContentTouches'][2]/Docs/*" />
+		/// <summary>Sets whether iOS delays touch events to determine scroll intent.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to delay; <see langword="false"/> for immediate touch response.</param>
+		/// <returns>The updated platform configuration.</returns>
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetShouldDelayContentTouches(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetShouldDelayContentTouches(config.Element, value);

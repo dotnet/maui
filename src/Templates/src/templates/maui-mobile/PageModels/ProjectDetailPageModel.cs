@@ -45,6 +45,9 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	bool _isBusy;
 
 	[ObservableProperty]
+	private bool _isCategoryPickerExpanded;
+
+	[ObservableProperty]
 	private List<IconData> _icons =	new List<IconData>
 	{
 		new IconData { Icon = FluentUI.ribbon_24_regular, Description = "Ribbon Icon" },
@@ -55,6 +58,9 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		new IconData { Icon = FluentUI.people_24_regular, Description = "People Icon" },
 		new IconData { Icon = FluentUI.bot_24_regular, Description = "Bot Icon" }
 	};
+
+	[ObservableProperty]
+	private ProjectTask? selectedTask;
 
 	private bool _canDelete;
 
@@ -182,6 +188,18 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	{
 		await _taskRepository.SaveItemAsync(task);
 		OnPropertyChanged(nameof(HasCompletedTasks));
+	}
+
+	partial void  OnIsCategoryPickerExpandedChanged(bool value)
+	{
+		if (value)
+		{
+			SemanticScreenReader.Announce("Category ComboBox, State Expanded");
+		}
+		else
+		{
+			SemanticScreenReader.Announce("Category ComboBox, State Collapsed");
+		}
 	}
 
 	[RelayCommand]

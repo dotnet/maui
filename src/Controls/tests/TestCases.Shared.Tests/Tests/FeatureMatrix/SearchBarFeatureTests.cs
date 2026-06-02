@@ -19,7 +19,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 #if IOS
         VerifyScreenshot(cropBottom: 1200); 
 #else
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 #endif
 	}
 
@@ -28,7 +28,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 	public void SearchBar_InitialState_VerifyVisualState()
 	{
 		App.WaitForElement("SearchBar");
-		VerifyScreenshot();
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/14061

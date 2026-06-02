@@ -7,7 +7,8 @@ using System.Linq;
 namespace Microsoft.Maui.Controls.Xaml;
 
 class SimplifyOnPlatformVisitor : IXamlNodeVisitor
-{	public SimplifyOnPlatformVisitor(string targetFramework)
+{
+	public SimplifyOnPlatformVisitor(string targetFramework)
 	{
 
 		if (string.IsNullOrEmpty(targetFramework))
@@ -49,7 +50,7 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 		//`{OnPlatform}` markup extension
 		if (node.XmlType.IsOfAnyType("OnPlatformExtension"))
 		{
-			if (   node.Properties.TryGetValue(new XmlName("", Target), out INode targetNode)
+			if (node.Properties.TryGetValue(new XmlName("", Target), out INode targetNode)
 				|| node.Properties.TryGetValue(new XmlName(null, Target), out targetNode)
 				|| node.Properties.TryGetValue(new XmlName("", "Default"), out targetNode)
 				|| node.Properties.TryGetValue(new XmlName(null, "Default"), out targetNode))
@@ -111,10 +112,10 @@ class SimplifyOnPlatformVisitor : IXamlNodeVisitor
 					// Create a new ElementNode with the type from x:TypeArguments
 					var typeArg = node.XmlType.TypeArguments[0];
 					var elementNode = new ElementNode(typeArg, typeArg.NamespaceUri, node.NamespaceResolver, node.LineNumber, node.LinePosition);
-					
+
 					// Set the value as the collection item (for types like Color, this is how they're represented)
 					elementNode.CollectionItems.Add(valueNode);
-					
+
 					// Replace the ValueNode with the new ElementNode
 					onNode = elementNode;
 				}

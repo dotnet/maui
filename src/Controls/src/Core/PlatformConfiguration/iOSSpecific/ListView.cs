@@ -13,21 +13,27 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static readonly BindableProperty SeparatorStyleProperty = BindableProperty.Create(nameof(SeparatorStyle), typeof(SeparatorStyle), typeof(FormsElement), SeparatorStyle.Default);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetSeparatorStyle'][1]/Docs/*" />
+		/// <summary>Gets the separator style for the ListView on iOS.</summary>
+		/// <param name="element">The element to get the value from.</param>
+		/// <returns>The separator style.</returns>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static SeparatorStyle GetSeparatorStyle(BindableObject element)
 		{
 			return (SeparatorStyle)element.GetValue(SeparatorStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetSeparatorStyle'][1]/Docs/*" />
+		/// <summary>Sets the separator style for the ListView on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">The separator style to apply.</param>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetSeparatorStyle(BindableObject element, SeparatorStyle value)
 		{
 			element.SetValue(SeparatorStyleProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetSeparatorStyle'][2]/Docs/*" />
+		/// <summary>Gets the separator style for the ListView on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The separator style.</returns>
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static SeparatorStyle GetSeparatorStyle(this IPlatformElementConfiguration<iOS, FormsElement> config)
@@ -36,7 +42,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetSeparatorStyle(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetSeparatorStyle'][2]/Docs/*" />
+		/// <summary>Sets the separator style for the ListView on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The separator style to apply.</param>
+		/// <returns>The updated platform configuration.</returns>
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
@@ -54,21 +63,27 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static readonly BindableProperty GroupHeaderStyleProperty = BindableProperty.Create(nameof(GroupHeaderStyle), typeof(GroupHeaderStyle), typeof(FormsElement), GroupHeaderStyle.Plain);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetGroupHeaderStyle'][1]/Docs/*" />
+		/// <summary>Gets the group header style for the ListView on iOS.</summary>
+		/// <param name="element">The element to get the value from.</param>
+		/// <returns>The group header style.</returns>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static GroupHeaderStyle GetGroupHeaderStyle(BindableObject element)
 		{
 			return (GroupHeaderStyle)element.GetValue(GroupHeaderStyleProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetGroupHeaderStyle'][1]/Docs/*" />
+		/// <summary>Sets the group header style for the ListView on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value">The group header style to apply.</param>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetGroupHeaderStyle(BindableObject element, GroupHeaderStyle value)
 		{
 			element.SetValue(GroupHeaderStyleProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='GetGroupHeaderStyle'][2]/Docs/*" />
+		/// <summary>Gets the group header style for the ListView on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <returns>The group header style.</returns>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 #pragma warning disable CS0618 // Type or member is obsolete
 		public static GroupHeaderStyle GetGroupHeaderStyle(this IPlatformElementConfiguration<iOS, FormsElement> config)
@@ -77,7 +92,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetGroupHeaderStyle(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetGroupHeaderStyle'][2]/Docs/*" />
+		/// <summary>Sets the group header style for the ListView on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value">The group header style to apply.</param>
+		/// <returns>The updated platform configuration.</returns>
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
@@ -100,14 +118,19 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return (bool)element.GetValue(RowAnimationsEnabledProperty);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetRowAnimationsEnabled'][1]/Docs/*" />
+		/// <summary>Sets whether row animations are enabled for the ListView on iOS.</summary>
+		/// <param name="element">The element to set the value on.</param>
+		/// <param name="value"><see langword="true"/> to enable animations; otherwise, <see langword="false"/>.</param>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetRowAnimationsEnabled(BindableObject element, bool value)
 		{
 			element.SetValue(RowAnimationsEnabledProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/ListView.xml" path="//Member[@MemberName='SetRowAnimationsEnabled'][2]/Docs/*" />
+		/// <summary>Sets whether row animations are enabled for the ListView on iOS.</summary>
+		/// <param name="config">The platform configuration.</param>
+		/// <param name="value"><see langword="true"/> to enable animations; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated platform configuration.</returns>
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]

@@ -1,0 +1,43 @@
+name: Bump global.json for dotnet/dotnet bumps
+on: pull_request_target
+
+jobs:
+  bump-global-json:
+    name: Bump global.json
+    runs-on: ubuntu-latest
+    # GITHUB_TOKEN change from read-write to read-only on 2024-02-01 requires permissions block
+    # https://docs.opensource.microsoft.com/github/apps/permission-changes/
+    # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      contents: write
+    if: contains(github.event.pull_request.title, 'Update dependencies from dotnet/') && github.actor == 'dotnet-maestro[bot]'
+    steps:
+    - name: 'Checkout repo'
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: 'Update global.json'
+      env:
+        PR_NUMBER: ${{ github.event.number }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      run: |
+        set -exo pipefail
+
+        sudo apt-get install libxml2-utils
+        DOTNET_VERSION=$(xmllint --xpath '/Project/PropertyGroup/MicrosoftNETSdkPackageVersion/text()' eng/Versions.props)
+
+        jq '.tools.dotnet = "'$DOTNET_VERSION'"' global.json > global.json.tmp
+        mv global.json.tmp global.json
+        if git diff --exit-code -- global.json; then
+          echo "No global.json update necessary"
+          exit 0
+        fi
+        git add -- global.json
+        git config --global user.email "github-actions@xamarin.com"
+        git config --global user.name "GitHub Actions"
+        git checkout "$GITHUB_HEAD_REF"
+        git commit -m "Re-generate global.json for PR #$PR_NUMBER: $PR_TITLE"
+        git push

@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using Android.Text;
 
@@ -11,20 +12,40 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (boundedWidth > 0)
 				finalWidth = (int)boundedWidth;
 
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				return StaticLayout.Builder.Obtain(text, 0, text.Length, textPaint, finalWidth)
+					.SetAlignment(alignment)
+					.SetLineSpacing(0f, 1f)
+					.SetIncludePad(false)
+					// Force LTR text direction: StaticLayout auto-detects direction from the first
+					// strong character, which inverts AlignNormal/AlignOpposite semantics for RTL
+					// text. Since ICanvas.DrawString has no FlowDirection parameter and the alignment
+					// mapping assumes LTR, we enforce LTR to match Windows behavior and honor the
+					// caller's HorizontalAlignment. See https://github.com/dotnet/maui/issues/17323
+					.SetTextDirection(TextDirectionHeuristics.Ltr)
+					.Build();
+			}
+			else
+			{
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
-			var layout = new StaticLayout(
-				text, // Text to layout
-				textPaint, // Text paint (font, size, etc...) to use
-				finalWidth, // The maximum width the text can be
-				alignment, // The horizontal alignment of the text
-				1.0f, // Spacing multiplier
-				0.0f, // Additional spacing
-				false); // Include padding
+				// Force LTR via Left-to-Right Mark (\u200E) for the same reason as SetTextDirection
+				// above — prevents auto-detected RTL from inverting alignment semantics.
+				// See https://github.com/dotnet/maui/issues/17323
+				text = "\u200E" + text;
+				return new StaticLayout(
+					text, // Text to layout
+					textPaint, // Text paint (font, size, etc...) to use
+					finalWidth, // The maximum width the text can be
+					alignment, // The horizontal alignment of the text
+					1.0f, // Spacing multiplier
+					0.0f, // Additional spacing
+					false); // Include padding
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
+			}
 
-			return layout;
 		}
 
 		public static StaticLayout CreateLayoutForSpannedString(SpannableString spannedString, TextPaint textPaint, int? boundedWidth, Layout.Alignment alignment)

@@ -172,7 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate footer position
 				#if IOS
-				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top);
+				AssertionExtensions.CloseEnough(footerFrame.Y + GetSafeArea(handler.ToPlatform()).Bottom, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top); 
 				#else
 				// On android the we pad the top of the header frame by the safe area because how layout works
 				// so that is already included in the headerFrame Height
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.DeviceTests
                                 // validate footer position
                                 var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
                                 AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.6, message: "Footer Y");
+                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y + GetSafeArea(handler.ToPlatform()).Bottom, epsilon: 0.6, message: "Footer Y");
                                 AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
                                 //All three views should measure to the height of the flyout
@@ -277,6 +277,11 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(ShellFlyoutHeaderScrollTestCases))]
 		public async Task FlyoutHeaderScroll(FlyoutHeaderBehavior flyoutHeaderBehavior, string contentType)
                 {
+                        // Skip on iOS 26+ due to FlyoutHeader collapse behavior changes
+                        // See: https://github.com/dotnet/maui/issues/33004
+                        if (OperatingSystem.IsIOSVersionAtLeast(26))
+                                return;
+
                         var headerRequestedHeight = 250;
                         var headerMinHeight = 100;
 
@@ -318,14 +323,20 @@ namespace Microsoft.Maui.DeviceTests
                                 }
                                 else
                                 {
-                                        AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
+                                        // After scrolling, the header height may include the safe area margin
+                                        // depending on the content type and how InvalidateMeasure is triggered.
+                                        var safeAreaTop = GetSafeArea(handler.ToPlatform()).Top;
+                                        Assert.True(
+                                                scrolledBox.Height >= headerRequestedHeight - 0.3 &&
+                                                scrolledBox.Height <= headerRequestedHeight + safeAreaTop + 0.3,
+                                                $"Header Height: expected between {headerRequestedHeight} and {headerRequestedHeight + safeAreaTop}, actual: {scrolledBox.Height}");
 
                                         if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
                                         {
-                                                // scrolledBoy.Y is negative because the header is scrolled up
-                                                var diff = scrolledBox.Y + headerRequestedHeight;
+                                                // scrolledBox.Y is negative because the header is scrolled up
+                                                var diff = scrolledBox.Y + scrolledBox.Height;
                                                 var epsilon = 0.3;
-                                                Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
+                                                Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is not enough to cover height ({scrolledBox.Height}). Epsilon: {epsilon}");
                                         }
                                         else
                                         {

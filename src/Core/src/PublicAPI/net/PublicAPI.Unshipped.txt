@@ -5,3 +5,4 @@ Microsoft.Maui.BorderStyle.None = 1 -> Microsoft.Maui.BorderStyle
 Microsoft.Maui.IEntry.BorderStyle.get -> Microsoft.Maui.BorderStyle
 static Microsoft.Maui.Handlers.EntryHandler.MapBorderStyle(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
+static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges

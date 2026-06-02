@@ -11,7 +11,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BindablePropertyConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindablePropertyConverter']/Docs/*" />
+	/// <summary>A TypeConverter that converts strings to <see cref="BindableProperty"/> instances.</summary>
 	[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.BindablePropertyConverter")]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
@@ -81,13 +81,13 @@ namespace Microsoft.Maui.Controls
 				return null;
 			if (strValue.IndexOf(":", StringComparison.Ordinal) != -1)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning("Can't resolve properties with xml namespace prefix.");
+				MauiLogger<BindablePropertyConverter>.Log(LogLevel.Warning, "Can't resolve properties with xml namespace prefix.");
 				return null;
 			}
 			string[] parts = strValue.Split('.');
 			if (parts.Length != 2)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindablePropertyConverter>()?.LogWarning($"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
+				MauiLogger<BindablePropertyConverter>.Log(LogLevel.Warning, $"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 				return null;
 			}
 			Type type = GetControlType(parts[0]);

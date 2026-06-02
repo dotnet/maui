@@ -107,9 +107,9 @@ namespace Microsoft.Maui
 
 			string currentString = "";
 			char lastCharacter = ' ';
-#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
-			var index = fontFamily.LastIndexOf('-');
-#pragma warning restore CA1307 // Specify StringComparison for clarity
+#pragma warning disable CA1865 // Use 'string.LastIndexOf(char)' - CA1307 requires StringComparison
+			var index = fontFamily.LastIndexOf("-", StringComparison.Ordinal);
+#pragma warning restore CA1865
 			bool multipleCaps = false;
 			var cleansedString = index > 0 ? fontFamily.Substring(0, index) : fontFamily;
 			foreach (var c in cleansedString)

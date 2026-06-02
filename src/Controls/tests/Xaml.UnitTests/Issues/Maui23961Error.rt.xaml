@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui23961Error">
+    <Grid>
+        <!-- Test Case: Properties with obsolete(error: true) should produce errors -->
+        <local:Maui23961ErrorClass1
+            BP2="Obsolete error BP"
+            P2="Obsolete error property" />
+
+        <!-- Test Case: Obsolete class with error: true should produce error -->
+        <local:Maui23961ObsoleteClass3 />
+    </Grid>
+</ContentPage>

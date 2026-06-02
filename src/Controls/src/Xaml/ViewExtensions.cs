@@ -31,18 +31,49 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	/// <summary>
+	/// Provides extension methods for loading XAML into objects.
+	/// </summary>
 	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #if !NETSTANDARD
 	[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
 	public static class Extensions
 	{
+		/// <summary>
+		/// Loads the XAML associated with the specified type into the view.
+		/// </summary>
+		/// <typeparam name="TXaml">The type of the view.</typeparam>
+		/// <param name="view">The view to load XAML into.</param>
+		/// <param name="callingType">The type used to locate the XAML resource.</param>
+		/// <returns>The view with XAML loaded.</returns>
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(TypeExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(StaticExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(NullExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(ArrayExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(OnPlatformExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(OnIdiomExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(StaticResourceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(DynamicResourceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(ReferenceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(BindingExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(TemplateBindingExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(RelativeSourceExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(DataTemplateExtension))]
+		[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicProperties, typeof(AppThemeBindingExtension))]
 		public static TXaml LoadFromXaml<TXaml>(this TXaml view, Type callingType)
 		{
 			XamlLoader.Load(view, callingType);
 			return view;
 		}
 
+		/// <summary>
+		/// Loads the specified XAML string into the view.
+		/// </summary>
+		/// <typeparam name="TXaml">The type of the view.</typeparam>
+		/// <param name="view">The view to load XAML into.</param>
+		/// <param name="xaml">The XAML string to load.</param>
+		/// <returns>The view with XAML loaded.</returns>
 		public static TXaml LoadFromXaml<TXaml>(this TXaml view, string xaml)
 		{
 			XamlLoader.Load(view, xaml);

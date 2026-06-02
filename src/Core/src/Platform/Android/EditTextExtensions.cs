@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Platform
 			editText.UpdateIsSpellCheckEnabled(editor as ITextInput);
 		}
 
-		private static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
+		internal static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
 		{
 			var keyboard = textInput.Keyboard;
 
@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Platform
 				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
 		}
 
-		private static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
+		internal static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
 		{
 			// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
 			if (!textInput.IsSpellCheckEnabled)
@@ -254,7 +254,23 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				clearButtonDrawable?.ClearColorFilter();
+				if (OperatingSystem.IsAndroidVersionAtLeast(23) && editText.Context?.Theme is Resources.Theme theme)
+				{
+					using var ta = theme.ObtainStyledAttributes([global::Android.Resource.Attribute.TextColorPrimary]);
+					var cs = ta.GetColorStateList(0);
+
+					if (cs is not null)
+					{
+						// Clear button is only visible when enabled, so just use the enabled state
+						int[] enabledState = [global::Android.Resource.Attribute.StateEnabled];
+						var color = new global::Android.Graphics.Color(cs.GetColorForState(enabledState, Colors.Black.ToPlatform()));
+						clearButtonDrawable?.SetColorFilter(color, FilterMode.SrcIn);
+					}
+				}
+				else
+				{
+					clearButtonDrawable?.ClearColorFilter();
+				}
 			}
 		}
 
@@ -293,7 +309,23 @@ namespace Microsoft.Maui.Platform
 				int start = GetSelectionStart(editText, entry);
 				int end = GetSelectionEnd(editText, entry, start);
 
-				editText.SetSelection(start, end);
+				if (editText.IsFocused)
+				{
+					editText.Post(() =>
+					{
+						if (editText.IsAlive())
+						{
+							var length = editText.Length();
+							var clampedStart = Math.Min(start, length);
+							var clampedEnd = Math.Min(end, length);
+							editText.SetSelection(clampedStart, clampedEnd);
+						}
+					});
+				}
+				else
+				{
+					editText.SetSelection(start, end);
+				}
 			}
 		}
 
@@ -319,10 +351,24 @@ namespace Microsoft.Maui.Platform
 
 		static int GetSelectionEnd(EditText editText, ITextInput entry, int start)
 		{
-			int end = start;
 			int selectionLength = entry.SelectionLength;
-			end = System.Math.Max(start, System.Math.Min(editText.Length(), start + selectionLength));
-			int newSelectionLength = System.Math.Max(0, end - start);
+			int end = Math.Max(start, Math.Min(editText.Length(), start + selectionLength));
+			int newSelectionLength = Math.Max(0, end - start);
+
+			// When the native EditText has a right-to-left selection (anchor > extent) that
+			// exactly matches our start position and requested length, preserve the native
+			// selection end to maintain the selection direction. We verify the native state
+			// matches to avoid using stale values (e.g., during initial focus when
+			// SelectionEnd is 0 and SelectionStart hasn't been updated yet).
+			if (selectionLength > 0 &&
+				start > editText.SelectionEnd &&
+				editText.SelectionStart == start &&
+				(start - editText.SelectionEnd) == selectionLength)
+			{
+				end = editText.SelectionEnd;
+				newSelectionLength = selectionLength;
+			}
+
 			// Updating this property results in UpdateSelectionLength being called again messing things up
 			if (newSelectionLength != selectionLength)
 				entry.SelectionLength = newSelectionLength;
@@ -331,8 +377,7 @@ namespace Microsoft.Maui.Platform
 
 		public static int GetSelectedTextLength(this EditText editText)
 		{
-			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
-			return Math.Max(0, selectedLength);
+			return Math.Abs(editText.SelectionEnd - editText.SelectionStart);
 		}
 
 		internal static void SetInputType(this EditText editText, ITextInput textInput)

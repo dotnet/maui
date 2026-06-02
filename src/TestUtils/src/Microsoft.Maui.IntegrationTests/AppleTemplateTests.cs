@@ -24,6 +24,15 @@ namespace Microsoft.Maui.IntegrationTests
 			{
 				TestSimulator.Shutdown();
 				TestSimulator.Launch();
+				// Wait for simulator to fully boot to avoid race condition where
+				// simulator reports "booted" but is still in Booting state internally
+				// This prevents "Unable to lookup in current state: Booting" errors
+				if (!TestSimulator.WaitForBootComplete())
+				{
+					throw new InvalidOperationException(
+						$"Simulator failed to fully boot within timeout. " +
+						$"Target: {TestSimulator.XHarnessID}, UDID: {TestSimulator.GetUDID()}");
+				}
 			}
 		}
 
@@ -76,6 +85,22 @@ namespace Microsoft.Maui.IntegrationTests
 		[Fact]
 		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
 
+		// CoreCLR test variants
+		[Fact]
+		public void RunOniOS_MauiDebug_CoreCLR() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_MauiRelease_CoreCLR() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_MauiReleaseTrimFull_CoreCLR() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, "full");
+
+		[Fact]
+		public void RunOniOS_BlazorDebug_CoreCLR() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_BlazorRelease_CoreCLR() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
 		// TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
 		// Issue: https://github.com/dotnet/aspnetcore/issues/63951
 		// 
@@ -100,13 +125,17 @@ namespace Microsoft.Maui.IntegrationTests
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.True(DotnetInternal.New(id, projectDir, framework),
+			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			var buildProps = BuildProps;
 			var runtimeIdentifier = "";
 
-			if (runtimeVariant == RuntimeVariant.NativeAOT)
+			if (runtimeVariant == RuntimeVariant.CoreCLR)
+			{
+				buildProps.Add("UseMonoRuntime=false");
+			}
+			else if (runtimeVariant == RuntimeVariant.NativeAOT)
 			{
 				buildProps.Add("PublishAot=true");
 				buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
@@ -126,7 +155,7 @@ namespace Microsoft.Maui.IntegrationTests
 				buildProps.Add("TrimmerSingleWarn=false"); // Disable trimmer warnings for iOS full trimming builds due to ObjCRuntime issues
 			}
 
-			Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps, runtimeIdentifier: runtimeIdentifier),
+			Assert.True(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildProps, runtimeIdentifier: runtimeIdentifier, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 			// Find the .app bundle - it may be in the bin folder with or without a RID subfolder depending on build settings
@@ -142,7 +171,7 @@ namespace Microsoft.Maui.IntegrationTests
 			// Let XHarness find the simulator based on target (e.g., ios-simulator-64_18.5).
 			// Don't pass a specific UDID - this gives XHarness full control over the simulator
 			// lifecycle and avoids race conditions with watchdog disabling.
-			Assert.True(XHarness.RunAppleForTimeout(appFile, xhResultsDir, _simulatorFixture.TestSimulator.XHarnessID),
+			Assert.True(XHarness.RunAppleForTimeout(appFile, xhResultsDir, _simulatorFixture.TestSimulator.XHarnessID, output: _output),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 	}

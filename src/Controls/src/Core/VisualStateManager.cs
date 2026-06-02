@@ -3,12 +3,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualStateManager']/Docs/*" />
+	/// <summary>
+	/// Manages visual states for controls (Normal, Focused, Disabled, etc.) and transitions between them.
+	/// </summary>
 	public static class VisualStateManager
 	{
 		public class CommonStates
@@ -32,13 +35,22 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is VisualStateGroupList { VisualElement: { } oldElement } oldVisualStateGroupList)
 			{
 				var vsgSpecificity = oldVisualStateGroupList.Specificity;
-				var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+				var baseSpecificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 				foreach (var group in oldVisualStateGroupList)
 				{
 					if (group.CurrentState is { } state)
+					{
+						// Only promote system-driven states (Disabled, Focused, etc.) to full VSM priority.
+						// Custom developer-defined states keep downgraded priority.
+						var unapplySpecificity = IsSystemDrivenState(state.Name)
+							? baseSpecificity.WithFullVsmPriority()
+							: baseSpecificity;
 						foreach (var setter in state.Setters)
-							setter.UnApply(oldElement, specificity);
+						{
+							setter.UnApply(oldElement, unapplySpecificity);
+						}
+					}
 				}
 				oldVisualStateGroupList.VisualElement = null;
 			}
@@ -53,15 +65,28 @@ namespace Microsoft.Maui.Controls
 			UpdateStateTriggers(visualElement);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='GetVisualStateGroups']/Docs/*" />
-		public static IList<VisualStateGroup> GetVisualStateGroups(VisualElement visualElement)
-			=> (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
+		/// <summary>
+		/// Gets the collection of <see cref="VisualStateGroup"/> objects associated with the specified <paramref name="visualElement"/>.
+		/// </summary>
+		/// <param name="visualElement">The visual element to get visual state groups from.</param>
+		/// <returns>The collection of visual state groups.</returns>
+		public static VisualStateGroupList GetVisualStateGroups(VisualElement visualElement)
+			=> (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='SetVisualStateGroups']/Docs/*" />
+		/// <summary>
+		/// Sets the collection of <see cref="VisualStateGroup"/> objects for the specified <paramref name="visualElement"/>.
+		/// </summary>
+		/// <param name="visualElement">The visual element to set visual state groups on.</param>
+		/// <param name="value">The collection of visual state groups to set.</param>
 		public static void SetVisualStateGroups(VisualElement visualElement, VisualStateGroupList value)
 			=> visualElement.SetValue(VisualStateGroupsProperty, value);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='GoToState']/Docs/*" />
+		/// <summary>
+		/// Transitions the <paramref name="visualElement"/> to the specified visual state.
+		/// </summary>
+		/// <param name="visualElement">The visual element to transition.</param>
+		/// <param name="name">The name of the visual state to transition to.</param>
+		/// <returns><see langword="true"/> if the transition was successful; otherwise, <see langword="false"/>.</returns>
 		public static bool GoToState(VisualElement visualElement, string name)
 		{
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
@@ -80,7 +105,7 @@ namespace Microsoft.Maui.Controls
 			var vsgSpecificity = vsgSpecificityValue.Key;
 			groups.Specificity = vsgSpecificity;
 
-			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
+			var baseSpecificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 			foreach (VisualStateGroup group in groups)
 			{
@@ -100,19 +125,30 @@ namespace Microsoft.Maui.Controls
 				// If we've got a new state to transition to, unapply the setters from the current state
 				if (group.CurrentState != null)
 				{
+					// Mirror the apply logic: use the same promoted specificity for system-driven states.
+					var unapplySpecificity = IsSystemDrivenState(group.CurrentState.Name)
+						? baseSpecificity.WithFullVsmPriority()
+						: baseSpecificity;
 					foreach (Setter setter in group.CurrentState.Setters)
 					{
-						setter.UnApply(visualElement, specificity);
+						setter.UnApply(visualElement, unapplySpecificity);
 					}
 				}
 
 				// Update the current state
 				group.CurrentState = target;
 
+				// For system-driven states (Disabled, Focused, Selected, PointerOver, Unfocused),
+				// promote implicit VSM to full VSM priority so it can override locally-set values.
+				// Normal state and custom developer-defined states keep downgraded priority (#18103, #34363).
+				var applySpecificity = IsSystemDrivenState(name)
+					? baseSpecificity.WithFullVsmPriority()
+					: baseSpecificity;
+
 				// Apply the setters from the new state
 				foreach (Setter setter in target.Setters)
 				{
-					setter.Apply(visualElement, specificity);
+					setter.Apply(visualElement, applySpecificity);
 				}
 
 				return true;
@@ -121,7 +157,25 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='HasVisualStateGroups']/Docs/*" />
+		/// <summary>
+		/// Returns <see langword="true"/> for states that the MAUI framework drives automatically
+		/// (Disabled, Focused, Unfocused, Selected, PointerOver, Pressed).
+		/// Only these states promote an implicit-style VSM setter to full VSM priority (fix for #34363),
+		/// preventing custom developer-defined states from unexpectedly overriding manually-set values.
+		/// </summary>
+		static bool IsSystemDrivenState(string stateName) =>
+			stateName == CommonStates.Disabled ||
+			stateName == CommonStates.Focused ||
+			stateName == CommonStates.Unfocused ||
+			stateName == CommonStates.Selected ||
+			stateName == CommonStates.PointerOver ||
+			stateName == ButtonElement.PressedVisualState;
+
+		/// <summary>
+		/// Determines whether the specified <paramref name="element"/> has any visual state groups defined.
+		/// </summary>
+		/// <param name="element">The visual element to check.</param>
+		/// <returns><see langword="true"/> if the element has visual state groups; otherwise, <see langword="false"/>.</returns>
 		public static bool HasVisualStateGroups(this VisualElement element)
 		{
 			if (!element.IsSet(VisualStateGroupsProperty))
@@ -133,9 +187,54 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <summary>
+		/// Forces unapply and reapply of the current visual state setters for the specified <paramref name="visualElement"/>.
+		/// This method is intended for infrastructure use (e.g., Hot Reload) and should not be used in application code.
+		/// </summary>
+		/// <param name="visualElement">The visual element whose visual states should be reapplied.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void InvalidateVisualStates(VisualElement visualElement)
+		{
+			var context = visualElement.GetContext(VisualStateGroupsProperty);
+			if (context is null)
+			{
+				return;
+			}
+
+			var vsgSpecificityValue = context.Values.GetSpecificityAndValue();
+			var groups = (VisualStateGroupList)vsgSpecificityValue.Value;
+			if (groups?.IsDefault != false)
+			{
+				return;
+			}
+
+			var vsgSpecificity = vsgSpecificityValue.Key;
+			// Build a VSM setter specificity that preserves the style origin so setters
+			// are unapplied/reapplied at the correct priority level.
+			var specificity = vsgSpecificity.CopyStyle(extras: 1, manual: 0, isDynamicResource: 0, isBinding: 0);
+
+			foreach (VisualStateGroup group in groups)
+			{
+				if (group.CurrentState is not { } state)
+				{
+					continue;
+				}
+
+				foreach (Setter setter in state.Setters)
+				{
+					setter.UnApply(visualElement, specificity);
+				}
+
+				foreach (Setter setter in state.Setters)
+				{
+					setter.Apply(visualElement, specificity);
+				}
+			}
+		}
+
 		internal static void UpdateStateTriggers(VisualElement visualElement)
 		{
-			var groups = (IList<VisualStateGroup>)visualElement.GetValue(VisualStateGroupsProperty);
+			var groups = (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 
 			foreach (VisualStateGroup group in groups)
 			{
@@ -145,7 +244,9 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualStateGroupList']/Docs/*" />
+	/// <summary>
+	/// A list of <see cref="VisualStateGroup"/> objects that enforces unique group and state names.
+	/// </summary>
 	public class VisualStateGroupList : IList<VisualStateGroup>
 	{
 		readonly IList<VisualStateGroup> _internalList;
@@ -201,12 +302,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="VisualStateGroupList"/> class.
+		/// </summary>
 		public VisualStateGroupList() : this(false)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="VisualStateGroupList"/> class with the specified default state.
+		/// </summary>
+		/// <param name="isDefault">Indicates whether this list represents the default visual state groups.</param>
 		public VisualStateGroupList(bool isDefault)
 		{
 			IsDefault = isDefault;
@@ -227,7 +333,7 @@ namespace Microsoft.Maui.Controls
 			OnStatesChanged();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='GetEnumerator']/Docs/*" />
+		/// <inheritdoc />
 		public IEnumerator<VisualStateGroup> GetEnumerator()
 		{
 			return _internalList.GetEnumerator();
@@ -238,7 +344,7 @@ namespace Microsoft.Maui.Controls
 			return ((IEnumerable)_internalList).GetEnumerator();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='Add']/Docs/*" />
+		/// <inheritdoc />
 		public void Add(VisualStateGroup item)
 		{
 			if (item == null)
@@ -251,7 +357,7 @@ namespace Microsoft.Maui.Controls
 			item.StatesChanged += ValidateAndNotify;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='Clear']/Docs/*" />
+		/// <inheritdoc />
 		public void Clear()
 		{
 			foreach (var group in _internalList)
@@ -262,19 +368,19 @@ namespace Microsoft.Maui.Controls
 			_internalList.Clear();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='Contains']/Docs/*" />
+		/// <inheritdoc />
 		public bool Contains(VisualStateGroup item)
 		{
 			return _internalList.Contains(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='CopyTo']/Docs/*" />
+		/// <inheritdoc />
 		public void CopyTo(VisualStateGroup[] array, int arrayIndex)
 		{
 			_internalList.CopyTo(array, arrayIndex);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='Remove']/Docs/*" />
+		/// <inheritdoc />
 		public bool Remove(VisualStateGroup item)
 		{
 			if (item == null)
@@ -286,19 +392,19 @@ namespace Microsoft.Maui.Controls
 			return _internalList.Remove(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='Count']/Docs/*" />
+		/// <inheritdoc />
 		public int Count => _internalList.Count;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />
+		/// <inheritdoc />
 		public bool IsReadOnly => false;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='IndexOf']/Docs/*" />
+		/// <inheritdoc />
 		public int IndexOf(VisualStateGroup item)
 		{
 			return _internalList.IndexOf(item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='Insert']/Docs/*" />
+		/// <inheritdoc />
 		public void Insert(int index, VisualStateGroup item)
 		{
 			if (item == null)
@@ -310,7 +416,7 @@ namespace Microsoft.Maui.Controls
 			_internalList.Insert(index, item);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroupList.xml" path="//Member[@MemberName='RemoveAt']/Docs/*" />
+		/// <inheritdoc />
 		public void RemoveAt(int index)
 		{
 			_internalList[index].StatesChanged -= ValidateAndNotify;
@@ -374,27 +480,39 @@ namespace Microsoft.Maui.Controls
 
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualStateGroup']/Docs/*" />
+	/// <summary>
+	/// Contains a collection of mutually exclusive <see cref="VisualState"/> objects and the setters to apply when transitioning between them.
+	/// </summary>
 	[RuntimeNameProperty(nameof(Name))]
 	[ContentProperty(nameof(States))]
 	public sealed class VisualStateGroup
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="VisualStateGroup"/> class.
+		/// </summary>
 		public VisualStateGroup()
 		{
 			States = new WatchAddList<VisualState>(OnStatesChanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the type that this visual state group targets.
+		/// </summary>
 		public Type TargetType { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='Name']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name of the visual state group.
+		/// </summary>
 		public string Name { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='States']/Docs/*" />
+		/// <summary>
+		/// Gets the collection of <see cref="VisualState"/> objects in this group.
+		/// </summary>
 		public IList<VisualState> States { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='CurrentState']/Docs/*" />
+		/// <summary>
+		/// Gets the currently active <see cref="VisualState"/> in this group.
+		/// </summary>
 		public VisualState CurrentState { get; internal set; }
 
 		WeakReference<VisualElement> _visualElement;
@@ -596,24 +714,39 @@ namespace Microsoft.Maui.Controls
 		}
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualState']/Docs/*" />
+	/// <summary>
+	/// Represents a named visual state with setters and triggers that define the appearance of a control.
+	/// </summary>
 	[RuntimeNameProperty(nameof(Name))]
 	public sealed class VisualState
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="VisualState"/> class.
+		/// </summary>
 		public VisualState()
 		{
 			Setters = new ObservableCollection<Setter>();
 			StateTriggers = new WatchAddList<StateTriggerBase>(OnStateTriggersChanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="//Member[@MemberName='Name']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name of the visual state (e.g., "Normal", "Focused", "Disabled").
+		/// </summary>
 		public string Name { get; set; }
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="//Member[@MemberName='Setters']/Docs/*" />
+
+		/// <summary>
+		/// Gets the collection of <see cref="Setter"/> objects that define property values for this state.
+		/// </summary>
 		public IList<Setter> Setters { get; }
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="//Member[@MemberName='StateTriggers']/Docs/*" />
+
+		/// <summary>
+		/// Gets the collection of <see cref="StateTriggerBase"/> objects that activate this state.
+		/// </summary>
 		public IList<StateTriggerBase> StateTriggers { get; }
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualState.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
+
+		/// <summary>
+		/// Gets or sets the type that this visual state targets.
+		/// </summary>
 		public Type TargetType { get; set; }
 		internal VisualStateGroup VisualStateGroup { get; set; }
 
@@ -698,7 +831,7 @@ namespace Microsoft.Maui.Controls
 				group.VisualElement = clone.VisualElement;
 				clone.Add(group.Clone());
 			}
-			
+
 			// Preserve specificity when cloning (issue #27202)
 			if (groups is VisualStateGroupList sourceList)
 			{
@@ -721,6 +854,20 @@ namespace Microsoft.Maui.Controls
 				{
 					if (group.States[j].Name == name)
 						return true;
+				}
+			}
+
+			return false;
+		}
+
+		internal static bool IsElementInSelectedState(this VisualElement element)
+		{
+			var groups = VisualStateManager.GetVisualStateGroups(element);
+			foreach (var group in groups)
+			{
+				if (group.CurrentState?.Name == VisualStateManager.CommonStates.Selected)
+				{
+					return true;
 				}
 			}
 

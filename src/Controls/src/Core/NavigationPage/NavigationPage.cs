@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for attached property <c>BackButtonTitle</c>.</summary>
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
+		/// <summary>Bindable property for attached property <c>BackButtonAccessibilityLabel</c>.</summary>
+		public static readonly BindableProperty BackButtonAccessibilityLabelProperty = BindableProperty.CreateAttached("BackButtonAccessibilityLabel", typeof(string), typeof(Page), null);
+
 		/// <summary>Bindable property for attached property <c>HasNavigationBar</c>.</summary>
 		public static readonly BindableProperty HasNavigationBarProperty =
 			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
@@ -65,12 +68,13 @@ namespace Microsoft.Maui.Controls
 
 		bool _setForMaui;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="NavigationPage"/> class.</summary>
 		public NavigationPage() : this(UseMauiHandler)
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>Initializes a new instance of the <see cref="NavigationPage"/> class with the specified root page.</summary>
+		/// <param name="root">The root page of the navigation stack.</param>
 		public NavigationPage(Page root) : this(UseMauiHandler, root)
 		{
 		}
@@ -98,7 +102,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(BarElement.BarBackgroundColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackground']/Docs/*" />
+		/// <summary>Gets or sets the brush used to paint the navigation bar background. This is a bindable property.</summary>
 		public Brush BarBackground
 		{
 			get => (Brush)GetValue(BarElement.BarBackgroundProperty);
@@ -175,6 +179,14 @@ namespace Microsoft.Maui.Controls
 			return (string)page.GetValue(BackButtonTitleProperty);
 		}
 
+		/// <summary>Gets the accessibility label for the back button of the specified <paramref name="page"/>.</summary>
+		/// <param name="page">The <see cref="Microsoft.Maui.Controls.Page"/> whose back-button's accessibility label is being requested.</param>
+		/// <returns>The accessibility label read by screen readers for the back button, or <see langword="null"/> if not set.</returns>
+		public static string GetBackButtonAccessibilityLabel(BindableObject page)
+		{
+			return (string)page.GetValue(BackButtonAccessibilityLabelProperty);
+		}
+
 		/// <summary>Returns a value that indicates whether <paramref name="page"/> has a back button.</summary>
 		/// <param name="page">The page parameter.</param>
 		public static bool GetHasBackButton(Page page)
@@ -217,13 +229,16 @@ namespace Microsoft.Maui.Controls
 			return (Color)bindable.GetValue(IconColorProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][1]/Docs/*" />
+		/// <summary>Asynchronously removes the top page from the navigation stack.</summary>
+		/// <returns>A task that represents the asynchronous pop operation and contains the popped page.</returns>
 		public Task<Page> PopAsync()
 		{
 			return PopAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopAsync'][2]/Docs/*" />
+		/// <summary>Asynchronously removes the top page from the navigation stack, with optional animation.</summary>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task that represents the asynchronous pop operation and contains the popped page.</returns>
 		public async Task<Page> PopAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -251,7 +266,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception e)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning(e, null);
+				MauiLogger<NavigationPage>.Log(LogLevel.Warning, e, "");
 				CurrentNavigationTask = null;
 				tcs.SetCanceled();
 
@@ -263,13 +278,16 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<NavigationEventArgs> PoppedToRoot;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][1]/Docs/*" />
+		/// <summary>Asynchronously pops all pages from the navigation stack except the root page.</summary>
+		/// <returns>A task that represents the asynchronous operation.</returns>
 		public Task PopToRootAsync()
 		{
 			return PopToRootAsync(true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PopToRootAsync'][2]/Docs/*" />
+		/// <summary>Asynchronously pops all pages from the navigation stack except the root page, with optional animation.</summary>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task that represents the asynchronous operation.</returns>
 		public async Task PopToRootAsync(bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -297,13 +315,18 @@ namespace Microsoft.Maui.Controls
 			await result;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][1]/Docs/*" />
+		/// <summary>Asynchronously pushes a page onto the navigation stack.</summary>
+		/// <param name="page">The page to push onto the navigation stack.</param>
+		/// <returns>A task that represents the asynchronous push operation.</returns>
 		public Task PushAsync(Page page)
 		{
 			return PushAsync(page, true);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='PushAsync'][2]/Docs/*" />
+		/// <summary>Asynchronously pushes a page onto the navigation stack, with optional animation.</summary>
+		/// <param name="page">The page to push onto the navigation stack.</param>
+		/// <param name="animated">Whether to animate the transition.</param>
+		/// <returns>A task that represents the asynchronous push operation.</returns>
 		public async Task PushAsync(Page page, bool animated)
 		{
 			// If Navigation interactions are being handled by the MAUI APIs
@@ -341,6 +364,14 @@ namespace Microsoft.Maui.Controls
 		public static void SetBackButtonTitle(BindableObject page, string value)
 		{
 			page.SetValue(BackButtonTitleProperty, value);
+		}
+
+		/// <summary>Sets the accessibility label for the back button of <paramref name="page"/>, allowing the text read by screen readers to differ from the visible back button title.</summary>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The accessibility label value to set.</param>
+		public static void SetBackButtonAccessibilityLabel(BindableObject page, string value)
+		{
+			page.SetValue(BackButtonAccessibilityLabelProperty, value);
 		}
 
 		/// <summary>Adds or removes a back button to <paramref name="page"/>, with optional animation.</summary>
@@ -826,7 +857,6 @@ namespace Microsoft.Maui.Controls
 						Owner.FireDisappearing(currentPage);
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
-						Owner.RemoveFromInnerChildren(currentPage);
 						if (currentPage.TitleView != null)
 						{
 							currentPage.RemoveLogicalChild(currentPage.TitleView);
@@ -919,7 +949,7 @@ namespace Microsoft.Maui.Controls
 
 				if (page == Owner.CurrentPage)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+					MauiLogger<NavigationPage>.Log(LogLevel.Warning, "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 					PopAsync();
 					return;
 				}
@@ -932,6 +962,10 @@ namespace Microsoft.Maui.Controls
 					{
 						Owner.NavigationType = NavigationType.Remove;
 						Owner.RemoveFromInnerChildren(page);
+
+						// Disconnect handlers for the removed non-visible page.
+						// Note: When the current page is removed, PopAsync() is called instead.
+						page?.DisconnectHandlers();
 
 						if (Owner.RootPage == page)
 							Owner.RootPage = (Page)Owner.InternalChildren[0];
