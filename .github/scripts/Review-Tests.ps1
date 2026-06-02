@@ -205,6 +205,7 @@ function New-TestFailureReviewComment {
     )
 
     $marker = "<!-- Test Failure Review -->"
+    $ReportContent = [regex]::Replace($ReportContent, '<details\s+open>', '<details>')
     if ($ReportContent.Contains($marker)) {
         return [regex]::Replace($ReportContent, '(?m)^##\s+.*Test Failure Review.*$', '## Test Failure Review', 1)
     }

@@ -228,3 +228,5 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 ```
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
+
+Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
