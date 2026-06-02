@@ -84,6 +84,22 @@ jobs:
       issues: write
       pull-requests: write
     steps:
+      - name: Check rerun author association
+        env:
+          AUTHOR_ASSOCIATION: ${{ github.event.comment.author_association }}
+        run: |
+          echo "Comment author association: ${AUTHOR_ASSOCIATION}"
+          # /review rerun is available to people who have already contributed
+          # to dotnet/maui, plus repo collaborators/members/owners.
+          case "${AUTHOR_ASSOCIATION}" in
+            OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR)
+              ;;
+            *)
+              echo "::error::User does not have sufficient access. Only prior contributors and repository collaborators/members/owners can trigger /review rerun."
+              exit 1
+              ;;
+          esac
+
       - name: Checkout repository scripts
         uses: actions/checkout@v4
         with:
