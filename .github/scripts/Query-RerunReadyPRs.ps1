@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
 
-. "$PSScriptRoot/Resolve-RerunEligibility.ps1"
+. "$PSScriptRoot/Resolve-RerunEligibility.ps1" -Owner $Owner -Repo $Repo
 . "$PSScriptRoot/shared/Update-AgentLabels.ps1"
 
 function ConvertTo-ActivityItemFromJson {
