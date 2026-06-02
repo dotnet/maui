@@ -200,7 +200,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 </p>
 
 <!-- SESSION:[sha7] START -->
-<details open>
+<details>
 <summary>[icon] <strong>Test Failure Review</strong> — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong> · <em>[UTC timestamp]</em></summary>
 <br/>
 

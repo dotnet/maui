@@ -278,7 +278,7 @@ $badges
 </p>
 
 $sessionMarkerStart
-<details open>
+<details>
 <summary>$verdictIcon <strong>Test Failure Review</strong> — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$prTitle</strong> · <em>$timestamp</em></summary>
 <br/>
 

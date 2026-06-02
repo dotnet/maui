@@ -115,7 +115,7 @@ Use an AI-summary-style comment format. Start with a stable marker, a short stat
 </p>
 
 <!-- SESSION:[sha7] START -->
-<details open>
+<details>
 <summary>[icon] <strong>Test Failure Review</strong> — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong> · <em>[UTC timestamp]</em></summary>
 <br/>
 
