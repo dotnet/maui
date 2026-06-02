@@ -84,56 +84,7 @@ namespace Microsoft.Maui.Controls
 				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
 				?? (bindable as Page)?.FindParentOfType<Shell>();
 
-			if (shell != null)
-			{
-				// Notify about the property change
-				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
-				
-				if (shell == null)
-				{
-					return;
-				}
-
-				shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
-
-				if (bindable.IsSet(NavBarIsVisibleProperty))
-				{
-					// Value explicitly set — propagate down so iOS/Mac compatibility renderers
-					// (which call Shell.GetNavBarIsVisible(page) directly) also see the change.
-					if (shell is IPropertyPropagationController controller)
-					{
-						controller.PropagatePropertyChanged(NavBarIsVisibleProperty.PropertyName);
-					}
-				}
-				else
-				{
-					// Value was cleared — also clear the propagated copies from visual children
-					// so GetEffectiveValue and platform handlers reflect the reverted state.
-					if (bindable is IVisualTreeElement element)
-					{
-						ClearPropagatedNavBarIsVisible(element, (bool)oldValue);
-					}
-				}
-			}
-		}
-
-		static void ClearPropagatedNavBarIsVisible(IVisualTreeElement element, bool propagatedValue)
-		{
-			foreach (var child in element.GetVisualChildren())
-			{
-				if (child is BindableObject bo
-					&& bo.IsSet(NavBarIsVisibleProperty)
-					&& (bool)bo.GetValue(NavBarIsVisibleProperty) == propagatedValue)
-				{
-					// ClearValue fires OnNavBarIsVisibleChanged on the child, which
-					// recursively clears further down the tree automatically.
-					bo.ClearValue(NavBarIsVisibleProperty);
-				}
-				else if (child is IVisualTreeElement childElement)
-				{
-					ClearPropagatedNavBarIsVisible(childElement, propagatedValue);
-				}
-			}
+			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 		}
 
 		/// <summary>
@@ -1821,8 +1772,8 @@ namespace Microsoft.Maui.Controls
 				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
 			}
-      
-      // Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+
+			// Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
 			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
 			{
 				CurrentPage.Loaded -= OnCurrentPageLoaded;
