@@ -222,6 +222,18 @@ namespace Microsoft.Maui.Controls.Handlers
 				shellItemHandler.MapMenuItems();
 			}
 
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				UnsubscribeAllShellContent();
+
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					SubscribeToShellContent(item);
+				}
+
+				return;
+			}
+
 			if (e.OldItems is not null)
 			{
 				foreach (var item in e.OldItems)
