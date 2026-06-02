@@ -117,6 +117,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					// First, call into WebViewManager to see if it has a framework file for this request. It will
 					// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
 					// return a file.
+					ApplyStaticContentCacheControlOverride(headers, requestUri);
 					var headerString = GetHeaderString(headers);
 					_logger.ResponseContentBeingSent(requestUri, statusCode);
 					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content.AsRandomAccessStream(), statusCode, statusMessage, headerString);
@@ -140,6 +141,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			//    from the internet or from the local cache.
 
 			_logger.LogDebug("Request for {Url} was not handled.", url);
+		}
+
+		// By default local caching is disabled so that user scripts are always re-executed. Applications can
+		// opt specific resources in to caching via BlazorWebView.StaticContentCacheControlProvider.
+		// See https://github.com/dotnet/maui/issues/8279
+		private void ApplyStaticContentCacheControlOverride(IDictionary<string, string> headers, string requestUri)
+		{
+			var contentType = headers.TryGetValue("Content-Type", out var resolvedContentType) ? resolvedContentType : string.Empty;
+			var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_handler.VirtualView, new Uri(requestUri), contentType);
+			if (cacheControlOverride is not null)
+			{
+				headers["Cache-Control"] = cacheControlOverride;
+			}
 		}
 
 		private async Task<bool> TryServeFromFolderAsync(
@@ -188,6 +202,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			if (stream != null)
 			{
+				ApplyStaticContentCacheControlOverride(headers, requestUri);
 				var headerString = GetHeaderString(headers);
 
 				_logger.ResponseContentBeingSent(requestUri, statusCode);

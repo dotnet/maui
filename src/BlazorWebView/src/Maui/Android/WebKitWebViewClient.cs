@@ -127,6 +127,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var contentType = headers["Content-Type"];
 
+				// By default local caching is disabled so that user scripts are always re-executed. Applications can
+				// opt specific resources in to caching via BlazorWebView.StaticContentCacheControlProvider.
+				// See https://github.com/dotnet/maui/issues/8279
+				var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_webViewHandler?.VirtualView, new Uri(requestUri), contentType);
+				if (cacheControlOverride is not null)
+				{
+					headers["Cache-Control"] = cacheControlOverride;
+				}
+
 				logger?.ResponseContentBeingSent(requestUri, statusCode);
 
 				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);

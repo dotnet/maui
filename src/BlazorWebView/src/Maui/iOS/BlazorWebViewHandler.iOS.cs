@@ -292,8 +292,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					{
 						dic.Add((NSString)"Content-Length", (NSString)responseBytes.Length.ToString(CultureInfo.InvariantCulture));
 						dic.Add((NSString)"Content-Type", (NSString)contentType);
-						// Disable local caching. This will prevent user scripts from executing correctly.
-						dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
+						// By default local caching is disabled so that user scripts are always re-executed. Applications can
+						// opt specific resources in to caching via BlazorWebView.StaticContentCacheControlProvider.
+						// See https://github.com/dotnet/maui/issues/8279
+						var cacheControl = StaticContentCacheControl.ResolveOverride(_webViewHandler.VirtualView, new Uri(url), contentType)
+							?? StaticContentCacheControl.Default;
+						dic.Add((NSString)"Cache-Control", (NSString)cacheControl);
 						if (urlSchemeTask.Request.Url != null)
 						{
 							using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
