@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Platform
 					platformButton.SetTitleColor(null, UIControlState.Disabled);
 					platformButton.TintColor = window.TintColor;
 				}
-
 				return;
 			}
 
