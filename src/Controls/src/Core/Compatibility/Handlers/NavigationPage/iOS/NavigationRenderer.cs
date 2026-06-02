@@ -1697,12 +1697,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var rect = RectangleF.Empty;
 				var size = rect.Size;
 
+#pragma warning disable CA1416 // TODO: UIGraphics.BeginImageContext/GetImageFromCurrentImageContext deprecated in iOS 17+; migrate to UIGraphicsImageRenderer
 				UIGraphics.BeginImageContext(size);
 				var context = UIGraphics.GetCurrentContext();
 				context?.SetFillColor(1, 1, 1, 0);
 				context?.FillRect(rect);
 
 				var empty = UIGraphics.GetImageFromCurrentImageContext();
+#pragma warning restore CA1416
 				context?.Dispose();
 
 				return empty;
@@ -2071,10 +2073,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 
 					var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
+#pragma warning disable CA1416 // TODO: UIBarButtonItem(UIImage, UIMenu) requires iOS 14+; add proper version guard
 					var menuButton = new UIBarButtonItem(secondaryIcon, menu)
 					{
 						AccessibilityIdentifier = "SecondaryToolbarMenuButton"
 					};
+#pragma warning restore CA1416
 
 					// Since we are adding secondary items under a primary button,
 					// make sure that primaries is initialized
