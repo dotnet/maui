@@ -20,8 +20,17 @@ permissions:
   issues: read
   pull-requests: read
 
+concurrency:
+  # Serialize scheduled and manual scanner runs so each queued PR is evaluated
+  # against the latest label/head state before any safe-output job can trigger.
+  group: "gh-aw-${{ github.workflow }}"
+  cancel-in-progress: false
+
 engine: "copilot"
 safe-outputs:
+  # gh-aw compiles this safe-output job into the `trigger_rerun_review` tool
+  # called by the agent below. The hyphenated job key is converted to the
+  # underscored tool name in the generated lock workflow.
   jobs:
     trigger-rerun-review:
       description: "Apply a validated rerun scanner decision. Use once per candidate PR with decision 'trigger' or 'skip'."
@@ -73,15 +82,15 @@ safe-outputs:
         - name: Process rerun scanner decisions
           shell: pwsh
           run: |
-            $args = @(
+            $scriptArgs = @(
               '-Owner', $env:REPO_OWNER,
               '-Repo', $env:REPO_NAME,
               '-DefaultPipelineRef', 'main'
             )
             if ($env:DRY_RUN -eq 'true') {
-              $args += '-DryRun'
+              $scriptArgs += '-DryRun'
             }
-            .github/scripts/Invoke-RerunReviewTrigger.ps1 @args
+            .github/scripts/Invoke-RerunReviewTrigger.ps1 @scriptArgs
 
 steps:
   - name: Build rerun candidate context
@@ -107,6 +116,16 @@ steps:
 
 You are scanning queued .NET MAUI PRs that already have the label `s/agent-ready-for-rerun`.
 
+## Concurrency and duplicate prevention
+
+The workflow-level concurrency group serializes scanner runs, including scheduled
+and manual dispatches. The deterministic `/review rerun` path also serializes
+queue-label application per PR. Before applying any side effects, the
+`trigger_rerun_review` safe-output job revalidates that the PR is open, the head
+SHA still matches `expected_head_sha`, and `s/agent-ready-for-rerun` is still
+present. After either `trigger` or `skip`, the safe-output job removes the queue
+label so the same queued request is not picked up by a later scanner run.
+
 The deterministic scanner found these candidates:
 
 ```json
@@ -120,7 +139,7 @@ For each candidate in `candidates`:
 3. Choose exactly one decision:
    - `trigger`: new comments or commits are relevant and safe to rerun.
    - `skip`: activity is noise, repeated commands only, stale, unsafe, duplicate, or insufficient.
-4. Call the `trigger_rerun_review` safe-output tool exactly once for each candidate.
+4. Call the `trigger_rerun_review` safe-output tool exactly once for each candidate. This tool is generated from `safe-outputs.jobs.trigger-rerun-review` above.
 
 Use:
 
