@@ -251,14 +251,6 @@ steps:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
 
-    - script: |
-        xcrun simctl runtime list -v || true
-        xcrun simctl runtime match list -v || true
-      displayName: Show simulator info
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      continueOnError: true
-      timeoutInMinutes: 5
-
     # Also install iOS 18.5 simulator for integration tests that require it
     - script: |
         echo "Installing iOS 18.5 simulator runtime for integration tests..."
@@ -269,6 +261,14 @@ steps:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       continueOnError: true
       timeoutInMinutes: 30
+
+    - script: |
+        xcrun simctl runtime list -v || true
+        xcrun simctl runtime match list -v || true
+      displayName: Show simulator info
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 5
 
 # Provision Additional Software
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
