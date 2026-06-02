@@ -63,6 +63,15 @@ Use the current MAUI pipeline names:
 - `maui-pr-devicetests` — Helix device tests.
 - `maui-pr-uitests` — Appium UI tests.
 
+### AzDO data sources
+
+Follow the CI scanner pattern from the MAUI gh-aw workflows:
+
+- Primary AzDO access is anonymous/public `builds`, `builds/{id}/timeline`, and `builds/{id}/logs/{logId}` REST APIs under `https://dev.azure.com/dnceng-public/public/_apis/build/...`.
+- Do not require `_apis/test/...` data to make a verdict. Those APIs often redirect to sign-in anonymously. Treat them as optional enrichment only when the gatherer reports authenticated AzDO access.
+- If a build returns 404 even when authenticated access is available, classify it as inaccessible/expired/insufficient data; do not assume it is unrelated or PR-caused.
+- Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs; use it when present in gathered context.
+
 ### Deduplicate test failures
 
 Do not sum raw failed counts across test runs. MAUI UI/device tests may be repeated across retries, runtime variants, and platform versions.

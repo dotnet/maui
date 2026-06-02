@@ -73,10 +73,12 @@ tools:
 network:
   allowed:
     - defaults
+    - dotnet
     - github
     - dev.azure.com
     - "*.visualstudio.com"
     - helix.dot.net
+    - "*.blob.core.windows.net"
 
 concurrency:
   group: "review-tests-${{ github.event.issue.number || inputs.pr_number || github.run_id }}"
@@ -85,6 +87,23 @@ concurrency:
 timeout-minutes: 30
 
 steps:
+  - name: Verify connectivity to AzDO and Helix
+    run: |
+      set -euo pipefail
+
+      check_url() {
+        local label="$1" url="$2"
+        local code
+        code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+        echo "$label: HTTP $code"
+      }
+
+      echo "=== AzDO API check ==="
+      check_url "AzDO" 'https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=302&branchName=refs/heads/main&%24top=1&api-version=7.1'
+
+      echo "=== Helix API check ==="
+      check_url "Helix" 'https://helix.dot.net/api/2019-06-17/jobs?count=1'
+
   - name: Gather test-failure context
     env:
       GH_TOKEN: ${{ github.token }}

@@ -71,6 +71,33 @@ New-Item -ItemType Directory -Force -Path $RunDirectory | Out-Null
 
 $ContextJsonPath = Join-Path $RunDirectory "context.json"
 $ContextMarkdownPath = Join-Path $RunDirectory "context.md"
+$script:AzDoAuthSource = if ([string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) { "none" } else { "AZDO_TOKEN" }
+
+function Initialize-AzDoToken {
+    if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
+        $script:AzDoAuthSource = "AZDO_TOKEN"
+        return
+    }
+
+    $az = Get-Command az -ErrorAction SilentlyContinue
+    if (-not $az) {
+        $script:AzDoAuthSource = "none"
+        return
+    }
+
+    try {
+        $token = & az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv 2>$null
+        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($token)) {
+            $env:AZDO_TOKEN = $token.Trim()
+            $script:AzDoAuthSource = "Azure CLI"
+        }
+    }
+    catch {
+        $script:AzDoAuthSource = "none"
+    }
+}
+
+Initialize-AzDoToken
 
 function ConvertTo-Array {
     param([object]$Value)
@@ -111,7 +138,8 @@ function Invoke-JsonUrl {
         Accept = "application/json"
     }
 
-    if ($AllowAuth -and -not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
+    $isAzDoUrl = $Url -match '^https://dev\.azure\.com/'
+    if (($AllowAuth -or $isAzDoUrl) -and -not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
         $headers.Authorization = "Bearer $env:AZDO_TOKEN"
     }
 
@@ -139,7 +167,7 @@ function Invoke-TextUrl {
         Accept = "text/plain"
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
+    if ($Url -match '^https://dev\.azure\.com/' -and -not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
         $headers.Authorization = "Bearer $env:AZDO_TOKEN"
     }
 
@@ -239,6 +267,9 @@ function Get-AzDoBuildRefsFromUrl {
         if ($uri.Host -ieq "dev.azure.com" -and $segments.Count -ge 2) {
             $org = $segments[0]
             $project = $segments[1]
+            if ($org -eq "dnceng-public" -and $project -match '^[0-9a-fA-F-]{36}$') {
+                $project = "public"
+            }
         }
         elseif ($uri.Host -match '^(?<org>[^.]+)\.visualstudio\.com$' -and $segments.Count -ge 1) {
             $org = $Matches.org
@@ -852,7 +883,10 @@ $dedupedFailures = @(Get-DeduplicatedFailures -Failures $allFailuresArray)
 
 $limitations = New-Object System.Collections.Generic.List[string]
 if ([string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
-    $limitations.Add("AZDO_TOKEN is not set; authenticated AzDO test-run APIs were skipped. Build metadata, timelines, and logs were still queried when public.")
+    $limitations.Add("No AZDO_TOKEN or Azure CLI AzDO token was available; authenticated AzDO test-run APIs were skipped. Build metadata, timelines, and logs were still queried when public.")
+}
+elseif ($script:AzDoAuthSource -eq "Azure CLI") {
+    $limitations.Add("Authenticated AzDO access used an Azure CLI bearer token for local-only data gathering. The gh-aw workflow still relies on public build/timeline/log APIs unless AZDO_TOKEN is provided by the runner environment.")
 }
 if ($buildRefsById.Count -eq 0) {
     $limitations.Add("No AzDO build IDs were discovered from failing GitHub checks and none were supplied manually.")
@@ -862,6 +896,11 @@ $context = [ordered]@{
     schemaVersion = 1
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     repository = $Repository
+    azdo = [ordered]@{
+        authenticated = -not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)
+        authSource = $script:AzDoAuthSource
+        dataSourceGuidance = "Uses AzDO build, timeline, and build log REST APIs as the primary data source; authenticated _apis/test queries are optional and only attempted when an AzDO bearer token is available."
+    }
     pr = [ordered]@{
         number = $pr.number
         title = $pr.title
@@ -902,6 +941,12 @@ $md = New-Object System.Collections.Generic.List[string]
 $md.Add("# Test Failure Context for PR #$PrNumber")
 $md.Add("")
 $md.Add("Generated: $($context.generatedAtUtc)")
+$md.Add("")
+$md.Add("## AzDO access")
+$md.Add("")
+$md.Add("- Authenticated: $($context.azdo.authenticated)")
+$md.Add("- Auth source: $($context.azdo.authSource)")
+$md.Add("- Data source: $($context.azdo.dataSourceGuidance)")
 $md.Add("")
 $md.Add("## PR")
 $md.Add("")
