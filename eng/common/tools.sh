@@ -570,9 +570,9 @@ function MSBuild-Core {
   fi
 
   local workload_resolver_switch=""
-  # if [[ "$ci" == true && -n "${_InitializeBuildToolCommand:-}" ]]; then
-  #   workload_resolver_switch="/p:MSBuildEnableWorkloadResolver=false"
-  # fi
+  if [[ "$ci" == true && -n "${_InitializeBuildToolCommand:-}" ]]; then
+    workload_resolver_switch="/p:MSBuildEnableWorkloadResolver=false"
+  fi
 
   RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch $workload_resolver_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
