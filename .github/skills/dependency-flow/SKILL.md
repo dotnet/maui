@@ -38,7 +38,7 @@ These are configured via default channel mappings — builds are **automatically
 
 **Common branch → channel patterns (not exhaustive — always verify with the command below):**
 - **Servicing release branches** (`release/X.0.Yxx-srN`) all map to the **single** general SDK channel for that band (e.g., `release/10.0.1xx-sr6`, `release/10.0.1xx-sr7`, etc. all map to `.NET 10.0.1xx SDK`). There is **no** `.NET X.0.Yxx SDK SRn` channel — do not invent one.
-- **Preview release branches** (`release/X.0.Yxx-previewN`) map to dedicated per-preview channels (e.g., `release/11.0.1xx-preview3` → `.NET 11.0.1xx SDK Preview 3`).
+- **Preview release branches** (`release/X.0.Yxx-previewN`) map to dedicated per-preview channels (e.g., `release/11.0.1xx-preview3` → `.NET 11.0.1xx SDK Preview 3`). See **Subscription Authoring & Lifecycle** below for how to wire a new preview channel into the maui subscription set, including the [PR #35364](https://github.com/dotnet/maui/pull/35364) channel/branch mismatch trap.
 - **RC release branches** (`release/X.0.Yxx-rcN`) use dedicated per-RC channels (e.g., `.NET 10.0.1xx SDK RC 2`) **only while their cycle is active** — these default mappings are removed after the RC ships, so `get-default-channels` will show no RC sibling to copy from. If you can't find a sibling, stop and tell the user to escalate to release engineering — do not guess the channel name.
 - **Main/development branches** (`main`, `netN.0`, `release/X.0.Yxx`) map to the general SDK channel for that band.
 - **Other shapes** also exist in dotnet/maui from time to time — point-sub-release branches (`-rc2.1`, `-preview6.1`), `inflight/*` mirrors, and vendor-suffixed branches (e.g., `release/10.0.1xx-meaipreview1`). Do not assume the four bullets above are complete — always check.
@@ -167,3 +167,154 @@ This means adding the build to the **Workload Release** channel, which makes ass
 - The `add-build-to-channel` command triggers a promotion build that publishes assets
 - This promotion can take several minutes — poll with `get-asset` to check
 - If `get-asset` shows no feed/channel, the build hasn't been promoted yet
+
+## Subscription Authoring & Lifecycle (`maestro-configuration`)
+
+This section covers how MAUI's Maestro subscriptions are authored, modified, and retired. The skill above is about *querying* dependency flow; this section is about *changing* it.
+
+### Where subscriptions live
+
+| Item | Location |
+|------|----------|
+| Org / project / repo | `https://dev.azure.com/dnceng/internal/_git/maestro-configuration` |
+| MAUI-targeted subs | `configuration/subscriptions/dotnet-maui.yml` |
+| Cross-repo per-preview subs | `configuration/subscriptions/11.0.1xx-previewN.yml` (deleted at preview-ship) |
+| Default channel mappings | `configuration/default-channels/dotnet-maui.yml` and `configuration/default-channels/11.0.1xx-previewN.yml` |
+| Active config branch | `production` — Maestro/BAR only ingests config from `production`. Subscriptions are **inert** until the config PR merges. |
+
+### MAUI subscription baseline (as of 2026-06-02)
+
+| Target branch | Source repos | Channel | Frequency |
+|---------------|--------------|---------|-----------|
+| `net10.0` | android, macios | `.NET 10.0.1xx SDK` | everyBuild |
+| `net10.0` | dotnet | `.NET 10.0.1xx SDK` | everyDay |
+| `net11.0` | android, macios, dotnet | `.NET 11.0.1xx SDK` | everyDay, batchable |
+| `net11.0` | dotnet-optimization | `.NET 11` | everyWeek |
+| `main` | xharness | `.NET Eng - Latest` | everyWeek |
+| `release/11.0.1xx-previewN` (when active) | android, macios, dotnet | `.NET 11.0.1xx SDK Preview N` | everyDay, batchable |
+
+Always verify the current state with `darc get-subscriptions --target-repo https://github.com/dotnet/maui` before making changes — the baseline above ages out.
+
+### The combined-PR pattern for start-of-preview (3 subs in 1 PR)
+
+`darc add-subscription` defaults to opening **one PR per call**. The cleaner pattern is to share a single topic branch across all three calls and open ONE PR at the end:
+
+```bash
+# Pick a topic branch name once
+BRANCH=users/<alias>/maui-preview5-subs
+
+# 1. Stage all 3 subs on the same branch with --no-pr (each call appends one entry)
+for SRC in android macios dotnet; do
+  darc add-subscription \
+    --no-pr \
+    --configuration-branch "$BRANCH" \
+    --channel ".NET 11.0.1xx SDK Preview 5" \
+    --source-repo "https://github.com/dotnet/$SRC" \
+    --target-repo https://github.com/dotnet/maui \
+    --target-branch release/11.0.1xx-preview5 \
+    --update-frequency everyDay \
+    --batchable \
+    -q
+done
+
+# 2. Open ONE PR against production
+az repos pr create \
+  --organization https://dev.azure.com/dnceng \
+  --project internal \
+  --repository maestro-configuration \
+  --source-branch "$BRANCH" \
+  --target-branch production \
+  --title "Add subscriptions for .NET 11.0.1xx SDK Preview 5 => dotnet/maui (android, macios, dotnet)" \
+  --description "..."
+```
+
+⚠️ `add-subscription` is in the explicit-confirmation list below — show the user the exact commands and wait for approval before running. `-q` skips the per-call confirmation prompt, so be especially deliberate about the inputs.
+
+**Exemplars:**
+- [PR 60474](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/60474) — Preview 4. Manual-combine of 3 separate PRs (older pattern).
+- [PR 61723](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61723) — Preview 5. Single shared `--configuration-branch` (cleaner pattern).
+
+Either pattern produces the same end state: 3 commits, each adding 8 lines to `dotnet-maui.yml`, totaling 24 lines.
+
+### Failure mode: channel ↔ branch mismatch ([PR #35364](https://github.com/dotnet/maui/pull/35364) trap)
+
+**Symptom:** a Maestro-generated dependency PR targeting `release/11.0.1xx-previewN` brings in CI-main package stamps instead of preview-stamped builds. Example from PR #35364:
+- Brought in `dotnet/android 36.99.0-ci.main.314` (CI-main) instead of a `-net11-p5`-stamped Preview 5 build.
+- Brought in `dotnet/macios 26.5.11527-net11-p5` because that's what was on the CI-main channel, not the Preview 5 channel.
+
+**Root cause:** the `release/11.0.1xx-previewN` branch was fed only by the general `.NET 11.0.1xx SDK` channel (which collects CI-main builds of the source repos), because no `.NET 11.0.1xx SDK Preview N` subscription existed yet for MAUI.
+
+**Detection during PR review:** when reviewing or creating any Maestro PR into a preview branch, confirm the *source build's channel* matches the *target branch's stage* in the release cycle. The MAUI repo's preview branches MUST be fed by preview channels, never the general `.NET 11.0.1xx SDK` channel.
+
+```bash
+# Quick sanity check
+darc get-subscriptions \
+  --target-repo https://github.com/dotnet/maui \
+  --target-branch release/11.0.1xx-previewN
+# Channel must read ".NET 11.0.1xx SDK Preview N", not ".NET 11.0.1xx SDK"
+```
+
+**Fix:** add Preview N subscriptions per the combined-PR pattern above.
+
+### Channel-name casing gotcha
+
+The same channel appears with two casings depending on tool/file:
+- `.NET 11.0.1xx SDK Preview 5` (capital P) — typical in `darc` output and most YAML
+- `.NET 11.0.1xx SDK preview 5` (lowercase p) — appears in some per-preview YAML files (e.g., `configuration/subscriptions/11.0.1xx-preview5.yml`)
+
+Always confirm exact casing before constructing a command:
+
+```bash
+darc get-channels | grep -i "preview 5"
+# or MCP:
+maestro_channels(filter="preview 5")
+```
+
+### The "subscription not active until the config PR merges" trap
+
+`darc trigger-subscriptions --id <new-guid>` will return `not found` until the config PR merges into `production` and BAR ingests it. This is by design — Maestro reads subscription config only from the `production` branch.
+
+Verify ingestion before triggering:
+
+```bash
+darc get-subscriptions --ids <new-guid>
+# If this returns the subscription, BAR has ingested it and trigger-subscriptions will work.
+```
+
+### Optional merge policies for batchable subs
+
+Adding batchable subscriptions without merge policies on the target branch produces a `darc add-subscription` warning. The warning is harmless — Maestro PRs still open. If you skip the policy, each batched PR must be reviewed/merged manually.
+
+To enable standard automerge (so Maestro PRs auto-merge when CI passes):
+
+```bash
+darc set-repository-policies \
+  --repo https://github.com/dotnet/maui \
+  --branch release/11.0.1xx-preview5 \
+  --standard-automerge
+```
+
+⚠️ `set-repository-policies` is in the **NEVER run** list above as a general rule (because merge-policy changes affect repo security). Standing up a **brand-new preview branch's merge policy** is a documented narrow exception. Show the user the exact command and wait for explicit approval before running. Outside this exception, defer to release engineering.
+
+### Cleanup at preview-ship
+
+At the end of a preview cycle, the prior preview's subs and default-channels are bulk-removed in **one cleanup PR**. This is normal and expected — it keeps the config tidy as previews ship.
+
+Exemplar: [PR 61033](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61033) (Matt Mitchell, 2026-05-13) removed:
+- `configuration/subscriptions/11.0.1xx-preview2.yml` (88 lines)
+- `configuration/subscriptions/11.0.1xx-preview4.yml` (401 lines)
+- The 24 preview-4 lines from `configuration/subscriptions/dotnet-maui.yml`
+- Matching files in `configuration/default-channels/`
+
+When standing up a new preview, **confirm the new preview's subs are in place before removing the old preview's** to avoid a flow gap.
+
+## Quick reference: lifecycle commands by phase
+
+| Phase | Action | Command sketch |
+|-------|--------|----------------|
+| Branch-for-preview (release branch just created) | Add default-channel mapping | `darc add-default-channel --channel ".NET 11.0.1xx SDK Preview N" --branch release/11.0.1xx-previewN --repo https://github.com/dotnet/maui` |
+| Same phase | Add 3 maui subs in one PR | Combined-PR pattern (see above) |
+| Same phase | Optional: enable standard automerge | `darc set-repository-policies ... --standard-automerge` (narrow exception, confirmation required) |
+| Mid-cycle | Verify a sub exists | `darc get-subscriptions --ids <guid>` or MCP `maestro_subscription(subscriptionId=...)` |
+| Mid-cycle | Trigger a single sub | `darc trigger-subscriptions --id <guid>` (config PR must be merged first) |
+| Preview-ship | Cleanup prior preview | One PR removing per-preview subscription file, per-preview default-channel file, and the 24 lines for that preview in `dotnet-maui.yml`. Reference [PR 61033](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61033). |
