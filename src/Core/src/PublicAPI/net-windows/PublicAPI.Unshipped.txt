@@ -1,2 +1,3 @@
-#nullable enable
+﻿#nullable enable
+override Microsoft.Maui.Animations.PlatformTicker.IsRunning.get -> bool
 override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
