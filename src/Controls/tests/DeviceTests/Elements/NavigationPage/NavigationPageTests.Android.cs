@@ -97,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 				var currentPageField = typeof(StackNavigationManager).GetField("_currentPage", flags);
 				var fragmentContainerViewField = typeof(StackNavigationManager).GetField("_fragmentContainerView", flags);
 				var fragmentManagerField = typeof(StackNavigationManager).GetField("_fragmentManager", flags);
-				
+
 				Assert.NotNull(currentPageField);
 				Assert.NotNull(fragmentContainerViewField);
 				Assert.NotNull(fragmentManagerField);
@@ -138,6 +138,35 @@ namespace Microsoft.Maui.DeviceTests
 
 				navPage.BarBackgroundColor = secondColor;
 				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors Android navigation bar on initial load")]
+		public async Task BarBackgroundColorUpdatesAndroidNavigationBarOnInitialLoad()
+		{
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = firstColor,
+				BarTextColor = Colors.Black
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformWindow = handler.PlatformView.Window;
+				Assert.NotNull(platformWindow);
+
+#pragma warning disable CA1422 // System bar color APIs still apply to older Android versions and are harmless on newer versions.
+				await AssertEventually(() => platformWindow.NavigationBarColor == firstColor.ToPlatform().ToArgb());
+
+				navPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() => platformWindow.NavigationBarColor == secondColor.ToPlatform().ToArgb());
+#pragma warning restore CA1422
 			});
 		}
 

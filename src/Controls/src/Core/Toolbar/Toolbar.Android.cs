@@ -31,8 +31,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (newHandler == null)
 			{
-				if (_platformTitleView != null)
-					_platformTitleView.Child = null;
+				_platformTitleView?.Child = null;
 
 				if (_currentBarBackground is GradientBrush currentGradientBrush)
 				{
@@ -160,6 +159,11 @@ namespace Microsoft.Maui.Controls
 			if (Handler?.PlatformView is MaterialToolbar materialToolbar)
 			{
 				materialToolbar.UpdateBarBackground(this);
+
+				if (this is NavigationPageToolbar { Parent: Window })
+				{
+					AndroidSystemChrome.UpdateBottomChrome(materialToolbar, _currentBarBackground);
+				}
 			}
 		}
 
