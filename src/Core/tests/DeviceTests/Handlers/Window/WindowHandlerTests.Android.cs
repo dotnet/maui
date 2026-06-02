@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Android.App;
-using AndroidX.Core.View;
 using AndroidX.AppCompat.App;
+using AndroidX.Core.View;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -72,26 +72,30 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task SystemBarAppearancePrefersBackgroundForContrast()
+		public async Task SystemBarAppearanceDoesNotOverwriteDeveloperAppearance()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var activity = (Activity)MauiProgramDefaults.DefaultContext;
 				var platformWindow = activity.Window;
+				var windowInsetsController = WindowCompat.GetInsetsController(platformWindow, platformWindow.DecorView);
+
+				Assert.NotNull(windowInsetsController);
+
+				windowInsetsController.AppearanceLightStatusBars = false;
+				windowInsetsController.AppearanceLightNavigationBars = false;
 
 				platformWindow.UpdateSystemBarAppearance(
 					activity,
 					updateStatusBar: true,
 					updateNavigationBar: true,
 					statusBarBackgroundColor: Colors.LightGreen,
-					statusBarForegroundColor: Colors.White,
+					statusBarForegroundColor: Colors.Black,
 					navigationBarBackgroundColor: Colors.LightGreen,
-					navigationBarForegroundColor: Colors.White);
+					navigationBarForegroundColor: Colors.Black);
 
-				var windowInsetsController = WindowCompat.GetInsetsController(platformWindow, platformWindow.DecorView);
-				Assert.NotNull(windowInsetsController);
-				Assert.True(windowInsetsController.AppearanceLightStatusBars);
-				Assert.True(windowInsetsController.AppearanceLightNavigationBars);
+				Assert.False(windowInsetsController.AppearanceLightStatusBars);
+				Assert.False(windowInsetsController.AppearanceLightNavigationBars);
 			});
 		}
 	}

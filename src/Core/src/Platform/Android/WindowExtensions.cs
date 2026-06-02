@@ -1,10 +1,9 @@
-﻿using Android.App;
+using System.Runtime.CompilerServices;
+using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Util;
-using System.Runtime.CompilerServices;
 using Android.Views;
-using AndroidX.Core.View;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -76,28 +75,6 @@ namespace Microsoft.Maui
 				statusBarBackgroundColor,
 				navigationBarBackgroundColor);
 
-			// Set appropriate system bar appearance for readability using AndroidX compat APIs.
-			var windowInsetsController = WindowCompat.GetInsetsController(window, window.DecorView);
-			if (windowInsetsController is not null)
-			{
-				// Automatically adjust icon/text colors based on explicit chrome colors when available,
-				// falling back to the app theme when MAUI doesn't know the system bar background.
-				var configuration = activity?.Resources?.Configuration;
-				var isLightTheme = configuration is null ||
-					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
-
-				if (updateStatusBar)
-				{
-					windowInsetsController.AppearanceLightStatusBars =
-						GetLightSystemBarAppearance(statusBarBackgroundColor, statusBarForegroundColor) ?? isLightTheme;
-				}
-
-				if (updateNavigationBar)
-				{
-					windowInsetsController.AppearanceLightNavigationBars =
-						GetLightSystemBarAppearance(navigationBarBackgroundColor, navigationBarForegroundColor) ?? isLightTheme;
-				}
-			}
 		}
 
 		static void UpdateSystemBarBackgrounds(
@@ -136,36 +113,6 @@ namespace Microsoft.Maui
 				}
 			}
 #pragma warning restore CA1422
-		}
-
-		static bool? GetLightSystemBarAppearance(Color? backgroundColor, Color? foregroundColor)
-		{
-			if (backgroundColor?.Alpha > 0)
-			{
-				// HSL luminosity misclassifies perceptually-bright hues (yellow, cyan, lime) as dark
-				// because it averages max/min channel values and lands at exactly 0.5 for these colours.
-				// Use ITU-R BT.601 perceptual luminance with a gamma-2.0 approximation instead:
-				//   L = 0.299R² + 0.587G² + 0.114B²  (squaring approximates linear-light encoding)
-				// Threshold 0.25 ≈ 50% perceived brightness.
-				return IsPerceptuallyLight(backgroundColor);
-			}
-
-			if (foregroundColor?.Alpha > 0)
-			{
-				return foregroundColor.GetLuminosity() <= 0.5;
-			}
-
-			return null;
-		}
-
-		// ITU-R BT.601 perceptual luminance with gamma-2.0 approximation.
-		// Returns true when the colour is bright enough to need dark (black) system bar icons.
-		static bool IsPerceptuallyLight(Color color)
-		{
-			float r = color.Red * color.Red;
-			float g = color.Green * color.Green;
-			float b = color.Blue * color.Blue;
-			return 0.299f * r + 0.587f * g + 0.114f * b > 0.25f;
 		}
 
 		sealed class OriginalSystemBarColors
