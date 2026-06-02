@@ -93,7 +93,7 @@ Use an AI-summary-style comment format. Start with a stable marker, a short stat
 ```markdown
 <!-- Test Failure Review -->
 
-## [icon] Test Failure Review — [Overall verdict]
+## Test Failure Review
 
 > @[PR author] — new test-failure review results are available based on this last commit: <a href="[commit URL]"><code>[sha7]</code></a>.
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.

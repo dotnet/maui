@@ -199,7 +199,7 @@ function New-TestFailureReviewComment {
 
     $marker = "<!-- Test Failure Review -->"
     if ($ReportContent.Contains($marker)) {
-        return $ReportContent
+        return [regex]::Replace($ReportContent, '(?m)^##\s+.*Test Failure Review.*$', '## Test Failure Review', 1)
     }
 
     $prJson = & gh pr view $PRNumber --repo $Repository --json title,author,headRefOid,url 2>&1
@@ -261,7 +261,7 @@ function New-TestFailureReviewComment {
     return @"
 $marker
 
-## $verdictIcon Test Failure Review — $verdict
+## Test Failure Review
 
 $authorPing
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.

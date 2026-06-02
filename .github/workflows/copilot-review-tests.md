@@ -168,7 +168,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 ```markdown
 <!-- Test Failure Review -->
 
-## [icon] Test Failure Review — [Overall verdict]
+## Test Failure Review
 
 > @[PR author] — new test-failure review results are available based on this last commit: <a href="[commit URL]"><code>[sha7]</code></a>.
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
