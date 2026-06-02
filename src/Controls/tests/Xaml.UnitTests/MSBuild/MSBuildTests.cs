@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 	//   1. XamlC is SKIPPED when all XAML uses SourceGen (BuildAProject, LinkedFile,
 	//      RandomXml, RandomEmbeddedResource, NoXamlFiles).
 	//   2. XamlC DOES run when files use the XamlC or Runtime inflator
-	//      (XamlCRunsWhenXamlCInflatorUsed).
+	//      (XamlCRunsWhenDeprecatedInflatorUsed, covering both gate branches).
 	[Trait("Category", "LongRunning")]
 	public class MSBuildTests : IDisposable
 	{
@@ -174,7 +174,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			}
 			project.Add(itemGroup);
 
-			//Let's enable XamlC assembly-wide
+			// Legacy assembly-wide XamlC opt-in. Under the SourceGen-default model the inflator is
+			// driven by the MauiXamlInflator property / MauiXaml.Inflator metadata, so this attribute
+			// no longer forces the XamlC target — the skip tests rely on it being a no-op here.
 			project.Add(AddFile("AssemblyInfo.cs", "Compile", "#pragma warning disable CS0618\n[assembly: Microsoft.Maui.Controls.Xaml.XamlCompilation (Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]"));
 
 			//Add a single CSS file
@@ -433,25 +435,29 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		}
 
 		/// <summary>
-		/// Verifies that XamlC still runs when the deprecated XamlC inflator is explicitly requested.
-		/// This is the positive counterpart to BuildAProject — it proves the condition gate
-		/// correctly activates XamlC when _MauiXaml_XC is populated.
+		/// Verifies that the XamlC target still runs when a deprecated inflator is explicitly
+		/// requested. This is the positive counterpart to BuildAProject — it proves the condition
+		/// gate activates XamlC when either branch of the OR is populated: _MauiXaml_XC (XamlC) or
+		/// _MauiXaml_RT (Runtime). Both inflators are covered so a future edit cannot silently drop
+		/// build-time validation for one of them while the suite stays green.
 		/// </summary>
-		[Fact]
-		public void XamlCRunsWhenXamlCInflatorUsed()
+		[Theory]
+		[InlineData("XamlC")]
+		[InlineData("Runtime")]
+		public void XamlCRunsWhenDeprecatedInflatorUsed(string inflator)
 		{
 			SetUp();
 			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			// MAUI1001 warns that the XamlC inflator is deprecated. WarningsNotAsErrors keeps
-			// the build green if a TreatWarningsAsErrors chain is ever introduced for these
+			// MAUI1001 warns that the XamlC and Runtime inflators are deprecated. WarningsNotAsErrors
+			// keeps the build green if a TreatWarningsAsErrors chain is ever introduced for these
 			// synthesized projects, without relying on the invalid `-warnaserror-:` switch syntax.
-			Build(projectFile, additionalArgs: "-p:MauiXamlInflator=XamlC -p:WarningsNotAsErrors=MAUI1001");
+			Build(projectFile, additionalArgs: $"-p:MauiXamlInflator={inflator} -p:WarningsNotAsErrors=MAUI1001");
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			// With XamlC inflator, _MauiXaml_XC is populated so the XamlC target runs.
+			// With the XamlC or Runtime inflator, _MauiXaml_XC / _MauiXaml_RT is populated so XamlC runs.
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
