@@ -1,9 +1,65 @@
+using System.Collections.Generic;
+using System;
+using Microsoft.Build.Utilities;
+using SkiaSharp;
 using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
 	public class ResizeImageInfoTests
 	{
+		public class Parse
+		{
+			[Fact]
+			public void SupportsDarkSplashMetadata()
+			{
+				var image = new TaskItem("images/camera.png", new Dictionary<string, string>
+				{
+					["DarkFile"] = "images/camera_color.png",
+					["DarkColor"] = "#000000",
+					["DarkTintColor"] = "#ffffff",
+				});
+
+				var info = ResizeImageInfo.Parse(image);
+
+				Assert.Equal(SKColors.Black, info.DarkColor);
+				Assert.Equal(SKColors.White, info.DarkTintColor);
+				Assert.EndsWith("camera_color.png", info.DarkFilename, StringComparison.Ordinal);
+				Assert.False(info.DarkIsVector);
+			}
+
+			[Fact]
+			public void DarkTintColorFallsBackToTintColorOnlyWhenDarkFileIsNotSpecified()
+			{
+				var image = new TaskItem("images/camera.png", new Dictionary<string, string>
+				{
+					["TintColor"] = "#ff0000",
+				});
+
+				var info = ResizeImageInfo.Parse(image);
+				var darkInfo = info.CreateDarkVariant();
+
+				Assert.Equal(SKColors.Red, darkInfo.TintColor);
+				Assert.Equal(info.Filename, darkInfo.Filename);
+			}
+
+			[Fact]
+			public void DarkTintColorDoesNotFallbackToTintColorWhenDarkFileIsSpecified()
+			{
+				var image = new TaskItem("images/camera.png", new Dictionary<string, string>
+				{
+					["TintColor"] = "#ff0000",
+					["DarkFile"] = "images/camera_color.png",
+				});
+
+				var info = ResizeImageInfo.Parse(image);
+				var darkInfo = info.CreateDarkVariant();
+
+				Assert.Null(darkInfo.TintColor);
+				Assert.EndsWith("camera_color.png", darkInfo.Filename, StringComparison.Ordinal);
+			}
+		}
+
 		public class IsVector
 		{
 			[Theory]

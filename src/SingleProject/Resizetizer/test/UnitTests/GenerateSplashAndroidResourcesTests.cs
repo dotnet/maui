@@ -13,8 +13,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	public class GenerateSplashAndroidResourcesTests : MSBuildTaskTestFixture<GenerateSplashAndroidResources>
 	{
 		readonly string _colors;
+		readonly string _colorsNight;
 		readonly string _drawable;
+		readonly string _drawableNight;
 		readonly string _drawable_v31;
+		readonly string _drawableNight_v31;
 
 		static readonly Dictionary<string, string> ResizeMetadata = new() { ["Resize"] = "true" };
 
@@ -22,8 +25,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			: base(outputHelper)
 		{
 			_colors = Path.Combine(DestinationDirectory, "values", "maui_colors.xml");
+			_colorsNight = Path.Combine(DestinationDirectory, "values-night", "maui_colors.xml");
 			_drawable = Path.Combine(DestinationDirectory, "drawable", "maui_splash_image.xml");
+			_drawableNight = Path.Combine(DestinationDirectory, "drawable-night", "maui_splash_image.xml");
 			_drawable_v31 = Path.Combine(DestinationDirectory, "drawable-v31", "maui_splash_image.xml");
+			_drawableNight_v31 = Path.Combine(DestinationDirectory, "drawable-night-v31", "maui_splash_image.xml");
 		}
 
 		protected GenerateSplashAndroidResources GetNewTask(params ITaskItem[] splash) =>
@@ -49,9 +55,123 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var success = task.Execute();
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-			AssertColorsFile("maui_colors.xml", outputColor);
+			AssertDefaultColorsFile("maui_colors.xml", outputColor);
 			AssertImageFile("maui_splash_image.xml", _drawable, "@drawable/appiconfg");
 			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, "@drawable/appiconfg");
+			Assert.False(File.Exists(_colorsNight), "Night colors should not be generated without dark metadata.");
+			Assert.False(File.Exists(_drawableNight), "Night drawable should not be generated without dark metadata.");
+			Assert.False(File.Exists(_drawableNight_v31), "Night v31 drawable should not be generated without dark metadata.");
+		}
+
+		[Fact]
+		public void DarkColorGeneratesNightValuesFile()
+		{
+			var splash = new TaskItem("images/appiconfg.svg", new Dictionary<string, string>
+			{
+				["Color"] = "#ffffff",
+				["DarkColor"] = "#000000",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertColorsFile(_colors, "#ffffffff");
+			AssertColorsFile(_colorsNight, "#ff000000");
+			AssertImageFile("maui_splash_image.xml", _drawable, "@drawable/appiconfg");
+			AssertImageFile("maui_splash_image.xml", _drawableNight, "@drawable/appiconfg");
+			AssertImageFile("maui_splash_image_v31.xml", _drawable_v31, "@drawable/appiconfg");
+			AssertImageFile("maui_splash_image_v31.xml", _drawableNight_v31, "@drawable/appiconfg");
+		}
+
+		[Fact]
+		public void DarkFileGeneratesNightQualifiedImages()
+		{
+			var splash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Resize"] = bool.TrueString,
+				["DarkFile"] = "images/camera_color.png",
+				["DarkColor"] = "#000000",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileSize("drawable-mdpi/camera.png", 1792, 1792);
+			AssertFileSize("drawable-night-mdpi/camera.png", 1792, 1792);
+			AssertFileSize("drawable-xhdpi/camera.png", 3584, 3584);
+			AssertFileSize("drawable-night-xhdpi/camera.png", 3584, 3584);
+			AssertImageFile("maui_splash_image.xml", _drawableNight, "@drawable/camera");
+			AssertImageFile("maui_splash_image_v31.xml", _drawableNight_v31, "@drawable/camera");
+		}
+
+		[Fact]
+		public void RemovingDarkColorUpdatesNightValuesToLightColor()
+		{
+			var splashWithDarkColor = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["DarkColor"] = "#000000",
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var firstTask = GetNewTask(splashWithDarkColor);
+			var firstSuccess = firstTask.Execute();
+			Assert.True(firstSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+			Assert.True(File.Exists(_colorsNight), "Night colors should be generated when DarkColor is set.");
+
+			var splashWithoutDarkColor = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Color"] = "#ffffff",
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var secondTask = GetNewTask(splashWithoutDarkColor);
+			var secondSuccess = secondTask.Execute();
+			Assert.True(secondSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertColorsFile(_colorsNight, "#ffffffff");
+		}
+
+		[Fact]
+		public void RemovingDarkColorAndLightColorRemovesStaleNightValuesFile()
+		{
+			var splashWithDarkColor = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["DarkColor"] = "#000000",
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var firstTask = GetNewTask(splashWithDarkColor);
+			var firstSuccess = firstTask.Execute();
+			Assert.True(firstSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+			Assert.True(File.Exists(_colorsNight), "Night colors should be generated when DarkColor is set.");
+
+			var splashWithoutColors = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var secondTask = GetNewTask(splashWithoutColors);
+			var secondSuccess = secondTask.Execute();
+			Assert.True(secondSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+			Assert.False(File.Exists(_colorsNight), "Night colors should be removed when dark mode remains but no color metadata remains.");
+		}
+
+		[Fact]
+		public void DarkFileWithLightColorWritesNightValuesFileEvenWhenColorsMatch()
+		{
+			var splash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Color"] = "#ffffff",
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertColorsFile(_colors, "#ffffffff");
+			AssertColorsFile(_colorsNight, "#ffffffff");
 		}
 
 		[Theory]
@@ -292,15 +412,18 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			AssertFileSize($"drawable-xhdpi/{outputName}.png", 88, 88);
 		}
 
-		void AssertColorsFile(string expectedFilename, string color)
+		void AssertDefaultColorsFile(string expectedFilename, string color)
+			=> AssertColorsFile(Path.Combine(DestinationDirectory, "values", expectedFilename), color);
+
+		void AssertColorsFile(string actualFilename, string color)
 		{
-			var expectedXml = File.ReadAllText($"testdata/androidsplash/" + expectedFilename)
+			var expectedXml = File.ReadAllText($"testdata/androidsplash/maui_colors.xml")
 				.Replace("{maui_splash_color}", color, StringComparison.OrdinalIgnoreCase);
 
-			var actual = XElement.Load(_colors);
+			var actual = XElement.Load(actualFilename);
 			var expected = XElement.Parse(expectedXml);
 
-			Assert.True(XNode.DeepEquals(actual, expected), $"{_colors} did not match:\n{actual}");
+			Assert.True(XNode.DeepEquals(actual, expected), $"{actualFilename} did not match:\n{actual}");
 		}
 
 		void AssertImageFile(string expectedFilename, string actualFilename, string image, string width = "108", string height = "108")

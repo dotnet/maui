@@ -35,6 +35,10 @@
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.GenerateSplashAssetCatalog" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.TizenSplashUpdater" />
 
     <UsingTask
@@ -241,7 +245,8 @@
             <MauiItem Include="@(MauiIcon)" ItemGroupName="MauiIcon" Condition="'%(MauiIcon.ForegroundFile)' != ''" ForegroundFile="$([System.IO.Path]::GetFullPath('%(MauiIcon.ForegroundFile)'))" />
             <MauiItem Include="@(MauiFont)"  ItemGroupName="MauiFont" />
             <MauiItem Include="@(MauiAsset)" ItemGroupName="MauiAsset" ProjectDirectory="$(MSBuildProjectDirectory)" />
-            <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" />
+            <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" Condition="'%(MauiSplashScreen.DarkFile)' == ''" />
+            <MauiItem Include="@(MauiSplashScreen)" ItemGroupName="MauiSplashScreen" Condition="'%(MauiSplashScreen.DarkFile)' != ''" DarkFile="$([System.IO.Path]::GetFullPath('%(MauiSplashScreen.DarkFile)'))" />
         </ItemGroup>
 
         <ConvertToAbsolutePath Paths="@(MauiItem)">
@@ -321,6 +326,14 @@
             <Output TaskParameter="Items" ItemName="_MauiSplashScreenWithHashes" />
         </GetFileHash>
 
+        <ItemGroup>
+            <_MauiSplashScreenDarkFile Include="%(MauiSplashScreen.DarkFile)" Condition="'%(MauiSplashScreen.DarkFile)' != ''" />
+        </ItemGroup>
+
+        <GetFileHash Files="@(_MauiSplashScreenDarkFile)" Condition="'@(_MauiSplashScreenDarkFile)' != ''">
+            <Output TaskParameter="Hash" PropertyName="_MauiSplashDarkFileHash" />
+        </GetFileHash>
+
         <!-- Write out item spec and metadata to a file we can use as an inputs for the resize target -->
         <!-- This allows us to invalidate the build based on not just input image files changing but project item metadata as well -->
         <WriteLinesToFile
@@ -337,7 +350,7 @@
 
         <WriteLinesToFile
             File="$(_MauiSplashInputsFile)"
-            Lines="@(_MauiSplashScreenWithHashes->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);ForegroundScale=%(ForegroundScale);FileHash=%(FileHash)')"
+            Lines="@(_MauiSplashScreenWithHashes->'File=%(Identity);Link=%(Link);BaseSize=%(BaseSize);Resize=%(Resize);TintColor=%(TintColor);Color=%(Color);DarkFile=%(DarkFile);DarkColor=%(DarkColor);DarkTintColor=%(DarkTintColor);ForegroundScale=%(ForegroundScale);FileHash=%(FileHash);DarkFileHash=$(_MauiSplashDarkFileHash);SupportedOSPlatformVersion=$(SupportedOSPlatformVersion)')"
             Overwrite="true"
             WriteOnlyWhenDifferent="true" />
 
@@ -406,7 +419,28 @@
             <_MauiHasSplashScreens Condition="'@(MauiSplashScreen->Count())' != '0'">true</_MauiHasSplashScreens>
             <_MauiShouldGenerateSplashScreen Condition="'$(_MauiHasSplashScreens)' == 'true'">true</_MauiShouldGenerateSplashScreen>
             <_MauiShouldGenerateSplashScreen Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' != 'true' and '$(EnableBlankMauiSplashScreen)' == 'true'">true</_MauiShouldGenerateSplashScreen>
+            <_MauiAppleThemedSplashSupported Condition="'$(SupportedOSPlatformVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(SupportedOSPlatformVersion)', '14.0'))">true</_MauiAppleThemedSplashSupported>
         </PropertyGroup>
+
+        <ItemGroup>
+            <_MauiSplashScreenWithDarkMetadata Include="@(MauiSplashScreen)" Condition="'%(MauiSplashScreen.DarkFile)' != '' Or '%(MauiSplashScreen.DarkColor)' != '' Or '%(MauiSplashScreen.DarkTintColor)' != ''" />
+            <_MauiSplashScreenWithColorMetadata Include="@(MauiSplashScreen)" Condition="'%(MauiSplashScreen.Color)' != '' Or '%(MauiSplashScreen.DarkColor)' != ''" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <_MauiHasThemedSplashScreen Condition="'@(_MauiSplashScreenWithDarkMetadata)' != ''">true</_MauiHasThemedSplashScreen>
+            <_MauiLaunchScreenColorName Condition="'@(_MauiSplashScreenWithColorMetadata)' != ''">MauiSplashColor</_MauiLaunchScreenColorName>
+            <_MauiShouldUseThemedAppleSplashScreen Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true' and '$(_MauiHasThemedSplashScreen)' == 'true' and '$(_MauiAppleThemedSplashSupported)' == 'true'">true</_MauiShouldUseThemedAppleSplashScreen>
+        </PropertyGroup>
+
+        <Warning
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasThemedSplashScreen)' == 'true' and '$(_MauiAppleThemedSplashSupported)' != 'true'"
+            Text="Themed MauiSplashScreen assets require iOS or iPadOS 14.0 or later. The existing launch storyboard splash screen will be used for this target."
+        />
+        <Warning
+            Condition="'$(_ResizetizerPlatformIsMacCatalyst)' == 'True' and '$(_MauiHasThemedSplashScreen)' == 'true' and '$(_MauiAppleThemedSplashSupported)' != 'true'"
+            Text="Themed MauiSplashScreen assets require iOS, iPadOS, or Mac Catalyst 14.0 or later. No themed splash screen assets will be generated for this target."
+        />
 
         <DetectInvalidResourceOutputFilenamesTask
             Condition="'$(_MauiHasSplashScreens)' == 'true'"
@@ -435,7 +469,12 @@
         </ItemGroup>
 
         <!-- iOS, but not Catalyst -->
-        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
+        <RemoveDir
+            Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(_MauiShouldUseThemedAppleSplashScreen)' != 'true' and Exists('$(_MauiIntermediateSplashScreen)Assets.xcassets')"
+            Directories="$(_MauiIntermediateSplashScreen)Assets.xcassets"
+        />
+
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
             <!-- Add a Link attribute in the form of '<filename>_<inputshash>.<extension>' -->
           <_MauiSplashScreenWithHashesInFilename
               Include="@(_MauiSplashScreenWithHashes->HasMetadata('Link'))"
@@ -447,22 +486,38 @@
               Link="%(Filename)_%(InputsFileHash)%(Extension)" />
         </ItemGroup>
         <GenerateSplashStoryboard
-            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'"
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true' and '$(_MauiShouldUseThemedAppleSplashScreen)' != 'true'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             MauiSplashScreen="@(_MauiSplashScreenWithHashesInFilename)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
-        <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'">
+        <GenerateSplashAssetCatalog
+            Condition="'$(_MauiShouldUseThemedAppleSplashScreen)' == 'true'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            MauiSplashScreen="@(_MauiSplashScreenWithHashesInFilename)"
+            InputsFile="$(_MauiSplashInputsFile)"
+        />
+        <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true' and '$(_MauiShouldUseThemedAppleSplashScreen)' != 'true'">
             <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
             <_MauiIntermediatePList>$(_MauiIntermediateSplashScreen)MauiInfo.plist</_MauiIntermediatePList>
         </PropertyGroup>
+        <PropertyGroup Condition="'$(_MauiShouldUseThemedAppleSplashScreen)' == 'true'">
+            <_MauiIntermediatePList>$(_MauiIntermediateSplashScreen)MauiInfo.plist</_MauiIntermediatePList>
+        </PropertyGroup>
         <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'"
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true' and '$(_MauiShouldUseThemedAppleSplashScreen)' != 'true'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             PlistName="MauiInfo.plist"
             Storyboard="$(_MauiIntermediateStoryboard)"
         />
-        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'">
+        <CreatePartialInfoPlistTask
+            Condition="'$(_MauiShouldUseThemedAppleSplashScreen)' == 'true'"
+            IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
+            PlistName="MauiInfo.plist"
+            LaunchScreenImage="MauiSplashImage"
+            LaunchScreenColor="$(_MauiLaunchScreenColorName)"
+        />
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true' and '$(_MauiShouldUseThemedAppleSplashScreen)' != 'true'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <_MauiSplashStoryboard Include="$(_MauiIntermediateStoryboard)" />
             <_MauiSplashPList Include="$(_MauiIntermediatePList)" />
@@ -476,6 +531,16 @@
                 <LogicalName>%(_MauiSplashImages.Filename)%(_MauiSplashImages.Extension)</LogicalName>
                 <TargetPath>%(_MauiSplashImages.Filename)%(_MauiSplashImages.Extension)</TargetPath>
             </BundleResource>
+        </ItemGroup>
+        <ItemGroup Condition="'$(_MauiShouldUseThemedAppleSplashScreen)' == 'true'">
+            <_MauiSplashPList Include="$(_MauiIntermediatePList)" />
+            <_MauiSplashAssetCatalog Include="$(_MauiIntermediateSplashScreen)Assets.xcassets\**\*" />
+            <PartialAppManifest Include="@(_MauiSplashPList)" />
+            <ImageAsset Include="@(_MauiSplashAssetCatalog)">
+                <LogicalName>Assets.xcassets\%(_MauiSplashAssetCatalog.RecursiveDir)%(_MauiSplashAssetCatalog.Filename)%(_MauiSplashAssetCatalog.Extension)</LogicalName>
+                <TargetPath>Assets.xcassets\%(_MauiSplashAssetCatalog.RecursiveDir)%(_MauiSplashAssetCatalog.Filename)%(_MauiSplashAssetCatalog.Extension)</TargetPath>
+                <Link>Assets.xcassets\%(_MauiSplashAssetCatalog.RecursiveDir)%(_MauiSplashAssetCatalog.Filename)%(_MauiSplashAssetCatalog.Extension)</Link>
+            </ImageAsset>
         </ItemGroup>
 
         <!-- Windows App SDK -->

@@ -16,6 +16,10 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string Storyboard { get; set; }
 
+		public string LaunchScreenImage { get; set; }
+
+		public string LaunchScreenColor { get; set; }
+
 		const string plistHeader =
 @"<?xml version=""1.0"" encoding=""UTF-8""?>
 <!DOCTYPE plist PUBLIC ""-//Apple//DTD PLIST 1.0//EN"" ""http://www.apple.com/DTDs/PropertyList-1.0.dtd"">
@@ -52,7 +56,26 @@ namespace Microsoft.Maui.Resizetizer
 						f.WriteLine("  </array>");
 					}
 
-					if (!string.IsNullOrEmpty(Storyboard))
+					if (!string.IsNullOrEmpty(LaunchScreenImage) || !string.IsNullOrEmpty(LaunchScreenColor))
+					{
+						f.WriteLine("  <key>UILaunchScreen</key>");
+						f.WriteLine("  <dict>");
+
+						if (!string.IsNullOrEmpty(LaunchScreenImage))
+						{
+							f.WriteLine("    <key>UIImageName</key>");
+							f.WriteLine($"    <string>{LaunchScreenImage}</string>");
+						}
+
+						if (!string.IsNullOrEmpty(LaunchScreenColor))
+						{
+							f.WriteLine("    <key>UIColorName</key>");
+							f.WriteLine($"    <string>{LaunchScreenColor}</string>");
+						}
+
+						f.WriteLine("  </dict>");
+					}
+					else if (!string.IsNullOrEmpty(Storyboard))
 					{
 						f.WriteLine("  <key>UILaunchStoryboardName</key>");
 						f.WriteLine($"  <string>{Path.GetFileNameWithoutExtension(Storyboard)}</string>");

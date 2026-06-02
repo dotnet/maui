@@ -40,7 +40,20 @@ namespace Microsoft.Maui.Resizetizer
 
 		public SKColor? Color { get; set; }
 
+		public SKColor? DarkTintColor { get; set; }
+
+		public SKColor? DarkColor { get; set; }
+
 		public bool IsVector => IsVectorFilename(Filename);
+
+		public string? DarkFilename { get; set; }
+
+		public bool DarkIsVector => IsVectorFilename(DarkFilename);
+
+		public bool HasDarkMode =>
+			DarkColor is not null ||
+			DarkTintColor is not null ||
+			!string.IsNullOrWhiteSpace(DarkFilename);
 
 		public bool IsAppIcon { get; set; }
 
@@ -108,6 +121,16 @@ namespace Microsoft.Maui.Resizetizer
 			if (info.Color is null && !string.IsNullOrEmpty(color))
 				throw new InvalidDataException($"Unable to parse color value '{color}' for '{info.Filename}'.");
 
+			var darkTintColor = image.GetMetadata("DarkTintColor");
+			info.DarkTintColor = Utils.ParseColorString(darkTintColor);
+			if (info.DarkTintColor is null && !string.IsNullOrEmpty(darkTintColor))
+				throw new InvalidDataException($"Unable to parse color value '{darkTintColor}' for '{info.Filename}'.");
+
+			var darkColor = image.GetMetadata("DarkColor");
+			info.DarkColor = Utils.ParseColorString(darkColor);
+			if (info.DarkColor is null && !string.IsNullOrEmpty(darkColor))
+				throw new InvalidDataException($"Unable to parse color value '{darkColor}' for '{info.Filename}'.");
+
 			if (bool.TryParse(image.GetMetadata("IsAppIcon"), out var iai))
 				info.IsAppIcon = iai;
 
@@ -124,6 +147,16 @@ namespace Microsoft.Maui.Resizetizer
 				info.ForegroundFilename = fgFileInfo.FullName;
 			}
 
+			var darkFile = image.GetMetadata("DarkFile");
+			if (!string.IsNullOrEmpty(darkFile))
+			{
+				var darkFileInfo = new FileInfo(darkFile);
+				if (!darkFileInfo.Exists)
+					throw new FileNotFoundException("Unable to find dark file: " + darkFileInfo.FullName, darkFileInfo.FullName);
+
+				info.DarkFilename = darkFileInfo.FullName;
+			}
+
 			// make sure the image is a foreground if this is an icon
 			if (info.IsAppIcon && string.IsNullOrEmpty(info.ForegroundFilename))
 			{
@@ -135,6 +168,25 @@ namespace Microsoft.Maui.Resizetizer
 			// - Parse out custom DPI's
 
 			return info;
+		}
+
+		public ResizeImageInfo CreateDarkVariant(string? alias = null)
+		{
+			var hasDarkFile = !string.IsNullOrWhiteSpace(DarkFilename);
+
+			return new ResizeImageInfo
+			{
+				ItemSpec = ItemSpec,
+				Alias = alias ?? Alias,
+				Filename = hasDarkFile ? DarkFilename : Filename,
+				BaseSize = BaseSize,
+				Resize = Resize,
+				TintColor = DarkTintColor ?? (hasDarkFile ? null : TintColor),
+				Color = DarkColor ?? Color,
+				IsAppIcon = IsAppIcon,
+				ForegroundFilename = ForegroundFilename,
+				ForegroundScale = ForegroundScale,
+			};
 		}
 	}
 }
