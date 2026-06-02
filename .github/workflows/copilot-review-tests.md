@@ -87,6 +87,22 @@ concurrency:
 timeout-minutes: 30
 
 steps:
+  - name: Check actor permission
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: ${{ github.repository }}
+      ACTOR: ${{ github.actor }}
+    run: |
+      set -euo pipefail
+
+      PERMISSION=$(gh api "repos/${REPOSITORY}/collaborators/${ACTOR}/permission" --jq '.permission')
+      echo "User ${ACTOR} has permission: ${PERMISSION}"
+      # Keep this in sync with .github/workflows/review-trigger.yml.
+      if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
+        echo "::error::User ${ACTOR} does not have sufficient access. Only write/maintain/admin can trigger /review tests."
+        exit 1
+      fi
+
   - name: Verify connectivity to AzDO and Helix
     run: |
       set -euo pipefail
