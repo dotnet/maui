@@ -36,7 +36,8 @@
 
 	<ItemGroup>
 		<!-- Android SDK - construct package names to install -->
-		<AndroidSdkPackages Include="platform-tools%3B$(AndroidSdkPlatformToolsVersion)" />
+		<!-- platform-tools doesn't support versioned install in sdkmanager, install latest -->
+		<AndroidSdkPackages Include="platform-tools" />
 		<AndroidSdkPackages Include="cmdline-tools%3B$(AndroidSdkCmdLineToolsVersion)" />
 		<AndroidSdkPackages Include="emulator" />
 	</ItemGroup>
