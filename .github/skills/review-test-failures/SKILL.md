@@ -88,10 +88,31 @@ Platform mismatch is supporting evidence, not proof by itself. For example, an i
 
 ## Output format
 
-Use this format for the final report:
+Use an AI-summary-style comment format. Start with a stable marker, a short status header, badges, and one expandable review session:
 
 ```markdown
-## Test Failure Review
+<!-- Test Failure Review -->
+
+## [icon] Test Failure Review — [Overall verdict]
+
+> @[PR author] — new test-failure review results are available based on this last commit: <a href="[commit URL]"><code>[sha7]</code></a>.
+> To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
+
+<p align="left">
+  <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
+  <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
+  <img alt="Data [Complete|Partial]" src="https://img.shields.io/badge/Data-[Complete|Partial]-[color]?labelColor=30363d&style=flat-square">
+  <img alt="Platform [platform]" src="https://img.shields.io/badge/Platform-[platform]-0969da?labelColor=30363d&style=flat-square">
+</p>
+
+<!-- SESSION:[sha7] START -->
+<details open>
+<summary><strong>Review Sessions</strong> — click to expand</summary>
+<br/>
+
+<details open>
+<summary>[icon] <strong>Test Failure Review</strong> — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong> · <em>[UTC timestamp]</em></summary>
+<br/>
 
 **Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data]
 
@@ -111,6 +132,11 @@ Use this format for the final report:
 [Relevant checks, build IDs, test run IDs, log excerpts, PR-scope details, and limitations.]
 
 </details>
+
+</details>
+
+</details>
+<!-- SESSION:[sha7] END -->
 ```
 
 Rules:
@@ -118,4 +144,6 @@ Rules:
 - Keep the visible summary short and decisive.
 - Include explicit limitations when data is unavailable.
 - Cite concrete evidence for every verdict.
+- Use badge colors: `d1242f` for `Likely PR-caused`, `1a7f37` for `Likely unrelated`, `bf8700` for `Needs human investigation`, and `6e7781` for `Insufficient data`.
+- Use `Data-Partial` when any limitations are present; otherwise use `Data-Complete`.
 - If there are no failing or inconclusive checks, report that no failing test evidence was found and use the noop path in gh-aw.

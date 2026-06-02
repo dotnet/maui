@@ -163,10 +163,31 @@ Example:
 
 ## Posting results
 
-If dry-run mode is not active, call `add_comment` exactly once with `item_number` set to the target PR number. Use this top-level shape:
+If dry-run mode is not active, call `add_comment` exactly once with `item_number` set to the target PR number. Use this AI-summary-style top-level shape:
 
 ```markdown
-## Test Failure Review
+<!-- Test Failure Review -->
+
+## [icon] Test Failure Review — [Overall verdict]
+
+> @[PR author] — new test-failure review results are available based on this last commit: <a href="[commit URL]"><code>[sha7]</code></a>.
+> To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
+
+<p align="left">
+  <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
+  <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
+  <img alt="Data [Complete|Partial]" src="https://img.shields.io/badge/Data-[Complete|Partial]-[color]?labelColor=30363d&style=flat-square">
+  <img alt="Platform [platform]" src="https://img.shields.io/badge/Platform-[platform]-0969da?labelColor=30363d&style=flat-square">
+</p>
+
+<!-- SESSION:[sha7] START -->
+<details open>
+<summary><strong>Review Sessions</strong> — click to expand</summary>
+<br/>
+
+<details open>
+<summary>[icon] <strong>Test Failure Review</strong> — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong> · <em>[UTC timestamp]</em></summary>
+<br/>
 
 **Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data]
 
@@ -186,6 +207,11 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 [Relevant checks, build IDs, test run IDs, log excerpts, PR-scope details, and limitations.]
 
 </details>
+
+</details>
+
+</details>
+<!-- SESSION:[sha7] END -->
 ```
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.

@@ -92,6 +92,7 @@ $ContextJsonPath = Join-Path $RunDirectory "context.json"
 $ContextMarkdownPath = Join-Path $RunDirectory "context.md"
 $PromptPath = Join-Path $RunDirectory "prompt.md"
 $ReportPath = Join-Path $RunDirectory "report.md"
+$CommentPath = Join-Path $RunDirectory "comment.md"
 $RawOutputPath = Join-Path $RunDirectory "copilot-output.jsonl"
 
 function Assert-Command {
@@ -129,6 +130,246 @@ function Get-FinalAssistantMessage {
     }
 
     return $messages[$messages.Count - 1]
+}
+
+function Escape-Html {
+    param([string]$Value)
+
+    if ($null -eq $Value) {
+        return ""
+    }
+
+    return $Value -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;'
+}
+
+function Get-ReportVerdict {
+    param([string]$Content)
+
+    $match = [regex]::Match($Content, '\*\*Overall verdict:\*\*\s*(?<verdict>[^\r\n]+)')
+    if ($match.Success) {
+        return $match.Groups["verdict"].Value.Trim()
+    }
+
+    return "Needs human investigation"
+}
+
+function Get-VerdictColor {
+    param([string]$Verdict)
+
+    switch -Regex ($Verdict) {
+        'Likely PR-caused' { return 'd1242f' }
+        'Likely unrelated' { return '1a7f37' }
+        'Insufficient data' { return '6e7781' }
+        default { return 'bf8700' }
+    }
+}
+
+function Get-VerdictIcon {
+    param([string]$Verdict)
+
+    switch -Regex ($Verdict) {
+        'Likely PR-caused' { return '🔴' }
+        'Likely unrelated' { return '🟢' }
+        'Insufficient data' { return '⚪' }
+        default { return '🟠' }
+    }
+}
+
+function New-Badge {
+    param(
+        [string]$Label,
+        [string]$Message,
+        [string]$Color,
+        [string]$Alt
+    )
+
+    $encodedLabel = [Uri]::EscapeDataString($Label) -replace '-', '--'
+    $encodedMessage = [Uri]::EscapeDataString($Message) -replace '-', '--'
+    $safeAlt = Escape-Html $Alt
+    return "  <img alt=""$safeAlt"" src=""https://img.shields.io/badge/$encodedLabel-$encodedMessage-$Color`?labelColor=30363d&style=flat-square"">"
+}
+
+function New-TestFailureReviewComment {
+    param(
+        [int]$PRNumber,
+        [string]$Repository,
+        [string]$ReportContent,
+        [string]$ContextJsonPath
+    )
+
+    $marker = "<!-- Test Failure Review -->"
+    if ($ReportContent.Contains($marker)) {
+        return $ReportContent
+    }
+
+    $prJson = & gh pr view $PRNumber --repo $Repository --json title,author,headRefOid,url 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to fetch PR metadata for comment formatting: $prJson"
+    }
+
+    $pr = $prJson | ConvertFrom-Json
+    $commitFull = [string]$pr.headRefOid
+    $commitSha7 = if ($commitFull.Length -ge 7) { $commitFull.Substring(0, 7) } else { "unknown" }
+    $commitUrl = if ($commitFull) { "https://github.com/$Repository/commit/$commitFull" } else { "#" }
+    $prTitle = Escape-Html $pr.title
+    $prAuthor = $pr.author.login
+    $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm UTC")
+
+    $verdict = Get-ReportVerdict -Content $ReportContent
+    $verdictColor = Get-VerdictColor -Verdict $verdict
+    $verdictIcon = Get-VerdictIcon -Verdict $verdict
+
+    $failureCount = 0
+    $platforms = @()
+    $limitations = @()
+    if (Test-Path $ContextJsonPath) {
+        try {
+            $context = Get-Content -Path $ContextJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            $failureCount = @($context.failures.unique).Count
+            $platforms = @($context.failures.unique | ForEach-Object { $_.platform } | Where-Object { $_ -and $_ -ne "unknown" } | Select-Object -Unique)
+            $limitations = @($context.limitations)
+        }
+        catch {
+            $limitations = @("Could not parse context JSON while formatting comment: $($_.Exception.Message)")
+        }
+    }
+
+    $badgeLines = @()
+    $badgeLines += New-Badge -Label "Overall" -Message $verdict -Color $verdictColor -Alt "Overall $verdict"
+    $badgeLines += New-Badge -Label "Failures" -Message "$failureCount" -Color "8250df" -Alt "Failures $failureCount"
+    if ($limitations.Count -gt 0) {
+        $badgeLines += New-Badge -Label "Data" -Message "Partial" -Color "bf8700" -Alt "Data Partial"
+    }
+    else {
+        $badgeLines += New-Badge -Label "Data" -Message "Complete" -Color "1a7f37" -Alt "Data Complete"
+    }
+    foreach ($platform in $platforms) {
+        $badgeLines += New-Badge -Label "Platform" -Message $platform -Color "0969da" -Alt "Platform $platform"
+    }
+
+    $sessionMarkerStart = "<!-- SESSION:$commitSha7 START -->"
+    $sessionMarkerEnd = "<!-- SESSION:$commitSha7 END -->"
+    $authorPing = if ($prAuthor) {
+        "> @$prAuthor — new test-failure review results are available based on this last commit: <a href=""$commitUrl""><code>$commitSha7</code></a>."
+    }
+    else {
+        "> New test-failure review results are available based on this last commit: <a href=""$commitUrl""><code>$commitSha7</code></a>."
+    }
+
+    $badges = $badgeLines -join "`n"
+
+    return @"
+$marker
+
+## $verdictIcon Test Failure Review — $verdict
+
+$authorPing
+> To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
+
+<p align="left">
+$badges
+</p>
+
+$sessionMarkerStart
+<details open>
+<summary><strong>Review Sessions</strong> — click to expand</summary>
+<br/>
+
+<details open>
+<summary>$verdictIcon <strong>Test Failure Review</strong> — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$prTitle</strong> · <em>$timestamp</em></summary>
+<br/>
+
+$ReportContent
+
+</details>
+
+</details>
+$sessionMarkerEnd
+"@
+}
+
+function Merge-TestFailureReviewSessions {
+    param(
+        [string]$ExistingBody,
+        [string]$NewBody
+    )
+
+    $marker = "<!-- Test Failure Review -->"
+    $sessionPattern = '(?s)<!-- SESSION:([a-f0-9]+|unknown) START -->.*?<!-- SESSION:\1 END -->'
+    $newSession = [regex]::Match($NewBody, $sessionPattern)
+    if (-not $newSession.Success) {
+        return $NewBody
+    }
+
+    $newSha = $newSession.Groups[1].Value
+    $sessions = [ordered]@{}
+    foreach ($match in [regex]::Matches($ExistingBody, $sessionPattern)) {
+        $sessions[$match.Groups[1].Value] = $match.Value
+    }
+    $sessions[$newSha] = $newSession.Value
+
+    $orderedKeys = @($newSha) + @($sessions.Keys | Where-Object { $_ -ne $newSha })
+    $sessionBlocks = @()
+    $isFirst = $true
+    foreach ($sha in $orderedKeys) {
+        $block = $sessions[$sha]
+        if ($isFirst) {
+            $block = $block -replace '<details(?:\s+open)?>', '<details open>'
+            $isFirst = $false
+        }
+        else {
+            $block = $block -replace '<details\s+open>', '<details>'
+        }
+        $sessionBlocks += $block
+    }
+
+    $prefix = [regex]::Replace($NewBody, $sessionPattern, '', 1).TrimEnd()
+    return "$prefix`n`n$($sessionBlocks -join "`n`n---`n`n")"
+}
+
+function Publish-TestFailureReviewComment {
+    param(
+        [int]$PRNumber,
+        [string]$Repository,
+        [string]$CommentPath,
+        [string]$CommentBody
+    )
+
+    $marker = "<!-- Test Failure Review -->"
+    $commentsRaw = & gh api "repos/$Repository/issues/$PRNumber/comments" --paginate 2>$null
+    $existing = $null
+    if ($LASTEXITCODE -eq 0 -and $commentsRaw) {
+        $comments = $commentsRaw | ConvertFrom-Json
+        $existing = @($comments | Where-Object {
+            $_.body -and ($_.body.Contains($marker) -or $_.body.TrimStart().StartsWith("## Test Failure Review"))
+        }) | Select-Object -Last 1
+    }
+
+    if ($existing -and $existing.id) {
+        $bodyToPost = if ($existing.body.Contains($marker)) {
+            Merge-TestFailureReviewSessions -ExistingBody $existing.body -NewBody $CommentBody
+        }
+        else {
+            $CommentBody
+        }
+        Set-Content -Path $CommentPath -Value $bodyToPost -Encoding UTF8
+        $payloadPath = [System.IO.Path]::GetTempFileName()
+        @{ body = $bodyToPost } | ConvertTo-Json -Depth 4 | Set-Content -Path $payloadPath -Encoding UTF8
+        $patchOutput = & gh api --method PATCH "repos/$Repository/issues/comments/$($existing.id)" --input $payloadPath 2>&1
+        Remove-Item -Path $payloadPath -Force -ErrorAction SilentlyContinue
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to update PR comment: $patchOutput"
+        }
+        return $existing.html_url
+    }
+
+    Set-Content -Path $CommentPath -Value $CommentBody -Encoding UTF8
+    $postOutput = & gh pr comment $PRNumber --repo $Repository --body-file $CommentPath 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to post PR comment: $postOutput"
+    }
+
+    return $null
 }
 
 Write-Host "Running local /review tests for PR #$PRNumber"
@@ -241,14 +482,20 @@ if (-not (Test-Path $ReportPath)) {
 }
 
 Write-Host "Report: $ReportPath"
+$reportContent = Get-Content -Path $ReportPath -Raw -Encoding UTF8
+$commentBody = New-TestFailureReviewComment -PRNumber $PRNumber -Repository $Repository -ReportContent $reportContent -ContextJsonPath $ContextJsonPath
+Set-Content -Path $CommentPath -Value $commentBody -Encoding UTF8
+Write-Host "Comment: $CommentPath"
 
 if ($PostComment -and -not $DryRun) {
     Write-Host "Posting report to PR #$PRNumber..."
-    $postOutput = & gh pr comment $PRNumber --repo $Repository --body-file $ReportPath 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to post PR comment: $postOutput"
+    $commentUrl = Publish-TestFailureReviewComment -PRNumber $PRNumber -Repository $Repository -CommentPath $CommentPath -CommentBody $commentBody
+    if ($commentUrl) {
+        Write-Host "Posted report to PR #${PRNumber}: $commentUrl"
     }
-    Write-Host "Posted report to PR #$PRNumber."
+    else {
+        Write-Host "Posted report to PR #$PRNumber."
+    }
 }
 else {
     Write-Host "Not posting. Use -PostComment to publish the generated report."
