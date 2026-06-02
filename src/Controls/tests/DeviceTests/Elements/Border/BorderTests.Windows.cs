@@ -121,6 +121,50 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(80, bitmap.Height, 2d);
 		}
 
+		[Fact(DisplayName = "Border with stroke should not inflate measured size when Label content has same explicit dimensions - Issue 19668")]
+		public async Task BorderWithStrokeShouldNotInflateMeasuredSizeWhenLabelHasSameExplicitDimensions()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			// The root cause of #19668: when content has the SAME WidthRequest/HeightRequest as the
+			// Border, AdjustForExplicitSize re-expands the content's measured size back to its
+			// explicit request even after the stroke inset has reduced the available constraint.
+			// This inflates MeasureContent's result by StrokeThickness*2, causing the parent to
+			// allocate an oversized slot so the border's right/bottom strokes get clipped.
+			const double requestedSize = 100;
+			const double strokeThickness = 4;
+
+			var label = new Label
+			{
+				Text = "Hello",
+				WidthRequest = requestedSize,
+				HeightRequest = requestedSize,
+			};
+
+			var border = new Border
+			{
+				BackgroundColor = Colors.Blue,
+				WidthRequest = requestedSize,
+				HeightRequest = requestedSize,
+				StrokeThickness = strokeThickness,
+				Content = label
+			};
+
+			// With bug:   desired size = requestedSize + StrokeThickness*2 → bitmap is ~108x108.
+			// After fix:  desired size capped at requestedSize → bitmap is 100x100.
+			var bitmap = await GetRawBitmap(border, typeof(BorderHandler)).WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Equal(requestedSize, bitmap.Width, 2d);
+			Assert.Equal(requestedSize, bitmap.Height, 2d);
+		}
+
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
 
