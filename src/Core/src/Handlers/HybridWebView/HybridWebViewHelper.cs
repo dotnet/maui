@@ -88,8 +88,14 @@ internal static partial class HybridWebViewHelper
 		// Use the handler command to evaluate the JS
 		var innerRequest = new EvaluateJavaScriptAsyncRequest(wrappedScript);
 
+#if WINDOWS
+		// On Windows, route through the handler command mapper to preserve the RunAfterInitialize gate.
+		// Directly calling handler.PlatformView.EvaluateJavaScript would bypass the WebView2 initialization check.
+		await handler.InvokeAsync(nameof(IHybridWebView.EvaluateJavaScriptAsync), innerRequest);
+#else
 		// Execute via platform evaluator
 		handler.PlatformView.EvaluateJavaScript(innerRequest);
+#endif
 
 		var result = await innerRequest.Task;
 
@@ -158,7 +164,20 @@ internal static partial class HybridWebViewHelper
 
 		var innerRequest = new EvaluateJavaScriptAsyncRequest(js);
 
+#if WINDOWS
+		// On Windows, use RunAfterInitialize to ensure WebView2 is ready before executing JS.
+		// Directly calling handler.PlatformView.EvaluateJavaScript would bypass the initialization gate.
+		if (handler.PlatformView is MauiHybridWebView hybridPlatformWebView)
+		{
+			hybridPlatformWebView.RunAfterInitialize(() => hybridPlatformWebView.EvaluateJavaScript(innerRequest));
+		}
+		else
+		{
+			handler.PlatformView.EvaluateJavaScript(innerRequest);
+		}
+#else
 		handler.PlatformView.EvaluateJavaScript(innerRequest);
+#endif
 
 		// Don't await innerRequest.Task because __InvokeJavaScript is async and returns a Promise,
 		// which iOS can't convert to a string. Instead, we wait for the callback message from JavaScript.

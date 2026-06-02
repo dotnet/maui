@@ -63,4 +63,18 @@ public partial class HybridWebViewTests_EvaluateJavaScriptAsync : HybridWebViewT
 			var result1 = await hybridWebView.EvaluateJavaScriptAsync("EvaluateMeWithParamsAndReturn('\"Hel', 'lo!\\'')");
 			Assert.Equal("\"Hello!'", result1);
 		});
+
+#if WINDOWS
+	[Fact]
+	public Task EvaluateJavaScriptAsync_WaitsForWebView2Initialization() =>
+		RunTest(async (hybridWebView) =>
+		{
+			// Regression test for #35696: JS evaluation must wait for WebView2 initialization.
+			// Before the fix, calling EvaluateJavaScriptAsync immediately would bypass the
+			// RunAfterInitialize gate and could fail because CoreWebView2 wasn't ready.
+			var result = await hybridWebView.EvaluateJavaScriptAsync("document.title");
+			Assert.NotNull(result);
+			Assert.NotEmpty(result);
+		});
+#endif
 }
