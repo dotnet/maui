@@ -8,9 +8,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>0fcb1b533967244768c3322ab70e85ed241aa381</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="36.99.0-ci.main.304">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="36.99.0-ci.main.314">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>f0db4c6c4bfe4672965f70f7008674b7eb9810cc</Sha>
+      <Sha>28de01f76f5e7920cafc5e1795810ec1c2f8d1e3</Sha>
     </Dependency>
     <!-- Previous .NET Android version(s) -->
     <Dependency Name="Microsoft.NET.Sdk.Android.Manifest-10.0.100" Version="36.1.69" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
