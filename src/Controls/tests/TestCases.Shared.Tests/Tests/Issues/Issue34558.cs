@@ -15,10 +15,16 @@ public class Issue34558 : _IssuesUITest
 	public void WebViewLoadsWhenCoexistingWithHybridWebView()
 	{
 		App.WaitForElement("HybridStatusLabel");
-		App.WaitForElement("RegularWebView");
+#if ANDROID
+   // Android WebView does not consistently expose AutomationId as resource-id,
+   // so wait for the HTML content text rendered inside the WebView instead.
+   App.WaitForElement(() => App.FindElementByText("WebView should load here"));
+#else
 
+		App.WaitForElement("RegularWebView");
 		var rect = App.WaitForElement("RegularWebView").GetRect();
 		Assert.That(rect.Height, Is.GreaterThan(0), "WebView should render with non-zero height");
+#endif
 
 		// "WebViewNavigatedLabel" is only added to the layout after the WebView successfully
 		// navigates. Waiting for it confirms the WebView rendered content and was not blank.
