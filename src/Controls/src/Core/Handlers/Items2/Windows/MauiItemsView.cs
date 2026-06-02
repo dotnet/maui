@@ -74,8 +74,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			"ItemContainerPressedBorderBrush");
 
 		// Multi-select checkbox: left-aligned, vertically centered.
-		Resources["ItemContainerCheckboxHorizontalAlignment"] = HorizontalAlignment.Left;
-		Resources["ItemContainerCheckboxVerticalAlignment"] = VerticalAlignment.Center;
+		Resources["ItemContainerCheckboxHorizontalAlignment"] = UI.Xaml.HorizontalAlignment.Left;
+		Resources["ItemContainerCheckboxVerticalAlignment"] = UI.Xaml.VerticalAlignment.Center;
 
 		// Hide the 3px accent selection border (PART_SelectionVisual) and inner stroke.
 		SetResources(transparent,
