@@ -80,8 +80,10 @@ foreach ($pr in @($searchResult)) {
     $activity = @(Get-ActivityForPR -Number $number)
     $commits = @(Get-CommitsForPR -Number $number)
     $latestRerun = Get-LatestRerunComment -Comments $activity
+    $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity
     $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -CurrentLabels $labels
-    $platform = Get-PlatformFromLabels -Labels $labels
+    $platform = if ($reviewOptions.Platform) { $reviewOptions.Platform } else { Get-PlatformFromLabels -Labels $labels }
+    $pipelineRef = if ($reviewOptions.PipelineRef) { $reviewOptions.PipelineRef } else { 'main' }
 
     $candidates += [pscustomobject]@{
         prNumber        = $number
@@ -90,6 +92,9 @@ foreach ($pr in @($searchResult)) {
         isDraft         = [bool]$pr.isDraft
         headSha         = [string]$pr.headRefOid
         platform        = $platform
+        pipelineRef     = $pipelineRef
+        reviewCommandId = $reviewOptions.CommentId
+        reviewCommand   = $reviewOptions.Body
         labels          = $labels
         rerunCommentId  = if ($latestRerun) { [Int64]$latestRerun.id } else { $null }
         contextMarkdown = $contextMarkdown

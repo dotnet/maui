@@ -74,6 +74,10 @@ safe-outputs:
           description: "Optional target platform; leave empty to infer from labels"
           required: false
           type: string
+        pipeline_ref:
+          description: "AzDO pipeline branch/ref to use for the rerun"
+          required: false
+          type: string
       steps:
         - name: Checkout repository scripts
           uses: actions/checkout@v4
@@ -153,6 +157,7 @@ Use:
 - `rerun_comment_id`: the candidate `rerunCommentId`. If it is missing, choose `skip` and use `0`.
 - `expected_head_sha`: the candidate `headSha`.
 - `platform`: the candidate `platform`.
+- `pipeline_ref`: the candidate `pipelineRef`.
 - `reason`: one short sentence.
 
 Do not call any other write tool. Do not create comments, labels, issues, or pull requests directly. The safe-output job will handle reactions, label removal, and AzDO triggering deterministically.

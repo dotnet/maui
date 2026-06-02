@@ -67,6 +67,30 @@ BeforeAll {
 }
 
 Describe 'Resolve-RerunEligibility' {
+    It 'parses review command branch and platform options for reruns' {
+        $parsed = ConvertFrom-ReviewCommand '/review -b feature/regression-check -p ios'
+
+        $parsed | Should -Not -BeNullOrEmpty
+        $parsed.Platform | Should -Be 'ios'
+        $parsed.PipelineRef | Should -Be 'feature/regression-check'
+    }
+
+    It 'finds latest normal review command while ignoring rerun and tests commands' {
+        $comments = @(
+            New-TestComment -Id 1 -Body '/review -b old/ref -p android' -CreatedAt '2026-05-31T09:00:00Z'
+            New-TestComment -Id 2 -Body '/review tests' -CreatedAt '2026-05-31T09:05:00Z'
+            New-TestComment -Id 3 -Body '/review --platform ios --branch feature/regression-check' -CreatedAt '2026-05-31T09:10:00Z'
+            New-TestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-05-31T09:15:00Z'
+        )
+
+        $options = Get-LatestReviewCommandOptions -Comments $comments
+
+        $options.Found | Should -BeTrue
+        $options.Platform | Should -Be 'ios'
+        $options.PipelineRef | Should -Be 'feature/regression-check'
+        $options.CommentId | Should -Be 3
+    }
+
     It 'rejects commands when no AI Summary exists' {
         $comments = @(
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'

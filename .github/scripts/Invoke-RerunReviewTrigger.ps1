@@ -57,8 +57,9 @@ function Add-CommentReaction {
 function Get-PlatformFromLabels {
     param([string[]]$Labels, [string]$Fallback)
 
-    if ($Fallback) {
-        return $Fallback
+    $validPlatforms = @('android', 'ios', 'catalyst', 'windows')
+    if ($Fallback -and $validPlatforms -contains $Fallback.ToLowerInvariant()) {
+        return $Fallback.ToLowerInvariant()
     }
 
     $lower = @($Labels | ForEach-Object { $_.ToLowerInvariant() })
@@ -67,6 +68,20 @@ function Get-PlatformFromLabels {
     if ($lower -contains 'platform/android') { return 'android' }
     if ($lower -contains 'platform/windows') { return 'windows' }
     return 'android'
+}
+
+function Normalize-PipelineRef {
+    param([string]$Value, [string]$Fallback = 'main')
+
+    $pipelineRef = if ([string]::IsNullOrWhiteSpace($Value)) { $Fallback } else { [string]$Value }
+    $pipelineRef = $pipelineRef -replace '[^a-zA-Z0-9/_.\-]', ''
+    if ([string]::IsNullOrWhiteSpace($pipelineRef)) {
+        return $Fallback
+    }
+    if ($pipelineRef -match '\.\.' -or $pipelineRef -match '//' -or $pipelineRef.EndsWith('/') -or $pipelineRef.StartsWith('/')) {
+        return $Fallback
+    }
+    return $pipelineRef
 }
 
 function Invoke-AzDOReviewPipeline {
@@ -201,7 +216,8 @@ foreach ($item in $items) {
 
             Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
             $platform = Get-PlatformFromLabels -Labels $labels -Fallback ([string]$item.platform)
-            Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $DefaultPipelineRef
+            $pipelineRef = Normalize-PipelineRef -Value ([string]$item.pipeline_ref) -Fallback $DefaultPipelineRef
+            Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $pipelineRef
         } catch {
             if ($lockApplied) {
                 Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null

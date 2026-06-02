@@ -48,6 +48,105 @@ function Test-RerunCommand {
     return ([string]$Body).Trim() -match '(?i)^/review\s+rerun\s*$'
 }
 
+function Normalize-ReviewPipelineRef {
+    param([string]$Value)
+
+    $pipelineRef = if ([string]::IsNullOrWhiteSpace($Value)) { 'main' } else { [string]$Value }
+    $pipelineRef = $pipelineRef -replace '[^a-zA-Z0-9/_.\-]', ''
+    if ([string]::IsNullOrWhiteSpace($pipelineRef)) {
+        return 'main'
+    }
+    if ($pipelineRef -match '\.\.' -or $pipelineRef -match '//' -or $pipelineRef.EndsWith('/') -or $pipelineRef.StartsWith('/')) {
+        return 'main'
+    }
+    return $pipelineRef
+}
+
+function ConvertFrom-ReviewCommand {
+    param([string]$Body)
+
+    $trimmed = ([string]$Body).Trim()
+    if ($trimmed -notmatch '(?i)^/review(\s|$)') {
+        return $null
+    }
+    if ($trimmed -match '(?i)^/review\s+(rerun|tests)(\s|$)') {
+        return $null
+    }
+
+    $validPlatforms = @('android', 'ios', 'catalyst', 'windows')
+    $argsText = [regex]::Replace($trimmed, '(?i)^/review\s*', '')
+    $tokens = @()
+    if (-not [string]::IsNullOrWhiteSpace($argsText)) {
+        $tokens = @($argsText -split '\s+' | Where-Object { $_ })
+    }
+
+    $platform = ''
+    $pipelineRef = 'main'
+    for ($i = 0; $i -lt $tokens.Count; $i++) {
+        $token = [string]$tokens[$i]
+        switch -Regex ($token) {
+            '^(--branch|-b)$' {
+                if ($i + 1 -lt $tokens.Count -and -not ([string]$tokens[$i + 1]).StartsWith('--')) {
+                    $pipelineRef = Normalize-ReviewPipelineRef $tokens[$i + 1]
+                    $i++
+                }
+                continue
+            }
+            '^(--platform|-p)$' {
+                if ($i + 1 -lt $tokens.Count -and -not ([string]$tokens[$i + 1]).StartsWith('--')) {
+                    $candidate = ([string]$tokens[$i + 1]).ToLowerInvariant()
+                    if ($validPlatforms -contains $candidate) {
+                        $platform = $candidate
+                    }
+                    $i++
+                }
+                continue
+            }
+            default {
+                $candidate = $token.ToLowerInvariant()
+                if (-not $platform -and $validPlatforms -contains $candidate) {
+                    $platform = $candidate
+                }
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        IsReviewCommand = $true
+        Platform        = $platform
+        PipelineRef     = $pipelineRef
+        Body            = $trimmed
+    }
+}
+
+function Get-LatestReviewCommandOptions {
+    param([object[]]$Comments)
+
+    $reviewCommands = @($Comments | Where-Object {
+        $_.kind -eq 'issue-comment' -and (ConvertFrom-ReviewCommand $_.body)
+    } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true })
+
+    if ($reviewCommands.Count -eq 0) {
+        return [pscustomobject]@{
+            Found       = $false
+            Platform    = ''
+            PipelineRef = 'main'
+            CommentId   = $null
+            Body        = ''
+        }
+    }
+
+    $latest = $reviewCommands[0]
+    $parsed = ConvertFrom-ReviewCommand $latest.body
+    return [pscustomobject]@{
+        Found       = $true
+        Platform    = [string]$parsed.Platform
+        PipelineRef = [string]$parsed.PipelineRef
+        CommentId   = [Int64]$latest.id
+        Body        = [string]$parsed.Body
+    }
+}
+
 function Get-ObjectDate {
     param(
         [Parameter(Mandatory = $true)]$Object,
