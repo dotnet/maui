@@ -459,10 +459,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
+#pragma warning disable CA1416 // TODO: UIBarButtonItem(UIImage, UIMenu) requires iOS 14+; add proper version guard
 				var menuButton = new UIBarButtonItem(secondaryIcon, menu)
 				{
 					AccessibilityIdentifier = "SecondaryToolbarMenuButton"
 				};
+#pragma warning restore CA1416
 
 				// Since we are adding secondary items under a primary button,
 				// make sure that primaries is initialized
