@@ -41,37 +41,64 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
-		// viewport during scroll. This is unexpected for a data list in MAUI and is
-		// intentionally suppressed for ALL CV2 instances (not just drag-reorder ones).
-		// See also OnApplyTemplate where this is re-applied after template inflation.
 		// viewport during scroll. This is unexpected for a data list in MAUI.
+		// See also OnApplyTemplate where this is re-applied after template inflation.
 		ItemTransitionProvider = null;
 
-		// Suppress the native WinUI ItemContainer visual states (PointerOver,
-		// Pressed, Selected, and their combinations) so they don't overlay
-		// on top of MAUI's own VisualStateManager states. Setting these on
-		// the parent ItemsView cascades to all child ItemContainer instances.
-		// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/ItemContainer/ItemContainer_themeresources.xaml
-		// Fixes: https://github.com/dotnet/maui/issues/13197
+		ApplyItemContainerResourceOverrides();
+	}
+
+	/// <summary>
+	/// Overrides WinUI ItemContainer theme resources on this instance so that
+	/// hover/press/selection visuals are suppressed in favour of MAUI's own
+	/// VisualStateManager. Scoped to <c>this.Resources</c> so other
+	/// <see cref="UI.Xaml.Controls.ItemContainer"/> consumers in the app are unaffected.
+	/// See: https://github.com/microsoft/microsoft-ui-xaml/blob/main/src/controls/dev/ItemContainer/ItemContainer_themeresources.xaml
+	/// Fixes: https://github.com/dotnet/maui/issues/13197
+	/// </summary>
+	void ApplyItemContainerResourceOverrides()
+	{
 		var transparent = new WSolidColorBrush(Microsoft.UI.Colors.Transparent);
 		var zeroCornerRadius = new Microsoft.UI.Xaml.CornerRadius(0);
 
-		// Set the control's CornerRadius property directly
 		CornerRadius = zeroCornerRadius;
-
-		// Override theme resources that control corner radius for ItemsView and its children
 		Resources["ControlCornerRadius"] = zeroCornerRadius;
 
-		// Suppress the gray hover/press overlay (PART_CommonVisual.Fill) so it does
-		// not interfere with MAUI's own VisualStateManager states. Fixes: #13197
-		Resources["ItemContainerBackground"] = transparent;
-		Resources["ItemContainerPointerOverBackground"] = transparent;
-		Resources["ItemContainerPressedBackground"] = transparent;
+		// Suppress hover/press overlay and border (PART_CommonVisual).
+		SetResources(transparent,
+			"ItemContainerBackground",
+			"ItemContainerPointerOverBackground",
+			"ItemContainerPressedBackground",
+			"ItemContainerBorderBrush",
+			"ItemContainerPointerOverBorderBrush",
+			"ItemContainerPressedBorderBrush");
 
-		// Border strokes (PART_CommonVisual.Stroke)
-		Resources["ItemContainerBorderBrush"] = transparent;
-		Resources["ItemContainerPointerOverBorderBrush"] = transparent;
-		Resources["ItemContainerPressedBorderBrush"] = transparent;
+		// Multi-select checkbox: left-aligned, vertically centered.
+		Resources["ItemContainerCheckboxHorizontalAlignment"] = HorizontalAlignment.Left;
+		Resources["ItemContainerCheckboxVerticalAlignment"] = VerticalAlignment.Center;
+
+		// Hide the 3px accent selection border (PART_SelectionVisual) and inner stroke.
+		SetResources(transparent,
+			"ItemContainerSelectionVisualBackground",
+			"ItemContainerSelectionVisualPointerOverBackground",
+			"ItemContainerSelectionVisualPressedBackground",
+			"ItemContainerSelectedInnerBorderBrush");
+
+		// Selected-state fill: use the system subtle fill brush (CV1 ListView parity).
+		if (WApp.Current.Resources.TryGetValue("SubtleFillColorSecondaryBrush", out var subtleSecondary))
+			SetResources(subtleSecondary, "ItemContainerSelectedBackground", "ItemContainerSelectedPressedBackground");
+
+		if (WApp.Current.Resources.TryGetValue("SubtleFillColorTertiaryBrush", out var subtleTertiary))
+			Resources["ItemContainerSelectedPointerOverBackground"] = subtleTertiary;
+
+		// No inset margin when selected.
+		Resources["ItemContainerSelectedInnerMargin"] = new Microsoft.UI.Xaml.Thickness(0);
+	}
+
+	void SetResources(object value, params string[] keys)
+	{
+		foreach (var key in keys)
+			Resources[key] = value;
 	}
 
 	/// <summary>Gets or sets the visibility of the empty view overlay.</summary>

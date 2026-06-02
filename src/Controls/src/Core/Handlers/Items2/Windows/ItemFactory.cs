@@ -105,24 +105,24 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				view.BindingContext = templateContext.Item ?? _view.BindingContext;
 				_view.AddLogicalChild(view);
 
-				// Apply the initial visual state so that VisualState setters (e.g., TextColor,
-				// Background) defined in Normal or Selected states take effect immediately,
-				// before the platform handler is created during the deferred ToPlatform() call.
-				// Without this, items display with default property values instead of the
-				// values defined in VisualState setters. (Fixes #27086)
-				if (view is VisualElement visualElement)
+				// Restore the Selected visual state for selectable views when the item is
+				// actually selected (fixes stale-state after recycle, #27086).
+				// Only call GoToState(Selected) — never force Normal — so that app-defined
+				// custom states applied via behaviors/triggers are not clobbered on rebind
+				// for non-selected items. WinUI's ItemContainer selection model handles
+				// clearing the WinUI-level Selected chrome independently.
+				if (view is VisualElement visualElement &&
+					_view is SelectableItemsView selectableItemsView &&
+					selectableItemsView.SelectionMode != SelectionMode.None)
 				{
-					bool isSelected = false;
-					if (_view is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode != SelectionMode.None)
-					{
-						if (selectableItemsView.SelectionMode == SelectionMode.Single)
-							isSelected = object.Equals(selectableItemsView.SelectedItem, templateContext.Item);
-						else
-							isSelected = selectableItemsView.SelectedItems.Contains(templateContext.Item);
-					}
+					bool isSelected = selectableItemsView.SelectionMode == SelectionMode.Single
+						? object.Equals(selectableItemsView.SelectedItem, templateContext.Item)
+						: selectableItemsView.SelectedItems.Contains(templateContext.Item);
 
-					VisualStateManager.GoToState(visualElement,
-						isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
+					if (isSelected)
+					{
+						VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
+					}
 				}
 
 			}

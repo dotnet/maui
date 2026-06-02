@@ -1171,7 +1171,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		// Resolve empty view
 		var oldMauiEmptyView = _mauiEmptyView;
 		_emptyView = emptyViewTemplate != null
-			? ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView)
+			? ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, emptyViewTemplate, MauiContext!, ref _mauiEmptyView, ItemsView)
 			: emptyView switch
 			{
 				string text => new TextBlock
@@ -1181,7 +1181,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 					Text = text
 				},
 				View view => ItemsViewExtensions.RealizeEmptyView(view, MauiContext!, ref _mauiEmptyView),
-				_ => ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView)
+				_ => ItemsViewExtensions.RealizeEmptyViewTemplate(emptyView, null, MauiContext!, ref _mauiEmptyView, ItemsView)
 			};
 
 		// Remove old logical child before adding the new one to prevent leak
@@ -1280,7 +1280,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (headerTemplate is not null)
 		{
 			var bindingContext = header ?? (object)string.Empty;
-			_header = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, headerTemplate, MauiContext!, ref _mauiHeader);
+			_header = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, headerTemplate, MauiContext!, ref _mauiHeader, ItemsView);
 		}
 		else if (header is not null)
 		{
@@ -1365,7 +1365,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		if (footerTemplate is not null)
 		{
 			var bindingContext = footer ?? (object)string.Empty;
-			_footer = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, footerTemplate, MauiContext!, ref _mauiFooter);
+			_footer = ItemsViewExtensions.RealizeHeaderFooterTemplate(bindingContext, footerTemplate, MauiContext!, ref _mauiFooter, ItemsView);
 		}
 		else if (footer is not null)
 		{
@@ -1566,27 +1566,40 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		// Instead, walk the realized ItemContainer children and check which ones
 		// are visible within the ScrollViewer viewport, similar to CV1's fallback approach.
 		bool isHorizontal = IsLayoutHorizontal;
-		int index = 0;
+
+		// Use ItemsRepeater.GetElementIndex to map each realized container back to its
+		// source-collection index. A naive per-container counter starting at 0 reports
+		// the position within the realized window (e.g., 0..20) instead of the actual
+		// source index (e.g., 4500..4520) once virtualization scrolls deep into a large
+		// list, which breaks Scrolled args and RemainingItemsThreshold math.
+		// GetElementIndex returns -1 for unrealized elements; those are skipped.
+		var repeater = (PlatformView as MauiItemsView)?.ItemsRepeaterControl;
 
 		foreach (var container in PlatformView.GetChildren<ItemContainer>())
 		{
 			if (container is null)
 			{
-				index++;
+				continue;
+			}
+
+			int index = repeater?.GetElementIndex(container) ?? -1;
+			if (index < 0)
+			{
 				continue;
 			}
 
 			if (IsElementVisibleInScrollViewer(container, _scrollViewer, isHorizontal))
 			{
-				if (firstVisibleItemIndex == -1)
+				if (firstVisibleItemIndex == -1 || index < firstVisibleItemIndex)
 				{
 					firstVisibleItemIndex = index;
 				}
 
-				lastVisibleItemIndex = index;
+				if (index > lastVisibleItemIndex)
+				{
+					lastVisibleItemIndex = index;
+				}
 			}
-
-			index++;
 		}
 
 		double center = (lastVisibleItemIndex + firstVisibleItemIndex) / 2.0;
