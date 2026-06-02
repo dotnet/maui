@@ -298,21 +298,14 @@
 	<Target Name="ProvisionJdk" DependsOnTargets="DetectJdkVersion;ProvisionJdkMacOS;ProvisionJdkWindows;ProvisionJdkLinux">
 		<!-- Call Detect again if we provisioned so we can get the installed path -->
 		<CallTarget Targets="DetectJdkVersion" Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' " />
-		
-		<!-- Set the preferred JDK path -->
-		<Exec Command="dotnet maui android jdk check --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
-			<Output TaskParameter="ConsoleOutput" ItemName="_MauiJdkCheckOutput" />
-		</Exec>
 
 		<Message Text="##vso[task.setvariable variable=JAVA_HOME]$(_AndroidJdkPath)" Importance="High" />
 
-		<Exec Command="dotnet maui android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+		<Exec Command="dotnet maui android jdk check" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="DetectJdkVersion">
-		<!-- Concat the console output lines into a single property -->
 		<PropertyGroup>
-			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', ' ')</_AndroidJdkListOutput>
 			<_AndroidJdkVersion>$(JavaJdkVersion)</_AndroidJdkVersion>
 			<!-- Version parsing requires more than just a single major version number -->
 			<_AndroidJdkVersion Condition=" '$(_AndroidJdkVersion)' != '' AND !$(_AndroidJdkVersion.Contains('.')) ">$(JavaJdkVersion).0</_AndroidJdkVersion>
@@ -320,10 +313,8 @@
 			<_AndroidJdkVersionNextMajor>$([MSBuild]::Add($(_AndroidJdkMajorVersion), 1))</_AndroidJdkVersionNextMajor>
 		</PropertyGroup>
 
-		<Exec Command="dotnet maui android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
-
-		<!-- Find a JDK installed that is >= the JavaJdkVersion but not > the major version specified (eg: [17.0,18.0]) -->
-		<Exec Command="dotnet maui android jdk list --version &quot;[$(_AndroidJdkVersion),$(_AndroidJdkVersionNextMajor)]&quot; --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		<!-- Use maui android jdk check to detect installed JDK -->
+		<Exec Command="dotnet maui android jdk check --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AndroidJdkListOutputLines" />
 		</Exec>
 
@@ -332,12 +323,12 @@
 			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', ' ')</_AndroidJdkListOutput>
 		</PropertyGroup>
 
-		<!-- Peek the appium version info from the json output -->
-		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Version">
+		<!-- Peek the JDK version and path from the json output -->
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Version" Condition=" '$(_AndroidJdkListOutput)' != '' AND $(_AndroidJdkListOutput.Contains('Version')) ">
 			<Output TaskParameter="Result" ItemName="_AndroidJdkVersions" />
 		</JsonPeek>
 
-		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Home">
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Home" Condition=" '$(_AndroidJdkListOutput)' != '' AND $(_AndroidJdkListOutput.Contains('Home')) ">
 			<Output TaskParameter="Result" ItemName="_AndroidJdkPaths" />
 		</JsonPeek>
 
