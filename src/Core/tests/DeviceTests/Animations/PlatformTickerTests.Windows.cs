@@ -1,11 +1,10 @@
-#if WINDOWS
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.Ticker)]
+	[Category(TestCategory.Animation)]
 	public class PlatformTickerTests : TestBase
 	{
 		[Fact]
@@ -72,4 +71,3 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
-#endif
