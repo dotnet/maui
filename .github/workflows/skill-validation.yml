@@ -1052,7 +1052,7 @@ jobs:
               ? `> @${prAuthor} — new skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`
               : `> New skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`;
             const content = lines.join('\n');
-            const body = [
+            let body = [
               marker,
               '',
               '## Skill Validation Results',
@@ -1073,7 +1073,7 @@ jobs:
               '',
               '</details>',
               `<!-- SESSION:${headSha7} END -->`,
-            ].join('\n');
+            ].join('\n').replace(/<details\s+open>/g, '<details>');
 
             // ── Write step summary with investigation prompt ──────
             const summaryPath = process.env.GITHUB_STEP_SUMMARY;
