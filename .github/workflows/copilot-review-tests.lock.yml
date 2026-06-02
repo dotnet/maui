@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"35fa681cd3f9586d2e6f9a51dc0d8392ffc0009f3d5e2033b2a21cbb28bb0ea8","body_hash":"b33ca3a75352a908bfeeb3c7614f8bac81d6db929c8273f27ecaf013c5091b06","compiler_version":"v0.77.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"bfa9e91495adf7b5709cd7691c6d9ba17b995a0a374f4ee3b62a6faaa86af776","body_hash":"b33ca3a75352a908bfeeb3c7614f8bac81d6db929c8273f27ecaf013c5091b06","compiler_version":"v0.77.5","strict":true,"agent_id":"copilot","agent_model":"claude-sonnet-4.6"}
 # gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"3ea13c02d765410340d533515cb31a7eef2baaf0","version":"v0.77.5"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.58"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.58"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.58"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.22"},{"image":"ghcr.io/github/github-mcp-server:v1.1.0"},{"image":"node:lts-alpine","digest":"sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14","pinned_image":"node:lts-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
@@ -96,8 +96,7 @@ jobs:
     if: >
       needs.pre_activation.outputs.activated == 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
-      (endsWith(github.event.comment.body, '/review tests') ||
-      contains(github.event.comment.body, '/review tests '))))
+      contains(github.event.comment.body, '/review tests')))
     runs-on: ubuntu-slim
     permissions:
       actions: read
@@ -269,20 +268,20 @@ jobs:
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh"
           {
-          cat << 'GH_AW_PROMPT_bfba5fbccd5aa547_EOF'
+          cat << 'GH_AW_PROMPT_8b971a81042a80f2_EOF'
           <system>
-          GH_AW_PROMPT_bfba5fbccd5aa547_EOF
+          GH_AW_PROMPT_8b971a81042a80f2_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_bfba5fbccd5aa547_EOF'
+          cat << 'GH_AW_PROMPT_8b971a81042a80f2_EOF'
           <safe-output-tools>
           Tools: add_comment, missing_tool, missing_data, noop
           </safe-output-tools>
-          GH_AW_PROMPT_bfba5fbccd5aa547_EOF
+          GH_AW_PROMPT_8b971a81042a80f2_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/mcp_cli_tools_prompt.md"
-          cat << 'GH_AW_PROMPT_bfba5fbccd5aa547_EOF'
+          cat << 'GH_AW_PROMPT_8b971a81042a80f2_EOF'
           <github-context>
           The following GitHub context information is available for this workflow:
           {{#if github.actor}}
@@ -311,15 +310,15 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_bfba5fbccd5aa547_EOF
+          GH_AW_PROMPT_8b971a81042a80f2_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
           if [ "$GITHUB_EVENT_NAME" = "issue_comment" ] && [ -n "$GH_AW_IS_PR_COMMENT" ] || [ "$GITHUB_EVENT_NAME" = "pull_request_review_comment" ] || [ "$GITHUB_EVENT_NAME" = "pull_request_review" ]; then
             cat "${RUNNER_TEMP}/gh-aw/prompts/pr_context_prompt.md"
           fi
-          cat << 'GH_AW_PROMPT_bfba5fbccd5aa547_EOF'
+          cat << 'GH_AW_PROMPT_8b971a81042a80f2_EOF'
           </system>
           {{#runtime-import .github/workflows/copilot-review-tests.md}}
-          GH_AW_PROMPT_bfba5fbccd5aa547_EOF
+          GH_AW_PROMPT_8b971a81042a80f2_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -578,9 +577,9 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_2d43449e3fbef513_EOF'
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_83181218facc6fad_EOF'
           {"add_comment":{"hide_older_comments":true,"max":1,"target":"*"},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"report_incomplete":{}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_2d43449e3fbef513_EOF
+          GH_AW_SAFE_OUTPUTS_CONFIG_83181218facc6fad_EOF
       - name: Generate Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
@@ -774,7 +773,7 @@ jobs:
           
           mkdir -p /home/runner/.copilot
           GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
-          cat << GH_AW_MCP_CONFIG_8376ea35b3a5196b_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
+          cat << GH_AW_MCP_CONFIG_e3be8887192d9da4_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
           {
             "mcpServers": {
               "github": {
@@ -815,7 +814,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_8376ea35b3a5196b_EOF
+          GH_AW_MCP_CONFIG_e3be8887192d9da4_EOF
       - name: Mount MCP servers as CLIs
         id: mount-mcp-clis
         continue-on-error: true
@@ -1066,7 +1065,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
       issues: write
       pull-requests: write
     concurrency:
@@ -1454,8 +1452,7 @@ jobs:
     if: >
       (github.event_name != 'issue_comment' && github.event_name != 'pull_request_review_comment' || contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) && (github.event_name == 'workflow_dispatch' || (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
-      (endsWith(github.event.comment.body, '/review tests') ||
-      contains(github.event.comment.body, '/review tests '))))
+      contains(github.event.comment.body, '/review tests')))
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' && steps.check_command_position.outputs.command_position_ok == 'true' }}
@@ -1509,7 +1506,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
       issues: write
       pull-requests: write
     timeout-minutes: 15

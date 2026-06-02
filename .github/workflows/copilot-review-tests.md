@@ -34,8 +34,7 @@ if: >-
   github.event_name == 'workflow_dispatch' ||
   (github.event_name == 'issue_comment' &&
    github.event.issue.pull_request &&
-   (endsWith(github.event.comment.body, '/review tests') ||
-    contains(github.event.comment.body, '/review tests ')))
+   contains(github.event.comment.body, '/review tests'))
 
 permissions:
   contents: read
@@ -53,6 +52,7 @@ safe-outputs:
     max: 1
     target: "*"
     hide-older-comments: true
+    discussions: false
   noop:
     report-as-issue: false
   missing-tool:

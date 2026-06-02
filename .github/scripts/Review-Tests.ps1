@@ -34,6 +34,10 @@
 .PARAMETER GatherOnly
     Gather context and skip Copilot analysis. Useful for debugging API access.
 
+.PARAMETER AllowAllTools
+    Pass --allow-all to Copilot CLI. This is off by default because PR text,
+    test names, and logs are untrusted evidence.
+
 .EXAMPLE
     pwsh .github/scripts/Review-Tests.ps1 -PRNumber 29800
 
@@ -71,7 +75,10 @@ param(
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
-    [switch]$GatherOnly
+    [switch]$GatherOnly,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$AllowAllTools
 )
 
 $ErrorActionPreference = "Stop"
@@ -337,6 +344,11 @@ function Publish-TestFailureReviewComment {
         $existing = @($comments | Where-Object {
             $_.body -and ($_.body.Contains($marker) -or $_.body.TrimStart().StartsWith("## Test Failure Review"))
         }) | Select-Object -Last 1
+
+        if ($existing -and $existing.body.Contains($marker) -and -not ([regex]::IsMatch($existing.body, '(?s)<!-- SESSION:([a-f0-9]+|unknown) START -->.*?<!-- SESSION:\1 END -->'))) {
+            Write-Host "Existing Test Failure Review comment has no session block; creating a fresh comment instead of overwriting legacy content." -ForegroundColor Yellow
+            $existing = $null
+        }
     }
 
     if ($existing -and $existing.id) {
@@ -442,9 +454,17 @@ Set-Content -Path $PromptPath -Value $prompt -Encoding UTF8
 
 $model = if ($env:COPILOT_REVIEW_TESTS_MODEL) { $env:COPILOT_REVIEW_TESTS_MODEL } else { "gpt-5.5" }
 Write-Host "Invoking Copilot CLI with model $model..."
+if ($AllowAllTools) {
+    Write-Host "AllowAllTools enabled: Copilot CLI will run with --allow-all against untrusted PR/log evidence." -ForegroundColor Yellow
+}
 
 $outputLines = New-Object System.Collections.Generic.List[string]
-& copilot -p $prompt --allow-all --output-format json --model $model 2>&1 | ForEach-Object {
+$copilotArgs = @("-p", $prompt, "--output-format", "json", "--model", $model)
+if ($AllowAllTools) {
+    $copilotArgs += "--allow-all"
+}
+
+& copilot @copilotArgs 2>&1 | ForEach-Object {
     $line = $_.ToString()
     $outputLines.Add($line)
     try {

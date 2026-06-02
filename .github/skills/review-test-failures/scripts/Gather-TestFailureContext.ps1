@@ -298,6 +298,31 @@ function Get-AzDoApiBase {
     return "https://dev.azure.com/$Org/$Project"
 }
 
+function Get-AzDoBuildRefKey {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$BuildRef
+    )
+
+    return "$($BuildRef.org)/$($BuildRef.project)/$($BuildRef.buildId)"
+}
+
+function Get-HttpStatusCode {
+    param([object]$ErrorRecord)
+
+    $response = $ErrorRecord.Exception.Response
+    if ($response -and $response.StatusCode) {
+        try {
+            return [int]$response.StatusCode
+        }
+        catch {
+            return [int]$response.StatusCode.value__
+        }
+    }
+
+    return $null
+}
+
 function Invoke-AzDoJsonWithProjectFallback {
     param(
         [string]$Org,
@@ -324,6 +349,10 @@ function Invoke-AzDoJsonWithProjectFallback {
         }
         catch {
             $lastError = $_.Exception.Message
+            $statusCode = Get-HttpStatusCode -ErrorRecord $_
+            if ($statusCode -ne 404) {
+                break
+            }
         }
     }
 
@@ -626,7 +655,7 @@ $interestingChecks = @($checks | Where-Object {
 $buildRefsById = [ordered]@{}
 foreach ($check in $interestingChecks) {
     foreach ($ref in (Get-AzDoBuildRefsFromUrl -Url $check.detailsUrl -CheckName $check.name)) {
-        $key = [string]$ref.buildId
+        $key = Get-AzDoBuildRefKey -BuildRef $ref
         if (-not $buildRefsById.Contains($key)) {
             $buildRefsById[$key] = $ref
         }
@@ -662,7 +691,7 @@ foreach ($rawBuildId in $BuildId) {
 }
 
 foreach ($ref in $manualBuildRefs.ToArray()) {
-    $key = [string]$ref.buildId
+    $key = Get-AzDoBuildRefKey -BuildRef $ref
     if (-not $buildRefsById.Contains($key)) {
         $buildRefsById[$key] = $ref
     }
