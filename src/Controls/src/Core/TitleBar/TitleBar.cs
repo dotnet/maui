@@ -69,7 +69,9 @@ namespace Microsoft.Maui.Controls
 		void ApplyMacCatalystMargin()
 		{
 			if (_templateRoot is not Grid contentGrid)
+			{
 				return;
+			}
 
 			if (IsMacCatalystFullScreen())
 			{
@@ -346,6 +348,7 @@ namespace Microsoft.Maui.Controls
 		{
 			PassthroughElements = new List<IView>();
 			PropertyChanged += TitleBar_PropertyChanged;
+
 #if MACCATALYST
 			SizeChanged += OnSizeChanged;
 #endif
@@ -366,9 +369,11 @@ namespace Microsoft.Maui.Controls
 		internal void Cleanup()
 		{
 			PropertyChanged -= TitleBar_PropertyChanged;
+
 #if MACCATALYST
 			SizeChanged -= OnSizeChanged;
 #endif
+
 			if (Window is not null)
 			{
 				Window.Activated -= Window_Activated;
@@ -403,6 +408,7 @@ namespace Microsoft.Maui.Controls
 #if MACCATALYST
 			ApplyMacCatalystMargin();
 #endif
+
 		}
 
 		internal void ApplyVisibleState(string stateGroup)
@@ -675,6 +681,7 @@ namespace Microsoft.Maui.Controls
 
 			// Left-to-Right state (default)
 			var ltrState = new VisualState() { Name = TitleBarLTRState };
+
 #if !MACCATALYST
 			ltrState.Setters.Add(new Setter()
 			{
@@ -683,10 +690,12 @@ namespace Microsoft.Maui.Controls
 				Value = new Thickness(0, 0, WindowsMargin, 0)  // System buttons on right in Windows
 			});
 #endif
+
 			flowDirectionGroup.States.Add(ltrState);
 
 			// Right-to-Left state
 			var rtlState = new VisualState() { Name = TitleBarRTLState };
+
 #if !MACCATALYST
 			rtlState.Setters.Add(new Setter()
 			{
@@ -695,6 +704,7 @@ namespace Microsoft.Maui.Controls
 				Value = new Thickness(WindowsMargin, 0, 0, 0)  // System buttons on left in Windows RTL
 			});
 #endif
+
 			flowDirectionGroup.States.Add(rtlState);
 
 			visualStateGroups.Add(flowDirectionGroup);
