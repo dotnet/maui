@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Platform
 				window: null,
 				updateStatusBar: true,
 				updateNavigationBar: false,
-				statusBarBackgroundColor: GetSolidColor(background),
+				statusBarBackgroundColor: GetChromeColor(background, ChromeEdge.Top),
 				statusBarForegroundColor: foreground);
 		}
 
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 				window: null,
 				updateStatusBar: false,
 				updateNavigationBar: true,
-				navigationBarBackgroundColor: GetSolidColor(background),
+				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom),
 				navigationBarForegroundColor: foreground);
 		}
 
@@ -59,15 +59,14 @@ namespace Microsoft.Maui.Controls.Platform
 			Paint? background = null,
 			Color? foreground = null)
 		{
-			var backgroundColor = GetSolidColor(background);
 			UpdateSystemBarAppearance(
 				context,
 				window,
 				updateStatusBar,
 				updateNavigationBar,
-				statusBarBackgroundColor: backgroundColor,
+				statusBarBackgroundColor: GetChromeColor(background, ChromeEdge.Top),
 				statusBarForegroundColor: foreground,
-				navigationBarBackgroundColor: backgroundColor,
+				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom),
 				navigationBarForegroundColor: foreground);
 		}
 
@@ -86,9 +85,9 @@ namespace Microsoft.Maui.Controls.Platform
 				window,
 				updateStatusBar,
 				updateNavigationBar,
-				statusBarBackgroundColor: GetSolidColor(statusBarBackground),
+				statusBarBackgroundColor: GetChromeColor(statusBarBackground, ChromeEdge.Top),
 				statusBarForegroundColor: statusBarForeground,
-				navigationBarBackgroundColor: GetSolidColor(navigationBarBackground),
+				navigationBarBackgroundColor: GetChromeColor(navigationBarBackground, ChromeEdge.Bottom),
 				navigationBarForegroundColor: navigationBarForeground);
 		}
 
@@ -144,18 +143,174 @@ namespace Microsoft.Maui.Controls.Platform
 			appBarLayout.UpdateBackground(background);
 		}
 
-		static Color? GetSolidColor(Brush? background)
+		static Color? GetChromeColor(Brush? background, ChromeEdge edge)
 		{
-			return background is SolidColorBrush { Color: { Alpha: > 0 } color }
-				? color
-				: null;
+			return background switch
+			{
+				SolidColorBrush { Color: { Alpha: > 0 } color } => color,
+				LinearGradientBrush linearGradientBrush => GetGradientColorAt(
+					linearGradientBrush.GradientStops,
+					GetLinearGradientOffset(linearGradientBrush.StartPoint, linearGradientBrush.EndPoint, edge)),
+				RadialGradientBrush radialGradientBrush => GetGradientColorAt(
+					radialGradientBrush.GradientStops,
+					GetRadialGradientOffset(radialGradientBrush.Center, radialGradientBrush.Radius, edge)),
+				_ => null
+			};
 		}
 
-		static Color? GetSolidColor(Paint? background)
+		static Color? GetChromeColor(Paint? background, ChromeEdge edge)
 		{
-			return background is SolidPaint { Color: { Alpha: > 0 } color }
-				? color
-				: null;
+			return background switch
+			{
+				SolidPaint { Color: { Alpha: > 0 } color } => color,
+				LinearGradientPaint linearGradientPaint => GetGradientColorAt(
+					linearGradientPaint.GradientStops,
+					GetLinearGradientOffset(linearGradientPaint.StartPoint, linearGradientPaint.EndPoint, edge)),
+				RadialGradientPaint radialGradientPaint => GetGradientColorAt(
+					radialGradientPaint.GradientStops,
+					GetRadialGradientOffset(radialGradientPaint.Center, radialGradientPaint.Radius, edge)),
+				_ => null
+			};
+		}
+
+		static Color? GetGradientColorAt(GradientStopCollection? gradientStops, float offset)
+		{
+			if (gradientStops is null || gradientStops.Count == 0)
+			{
+				return null;
+			}
+
+			GradientStop? before = null;
+			GradientStop? after = null;
+
+			foreach (var gradientStop in gradientStops)
+			{
+				if (gradientStop is null || gradientStop.Color is null)
+				{
+					continue;
+				}
+
+				if (gradientStop.Offset <= offset && (before is null || gradientStop.Offset >= before.Offset))
+				{
+					before = gradientStop;
+				}
+
+				if (gradientStop.Offset >= offset && (after is null || gradientStop.Offset <= after.Offset))
+				{
+					after = gradientStop;
+				}
+			}
+
+			return GetGradientColorAt(before?.Offset, before?.Color, after?.Offset, after?.Color, offset);
+		}
+
+		static Color? GetGradientColorAt(PaintGradientStop[]? gradientStops, float offset)
+		{
+			if (gradientStops is null || gradientStops.Length == 0)
+			{
+				return null;
+			}
+
+			PaintGradientStop? before = null;
+			PaintGradientStop? after = null;
+
+			foreach (var gradientStop in gradientStops)
+			{
+				if (gradientStop is null || gradientStop.Color is null)
+				{
+					continue;
+				}
+
+				if (gradientStop.Offset <= offset && (before is null || gradientStop.Offset >= before.Offset))
+				{
+					before = gradientStop;
+				}
+
+				if (gradientStop.Offset >= offset && (after is null || gradientStop.Offset <= after.Offset))
+				{
+					after = gradientStop;
+				}
+			}
+
+			return GetGradientColorAt(before?.Offset, before?.Color, after?.Offset, after?.Color, offset);
+		}
+
+		static Color? GetGradientColorAt(float? beforeOffset, Color? beforeColor, float? afterOffset, Color? afterColor, float offset)
+		{
+			Color? color = null;
+
+			if (beforeOffset.HasValue && beforeColor is not null && afterOffset.HasValue && afterColor is not null)
+			{
+				color = beforeOffset == afterOffset
+					? beforeColor
+					: BlendColors(beforeColor, afterColor, (offset - beforeOffset.Value) / (afterOffset.Value - beforeOffset.Value));
+			}
+			else if (beforeColor is not null)
+			{
+				color = beforeColor;
+			}
+			else if (afterColor is not null)
+			{
+				color = afterColor;
+			}
+
+			return color is { Alpha: > 0 } ? color : null;
+		}
+
+		static Color BlendColors(Color startColor, Color endColor, float factor)
+		{
+			factor = Math.Clamp(factor, 0f, 1f);
+
+			return new Color(
+				startColor.Red + ((endColor.Red - startColor.Red) * factor),
+				startColor.Green + ((endColor.Green - startColor.Green) * factor),
+				startColor.Blue + ((endColor.Blue - startColor.Blue) * factor),
+				startColor.Alpha + ((endColor.Alpha - startColor.Alpha) * factor));
+		}
+
+		static float GetLinearGradientOffset(Point startPoint, Point endPoint, ChromeEdge edge)
+		{
+			var samplePoint = GetEdgeSamplePoint(edge);
+			var x = endPoint.X - startPoint.X;
+			var y = endPoint.Y - startPoint.Y;
+			var lengthSquared = (x * x) + (y * y);
+
+			if (lengthSquared == 0)
+			{
+				return 0;
+			}
+
+			return (float)Math.Clamp(
+				(((samplePoint.X - startPoint.X) * x) + ((samplePoint.Y - startPoint.Y) * y)) / lengthSquared,
+				0,
+				1);
+		}
+
+		static float GetRadialGradientOffset(Point center, double radius, ChromeEdge edge)
+		{
+			if (radius <= 0)
+			{
+				return 0;
+			}
+
+			var samplePoint = GetEdgeSamplePoint(edge);
+			var x = samplePoint.X - center.X;
+			var y = samplePoint.Y - center.Y;
+
+			return (float)Math.Clamp(Math.Sqrt((x * x) + (y * y)) / radius, 0, 1);
+		}
+
+		static Point GetEdgeSamplePoint(ChromeEdge edge)
+		{
+			return edge == ChromeEdge.Top
+				? new Point(0.5, 0)
+				: new Point(0.5, 1);
+		}
+
+		enum ChromeEdge
+		{
+			Top,
+			Bottom
 		}
 
 		sealed class OriginalAppBarBackground
