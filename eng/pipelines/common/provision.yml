@@ -286,26 +286,26 @@ steps:
 # Provisioning Android - JDK
 - ${{ if ne(parameters.skipJdk, 'true') }}:
   - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
-    displayName: 'Provision JDK'
+    displayName: 'Provision JDK (maui cli)'
     condition: succeeded()
 
 # Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
   - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
-    displayName: 'Provision Android SDK - Common Packages'
+    displayName: 'Provision Android SDK - Common Packages (maui cli)'
     condition: succeeded()
 
 # Provisioning Android - Android environment variables
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
   - pwsh: |
       echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
-      $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
+      $jsonOutput = & dotnet maui android sdk check --json | ConvertFrom-Json
       $preferredSdk = $jsonOutput.SdkInfo.Path
       echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$preferredSdk"
       echo "ANDROID_SDK_ROOT set to '$preferredSdk'"
       echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
       echo "ANDROID_HOME set to '$preferredSdk'"
-    displayName: 'Provision Android SDK - Environment variables'
+    displayName: 'Provision Android SDK - Environment variables (maui cli)'
     condition: succeeded()
 
 # Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)

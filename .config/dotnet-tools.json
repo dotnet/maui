@@ -30,10 +30,10 @@
       ],
       "rollForward": false
     },
-    "androidsdk.tool": {
-      "version": "0.19.0",
+    "microsoft.maui.cli": {
+      "version": "0.1.0-preview.10.26274.3",
       "commands": [
-        "android"
+        "maui"
       ],
       "rollForward": false
     }
