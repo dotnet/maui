@@ -13,8 +13,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
+$ReviewInProgressLabel = 's/agent-review-in-progress'
 
 . "$PSScriptRoot/Resolve-RerunEligibility.ps1"
+. "$PSScriptRoot/shared/Update-AgentLabels.ps1"
 
 function ConvertTo-ActivityItemFromJson {
     param(
@@ -69,6 +71,9 @@ foreach ($pr in @($searchResult)) {
     $number = [int]$pr.number
     $labels = @(Get-IssueLabels -Number $number)
     if ($labels -notcontains $ReadyForRerunLabel) {
+        continue
+    }
+    if ($labels -contains $ReviewInProgressLabel -and -not (Test-AgentReviewInProgressIsStale -PRNumber $number -Owner $Owner -Repo $Repo)) {
         continue
     }
 

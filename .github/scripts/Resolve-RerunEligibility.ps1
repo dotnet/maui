@@ -26,6 +26,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $AISummaryMarker = '<!-- AI Summary -->'
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
+$ReviewInProgressLabel = 's/agent-review-in-progress'
 $ReadyForRerunLabelDescription = 'AI review has new PR activity and is ready for rerun'
 $ReadyForRerunLabelColor = '5319E7'
 
@@ -247,6 +248,7 @@ function New-RerunContextMarkdown {
     $latestRerun = Get-LatestRerunComment -Comments $Comments
     $checkpointRerun = if ($latestRerun) { Get-LatestRerunCommentBefore -Comments $Comments -CurrentCommentId ([Int64]$latestRerun.id) } else { $null }
     $readyLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
+    $inProgressLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0
 
     $latestReviewedSha = if ($latestSummary) { Get-LatestReviewedSha -AISummaryBody $latestSummary.body } else { $null }
     $summaryUpdatedAt = if ($latestSummary) { Get-ObjectDate $latestSummary 'updated_at' } else { $null }
@@ -307,6 +309,7 @@ function New-RerunContextMarkdown {
     $lines.Add("- Current head SHA: $(if ($CurrentHeadSha) { $CurrentHeadSha } else { 'unknown' })")
     $lines.Add("- Current head differs from latest reviewed SHA: $($headDiffers.ToString().ToLowerInvariant())")
     $lines.Add("- ``$ReadyForRerunLabel`` present: $($readyLabelPresent.ToString().ToLowerInvariant())")
+    $lines.Add("- ``$ReviewInProgressLabel`` present: $($inProgressLabelPresent.ToString().ToLowerInvariant())")
     $lines.Add('')
     $lines.Add('## New activity since checkpoint')
     $lines.Add('')
@@ -370,6 +373,10 @@ function Resolve-RerunEligibility {
 
     if ($current.user -and ($current.user.type -eq 'Bot' -or $current.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$')) {
         return [pscustomobject]@{ Eligible = $false; Reason = 'bot-comment'; Label = $ReadyForRerunLabel }
+    }
+
+    if (@($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0) {
+        return [pscustomobject]@{ Eligible = $false; Reason = 'review-in-progress'; Label = $ReadyForRerunLabel }
     }
 
     $latestSummary = Get-LatestAISummaryComment -Comments $Comments

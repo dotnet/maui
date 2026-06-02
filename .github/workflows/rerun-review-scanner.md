@@ -22,7 +22,7 @@ permissions:
 
 concurrency:
   # Serialize scheduled and manual scanner runs so each queued PR is evaluated
-  # against the latest label/head state before any safe-output job can trigger.
+  # against the latest label/head/lock state before any safe-output job can trigger.
   group: "gh-aw-${{ github.workflow }}"
   cancel-in-progress: false
 
@@ -116,15 +116,21 @@ steps:
 
 You are scanning queued .NET MAUI PRs that already have the label `s/agent-ready-for-rerun`.
 
-## Concurrency and duplicate prevention
+## Concurrency, locking, and duplicate prevention
 
 The workflow-level concurrency group serializes scanner runs, including scheduled
 and manual dispatches. The deterministic `/review rerun` path also serializes
 queue-label application per PR. Before applying any side effects, the
 `trigger_rerun_review` safe-output job revalidates that the PR is open, the head
 SHA still matches `expected_head_sha`, and `s/agent-ready-for-rerun` is still
-present. After either `trigger` or `skip`, the safe-output job removes the queue
-label so the same queued request is not picked up by a later scanner run.
+present. It also refuses to trigger if a fresh `s/agent-review-in-progress` lock
+is already present. When it does trigger, it applies
+`s/agent-review-in-progress` before starting the async AzDO review pipeline; the
+AzDO pipeline removes that lock in its final cleanup stage. If the lock is older
+than the conservative stale window, the safe-output job treats it as abandoned
+and clears it before continuing. After either `trigger` or `skip`, the
+safe-output job removes the queue label so the same queued request is not picked
+up by a later scanner run.
 
 The deterministic scanner found these candidates:
 

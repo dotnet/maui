@@ -121,6 +121,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      issues: write
       pull-requests: read
     steps:
       - name: Check actor permission
@@ -237,7 +238,39 @@ jobs:
           echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Checkout repository scripts
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set review in-progress lock
+        id: review_lock
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+        run: |
+          . .github/scripts/shared/Update-AgentLabels.ps1
+          $labels = Get-AgentLabels -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+          if ($labels -contains 's/agent-review-in-progress') {
+            if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
+              Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
+            } else {
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
+              "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
+              exit 0
+            }
+          }
+
+          $locked = Set-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+          if (-not $locked) {
+            throw "Failed to apply s/agent-review-in-progress to PR #$($env:PR_NUMBER)."
+          }
+          "locked=false" >> $env:GITHUB_OUTPUT
+
       - name: Infer platform
+        if: steps.review_lock.outputs.locked != 'true'
         id: infer
         env:
           GH_TOKEN: ${{ github.token }}
@@ -280,6 +313,7 @@ jobs:
           echo "platform=${PLATFORM}" >> "$GITHUB_OUTPUT"
 
       - name: Get OIDC Token
+        if: steps.review_lock.outputs.locked != 'true'
         id: oidc
         run: |
           OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
@@ -293,6 +327,7 @@ jobs:
           echo "oidc_token=${OIDC_TOKEN}" >> "$GITHUB_OUTPUT"
 
       - name: Exchange for AzDO Token
+        if: steps.review_lock.outputs.locked != 'true'
         id: token
         env:
           OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
@@ -316,6 +351,8 @@ jobs:
           echo "azdo_token=${AZDO_TOKEN}" >> "$GITHUB_OUTPUT"
 
       - name: Trigger maui-copilot pipeline
+        id: trigger_azdo
+        if: steps.review_lock.outputs.locked != 'true'
         env:
           AZDO_TOKEN: ${{ steps.token.outputs.azdo_token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
@@ -355,3 +392,13 @@ jobs:
             echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
             exit 1
           fi
+
+      - name: Clear review lock on trigger failure
+        if: always() && steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome != 'success'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+        run: |
+          . .github/scripts/shared/Update-AgentLabels.ps1
+          Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null

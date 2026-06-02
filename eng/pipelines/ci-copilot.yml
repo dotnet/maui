@@ -1692,3 +1692,36 @@ stages:
             displayName: 'Post AI summary review'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+  - stage: CleanupReviewLock
+    displayName: 'Cleanup review lock'
+    dependsOn:
+      - ReviewPR
+      - RunDeepUITests
+      - UpdateAISummaryComment
+    condition: always()
+    jobs:
+      - job: CleanupReviewLock
+        displayName: 'Remove PR review in-progress label'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 5
+        steps:
+          - bash: |
+              set -euo pipefail
+
+              PR_NUM="${PARAM_PR_NUMBER}"
+              if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "Skipping lock cleanup; invalid PR number: '${PR_NUM}'"
+                exit 0
+              fi
+
+              echo "Removing s/agent-review-in-progress from PR #${PR_NUM} if present..."
+              gh api \
+                --method DELETE \
+                "repos/dotnet/maui/issues/${PR_NUM}/labels/s%2Fagent-review-in-progress" >/dev/null 2>&1 || true
+            displayName: 'Remove in-progress label'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}

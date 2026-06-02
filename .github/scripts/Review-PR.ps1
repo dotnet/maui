@@ -1828,6 +1828,10 @@ if (Test-Path $labelHelperPath) {
         Write-Host "  ✅ Labels applied" -ForegroundColor Green
     } catch {
         Write-Host "  ⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
+    } finally {
+        if (-not $env:TF_BUILD -and (Get-Command Clear-AgentReviewInProgress -ErrorAction SilentlyContinue)) {
+            Clear-AgentReviewInProgress -PRNumber $PRNumber | Out-Null
+        }
     }
 } else {
     Write-Host "  ⚠️ Label helper not found — skipping" -ForegroundColor Yellow

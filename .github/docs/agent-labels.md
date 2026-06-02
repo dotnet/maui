@@ -49,6 +49,7 @@ Manual labels are applied by MAUI maintainers. Queue labels are applied by deter
 |-------|-------|-------------|--------------|
 | `s/agent-fix-implemented` | 🟣 `#7B1FA2` | PR author implemented the agent's suggested fix | Maintainer applies when PR author adopts agent's recommendation |
 | `s/agent-ready-for-rerun` | 🟣 `#5319E7` | AI review has new PR activity and is ready for rerun | `/review rerun` finds new comments or commits after the latest AI Summary / previous rerun request |
+| `s/agent-review-in-progress` | 🟡 `#FBCA04` | AI review is currently running for this PR | Applied before triggering the async AzDO review pipeline and removed by pipeline cleanup; stale locks can be recovered after a conservative timeout |
 
 ---
 
@@ -71,7 +72,7 @@ Review-PR.ps1
     └── Non-fatal: errors warn but don't fail the workflow
 ```
 
-Most review outcome labels are applied from `Review-PR.ps1` Phase 4. The exception is `s/agent-ready-for-rerun`, which is applied by the deterministic `/review rerun` GitHub Action path after checking for new comments or commits. The rerun path does not use AI to decide whether the label applies.
+Most review outcome labels are applied from `Review-PR.ps1` Phase 4. The exceptions are queue/lock labels: `s/agent-ready-for-rerun` is applied by the deterministic `/review rerun` GitHub Action path after checking for new comments or commits, and `s/agent-review-in-progress` is applied before triggering the async AzDO review pipeline. The rerun path does not use AI to decide whether these labels apply. The lock label normally clears in the AzDO cleanup stage; trigger paths treat very old locks as stale so a cancelled pipeline does not permanently block reviews.
 
 ### How Labels Are Parsed
 
@@ -141,6 +142,9 @@ is:pr label:s/agent-reviewed
 | `.github/scripts/shared/Update-AgentLabels.ps1` | Label helper module (all label logic) |
 | `.github/scripts/Review-PR.ps1` | Orchestrator that calls `Apply-AgentLabels` in Phase 4 |
 | `.github/scripts/Resolve-RerunEligibility.ps1` | Deterministic `/review rerun` checker that can apply `s/agent-ready-for-rerun` |
+| `.github/scripts/Invoke-RerunReviewTrigger.ps1` | Safe-output handler that applies `s/agent-review-in-progress` before triggering AzDO reruns |
+| `.github/workflows/review-trigger.yml` | Manual `/review` trigger that applies `s/agent-review-in-progress` before triggering AzDO reviews |
+| `eng/pipelines/ci-copilot.yml` | AzDO review pipeline that removes `s/agent-review-in-progress` in final cleanup |
 | `.github/skills/pr-review/SKILL.md` | Documents label system for the pr-review skill |
 
 ### Key Functions
@@ -152,6 +156,9 @@ is:pr label:s/agent-reviewed
 | `Update-AgentOutcomeLabel` | Applies one outcome label, removes conflicting ones |
 | `Update-AgentSignalLabels` | Adds/removes validate and fix signal labels |
 | `Update-AgentReviewedLabel` | Ensures tracking label is present |
+| `Set-AgentReviewInProgress` | Applies the async review lock label |
+| `Clear-AgentReviewInProgress` | Removes the async review lock label |
+| `Test-AgentReviewInProgressIsStale` | Checks whether a lock label is old enough to recover |
 | `Ensure-LabelExists` | Creates or updates a label in the repository |
 
 ### Design Principles

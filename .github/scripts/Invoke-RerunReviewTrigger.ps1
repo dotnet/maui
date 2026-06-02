@@ -13,6 +13,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
+$ReviewInProgressLabel = 's/agent-review-in-progress'
 
 . "$PSScriptRoot/shared/Update-AgentLabels.ps1"
 
@@ -172,11 +173,41 @@ foreach ($item in $items) {
         Write-Host "  ⏭️ PR #$prNumber no longer has $ReadyForRerunLabel; skipping"
         continue
     }
+    if ($labels -contains $ReviewInProgressLabel) {
+        if (Test-AgentReviewInProgressIsStale -PRNumber $prNumber -Owner $Owner -Repo $Repo) {
+            if ($DryRun) {
+                Write-Host "[dry-run] Would remove stale $ReviewInProgressLabel from PR #$prNumber"
+            } else {
+                Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
+            }
+            $labels = @($labels | Where-Object { $_ -ne $ReviewInProgressLabel })
+        } else {
+            Write-Host "  ⏭️ PR #$prNumber already has $ReviewInProgressLabel; skipping duplicate review trigger"
+            continue
+        }
+    }
 
     if ($decision -eq 'trigger') {
-        Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
-        $platform = Get-PlatformFromLabels -Labels $labels -Fallback ([string]$item.platform)
-        Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $DefaultPipelineRef
+        $lockApplied = $false
+        try {
+            if ($DryRun) {
+                Write-Host "[dry-run] Would apply $ReviewInProgressLabel to PR #$prNumber"
+            } else {
+                $lockApplied = Set-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo
+                if (-not $lockApplied) {
+                    throw "Failed to apply $ReviewInProgressLabel to PR #$prNumber; refusing to trigger duplicate-prone review."
+                }
+            }
+
+            Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
+            $platform = Get-PlatformFromLabels -Labels $labels -Fallback ([string]$item.platform)
+            Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $DefaultPipelineRef
+        } catch {
+            if ($lockApplied) {
+                Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
+            }
+            throw
+        }
     } else {
         Add-CommentReaction -CommentId $rerunCommentId -Content '-1'
         Write-Host "  ⏭️ AI scanner decided not to trigger PR #$prNumber"
