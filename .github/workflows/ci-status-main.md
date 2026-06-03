@@ -253,9 +253,11 @@ Normalization rules:
 Search existing issues and PRs before creating anything new — never duplicate:
 - First `search_issues`: `is:issue is:open label:ci-scan in:body "<fingerprint>"`
 - Then `search_issues`: `is:issue is:open label:ci-scan "<normalized-test-or-task>" "<normalized-primary-error>"`
-- Then `search_pull_requests` for both open and merged PRs:
-  - `is:pr is:open label:ci-scan in:body "<fingerprint>" OR is:pr is:open in:title "<normalized-test-or-task>" "[ci-scan]"`
-  - `is:pr is:merged label:ci-scan in:body "<fingerprint>" OR is:pr is:merged in:title "<normalized-test-or-task>" "[ci-scan]"`
+- Then run these four separate `search_pull_requests` calls, in order; do not combine them with `OR`:
+  - `is:pr is:open label:ci-scan in:body "<fingerprint>"`
+  - `is:pr is:open in:title "<normalized-test-or-task>" "[ci-scan]"`
+  - `is:pr is:merged label:ci-scan in:body "<fingerprint>"`
+  - `is:pr is:merged in:title "<normalized-test-or-task>" "[ci-scan]"`
 
 Every tracking issue body must include this hidden marker exactly once:
 `<!-- ci-scan-fingerprint: <fingerprint> -->`
