@@ -49,7 +49,7 @@ parameters:
   type: object
   default:
     name: Azure Pipelines
-    vmImage: macOS-15
+    vmImage: macOS-26
     os: macOS
 
 resources:
