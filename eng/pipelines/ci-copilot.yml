@@ -36,7 +36,7 @@ parameters:
     default:
       name: AcesShared
       demands:
-        - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+        - ImageOverride -equals $(AcesMacImageOverride)
 
   - name: macPool
     type: object
