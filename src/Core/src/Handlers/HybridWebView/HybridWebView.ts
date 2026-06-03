@@ -87,15 +87,15 @@ interface DotNetInvokeResult {
             };
         } else {
             // Android WebView
-            // Native -> JS messages are delivered via WebView.postWebMessage targeting the app
-            // origin. The resulting MessageEvent has source === null (no sending window) and,
-            // on current Chromium-based WebView, origin === window.location.origin. The
-            // `source === null` check is the load-bearing one — it is invariant across WebView
-            // versions and rejects every `window.postMessage` sender, including same-origin
-            // ones. The origin equality is best-effort defense-in-depth.
-            const expectedOrigin = window.location.origin;
+            // Native -> JS messages are delivered via WebView.postWebMessage. The resulting
+            // MessageEvent has source === null (no sending window) -- that's the invariant we
+            // can rely on across WebView versions. Drop any 'message' event whose source is
+            // a Window (e.g. a nested iframe calling window.parent.postMessage), which would
+            // otherwise be mistaken for a native message. NOTE: we intentionally do not check
+            // arg.origin here because Android WebView delivers postWebMessage events with an
+            // empty-string origin, not window.location.origin.
             window.addEventListener('message', (arg: MessageEvent) => {
-                if (arg.source !== null || arg.origin !== expectedOrigin) {
+                if (arg.source !== null) {
                     console.warn(`HybridWebView: ignored 'message' event from unexpected sender (origin: '${arg.origin}').`);
                     return;
                 }
