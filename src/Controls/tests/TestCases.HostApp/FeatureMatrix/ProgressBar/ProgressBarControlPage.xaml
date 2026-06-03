@@ -7,7 +7,7 @@
              Title="ProgressBarFeature">
 
        <Grid ColumnDefinitions="0.5*, 0.5*"
-             RowDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+             RowDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
              RowSpacing="10"
              ColumnSpacing="15"
              Padding="20">
@@ -17,9 +17,11 @@
                                   AutomationId="ProgressBarControl"
                                   BackgroundColor="{Binding BackgroundColor}"
                                   FlowDirection="{Binding FlowDirection}"
+                                  IsEnabled="{Binding IsEnabled}"
                                   IsVisible="{Binding IsVisible}"
                                   Progress="{Binding Progress}"
                                   ProgressColor="{Binding ProgressColor}"
+                                  SemanticProperties.Description="Download progress"
                                   Shadow="{Binding Shadow}"/>
               </Grid>
 
@@ -68,14 +70,22 @@
                      Grid.Column="0"
                      Text="Is Visible:"
                      VerticalOptions="Center"/>
-              <RadioButton Grid.Row="3"
+              <StackLayout Grid.Row="3"
                            Grid.Column="1"
-                           x:Name="IsVisibleTrueRadio"
-                           VerticalOptions="Center"
-                           AutomationId="IsVisibleFalseRadio"
-                           GroupName="IsVisible"
-                           Content="False"
-                           CheckedChanged="OnIsVisibleCheckedChanged"/>
+                           Orientation="Horizontal"
+                           VerticalOptions="Center">
+                     <RadioButton x:Name="IsVisibleTrueRadio"
+                                  AutomationId="IsVisibleTrueRadio"
+                                  GroupName="IsVisible"
+                                  Content="True"
+                                  IsChecked="True"
+                                  CheckedChanged="OnIsVisibleCheckedChanged"/>
+                     <RadioButton x:Name="IsVisibleFalseRadio"
+                                  AutomationId="IsVisibleFalseRadio"
+                                  GroupName="IsVisible"
+                                  Content="False"
+                                  CheckedChanged="OnIsVisibleCheckedChanged"/>
+              </StackLayout>
 
               <!-- Flow Direction -->
               <Label Grid.Row="4"
@@ -126,30 +136,61 @@
                      Grid.Column="0"
                      Text="Shadow:"
                      VerticalOptions="Center"/>
-              <RadioButton Grid.Row="6"
+              <StackLayout Grid.Row="6"
                            Grid.Column="1"
-                           x:Name="ShadowFalseRadio"
-                           VerticalOptions="Center"
-                           AutomationId="ShadowTrueRadio"
-                           Content="True"
-                           CheckedChanged="OnShadowCheckedChanged"/>
+                           Orientation="Horizontal"
+                           VerticalOptions="Center">
+                     <RadioButton x:Name="ShadowFalseRadio"
+                                  AutomationId="ShadowFalseRadio"
+                                  GroupName="Shadow"
+                                  Content="False"
+                                  IsChecked="True"
+                                  CheckedChanged="OnShadowCheckedChanged"/>
+                     <RadioButton x:Name="ShadowTrueRadio"
+                                  AutomationId="ShadowTrueRadio"
+                                  GroupName="Shadow"
+                                  Content="True"
+                                  CheckedChanged="OnShadowCheckedChanged"/>
+              </StackLayout>
 
+              <!-- IsEnabled -->
               <Label Grid.Row="7"
+                     Grid.Column="0"
+                     Text="Is Enabled:"
+                     VerticalOptions="Center"/>
+              <StackLayout Grid.Row="7"
+                           Grid.Column="1"
+                           Orientation="Horizontal"
+                           VerticalOptions="Center">
+                     <RadioButton x:Name="IsEnabledTrueRadio"
+                                  AutomationId="IsEnabledTrueRadio"
+                                  GroupName="IsEnabled"
+                                  Content="True"
+                                  IsChecked="True"
+                                  CheckedChanged="OnIsEnabledCheckedChanged"/>
+                     <RadioButton x:Name="IsEnabledFalseRadio"
+                                  AutomationId="IsEnabledFalseRadio"
+                                  GroupName="IsEnabled"
+                                  Content="False"
+                                  CheckedChanged="OnIsEnabledCheckedChanged"/>
+              </StackLayout>
+
+              <Label Grid.Row="8"
                      Grid.Column="0"
                      Text="Progress:"
                      FontSize="16"
                      VerticalTextAlignment="Center"/>
-              <Label Grid.Row="7"
+              <Label Grid.Row="8"
                      Grid.Column="1"
                      Text="{Binding Progress, StringFormat='{0:F2}'}"
                      FontSize="16"
                      VerticalTextAlignment="Center"
                      AutomationId="ProgressValueLabel"/>
 
-              <Label Grid.Row="8"
+              <Label Grid.Row="9"
                      Grid.Column="0"
                      Text="ProgressTo"/>
-              <local:UITestEntry Grid.Row="8"
+              <local:UITestEntry Grid.Row="9"
                                  Grid.Column="1"
                                  x:Name="ProgressToEntry"
                                  AutomationId="ProgressToEntry"
@@ -160,12 +201,12 @@
                                  VerticalOptions="Center"
                                  WidthRequest="100"/>
 
-              <Button Grid.Row="9"
+              <Button Grid.Row="10"
                       Grid.Column="0"
                       Text="ProgressTo"
                       Clicked="ProgressToButton_Clicked"
                       AutomationId="ProgressToButton"/>
-              <Button Grid.Row="9"
+              <Button Grid.Row="10"
                       Grid.Column="1"
                       Text="Reset"
                       Clicked="ResetButton_Clicked"

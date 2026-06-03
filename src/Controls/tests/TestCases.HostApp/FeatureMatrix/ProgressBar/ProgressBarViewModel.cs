@@ -9,6 +9,7 @@ namespace Maui.Controls.Sample
 		private double _progress = 0.5;
 		private Color _progressColor;
 		private Color _backgroundColor;
+		private bool _isEnabled = true;
 		private bool _isVisible = true;
 		private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 		private Shadow _shadow;
@@ -49,6 +50,19 @@ namespace Maui.Controls.Sample
 				if (_backgroundColor != value)
 				{
 					_backgroundColor = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+		public bool IsEnabled
+		{
+			get => _isEnabled;
+			set
+			{
+				if (_isEnabled != value)
+				{
+					_isEnabled = value;
 					OnPropertyChanged();
 				}
 			}

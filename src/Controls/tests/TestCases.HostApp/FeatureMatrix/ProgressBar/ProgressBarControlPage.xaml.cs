@@ -23,6 +23,7 @@ public partial class ProgressBarControlPage : ContentPage
 
 		progressBar.SetBinding(ProgressBar.BackgroundColorProperty, nameof(ProgressBarViewModel.BackgroundColor));
 		progressBar.SetBinding(ProgressBar.FlowDirectionProperty, nameof(ProgressBarViewModel.FlowDirection));
+		progressBar.SetBinding(ProgressBar.IsEnabledProperty, nameof(ProgressBarViewModel.IsEnabled));
 		progressBar.SetBinding(ProgressBar.IsVisibleProperty, nameof(ProgressBarViewModel.IsVisible));
 		progressBar.SetBinding(ProgressBar.ProgressProperty, nameof(ProgressBarViewModel.Progress));
 		progressBar.SetBinding(ProgressBar.ProgressColorProperty, nameof(ProgressBarViewModel.ProgressColor));
@@ -61,7 +62,7 @@ public partial class ProgressBarControlPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton != null && radioButton.IsChecked)
 		{
-			_viewModel.IsVisible = false;
+			_viewModel.IsVisible = radioButton.Content.ToString() == "True";
 		}
 	}
 
@@ -79,21 +80,32 @@ public partial class ProgressBarControlPage : ContentPage
 		var radioButton = (RadioButton)sender;
 		if (radioButton != null && radioButton.IsChecked)
 		{
-			_viewModel.Shadow = new Shadow { Brush = Colors.Violet, Radius = 20, Offset = new Point(0, 0), Opacity = 1f };
+			_viewModel.Shadow = radioButton.Content.ToString() == "True"
+				? new Shadow { Brush = Colors.Violet, Radius = 20, Offset = new Point(0, 0), Opacity = 1f }
+				: null;
+		}
+	}
+
+	private void OnIsEnabledCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.IsEnabled = radioButton.Content.ToString() == "True";
 		}
 	}
 
 	private void ProgressToButton_Clicked(object sender, EventArgs e)
 	{
-		if (!string.IsNullOrWhiteSpace(ProgressToEntry.Text))
+		if (!string.IsNullOrWhiteSpace(ProgressToEntry.Text) && double.TryParse(ProgressToEntry.Text, out double targetProgress))
 		{
 			if (progressBar == null)
 			{
-				progressBarControl.ProgressTo(double.Parse(ProgressToEntry.Text), 1000, Easing.Linear);
+				progressBarControl.ProgressTo(targetProgress, 1000, Easing.Linear);
 			}
 			else
 			{
-				progressBar.ProgressTo(double.Parse(ProgressToEntry.Text), 1000, Easing.Linear);
+				progressBar.ProgressTo(targetProgress, 1000, Easing.Linear);
 			}
 		}
 	}
@@ -102,10 +114,14 @@ public partial class ProgressBarControlPage : ContentPage
 	{
 		ProgressEntry.Text = "0.50";
 		ProgressToEntry.Text = "0";
-		IsVisibleTrueRadio.IsChecked = false;
-		FlowDirectionLTR.IsChecked = false;
+		IsVisibleTrueRadio.IsChecked = true;
+		IsVisibleFalseRadio.IsChecked = false;
+		FlowDirectionLTR.IsChecked = true;
 		FlowDirectionRTL.IsChecked = false;
-		ShadowFalseRadio.IsChecked = false;
+		ShadowFalseRadio.IsChecked = true;
+		ShadowTrueRadio.IsChecked = false;
+		IsEnabledTrueRadio.IsChecked = true;
+		IsEnabledFalseRadio.IsChecked = false;
 		ReinitializeProgressBar();
 	}
 }
