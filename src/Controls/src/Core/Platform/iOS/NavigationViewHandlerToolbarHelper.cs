@@ -132,6 +132,11 @@ namespace Microsoft.Maui.Controls
         {
             UpdateNavigationBarVisibility(animated);
 
+            // Match renderer behavior: when the nav bar is opaque, prevent content
+            // from extending underneath it. When translucent, allow full extension.
+            var isTranslucent = NavigationController?.NavigationBar.Translucent ?? false;
+            EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+
             // Re-evaluate per-page IconColor when this page becomes visible
             // (push or pop-back). IconColor is already set before the push,
             // so HandleChildPropertyChanged won't fire — we need this trigger.
@@ -591,9 +596,6 @@ namespace Microsoft.Maui.Controls
         UIImageView? _icon;
         bool _disposed;
 
-        const int IconWidth = 40;
-        const int IconHeight = 40;
-
         internal TitleViewContainer(View? view, UINavigationBar bar) : base(bar.Bounds)
         {
             if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
@@ -685,6 +687,9 @@ namespace Microsoft.Maui.Controls
             }
         }
 
+        nfloat IconHeight => _icon?.Frame.Height ?? 0;
+        nfloat IconWidth => _icon?.Frame.Width ?? 0;
+
         public override CGSize IntrinsicContentSize => UILayoutFittingExpandedSize;
 
         public override CGSize SizeThatFits(CGSize size)
@@ -743,7 +748,7 @@ namespace Microsoft.Maui.Controls
 
             nfloat toolbarHeight = ToolbarHeight;
             double height = Math.Min(toolbarHeight, Bounds.Height);
-            nfloat iconWidth = _icon is not null ? IconWidth : 0;
+            nfloat iconWidth = IconWidth;
 
             if (_icon is not null)
             {

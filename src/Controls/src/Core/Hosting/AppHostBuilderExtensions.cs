@@ -349,6 +349,13 @@ public static partial class AppHostBuilderExtensions
 			NavigationPage.RemapForControls();
 			NavigationViewHandler.NavigationBarType = typeof(MauiNavigationBar);
 			NavigationViewHandler.CreateViewControllerForPage = NavigationViewHandlerToolbarHelper.CreateViewControllerForPage;
+			NavigationViewHandler.OnNativePopCompleted = (navigationView, poppedPage) =>
+			{
+				if (navigationView is NavigationPage navPage && poppedPage is Page page)
+				{
+					navPage.SendNavigatedFromHandler(page, NavigationType.Pop);
+				}
+			};
 		}
 #endif
 

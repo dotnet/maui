@@ -37,24 +37,49 @@ namespace Microsoft.Maui.Controls
 				barBackground = null;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
+			bool isTranslucentExplicitlySet = navigationPage.IsSet(iOSSpecificNavigationPage.IsNavigationBarTranslucentProperty);
+			bool userTranslucentValue = isTranslucentExplicitlySet && iOSSpecificNavigationPage.GetIsNavigationBarTranslucent(navigationPage);
+#pragma warning restore CS0618 // Type or member is obsolete
+
 			var navigationBarAppearance = navBar.StandardAppearance;
 
 			if (barBackgroundColor is null && barBackground is null)
 			{
 				navigationBarAppearance.ConfigureWithOpaqueBackground();
 				navigationBarAppearance.BackgroundColor = ColorExtensions.BackgroundColor;
+				// Match renderer: default translucency is driven by IsNavigationBarTranslucent (defaults to false)
+				navBar.Translucent = userTranslucentValue;
 			}
 			else if (barBackgroundColor is not null)
 			{
-				if (barBackgroundColor.Alpha < 1f)
+				// Match renderer: if IsNavigationBarTranslucent is explicitly set, respect it;
+				// otherwise base translucency on the background color alpha
+				if (isTranslucentExplicitlySet)
 				{
-					navigationBarAppearance.ConfigureWithTransparentBackground();
-					navBar.Translucent = true;
+					if (userTranslucentValue)
+					{
+						navigationBarAppearance.ConfigureWithTransparentBackground();
+						navBar.Translucent = true;
+					}
+					else
+					{
+						navigationBarAppearance.ConfigureWithOpaqueBackground();
+						navBar.Translucent = false;
+					}
 				}
 				else
 				{
-					navigationBarAppearance.ConfigureWithOpaqueBackground();
-					navBar.Translucent = false;
+					if (barBackgroundColor.Alpha < 1f)
+					{
+						navigationBarAppearance.ConfigureWithTransparentBackground();
+						navBar.Translucent = true;
+					}
+					else
+					{
+						navigationBarAppearance.ConfigureWithOpaqueBackground();
+						navBar.Translucent = false;
+					}
 				}
 
 				navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
@@ -68,6 +93,13 @@ namespace Microsoft.Maui.Controls
 			navBar.CompactAppearance = navigationBarAppearance;
 			navBar.StandardAppearance = navigationBarAppearance;
 			navBar.ScrollEdgeAppearance = navigationBarAppearance;
+		}
+
+		static void MapIsNavigationBarTranslucent(NavigationViewHandler handler, NavigationPage navigationPage)
+		{
+			// Translucency affects both bar appearance and content layout;
+			// re-evaluate everything through MapBarBackground.
+			MapBarBackground(handler, navigationPage);
 		}
 
 		static void MapBarTextColor(NavigationViewHandler handler, NavigationPage navigationPage)

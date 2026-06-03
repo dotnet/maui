@@ -26,6 +26,14 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		internal static Func<IView, IMauiContext, UIViewController>? CreateViewControllerForPage { get; set; }
 
+		/// <summary>
+		/// Optional callback invoked after a UIKit-initiated pop (back button, swipe, long-press
+		/// history menu) has completed and the MAUI stack is synced. The Controls layer sets this
+		/// to fire page lifecycle events (OnNavigatedTo/OnNavigatedFrom) via SendNavigatedFromHandler.
+		/// Parameters: (IStackNavigationView navigationView, IView poppedPage)
+		/// </summary>
+		internal static Action<IStackNavigationView, IView>? OnNativePopCompleted { get; set; }
+
 		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
 
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
@@ -343,20 +351,21 @@ namespace Microsoft.Maui.Handlers
 					return true;
 				}
 
-				// Route the back button press through MAUI's navigation pipeline.
-				// IWindow.BackButtonClicked() calls Page.SendBackButtonPressed() which
-				// invokes NavigationPage.OnBackButtonPressed() — that method either:
-				//   1. Lets the current page intercept the press, or
-				//   2. Calls PopAsync() to navigate back programmatically.
-				// In both cases, UIKit should NOT perform its own pop (return false).
+				// Dispatch to the next run loop iteration to avoid re-entrancy in shouldPopItem:
+				// which would cause UIKit to skip DidShowViewController callbacks.
 				var window = handler.MauiContext?.GetPlatformWindow()?.GetWindow();
 
-				if (window?.BackButtonClicked() == true)
+				if (window is not null)
 				{
+					CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+					{
+						window.BackButtonClicked();
+					});
+
 					return false;
 				}
 
-				// Not handled (e.g. root page) — allow UIKit pop (harmless at root).
+				// No window — allow UIKit pop (harmless fallback).
 				return true;
 			}
 
@@ -403,6 +412,9 @@ namespace Microsoft.Maui.Handlers
 				var navController = handler._navManager?.NavigationController;
 				if (navController?.ViewControllers is UIViewController[] vcs)
 				{
+					// Identify pages that were popped (in old stack but not in new UIKit stack)
+					var oldStack = handler.NavigationStack;
+
 					var newStack = new List<IView>();
 					foreach (var vc in vcs)
 					{
@@ -416,8 +428,24 @@ namespace Microsoft.Maui.Handlers
 						}
 					}
 
+					// Find the page that was on top before the pop
+					IView? poppedPage = null;
+					if (oldStack.Count > newStack.Count && oldStack.Count > 0)
+					{
+						poppedPage = oldStack[oldStack.Count - 1];
+					}
+
 					handler.NavigationStack = newStack;
 					handler.NavigationView.NavigationFinished(newStack);
+
+					// After NavigationFinished has updated CurrentPage, fire lifecycle events
+					// for the popped page. This is the iOS-specific equivalent of the renderer's
+					// ParentingViewController.DidMoveToParentViewController → UpdateFormsInnerNavigation
+					// → SendNavigatedFromHandler.
+					if (poppedPage is not null && OnNativePopCompleted is not null)
+					{
+						OnNativePopCompleted(handler.NavigationView, poppedPage);
+					}
 				}
 			}
 		}
