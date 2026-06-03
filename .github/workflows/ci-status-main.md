@@ -237,8 +237,23 @@ Do not jump between pipelines. Finish all classifications for pipeline N before 
 
 ## Submit
 
+Before creating any issue or PR, compute a deterministic fingerprint for each failure:
+`ci-scan|main|<pipeline>|<normalized-test-or-task>|<normalized-primary-error>|<normalized-platform-or-leg>`.
+
+Normalization rules:
+- Lowercase.
+- Replace URLs, build IDs, job IDs, GUIDs, paths, line numbers, durations, and timestamps with stable tokens.
+- Keep the test name, failed task name, pipeline, branch, platform/leg, and primary error category.
+- If two failures share the same suspected root cause and would be fixed by the same change, reuse the existing issue instead of filing a more specific duplicate.
+
 Search existing issues and PRs before creating anything new — never duplicate:
-- `search_issues`: `is:issue is:open label:ci-scan in:body "<error-signature>"`
-- `search_pull_requests`: `is:pr is:open in:title "<test-name>" "[ci-scan]"`
+- First `search_issues`: `is:issue is:open label:ci-scan in:body "<fingerprint>"`
+- Then `search_issues`: `is:issue is:open label:ci-scan "<normalized-test-or-task>" "<normalized-primary-error>"`
+- Then `search_pull_requests`: `is:pr is:open label:ci-scan in:body "<fingerprint>" OR is:pr is:open in:title "<normalized-test-or-task>" "[ci-scan]"`
+
+Every tracking issue body must include this hidden marker exactly once:
+`<!-- ci-scan-fingerprint: <fingerprint> -->`
+
+Every muting PR body must include the tracking issue link and the same hidden fingerprint marker. If an existing issue or PR is found, do not create another issue; record `existing-issue #N` or `existing-PR #N` in the coverage summary.
 
 If everything is already covered, call `noop` with a coverage summary.
