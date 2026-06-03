@@ -196,49 +196,49 @@ steps:
 
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
+        xcrun simctl runtime list -v || true
+        xcrun simctl runtime match list -v || true
+        xcrun simctl runtime list -v --json || true
+        xcrun simctl runtime match list -v --json || true
+        exit 0
+      displayName: Show pre simulator info
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 5
+
+    - script: |
         echo installing simulator runtimes...
         # XCODE variable is in major.minor format (e.g., 26.1)
         XCODE_MAJOR_MINOR=$(XCODE)
         MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
         MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
 
-        # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
-        # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-        if [[ "${MAJOR}" == "26" && "${MINOR}" == "0" ]]; then
-          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion 26.0"
-        elif [[ "${MAJOR}" -ge "26" ]]; then
-          # Pin the simulator version to match the selected Xcode version.
-          # Without -buildVersion, xcodebuild downloads the LATEST available simulator
-          # runtime, which may not match the selected Xcode's SDK (e.g., Xcode 26.2
-          # ships iphonesimulator SDK 23C53 but -downloadPlatform iOS may install
-          # iOS 26.3.1 which is incompatible, causing actool/ibtool failures).
-          # Include -architectureVariant universal (carried forward from the 26.0
-          # block) for x64 simulator support on Apple Silicon CI agents.
-          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
-        else
-          # For Xcode < 26, iOS simulator version != Xcode version; download latest compatible
-          DOWNLOAD_ARGS="-downloadPlatform iOS"
-        fi
+        # Try to install a variety of simulators:
+        # * The exact version we need, universal variant.
+        # * The default universal variant.
+        # * The default variant.
 
+        # The exact version we need, universal variant
+        echo "Installing the exact universal simulator runtime..."
+        echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
         RC=0
-        sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
-        if [[ "$RC" != "0" ]]; then
-          echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
-          sudo xcrun simctl runtime delete all
-          # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
-          for i in $(seq 1 60); do
-            sleep 1
-            C=$(xcrun simctl runtime list -j | jq '. | length')
-            if [[ $C == 0 ]]; then
-              break
-            fi
-            echo "    still $C simulators left..."
-          done
-          echo "Re-trying simulator runtime installation..."
-          sudo xcodebuild $DOWNLOAD_ARGS
-        fi
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR} || RC=$?
+        echo "Installation result: $RC"
 
-        # Verify the simulator runtime was actually installed
+        # * The default universal variant.
+        echo "Installing the default universal simulator runtime..."
+        echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal"
+        RC=0
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal || RC=$?
+        echo "Installation result: $RC"
+
+        echo "Installing the default simulator runtime..."
+        echo "\$ sudo xcodebuild -downloadPlatform iOS"
+        RC=0
+        sudo xcodebuild -downloadPlatform iOS || RC=$?
+        echo "Installation result: $RC"
+
+        # Verify the simulator runtimes are/were actually installed
         echo "Verifying simulator runtimes..."
         xcrun simctl runtime list
         RUNTIME_COUNT=$(xcrun simctl runtime list -j | jq '. | length')
@@ -251,14 +251,6 @@ steps:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
 
-    - script: |
-        xcrun simctl runtime list -v || true
-        xcrun simctl runtime match list -v || true
-      displayName: Show simulator info
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      continueOnError: true
-      timeoutInMinutes: 5
-
     # Also install iOS 18.5 simulator for integration tests that require it
     - script: |
         echo "Installing iOS 18.5 simulator runtime for integration tests..."
@@ -269,6 +261,17 @@ steps:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       continueOnError: true
       timeoutInMinutes: 30
+
+    - script: |
+        xcrun simctl runtime list -v || true
+        xcrun simctl runtime match list -v || true
+        xcrun simctl runtime list -v --json || true
+        xcrun simctl runtime match list -v --json || true
+        exit 0
+      displayName: Show post simulator info
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 5
 
 # Provision Additional Software
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), ne(parameters.skipProvisionator, true)) }}:
