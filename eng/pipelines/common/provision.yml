@@ -213,60 +213,32 @@ steps:
         MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
         MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
 
+        # Try to install a variety of simulators:
+        # * The exact version we need, universal variant.
+        # * The default universal variant.
+        # * The default variant.
 
-        # Pin the simulator version to match the selected Xcode version.
-        # Without -buildVersion, xcodebuild downloads the LATEST available simulator
-        # runtime, which may not match the selected Xcode's SDK (e.g., Xcode 26.2
-        # ships iphonesimulator SDK 23C53 but -downloadPlatform iOS may install
-        # iOS 26.3.1 which is incompatible, causing actool/ibtool failures).
-        # Include -architectureVariant universal (carried forward from the 26.0
-        # block) for x64 simulator support on Apple Silicon CI agents.
-
-        echo "Installing iOS $MAJOR.$MINOR simulator runtime..."
-        DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
-
-        echo "\$ sudo xcodebuild $DOWNLOAD_ARGS"
+        # The exact version we need, universal variant
+        echo "Installing the exact universal simulator runtime..."
+        echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
         RC=0
-        sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR} || RC=$?
         echo "Installation result: $RC"
-        # if [[ "$RC" != "0" ]]; then
-        #   echo "First attempt failed with exit code $RC, deleting all simulator runtimes"
-        #   echo "Simulators to delete:"
-        #   xcrun simctl runtime list
-        #   echo '$ sudo xcrun simctl runtime delete all'
-        #   sudo xcrun simctl runtime delete all
-        #   # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
-        #   for i in $(seq 1 300); do
-        #     sleep 1
-        #     C=$(xcrun simctl runtime list -j | jq '. | length')
-        #     if [[ $C == 0 ]]; then
-        #       break
-        #     fi
-        #     # every 60 seconds print the simulators left to delete
-        #     if [[ $(( i % 60)) == 0 ]]; then
-        #       printf "Simulators left to delete:\n"
-        #       xcrun simctl runtime list
-        #     fi
-        #     echo "    still $C simulators left..."
-        #   done
-        #   echo "Re-trying simulator runtime installation..."
-        #   sudo xcodebuild $DOWNLOAD_ARGS
-        # fi
 
-        # Also download the default/unpinned simulator version
-        echo "Installing the default iOS simulator runtime..."
+        # * The default universal variant.
+        echo "Installing the default universal simulator runtime..."
         echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal"
         RC=0
         sudo xcodebuild -downloadPlatform iOS -architectureVariant universal || RC=$?
         echo "Installation result: $RC"
 
-        echo "And finally try to download the default (non-universal) simulator. This should succeed immediately if installing the universal simulator worked."
+        echo "Installing the default simulator runtime..."
         echo "\$ sudo xcodebuild -downloadPlatform iOS"
         RC=0
         sudo xcodebuild -downloadPlatform iOS || RC=$?
         echo "Installation result: $RC"
 
-        # Verify the simulator runtime was actually installed
+        # Verify the simulator runtimes are/were actually installed
         echo "Verifying simulator runtimes..."
         xcrun simctl runtime list
         RUNTIME_COUNT=$(xcrun simctl runtime list -j | jq '. | length')
