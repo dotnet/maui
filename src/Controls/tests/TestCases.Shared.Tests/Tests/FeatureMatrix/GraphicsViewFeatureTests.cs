@@ -161,7 +161,7 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Options");
 
 		Assert.That(App.FindElement("DrawableTypeLabel").GetText(), Is.EqualTo("TransparentEllipse"));
-		
+
 		VerifyShapeScreenshot();
 	}
 #endif
@@ -502,18 +502,18 @@ public class GraphicsViewFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
-		App.WaitForElement("Square");
+		App.WaitForElementTillPageNavigationSettled("Square");
 		App.Tap("Square");
-		App.WaitForElement("Apply");
+		App.WaitForElementTillPageNavigationSettled("Apply");
 		App.Tap("Apply");
 		// Clear any existing events to start fresh
-		App.WaitForElement("ClearEventsButton");
+		App.WaitForElementTillPageNavigationSettled("ClearEventsButton");
 		App.Tap("ClearEventsButton");
 
 		var interactionEventLabel = App.FindElement("InteractionEventLabel");
 		var initialEventsText = interactionEventLabel.GetText();
 
-		App.WaitForElement("InvalidateButton");
+		App.WaitForElementTillPageNavigationSettled("InvalidateButton");
 		App.Tap("InvalidateButton");
 
 		var updatedEventsText = interactionEventLabel.GetText();

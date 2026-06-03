@@ -39,7 +39,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Wait for Alert 3
 			App.WaitForElement("OK", timeout: System.TimeSpan.FromSeconds(2));
 			App.TapDisplayAlertButton("OK");
-
+			App.WaitForElement("StatusLabel");
 			// Verify all alerts were shown successfully
 			var statusText = App.FindElement("StatusLabel").GetText();
 			Assert.That(statusText, Does.Contain("All alerts shown successfully"));

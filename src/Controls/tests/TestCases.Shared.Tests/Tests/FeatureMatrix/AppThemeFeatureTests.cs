@@ -51,6 +51,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("LightThemeButton");
 		App.WaitForElement("CheckBox");
 		App.Tap("CheckBox");
+		App.Tap("CheckBox");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
@@ -59,14 +60,13 @@ public class AppThemeFeatureTests : _GalleryUITest
 	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_CheckBox_VerifyVisualState()
 	{
-		App.WaitForElement("DefaultDarkThemeButton");
-		App.Tap("DefaultDarkThemeButton");
+		App.WaitForElement("DefaultLightThemeButton");
+		App.Tap("DefaultLightThemeButton");
 		App.WaitForElement("AppThemePage");
 		App.Tap("AppThemePage");
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("CheckBox");
-		App.Tap("CheckBox");
 		App.Tap("CheckBox");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
@@ -185,7 +185,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 	}
 
 #if TEST_FAILS_ON_CATALYST // Issue Link :  https://github.com/dotnet/maui/issues/35257
-	[Test, Order(13)]
+	[Test, Order(14)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void LightTheme_Switch_VerifyVisualState()
 	{
@@ -193,18 +193,18 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.Tap("LightThemeButton");
 		App.WaitForElement("Switch");
 		App.Tap("Switch");
+		App.Tap("Switch");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
 
-	[Test, Order(14)]
+	[Test, Order(13)]
 	[Category(UITestCategories.ViewBaseTests)]
 	public void DarkTheme_Switch_VerifyVisualState()
 	{
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Switch");
-		App.Tap("Switch");
 		App.Tap("Switch");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
@@ -364,6 +364,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Entry");
+		App.ClearText("Entry");
 		VerifyScreenshotWithPlatformCropping();
 	}
 
@@ -393,6 +394,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("Editor");
+		App.ClearText("Editor");
 		VerifyScreenshotWithPlatformCropping();
 	}
 
@@ -422,6 +424,7 @@ public class AppThemeFeatureTests : _GalleryUITest
 		App.WaitForElement("DarkThemeButton");
 		App.Tap("DarkThemeButton");
 		App.WaitForElement("SearchBar");
+		App.ClearText("SearchBar");
 		VerifyScreenshotWithPlatformCropping();
 	}
 }

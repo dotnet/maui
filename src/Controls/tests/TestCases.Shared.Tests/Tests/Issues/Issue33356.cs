@@ -22,6 +22,7 @@ public class Issue33356 : _IssuesUITest
 		var searchHandler = App.GetShellSearchHandler();
 		searchHandler.Tap();
 		searchHandler.SendKeys("A");
+		App.WaitForElement("SearchResultName");
 		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Issue33356CatNameLabel");
 		if (iOS26OrHigher)

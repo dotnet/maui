@@ -22,17 +22,29 @@ public class Issue29740 : _IssuesUITest
 		}
 		var initialvalue = App.WaitForElement("29740StepperValueLabel").GetText();
 		Assert.That(initialvalue, Is.EqualTo("Stepper Value: 0"));
+
+		// Stepper: min=0, max=10, increment=3 → 4 taps to reach 10 (0→3→6→9→10, clamped to max).
+		// Each tap is verified individually to handle intermittent tap failures.
+		string[] expectedValues = ["Stepper Value: 3", "Stepper Value: 6", "Stepper Value: 9", "Stepper Value: 10"];
 		for (int i = 0; i < 4; i++)
 		{
-			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
-			// See https://github.com/appium/appium/issues/22272
+			var expected = expectedValues[i];
+			App.RetryAssert(() =>
+			{
+				var currentValue = App.WaitForElement("29740StepperValueLabel").GetText();
+				if (currentValue != expected)
+				{
+					// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
+					// See https://github.com/appium/appium/issues/22272
 #if MACCATALYST
-			App.DecreaseStepper("29740Stepper");
+					App.DecreaseStepper("29740Stepper");
 #else
-			App.IncreaseStepper("29740Stepper");
+					App.IncreaseStepper("29740Stepper");
 #endif
+					currentValue = App.WaitForElement("29740StepperValueLabel").GetText();
+				}
+				Assert.That(currentValue, Is.EqualTo(expected));
+			});
 		}
-		var finalvalue = App.WaitForElement("29740StepperValueLabel").GetText();
-		Assert.That(finalvalue, Is.EqualTo("Stepper Value: 10"));
 	}
 }

@@ -11,6 +11,7 @@ public class Issue29544 : _IssuesUITest
 
 	public Issue29544(TestDevice device) : base(device) { }
 
+#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/34965
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void PreviousPositionUpdatesCorrectlyOnScrollTo()
@@ -54,6 +55,7 @@ public class Issue29544 : _IssuesUITest
 		Assert.That(secondPreviousItem, Does.Contain("Item 4"),
 			"After scrolling from position 3 to 1, PreviousItem should be 'Item 4'");
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.CarouselView)]

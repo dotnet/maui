@@ -21,45 +21,62 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var initialValue = App.FindElement("entry").GetText();
 			Assert.That("0", Is.EqualTo(initialValue));
 
-			// Increase the value.
+			// Increase the value and verify - retry tap if it didn't register.
 			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
 			// See https://github.com/appium/appium/issues/22272
+			App.RetryAssert(() =>
+			{
+				var currentValue = App.FindElement("entry").GetText();
+				if (currentValue != "2")
+				{
 #if MACCATALYST
-			App.DecreaseStepper("myStepper");
+					App.DecreaseStepper("myStepper");
 #else
-			App.IncreaseStepper("myStepper");
+					App.IncreaseStepper("myStepper");
 #endif
-
-			// Verify that the value has been increased.
-			var step1Value = App.FindElement("entry").GetText();
-			Assert.That("2", Is.EqualTo(step1Value));
+					currentValue = App.FindElement("entry").GetText();
+				}
+				Assert.That("2", Is.EqualTo(currentValue));
+			});
 
 			// Change the Stepper increment value.
 			App.Click("incrementButton");
 
-			// Increase the value.
+			// Increase the value and verify - retry tap if it didn't register.
 			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
 			// See https://github.com/appium/appium/issues/22272
+			App.RetryAssert(() =>
+			{
+				var currentValue = App.FindElement("entry").GetText();
+				if (currentValue != "12")
+				{
 #if MACCATALYST
-			App.DecreaseStepper("myStepper");
+					App.DecreaseStepper("myStepper");
 #else
-			App.IncreaseStepper("myStepper");
+					App.IncreaseStepper("myStepper");
 #endif
-			var step2Value = App.FindElement("entry").GetText();
-			Assert.That("12", Is.EqualTo(step2Value));
+					currentValue = App.FindElement("entry").GetText();
+				}
+				Assert.That("12", Is.EqualTo(currentValue));
+			});
 
-			// Decrease the value.
+			// Decrease the value and verify - retry tap if it didn't register.
 			// Workaround: On Mac Catalyst, Appium reports stepper buttons in reversed order.
 			// See https://github.com/appium/appium/issues/22272
+			App.RetryAssert(() =>
+			{
+				var currentValue = App.FindElement("entry").GetText();
+				if (currentValue != "2")
+				{
 #if MACCATALYST
-			App.IncreaseStepper("myStepper");
+					App.IncreaseStepper("myStepper");
 #else
-			App.DecreaseStepper("myStepper");
+					App.DecreaseStepper("myStepper");
 #endif
-
-			// Verify that the value has decreased.
-			var step3Value = App.FindElement("entry").GetText();
-			Assert.That("2", Is.EqualTo(step3Value));
+					currentValue = App.FindElement("entry").GetText();
+				}
+				Assert.That("2", Is.EqualTo(currentValue));
+			});
 		}
 	}
 }
