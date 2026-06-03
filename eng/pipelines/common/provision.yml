@@ -225,10 +225,14 @@ steps:
         echo "Installing iOS $MAJOR.$MINOR simulator runtime..."
         DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
 
+        echo "\$ sudo xcodebuild $DOWNLOAD_ARGS"
         RC=0
         sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
         if [[ "$RC" != "0" ]]; then
-          echo "First attempt failed with exit code $RC, deleting all simulator runtimes and trying again..."
+          echo "First attempt failed with exit code $RC, deleting all simulator runtimes"
+          echo "Simulators to delete:"
+          xcrun simctl runtime list
+          echo '$ sudo xcrun simctl runtime delete all'
           sudo xcrun simctl runtime delete all
           # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
           for i in $(seq 1 300); do
@@ -251,8 +255,16 @@ steps:
         # Also download the default/unpinned simulator version
 
         echo "Installing the default iOS simulator runtime..."
+        echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal"
         RC=0
         sudo xcodebuild -downloadPlatform iOS -architectureVariant universal || RC=$?
+        echo "Installation result: $RC"
+
+        echo "And finally try to download the default (non-universal) simulator. This should succeed immediately if installing the universal simulator worked."
+        echo "\$ sudo xcodebuild -downloadPlatform iOS"
+        RC=0
+        sudo xcodebuild -downloadPlatform iOS || RC=$?
+        echo "Installation result: $RC"
 
         # Verify the simulator runtime was actually installed
         echo "Verifying simulator runtimes..."
