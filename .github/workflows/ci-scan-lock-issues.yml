@@ -1,0 +1,55 @@
+name: Lock CI scanner issues
+
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to lock if it has a CI scanner label"
+        required: true
+        type: number
+
+permissions:
+  issues: write
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'dotnet' }}
+    steps:
+      - name: Lock scanner issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          set -euo pipefail
+
+          issue_json="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}")"
+
+          if [ "$(jq -r 'has("pull_request")' <<< "${issue_json}")" = "true" ]; then
+            echo "Skipping #${ISSUE_NUMBER}; it is a pull request."
+            exit 0
+          fi
+
+          labels="$(jq -r '.labels[].name' <<< "${issue_json}")"
+          scanner_label=""
+          for label in ci-scan ci-scan-net11; do
+            if printf '%s\n' "${labels}" | grep -Fxq "${label}"; then
+              scanner_label="${label}"
+              break
+            fi
+          done
+
+          if [ -z "${scanner_label}" ]; then
+            echo "Skipping #${ISSUE_NUMBER}; no CI scanner label is present."
+            exit 0
+          fi
+
+          if [ "$(jq -r '.locked' <<< "${issue_json}")" = "true" ]; then
+            echo "Issue #${ISSUE_NUMBER} is already locked."
+            exit 0
+          fi
+
+          gh issue lock "${ISSUE_NUMBER}" --repo "${GITHUB_REPOSITORY}"
+          echo "Locked ${scanner_label} issue #${ISSUE_NUMBER}."
