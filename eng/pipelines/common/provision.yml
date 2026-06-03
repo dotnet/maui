@@ -228,32 +228,32 @@ steps:
         echo "\$ sudo xcodebuild $DOWNLOAD_ARGS"
         RC=0
         sudo xcodebuild $DOWNLOAD_ARGS || RC=$?
-        if [[ "$RC" != "0" ]]; then
-          echo "First attempt failed with exit code $RC, deleting all simulator runtimes"
-          echo "Simulators to delete:"
-          xcrun simctl runtime list
-          echo '$ sudo xcrun simctl runtime delete all'
-          sudo xcrun simctl runtime delete all
-          # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
-          for i in $(seq 1 300); do
-            sleep 1
-            C=$(xcrun simctl runtime list -j | jq '. | length')
-            if [[ $C == 0 ]]; then
-              break
-            fi
-            # every 60 seconds print the simulators left to delete
-            if [[ $(( i % 60)) == 0 ]]; then
-              printf "Simulators left to delete:\n"
-              xcrun simctl runtime list
-            fi
-            echo "    still $C simulators left..."
-          done
-          echo "Re-trying simulator runtime installation..."
-          sudo xcodebuild $DOWNLOAD_ARGS
-        fi
+        echo "Installation result: $RC"
+        # if [[ "$RC" != "0" ]]; then
+        #   echo "First attempt failed with exit code $RC, deleting all simulator runtimes"
+        #   echo "Simulators to delete:"
+        #   xcrun simctl runtime list
+        #   echo '$ sudo xcrun simctl runtime delete all'
+        #   sudo xcrun simctl runtime delete all
+        #   # simulator runtimes are deleted asynchronously, so wait until they're all gone (but max 60 seconds)
+        #   for i in $(seq 1 300); do
+        #     sleep 1
+        #     C=$(xcrun simctl runtime list -j | jq '. | length')
+        #     if [[ $C == 0 ]]; then
+        #       break
+        #     fi
+        #     # every 60 seconds print the simulators left to delete
+        #     if [[ $(( i % 60)) == 0 ]]; then
+        #       printf "Simulators left to delete:\n"
+        #       xcrun simctl runtime list
+        #     fi
+        #     echo "    still $C simulators left..."
+        #   done
+        #   echo "Re-trying simulator runtime installation..."
+        #   sudo xcodebuild $DOWNLOAD_ARGS
+        # fi
 
         # Also download the default/unpinned simulator version
-
         echo "Installing the default iOS simulator runtime..."
         echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal"
         RC=0
