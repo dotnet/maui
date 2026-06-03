@@ -59,6 +59,8 @@ public partial class Maui35564 : ContentPage
 		/// Scenario A: RelativeSource binding without x:DataType directly on the binding node.
 		/// The DataTemplate's inherited x:DataType (Maui35564Item) must NOT be used to validate
 		/// the RelativeSource binding's resolved ancestor (the Maui35564 page).
+		/// For SourceGen, AncestorType should be resolved as the canonical source type and
+		/// compiled to TypedBinding even without x:DataType on the binding node.
 		/// </summary>
 		[Theory]
 		[XamlInflatorData]
@@ -84,6 +86,12 @@ public partial class Maui35564 : ContentPage
 
 				Assert.NotNull(tapGesture.Command);
 				Assert.Same(page.ItemTappedCommand, tapGesture.Command);
+
+				if (inflator == XamlInflator.SourceGen)
+				{
+					var binding = tapGesture.GetContext(TapGestureRecognizer.CommandProperty).Bindings.GetValue();
+					Assert.IsAssignableFrom<TypedBindingBase>(binding);
+				}
 			}
 			finally
 			{
@@ -166,6 +174,42 @@ public partial class Maui35564 : ContentPage
 				// If the inherited x:DataType were applied, the Self source would be nulled out
 				// and Text would be null or empty.
 				Assert.Equal("scenario-c", label.Text);
+			}
+			finally
+			{
+				AppContext.SetSwitch(FeatureSwitch, false);
+			}
+		}
+
+		/// <summary>
+		/// Scenario D: {RelativeSource Self} with x:DataType directly on the binding node.
+		/// Self bindings should not be compiled to TypedBinding, even with explicit x:DataType,
+		/// because the source is the view element itself.
+		/// </summary>
+		[Theory]
+		[XamlInflatorData]
+		internal void RelativeSourceSelfWithExplicitXDataTypeStaysUncompiled(XamlInflator inflator)
+		{
+			AppContext.SetSwitch(FeatureSwitch, true);
+			try
+			{
+				var page = new Maui35564(inflator);
+				page.BindingContext = page;
+
+				var itemLayout = page.TheCollectionView4.ItemTemplate.CreateContent() as VerticalStackLayout;
+				Assert.NotNull(itemLayout);
+
+				itemLayout.BindingContext = new Maui35564Item { Name = "Test" };
+
+				var label = itemLayout.Children[0] as Label;
+				Assert.NotNull(label);
+				Assert.Equal("scenario-d", label.Text);
+
+				if (inflator == XamlInflator.SourceGen)
+				{
+					var binding = label.GetContext(Label.TextProperty).Bindings.GetValue();
+					Assert.IsNotAssignableFrom<TypedBindingBase>(binding);
+				}
 			}
 			finally
 			{

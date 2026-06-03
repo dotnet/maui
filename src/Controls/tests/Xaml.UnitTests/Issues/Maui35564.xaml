@@ -57,5 +57,19 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+        <!-- Scenario D: {RelativeSource Self} with x:DataType explicitly on the binding node.
+             Even with explicit x:DataType, Self bindings should stay uncompiled because the
+             source is the element itself and not inferred from a model type annotation. -->
+        <CollectionView x:Name="TheCollectionView4"
+            ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui35564Item">
+                    <VerticalStackLayout>
+                        <Label AutomationId="scenario-d"
+                               Text="{Binding AutomationId, x:DataType=Label, Source={RelativeSource Self}}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
     </VerticalStackLayout>
 </ContentPage>
