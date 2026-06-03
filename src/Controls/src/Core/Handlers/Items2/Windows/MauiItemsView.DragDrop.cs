@@ -24,6 +24,10 @@ internal partial class MauiItemsView
 {
 	// Drag and drop fields
 	object? _draggedItem;
+	// Flat source index of the dragged container, captured at DragStarting.
+	// Used by PerformReorder to disambiguate value-equal duplicates (record structs,
+	// boxed primitives, repeated entries) where IndexOfItem would return the first match.
+	int _draggedSourceIndex = -1;
 	ItemContainer? _sourceContainer;
 	int _insertionIndex = -1;
 	bool _insertAfter;
@@ -85,7 +89,7 @@ internal partial class MauiItemsView
 	/// <summary>
 	/// Convenience accessor that exposes the templated ItemsRepeater.
 	/// </summary>
-	ItemsRepeater? ItemsRepeaterControl => _itemsRepeater as ItemsRepeater;
+	internal ItemsRepeater? ItemsRepeaterControl => _itemsRepeater as ItemsRepeater;
 
 	/// <summary>
 	/// Sets a reference to the MAUI ItemsView for accessing the original ItemsSource
@@ -391,6 +395,7 @@ internal partial class MauiItemsView
 		}
 
 		_draggedItem = item;
+		_draggedSourceIndex = GetContainerIndex(itemContainer);
 		_sourceContainer = itemContainer;
 
 		args.Data.Properties.Add("DragSource", "MauiItemsView");
@@ -666,7 +671,25 @@ internal partial class MauiItemsView
 			return false;
 		}
 
-		int oldIndex = IndexOfItem(_draggedItem, itemsList);
+		// Prefer the source index captured at DragStarting so value-equal duplicates
+		// (record structs, boxed primitives, two equal entries) resolve to the row the
+		// user actually dragged. Validate it still points at an equal item — if a
+		// concurrent insert/remove shifted the row, fall back to a linear search.
+		int oldIndex = -1;
+		if (_draggedSourceIndex >= 0 && _draggedSourceIndex < itemsList.Count)
+		{
+			var candidate = GetItemAtIndex(_draggedSourceIndex, itemsList);
+			if (ReferenceEquals(candidate, _draggedItem) || Equals(candidate, _draggedItem))
+			{
+				oldIndex = _draggedSourceIndex;
+			}
+		}
+
+		if (oldIndex < 0)
+		{
+			oldIndex = IndexOfItem(_draggedItem, itemsList);
+		}
+
 		if (oldIndex < 0)
 		{
 			return false;
@@ -1247,6 +1270,7 @@ internal partial class MauiItemsView
 		RestoreAllContainerOpacity();
 
 		_draggedItem = null;
+		_draggedSourceIndex = -1;
 		_insertionIndex = -1;
 		_insertAfter = false;
 		StopAutoScroll();

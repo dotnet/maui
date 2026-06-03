@@ -4,20 +4,22 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
-using WASDKScrollingScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;	
+using WASDKScrollingScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal static class ItemsViewExtensions
 	{
-		internal static FrameworkElement RealizeEmptyViewTemplate(object? bindingContext, DataTemplate? emptyViewTemplate, IMauiContext mauiContext, ref View? mauiEmptyView)
+		internal static FrameworkElement RealizeEmptyViewTemplate(object? bindingContext, DataTemplate? emptyViewTemplate, IMauiContext mauiContext, ref View? mauiEmptyView, BindableObject? container = null)
 		{
 			if (emptyViewTemplate is null)
 			{
 				return CreateDefaultEmptyViewTextBlock(bindingContext);
 			}
 
-			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
+			// Pass the owning ItemsView as the container so DataTemplateSelector
+			// implementations can inspect it (parity with iOS/Android/Tizen).
+			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, container);
 
 			var view = template.CreateContent() as View;
 			if (view is not null)
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return platformView as FrameworkElement ?? throw new InvalidOperationException("Unable to convert view to FrameworkElement");
 		}
 
-		internal static FrameworkElement RealizeHeaderFooterTemplate(object? bindingContext, DataTemplate? template, IMauiContext mauiContext, ref View? mauiView)
+		internal static FrameworkElement RealizeHeaderFooterTemplate(object? bindingContext, DataTemplate? template, IMauiContext mauiContext, ref View? mauiView, BindableObject? container = null)
 		{
 			if (template is null)
 			{
@@ -58,7 +60,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				};
 			}
 
-			var dataTemplate = template.SelectDataTemplate(bindingContext, null);
+			// Pass the owning ItemsView as the container so DataTemplateSelector
+			// implementations can inspect it (parity with iOS/Android/Tizen).
+			var dataTemplate = template.SelectDataTemplate(bindingContext, container);
 			var view = dataTemplate.CreateContent() as View;
 			if (view is not null)
 			{

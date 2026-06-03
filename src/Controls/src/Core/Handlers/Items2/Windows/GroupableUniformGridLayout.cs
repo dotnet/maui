@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -20,140 +22,70 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		double _estimatedHeaderVerticalExtent = DefaultEstimatedHeaderExtent;
 		double _estimatedHeaderHorizontalExtent = DefaultEstimatedHeaderExtent;
 
+		readonly List<double> _bandStartOffsets = new();
+		readonly List<double> _bandEndOffsets = new();
+		readonly List<double> _bandExtents = new();
+		readonly List<int> _bandStartIndices = new();
+		readonly List<int> _bandEndIndices = new();
+
+		int[] _itemToBand = Array.Empty<int>();
+		bool _bandCacheValid;
+		int _bandCacheItemCount = -1;
+		int _bandCacheSpan;
+		bool _bandCacheIsVertical;
+		double _bandCacheRegularExtent;
+		double _bandCacheHeaderExtent;
+		double _bandCacheSpacing;
+		double _cachedTotalPrimaryExtent;
+
 		protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
 		{
 			if (context.ItemCount == 0)
 			{
+				InvalidateBandCache();
 				return new Size(0, 0);
 			}
 
 			var span = Math.Max(1, MaximumRowsOrColumns);
-			var minColumnSpacing = MinColumnSpacing;
-			var minRowSpacing = MinRowSpacing;
 			var isVerticalOrientation = Orientation == Orientation.Horizontal;
+
+			EnsureBandCache(context, span, isVerticalOrientation);
 			var realizationRange = GetRealizationIndexRange(context, span, isVerticalOrientation);
 
-			double totalHeight = 0;
-			double totalWidth = 0;
-			double maxItemSize = 0;
-			int columnIndex = 0;
-			int rowIndex = 0;
+			double maxMeasuredRegular = 0;
+			double maxMeasuredHeader = 0;
 
-			// Iterate all indices for layout math, but realize only the visible realization window.
-			for (int i = 0; i < context.ItemCount; i++)
+			for (int i = realizationRange.start; i <= realizationRange.end; i++)
 			{
-				bool shouldRealize = i >= realizationRange.start && i <= realizationRange.end;
-				bool isHeaderOrFooter = IsHeaderOrFooterContext(context, i);
-				double elementPrimarySize;
+				var element = context.GetOrCreateElementAt(i);
+				element.Measure(availableSize);
 
-				if (shouldRealize)
-				{
-					var element = context.GetOrCreateElementAt(i);
-					element.Measure(availableSize);
-					isHeaderOrFooter = IsHeaderOrFooter(element);
-					elementPrimarySize = isVerticalOrientation
-						? element.DesiredSize.Height
-						: element.DesiredSize.Width;
-
-					if (isHeaderOrFooter)
-					{
-						if (isVerticalOrientation)
-							_estimatedHeaderVerticalExtent = elementPrimarySize;
-						else
-							_estimatedHeaderHorizontalExtent = elementPrimarySize;
-					}
-					else
-					{
-						if (isVerticalOrientation)
-							_estimatedVerticalRegularExtent = elementPrimarySize;
-						else
-							_estimatedHorizontalRegularExtent = elementPrimarySize;
-					}
-				}
-				else
-				{
-					elementPrimarySize = GetEstimatedPrimarySize(isVerticalOrientation, isHeaderOrFooter);
-				}
+				bool isHeaderOrFooter = IsHeaderOrFooter(element);
+				double primaryExtent = isVerticalOrientation ? element.DesiredSize.Height : element.DesiredSize.Width;
 
 				if (isHeaderOrFooter)
 				{
-					if (isVerticalOrientation)
-					{
-						// Complete current row if needed
-						if (columnIndex > 0)
-						{
-							totalHeight += maxItemSize + minRowSpacing;
-							columnIndex = 0;
-							maxItemSize = 0;
-						}
-						// Add header height
-						totalHeight += elementPrimarySize + minRowSpacing;
-					}
-					else
-					{
-						// Complete current column if needed
-						if (rowIndex > 0)
-						{
-							totalWidth += maxItemSize + minColumnSpacing;
-							rowIndex = 0;
-							maxItemSize = 0;
-						}
-						// Add header width
-						totalWidth += elementPrimarySize + minColumnSpacing;
-					}
+					maxMeasuredHeader = Math.Max(maxMeasuredHeader, primaryExtent);
 				}
 				else
 				{
-					if (isVerticalOrientation)
-					{
-						maxItemSize = Math.Max(maxItemSize, elementPrimarySize);
-						columnIndex++;
-
-						if (columnIndex >= span)
-						{
-							totalHeight += maxItemSize + minRowSpacing;
-							columnIndex = 0;
-							maxItemSize = 0;
-						}
-					}
-					else
-					{
-						maxItemSize = Math.Max(maxItemSize, elementPrimarySize);
-						rowIndex++;
-
-						if (rowIndex >= span)
-						{
-							totalWidth += maxItemSize + minColumnSpacing;
-							rowIndex = 0;
-							maxItemSize = 0;
-						}
-					}
+					maxMeasuredRegular = Math.Max(maxMeasuredRegular, primaryExtent);
 				}
 			}
 
-			// Add final incomplete row/column
+			bool changed = UpdateEstimates(isVerticalOrientation, maxMeasuredRegular, maxMeasuredHeader);
+			if (changed)
+			{
+				InvalidateBandCache();
+				EnsureBandCache(context, span, isVerticalOrientation);
+			}
+
 			if (isVerticalOrientation)
 			{
-				if (columnIndex > 0)
-				{
-					totalHeight += maxItemSize;
-				}
-
-				// Calculate width based on span
-				totalWidth = availableSize.Width;
-			}
-			else
-			{
-				if (rowIndex > 0)
-				{
-					totalWidth += maxItemSize;
-				}
-
-				// Calculate height based on span
-				totalHeight = availableSize.Height;
+				return new Size(availableSize.Width, _cachedTotalPrimaryExtent);
 			}
 
-			return new Size(totalWidth, totalHeight);
+			return new Size(_cachedTotalPrimaryExtent, availableSize.Height);
 		}
 
 		protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
@@ -166,166 +98,86 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var span = Math.Max(1, MaximumRowsOrColumns);
 			var minColumnSpacing = MinColumnSpacing;
 			var minRowSpacing = MinRowSpacing;
-			var isVerticalOrientation = Orientation == Orientation.Horizontal; // Horizontal orientation means vertical scrolling (items flow left-to-right, stacking vertically)
+			var isVerticalOrientation = Orientation == Orientation.Horizontal;
+
+			EnsureBandCache(context, span, isVerticalOrientation);
 			var realizationRange = GetRealizationIndexRange(context, span, isVerticalOrientation);
 
-			double currentX = 0;
-			double currentY = 0;
-			double cellWidth = 0;
-			double cellHeight = 0;
-			int columnIndex = 0;
-			int rowIndex = 0;
+			double cellWidth;
+			double cellHeight;
 
-			// Calculate cell dimensions based on span and available space
 			if (isVerticalOrientation)
 			{
-				// Vertical grid: divide width by span for column width
 				double totalSpacing = minColumnSpacing * (span - 1);
 				cellWidth = Math.Max(0, (finalSize.Width - totalSpacing) / span);
 				cellHeight = _estimatedVerticalRegularExtent;
 			}
 			else
 			{
-				// Horizontal grid: divide height by span for row height
 				double totalSpacing = minRowSpacing * (span - 1);
 				cellHeight = Math.Max(0, (finalSize.Height - totalSpacing) / span);
 				cellWidth = _estimatedHorizontalRegularExtent;
 			}
 
-			// Iterate all indices for coordinate calculation, but only realize/arrange within the realization window.
-			for (int i = 0; i < context.ItemCount; i++)
-			{
-				bool shouldRealize = i >= realizationRange.start && i <= realizationRange.end;
-				bool isHeaderOrFooter = IsHeaderOrFooterContext(context, i);
-				UIElement? child = null;
+			double maxMeasuredRegular = 0;
+			double maxMeasuredHeader = 0;
 
-				if (shouldRealize)
+			for (int i = realizationRange.start; i <= realizationRange.end; i++)
+			{
+				var child = context.GetOrCreateElementAt(i);
+				bool isHeaderOrFooter = IsHeaderOrFooter(child);
+				int bandIndex = GetBandIndex(i);
+
+				if (bandIndex < 0)
 				{
-					child = context.GetOrCreateElementAt(i);
-					isHeaderOrFooter = IsHeaderOrFooter(child);
+					continue;
 				}
+
+				double bandStart = _bandStartOffsets[bandIndex];
+				double bandExtent = _bandExtents[bandIndex];
 
 				if (isHeaderOrFooter)
 				{
-					// Header/Footer: Span full width (vertical grid) or full height (horizontal grid)
 					if (isVerticalOrientation)
 					{
-						// If we're in the middle of a row, complete the row first
-						if (columnIndex > 0)
-						{
-							currentY += cellHeight + minRowSpacing;
-							currentX = 0;
-							columnIndex = 0;
-						}
-
-						// Vertical grid: header spans full width
-						var headerHeight = shouldRealize && child is not null
-							? child.DesiredSize.Height
-							: _estimatedHeaderVerticalExtent;
-						if (shouldRealize && child is not null)
-						{
-							var headerRect = new Rect(0, currentY, finalSize.Width, headerHeight);
-							child.Arrange(headerRect);
-							_estimatedHeaderVerticalExtent = headerHeight;
-						}
-
-						// Move to next row
-						currentY += headerHeight + minRowSpacing;
+						child.Arrange(new Rect(0, bandStart, finalSize.Width, bandExtent));
+						maxMeasuredHeader = Math.Max(maxMeasuredHeader, child.DesiredSize.Height);
 					}
 					else
 					{
-						// If we're in the middle of a column, complete the column first
-						if (rowIndex > 0)
-						{
-							currentX += cellWidth + minColumnSpacing;
-							currentY = 0;
-							rowIndex = 0;
-						}
-
-						// Horizontal grid: header spans full height
-						var headerWidth = shouldRealize && child is not null
-							? child.DesiredSize.Width
-							: _estimatedHeaderHorizontalExtent;
-						if (shouldRealize && child is not null)
-						{
-							var headerRect = new Rect(currentX, 0, headerWidth, finalSize.Height);
-							child.Arrange(headerRect);
-							_estimatedHeaderHorizontalExtent = headerWidth;
-						}
-
-						// Move to next column
-						currentX += headerWidth + minColumnSpacing;
+						child.Arrange(new Rect(bandStart, 0, bandExtent, finalSize.Height));
+						maxMeasuredHeader = Math.Max(maxMeasuredHeader, child.DesiredSize.Width);
 					}
 				}
 				else
 				{
-					// Regular item: Place in grid cell
+					int slot = i - _bandStartIndices[bandIndex];
 					if (isVerticalOrientation)
 					{
-						// Vertical grid: items flow left-to-right
-						if (shouldRealize && child is not null)
-						{
-							var itemRect = new Rect(currentX, currentY, cellWidth, cellHeight);
-							child.Arrange(itemRect);
-							_estimatedVerticalRegularExtent = Math.Max(_estimatedVerticalRegularExtent, child.DesiredSize.Height);
-						}
-
-						columnIndex++;
-						currentX += cellWidth + minColumnSpacing;
-
-						if (columnIndex >= span)
-						{
-							// Move to next row
-							columnIndex = 0;
-							currentX = 0;
-							currentY += cellHeight + minRowSpacing;
-						}
+						double x = slot * (cellWidth + minColumnSpacing);
+						child.Arrange(new Rect(x, bandStart, cellWidth, bandExtent));
+						maxMeasuredRegular = Math.Max(maxMeasuredRegular, child.DesiredSize.Height);
 					}
 					else
 					{
-						// Horizontal grid: items flow top-to-bottom
-						if (shouldRealize && child is not null)
-						{
-							var itemRect = new Rect(currentX, currentY, cellWidth, cellHeight);
-							child.Arrange(itemRect);
-							_estimatedHorizontalRegularExtent = Math.Max(_estimatedHorizontalRegularExtent, child.DesiredSize.Width);
-						}
-
-						rowIndex++;
-						currentY += cellHeight + minRowSpacing;
-
-						if (rowIndex >= span)
-						{
-							// Move to next column
-							rowIndex = 0;
-							currentY = 0;
-							currentX += cellWidth + minColumnSpacing;
-						}
+						double y = slot * (cellHeight + minRowSpacing);
+						child.Arrange(new Rect(bandStart, y, bandExtent, cellHeight));
+						maxMeasuredRegular = Math.Max(maxMeasuredRegular, child.DesiredSize.Width);
 					}
 				}
 			}
 
-			// Calculate total size
+			if (UpdateEstimates(isVerticalOrientation, maxMeasuredRegular, maxMeasuredHeader))
+			{
+				InvalidateBandCache();
+			}
+
 			if (isVerticalOrientation)
 			{
-				// Add final row height if we have items in the current row
-				if (columnIndex > 0)
-				{
-					currentY += cellHeight;
-				}
-				// Return the actual height needed (don't clamp to finalSize.Height)
-				return new Size(finalSize.Width, currentY);
+				return new Size(finalSize.Width, _cachedTotalPrimaryExtent);
 			}
-			else
-			{
-				// Add final column width if we have items in the current column
-				if (rowIndex > 0)
-				{
-					currentX += cellWidth;
-				}
-				// Return the actual width needed (don't clamp to finalSize.Width)
-				return new Size(currentX, finalSize.Height);
-			}
+
+			return new Size(_cachedTotalPrimaryExtent, finalSize.Height);
 		}
 
 		(double start, double end) GetRealizationPrimaryRange(VirtualizingLayoutContext context, bool isVerticalOrientation)
@@ -345,21 +197,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return (0, -1);
 			}
 
-			var (realizationStart, realizationEnd) = GetRealizationPrimaryRange(context, isVerticalOrientation);
-			double estimatedRegular = GetEstimatedPrimarySize(isVerticalOrientation, isHeaderOrFooter: false);
-			double spacing = isVerticalOrientation ? MinRowSpacing : MinColumnSpacing;
+			EnsureBandCache(context, span, isVerticalOrientation);
+			if (_bandStartIndices.Count == 0)
+			{
+				return (0, context.ItemCount - 1);
+			}
 
-			double step = Math.Max(1, estimatedRegular + spacing);
-			int startBand = (int)Math.Floor(realizationStart / step) - RealizationBufferRowsOrColumns;
-			int endBand = (int)Math.Ceiling(realizationEnd / step) + RealizationBufferRowsOrColumns;
+			var (realizationStart, realizationEnd) = GetRealizationPrimaryRange(context, isVerticalOrientation);
+
+			int startBand = FindBandByOffset(realizationStart) - RealizationBufferRowsOrColumns;
+			int endBand = FindBandByOffset(realizationEnd) + RealizationBufferRowsOrColumns;
 
 			startBand = Math.Max(0, startBand);
-			endBand = Math.Max(startBand, endBand);
+			endBand = Math.Min(_bandStartIndices.Count - 1, endBand);
+			if (endBand < startBand)
+			{
+				endBand = startBand;
+			}
 
-			int startIndex = Math.Max(0, (startBand * span) - span);
-			int endIndex = Math.Min(context.ItemCount - 1, ((endBand + 1) * span) - 1 + span);
-
-			return (startIndex, endIndex);
+			return (_bandStartIndices[startBand], _bandEndIndices[endBand]);
 		}
 
 		double GetEstimatedPrimarySize(bool isVerticalOrientation, bool isHeaderOrFooter)
@@ -391,6 +247,210 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return child is ItemContainer itemContainer
 				&& itemContainer.Child is ElementWrapper wrapper
 				&& wrapper.IsHeaderOrFooter;
+		}
+
+		void EnsureBandCache(VirtualizingLayoutContext context, int span, bool isVerticalOrientation)
+		{
+			double regularExtent = GetEstimatedPrimarySize(isVerticalOrientation, isHeaderOrFooter: false);
+			double headerExtent = GetEstimatedPrimarySize(isVerticalOrientation, isHeaderOrFooter: true);
+			double spacing = isVerticalOrientation ? MinRowSpacing : MinColumnSpacing;
+
+			if (_bandCacheValid
+				&& _bandCacheItemCount == context.ItemCount
+				&& _bandCacheSpan == span
+				&& _bandCacheIsVertical == isVerticalOrientation
+				&& Math.Abs(_bandCacheRegularExtent - regularExtent) < 0.1
+				&& Math.Abs(_bandCacheHeaderExtent - headerExtent) < 0.1
+				&& Math.Abs(_bandCacheSpacing - spacing) < 0.1)
+			{
+				return;
+			}
+
+			RebuildBandCache(context, span, isVerticalOrientation, regularExtent, headerExtent, spacing);
+		}
+
+		void RebuildBandCache(VirtualizingLayoutContext context, int span, bool isVerticalOrientation, double regularExtent, double headerExtent, double spacing)
+		{
+			_bandStartOffsets.Clear();
+			_bandEndOffsets.Clear();
+			_bandExtents.Clear();
+			_bandStartIndices.Clear();
+			_bandEndIndices.Clear();
+			_cachedTotalPrimaryExtent = 0;
+
+			if (_itemToBand.Length != context.ItemCount)
+			{
+				_itemToBand = new int[context.ItemCount];
+			}
+
+			Array.Fill(_itemToBand, -1);
+
+			double currentPrimary = 0;
+			int runStart = -1;
+			int runCount = 0;
+
+			for (int i = 0; i < context.ItemCount; i++)
+			{
+				if (IsHeaderOrFooterContext(context, i))
+				{
+					if (runCount > 0)
+					{
+						AddRegularBands(runStart, runCount, span, regularExtent, spacing, ref currentPrimary);
+						runStart = -1;
+						runCount = 0;
+					}
+
+					AddBand(i, i, isHeader: true, headerExtent, spacing, ref currentPrimary);
+				}
+				else
+				{
+					if (runStart < 0)
+					{
+						runStart = i;
+					}
+
+					runCount++;
+				}
+			}
+
+			if (runCount > 0)
+			{
+				AddRegularBands(runStart, runCount, span, regularExtent, spacing, ref currentPrimary);
+			}
+
+			_cachedTotalPrimaryExtent = currentPrimary;
+			_bandCacheValid = true;
+			_bandCacheItemCount = context.ItemCount;
+			_bandCacheSpan = span;
+			_bandCacheIsVertical = isVerticalOrientation;
+			_bandCacheRegularExtent = regularExtent;
+			_bandCacheHeaderExtent = headerExtent;
+			_bandCacheSpacing = spacing;
+		}
+
+		void AddRegularBands(int runStart, int runCount, int span, double regularExtent, double spacing, ref double currentPrimary)
+		{
+			int regularRunEnd = runStart + runCount - 1;
+			int bandCount = (runCount + span - 1) / span;
+
+			for (int band = 0; band < bandCount; band++)
+			{
+				int bandStart = runStart + (band * span);
+				int bandEnd = Math.Min(regularRunEnd, bandStart + span - 1);
+				AddBand(bandStart, bandEnd, isHeader: false, regularExtent, spacing, ref currentPrimary);
+			}
+		}
+
+		void AddBand(int startIndex, int endIndex, bool isHeader, double extent, double spacing, ref double currentPrimary)
+		{
+			if (_bandStartOffsets.Count > 0)
+			{
+				currentPrimary += spacing;
+			}
+
+			double startOffset = currentPrimary;
+			currentPrimary += extent;
+
+			int bandIndex = _bandStartOffsets.Count;
+			_bandStartOffsets.Add(startOffset);
+			_bandEndOffsets.Add(currentPrimary);
+			_bandExtents.Add(extent);
+			_bandStartIndices.Add(startIndex);
+			_bandEndIndices.Add(endIndex);
+
+			for (int i = startIndex; i <= endIndex; i++)
+			{
+				_itemToBand[i] = bandIndex;
+			}
+		}
+
+		int FindBandByOffset(double offset)
+		{
+			int lo = 0;
+			int hi = _bandEndOffsets.Count - 1;
+			if (hi < 0)
+			{
+				return 0;
+			}
+
+			while (lo <= hi)
+			{
+				int mid = lo + ((hi - lo) / 2);
+				if (_bandEndOffsets[mid] < offset)
+				{
+					lo = mid + 1;
+				}
+				else
+				{
+					hi = mid - 1;
+				}
+			}
+
+			return Math.Min(_bandEndOffsets.Count - 1, Math.Max(0, lo));
+		}
+
+		int GetBandIndex(int itemIndex)
+		{
+			if ((uint)itemIndex >= (uint)_itemToBand.Length)
+			{
+				return -1;
+			}
+
+			return _itemToBand[itemIndex];
+		}
+
+		bool UpdateEstimates(bool isVerticalOrientation, double measuredRegular, double measuredHeader)
+		{
+			bool changed = false;
+
+			if (isVerticalOrientation)
+			{
+				if (measuredRegular > _estimatedVerticalRegularExtent + 0.1)
+				{
+					_estimatedVerticalRegularExtent = measuredRegular;
+					changed = true;
+				}
+
+				if (measuredHeader > _estimatedHeaderVerticalExtent + 0.1)
+				{
+					_estimatedHeaderVerticalExtent = measuredHeader;
+					changed = true;
+				}
+			}
+			else
+			{
+				if (measuredRegular > _estimatedHorizontalRegularExtent + 0.1)
+				{
+					_estimatedHorizontalRegularExtent = measuredRegular;
+					changed = true;
+				}
+
+				if (measuredHeader > _estimatedHeaderHorizontalExtent + 0.1)
+				{
+					_estimatedHeaderHorizontalExtent = measuredHeader;
+					changed = true;
+				}
+			}
+
+			return changed;
+		}
+
+		void InvalidateBandCache()
+		{
+			_bandCacheValid = false;
+			_bandCacheItemCount = -1;
+			_cachedTotalPrimaryExtent = 0;
+			//Reset estimates so shrinking items recalculate correctly
+			_estimatedVerticalRegularExtent = DefaultEstimatedRegularExtent;
+			_estimatedHorizontalRegularExtent = DefaultEstimatedRegularExtent;
+			_estimatedHeaderVerticalExtent = DefaultEstimatedHeaderExtent;
+			_estimatedHeaderHorizontalExtent = DefaultEstimatedHeaderExtent;
+		}
+
+		protected override void OnItemsChangedCore(VirtualizingLayoutContext context, object source, NotifyCollectionChangedEventArgs args)
+		{
+			InvalidateBandCache();
+			base.OnItemsChangedCore(context, source, args);
 		}
 	}
 }
