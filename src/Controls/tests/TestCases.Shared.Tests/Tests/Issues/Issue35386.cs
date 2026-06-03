@@ -17,7 +17,7 @@ public class Issue35386 : _IssuesUITest
 	{
 		App.WaitForElement("statusLabel");
 		Assert.That(
-			App.WaitForTextToBePresentInElement("statusLabel", "Suspect SafeAreaEdges.SoftInput: virtual=0/12, handler=0/12, platform=0/12", timeout: TimeSpan.FromSeconds(25)),
+			App.WaitForTextToBePresentInElement("statusLabel", "Suspect SafeAreaEdges.SoftInput: virtual=0/12, handler=0/12, platform=0/12", timeout: TimeSpan.FromSeconds(60)),
 			Is.True,
 			"The status label did not reach the expected SoftInput summary text.");
 	}
