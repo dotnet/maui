@@ -340,27 +340,29 @@ namespace Microsoft.Maui.Platform
 				_keyboardWillHideObserver = null;
 			}
 
-			// Clear stale keyboard state so that re-subscribing later doesn't
-			// pick up a phantom keyboard frame from a previous session (#34846).
+			// If the keyboard was visible when we unsubscribed (e.g. view detached while keyboard
+			// is up), we will never receive the WillHide notification. Clear the stale state now
+			// so that safe-area calculations are correct if the view is later re-attached.
 			if (_isKeyboardShowing)
 			{
-				ClearKeyboardState();
+				_keyboardFrame = CGRect.Empty;
+				_isKeyboardShowing = false;
+				_safeAreaInvalidated = true;
 			}
 		}
 
 		void UpdateKeyboardSubscription()
 		{
-			// Update keyboard subscription based on current SafeAreaEdges settings
-			if (Window != null)
+			// Subscribe only when attached to a window and SoftInput edges are configured.
+			// Always unsubscribe when detached (Window == null) to release the NSNotificationCenter
+			// observer tokens that otherwise retain this MauiView instance and cause memory leaks.
+			if (Window != null && ShouldSubscribeToKeyboardNotifications())
 			{
-				if (ShouldSubscribeToKeyboardNotifications())
-				{
-					SubscribeToKeyboardNotifications();
-				}
-				else
-				{
-					UnsubscribeFromKeyboardNotifications();
-				}
+				SubscribeToKeyboardNotifications();
+			}
+			else
+			{
+				UnsubscribeFromKeyboardNotifications();
 			}
 		}
 
