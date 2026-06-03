@@ -26,7 +26,7 @@ tools:
   github:
     toolsets: [pull_requests, repos, issues, search]
   edit:
-  bash: ["git", "find", "ls", "cat", "grep", "head", "tail", "wc", "curl", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "env", "basename", "dirname", "bash", "sh", "chmod"]
+  bash: ["git", "find", "ls", "cat", "grep", "head", "tail", "wc", "curl", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "basename", "dirname"]
 
 checkout:
   fetch-depth: 50
@@ -71,6 +71,10 @@ steps:
         local code
         code=$(curl -s -o /dev/null -w "%{http_code}" "$url")
         echo "$label: HTTP $code"
+        if [ "$code" -lt 200 ] || [ "$code" -ge 400 ]; then
+          echo "$label connectivity check failed with HTTP $code" >&2
+          exit 1
+        fi
       }
 
       echo "=== AzDO API check ==="
@@ -249,7 +253,9 @@ Normalization rules:
 Search existing issues and PRs before creating anything new — never duplicate:
 - First `search_issues`: `is:issue is:open label:ci-scan in:body "<fingerprint>"`
 - Then `search_issues`: `is:issue is:open label:ci-scan "<normalized-test-or-task>" "<normalized-primary-error>"`
-- Then `search_pull_requests`: `is:pr is:open label:ci-scan in:body "<fingerprint>" OR is:pr is:open in:title "<normalized-test-or-task>" "[ci-scan]"`
+- Then `search_pull_requests` for both open and merged PRs:
+  - `is:pr is:open label:ci-scan in:body "<fingerprint>" OR is:pr is:open in:title "<normalized-test-or-task>" "[ci-scan]"`
+  - `is:pr is:merged label:ci-scan in:body "<fingerprint>" OR is:pr is:merged in:title "<normalized-test-or-task>" "[ci-scan]"`
 
 Every tracking issue body must include this hidden marker exactly once:
 `<!-- ci-scan-fingerprint: <fingerprint> -->`
@@ -262,6 +268,6 @@ Only create a muting PR from an existing tracking issue when all of these are tr
 - The issue body has the matching `ci-scan-fingerprint` marker.
 - The issue author is the trusted GitHub Actions app (`app/github-actions` / `github-actions[bot]`).
 
-Every muting PR body must include the tracking issue link and the same hidden fingerprint marker. If an existing issue or PR is found, do not create another issue; record `existing-issue #N` or `existing-PR #N` in the coverage summary.
+Every muting PR body must include the tracking issue link and the same hidden fingerprint marker. If an existing issue or open/merged PR is found, do not create another issue or PR; record `existing-issue #N`, `existing-PR #N`, or `merged-PR #N` in the coverage summary.
 
 If everything is already covered, call `noop` with a coverage summary.
