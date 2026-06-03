@@ -11,17 +11,8 @@ permissions:
   pull-requests: read
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - ".github/workflows/ci-status-net11.md"
-      - ".github/workflows/ci-status-net11.lock.yml"
   schedule: every 12h
   workflow_dispatch:
-
-if: >-
-  github.event_name == 'schedule' ||
-  github.event_name == 'workflow_dispatch'
 
 engine:
   id: copilot
