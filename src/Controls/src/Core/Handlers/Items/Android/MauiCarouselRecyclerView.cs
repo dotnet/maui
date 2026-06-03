@@ -601,14 +601,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		// https://github.com/dotnet/maui/issues/13323
-		// base.RequestChildFocus starts a focus-driven scroll; cancel it after
-		// calling base so that focus itself still works normally.
+		// base.RequestChildFocus preserves normal focus propagation, but it may
+		// start a focus-driven scroll from an otherwise idle CarouselView.
 		public override void RequestChildFocus(
 			global::Android.Views.View child,
 			global::Android.Views.View focused)
 		{
+			var wasIdleBeforeFocus = ScrollState == RecyclerView.ScrollStateIdle;
+
 			base.RequestChildFocus(child, focused);
-			StopScroll();
+
+			if (wasIdleBeforeFocus && ScrollState != RecyclerView.ScrollStateIdle)
+			{
+				StopScroll();
+			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

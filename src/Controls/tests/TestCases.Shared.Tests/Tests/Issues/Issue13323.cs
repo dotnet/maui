@@ -22,11 +22,12 @@ public class Issue13323 : _IssuesUITest
 		App.WaitForElement("CenterEntry_2", timeout: TimeSpan.FromSeconds(10));
 
 		var positionBefore = App.FindElement("PositionLabel").GetText();
+		Assert.That(positionBefore, Is.EqualTo("Position:2"), $"CarouselView did not reach Position:2 before tapping Entry. Actual: {positionBefore}");
 
 		App.Tap("CenterEntry_2");
 
 		var positionAfter = App.FindElement("PositionLabel").GetText();
-		Assert.That(positionAfter, Is.EqualTo(positionBefore), $"CarouselView jumped after tapping Center-aligned Entry. Before: {positionBefore}, After: {positionAfter}");
+		Assert.That(positionAfter, Is.EqualTo("Position:2"), $"CarouselView jumped after tapping Center-aligned Entry. Before: {positionBefore}, After: {positionAfter}");
 
 		App.DismissKeyboard();
 #if ANDROID
@@ -45,11 +46,12 @@ public class Issue13323 : _IssuesUITest
 		App.WaitForElement("LoopCenterEntry_2", timeout: TimeSpan.FromSeconds(10));
 
 		var positionBefore = App.FindElement("LoopPositionLabel").GetText();
+		Assert.That(positionBefore, Is.EqualTo("LoopPosition:2"), $"Loop CarouselView did not reach LoopPosition:2 before tapping Entry. Actual: {positionBefore}");
 
 		App.Tap("LoopCenterEntry_2");
 
 		var positionAfter = App.FindElement("LoopPositionLabel").GetText();
-		Assert.That(positionAfter, Is.EqualTo(positionBefore), $"CarouselView (Loop=true) jumped after tapping Center-aligned Entry. Before: {positionBefore}, After: {positionAfter}");
+		Assert.That(positionAfter, Is.EqualTo("LoopPosition:2"), $"CarouselView (Loop=true) jumped after tapping Center-aligned Entry. Before: {positionBefore}, After: {positionAfter}");
 
 		App.DismissKeyboard();
 #if ANDROID
