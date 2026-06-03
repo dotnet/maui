@@ -68,6 +68,11 @@ namespace Microsoft.Maui.Controls
 
 		void ApplyMacCatalystMargin()
 		{
+			if (!_isDefaultControlTemplate)
+			{
+				return;
+			}
+
 			if (_templateRoot is not Grid contentGrid)
 			{
 				return;
@@ -343,6 +348,9 @@ namespace Microsoft.Maui.Controls
 
 		static ControlTemplate? _defaultTemplate;
 		View? _templateRoot;
+#if MACCATALYST
+		bool _isDefaultControlTemplate;
+#endif
 
 		public TitleBar()
 		{
@@ -441,6 +449,10 @@ namespace Microsoft.Maui.Controls
 			var controlTemplate = (this as IControlTemplated);
 
 			_templateRoot = controlTemplate?.TemplateRoot as View;
+
+#if MACCATALYST
+			_isDefaultControlTemplate = ReferenceEquals(ControlTemplate, DefaultTemplate);
+#endif
 
 			if (controlTemplate?.GetTemplateChild(TitleBarLeading) is IView leadingContent)
 			{

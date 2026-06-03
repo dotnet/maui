@@ -18,8 +18,16 @@ public class Issue30248 : _IssuesUITest
 	public void VerifyTitleBarContentinFullScreenmode()
 	{
 		App.WaitForElement("TitleBarAlignmentLabel");
-		App.EnterFullScreen();
-		VerifyScreenshot(includeTitleBar: true);
+		try
+		{
+			App.EnterFullScreen();
+			App.WaitForElement("TitleBarAlignmentLabel");
+			VerifyScreenshot(includeTitleBar: true);
+		}
+		finally
+		{
+			App.ExitFullScreen();
+		}
 	}
 }
 #endif
