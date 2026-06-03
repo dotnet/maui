@@ -591,7 +591,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		[InlineData("Runtime")]
 		public void XamlCRunsWhenDeprecatedInflatorUsed(string inflator)
 		{
-			SetUp();
+			// Per-inflator directory so the two Theory rows can't leak a stale XamlC.stamp between them.
+			SetUp($"{nameof(XamlCRunsWhenDeprecatedInflatorUsed)}_{inflator}");
 			var project = NewProject();
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
