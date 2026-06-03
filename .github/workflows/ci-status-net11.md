@@ -41,11 +41,12 @@ safe-outputs:
   create-pull-request:
     title-prefix: "[ci-scan-net11] "
     draft: true
+    base-branch: "net11.0"
     max: 5
     protected-files: blocked
     allowed-files:
-      - "src/**"
-      - "eng/**"
+      - "src/**/tests/**/*.cs"
+      - "src/**/test/**/*.cs"
     labels: [ci-scan-net11]
     allowed-labels: [ci-scan-net11]
   noop:
@@ -212,7 +213,7 @@ Fixes #<N> (or: Linked issue: #<N>)
 Adds `[ActiveIssue]` annotation to skip the flaky test until the root cause is fixed.
 ```
 
-Branch from `origin/net11.0`. Stage only specific files with `git add <path>` — never `git add -A`. Verify with `git diff --name-only --cached` before committing.
+Branch from `origin/net11.0`. Every `create_pull_request` safe-output payload MUST include `base: "net11.0"`; do not rely on the workflow default branch, and do not create a muting PR if you cannot set that base. Stage only specific files with `git add <path>` — never `git add -A`. Verify with `git diff --name-only --cached` before committing.
 
 ## Hard environment constraints
 

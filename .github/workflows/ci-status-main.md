@@ -44,8 +44,8 @@ safe-outputs:
     max: 5
     protected-files: blocked
     allowed-files:
-      - "src/**"
-      - "eng/**"
+      - "src/**/tests/**/*.cs"
+      - "src/**/test/**/*.cs"
     labels: [ci-scan]
     allowed-labels: [ci-scan]
   noop:
