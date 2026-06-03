@@ -1,0 +1,134 @@
+name: Net11 Release Readiness
+
+on:
+  schedule:
+    - cron: "30 8 * * 1-5"  # Weekdays at 8:30 UTC
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Release target: auto, net11.0, net11-previewN, or release/11.0.1xx-previewN"
+        required: false
+        default: "auto"
+      create_issue:
+        description: "Create the daily public Release READY issue"
+        type: boolean
+        required: false
+        default: true
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - '.github/workflows/net11-release-readiness.yml'
+      - '.github/skills/net11-release-readiness/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: net11-release-readiness-${{ github.event_name }}-${{ inputs.target || 'auto' }}
+  cancel-in-progress: true
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate net11 release readiness report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET: ${{ inputs.target || 'auto' }}
+        run: |
+          set +e
+          pwsh .github/skills/net11-release-readiness/scripts/Get-Net11ReleaseReadiness.ps1 \
+            -Target "$TARGET" \
+            -OutputFormat markdown \
+            > net11-release-ready-raw.md 2>net11-release-ready-errors.txt
+          rc=$?
+          set -e
+
+          if [ $rc -ne 0 ]; then
+            echo "::error::Net11 release readiness script failed"
+            cat net11-release-ready-errors.txt
+            exit 1
+          fi
+
+          awk '/^<!-- NET11_RELEASE_READY_BEGIN -->$/{inside=1} inside{print} /^<!-- NET11_RELEASE_READY_END -->$/{inside=0}' \
+            net11-release-ready-raw.md > net11-release-ready-body.md
+
+          if [ ! -s net11-release-ready-body.md ]; then
+            echo "::error::Release readiness report produced empty public output"
+            cat net11-release-ready-errors.txt
+            exit 1
+          fi
+
+          cat net11-release-ready-body.md >> "$GITHUB_STEP_SUMMARY"
+          echo "Generated report:"
+          head -30 net11-release-ready-body.md
+
+      - name: Close previous daily Release READY issues
+        if: github.event_name == 'schedule' || inputs.create_issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue list \
+            --repo ${{ github.repository }} \
+            --search '"[Release READY]" "net11" in:title' \
+            --state open \
+            --json number \
+            --jq '.[].number' | \
+          xargs -I{} gh issue close {} --repo ${{ github.repository }} --reason "not planned" 2>/dev/null || true
+
+      - name: Create daily Release READY issue
+        if: github.event_name == 'schedule' || inputs.create_issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --repo ${{ github.repository }} \
+            --title "[Release READY] net11 $(date -u '+%Y-%m-%d')" \
+            --body-file net11-release-ready-body.md \
+            --label "report" \
+            --label "s/triaged"
+
+  validate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate net11 release readiness report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          pwsh .github/skills/net11-release-readiness/scripts/Get-Net11ReleaseReadiness.ps1 \
+            -Target auto \
+            -OutputFormat markdown \
+            > net11-release-ready-raw.md 2>net11-release-ready-errors.txt
+          rc=$?
+          set -e
+
+          if [ $rc -ne 0 ]; then
+            echo "::error::Net11 release readiness script failed"
+            cat net11-release-ready-errors.txt
+            exit 1
+          fi
+
+          awk '/^<!-- NET11_RELEASE_READY_BEGIN -->$/{inside=1} inside{print} /^<!-- NET11_RELEASE_READY_END -->$/{inside=0}' \
+            net11-release-ready-raw.md > net11-release-ready-body.md
+
+          if [ ! -s net11-release-ready-body.md ]; then
+            echo "::error::Release readiness report produced empty public output"
+            cat net11-release-ready-errors.txt
+            exit 1
+          fi
+
+          echo "Validation passed — report preview:"
+          cat net11-release-ready-body.md
