@@ -26,6 +26,28 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 	private object _selectedValue = null;
 	private object _value = "One";
 
+	public void ResetToDefaults()
+	{
+		BorderColor = Colors.Transparent;
+		BorderWidth = -1d;
+		CharacterSpacing = 0.0d;
+		Content = "Dark Mode";
+		CornerRadius = -1;
+		FlowDirection = FlowDirection.LeftToRight;
+		FontAttributes = FontAttributes.None;
+		FontAutoScalingEnabled = true;
+		FontFamily = null;
+		FontSize = 14d;
+		GroupName = "Theme";
+		IsChecked = false;
+		IsEnabled = true;
+		IsVisible = true;
+		TextColor = Colors.Black;
+		TextTransform = TextTransform.Default;
+		SelectedValue = null;
+		Value = "One";
+	}
+
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	public Color BorderColor
