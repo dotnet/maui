@@ -87,15 +87,28 @@ jobs:
       - name: Check actor permission
         env:
           GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
-          echo "User ${{ github.actor }} has permission: ${PERMISSION}"
-          # /review rerun can queue privileged review infrastructure, so it
-          # uses the same write/maintain/admin gate as /review.
-          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
-            echo "::error::User ${{ github.actor }} does not have sufficient access. Only write/maintain/admin can trigger /review rerun."
-            exit 1
+          PERMISSION=$(gh api "repos/${REPOSITORY}/collaborators/${ACTOR}/permission" --jq '.permission')
+          PR_AUTHOR=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" --jq '.user.login')
+          PR_AUTHOR_ASSOCIATION=$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" --jq '.author_association')
+          echo "User ${ACTOR} has permission: ${PERMISSION}"
+          echo "PR #${PR_NUMBER} author: ${PR_AUTHOR} (${PR_AUTHOR_ASSOCIATION})"
+          # /review rerun can queue privileged review infrastructure. Maintainers
+          # can rerun any PR; non-first-time PR authors can rerun only their own
+          # PR after the deterministic eligibility check confirms new activity.
+          if [[ "${PERMISSION}" == "admin" || "${PERMISSION}" == "maintain" || "${PERMISSION}" == "write" ]]; then
+            exit 0
           fi
+          if [[ "${ACTOR}" == "${PR_AUTHOR}" && "${PR_AUTHOR_ASSOCIATION}" != "FIRST_TIMER" && "${PR_AUTHOR_ASSOCIATION}" != "FIRST_TIME_CONTRIBUTOR" && "${PR_AUTHOR_ASSOCIATION}" != "NONE" ]]; then
+            echo "User ${ACTOR} is a non-first-time PR author; allowing /review rerun."
+            exit 0
+          fi
+
+          echo "::error::User ${ACTOR} does not have sufficient access. Only write/maintain/admin users or non-first-time PR authors can trigger /review rerun."
+          exit 1
 
       - name: Checkout repository scripts
         uses: actions/checkout@v4
