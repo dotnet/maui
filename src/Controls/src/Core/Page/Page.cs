@@ -853,6 +853,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
+			// Prevent duplicate OnNavigatedTo during a single navigation burst (fixes #23902).
 			if (HasNavigatedTo)
 			{
 				return;
@@ -861,7 +862,21 @@ namespace Microsoft.Maui.Controls
 			HasNavigatedTo = true;
 			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+
+			// Cascade to child page (e.g. TabbedPage → CurrentPage).
+			// On Pop, reset the child flag first — a prior tab change while a modal was open
+			// can leave it true, which would incorrectly block the pop-return (fixes #35756).
+			// PopToRoot is excluded: SendNavigatedFrom already resets all flags before PopToRoot cascades.
+			var containerChild = (this as IPageContainer<Page>)?.CurrentPage;
+			if (containerChild is not null)
+			{
+				if (args.NavigationType == NavigationType.Pop)
+				{
+					containerChild.HasNavigatedTo = false;
+				}
+
+				containerChild.SendNavigatedTo(args);
+			}
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
