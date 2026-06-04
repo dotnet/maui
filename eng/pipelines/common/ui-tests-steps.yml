@@ -10,6 +10,7 @@ parameters:
   configuration: "Release"
   runtimeVariant: "Mono"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
+  useWindowsCV2: false # NEW PARAMETER - Enable WindowsCollectionView2Handler test configuration
   testFilter: ''
   headless: true
   testConfigurationArgs: ''
@@ -38,9 +39,14 @@ steps:
     artifact: ui-tests-samples-coreclr
 
 - task: DownloadPipelineArtifact@2
-  condition: eq('${{ parameters.platform }}' , 'windows')
+  condition: and(eq('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.useWindowsCV2 }}', 'false'))
   inputs:
     artifact: ui-tests-samples-windows
+
+- task: DownloadPipelineArtifact@2
+  condition: and(eq('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.useWindowsCV2 }}', 'true'))
+  inputs:
+    artifact: ui-tests-samples-windows-cv2
 
 - ${{ if eq(parameters.platform, 'ios')}}:
   - bash: |

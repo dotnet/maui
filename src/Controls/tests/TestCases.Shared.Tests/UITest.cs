@@ -388,6 +388,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
+						
+						// Check if using CollectionView2 handler (UseWindowsCollectionView2Handler=true)
+						// This uses a separate snapshot directory for visual regression testing
+						var testConfigArgs = App.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+						if (testConfigArgs != null && testConfigArgs.ContainsKey("UseWindowsCV2") && testConfigArgs["UseWindowsCV2"].Equals("true", StringComparison.OrdinalIgnoreCase))
+						{
+							environmentName = "windows-cv2";
+						}
 						break;
 
 					case TestDevice.Mac:

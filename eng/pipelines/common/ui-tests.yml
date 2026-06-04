@@ -115,6 +115,25 @@ stages:
                 platform: windows
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
+  # Windows CV2 Build Stage - Separate build with UseWindowsCollectionView2Handler=true
+  - stage: build_ui_tests_windows_cv2
+    displayName: Build UITests Windows CV2 Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_windows_cv2
+        displayName: Build Sample App (Windows CV2)
+        workspace:
+          clean: all
+        pool: ${{ parameters.windowsBuildPool }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                platform: windows
+                useWindowsCV2: true
+                skipProvisioning: ${{ parameters.skipProvisioning }}
+
   # Material3 Build Stage - Separate build with UseMaterial3=true (Android-only)
   - stage: build_ui_tests_material3
     displayName: Build UITests Material3 Sample App
@@ -524,6 +543,41 @@ stages:
                     parameters:
                       platform: 'Windows'
                       artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
+  # Windows CV2 UI Tests - Testing CollectionView with UseWindowsCollectionView2Handler=true
+  - stage: winui_ui_tests_cv2
+    displayName: WinUI UITests CV2
+    dependsOn: build_ui_tests_windows_cv2
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.winui, '') }}:
+              - job: CV2_winui_ui_tests_${{ project.name }}
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (CV2)
+                pool: ${{ parameters.windowsPool }}
+                variables:
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: windows
+                      version: "10.0.19041.0"
+                      device: windows10
+                      path: ${{ project.winui }}
+                      app: ${{ project.app }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      useWindowsCV2: true
+                      testFilter: "CollectionView"
+                      testConfigurationArgs: "UseWindowsCV2:true"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Windows CV2 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Windows CV2'
+                      artifactName: 'uitest-snapshot-results-windows-cv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: mac_ui_tests
     displayName: macOS UITests
