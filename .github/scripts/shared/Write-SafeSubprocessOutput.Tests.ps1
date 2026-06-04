@@ -441,18 +441,75 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
             'prInfo',         # PR title (and any other field we ever pull from `gh pr view`)
             'content',        # `assistant.message` text (PR-aware agent output)
             'textContent',    # non-JSON catch branch (raw agent stdout)
-            # : variables previously documented
-            # but not actually enforced. `$line` and `$output` flow through
-            # pipeline-style sanitization at multiple sites; `$modelName`
-            # is derived from PR-scope label parsing (see L630 region);
-            # `$resp` is `gh api` response body, which echoes back the
-            # request payload on error and is PR-aware.
+            # Variables previously documented but not actually enforced.
+            # `$line` and `$output` flow through pipeline-style sanitization
+            # at multiple sites; `$modelName` is derived from PR-scope label
+            # parsing; `$resp` is `gh api` response body, which echoes back
+            # the request payload on error and is PR-aware.
             'line',           # generic line variable used in test/UI sanitization loops
             'output',         # generic captured-output buffer in subprocess sites
             'modelName',      # PR-label-derived model identifier
             'resp',           # `gh api` response body (error path)
-            'reviewOutput'    # captured output of post-ai-summary-comment subprocess ( / F1 fix)
+            'reviewOutput'    # captured output of post-ai-summary-comment subprocess
         )
+
+        # Compute the TAINT CLOSURE: any local variable whose value is
+        # derived (via assignment) from a PR-derived variable inherits the
+        # taint. Without this, a bypass like
+        #   $preview = $content.Trim()
+        #   Write-Host $preview            # ← $preview not in PrDerivedVars, so audit misses
+        # passes the inventory check. The walker performs a fixed-point
+        # forward def-use closure over the WHOLE file: each pass adds any
+        # AssignmentStatementAst.Left variable whose RHS subtree contains
+        # a reference to an already-tainted variable. Converges in 1-5
+        # passes typically.
+        $assignAsts = $script:ReviewPRAst.FindAll(
+            { param($n) $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                        $n.Left -is [System.Management.Automation.Language.VariableExpressionAst] },
+            $true)
+        $taintedVars = [System.Collections.Generic.HashSet[string]]::new()
+        foreach ($v in $script:PrDerivedVars) { [void]$taintedVars.Add($v) }
+        $changed = $true
+        $passLimit = 16
+        while ($changed -and $passLimit -gt 0) {
+            $changed = $false
+            $passLimit--
+            foreach ($a in $assignAsts) {
+                $lhsName = $a.Left.VariablePath.UserPath
+                if ($taintedVars.Contains($lhsName)) { continue }
+                $varsInRhs = $a.Right.FindAll(
+                    { param($n) $n -is [System.Management.Automation.Language.VariableExpressionAst] },
+                    $true)
+                foreach ($v in $varsInRhs) {
+                    if ($taintedVars.Contains($v.VariablePath.UserPath)) {
+                        [void]$taintedVars.Add($lhsName)
+                        $changed = $true
+                        break
+                    }
+                }
+            }
+        }
+
+        # Override: variables that are type-bounded to NON-string-tainted
+        # values by their assignment pattern. The closure is conservative
+        # (any def-use reference taints), but these names are assigned
+        # ONLY to numeric counts, fixed emoji literals from script-internal
+        # hashtable lookups, or other structurally-safe values. They cannot
+        # carry an attacker `##vso[…]` payload.
+        # Each entry is documented to the site that justifies its safety.
+        $knownSafeOverrides = @(
+            'icon',          # $icon = $toolIcons[$toolName] — script-internal hashtable with literal emoji values only
+            'apiMs',         # $apiMs = [math]::Round($usage.totalApiDurationMs / 1000, 1) — numeric
+            'filesChanged',  # $filesChanged = @($changes.filesModified).Count — integer
+            'linesAdded',    # $linesAdded = $changes.linesAdded — numeric stat
+            'linesRemoved',  # $linesRemoved = $changes.linesRemoved — numeric stat
+            'toolCount',     # $toolCount++ — integer counter
+            'turnCount',     # $turnCount++ — integer counter
+            'exitCode',      # $exitCode = $LASTEXITCODE — integer
+            'elapsed'        # $elapsed = $stopwatch.Elapsed.ToString("mm\:ss") — formatted-time string from .NET TimeSpan
+        )
+        foreach ($n in $knownSafeOverrides) { [void]$taintedVars.Remove($n) }
+        $script:PrDerivedVarsClosure = $taintedVars
 
         # Cmdlets whose stdout reaches the AzDO agent log parser. All of
         # these are equivalent attack surfaces for `##vso[…]` injection.
@@ -500,7 +557,27 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
         )
         $violations = @()
 
-        # Helper: a variable is "sanitized" if any ancestor of its node
+        # Helper: a variable reference is "safe member access" if its
+        # IMMEDIATE parent is a MemberExpression accessing a member that
+        # cannot carry the tainted string content — count, length, etc.
+        # `$failedTools.Count` evaluates to an integer; the AzDO host
+        # parser will never see the tainted strings inside the collection.
+        # Same for `.Length`, `.Keys`, `.PSObject.TypeNames`, etc.
+        $safeMemberNames = [System.Collections.Generic.HashSet[string]]::new(
+            [string[]]@('Count','Length','Keys','GetType','PSObject','Type'),
+            [System.StringComparer]::OrdinalIgnoreCase)
+        $isSafeMemberAccess = {
+            param($v)
+            $p = $v.Parent
+            if ($p -is [System.Management.Automation.Language.MemberExpressionAst] -and
+                $p.Expression -eq $v -and
+                $p.Member -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+                $safeMemberNames.Contains($p.Member.Value)) {
+                return $true
+            }
+            return $false
+        }
+
         # is a BinaryExpressionAst with the `-replace` (Ireplace) operator
         # and the right-hand side is the canonical AzDO logging-command
         # pattern (`(?i)##(vso\[|\[)`). The RHS of -replace is parsed as
@@ -559,7 +636,7 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
                         }
                         foreach ($v in $varRefs) {
                             $name = $v.VariablePath.UserPath
-                            if ($script:PrDerivedVars -contains $name -and -not (& $isSanitized $v)) {
+                            if ($script:PrDerivedVarsClosure.Contains($name) -and -not (& $isSanitized $v) -and -not (& $isSafeMemberAccess $v)) {
                                 $violations += "L$($call.Extent.StartLineNumber): $emitterName -$($arg.ParameterName):`$$name (colon-form bypass)"
                             }
                         }
@@ -577,7 +654,7 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
                 }
                 foreach ($v in $varRefs) {
                     $name = $v.VariablePath.UserPath
-                    if ($script:PrDerivedVars -contains $name -and -not (& $isSanitized $v)) {
+                    if ($script:PrDerivedVarsClosure.Contains($name) -and -not (& $isSanitized $v) -and -not (& $isSafeMemberAccess $v)) {
                         $shape = $arg.GetType().Name -replace 'ExpressionAst$',''
                         $violations += "L$($call.Extent.StartLineNumber): $emitterName ... `$$name (arg shape: $shape)"
                     }
@@ -638,7 +715,7 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
                 }
                 foreach ($v in $varRefs) {
                     $name = $v.VariablePath.UserPath
-                    if ($script:PrDerivedVars -contains $name) {
+                    if ($script:PrDerivedVarsClosure.Contains($name)) {
                         $violations += "L$($call.Extent.StartLineNumber): [Console]…$($call.Member.Value)(...`$$name...)"
                     }
                 }
