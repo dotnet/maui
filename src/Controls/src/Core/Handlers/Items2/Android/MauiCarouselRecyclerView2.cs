@@ -39,6 +39,15 @@ internal class MauiCarouselRecyclerView2 :
     {
     }
 
+    // Material's CarouselLayoutManager has no virtual-range concept, so the
+    // LoopScale (16384) trick used by the legacy LinearLayoutManager path does
+    // not apply here. Force every Loop-aware code path in the base class to
+    // take the non-loop branch regardless of CarouselView.Loop.
+    // TODO: Remove this override once a true looping mechanism is implemented
+    // for the Material3 handler (e.g. edge-jump strategy, duplicate-buffer
+    // adapter, or a CarouselLayoutManager fork with virtual-range support).
+    protected override bool IsLoopEnabled => false;
+
     // -----------------------------------------------------------------------
     // Layout manager — swap LinearLayoutManager for CarouselLayoutManager
     // -----------------------------------------------------------------------

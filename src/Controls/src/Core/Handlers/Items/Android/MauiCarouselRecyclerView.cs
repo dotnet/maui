@@ -121,12 +121,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual bool IsHorizontal => (Carousel?.ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
+		// Subclasses backed by a layout manager that has no virtual-range concept
+		// (e.g. Material's CarouselLayoutManager) can override this to force the
+		// non-loop code paths regardless of the public Carousel.Loop value.
+		protected virtual bool IsLoopEnabled => Carousel?.Loop == true;
+
 		protected override int DetermineTargetPosition(ScrollToRequestEventArgs args)
 		{
 			if (args.Mode == ScrollToMode.Element)
 				return ItemsViewAdapter.GetPositionForItem(args.Item);
 
-			if (!Carousel.Loop)
+			if (!IsLoopEnabled)
 				return args.Index;
 
 			if (_carouselViewLoopManager == null)
@@ -140,12 +145,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (!IsSwipeEnabled)
-			{
-				return false;
-			}
-
-			if (Carousel.Loop)
+			if (IsLoopEnabled)
 				_carouselViewLoopManager.CenterIfNeeded(this, IsHorizontal);
 
 			return base.OnTouchEvent(e);
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (position == -1)
 			{
 				_gotoPosition = -1;
-				if (Carousel.Loop)
+				if (IsLoopEnabled)
 					_carouselViewLoopManager.AddPendingScrollTo(args);
 
 				return;
@@ -378,7 +378,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				else if (removingLastElement)
 					carouselPosition = Carousel.Position - 1;
 
-				if (Carousel.Loop)
+				if (IsLoopEnabled)
 				{
 					UpdateAdapter();
 					// Sync the loop manager's source so GetGoToIndex uses the correct item count
@@ -517,7 +517,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				int loopedPosition = LoopedPosition(itemCount) + currentPosition;
 				ScrollToPosition(loopedPosition);
 			}
-			else	
+			else
 			{
 				ScrollToPosition(currentPosition);
 			}
@@ -549,7 +549,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				position = Carousel.Position;
-				if (Carousel.Loop && position == 0)
+				if (IsLoopEnabled && position == 0)
 				{
 					itemCount = ItemsViewAdapter.ItemsSource.Count;
 				}
@@ -559,14 +559,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			SetCurrentItem(_oldPosition);
 
-			if (Carousel.Loop)
-			{
-				UpdateLoopCentering(itemCount);
-			}
-			else
-			{
-				ScrollHelper.JumpScrollToPosition(_oldPosition, Microsoft.Maui.Controls.ScrollToPosition.Center);
-			}
+			var index = IsLoopEnabled ? LoopedPosition(itemCount) + _oldPosition : _oldPosition;
+			ScrollHelper.JumpScrollToPosition(index, Microsoft.Maui.Controls.ScrollToPosition.Center);
 			_gotoPosition = -1;
 		}
 
@@ -873,7 +867,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_noNeedForScroll = false;
 			var index = e.CenterItemIndex;
-			if (Carousel?.Loop == true)
+			if (IsLoopEnabled)
 			{
 				index = GetCarouselViewCurrentIndex(index);
 			}
@@ -1004,7 +998,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!_initialized)
 			{
 				ItemsView.Scrolled += CarouselViewScrolled;
-				if (Carousel.Loop)
+				if (IsLoopEnabled)
 				{
 					_carouselViewLoopManager.CenterIfNeeded(this, IsHorizontal);
 					_carouselViewLoopManager.CheckPendingScrollToEvents(this);
