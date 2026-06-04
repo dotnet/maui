@@ -1658,13 +1658,6 @@ if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
     Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]DEFERRED"
 } else {
 
-if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
-    Write-Host "  ⏭️ Deferred to Stage 3 (DEFER_COMMENT_TO_STAGE3=true)" -ForegroundColor Gray
-    Write-Host "  ℹ️  Content files saved in CopilotLogs artifact" -ForegroundColor Gray
-    # Still emit a dummy output var so Stage 3 condition works
-    Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]DEFERRED"
-} else {
-
 # Post PR review phases (pre-flight, try-fix, report)
 $aiSummaryCommentId = $null
 $reviewScript = Join-Path $summaryScriptsDir "post-ai-summary-comment.ps1"

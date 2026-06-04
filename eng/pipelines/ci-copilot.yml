@@ -709,38 +709,6 @@ stages:
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
-              DEFER_COMMENT_TO_STAGE3: "true"
-
-          # Copy review artifacts into the CopilotLogs staging dir.
-          # Uses pwsh (not bash) so paths resolve correctly on Windows.
-          - pwsh: |
-              $logsDir = "$(Build.ArtifactStagingDirectory)/copilot-logs"
-              if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Path $logsDir -Force | Out-Null }
-
-              # CustomAgentLogsTmp (PRAgent content files for Stage 3 comment)
-              if (Test-Path "CustomAgentLogsTmp") {
-                Write-Host "Copying CustomAgentLogsTmp..."
-                Copy-Item -Path "CustomAgentLogsTmp" -Destination $logsDir -Recurse -Force -ErrorAction SilentlyContinue
-              } else {
-                Write-Host "##[warning]CustomAgentLogsTmp not found — Stage 3 comment may be incomplete"
-              }
-
-              # agent-pr-session files
-              if (Test-Path ".github/agent-pr-session") {
-                Write-Host "Copying agent-pr-session..."
-                Copy-Item -Path ".github/agent-pr-session" -Destination $logsDir -Recurse -Force -ErrorAction SilentlyContinue
-              }
-
-              # Review_Feedback files
-              Get-ChildItem -Path . -Filter "Review_Feedback_*.md" -Recurse -ErrorAction SilentlyContinue |
-                ForEach-Object { Copy-Item $_.FullName $logsDir -ErrorAction SilentlyContinue }
-
-              Write-Host "Artifacts staged in $logsDir"
-              Get-ChildItem $logsDir -Recurse -File | Select-Object -First 20 | ForEach-Object {
-                Write-Host "  $($_.FullName.Substring($logsDir.Length))"
-              }
-            displayName: 'Copy review artifacts to staging'
-            condition: succeededOrFailed()
 
           # ─────────────────────────────────────────────────────────
           #  Task 4 — POST: gate comment, AI summary, labels.
