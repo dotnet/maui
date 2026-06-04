@@ -93,15 +93,15 @@ internal static class LayoutFactory2
 		//create global header and footer
 		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
-		CustomUICollectionViewCompositionalLayout? layout = null;
-		layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, layoutHeaderFooterInfo, (sectionIndex, environment) =>
+		var estimatedSizeHolder = new EstimatedItemSizeHolder();
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, layoutHeaderFooterInfo, (sectionIndex, environment) =>
 		{
 			var effectiveItemHeight = itemHeight;
 			var effectiveGroupHeight = groupHeight;
 			var effectiveItemWidth = itemWidth;
 			var effectiveGroupWidth = groupWidth;
 
-			if (layout?.MeasuredEstimatedItemSize is nfloat measuredSize)
+			if (estimatedSizeHolder.Value is nfloat measuredSize)
 			{
 				var estimatedDimension = NSCollectionLayoutDimension.CreateEstimated(measuredSize);
 				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
@@ -164,7 +164,7 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration, itemsLayout);
+		}, layoutConfiguration, itemsLayout, estimatedSizeHolder);
 
 		return layout;
 	}
@@ -176,15 +176,15 @@ internal static class LayoutFactory2
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
 
-		CustomUICollectionViewCompositionalLayout? layout = null;
-		layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
+		var estimatedSizeHolder = new EstimatedItemSizeHolder();
+		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, groupingInfo, headerFooterInfo, (sectionIndex, environment) =>
 		{
 			var effectiveItemHeight = itemHeight;
 			var effectiveGroupHeight = groupHeight;
 			var effectiveItemWidth = itemWidth;
 			var effectiveGroupWidth = groupWidth;
 
-			if (layout?.MeasuredEstimatedItemSize is nfloat measuredSize)
+			if (estimatedSizeHolder.Value is nfloat measuredSize)
 			{
 				var estimatedDimension = NSCollectionLayoutDimension.CreateEstimated(measuredSize);
 				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
@@ -239,7 +239,7 @@ internal static class LayoutFactory2
 				groupHeight);
 
 			return section;
-		}, layoutConfiguration, itemsLayout);
+		}, layoutConfiguration, itemsLayout, estimatedSizeHolder);
 
 		return layout;
 	}
@@ -539,6 +539,15 @@ internal static class LayoutFactory2
 			return false;
 		}
 	}
+	/// <summary>
+	/// Holds the measured estimated item size shared between the layout and its
+	/// section provider closure, avoiding a layout → closure → layout retain cycle.
+	/// </summary>
+	internal sealed class EstimatedItemSizeHolder
+	{
+		internal nfloat? Value { get; set; }
+	}
+
 	internal class CustomUICollectionViewCompositionalLayout : UICollectionViewCompositionalLayout
 	{
 		LayoutSnapInfo _snapInfo;
@@ -546,16 +555,24 @@ internal static class LayoutFactory2
 		LayoutGroupingInfo? _groupingInfo;
 		LayoutHeaderFooterInfo? _headerFooterInfo;
 
-		// Tracks actual measured item size so the section provider can use it
-		// instead of the hardcoded estimated=30 after cells have been measured.
-		internal nfloat? MeasuredEstimatedItemSize { get; set; }
+		// Shared holder so the section provider closure can read the measured
+		// size without capturing a strong reference to this layout instance.
+		internal EstimatedItemSizeHolder EstimatedSizeHolder { get; }
 
-		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout) : base(sectionProvider, configuration)
+		// Convenience accessor — delegates to the shared holder.
+		internal nfloat? MeasuredEstimatedItemSize
+		{
+			get => EstimatedSizeHolder.Value;
+			set => EstimatedSizeHolder.Value = value;
+		}
+
+		public CustomUICollectionViewCompositionalLayout(LayoutSnapInfo snapInfo, LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? headerFooterInfo, UICollectionViewCompositionalLayoutSectionProvider sectionProvider, UICollectionViewCompositionalLayoutConfiguration configuration, ItemsLayout? itemsLayout, EstimatedItemSizeHolder? estimatedSizeHolder = null) : base(sectionProvider, configuration)
 		{
 			_snapInfo = snapInfo;
 			_itemsLayout = itemsLayout;
 			_groupingInfo = groupingInfo;
 			_headerFooterInfo = headerFooterInfo;
+			EstimatedSizeHolder = estimatedSizeHolder ?? new EstimatedItemSizeHolder();
 		}
 
 		public override void FinalizeCollectionViewUpdates()

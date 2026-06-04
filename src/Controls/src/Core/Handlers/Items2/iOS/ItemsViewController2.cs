@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -88,6 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (disposing)
 			{
+				UnsubscribeFromItemsSourceUpdating();
 				ItemsSource?.Dispose();
 
 				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
@@ -163,6 +165,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.ViewDidLoad();
 
 			ItemsSource = CreateItemsViewSource();
+			SubscribeToItemsSourceUpdating();
 
 			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
 #if TVOS
@@ -251,21 +254,63 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				handler.SetCachedFirstItemSize(CoreGraphics.CGSize.Empty);
 			}
 
-			// Reset measured estimated item size so the section provider
-			// uses fresh measurements from the new data
-			if (CollectionView.CollectionViewLayout is LayoutFactory2.CustomUICollectionViewCompositionalLayout compLayout)
-			{
-				compLayout.MeasuredEstimatedItemSize = null;
-			}
-
+			ResetEstimatedItemSize();
 			CollectionView.ReloadData();
 		}
 
 		internal void DisposeItemsSource()
 		{
+			UnsubscribeFromItemsSourceUpdating();
 			ItemsSource?.Dispose();
 			ItemsSource = new Items.EmptySource();
 			ReloadData();
+		}
+
+		void SubscribeToItemsSourceUpdating()
+		{
+			if (ItemsSource is Items.ObservableItemsSource observableSource)
+			{
+				observableSource.CollectionViewUpdating += OnItemsSourceCollectionViewUpdating;
+			}
+			else if (ItemsSource is Items.ObservableGroupedSource observableGroupedSource)
+			{
+				observableGroupedSource.CollectionViewUpdating += OnItemsSourceCollectionViewUpdating;
+			}
+		}
+
+		void UnsubscribeFromItemsSourceUpdating()
+		{
+			if (ItemsSource is Items.ObservableItemsSource observableSource)
+			{
+				observableSource.CollectionViewUpdating -= OnItemsSourceCollectionViewUpdating;
+			}
+			else if (ItemsSource is Items.ObservableGroupedSource observableGroupedSource)
+			{
+				observableGroupedSource.CollectionViewUpdating -= OnItemsSourceCollectionViewUpdating;
+			}
+		}
+
+		void OnItemsSourceCollectionViewUpdating(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			// ObservableItemsSource/ObservableGroupedSource Reload() calls
+			// collectionView.ReloadData() directly, bypassing ItemsViewController2.ReloadData().
+			// Reset the measured estimate here so the section provider uses fresh measurements.
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				ResetEstimatedItemSize();
+			}
+		}
+
+		/// <summary>
+		/// Resets the measured estimated item size so the section provider
+		/// falls back to the default estimate until a new measurement arrives.
+		/// </summary>
+		void ResetEstimatedItemSize()
+		{
+			if (CollectionView?.CollectionViewLayout is LayoutFactory2.CustomUICollectionViewCompositionalLayout compLayout)
+			{
+				compLayout.MeasuredEstimatedItemSize = null;
+			}
 		}
 
 		void EnsureLayoutInitialized()
@@ -297,8 +342,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public virtual void UpdateItemsSource()
 		{
+			UnsubscribeFromItemsSourceUpdating();
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
+			SubscribeToItemsSourceUpdating();
 
 			ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
