@@ -111,9 +111,10 @@ steps:
       $output = "CustomAgentLogsTmp/RerunScanner/candidates.json"
       .github/scripts/Query-RerunReadyPRs.ps1 -MaxPRs $max -OutputPath $output | Out-Null
       $json = Get-Content -Raw -LiteralPath $output
-      "candidates<<EOF" >> $env:GITHUB_OUTPUT
+      $delimiter = "EOF_$([Guid]::NewGuid().ToString('N'))"
+      "candidates<<$delimiter" >> $env:GITHUB_OUTPUT
       $json >> $env:GITHUB_OUTPUT
-      "EOF" >> $env:GITHUB_OUTPUT
+      $delimiter >> $env:GITHUB_OUTPUT
 ---
 
 # Rerun Review Scanner
@@ -123,8 +124,9 @@ You are scanning queued .NET MAUI PRs that already have the label `s/agent-ready
 ## Concurrency, locking, and duplicate prevention
 
 The workflow-level concurrency group serializes scanner runs, including scheduled
-and manual dispatches. The deterministic `/review rerun` path also serializes
-queue-label application per PR. Before applying any side effects, the
+and manual dispatches. The deterministic `/review` and `/review rerun` workflow
+paths also share a per-PR concurrency group so manual commands for the same PR do
+not race each other. Before applying any side effects, the
 `trigger_rerun_review` safe-output job revalidates that the PR is open, the head
 SHA still matches `expected_head_sha`, and `s/agent-ready-for-rerun` is still
 present. It also refuses to trigger if a fresh `s/agent-review-in-progress` lock
@@ -135,6 +137,14 @@ than the conservative stale window, the safe-output job treats it as abandoned
 and clears it before continuing. After either `trigger` or `skip`, the
 safe-output job removes the queue label so the same queued request is not picked
 up by a later scanner run.
+
+GitHub label application is idempotent rather than atomic, and the gh-aw
+safe-output job processes all selected PRs in one job, so there is no safe
+per-candidate GitHub Actions concurrency key to share with the manual workflow.
+The scanner therefore relies on scanner serialization, immediate head/label
+revalidation, and the persistent in-progress label to prevent duplicates without
+using a global concurrency group that could cancel unrelated maintainer
+`/review` requests.
 
 The deterministic scanner found these candidates:
 

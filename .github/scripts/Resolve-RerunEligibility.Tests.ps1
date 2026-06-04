@@ -75,6 +75,19 @@ Describe 'Resolve-RerunEligibility' {
         $parsed.PipelineRef | Should -Be 'feature/regression-check'
     }
 
+    It 'parses equals-form branch and platform options' {
+        $parsed = ConvertFrom-ReviewCommand '/review --branch=refs/heads/feature/regression-check --platform=ios'
+
+        $parsed | Should -Not -BeNullOrEmpty
+        $parsed.Platform | Should -Be 'ios'
+        $parsed.PipelineRef | Should -Be 'feature/regression-check'
+    }
+
+    It 'strips refs heads prefix when normalizing review pipeline refs' {
+        Normalize-ReviewPipelineRef 'refs/heads/feature/regression-check' |
+            Should -Be 'feature/regression-check'
+    }
+
     It 'finds latest normal review command while ignoring rerun and tests commands' {
         $comments = @(
             New-TestComment -Id 1 -Body '/review -b old/ref -p android' -CreatedAt '2026-05-31T09:00:00Z'
@@ -122,6 +135,33 @@ Describe 'Resolve-RerunEligibility' {
         )
 
         $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+
+        $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+    }
+
+    It 'uses AI Summary creation time as the activity checkpoint when the summary was edited later' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T10:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 2 -Body 'I pushed the requested update before the summary edit.' -CreatedAt '2026-05-31T09:45:00Z'
+            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+
+        $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+    }
+
+    It 'selects the newest AI Summary by creation time instead of edit time' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T11:00:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 2 -Body (New-AISummaryBody -Sha '2222222') -CreatedAt '2026-05-31T10:00:00Z' -UpdatedAt '2026-05-31T10:00:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 3 -Body 'Follow-up after the latest summary.' -CreatedAt '2026-05-31T10:15:00Z'
+            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:30:00Z'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha '2222222abcdef'
 
         $result.Eligible | Should -BeTrue
         $result.Reason | Should -Be 'new-comment-after-ai-summary'

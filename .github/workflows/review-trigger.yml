@@ -76,7 +76,7 @@ jobs:
     if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'rerun'
     runs-on: ubuntu-latest
     concurrency:
-      group: review-rerun-${{ github.event.issue.number }}
+      group: review-trigger-${{ github.event.issue.number }}
       cancel-in-progress: false
     timeout-minutes: 5
     permissions:
@@ -84,21 +84,18 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - name: Check rerun author association
+      - name: Check actor permission
         env:
-          AUTHOR_ASSOCIATION: ${{ github.event.comment.author_association }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Comment author association: ${AUTHOR_ASSOCIATION}"
-          # /review rerun is available to people who have already contributed
-          # to dotnet/maui, plus repo collaborators/members/owners.
-          case "${AUTHOR_ASSOCIATION}" in
-            OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR)
-              ;;
-            *)
-              echo "::error::User does not have sufficient access. Only prior contributors and repository collaborators/members/owners can trigger /review rerun."
-              exit 1
-              ;;
-          esac
+          PERMISSION=$(gh api repos/${{ github.repository }}/collaborators/${{ github.actor }}/permission --jq '.permission')
+          echo "User ${{ github.actor }} has permission: ${PERMISSION}"
+          # /review rerun can queue privileged review infrastructure, so it
+          # uses the same write/maintain/admin gate as /review.
+          if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
+            echo "::error::User ${{ github.actor }} does not have sufficient access. Only write/maintain/admin can trigger /review rerun."
+            exit 1
+          fi
 
       - name: Checkout repository scripts
         uses: actions/checkout@v4
@@ -184,11 +181,23 @@ jobs:
             set -- ${ARGS}
             while [ $# -gt 0 ]; do
               case "$1" in
+                --branch=*|-b=*)
+                  PIPELINE_REF="${1#*=}"
+                  ;;
                 --branch|-b)
                   shift
                   if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
                     PIPELINE_REF="$1"
                   fi
+                  ;;
+                --platform=*|-p=*)
+                  CANDIDATE=$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')
+                  for p in ${VALID_PLATFORMS}; do
+                    if [ "${CANDIDATE}" = "${p}" ]; then
+                      PLATFORM="${p}"
+                      break
+                    fi
+                  done
                   ;;
                 --platform|-p)
                   shift
@@ -216,6 +225,9 @@ jobs:
             done
           fi
 
+          # The AzDO payload adds refs/heads/, so accept either branch names or
+          # fully-qualified refs/heads/<branch> input without double-prefixing.
+          PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's|^refs/heads/||')
           # Sanitize ref to valid git ref characters only
           PIPELINE_REF=$(echo "${PIPELINE_REF}" | sed 's/[^a-zA-Z0-9/_.\-]//g')
           # Reject path traversal, empty segments, and leading /
@@ -282,6 +294,13 @@ jobs:
           $locked = Set-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
           if (-not $locked) {
             throw "Failed to apply s/agent-review-in-progress to PR #$($env:PR_NUMBER)."
+          }
+          if ($labels -contains 's/agent-ready-for-rerun') {
+            if (Remove-Label -PRNumber $env:PR_NUMBER -LabelName 's/agent-ready-for-rerun' -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
+              Write-Host "  ✅ Removed stale queue label: s/agent-ready-for-rerun"
+            } else {
+              Write-Host "  ⚠️  Could not remove stale queue label: s/agent-ready-for-rerun" -ForegroundColor Yellow
+            }
           }
           "locked=false" >> $env:GITHUB_OUTPUT
 

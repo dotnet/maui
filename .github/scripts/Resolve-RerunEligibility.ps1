@@ -51,7 +51,8 @@ function Test-RerunCommand {
 function Normalize-ReviewPipelineRef {
     param([string]$Value)
 
-    $pipelineRef = if ([string]::IsNullOrWhiteSpace($Value)) { 'main' } else { [string]$Value }
+    $pipelineRef = if ([string]::IsNullOrWhiteSpace($Value)) { 'main' } else { ([string]$Value).Trim() }
+    $pipelineRef = $pipelineRef -replace '^refs/heads/', ''
     $pipelineRef = $pipelineRef -replace '[^a-zA-Z0-9/_.\-]', ''
     if ([string]::IsNullOrWhiteSpace($pipelineRef)) {
         return 'main'
@@ -84,30 +85,38 @@ function ConvertFrom-ReviewCommand {
     $pipelineRef = 'main'
     for ($i = 0; $i -lt $tokens.Count; $i++) {
         $token = [string]$tokens[$i]
-        switch -Regex ($token) {
-            '^(--branch|-b)$' {
-                if ($i + 1 -lt $tokens.Count -and -not ([string]$tokens[$i + 1]).StartsWith('--')) {
-                    $pipelineRef = Normalize-ReviewPipelineRef $tokens[$i + 1]
-                    $i++
-                }
-                continue
+        if ($token -match '^(--branch|-b)=(.*)$') {
+            $pipelineRef = Normalize-ReviewPipelineRef $Matches[2]
+            continue
+        }
+        if ($token -match '^(--branch|-b)$') {
+            if ($i + 1 -lt $tokens.Count -and -not ([string]$tokens[$i + 1]).StartsWith('--')) {
+                $pipelineRef = Normalize-ReviewPipelineRef $tokens[$i + 1]
+                $i++
             }
-            '^(--platform|-p)$' {
-                if ($i + 1 -lt $tokens.Count -and -not ([string]$tokens[$i + 1]).StartsWith('--')) {
-                    $candidate = ([string]$tokens[$i + 1]).ToLowerInvariant()
-                    if ($validPlatforms -contains $candidate) {
-                        $platform = $candidate
-                    }
-                    $i++
-                }
-                continue
+            continue
+        }
+        if ($token -match '^(--platform|-p)=(.*)$') {
+            $candidate = $Matches[2].ToLowerInvariant()
+            if ($validPlatforms -contains $candidate) {
+                $platform = $candidate
             }
-            default {
-                $candidate = $token.ToLowerInvariant()
-                if (-not $platform -and $validPlatforms -contains $candidate) {
+            continue
+        }
+        if ($token -match '^(--platform|-p)$') {
+            if ($i + 1 -lt $tokens.Count -and -not ([string]$tokens[$i + 1]).StartsWith('--')) {
+                $candidate = ([string]$tokens[$i + 1]).ToLowerInvariant()
+                if ($validPlatforms -contains $candidate) {
                     $platform = $candidate
                 }
+                $i++
             }
+            continue
+        }
+
+        $candidate = $token.ToLowerInvariant()
+        if (-not $platform -and $validPlatforms -contains $candidate) {
+            $platform = $candidate
         }
     }
 
@@ -166,7 +175,7 @@ function Get-LatestAISummaryComment {
 
     return @($Comments |
         Where-Object { $_.body -and ([string]$_.body).Contains($AISummaryMarker) } |
-        Sort-Object @{ Expression = { Get-ObjectDate $_ 'updated_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true } |
+        Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true } |
         Select-Object -First 1)
 }
 
@@ -350,9 +359,9 @@ function New-RerunContextMarkdown {
     $inProgressLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0
 
     $latestReviewedSha = if ($latestSummary) { Get-LatestReviewedSha -AISummaryBody $latestSummary.body } else { $null }
-    $summaryUpdatedAt = if ($latestSummary) { Get-ObjectDate $latestSummary 'updated_at' } else { $null }
+    $summaryCreatedAt = if ($latestSummary) { Get-ObjectDate $latestSummary 'created_at' } else { $null }
 
-    $checkpoint = $summaryUpdatedAt
+    $checkpoint = $summaryCreatedAt
     $checkpointReason = if ($latestSummary) { 'latest AI Summary' } else { 'none' }
     if ($checkpointRerun) {
         $checkpointRerunCreatedAt = Get-ObjectDate $checkpointRerun 'created_at'
@@ -387,7 +396,7 @@ function New-RerunContextMarkdown {
     $lines.Add('## Checkpoint')
     $lines.Add('')
     if ($latestSummary) {
-        $lines.Add("- Latest AI Summary: $($latestSummary.kind) `#$($latestSummary.id)` updated $($summaryUpdatedAt.ToString('u'))")
+        $lines.Add("- Latest AI Summary: $($latestSummary.kind) `#$($latestSummary.id)` created $($summaryCreatedAt.ToString('u'))")
     } else {
         $lines.Add('- Latest AI Summary: not found')
     }
@@ -487,10 +496,10 @@ function Resolve-RerunEligibility {
         return [pscustomobject]@{ Eligible = $true; Reason = 'label-already-present'; Label = $ReadyForRerunLabel }
     }
 
-    $summaryUpdatedAt = Get-ObjectDate $latestSummary 'updated_at'
+    $summaryCreatedAt = Get-ObjectDate $latestSummary 'created_at'
     $latestReviewedSha = Get-LatestReviewedSha -AISummaryBody $latestSummary.body
     $previousRerun = Get-LatestRerunCommentBefore -Comments $Comments -CurrentCommentId $CurrentCommentId
-    $checkpoint = $summaryUpdatedAt
+    $checkpoint = $summaryCreatedAt
     $checkpointReason = 'ai-summary'
     if ($previousRerun) {
         $previousRerunCreatedAt = Get-ObjectDate $previousRerun 'created_at'

@@ -73,7 +73,8 @@ function Get-PlatformFromLabels {
 function Normalize-PipelineRef {
     param([string]$Value, [string]$Fallback = 'main')
 
-    $pipelineRef = if ([string]::IsNullOrWhiteSpace($Value)) { $Fallback } else { [string]$Value }
+    $pipelineRef = if ([string]::IsNullOrWhiteSpace($Value)) { $Fallback } else { ([string]$Value).Trim() }
+    $pipelineRef = $pipelineRef -replace '^refs/heads/', ''
     $pipelineRef = $pipelineRef -replace '[^a-zA-Z0-9/_.\-]', ''
     if ([string]::IsNullOrWhiteSpace($pipelineRef)) {
         return $Fallback
@@ -156,83 +157,107 @@ if ($items.Count -eq 0) {
 }
 
 foreach ($item in $items) {
-    $prNumber = [int]$item.pr_number
-    $decision = ([string]$item.decision).Trim().ToLowerInvariant()
-    $rerunCommentId = [Int64]$item.rerun_comment_id
-    $reason = [string]$item.reason
-    $expectedHeadSha = [string]$item.expected_head_sha
+    $prNumber = 0
+    try {
+        $prNumber = [int]$item.pr_number
+        $decision = ([string]$item.decision).Trim().ToLowerInvariant()
+        $rerunCommentId = [Int64]$item.rerun_comment_id
+        $reason = [string]$item.reason
+        $expectedHeadSha = ([string]$item.expected_head_sha).Trim()
 
-    if ($decision -notin @('trigger', 'skip')) {
-        throw "Invalid decision '$decision' for PR #$prNumber."
-    }
-    if ($prNumber -le 0) {
-        throw "Invalid PR number '$($item.pr_number)'."
-    }
-    if ($rerunCommentId -le 0) {
-        throw "Invalid rerun comment id '$($item.rerun_comment_id)' for PR #$prNumber."
-    }
+        if ($decision -notin @('trigger', 'skip')) {
+            throw "Invalid decision '$decision' for PR #$prNumber."
+        }
+        if ($prNumber -le 0) {
+            throw "Invalid PR number '$($item.pr_number)'."
+        }
+        if ($decision -eq 'trigger' -and $rerunCommentId -le 0) {
+            throw "Invalid rerun comment id '$($item.rerun_comment_id)' for trigger decision on PR #$prNumber."
+        }
+        if ($decision -eq 'trigger' -and [string]::IsNullOrWhiteSpace($expectedHeadSha)) {
+            throw "Missing expected head SHA for trigger decision on PR #$prNumber."
+        }
 
-    Write-Host "Processing PR #$prNumber decision=$decision reason=$reason"
-    $pr = gh api "repos/$Owner/$Repo/pulls/$prNumber" | ConvertFrom-Json
-    if ($pr.state -ne 'open') {
-        Write-Host "  ⏭️ PR #$prNumber is not open ($($pr.state)); skipping"
-        continue
-    }
-    if ($expectedHeadSha -and $pr.head.sha -ne $expectedHeadSha) {
-        Write-Host "  ⏭️ PR #$prNumber head changed from $expectedHeadSha to $($pr.head.sha); skipping stale decision"
-        continue
-    }
-
-    $labels = @(gh api "repos/$Owner/$Repo/issues/$prNumber/labels" --jq '.[].name' 2>$null)
-    if ($labels -notcontains $ReadyForRerunLabel) {
-        Write-Host "  ⏭️ PR #$prNumber no longer has $ReadyForRerunLabel; skipping"
-        continue
-    }
-    if ($labels -contains $ReviewInProgressLabel) {
-        if (Test-AgentReviewInProgressIsStale -PRNumber $prNumber -Owner $Owner -Repo $Repo) {
-            if ($DryRun) {
-                Write-Host "[dry-run] Would remove stale $ReviewInProgressLabel from PR #$prNumber"
-            } else {
-                Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
-            }
-            $labels = @($labels | Where-Object { $_ -ne $ReviewInProgressLabel })
-        } else {
-            Write-Host "  ⏭️ PR #$prNumber already has $ReviewInProgressLabel; skipping duplicate review trigger"
+        Write-Host "Processing PR #$prNumber decision=$decision reason=$reason"
+        $pr = gh api "repos/$Owner/$Repo/pulls/$prNumber" | ConvertFrom-Json
+        if ($pr.state -ne 'open') {
+            Write-Host "  ⏭️ PR #$prNumber is not open ($($pr.state)); skipping"
             continue
         }
-    }
-
-    if ($decision -eq 'trigger') {
-        $lockApplied = $false
-        try {
-            if ($DryRun) {
-                Write-Host "[dry-run] Would apply $ReviewInProgressLabel to PR #$prNumber"
-            } else {
-                $lockApplied = Set-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo
-                if (-not $lockApplied) {
-                    throw "Failed to apply $ReviewInProgressLabel to PR #$prNumber; refusing to trigger duplicate-prone review."
-                }
-            }
-
-            Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
-            $platform = Get-PlatformFromLabels -Labels $labels -Fallback ([string]$item.platform)
-            $pipelineRef = Normalize-PipelineRef -Value ([string]$item.pipeline_ref) -Fallback $DefaultPipelineRef
-            Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $pipelineRef
-        } catch {
-            if ($lockApplied) {
-                Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
-            }
-            throw
+        if ($expectedHeadSha -and $pr.head.sha -ne $expectedHeadSha) {
+            Write-Host "  ⏭️ PR #$prNumber head changed from $expectedHeadSha to $($pr.head.sha); skipping stale decision"
+            continue
         }
-    } else {
-        Add-CommentReaction -CommentId $rerunCommentId -Content '-1'
-        Write-Host "  ⏭️ AI scanner decided not to trigger PR #$prNumber"
-    }
 
-    if ($DryRun) {
-        Write-Host "[dry-run] Would remove $ReadyForRerunLabel from PR #$prNumber"
-    } else {
-        Remove-Label -PRNumber $prNumber -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo | Out-Null
-        Write-Host "  ✅ Removed $ReadyForRerunLabel from PR #$prNumber"
+        $labels = @(gh api "repos/$Owner/$Repo/issues/$prNumber/labels" --jq '.[].name' 2>$null)
+        if ($labels -notcontains $ReadyForRerunLabel) {
+            Write-Host "  ⏭️ PR #$prNumber no longer has $ReadyForRerunLabel; skipping"
+            continue
+        }
+        if ($labels -contains $ReviewInProgressLabel) {
+            if (Test-AgentReviewInProgressIsStale -PRNumber $prNumber -Owner $Owner -Repo $Repo) {
+                if ($DryRun) {
+                    Write-Host "[dry-run] Would remove stale $ReviewInProgressLabel from PR #$prNumber"
+                } else {
+                    Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
+                }
+                $labels = @($labels | Where-Object { $_ -ne $ReviewInProgressLabel })
+            } else {
+                Write-Host "  ⏭️ PR #$prNumber already has $ReviewInProgressLabel; skipping duplicate review trigger"
+                continue
+            }
+        }
+
+        if ($decision -eq 'trigger') {
+            $lockApplied = $false
+            try {
+                if ($DryRun) {
+                    Write-Host "[dry-run] Would apply $ReviewInProgressLabel to PR #$prNumber"
+                } else {
+                    $lockApplied = Set-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo
+                    if (-not $lockApplied) {
+                        throw "Failed to apply $ReviewInProgressLabel to PR #$prNumber; refusing to trigger duplicate-prone review."
+                    }
+                }
+
+                $platform = Get-PlatformFromLabels -Labels $labels -Fallback ([string]$item.platform)
+                $pipelineRef = Normalize-PipelineRef -Value ([string]$item.pipeline_ref) -Fallback $DefaultPipelineRef
+                Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $pipelineRef
+                if ($rerunCommentId -gt 0) {
+                    try {
+                        Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
+                    } catch {
+                        Write-Host "::warning::Triggered PR #$prNumber but failed to react '+1' to comment $rerunCommentId`: $_"
+                    }
+                }
+            } catch {
+                if ($lockApplied) {
+                    Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
+                }
+                throw
+            }
+        } else {
+            if ($rerunCommentId -gt 0) {
+                try {
+                    Add-CommentReaction -CommentId $rerunCommentId -Content '-1'
+                } catch {
+                    Write-Host "::warning::Skipped PR #$prNumber but failed to react '-1' to comment $rerunCommentId`: $_"
+                }
+            } else {
+                Write-Host "  ⏭️ No rerun comment id was provided; skipping '-1' reaction"
+            }
+            Write-Host "  ⏭️ AI scanner decided not to trigger PR #$prNumber"
+        }
+
+        if ($DryRun) {
+            Write-Host "[dry-run] Would remove $ReadyForRerunLabel from PR #$prNumber"
+        } else {
+            Remove-Label -PRNumber $prNumber -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo | Out-Null
+            Write-Host "  ✅ Removed $ReadyForRerunLabel from PR #$prNumber"
+        }
+    } catch {
+        $target = if ($prNumber -gt 0) { "PR #$prNumber" } else { "agent decision" }
+        Write-Host "::error::Failed to process $target`: $_"
+        continue
     }
 }
