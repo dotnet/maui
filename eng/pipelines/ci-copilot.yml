@@ -1264,7 +1264,21 @@ stages:
                       $argList += @('-DeviceUdid', $env:DEVICE_UDID)
                     }
                     Write-Host "DEBUG: invoking pwsh with args: $($argList -join ' | ')"
-                    & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object { Write-Host $_ }
+                    # Apply the same `##vso[…]` / `##[…]` neutralizer the
+                    # primary branch uses for $runResult.Output. The pwsh
+                    # subprocess child has its own host, so 2>&1 captures
+                    # ALL of its output (Write-Host included) — but
+                    # BuildAndRunHostApp.ps1 emits attacker-controlled
+                    # device logcat via Write-Host. Re-emitting it verbatim
+                    # via `Write-Host $_` would let `##vso[task.complete]`
+                    # / `##vso[task.setvariable]` / `##vso[task.uploadfile]`
+                    # reach the AzDO parser. The inline -replace keeps the
+                    # line VISIBLE in the task log (no stealth) but defangs
+                    # the prefix the parser scans for.
+                    & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object {
+                      $line = [string]$_
+                      Write-Host ($line -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1')
+                    }
                     if ($LASTEXITCODE -ne 0) {
                       Write-Host "Category $cat exited with code $LASTEXITCODE" -ForegroundColor Yellow
                       $hadFailure = $true
