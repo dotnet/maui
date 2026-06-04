@@ -140,12 +140,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					if (isVerticalOrientation)
 					{
-						child.Arrange(new Rect(0, bandStart, finalSize.Width, bandExtent));
+						// Re-measure with unconstrained height so DesiredSize reflects the header's
+						// natural height against the current finalSize.Width (layout width may differ
+						// from the availableSize used during MeasureOverride, e.g. after window resize).
+						child.Measure(new Size(finalSize.Width, double.PositiveInfinity));
+						double headerHeight = child.DesiredSize.Height;
+						child.Arrange(new Rect(0, bandStart, finalSize.Width, headerHeight > 0 ? headerHeight : bandExtent));
 						maxMeasuredHeader = Math.Max(maxMeasuredHeader, child.DesiredSize.Height);
 					}
 					else
 					{
-						child.Arrange(new Rect(bandStart, 0, bandExtent, finalSize.Height));
+						// Re-measure here for the same reason as the vertical case above.
+						child.Measure(new Size(double.PositiveInfinity, finalSize.Height));
+						double headerWidth = child.DesiredSize.Width;
+						child.Arrange(new Rect(bandStart, 0, headerWidth > 0 ? headerWidth : bandExtent, finalSize.Height));
 						maxMeasuredHeader = Math.Max(maxMeasuredHeader, child.DesiredSize.Width);
 					}
 				}
@@ -170,6 +178,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (UpdateEstimates(isVerticalOrientation, maxMeasuredRegular, maxMeasuredHeader))
 			{
 				InvalidateBandCache();
+			}
+			else if (maxMeasuredHeader > 0)
+			{
+				// UpdateEstimates only grows estimates upward. If freshly-measured header
+				// (via explicit Measure() above) is smaller than the current estimate, the
+				// band cache has inflated offsets that push items below group headers too far
+				// down. Invalidate so the next MeasureOverride rebuilds from the correct size.
+				double currentHeaderEstimate = isVerticalOrientation
+					? _estimatedHeaderVerticalExtent
+					: _estimatedHeaderHorizontalExtent;
+				if (maxMeasuredHeader < currentHeaderEstimate - 1.0)
+				{
+					InvalidateBandCache();
+				}
 			}
 
 			if (isVerticalOrientation)

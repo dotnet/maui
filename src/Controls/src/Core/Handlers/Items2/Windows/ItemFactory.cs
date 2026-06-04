@@ -105,24 +105,23 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				view.BindingContext = templateContext.Item ?? _view.BindingContext;
 				_view.AddLogicalChild(view);
 
-				// Restore the Selected visual state for selectable views when the item is
-				// actually selected (fixes stale-state after recycle, #27086).
-				// Only call GoToState(Selected) — never force Normal — so that app-defined
-				// custom states applied via behaviors/triggers are not clobbered on rebind
-				// for non-selected items. WinUI's ItemContainer selection model handles
-				// clearing the WinUI-level Selected chrome independently.
+				// Sync the CommonStates VSM group to match actual selection state on every
+				// rebind (new or recycled container). GoToState(Normal) only transitions
+				// within the CommonStates VisualStateGroup and cannot affect states in other
+				// groups, so it will not clobber app-defined custom states. This matches the
+				// Selected : Normal contract that Android, iOS, and Tizen all honour.
 				if (view is VisualElement visualElement &&
-					_view is SelectableItemsView selectableItemsView &&
-					selectableItemsView.SelectionMode != SelectionMode.None)
+					_view is SelectableItemsView selectableItemsView)
 				{
-					bool isSelected = selectableItemsView.SelectionMode == SelectionMode.Single
-						? object.Equals(selectableItemsView.SelectedItem, templateContext.Item)
-						: selectableItemsView.SelectedItems.Contains(templateContext.Item);
+					bool isSelected = selectableItemsView.SelectionMode != SelectionMode.None &&
+						(selectableItemsView.SelectionMode == SelectionMode.Single
+							? object.Equals(selectableItemsView.SelectedItem, templateContext.Item)
+							: selectableItemsView.SelectedItems.Contains(templateContext.Item));
 
-					if (isSelected)
-					{
-						VisualStateManager.GoToState(visualElement, VisualStateManager.CommonStates.Selected);
-					}
+					VisualStateManager.GoToState(visualElement,
+						isSelected
+							? VisualStateManager.CommonStates.Selected
+							: VisualStateManager.CommonStates.Normal);
 				}
 
 			}
