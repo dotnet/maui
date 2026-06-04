@@ -245,9 +245,43 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_textBlock.Enabled = SearchHandler.IsSearchEnabled;
 			}
-			else if (e.PropertyName == SearchHandler.ClearPlaceholderEnabledProperty.PropertyName)
+			else if (e.PropertyName == SearchHandler.QueryIconProperty.PropertyName)
 			{
+				UpdateImageButton(_searchButton, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material);
+			}
+			else if (e.PropertyName == SearchHandler.ClearIconProperty.PropertyName)
+			{
+				UpdateImageButton(_clearButton, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material);
+			}
+			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
+			{
+				UpdateImageButton(_clearPlaceholderButton, SearchHandler.ClearPlaceholderIconProperty, -1);
 				UpdateClearButtonState();
+			}
+		}
+
+		void UpdateImageButton(AImageButton button, BindableProperty property, int defaultImage)
+		{
+			if (button is null)
+			{
+				return;
+			}
+
+			if (SearchHandler.GetValue(property) is ImageSource image)
+			{
+				AutomationPropertiesProvider.SetContentDescription(button, image, null, null);
+				image.LoadImage(MauiContext, (r) =>
+				{
+					button.SetImageDrawable(r?.Value);
+				});
+			}
+			else if (defaultImage > 0 && ContextCompat.GetDrawable(Context, defaultImage) is Drawable defaultDrawable)
+			{
+				button.SetImageDrawable(defaultDrawable);
+			}
+			else
+			{
+				button.SetImageDrawable(null);
 			}
 		}
 

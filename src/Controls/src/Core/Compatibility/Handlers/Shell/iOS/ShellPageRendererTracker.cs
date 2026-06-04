@@ -948,6 +948,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateAutomationId();
 			}
+			else if (e.PropertyName == SearchHandler.QueryIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.QueryIcon, UISearchBarIcon.Search);
+			}
+			else if (e.PropertyName == SearchHandler.ClearIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearIcon, UISearchBarIcon.Clear);
+			}
+			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearPlaceholderIcon, UISearchBarIcon.Bookmark);
+			}
 		}
 
 		void UpdateAutomationId()
@@ -1179,8 +1191,49 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
+
+					// iOS caches the clear button image once it has been shown. After the button
+					// has appeared (user typed text), SetImageforSearchBarIcon alone won't refresh
+					// it. Directly update the button subview so dynamic changes are reflected.
+					if (icon is UISearchBarIcon.Clear)
+					{
+						UpdateClearButtonImage(searchBar, newResult);
+					}
 				}
 			});
+		}
+
+		// Directly updates the clear button (X) inside UISearchBar's UITextField subview.
+		// This is required because iOS does not re-apply SetImageforSearchBarIcon to a
+		// clear button that is already visible on screen.
+		static void UpdateClearButtonImage(UISearchBar searchBar, UIImage image)
+		{
+			if (searchBar.ValueForKey(new NSString("searchField")) is UITextField textField &&
+				textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
+			{
+				clearButton.SetImage(image, UIControlState.Normal);
+				clearButton.SetImage(image, UIControlState.Highlighted);
+			}
+		}
+
+		void UpdateSearchBarIcon(UISearchBar searchBar, ImageSource? source, UISearchBarIcon icon)
+		{
+			if (source != null)
+			{
+				SetSearchBarIcon(searchBar, source, icon);
+			}
+			else
+			{
+				// Reset to default system icon by clearing the custom image
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Normal);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Highlighted);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Selected);
+
+				if (icon is UISearchBarIcon.Clear)
+				{
+					UpdateClearButtonImage(searchBar, null!);
+				}
+			}
 		}
 
 		void OnPageLoaded(object? sender, EventArgs e)

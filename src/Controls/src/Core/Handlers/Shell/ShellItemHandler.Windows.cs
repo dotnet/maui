@@ -543,7 +543,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				case nameof(SearchHandler.VerticalTextAlignment):
 					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					break;
-			}
+				case nameof(SearchHandler.QueryIcon):
+					UpdateQueryIcon();
+					break;
+				}
 		}
 
 		void UpdateQueryIcon()
