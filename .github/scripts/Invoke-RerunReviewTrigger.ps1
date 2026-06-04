@@ -14,6 +14,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
+$ReviewTriggerCooldownMinutes = 60
+$ReviewTriggerWindowHours = 24
+$MaxReviewTriggersPerWindow = 3
 
 . "$PSScriptRoot/shared/Update-AgentLabels.ps1"
 
@@ -83,6 +86,78 @@ function Normalize-PipelineRef {
         return $Fallback
     }
     return $pipelineRef
+}
+
+function ConvertTo-DateTimeOffset {
+    param([Parameter(Mandatory = $true)]$Value)
+
+    if ($Value -is [datetimeoffset]) {
+        return $Value
+    }
+    if ($Value -is [datetime]) {
+        return [datetimeoffset]$Value
+    }
+
+    return [datetimeoffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+}
+
+function Get-ReviewTriggerRateLimitStatus {
+    param(
+        [datetimeoffset[]]$TriggeredAt = @(),
+        [datetimeoffset]$Now = [datetimeoffset]::UtcNow,
+        [int]$CooldownMinutes = $script:ReviewTriggerCooldownMinutes,
+        [int]$WindowHours = $script:ReviewTriggerWindowHours,
+        [int]$MaxTriggersPerWindow = $script:MaxReviewTriggersPerWindow
+    )
+
+    $sorted = @($TriggeredAt | Sort-Object -Descending)
+    $latest = @($sorted | Select-Object -First 1)
+    if ($latest.Count -gt 0) {
+        $cooldownAge = $Now - $latest[0]
+        if ($cooldownAge -lt [timespan]::FromMinutes($CooldownMinutes)) {
+            return [pscustomobject]@{
+                Allowed         = $false
+                Reason          = "cooldown-active"
+                LatestTriggered = $latest[0]
+                RecentCount     = @($sorted | Where-Object { ($Now - $_) -lt [timespan]::FromHours($WindowHours) }).Count
+            }
+        }
+    }
+
+    $recent = @($sorted | Where-Object { ($Now - $_) -lt [timespan]::FromHours($WindowHours) })
+    if ($recent.Count -ge $MaxTriggersPerWindow) {
+        return [pscustomobject]@{
+            Allowed         = $false
+            Reason          = "rerun-quota-exhausted"
+            LatestTriggered = if ($latest.Count -gt 0) { $latest[0] } else { $null }
+            RecentCount     = $recent.Count
+        }
+    }
+
+    return [pscustomobject]@{
+        Allowed         = $true
+        Reason          = "allowed"
+        LatestTriggered = if ($latest.Count -gt 0) { $latest[0] } else { $null }
+        RecentCount     = $recent.Count
+    }
+}
+
+function Get-ReviewTriggerLabelTimes {
+    param([Parameter(Mandatory = $true)][int]$PRNumber)
+
+    $createdAtValues = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/events?per_page=100" --paginate --jq ".[] | select(.event == `"labeled`" and .label.name == `"$ReviewInProgressLabel`") | .created_at" 2>$null)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not inspect $ReviewInProgressLabel history for PR #$PRNumber."
+    }
+
+    return @($createdAtValues | ForEach-Object { ConvertTo-DateTimeOffset $_ })
+}
+
+function Test-ReviewTriggerRateLimit {
+    param([Parameter(Mandatory = $true)][int]$PRNumber)
+
+    $triggeredAt = @(Get-ReviewTriggerLabelTimes -PRNumber $PRNumber)
+    return Get-ReviewTriggerRateLimitStatus -TriggeredAt $triggeredAt
 }
 
 function Invoke-AzDOReviewPipeline {
@@ -209,32 +284,45 @@ foreach ($item in $items) {
         }
 
         if ($decision -eq 'trigger') {
-            $lockApplied = $false
-            try {
-                if ($DryRun) {
-                    Write-Host "[dry-run] Would apply $ReviewInProgressLabel to PR #$prNumber"
-                } else {
-                    $lockApplied = Set-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo
-                    if (-not $lockApplied) {
-                        throw "Failed to apply $ReviewInProgressLabel to PR #$prNumber; refusing to trigger duplicate-prone review."
-                    }
-                }
-
-                $platform = Get-PlatformFromLabels -Labels $labels -Fallback ([string]$item.platform)
-                $pipelineRef = Normalize-PipelineRef -Value ([string]$item.pipeline_ref) -Fallback $DefaultPipelineRef
-                Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $pipelineRef
+            $rateLimit = Test-ReviewTriggerRateLimit -PRNumber $prNumber
+            if (-not $rateLimit.Allowed) {
+                $latestText = if ($rateLimit.LatestTriggered) { $rateLimit.LatestTriggered.ToString('u') } else { 'never' }
+                Write-Host "  ⏭️ PR #$prNumber rerun trigger blocked by deterministic rate limit ($($rateLimit.Reason); recent=$($rateLimit.RecentCount); latest=$latestText)"
                 if ($rerunCommentId -gt 0) {
                     try {
-                        Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
+                        Add-CommentReaction -CommentId $rerunCommentId -Content '-1'
                     } catch {
-                        Write-Host "::warning::Triggered PR #$prNumber but failed to react '+1' to comment $rerunCommentId`: $_"
+                        Write-Host "::warning::Rate-limited PR #$prNumber but failed to react '-1' to comment $rerunCommentId`: $_"
                     }
                 }
-            } catch {
-                if ($lockApplied) {
-                    Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
+            } else {
+                $lockApplied = $false
+                try {
+                    if ($DryRun) {
+                        Write-Host "[dry-run] Would apply $ReviewInProgressLabel to PR #$prNumber"
+                    } else {
+                        $lockApplied = Set-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo
+                        if (-not $lockApplied) {
+                            throw "Failed to apply $ReviewInProgressLabel to PR #$prNumber; refusing to trigger duplicate-prone review."
+                        }
+                    }
+
+                    $platform = Get-PlatformFromLabels -Labels $labels -Fallback ([string]$item.platform)
+                    $pipelineRef = Normalize-PipelineRef -Value ([string]$item.pipeline_ref) -Fallback $DefaultPipelineRef
+                    Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $pipelineRef
+                    if ($rerunCommentId -gt 0) {
+                        try {
+                            Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
+                        } catch {
+                            Write-Host "::warning::Triggered PR #$prNumber but failed to react '+1' to comment $rerunCommentId`: $_"
+                        }
+                    }
+                } catch {
+                    if ($lockApplied) {
+                        Clear-AgentReviewInProgress -PRNumber $prNumber -Owner $Owner -Repo $Repo | Out-Null
+                    }
+                    throw
                 }
-                throw
             }
         } else {
             if ($rerunCommentId -gt 0) {
