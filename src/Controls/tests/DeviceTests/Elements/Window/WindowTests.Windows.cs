@@ -170,16 +170,24 @@ namespace Microsoft.Maui.DeviceTests
 				presenter.Maximize();
 				var appWindow = handler.PlatformView.GetWindow();
 				Assert.NotNull(appWindow);
-				// Wait for MAUI frame to be updated with the maximized bounds
-				// (regression guard: Height was reported as 0 when maximized).
-				await AssertEventually(() => appWindow.Height > 0);
 
+				// Compute work-area reference values before polling so the same values
+				// are used for both the wait predicate and the final assertions.
 				// Compare against the monitor's work area. This correctly handles negative
 				// coordinates when the window is on a monitor positioned left of or above
 				// the primary display, and catches regressions beyond a simple > 0 check.
 				var displayArea = DisplayArea.GetFromWindowId(appWindowPlatform.Id, DisplayAreaFallback.Nearest);
 				var workArea = displayArea.WorkArea;
 				var density = handler.PlatformView.GetDisplayDensity();
+
+				// Wait until the MAUI frame reflects the maximized work-area bounds.
+				// Waiting only for Height > 0 is insufficient: that condition is already true
+				// before Maximize() is called, so on slow machines the assertions below would
+				// execute against the pre-maximized frame and become flaky.
+				await AssertEventually(() =>
+					Math.Abs(appWindow.Width - workArea.Width / density) < 2 &&
+					Math.Abs(appWindow.Height - workArea.Height / density) < 2);
+
 				Assert.True(Math.Abs(appWindow.X - workArea.X / density) < 2,
 					$"X should be near work area X ({workArea.X / density:F2}) but was {appWindow.X}");
 				Assert.True(Math.Abs(appWindow.Y - workArea.Y / density) < 2,
@@ -199,6 +207,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			double destroyingY = double.NaN;
 			double destroyingHeight = double.NaN;
+			double expectedY = double.NaN;
+			double expectedHeight = double.NaN;
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
 			{
@@ -211,25 +221,41 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Capture the frame values at destroy time so we can verify them after cleanup
 				window.Destroying += (s, e) =>
-	   {
-				 destroyingY = window.Y;
-				 destroyingHeight = window.Height;
-			 };
+				{
+					destroyingY = window.Y;
+					destroyingHeight = window.Height;
+				};
 
-				// Maximize the window and wait until the frame update reflects the maximized bounds.
+				// Capture the expected work-area bounds before waiting for the maximized frame,
+				// so the same reference values are used for both the wait predicate and the
+				// post-cleanup assertions.
+				var displayArea = DisplayArea.GetFromWindowId(appWindowPlatform.Id, DisplayAreaFallback.Nearest);
+				var workArea = displayArea.WorkArea;
+				var density = handler.PlatformView.GetDisplayDensity();
+				expectedY = workArea.Y / density;
+				expectedHeight = workArea.Height / density;
+
+				// Maximize the window and wait until the MAUI frame reflects the maximized bounds.
+				// Waiting only for Height > 0 is insufficient: that condition is already true
+				// before Maximize() is called, so on slow machines the captured values at
+				// Destroying time could come from the pre-maximized frame.
 				// Do not assert window.Y == 0: on monitors positioned above the primary display
 				// Y is legitimately negative.
 				presenter.Maximize();
-				await AssertEventually(() => window.Height > 0);
+				await AssertEventually(() =>
+					Math.Abs(window.Height - expectedHeight) < 2 &&
+					Math.Abs(window.Y - expectedY) < 2);
 			});
 
 			// The window is destroyed during CreateHandlerAndAddToWindow cleanup.
-			// Verify Height > 0 at Destroying time (regression: it was reported as 0 when closing a maximized window).
-			// Y is not asserted to be non-negative: on monitors positioned above the primary display it is legitimately negative.
+			// Assert that the bounds reported at Destroying time match the monitor work area,
+			// using the same < 2 tolerance as WindowsBoundsWhenMaximized.  This catches
+			// regressions where Y or Height is off by ~8 pixels when closing a maximized window.
 			Assert.False(double.IsNaN(destroyingHeight), "Window.Destroying event was not raised");
-			Assert.True(destroyingHeight > 0, $"Height should be > 0 when closing a maximized window, but was {destroyingHeight}");
-			Assert.True(!double.IsNaN(destroyingY) && !double.IsInfinity(destroyingY),
-				$"Y should be a valid finite number when closing a maximized window, but was {destroyingY}");
+			Assert.True(Math.Abs(destroyingY - expectedY) < 2,
+				$"Y should be near work area Y ({expectedY:F2}) when closing a maximized window, but was {destroyingY}");
+			Assert.True(Math.Abs(destroyingHeight - expectedHeight) < 2,
+				$"Height should match work area height ({expectedHeight:F2}) when closing a maximized window, but was {destroyingHeight}");
 		}
 
 		[Fact]
