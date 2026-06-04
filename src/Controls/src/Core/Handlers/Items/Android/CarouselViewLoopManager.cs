@@ -50,7 +50,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_itemsSource is null || _itemsSource.Count == 0)
 				return -1;
 
-			var currentCarouselPosition = carouselPosition;
 			var itemSourceCount = _itemsSource.Count;
 
 			if (newPosition < 0 || newPosition >= itemSourceCount)
@@ -58,29 +57,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return -1;
 			}
 
-			var diffToStart = (currentCarouselPosition - newPosition + itemSourceCount) % itemSourceCount;
-			var diffToEnd = (newPosition - currentCarouselPosition + itemSourceCount) % itemSourceCount;
-
 			var centerView = recyclerView.GetCenteredView();
 
 			if (centerView == null)
 				return -1;
 
 			var centerPosition = linearLayoutManager.GetPosition(centerView);
-			var increment = currentCarouselPosition - newPosition;
-			var incrementAbs = System.Math.Abs(increment);
+			var adapterCount = recyclerView.GetAdapter()?.ItemCount ?? 0;
 
-			int goToPosition;
-			if (diffToStart < incrementAbs)
-				goToPosition = centerPosition - diffToStart;
-			else if (diffToEnd < incrementAbs)
-				goToPosition = centerPosition + diffToEnd;
-			else
-				goToPosition = centerPosition - increment;
-
-			return goToPosition;
+			return GetNearestAdapterPosition(centerPosition, newPosition, itemSourceCount, adapterCount);
 		}
 
 		public void SetItemsSource(IItemsViewSource itemsSource) => _itemsSource = itemsSource;
+
+		static int GetNearestAdapterPosition(int currentAdapterPosition, int targetItemIndex, int itemCount, int adapterCount)
+		{
+			if (currentAdapterPosition < 0 || adapterCount <= 0 || itemCount <= 0)
+			{
+				return -1;
+			}
+
+			var currentCycleStart = currentAdapterPosition - (currentAdapterPosition % itemCount);
+			var bestPosition = -1;
+			var bestDistance = int.MaxValue;
+
+			for (var cycleOffset = -1; cycleOffset <= 1; cycleOffset++)
+			{
+				var candidate = currentCycleStart + targetItemIndex + (cycleOffset * itemCount);
+
+				if (candidate < 0 || candidate >= adapterCount)
+				{
+					continue;
+				}
+
+				var distance = System.Math.Abs(candidate - currentAdapterPosition);
+				if (distance < bestDistance)
+				{
+					bestPosition = candidate;
+					bestDistance = distance;
+				}
+			}
+
+			return bestPosition;
+		}
 	}
 }
