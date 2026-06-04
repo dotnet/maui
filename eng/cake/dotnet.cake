@@ -225,11 +225,11 @@ Task("uitests-apphost")
             properties.Add("UseMaterial3", "true");
         }
         
-        var useWindowsCV2 = Argument("usewindowscv2", false);
-        if (useWindowsCV2)
+        var useWindowsCV1 = Argument("usewindowscv1", false);
+        if (useWindowsCV1)
         {
-            Information("Building with UseWindowsCollectionView2Handler=true");
-            properties.Add("UseWindowsCollectionView2Handler", "true");
+            Information("Building with UseWindowsCollectionView2Handler=false (CV1)");
+            properties.Add("UseWindowsCollectionView2Handler", "false");
         }
 
         if (useNuget)

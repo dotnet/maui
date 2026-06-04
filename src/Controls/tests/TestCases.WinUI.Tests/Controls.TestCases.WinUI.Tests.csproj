@@ -54,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="snapshots/windows-cv2/" />
+    <Folder Include="snapshots/windows-cv1/" />
   </ItemGroup>
 
 </Project>
