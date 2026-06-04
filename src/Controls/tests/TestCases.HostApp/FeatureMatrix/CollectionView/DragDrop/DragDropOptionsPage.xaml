@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.DragDropOptionsPage"
+             Title="CollectionViewOptionsPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Apply"
+                     Clicked="ApplyButton_Clicked"
+                     AutomationId="Apply" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="8" Spacing="8">
+            <Label Text="IsGrouped:" FontSize="12" FontAttributes="Bold"/>
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="IsGroupedFalse"
+                             Content="False"
+                             CheckedChanged="OnIsGroupedChanged"
+                             GroupName="IsGroupedGroup"
+                             FontSize="11"
+                             AutomationId="IsGroupedFalse"/>
+                <RadioButton x:Name="IsGroupedTrue"
+                             Content="True"
+                             IsChecked="True"
+                             CheckedChanged="OnIsGroupedChanged"
+                             GroupName="IsGroupedGroup"
+                             FontSize="11"
+                             AutomationId="IsGroupedTrue"/>
+            </HorizontalStackLayout>
+
+            <Label Text="Can Reorder Items:" FontSize="12" FontAttributes="Bold"/>
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="CanReorderItemsFalse"
+                             Content="False"
+                             CheckedChanged="OnCanReorderItemsChanged"
+                             GroupName="CanReorderItemsGroup"
+                             FontSize="11"
+                             AutomationId="CanReorderItemsFalse"/>
+                <RadioButton x:Name="CanReorderItemsTrue"
+                             Content="True"
+                             IsChecked="True"
+                             CheckedChanged="OnCanReorderItemsChanged"
+                             GroupName="CanReorderItemsGroup"
+                             FontSize="11"
+                             AutomationId="CanReorderItemsTrue"/>
+            </HorizontalStackLayout>
+
+            <Label Text="Can Mix Groups:" FontSize="12" FontAttributes="Bold"/>
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="CanMixGroupsFalse"
+                             Content="False"
+                             CheckedChanged="OnCanMixGroupsChanged"
+                             GroupName="CanMixGroupsGroup"
+                             FontSize="11"
+                             AutomationId="CanMixGroupsFalse"/>
+                <RadioButton x:Name="CanMixGroupsTrue"
+                             Content="True"
+                             IsChecked="True"
+                             CheckedChanged="OnCanMixGroupsChanged"
+                             GroupName="CanMixGroupsGroup"
+                             FontSize="11"
+                             AutomationId="CanMixGroupsTrue"/>
+            </HorizontalStackLayout>
+
+            <Label Text="ItemsLayout:" FontAttributes="Bold" FontSize="12"/>
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="ItemsLayoutVerticalList"
+                             Content="Vertical List"
+                             CheckedChanged="OnItemsLayoutChanged"
+                             GroupName="ItemsLayoutGroup"
+                             FontSize="11"
+                             AutomationId="ItemsLayoutVerticalList"/>
+                <RadioButton x:Name="ItemsLayoutHorizontalList"
+                             Content="Horizontal List"
+                             CheckedChanged="OnItemsLayoutChanged"
+                             GroupName="ItemsLayoutGroup"
+                             FontSize="11"
+                             AutomationId="ItemsLayoutHorizontalList"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="ItemsLayoutVerticalGrid"
+                             Content="Vertical Grid"
+                             IsChecked="True"
+                             CheckedChanged="OnItemsLayoutChanged"
+                             GroupName="ItemsLayoutGroup"
+                             FontSize="11"
+                             AutomationId="ItemsLayoutVerticalGrid"/>
+                <RadioButton x:Name="ItemsLayoutHorizontalGrid"
+                             Content="Horizontal Grid"
+                             CheckedChanged="OnItemsLayoutChanged"
+                             GroupName="ItemsLayoutGroup"
+                             FontSize="11"
+                             AutomationId="ItemsLayoutHorizontalGrid"/>
+            </HorizontalStackLayout>
+
+            <Label Text="ItemsSource:" FontAttributes="Bold" FontSize="12"/>
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="ItemsSourceObservableCollection"
+                             Content="ObservableCollection"
+                             GroupName="ItemsSourceGroup"
+                             CheckedChanged="OnItemsSourceChanged"
+                             FontSize="11"
+                             AutomationId="ItemsSourceObservableCollection"/>
+                <RadioButton x:Name="ItemsSourceGroupedList"
+                             Content="Grouped List"
+                             GroupName="ItemsSourceGroup"
+                             IsChecked="True"
+                             CheckedChanged="OnItemsSourceChanged"
+                             FontSize="11"
+                             AutomationId="ItemsSourceGroupedList"/>
+                <RadioButton x:Name="ItemsSourceNone"
+                             Content="None"
+                             GroupName="ItemsSourceGroup"
+                             CheckedChanged="OnItemsSourceChanged"
+                             FontSize="11"
+                             AutomationId="ItemsSourceNone"/>
+            </HorizontalStackLayout>
+
+            <Label Text="FlowDirection:" FontAttributes="Bold" FontSize="12"/>
+            <HorizontalStackLayout Spacing="10">
+                <RadioButton x:Name="FlowDirectionLeftToRight"
+                             Content="LeftToRight"
+                             GroupName="FlowDirectionGroup"
+                             IsChecked="True"
+                             CheckedChanged="OnFlowDirectionChanged"
+                             FontSize="11"
+                             AutomationId="FlowDirectionLeftToRight"/>
+                <RadioButton x:Name="FlowDirectionRightToLeft"
+                             Content="RightToLeft"
+                             GroupName="FlowDirectionGroup"
+                             CheckedChanged="OnFlowDirectionChanged"
+                             FontSize="11"
+                             AutomationId="FlowDirectionRightToLeft"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

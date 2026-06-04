@@ -3,6 +3,7 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
+
 public class CollectionView_GroupingFeatureTests : _GalleryUITest
 {
 	public const string GroupingFeatureMatrix = "CollectionView Feature Matrix";
@@ -1054,6 +1055,56 @@ public class CollectionView_GroupingFeatureTests : _GalleryUITest
 		App.DragAndDrop("Banana", "Potato"); // Changed from Apple to Banana because Appium taps, scrolls, or drags the Apple icon instead of the CollectionView Apple item.
 		var newY = App.WaitForElement("Banana").GetRect().Y;
 		Assert.That(newY, Is.EqualTo(initialY), "The Y position of 'Banana' should be Same Value after the drag-and-drop operation.");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyGroupingWithVerticalGridLayoutAndGroupedItemsSource()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement("CanReorderItemsTrue");
+		App.Tap("CanReorderItemsTrue");
+		App.WaitForElement("CanMixGroupsTrue");
+		App.Tap("CanMixGroupsTrue");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		App.WaitForElement("Fruits");
+		App.WaitForElement("Vegetables");
+		App.WaitForElement("Banana");
+		App.WaitForElement("Carrot");
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyDragAndDropWithCanReorderItemsAndCanMixGroupsInVerticalGridLayout()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsSourceGroupedList);
+		App.Tap(ItemsSourceGroupedList);
+		App.WaitForElement(IsGroupedTrue);
+		App.Tap(IsGroupedTrue);
+		App.WaitForElement(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElement("CanReorderItemsTrue");
+		App.Tap("CanReorderItemsTrue");
+		App.WaitForElement("CanMixGroupsTrue");
+		App.Tap("CanMixGroupsTrue");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+
+		var initialY = App.WaitForElement("Banana").GetRect().Y;
+		App.DragAndDrop("Banana", "Potato");
+		var newY = App.WaitForElement("Banana").GetRect().Y;
+		Assert.That(newY, Is.GreaterThan(initialY), "The Y position of 'Banana' should be greater after drag-and-drop when CanReorderItems and CanMixGroups are enabled in grouped vertical grid layout.");
 	}
 #endif
 }
