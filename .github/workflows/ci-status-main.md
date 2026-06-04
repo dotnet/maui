@@ -29,7 +29,7 @@ tools:
   bash: ["git", "find", "ls", "cat", "grep", "head", "tail", "wc", "curl", "jq", "tee", "sed", "awk", "tr", "cut", "sort", "uniq", "xargs", "echo", "date", "mkdir", "test", "basename", "dirname"]
 
 checkout:
-  fetch-depth: 50
+  fetch-depth: 1
 
 safe-outputs:
   create-issue:
@@ -177,6 +177,8 @@ MAUI tests run across multiple variants (CoreCLR/Mono, iOS/Android/Windows, retr
 Use this structure:
 
 ```markdown
+<!-- ci-scan-fingerprint: <fingerprint> -->
+
 ## Summary
 [One-line description of the failure]
 
@@ -203,6 +205,8 @@ Use this structure:
 When opening a muting PR:
 
 ```markdown
+<!-- ci-scan-fingerprint: <fingerprint> -->
+
 ## Reasoning
 Why the test fails and why disabling is the right short-term fix.
 

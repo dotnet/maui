@@ -29,7 +29,7 @@ jobs:
 
           lock_issue() {
             local issue_number="$1"
-            local issue_json labels scanner_label author
+            local issue_json labels scanner_label title_prefix
 
             issue_json="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${issue_number}")"
 
@@ -52,14 +52,14 @@ jobs:
               return 0
             fi
 
-            author="$(jq -r '.user.login' <<< "${issue_json}")"
-            if [ "${author}" != "github-actions[bot]" ]; then
-              echo "Skipping #${issue_number}; author '${author}' is not the scanner bot."
+            if ! jq -e '(.body // "") | contains("ci-scan-fingerprint:")' <<< "${issue_json}" >/dev/null; then
+              echo "Skipping #${issue_number}; no ci-scan-fingerprint marker."
               return 0
             fi
 
-            if ! jq -e '(.body // "") | contains("ci-scan-fingerprint:")' <<< "${issue_json}" >/dev/null; then
-              echo "Skipping #${issue_number}; no ci-scan-fingerprint marker."
+            title_prefix="[${scanner_label}] "
+            if ! jq -e --arg prefix "${title_prefix}" '(.title // "") | startswith($prefix)' <<< "${issue_json}" >/dev/null; then
+              echo "Skipping #${issue_number}; title does not start with ${title_prefix}."
               return 0
             fi
 
@@ -73,7 +73,7 @@ jobs:
           }
 
           if [ -n "${ISSUE_NUMBER}" ]; then
-            lock_issue "${ISSUE_NUMBER}"
+            lock_issue "${ISSUE_NUMBER}" || echo "::warning::Failed to process #${ISSUE_NUMBER}; continuing."
             exit 0
           fi
 
@@ -81,5 +81,6 @@ jobs:
             gh issue list --repo "${GITHUB_REPOSITORY}" --state open --label ci-scan --search '-is:locked' --limit 100 --json number --jq '.[].number'
             gh issue list --repo "${GITHUB_REPOSITORY}" --state open --label ci-scan-net11 --search '-is:locked' --limit 100 --json number --jq '.[].number'
           } | sort -n -u | while read -r issue_number; do
-            [ -n "${issue_number}" ] && lock_issue "${issue_number}"
+            [ -n "${issue_number}" ] || continue
+            lock_issue "${issue_number}" || echo "::warning::Failed to process #${issue_number}; continuing."
           done
