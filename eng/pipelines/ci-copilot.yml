@@ -124,7 +124,10 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
+              # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
+              # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
+              # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
+              skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
@@ -871,7 +874,10 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
+              # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
+              # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
+              # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
+              skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
