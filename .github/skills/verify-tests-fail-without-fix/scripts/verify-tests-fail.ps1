@@ -189,6 +189,17 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 # Import the shared test detection script
 $DetectTestsScript = Join-Path $RepoRoot ".github/scripts/shared/Detect-TestsInDiff.ps1"
 
+# Import Out-SafePRSubprocessLine so the log-file re-emit at the end of
+# each test run can neutralize attacker-controlled `##vso[…]` payloads.
+# A malicious PR test that emits `##vso[task.setvariable variable=...]`
+# to its own log would otherwise have that line written verbatim through
+# this script's host, then captured into Review-PR.ps1's $gateOutput,
+# then re-echoed to the AzDO log where the parser executes it.
+$SanitizerScript = Join-Path $RepoRoot ".github/scripts/shared/Write-SafeSubprocessOutput.ps1"
+if (Test-Path $SanitizerScript) {
+    . $SanitizerScript
+}
+
 
 # ============================================================
 # Test type detection from changed files
@@ -376,8 +387,19 @@ function Invoke-TestRun {
             if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 $uiParams.DeviceUdid = $script:BootedDeviceUdid
             }
-            # Capture all output — includes build, deploy, and test results
-            $scriptOutput = Invoke-WithoutGhTokens { & $buildScript @uiParams 2>&1 }
+            # Capture all output — includes build, deploy, and test results.
+            # Launch BuildAndRunHostApp.ps1 as `pwsh -NoProfile -File` SUBPROCESS,
+            # not in-process. BuildAndRunHostApp.ps1 emits 19+ Write-Host calls
+            # of attacker-controlled device-log content (logcat / simulator log).
+            # An in-process `& $buildScript` would let that Write-Host write
+            # directly to verify-tests-fail.ps1's host (stream 6), and from
+            # there straight to Review-PR.ps1's $gateOutput. The downstream
+            # AzDO `##vso[…]` parser would then execute the payload (forge a
+            # green gate, flip detectedCategories=NONE to skip RunDeepUITests,
+            # exfiltrate files via task.uploadfile, etc.). Subprocess gives
+            # the child its own host so all of its output flows through stdout
+            # and is captured here by `2>&1`.
+            $scriptOutput = Invoke-WithoutGhTokens { & pwsh -NoProfile -File $buildScript @uiParams 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -482,7 +504,10 @@ function Invoke-TestRun {
                 $deviceParams.DeviceUdid = $script:BootedDeviceUdid
             }
 
-            $scriptOutput = Invoke-WithoutGhTokens { & $deviceTestScript @deviceParams 2>&1 }
+            # Same F1-CRIT concern as the UI-test branch above: Run-DeviceTests.ps1
+            # emits 69+ Write-Host calls of attacker-controlled adb output.
+            # Subprocess + 2>&1 keeps Write-Host in the captured stdout pipe.
+            $scriptOutput = Invoke-WithoutGhTokens { & pwsh -NoProfile -File $deviceTestScript @deviceParams 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -1616,7 +1641,7 @@ foreach ($testEntry in $AllDetectedTests) {
         $logLines = Get-Content $testLogFile -ErrorAction SilentlyContinue
         $lineCount = if ($logLines) { $logLines.Count } else { 0 }
         Write-Host "  ── Log ($lineCount lines) ──" -ForegroundColor DarkGray
-        if ($logLines) { $logLines | ForEach-Object { Write-Host "  $_" } }
+        if ($logLines) { $logLines | Out-SafePRSubprocessLine -Prefix "  " }
     }
     Write-Host "##[endgroup]"
 
@@ -1704,7 +1729,7 @@ foreach ($testEntry in $AllDetectedTests) {
         $logLines = Get-Content $testLogFile -ErrorAction SilentlyContinue
         $lineCount = if ($logLines) { $logLines.Count } else { 0 }
         Write-Host "  ── Log ($lineCount lines) ──" -ForegroundColor DarkGray
-        if ($logLines) { $logLines | ForEach-Object { Write-Host "  $_" } }
+        if ($logLines) { $logLines | Out-SafePRSubprocessLine -Prefix "  " }
     }
     Write-Host "##[endgroup]"
 

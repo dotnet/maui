@@ -1307,7 +1307,7 @@ $detectScript = Join-Path $EngScriptsDir "detect-ui-test-categories.ps1"
 if (Test-Path $detectScript) {
     try {
         $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" 2>&1
-        $detectOutput | ForEach-Object { Write-Host "  $_" }
+        $detectOutput | Out-SafePRSubprocessLine -Prefix "  "
 
         foreach ($line in $detectOutput) {
             $lineStr = $line.ToString()
@@ -1494,7 +1494,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                             Write-Host "    🧪 Running: dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"" -ForegroundColor Cyan
                             $testOutput = Invoke-WithoutGhTokens { dotnet test $resolvedProj --filter $t.Filter --logger "console;verbosity=minimal" 2>&1 }
                             $testExitCode = $LASTEXITCODE
-                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                            $testOutput | Select-Object -Last 20 | Out-SafePRSubprocessLine -Prefix "    "
                         } else {
                             Write-Host "    ⚠️ No project path for unit test" -ForegroundColor Yellow
                             $testExitCode = -1
@@ -1598,7 +1598,7 @@ Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
 $testDetectScript = Join-Path $ScriptsDir "shared/Detect-TestsInDiff.ps1"
 if (Test-Path $testDetectScript) {
     $testDetectScript = (Resolve-Path $testDetectScript).Path
-    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
+    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | Out-SafePRSubprocessLine -Prefix "    "
 } else {
     Write-Host "    ⚠️ Detect-TestsInDiff.ps1 not found at $testDetectScript" -ForegroundColor Yellow
 }
@@ -1655,7 +1655,7 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # subprocess invocations internally to strip the token before PR code runs.
     $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
     $gateExitCode = $LASTEXITCODE
-    $gateOutput | ForEach-Object { Write-Host "    $_" }
+    $gateOutput | Out-SafePRSubprocessLine -Prefix "    "
 
     # Check if this was an ENV ERROR (emulator timeout, ADB failure, etc.)
     $isEnvError = $false
@@ -2124,7 +2124,7 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
         if (-not [string]::IsNullOrWhiteSpace($aiCategoriesArg)) {
             Write-Host "  🔁 Refreshing UI category detection with AI tier..." -ForegroundColor Cyan
             $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -AiCategories $aiCategoriesArg 2>&1
-            $refreshOutput | ForEach-Object { Write-Host "    $_" }
+            $refreshOutput | Out-SafePRSubprocessLine -Prefix "    "
 
             $refreshedCategories = $uitestCategories
             foreach ($line in $refreshOutput) {

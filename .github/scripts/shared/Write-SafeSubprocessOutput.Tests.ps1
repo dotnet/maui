@@ -923,8 +923,18 @@ Describe 'Shared runner wrappers never launch a PR-controlled runner IN-PROCESS 
         # Scripts that wrap a PR-controlled test runner and may be invoked
         # in-process by a parent (YAML task / Review-PR.ps1).
         $script:WrapperScripts = @(
-            (Join-Path $script:SharedDir 'Invoke-UITestWithRetry.ps1')
-        )
+            (Join-Path $script:SharedDir 'Invoke-UITestWithRetry.ps1'),
+            # verify-tests-fail.ps1 is the Gate phase's primary runner.
+            # It launches BuildAndRunHostApp.ps1 and Run-DeviceTests.ps1
+            # internally for UI/device-test verification. Its stdout
+            # flows back through Review-PR.ps1's $gateOutput, which means
+            # any Write-Host bypass here is end-to-end exploitable
+            # (attacker test plants ##vso[…] → device log → child's
+            # Write-Host → in-process leak to verify-tests-fail's host
+            # → verify-tests-fail's stdout → Review-PR's gateOutput →
+            # AzDO parser executes the directive).
+            (Join-Path $script:SharedDir '..' '..' 'skills' 'verify-tests-fail-without-fix' 'scripts' 'verify-tests-fail.ps1' | Resolve-Path -ErrorAction SilentlyContinue)
+        ) | Where-Object { $null -ne $_ -and (Test-Path $_) }
         # Variable names known to hold a path to a PR-controlled runner whose
         # Write-Host must not leak to the parent host. Matched by the value
         # assigned to the variable (a *.ps1 path) AND by these well-known names.
