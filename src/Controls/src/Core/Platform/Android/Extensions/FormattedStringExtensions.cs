@@ -126,6 +126,15 @@ namespace Microsoft.Maui.Controls.Platform
 			if (layout == null)
 				return;
 
+			// When MaxLines truncates the text, the Layout only covers a subset of the
+			// SpannableString's characters. Pre-compute the last addressable offset so we
+			// can skip spans that fall entirely beyond the laid-out range and avoid
+			// IndexOutOfBoundsException in GetPrimaryHorizontal (see GitHub #35755).
+			var lastLayoutLine = layout.LineCount - 1;
+			if (lastLayoutLine < 0)
+				return;
+			var layoutEndOffset = layout.GetLineEnd(lastLayoutLine);
+
 			int next = 0;
 			int count = 0;
 
@@ -165,6 +174,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var spanStartLine = layout.GetLineForOffset(spanStartOffset);
 				var spanEndLine = layout.GetLineForOffset(spanEndOffset);
+
+				// If MaxLines is active, spanStartOffset may exceed the laid-out character
+				// range. GetPrimaryHorizontal would throw in that case, so skip the span.
+				if (spanStartOffset >= layoutEndOffset)
+					continue;
+
+				// Clamp spanEndLine so the inner loop never walks past the last laid-out line.
+				spanEndLine = System.Math.Min(spanEndLine, lastLayoutLine);
 
 				// Go through all lines that are affected by the span and calculate a rectangle for each
 				List<Graphics.Rect> spanRectangles = new List<Graphics.Rect>();
