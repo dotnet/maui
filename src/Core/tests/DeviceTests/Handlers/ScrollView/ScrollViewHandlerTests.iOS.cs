@@ -189,5 +189,50 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(44, result.Top);
 			Assert.Equal(34, result.Bottom);
 		}
+
+		[Fact]
+		public void ComputeSafeArea_Automatic_HorizontalScroll_LandscapeLeft_UsesAciForHorizontal()
+		{
+			// For horizontal scroll views, UIKit DOES include L/R in ACI under Automatic mode.
+			// MAUI should therefore read L/R from ACI (UIKit-owned) and T/B from deviceInset (MAUI-owned).
+			// aci.Left = 44 because UIKit populated it; device.Left = 44 (notch) — equal, so result is the same value.
+			// The key is that T/B are device-sourced, not ACI-sourced (UIKit doesn't populate T/B for horizontal scroll).
+			var aci = new UIEdgeInsets(top: 0, left: 44, bottom: 0, right: 0); // UIKit adds L/R for horizontal
+			var deviceInset = new UIEdgeInsets(top: 20, left: 44, bottom: 0, right: 0);
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Automatic,
+				deviceInset,
+				isHorizontalScroll: true);
+
+			// L/R come from ACI (UIKit-owned for horizontal scroll)
+			Assert.Equal(44, result.Left);
+			Assert.Equal(0, result.Right);
+			// T/B come from deviceInset (MAUI-owned; UIKit doesn't apply T/B to ACI for horizontal scroll)
+			Assert.Equal(20, result.Top);
+			Assert.Equal(0, result.Bottom);
+		}
+
+		[Fact]
+		public void ComputeSafeArea_Automatic_VerticalScroll_AciTopNotDoubledWithDeviceTop()
+		{
+			// Regression guard: for vertical scroll in Automatic mode, T/B come from ACI (normAci),
+			// NOT from deviceInset. Previously a raw-(double) cast was used; confirm ToSafeAreaInsets()
+			// normalization is now applied consistently (values within tolerance become exactly 0).
+			const double noise = 3.5e-15; // representative UIKit floating-point noise
+			var aci = new UIEdgeInsets(top: (nfloat)(44 + noise), left: 0, bottom: 0, right: 0);
+			var deviceInset = new UIEdgeInsets(top: 44, left: 0, bottom: 0, right: 0);
+
+			var result = MauiScrollView.ComputeSafeArea(
+				aci,
+				UIScrollViewContentInsetAdjustmentBehavior.Automatic,
+				deviceInset);
+
+			// Top must be exactly 44, not 44 + 3.5e-15 — normalization suppresses the noise
+			Assert.Equal(44, result.Top);
+			Assert.Equal(0, result.Left);
+		}
 	}
 }
+

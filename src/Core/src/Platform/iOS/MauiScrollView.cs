@@ -394,7 +394,8 @@ namespace Microsoft.Maui.Platform
 			//   Always : UIKit manages ALL edges in AdjustedContentInset → use SACI for all edges
 			//     to avoid double-applying horizontal safe area that UIKit already handles.
 			var aci = SystemAdjustedContentInset;
-			_safeArea = ComputeSafeArea(aci, ContentInsetAdjustmentBehavior, GetInset());
+			var isHorizontalScrollInValidate = View is IScrollView { Orientation: ScrollOrientation.Horizontal or ScrollOrientation.Both };
+			_safeArea = ComputeSafeArea(aci, ContentInsetAdjustmentBehavior, GetInset(), isHorizontalScrollInValidate);
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -440,11 +441,16 @@ namespace Microsoft.Maui.Platform
 		/// <param name="aci">SystemAdjustedContentInset (AdjustedContentInset minus developer ContentInset).</param>
 		/// <param name="ciab">The scroll view's ContentInsetAdjustmentBehavior.</param>
 		/// <param name="deviceInset">Raw SafeAreaInsets from GetInset() — the actual device notch/home-indicator insets.</param>
+		/// <param name="isHorizontalScroll">
+		/// True when the scroll view scrolls horizontally (Horizontal or Both orientation).
+		/// UIKit's Automatic mode includes L/R in ACI for horizontal scroll views, but only T/B for vertical ones.
+		/// </param>
 		/// <returns>The safe-area padding to apply to the MAUI layout.</returns>
 		internal static SafeAreaPadding ComputeSafeArea(
 			UIEdgeInsets aci,
 			UIScrollViewContentInsetAdjustmentBehavior ciab,
-			UIEdgeInsets deviceInset)
+			UIEdgeInsets deviceInset,
+			bool isHorizontalScroll = false)
 		{
 			if (ciab == UIScrollViewContentInsetAdjustmentBehavior.Never
 				|| aci == UIEdgeInsets.Zero)
@@ -459,13 +465,29 @@ namespace Microsoft.Maui.Platform
 				return aci.ToSafeAreaInsets();
 			}
 
-			// Default/fallback (Automatic): UIKit manages T/B but NOT L/R for vertical-only scroll.
-			// Use GetInset() for horizontal edges (landscape notch fix) and SACI for vertical edges.
+			// Automatic: UIKit ownership depends on scroll orientation.
+			// Normalize both sources via ToSafeAreaInsets() to suppress sub-pixel UIKit floating-point noise
+			// (e.g. 3.5e-15), consistent with the Never/Always branches above.
+			var normDevice = deviceInset.ToSafeAreaInsets();
+			var normAci = aci.ToSafeAreaInsets();
+
+			if (isHorizontalScroll)
+			{
+				// Horizontal scroll: UIKit includes L/R in ACI; MAUI must supply T/B from device insets.
+				return new SafeAreaPadding(
+					Left:   normAci.Left,
+					Right:  normAci.Right,
+					Top:    normDevice.Top,
+					Bottom: normDevice.Bottom);
+			}
+
+			// Default (vertical): UIKit includes T/B in ACI but NOT L/R (landscape notch fix #35410).
+			// MAUI must supply L/R from device insets; UIKit owns T/B via contentOffset.
 			return new SafeAreaPadding(
-				Left: (double)deviceInset.Left,
-				Right: (double)deviceInset.Right,
-				Top: (double)aci.Top,
-				Bottom: (double)aci.Bottom);
+				Left:   normDevice.Left,
+				Right:  normDevice.Right,
+				Top:    normAci.Top,
+				Bottom: normAci.Bottom);
 		}
 
 		/// <summary>
