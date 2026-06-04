@@ -21,6 +21,5 @@ override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
-override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
