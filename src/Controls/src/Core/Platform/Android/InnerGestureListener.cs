@@ -112,10 +112,12 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SetStartingPosition(e);
 
-			if (HasAnyGestures())
+			if (HasAnyGestures() || EnableLongPressGestures)
 			{
-				// If we have any gestures to listen for, we need to return true to show we're interested in the rest
-				// of the events.		
+				// If we have any gestures to listen for (including drag gestures that use long press),
+				// we need to return true to show we're interested in the rest of the events.
+				// Without consuming ACTION_DOWN, the view won't receive ACTION_UP which is needed
+				// to cancel the long-press timer for quick taps.
 				return true;
 			}
 
