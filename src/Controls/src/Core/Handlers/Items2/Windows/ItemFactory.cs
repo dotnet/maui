@@ -314,9 +314,11 @@ internal partial class ElementWrapper : ContentControl
 	{
 		EnsurePlatformViewCreated();
 		var handler = GetCollectionViewHandler();
-		// Check if we should use cached first item size
+		// Check if we should use cached first item size.
+		// Headers and footers always measure at their natural size — never pin them to the
+		// cached regular-item extent (e.g. a 100px FlexLayout would bloat every header).
 		var cachedSize = handler?.GetCachedFirstItemSize() ?? global::Windows.Foundation.Size.Empty;
-		if (!cachedSize.IsEmpty)
+		if (!cachedSize.IsEmpty && !IsHeaderOrFooter)
 		{
 			// For MeasureFirstItem: pin ONLY the along-axis (scroll direction) to the
 			// cached first-item size so every item is uniform in that direction. Measure
