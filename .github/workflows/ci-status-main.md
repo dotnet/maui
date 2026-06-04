@@ -176,8 +176,10 @@ MAUI tests run across multiple variants (CoreCLR/Mono, iOS/Android/Windows, retr
 
 Use this structure:
 
+Replace `{FINGERPRINT}` with the exact fingerprint computed in the Submit section. Do not emit the literal text `{FINGERPRINT}`.
+
 ```markdown
-<!-- ci-scan-fingerprint: <fingerprint> -->
+<!-- ci-scan-fingerprint: {FINGERPRINT} -->
 
 ## Summary
 [One-line description of the failure]
@@ -204,8 +206,10 @@ Use this structure:
 
 When opening a muting PR:
 
+Replace `{FINGERPRINT}` with the exact fingerprint computed in the Submit section. Do not emit the literal text `{FINGERPRINT}`.
+
 ```markdown
-<!-- ci-scan-fingerprint: <fingerprint> -->
+<!-- ci-scan-fingerprint: {FINGERPRINT} -->
 
 ## Reasoning
 Why the test fails and why disabling is the right short-term fix.

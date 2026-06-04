@@ -31,7 +31,10 @@ jobs:
             local issue_number="$1"
             local issue_json labels scanner_label title_prefix
 
-            issue_json="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${issue_number}")"
+            if ! issue_json="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${issue_number}")"; then
+              echo "::warning::Failed to fetch issue #${issue_number}."
+              return 1
+            fi
 
             if [ "$(jq -r 'has("pull_request")' <<< "${issue_json}")" = "true" ]; then
               echo "Skipping #${issue_number}; it is a pull request."
@@ -42,13 +45,16 @@ jobs:
             scanner_label=""
             for label in ci-scan ci-scan-net11; do
               if printf '%s\n' "${labels}" | grep -Fxq "${label}"; then
-                scanner_label="${label}"
-                break
+                title_prefix="[${label}] "
+                if jq -e --arg prefix "${title_prefix}" '(.title // "") | startswith($prefix)' <<< "${issue_json}" >/dev/null; then
+                  scanner_label="${label}"
+                  break
+                fi
               fi
             done
 
             if [ -z "${scanner_label}" ]; then
-              echo "Skipping #${issue_number}; no CI scanner label is present."
+              echo "Skipping #${issue_number}; no CI scanner label matches the issue title prefix."
               return 0
             fi
 
@@ -57,18 +63,15 @@ jobs:
               return 0
             fi
 
-            title_prefix="[${scanner_label}] "
-            if ! jq -e --arg prefix "${title_prefix}" '(.title // "") | startswith($prefix)' <<< "${issue_json}" >/dev/null; then
-              echo "Skipping #${issue_number}; title does not start with ${title_prefix}."
-              return 0
-            fi
-
             if [ "$(jq -r '.locked' <<< "${issue_json}")" = "true" ]; then
               echo "Issue #${issue_number} is already locked."
               return 0
             fi
 
-            gh issue lock "${issue_number}" --repo "${GITHUB_REPOSITORY}"
+            if ! gh issue lock "${issue_number}" --repo "${GITHUB_REPOSITORY}"; then
+              echo "::warning::Failed to lock issue #${issue_number}."
+              return 1
+            fi
             echo "Locked ${scanner_label} issue #${issue_number}."
           }
 
