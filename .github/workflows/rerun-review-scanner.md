@@ -103,13 +103,19 @@ steps:
     env:
       GH_TOKEN: ${{ github.token }}
       MAX_PRS: ${{ inputs.max_prs || '5' }}
+      REPO_OWNER: ${{ github.repository_owner }}
+      REPO_NAME: ${{ github.event.repository.name }}
     run: |
       $max = 5
       if ($env:MAX_PRS -match '^\d+$') {
         $max = [Math]::Max(1, [Math]::Min(20, [int]$env:MAX_PRS))
       }
       $output = "CustomAgentLogsTmp/RerunScanner/candidates.json"
-      .github/scripts/Query-RerunReadyPRs.ps1 -MaxPRs $max -OutputPath $output | Out-Null
+      .github/scripts/Query-RerunReadyPRs.ps1 `
+        -Owner $env:REPO_OWNER `
+        -Repo $env:REPO_NAME `
+        -MaxPRs $max `
+        -OutputPath $output | Out-Null
       $json = Get-Content -Raw -LiteralPath $output
       $delimiter = "EOF_$([Guid]::NewGuid().ToString('N'))"
       "candidates<<$delimiter" >> $env:GITHUB_OUTPUT
