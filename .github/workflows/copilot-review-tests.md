@@ -28,13 +28,9 @@ on:
 labels: ["pr-review", "testing"]
 
 # gh-aw slash commands match the first token only, so this workflow listens for
-# `/review` and then neutrally skips unless the comment uses the canonical
-# `/review tests` subcommand. workflow_dispatch is always allowed.
-if: >-
-  github.event_name == 'workflow_dispatch' ||
-  (github.event_name == 'issue_comment' &&
-   github.event.issue.pull_request &&
-   contains(github.event.comment.body, '/review tests'))
+# `/review` and then a deterministic filter job skips unless the comment uses
+# the canonical `/review tests` subcommand. workflow_dispatch is always allowed.
+if: needs.command-filter.outputs.should-run == 'true'
 
 permissions:
   contents: read
@@ -66,6 +62,34 @@ safe-outputs:
     run-success: "Test-failure review complete. [{workflow_name}]({run_url})"
     run-failure: "Test-failure review failed. [{workflow_name}]({run_url}) {status}"
 
+jobs:
+  command-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    steps:
+      - name: Confirm /review tests subcommand
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          ISSUE_PULL_REQUEST_URL: ${{ github.event.issue.pull_request.url }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "should-run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "should-run=false" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" != "issue_comment" ] || [ -z "${ISSUE_PULL_REQUEST_URL:-}" ]; then
+            exit 0
+          fi
+
+          TRIMMED_BODY=$(printf '%s' "$COMMENT_BODY" | sed -e 's/^[[:space:]]*//')
+          if [[ "$TRIMMED_BODY" =~ ^/review[[:space:]]+tests([[:space:]]|$) ]]; then
+            echo "should-run=true" >> "$GITHUB_OUTPUT"
+          fi
+
 tools:
   github:
     toolsets: [default]
@@ -87,22 +111,6 @@ concurrency:
 timeout-minutes: 30
 
 steps:
-  - name: Check actor permission
-    env:
-      GH_TOKEN: ${{ github.token }}
-      REPOSITORY: ${{ github.repository }}
-      ACTOR: ${{ github.actor }}
-    run: |
-      set -euo pipefail
-
-      PERMISSION=$(gh api "repos/${REPOSITORY}/collaborators/${ACTOR}/permission" --jq '.permission')
-      echo "User ${ACTOR} has permission: ${PERMISSION}"
-      # Keep this in sync with .github/workflows/review-trigger.yml.
-      if [[ "${PERMISSION}" != "admin" && "${PERMISSION}" != "maintain" && "${PERMISSION}" != "write" ]]; then
-        echo "::error::User ${ACTOR} does not have sufficient access. Only write/maintain/admin can trigger /review tests."
-        exit 1
-      fi
-
   - name: Verify connectivity to AzDO and Helix
     run: |
       set -euo pipefail

@@ -196,6 +196,20 @@ function New-Badge {
     return "  <img alt=""$safeAlt"" src=""https://img.shields.io/badge/$encodedLabel-$encodedMessage-$Color`?labelColor=30363d&style=flat-square"">"
 }
 
+function Collapse-OpenDetails {
+    param([string]$Content)
+
+    if ([string]::IsNullOrEmpty($Content)) {
+        return $Content
+    }
+
+    return [regex]::Replace(
+        $Content,
+        '<details\s+open\b[^>]*>',
+        '<details>',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+}
+
 function New-TestFailureReviewComment {
     param(
         [int]$PRNumber,
@@ -205,7 +219,7 @@ function New-TestFailureReviewComment {
     )
 
     $marker = "<!-- Test Failure Review -->"
-    $ReportContent = [regex]::Replace($ReportContent, '<details\s+open>', '<details>')
+    $ReportContent = Collapse-OpenDetails $ReportContent
     if ($ReportContent.Contains($marker)) {
         return [regex]::Replace($ReportContent, '(?m)^##\s+.*Test Failure Review.*$', '## Test Failure Review', 1)
     }
@@ -312,16 +326,9 @@ function Merge-TestFailureReviewSessions {
 
     $orderedKeys = @($newSha) + @($sessions.Keys | Where-Object { $_ -ne $newSha })
     $sessionBlocks = @()
-    $isFirst = $true
     foreach ($sha in $orderedKeys) {
         $block = $sessions[$sha]
-        if ($isFirst) {
-            $block = $block -replace '<details(?:\s+open)?>', '<details open>'
-            $isFirst = $false
-        }
-        else {
-            $block = $block -replace '<details\s+open>', '<details>'
-        }
+        $block = Collapse-OpenDetails $block
         $sessionBlocks += $block
     }
 
