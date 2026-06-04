@@ -203,7 +203,7 @@ function Get-LatestAISummaryComment {
         Where-Object {
             $_.body -and
             ([string]$_.body).Contains($AISummaryMarker) -and
-            ($_.user -and ($_.user.type -eq 'Bot' -or $_.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$'))
+            ($_.user -and $_.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$')
         } |
         Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true } |
         Select-Object -First 1)

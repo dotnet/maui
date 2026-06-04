@@ -220,6 +220,30 @@ Describe 'Resolve-RerunEligibility' {
         $result.Reason | Should -Be 'no-ai-summary'
     }
 
+    It 'ignores AI Summary comments from bots outside the allowlisted logins' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -Login 'dependabot[bot]' -Type 'Bot'
+            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'no-ai-summary'
+    }
+
+    It 'still recognizes AI Summary comments from github-actions[bot]' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha 'abcdef1') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'github-actions[bot]' -Type 'Bot'
+            New-TestComment -Id 2 -Body 'A meaningful follow-up after the summary.' -CreatedAt '2026-05-31T09:45:00Z'
+            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+
+        $result.Eligible | Should -BeTrue
+    }
+
     It 'uses the first session marker from an AI Summary' {
         $body = @"
 <!-- AI Summary -->

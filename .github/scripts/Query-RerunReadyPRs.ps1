@@ -49,27 +49,22 @@ function Get-CommitsForPR {
 }
 
 function Test-UserCanSetReviewOptions {
-    param([Parameter(Mandatory = $true)][string]$Login)
+    param([Parameter(Mandatory = $true)][object]$Comment)
 
-    $permission = gh api "repos/$Owner/$Repo/collaborators/$Login/permission" --jq '.permission' 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        return $false
-    }
-
-    return $permission -in @('write', 'maintain', 'admin')
+    $association = if ($Comment.author_association) { [string]$Comment.author_association } else { '' }
+    return $association -in @('OWNER', 'MEMBER', 'COLLABORATOR')
 }
 
 function Get-ReviewOptionAuthorLogins {
     param([object[]]$Comments)
 
-    $logins = @($Comments | Where-Object {
+    return @($Comments | Where-Object {
         $_.kind -eq 'issue-comment' -and
         $_.user -and
         -not [string]::IsNullOrWhiteSpace($_.user.login) -and
-        (ConvertFrom-ReviewCommand $_.body)
+        (ConvertFrom-ReviewCommand $_.body) -and
+        (Test-UserCanSetReviewOptions -Comment $_)
     } | ForEach-Object { [string]$_.user.login } | Sort-Object -Unique)
-
-    return @($logins | Where-Object { Test-UserCanSetReviewOptions -Login $_ })
 }
 
 function Get-PlatformFromLabels {

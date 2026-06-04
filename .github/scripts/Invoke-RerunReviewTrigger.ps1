@@ -274,20 +274,17 @@ $candidates = @(Get-CandidateItems -Path $env:RERUN_CANDIDATES_PATH)
 foreach ($item in $items) {
     $prNumber = 0
     try {
-        $prNumber = [int]$item.pr_number
+        $prNumberRaw = ([string]$item.pr_number).Trim()
+        if ($prNumberRaw -notmatch '^[1-9]\d*$') {
+            throw "Invalid pr_number; expected positive integer string."
+        }
+        $prNumber = [int]$prNumberRaw
         $decision = ([string]$item.decision).Trim().ToLowerInvariant()
-        $rerunCommentId = [Int64]$item.rerun_comment_id
         $reason = [string]$item.reason
         $expectedHeadSha = ([string]$item.expected_head_sha).Trim()
 
         if ($decision -notin @('trigger', 'skip')) {
-            throw "Invalid decision '$decision' for PR #$prNumber."
-        }
-        if ($prNumber -le 0) {
-            throw "Invalid PR number '$($item.pr_number)'."
-        }
-        if ($decision -eq 'trigger' -and $rerunCommentId -le 0) {
-            throw "Invalid rerun comment id '$($item.rerun_comment_id)' for trigger decision on PR #$prNumber."
+            throw "Invalid decision; expected 'trigger' or 'skip'."
         }
         if ([string]::IsNullOrWhiteSpace($expectedHeadSha)) {
             throw "Missing expected head SHA for $decision decision on PR #$prNumber."
@@ -296,8 +293,21 @@ foreach ($item in $items) {
         if (-not $candidate) {
             throw "PR #$prNumber was not in the deterministic rerun candidate set."
         }
-        if ($candidate.headSha -and [string]$candidate.headSha -ne $expectedHeadSha) {
-            throw "PR #$prNumber decision head SHA '$expectedHeadSha' does not match candidate head SHA '$($candidate.headSha)'."
+        if ([string]::IsNullOrWhiteSpace([string]$candidate.headSha)) {
+            throw "Candidate for PR #$prNumber has no recorded head SHA."
+        }
+        if ([string]$candidate.headSha -ne $expectedHeadSha) {
+            throw "PR #$prNumber decision head SHA does not match candidate head SHA."
+        }
+
+        # Source operational values from the deterministic candidate set, not from the agent's emission.
+        # The agent's pipeline_ref / platform / rerun_comment_id fields are advisory only.
+        $rerunCommentId = if ($candidate.rerunCommentId) { [Int64]$candidate.rerunCommentId } else { [Int64]0 }
+        $candidatePlatformFallback = [string]$candidate.platform
+        $candidatePipelineRef = Normalize-PipelineRef -Value ([string]$candidate.pipelineRef) -Fallback $DefaultPipelineRef
+
+        if ($decision -eq 'trigger' -and $rerunCommentId -le 0) {
+            throw "Candidate for PR #$prNumber has no rerun comment id; cannot trigger."
         }
 
         Write-Host "Processing PR #$prNumber decision=$decision reason=$(ConvertTo-SafeLogValue $reason)"
@@ -330,18 +340,13 @@ foreach ($item in $items) {
             }
         }
 
+        $preserveReadyLabel = $false
         if ($decision -eq 'trigger') {
             $rateLimit = Test-ReviewTriggerRateLimit -PRNumber $prNumber
             if (-not $rateLimit.Allowed) {
                 $latestText = if ($rateLimit.LatestTriggered) { $rateLimit.LatestTriggered.ToString('u') } else { 'never' }
-                Write-Host "  ⏭️ PR #$prNumber rerun trigger blocked by deterministic rate limit ($($rateLimit.Reason); recent=$($rateLimit.RecentCount); latest=$latestText)"
-                if ($rerunCommentId -gt 0) {
-                    try {
-                        Add-CommentReaction -CommentId $rerunCommentId -Content '-1'
-                    } catch {
-                        Write-Host "::warning::Rate-limited PR #$prNumber but failed to react '-1' to comment $rerunCommentId`: $_"
-                    }
-                }
+                Write-Host "  ⏭️ PR #$prNumber rerun trigger blocked by deterministic rate limit ($($rateLimit.Reason); recent=$($rateLimit.RecentCount); latest=$latestText); leaving $ReadyForRerunLabel in place for a future scan"
+                $preserveReadyLabel = $true
             } else {
                 $lockApplied = $false
                 try {
@@ -354,14 +359,13 @@ foreach ($item in $items) {
                         }
                     }
 
-                    $platform = Get-PlatformFromLabels -Labels $labels -Fallback ([string]$item.platform)
-                    $pipelineRef = Normalize-PipelineRef -Value ([string]$item.pipeline_ref) -Fallback $DefaultPipelineRef
-                    Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $pipelineRef
+                    $platform = Get-PlatformFromLabels -Labels $labels -Fallback $candidatePlatformFallback
+                    Invoke-AzDOReviewPipeline -PRNumber $prNumber -Platform $platform -PipelineRef $candidatePipelineRef
                     if ($rerunCommentId -gt 0) {
                         try {
                             Add-CommentReaction -CommentId $rerunCommentId -Content '+1'
                         } catch {
-                            Write-Host "::warning::Triggered PR #$prNumber but failed to react '+1' to comment $rerunCommentId`: $_"
+                            Write-Host "::warning::Triggered PR #$prNumber but failed to react '+1' to comment $rerunCommentId`: $(ConvertTo-SafeLogValue ([string]$_))"
                         }
                     }
                 } catch {
@@ -376,7 +380,7 @@ foreach ($item in $items) {
                 try {
                     Add-CommentReaction -CommentId $rerunCommentId -Content '-1'
                 } catch {
-                    Write-Host "::warning::Skipped PR #$prNumber but failed to react '-1' to comment $rerunCommentId`: $_"
+                    Write-Host "::warning::Skipped PR #$prNumber but failed to react '-1' to comment $rerunCommentId`: $(ConvertTo-SafeLogValue ([string]$_))"
                 }
             } else {
                 Write-Host "  ⏭️ No rerun comment id was provided; skipping '-1' reaction"
@@ -384,7 +388,9 @@ foreach ($item in $items) {
             Write-Host "  ⏭️ AI scanner decided not to trigger PR #$prNumber"
         }
 
-        if ($DryRun) {
+        if ($preserveReadyLabel) {
+            Write-Host "  ℹ️ Leaving $ReadyForRerunLabel on PR #$prNumber for a future scan"
+        } elseif ($DryRun) {
             Write-Host "[dry-run] Would remove $ReadyForRerunLabel from PR #$prNumber"
         } else {
             Remove-Label -PRNumber $prNumber -LabelName $ReadyForRerunLabel -Owner $Owner -Repo $Repo | Out-Null
@@ -392,7 +398,7 @@ foreach ($item in $items) {
         }
     } catch {
         $target = if ($prNumber -gt 0) { "PR #$prNumber" } else { "agent decision" }
-        Write-Host "::error::Failed to process $target`: $_"
+        Write-Host "::error::Failed to process $target`: $(ConvertTo-SafeLogValue ([string]$_))"
         continue
     }
 }

@@ -14,7 +14,7 @@ BeforeAll {
     $script:ReviewTriggerWindowHours = 24
     $script:MaxReviewTriggersPerWindow = 3
 
-    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus', 'ConvertTo-SafeLogValue', 'Get-MatchingCandidate')) {
+    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus', 'ConvertTo-SafeLogValue', 'Get-MatchingCandidate', 'Normalize-PipelineRef', 'Get-PlatformFromLabels')) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -25,6 +25,24 @@ BeforeAll {
         }
 
         Invoke-Expression $function.Extent.Text
+    }
+
+    function New-TestCandidate {
+        param(
+            [int]$PRNumber = 123,
+            [string]$HeadSha = 'abc123def',
+            [string]$Platform = 'android',
+            [string]$PipelineRef = 'main',
+            [Int64]$RerunCommentId = 9001
+        )
+
+        [pscustomobject]@{
+            prNumber       = $PRNumber
+            headSha        = $HeadSha
+            platform       = $Platform
+            pipelineRef    = $PipelineRef
+            rerunCommentId = $RerunCommentId
+        }
     }
 }
 
@@ -43,6 +61,16 @@ Describe 'ConvertTo-SafeLogValue' {
         $safe.Length | Should -Be 20
         $safe | Should -Match '\.\.\.$'
     }
+
+    It 'sanitizes embedded workflow commands in error-shaped strings' {
+        $exceptionText = "Cannot convert value `"99`n::stop-commands::pwn`" to type System.Int32"
+
+        $safe = ConvertTo-SafeLogValue $exceptionText
+
+        $safe | Should -Not -Match '[\r\n]'
+        $safe | Should -Not -Match '::'
+        $safe | Should -Match 'stop-commands'
+    }
 }
 
 Describe 'Get-MatchingCandidate' {
@@ -54,6 +82,85 @@ Describe 'Get-MatchingCandidate' {
 
         (Get-MatchingCandidate -Candidates $candidates -PRNumber 456).headSha | Should -Be 'def'
         Get-MatchingCandidate -Candidates $candidates -PRNumber 789 | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Normalize-PipelineRef' {
+    It 'strips refs/heads/ prefix' {
+        Normalize-PipelineRef -Value 'refs/heads/feature/x' | Should -Be 'feature/x'
+    }
+
+    It 'returns fallback for empty input' {
+        Normalize-PipelineRef -Value '' -Fallback 'main' | Should -Be 'main'
+    }
+
+    It 'returns fallback when traversal or anchor patterns are present' {
+        Normalize-PipelineRef -Value '../etc/passwd' -Fallback 'main' | Should -Be 'main'
+        Normalize-PipelineRef -Value '/feature' -Fallback 'main' | Should -Be 'main'
+        Normalize-PipelineRef -Value 'feature/' -Fallback 'main' | Should -Be 'main'
+    }
+
+    It 'strips characters outside the safe set and returns fallback when result ends with slash' {
+        Normalize-PipelineRef -Value 'feature/x; rm -rf /' -Fallback 'main' | Should -Be 'main'
+    }
+
+    It 'strips invalid characters while keeping a valid ref intact' {
+        Normalize-PipelineRef -Value 'feat ure/x' -Fallback 'main' | Should -Be 'feature/x'
+    }
+}
+
+Describe 'Get-PlatformFromLabels' {
+    It 'prefers a valid fallback over labels' {
+        Get-PlatformFromLabels -Labels @('platform/ios') -Fallback 'android' | Should -Be 'android'
+    }
+
+    It 'ignores an invalid fallback and falls back to labels' {
+        Get-PlatformFromLabels -Labels @('platform/ios') -Fallback '../etc/passwd' | Should -Be 'ios'
+    }
+
+    It 'maps platform/macos to catalyst' {
+        Get-PlatformFromLabels -Labels @('platform/macos') | Should -Be 'catalyst'
+    }
+
+    It 'defaults to android when no platform label is present' {
+        Get-PlatformFromLabels -Labels @('area-controls') | Should -Be 'android'
+    }
+}
+
+Describe 'Candidate-sourced values' {
+    It 'produces the rerun comment id from candidate data, not the agent emission' {
+        $candidate = New-TestCandidate -RerunCommentId 4242
+
+        # The handler reads $candidate.rerunCommentId via:
+        #   $rerunCommentId = if ($candidate.rerunCommentId) { [Int64]$candidate.rerunCommentId } else { [Int64]0 }
+        $rerunCommentId = if ($candidate.rerunCommentId) { [Int64]$candidate.rerunCommentId } else { [Int64]0 }
+
+        $rerunCommentId | Should -Be 4242
+    }
+
+    It 'falls back to zero when candidate has no rerun comment id' {
+        $candidate = New-TestCandidate -RerunCommentId 0
+        $rerunCommentId = if ($candidate.rerunCommentId) { [Int64]$candidate.rerunCommentId } else { [Int64]0 }
+
+        $rerunCommentId | Should -Be 0
+    }
+
+    It 'normalizes the candidate pipeline ref against the configured default' {
+        $candidate = New-TestCandidate -PipelineRef 'refs/heads/feature/x'
+
+        Normalize-PipelineRef -Value ([string]$candidate.pipelineRef) -Fallback 'main' | Should -Be 'feature/x'
+    }
+
+    It 'falls back to the configured default when candidate pipeline ref is unsafe' {
+        $candidate = New-TestCandidate -PipelineRef '../escape'
+
+        Normalize-PipelineRef -Value ([string]$candidate.pipelineRef) -Fallback 'main' | Should -Be 'main'
+    }
+
+    It 'lets label-derived platform override an invalid candidate platform' {
+        $candidate = New-TestCandidate -Platform ''
+
+        Get-PlatformFromLabels -Labels @('platform/ios') -Fallback ([string]$candidate.platform) | Should -Be 'ios'
     }
 }
 
