@@ -76,7 +76,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			bool changed = UpdateEstimates(isVerticalOrientation, maxMeasuredRegular, maxMeasuredHeader);
 			if (changed)
 			{
-				InvalidateBandCache();
+				// Keep the newly grown estimate; only invalidate structure so EnsureBandCache
+				// rebuilds using it. InvalidateBandCache() would reset the estimate we just set.
+				InvalidateBandCacheStructure();
 				EnsureBandCache(context, span, isVerticalOrientation);
 			}
 
@@ -103,6 +105,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			EnsureBandCache(context, span, isVerticalOrientation);
 			var realizationRange = GetRealizationIndexRange(context, span, isVerticalOrientation);
 
+			// Pre-measure all visible headers before the arrange loop. This lets us detect a
+			// downward correction (header actual height < current estimate) and rebuild the band
+			// cache inline so item bandStart offsets are already correct in the single arrange
+			// pass below. Without this, items would be placed at wrong positions on the first
+			// frame and a second layout pass would be needed to correct them (Issue #20855).
+			double maxPreMeasuredHeader = 0;
+			for (int i = realizationRange.start; i <= realizationRange.end; i++)
+			{
+				var child = context.GetOrCreateElementAt(i);
+				if (!IsHeaderOrFooter(child))
+					continue;
+
+				if (isVerticalOrientation)
+					child.Measure(new Size(finalSize.Width, double.PositiveInfinity));
+				else
+					child.Measure(new Size(double.PositiveInfinity, finalSize.Height));
+
+				double measured = isVerticalOrientation ? child.DesiredSize.Height : child.DesiredSize.Width;
+				maxPreMeasuredHeader = Math.Max(maxPreMeasuredHeader, measured);
+			}
+
+			// Apply downward header correction before arranging so band offsets are correct.
+			if (maxPreMeasuredHeader > 0)
+			{
+				double currentEstimate = isVerticalOrientation
+					? _estimatedHeaderVerticalExtent
+					: _estimatedHeaderHorizontalExtent;
+				if (maxPreMeasuredHeader < currentEstimate - 1.0)
+				{
+					if (isVerticalOrientation)
+						_estimatedHeaderVerticalExtent = maxPreMeasuredHeader;
+					else
+						_estimatedHeaderHorizontalExtent = maxPreMeasuredHeader;
+
+					// Rebuild inline with the corrected estimate so all bandStart offsets used
+					// below already reflect the true header height.
+					double regularExtent = GetEstimatedPrimarySize(isVerticalOrientation, isHeaderOrFooter: false);
+					double headerExtent = maxPreMeasuredHeader;
+					double spacing = isVerticalOrientation ? MinRowSpacing : MinColumnSpacing;
+					RebuildBandCache(context, span, isVerticalOrientation, regularExtent, headerExtent, spacing);
+				}
+			}
+
 			double cellWidth;
 			double cellHeight;
 
@@ -120,7 +165,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			double maxMeasuredRegular = 0;
-			double maxMeasuredHeader = 0;
 
 			for (int i = realizationRange.start; i <= realizationRange.end; i++)
 			{
@@ -138,23 +182,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (isHeaderOrFooter)
 				{
+					// Already measured in the pre-measure pass above; use DesiredSize directly.
 					if (isVerticalOrientation)
 					{
-						// Re-measure with unconstrained height so DesiredSize reflects the header's
-						// natural height against the current finalSize.Width (layout width may differ
-						// from the availableSize used during MeasureOverride, e.g. after window resize).
-						child.Measure(new Size(finalSize.Width, double.PositiveInfinity));
 						double headerHeight = child.DesiredSize.Height;
 						child.Arrange(new Rect(0, bandStart, finalSize.Width, headerHeight > 0 ? headerHeight : bandExtent));
-						maxMeasuredHeader = Math.Max(maxMeasuredHeader, child.DesiredSize.Height);
 					}
 					else
 					{
-						// Re-measure here for the same reason as the vertical case above.
-						child.Measure(new Size(double.PositiveInfinity, finalSize.Height));
 						double headerWidth = child.DesiredSize.Width;
 						child.Arrange(new Rect(bandStart, 0, headerWidth > 0 ? headerWidth : bandExtent, finalSize.Height));
-						maxMeasuredHeader = Math.Max(maxMeasuredHeader, child.DesiredSize.Width);
 					}
 				}
 				else
@@ -175,23 +212,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-			if (UpdateEstimates(isVerticalOrientation, maxMeasuredRegular, maxMeasuredHeader))
+			// Only check for upward estimate growth; downward correction was already handled
+			// in the pre-measure pass above before we began arranging.
+			if (UpdateEstimates(isVerticalOrientation, maxMeasuredRegular, maxPreMeasuredHeader))
 			{
-				InvalidateBandCache();
-			}
-			else if (maxMeasuredHeader > 0)
-			{
-				// UpdateEstimates only grows estimates upward. If freshly-measured header
-				// (via explicit Measure() above) is smaller than the current estimate, the
-				// band cache has inflated offsets that push items below group headers too far
-				// down. Invalidate so the next MeasureOverride rebuilds from the correct size.
-				double currentHeaderEstimate = isVerticalOrientation
-					? _estimatedHeaderVerticalExtent
-					: _estimatedHeaderHorizontalExtent;
-				if (maxMeasuredHeader < currentHeaderEstimate - 1.0)
-				{
-					InvalidateBandCache();
-				}
+				// Estimate grew upward — keep it, just invalidate structure so next pass rebuilds.
+				InvalidateBandCacheStructure();
 			}
 
 			if (isVerticalOrientation)
@@ -457,12 +483,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return changed;
 		}
 
-		void InvalidateBandCache()
+		// Invalidates band cache structure only. Keeps current estimates so the next
+		// RebuildBandCache uses the grown values. Use this after an upward estimate change.
+		void InvalidateBandCacheStructure()
 		{
 			_bandCacheValid = false;
 			_bandCacheItemCount = -1;
 			_cachedTotalPrimaryExtent = 0;
-			//Reset estimates so shrinking items recalculate correctly
+		}
+
+		// Full reset: invalidates structure AND resets estimates to defaults.
+		// Use this only when estimates need to shrink (downward correction) or
+		// when the item collection changes entirely.
+		void InvalidateBandCache()
+		{
+			InvalidateBandCacheStructure();
 			_estimatedVerticalRegularExtent = DefaultEstimatedRegularExtent;
 			_estimatedHorizontalRegularExtent = DefaultEstimatedRegularExtent;
 			_estimatedHeaderVerticalExtent = DefaultEstimatedHeaderExtent;
