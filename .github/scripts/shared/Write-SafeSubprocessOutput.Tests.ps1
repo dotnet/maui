@@ -450,7 +450,19 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
             'output',         # generic captured-output buffer in subprocess sites
             'modelName',      # PR-label-derived model identifier
             'resp',           # `gh api` response body (error path)
-            'reviewOutput'    # captured output of post-ai-summary-comment subprocess
+            'reviewOutput',   # captured output of post-ai-summary-comment subprocess
+            # Subprocess-capture variables. Each holds the 2>&1 stream of
+            # a `pwsh -NoProfile -File` invocation that runs PR-controlled
+            # code OR a trusted helper whose stdin/stdout passes through
+            # PR-aware content (gh api responses, PR diffs, etc.). Seeded
+            # explicitly so the taint closure flags any future raw
+            # `Write-Host $<name>` re-emit without relying on the helper
+            # call sites already being correctly wrapped.
+            'gateOutput',     # captured 2>&1 of verify-tests-fail.ps1 (Gate phase)
+            'detectOutput',   # captured 2>&1 of detect-ui-test-categories.ps1
+            'refreshOutput',  # captured 2>&1 of detect-ui-test-categories.ps1 (AI refresh path)
+            'testOutput',     # captured 2>&1 of regression-test runners
+            'runResult'       # Invoke-UITestWithRetry return object whose .Output flows ##vso-bearing lines
         )
 
         # Compute the TAINT CLOSURE: any local variable whose value is
@@ -517,7 +529,7 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
         # stream the parser scans; we audit them just like `Write-Host`.
         # `[Console]::WriteLine` is covered by a dedicated test below
         # (different AST shape — InvokeMemberExpressionAst).
-        #  : added Out-Host and
+        # added Out-Host and
         # Out-Default. Both reach the host stream that AzDO parses for
         # ##vso[...] exactly like Write-Host — a future refactor that
         # routes captured stdout through `$cliOut | Out-Host` or
@@ -531,7 +543,7 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
     }
 
     It 'has no raw Write-Host/Write-Output/Write-Information of a known-PR-derived variable (any expression shape)' {
-        # : the prior split tests only
+        # the prior split tests only
         # caught direct variable args, single-level member access, and
         # ExpandableString interpolation. They MISSED these idioms that
         # equally reach AzDO stdout:
@@ -544,18 +556,51 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
         # IndexExpressionAst, SubExpressionAst, ParenExpressionAst, AND
         # ExpandableStringExpressionAst.NestedExpressions (verified empirically),
         # so a single FindAll on each command-element subtree closes all the
-        # above shapes uniformly.
+        # above shapes uniformly. CommandElements.Count >= 1 also catches
+        # the bare pipeline-as-emitter shape (`$tainted | Out-Host`) — without
+        # this, the walker would miss any future refactor that pipes tainted
+        # data into an arity-zero emitter.
         $emitterCalls = $script:ReviewPRAst.FindAll(
             {
                 param($n)
                 $n -is [System.Management.Automation.Language.CommandAst] -and
-                $n.CommandElements.Count -ge 2 -and
+                $n.CommandElements.Count -ge 1 -and
                 $n.CommandElements[0] -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
                 ($script:EmitterCmdlets -contains $n.CommandElements[0].Value)
             },
             $true
         )
         $violations = @()
+
+        # For bare-pipe emitters (`$x | Out-Host`), the variable lives in the
+        # UPSTREAM pipeline element, not in the emitter's arguments. Walk
+        # pipeline ancestors of each emitter call and add upstream
+        # CommandExpressionAst values to the inspection set.
+        foreach ($call in @($emitterCalls)) {
+            # Walk up to the enclosing PipelineAst (if any).
+            $p = $call.Parent
+            while ($null -ne $p -and $p -isnot [System.Management.Automation.Language.PipelineAst]) {
+                $p = $p.Parent
+            }
+            if ($null -eq $p) { continue }
+            # If the emitter is not the first element, harvest preceding
+            # CommandExpressionAst nodes — those carry the tainted variable.
+            for ($i = 0; $i -lt $p.PipelineElements.Count; $i++) {
+                $el = $p.PipelineElements[$i]
+                if ($el -eq $call) { break }
+                if ($el -is [System.Management.Automation.Language.CommandExpressionAst]) {
+                    $upstreamVars = $el.FindAll(
+                        { param($n) $n -is [System.Management.Automation.Language.VariableExpressionAst] },
+                        $true)
+                    foreach ($v in $upstreamVars) {
+                        $name = $v.VariablePath.UserPath
+                        if ($script:PrDerivedVarsClosure.Contains($name) -and -not (& $isSanitized $v) -and -not (& $isSafeMemberAccess $v)) {
+                            $violations += "L$($call.Extent.StartLineNumber): bare-pipe `$$name | $($call.CommandElements[0].Value) (no sanitizer)"
+                        }
+                    }
+                }
+            }
+        }
 
         # Helper: a variable reference is "safe member access" if its
         # IMMEDIATE parent is a MemberExpression accessing a member that
@@ -733,7 +778,6 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
         # Smoke-check that the sanitization actually exists in the file. If
         # someone refactors away ALL the sanitization calls, this fails fast
         # before the next reviewer round.
-        #
         # Two equivalent sanitizer shapes are counted:
         #   * `| Out-SafePRSubprocessLine` — pipeline form, used for
         #     subprocess stdout where line-by-line streaming is natural.
@@ -888,7 +932,7 @@ Describe 'Review-PR.ps1 Write-Host inventory — no raw PR-derived echo (+ )' {
             if ($null -eq $scopeNode) { continue }
 
             $consumerFound = $false
-            #  : forward def-use walk through scalar
+            # forward def-use walk through scalar
             # copies. If `$mid = $capVar` and later `$mid | Out-Safe...`,
             # the consumer-search above misses it. Build a small watch-set
             # of "tainted" variable names: start with $capVar, then add any

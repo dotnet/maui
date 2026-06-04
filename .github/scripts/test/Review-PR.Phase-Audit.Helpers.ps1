@@ -122,7 +122,7 @@ function Resolve-StaticStringValue {
     if ($Depth -gt 12) { return $null }
     $next = $Depth + 1
 
-    #  : state-aware fallback.
+    # state-aware fallback.
     # When pure-AST resolution returns null, consult $script:CurrentResolveState
     # set by Pattern 6 to fold values that flow through hashState/varState/
     # arrayState. The state is null when this function is called outside
@@ -187,7 +187,7 @@ function Resolve-StaticStringValue {
         return $null
     }
     if ($Node -is [System.Management.Automation.Language.SubExpressionAst]) {
-        #  : SubExpression `$(...)` may wrap ANY
+        # SubExpression `$(...)` may wrap ANY
         # statement type, not just `PipelineAst > CommandExpression` or
         # `IfStatementAst`. Walk the inner StatementBlockAst via the
         # shared Resolve-StatementBlockYield helper which dispatches
@@ -199,7 +199,7 @@ function Resolve-StaticStringValue {
         # rule: drop the cast and evaluate the child. If a string cast
         # would actually transform the value we still over-flag — fine
         # for default-deny.
-        #  : when the child is a member/index over
+        # when the child is a member/index over
         # hashState, the pure-AST recurse returns null. State fallback
         # closes the gap.
         $val = Resolve-StaticStringValue -Node $Node.Child -Depth $next
@@ -207,7 +207,7 @@ function Resolve-StaticStringValue {
         return $val
     }
 
-    #  : Ternary `cond ? a : b` and null-coalescing
+    # Ternary `cond ? a : b` and null-coalescing
     # `a ?? b` (PowerShell 7+). Resolve both branches and return any
     # branch that matches gh (attacker controls which branch fires).
     # Falls back to the first non-null branch.
@@ -386,7 +386,7 @@ function Resolve-StaticStringValue {
         $Node.Member -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
         $memberName = $Node.Member.Value
 
-        #  : ({'gh'}).Invoke() / .InvokeReturnAsIs() —
+        # ({'gh'}).Invoke() / .InvokeReturnAsIs() —
         # fold the scriptblock body's yield. Strip paren wrap first.
         if ($memberName -in @('Invoke', 'InvokeReturnAsIs')) {
             $recv = $Node.Expression
@@ -586,7 +586,7 @@ function Resolve-StaticStringValue {
         }
     }
 
-    # : -replace BinaryExpressionAst (operator form).
+    # -replace BinaryExpressionAst (operator form).
     # `'xyz' -replace 'xyz','gh'` folds to 'gh'. The .Replace() method form
     # is already handled via the InvokeMember/foldersN['Replace'] path; this
     # closes the operator-syntax bypass that produced an unfolded
@@ -633,7 +633,7 @@ function Resolve-StaticStringValue {
         }
     }
 
-    # : MemberExpressionAst (property access, not method
+    # MemberExpressionAst (property access, not method
     # call). Two folds matter here:
     #   `@{a='gh'}.a`          — HashtableAst lookup
     #   `[pscustomobject]@{a='gh'}.a` — same shape under a ConvertExpression
@@ -682,7 +682,7 @@ function Resolve-StaticStringValue {
         }
     }
 
-    # : IndexExpression over a string constant — `'hg'[1]`
+    # IndexExpression over a string constant — `'hg'[1]`
     # is 'g'; `'hg'[1..0]` is 'gh'. Treat the string as a char-array target.
     if ($Node -is [System.Management.Automation.Language.IndexExpressionAst]) {
         $target = $Node.Target
@@ -733,7 +733,7 @@ function Resolve-StaticStringValue {
                 }
             }
         } elseif ($target -is [System.Management.Automation.Language.HashtableAst]) {
-            # : `@{tool='gh'}['tool']` or
+            # `@{tool='gh'}['tool']` or
             # `([pscustomobject]@{tool='gh'})['tool']` after the
             # cast/paren unwrap above. Look up by string-constant key.
             if ($idx -is [System.Management.Automation.Language.StringConstantExpressionAst] -or
@@ -847,7 +847,7 @@ function Resolve-StaticStringValue {
     # attacker can steer execution into). If no branches are literal,
     # return $null.
 
-    #  : walk EACH clause body via the shared
+    # walk EACH clause body via the shared
     # Resolve-StatementBlockYield helper. The old per-walker logic
     # gated on `Statements.Count -eq 1`, missing every multi-statement
     # body (`{ 'gh'; break }`) and every nested control-flow shape
@@ -869,9 +869,9 @@ function Resolve-StaticStringValue {
         return $null
     }
 
-    # : Switch-statement as RHS of an assignment,
+    # Switch-statement as RHS of an assignment,
     # or inline `$(switch (…) {…})`. Walk every clause body (including
-    # the default block) via Resolve-StatementBlockYield (/#6).
+    # the default block) via Resolve-StatementBlockYield.
     if ($Node -is [System.Management.Automation.Language.SwitchStatementAst]) {
         $candidates = @()
         foreach ($clause in $Node.Clauses) {
@@ -889,10 +889,10 @@ function Resolve-StaticStringValue {
         return $null
     }
 
-    # : Try/catch/finally as RHS of an assignment,
+    # Try/catch/finally as RHS of an assignment,
     # or inline `$(try { 'gh' } catch { 'no' })`. Walk Try-body,
     # each catch-clause body, and the finally-block via
-    # Resolve-StatementBlockYield (/#6).
+    # Resolve-StatementBlockYield.
     if ($Node -is [System.Management.Automation.Language.TryStatementAst]) {
         $candidates = @()
         $blocks = @($Node.Body)
@@ -911,14 +911,14 @@ function Resolve-StaticStringValue {
         return $null
     }
 
-    #  : DataStatementAst body — `$x = data { 'gh' }`.
-    #  : use Resolve-StatementBlockYield so the body
+    # DataStatementAst body — `$x = data { 'gh' }`.
+    # use Resolve-StatementBlockYield so the body
     # can contain nested if/switch/try/loop/return/multi-statement shapes.
     if ($Node -is [System.Management.Automation.Language.DataStatementAst]) {
         return Resolve-StatementBlockYield -Block $Node.Body
     }
 
-    #  : LoopStatementAst — foreach/do-until/do-while/
+    # LoopStatementAst — foreach/do-until/do-while/
     # while/for. All derive from LoopStatementAst with a `.Body` of
     # StatementBlockAst.  : use the shared walker
     # so nested if/switch/return/foreach are all resolved.
@@ -926,13 +926,13 @@ function Resolve-StaticStringValue {
         return Resolve-StatementBlockYield -Block $Node.Body
     }
 
-    #  : ScriptBlockExpressionAst — `({'gh'}).Invoke()`
+    # ScriptBlockExpressionAst — `({'gh'}).Invoke()`
     # and friends. The expression is wrapped in a paren above; here we
     # fold the inner block as if it yielded. Tracks invoke through a
     # subsequent .Invoke() resolved by Resolve-StaticStringValue's
     # InvokeMemberExpressionAst handler (which dispatches to here when
     # the receiver is a ScriptBlockExpressionAst).
-    #  : also walk ProcessBlock — a `process{}`
+    # also walk ProcessBlock — a `process{}`
     # clause fires once per pipeline input, and `({process{'gh'}}).Invoke()`
     # yields 'gh' at runtime. (BeginBlock-only scriptblocks throw at
     # runtime; not a real attack — skip.)
@@ -950,17 +950,17 @@ function Resolve-StaticStringValue {
         return $null
     }
 
-    #  : Pipeline-fold for `'safe','gh' | Select-Object -First/-Last N`.
+    # Pipeline-fold for `'safe','gh' | Select-Object -First/-Last N`.
     # Detect the limited common shape: ArrayLiteralAst (or array of literals)
     # as the source, followed by a CommandAst named 'Select-Object' or 'select'
     # with -First|-Last parameter and a literal positive integer argument.
-    #  : also fold `<any> | ForEach-Object { 'gh' }` —
+    # also fold `<any> | ForEach-Object { 'gh' }` —
     # the scriptblock body yields a literal regardless of source.
     if ($Node -is [System.Management.Automation.Language.PipelineAst] -and $Node.PipelineElements.Count -eq 2) {
         $srcElem = $Node.PipelineElements[0]
         $selElem = $Node.PipelineElements[1]
 
-        #  : ForEach-Object scriptblock body — fold the
+        # ForEach-Object scriptblock body — fold the
         # body via Resolve-StatementBlockYield. Works for any source.
         if ($selElem -is [System.Management.Automation.Language.CommandAst] -and
             $selElem.CommandElements.Count -ge 2 -and
@@ -1047,7 +1047,7 @@ function Resolve-StaticStringValue {
 }
 
 # ────────────────────────────────────────────────────────────────────
-#  : shared helpers
+# shared helpers
 # that the per-AST walkers above and the assignment loop below both
 # need. Placed after Resolve-StaticStringValue so they can recurse into
 # it; PowerShell resolves function names at call time so order works.
@@ -1126,7 +1126,7 @@ function Resolve-StatementBlockYield {
                 $folded = Resolve-StaticStringValue -Node $stmt.Pipeline.PipelineElements[0].Expression
             }
         } elseif ($stmt -is [System.Management.Automation.Language.ThrowStatementAst]) {
-            #  : `throw 'gh'` — PowerShell's
+            # `throw 'gh'` — PowerShell's
             # `& <ErrorRecord>` calls .ToString() which yields the
             # throw operand. `try { throw 'gh' } catch { $_ }` followed
             # by `& $cmd` therefore invokes 'gh'.
@@ -1831,7 +1831,7 @@ function Get-IndirectionRecords {
     # three reviewers verified
     # against `842bdfc72b`.
 
-    # : also handles
+    # also handles
     #   * Multi-LHS array assignment: `$a, $b = 'gh', 'foo'` — split into
     #     scalar-per-pair and resolve each independently.
     #   * Compound `+=`: `$cmd = 'g'; $cmd += 'h'` — walk all assignments
@@ -1851,7 +1851,7 @@ function Get-IndirectionRecords {
     # Per-variable accumulator state: name → @{ Value=<string>; LastAssign=<ast> }
     $varState = @{}
 
-    # : per-variable HASHTABLE-LITERAL state.
+    # per-variable HASHTABLE-LITERAL state.
     # Tracks `$h = @{key='gh'}` so that a subsequent `$cmd = $h.key`
     # (member access) or `$cmd = $h['key']` (index access) can be resolved
     # to the literal value at the consumer assignment. Without this,
@@ -1882,7 +1882,7 @@ function Get-IndirectionRecords {
     $arrayState = @{}
 
     # Helper: given a HashtableAst, return a fresh @{key=valueAst} dictionary.
-    #  : keys go through Resolve-HashKeyName so computed-
+    # keys go through Resolve-HashKeyName so computed-
     # literal keys (`('to' + 'ol')`) and variable refs that fold via varState
     # resolve transparently. Non-foldable keys are silently skipped.
     $unpackHashtableAst = {
@@ -1928,7 +1928,7 @@ function Get-IndirectionRecords {
             $valueAst = $rhs.PipelineElements[0].Expression
         } elseif ($rhs -is [System.Management.Automation.Language.PipelineAst] -and
                   $rhs.PipelineElements.Count -ge 2) {
-            #  : multi-element pipeline, e.g.
+            # multi-element pipeline, e.g.
             # `$cmd = 'safe','gh' | Select-Object -Last 1`.
             # Pass the whole PipelineAst through to Resolve-StaticStringValue
             # which has a dedicated pipeline-fold handler for limited common
@@ -1957,7 +1957,7 @@ function Get-IndirectionRecords {
         # Unwrap @(…) around an expression (`$x = @('gh')` or multi-LHS
         # RHS `$a,$b = @('g','h')`). The @(…) wraps a SubExpression
         # containing a single StatementBlock > Pipeline > CommandExpression.
-        #  : ONLY unwrap when the inner expression is
+        # ONLY unwrap when the inner expression is
         # itself an ArrayLiteralAst — otherwise we destroy array context.
         # `$a = @(@{tool='gh'})` is a 1-element array; stripping the @()
         # would conflate it with `$a = @{tool='gh'}` (a bare hashtable).
@@ -1975,10 +1975,10 @@ function Get-IndirectionRecords {
                 # array-state seeding can handle the 1-element @(<expr>) case.
             }
         }
-        #  : unwrap ConvertExpression around a HashtableAst
+        # unwrap ConvertExpression around a HashtableAst
         # so `[hashtable]@{…}`, `[ordered]@{…}`, `[pscustomobject]@{…}` all
         # expose the inner HashtableAst for state tracking.
-        #  : also unwrap a ParenExpression INSIDE the
+        # also unwrap a ParenExpression INSIDE the
         # ConvertExpression — `[hashtable](@{tool='gh'})` has shape
         # ConvertExpression > ParenExpression > Pipeline > Cmd > Hashtable.
         if ($valueAst -is [System.Management.Automation.Language.ConvertExpressionAst]) {
@@ -2002,7 +2002,7 @@ function Get-IndirectionRecords {
     # is a variable, by consulting $hashState. Returns the folded string
     # or $null. ( G4 — hashtable-variable propagation.)
 
-    #  : now recursive — handles nested `$h.a.b` chains
+    # now recursive — handles nested `$h.a.b` chains
     # by resolving the inner `.a` to its value AST (HashtableAst), then
     # looking up `.b` in that inner map. Also follows IndexExpressionAst
     # roots and stores-then-reads through $arrayState.
@@ -2058,7 +2058,7 @@ function Get-IndirectionRecords {
             # MemberExpression: resolve receiver to a hashMap, then look
             # up the member name in that map. Returns the looked-up AST
             # (which may itself be a HashtableAst for nesting).
-            #  : member name may be a dynamic
+            # member name may be a dynamic
             # variable reference `$h.$prop`. Resolve via varStateLocal
             # so a prior `$prop = 'tool'` propagates.
             if ($n -is [System.Management.Automation.Language.MemberExpressionAst] -and
@@ -2074,7 +2074,7 @@ function Get-IndirectionRecords {
                 if ($receiver -is [System.Collections.IDictionary] -and $receiver.__KIND__ -eq 'hashMap') {
                     if ($null -ne $mName -and $receiver.Map.ContainsKey($mName)) {
                         $valAst = $receiver.Map[$mName]
-                        #  : stored value may itself be
+                        # stored value may itself be
                         # a key-map dictionary (when LHS-write copied a
                         # hashState entry by reference) — return as hashMap.
                         if ($valAst -is [System.Collections.IDictionary] -and -not $valAst.ContainsKey('__KIND__')) {
@@ -2087,7 +2087,7 @@ function Get-IndirectionRecords {
                         }
                         return @{ __KIND__ = 'valueAst'; Ast = $valAst }
                     }
-                    #  : tainted-hash fallback —
+                    # tainted-hash fallback —
                     # if the receiver was poisoned by an unresolvable-key
                     # write of a gh-named value, surface that on ANY read.
                     if ($receiver.Map.ContainsKey('__TAINTED__')) {
@@ -2098,7 +2098,7 @@ function Get-IndirectionRecords {
             }
 
             # IndexExpression with string/dynamic key: same as MemberExpression.
-            #  : allow `$h[$prop]` by routing through
+            # allow `$h[$prop]` by routing through
             # Resolve-HashKeyName (falls through to varStateLocal).
             if ($n -is [System.Management.Automation.Language.IndexExpressionAst]) {
                 $idx = $n.Index
@@ -2125,7 +2125,7 @@ function Get-IndirectionRecords {
                         }
                     }
                 } else {
-                    #  : unresolvable key read against
+                    # unresolvable key read against
                     # a tainted tracked hashtable → surface the tainted value.
                     if ($n.Target -is [System.Management.Automation.Language.VariableExpressionAst]) {
                         $tname = $n.Target.VariablePath.UserPath
@@ -2145,7 +2145,7 @@ function Get-IndirectionRecords {
                             $elems = $arrayStateLocal[$vname]
                             if ($i -ge 0 -and $i -lt $elems.Count) {
                                 $elt = $elems[$i]
-                                #  : array-of-hashes — if
+                                # array-of-hashes — if
                                 # the indexed element is a HashtableAst, wrap as
                                 # hashMap so the next `.tool` chain resolves.
                                 $innerHt = & $resolveToHashAst $elt
@@ -2156,7 +2156,7 @@ function Get-IndirectionRecords {
                             }
                         }
                     } else {
-                        #  : chain index — `$h.arr[0].tool`.
+                        # chain index — `$h.arr[0].tool`.
                         # Target is a Member/Index chain (not a bare variable).
                         # Resolve target first; if it's a valueAst pointing to
                         # an array-literal-like AST, index into it.
@@ -2204,7 +2204,7 @@ function Get-IndirectionRecords {
             return $null
         }
 
-        #  : bump recursion-depth cap from 8 to 64.
+        # bump recursion-depth cap from 8 to 64.
         # 8 was bypassable with a 9-level nested hashtable. Real code
         # rarely goes beyond 3-4 levels; 64 is comfortably above any
         # legitimate use AND keeps the audit fast (chain resolve is O(depth)).
@@ -2222,7 +2222,7 @@ function Get-IndirectionRecords {
     # `$h.k.ToString()`, `$h.k.ToLower()`). The receiver folds via
     # hashState; we then re-apply Resolve-StaticStringValue to the
     # synthesized member-call shape.  opus-4.7x #7.
-    #  : recurse on the RECEIVER when it's itself
+    # recurse on the RECEIVER when it's itself
     # an InvokeMemberExpressionAst, so chains like `.Trim().ToLower()`
     # / `.Trim().ToLower().Replace('!','')` fold by applying each
     # method in sequence. Stops as soon as any intermediate receiver
@@ -2290,7 +2290,7 @@ function Get-IndirectionRecords {
         return $null
     }
 
-    #  : collect ParameterAst nodes with literal default
+    # collect ParameterAst nodes with literal default
     # values, and synthesize virtual assignments. The audit walks
     # AssignmentStatementAst only; without this `function Foo { param($x='gh') & $x … }`
     # silently bypasses Pattern 6 because `param($x='gh')` is a ParameterAst,
@@ -2304,10 +2304,10 @@ function Get-IndirectionRecords {
         $true
     )
 
-    #  : collect InvokeMember mutations interleaved
+    # collect InvokeMember mutations interleaved
     # with assignments. `$h.Add('tool','gh')` and `$h.Set_Item('tool','gh')`
     # are bare InvokeMemberExpressionAst statements, not assignments.
-    #  : also collect ArrayList .Add(value) and
+    # also collect ArrayList .Add(value) and
     # .Insert(int, value). These are 1-arg / 2-arg-with-int-first
     # mutations on an ArrayList tracked in arrayState.
     $invokeMutations = $Ast.FindAll(
@@ -2321,16 +2321,16 @@ function Get-IndirectionRecords {
         $true
     )
 
-    #  : also detect New-Object/[Type]::new() seeds
+    # also detect New-Object/[Type]::new() seeds
     # for ArrayList/Hashtable/OrderedDictionary so subsequent .Add/.Insert
     # mutations can update tracked state. Collect at the AssignmentStatement
     # level so we know which variable is being seeded.
     $arrayListCtorCheck = {
         param($node)
         # `New-Object System.Collections.ArrayList` / `New-Object 'System.Collections.ArrayList'`
-        #  : also detect Hashtable/OrderedDictionary
+        # also detect Hashtable/OrderedDictionary
         # via New-Object, and support `New-Object -TypeName <T>` form.
-        #  : also detect `New-Object psobject -Property @{...}`
+        # also detect `New-Object psobject -Property @{...}`
         # which creates a PSCustomObject. Returns ('psobject', $hashtableAst)
         # so the caller can seed hashState with the unpacked -Property hashtable.
         if ($node -is [System.Management.Automation.Language.CommandAst] -and
@@ -2458,7 +2458,7 @@ function Get-IndirectionRecords {
         if ($step.Kind -eq 'invokeMutation') {
             # Hashtable: `$h.Add('key', 'value')` / `$h.Set_Item('key', 'value')` /
             # `$h.Insert(i, 'key', 'value')` — update the per-variable map.
-            #  : also handle ArrayList .Add(value)
+            # also handle ArrayList .Add(value)
             # (1 arg) and .Insert(int, value) — update arrayState.
             $im = $step.Node
             $tName = $im.Expression.VariablePath.UserPath
@@ -2469,14 +2469,14 @@ function Get-IndirectionRecords {
             if ($hashState.ContainsKey($tName)) {
                 # .Add(key, value) / .Set_Item(key, value) — 2 args, key first
                 if ($args.Count -ge 2) {
-                    #  : route key through Resolve-HashKeyName
+                    # route key through Resolve-HashKeyName
                     # so variable refs that fold via varState (`$k = 'tool';
                     # $h.Add($k, 'gh')`) propagate.
                     $keyName = Resolve-HashKeyName -KeyAst $args[0] -VarState $varState
                     if ($null -ne $keyName) {
                         $hashState[$tName][$keyName] = $args[1]
                     } else {
-                        #  : tainted-key write fallback.
+                        # tainted-key write fallback.
                         $rhsVal = Resolve-StaticStringValue -Node $args[1]
                         if ($rhsVal -and (Test-IsGhCommandName $rhsVal)) {
                             $hashState[$tName]['__TAINTED__'] = $args[1]
@@ -2556,11 +2556,11 @@ function Get-IndirectionRecords {
             }
 
             # array-literal tracking (parallel to hashState).
-            #  : handle `$a += 'gh'` append on a
+            # handle `$a += 'gh'` append on a
             # tracked array. Don't drop state; append the new element.
-            #  : handle Equals-with-Plus
+            # handle Equals-with-Plus
             # `$a = $a + @('x')` / `$a = $a + 'gh'` — extend rather than drop.
-            #  : seed empty arrayState when RHS is
+            # seed empty arrayState when RHS is
             # `New-Object System.Collections.ArrayList` or `[ArrayList]::new()`.
             $seededArrayFromCopy = $false
             if ($opNameForHash -eq 'Equals') {
@@ -2577,7 +2577,7 @@ function Get-IndirectionRecords {
                         if ($inner -is [System.Management.Automation.Language.ArrayLiteralAst]) {
                             $arrayLitAst = $inner
                         } else {
-                            #  : `@(<expr>)` with a
+                            # `@(<expr>)` with a
                             # single non-ArrayLiteralAst inner expression
                             # (e.g. `@(@{tool='gh'})`) is a 1-element array.
                             # Seed arrayState directly with the single element.
@@ -2590,7 +2590,7 @@ function Get-IndirectionRecords {
                     $arrayState[$vName] = @($arrayLitAst.Elements)
                     $seededArrayFromCopy = $true
                 }
-                #  : empty `@()` seeds arrayState
+                # empty `@()` seeds arrayState
                 # with an empty list so subsequent `$a = $a + 'gh'` /
                 # `$a += 'gh'` mutations can extend it.
                 if (-not $seededArrayFromCopy -and
@@ -2609,7 +2609,7 @@ function Get-IndirectionRecords {
                     $arrayState[$vName] = @()
                     $seededArrayFromCopy = $true
                 }
-                #  : ArrayList/Hashtable ctor seed.
+                # ArrayList/Hashtable ctor seed.
                 if (-not $seededArrayFromCopy) {
                     $rhsAstForCtor = $valueAst
                     if ($rhsAstForCtor -is [System.Management.Automation.Language.ParenExpressionAst]) {
@@ -2645,12 +2645,12 @@ function Get-IndirectionRecords {
                         # don't set seededArrayFromCopy — this is hashState
                     } elseif ($ctorKind -is [System.Collections.IDictionary] -and
                               $ctorKind.Kind -eq 'psobject-property') {
-                        #  : `New-Object psobject -Property @{...}`
+                        # `New-Object psobject -Property @{...}`
                         # — seed hashState directly from the -Property hashtable.
                         $hashState[$vName] = & $unpackHashtableAst $ctorKind.Hashtable
                     }
                 }
-                #  : Equals-with-BinaryPlus on tracked array.
+                # Equals-with-BinaryPlus on tracked array.
                 # `$a = $a + @('x')` or `$a = $a + 'gh'` — extend rather than drop.
                 if (-not $seededArrayFromCopy -and
                     $valueAst -is [System.Management.Automation.Language.BinaryExpressionAst] -and
@@ -2689,7 +2689,7 @@ function Get-IndirectionRecords {
                     }
                 }
             } elseif ($opNameForHash -eq 'PlusEquals' -and $arrayState.ContainsKey($vName)) {
-                #  : `$a += elem` / `$a += @(elem, ...)` —
+                # `$a += elem` / `$a += @(elem, ...)` —
                 # extend the tracked array instead of dropping state.
                 $rhsExpr = script:Get-AssignmentRhsExpression $rhs
                 $newElems = $null
@@ -2728,14 +2728,14 @@ function Get-IndirectionRecords {
             }
         } elseif ($lhs -is [System.Management.Automation.Language.IndexExpressionAst] -and
                   $lhs.Target -is [System.Management.Automation.Language.VariableExpressionAst]) {
-            #  : `$h['x'] = 'gh'` write-through. Update the
+            # `$h['x'] = 'gh'` write-through. Update the
             # per-variable map in place, if we're tracking the variable.
-            #  : key may be a variable refering to a
+            # key may be a variable refering to a
             # statically-known literal (`$k = 'tool'; $h[$k] = 'gh'`).
             # Use Resolve-HashKeyName so varState propagation chains in.
-            #  : also handle integer-key write-through
+            # also handle integer-key write-through
             # for tracked arrays — `$a[0] = 'gh'` updates arrayState in place.
-            #  : unwrap ParenExpression around integer
+            # unwrap ParenExpression around integer
             # index — `$a[(0)] = 'gh'` should still update arrayState.
             $tName = $lhs.Target.VariablePath.UserPath
             # Index unwrap: paren around constant int.
@@ -2756,7 +2756,7 @@ function Get-IndirectionRecords {
                         $hashState[$tName][$keyName] = $rhsExpr
                     }
                 } else {
-                    #  : tainted-key write — if RHS is
+                    # tainted-key write — if RHS is
                     # gh-named, mark the entire tracked hashtable as poisoned
                     # so any subsequent read (resolved or not) flags. Stored
                     # under reserved key `__TAINTED__`.
@@ -2783,13 +2783,13 @@ function Get-IndirectionRecords {
         } elseif ($lhs -is [System.Management.Automation.Language.MemberExpressionAst] -and
                   -not ($lhs -is [System.Management.Automation.Language.InvokeMemberExpressionAst]) -and
                   $lhs.Member -is [System.Management.Automation.Language.StringConstantExpressionAst]) {
-            #  : `$h.x = 'gh'` member-write-through.
-            #  : also support NESTED member chains
+            # `$h.x = 'gh'` member-write-through.
+            # also support NESTED member chains
             # `$h.outer.tool = 'gh'`. Walk the LHS expression chain to its
             # root variable, then descend through tracked hashMaps
             # (creating intermediate empty maps when needed) and mutate
             # the leaf. Only when the root is itself in hashState.
-            #  : also handle PlusEquals — `$h.tool += 'h'`.
+            # also handle PlusEquals — `$h.tool += 'h'`.
             $chain = New-Object System.Collections.Generic.List[string]
             $chain.Insert(0, $lhs.Member.Value)
             $current = $lhs.Expression
@@ -2817,7 +2817,6 @@ function Get-IndirectionRecords {
                 for ($i = 0; $i -lt $chain.Count - 1; $i++) {
                     $k = $chain[$i]
                     if (-not $cur.ContainsKey($k)) {
-                        $cur[$k] = @{}
                         $newInner = @{}
                         $cur[$k] = $newInner
                         $cur = $newInner
@@ -2831,7 +2830,7 @@ function Get-IndirectionRecords {
                         } elseif ($existing -is [System.Collections.IDictionary]) {
                             $cur = $existing
                         } elseif ($existing -is [System.Management.Automation.Language.VariableExpressionAst]) {
-                            #  : existing is a VariableExpressionAst
+                            # existing is a VariableExpressionAst
                             # stored from `$h.inner = $other`. Resolve it.
                             $srcName = $existing.VariablePath.UserPath
                             if ($hashState.ContainsKey($srcName)) {
@@ -2847,7 +2846,7 @@ function Get-IndirectionRecords {
                     $rhsExpr = script:Get-AssignmentRhsExpression $rhs
                     if ($null -ne $rhsExpr) {
                         if ($opNameForHash -eq 'Equals') {
-                            #  : if RHS is a VariableExpressionAst
+                            # if RHS is a VariableExpressionAst
                             # pointing to a tracked hashtable, store the hashMap
                             # (shared reference) so chain resolver can dereference.
                             if ($rhsExpr -is [System.Management.Automation.Language.VariableExpressionAst] -and
@@ -2857,7 +2856,7 @@ function Get-IndirectionRecords {
                                 $cur[$leafKey] = $rhsExpr
                             }
                         } elseif ($opNameForHash -eq 'PlusEquals') {
-                            #  : hash member += . Resolve
+                            # hash member += . Resolve
                             # existing value, fold RHS, concat, store.
                             $existingAst = if ($cur.ContainsKey($leafKey)) { $cur[$leafKey] } else { $null }
                             $existingVal = if ($null -ne $existingAst) { Resolve-StaticStringValue -Node $existingAst } else { $null }
@@ -2895,7 +2894,7 @@ function Get-IndirectionRecords {
             # pairing. Zip pairs positionally. :
             # also accept ParenExpressionAst and ArrayExpressionAst around
             # the array literal — Get-AssignmentRhsExpression unwraps both.
-            #  : also handle RHS as a VariableExpressionAst
+            # also handle RHS as a VariableExpressionAst
             # pointing to a tracked array. `$a = 'gh','safe'; $x,$y = $a`
             # zips arrayState['a'] elements against the LHS names.
             $rhsExpr = script:Get-AssignmentRhsExpression $rhs
@@ -2957,7 +2956,6 @@ function Get-IndirectionRecords {
                         Value = $newValue
                         LastAssign = $a
                     }
-                    #  :
                     # eagerly flag at THIS step if the accumulator now
                     # matches a gh command name. Without this, a later
                     # `$x = 'something else'` would overwrite varState

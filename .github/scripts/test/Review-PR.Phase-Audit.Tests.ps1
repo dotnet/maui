@@ -1275,7 +1275,7 @@ Describe 'Axis C — extractor self-test' {
     }
 
     Context 'Pattern 6: statement-RHS, late-=, hashtable variable, multi-LHS unwrap, hashtable index' {
-        # #   F1 opus-4.7x: statement-RHS bypass (if/switch/try as RHS) —
+        # F1 opus-4.7x: statement-RHS bypass (if/switch/try as RHS) —
         #                 closed by walking IfStatementAst/SwitchStatementAst/
         #                 TryStatementAst inside Resolve-StaticStringValue
         #                 and by accepting them as a Pattern 6 RHS shape.
@@ -1355,7 +1355,7 @@ Describe 'Axis C — extractor self-test' {
     }
 
     Context 'Pattern 6: hashtable mutations, casts, copies, nested chains, method chains, array index, param defaults, loop RHS' {
-        # #   opus-4.7x: statement-RHS extensions — `data { 'gh' }`,
+        # opus-4.7x: statement-RHS extensions — `data { 'gh' }`,
         #                    `foreach { 'gh' }`, `do { 'gh' } until/while`,
         #                    `while { 'gh' }`. Closed by accepting
         #                    DataStatementAst and LoopStatementAst in
@@ -1635,12 +1635,12 @@ Describe 'Axis C — extractor self-test' {
     Context 'Pattern 6: New-Object collection ctors + array-in-hashtable chain' {
         # 5 .
         # (zero important findings on validation pass)
-        #   : New-Object Hashtable/OrderedDictionary
+        # New-Object Hashtable/OrderedDictionary
         #           (ctor check now handles -TypeName + bare-typename forms)
-        #   : chain array index `$h.arr[0]` / `$h.arr[0].tool`
+        # chain array index `$h.arr[0]` / `$h.arr[0].tool`
         #           (chain resolver walks Member/Index chain targets, not
         #            just bare variables)
-        #   : `<source> | ForEach-Object { 'gh' }` scriptblock body fold
+        # `<source> | ForEach-Object { 'gh' }` scriptblock body fold
         #           (extended from Select-Object-only to Foreach-Object/% too)
         $cases = @(
             @{ Name = 'New-Object Hashtable + .Add';                Code = "`$h = New-Object System.Collections.Hashtable; `$h.Add('tool','gh'); `$cmd = `$h.tool; & `$cmd pr comment 1" }
