@@ -15,6 +15,7 @@ public class Issue19831 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
+	[Ignore("Fails on all platforms. See https://github.com/dotnet/maui/issues/35760")]
 	public void ActionModeMenuShouldNotBeVisibleAfterSwitchingTab()
 	{
 		_ = App.WaitForElement("Item1");
