@@ -225,9 +225,9 @@ stages:
                       platform: 'Android Material3'
                       artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
-  # Shell Handlers Test Stage - Tests using Shell handlers build (shares screenshots with regular Android)
+  # Shell Renderer Test Stage - Tests using Shell renderer build (shares screenshots with regular Android)
   - stage: android_ui_tests_shell
-    displayName: Android UITests Shell Handlers
+    displayName: Android UITests Shell Renderer
     dependsOn: build_ui_tests_shell
     jobs:
       - ${{ each project in parameters.projects }}:
@@ -254,7 +254,7 @@ stages:
                       ${{ if not(eq(api, 27)) }}:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      useAndroidShellHandlers: true
+                      useAndroidShellRenderer: true
                       testFilter: "Shell"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   

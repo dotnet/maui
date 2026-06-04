@@ -232,11 +232,11 @@ Task("uitests-apphost")
             properties.Add("UseWindowsCollectionView2Handler", "false");
         }
 
-        var useAndroidShellHandlers = Argument("useandroidshellhandlers", false);
-        if (useAndroidShellHandlers)
+        var useAndroidShellRenderer = Argument("useandroidshellrenderer", false);
+        if (useAndroidShellRenderer)
         {
-            Information("Building with Android Shell handlers enabled");
-            properties.Add("UseAndroidShellHandlers", "true");
+            Information("Building with Android Shell renderer enabled (handlers disabled)");
+            properties.Add("UseAndroidShellHandlers", "false");
         }
 
         if (useNuget)
