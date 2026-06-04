@@ -67,6 +67,7 @@ static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.CommandProper
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDurationProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequiredProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.LongPressGestureRecognizer.StateProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.IsLoopEnabled.get -> bool
 virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 ~Microsoft.Maui.Controls.AppThemeBinding.Dark.get -> object
