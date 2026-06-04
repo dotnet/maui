@@ -14,7 +14,7 @@ BeforeAll {
     $script:ReviewTriggerWindowHours = 24
     $script:MaxReviewTriggersPerWindow = 3
 
-    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus')) {
+    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus', 'ConvertTo-SafeLogValue', 'Get-MatchingCandidate')) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -25,6 +25,35 @@ BeforeAll {
         }
 
         Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'ConvertTo-SafeLogValue' {
+    It 'removes newlines and breaks workflow command tokens' {
+        $safe = ConvertTo-SafeLogValue "ok`n::stop-commands::x"
+
+        $safe | Should -Be 'ok : :stop-commands: :x'
+        $safe | Should -Not -Match '[\r\n]'
+        $safe | Should -Not -Match '::'
+    }
+
+    It 'caps long log values' {
+        $safe = ConvertTo-SafeLogValue ('a' * 200) -MaxLength 20
+
+        $safe.Length | Should -Be 20
+        $safe | Should -Match '\.\.\.$'
+    }
+}
+
+Describe 'Get-MatchingCandidate' {
+    It 'matches only PRs in the deterministic candidate set' {
+        $candidates = @(
+            [pscustomobject]@{ prNumber = 123; headSha = 'abc' }
+            [pscustomobject]@{ prNumber = 456; headSha = 'def' }
+        )
+
+        (Get-MatchingCandidate -Candidates $candidates -PRNumber 456).headSha | Should -Be 'def'
+        Get-MatchingCandidate -Candidates $candidates -PRNumber 789 | Should -BeNullOrEmpty
     }
 }
 

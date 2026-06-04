@@ -128,11 +128,36 @@ function ConvertFrom-ReviewCommand {
     }
 }
 
+function Test-ReviewCommandOptionsAllowed {
+    param(
+        $Comment,
+        [AllowNull()][string[]]$AllowedAuthorLogins = $null
+    )
+
+    if ($null -ne $AllowedAuthorLogins) {
+        if (-not $Comment.user -or [string]::IsNullOrWhiteSpace($Comment.user.login)) {
+            return $false
+        }
+
+        $login = ([string]$Comment.user.login).ToLowerInvariant()
+        $allowed = @($AllowedAuthorLogins | ForEach-Object { ([string]$_).ToLowerInvariant() })
+        return $allowed -contains $login
+    }
+
+    $association = if ($Comment.author_association) { [string]$Comment.author_association } else { '' }
+    return $association -in @('OWNER', 'MEMBER', 'COLLABORATOR')
+}
+
 function Get-LatestReviewCommandOptions {
-    param([object[]]$Comments)
+    param(
+        [object[]]$Comments,
+        [AllowNull()][string[]]$AllowedAuthorLogins = $null
+    )
 
     $reviewCommands = @($Comments | Where-Object {
-        $_.kind -eq 'issue-comment' -and (ConvertFrom-ReviewCommand $_.body)
+        $_.kind -eq 'issue-comment' -and
+        (Test-ReviewCommandOptionsAllowed -Comment $_ -AllowedAuthorLogins $AllowedAuthorLogins) -and
+        (ConvertFrom-ReviewCommand $_.body)
     } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true })
 
     if ($reviewCommands.Count -eq 0) {
@@ -153,6 +178,7 @@ function Get-LatestReviewCommandOptions {
         PipelineRef = [string]$parsed.PipelineRef
         CommentId   = [Int64]$latest.id
         Body        = [string]$parsed.Body
+        AuthorLogin  = if ($latest.user) { [string]$latest.user.login } else { '' }
     }
 }
 
@@ -174,7 +200,11 @@ function Get-LatestAISummaryComment {
     param([object[]]$Comments)
 
     return @($Comments |
-        Where-Object { $_.body -and ([string]$_.body).Contains($AISummaryMarker) } |
+        Where-Object {
+            $_.body -and
+            ([string]$_.body).Contains($AISummaryMarker) -and
+            ($_.user -and ($_.user.type -eq 'Bot' -or $_.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$'))
+        } |
         Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true } |
         Select-Object -First 1)
 }
@@ -222,7 +252,7 @@ function Get-LatestReviewedSha {
         return $null
     }
 
-    return $matches[$matches.Count - 1].Groups[1].Value.ToLowerInvariant()
+    return $matches[0].Groups[1].Value.ToLowerInvariant()
 }
 
 function Test-CommentIsEvidence {
@@ -326,6 +356,7 @@ function ConvertTo-RerunActivityItem {
         created_at = $createdAt
         updated_at = $updatedAt
         user       = $Item.user
+        author_association = $Item.author_association
     }
 }
 

@@ -83,8 +83,15 @@ safe-outputs:
           uses: actions/checkout@v4
           with:
             persist-credentials: false
+        - name: Download rerun candidate context
+          uses: actions/download-artifact@v8.0.1
+          with:
+            name: rerun-candidates
+            path: ${{ runner.temp }}/rerun-candidates
         - name: Process rerun scanner decisions
           shell: pwsh
+          env:
+            RERUN_CANDIDATES_PATH: ${{ runner.temp }}/rerun-candidates/candidates.json
           run: |
             $scriptArgs = @(
               '-Owner', $env:REPO_OWNER,
@@ -121,6 +128,13 @@ steps:
       "candidates<<$delimiter" >> $env:GITHUB_OUTPUT
       $json >> $env:GITHUB_OUTPUT
       $delimiter >> $env:GITHUB_OUTPUT
+  - name: Upload rerun candidate context
+    uses: actions/upload-artifact@v7.0.1
+    with:
+      name: rerun-candidates
+      path: CustomAgentLogsTmp/RerunScanner/candidates.json
+      if-no-files-found: error
+      retention-days: 1
 ---
 
 # Rerun Review Scanner

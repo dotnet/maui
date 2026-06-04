@@ -21,7 +21,8 @@ BeforeAll {
             [string]$UpdatedAt = $CreatedAt,
             [string]$Login = 'dev-user',
             [string]$Type = 'User',
-            [string]$Kind = 'issue-comment'
+            [string]$Kind = 'issue-comment',
+            [string]$AuthorAssociation = 'COLLABORATOR'
         )
 
         [pscustomobject]@{
@@ -31,6 +32,7 @@ BeforeAll {
             created_at = $CreatedAt
             updated_at = $UpdatedAt
             user       = New-TestUser -Login $Login -Type $Type
+            author_association = $AuthorAssociation
         }
     }
 
@@ -104,6 +106,45 @@ Describe 'Resolve-RerunEligibility' {
         $options.CommentId | Should -Be 3
     }
 
+    It 'ignores review command options from commenters without write access' {
+        $comments = @(
+            New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -AuthorAssociation 'NONE'
+            New-TestComment -Id 2 -Body '/review -b feature/trusted -p ios' -CreatedAt '2026-05-31T09:05:00Z' -AuthorAssociation 'MEMBER'
+        )
+
+        $options = Get-LatestReviewCommandOptions -Comments $comments
+
+        $options.Found | Should -BeTrue
+        $options.Platform | Should -Be 'ios'
+        $options.PipelineRef | Should -Be 'feature/trusted'
+        $options.CommentId | Should -Be 2
+    }
+
+    It 'does not use review command options when only untrusted comments exist' {
+        $comments = @(
+            New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -AuthorAssociation 'NONE'
+        )
+
+        $options = Get-LatestReviewCommandOptions -Comments $comments
+
+        $options.Found | Should -BeFalse
+        $options.PipelineRef | Should -Be 'main'
+    }
+
+    It 'can restrict review command options to explicit write-permission authors' {
+        $comments = @(
+            New-TestComment -Id 1 -Body '/review -b untrusted -p windows' -CreatedAt '2026-05-31T09:00:00Z' -Login 'untrusted-user' -AuthorAssociation 'COLLABORATOR'
+            New-TestComment -Id 2 -Body '/review -b trusted -p ios' -CreatedAt '2026-05-31T09:05:00Z' -Login 'trusted-user' -AuthorAssociation 'COLLABORATOR'
+        )
+
+        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('trusted-user')
+
+        $options.Found | Should -BeTrue
+        $options.Platform | Should -Be 'ios'
+        $options.PipelineRef | Should -Be 'trusted'
+        $options.AuthorLogin | Should -Be 'trusted-user'
+    }
+
     It 'rejects commands when no AI Summary exists' {
         $comments = @(
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
@@ -165,6 +206,30 @@ Describe 'Resolve-RerunEligibility' {
 
         $result.Eligible | Should -BeTrue
         $result.Reason | Should -Be 'new-comment-after-ai-summary'
+    }
+
+    It 'ignores forged AI Summary comments from non-bots' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -Login 'dev-user' -Type 'User'
+            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'no-ai-summary'
+    }
+
+    It 'uses the first session marker from an AI Summary' {
+        $body = @"
+<!-- AI Summary -->
+<!-- SESSION:1111111 START -->
+old
+<!-- SESSION:2222222 START -->
+new
+"@
+
+        Get-LatestReviewedSha -AISummaryBody $body | Should -Be '1111111'
     }
 
     It 'does not count repeated rerun commands as evidence' {

@@ -48,6 +48,30 @@ function Get-CommitsForPR {
     return @(gh api "repos/$Owner/$Repo/pulls/$Number/commits?per_page=100" --paginate --jq '.[]' | ForEach-Object { $_ | ConvertFrom-Json })
 }
 
+function Test-UserCanSetReviewOptions {
+    param([Parameter(Mandatory = $true)][string]$Login)
+
+    $permission = gh api "repos/$Owner/$Repo/collaborators/$Login/permission" --jq '.permission' 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        return $false
+    }
+
+    return $permission -in @('write', 'maintain', 'admin')
+}
+
+function Get-ReviewOptionAuthorLogins {
+    param([object[]]$Comments)
+
+    $logins = @($Comments | Where-Object {
+        $_.kind -eq 'issue-comment' -and
+        $_.user -and
+        -not [string]::IsNullOrWhiteSpace($_.user.login) -and
+        (ConvertFrom-ReviewCommand $_.body)
+    } | ForEach-Object { [string]$_.user.login } | Sort-Object -Unique)
+
+    return @($logins | Where-Object { Test-UserCanSetReviewOptions -Login $_ })
+}
+
 function Get-PlatformFromLabels {
     param([string[]]$Labels)
 
@@ -80,7 +104,8 @@ foreach ($pr in @($searchResult)) {
     $activity = @(Get-ActivityForPR -Number $number)
     $commits = @(Get-CommitsForPR -Number $number)
     $latestRerun = Get-LatestRerunComment -Comments $activity
-    $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity
+    $reviewOptionAuthors = @(Get-ReviewOptionAuthorLogins -Comments $activity)
+    $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity -AllowedAuthorLogins $reviewOptionAuthors
     $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -CurrentLabels $labels
     $platform = if ($reviewOptions.Platform) { $reviewOptions.Platform } else { Get-PlatformFromLabels -Labels $labels }
     $pipelineRef = if ($reviewOptions.PipelineRef) { $reviewOptions.PipelineRef } else { 'main' }

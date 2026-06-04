@@ -29,6 +29,45 @@ function Get-AgentItems {
     return @($payload.items | Where-Object { $_.type -eq 'trigger_rerun_review' })
 }
 
+function Get-CandidateItems {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        throw "RERUN_CANDIDATES_PATH is required."
+    }
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "Rerun candidates file '$Path' does not exist."
+    }
+
+    $payload = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    return @($payload.candidates)
+}
+
+function Get-MatchingCandidate {
+    param(
+        [object[]]$Candidates,
+        [Parameter(Mandatory = $true)][int]$PRNumber
+    )
+
+    return @($Candidates | Where-Object { [int]$_.prNumber -eq $PRNumber } | Select-Object -First 1)
+}
+
+function ConvertTo-SafeLogValue {
+    param(
+        [string]$Value,
+        [int]$MaxLength = 180
+    )
+
+    $safe = ([string]$Value) -replace '[\r\n]+', ' '
+    $safe = $safe -replace '::', ': :'
+    $safe = $safe.Trim()
+    if ($safe.Length -gt $MaxLength) {
+        $safe = $safe.Substring(0, $MaxLength - 3) + '...'
+    }
+
+    return $safe
+}
+
 function Add-CommentReaction {
     param(
         [Parameter(Mandatory = $true)][Int64]$CommentId,
@@ -230,6 +269,7 @@ if ($items.Count -eq 0) {
     Write-Host "No trigger_rerun_review decisions found."
     exit 0
 }
+$candidates = @(Get-CandidateItems -Path $env:RERUN_CANDIDATES_PATH)
 
 foreach ($item in $items) {
     $prNumber = 0
@@ -249,11 +289,18 @@ foreach ($item in $items) {
         if ($decision -eq 'trigger' -and $rerunCommentId -le 0) {
             throw "Invalid rerun comment id '$($item.rerun_comment_id)' for trigger decision on PR #$prNumber."
         }
-        if ($decision -eq 'trigger' -and [string]::IsNullOrWhiteSpace($expectedHeadSha)) {
-            throw "Missing expected head SHA for trigger decision on PR #$prNumber."
+        if ([string]::IsNullOrWhiteSpace($expectedHeadSha)) {
+            throw "Missing expected head SHA for $decision decision on PR #$prNumber."
+        }
+        $candidate = Get-MatchingCandidate -Candidates $candidates -PRNumber $prNumber
+        if (-not $candidate) {
+            throw "PR #$prNumber was not in the deterministic rerun candidate set."
+        }
+        if ($candidate.headSha -and [string]$candidate.headSha -ne $expectedHeadSha) {
+            throw "PR #$prNumber decision head SHA '$expectedHeadSha' does not match candidate head SHA '$($candidate.headSha)'."
         }
 
-        Write-Host "Processing PR #$prNumber decision=$decision reason=$reason"
+        Write-Host "Processing PR #$prNumber decision=$decision reason=$(ConvertTo-SafeLogValue $reason)"
         $pr = gh api "repos/$Owner/$Repo/pulls/$prNumber" | ConvertFrom-Json
         if ($pr.state -ne 'open') {
             Write-Host "  ⏭️ PR #$prNumber is not open ($($pr.state)); skipping"
