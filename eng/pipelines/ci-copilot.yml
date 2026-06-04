@@ -1218,6 +1218,25 @@ stages:
                     if (-not [string]::IsNullOrEmpty($cat)) { $retryParams.Category = $cat }
                     if ($env:DEVICE_UDID) { $retryParams.DeviceUdid = $env:DEVICE_UDID }
                     $runResult = & $retryScript @retryParams
+                    # Re-emit the captured subprocess output through the same
+                    # non-anchored ##vso[…] / ##[…] neutralizer the fallback
+                    # branch (below, ~L1240) uses. Invoke-UITestWithRetry.ps1
+                    # now launches BuildAndRunHostApp.ps1 as a `pwsh -File`
+                    # subprocess (so its Write-Host flows into 2>&1 instead
+                    # of leaking to this AzDO task's host directly), and
+                    # exposes the captured output as $runResult.Output.
+                    # Echoing it here keeps the build/test diagnostics visible
+                    # in the deep-UI-test task log AS-IF the subprocess had run
+                    # in-process — minus the attacker's `##vso[…]` payloads.
+                    # If we skipped this re-emit, the captured output would
+                    # only land in the per-attempt $LogFile artifact, which
+                    # operators don't surface in the live task log.
+                    if ($runResult -and $runResult.Output) {
+                      $runResult.Output | ForEach-Object {
+                        $line = [string]$_
+                        Write-Host ($line -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1')
+                      }
+                    }
                     $exitCode = if ($runResult) { $runResult.ExitCode } else { -1 }
                     Write-Host "Attempts: $(if ($runResult) { $runResult.Attempts } else { '?' }) · Exit: $exitCode · EnvError: $(if ($runResult) { $runResult.EnvErrorHit } else { 'N/A' })"
 

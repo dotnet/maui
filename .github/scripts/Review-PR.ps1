@@ -125,6 +125,13 @@ if (Test-Path $commentCleanupScript) {
     . $commentCleanupScript
 }
 
+# Out-SafePRSubprocessLine neutralizes `##vso[…]` / `##[…]` AzDO logging
+# commands in PR-controlled subprocess output before re-emit.
+$sanitizerScript = Join-Path $ScriptsDir "shared/Write-SafeSubprocessOutput.ps1"
+if (Test-Path $sanitizerScript) {
+    . $sanitizerScript
+}
+
 # Gate has GH_TOKEN in env so trusted code (Detect-TestsInDiff, Find-RegressionRisks,
 # detect-ui-test-categories) can fetch PR metadata via `gh` CLI. Any subprocess that
 # executes PR-controlled code (MSBuild targets, test code, source generators, host-app
@@ -200,7 +207,7 @@ Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
 
 $prInfo = gh pr view $PRNumber --json title,state 2>$null | ConvertFrom-Json
 if (-not $prInfo) { Write-Error "PR #$PRNumber not found"; exit 1 }
-Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
+Write-Host ("  ✅ PR: " + ($prInfo.title -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1')) -ForegroundColor Green
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 1: Branch Setup (Create Review Branch & Cherry-Pick PR)
@@ -1038,7 +1045,7 @@ function Invoke-CopilotStep {
 
     if ($DryRun) {
         Write-Host "[DRY RUN] Prompt:" -ForegroundColor Magenta
-        Write-Host $Prompt -ForegroundColor Gray
+        Write-Host ($Prompt -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1') -ForegroundColor Gray
         return 0
     }
 
@@ -1106,7 +1113,7 @@ function Invoke-CopilotStep {
                         if ($event.data.model) {
                             $modelName = $event.data.model
                             Write-Host "  ⚙️  Model: " -ForegroundColor DarkGray -NoNewline
-                            Write-Host $modelName -ForegroundColor DarkCyan
+                            Write-Host ($modelName -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1') -ForegroundColor DarkCyan
                         }
                     }
                     'assistant.turn_start' {
@@ -1116,7 +1123,7 @@ function Invoke-CopilotStep {
                         Write-Host "  ┌─ Turn $turnCount " -ForegroundColor DarkGray -NoNewline
                         Write-Host "[$elapsed]" -ForegroundColor DarkYellow -NoNewline
                         if ($currentIntent) {
-                            Write-Host " · $currentIntent" -ForegroundColor DarkCyan
+                            Write-Host (" · " + ($currentIntent -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1')) -ForegroundColor DarkCyan
                         } else {
                             Write-Host ""
                         }
@@ -1132,7 +1139,7 @@ function Invoke-CopilotStep {
                         if ($toolName -eq 'report_intent') {
                             $currentIntent = $args_.intent ?? $currentIntent
                             Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
-                            Write-Host $currentIntent -ForegroundColor Yellow
+                            Write-Host ($currentIntent -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1') -ForegroundColor Yellow
                             break
                         }
 
@@ -1163,9 +1170,9 @@ function Invoke-CopilotStep {
                         }
 
                         Write-Host "  │  $icon " -ForegroundColor DarkGray -NoNewline
-                        Write-Host $displayName -ForegroundColor Cyan -NoNewline
+                        Write-Host ($displayName -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1') -ForegroundColor Cyan -NoNewline
                         if ($detail) {
-                            Write-Host "  $detail" -ForegroundColor DarkGray
+                            Write-Host ("  " + ($detail -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1')) -ForegroundColor DarkGray
                         } else {
                             Write-Host ""
                         }
@@ -1186,7 +1193,7 @@ function Invoke-CopilotStep {
                                 $preview = $preview.Substring(0, 400) + "…"
                             }
                             Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
-                            Write-Host $preview -ForegroundColor White
+                            Write-Host ($preview -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1') -ForegroundColor White
                         }
                     }
                     'result' {
@@ -1230,9 +1237,10 @@ function Invoke-CopilotStep {
                     $modelName = [string]$cliLineData.model
                 }
 
-                # Non-JSON line (e.g. stats) — pass through as-is
+                # Non-JSON line (e.g. stats) — sanitize the copilot CLI's
+                # PR-aware stdout before re-emit.
                 if ($line.Trim()) {
-                    Write-Host "  $line" -ForegroundColor DarkGray
+                    Write-Host ("  " + ($line -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1')) -ForegroundColor DarkGray
                 }
             }
         }
@@ -1377,7 +1385,12 @@ $regressionOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber
 $regressionScript = Join-Path $ScriptsDir "Find-RegressionRisks.ps1"
 if (Test-Path $regressionScript) {
     try {
-        & $regressionScript -PRNumber $PRNumber -OutputDir $regressionOutputDir
+        # Launch as `pwsh -NoProfile -File` SUBPROCESS so the child's
+        # Write-Host writes to its own host (captured by 2>&1) instead of
+        # leaking directly to the parent AzDO log (Information stream is
+        # NOT captured by `2>&1` for in-process invocation).
+        & pwsh -NoProfile -File $regressionScript -PRNumber $PRNumber -OutputDir $regressionOutputDir 2>&1 |
+            Out-SafePRSubprocessLine -Prefix '  '
         $regressionResult = if (Test-Path (Join-Path $regressionOutputDir "result.txt")) {
             (Get-Content (Join-Path $regressionOutputDir "result.txt") -Raw).Trim()
         } else { 'UNKNOWN' }
@@ -1451,9 +1464,12 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                     'UITest' {
                         if (Test-Path $uiTestRunner) {
                             Write-Host "    🖥️ Running UI test via BuildAndRunHostApp.ps1 -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = Invoke-WithoutGhTokens { & $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1 }
+                            # `pwsh -File` SUBPROCESS so BuildAndRunHostApp's Write-Host
+                            # of attacker-controlled device-log content can't bypass
+                            # the 2>&1 capture into $testOutput.
+                            $testOutput = Invoke-WithoutGhTokens { & pwsh -NoProfile -File $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1 }
                             $testExitCode = $LASTEXITCODE
-                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                            $testOutput | Select-Object -Last 20 | Out-SafePRSubprocessLine -Prefix '    '
                         } else {
                             Write-Host "    ⚠️ BuildAndRunHostApp.ps1 not found" -ForegroundColor Yellow
                             $testExitCode = -1
@@ -1463,9 +1479,10 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                         if (Test-Path $deviceTestRunner) {
                             $dtProject = if ($t.Project) { $t.Project } else { 'Controls' }
                             Write-Host "    📱 Running device test via Run-DeviceTests.ps1 -Project $dtProject -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = Invoke-WithoutGhTokens { & $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1 }
+                            # `pwsh -File` SUBPROCESS — same rationale as above.
+                            $testOutput = Invoke-WithoutGhTokens { & pwsh -NoProfile -File $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1 }
                             $testExitCode = $LASTEXITCODE
-                            $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
+                            $testOutput | Select-Object -Last 20 | Out-SafePRSubprocessLine -Prefix '    '
                         } else {
                             Write-Host "    ⚠️ Run-DeviceTests.ps1 not found" -ForegroundColor Yellow
                             $testExitCode = -1
