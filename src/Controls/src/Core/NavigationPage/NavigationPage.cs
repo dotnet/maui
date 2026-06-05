@@ -415,10 +415,10 @@ namespace Microsoft.Maui.Controls
 			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
 		}
 
-		void SendNavigating(NavigationType navigationType, Page navigatingFrom = null, Page destinationPage = null)
+		void SendNavigating(NavigationType navigationType, Page navigatingFrom, Page destinationPage)
 		{
 			var fromPage = navigatingFrom ?? CurrentPage;
-			var toPage = destinationPage ?? CurrentPage;
+			var toPage = destinationPage;
 
 			fromPage?.SendNavigatingFrom(new NavigatingFromEventArgs(toPage, navigationType));
 		}
