@@ -145,6 +145,31 @@ Describe 'Resolve-RerunEligibility' {
         $options.AuthorLogin | Should -Be 'trusted-user'
     }
 
+    It 'still requires per-comment author_association even for previously-allowed logins' {
+        $comments = @(
+            New-TestComment -Id 1 -Body '/review -b feature/old -p ios' -CreatedAt '2026-05-31T09:00:00Z' -Login 'former-collaborator' -AuthorAssociation 'COLLABORATOR'
+            New-TestComment -Id 2 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T09:10:00Z' -Login 'former-collaborator' -AuthorAssociation 'NONE'
+        )
+
+        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('former-collaborator')
+
+        $options.Found | Should -BeTrue
+        $options.Platform | Should -Be 'ios'
+        $options.PipelineRef | Should -Be 'feature/old'
+        $options.CommentId | Should -Be 1
+    }
+
+    It 'rejects every comment when previously-allowed login has lost access on all later comments' {
+        $comments = @(
+            New-TestComment -Id 5 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T10:00:00Z' -Login 'former-collaborator' -AuthorAssociation 'NONE'
+        )
+
+        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('former-collaborator')
+
+        $options.Found | Should -BeFalse
+        $options.PipelineRef | Should -Be 'main'
+    }
+
     It 'rejects commands when no AI Summary exists' {
         $comments = @(
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'

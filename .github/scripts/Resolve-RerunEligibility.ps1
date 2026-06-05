@@ -134,6 +134,14 @@ function Test-ReviewCommandOptionsAllowed {
         [AllowNull()][string[]]$AllowedAuthorLogins = $null
     )
 
+    # The comment's own author_association is always required to be in the trusted set,
+    # so that a login which was trusted on an earlier comment cannot carry that trust
+    # forward to a later comment posted after access changed.
+    $association = if ($Comment.author_association) { [string]$Comment.author_association } else { '' }
+    if ($association -notin @('OWNER', 'MEMBER', 'COLLABORATOR')) {
+        return $false
+    }
+
     if ($null -ne $AllowedAuthorLogins) {
         if (-not $Comment.user -or [string]::IsNullOrWhiteSpace($Comment.user.login)) {
             return $false
@@ -144,8 +152,7 @@ function Test-ReviewCommandOptionsAllowed {
         return $allowed -contains $login
     }
 
-    $association = if ($Comment.author_association) { [string]$Comment.author_association } else { '' }
-    return $association -in @('OWNER', 'MEMBER', 'COLLABORATOR')
+    return $true
 }
 
 function Get-LatestReviewCommandOptions {
