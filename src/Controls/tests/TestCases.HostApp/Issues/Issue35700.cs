@@ -19,7 +19,7 @@ public class Issue35700 : TestContentPage
 			ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Vertical)
 			{
 				Span = 5,
-				VerticalItemSpacing = 10,
+				VerticalItemSpacing = 30,
 				HorizontalItemSpacing = 10,
 			},
 			GroupHeaderTemplate = new DataTemplate(() =>
