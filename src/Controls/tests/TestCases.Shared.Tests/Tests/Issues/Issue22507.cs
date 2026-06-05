@@ -12,6 +12,34 @@ public class Issue22507 : _IssuesUITest
     }
     public override string Issue => "CarouselView behaves strangely when swiping vertically in view";
 
+    // NUnit reuses the same fixture (and the same loaded page) for all tests in this class,
+    // and runs them in alphabetical order. That means HandleCarouselHorizontalToVerticalScroll
+    // runs first and leaves the carousel on Page 2 with Page 2's CollectionView scrolled down.
+    // Reset to Page 1 *and* scroll both inner CollectionViews back to the top so the tests are
+    // independent regardless of execution order.
+    [SetUp]
+    public void ResetCarouselState()
+    {
+        App.WaitForElement("Issue22507Label");
+
+        // Navigate to Page 2 (no-op if we're already there because Loop = false)
+        // and scroll Page 2's CollectionView back to the top.
+        App.SwipeRightToLeft();
+        App.WaitForElement("Issue22507CV_Page2");
+        for (int i = 0; i < 5; i++)
+        {
+            App.ScrollUp("Issue22507CV_Page2", ScrollStrategy.Gesture, 0.99, swipeSpeed: 900);
+        }
+
+        // Navigate back to Page 1 and scroll its CollectionView back to the top.
+        App.SwipeLeftToRight();
+        App.WaitForElement("Issue22507CV_Page1");
+        for (int i = 0; i < 5; i++)
+        {
+            App.ScrollUp("Issue22507CV_Page1", ScrollStrategy.Gesture, 0.99, swipeSpeed: 900);
+        }
+    }
+
     [Test]
     [Category(UITestCategories.CarouselView)]
     public void HandleCarouselVerticalToHorizontalScroll()
