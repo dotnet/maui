@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		ItemsLayoutOrientation _orientation;
 
+		int _cachedLastRowCol = -1;
+		int _cachedItemCount = -1;
+
 		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
 		{
 			// The original "SpacingItemDecoration" applied spacing based on an item's current span index.
@@ -91,7 +94,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var spanSizeLookup = gridLayoutManager.GetSpanSizeLookup();
 				int spanCount = gridLayoutManager.SpanCount;
 				rowCol = spanSizeLookup.GetSpanGroupIndex(position, spanCount);
-				lastRowCol = spanSizeLookup.GetSpanGroupIndex(itemCount - 1, spanCount);
+
+				if (_cachedItemCount != itemCount)
+				{
+					_cachedLastRowCol = spanSizeLookup.GetSpanGroupIndex(itemCount - 1, spanCount);
+					_cachedItemCount = itemCount;
+				}
+
+				lastRowCol = _cachedLastRowCol;
 			}
 			else
 			{
