@@ -37,6 +37,9 @@
 .PARAMETER LogFile
     Capture all output via Start-Transcript
 
+.PARAMETER TokenUsageOutputDir
+    Directory where Copilot CLI token-usage telemetry records should be written.
+
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
     .\Review-PR.ps1 -PRNumber 33687 -Platform ios
@@ -66,7 +69,10 @@ param(
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
-    [string]$LogFile
+    [string]$LogFile,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TokenUsageOutputDir
 )
 
 $ErrorActionPreference = 'Stop'
@@ -173,6 +179,10 @@ $autonomousRules = @"
 "@
 
 $reviewBranch = "pr-review-$PRNumber"
+
+if ([string]::IsNullOrWhiteSpace($TokenUsageOutputDir)) {
+    $TokenUsageOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/token-usage/raw"
+}
 
 # ─── Prerequisites ────────────────────────────────────────────────────────────
 if ($runSetup) {
@@ -584,6 +594,240 @@ function Get-TrxResults {
     }
 }
 
+# ─── Helper: Copilot token usage telemetry ────────────────────────────────────
+function Test-IsNumericValue {
+    param([object]$Value)
+
+    return (
+        $Value -is [byte] -or
+        $Value -is [sbyte] -or
+        $Value -is [int16] -or
+        $Value -is [uint16] -or
+        $Value -is [int] -or
+        $Value -is [uint32] -or
+        $Value -is [long] -or
+        $Value -is [uint64] -or
+        $Value -is [float] -or
+        $Value -is [double] -or
+        $Value -is [decimal]
+    )
+}
+
+function Get-ObjectMemberValue {
+    param(
+        [object]$InputObject,
+        [string[]]$Names
+    )
+
+    if ($null -eq $InputObject) { return $null }
+
+    foreach ($name in $Names) {
+        if ($InputObject -is [System.Collections.IDictionary] -and $InputObject.Contains($name)) {
+            return $InputObject[$name]
+        }
+
+        $property = $InputObject.PSObject.Properties[$name]
+        if ($property) {
+            return $property.Value
+        }
+    }
+
+    return $null
+}
+
+function Get-CopilotUsageTokenFields {
+    param(
+        [object]$Value,
+        [string]$Path = ''
+    )
+
+    $fields = New-Object System.Collections.ArrayList
+    if ($null -eq $Value) { return @() }
+
+    if (Test-IsNumericValue $Value) {
+        if ($Path -match '(?i)token') {
+            [void]$fields.Add([ordered]@{
+                Path  = $Path
+                Value = [double]$Value
+            })
+        }
+        return @($fields.ToArray())
+    }
+
+    if ($Value -is [string]) { return @() }
+
+    if ($Value -is [System.Collections.IDictionary]) {
+        foreach ($key in $Value.Keys) {
+            $childPath = if ($Path) { "$Path.$key" } else { [string]$key }
+            foreach ($field in Get-CopilotUsageTokenFields -Value $Value[$key] -Path $childPath) {
+                [void]$fields.Add($field)
+            }
+        }
+        return @($fields.ToArray())
+    }
+
+    if ($Value -is [System.Collections.IEnumerable]) {
+        $index = 0
+        foreach ($item in $Value) {
+            $childPath = if ($Path) { "$Path[$index]" } else { "[$index]" }
+            foreach ($field in Get-CopilotUsageTokenFields -Value $item -Path $childPath) {
+                [void]$fields.Add($field)
+            }
+            $index++
+        }
+        return @($fields.ToArray())
+    }
+
+    foreach ($property in $Value.PSObject.Properties) {
+        if ($property.MemberType -notin @('NoteProperty', 'Property', 'AliasProperty')) {
+            continue
+        }
+
+        $childPath = if ($Path) { "$Path.$($property.Name)" } else { $property.Name }
+        foreach ($field in Get-CopilotUsageTokenFields -Value $property.Value -Path $childPath) {
+            [void]$fields.Add($field)
+        }
+    }
+
+    return @($fields.ToArray())
+}
+
+function Get-TokenFieldSum {
+    param([object[]]$Fields)
+
+    $items = @($Fields)
+    if ($items.Count -eq 0) { return $null }
+
+    $sum = 0.0
+    foreach ($item in $items) {
+        $sum += [double]$item.Value
+    }
+
+    return [long][Math]::Round($sum)
+}
+
+function Get-CopilotTokenMetrics {
+    param([object]$Usage)
+
+    $tokenFields = @(Get-CopilotUsageTokenFields -Value $Usage)
+    $inputFields = @($tokenFields | Where-Object {
+        $_.Path -match '(?i)(input|prompt)' -and
+        $_.Path -notmatch '(?i)(cache|cached)' -and
+        $_.Path -notmatch '(?i)total'
+    })
+    $outputFields = @($tokenFields | Where-Object {
+        $_.Path -match '(?i)(output|completion)' -and
+        $_.Path -notmatch '(?i)(cache|cached)' -and
+        $_.Path -notmatch '(?i)total'
+    })
+    $cachedInputFields = @($tokenFields | Where-Object {
+        $_.Path -match '(?i)(cache|cached)' -and
+        $_.Path -match '(?i)(input|prompt|read)'
+    })
+    $explicitTotalFields = @($tokenFields | Where-Object {
+        $_.Path -match '(?i)total' -and
+        $_.Path -match '(?i)token'
+    })
+
+    $inputTokens = Get-TokenFieldSum -Fields $inputFields
+    $outputTokens = Get-TokenFieldSum -Fields $outputFields
+    $cachedInputTokens = Get-TokenFieldSum -Fields $cachedInputFields
+    $totalTokens = Get-TokenFieldSum -Fields $explicitTotalFields
+    if ($null -eq $totalTokens -and ($null -ne $inputTokens -or $null -ne $outputTokens)) {
+        $totalTokens = [long](($inputTokens ?? 0) + ($outputTokens ?? 0))
+    }
+
+    return [ordered]@{
+        inputTokens       = $inputTokens
+        outputTokens      = $outputTokens
+        cachedInputTokens = $cachedInputTokens
+        totalTokens       = $totalTokens
+        rawTokenFields    = @($tokenFields)
+    }
+}
+
+function New-CopilotTokenUsageRecord {
+    param(
+        [int]$PRNumber,
+        [string]$Platform,
+        [string]$Phase,
+        [string]$StepName,
+        [string]$ModelName,
+        [datetimeoffset]$StartedAtUtc,
+        [datetimeoffset]$EndedAtUtc,
+        [long]$DurationMs,
+        [int]$TurnCount,
+        [int]$ToolCount,
+        [int]$FailedToolCount,
+        [object]$Usage,
+        [bool]$ResultEventSeen,
+        [int]$ExitCode
+    )
+
+    $apiDurationValue = Get-ObjectMemberValue -InputObject $Usage -Names @('totalApiDurationMs', 'total_api_duration_ms')
+    $apiDurationMs = if (Test-IsNumericValue $apiDurationValue) { [long]$apiDurationValue } else { $null }
+
+    return [ordered]@{
+        schemaVersion         = 1
+        generatedAtUtc        = ([DateTimeOffset]::UtcNow).ToString('o')
+        prNumber              = $PRNumber
+        platform              = $Platform
+        pipeline              = [ordered]@{
+            buildId        = $env:BUILD_BUILDID
+            buildNumber    = $env:BUILD_BUILDNUMBER
+            definitionName = $env:BUILD_DEFINITIONNAME
+            stageName      = $env:SYSTEM_STAGENAME
+            jobName        = $env:SYSTEM_JOBNAME
+            jobDisplayName = $env:SYSTEM_JOBDISPLAYNAME
+            taskInstanceId = $env:SYSTEM_TASKINSTANCEID
+        }
+        scriptPhase           = if ($Phase) { $Phase } else { 'All' }
+        copilotStep           = $StepName
+        model                 = $ModelName
+        startedAtUtc          = $StartedAtUtc.ToString('o')
+        endedAtUtc            = $EndedAtUtc.ToString('o')
+        durationMs            = $DurationMs
+        apiDurationMs         = $apiDurationMs
+        resultEventSeen       = $ResultEventSeen
+        exitCode              = $ExitCode
+        turnCount             = $TurnCount
+        toolCount             = $ToolCount
+        failedToolCount       = $FailedToolCount
+        normalizedTokens      = Get-CopilotTokenMetrics -Usage $Usage
+        usage                 = $Usage
+        costEstimateAvailable = $false
+        costEstimateNote      = 'Dollar cost not calculated; no trusted rate table configured.'
+    }
+}
+
+function Write-CopilotTokenUsageRecord {
+    param(
+        [string]$OutputDir,
+        [object]$Record
+    )
+
+    if ([string]::IsNullOrWhiteSpace($OutputDir) -or $null -eq $Record) {
+        return
+    }
+
+    try {
+        New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+        $stepName = [string]$Record.copilotStep
+        $safeStepName = ($stepName -replace '[^A-Za-z0-9._-]+', '-').Trim('-')
+        if ([string]::IsNullOrWhiteSpace($safeStepName)) {
+            $safeStepName = 'copilot-step'
+        }
+
+        $timestamp = [DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')
+        $fileName = "copilot-token-usage-$timestamp-$safeStepName-$([guid]::NewGuid().ToString('N')).json"
+        $path = Join-Path $OutputDir $fileName
+        $Record | ConvertTo-Json -Depth 50 | Set-Content -Path $path -Encoding UTF8
+        Write-Host "  Token usage record: $path" -ForegroundColor DarkGray
+    } catch {
+        Write-Host "  WARNING: Failed to write Copilot token usage record: $_" -ForegroundColor Yellow
+    }
+}
+
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
     param([string]$StepName, [string]$Prompt)
@@ -599,12 +843,15 @@ function Invoke-CopilotStep {
         return 0
     }
 
+    $startedAtUtc = [DateTimeOffset]::UtcNow
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $toolCount = 0
     $turnCount = 0
     $currentIntent = ""
     $modelName = ""
     $failedTools = @()
+    $resultEventSeen = $false
+    $resultUsage = $null
 
     # Tool icon mapping for common tools
     $toolIcons = @{
@@ -623,6 +870,9 @@ function Invoke-CopilotStep {
     # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model access
     # can run this script (e.g., with 'claude-opus-4.6' or 'claude-sonnet-4.6').
     $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.5' }
+    if ([string]::IsNullOrWhiteSpace($modelName)) {
+        $modelName = $copilotModel
+    }
     & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
         $line = $_.ToString()
         try {
@@ -717,7 +967,9 @@ function Invoke-CopilotStep {
                 }
                 'result' {
                     # Final stats — note: 'result' is a top-level event with no 'data' wrapper.
+                    $resultEventSeen = $true
                     $usage = $event.usage
+                    $resultUsage = $usage
                     if ($usage) {
                         $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
                         $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
@@ -750,6 +1002,24 @@ function Invoke-CopilotStep {
     }
     $exitCode = $LASTEXITCODE
     $stopwatch.Stop()
+    $endedAtUtc = [DateTimeOffset]::UtcNow
+
+    $usageRecord = New-CopilotTokenUsageRecord `
+        -PRNumber $PRNumber `
+        -Platform $Platform `
+        -Phase $Phase `
+        -StepName $StepName `
+        -ModelName $modelName `
+        -StartedAtUtc $startedAtUtc `
+        -EndedAtUtc $endedAtUtc `
+        -DurationMs $stopwatch.ElapsedMilliseconds `
+        -TurnCount $turnCount `
+        -ToolCount $toolCount `
+        -FailedToolCount (@($failedTools).Count) `
+        -Usage $resultUsage `
+        -ResultEventSeen $resultEventSeen `
+        -ExitCode $exitCode
+    Write-CopilotTokenUsageRecord -OutputDir $TokenUsageOutputDir -Record $usageRecord
 
     if ($exitCode -eq 0) {
         Write-Host "  ✅ $StepName completed" -ForegroundColor Green

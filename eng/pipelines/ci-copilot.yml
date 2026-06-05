@@ -614,6 +614,7 @@ stages:
 
               # Create artifacts directory
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
+              mkdir -p $(Build.ArtifactStagingDirectory)/copilot-token-usage/raw
 
               # Copy trusted scripts from the checked-out commit so later tasks
               # (which may be on a merged/modified worktree) use the same .github/
@@ -633,6 +634,7 @@ stages:
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Setup \
                 -TrustedScriptsDir "$TRUSTED" \
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
                 -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               SETUP_EXIT=$?
               set -e
@@ -663,6 +665,7 @@ stages:
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Gate \
                 -TrustedScriptsDir "$TRUSTED" \
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
                 -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               GATE_EXIT=$?
               set -e
@@ -694,6 +697,7 @@ stages:
                 -Platform "${{ parameters.Platform }}" \
                 -Phase CopilotReview \
                 -TrustedScriptsDir "$TRUSTED" \
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
                 -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               REVIEW_EXIT=$?
               set -e
@@ -724,6 +728,7 @@ stages:
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Post \
                 -TrustedScriptsDir "$TRUSTED" \
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
                 -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               POST_EXIT=$?
               set -e
@@ -759,6 +764,13 @@ stages:
               if (Test-Path ".github/agent-pr-session") {
                 Write-Host "Copying agent-pr-session..."
                 Copy-Item -Path ".github/agent-pr-session" -Destination $logsDir -Recurse -Force -ErrorAction SilentlyContinue
+              }
+
+              # Copilot token usage raw records
+              $tokenUsageDir = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
+              if (Test-Path $tokenUsageDir) {
+                Write-Host "Copying copilot-token-usage..."
+                Copy-Item -Path $tokenUsageDir -Destination (Join-Path $logsDir "copilot-token-usage") -Recurse -Force -ErrorAction SilentlyContinue
               }
 
               # Review_Feedback files
@@ -1698,3 +1710,56 @@ stages:
             displayName: 'Post AI summary review'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+  - stage: AnalyzeCopilotTokenUsage
+    displayName: 'Analyze Copilot token usage'
+    dependsOn:
+      - ReviewPR
+      - RunDeepUITests
+      - UpdateAISummaryComment
+    condition: always()
+    jobs:
+      - job: AnalyzeTokenUsage
+        displayName: 'Publish Copilot token usage artifact'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 10
+        steps:
+          - checkout: self
+            persistCredentials: false
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download CopilotLogs'
+            inputs:
+              buildType: 'current'
+              artifactName: 'CopilotLogs'
+              targetPath: '$(Pipeline.Workspace)/CopilotLogs'
+            continueOnError: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $inputRoot = "$(Pipeline.Workspace)/CopilotLogs"
+              $outputDir = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
+              $script = ".github/scripts/shared/Aggregate-CopilotTokenUsage.ps1"
+              if (-not (Test-Path $script)) { throw "$script missing" }
+
+              & $script `
+                -InputRoot $inputRoot `
+                -OutputDir $outputDir `
+                -PRNumber "${{ parameters.PRNumber }}" `
+                -ExpectedStages @(
+                  'ReviewPR',
+                  'RunDeepUITests',
+                  'UpdateAISummaryComment',
+                  'AnalyzeCopilotTokenUsage'
+                )
+            displayName: 'Aggregate Copilot token usage'
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish CopilotTokenUsage'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-token-usage'
+              artifact: 'CopilotTokenUsage'
+              publishLocation: 'pipeline'
+            condition: always()
