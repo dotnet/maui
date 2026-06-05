@@ -1548,7 +1548,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var isTranslucent = false;
 				if (_navigation.TryGetTarget(out n))
 					isTranslucent = n.NavigationBar.Translucent;
-				EdgesForExtendedLayout = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+
+				var edges = isTranslucent ? UIRectEdge.All : UIRectEdge.None;
+
+				// On iOS/MacCatalyst 26+, the tab bar renders as a floating glass overlay.
+				// Extend behind it when inside a visible UITabBarController so content
+				// isn't clipped at the old tab bar boundary.
+				if ((OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					&& TabBarController is { } tbc
+					&& !tbc.TabBar.Hidden
+					&& tbc.TabBar.Translucent)
+				{
+					edges |= UIRectEdge.Bottom;
+				}
+
+				EdgesForExtendedLayout = edges;
 
 				base.ViewWillAppear(animated);
 			}
