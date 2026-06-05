@@ -84,10 +84,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			outRect.Top = VerticalOffset;
 
 			// Remove spacing on the outer edges so spacing only appears between items.
-			// A linear layout is effectively span=1, so the same math works for both.
-			int rowCol = _span <= 1 ? position : position / _span;
-			int totalRowsCols = _span <= 1 ? itemCount : (itemCount + _span - 1) / _span;
-			int lastRowCol = totalRowsCols - 1;
+			int rowCol;
+			int lastRowCol;
+
+			if (parent.GetLayoutManager() is GridLayoutManager gridLayoutManager)
+			{
+				// Use the GridLayoutManager's SpanSizeLookup to correctly compute which row (for
+				// vertical orientation) or column group (for horizontal orientation) this item belongs
+				// to. This correctly accounts for full-span items such as group headers/footers and
+				// list headers/footers, which would otherwise cause simple position / spanCount
+				// arithmetic to produce wrong row indices for the items that follow them.
+				var spanSizeLookup = gridLayoutManager.GetSpanSizeLookup();
+				int spanCount = gridLayoutManager.SpanCount;
+				rowCol = spanSizeLookup.GetSpanGroupIndex(position, spanCount);
+				lastRowCol = spanSizeLookup.GetSpanGroupIndex(itemCount - 1, spanCount);
+			}
+			else
+			{
+				// Linear layout: each item occupies exactly one row/column.
+				rowCol = position;
+				lastRowCol = itemCount - 1;
+			}
 
 			if (_orientation == ItemsLayoutOrientation.Vertical)
 			{
