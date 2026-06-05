@@ -51,6 +51,8 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotCliUsageLineData')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotOtelTokenMetrics')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-PhaseStateDir')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Restore-GateResultOrFailClosed')
 }
 
 Describe 'Copilot token usage helpers' {
@@ -396,5 +398,91 @@ Describe 'Get-DotNetTestResults (console-scrape fallback)' {
 
     It 'returns an empty array for empty input' {
         (Get-DotNetTestResults -Lines @()).Count | Should -Be 0
+    }
+}
+
+# ─── Phase-state security helpers (F1 hardening) ─────────────────────────
+# These guard the cross-phase trust boundary: Gate writes verdict files,
+# CopilotReview/Post restore them. Originally these defaulted to "SKIPPED"
+# on missing file (fail open) and used the writable parent of
+# $TrustedScriptsDir as the state dir.
+
+Describe 'Get-PhaseStateDir' {
+    BeforeAll {
+        $script:tmpRoot = Join-Path ([System.IO.Path]::GetTempPath()) "phase-state-$(New-Guid)"
+        New-Item -ItemType Directory -Force -Path $script:tmpRoot | Out-Null
+    }
+    AfterAll {
+        Remove-Item -Recurse -Force $script:tmpRoot -ErrorAction SilentlyContinue
+    }
+
+    Context 'when -TrustedScriptsDir is provided' {
+        It 'returns a dedicated phase-state subdirectory, not the writable parent' {
+            $trusted = Join-Path $script:tmpRoot 'trusted-github'
+            New-Item -ItemType Directory -Force -Path $trusted | Out-Null
+            $d = Get-PhaseStateDir -TrustedScriptsDir $trusted -RepoRoot $script:tmpRoot -PRNumber '12345'
+            $d  | Should -Be (Join-Path $script:tmpRoot 'phase-state')
+            $d  | Should -Not -Be (Split-Path $trusted -Parent)
+            Test-Path $d | Should -BeTrue
+        }
+        It 'returns the same path on repeated calls (idempotent)' {
+            $trusted = Join-Path $script:tmpRoot 'trusted-github-2'
+            New-Item -ItemType Directory -Force -Path $trusted | Out-Null
+            $a = Get-PhaseStateDir -TrustedScriptsDir $trusted -RepoRoot $script:tmpRoot -PRNumber '1'
+            $b = Get-PhaseStateDir -TrustedScriptsDir $trusted -RepoRoot $script:tmpRoot -PRNumber '1'
+            $a | Should -Be $b
+        }
+    }
+
+    Context 'when -TrustedScriptsDir is empty (local dev)' {
+        It 'falls back to a per-PR path under CustomAgentLogsTmp/PRState' {
+            $d = Get-PhaseStateDir -TrustedScriptsDir '' -RepoRoot $script:tmpRoot -PRNumber '42'
+            $d | Should -Match 'CustomAgentLogsTmp[/\\]PRState[/\\]42[/\\]PRAgent[/\\]phase-state$'
+            Test-Path $d | Should -BeTrue
+        }
+    }
+}
+
+Describe 'Restore-GateResultOrFailClosed' {
+    BeforeEach {
+        $script:stateDir = Join-Path ([System.IO.Path]::GetTempPath()) "gate-restore-$(New-Guid)"
+        New-Item -ItemType Directory -Force -Path $script:stateDir | Out-Null
+    }
+    AfterEach {
+        Remove-Item -Recurse -Force $script:stateDir -ErrorAction SilentlyContinue
+    }
+
+    It 'returns the gate verdict when the file exists with a valid value' {
+        'PASSED' | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
+    }
+
+    It 'accepts each whitelisted value' {
+        foreach ($v in @('PASSED','FAILED','SKIPPED','SKIP_NO_TESTS')) {
+            $v | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8
+            Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be $v
+        }
+    }
+
+    It 'fails closed (throws) when the file is missing' {
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+            Should -Throw -ExpectedMessage '*failing closed*'
+    }
+
+    It 'fails closed on an unrecognised verdict value (attacker tries arbitrary string)' {
+        'GREEN' | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+            Should -Throw -ExpectedMessage "*Invalid Gate result value 'GREEN'*"
+    }
+
+    It 'fails closed on an empty file' {
+        '' | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8 -NoNewline
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+            Should -Throw -ExpectedMessage '*Invalid Gate result value*'
+    }
+
+    It 'trims surrounding whitespace before validating (real Set-Content adds trailing newline)' {
+        "PASSED`n" | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8 -NoNewline
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
     }
 }

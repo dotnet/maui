@@ -132,6 +132,50 @@ if (Test-Path $sanitizerScript) {
     . $sanitizerScript
 }
 
+# ─── Phase-state helpers ──────────────────────────────────────────────────
+# Cross-phase state files (setup-complete sentinel, gate-result.txt, etc.)
+# must live in a directory that hostile PR test code cannot rewrite between
+# Gate and CopilotReview/Post. Previously these landed in the writable
+# parent of `$TrustedScriptsDir`. We now use a dedicated `phase-state`
+# subdirectory that CI re-chmods read-only after the Gate task completes.
+function Get-PhaseStateDir {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string]$TrustedScriptsDir,
+        [Parameter(Mandatory)][string]$RepoRoot,
+        [Parameter(Mandatory)][string]$PRNumber
+    )
+    if ($TrustedScriptsDir) {
+        $d = Join-Path (Split-Path $TrustedScriptsDir -Parent) 'phase-state'
+    } else {
+        $d = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/phase-state"
+    }
+    if (-not (Test-Path $d)) {
+        New-Item -ItemType Directory -Force -Path $d | Out-Null
+    }
+    return $d
+}
+
+# Fail closed when the Gate verdict file is missing or contains a value
+# outside the known whitelist. A missing/corrupt file is the failure mode
+# an attacker would aim for to flip the verdict back to "SKIPPED" (which
+# the AI prompt treats as non-blocking). We treat it as a hard error.
+function Restore-GateResultOrFailClosed {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$StateDir)
+    $f = Join-Path $StateDir "gate-result.txt"
+    if (-not (Test-Path $f)) {
+        throw "Gate result file missing at '$f' — failing closed (cannot proceed without a verified Gate result)."
+    }
+    $raw = Get-Content $f -Raw
+    $r = if ($null -eq $raw) { '' } else { $raw.Trim() }
+    $valid = @('PASSED','FAILED','SKIPPED','SKIP_NO_TESTS')
+    if ($r -notin $valid) {
+        throw "Invalid Gate result value '$r' at '$f' (expected one of: $($valid -join ', ')) — failing closed."
+    }
+    return $r
+}
+
 # Gate has GH_TOKEN in env so trusted code (Detect-TestsInDiff, Find-RegressionRisks,
 # detect-ui-test-categories) can fetch PR metadata via `gh` CLI. Any subprocess that
 # executes PR-controlled code (MSBuild targets, test code, source generators, host-app
@@ -403,13 +447,7 @@ if ($DryRun) {
 # End of Setup phase — write sentinel and exit early
 if ($Phase -eq 'Setup') {
     # Sentinel signals to Tasks 2-4 that Setup completed successfully (PR merged).
-    $sentinelDir = if ($TrustedScriptsDir) {
-        Split-Path $TrustedScriptsDir -Parent
-    } else {
-        $d = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
-        New-Item -ItemType Directory -Force -Path $d | Out-Null
-        $d
-    }
+    $sentinelDir = Get-PhaseStateDir -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot -PRNumber $PRNumber
     "OK" | Set-Content (Join-Path $sentinelDir "setup-complete") -Encoding UTF8
     Write-Host "✅ Setup phase complete" -ForegroundColor Green
     if ($LogFile) { Stop-Transcript -ErrorAction SilentlyContinue | Out-Null }
@@ -418,11 +456,7 @@ if ($Phase -eq 'Setup') {
 
 # ─── Sentinel check: verify Setup completed before running later phases ───
 if ($Phase -and $Phase -ne 'Setup') {
-    $sentinelDir = if ($TrustedScriptsDir) {
-        Split-Path $TrustedScriptsDir -Parent
-    } else {
-        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
-    }
+    $sentinelDir = Get-PhaseStateDir -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot -PRNumber $PRNumber
     $sentinelFile = Join-Path $sentinelDir "setup-complete"
     if (-not (Test-Path $sentinelFile)) {
         Write-Error "Setup phase did not complete (sentinel not found at '$sentinelFile'). Cannot proceed with -Phase $Phase."
@@ -1839,13 +1873,7 @@ $gateLogTail
 }
 
 # Persist gate result so other phases can read it
-$gateVerdictDir = if ($TrustedScriptsDir) {
-    Split-Path $TrustedScriptsDir -Parent
-} else {
-    $d = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
-    New-Item -ItemType Directory -Force -Path $d | Out-Null
-    $d
-}
+$gateVerdictDir = Get-PhaseStateDir -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot -PRNumber $PRNumber
 $gateResult | Set-Content (Join-Path $gateVerdictDir "gate-result.txt") -Encoding UTF8
 Write-Host "  📄 Gate result persisted: $gateResult" -ForegroundColor Gray
 
@@ -1865,11 +1893,21 @@ if ($risksData) {
     }
 }
 
-# Persist detect script path and detected categories for Tier 3 refresh
-if ($detectScript) {
-    $detectScript | Set-Content (Join-Path $gateVerdictDir "detect-script-path.txt") -Encoding UTF8
-}
+# Persist detected UI test categories for Tier 3 refresh. The detect script
+# *path* is intentionally NOT persisted — CopilotReview re-derives it from
+# `$EngScriptsDir` so a tampered persisted path cannot redirect execution
+# under COPILOT_GITHUB_TOKEN to attacker-controlled code.
 $uitestCategories | Set-Content (Join-Path $gateVerdictDir "uitest-categories.txt") -Encoding UTF8
+
+# Defense-in-depth: lock the phase-state directory read-only after Gate
+# writes complete so attacker-controlled subprocess output cannot forge
+# `gate-result.txt` (or any other state file) between phases on Linux/Mac
+# CI agents. Restricted to CI runs ($TrustedScriptsDir is set) so local
+# non-phased re-runs are not blocked by leftover read-only state files.
+# On Windows / local dev the chmod is skipped entirely.
+if (($IsLinux -or $IsMacOS) -and $TrustedScriptsDir) {
+    try { & chmod -R a-w $gateVerdictDir 2>$null } catch { }
+}
 
 } # end if (-not $skipGateAndTryFix)
 
@@ -1880,19 +1918,13 @@ if ($runCopilotReview) {
 
 # Restore gate result from file when running in phased mode
 if ($Phase -eq 'CopilotReview') {
-    $gateVerdictDir = if ($TrustedScriptsDir) {
-        Split-Path $TrustedScriptsDir -Parent
-    } else {
-        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
-    }
-    $gateVerdictFile = Join-Path $gateVerdictDir "gate-result.txt"
-    if (Test-Path $gateVerdictFile) {
-        $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
-        Write-Host "  📄 Restored gate result: $gateResult" -ForegroundColor Gray
-    } else {
-        $gateResult = "SKIPPED"
-        Write-Host "  ⚠️ Gate result file not found — defaulting to SKIPPED" -ForegroundColor Yellow
-    }
+    $gateVerdictDir = Get-PhaseStateDir -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot -PRNumber $PRNumber
+    # Fail closed if Gate did not produce a verdict — never default to SKIPPED.
+    # The function throws on missing file or invalid value; we let it propagate
+    # because running CopilotReview with a forged/missing verdict is the
+    # specific attack we are defending against.
+    $gateResult = Restore-GateResultOrFailClosed -StateDir $gateVerdictDir
+    Write-Host "  📄 Restored gate result: $gateResult" -ForegroundColor Gray
 
     # Restore regression data persisted by Gate phase
     $risksFile = Join-Path $gateVerdictDir "regression-risks.json"
@@ -1915,12 +1947,11 @@ if ($Phase -eq 'CopilotReview') {
         }
     }
 
-    # Restore detect script path and UI test categories for Tier 3 refresh
-    $detectPathFile = Join-Path $gateVerdictDir "detect-script-path.txt"
-    $catsFile       = Join-Path $gateVerdictDir "uitest-categories.txt"
-    if (Test-Path $detectPathFile) {
-        $detectScript = (Get-Content $detectPathFile -Raw).Trim()
-    }
+    # Re-derive detect script from the trusted directory rather than reading
+    # a persisted path (which an attacker could tamper to redirect execution
+    # to a malicious script run under COPILOT_GITHUB_TOKEN).
+    $detectScript = Join-Path $EngScriptsDir "detect-ui-test-categories.ps1"
+    $catsFile     = Join-Path $gateVerdictDir "uitest-categories.txt"
     if (Test-Path $catsFile) {
         $uitestCategories = (Get-Content $catsFile -Raw).Trim()
     }
@@ -2166,17 +2197,9 @@ if ($runPost) {
 
 # Restore gate result from file when running in phased mode
 if ($Phase -eq 'Post') {
-    $gateVerdictDir = if ($TrustedScriptsDir) {
-        Split-Path $TrustedScriptsDir -Parent
-    } else {
-        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
-    }
-    $gateVerdictFile = Join-Path $gateVerdictDir "gate-result.txt"
-    if (Test-Path $gateVerdictFile) {
-        $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
-    } else {
-        $gateResult = "SKIPPED"
-    }
+    $gateVerdictDir = Get-PhaseStateDir -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot -PRNumber $PRNumber
+    # Fail closed: see CopilotReview restore above.
+    $gateResult = Restore-GateResultOrFailClosed -StateDir $gateVerdictDir
 }
 
 # ─── Gate posting (moved here so only the Post task needs GH_TOKEN) ──────

@@ -658,6 +658,7 @@ stages:
           - bash: |
               echo "═══ TASK 2: GATE ═══"
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              STATE="$(Build.ArtifactStagingDirectory)/phase-state"
 
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
@@ -669,6 +670,16 @@ stages:
                 -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               GATE_EXIT=$?
               set -e
+
+              # Defense-in-depth: lock the cross-phase state directory
+              # read-only so PR-controlled subprocess output cannot forge
+              # gate-result.txt (or other state files) between Gate exit
+              # and CopilotReview/Post restore. Review-PR.ps1 also does
+              # this from its Gate phase end; we re-apply here as belt-
+              # and-braces in case the script exits before reaching it.
+              if [ -d "$STATE" ]; then
+                chmod -R a-w "$STATE" || true
+              fi
 
               if [ $GATE_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=warning]Gate phase exited with code $GATE_EXIT"
