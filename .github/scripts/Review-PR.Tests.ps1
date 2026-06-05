@@ -7,6 +7,7 @@
       - Get-TrxResults  (parses VSTest TRX produced by `dotnet test --logger trx`)
       - Get-DotNetTestResults  (legacy console-output scraper, still used as fallback
                                 when TRX is missing)
+      - Copilot token usage helpers
 
     These functions sit on the critical path of STEP 3 (UI Test Execution
     Results in the AI summary review). A regression here can silently
@@ -41,6 +42,69 @@ BeforeAll {
 
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TrxResults')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-DotNetTestResults')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-IsNumericValue')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-ObjectMemberValue')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotUsageTokenFields')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TokenFieldSum')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotTokenMetrics')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
+}
+
+Describe 'Copilot token usage helpers' {
+    It 'normalizes known token fields while preserving raw token field paths' {
+        $usage = [pscustomobject]@{
+            inputTokens        = 100
+            outputTokens       = 40
+            totalApiDurationMs = 1234
+            nested             = [pscustomobject]@{
+                cachedInputTokens = 12
+            }
+        }
+
+        $metrics = Get-CopilotTokenMetrics -Usage $usage
+
+        $metrics.inputTokens | Should -Be 100
+        $metrics.outputTokens | Should -Be 40
+        $metrics.cachedInputTokens | Should -Be 12
+        $metrics.totalTokens | Should -Be 140
+        @($metrics.rawTokenFields).Count | Should -Be 3
+        @($metrics.rawTokenFields | Where-Object { $_.Path -eq 'nested.cachedInputTokens' }).Count | Should -Be 1
+    }
+
+    It 'builds a telemetry record with raw usage and no hardcoded cost estimate' {
+        $usage = [pscustomobject]@{
+            prompt_tokens      = 25
+            completion_tokens  = 15
+            total_tokens       = 45
+            totalApiDurationMs = 2000
+        }
+
+        $record = New-CopilotTokenUsageRecord `
+            -PRNumber 35677 `
+            -Platform 'android' `
+            -Phase 'CopilotReview' `
+            -StepName 'STEP 5a: TRY-FIX' `
+            -ModelName 'gpt-5.5' `
+            -StartedAtUtc ([DateTimeOffset]::Parse('2026-06-05T10:00:00Z')) `
+            -EndedAtUtc ([DateTimeOffset]::Parse('2026-06-05T10:00:05Z')) `
+            -DurationMs 5000 `
+            -TurnCount 2 `
+            -ToolCount 3 `
+            -FailedToolCount 1 `
+            -Usage $usage `
+            -ResultEventSeen $true `
+            -ExitCode 0
+
+        $record.prNumber | Should -Be 35677
+        $record.scriptPhase | Should -Be 'CopilotReview'
+        $record.copilotStep | Should -Be 'STEP 5a: TRY-FIX'
+        $record.apiDurationMs | Should -Be 2000
+        $record.normalizedTokens.inputTokens | Should -Be 25
+        $record.normalizedTokens.outputTokens | Should -Be 15
+        $record.normalizedTokens.totalTokens | Should -Be 45
+        $record.usage.total_tokens | Should -Be 45
+        $record.costEstimateAvailable | Should -Be $false
+    }
 }
 
 Describe 'Get-TrxResults' {
