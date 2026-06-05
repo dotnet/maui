@@ -181,11 +181,21 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		var item = args.Element as ItemContainer;
 		var wrapper = item?.Child as ElementWrapper;
 		var wrapperView = wrapper?.VirtualView as View;
-		if (wrapperView is not null)
-		{
-			// Break references to the previous item while this container sits in the recycle pool.
-			wrapperView.BindingContext = null;
-		}
+
+		// Do NOT set wrapperView.BindingContext = null here.
+		//
+		// WinUI's ItemsRepeater can call RecycleElement immediately followed by GetElement
+		// for the SAME item during its layout/measurement pass. Nulling BindingContext here
+		// causes three BindingContextChanged events instead of one (null→item, item→null, null→item),
+		// which breaks Issue #16787 (BindingContextChanged fires too many times).
+		//
+		// Memory note: pooled containers hold a reference to the last BindingContext while
+		// sitting in the pool. This is bounded by the number of visible (realized) items —
+		// WinUI's ItemsRepeater only creates as many containers as fit on screen — so the
+		// pool can never grow to O(total-list-size). References are released as soon as:
+		//   (a) GetElement reuses the container and overwrites BindingContext, or
+		//   (b) CleanUp() runs when ItemsSource changes (which nulls all pooled BCs).
+		// CleanUp() is the correct place for full teardown; RecycleElement is not.
 
 		if (wrapper is not null)
 		{
