@@ -74,3 +74,97 @@ Describe 'Test-ShouldPreserveMauiBotArtifact' {
             Should -BeFalse
     }
 }
+
+Describe 'Hide-StaleMauiBotIssueComments — F3 author check on marker path' {
+    BeforeAll {
+        $script:hiddenIds = New-Object System.Collections.Generic.List[int]
+        Mock Invoke-GitHubMinimizeComment {
+            param($SubjectNodeId, $Classifier, $Reason, $DryRun)
+            if ($Reason -match 'comment (\d+)$') {
+                $script:hiddenIds.Add([int]$Matches[1])
+            }
+        }
+    }
+
+    BeforeEach {
+        $script:hiddenIds.Clear()
+    }
+
+    It 'hides bot-authored comments that contain the AI Summary marker' {
+        Mock Get-GitHubIssueComments {
+            @(
+                [pscustomobject]@{
+                    id = 100; node_id = 'IC_bot'
+                    user = [pscustomobject]@{ login = 'maui-bot' }
+                    body = "<!-- AI Summary -->`nbot summary"
+                }
+            )
+        }
+        Hide-StaleMauiBotIssueComments -PRNumber 1 -IncludeAISummary -DryRun
+        $script:hiddenIds | Should -Contain 100
+    }
+
+    It 'does NOT hide a non-bot comment quoting the AI Summary marker (F3 fix)' {
+        Mock Get-GitHubIssueComments {
+            @(
+                [pscustomobject]@{
+                    id = 200; node_id = 'IC_user'
+                    user = [pscustomobject]@{ login = 'contributor' }
+                    body = 'Quoting `<!-- AI Summary -->` for context.'
+                }
+            )
+        }
+        Hide-StaleMauiBotIssueComments -PRNumber 1 -IncludeAISummary -DryRun
+        $script:hiddenIds | Should -Not -Contain 200
+        $script:hiddenIds.Count | Should -Be 0
+    }
+
+    It 'does NOT hide a non-bot comment quoting the AI Gate legacy marker (F3 fix)' {
+        Mock Get-GitHubIssueComments {
+            @(
+                [pscustomobject]@{
+                    id = 300; node_id = 'IC_user2'
+                    user = [pscustomobject]@{ login = 'someone-else' }
+                    body = 'Reference: `<!-- AI Gate -->` used to mark gate output.'
+                }
+            )
+        }
+        Hide-StaleMauiBotIssueComments -PRNumber 1 -IncludeLegacyGate -DryRun
+        $script:hiddenIds | Should -Not -Contain 300
+        $script:hiddenIds.Count | Should -Be 0
+    }
+
+    It 'still hides a bot comment that contains the AI Gate marker' {
+        Mock Get-GitHubIssueComments {
+            @(
+                [pscustomobject]@{
+                    id = 400; node_id = 'IC_bot2'
+                    user = [pscustomobject]@{ login = 'github-actions[bot]' }
+                    body = "<!-- AI Gate -->`nGate output"
+                }
+            )
+        }
+        Hide-StaleMauiBotIssueComments -PRNumber 1 -IncludeLegacyGate -DryRun
+        $script:hiddenIds | Should -Contain 400
+    }
+
+    It 'mixed batch: hides bot, leaves contributor with same marker' {
+        Mock Get-GitHubIssueComments {
+            @(
+                [pscustomobject]@{
+                    id = 1; node_id = 'IC_a'
+                    user = [pscustomobject]@{ login = 'maui-bot' }
+                    body = "<!-- AI Summary -->`nbot"
+                },
+                [pscustomobject]@{
+                    id = 2; node_id = 'IC_b'
+                    user = [pscustomobject]@{ login = 'attacker' }
+                    body = "<!-- AI Summary -->`nuser quote"
+                }
+            )
+        }
+        Hide-StaleMauiBotIssueComments -PRNumber 1 -IncludeAISummary -DryRun
+        $script:hiddenIds | Should -Contain 1
+        $script:hiddenIds | Should -Not -Contain 2
+    }
+}
