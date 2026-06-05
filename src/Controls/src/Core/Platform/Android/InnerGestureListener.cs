@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HasAnyGestures()
 		{
-			return (_panGestureHandler?.HasAnyGestures() ?? false) || (_tapGestureHandler?.HasAnyGestures() ?? false) || (_swipeGestureHandler?.HasAnyGestures() ?? false);
+			return (_panGestureHandler?.HasAnyGestures() ?? false) || (_tapGestureHandler?.HasAnyGestures() ?? false) || (_swipeGestureHandler?.HasAnyGestures() ?? false) || (_dragAndDropGestureHandler?.HasAnyDragGestures() ?? false);
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds
@@ -112,12 +112,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SetStartingPosition(e);
 
-			if (HasAnyGestures() || EnableLongPressGestures)
+			if (HasAnyGestures())
 			{
-				// If we have any gestures to listen for (including drag gestures that use long press),
-				// we need to return true to show we're interested in the rest of the events.
-				// Without consuming ACTION_DOWN, the view won't receive ACTION_UP which is needed
-				// to cancel the long-press timer for quick taps.
+				// If we have any gestures to listen for, we need to return true to show we're interested in the rest
+				// of the events.
 				return true;
 			}
 

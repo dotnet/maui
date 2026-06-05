@@ -27,13 +27,31 @@ public class Issue35752 : TestContentPage
 			statusLabel.Text = "DragStarting fired";
 		};
 
-		var dragBox = new BoxView
+		var dragBox = new Label
 		{
 			HeightRequest = 100,
 			WidthRequest = 200,
 			BackgroundColor = Colors.Blue,
 			AutomationId = "DragBox",
+			Text = "Drag Me",
+			TextColor = Colors.White,
+			HorizontalTextAlignment = TextAlignment.Center,
+			VerticalTextAlignment = TextAlignment.Center,
 			GestureRecognizers = { dragRecognizer }
+		};
+
+		var dropRecognizer = new DropGestureRecognizer();
+		var dropBox = new Label
+		{
+			HeightRequest = 100,
+			WidthRequest = 200,
+			BackgroundColor = Colors.Green,
+			AutomationId = "DropBox",
+			Text = "Drop Here",
+			TextColor = Colors.White,
+			HorizontalTextAlignment = TextAlignment.Center,
+			VerticalTextAlignment = TextAlignment.Center,
+			GestureRecognizers = { dropRecognizer }
 		};
 
 		var instructions = new Label
@@ -51,6 +69,7 @@ public class Issue35752 : TestContentPage
 			{
 				instructions,
 				dragBox,
+				dropBox,
 				new Label { Text = "Status:" },
 				statusLabel,
 				new Label { Text = "DragStart count:" },

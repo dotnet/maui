@@ -27,14 +27,7 @@ public class Issue35752 : _IssuesUITest
 			"DragStarting should not fire on a quick tap");
 
 		// Initiate drag - DragStarting SHOULD fire
-		// Mobile platforms (Android/iOS) use long press to start drag
-		// Desktop platforms (Mac/Windows) use press + move
-		var rect = App.WaitForElement("DragBox").GetRect();
-#if ANDROID || IOS
-		App.LongPress("DragBox");
-#else
-		App.DragCoordinates(rect.CenterX(), rect.CenterY(), rect.CenterX() + 100, rect.CenterY());
-#endif
+		App.DragAndDrop("DragBox", "DropBox");
 
 		dragCount = App.WaitForElement("DragStartCount").GetText();
 		Assert.That(dragCount, Is.EqualTo("1"),
