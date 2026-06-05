@@ -106,6 +106,13 @@ public class PlatformDrawableStyle {
             paint.setShader(null);
             paint.setColor(this.solidColor);
         } else if (this.paintType == PlatformPaintType.LINEAR || this.paintType == PlatformPaintType.RADIAL) {
+            if (width <= 0 || height <= 0) {
+                // Cannot create a gradient shader for a zero-size view; render transparent.
+                paint.setShader(null);
+                paint.setColor(Color.TRANSPARENT);
+                return;
+            }
+
             // Reset the color to its default value so that a shader can be applied on top of it
             paint.setColor(Color.BLACK);
             paint.setShader(getShader(width, height));
