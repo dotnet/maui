@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (HasAnyGestures())
 			{
 				// If we have any gestures to listen for, we need to return true to show we're interested in the rest
-				// of the events.
+				// of the events.		
 				return true;
 			}
 
