@@ -160,9 +160,21 @@ function Get-PhaseStateDir {
 # outside the known whitelist. A missing/corrupt file is the failure mode
 # an attacker would aim for to flip the verdict back to "SKIPPED" (which
 # the AI prompt treats as non-blocking). We treat it as a hard error.
+#
+# F1.A defense: when an HMAC key is supplied (CI passes it via the
+# $env:GATE_HMAC_KEY secret variable, which is generated AFTER Gate's
+# pwsh exits and bound into CopilotReview / Post tasks via the YAML
+# `env:` block), require gate-result.txt.hmac to match HMAC-SHA256(file,
+# key). This raises the bar against the demonstrated same-user TOCTOU
+# attack — a PR-spawned daemonized process can overwrite gate-result.txt
+# after Gate exits but does not have the HMAC key (the key was generated
+# in bash after pwsh exited and never written to disk).
 function Restore-GateResultOrFailClosed {
     [CmdletBinding()]
-    param([Parameter(Mandatory)][string]$StateDir)
+    param(
+        [Parameter(Mandatory)][string]$StateDir,
+        [string]$HmacKeyHex = $env:GATE_HMAC_KEY
+    )
     $f = Join-Path $StateDir "gate-result.txt"
     if (-not (Test-Path $f)) {
         throw "Gate result file missing at '$f' — failing closed (cannot proceed without a verified Gate result)."
@@ -172,6 +184,31 @@ function Restore-GateResultOrFailClosed {
     $valid = @('PASSED','FAILED','SKIPPED','SKIP_NO_TESTS')
     if ($r -notin $valid) {
         throw "Invalid Gate result value '$r' at '$f' (expected one of: $($valid -join ', ')) — failing closed."
+    }
+    if (-not [string]::IsNullOrWhiteSpace($HmacKeyHex)) {
+        $hmacFile = "$f.hmac"
+        if (-not (Test-Path $hmacFile)) {
+            throw "Gate HMAC key was supplied but '$hmacFile' is missing — failing closed (verdict file may have been tampered after Gate sealed it)."
+        }
+        $expectedRaw = (Get-Content $hmacFile -Raw)
+        $expected = if ($null -eq $expectedRaw) { '' } else { $expectedRaw.Trim().ToLowerInvariant() }
+        $keyBytes = [byte[]]::new($HmacKeyHex.Length / 2)
+        for ($i = 0; $i -lt $keyBytes.Length; $i++) {
+            $keyBytes[$i] = [Convert]::ToByte($HmacKeyHex.Substring($i * 2, 2), 16)
+        }
+        # Match openssl's `openssl dgst -sha256 -hmac` which hashes the
+        # *exact bytes* of the file (no trailing newline normalization).
+        $fileBytes = [System.IO.File]::ReadAllBytes($f)
+        $hmac = [System.Security.Cryptography.HMACSHA256]::new($keyBytes)
+        try {
+            $hashBytes = $hmac.ComputeHash($fileBytes)
+            $computed = ([System.BitConverter]::ToString($hashBytes) -replace '-','').ToLowerInvariant()
+        } finally {
+            $hmac.Dispose()
+        }
+        if ($computed -ne $expected) {
+            throw "Gate HMAC verification failed for '$f' (expected '$expected', got '$computed') — verdict file was tampered after Gate sealed it."
+        }
     }
     return $r
 }

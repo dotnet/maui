@@ -693,6 +693,33 @@ stages:
                 chmod -R a-w "$STATE" || true
               fi
 
+              # F1.A defense: HMAC-sign gate-result.txt with a per-job key.
+              # The key is generated *after* pwsh exits, never written to
+              # disk, and propagated to CopilotReview/Post tasks only via
+              # an AzDO secret variable (which is not exposed to processes
+              # spawned by Gate's PR test code). A PR-spawned daemonized
+              # process that wakes after Gate ends can still overwrite
+              # gate-result.txt (chmod is bypassable by mv+mkdir on a
+              # writable parent dir), but cannot recompute a valid HMAC
+              # without the key. CopilotReview's Restore-GateResultOrFailClosed
+              # then rejects the forged verdict.
+              if [ -f "$STATE/gate-result.txt" ] && command -v openssl >/dev/null 2>&1; then
+                GATE_HMAC_KEY=$(openssl rand -hex 32)
+                # `-macopt hexkey:` decodes the 64-char hex into 32 raw bytes
+                # so the .NET HMACSHA256 verifier (which hex-decodes the same
+                # key via [Convert]::ToByte) computes an identical MAC.
+                HMAC_VAL=$(openssl dgst -sha256 -mac HMAC -macopt "hexkey:$GATE_HMAC_KEY" "$STATE/gate-result.txt" | awk '{print $NF}')
+                # Briefly re-enable write to drop the .hmac sibling, then re-lock.
+                chmod u+w "$STATE" 2>/dev/null || true
+                echo "$HMAC_VAL" > "$STATE/gate-result.txt.hmac"
+                chmod -R a-w "$STATE" 2>/dev/null || true
+                # Propagate key to CopilotReview/Post via secret variable
+                # (issecret=true masks the value in logs and prevents it
+                # from being exported as a default env var; tasks must
+                # explicitly bind it in their `env:` block).
+                echo "##vso[task.setvariable variable=GATE_HMAC_KEY;issecret=true]$GATE_HMAC_KEY"
+              fi
+
               if [ $GATE_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=warning]Gate phase exited with code $GATE_EXIT"
                 echo "##vso[task.setvariable variable=GateFailed]true"
@@ -738,6 +765,11 @@ stages:
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
+              # F1.A: bind the Gate-generated HMAC key (secret variable)
+              # so Restore-GateResultOrFailClosed can verify gate-result.txt.hmac
+              # before trusting the verdict. Missing => HMAC verification
+              # is skipped (local dev / pipelines without the Gate task).
+              GATE_HMAC_KEY: $(GATE_HMAC_KEY)
 
           # ─────────────────────────────────────────────────────────
           #  Task 4 — POST: gate comment, AI summary, labels.
@@ -774,6 +806,8 @@ stages:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               DEFER_COMMENT_TO_STAGE3: "true"
+              # F1.A: bind the Gate-generated HMAC key (see Task 3 above).
+              GATE_HMAC_KEY: $(GATE_HMAC_KEY)
 
           # Copy review artifacts into the CopilotLogs staging dir.
           # Uses pwsh (not bash) so paths resolve correctly on Windows.

@@ -486,3 +486,154 @@ Describe 'Restore-GateResultOrFailClosed' {
         Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
     }
 }
+
+Describe 'Restore-GateResultOrFailClosed — F1.A HMAC verification' {
+    BeforeEach {
+        $script:stateDir = Join-Path ([System.IO.Path]::GetTempPath()) "gate-hmac-$(New-Guid)"
+        New-Item -ItemType Directory -Force -Path $script:stateDir | Out-Null
+        $script:resultFile = Join-Path $script:stateDir 'gate-result.txt'
+        $script:hmacFile = "$script:resultFile.hmac"
+        # 32-byte / 64-hex-char test key (matches `openssl rand -hex 32`).
+        $script:testKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+    }
+    AfterEach {
+        Remove-Item -Recurse -Force $script:stateDir -ErrorAction SilentlyContinue
+        Remove-Item Env:GATE_HMAC_KEY -ErrorAction SilentlyContinue
+    }
+
+    function script:Compute-TestHmac {
+        param([string]$Path, [string]$KeyHex)
+        $keyBytes = [byte[]]::new($KeyHex.Length / 2)
+        for ($i = 0; $i -lt $keyBytes.Length; $i++) {
+            $keyBytes[$i] = [Convert]::ToByte($KeyHex.Substring($i * 2, 2), 16)
+        }
+        $fileBytes = [System.IO.File]::ReadAllBytes($Path)
+        $hmac = [System.Security.Cryptography.HMACSHA256]::new($keyBytes)
+        try {
+            $h = $hmac.ComputeHash($fileBytes)
+            return ([System.BitConverter]::ToString($h) -replace '-','').ToLowerInvariant()
+        } finally { $hmac.Dispose() }
+    }
+
+    It 'returns verdict when HMAC is correct (param form)' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        (Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey) | Set-Content $script:hmacFile -Encoding UTF8
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey |
+            Should -Be 'PASSED'
+    }
+
+    It 'returns verdict when HMAC is correct (env form)' {
+        'FAILED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        (Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey) | Set-Content $script:hmacFile -Encoding UTF8
+        $env:GATE_HMAC_KEY = $script:testKey
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'FAILED'
+    }
+
+    It 'skips HMAC verification when key is not supplied (local dev)' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        # No .hmac file, no env var — should still succeed
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
+    }
+
+    It 'fails closed when HMAC key is supplied but .hmac file is missing' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
+            Should -Throw -ExpectedMessage '*HMAC key was supplied but*missing*'
+    }
+
+    It 'fails closed when the verdict file is tampered after HMAC was sealed (forgery attack)' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        (Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey) | Set-Content $script:hmacFile -Encoding UTF8
+        # Simulate attacker overwriting verdict but unable to recompute HMAC
+        # without the key — old HMAC no longer matches the new file content.
+        'FAILED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
+            Should -Throw -ExpectedMessage '*HMAC verification failed*'
+    }
+
+    It 'fails closed when the .hmac file is forged with wrong key' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        $wrongKey = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+        (Compute-TestHmac -Path $script:resultFile -KeyHex $wrongKey) | Set-Content $script:hmacFile -Encoding UTF8
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
+            Should -Throw -ExpectedMessage '*HMAC verification failed*'
+    }
+
+    It 'accepts openssl-format HMAC output (lowercase hex, no newline normalisation)' {
+        # `openssl dgst -sha256 -hmac KEY file | awk '{print $NF}'` produces
+        # exactly 64 lowercase hex chars. Verify our verifier accepts that
+        # without leading whitespace, prefix, or trailing newline issues.
+        'SKIPPED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        $h = Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey
+        # Set-Content -Encoding UTF8 normally appends newline → simulate that
+        # path too (the bash `echo ... > file` does the same).
+        Set-Content -Path $script:hmacFile -Value $h -Encoding UTF8
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey |
+            Should -Be 'SKIPPED'
+    }
+}
+
+Describe 'Restore-GateResultOrFailClosed — openssl ↔ .NET HMAC cross-check' {
+    BeforeAll {
+        # Locate openssl. Hosted Linux/Mac CI agents have it on PATH.
+        # On Windows dev boxes we fall back to git-bash's openssl.
+        $script:openssl = (Get-Command openssl -ErrorAction SilentlyContinue)?.Source
+        if (-not $script:openssl) {
+            $candidates = @(
+                'C:\Program Files\Git\usr\bin\openssl.exe',
+                'C:\Program Files\Git\mingw64\bin\openssl.exe',
+                '/usr/bin/openssl',
+                '/opt/homebrew/bin/openssl'
+            )
+            $script:openssl = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        }
+    }
+
+    BeforeEach {
+        $script:stateDir = Join-Path ([System.IO.Path]::GetTempPath()) "gate-hmac-x-$(New-Guid)"
+        New-Item -ItemType Directory -Force -Path $script:stateDir | Out-Null
+        $script:resultFile = Join-Path $script:stateDir 'gate-result.txt'
+        $script:hmacFile = "$script:resultFile.hmac"
+        $script:testKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+    }
+    AfterEach {
+        Remove-Item -Recurse -Force $script:stateDir -ErrorAction SilentlyContinue
+    }
+
+    It 'a verdict file sealed via openssl with hexkey verifies under the .NET verifier' {
+        if (-not $script:openssl) {
+            Set-ItResult -Skipped -Because 'openssl not available in this environment'
+            return
+        }
+        # Reproduce the YAML pipeline byte-for-byte: write verdict, sign
+        # with `openssl dgst -sha256 -mac HMAC -macopt hexkey:KEY`,
+        # extract last token, write .hmac sibling.
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        $opensslOut = & $script:openssl dgst -sha256 -mac HMAC -macopt "hexkey:$script:testKey" $script:resultFile
+        $hmac = ($opensslOut -split ' ')[-1].Trim()
+        $hmac | Should -Match '^[0-9a-f]{64}$' -Because 'openssl should produce 64 lowercase hex chars'
+        $hmac | Set-Content $script:hmacFile -Encoding UTF8
+
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey |
+            Should -Be 'PASSED'
+    }
+
+    It 'a verdict file sealed via openssl WITHOUT hexkey (default -hmac form) is REJECTED — guards against accidental YAML downgrade' {
+        if (-not $script:openssl) {
+            Set-ItResult -Skipped -Because 'openssl not available in this environment'
+            return
+        }
+        # If someone mistakenly drops `-mac HMAC -macopt hexkey:` and reverts
+        # to the simpler `-hmac KEY` form, openssl treats the key as a UTF-8
+        # string while our .NET verifier hex-decodes it — the two produce
+        # different MACs. The verifier MUST reject this, otherwise a YAML
+        # regression would silently disable F1.A protection.
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        $wrongFormOut = & $script:openssl dgst -sha256 -hmac $script:testKey $script:resultFile
+        $wrongHmac = ($wrongFormOut -split ' ')[-1].Trim()
+        $wrongHmac | Set-Content $script:hmacFile -Encoding UTF8
+
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
+            Should -Throw -ExpectedMessage '*HMAC verification failed*'
+    }
+}
