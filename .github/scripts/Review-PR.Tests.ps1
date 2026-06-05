@@ -47,6 +47,9 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotUsageTokenFields')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TokenFieldSum')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotTokenMetrics')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Convert-CopilotCompactNumber')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotCliUsageLineData')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotOtelTokenMetrics')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
 }
 
@@ -71,6 +74,44 @@ Describe 'Copilot token usage helpers' {
         @($metrics.rawTokenFields | Where-Object { $_.Path -eq 'nested.cachedInputTokens' }).Count | Should -Be 1
     }
 
+    It 'parses Copilot CLI AIC and context footer lines' {
+        $aicLine = Get-CopilotCliUsageLineData -Line 'Session: 1030 AIC used'
+        $contextLine = Get-CopilotCliUsageLineData -Line 'GPT-5.5 • 1.1M context'
+
+        $aicLine.aicUsed | Should -Be 1030
+        $contextLine.model | Should -Be 'GPT-5.5'
+        $contextLine.contextWindowRaw | Should -Be '1.1M'
+        $contextLine.contextWindow | Should -Be 1100000
+    }
+
+    It 'reads token counts from Copilot OTel spans' {
+        $otelPath = Join-Path ([System.IO.Path]::GetTempPath()) "copilot-otel-$([guid]::NewGuid()).jsonl"
+        try {
+            [ordered]@{
+                type       = 'span'
+                attributes = [ordered]@{
+                    'gen_ai.usage.input_tokens'            = 1000
+                    'gen_ai.usage.output_tokens'           = 200
+                    'gen_ai.usage.cache_read.input_tokens' = 800
+                    'gen_ai.usage.reasoning.output_tokens' = 50
+                    'github.copilot.cost'                  = 7.5
+                }
+            } | ConvertTo-Json -Depth 10 -Compress | Set-Content $otelPath -Encoding UTF8
+
+            $metrics = Get-CopilotOtelTokenMetrics -Path $otelPath
+
+            $metrics.available | Should -Be $true
+            $metrics.inputTokens | Should -Be 1000
+            $metrics.outputTokens | Should -Be 200
+            $metrics.cachedInputTokens | Should -Be 800
+            $metrics.reasoningOutputTokens | Should -Be 50
+            $metrics.totalTokens | Should -Be 1200
+            $metrics.copilotCost | Should -Be 7.5
+        } finally {
+            Remove-Item $otelPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     It 'builds a telemetry record with raw usage and no hardcoded cost estimate' {
         $usage = [pscustomobject]@{
             prompt_tokens      = 25
@@ -92,6 +133,10 @@ Describe 'Copilot token usage helpers' {
             -ToolCount 3 `
             -FailedToolCount 1 `
             -Usage $usage `
+            -OtelMetrics $null `
+            -AicUsed 1030 `
+            -ContextWindow 1100000 `
+            -ContextWindowRaw '1.1M' `
             -ResultEventSeen $true `
             -ExitCode 0
 
@@ -102,8 +147,51 @@ Describe 'Copilot token usage helpers' {
         $record.normalizedTokens.inputTokens | Should -Be 25
         $record.normalizedTokens.outputTokens | Should -Be 15
         $record.normalizedTokens.totalTokens | Should -Be 45
+        $record.cliUsage.aicUsed | Should -Be 1030
+        $record.cliUsage.contextWindow | Should -Be 1100000
+        $record.cliUsage.contextWindowRaw | Should -Be '1.1M'
         $record.usage.total_tokens | Should -Be 45
         $record.costEstimateAvailable | Should -Be $false
+    }
+
+    It 'uses OTel token metrics when result usage has no token fields' {
+        $otelMetrics = [ordered]@{
+            inputTokens           = 500
+            outputTokens          = 75
+            cachedInputTokens     = 400
+            reasoningOutputTokens = 25
+            totalTokens           = 575
+            copilotCost           = 7.5
+            file                  = '/tmp/copilot-otel.jsonl'
+        }
+
+        $record = New-CopilotTokenUsageRecord `
+            -PRNumber 35677 `
+            -Platform 'android' `
+            -Phase 'CopilotReview' `
+            -StepName 'STEP 5a: TRY-FIX' `
+            -ModelName 'gpt-5.5' `
+            -StartedAtUtc ([DateTimeOffset]::Parse('2026-06-05T10:00:00Z')) `
+            -EndedAtUtc ([DateTimeOffset]::Parse('2026-06-05T10:00:05Z')) `
+            -DurationMs 5000 `
+            -TurnCount 2 `
+            -ToolCount 3 `
+            -FailedToolCount 0 `
+            -Usage ([pscustomobject]@{ totalApiDurationMs = 1000 }) `
+            -OtelMetrics $otelMetrics `
+            -AicUsed $null `
+            -ContextWindow $null `
+            -ContextWindowRaw $null `
+            -ResultEventSeen $true `
+            -ExitCode 0
+
+        $record.normalizedTokens.inputTokens | Should -Be 500
+        $record.normalizedTokens.outputTokens | Should -Be 75
+        $record.normalizedTokens.cachedInputTokens | Should -Be 400
+        $record.normalizedTokens.reasoningOutputTokens | Should -Be 25
+        $record.normalizedTokens.totalTokens | Should -Be 575
+        $record.normalizedTokens.otelFile | Should -Be '/tmp/copilot-otel.jsonl'
+        $record.cliUsage.aicUsed | Should -Be 7.5
     }
 }
 
