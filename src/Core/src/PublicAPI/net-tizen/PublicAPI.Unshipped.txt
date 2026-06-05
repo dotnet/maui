@@ -9,7 +9,7 @@ Microsoft.Maui.ITab
 Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.ITab.IsEnabled.get -> bool
 Microsoft.Maui.ITab.Title.get -> string!
-Microsoft.Maui.ITabbedView.BarBackground.get -> object
+Microsoft.Maui.ITabbedView.BarBackground.get -> object!
 Microsoft.Maui.ITabbedView.BarBackgroundColor.get -> Microsoft.Maui.Graphics.Color?
 Microsoft.Maui.ITabbedView.BarTextColor.get -> Microsoft.Maui.Graphics.Color?
 Microsoft.Maui.ITabbedView.CurrentTab.get -> Microsoft.Maui.ITab?
