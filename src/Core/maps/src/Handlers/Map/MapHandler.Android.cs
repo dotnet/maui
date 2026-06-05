@@ -504,7 +504,7 @@ namespace Microsoft.Maui.Maps.Handlers
 					_markers.Add(marker!);
 				}
 
-				_subscribedPins ??= new HashSet<IMapPin>();
+				_subscribedPins ??= new HashSet<IMapPin>(ReferenceEqualityComparer.Instance);
 				if (_subscribedPins.Add(pin) && pin is INotifyPropertyChanged observable)
 				{
 					observable.PropertyChanged += PinOnPropertyChanged;
