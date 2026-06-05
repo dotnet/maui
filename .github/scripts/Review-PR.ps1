@@ -1376,6 +1376,17 @@ if (Test-Path $detectScript) {
         $catsForOutput = if ($uitestCategories -eq 'NONE') { 'NONE' }
                          elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) { 'ALL' }
                          else { $uitestCategories }
+        # Defense-in-depth (mirrors the refresh-path guard ~L1683): the
+        # AzDO setvariable command is parsed by IndexOf — a `]` mid-value
+        # would terminate it. Validate the final string against the
+        # documented category-list grammar before re-emitting so a malicious
+        # detect script (or a future change that surfaces PR-controlled
+        # text into the category list) cannot inject a second ##vso
+        # command via this echo path.
+        if ($catsForOutput -notmatch '^(NONE|ALL|[A-Za-z0-9_,]+)$') {
+            Write-Host "  ⚠️ Rejecting detected category list (invalid characters): $catsForOutput" -ForegroundColor Yellow
+            $catsForOutput = 'ALL'
+        }
         Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$catsForOutput"
         Write-Host "##vso[task.setvariable variable=detectedPlatform;isOutput=true]$Platform"
 
@@ -2170,8 +2181,20 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
                 $refreshedForOutput = if ($refreshedCategories -eq 'NONE') { 'NONE' }
                                       elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) { 'ALL' }
                                       else { $refreshedCategories }
-                Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"
-                Write-Host "  🔁 Updated detectedCategories output: $refreshedForOutput" -ForegroundColor Green
+                # Defense-in-depth: the AzDO setvariable command is parsed by
+                # IndexOf — a `]` mid-value would terminate it. Validate the
+                # final string against the documented category-list grammar
+                # before re-emitting so a malicious detect script (or a
+                # tampered ai-categories.md) cannot inject a second
+                # ##vso command via this echo path. The detect script is
+                # trusted (\$EngScriptsDir) but the AI categories input is
+                # PR-derived.
+                if ($refreshedForOutput -notmatch '^(NONE|ALL|[A-Za-z0-9_,]+)$') {
+                    Write-Host "  ⚠️ Rejecting refreshed category list (invalid characters): $refreshedForOutput" -ForegroundColor Yellow
+                } else {
+                    Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"
+                    Write-Host "  🔁 Updated detectedCategories output: $refreshedForOutput" -ForegroundColor Green
+                }
             }
 
             $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
@@ -2296,8 +2319,20 @@ if (Test-Path $reviewScript) {
             $aiSummaryReviewId | Set-Content $reviewIdFile -Encoding UTF8
             if (-not [string]::IsNullOrWhiteSpace($aiSummaryReviewNodeId)) {
                 $aiSummaryReviewNodeId | Set-Content (Join-Path (Split-Path -Parent $reviewIdFile) "ai-summary-review-node-id.txt") -Encoding UTF8
-                Write-Host "##vso[task.setvariable variable=aiSummaryReviewNodeId;isOutput=true]$aiSummaryReviewNodeId"
+                # Defense-in-depth: GitHub review node-ids are GraphQL-encoded
+                # base64-ish strings (e.g. `PRR_kwDOFB4dxc6...`). Validate the
+                # grammar before re-emitting through ##vso[task.setvariable]
+                # so a malicious post-ai-summary-comment.ps1 (trusted today)
+                # could not inject a second AzDO command via this echo path
+                # if it ever started surfacing PR-controlled text.
+                if ($aiSummaryReviewNodeId -match '^[A-Za-z0-9_\-]+$') {
+                    Write-Host "##vso[task.setvariable variable=aiSummaryReviewNodeId;isOutput=true]$aiSummaryReviewNodeId"
+                } else {
+                    Write-Host "  ⚠️ Rejecting aiSummaryReviewNodeId (unexpected characters): $aiSummaryReviewNodeId" -ForegroundColor Yellow
+                }
             }
+            # $aiSummaryReviewId is already constrained to \d+ by the regex
+            # capture above, so it is safe to re-emit without an extra guard.
             Write-Host "##vso[task.setvariable variable=aiSummaryReviewId;isOutput=true]$aiSummaryReviewId"
         } else {
             Write-Host "  ✅ PR review summary posted" -ForegroundColor Green
