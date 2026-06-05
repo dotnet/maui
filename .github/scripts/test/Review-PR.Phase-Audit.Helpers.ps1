@@ -1,26 +1,9 @@
-# ─────────────────────────────────────────────────────────────────
-#  Phase-Audit test helpers (— closes 10 bypass classes
-#  identified in PureWeen review + adversarial reviewers).
-
-#  Dot-sourced from each Describe's BeforeAll in
-#  Review-PR.Phase-Audit.Tests.ps1. Kept in a separate file so the
-#  same helpers can be unambiguously loaded into every Pester scope
-#  without relying on top-level-vs-BeforeAll visibility quirks.
-
-#  The audit operates on the TRANSITIVE call-graph closure of the
-#  `if ($runGate) { ... }` block: it walks function calls into both
-#  same-file functions defined elsewhere in Review-PR.ps1 AND into
-#  helper functions brought in via top-level dot-source. This closes
-#  Findings A (dot-sourced helpers bypass), B (in-process functions
-#  outside $runGate called from inside), C (variable verb), D
-#  (splatting), E (indirect gh execution), F (indirect script paths
-#  bypass drift), G (write-verb allowlist holes).
-
-#  Model: read-allowlist (default deny). New gh CLI verbs are
-#  rejected by construction until explicitly classified — the
-#  failure mode is "audit fails on next CI run", which is the
-#  intended secure-by-default behavior.
-# ─────────────────────────────────────────────────────────────────
+# Phase-Audit test helpers.
+#
+# Dot-sourced from each Describe's BeforeAll in Review-PR.Phase-Audit.Tests.ps1.
+# Operates on the transitive call-graph closure of the `if ($runGate) { ... }`
+# block. Default-deny model: new gh verbs must be explicitly classified or the
+# audit fails — secure-by-default.
 
 # ────────────  Parsing primitives  ────────────
 
@@ -262,7 +245,7 @@ function Resolve-StaticStringValue {
         return $sb.ToString()
     }
 
-    # opus-4.8 F2: format-string operator — `'{0}{1}' -f 'g','h'`.
+    # format-string operator — `'{0}{1}' -f 'g','h'`.
     # Reduces to 'gh' if format string + every argument are all static.
     if ($Node -is [System.Management.Automation.Language.BinaryExpressionAst] -and $Node.Operator -eq 'Format') {
         $fmt = Resolve-StaticStringValue -Node $Node.Left -Depth $next
@@ -282,7 +265,7 @@ function Resolve-StaticStringValue {
         }
     }
 
-    # opus-4.8 F2: -join operator — `('g','h') -join ''`.
+    # -join operator — `('g','h') -join ''`.
     # Reduces to 'gh' if the array and separator are all static.
     if ($Node -is [System.Management.Automation.Language.BinaryExpressionAst] -and $Node.Operator -eq 'Join') {
         $sep = Resolve-StaticStringValue -Node $Node.Right -Depth $next
@@ -375,7 +358,7 @@ function Resolve-StaticStringValue {
         return $null
     }
 
-    # opus-4.8 F2: .ToString() / .ToLower() / .ToUpper() / .Trim() /
+    # .ToString() / .ToLower() / .ToUpper() / .Trim() /
     # .Normalize() / .ToLowerInvariant() / .ToUpperInvariant() — fold when
     # the receiver is a statically known string. `'gh'.ToString()` → 'gh',
     # `'GH'.ToLower()` → 'gh', `'  gh  '.Trim()` → 'gh', etc.
@@ -1265,7 +1248,7 @@ function Get-GhCallRecords {
             } elseif ($text -match '^(-f|-F|--field|--raw-field)=') {
                 $hasFieldFlag = $true
             } elseif ($text -eq '--input') {
-                # F1 : per `gh api
+                # per `gh api
                 # --help`, `--input <file|->` forces an implicit POST
                 # unless an explicit --method is supplied. Treat
                 # exactly like a field flag.
@@ -1407,7 +1390,7 @@ function Get-IndirectionRecords {
     $results = @()
 
     # Pattern 1: Invoke-Expression / iex
-    # F10 : normalize namespace-qualified names
+    # normalize namespace-qualified names
     # (`Microsoft.PowerShell.Utility\Invoke-Expression` resolves to
     # the same cmdlet).
     $iexCalls = $Ast.FindAll(
@@ -1428,7 +1411,7 @@ function Get-IndirectionRecords {
     }
 
     # Pattern 2: Start-Process / saps with first arg resolving (literally or by name) to gh.
-    # F11 : normalize namespace-qualified names.
+    # normalize namespace-qualified names.
     $startProcessCalls = $Ast.FindAll(
         {
             param($n)
@@ -1442,7 +1425,7 @@ function Get-IndirectionRecords {
         $filePath = $null
         $filePathElem = $null
         $argsList = $null
-        # opus-4.7x F4: Start-Process @args / @h splat.
+        # Start-Process @args / @h splat.
         # When the only arg is a splatted hashtable, the FilePath
         # is assembled at runtime — we cannot statically audit it.
         $splatElems = @($elements | Where-Object {
@@ -1487,7 +1470,7 @@ function Get-IndirectionRecords {
             } elseif ($stripped -match '(?i)^([/\\]?(usr[/\\]bin[/\\]|bin[/\\])?(bash|sh|zsh|cmd|pwsh|powershell|env|sudo|nohup|timeout|xargs|command|setsid))(\.exe)?$' -and
                       $argsList -and $argsList -match '(?i)gh(\.(exe|bat|cmd|com|ps1))?(?:\s|''|"|$)') {
                 # Start-Process launching a shell/wrapper with gh in args.
-                # F11/F5 .
+                # F11/F5.
                 $results += [pscustomobject]@{
                     LineNumber  = $c.Extent.StartLineNumber
                     RawText     = $c.Extent.Text
@@ -1513,7 +1496,7 @@ function Get-IndirectionRecords {
 
     # Pattern 3: Set-Alias / New-Alias / sal / nal aliasing gh
     # normalize namespace-qualified names.
-    # gpt-5.5 F1: the textual scan caught the bare-literal
+    # the textual scan caught the bare-literal
     # form `Set-Alias mygh gh` only when 'gh' appeared verbatim in
     # the call's text. These bypasses produce no literal 'gh' token
     # in the call:
@@ -1626,7 +1609,7 @@ function Get-IndirectionRecords {
     # Pattern 4: `& <expr>` or `. <expr>` (indirect call) where the
     # operand could resolve to gh at runtime.
 
-    # F5/F6/F7 + F3 : previously
+    # previously
     # this only flagged VariableExpressionAst / ExpandableStringExpressionAst
     # operands, leaving these bypasses:
     #   & (Get-Command gh)            ParenExpressionAst
@@ -1690,7 +1673,7 @@ function Get-IndirectionRecords {
     #     (`bash -c '/usr/bin/gh …'`) match
     #   - non-literal `-c`/`-Command` value (variable / expression /
     #     paren) is forbidden — can't be statically audited.
-    # opus-4.7x F1 + F7:
+    # + F7:
     #   - `pwsh -EncodedCommand` / `-e` / `-ec` / `-en` / `-enc` accept
     #     base64-encoded scriptblocks. The base64 hides any 'gh'
     #     substring from textual checks, so we treat the operand as
@@ -1699,8 +1682,7 @@ function Get-IndirectionRecords {
     #     we cannot inline-audit; default-deny in Gate scope.
     #   - `cmd /k` and `cmd /r` (run-then-stay-open) accept commands
     #     just like `/c` — adding them closes the open-shell variant.
-    # opus-4.7x F8:
-    #   - `cmd /v:on` / `/v` enable delayed expansion. Combined with
+    # #   - `cmd /v:on` / `/v` enable delayed expansion. Combined with
     #     `set X=g&!X!h …`, the literal 'gh' never appears in the AST.
     #     Treat ANY cmd CommandAst with /v:on or /v in its arg list as
     #     forbidden.
@@ -1718,7 +1700,7 @@ function Get-IndirectionRecords {
     $cFlagRegex     = '^(-c|-C|-Command|/c|/k|/r|/C|/K|/R|-lc|-ic|-lic|-cli|--command)$'
     # pwsh/powershell-only flags that take an operand we cannot statically
     # audit (encoded base64) or an external script we cannot inline-audit.
-    # opus-4.7x F1: pwsh / powershell with `-e` / `-ec` /
+    # pwsh / powershell with `-e` / `-ec` /
     # `-en` / `-enc` / `-EncodedCommand` accept Base64-encoded
     # commands whose content is invisible to AST static analysis.
     # We default-deny these flags in the Gate scope.
@@ -1727,7 +1709,7 @@ function Get-IndirectionRecords {
     # subprocess walker (`Get-SubprocessInvocations` below) already
     # recursively audits `.ps1` targets, so a `pwsh -File someScript.ps1`
     # call is auditable provided `someScript.ps1` lands in the
-    # inventory. The bare-name bypass that opus-4.7x F9 flagged is
+    # inventory. The bare-name bypass that flagged is
     # closed by Get-SubprocessInvocations including bare `.ps1` names
     # (see comment in that function below). The `-Command` / `-c`
     # inline-command form is caught by Pattern 5 (`bash -c gh`-style)
@@ -1739,7 +1721,7 @@ function Get-IndirectionRecords {
     foreach ($c in $shellCalls) {
         $cmdName = (Get-NormalizedCommandName $c.GetCommandName())
         $elements = @($c.CommandElements)
-        # F1: pwsh -EncodedCommand / -File default-deny.
+        # pwsh -EncodedCommand / -File default-deny.
         if ($cmdName -in @('pwsh','powershell')) {
             for ($i = 1; $i -lt $elements.Count; $i++) {
                 $eText = $elements[$i].Extent.Text
@@ -1753,7 +1735,7 @@ function Get-IndirectionRecords {
                 }
             }
         }
-        # F8: cmd /v:on enables delayed expansion → forbid.
+        # cmd /v:on enables delayed expansion → forbid.
         if ($cmdName -eq 'cmd') {
             for ($i = 1; $i -lt $elements.Count; $i++) {
                 $eText = $elements[$i].Extent.Text
@@ -1792,7 +1774,7 @@ function Get-IndirectionRecords {
                             IsForbidden = $true
                         }
                     } elseif ($cmdName -eq 'cmd' -and $arg -match '\^.') {
-                        # F8: cmd caret-escape — `g^h`, `^g^h^`.
+                        # cmd caret-escape — `g^h`, `^g^h^`.
                         # The caret defeats literal scanning; no
                         # legitimate Gate-scope use of `^` exists.
                         $results += [pscustomobject]@{
@@ -1802,7 +1784,7 @@ function Get-IndirectionRecords {
                             IsForbidden = $true
                         }
                     } elseif ($cmdName -eq 'cmd' -and $arg -match '!\w+!') {
-                        # F8: cmd delayed-expansion expansion
+                        # cmd delayed-expansion expansion
                         # `!X!` in the operand — flag even without
                         # explicit `/v:on` (some shells default to it).
                         $results += [pscustomobject]@{
@@ -1915,8 +1897,8 @@ function Get-IndirectionRecords {
     #   IfStatementAst              — `$x = if (…) {literal}` ( F1)
     #   SwitchStatementAst          — `$x = switch (…) {default {literal}}` ( F1)
     #   TryStatementAst             — `$x = try {literal} catch {…}` ( F1)
-    #   DataStatementAst            — `$x = data {literal}` ( opus-4.7x -1)
-    #   LoopStatementAst            — `$x = foreach/while/do/for {literal}` ( opus-4.7x -1)
+    #   DataStatementAst            — `$x = data {literal}`
+    #   LoopStatementAst            — `$x = foreach/while/do/for {literal}`
     function script:Get-AssignmentRhsExpression {
         param($rhs)
         $valueAst = $null
@@ -2036,7 +2018,7 @@ function Get-IndirectionRecords {
         # and return the deepest valueAst found, or $null. Stops as soon
         # as any intermediate value isn't a hashtable we can chain into.
         # Resolves the OUTERMOST node first by recursion on $node.Expression
-        # / $node.Target. Limited recursion depth to keep it sane.
+        # $node.Target. Limited recursion depth to keep it sane.
         $chainResolve = $null
         $chainResolve = {
             param($n, $depth)
@@ -2221,10 +2203,10 @@ function Get-IndirectionRecords {
     # Helper: resolve a method-chain on a hashState lookup (e.g.
     # `$h.k.ToString()`, `$h.k.ToLower()`). The receiver folds via
     # hashState; we then re-apply Resolve-StaticStringValue to the
-    # synthesized member-call shape.  opus-4.7x #7.
+    # synthesized member-call shape.  #7.
     # recurse on the RECEIVER when it's itself
     # an InvokeMemberExpressionAst, so chains like `.Trim().ToLower()`
-    # / `.Trim().ToLower().Replace('!','')` fold by applying each
+    # `.Trim().ToLower().Replace('!','')` fold by applying each
     # method in sequence. Stops as soon as any intermediate receiver
     # can't be resolved.
     $resolveMethodChainViaHashState = $null
@@ -3121,12 +3103,11 @@ function Get-IndirectionRecords {
 
     # Pattern 7: dynamic scriptblock / PowerShell construction —
     # `[scriptblock]::Create("…").Invoke()`, `[powershell]::Create()`,
-    # `Runspace.AddScript(...)`. F8 .
+    # `Runspace.AddScript(...)`. F8.
     # These produce no CommandAst named `gh`, so the gh extractor and
     # `iex` detector both miss them. Default-deny on existence.
 
-    # opus-4.7x F2 / gpt-5.5 F2 / opus-4.7x F6:
-    # extended catalog of "dynamic / reflective dispatch":
+    # # extended catalog of "dynamic / reflective dispatch":
     #   - [System.Diagnostics.Process]::Start(...)      — directly run gh
     #     (no need to involve any PowerShell construct).
     #   - $ExecutionContext.InvokeCommand.InvokeScript / NewScriptBlock /
@@ -3193,7 +3174,7 @@ function Get-IndirectionRecords {
             }
         }
     }
-    # gpt-5.5 F2: $ExecutionContext.InvokeCommand.* and
+    # $ExecutionContext.InvokeCommand.* and
     # $PSCmdlet.InvokeCommand.* member calls. The receiver is an
     # expression chain (.) not a type expression, so the loop above
     # misses them.
@@ -3263,8 +3244,7 @@ function Get-IndirectionRecords {
     # . Each wraps an underlying program; if that program
     # is gh, the gh extractor doesn't see it (the CommandAst's name is
     # the wrapper, not gh).
-    # opus-4.7x F5:
-    #   - `wsl gh …` — Windows Subsystem for Linux passthrough.
+    # #   - `wsl gh …` — Windows Subsystem for Linux passthrough.
     #   - `chroot /jail gh …`, `unshare gh …` — namespace wrappers.
     #   - `ssh host gh …`, `rsh host gh …` — remote shell invokes gh.
     $execWrappers = @('env','sudo','nohup','setsid','command','exec','time','wsl','chroot','unshare')
@@ -3299,7 +3279,7 @@ function Get-IndirectionRecords {
     # numeric/duration args (or `-Iflag value` pairs) before the
     # command; scan them with the same logic but skip the first
     # positional which is the duration / xargs replacement.
-    # F5: `ssh host gh …` / `rsh host gh …` fit the same
+    # `ssh host gh …` / `rsh host gh …` fit the same
     # shape — first positional is the host, rest is the remote command.
     $argWrappers = @('timeout','xargs','watch','stdbuf','ionice','chrt','taskset','ssh','rsh')
     $argWrapperCalls = $Ast.FindAll(
@@ -3327,7 +3307,7 @@ function Get-IndirectionRecords {
             }
         }
     }
-    # F5: container wrappers — `docker exec/run … gh …`,
+    # container wrappers — `docker exec/run … gh …`,
     # `podman exec/run … gh …`, `kubectl exec … -- gh …`,
     # `crictl exec … gh …`. The first positional is a subcommand,
     # not the program; we scan ALL positional args for gh after
@@ -3630,7 +3610,7 @@ function Get-DotSourcedFiles {
 # (PowerShell scoping makes nested functions visible only when the
 # parent is called; for the audit we conservatively include them).
 
-# F9 : also enumerate FunctionMemberAst
+# also enumerate FunctionMemberAst
 # (PowerShell `class` member methods). A class declared in any
 # audited file can be instantiated and its methods called; the
 # methods can themselves invoke gh. Register them as
@@ -3746,7 +3726,7 @@ function Walk-CallGraphClosure {
             }
         }
 
-        # F9 : class static & instance member calls
+        # class static & instance member calls
         # `[Type]::Method(...)` and `$obj.Method(...)`. The walker has
         # to follow these into FunctionMemberAst bodies registered by
         # Get-FunctionTable, otherwise a class method that runs `gh`
@@ -3998,7 +3978,7 @@ function Test-InvokeWithoutGhTokensWrapper {
             continue
         }
 
-        # opus-4.8 F1: non-null assignment to a tracked token
+        # non-null assignment to a tracked token
         # must be flagged whether or not it's at top level. The
         # previous `$isTopLevel` guard let `if($cond) { $env:GH_TOKEN
         # = 'leaked' }` slip through entirely — it isn't $isNullClear
@@ -4126,7 +4106,7 @@ function Test-InvokeWithoutGhTokensWrapper {
             }
         }
 
-        # 6d. opus-4.8 F1: recursively scan AssignmentStatementAst
+        # 6d. recursively scan AssignmentStatementAst
         # nodes inside this statement. Step 4 only looks at direct
         # children of the try-body; if a nested block (e.g.
         # `if($cond) { $env:GH_TOKEN = 'x' }`) writes a tracked-token
@@ -4248,7 +4228,7 @@ function Get-SubprocessInvocations {
     foreach ($s in $allStrings) {
         $val = if ($s -is [System.Management.Automation.Language.ExpandableStringExpressionAst]) { $s.Value } else { $s.Value }
         if ($val -notmatch '\.ps1$') { continue }
-        # opus-4.7x F9: previously this filter dropped strings
+        # previously this filter dropped strings
         # without a directory separator entirely, on the theory they
         # were Join-Path args / basename comparisons. That left
         # `pwsh -File evil.ps1` (bare relative name) invisible to the

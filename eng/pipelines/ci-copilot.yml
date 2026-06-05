@@ -627,10 +627,8 @@ stages:
               chmod -R a-w "$TRUSTED"
               echo "Trusted scripts copied to $TRUSTED"
 
-              # Run Setup phase (branch checkout + PR merge). Use the
-              # trusted copy of Review-PR.ps1 (already copied + chmod'd
-              # above) rather than the worktree path so the same script
-              # version runs in all four phases.
+              # Run Setup phase (branch checkout + PR merge) from the trusted
+              # copy so all four phases run identical script bytes.
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
                 -PRNumber "${PARAM_PR_NUMBER}" \
@@ -644,15 +642,10 @@ stages:
 
               if [ $SETUP_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=error]Setup phase failed with exit code $SETUP_EXIT"
-                # Use a dedicated variable distinct from CopilotFailed (set by
-                # later phases) so Tasks 2-4 can short-circuit on Setup failure
-                # only, while Task 4 still runs after a Review failure to post
-                # the gate result / AI summary it already has on disk.
+                # SetupFailed (Setup-only) vs CopilotFailed (any phase) lets
+                # Task 4 still post after a Review failure but skip after Setup.
                 echo "##vso[task.setvariable variable=SetupFailed]true"
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
-                # Short-circuit: surface failure as a non-zero step exit
-                # so later tasks (which now have `condition` gates) skip
-                # cleanly instead of running on a half-set-up worktree.
                 exit $SETUP_EXIT
               fi
             name: RunSetup
@@ -683,40 +676,26 @@ stages:
               GATE_EXIT=$?
               set -e
 
-              # Defense-in-depth: lock the cross-phase state directory
-              # read-only so PR-controlled subprocess output cannot forge
-              # gate-result.txt (or other state files) between Gate exit
-              # and CopilotReview/Post restore. Review-PR.ps1 also does
-              # this from its Gate phase end; we re-apply here as belt-
-              # and-braces in case the script exits before reaching it.
+              # Lock cross-phase state read-only so PR-controlled subprocess
+              # output cannot forge gate-result.txt between Gate exit and the
+              # CopilotReview/Post restore. (Review-PR.ps1 does this too at
+              # the end of its Gate phase; this is belt-and-braces.)
               if [ -d "$STATE" ]; then
                 chmod -R a-w "$STATE" || true
               fi
 
-              # F1.A defense: HMAC-sign gate-result.txt with a per-job key.
-              # The key is generated *after* pwsh exits, never written to
-              # disk, and propagated to CopilotReview/Post tasks only via
-              # an AzDO secret variable (which is not exposed to processes
-              # spawned by Gate's PR test code). A PR-spawned daemonized
-              # process that wakes after Gate ends can still overwrite
-              # gate-result.txt (chmod is bypassable by mv+mkdir on a
-              # writable parent dir), but cannot recompute a valid HMAC
-              # without the key. CopilotReview's Restore-GateResultOrFailClosed
-              # then rejects the forged verdict.
+              # HMAC-sign gate-result.txt with a per-job key generated AFTER
+              # pwsh exits (so PR-spawned daemons never see it) and propagated
+              # via AzDO secret variable. Defeats the same-user mv+mkdir
+              # forgery class — a daemon can rewrite the file but cannot
+              # recompute a valid HMAC without the key. `-macopt hexkey:`
+              # is the form .NET's Convert.FromHexString round-trips with.
               if [ -f "$STATE/gate-result.txt" ] && command -v openssl >/dev/null 2>&1; then
                 GATE_HMAC_KEY=$(openssl rand -hex 32)
-                # `-macopt hexkey:` decodes the 64-char hex into 32 raw bytes
-                # so the .NET HMACSHA256 verifier (which hex-decodes the same
-                # key via [Convert]::ToByte) computes an identical MAC.
                 HMAC_VAL=$(openssl dgst -sha256 -mac HMAC -macopt "hexkey:$GATE_HMAC_KEY" "$STATE/gate-result.txt" | awk '{print $NF}')
-                # Briefly re-enable write to drop the .hmac sibling, then re-lock.
                 chmod u+w "$STATE" 2>/dev/null || true
                 echo "$HMAC_VAL" > "$STATE/gate-result.txt.hmac"
                 chmod -R a-w "$STATE" 2>/dev/null || true
-                # Propagate key to CopilotReview/Post via secret variable
-                # (issecret=true masks the value in logs and prevents it
-                # from being exported as a default env var; tasks must
-                # explicitly bind it in their `env:` block).
                 echo "##vso[task.setvariable variable=GATE_HMAC_KEY;issecret=true]$GATE_HMAC_KEY"
               fi
 
@@ -765,10 +744,6 @@ stages:
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
-              # F1.A: bind the Gate-generated HMAC key (secret variable)
-              # so Restore-GateResultOrFailClosed can verify gate-result.txt.hmac
-              # before trusting the verdict. Missing => HMAC verification
-              # is skipped (local dev / pipelines without the Gate task).
               GATE_HMAC_KEY: $(GATE_HMAC_KEY)
 
           # ─────────────────────────────────────────────────────────
@@ -798,15 +773,13 @@ stages:
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
             name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryReviewId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId']). Note: detectedCategories comes from RunGate, not RunPost.
             displayName: 'Task 4: Post (comments + labels)'
-            # Skip only when Setup itself failed — there is no state to post.
-            # Keep posting after Gate or Review failures so the partial AI
-            # summary / gate-result comment still surfaces on the PR.
+            # Skip only on Setup failure (no state to post); always run after
+            # Gate/Review failures so the partial AI summary still posts.
             condition: ne(variables['SetupFailed'], 'true')
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               DEFER_COMMENT_TO_STAGE3: "true"
-              # F1.A: bind the Gate-generated HMAC key (see Task 3 above).
               GATE_HMAC_KEY: $(GATE_HMAC_KEY)
 
           # Copy review artifacts into the CopilotLogs staging dir.

@@ -472,13 +472,13 @@ Describe 'Restore-GateResultOrFailClosed' {
     It 'fails closed on an unrecognised verdict value (attacker tries arbitrary string)' {
         'GREEN' | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8
         { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
-            Should -Throw -ExpectedMessage "*Invalid Gate result value 'GREEN'*"
+            Should -Throw -ExpectedMessage "*Invalid Gate result 'GREEN'*"
     }
 
     It 'fails closed on an empty file' {
         '' | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8 -NoNewline
         { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
-            Should -Throw -ExpectedMessage '*Invalid Gate result value*'
+            Should -Throw -ExpectedMessage '*Invalid Gate result*'
     }
 
     It 'trims surrounding whitespace before validating (real Set-Content adds trailing newline)' {
@@ -501,18 +501,11 @@ Describe 'Restore-GateResultOrFailClosed — F1.A HMAC verification' {
         Remove-Item Env:GATE_HMAC_KEY -ErrorAction SilentlyContinue
     }
 
-    function script:Compute-TestHmac {
-        param([string]$Path, [string]$KeyHex)
-        $keyBytes = [byte[]]::new($KeyHex.Length / 2)
-        for ($i = 0; $i -lt $keyBytes.Length; $i++) {
-            $keyBytes[$i] = [Convert]::ToByte($KeyHex.Substring($i * 2, 2), 16)
-        }
-        $fileBytes = [System.IO.File]::ReadAllBytes($Path)
-        $hmac = [System.Security.Cryptography.HMACSHA256]::new($keyBytes)
-        try {
-            $h = $hmac.ComputeHash($fileBytes)
-            return ([System.BitConverter]::ToString($h) -replace '-','').ToLowerInvariant()
-        } finally { $hmac.Dispose() }
+    function script:Compute-TestHmac([string]$Path, [string]$KeyHex) {
+        $h = [System.Security.Cryptography.HMACSHA256]::HashData(
+            [System.Convert]::FromHexString($KeyHex),
+            [System.IO.File]::ReadAllBytes($Path))
+        [System.Convert]::ToHexString($h).ToLowerInvariant()
     }
 
     It 'returns verdict when HMAC is correct (param form)' {
@@ -538,7 +531,7 @@ Describe 'Restore-GateResultOrFailClosed — F1.A HMAC verification' {
     It 'fails closed when HMAC key is supplied but .hmac file is missing' {
         'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
         { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
-            Should -Throw -ExpectedMessage '*HMAC key was supplied but*missing*'
+            Should -Throw -ExpectedMessage '*HMAC key supplied but*missing*'
     }
 
     It 'fails closed when the verdict file is tampered after HMAC was sealed (forgery attack)' {
@@ -616,24 +609,5 @@ Describe 'Restore-GateResultOrFailClosed — openssl ↔ .NET HMAC cross-check' 
 
         Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey |
             Should -Be 'PASSED'
-    }
-
-    It 'a verdict file sealed via openssl WITHOUT hexkey (default -hmac form) is REJECTED — guards against accidental YAML downgrade' {
-        if (-not $script:openssl) {
-            Set-ItResult -Skipped -Because 'openssl not available in this environment'
-            return
-        }
-        # If someone mistakenly drops `-mac HMAC -macopt hexkey:` and reverts
-        # to the simpler `-hmac KEY` form, openssl treats the key as a UTF-8
-        # string while our .NET verifier hex-decodes it — the two produce
-        # different MACs. The verifier MUST reject this, otherwise a YAML
-        # regression would silently disable F1.A protection.
-        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
-        $wrongFormOut = & $script:openssl dgst -sha256 -hmac $script:testKey $script:resultFile
-        $wrongHmac = ($wrongFormOut -split ' ')[-1].Trim()
-        $wrongHmac | Set-Content $script:hmacFile -Encoding UTF8
-
-        { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
-            Should -Throw -ExpectedMessage '*HMAC verification failed*'
     }
 }

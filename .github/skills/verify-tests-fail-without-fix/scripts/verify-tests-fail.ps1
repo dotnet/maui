@@ -200,7 +200,6 @@ if (Test-Path $SanitizerScript) {
     . $SanitizerScript
 }
 
-
 # ============================================================
 # Test type detection from changed files
 # ============================================================
@@ -826,7 +825,6 @@ function Get-TestResultFromOutput {
     return @{ Passed = $false; Error = "Could not parse test results"; Total = 0; Failed = 0; Skipped = 0 }
 }
 
-
 # ============================================================
 # Auto-detect tests from changed files using shared detection
 # ============================================================
@@ -1239,7 +1237,6 @@ function Write-MarkdownReport {
     # Without this, every non-PASSED gate just says "tests did not behave as expected".
     # Map the without/with-fix outcomes per test into a concrete diagnosis the
     # downstream Try-Fix×4 stage and the human reader can act on.
-    #
     # Reliability extensions:
     # - BuildError flag → headline says "Fix does not compile" (was conflated
     #   with "Fix does not pass the tests" because the test runner can't load
@@ -1786,8 +1783,7 @@ foreach ($t in $AllDetectedTests) {
 
     $nameDisplay = $t.TestName
     if ($nameDisplay.Length -gt 22) { $nameDisplay = $nameDisplay.Substring(0, 19) + "..." }
-    $nameDisplay = $nameDisplay.PadRight(22)
-
+    $nameDisplay = $nameDisplay.PadRight
     $woColor = if ($woResult.EnvError) { "Yellow" } elseif (-not $woResult.Passed) { "Green" } else { "Red" }
     $wColor = if ($wResult.EnvError) { "Yellow" } elseif ($wResult.Passed) { "Green" } else { "Red" }
 

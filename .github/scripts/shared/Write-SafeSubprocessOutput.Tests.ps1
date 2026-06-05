@@ -1,48 +1,12 @@
 #Requires -Version 5.1
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.0.0' }
 
-# Tests for shared/Write-SafeSubprocessOutput.ps1 — F2 (PureWeen review).
-
-# F2 ATTACK MODEL (the bug we're guarding against)
-# ------------------------------------------------
-# Review-PR.ps1 shells out to subprocesses that execute PR-controlled code
-# (dotnet test, BuildAndRunHostApp.ps1, verify-tests-fail.ps1, etc.) and
-# re-emits the captured stdout via `Write-Host`. AzDO's agent parses ANY
-# line in a bash-task's stdout for `##vso[...]` logging commands. So a
-# malicious PR test that does `Console.WriteLine("##vso[task.setvariable
-# variable=detectedCategories;isOutput=true]NONE")` would, before this fix,
-# successfully flip the cross-stage `detectedCategories` output variable
-# to NONE — silently skipping the entire RunDeepUITests stage.
-
-# Other dangerous logging commands that must also be neutralized:
-#   ##vso[task.setvariable variable=X]Y    (set pipeline vars)
-#   ##vso[task.setvariable variable=X;isOutput=true]Y  (cross-stage vars)
-#   ##vso[task.complete result=Failed]done (force-fail or force-pass task)
-#   ##vso[task.uploadfile]/etc/passwd      (filesystem exfiltration)
-#   ##vso[task.prependpath]/tmp/attacker   (PATH hijacking for next tasks)
-#   ##vso[task.logissue type=error]msg     (forged error issue)
-#   ##[error]forged                         (forged error label)
-#   ##[warning]forged                       (forged warning label)
-
-# WHAT THIS TEST SUITE ASSERTS
-# ----------------------------
-# Out-SafePRSubprocessLine must:
-#   - Pass through benign lines unchanged (modulo the Prefix parameter).
-#   - Neutralize the AzDO logging-command prefix on lines starting with
-#     `##vso[` or `##[`, INCLUDING:
-#       * leading whitespace
-#       * leading carriage return / NUL / other ASCII control chars
-#       * ANSI color escape sequences before the prefix
-#       * embedded ANSI escapes splitting the prefix
-#       * case variations (##VSO, ##Vso, ##vso, ##VsO[)
-#       * mixed case args (TASK.SETVARIABLE)
-#       * multiple logging commands on one line
-#       * nested logging commands (##vso[##vso[...]...])
-#   - Leave the rest of the line intact so observers still see what the
-#     attacker tried to do.
-#   - Apply a Prefix argument to every emitted line, including sanitized ones.
-#   - Handle $null and empty-string input without throwing.
-#   - Work as a pipeline filter (Process scriptblock).
+# Tests for shared/Write-SafeSubprocessOutput.ps1. Out-SafePRSubprocessLine
+# must neutralize any `##vso[...]` / `##[...]` AzDO logging-command prefix
+# in PR-controlled subprocess stdout (case-insensitive, mid-line, with
+# leading whitespace / control chars / ANSI escapes, nested, multiple per
+# line) while leaving the rest of the line intact, and handle $null / empty
+# input without throwing.
 
 BeforeAll {
     $script:HelperPath = Join-Path $PSScriptRoot 'Write-SafeSubprocessOutput.ps1'
@@ -351,7 +315,7 @@ Describe 'Out-SafePRSubprocessLine — pipeline behavior' {
 }
 
 # Mid-line IndexOf bypasses — these test the exact attack class that
-# adversarial reviewer u4-adversarial-opus48 found bypassed an earlier
+# review found bypassed an earlier
 # anchored-detection version of the helper. The AzDO agent parser uses
 # `IndexOf('##vso[')` / `IndexOf('##[')`, NOT `StartsWith`, so any
 # non-whitespace prefix (e.g. test framework's `[INFO]`, `[xUnit.net …]`,
@@ -400,7 +364,6 @@ Describe 'Out-SafePRSubprocessLine — mid-line IndexOf bypasses (regression for
 
 # ───────────────────────────────────────────────────────────────────────────
 #  — PR-derived `Write-Host` inventory in Review-PR.ps1
-#  (closes opus-4.8 F1 / opus-4.7x F2 / opus-4.8 F4 / grep audit)
 
 #  The helper is only useful if every PR-derived echo site in the parent
 #  script actually routes through it. Three independent reviewers
