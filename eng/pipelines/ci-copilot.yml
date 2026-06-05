@@ -627,9 +627,12 @@ stages:
               chmod -R a-w "$TRUSTED"
               echo "Trusted scripts copied to $TRUSTED"
 
-              # Run Setup phase (branch checkout + PR merge)
+              # Run Setup phase (branch checkout + PR merge). Use the
+              # trusted copy of Review-PR.ps1 (already copied + chmod'd
+              # above) rather than the worktree path so the same script
+              # version runs in all four phases.
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 \
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
                 -PRNumber "${PARAM_PR_NUMBER}" \
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Setup \
@@ -641,7 +644,16 @@ stages:
 
               if [ $SETUP_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=error]Setup phase failed with exit code $SETUP_EXIT"
+                # Use a dedicated variable distinct from CopilotFailed (set by
+                # later phases) so Tasks 2-4 can short-circuit on Setup failure
+                # only, while Task 4 still runs after a Review failure to post
+                # the gate result / AI summary it already has on disk.
+                echo "##vso[task.setvariable variable=SetupFailed]true"
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
+                # Short-circuit: surface failure as a non-zero step exit
+                # so later tasks (which now have `condition` gates) skip
+                # cleanly instead of running on a half-set-up worktree.
+                exit $SETUP_EXIT
               fi
             name: RunSetup
             displayName: 'Task 1: Setup (branch + merge)'
@@ -687,6 +699,7 @@ stages:
               fi
             name: RunGate
             displayName: 'Task 2: Gate (test verification)'
+            condition: and(succeeded(), ne(variables['SetupFailed'], 'true'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
@@ -719,6 +732,7 @@ stages:
               fi
             name: RunReview
             displayName: 'Task 3: Copilot Review (expert review + try-fix)'
+            condition: and(succeeded(), ne(variables['SetupFailed'], 'true'))
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
@@ -752,6 +766,10 @@ stages:
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
             name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryReviewId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId']). Note: detectedCategories comes from RunGate, not RunPost.
             displayName: 'Task 4: Post (comments + labels)'
+            # Skip only when Setup itself failed — there is no state to post.
+            # Keep posting after Gate or Review failures so the partial AI
+            # summary / gate-result comment still surfaces on the PR.
+            condition: ne(variables['SetupFailed'], 'true')
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}

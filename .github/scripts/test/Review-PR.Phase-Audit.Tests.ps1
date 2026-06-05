@@ -511,7 +511,7 @@ Describe 'Axis B — YAML binding audit (eng/pipelines/ci-copilot.yml)' {
     It 'CopilotReview task has no GH_TOKEN env binding' {
         $copilotMatch = [regex]::Match(
             $script:YamlText,
-            "(?s)name:\s*RunReview\s*\n\s*displayName:\s*'Task 3: Copilot Review[^\n]*\n\s*env:\s*\n(?<body>(?:\s+[A-Z][A-Z_0-9]*:\s*[^\n]*\n)+)"
+            "(?s)name:\s*RunReview\s*\n\s*displayName:\s*'Task 3: Copilot Review[^\n]*\n(?:\s*condition:\s*[^\n]*\n)?\s*env:\s*\n(?<body>(?:\s+[A-Z][A-Z_0-9]*:\s*[^\n]*\n)+)"
         )
         $copilotMatch.Success | Should -BeTrue -Because "must locate RunReview task env: block"
         $copilotMatch.Groups['body'].Value | Should -Not -Match '(?m)^\s+GH_TOKEN:' `
