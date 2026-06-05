@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public int VerticalOffset { get; }
 
-		int _span = 1;
-
 		ItemsLayoutOrientation _orientation;
 
 		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
@@ -39,7 +37,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				case GridItemsLayout gridItemsLayout:
 					horizontalOffset = gridItemsLayout.HorizontalItemSpacing / 2.0;
 					verticalOffset = gridItemsLayout.VerticalItemSpacing / 2.0;
-					_span = gridItemsLayout.Span;
 					_orientation = gridItemsLayout.Orientation;
 					break;
 				case LinearItemsLayout listItemsLayout:
@@ -89,11 +86,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (parent.GetLayoutManager() is GridLayoutManager gridLayoutManager)
 			{
-				// Use the GridLayoutManager's SpanSizeLookup to correctly compute which row (for
-				// vertical orientation) or column group (for horizontal orientation) this item belongs
-				// to. This correctly accounts for full-span items such as group headers/footers and
-				// list headers/footers, which would otherwise cause simple position / spanCount
-				// arithmetic to produce wrong row indices for the items that follow them.
+				// Use SpanSizeLookup instead of position/spanCount so full-span items
+				// (group headers, footers, etc.) are accounted for when determining rows.
 				var spanSizeLookup = gridLayoutManager.GetSpanSizeLookup();
 				int spanCount = gridLayoutManager.SpanCount;
 				rowCol = spanSizeLookup.GetSpanGroupIndex(position, spanCount);
