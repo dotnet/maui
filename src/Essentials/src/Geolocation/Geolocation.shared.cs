@@ -199,7 +199,8 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		internal static void ValidateListeningRequest(GeolocationListeningRequest request)
 		{
-			ArgumentNullException.ThrowIfNull(request);
+			if (request is null)
+				throw new ArgumentNullException(nameof(request));
 
 			if (request.MinimumTime < TimeSpan.Zero)
 				throw new ArgumentOutOfRangeException(nameof(request), "MinimumTime must be greater than or equal to TimeSpan.Zero.");
