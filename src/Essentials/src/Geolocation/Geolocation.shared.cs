@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <see cref="Permissions.LocationWhenInUse"/> from the user.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="request"/> contains a negative minimum time or distance.</exception>
 		/// <exception cref="FeatureNotSupportedException">Thrown if listening is not supported on this platform.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if already listening and <see cref="IsListeningForeground"/> returns <see langword="true"/>.</exception>
 		/// <param name="request">The listening request parameters to use.</param>
@@ -151,6 +152,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// from the user.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="request"/> contains a negative minimum time or distance.</exception>
 		/// <exception cref="FeatureNotSupportedException">Thrown if listening is not supported on this platform.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if already listening and <see cref="IsListeningForeground"/> returns <see langword="true"/>.</exception>
 		/// <param name="request">The listening request parameters to use.</param>
@@ -195,15 +197,15 @@ namespace Microsoft.Maui.Devices.Sensors
 		internal void OnLocationError(GeolocationError geolocationError) =>
 			ListeningFailed?.Invoke(null, new GeolocationListeningFailedEventArgs(geolocationError));
 
-		static void ValidateListeningRequest(GeolocationListeningRequest request)
+		internal static void ValidateListeningRequest(GeolocationListeningRequest request)
 		{
 			ArgumentNullException.ThrowIfNull(request);
 
-			if (request.MinimumTime.TotalMilliseconds < 0)
-				throw new ArgumentOutOfRangeException(nameof(request), "MinimumTime must be positive.");
+			if (request.MinimumTime < TimeSpan.Zero)
+				throw new ArgumentOutOfRangeException(nameof(request), "MinimumTime must be greater than or equal to TimeSpan.Zero.");
 
 			if (request.MinimumDistance < 0)
-				throw new ArgumentOutOfRangeException(nameof(request), "MinimumDistance must be positive.");
+				throw new ArgumentOutOfRangeException(nameof(request), "MinimumDistance must be greater than or equal to 0.");
 		}
 	}
 
