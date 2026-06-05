@@ -84,10 +84,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
-			ArgumentNullException.ThrowIfNull(request);
-
-			if (request.MinimumTime.TotalMilliseconds < 0)
-				throw new ArgumentOutOfRangeException(nameof(request), "MinimumTime must be positive.");
+			ValidateListeningRequest(request);
 
 			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location updates.");
@@ -98,7 +95,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				DesiredAccuracyInMeters = request.PlatformDesiredAccuracy,
 				ReportInterval = (uint)request.MinimumTime.TotalMilliseconds,
-				MovementThreshold = request.PlatformDesiredAccuracy,
+				MovementThreshold = request.MinimumDistance,
 			};
 
 			CheckStatus(listeningGeolocator.LocationStatus);

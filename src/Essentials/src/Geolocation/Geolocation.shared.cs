@@ -194,6 +194,17 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		internal void OnLocationError(GeolocationError geolocationError) =>
 			ListeningFailed?.Invoke(null, new GeolocationListeningFailedEventArgs(geolocationError));
+
+		static void ValidateListeningRequest(GeolocationListeningRequest request)
+		{
+			ArgumentNullException.ThrowIfNull(request);
+
+			if (request.MinimumTime.TotalMilliseconds < 0)
+				throw new ArgumentOutOfRangeException(nameof(request), "MinimumTime must be positive.");
+
+			if (request.MinimumDistance < 0)
+				throw new ArgumentOutOfRangeException(nameof(request), "MinimumDistance must be positive.");
+		}
 	}
 
 	/// <summary>

@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
-			ArgumentNullException.ThrowIfNull(request);
+			ValidateListeningRequest(request);
 
 			if (LocationManager is null)
 				throw new FeatureNotSupportedException("Android LocationManager is not available");
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			var minTimeMilliseconds = (long)request.MinimumTime.TotalMilliseconds;
 
 			foreach (var provider in listeningProviders)
-				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, providerInfo.Accuracy, continuousListener, looper);
+				LocationManager.RequestLocationUpdates(provider, minTimeMilliseconds, (float)request.MinimumDistance, continuousListener, looper);
 
 			return true;
 

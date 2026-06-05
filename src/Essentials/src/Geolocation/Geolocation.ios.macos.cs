@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
-			ArgumentNullException.ThrowIfNull(request);
+			ValidateListeningRequest(request);
 
 			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location changes.");
@@ -143,6 +143,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			listener.ErrorHandler += HandleError;
 
 			listeningManager.DesiredAccuracy = request.PlatformDesiredAccuracy;
+			listeningManager.DistanceFilter = request.MinimumDistance == 0
+				? CLLocationDistance.FilterNone
+				: request.MinimumDistance;
 			listeningManager.Delegate = listener;
 
 #if __IOS__
