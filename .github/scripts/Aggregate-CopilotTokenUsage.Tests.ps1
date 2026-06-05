@@ -32,6 +32,11 @@ Describe 'Aggregate-CopilotTokenUsage.ps1' {
             apiDurationMs    = 2000
             turnCount        = 2
             toolCount        = 3
+            cliUsage         = [ordered]@{
+                aicUsed          = 7.5
+                contextWindow    = 1100000
+                contextWindowRaw = '1.1M'
+            }
             normalizedTokens = [ordered]@{
                 inputTokens       = 100
                 outputTokens      = 40
@@ -56,14 +61,17 @@ Describe 'Aggregate-CopilotTokenUsage.ps1' {
         $summary.totals.inputTokens | Should -Be 100
         $summary.totals.outputTokens | Should -Be 40
         $summary.totals.totalTokens | Should -Be 140
+        $summary.totals.aicUsed | Should -Be 7.5
 
         $reviewStage = $summary.stages | Where-Object { $_.stageName -eq 'ReviewPR' }
         $reviewStage.invocationCount | Should -Be 1
         $reviewStage.totalTokens | Should -Be 140
+        $reviewStage.aicUsed | Should -Be 7.5
 
         $deepStage = $summary.stages | Where-Object { $_.stageName -eq 'RunDeepUITests' }
         $deepStage.invocationCount | Should -Be 0
         $deepStage.totalTokens | Should -Be 0
+        $deepStage.aicUsed | Should -Be 0
         $deepStage.note | Should -Be 'No Copilot invocation observed in this stage.'
     }
 

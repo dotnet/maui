@@ -746,6 +746,158 @@ function Get-CopilotTokenMetrics {
     }
 }
 
+function Convert-CopilotCompactNumber {
+    param([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) { return $null }
+
+    $normalized = ($Value -replace ',', '').Trim()
+    if ($normalized -notmatch '^(?<number>[0-9]+(?:\.[0-9]+)?)\s*(?<suffix>[KMGkmg])?$') {
+        return $null
+    }
+
+    $number = [double]$Matches['number']
+    $multiplier = switch ($Matches['suffix'].ToUpperInvariant()) {
+        'K' { 1000 }
+        'M' { 1000000 }
+        'G' { 1000000000 }
+        default { 1 }
+    }
+
+    return [long][Math]::Round($number * $multiplier)
+}
+
+function Get-CopilotCliUsageLineData {
+    param([string]$Line)
+
+    $data = [ordered]@{}
+    if ([string]::IsNullOrWhiteSpace($Line)) {
+        return $data
+    }
+
+    if ($Line -match 'Session:\s*(?<aic>[0-9]+(?:\.[0-9]+)?)\s*AIC\s+used') {
+        $data.aicUsed = [double]$Matches['aic']
+    }
+
+    if ($Line -match '^\s*(?<model>.+?)\s*[\u2022\u00b7]\s*(?<context>[0-9][0-9,]*(?:\.[0-9]+)?\s*[KMGkmg]?)\s+context\s*$') {
+        $contextRaw = $Matches['context'].Trim()
+        $data.model = $Matches['model'].Trim()
+        $data.contextWindowRaw = $contextRaw
+        $data.contextWindow = Convert-CopilotCompactNumber -Value $contextRaw
+    }
+
+    return $data
+}
+
+function Get-CopilotOtelTokenMetrics {
+    param([string]$Path)
+
+    $metrics = [ordered]@{
+        inputTokens          = $null
+        outputTokens         = $null
+        cachedInputTokens    = $null
+        reasoningOutputTokens = $null
+        totalTokens          = $null
+        copilotCost          = $null
+        available            = $false
+        file                 = $Path
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path $Path)) {
+        return $metrics
+    }
+
+    $spanSums = @{
+        input     = 0.0
+        output    = 0.0
+        cached    = 0.0
+        reasoning = 0.0
+        cost      = 0.0
+    }
+    $spanSeen = @{
+        input     = $false
+        output    = $false
+        cached    = $false
+        reasoning = $false
+        cost      = $false
+    }
+
+    $metricSums = @{
+        input  = 0.0
+        output = 0.0
+        cached = 0.0
+    }
+    $metricSeen = @{
+        input  = $false
+        output = $false
+        cached = $false
+    }
+
+    foreach ($line in Get-Content -Path $Path -Encoding UTF8) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+
+        try {
+            $entry = $line | ConvertFrom-Json -ErrorAction Stop
+        } catch {
+            continue
+        }
+
+        if ($entry.type -eq 'span' -and $entry.attributes) {
+            $attributes = $entry.attributes
+            $inputValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.input_tokens')
+            $outputValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.output_tokens')
+            $cachedValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.cache_read.input_tokens')
+            $reasoningValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.reasoning.output_tokens')
+            $costValue = Get-ObjectMemberValue -InputObject $attributes -Names @('github.copilot.cost')
+
+            if (Test-IsNumericValue $inputValue) { $spanSums.input += [double]$inputValue; $spanSeen.input = $true }
+            if (Test-IsNumericValue $outputValue) { $spanSums.output += [double]$outputValue; $spanSeen.output = $true }
+            if (Test-IsNumericValue $cachedValue) { $spanSums.cached += [double]$cachedValue; $spanSeen.cached = $true }
+            if (Test-IsNumericValue $reasoningValue) { $spanSums.reasoning += [double]$reasoningValue; $spanSeen.reasoning = $true }
+            if (Test-IsNumericValue $costValue) { $spanSums.cost += [double]$costValue; $spanSeen.cost = $true }
+        } elseif ($entry.type -eq 'metric' -and $entry.name -eq 'gen_ai.client.token.usage') {
+            foreach ($point in @($entry.dataPoints)) {
+                $tokenType = [string](Get-ObjectMemberValue -InputObject $point.attributes -Names @('gen_ai.token.type'))
+                $sumValue = Get-ObjectMemberValue -InputObject $point.value -Names @('sum')
+                if (-not (Test-IsNumericValue $sumValue)) { continue }
+
+                if ($tokenType -eq 'input') {
+                    $metricSums.input += [double]$sumValue
+                    $metricSeen.input = $true
+                } elseif ($tokenType -eq 'output') {
+                    $metricSums.output += [double]$sumValue
+                    $metricSeen.output = $true
+                } elseif ($tokenType -match '(?i)cache') {
+                    $metricSums.cached += [double]$sumValue
+                    $metricSeen.cached = $true
+                }
+            }
+        }
+    }
+
+    $inputTokens = if ($spanSeen.input) { [long][Math]::Round($spanSums.input) } elseif ($metricSeen.input) { [long][Math]::Round($metricSums.input) } else { $null }
+    $outputTokens = if ($spanSeen.output) { [long][Math]::Round($spanSums.output) } elseif ($metricSeen.output) { [long][Math]::Round($metricSums.output) } else { $null }
+    $cachedInputTokens = if ($spanSeen.cached) { [long][Math]::Round($spanSums.cached) } elseif ($metricSeen.cached) { [long][Math]::Round($metricSums.cached) } else { $null }
+    $reasoningOutputTokens = if ($spanSeen.reasoning) { [long][Math]::Round($spanSums.reasoning) } else { $null }
+    $copilotCost = if ($spanSeen.cost) { [Math]::Round($spanSums.cost, 3) } else { $null }
+
+    $totalTokens = if ($null -ne $inputTokens -or $null -ne $outputTokens) {
+        [long](($inputTokens ?? 0) + ($outputTokens ?? 0))
+    } else {
+        $null
+    }
+
+    $metrics.inputTokens = $inputTokens
+    $metrics.outputTokens = $outputTokens
+    $metrics.cachedInputTokens = $cachedInputTokens
+    $metrics.reasoningOutputTokens = $reasoningOutputTokens
+    $metrics.totalTokens = $totalTokens
+    $metrics.copilotCost = $copilotCost
+    $metrics.available = ($null -ne $inputTokens -or $null -ne $outputTokens -or $null -ne $cachedInputTokens -or $null -ne $copilotCost)
+
+    return $metrics
+}
+
 function New-CopilotTokenUsageRecord {
     param(
         [int]$PRNumber,
@@ -760,12 +912,46 @@ function New-CopilotTokenUsageRecord {
         [int]$ToolCount,
         [int]$FailedToolCount,
         [object]$Usage,
+        [object]$OtelMetrics,
+        [object]$AicUsed,
+        [object]$ContextWindow,
+        [string]$ContextWindowRaw,
         [bool]$ResultEventSeen,
         [int]$ExitCode
     )
 
     $apiDurationValue = Get-ObjectMemberValue -InputObject $Usage -Names @('totalApiDurationMs', 'total_api_duration_ms')
     $apiDurationMs = if (Test-IsNumericValue $apiDurationValue) { [long]$apiDurationValue } else { $null }
+    $usageTokenMetrics = Get-CopilotTokenMetrics -Usage $Usage
+
+    $inputTokens = $usageTokenMetrics.inputTokens
+    $outputTokens = $usageTokenMetrics.outputTokens
+    $cachedInputTokens = $usageTokenMetrics.cachedInputTokens
+    $totalTokens = $usageTokenMetrics.totalTokens
+    $reasoningOutputTokens = $null
+    $copilotCost = $null
+    $otelFile = $null
+
+    if ($OtelMetrics) {
+        if ($null -eq $inputTokens -and $null -ne $OtelMetrics.inputTokens) { $inputTokens = $OtelMetrics.inputTokens }
+        if ($null -eq $outputTokens -and $null -ne $OtelMetrics.outputTokens) { $outputTokens = $OtelMetrics.outputTokens }
+        if ($null -eq $cachedInputTokens -and $null -ne $OtelMetrics.cachedInputTokens) { $cachedInputTokens = $OtelMetrics.cachedInputTokens }
+        if ($null -eq $totalTokens -and $null -ne $OtelMetrics.totalTokens) { $totalTokens = $OtelMetrics.totalTokens }
+        $reasoningOutputTokens = $OtelMetrics.reasoningOutputTokens
+        $copilotCost = $OtelMetrics.copilotCost
+        $otelFile = $OtelMetrics.file
+    }
+
+    $billingUnits = $AicUsed
+    if ($null -eq $billingUnits -and $null -ne $copilotCost) {
+        $billingUnits = $copilotCost
+    }
+    if ($null -eq $billingUnits) {
+        $premiumRequests = Get-ObjectMemberValue -InputObject $Usage -Names @('premiumRequests')
+        if (Test-IsNumericValue $premiumRequests) {
+            $billingUnits = [double]$premiumRequests
+        }
+    }
 
     return [ordered]@{
         schemaVersion         = 1
@@ -793,7 +979,20 @@ function New-CopilotTokenUsageRecord {
         turnCount             = $TurnCount
         toolCount             = $ToolCount
         failedToolCount       = $FailedToolCount
-        normalizedTokens      = Get-CopilotTokenMetrics -Usage $Usage
+        cliUsage              = [ordered]@{
+            aicUsed          = $billingUnits
+            contextWindow    = $ContextWindow
+            contextWindowRaw = $ContextWindowRaw
+        }
+        normalizedTokens      = [ordered]@{
+            inputTokens           = $inputTokens
+            outputTokens          = $outputTokens
+            cachedInputTokens     = $cachedInputTokens
+            reasoningOutputTokens = $reasoningOutputTokens
+            totalTokens           = $totalTokens
+            rawTokenFields        = @($usageTokenMetrics.rawTokenFields)
+            otelFile              = $otelFile
+        }
         usage                 = $Usage
         costEstimateAvailable = $false
         costEstimateNote      = 'Dollar cost not calculated; no trusted rate table configured.'
@@ -852,6 +1051,9 @@ function Invoke-CopilotStep {
     $failedTools = @()
     $resultEventSeen = $false
     $resultUsage = $null
+    $cliAicUsed = $null
+    $cliContextWindow = $null
+    $cliContextWindowRaw = $null
 
     # Tool icon mapping for common tools
     $toolIcons = @{
@@ -873,136 +1075,180 @@ function Invoke-CopilotStep {
     if ([string]::IsNullOrWhiteSpace($modelName)) {
         $modelName = $copilotModel
     }
-    & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
-        $line = $_.ToString()
-        try {
-            $event = $line | ConvertFrom-Json -ErrorAction Stop
-            switch ($event.type) {
-                'session.tools_updated' {
-                    if ($event.data.model) {
-                        $modelName = $event.data.model
-                        Write-Host "  ⚙️  Model: " -ForegroundColor DarkGray -NoNewline
-                        Write-Host $modelName -ForegroundColor DarkCyan
-                    }
-                }
-                'assistant.turn_start' {
-                    $turnCount++
-                    $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
-                    Write-Host ""
-                    Write-Host "  ┌─ Turn $turnCount " -ForegroundColor DarkGray -NoNewline
-                    Write-Host "[$elapsed]" -ForegroundColor DarkYellow -NoNewline
-                    if ($currentIntent) {
-                        Write-Host " · $currentIntent" -ForegroundColor DarkCyan
-                    } else {
-                        Write-Host ""
-                    }
-                }
-                'assistant.turn_end' {
-                    Write-Host "  └─" -ForegroundColor DarkGray
-                }
-                'tool.execution_start' {
-                    $toolName = $event.data.toolName
-                    $args_ = $event.data.arguments
+    $safeOtelStepName = ($StepName -replace '[^A-Za-z0-9._-]+', '-').Trim('-')
+    if ([string]::IsNullOrWhiteSpace($safeOtelStepName)) {
+        $safeOtelStepName = 'copilot-step'
+    }
+    $otelPath = $null
+    if (-not [string]::IsNullOrWhiteSpace($TokenUsageOutputDir)) {
+        New-Item -ItemType Directory -Path $TokenUsageOutputDir -Force | Out-Null
+        $otelPath = Join-Path $TokenUsageOutputDir "copilot-otel-$([DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'))-$safeOtelStepName-$([guid]::NewGuid().ToString('N')).jsonl"
+    }
 
-                    # Capture intent changes silently
-                    if ($toolName -eq 'report_intent') {
-                        $currentIntent = $args_.intent ?? $currentIntent
-                        Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
-                        Write-Host $currentIntent -ForegroundColor Yellow
-                        break
-                    }
+    $savedOtel = @{
+        COPILOT_OTEL_FILE_EXPORTER_PATH = $env:COPILOT_OTEL_FILE_EXPORTER_PATH
+        COPILOT_OTEL_EXPORTER_TYPE      = $env:COPILOT_OTEL_EXPORTER_TYPE
+        OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT = $env:OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT
+    }
+    try {
+        if ($otelPath) {
+            $env:COPILOT_OTEL_FILE_EXPORTER_PATH = $otelPath
+            $env:COPILOT_OTEL_EXPORTER_TYPE = 'file'
+            $env:OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT = 'false'
+        }
 
-                    $toolCount++
-                    $icon = $toolIcons[$toolName]
-                    if (-not $icon) {
-                        # Prefix match for github-mcp-server-* and other compound names
-                        $icon = if ($toolName -like 'github-*') { '🔀' } else { '🔧' }
-                    }
-
-                    # Build a short display name for long tool names
-                    $displayName = $toolName -replace '^github-mcp-server-', 'gh/'
-
-                    # Pick the most useful detail from arguments
-                    $detail = $args_.description ?? $args_.intent ?? ''
-                    if (-not $detail) {
-                        # Fallback: pick first informative arg
-                        $detail = $args_.command ?? $args_.pattern ?? $args_.query ?? $args_.path ?? $args_.prompt ?? ''
-                    }
-                    if ($detail) {
-                        $detail = $detail.Substring(0, [Math]::Min($detail.Length, 90))
-                        # Truncate at last word boundary if we cut mid-word
-                        if ($detail.Length -eq 90) {
-                            $lastSpace = $detail.LastIndexOf(' ')
-                            if ($lastSpace -gt 60) { $detail = $detail.Substring(0, $lastSpace) + "…" }
-                            else { $detail += "…" }
+        & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
+            $line = $_.ToString()
+            try {
+                $event = $line | ConvertFrom-Json -ErrorAction Stop
+                switch ($event.type) {
+                    'session.tools_updated' {
+                        if ($event.data.model) {
+                            $modelName = $event.data.model
+                            Write-Host "  ⚙️  Model: " -ForegroundColor DarkGray -NoNewline
+                            Write-Host $modelName -ForegroundColor DarkCyan
                         }
                     }
-
-                    Write-Host "  │  $icon " -ForegroundColor DarkGray -NoNewline
-                    Write-Host $displayName -ForegroundColor Cyan -NoNewline
-                    if ($detail) {
-                        Write-Host "  $detail" -ForegroundColor DarkGray
-                    } else {
-                        Write-Host ""
-                    }
-                }
-                'tool.execution_complete' {
-                    if (-not $event.data.success) {
-                        $failedTool = $event.data.toolCallId
-                        $failedTools += $failedTool
-                        Write-Host "  │  ❌ Tool failed" -ForegroundColor Red
-                    }
-                }
-                'assistant.message' {
-                    $content = $event.data.content
-                    # Show agent text responses (skip empty tool-request-only messages)
-                    if ($content -and $content.Trim()) {
-                        $preview = $content.Trim()
-                        if ($preview.Length -gt 400) {
-                            $preview = $preview.Substring(0, 400) + "…"
-                        }
-                        Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
-                        Write-Host $preview -ForegroundColor White
-                    }
-                }
-                'result' {
-                    # Final stats — note: 'result' is a top-level event with no 'data' wrapper.
-                    $resultEventSeen = $true
-                    $usage = $event.usage
-                    $resultUsage = $usage
-                    if ($usage) {
+                    'assistant.turn_start' {
+                        $turnCount++
                         $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
-                        $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
-                        $changes = $usage.codeChanges
-                        $filesChanged = if ($changes -and $changes.filesModified) { @($changes.filesModified).Count } else { 0 }
-                        $linesAdded = if ($changes) { $changes.linesAdded } else { 0 }
-                        $linesRemoved = if ($changes) { $changes.linesRemoved } else { 0 }
-
                         Write-Host ""
-                        Write-Host "  ╭──────────────────────────────────────────╮" -ForegroundColor DarkGray
-                        Write-Host "  │  ⏱  $elapsed elapsed  ($($apiMs)s API)" -ForegroundColor DarkGray -NoNewline
-                        Write-Host "  │  🔧 $toolCount tools" -ForegroundColor DarkGray -NoNewline
-                        Write-Host "  │  🔄 $turnCount turns" -ForegroundColor DarkGray
-                        if ($filesChanged -gt 0 -or $linesAdded -gt 0 -or $linesRemoved -gt 0) {
-                            Write-Host "  │  📝 $filesChanged files  " -ForegroundColor DarkGray -NoNewline
-                            Write-Host "+$linesAdded" -ForegroundColor Green -NoNewline
-                            Write-Host "/" -ForegroundColor DarkGray -NoNewline
-                            Write-Host "-$linesRemoved" -ForegroundColor Red
+                        Write-Host "  ┌─ Turn $turnCount " -ForegroundColor DarkGray -NoNewline
+                        Write-Host "[$elapsed]" -ForegroundColor DarkYellow -NoNewline
+                        if ($currentIntent) {
+                            Write-Host " · $currentIntent" -ForegroundColor DarkCyan
+                        } else {
+                            Write-Host ""
                         }
-                        Write-Host "  ╰──────────────────────────────────────────╯" -ForegroundColor DarkGray
                     }
+                    'assistant.turn_end' {
+                        Write-Host "  └─" -ForegroundColor DarkGray
+                    }
+                    'tool.execution_start' {
+                        $toolName = $event.data.toolName
+                        $args_ = $event.data.arguments
+
+                        # Capture intent changes silently
+                        if ($toolName -eq 'report_intent') {
+                            $currentIntent = $args_.intent ?? $currentIntent
+                            Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
+                            Write-Host $currentIntent -ForegroundColor Yellow
+                            break
+                        }
+
+                        $toolCount++
+                        $icon = $toolIcons[$toolName]
+                        if (-not $icon) {
+                            # Prefix match for github-mcp-server-* and other compound names
+                            $icon = if ($toolName -like 'github-*') { '🔀' } else { '🔧' }
+                        }
+
+                        # Build a short display name for long tool names
+                        $displayName = $toolName -replace '^github-mcp-server-', 'gh/'
+
+                        # Pick the most useful detail from arguments
+                        $detail = $args_.description ?? $args_.intent ?? ''
+                        if (-not $detail) {
+                            # Fallback: pick first informative arg
+                            $detail = $args_.command ?? $args_.pattern ?? $args_.query ?? $args_.path ?? $args_.prompt ?? ''
+                        }
+                        if ($detail) {
+                            $detail = $detail.Substring(0, [Math]::Min($detail.Length, 90))
+                            # Truncate at last word boundary if we cut mid-word
+                            if ($detail.Length -eq 90) {
+                                $lastSpace = $detail.LastIndexOf(' ')
+                                if ($lastSpace -gt 60) { $detail = $detail.Substring(0, $lastSpace) + "…" }
+                                else { $detail += "…" }
+                            }
+                        }
+
+                        Write-Host "  │  $icon " -ForegroundColor DarkGray -NoNewline
+                        Write-Host $displayName -ForegroundColor Cyan -NoNewline
+                        if ($detail) {
+                            Write-Host "  $detail" -ForegroundColor DarkGray
+                        } else {
+                            Write-Host ""
+                        }
+                    }
+                    'tool.execution_complete' {
+                        if (-not $event.data.success) {
+                            $failedTool = $event.data.toolCallId
+                            $failedTools += $failedTool
+                            Write-Host "  │  ❌ Tool failed" -ForegroundColor Red
+                        }
+                    }
+                    'assistant.message' {
+                        $content = $event.data.content
+                        # Show agent text responses (skip empty tool-request-only messages)
+                        if ($content -and $content.Trim()) {
+                            $preview = $content.Trim()
+                            if ($preview.Length -gt 400) {
+                                $preview = $preview.Substring(0, 400) + "…"
+                            }
+                            Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
+                            Write-Host $preview -ForegroundColor White
+                        }
+                    }
+                    'result' {
+                        # Final stats — note: 'result' is a top-level event with no 'data' wrapper.
+                        $resultEventSeen = $true
+                        $usage = $event.usage
+                        $resultUsage = $usage
+                        if ($usage) {
+                            $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
+                            $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
+                            $changes = $usage.codeChanges
+                            $filesChanged = if ($changes -and $changes.filesModified) { @($changes.filesModified).Count } else { 0 }
+                            $linesAdded = if ($changes) { $changes.linesAdded } else { 0 }
+                            $linesRemoved = if ($changes) { $changes.linesRemoved } else { 0 }
+
+                            Write-Host ""
+                            Write-Host "  ╭──────────────────────────────────────────╮" -ForegroundColor DarkGray
+                            Write-Host "  │  ⏱  $elapsed elapsed  ($($apiMs)s API)" -ForegroundColor DarkGray -NoNewline
+                            Write-Host "  │  🔧 $toolCount tools" -ForegroundColor DarkGray -NoNewline
+                            Write-Host "  │  🔄 $turnCount turns" -ForegroundColor DarkGray
+                            if ($filesChanged -gt 0 -or $linesAdded -gt 0 -or $linesRemoved -gt 0) {
+                                Write-Host "  │  📝 $filesChanged files  " -ForegroundColor DarkGray -NoNewline
+                                Write-Host "+$linesAdded" -ForegroundColor Green -NoNewline
+                                Write-Host "/" -ForegroundColor DarkGray -NoNewline
+                                Write-Host "-$linesRemoved" -ForegroundColor Red
+                            }
+                            Write-Host "  ╰──────────────────────────────────────────╯" -ForegroundColor DarkGray
+                        }
+                    }
+                }
+            } catch {
+                $cliLineData = Get-CopilotCliUsageLineData -Line $line
+                if ($cliLineData.Contains('aicUsed')) {
+                    $cliAicUsed = $cliLineData.aicUsed
+                }
+                if ($cliLineData.Contains('contextWindow')) {
+                    $cliContextWindow = $cliLineData.contextWindow
+                    $cliContextWindowRaw = $cliLineData.contextWindowRaw
+                }
+                if ($cliLineData.Contains('model') -and -not [string]::IsNullOrWhiteSpace([string]$cliLineData.model)) {
+                    $modelName = [string]$cliLineData.model
+                }
+
+                # Non-JSON line (e.g. stats) — pass through as-is
+                if ($line.Trim()) {
+                    Write-Host "  $line" -ForegroundColor DarkGray
                 }
             }
-        } catch {
-            # Non-JSON line (e.g. stats) — pass through as-is
-            if ($line.Trim()) {
-                Write-Host "  $line" -ForegroundColor DarkGray
+        }
+    } finally {
+        foreach ($key in $savedOtel.Keys) {
+            if ($null -eq $savedOtel[$key]) {
+                Remove-Item -Path ("env:" + $key) -ErrorAction SilentlyContinue
+            } else {
+                Set-Item -Path ("env:" + $key) -Value $savedOtel[$key]
             }
         }
     }
     $exitCode = $LASTEXITCODE
     $stopwatch.Stop()
     $endedAtUtc = [DateTimeOffset]::UtcNow
+    $otelMetrics = Get-CopilotOtelTokenMetrics -Path $otelPath
 
     $usageRecord = New-CopilotTokenUsageRecord `
         -PRNumber $PRNumber `
@@ -1017,6 +1263,10 @@ function Invoke-CopilotStep {
         -ToolCount $toolCount `
         -FailedToolCount (@($failedTools).Count) `
         -Usage $resultUsage `
+        -OtelMetrics $otelMetrics `
+        -AicUsed $cliAicUsed `
+        -ContextWindow $cliContextWindow `
+        -ContextWindowRaw $cliContextWindowRaw `
         -ResultEventSeen $resultEventSeen `
         -ExitCode $exitCode
     Write-CopilotTokenUsageRecord -OutputDir $TokenUsageOutputDir -Record $usageRecord
