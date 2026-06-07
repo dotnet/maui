@@ -444,10 +444,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateAdapter();
 
 			// Set up any properties which require observing data changes in the adapter
-			UpdateItemsUpdatingScrollMode();
-
 			UpdateEmptyView();
 			AddOrUpdateScrollListener();
+			UpdateItemsUpdatingScrollMode();
 			UpdateSnapBehavior();
 		}
 
@@ -455,6 +454,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsViewAdapter == null || ItemsView == null)
 				return;
+
+			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				ScrollHelper.AddScrollListener();
+			}
+			else
+			{
+				ScrollHelper.RemoveScrollListener();
+			}
 
 			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
