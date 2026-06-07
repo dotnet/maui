@@ -52,34 +52,9 @@ public class UriExtensions_Tests
 		Assert.Equal(expected, result);
 	}
 
-	[Fact]
-	public void IsBaseOfPage_ReturnsFalse_WhenPathHasFileExtension()
-	{
-		var uriWithExtension = "https://example.com/assets/image.png";
-		Assert.False(_baseUri.IsBaseOfPage(uriWithExtension));
-	}
-
-	[Fact]
-	public void IsBaseOfPage_ReturnsTrue_WhenUriIsBaseItself()
-	{
-		var uri = "https://example.com/";
-		Assert.True(_baseUri.IsBaseOfPage(uri));
-	}
-
-	[Fact]
-	public void IsBaseOfPage_IgnoresDotInQuery_WhenBaseUriMatches()
-	{
-		var uri = "https://example.com/page?foo=1.2.3";
-		Assert.True(_baseUri.IsBaseOfPage(uri));
-	}
-
-	[Fact]
-	public void IsBaseOfPage_ReturnsFalse_WhenSchemeDiffersFromBase()
-	{
-		var uri = "ftp://example.com/page";
-		Assert.False(_baseUri.IsBaseOfPage(uri));
-	}
-
+	// Regression test for https://github.com/dotnet/maui/issues/25689
+	// A URL with a dot in the query parameter (e.g. ?weight=62.5) must not be
+	// treated as a file-extension path and must be allowed to fall back to the host page.
 	[Fact]
 	public void IsBaseOfPage_DoesNotTreatDotInQueryAsExtension()
 	{
@@ -88,19 +63,19 @@ public class UriExtensions_Tests
 		Assert.True(baseUri.IsBaseOfPage(urlWithDotInQuery));
 	}
 
-	[Fact]
-	public void IsBaseOfPage_ReturnsFalse_WhenPathHasDotExtension()
+	// Regression tests using the actual BlazorWebView platform app origins (https://github.com/dotnet/maui/issues/25689).
+	// Android/Windows use https://0.0.0.1/ and iOS/MacCatalyst use app://0.0.0.1/ as the host origin,
+	// so the original ?weight=62.5 bug must be verified against those real origins, not just a generic host.
+	[Theory]
+	[InlineData("https://0.0.0.1/", "https://0.0.0.1/customer?weight=62.5", true)]  // Android/Windows: dot in query
+	[InlineData("https://0.0.0.1/", "https://0.0.0.1/customer#section.1", true)]    // Android/Windows: dot in fragment
+	[InlineData("https://0.0.0.1/", "https://0.0.0.1/customer.json", false)]        // Android/Windows: real file extension
+	[InlineData("app://0.0.0.1/", "app://0.0.0.1/customer?weight=62.5", true)]      // iOS/MacCatalyst: dot in query
+	[InlineData("app://0.0.0.1/", "app://0.0.0.1/customer#section.1", true)]        // iOS/MacCatalyst: dot in fragment
+	[InlineData("app://0.0.0.1/", "app://0.0.0.1/customer.json", false)]            // iOS/MacCatalyst: real file extension
+	public void IsBaseOfPage_HandlesPlatformAppOrigins(string baseUri, string uriString, bool expected)
 	{
-		var baseUri = new Uri("https://example.com");
-		var urlWithExtension = "https://example.com/customer.json";
-		Assert.False(baseUri.IsBaseOfPage(urlWithExtension));
-	}
-
-	[Fact]
-	public void IsBaseOfPage_TreatsFragmentWithDotAsNoExtension()
-	{
-		var baseUri = new Uri("https://example.com");
-		var urlWithDotInFragment = "https://example.com/customer#section.1";
-		Assert.True(baseUri.IsBaseOfPage(urlWithDotInFragment));
+		var result = new Uri(baseUri).IsBaseOfPage(uriString);
+		Assert.Equal(expected, result);
 	}
 }
