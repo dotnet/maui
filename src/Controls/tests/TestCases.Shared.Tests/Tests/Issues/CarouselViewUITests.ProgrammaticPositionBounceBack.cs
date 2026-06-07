@@ -1,4 +1,5 @@
 #if TEST_FAILS_ON_WINDOWS // Related issue for Windows: https://github.com/dotnet/maui/issues/24482
+using System.Globalization;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// not the intermediate "storm" observed in #21480. Allow a small tolerance
 			// because some platforms may fire a 0→0 set-from-renderer on initial layout.
 			var eventText = App.FindElement(PositionEventCountId).GetText();
-			var eventCount = int.Parse(eventText.Replace("PosChanged:", ""));
+			var eventCount = ParseEventCount(eventText, "PosChanged:");
 			Assert.That(
 				eventCount,
 				Is.LessThanOrEqualTo(2),
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// CurrentItemChanged should also fire at most once for the same user-driven assignment.
 			var currentItemText = App.FindElement(CurrentItemEventCountId).GetText();
-			var currentItemCount = int.Parse(currentItemText.Replace("ItemChanged:", ""));
+			var currentItemCount = ParseEventCount(currentItemText, "ItemChanged:");
 			Assert.That(
 				currentItemCount,
 				Is.LessThanOrEqualTo(2),
@@ -82,6 +83,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				Is.EqualTo("Pos:2"),
 				"Explicit Position assignment in the same render as an ItemsSource reset must be honored."
 			);
+		}
+
+		static int ParseEventCount(string? text, string prefix)
+		{
+			ArgumentNullException.ThrowIfNull(text);
+			Assert.That(text, Does.StartWith(prefix));
+			return int.Parse(text[prefix.Length..], CultureInfo.InvariantCulture);
 		}
 	}
 }

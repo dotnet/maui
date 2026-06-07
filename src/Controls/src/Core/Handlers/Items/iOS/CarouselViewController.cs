@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 
 				// Clamp position to valid range after ItemsSource change (parity with Android #23023).
-				if (ItemsSource is not null && carousel.Position >= ItemsSource.ItemCount && carousel.Position != 0)
+				if (ItemsSource is not null && (carousel.Position >= ItemsSource.ItemCount || carousel.Position < 0))
 				{
 					carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 				}
@@ -654,6 +654,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							return;
 						}
 
+						if (position >= ItemsSource.ItemCount || position < 0)
+						{
+							position = 0;
+							carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
+						}
 
 						carousel.ScrollTo(position, -1, Microsoft.Maui.Controls.ScrollToPosition.Center, false);
 

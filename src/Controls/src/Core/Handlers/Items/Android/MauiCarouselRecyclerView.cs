@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							UpdatePosition(carouselPosition);
 							ScrollToPosition(carouselPosition);
 						}
-						
+
 						//If we are adding or removing the last item we need to update
 						//the inset that we give to items so they are centered
 						if (e.NewStartingIndex == count - 1 || removingLastElement)
@@ -353,14 +353,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// Clamp position to valid range after ItemsSource change (#23023).
 				var sourceCount = ItemsViewAdapter.ItemsSource.Count;
-				if (position >= sourceCount)
+				if (position >= sourceCount || position < 0)
 				{
 					position = 0;
 					if (Carousel.Position != 0)
 						Carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
 				}
 
-				if (Carousel.Loop && position == 0)
+				if (Carousel.Loop)
 				{
 					itemCount = sourceCount;
 				}
@@ -523,7 +523,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// IDLE, meaning any programmatic scroll animation has fully settled.
 		internal void OnProgrammaticScrollIdle()
 		{
+			if (_gotoPosition == -1)
+				return;
+
+			var targetPosition = _gotoPosition;
 			_gotoPosition = -1;
+
+			var centeredPosition = GetCarouselViewCurrentIndex(targetPosition);
+			UpdatePosition(centeredPosition == -1 ? targetPosition : centeredPosition);
 		}
 
 		// Called from CarouselViewOnScrollListener when the user starts dragging,
@@ -540,7 +547,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
-				_gotoPosition = currentItemPosition;
+				if (Carousel.AnimateCurrentItemChanges)
+					_gotoPosition = currentItemPosition;
+
 				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
 			}
 		}
