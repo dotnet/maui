@@ -846,8 +846,8 @@ function Get-CopilotOtelTokenMetrics {
             $attributes = $entry.attributes
             $inputValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.input_tokens')
             $outputValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.output_tokens')
-            $cachedValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.cache_read.input_tokens')
-            $reasoningValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.reasoning.output_tokens')
+            $cachedValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.cache_read.input_tokens', 'gen_ai.usage.cache_read_input_tokens')
+            $reasoningValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.reasoning.output_tokens', 'gen_ai.usage.reasoning_output_tokens')
             $costValue = Get-ObjectMemberValue -InputObject $attributes -Names @('github.copilot.cost')
 
             if (Test-IsNumericValue $inputValue) { $spanSums.input += [double]$inputValue; $spanSeen.input = $true }
