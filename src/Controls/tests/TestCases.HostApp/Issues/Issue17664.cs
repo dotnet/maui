@@ -105,7 +105,7 @@ public class Issue17664 : ContentPage
 		var targetGroup = _groupedItems.FirstOrDefault(group => group.Name == "Category C");
 		var targetItem = targetGroup.FirstOrDefault(item => item == "Category C item #2");
 
-		_collectionView.ScrollTo(targetItem, targetGroup, ScrollToPosition.End);
+		_collectionView.ScrollTo(targetItem, targetGroup, ScrollToPosition.End, animate: false);
 	}
 }
 
