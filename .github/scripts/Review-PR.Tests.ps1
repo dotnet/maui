@@ -84,28 +84,39 @@ Describe 'Copilot token usage helpers' {
         $contextLine.contextWindow | Should -Be 1100000
     }
 
-    It 'reads token counts from Copilot OTel spans' {
+    It 'reads token counts from Copilot OTel spans with both cache/reasoning naming variants' {
         $otelPath = Join-Path ([System.IO.Path]::GetTempPath()) "copilot-otel-$([guid]::NewGuid()).jsonl"
         try {
-            [ordered]@{
-                type       = 'span'
-                attributes = [ordered]@{
-                    'gen_ai.usage.input_tokens'            = 1000
-                    'gen_ai.usage.output_tokens'           = 200
-                    'gen_ai.usage.cache_read.input_tokens' = 800
-                    'gen_ai.usage.reasoning.output_tokens' = 50
-                    'github.copilot.cost'                  = 7.5
+            @(
+                [ordered]@{
+                    type       = 'span'
+                    attributes = [ordered]@{
+                        'gen_ai.usage.input_tokens'            = 1000
+                        'gen_ai.usage.output_tokens'           = 200
+                        'gen_ai.usage.cache_read.input_tokens' = 800
+                        'gen_ai.usage.reasoning.output_tokens' = 50
+                        'github.copilot.cost'                  = 7.5
+                    }
+                },
+                [ordered]@{
+                    type       = 'span'
+                    attributes = [ordered]@{
+                        'gen_ai.usage.input_tokens'            = 500
+                        'gen_ai.usage.output_tokens'           = 40
+                        'gen_ai.usage.cache_read_input_tokens' = 400
+                        'gen_ai.usage.reasoning_output_tokens' = 10
+                    }
                 }
-            } | ConvertTo-Json -Depth 10 -Compress | Set-Content $otelPath -Encoding UTF8
+            ) | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress } | Set-Content $otelPath -Encoding UTF8
 
             $metrics = Get-CopilotOtelTokenMetrics -Path $otelPath
 
             $metrics.available | Should -Be $true
-            $metrics.inputTokens | Should -Be 1000
-            $metrics.outputTokens | Should -Be 200
-            $metrics.cachedInputTokens | Should -Be 800
-            $metrics.reasoningOutputTokens | Should -Be 50
-            $metrics.totalTokens | Should -Be 1200
+            $metrics.inputTokens | Should -Be 1500
+            $metrics.outputTokens | Should -Be 240
+            $metrics.cachedInputTokens | Should -Be 1200
+            $metrics.reasoningOutputTokens | Should -Be 60
+            $metrics.totalTokens | Should -Be 1740
             $metrics.copilotCost | Should -Be 7.5
         } finally {
             Remove-Item $otelPath -Force -ErrorAction SilentlyContinue
