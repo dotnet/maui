@@ -2,6 +2,10 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <PropertyGroup>
+    <IsPackable Condition="$(TargetFramework.Contains('netstandard'))">false</IsPackable>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Upgrade xunit's transitive NETStandard.Library dependency to avoid .NET Standard 1.x dependencies. -->
     <!-- <PackageReference Include="NETStandard.Library"
