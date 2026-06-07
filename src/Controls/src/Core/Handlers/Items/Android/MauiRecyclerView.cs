@@ -731,17 +731,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		class ParentScrollGestureDispatcher : IDisposable
 		{
 			readonly MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> _owner;
+			readonly DescendantDisallowInterceptListener _disallowInterceptListener;
 			readonly int[] _targetLocation = new int[2];
 			MotionEvent _downEvent;
 			AView _parentScrollTarget;
 			float _touchStartX;
 			float _touchStartY;
 			int? _scaledTouchSlop;
+			bool _descendantDisallowedIntercept;
 			GestureOwner _gestureOwner;
 
 			public ParentScrollGestureDispatcher(MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource> owner)
 			{
 				_owner = owner;
+				_disallowInterceptListener = new DescendantDisallowInterceptListener(this);
+				_owner.AddOnItemTouchListener(_disallowInterceptListener);
 			}
 
 			public bool TryDispatchToParent(MotionEvent e, Func<MotionEvent, bool> dispatchToRecyclerView, out bool handled)
@@ -789,7 +793,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			public void Dispose()
 			{
+				_owner.RemoveOnItemTouchListener(_disallowInterceptListener);
+				_disallowInterceptListener.Dispose();
 				Reset();
+			}
+
+			public void RequestDisallowInterceptTouchEvent(bool disallowIntercept)
+			{
+				if (_gestureOwner == GestureOwner.Undecided)
+				{
+					_descendantDisallowedIntercept = disallowIntercept;
+				}
 			}
 
 			void TrackDown(MotionEvent e)
@@ -839,11 +853,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return false;
 				}
 
+				if (_descendantDisallowedIntercept)
+				{
+					_gestureOwner = GestureOwner.RecyclerView;
+					return false;
+				}
+
 				var target = FindParentScrollTarget(e, canScrollHorizontally);
 
 				if (target is null)
 				{
 					return false;
+				}
+
+				var recyclerViewHandled = dispatchToRecyclerView(e);
+
+				if (_descendantDisallowedIntercept)
+				{
+					_gestureOwner = GestureOwner.RecyclerView;
+					handled = recyclerViewHandled;
+					return true;
 				}
 
 				_parentScrollTarget = target;
@@ -934,6 +963,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_owner.Parent?.RequestDisallowInterceptTouchEvent(false);
 				_parentScrollTarget = null;
+				_descendantDisallowedIntercept = false;
 				_gestureOwner = GestureOwner.Undecided;
 
 				if (_downEvent is not null)
@@ -953,6 +983,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Undecided,
 				RecyclerView,
 				Parent
+			}
+
+			sealed class DescendantDisallowInterceptListener : Java.Lang.Object, RecyclerView.IOnItemTouchListener
+			{
+				readonly ParentScrollGestureDispatcher _dispatcher;
+
+				public DescendantDisallowInterceptListener(ParentScrollGestureDispatcher dispatcher)
+				{
+					_dispatcher = dispatcher;
+				}
+
+				public bool OnInterceptTouchEvent(RecyclerView rv, MotionEvent e)
+				{
+					return false;
+				}
+
+				public void OnTouchEvent(RecyclerView rv, MotionEvent e)
+				{
+				}
+
+				public void OnRequestDisallowInterceptTouchEvent(bool disallowIntercept)
+				{
+					_dispatcher.RequestDisallowInterceptTouchEvent(disallowIntercept);
+				}
 			}
 		}
 
