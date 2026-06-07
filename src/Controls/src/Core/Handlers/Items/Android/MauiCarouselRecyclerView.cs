@@ -545,8 +545,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var currentItemPosition = ItemsViewAdapter.ItemsSource.GetPosition(Carousel.CurrentItem);
 			var carouselPosition = Carousel.Position;
 
-			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
+			if (currentItemPosition < 0)
+				return;
+
+			if (currentItemPosition != carouselPosition)
 			{
+				_gotoPosition = -1;
+
 				if (Carousel.AnimateCurrentItemChanges)
 					_gotoPosition = currentItemPosition;
 
@@ -575,8 +580,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (carouselPosition >= itemCount || carouselPosition < 0)
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
 
-			// Always clear _gotoPosition when a new programmatic position change
-			// arrives, so that a previous in-flight scroll cannot block this one.
+			var hadProgrammaticScroll = _gotoPosition != -1;
+
+			// A new programmatic position change supersedes any in-flight programmatic scroll.
 			_gotoPosition = -1;
 
 			if (_noNeedForScroll)
@@ -586,7 +592,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var centerPosition = GetCarouselViewCurrentIndex(carouselPosition);
-			if (!Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
+			if (!Carousel.IsDragging && (hadProgrammaticScroll || !Carousel.IsScrolling) && centerPosition != carouselPosition)
 			{
 				if (_initialized && Carousel.AnimatePositionChanges)
 				{
