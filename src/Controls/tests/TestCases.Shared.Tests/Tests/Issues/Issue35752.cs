@@ -13,14 +13,14 @@ public class Issue35752 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.Gestures)]
+	[Category(UITestCategories.DragAndDrop)]
 	public void DragStartingShouldNotFireOnTapButShouldFireOnDrag()
 	{
 		App.WaitForElement("TestLoaded");
 
 		App.Tap("DragBox");
 
-		Thread.Sleep(400);
+		Thread.Sleep(600);
 
 		var dragCount = App.WaitForElement("DragStartCount").GetText();
 		Assert.That(dragCount, Is.EqualTo("0"),
