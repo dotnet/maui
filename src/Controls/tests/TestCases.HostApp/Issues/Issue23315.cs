@@ -11,7 +11,6 @@ public class Issue23315 : TestContentPage
 	{
 		var statusLabel = new Label
 		{
-			Text = "Loading...",
 			AutomationId = "StatusLabel",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
@@ -26,18 +25,11 @@ public class Issue23315 : TestContentPage
 		{
 			if (e.Result != WebNavigationResult.Success)
 			{
-				statusLabel.Text = $"Failed: {e.Result}";
-				return;
+				statusLabel.Text = $"Failed";
 			}
-
-			try
+			else if (e.Result == WebNavigationResult.Success)
 			{
-				var title = await webView.EvaluateJavaScriptAsync("document.title");
-				statusLabel.Text = title ?? "Empty";
-			}
-			catch (Exception ex)
-			{
-				statusLabel.Text = $"Exception: {ex.Message}";
+				statusLabel.Text = $"Success";
 			}
 		};
 

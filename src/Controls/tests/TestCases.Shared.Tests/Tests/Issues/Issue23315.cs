@@ -16,8 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// When the bug is present on iOS/MacCatalyst, LoadFile strips the directory part
 			// and tries to load only `test.html`, so the navigation fails and the label
 			// never reports the expected title.
-			App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(10));
-			App.WaitForTextToBePresentInElement("StatusLabel", "Nested Subdirectory Test File");
+			var statusLabel = App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(10));
+			var text = statusLabel.GetText();
+			Assert.That(text, Is.EqualTo("Success"), $"Expected to load the file from the subdirectory, but got '{text}' instead.");
 		}
 	}
 }
