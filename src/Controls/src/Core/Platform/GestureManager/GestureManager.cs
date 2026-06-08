@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _didHaveWindow;
 
 		public bool IsConnected => GesturePlatformManager != null;
-		public IDisposable? GesturePlatformManager { get; private set; }
+		public IGesturePlatformManager? GesturePlatformManager { get; private set; }
 
 		public GestureManager(IControlsView view)
 		{
@@ -76,15 +77,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			if (handler is ICustomGesturePlatformManagerProvider provider)
-			{
-				GesturePlatformManager = provider.CreateGesturePlatformManager()
-					?? throw new InvalidOperationException($"{nameof(ICustomGesturePlatformManagerProvider)}.{nameof(ICustomGesturePlatformManagerProvider.CreateGesturePlatformManager)} cannot return null.");
-			}
-			else
-			{
-				GesturePlatformManager = new GesturePlatformManager(handler);
-			}
+			var factory = handler.MauiContext?.Services.GetService<IGesturePlatformManagerFactory>();
+			GesturePlatformManager = factory is null
+				? new GesturePlatformManager(handler)
+				: factory.CreateGesturePlatformManager(handler)
+					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerFactory)}.{nameof(IGesturePlatformManagerFactory.CreateGesturePlatformManager)} cannot return null.");
 
 			_handler = handler;
 			_containerView = handler.ContainerView;

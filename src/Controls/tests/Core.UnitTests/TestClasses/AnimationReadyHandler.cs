@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 
@@ -88,6 +89,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				if (serviceType == typeof(IAnimationManager))
 					return _animationManager;
+
+				if (serviceType == typeof(IGesturePlatformManagerFactory))
+					return null;
 
 				throw new NotSupportedException($"Attempting to get service type {serviceType}");
 			}
