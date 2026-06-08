@@ -332,7 +332,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					break;
 
 				case FlyoutBehavior.Locked:
-				Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.TrueBox);
+					Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.TrueBox);
 					_currentLockMode = LockModeLockedOpen;
 					SetDrawerLockMode(_currentLockMode);
 
