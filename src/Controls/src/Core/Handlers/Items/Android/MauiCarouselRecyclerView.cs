@@ -598,9 +598,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (carouselPosition >= itemCount || carouselPosition < 0)
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
 
-			var hadProgrammaticScroll = _gotoPosition != -1;
-
-			// A new programmatic position change supersedes any in-flight programmatic scroll.
+			// A new programmatic position change supersedes any in-flight scroll. This includes
+			// the internal scroll kicked off by UpdateInitialPosition during ItemsSource swaps.
 			_gotoPosition = -1;
 
 			if (_noNeedForScroll)
@@ -610,7 +609,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var centerPosition = GetCarouselViewCurrentIndex(carouselPosition);
-			if (!Carousel.IsDragging && (hadProgrammaticScroll || !Carousel.IsScrolling) && centerPosition != carouselPosition)
+			if (!Carousel.IsDragging && centerPosition != carouselPosition)
 			{
 				if (_initialized && Carousel.AnimatePositionChanges)
 				{
