@@ -107,6 +107,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
 
+			// Reset lifecycle state so the next element setup starts cleanly.
+			_initialized = false;
+			_lastLoopValue = null;
+
 			ClearLayoutListener();
 			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			base.TearDownOldElement(oldElement);
@@ -346,15 +350,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var loopValue = Carousel.Loop;
+			var previousLoopValue = _lastLoopValue;
+			_lastLoopValue = loopValue;
 
 			// Ignore startup mapper call and repeated same-value mapper calls.
-			if (!_initialized || (_lastLoopValue.HasValue && _lastLoopValue.Value == loopValue))
+			if (!_initialized || !previousLoopValue.HasValue || previousLoopValue.Value == loopValue)
 			{
-				_lastLoopValue = loopValue;
 				return;
 			}
-
-			_lastLoopValue = loopValue;
 
 			// Preserve both the Position and the CurrentItem because UpdateAdapter() resets
 			// CarouselView.Position to 0 and CarouselView.CurrentItem to null on rebuild.
