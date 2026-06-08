@@ -182,29 +182,11 @@ namespace Microsoft.Maui.Platform
 
 		bool LoadFile(string url)
 		{
-			try
-			{
-				var file = Path.GetFileNameWithoutExtension(url);
-				var ext = Path.GetExtension(url);
+			ILogger? logger = null;
+			if (_handler.TryGetTarget(out var handler))
+				logger = handler.MauiContext?.CreateLogger<MauiWKWebView>();
 
-				var nsUrl = NSBundle.MainBundle.GetUrlForResource(file, ext);
-
-				if (nsUrl == null)
-				{
-					return false;
-				}
-
-				LoadFileUrl(nsUrl, nsUrl);
-
-				return true;
-			}
-			catch (Exception ex)
-			{
-				if (_handler.TryGetTarget(out var handler))
-					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning($"Could not load {url} as local file: {ex}");
-			}
-
-			return false;
+			return this.LoadFile(url, logger);
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
