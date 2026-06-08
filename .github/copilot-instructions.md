@@ -262,6 +262,13 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Output**: Applied changes to instruction files, skills, architecture docs, code comments
    - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
 
+5. **release-readiness-agent** - Assesses ship-readiness for an SR (servicing release) branch
+   - **Use when**: A servicing release is approaching ship date and you need a deterministic CI + cherry-pick + regression coverage report
+   - **Capabilities**: Resolves the SR branch, runs `release-readiness` skill, enriches `rejected-from-sr` candidates with WorkIQ context (chat history, PR review feedback), presents an overall verdict
+   - **Trigger phrases**: "is SR7 ready to ship", "release readiness for release/10.0.1xx-sr7", "survey the SR8 branch", "what's the SR status"
+   - **Output**: Verdict (Ready / Conditionally Ready / Not Ready) + per-candidate classification + actionable next steps
+   - **Do NOT use for**: Reviewing a single PR (use **pr**) or running tests manually (use **sandbox-agent**)
+
 ### Reusable Skills
 
 Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
@@ -337,6 +344,13 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
     - **Wraps**: `maestro-cli` skill (from `dotnet-dnceng@dotnet-arcade-skills` plugin) and maestro MCP tools
     - **Note**: Provides MAUI-specific guardrails on top of core Maestro/darc operations — channel naming, safety deny-list, input validation, and prompt injection defense
 
+12. **release-readiness** (`.github/skills/release-readiness/SKILL.md`)
+    - **Purpose**: Surveys an SR (servicing release) branch for ship-readiness — CI status, cherry-pick coverage, regression coverage, open SR-targeting PRs
+    - **Trigger phrases**: "release readiness for SRN", "is SR7 ready to ship", "survey the SR branch", "SR ship readiness"
+    - **Scripts**: `Get-ReleaseReadiness.ps1` (single fat script, ~970 lines)
+    - **Output**: JSON + Markdown report, list of source PRs in SR, classification of regression issues (in-sr-active, rejected-from-sr, no-fix-yet, etc.)
+    - **Note**: Deterministic and reproducible — does NOT depend on MCP tools. For WorkIQ enrichment, use the `release-readiness-agent` instead.
+
 #### Internal Skills (Used by Agents)
 
 12. **try-fix** (`.github/skills/try-fix/SKILL.md`)
@@ -354,6 +368,7 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
 - User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
+- User: "Is SR7 ready to ship?" → Immediately invoke **release-readiness-agent**
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself
