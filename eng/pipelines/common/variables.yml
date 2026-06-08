@@ -1,3 +1,8 @@
+parameters:
+- name: hostedMacImage
+  type: string
+  default: macOS-26
+
 variables:
 - name: BuildVersion
   value: $[counter('buildversion-counter', 5000)]
@@ -21,8 +26,17 @@ variables:
 - name: signingCondition
   value: $[or( eq(variables['Sign'], 'true'), in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main', 'refs/heads/inflight/current' ), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') )]
 # Common Agent Pools in use
+# hostedMacImage is the source of truth for Azure Pipelines hosted macOS image lanes.
+# Keep the AcesMacImageOverride mapping below aligned so AcesShared lanes target
+# the corresponding macOS/Xcode generation.
 - name: HostedMacImage
-  value: macOS-15
+  value: ${{ parameters.hostedMacImage }}
+- ${{ if eq(parameters.hostedMacImage, 'macOS-26') }}:
+  - name: AcesMacImageOverride
+    value: ACES_VM_SharedPool_Tahoe
+- ${{ if ne(parameters.hostedMacImage, 'macOS-26') }}:
+  - name: AcesMacImageOverride
+    value: Unsupported_HostedMacImage_${{ parameters.hostedMacImage }}_Update_AcesMacImageOverride
 - name: HostedWindowsImage
   value: windows-2022
 - name: LogDirectory
@@ -69,6 +83,4 @@ variables:
     - group: AzureDevOps-Artifact-Feeds-Pats
     - ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
       - group: Publish-Build-Assets # This variable group contains secrets to publis to BAR
-
-
 
