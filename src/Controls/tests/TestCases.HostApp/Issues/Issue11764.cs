@@ -15,6 +15,7 @@ namespace Maui.Controls.Sample.Issues
 			scrollPositionLabel = new Label
 			{
 				Text = "ScrollView - Y position is 0",
+				AutomationId = "ScrollResultLabel",
 				FontSize = 18,
 				TextColor = Colors.White,
 				BackgroundColor = Colors.Green,
