@@ -32,7 +32,9 @@ namespace Microsoft.Maui.Platform
 				// MauiWebViewClient can remove this synthetic entry from the native back stack
 				// once the real URL loads, fixing CanGoBack() returning true unexpectedly (#35788).
 				if (platformWebView is MauiWebView mauiWebView)
+				{
 					mauiWebView.IsLoadingForLayout = true;
+				}
 
 				platformWebView.LoadUrl("about:blank");
 			}
