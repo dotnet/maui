@@ -114,7 +114,7 @@ Check for prior reviews on the same PR — from the Copilot PR reviewer bot, oth
 
 ```bash
 # Surface 1: top-level review bodies (review-API stubs, verdicts, human reviewer prose):
-gh pr view <PR_NUMBER> --repo dotnet/maui --json reviews --jq '.reviews[] | select((.body // "") != "") | "Reviewer: \(.author.login) | State: \(.state)\n\(.body[0:10000])\n---"'
+gh pr view <PR_NUMBER> --repo dotnet/maui --json reviews --jq '.reviews[] | select((.body // "") != "") | "Reviewer: \(.author.login) | State: \(.state)\n\(.body)\n---"'
 
 # Surface 2: inline review comments (where MauiBot/Copilot/this skill post ❌/⚠️/💡 findings):
 gh api repos/dotnet/maui/pulls/<PR_NUMBER>/comments --paginate \
@@ -122,10 +122,10 @@ gh api repos/dotnet/maui/pulls/<PR_NUMBER>/comments --paginate \
 
 # Surface 3: PR issue comments (where AI Summary bots and prior round wall-of-text summaries post):
 gh api repos/dotnet/maui/issues/<PR_NUMBER>/comments --paginate \
-  --jq '.[] | "\(.user.login) @ \(.created_at)\n\(.body[0:5000])\n---"'
+  --jq '.[] | "\(.user.login) @ \(.created_at)\n\(.body)\n---"'
 ```
 
-Scan all three outputs for `❌` markers, `[major]`/`[moderate]` tags, or equivalent severity language from other reviewer formats.
+Scan all three outputs for `❌` markers, `[major]`/`[moderate]` tags, or equivalent severity language from other reviewer formats. Do NOT slice/truncate the body fields — long bot reviews routinely exceed 10K chars and have severity markers in the tail (empirically observed on this skill's own PRs: MauiBot reviews of 26K+ chars with `❌` markers past char 10000); truncating silently drops them and causes false `LGTM`.
 
 **If prior reviews flagged ❌ Error-level issues:**
 - Verify whether each ❌ Error finding was addressed in subsequent commits
@@ -145,18 +145,18 @@ gh pr checks <PR_NUMBER> --repo dotnet/maui --required
 - Exit `0` is NOT a "clean pass" signal — checks marked `skipping` (e.g., `maui-pr skipping`) also exit `0`. Read the stdout rows for actual state.
 - Exit `1` is **overloaded** with three cases that look similar but require different responses:
   - **(a) Failing required check** — stdout lists one or more `fail` rows.
-  - **(b) Zero required checks configured for the branch** — stdout is empty and stderr says `no required checks reported on the '<branch>' branch`. This is a meaningful answer (the PR genuinely has no required gates), NOT a tool failure. Route to the *Skipped, pending, or empty result* bullet below.
+  - **(b) Zero required checks for the branch** — stdout is empty and stderr contains the substring `checks reported` (specifically either `no checks reported on the '<branch>' branch` when the PR has zero checks of any kind, or `no required checks reported on the '<branch>' branch` when checks exist but none are required). Both shapes mean the PR has no required gates, NOT a tool failure. Route to the *Skipped, pending, or empty result* bullet below.
   - **(c) `gh` itself errored** — stdout has no check rows and stderr contains `GraphQL:`, `Could not resolve`, `HTTP 4xx/5xx`, or `error:`. Route to the tool-unavailable fallback at the bottom of this section.
 - Exit `8` means required checks are pending and `gh` is reporting normally.
 - Other non-zero exits (e.g., auth failure: `gh auth login`, network failure, `command not found`) DO indicate tool unavailability and should trigger the fallback at the bottom of this section.
 
-Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **and** the stderr message, not the exit code alone. If stdout has no check rows and stderr contains a `GraphQL:` / `Could not resolve` / `error:` message, treat as **tool-unavailable** (fallback). If stdout has no check rows and stderr says `no required checks reported`, treat as **empty result** (not a tool failure).
+Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **and** the stderr message, not the exit code alone. If stdout has no check rows and stderr contains a `GraphQL:` / `Could not resolve` / `error:` message, treat as **tool-unavailable** (fallback). If stdout has no check rows and stderr contains `checks reported` (either spelling — see (b) above), treat as **empty result** (not a tool failure).
 
 - **PR-caused failing check** (compile/build errors, test failures in modified code) → flag as ❌ Error and `NEEDS_CHANGES`. Surface this in the CI Status / Verdict sections; do NOT also generate per-line inline comments duplicating compiler output (the inline-comment rule in *Review Output Format* still applies).
 - **Pre-existing infra flake or known issue** (cross-reference with `azdo-build-investigator` skill if uncertain) → note in summary but still cap confidence per the table in Step 6
 - **Ambiguous** → invoke the `azdo-build-investigator` skill to determine root cause before finalizing
 - **PR description acknowledges the failure** → note that the author has documented the dependency; the failure still caps confidence
-- **Skipped, pending, or empty result** (required check listed as `skipping`/`pending`, or `gh` exits `1` with stderr `no required checks reported on the '<branch>' branch` and no stdout rows) → treat CI coverage as **undetermined**. Do not interpret an empty/skipped result as a passing build. Cap confidence at **low** and **do NOT post `LGTM`** — use `NEEDS_DISCUSSION` (per Rule #6, which prohibits LGTM on pending/undetermined CI as strictly as on red CI).
+- **Skipped, pending, or empty result** (required check listed as `skipping`/`pending`, or `gh` exits `1` with stderr containing `checks reported` — see Exit-1 case (b) — and no stdout rows) → treat CI coverage as **undetermined**. Do not interpret an empty/skipped result as a passing build. Cap confidence at **low** and **do NOT post `LGTM`** — use `NEEDS_DISCUSSION` (per Rule #6, which prohibits LGTM on pending/undetermined CI as strictly as on red CI).
 
 **Never claim "clean build" or `LGTM` without running this step.** Apply the *tool-unavailable* fallback when `gh` cannot determine CI state — either because `gh` itself is missing/unauthenticated (`command not found`, `gh: To get started with GitHub CLI, please run: gh auth login`), or because the command returned a tool/API error instead of check rows (stderr contains `GraphQL:` / `Could not resolve` / `error:` / `HTTP 4xx/5xx` and stdout has no `pass`/`fail`/`skipping`/`pending` rows). In any of those cases, record the gap explicitly and cap verdict confidence at **low**.
 
