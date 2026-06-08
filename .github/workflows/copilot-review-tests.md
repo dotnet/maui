@@ -69,6 +69,11 @@ safe-outputs:
 
 jobs:
   command-filter:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, 'tests'))
     runs-on: ubuntu-slim
     outputs:
       should-run: ${{ steps.check.outputs.should-run }}
