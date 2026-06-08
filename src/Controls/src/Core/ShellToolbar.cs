@@ -169,27 +169,44 @@ namespace Microsoft.Maui.Controls
 				Shell.TitleViewProperty,
 				Shell.GetTitleView(_shell));
 
+			var title = GetCurrentTitle();
+			if (!IsShellTitleSetByUser())
+				_shell.SetValueFromRenderer(Shell.TitleProperty, title);
+
 			if (TitleView != null)
 			{
 				Title = String.Empty;
 				return;
 			}
 
+			Title = title;
+		}
+
+		string GetCurrentTitle()
+		{
 			Page? currentPage = _shell.GetCurrentShellPage();
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 			{
-				Title = currentPage.Title ?? String.Empty;
+				return currentPage.Title ?? String.Empty;
 			}
 			// We only want to use the ShellContent as a title if no pages have been
 			// Pushed onto the stack
 			else if (_shell.Navigation?.NavigationStack?.Count <= 1)
 			{
-				Title = _shell.CurrentContent?.Title ?? String.Empty;
+				return _shell.CurrentContent?.Title ?? String.Empty;
 			}
-			else
-			{
-				Title = String.Empty;
-			}
+
+			return String.Empty;
+		}
+
+		bool IsShellTitleSetByUser()
+		{
+			var titleContext = _shell.GetContext(Shell.TitleProperty);
+			if (titleContext == null)
+				return false;
+
+			var specificity = titleContext.Values.GetSpecificity();
+			return specificity != SetterSpecificity.DefaultValue && specificity != SetterSpecificity.FromHandler;
 		}
 	}
 }

@@ -271,6 +271,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ShellTitleReflectsCurrentPageTitleForTitleViewBindings()
+		{
+			var contentPage = new ContentPage() { Title = "Test Title" };
+			var label = new Label();
+			var titleView = new VerticalStackLayout()
+			{
+				Children =
+				{
+					label
+				}
+			};
+
+			TestShell testShell = new TestShell(contentPage);
+			_ = new Window()
+			{
+				Page = testShell
+			};
+
+			label.SetBinding(Label.TextProperty, new Binding(nameof(Shell.Title), source: testShell));
+			Shell.SetTitleView(contentPage, titleView);
+
+			Assert.Empty(testShell.Toolbar.Title);
+			Assert.Equal("Test Title", testShell.Title);
+			Assert.Equal("Test Title", label.Text);
+
+			contentPage.Title = "Updated Test Title";
+
+			Assert.Equal("Updated Test Title", testShell.Title);
+			Assert.Equal("Updated Test Title", label.Text);
+		}
+
+		[Fact]
 		public void ContentPageColorsPropagateToShellToolbar()
 		{
 			var contentPage = new ContentPage() { Title = "Test Title" };
