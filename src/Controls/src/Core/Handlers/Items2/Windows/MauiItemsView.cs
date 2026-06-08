@@ -32,6 +32,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	WStackPanel? _containerPanel;
 	FrameworkElement? _itemsRepeater;
 	bool _isHorizontalLayout;
+	bool _isGridLayout;
 	ScrollViewer? _scrollViewer;
 	Canvas? _dropIndicatorCanvas;
 
@@ -73,7 +74,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			"ItemContainerPointerOverBorderBrush",
 			"ItemContainerPressedBorderBrush");
 
-		// Multi-select checkbox: left-aligned, vertically centered.
+		// Multi-select checkbox: default to Left+Center (vertical layout). Updated dynamically
+		// in ApplyLayoutOrientation() when layout orientation is set.
 		Resources["ItemContainerCheckboxHorizontalAlignment"] = UI.Xaml.HorizontalAlignment.Left;
 		Resources["ItemContainerCheckboxVerticalAlignment"] = UI.Xaml.VerticalAlignment.Center;
 
@@ -242,10 +244,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	/// <summary>Gets whether the items are arranged horizontally (along-axis = width) or vertically (along-axis = height).</summary>
 	internal bool IsHorizontalLayout => _isHorizontalLayout;
 
-	/// <summary>Sets the layout orientation and updates the visual tree accordingly.</summary>
-	internal void SetLayoutOrientation(bool isHorizontal)
+	/// <summary>Sets the layout orientation and type, and updates the visual tree accordingly.</summary>
+	internal void SetLayoutOrientation(bool isHorizontal, bool isGrid = false)
 	{
 		_isHorizontalLayout = isHorizontal;
+		_isGridLayout = isGrid;
 		ApplyLayoutOrientation();
 	}
 
@@ -258,6 +261,10 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		if (_isHorizontalLayout)
 		{
+			// For horizontal scrolling, pin the checkbox to the top-left corner of each item.
+			Resources["ItemContainerCheckboxHorizontalAlignment"] = UI.Xaml.HorizontalAlignment.Left;
+			Resources["ItemContainerCheckboxVerticalAlignment"] = UI.Xaml.VerticalAlignment.Top;
+
 			_containerPanel.Orientation = Orientation.Horizontal;
 			// For horizontal layout, the container panel should stretch vertically
 			_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
@@ -283,6 +290,15 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 		else
 		{
+			// Grid layout: checkbox at top-right of each tile (WinUI default, natural for grids).
+			// Linear layout: checkbox left-aligned, vertically centered on the row.
+			Resources["ItemContainerCheckboxHorizontalAlignment"] = _isGridLayout
+				? UI.Xaml.HorizontalAlignment.Right
+				: UI.Xaml.HorizontalAlignment.Left;
+			Resources["ItemContainerCheckboxVerticalAlignment"] = _isGridLayout
+				? UI.Xaml.VerticalAlignment.Top
+				: UI.Xaml.VerticalAlignment.Center;
+
 			_containerPanel.Orientation = Orientation.Vertical;
 			// For vertical layout, the container panel should stretch horizontally
 			_containerPanel.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;

@@ -674,8 +674,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
 		}
 
-		itemsView.SetLayoutOrientation(IsLayoutHorizontal);
-		return itemsView;
+		itemsView.SetLayoutOrientation(IsLayoutHorizontal, Layout is GridItemsLayout);
 	}
 
 	protected void UpdateItemsLayout()
@@ -708,7 +707,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 				ScrollViewer.SetVerticalScrollMode(mauiItemsView, UI.Xaml.Controls.ScrollMode.Enabled);
 			}
 
-			mauiItemsView.SetLayoutOrientation(IsLayoutHorizontal);
+			mauiItemsView.SetLayoutOrientation(IsLayoutHorizontal, Layout is GridItemsLayout);
 		}
 
 		UpdateVerticalScrollBarVisibility();

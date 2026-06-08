@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -264,6 +265,12 @@ internal partial class ElementWrapper : ContentControl
 	public ElementWrapper(IMauiContext context)
 	{
 		_context = context;
+		// ContentControl's default style sets Background = {ThemeResource ControlFillColorDefaultBrush}
+		// (semi-transparent white). Setting null may act as ClearValue in WinUI 3, allowing the
+		// style setter to reactivate. Use an explicit transparent brush (a non-null local value)
+		// so the TemplateBinding passes Transparent to ContentPresenter, preventing the overlay
+		// from washing out the item's own BackgroundColor.
+		Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
 	}
 
 	/// <summary>
