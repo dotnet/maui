@@ -110,11 +110,18 @@ Now read the PR description, linked issue, and comments. Treat these as **claims
 
 #### 🚨 Prior Review Reconciliation
 
-Check for prior reviews on the same PR — from the Copilot PR reviewer bot, other agents, or human reviewers:
+Check for prior reviews on the same PR — from the Copilot PR reviewer bot, other agents, or human reviewers. **You MUST query both surfaces** — top-level review bodies AND inline review comments. Most automated reviewers (MauiBot, Copilot bot, this skill's adversarial reviewer) post a stub like *"Expert Review — 3 findings, see inline comments for details"* at the top level and put the actual `❌`/`⚠️`/`💡` markers in inline comments. Querying only the top-level bodies will silently miss every Error finding posted that way.
 
 ```bash
+# Surface 1: top-level review bodies (summaries, verdicts, human reviewer prose):
 gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | select((.body // "") != "") | "Reviewer: \(.author.login) | State: \(.state)\n\(.body[0:10000])\n---"'
+
+# Surface 2: inline review comments (where MauiBot/Copilot/this skill post ❌/⚠️/💡 findings):
+gh api repos/<OWNER>/<REPO>/pulls/<PR_NUMBER>/comments --paginate \
+  --jq '.[] | "\(.user.login) @ \(.path):\(.line // .original_line // 0)\n\(.body)\n---"'
 ```
+
+Scan both outputs for `❌` markers, `[major]`/`[moderate]` tags, or equivalent severity language from other reviewer formats.
 
 **If prior reviews flagged ❌ Error-level issues:**
 - Verify whether each ❌ Error finding was addressed in subsequent commits
@@ -130,14 +137,17 @@ Before delivering a verdict, **collect the required-check status for the PR**. D
 gh pr checks <PR_NUMBER> --required
 ```
 
-Classify each failing check:
+**Exit-code semantics (read this before classifying):** `gh pr checks --required` exits with code `1` if any required check is failing, `8` if any are pending, and `0` if all required checks pass. **A non-zero exit means the tool succeeded and is reporting check status — it does NOT mean `gh` is unavailable.** Classify based on the stdout content (`pass`/`fail`/`skipping`/`pending`), not the exit code.
 
-- **PR-caused** (compile/build errors, test failures in modified code) → flag as ❌ Error and `NEEDS_CHANGES`
+Classify each row of stdout:
+
+- **PR-caused failing check** (compile/build errors, test failures in modified code) → flag as ❌ Error and `NEEDS_CHANGES`. Surface this in the CI Status / Verdict sections; do NOT also generate per-line inline comments duplicating compiler output (the inline-comment rule in *Review Output Format* still applies).
 - **Pre-existing infra flake or known issue** (cross-reference with `azdo-build-investigator` skill if uncertain) → note in summary but still cap confidence per the table in Step 6
 - **Ambiguous** → invoke the `azdo-build-investigator` skill to determine root cause before finalizing
 - **PR description acknowledges the failure** → note that the author has documented the dependency; the failure still caps confidence
+- **Skipped, pending, or empty result** (required check listed as `skipping`/`pending`, or `gh` returns no required checks at all) → treat CI coverage as **undetermined**. Do not interpret an empty/skipped result as a passing build. Cap confidence at **low** and prefer `NEEDS_DISCUSSION` over `LGTM`.
 
-**Never claim "clean build" or `LGTM` without running this step.** If `gh pr checks` is unavailable in your environment, record the gap explicitly in the output and cap verdict confidence at **low**.
+**Never claim "clean build" or `LGTM` without running this step.** Apply the *tool-unavailable* fallback ONLY if `gh` itself is missing or unauthenticated (e.g., `command not found`, `gh: To get started with GitHub CLI, please run: gh auth login`). In that case, record the gap explicitly and cap verdict confidence at **low**.
 
 ### Step 6: Blast Radius, Failure-Mode Probing, and Verdict
 
@@ -174,7 +184,7 @@ Classify each failing check:
 
 | Evidence | Confidence Cap |
 |----------|---------------|
-| CI red or pending | Max **low** — invoke `azdo-build-investigator` skill for CI analysis before finalizing |
+| CI red or pending | Max **low** — invoke `azdo-build-investigator` skill for CI analysis. Combined with Rule #6: LGTM is not permitted unless red failures are confirmed PR-unrelated. |
 | No relevant tests run (UITests skip PR builds) | Max **low** |
 | Prior ❌ Error findings unresolved | **NEEDS_CHANGES** (no LGTM) |
 
@@ -192,7 +202,7 @@ Classify each failing check:
 - Only comment on added/modified lines — don't flag pre-existing code
 - One issue per comment. If the same issue appears many times, flag once with a note listing all affected files
 - **Don't pile on.** 3 important comments > 15 nitpicks
-- **Don't flag what CI catches.** Skip compiler errors, formatting the linter will catch, etc.
+- **Don't duplicate CI output as inline comments.** Skip line-by-line compiler errors and linter findings in inline `file:line` comments — CI already surfaces those. CI-detected failures must still drive the verdict and appear in the CI Status / Verdict sections per Step 5; this rule only governs the *inline-comment* surface.
 - **Avoid false positives.** Verify the concern actually applies given full context. If unsure, phrase as a question.
 
 ```markdown
@@ -247,7 +257,7 @@ Classify each failing check:
 3. **Never approve what you can't verify.** If the fix touches platform code you can't fully reason about, say so explicitly and use `NEEDS_DISCUSSION`.
 4. **LGTM means no ❌ Errors.** You can LGTM with 💡 Suggestions. You can LGTM with ⚠️ Warnings only if you've explained why they're acceptable.
 5. **Prior ❌ Error findings override.** If any prior review flagged an ❌ Error-level issue (using this skill's severity taxonomy) that remains unresolved in the current code, verdict must be `NEEDS_CHANGES` regardless of your own assessment. Confirm the finding still applies to the current diff before applying the override.
-6. **Never LGTM if CI is red.** If required CI checks are failing, invoke `azdo-build-investigator` to determine whether failures are PR-caused. Do not post `LGTM` until CI passes or failures are confirmed unrelated.
+6. **Never LGTM if CI is red.** If required CI checks are failing, invoke `azdo-build-investigator` to determine whether failures are PR-caused. Do not post `LGTM` until CI passes or failures are confirmed PR-unrelated. Even when failures are confirmed PR-unrelated, the Step 6 confidence cap still applies (max **low**).
 7. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
 8. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
 

@@ -85,10 +85,18 @@ scenarios:
   - name: "Blast radius - infrastructure changes get probed"
     prompt: "code review PR #35223 in dotnet/maui. This is a merged Android fix. Hypothesis to verify or refute: even after this PR, the back-navigation callback registration still runs unconditionally for all activities at startup."
     assertions:
+      # Analytical framing: the agent must use blast-radius vocabulary that does NOT appear in the prompt itself.
       - type: "output_matches"
-        pattern: "(blast radius|all instances|unconditional|callback registration)"
+        pattern: "(blast radius|all instances|every instance|each instance)"
+      # Confidence calibrated to the structured field shape; not just any 'medium'/'low' substring.
       - type: "output_matches"
         pattern: '\*\*Confidence:\*\*\s*(medium|low)'
+      # Refutation evidence: the agent must show it actually analyzed the code, using terms NOT in the prompt
+      # (the prompt contains 'unconditionally' and 'callback registration' — a parroting agent that just echoes
+      # those phrases must not pass). Notes: `\b` on 'conditional' prevents matching inside 'unconditional';
+      # 'no longer' catches phrasings like 'no longer unconditional' / 'no longer registered for all activities'.
+      - type: "output_matches"
+        pattern: '(\bconditional|guarded|gated|opt-in|opted in|refut|hypothesis is false|now scoped|no longer)'
     rubric:
       - "The agent assesses blast radius for handler/platform changes (does this run for all instances?)"
       - "The agent probes real failure modes, not softballs (e.g., handler disconnect, null PlatformView)"
