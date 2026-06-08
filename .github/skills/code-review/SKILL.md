@@ -54,12 +54,12 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 
 1. **Get the diff:**
    ```bash
-   gh pr diff <PR_NUMBER>
+   gh pr diff <PR_NUMBER> --repo dotnet/maui
    ```
 
 2. **Read full source files** for every changed file (not just diff hunks):
    ```bash
-   gh pr diff <PR_NUMBER> --name-only
+   gh pr diff <PR_NUMBER> --repo dotnet/maui --name-only
    # Then read each file in full
    ```
 
@@ -142,18 +142,21 @@ gh pr checks <PR_NUMBER> --repo dotnet/maui --required
 ```
 
 **Exit-code semantics (read this before classifying):** `gh pr checks --required` exit codes are NOT a reliable signal on their own — `gh` overloads them. **Always inspect stdout/stderr.**
-- Exit `0` is NOT a "clean pass" signal — checks marked `skipping` (e.g., `maui-pr skipping`) and PRs with zero required checks configured also exit `0`. Read the stdout rows for actual state.
-- Exit `1` is **overloaded**: it can mean (a) at least one required check is failing — stdout will list `fail` rows; OR (b) `gh` itself errored — typically with `GraphQL:`, `Could not resolve`, `HTTP 4xx/5xx`, or `error:` on stderr and no check rows on stdout. The two cases require different responses.
+- Exit `0` is NOT a "clean pass" signal — checks marked `skipping` (e.g., `maui-pr skipping`) also exit `0`. Read the stdout rows for actual state.
+- Exit `1` is **overloaded** with three cases that look similar but require different responses:
+  - **(a) Failing required check** — stdout lists one or more `fail` rows.
+  - **(b) Zero required checks configured for the branch** — stdout is empty and stderr says `no required checks reported on the '<branch>' branch`. This is a meaningful answer (the PR genuinely has no required gates), NOT a tool failure. Route to the *Skipped, pending, or empty result* bullet below.
+  - **(c) `gh` itself errored** — stdout has no check rows and stderr contains `GraphQL:`, `Could not resolve`, `HTTP 4xx/5xx`, or `error:`. Route to the tool-unavailable fallback at the bottom of this section.
 - Exit `8` means required checks are pending and `gh` is reporting normally.
 - Other non-zero exits (e.g., auth failure: `gh auth login`, network failure, `command not found`) DO indicate tool unavailability and should trigger the fallback at the bottom of this section.
 
-Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`), not the exit code alone. If stdout has no check rows and stderr contains a `GraphQL:` / `Could not resolve` / `error:` message, treat as **tool-unavailable** (fallback), not as "failing checks".
+Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **and** the stderr message, not the exit code alone. If stdout has no check rows and stderr contains a `GraphQL:` / `Could not resolve` / `error:` message, treat as **tool-unavailable** (fallback). If stdout has no check rows and stderr says `no required checks reported`, treat as **empty result** (not a tool failure).
 
 - **PR-caused failing check** (compile/build errors, test failures in modified code) → flag as ❌ Error and `NEEDS_CHANGES`. Surface this in the CI Status / Verdict sections; do NOT also generate per-line inline comments duplicating compiler output (the inline-comment rule in *Review Output Format* still applies).
 - **Pre-existing infra flake or known issue** (cross-reference with `azdo-build-investigator` skill if uncertain) → note in summary but still cap confidence per the table in Step 6
 - **Ambiguous** → invoke the `azdo-build-investigator` skill to determine root cause before finalizing
 - **PR description acknowledges the failure** → note that the author has documented the dependency; the failure still caps confidence
-- **Skipped, pending, or empty result** (required check listed as `skipping`/`pending`, or `gh` returns no required checks at all) → treat CI coverage as **undetermined**. Do not interpret an empty/skipped result as a passing build. Cap confidence at **low** and **do NOT post `LGTM`** — use `NEEDS_DISCUSSION` (per Rule #6, which prohibits LGTM on pending/undetermined CI as strictly as on red CI).
+- **Skipped, pending, or empty result** (required check listed as `skipping`/`pending`, or `gh` exits `1` with stderr `no required checks reported on the '<branch>' branch` and no stdout rows) → treat CI coverage as **undetermined**. Do not interpret an empty/skipped result as a passing build. Cap confidence at **low** and **do NOT post `LGTM`** — use `NEEDS_DISCUSSION` (per Rule #6, which prohibits LGTM on pending/undetermined CI as strictly as on red CI).
 
 **Never claim "clean build" or `LGTM` without running this step.** Apply the *tool-unavailable* fallback when `gh` cannot determine CI state — either because `gh` itself is missing/unauthenticated (`command not found`, `gh: To get started with GitHub CLI, please run: gh auth login`), or because the command returned a tool/API error instead of check rows (stderr contains `GraphQL:` / `Could not resolve` / `error:` / `HTTP 4xx/5xx` and stdout has no `pass`/`fail`/`skipping`/`pending` rows). In any of those cases, record the gap explicitly and cap verdict confidence at **low**.
 
@@ -273,7 +276,7 @@ Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`), n
 5. **Prior ❌ Error findings override.** If any prior review flagged an ❌ Error-level issue (using this skill's severity taxonomy) that remains unresolved in the current code, verdict must be `NEEDS_CHANGES` regardless of your own assessment. Confirm the finding still applies to the current diff before applying the override.
 6. **Never LGTM if CI is red, pending, or undetermined.** If required CI checks are failing, invoke `azdo-build-investigator` to determine whether failures are PR-caused. Do not post `LGTM` until CI passes or failures are confirmed PR-unrelated. If required checks are pending, skipping, or absent, use `NEEDS_DISCUSSION` — code review alone does not warrant LGTM when CI hasn't run. Even when failures are confirmed PR-unrelated, the Step 6 confidence cap still applies (max **low**).
 7. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
-8. **Findings handling depends on environment.** In CI (`COMMENTS_VIA_FILE=true`), the code-review agent does NOT have the GitHub comment token; the pipeline posts on its behalf. The `maui-expert-reviewer` (Step 2) produces `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json`, which `Review-PR.ps1` posts via `post-inline-review.ps1`; the code-review agent's wall-of-text summary is posted separately by `post-ai-summary-comment.ps1`. **Do NOT have the code-review agent emit, overwrite, or merge into `inline-findings.json`** — that file is the expert reviewer's responsibility, and overwriting it with markdown findings will break `post-inline-review.ps1`. In local invocation (no `COMMENTS_VIA_FILE`), the agent may post directly using its own `gh` credentials per the Step 2 `gh api ... reviews --method POST` command. In either mode, Rule #7 still applies: never `--approve` or `--request-changes`.
+8. **Findings handling depends on environment.** In CI (`COMMENTS_VIA_FILE=true`), the code-review agent does NOT have the GitHub comment token; the pipeline posts on its behalf. The `maui-expert-reviewer` sub-agent invoked in Step 2 is the *sole* producer of `CustomAgentLogsTmp/PRState/{PR}/PRAgent/inline-findings.json` (structured file:line JSON in GitHub Review API shape), which `Review-PR.ps1` posts via `post-inline-review.ps1`; the code-review skill's wall-of-text summary is posted separately by `post-ai-summary-comment.ps1`. **Do NOT have the wall-of-text-producing code-review agent emit, overwrite, or merge into `inline-findings.json` itself** — overwriting that file with prose findings will corrupt its JSON schema and break `post-inline-review.ps1`. (When the orchestrator pipeline says "write inline findings to `inline-findings.json`", it means: ensure the Step 2 expert reviewer ran and produced that file — not that the wall-of-text agent should author the JSON directly.) In local invocation (no `COMMENTS_VIA_FILE`), the agent may post directly using its own `gh` credentials per the Step 2 `gh api ... reviews --method POST` command. In either mode, Rule #7 still applies: never `--approve` or `--request-changes`.
 
 ---
 

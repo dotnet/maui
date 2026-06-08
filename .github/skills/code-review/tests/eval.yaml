@@ -104,14 +104,17 @@ scenarios:
       - type: "output_matches"
         pattern: '(\b[Cc]onditional|[Gg]uarded|[Gg]ated|[Oo]pt-in|[Oo]pted in|[Hh]ypothesis is false|[Nn]ow scoped|[Nn]o longer|[Rr]efuted|[Rr]efutes|[Rr]efutation)'
       # Code-specific evidence: the agent must cite at least one concrete symbol from PR #35223's actual
-      # diff (none of these symbol names appear in the prompt, so they can only be produced by an agent that
-      # actually opened the code). Defeats the 3-line template parrot like:
+      # diff. Only MAUI-internal implementation symbols are accepted — generic AndroidX types like
+      # `OnBackPressedDispatcher`/`OnBackPressedCallback` and well-known MAUI base classes like
+      # `MauiAppCompatActivity` are easy to guess from the prompt's "back-navigation callback" hint
+      # without opening the code, so they're deliberately excluded. The remaining symbols only appear
+      # in this PR's actual diff. Defeats the 3-line template parrot like:
       #   ### Blast Radius Assessment
       #   **Confidence:** low
       #   Hypothesis is false.
       # which otherwise satisfies the analytical/confidence/refutation assertions without doing analysis.
       - type: "output_matches"
-        pattern: '(MauiOnBackPressedCallback|ShouldRegisterPredictiveBackCallback|OnBackPressedDispatcher|OnBackPressedCallback|IBackNavigationState|HandleOnBackPressed|MauiAppCompatActivity)'
+        pattern: '(MauiOnBackPressedCallback|ShouldRegisterPredictiveBackCallback|IBackNavigationState|HandleOnBackPressed)'
     rubric:
       - "The agent assesses blast radius for handler/platform changes (does this run for all instances?)"
       - "The agent probes real failure modes, not softballs (e.g., handler disconnect, null PlatformView)"
