@@ -19,12 +19,32 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
+
+			if (view.ShouldPreserveNativeDefaults())
+			{
+				uiSwitch.ClearCustomColorState();
+				return;
+			}
+
+			uiSwitch.ApplyTrackColor(view);
+
+			if (styleChanged)
+			{
+				uiSwitch.ReapplyColorsAfterStyleUpdate(view);
+			}
+		}
+
+		internal static void ApplyTrackColor(this UISwitch uiSwitch, ISwitch view)
+		{
 			var uIView = GetTrackSubview(uiSwitch);
 
 			if (uIView is null)
 			{
 				return;
 			}
+
+			(uiSwitch as MauiSwitch)?.MarkMauiTrackColorOverride();
 
 			var trackColor = view.TrackColor?.ToPlatform();
 
@@ -62,9 +82,110 @@ namespace Microsoft.Maui.Platform
 			if (view == null)
 				return;
 
-			Graphics.Color thumbColor = view.ThumbColor;
-			if (thumbColor != null)
-				uiSwitch.ThumbTintColor = thumbColor?.ToPlatform();
+			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
+
+			if (view.ShouldPreserveNativeDefaults())
+			{
+				uiSwitch.ClearCustomColorState();
+				return;
+			}
+
+			uiSwitch.ApplyThumbColor(view);
+
+			if (styleChanged)
+			{
+				uiSwitch.ReapplyColorsAfterStyleUpdate(view);
+			}
+		}
+
+		internal static void ApplyThumbColor(this UISwitch uiSwitch, ISwitch view)
+		{
+			uiSwitch.ThumbTintColor = view.ThumbColor?.ToPlatform();
+		}
+
+		static bool UpdatePreferredStyle(this UISwitch uiSwitch, ISwitch view)
+		{
+#if IOS || MACCATALYST
+			if (!IsSlidingStyleRequiredForCustomColors())
+			{
+				return false;
+			}
+
+			var preferredStyle = view.HasCustomColors()
+				? UISwitchStyle.Sliding
+				: UISwitchStyle.Automatic;
+
+			if (uiSwitch.PreferredStyle != preferredStyle)
+			{
+				uiSwitch.PreferredStyle = preferredStyle;
+				uiSwitch.SetNeedsLayout();
+				return true;
+			}
+#endif
+			return false;
+		}
+
+		static void ReapplyColorsAfterStyleUpdate(this UISwitch uiSwitch, ISwitch view)
+		{
+#if IOS || MACCATALYST
+			if (!IsSlidingStyleRequiredForCustomColors() || !view.HasCustomColors())
+			{
+				return;
+			}
+
+			if (uiSwitch is MauiSwitch mauiSwitch)
+			{
+				mauiSwitch.SetNeedsColorReapply();
+			}
+			else if (uiSwitch.IsReadyForColorReapply())
+			{
+				uiSwitch.ApplyTrackColor(view);
+				uiSwitch.ApplyThumbColor(view);
+			}
+#endif
+		}
+
+		internal static bool HasCustomColors(this ISwitch view)
+		{
+			return view.TrackColor is not null || view.ThumbColor is not null;
+		}
+
+		internal static bool ShouldPreserveNativeDefaults(this ISwitch view)
+		{
+			return IsSlidingStyleRequiredForCustomColors() && !view.HasCustomColors();
+		}
+
+		static void ClearCustomColorState(this UISwitch uiSwitch)
+		{
+			uiSwitch.OnTintColor = null;
+			uiSwitch.ThumbTintColor = null;
+
+			if (uiSwitch is MauiSwitch mauiSwitch && mauiSwitch.HasMauiTrackColorOverride)
+			{
+				uiSwitch.GetTrackSubview()?.BackgroundColor = null;
+				mauiSwitch.ClearMauiTrackColorOverride();
+			}
+		}
+
+		internal static bool IsReadyForColorReapply(this UISwitch uiSwitch)
+		{
+			var trackSubview = uiSwitch.GetTrackSubview();
+
+			return uiSwitch.Window is not null
+				&& trackSubview is not null
+				&& uiSwitch.Bounds.Width > 0
+				&& uiSwitch.Bounds.Height > 0
+				&& trackSubview.Bounds.Width > 0
+				&& trackSubview.Bounds.Height > 0;
+		}
+
+		static bool IsSlidingStyleRequiredForCustomColors()
+		{
+#if IOS || MACCATALYST
+			return OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
+#else
+			return false;
+#endif
 		}
 
 		internal static UIView? GetTrackSubview(this UISwitch uISwitch)
