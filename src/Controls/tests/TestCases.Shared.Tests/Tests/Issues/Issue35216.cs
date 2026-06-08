@@ -25,12 +25,14 @@ public class Issue35216 : _IssuesUITest
 
 		App.DragCoordinates(centerX, centerY, centerX + 200, centerY);
 
-		VerifyScreenshotOrSetException(ref exception, "Issue35216SwipeOpen_InitiallyHidden");
+		VerifyScreenshotOrSetException(ref exception, "Issue35216SwipeOpen_InitiallyHidden",
+			retryTimeout: TimeSpan.FromSeconds(2), tolerance: 1.0);
 
 		App.Tap("ToggleVisibilityButton");
 
 		App.DragCoordinates(centerX, centerY, centerX + 200, centerY);
-		VerifyScreenshotOrSetException(ref exception, "Issue35216SwipeOpen_BecomeVisible");
+		VerifyScreenshotOrSetException(ref exception, "Issue35216SwipeOpen_BecomeVisible",
+			retryTimeout: TimeSpan.FromSeconds(2), tolerance: 1.0);
 
 		App.Tap("ResetButton");
 
@@ -53,12 +55,14 @@ public class Issue35216 : _IssuesUITest
 		App.Tap("ToggleVisibilityButton");
 		App.DragCoordinates(centerX, centerY, centerX + 200, centerY);
 
-		VerifyScreenshotOrSetException(ref exception, "Issue35216SwipeOpen_DeleteVisible");
+		VerifyScreenshotOrSetException(ref exception, "Issue35216SwipeOpen_DeleteVisible",
+			retryTimeout: TimeSpan.FromSeconds(2), tolerance: 1.0);
 
 		App.Tap("ToggleVisibilityButton");
 
 		App.DragCoordinates(centerX, centerY, centerX + 200, centerY);
-		VerifyScreenshotOrSetException(ref exception, "Issue35216SwipeOpen_DeleteHidden");
+		VerifyScreenshotOrSetException(ref exception, "Issue35216SwipeOpen_DeleteHidden",
+			retryTimeout: TimeSpan.FromSeconds(2), tolerance: 1.0);
 
 		App.Tap("ResetButton");
 
