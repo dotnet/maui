@@ -1,10 +1,11 @@
 name: Lock CI scanner issues
 
+# Scanner-created issues use GITHUB_TOKEN, which does not trigger follow-up
+# issues events. The scheduled sweep is the locking mechanism, so new scanner
+# issues may remain unlocked for up to 6 hours.
 on:
   schedule:
     - cron: '0 */6 * * *'
-  issues:
-    types: [opened, labeled]
   workflow_dispatch:
     inputs:
       issue_number:
