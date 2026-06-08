@@ -50,7 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var badgeColor = Color.FromArgb("#00C853");
-			var badgeTextColor = Color.FromArgb("#FF00FF");
+			var badgeTextColor = Color.FromArgb("#111111");
 			var tab = CreateBadgeTab("Tab1", "white_tab.png", badgeColor, badgeTextColor);
 
 			var shell = await CreateShellAsync(shell =>
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var badgeColor = Color.FromArgb("#00C853");
-			var badgeTextColor = Color.FromArgb("#111111");
+			var badgeTextColor = Color.FromArgb("#FF00FF");
 			var tab = CreateBadgeTab("Tab1", "white_tab.png", badgeColor, badgeTextColor);
 
 			var shell = await CreateShellAsync(shell =>
