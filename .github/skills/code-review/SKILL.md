@@ -122,7 +122,24 @@ gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | select((.body // "") !=
 - If status cannot be determined → default to unresolved (caution over optimism)
 - **NEVER silently drop or contradict a prior ❌ Error finding** — confirm it no longer applies to current code before dismissing
 
-### Step 5: Blast Radius, Failure-Mode Probing, and Verdict
+### Step 5: Check CI Status
+
+Before delivering a verdict, **collect the required-check status for the PR**. Don't infer CI state from absence of evidence and don't rely on prior commits' status.
+
+```bash
+gh pr checks <PR_NUMBER> --required
+```
+
+Classify each failing check:
+
+- **PR-caused** (compile/build errors, test failures in modified code) → flag as ❌ Error and `NEEDS_CHANGES`
+- **Pre-existing infra flake or known issue** (cross-reference with `azdo-build-investigator` skill if uncertain) → note in summary but still cap confidence per the table in Step 6
+- **Ambiguous** → invoke the `azdo-build-investigator` skill to determine root cause before finalizing
+- **PR description acknowledges the failure** → note that the author has documented the dependency; the failure still caps confidence
+
+**Never claim "clean build" or `LGTM` without running this step.** If `gh pr checks` is unavailable in your environment, record the gap explicitly in the output and cap verdict confidence at **low**.
+
+### Step 6: Blast Radius, Failure-Mode Probing, and Verdict
 
 #### Blast Radius Assessment
 
@@ -265,9 +282,10 @@ In CI (`eng/pipelines/ci-copilot.yml`), `Review-PR.ps1` calls both `post-inline-
 - [ ] Independent assessment formed before reading PR narrative
 - [ ] Prior reviews checked and ❌ Error findings reconciled (Step 4)
 - [ ] MAUI-specific checklist walked through for each applicable section
-- [ ] Blast radius assessed for infrastructure/handler/platform changes (Step 5)
-- [ ] Failure-mode probing completed with real scenarios, not softballs (Step 5)
+- [ ] CI status collected via `gh pr checks --required` and classified (Step 5)
+- [ ] Blast radius assessed for infrastructure/handler/platform changes (Step 6)
+- [ ] Failure-mode probing completed with real scenarios, not softballs (Step 6)
 - [ ] Findings categorized by severity (❌ / ⚠️ / 💡)
-- [ ] Confidence calibrated against blast radius and evidence tables (Step 5)
+- [ ] Confidence calibrated against blast radius and evidence tables (Step 6)
 - [ ] Verdict is consistent with findings AND prior review reconciliation
 - [ ] Output follows the format above
