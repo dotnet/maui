@@ -2,10 +2,11 @@
 name: code-review
 description: >-
   Deep code review of PR changes for correctness, safety, and MAUI conventions.
-  Uses independence-first assessment (code before narrative) with 345 lines of
-  maintainer-sourced review rules. Triggers on: "review code for PR", "code review PR",
-  "analyze code changes", "check PR code quality". Do NOT use for: summarizing PRs,
-  describing what changed, general PR questions, running tests, or fixing code.
+  Uses independence-first assessment (code before narrative) and delegates to the
+  maui-expert-reviewer agent for per-dimension sub-agent evaluation. Triggers on:
+  "review code for PR", "code review PR", "analyze code changes", "check PR code quality".
+  Do NOT use for: summarizing PRs, describing what changed, general PR questions,
+  running tests, or fixing code.
 ---
 
 # Code Review Skill
@@ -17,7 +18,7 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
 **Do NOT use for:** "what does PR #XXXXX do?", "summarize PR", "describe the changes", or any informational query — just answer those directly without invoking this skill.
 
 > **How this differs from other skills:**
-> - **`pr-review`** — End-to-end PR workflow (3 phases: pre-flight with code review, try-fix, report; gate runs separately). Use when you want the full pipeline including test verification and fix attempts. Pre-Flight invokes this skill as a sub-agent for independence-first code analysis.
+> - **`pr-review`** — End-to-end PR workflow (4 phases: pre-flight, gate, try-fix, report). Use when you want the full pipeline including test verification and fix attempts.
 > - **`pr-finalize`** — Verifies PR title/description match implementation + light code review. Use before merging.
 > - **`code-review`** (this skill) — Deep code-only review with MAUI domain rules. Use when you want a thorough code analysis without running tests or modifying the PR.
 
@@ -71,9 +72,24 @@ Standalone skill that evaluates PR code changes for correctness, safety, perform
    git log --oneline -10 -- <changed-file>
    ```
 
-### Step 2: Load Review Rules
+### Step 2: Delegate to Expert Reviewer
 
-Read `.github/skills/code-review/references/review-rules.md`. These rules are distilled from real code reviews by senior MAUI maintainers across 142 high-discussion PRs.
+Delegate to the `maui-expert-reviewer` agent (`.github/agents/maui-expert-reviewer.md`) which runs per-dimension sub-agent evaluation. The agent's sole output is `inline-findings.json` — file:line comments in GitHub Review API format.
+
+**After the agent finishes:**
+
+- **If `COMMENTS_VIA_FILE=true`** (CI): Done. The pipeline calls `post-inline-review.ps1` to post findings using `GH_COMMENT_TOKEN`.
+- **If `COMMENTS_VIA_FILE` is unset** (local): Post inline findings directly:
+  ```bash
+  COMMIT_SHA=$(gh pr view $PR_NUMBER --json headRefOid --jq .headRefOid)
+  gh api repos/dotnet/maui/pulls/$PR_NUMBER/reviews \
+    --method POST \
+    --input <(jq -n \
+      --arg sha "$COMMIT_SHA" \
+      --arg body "Expert review — see inline comments." \
+      --argjson comments "$(cat CustomAgentLogsTmp/PRState/$PR_NUMBER/PRAgent/inline-findings.json)" \
+      '{commit_id: $sha, body: $body, event: "COMMENT", comments: [$comments[] | {path, line, body, side: "RIGHT"}]}')
+  ```
 
 ### Step 3: Form Independent Assessment
 
@@ -82,7 +98,7 @@ Based ONLY on the code (no PR description), answer:
 1. **What does this change do?** Describe the behavioral change in your own words
 2. **Why might it be needed?** Infer motivation from the code
 3. **Is the approach sound?** Would a simpler alternative work?
-4. **What problems do you see?** Run through the review rules AND the MAUI-Specific Review Checklist below
+4. **What problems do you see?** Run through the agent's dimension CHECKs for matched dimensions
 
 ### Step 4: Read PR Narrative and Reconcile
 
@@ -116,33 +132,6 @@ Then deliver your verdict:
 - **`LGTM`** — Code is correct, safe, and consistent with MAUI patterns. Ready for human approval.
 - **`NEEDS_CHANGES`** — Concrete issues found that should be addressed before merge.
 - **`NEEDS_DISCUSSION`** — Complex tradeoffs or architectural questions that need human judgment.
-
----
-
-## MAUI-Specific Review Rules
-
-Apply the rules in `references/review-rules.md` to each changed file. The rules are distilled from real code reviews across 142 high-discussion PRs and cover 20 categories:
-
-**Platform & Lifecycle:** Handler lifecycle, platform-specific code, Android, iOS/macCatalyst, Windows
-**Architecture:** Memory management, threading, safe area, layout, navigation, CollectionView
-**Code Quality:** Error handling, null safety, performance, XAML & bindings, API design
-**Ecosystem:** Testing, build & MSBuild, image handling, gestures, accessibility
-
-The rules file also includes a **"What NOT to Flag"** section — respect it to avoid noise.
-
----
-
-## Multi-Model Review (Optional)
-
-When the environment supports multiple models, run the review in parallel for diverse perspectives. Different model families catch different classes of issues.
-
-**How:**
-1. Select 2-3 models from different families (e.g., Claude + GPT + Gemini)
-2. Launch sub-agents in parallel, each running the full 6-step workflow above
-3. Synthesize: deduplicate findings, elevate issues flagged by multiple models
-4. Present unified review noting which findings had multi-model agreement
-
-**Timeout:** If a sub-agent hasn't completed after 5 minutes, proceed with available results.
 
 ---
 
@@ -194,23 +183,30 @@ When the environment supports multiple models, run the review in parallel for di
 3. **Never approve what you can't verify.** If the fix touches platform code you can't fully reason about, say so explicitly and use `NEEDS_DISCUSSION`.
 4. **LGTM means no ❌ Errors.** You can LGTM with 💡 Suggestions. You can LGTM with ⚠️ Warnings only if you've explained why they're acceptable.
 5. **🚨 NEVER use `--approve` or `--request-changes` on GitHub.** Only post comments. Approval is a human decision.
-6. **Output to terminal only by default.** Do not post review comments to GitHub (`gh pr review --comment`) unless explicitly asked by the user or orchestrated by another agent. This matches `pr-finalize` policy.
+6. **Write findings to disk, do not post directly.** The agent does not have the GitHub comment token. Write findings to `CustomAgentLogsTmp/PRState/{PR}/PRAgent/` — the CI pipeline or posting scripts handle GitHub interaction.
 
 ---
 
 ## Posting the Review
 
-After completing your review, suggest using the `Post-CodeReview.ps1` script to format and post the comment. **Do NOT post automatically** - always let the user decide when to post.
+The agent writes findings to disk. Posting is done separately by `Review-PR.ps1`:
 
+**Inline review comments** (preferred — findings at exact file:line):
 ```bash
-# Save your review to a file, then suggest:
-pwsh .github/scripts/Post-CodeReview.ps1 -PRNumber <PR_NUMBER> -ReviewFile /tmp/review.md -DryRun
+# Preview first:
+pwsh .github/scripts/post-inline-review.ps1 -PRNumber <PR_NUMBER> -DryRun
 
-# User can then post when ready:
-pwsh .github/scripts/Post-CodeReview.ps1 -PRNumber <PR_NUMBER> -ReviewFile /tmp/review.md
+# Post when ready:
+pwsh .github/scripts/post-inline-review.ps1 -PRNumber <PR_NUMBER>
 ```
 
-The script wraps the review in a collapsible `<details>` section, adds PR metadata (commit SHA, title), and auto-detects the verdict for a colored status dot (🟢 Approved, 🟡 Changes Suggested, 🟠 Discussion Needed).
+**Wall-of-text summary** (phase content assembled into a single PR comment):
+```bash
+# Called by Review-PR.ps1 automatically:
+pwsh .github/scripts/post-ai-summary-comment.ps1
+```
+
+In CI (`eng/pipelines/ci-copilot.yml`), `Review-PR.ps1` calls both `post-inline-review.ps1` (for inline findings) and `post-ai-summary-comment.ps1` (for the wall-of-text from `{phase}/content.md` files), using `GH_COMMENT_TOKEN`.
 
 ---
 

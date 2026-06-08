@@ -185,6 +185,40 @@ $IgnoredFileNames = @(
 # Intermediate: collect test files grouped by type + test name
 $testGroups = @{}  # Key: "Type:TestName" → Value: hashtable
 
+# ─── Reliability fix #7: parse the actual class name from the .cs file ───
+# The previous logic derived the dotnet test filter from the *filename basename*,
+# but maui's test repo uses a "category-prefix" file-naming convention where the
+# filename includes a logical bucket dot the class name (e.g.
+# `CarouselViewUITests.ProgrammaticPositionBounceBack.cs` containing the class
+# `CarouselViewProgrammaticPositionBounceBack`). Filtering by the filename
+# yielded `--filter FullyQualifiedName~CarouselViewUITests.ProgrammaticPositionBounceBack`
+# which matched zero tests, and the gate marked the PR FAILED purely because of
+# our auto-detection mistake. Reading the actual `public class` declaration
+# from the file content is more reliable. Falls back to the filename basename
+# when the file can't be read (e.g., file deleted, path unresolvable).
+$RepoRootForRead = git rev-parse --show-toplevel 2>$null
+function Get-ClassNameFromFile {
+    param([string]$RelativePath)
+    $candidates = @($RelativePath)
+    if ($RepoRootForRead) {
+        $candidates += (Join-Path $RepoRootForRead $RelativePath)
+    }
+    foreach ($p in $candidates) {
+        if (Test-Path $p) {
+            try {
+                $content = Get-Content $p -Raw -ErrorAction Stop
+            } catch { continue }
+            # Match the first non-static, non-abstract `public class XXX` or
+            # `public partial class XXX` declaration — only concrete classes (skip
+            # `abstract`/`static`) so a base test class declared above the concrete
+            # test class isn't picked up and turned into a non-matching test filter.
+            $m = [regex]::Match($content, '(?m)^\s*public(?:\s+(?:partial|sealed))*\s+class\s+(\w+)')
+            if ($m.Success) { return $m.Groups[1].Value }
+        }
+    }
+    return $null
+}
+
 foreach ($file in $ChangedFiles) {
     # Skip non-code files
     if ($file -notmatch "\.(cs|xaml)$") { continue }
@@ -207,7 +241,14 @@ foreach ($file in $ChangedFiles) {
                     # Only Shared.Tests files define actual test classes.
                     # HostApp files are UI pages associated with tests but aren't tests themselves.
                     if ($file -match "TestCases\.Shared\.Tests") {
-                        if ($file -match "[/\\]([^/\\]+)\.cs$") {
+                        # Prefer the class name parsed from the file content over
+                        # the filename basename. maui's test repo often uses a
+                        # category-prefix in the filename that does NOT match the
+                        # actual class name (e.g. CarouselViewUITests.X.cs → class X).
+                        $parsedClass = Get-ClassNameFromFile -RelativePath $file
+                        if ($parsedClass) {
+                            $testName = $parsedClass
+                        } elseif ($file -match "[/\\]([^/\\]+)\.cs$") {
                             $testName = $matches[1]
                         }
                         $filter = $testName
@@ -223,7 +264,10 @@ foreach ($file in $ChangedFiles) {
                 }
 
                 "XamlUnitTest" {
-                    if ($file -match "[/\\]([^/\\]+)\.(cs|xaml)$") {
+                    $parsedClass = Get-ClassNameFromFile -RelativePath $file
+                    if ($parsedClass) {
+                        $testName = $parsedClass
+                    } elseif ($file -match "[/\\]([^/\\]+)\.(cs|xaml)$") {
                         $testName = $matches[1]
                         $testName = $testName -replace '\.(rt|rtsg|rtxc|xaml)$', ''
                     }
@@ -232,7 +276,10 @@ foreach ($file in $ChangedFiles) {
                 }
 
                 "DeviceTest" {
-                    if ($file -match "[/\\]([^/\\]+)\.cs$") {
+                    $parsedClass = Get-ClassNameFromFile -RelativePath $file
+                    if ($parsedClass) {
+                        $testName = $parsedClass
+                    } elseif ($file -match "[/\\]([^/\\]+)\.cs$") {
                         $className = $matches[1]
                         # Strip platform suffix: EditorTests.iOS → EditorTests
                         $className = $className -replace '\.(iOS|Android|Windows|MacCatalyst)$', ''
@@ -256,7 +303,10 @@ foreach ($file in $ChangedFiles) {
                 }
 
                 "UnitTest" {
-                    if ($file -match "[/\\]([^/\\]+)\.cs$") {
+                    $parsedClass = Get-ClassNameFromFile -RelativePath $file
+                    if ($parsedClass) {
+                        $testName = $parsedClass
+                    } elseif ($file -match "[/\\]([^/\\]+)\.cs$") {
                         $testName = $matches[1]
                     }
 
