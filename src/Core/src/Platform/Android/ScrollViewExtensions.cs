@@ -1,4 +1,5 @@
 ﻿using Android.Views;
+using AndroidX.DrawerLayout.Widget;
 
 namespace Microsoft.Maui.Platform
 {
@@ -43,16 +44,27 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void HandleTouchEvent(MotionEvent ev, IViewParent? parent)
+		internal static void HandleTouchEvent(MotionEvent ev, IViewParent parent)
 		{
 			if (ev.Action == MotionEventActions.Down)
 			{
-				parent?.RequestDisallowInterceptTouchEvent(true);
+				parent.RequestDisallowInterceptTouchEvent(true);
 			}
 			else if (ev.Action == MotionEventActions.Up || ev.Action == MotionEventActions.Cancel)
 			{
-				parent?.RequestDisallowInterceptTouchEvent(false);
+				parent.RequestDisallowInterceptTouchEvent(false);
 			}
+		}
+
+		internal static DrawerLayout? FindDrawerLayoutAncestor(IViewParent? parent)
+		{
+			for (IViewParent? current = parent; current != null; current = current.Parent)
+			{
+				if (current is DrawerLayout drawerLayout)
+					return drawerLayout;
+			}
+
+			return null;
 		}
 	}
 }
