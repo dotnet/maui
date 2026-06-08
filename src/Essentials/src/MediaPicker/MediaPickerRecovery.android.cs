@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="id">The identifier of the recovered result.</param>
 		/// <param name="kind">The kind of MediaPicker operation that produced the result.</param>
 		/// <param name="files">The recovered media files.</param>
-		public RecoveredMediaPickerResult(string id, RecoveredMediaPickerResultKind kind, IReadOnlyList<FileResult> files)
+		internal RecoveredMediaPickerResult(string id, RecoveredMediaPickerResultKind kind, IReadOnlyList<FileResult> files)
 		{
 			Id = id ?? throw new ArgumentNullException(nameof(id));
 			Kind = kind;

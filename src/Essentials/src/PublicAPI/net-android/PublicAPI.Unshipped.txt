@@ -3,7 +3,6 @@ Microsoft.Maui.Media.RecoveredMediaPickerResult
 Microsoft.Maui.Media.RecoveredMediaPickerResult.Files.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Storage.FileResult!>!
 Microsoft.Maui.Media.RecoveredMediaPickerResult.Id.get -> string!
 Microsoft.Maui.Media.RecoveredMediaPickerResult.Kind.get -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
-Microsoft.Maui.Media.RecoveredMediaPickerResult.RecoveredMediaPickerResult(string! id, Microsoft.Maui.Media.RecoveredMediaPickerResultKind kind, System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Storage.FileResult!>! files) -> void
 Microsoft.Maui.Media.RecoveredMediaPickerResultKind
 Microsoft.Maui.Media.RecoveredMediaPickerResultKind.CapturePhoto = 0 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
 Microsoft.Maui.Media.RecoveredMediaPickerResultKind.CaptureVideo = 1 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
