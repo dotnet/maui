@@ -33,3 +33,5 @@ override Microsoft.Maui.Platform.MauiView.AccessibilityActivate() -> bool
 override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.get -> string?
 override Microsoft.Maui.Platform.MauiView.AccessibilityLabel.set -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+Microsoft.Maui.Animations.PlatformTicker.Dispose() -> void
+virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
