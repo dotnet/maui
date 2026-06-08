@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty DragLeaveCommandParameterProperty = BindableProperty.Create(nameof(DragLeaveCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="DropCommand"/>.</summary>
-		public static readonly BindableProperty DropCommandProperty = BindableProperty.Create(nameof(DropCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
+		public static readonly BindableProperty DropCommandProperty = BindableProperty.Create(nameof(DropCommand), typeof(ICommand), typeof(DropGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="DropCommandParameter"/>.</summary>
 		public static readonly BindableProperty DropCommandParameterProperty = BindableProperty.Create(nameof(DropCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
