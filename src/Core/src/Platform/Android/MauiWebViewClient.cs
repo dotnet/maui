@@ -64,12 +64,29 @@ namespace Microsoft.Maui.Platform
 			// Skip Navigated event for about:blank to prevent unwanted events when Source is null
 			if (navigate && !IsBlankNavigation(url))
 			{
-				handler.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
+				// Clear the synthetic about:blank entry (loaded for layout, see #32030) now that
+				// the real URL is current. ClearHistory() removes all entries except the current
+				// page, ensuring CanGoBack() is already false when Navigated fires (#35788).
+				if (view is MauiWebView mauiWebView && mauiWebView.IsLoadingForLayout)
+				{
+					view.ClearHistory();
+					mauiWebView.IsLoadingForLayout = false;
+					// Called BEFORE Navigated fires so user handlers observe CanGoBack=false immediately.
+					handler?.PlatformView?.UpdateCanGoBackForward(handler.VirtualView);
+				}
+
+				handler!.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
+			}
+			else if (view is MauiWebView mv && mv.IsLoadingForLayout && _navigationResult == WebNavigationResult.Failure)
+			{
+				// Navigation failed — reset the layout flag so a subsequent successful load
+				// does not incorrectly trigger ClearHistory() (#35788).
+				mv.IsLoadingForLayout = false;
 			}
 
 			handler.SyncPlatformCookiesToVirtualView(url);
 
-			handler?.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
+			handler?.PlatformView?.UpdateCanGoBackForward(handler.VirtualView);
 
 			// Only inject the scroll-capture observer when the WebView is hosted inside
 			// a RefreshView – avoids unnecessary JS overhead for standalone WebViews.

@@ -64,6 +64,12 @@ namespace Microsoft.Maui.Handlers
 					webChromeClient.Disconnect();
 			}
 
+			// Reset layout flag so a stale true value does not trigger ClearHistory()
+			// if this handler is re-connected (e.g., Shell tab switch). (#35788)
+			if (platformView is MauiWebView mauiWebView)
+				mauiWebView.IsLoadingForLayout = false;
+
+			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
