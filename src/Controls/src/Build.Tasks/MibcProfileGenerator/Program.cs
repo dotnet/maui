@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Microsoft.Maui.Controls.Build.Tasks;
 
@@ -61,8 +63,7 @@ static class MibcProfileGenerator
 
 		if (inputPaths.Count == 0)
 		{
-			Console.Error.WriteLine("Error: No input assemblies specified.");
-			return 1;
+			Console.WriteLine("No input assemblies specified; emitting empty MIBC profile.");
 		}
 
 		var methods = new List<DiscoveredMethod>();
@@ -425,17 +426,17 @@ static class MibcProfileGenerator
 			dictBodyOffset,
 			default);
 
+		var (contentMvid, contentStamp) = ComputeContentId(methods);
+
 		// Write the MVID before serializing so it's included in the PE output
-		new BlobWriter(mvidBlob.Content).WriteGuid(
-			new Guid("97F4DBD4-F6D1-4FAD-91B3-1001F92068E5"));
+		new BlobWriter(mvidBlob.Content).WriteGuid(contentMvid);
 
 		// Serialize to PE
 		var peBuilder = new ManagedPEBuilder(
 			new PEHeaderBuilder(),
 			new MetadataRootBuilder(mdBuilder),
 			ilBuilder,
-			deterministicIdProvider: content => new BlobContentId(
-				new Guid("97F4DBD4-F6D1-4FAD-91B3-1001F92068E5"), 0x04030201));
+			deterministicIdProvider: content => new BlobContentId(contentMvid, contentStamp));
 
 		var peBlob = new BlobBuilder();
 		peBuilder.Serialize(peBlob);
@@ -521,5 +522,19 @@ static class MibcProfileGenerator
 			? Convert.ToHexString(method.PublicKeyToken).ToLowerInvariant()
 			: "null";
 		return $"{method.AssemblyName}, Version={version}, PublicKeyToken={pkt}";
+	}
+
+	static (Guid Mvid, uint Stamp) ComputeContentId(List<DiscoveredMethod> methods)
+	{
+		var sb = new StringBuilder();
+		foreach (var entry in methods
+			.Select(m => $"{GetAssemblyIdentityKey(m)}|{m.Namespace}.{m.TypeName}::{m.MethodName}|{Convert.ToHexString(m.Signature)}")
+			.OrderBy(s => s, StringComparer.Ordinal))
+		{
+			sb.Append(entry).Append('\n');
+		}
+
+		byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString()));
+		return (new Guid(hash.AsSpan(0, 16)), BitConverter.ToUInt32(hash, 16));
 	}
 }

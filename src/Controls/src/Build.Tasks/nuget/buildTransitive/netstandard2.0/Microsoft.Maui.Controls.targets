@@ -260,6 +260,8 @@
 		<_MauiMibcMatchedListPath>$(IntermediateOutputPath)$(TargetName).mibc.matched</_MauiMibcMatchedListPath>
 		<_MibcProfileGeneratorPath>$(MSBuildThisFileDirectory)MibcProfileGenerator.dll</_MibcProfileGeneratorPath>
 		<_MibcInputListPath>$(IntermediateOutputPath)_mibc_inputs.txt</_MibcInputListPath>
+		<_MibcDotNetHostPath Condition=" '$(DOTNET_HOST_PATH)' != '' ">$(DOTNET_HOST_PATH)</_MibcDotNetHostPath>
+		<_MibcDotNetHostPath Condition=" '$(_MibcDotNetHostPath)' == '' ">dotnet</_MibcDotNetHostPath>
 	</PropertyGroup>
 
 	<!-- Generate MIBC profile listing all InitializeComponent* methods for PGO.
@@ -302,7 +304,7 @@
 	<Target Name="_MauiRunMibcProfileGenerator"
 		Inputs="$(_MibcInputListPath);@(PublishReadyToRunExclude)"
 		Outputs="$(_MauiMibcProfilePath);$(_MauiMibcMatchedListPath)">
-		<Exec Command="dotnet exec &quot;$(_MibcProfileGeneratorPath)&quot; &quot;$(_MauiMibcProfilePath)&quot; @&quot;$(_MibcInputListPath)&quot;" />
+		<Exec Command="&quot;$(_MibcDotNetHostPath)&quot; exec &quot;$(_MibcProfileGeneratorPath)&quot; &quot;$(_MauiMibcProfilePath)&quot; @&quot;$(_MibcInputListPath)&quot;" />
 	</Target>
 
  <!--
