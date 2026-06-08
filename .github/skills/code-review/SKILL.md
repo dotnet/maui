@@ -200,13 +200,13 @@ pwsh .github/scripts/post-inline-review.ps1 -PRNumber <PR_NUMBER> -DryRun
 pwsh .github/scripts/post-inline-review.ps1 -PRNumber <PR_NUMBER>
 ```
 
-**Wall-of-text summary** (phase content assembled into a single PR comment):
+**Wall-of-text summary** (phase content assembled into a PR review body):
 ```bash
 # Called by Review-PR.ps1 automatically:
 pwsh .github/scripts/post-ai-summary-comment.ps1
 ```
 
-In CI (`eng/pipelines/ci-copilot.yml`), `Review-PR.ps1` calls both `post-inline-review.ps1` (for inline findings) and `post-ai-summary-comment.ps1` (for the wall-of-text from `{phase}/content.md` files), using `GH_COMMENT_TOKEN`.
+In CI (`eng/pipelines/ci-copilot.yml`), `Review-PR.ps1` calls both `post-inline-review.ps1` (for inline findings) and `post-ai-summary-comment.ps1` (for the wall-of-text from `{phase}/content.md` files), using `GH_COMMENT_TOKEN`. The trusted posting script may submit `APPROVE` or `REQUEST_CHANGES` from the final recommendation; the agent itself must not run review commands directly.
 
 ---
 
