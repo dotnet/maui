@@ -355,7 +355,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var renderer = RendererForShellContent(shellSection);
 				if (renderer is not null)
 				{
-					UpdateTabBarItemBadge(renderer.ViewController.TabBarItem, shellSection, TabBar);
+					UpdateTabBarItemBadge(renderer.ViewController?.TabBarItem, shellSection, TabBar);
 				}
 			}
 		}
@@ -495,9 +495,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		static void UpdateTabBarItemBadgeAppearance(UITabBarItemStateAppearance appearance, Color badgeColor, Color badgeTextColor)
 		{
 			appearance.BadgeBackgroundColor = badgeColor?.ToPlatform();
-			appearance.WeakBadgeTextAttributes = badgeTextColor is null
-				? new NSDictionary()
-				: new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() }.Dictionary;
+
+			if (badgeTextColor is not null)
+			{
+				appearance.WeakBadgeTextAttributes = new UIStringAttributes { ForegroundColor = badgeTextColor.ToPlatform() }.Dictionary;
+				return;
+			}
+
+			var badgeTextAttributes = appearance.WeakBadgeTextAttributes;
+			if (badgeTextAttributes?[UIStringAttributeKey.ForegroundColor] is null)
+				return;
+
+			var mutableBadgeTextAttributes = new NSMutableDictionary(badgeTextAttributes);
+			mutableBadgeTextAttributes.Remove(UIStringAttributeKey.ForegroundColor);
+			appearance.WeakBadgeTextAttributes = mutableBadgeTextAttributes;
 		}
 
 		void UpdateIsInMoreTabForRenderers()
