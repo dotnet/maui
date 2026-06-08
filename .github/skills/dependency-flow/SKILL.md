@@ -220,35 +220,52 @@ done
 ```
 
 ```bash
-# 2. REQUIRED: review the staged diff against production before opening the PR.
-#    This is the gate that prevents a wrong-channel/wrong-branch sub from going live.
-git fetch origin "$BRANCH":"$BRANCH"
-git diff origin/production..."$BRANCH" -- configuration/subscriptions/dotnet-maui.yml
-
-# Confirm in the diff output:
-#   - Exactly 3 new subscription blocks were added
-#   - Channel reads ".NET 11.0.1xx SDK Preview 5" (NOT ".NET 11.0.1xx SDK")
-#   - Source Repository URL is one of dotnet/android, dotnet/dotnet, dotnet/macios
-#   - Target Repository URL is https://github.com/dotnet/maui
-#   - Target Branch is release/11.0.1xx-preview5
-#   - Update Frequency: everyDay
-#   - Batchable: true
-# Stop and re-stage if any of these are wrong. Do NOT proceed to step 3 without this check.
-```
-
-```bash
-# 3. Open ONE PR against production (only after step 2 passes)
-az repos pr create \
+# 2. Open ONE PR against production AS DRAFT.
+#    The draft state IS the review gate — the PR cannot be merged (and the YAML
+#    cannot be ingested by BAR) until you explicitly mark it ready for review.
+#    Reviewing in the AzDO "Files changed" UI is more reliable than a local-git
+#    diff, because `--no-pr --configuration-branch` pushes to
+#    dnceng/internal/maestro-configuration, not to the maui worktree's `origin`,
+#    so `git fetch origin "$BRANCH"` / `git diff origin/production...` would not
+#    work from a dotnet/maui clone (the only context where this skill loads).
+PR_ID=$(az repos pr create \
   --organization https://dev.azure.com/dnceng \
   --project internal \
   --repository maestro-configuration \
   --source-branch "$BRANCH" \
   --target-branch production \
+  --draft true \
   --title "Add subscriptions for .NET 11.0.1xx SDK Preview 5 => dotnet/maui (android, macios, dotnet)" \
-  --description "..."
+  --description "..." \
+  --query pullRequestId -o tsv)
+
+echo "Draft PR: https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/$PR_ID"
 ```
 
-⚠️ `add-subscription` is in the explicit-confirmation list below — show the user the exact commands and wait for approval before running each step. Never combine all three steps into one un-reviewed script.
+```bash
+# 3. REQUIRED gate: open the draft PR's "Files changed" view in AzDO and confirm
+#    in the diff:
+#   - Exactly 3 new subscription blocks were added to
+#     configuration/subscriptions/dotnet-maui.yml
+#   - Channel string contains the "Preview N" / "preview N" stage qualifier
+#     (case-insensitive — see "Channel-name casing gotcha" below — but the bare
+#     ".NET 11.0.1xx SDK" without a stage qualifier is WRONG)
+#   - Source Repository URL is one of dotnet/android, dotnet/dotnet, dotnet/macios
+#   - Target Repository URL is https://github.com/dotnet/maui
+#   - Target Branch is release/11.0.1xx-preview5
+#   - Update Frequency: everyDay
+#   - Batchable: true
+# If any of these are wrong, abandon the draft PR and re-stage from step 1.
+# Do NOT mark the PR ready for review until this check passes.
+```
+
+```bash
+# 4. After the human reviewer confirms the diff in the AzDO UI, mark the draft
+#    PR ready for review (either in the AzDO UI, or via the command below).
+az repos pr update --organization https://dev.azure.com/dnceng --id "$PR_ID" --draft false
+```
+
+⚠️ `add-subscription` is in the explicit-confirmation list above — show the user the exact commands and wait for approval before running each step. Never combine all four steps into one un-reviewed script.
 
 **Exemplars:**
 - [PR 60474](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/60474) — Preview 4. Manual-combine of 3 separate PRs (older pattern).
