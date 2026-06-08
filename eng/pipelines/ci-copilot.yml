@@ -627,9 +627,10 @@ stages:
               chmod -R a-w "$TRUSTED"
               echo "Trusted scripts copied to $TRUSTED"
 
-              # Run Setup phase (branch checkout + PR merge)
+              # Run Setup phase (branch checkout + PR merge) from the trusted
+              # copy so all four phases run identical script bytes.
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 \
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
                 -PRNumber "${PARAM_PR_NUMBER}" \
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Setup \
@@ -641,7 +642,11 @@ stages:
 
               if [ $SETUP_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=error]Setup phase failed with exit code $SETUP_EXIT"
+                # SetupFailed (Setup-only) vs CopilotFailed (any phase) lets
+                # Task 4 still post after a Review failure but skip after Setup.
+                echo "##vso[task.setvariable variable=SetupFailed]true"
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
+                exit $SETUP_EXIT
               fi
             name: RunSetup
             displayName: 'Task 1: Setup (branch + merge)'
@@ -658,6 +663,7 @@ stages:
           - bash: |
               echo "═══ TASK 2: GATE ═══"
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              STATE="$(Build.ArtifactStagingDirectory)/phase-state"
 
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
@@ -670,12 +676,36 @@ stages:
               GATE_EXIT=$?
               set -e
 
+              # Lock cross-phase state read-only so PR-controlled subprocess
+              # output cannot forge gate-result.txt between Gate exit and the
+              # CopilotReview/Post restore. (Review-PR.ps1 does this too at
+              # the end of its Gate phase; this is belt-and-braces.)
+              if [ -d "$STATE" ]; then
+                chmod -R a-w "$STATE" || true
+              fi
+
+              # HMAC-sign gate-result.txt with a per-job key generated AFTER
+              # pwsh exits (so PR-spawned daemons never see it) and propagated
+              # via AzDO secret variable. Defeats the same-user mv+mkdir
+              # forgery class — a daemon can rewrite the file but cannot
+              # recompute a valid HMAC without the key. `-macopt hexkey:`
+              # is the form .NET's Convert.FromHexString round-trips with.
+              if [ -f "$STATE/gate-result.txt" ] && command -v openssl >/dev/null 2>&1; then
+                GATE_HMAC_KEY=$(openssl rand -hex 32)
+                HMAC_VAL=$(openssl dgst -sha256 -mac HMAC -macopt "hexkey:$GATE_HMAC_KEY" "$STATE/gate-result.txt" | awk '{print $NF}')
+                chmod u+w "$STATE" 2>/dev/null || true
+                echo "$HMAC_VAL" > "$STATE/gate-result.txt.hmac"
+                chmod -R a-w "$STATE" 2>/dev/null || true
+                echo "##vso[task.setvariable variable=GATE_HMAC_KEY;issecret=true]$GATE_HMAC_KEY"
+              fi
+
               if [ $GATE_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=warning]Gate phase exited with code $GATE_EXIT"
                 echo "##vso[task.setvariable variable=GateFailed]true"
               fi
             name: RunGate
             displayName: 'Task 2: Gate (test verification)'
+            condition: and(succeeded(), ne(variables['SetupFailed'], 'true'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
@@ -708,11 +738,13 @@ stages:
               fi
             name: RunReview
             displayName: 'Task 3: Copilot Review (expert review + try-fix)'
+            condition: and(succeeded(), ne(variables['SetupFailed'], 'true'))
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
+              GATE_HMAC_KEY: $(GATE_HMAC_KEY)
 
           # ─────────────────────────────────────────────────────────
           #  Task 4 — POST: gate comment, AI summary, labels.
@@ -741,10 +773,14 @@ stages:
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
             name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryReviewId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId']). Note: detectedCategories comes from RunGate, not RunPost.
             displayName: 'Task 4: Post (comments + labels)'
+            # Skip only on Setup failure (no state to post); always run after
+            # Gate/Review failures so the partial AI summary still posts.
+            condition: ne(variables['SetupFailed'], 'true')
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               DEFER_COMMENT_TO_STAGE3: "true"
+              GATE_HMAC_KEY: $(GATE_HMAC_KEY)
 
           # Copy review artifacts into the CopilotLogs staging dir.
           # Uses pwsh (not bash) so paths resolve correctly on Windows.
@@ -1218,6 +1254,25 @@ stages:
                     if (-not [string]::IsNullOrEmpty($cat)) { $retryParams.Category = $cat }
                     if ($env:DEVICE_UDID) { $retryParams.DeviceUdid = $env:DEVICE_UDID }
                     $runResult = & $retryScript @retryParams
+                    # Re-emit the captured subprocess output through the same
+                    # non-anchored ##vso[…] / ##[…] neutralizer the fallback
+                    # branch (below, ~L1240) uses. Invoke-UITestWithRetry.ps1
+                    # now launches BuildAndRunHostApp.ps1 as a `pwsh -File`
+                    # subprocess (so its Write-Host flows into 2>&1 instead
+                    # of leaking to this AzDO task's host directly), and
+                    # exposes the captured output as $runResult.Output.
+                    # Echoing it here keeps the build/test diagnostics visible
+                    # in the deep-UI-test task log AS-IF the subprocess had run
+                    # in-process — minus the attacker's `##vso[…]` payloads.
+                    # If we skipped this re-emit, the captured output would
+                    # only land in the per-attempt $LogFile artifact, which
+                    # operators don't surface in the live task log.
+                    if ($runResult -and $runResult.Output) {
+                      $runResult.Output | ForEach-Object {
+                        $line = [string]$_
+                        Write-Host ($line -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1')
+                      }
+                    }
                     $exitCode = if ($runResult) { $runResult.ExitCode } else { -1 }
                     Write-Host "Attempts: $(if ($runResult) { $runResult.Attempts } else { '?' }) · Exit: $exitCode · EnvError: $(if ($runResult) { $runResult.EnvErrorHit } else { 'N/A' })"
 
@@ -1245,7 +1300,21 @@ stages:
                       $argList += @('-DeviceUdid', $env:DEVICE_UDID)
                     }
                     Write-Host "DEBUG: invoking pwsh with args: $($argList -join ' | ')"
-                    & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object { Write-Host $_ }
+                    # Apply the same `##vso[…]` / `##[…]` neutralizer the
+                    # primary branch uses for $runResult.Output. The pwsh
+                    # subprocess child has its own host, so 2>&1 captures
+                    # ALL of its output (Write-Host included) — but
+                    # BuildAndRunHostApp.ps1 emits attacker-controlled
+                    # device logcat via Write-Host. Re-emitting it verbatim
+                    # via `Write-Host $_` would let `##vso[task.complete]`
+                    # / `##vso[task.setvariable]` / `##vso[task.uploadfile]`
+                    # reach the AzDO parser. The inline -replace keeps the
+                    # line VISIBLE in the task log (no stealth) but defangs
+                    # the prefix the parser scans for.
+                    & pwsh @argList 2>&1 | Tee-Object -FilePath $catLog | ForEach-Object {
+                      $line = [string]$_
+                      Write-Host ($line -replace '(?i)##(vso\[|\[)', '##~SANITIZED~$1')
+                    }
                     if ($LASTEXITCODE -ne 0) {
                       Write-Host "Category $cat exited with code $LASTEXITCODE" -ForegroundColor Yellow
                       $hadFailure = $true

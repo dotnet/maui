@@ -1,0 +1,158 @@
+name: Security-critical script tests (Pester)
+
+# Runs Pester tests for safety-critical PowerShell scripts under .github/
+# on every PR that touches them. This is the enforcement mechanism for the
+# token-scoping contract documented in
+# .github/instructions/ci-copilot-pipeline-security.instructions.md
+# (notably the Review-PR.Phase-Audit static-audit test that prevents
+# write-class `gh` calls from ever landing inside the Gate phase, which
+# is run with GH_READ_TOKEN).
+#
+# Make this a REQUIRED check via repo settings → branches → branch protection
+# for `main` and any active `release/*` branches.
+
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/**'
+      - '.github/skills/**'
+      - 'eng/scripts/**'
+      - 'eng/pipelines/ci-copilot.yml'
+      - '.github/workflows/security-scripts-pester.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/scripts/**'
+      - '.github/skills/**'
+      - 'eng/scripts/**'
+      - 'eng/pipelines/ci-copilot.yml'
+      - '.github/workflows/security-scripts-pester.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-scripts-pester-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pester:
+    name: Pester (.github/scripts)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install / verify Pester 5
+        shell: pwsh
+        run: |
+          # Prefer the runner's pre-installed Pester 5 (ubuntu-latest
+          # ships with one). Only fall back to PSGallery if absent. We
+          # pin to a tight major-version range so an unexpected Pester
+          # 6+ on a future runner image doesn't silently change
+          # discovery semantics. -SkipPublisherCheck is required when
+          # the runner image has a pre-installed Pester signed by a
+          # different publisher than the gallery release; without it
+          # Install-Module fails. The audit is repo-local code — a
+          # compromised gallery Pester would surface as test-suite
+          # behavior changes, which we'd notice. The workflow runs
+          # with `contents: read` only and no PATs.
+          $existing = Get-Module -ListAvailable -Name Pester |
+            Where-Object { $_.Version.Major -eq 5 -and $_.Version.Minor -ge 3 } |
+            Sort-Object Version -Descending | Select-Object -First 1
+          if ($null -eq $existing) {
+            Install-Module -Name Pester `
+              -MinimumVersion 5.3.0 -MaximumVersion 5.99.99 `
+              -Force -SkipPublisherCheck -Scope CurrentUser
+          }
+          Import-Module Pester -MinimumVersion 5.3.0 -MaximumVersion 5.99.99
+          Get-Module Pester | Format-List Name, Version, Path
+
+      - name: Verify required test files are present
+        shell: pwsh
+        run: |
+          # Defense-in-depth: prevent a silent deletion / rename of any
+          # required test file from causing the workflow to be "green
+          # because nothing ran". If the deletion is intentional, this
+          # list and the corresponding skill/script must be updated in
+          # the same PR.
+          $required = @(
+            '.github/scripts/test/Review-PR.Phase-Audit.Tests.ps1',
+            '.github/scripts/test/Review-PR.Phase-Audit.Helpers.ps1',
+            '.github/scripts/Review-PR.Tests.ps1',
+            '.github/scripts/Fix-MilestoneDrift.Tests.ps1',
+            '.github/scripts/Post-AISummaryComment.Tests.ps1',
+            '.github/scripts/Aggregate-CopilotTokenUsage.Tests.ps1',
+            '.github/scripts/shared/Aggregate-UITestArtifacts.Tests.ps1',
+            '.github/scripts/Remove-StaleMauiBotComments.Tests.ps1',
+            '.github/scripts/shared/Write-SafeSubprocessOutput.Tests.ps1',
+            '.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1'
+          )
+          $missing = $required | Where-Object { -not (Test-Path $_) }
+          if ($missing) {
+            Write-Error ("Required Pester test file(s) missing — refusing to run a silently-green Pester suite:`n  - " + ($missing -join "`n  - "))
+            exit 1
+          }
+          Write-Host "All required test files present." -ForegroundColor Green
+
+      - name: Run Pester suite
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path        = @('.github/scripts')
+          $config.Run.Exit        = $true
+          $config.Run.Throw       = $true
+          $config.Run.PassThru    = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled      = $true
+          $config.TestResult.OutputFormat = 'NUnitXml'
+          $config.TestResult.OutputPath   = 'pester-results.xml'
+          $result = Invoke-Pester -Configuration $config
+
+          # Defense-in-depth: assert a minimum PASSED test count. If a
+          # refactor accidentally orphans the audit Describe blocks (so
+          # Pester discovers 0 tests in them), or if a test ends up in
+          # Skipped/Inconclusive/NotRun state, `Tests Passed: 0, Failed:
+          # 0` is reported as overall success. We want to fail loudly:
+          #
+          #   1. Pin a floor on PassedCount (not TotalCount) so a test
+          #      regression that flips green tests to Skipped doesn't
+          #      stealth-pass.
+          #   2. Assert zero Skipped / Inconclusive / NotRun. Any of
+          #      those is a SILENT FAILURE in security-test context —
+          #      the test framework discovered the test but never
+          #      executed it (most often a BeforeAll error swallowed
+          #      by Pester or a -Skip leftover from local debugging).
+          #
+          # Update $minPassed in the SAME PR that legitimately removes
+          # tests (rare); never lower it to "make CI green".
+          $minPassed = 200
+          if ($result.PassedCount -lt $minPassed) {
+            Write-Error ("Pester passed only $($result.PassedCount) tests; expected >= $minPassed " +
+                         "(TotalCount=$($result.TotalCount)). A test file was likely deleted, " +
+                         "renamed, has BeforeAll discovery errors, or was Skipped.")
+            exit 1
+          }
+          $silentlySkipped = $result.SkippedCount + $result.InconclusiveCount + $result.NotRunCount
+          if ($silentlySkipped -gt 0) {
+            Write-Error ("Pester reported $silentlySkipped non-executed tests " +
+                         "(Skipped=$($result.SkippedCount), Inconclusive=$($result.InconclusiveCount), " +
+                         "NotRun=$($result.NotRunCount)). Security audit tests must all execute; " +
+                         "remove the -Skip / fix the BeforeAll error and re-run.")
+            exit 1
+          }
+          Write-Host ("Pester passed $($result.PassedCount)/$($result.TotalCount) tests " +
+                      "(>= $minPassed floor, 0 skipped/inconclusive/notrun).") -ForegroundColor Green
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-results
+          path: pester-results.xml
+          retention-days: 14
