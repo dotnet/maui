@@ -24,3 +24,5 @@ Microsoft.Maui.ITab.Title.get -> string!
 Microsoft.Maui.TabBarPlacement
 Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
 Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.Animations.PlatformTicker.Dispose() -> void
+virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
