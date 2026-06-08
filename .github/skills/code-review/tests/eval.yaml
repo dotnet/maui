@@ -86,9 +86,10 @@ scenarios:
     prompt: "code review PR #35223 in dotnet/maui. This is a merged Android fix. Hypothesis to verify or refute: even after this PR, the back-navigation callback registration still runs unconditionally for all activities at startup."
     assertions:
       # Analytical framing: the agent must use blast-radius vocabulary that does NOT appear in the prompt itself.
-      # Case-tolerant character classes so the SKILL.md heading-style 'Blast Radius' (TitleCase) also matches.
+      # Case-tolerant on every word so the SKILL.md heading-style "Blast Radius Assessment" (TitleCase)
+      # AND the template body "Runs for all instances:" both match.
       - type: "output_matches"
-        pattern: "([Bb]last radius|[Aa]ll instances|[Ee]very instance|[Ee]ach instance)"
+        pattern: "([Bb]last [Rr]adius|[Aa]ll [Ii]nstances|[Ee]very [Ii]nstance|[Ee]ach [Ii]nstance)"
       # Confidence calibrated to the structured field shape; not just any 'medium'/'low' substring.
       # Case-tolerant on the value so compliant outputs that capitalize 'Medium'/'Low' still pass.
       - type: "output_matches"
@@ -102,6 +103,15 @@ scenarios:
       # - 'no longer' catches phrasings like 'no longer unconditional' / 'no longer registered for all activities'
       - type: "output_matches"
         pattern: '(\b[Cc]onditional|[Gg]uarded|[Gg]ated|[Oo]pt-in|[Oo]pted in|[Hh]ypothesis is false|[Nn]ow scoped|[Nn]o longer|[Rr]efuted|[Rr]efutes|[Rr]efutation)'
+      # Code-specific evidence: the agent must cite at least one concrete symbol from PR #35223's actual
+      # diff (none of these symbol names appear in the prompt, so they can only be produced by an agent that
+      # actually opened the code). Defeats the 3-line template parrot like:
+      #   ### Blast Radius Assessment
+      #   **Confidence:** low
+      #   Hypothesis is false.
+      # which otherwise satisfies the analytical/confidence/refutation assertions without doing analysis.
+      - type: "output_matches"
+        pattern: '(MauiOnBackPressedCallback|ShouldRegisterPredictiveBackCallback|OnBackPressedDispatcher|OnBackPressedCallback|IBackNavigationState|HandleOnBackPressed|MauiAppCompatActivity)'
     rubric:
       - "The agent assesses blast radius for handler/platform changes (does this run for all instances?)"
       - "The agent probes real failure modes, not softballs (e.g., handler disconnect, null PlatformView)"
