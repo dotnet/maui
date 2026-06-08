@@ -61,8 +61,9 @@ public class Issue35736 : _IssuesUITest
 	{
 		App.WaitForElement("Issue35736QueryIconLabel");
 
-		// Change all icons first
+		// Change all icons first (including ClearIcon)
 		App.Tap("Issue35736ToggleQueryIcon");
+		App.Tap("Issue35736ToggleClearIcon");
 		App.Tap("Issue35736ToggleClearPlaceholderIcon");
 
 		// Reset all back to defaults

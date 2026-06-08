@@ -1206,7 +1206,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// Directly updates the clear button (X) inside UISearchBar's UITextField subview.
 		// This is required because iOS does not re-apply SetImageforSearchBarIcon to a
 		// clear button that is already visible on screen.
-		static void UpdateClearButtonImage(UISearchBar searchBar, UIImage image)
+		//
+		// NOTE: "searchField" and "clearButton" are private UIKit KVC keys. Apple does not
+		// expose these as public API. They have been stable across iOS versions and are a
+		// well-established pattern in Xamarin/MAUI, but could break in a future OS release.
+		static void UpdateClearButtonImage(UISearchBar searchBar, UIImage? image)
 		{
 			if (searchBar.ValueForKey(new NSString("searchField")) is UITextField textField &&
 				textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
@@ -1231,7 +1235,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (icon is UISearchBarIcon.Clear)
 				{
-					UpdateClearButtonImage(searchBar, null!);
+					// UIKit caches the clear button image once it is on-screen, so
+					// SetImageforSearchBarIcon(null, ...) alone will not update the visible
+					// button. Restore the system default SF Symbol so the button shows the
+					// standard 'X' instead of becoming imageless.
+					UpdateClearButtonImage(searchBar, UIImage.GetSystemImage("multiply.circle.fill"));
 				}
 			}
 		}
