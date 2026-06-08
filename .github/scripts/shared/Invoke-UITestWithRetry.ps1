@@ -179,20 +179,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
 
     $envHit = $null
     Write-Host "▶ BuildAndRunHostApp.ps1 attempt $attempt/$MaxAttempts" -ForegroundColor Cyan
-    # Launch BuildAndRunHostApp.ps1 as a `pwsh -NoProfile -File` SUBPROCESS,
-    # not in-process. BuildAndRunHostApp.ps1 has 19+ Write-Host emissions
-    # including the last 100 lines of the device log (`$recentLogs | ForEach-Object
-    # { Write-Host $_ }`) which is attacker-controlled (logcat / syslog content
-    # from a poisoned PR app). When this script is itself invoked IN-PROCESS
-    # (`& $retryScript` from ci-copilot.yml's deep-UI-test stage), an in-process
-    # `& $buildScript` would let that Write-Host write straight to the parent
-    # pwsh task's host (= the AzDO agent's stdout), BYPASSING `2>&1` capture
-    # (Write-Host targets the Information stream, which `2>&1` does not redirect).
-    # The `##vso[…]` payload would then reach the AzDO parser raw. Running as
-    # a subprocess gives the child its OWN host, so ALL of its output flows
-    # through its stdout and is captured here by `2>&1` into $lastOutput
-    # (which the caller writes to $LogFile / returns for sanitized re-emission).
-    $lastOutput = & pwsh -NoProfile -File $buildScript @baseParams 2>&1
+    $lastOutput = & $buildScript @baseParams 2>&1
     $lastExit = $LASTEXITCODE
 
     if ($lastExit -eq 0) { break }

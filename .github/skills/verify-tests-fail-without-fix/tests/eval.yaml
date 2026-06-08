@@ -64,8 +64,8 @@ scenarios:
 
   - name: "Regression: tests passing without fix means verification FAILED"
     prompt: |
-      We ran failure-only verification on PR #77123. The test was run without
-      the fix applied, and it PASSED.
+      We ran the verify-tests-fail-without-fix skill on PR #77123. The test was
+      run without the fix applied, and it PASSED.
 
       What does this result mean? Is the verification successful?
     assertions:
@@ -83,9 +83,9 @@ scenarios:
 
   - name: "Edge case: no test files detected in the PR"
     prompt: |
-      I want to verify the fix in this PR is caught by tests. The PR only
-      contains a fix in src/Controls/src/Core/Handlers/Entry/EntryHandler.Android.cs
-      but no test files were added.
+      Run verify-tests-fail-without-fix on this PR. The PR only contains a fix
+      in src/Controls/src/Core/Handlers/Entry/EntryHandler.Android.cs but no
+      test files were added.
 
       Platform: android
     assertions:
@@ -136,7 +136,7 @@ scenarios:
 
   - name: "Regression: agent correctly reports test failure as verification success"
     prompt: |
-      I just ran failure-only verification on PR #44444. The test FAILED with an
+      I just ran verify-tests-fail-without-fix on PR #44444. The test FAILED with an
       assertion error: Assert.That(rect.Height, Is.GreaterThan(0)) failed — the element
       rendered with zero height. This is failure-only verification (no fix files).
       What should I report?

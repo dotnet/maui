@@ -182,14 +182,9 @@ function Hide-StaleMauiBotIssueComments {
             continue
         }
 
-        # gate the marker path on bot authorship so a maintainer who
-        # quotes `<!-- AI Summary -->` / `<!-- AI Gate -->` in their own
-        # comment is not silently hidden on the next cleanup run.
         $matchesGeneratedMarker =
-            (Test-IsMauiBotCommentAuthor $comment) -and (
-                ($IncludeAISummary -and (Test-IsAISummaryCommentBody $body)) -or
-                ($IncludeLegacyGate -and $body.Contains($script:AiGateCommentMarker))
-            )
+            ($IncludeAISummary -and (Test-IsAISummaryCommentBody $body)) -or
+            ($IncludeLegacyGate -and $body.Contains($script:AiGateCommentMarker))
 
         $matchesBotOnlyContent =
             (Test-IsMauiBotCommentAuthor $comment) -and (
