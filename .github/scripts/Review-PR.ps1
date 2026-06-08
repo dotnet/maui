@@ -398,7 +398,7 @@ if ($Phase -and $Phase -ne 'Setup') {
 # ─── Helper: Parse `dotnet test --logger "console;verbosity=detailed"` ──────
 # Extracts per-test results (Passed/Failed/Skipped) plus failure messages and
 # stack traces from raw stdout. Used by the RunDeepUITests stage and Gate so the
-# AI summary comment shows WHICH tests failed and WHY, not just an aggregate exit code.
+# AI summary review shows WHICH tests failed and WHY, not just an aggregate exit code.
 function Get-DotNetTestResults {
     param([string[]]$Lines)
 
@@ -1010,7 +1010,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
 # inline-stages architecture. Both phases are expensive (build the whole
 # repo, run agents on multiple candidates) and we just need STEPs 1-3 +
 # STEP 6 (post comment) to validate that detectedCategories /
-# aiSummaryCommentId output variables flow through to the new
+# aiSummaryReviewId output variables flow through to the new
 # RunDeepUITests + UpdateAISummaryComment stages. Flip $skipGateAndTryFix
 # back to $false (or delete the wrapper) once the new pipeline stages
 # are validated end-to-end.
@@ -1355,6 +1355,35 @@ $gateStatusForPrompt = switch ($gateResult) {
     default { "Gate ❌ FAILED — tests did NOT behave as expected." }
 }
 
+$rerunContextInstruction = ""
+$rerunContextPath = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/rerun/context.md"
+$rerunContextScript = Join-Path $ScriptsDir "Resolve-RerunEligibility.ps1"
+if (Test-Path $rerunContextScript) {
+    try {
+        Write-Host "Generating deterministic rerun context..." -ForegroundColor Cyan
+        & pwsh -NoProfile -File $rerunContextScript `
+            -PRNumber $PRNumber `
+            -Owner 'dotnet' `
+            -Repo 'maui' `
+            -ContextOutputPath $rerunContextPath
+        if ($LASTEXITCODE -eq 0 -and (Test-Path $rerunContextPath)) {
+            Write-Host "  ✅ rerun context: $rerunContextPath" -ForegroundColor Green
+            $rerunContextInstruction = @"
+
+## Deterministic rerun context
+
+Before pre-flight, read ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/rerun/context.md`` if it exists. This file is generated without AI and lists new comments/commits since the latest AI Summary or previous ``/review rerun`` checkpoint.
+
+When the file has new activity, explicitly include a "New activity since previous AI Summary" subsection in ``pre-flight/content.md`` and prioritize that delta when deciding what changed since the previous review.
+"@
+        } else {
+            Write-Host "  ⚠️ rerun context generation exited with code $LASTEXITCODE" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "  ⚠️ rerun context generation failed: $_" -ForegroundColor Yellow
+    }
+}
+
 # Build regression test instruction for try-fix candidates
 $regressionTestInstruction = ""
 if ($risksData -and $regressionTests -and $regressionTests.Count -gt 0) {
@@ -1388,6 +1417,7 @@ Generate alternative fix candidates for PR #$PRNumber using an iterative expert-
 ## Phase 1 — Pre-Flight (context only)
 Use the pr-review skill's pre-flight phase to gather context about the issue and PR. Do NOT modify code.
 Write summary to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``.
+$rerunContextInstruction
 
 ## Phase 2 — Iterative Try-Fix loop
 For each candidate, follow this cycle:
@@ -1639,9 +1669,9 @@ if (-not $DryRun) {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 6: Post AI Summary Comment (direct script invocation)
+#  STEP 6: Post AI Summary Review (direct script invocation)
 #  When DEFER_COMMENT_TO_STAGE3=true, skip posting here — Stage 3
-#  (UpdateAISummaryComment) will post the full comment after deep tests.
+#  (UpdateAISummaryComment) will post the full review after deep tests.
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
@@ -1655,11 +1685,12 @@ if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
     Write-Host "  ⏭️ Deferred to Stage 3 (DEFER_COMMENT_TO_STAGE3=true)" -ForegroundColor Gray
     Write-Host "  ℹ️  Content files saved in CopilotLogs artifact" -ForegroundColor Gray
     # Still emit a dummy output var so Stage 3 condition works
-    Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]DEFERRED"
+    Write-Host "##vso[task.setvariable variable=aiSummaryReviewId;isOutput=true]DEFERRED"
 } else {
 
 # Post PR review phases (pre-flight, try-fix, report)
-$aiSummaryCommentId = $null
+$aiSummaryReviewId = $null
+$aiSummaryReviewNodeId = $null
 $reviewScript = Join-Path $summaryScriptsDir "post-ai-summary-comment.ps1"
 if (Test-Path $reviewScript) {
     try {
@@ -1669,20 +1700,28 @@ if (Test-Path $reviewScript) {
         } else {
             $reviewOutput = & $reviewScript -PRNumber $PRNumber
         }
-        # Capture comment ID from script output (format: COMMENT_ID=<id>)
-        $idLine = $reviewOutput | Where-Object { $_ -match '^COMMENT_ID=' } | Select-Object -Last 1
-        if ($idLine -match '^COMMENT_ID=(\d+)$') {
-            $aiSummaryCommentId = $Matches[1]
-            Write-Host "  ✅ PR review summary posted (comment ID: $aiSummaryCommentId)" -ForegroundColor Green
+        # Capture review ID from script output (format: AI_SUMMARY_REVIEW_ID=<id>)
+        $idLine = $reviewOutput | Where-Object { $_ -match '^AI_SUMMARY_REVIEW_ID=' } | Select-Object -Last 1
+        $nodeLine = $reviewOutput | Where-Object { $_ -match '^AI_SUMMARY_REVIEW_NODE_ID=' } | Select-Object -Last 1
+        if ($idLine -match '^AI_SUMMARY_REVIEW_ID=(\d+)$') {
+            $aiSummaryReviewId = $Matches[1]
+            if ($nodeLine -match '^AI_SUMMARY_REVIEW_NODE_ID=(.+)$') {
+                $aiSummaryReviewNodeId = $Matches[1]
+            }
+            Write-Host "  ✅ PR review summary posted (review ID: $aiSummaryReviewId)" -ForegroundColor Green
 
-            # Persist comment ID + PR number to a known location and emit
+            # Persist review ID + PR number to a known location and emit
             # as an output variable so the downstream UpdateAISummaryComment
-            # stage in ci-copilot.yml can rewrite the UI tests section once
+            # stage in ci-copilot.yml can rewrite the review body once
             # the deep UI tests finish on the platform-pool agents.
-            $commentIdFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/ai-summary-comment-id.txt"
-            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $commentIdFile) | Out-Null
-            $aiSummaryCommentId | Set-Content $commentIdFile -Encoding UTF8
-            Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]$aiSummaryCommentId"
+            $reviewIdFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/ai-summary-review-id.txt"
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $reviewIdFile) | Out-Null
+            $aiSummaryReviewId | Set-Content $reviewIdFile -Encoding UTF8
+            if (-not [string]::IsNullOrWhiteSpace($aiSummaryReviewNodeId)) {
+                $aiSummaryReviewNodeId | Set-Content (Join-Path (Split-Path -Parent $reviewIdFile) "ai-summary-review-node-id.txt") -Encoding UTF8
+                Write-Host "##vso[task.setvariable variable=aiSummaryReviewNodeId;isOutput=true]$aiSummaryReviewNodeId"
+            }
+            Write-Host "##vso[task.setvariable variable=aiSummaryReviewId;isOutput=true]$aiSummaryReviewId"
         } else {
             Write-Host "  ✅ PR review summary posted" -ForegroundColor Green
         }
@@ -1693,7 +1732,7 @@ if (Test-Path $reviewScript) {
     Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
 }
 
-} # END DEFER_COMMENT_TO_STAGE3 else block (summary comment only — inline findings + labels always run below)
+} # END DEFER_COMMENT_TO_STAGE3 else block (summary review only — inline findings + labels always run below)
 
 # Determine winning candidate (winner.json) — drives whether we post inline findings or request changes
 $winnerFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json"
@@ -1730,8 +1769,8 @@ if (Test-Path $winnerFile) {
 
 $isPRWinner = (-not $winner) -or ($winner.isPRFix -eq $true)
 
-if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
-    Remove-StaleMauiBotIssueComments `
+if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+    Hide-StaleMauiBotIssueComments `
         -PRNumber $PRNumber `
         -IncludeTryFix `
         -Reason "stale try-fix notice"
@@ -1765,79 +1804,10 @@ if ($isPRWinner) {
         }
     }
 } else {
-    # Non-PR candidate won — submit a REQUEST_CHANGES review with the candidate diff in the body
-    Write-Host "  📝 Non-PR candidate won — submitting REQUEST_CHANGES review with candidate diff..." -ForegroundColor Cyan
-
-    $maxDiffBytes = 55KB
-    $diff = [string]$winner.candidateDiff
-    $truncated = $false
-    # Truncate by binary-searching the largest character count whose UTF-8
-    # encoding fits within the byte budget (reserving room for the marker line).
-    # O(log n) and much cheaper than the previous O(n²) trim-512-and-recount loop.
-    $marker = "`n... [truncated]"
-    $markerBytes = [System.Text.Encoding]::UTF8.GetByteCount($marker)
-    $budget = $maxDiffBytes - $markerBytes
-    if ([System.Text.Encoding]::UTF8.GetByteCount($diff) -gt $maxDiffBytes) {
-        $lo = 0
-        $hi = $diff.Length
-        while ($lo -lt $hi) {
-            $mid = [int](($lo + $hi + 1) / 2)
-            $bytes = [System.Text.Encoding]::UTF8.GetByteCount($diff.Substring(0, $mid))
-            if ($bytes -le $budget) { $lo = $mid } else { $hi = $mid - 1 }
-        }
-        $diff = $diff.Substring(0, $lo) + $marker
-        $truncated = $true
-    }
-
-    # Compute an outer code fence longer than any backtick run inside the diff
-    # (minimum 4) so the diff content cannot accidentally close the fence and
-    # leak into the surrounding markdown. Preserves the diff text exactly.
-    $maxBacktickRun = 0
-    foreach ($m in [regex]::Matches($diff, '`+')) {
-        if ($m.Length -gt $maxBacktickRun) { $maxBacktickRun = $m.Length }
-    }
-    $fenceLen = [Math]::Max(4, $maxBacktickRun + 1)
-    $fence = '`' * $fenceLen
-
-    $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
-    $reviewBody = @"
-<!-- MAUI_BOT_TRY_FIX -->
-🤖 **Automated review — alternative fix proposed**
-
-The expert-reviewer evaluation compared the PR fix against $($winner.winner -replace 'try-fix-','#') automatically generated candidates and selected ``$($winner.winner)`` as the strongest fix.
-
-**Why:** $rationale
-
-Please consider applying the candidate diff below (or use it as guidance). Once you push an update, this workflow will re-trigger and re-evaluate.
-
-<details><summary>Candidate diff (``$($winner.winner)``)</summary>
-
-${fence}diff
-$diff
-$fence
-
-</details>
-$( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limit._" } )
-"@
-
-    if ($DryRun) {
-        Write-Host "  [DryRun] Would POST review state=REQUEST_CHANGES with body length $($reviewBody.Length)" -ForegroundColor Yellow
-    } else {
-        try {
-            $bodyJson = @{ body = $reviewBody; event = 'REQUEST_CHANGES' } | ConvertTo-Json -Compress -Depth 5
-            $tmp = New-TemporaryFile
-            Set-Content -LiteralPath $tmp -Value $bodyJson -Encoding utf8 -NoNewline
-            $resp = & gh api -X POST "repos/dotnet/maui/pulls/$PRNumber/reviews" --input $tmp 2>&1
-            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "  ✅ REQUEST_CHANGES review submitted" -ForegroundColor Green
-            } else {
-                Write-Host "  ⚠️ Failed to submit REQUEST_CHANGES review (non-fatal): $resp" -ForegroundColor Yellow
-            }
-        } catch {
-            Write-Host "  ⚠️ REQUEST_CHANGES submission threw (non-fatal): $_" -ForegroundColor Yellow
-        }
-    }
+    # Non-PR candidate details are now merged into the unified AI Summary
+    # Future Action section. Avoid a second MauiBot review so the PR has one
+    # source of truth for automated review guidance.
+    Write-Host "  ⏭️ Non-PR candidate selected; Future Action is included in AI Summary" -ForegroundColor Cyan
     Write-Host "  ⏭️ Skipping inline findings (winner is not the PR fix)" -ForegroundColor Gray
 }
 
@@ -1858,6 +1828,10 @@ if (Test-Path $labelHelperPath) {
         Write-Host "  ✅ Labels applied" -ForegroundColor Green
     } catch {
         Write-Host "  ⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
+    } finally {
+        if (-not $env:TF_BUILD -and (Get-Command Clear-AgentReviewInProgress -ErrorAction SilentlyContinue)) {
+            Clear-AgentReviewInProgress -PRNumber $PRNumber | Out-Null
+        }
     }
 } else {
     Write-Host "  ⚠️ Label helper not found — skipping" -ForegroundColor Yellow

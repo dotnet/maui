@@ -734,7 +734,7 @@ stages:
               fi
 
               echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
-            name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryCommentId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryCommentId']). Note: detectedCategories comes from RunGate, not RunPost.
+            name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryReviewId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId']). Note: detectedCategories comes from RunGate, not RunPost.
             displayName: 'Task 4: Post (comments + labels)'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
@@ -809,7 +809,7 @@ stages:
   #  STAGE: RunDeepUITests
   # ─────────────────────────────────────────────────────────────────────────────
   # After the Copilot review agent has detected UI test categories and posted
-  # an initial AI summary comment with in-process per-category results, this
+  # an initial AI summary review with in-process per-category results, this
   # stage re-runs those same categories on a real platform-appropriate pool
   # (Tahoe iOS sim / Ubuntu Android emu / Windows-2022 / macOS-14) instead of
   # whatever VM the Copilot agent happened to land on. Each category becomes
@@ -1278,7 +1278,7 @@ stages:
               }
 
               if ($hadFailure) {
-                # Don't fail the stage — the AI summary comment is the
+                # Don't fail the stage — the AI summary review is the
                 # deliverable; failed tests get reported there. Stage-level
                 # failure would prevent the UpdateAISummaryComment stage
                 # from running.
@@ -1310,26 +1310,26 @@ stages:
   #  STAGE: PostAISummaryComment
   # ─────────────────────────────────────────────────────────────────────────────
   # Final stage. Depends on both ReviewPR (which posted the initial AI
-  # summary comment and emitted aiSummaryCommentId) and RunDeepUITests
+  # summary review and emitted aiSummaryReviewId) and RunDeepUITests
   # (which produced the TRX artifacts on the right pool). Downloads the
   # artifacts, parses them via Aggregate-UITestArtifacts.ps1, and edits
-  # the existing PR comment to replace the in-process STEP 3 section
+  # the existing PR review to replace the in-process STEP 3 section
   # with the deep-test results.
   - stage: UpdateAISummaryComment
-    displayName: 'Post AI Summary Comment'
+    displayName: 'Post AI Summary Review'
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunPost.aiSummaryCommentId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
       - job: UpdateComment
-        displayName: 'Post AI summary with review + deep test results'
+        displayName: 'Post AI summary review with deep test results'
         # Job-level variables can use $[ stageDependencies... ] (cross-stage,
         # job context). The stage condition above already gated emptiness;
-        # this just makes the value available as $(aiSummaryCommentId)
+        # this just makes the value available as $(aiSummaryReviewId)
         # inside the steps.
         variables:
-          aiSummaryCommentId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryCommentId'] ]
+          aiSummaryReviewId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId'] ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -1366,12 +1366,12 @@ stages:
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "${{ parameters.PRNumber }}"
-              $commentId = "$(aiSummaryCommentId)"
-              $isDeferred = ($commentId -eq 'DEFERRED')
+              $reviewId = "$(aiSummaryReviewId)"
+              $isDeferred = ([string]::IsNullOrWhiteSpace($reviewId) -or $reviewId -eq 'DEFERRED')
 
               # Diagnostic logging for Stage 3 debugging
               Write-Host "=== Stage 3 Diagnostics ===" -ForegroundColor Cyan
-              Write-Host "  commentId: '$commentId'"
+              Write-Host "  reviewId: '$reviewId'"
               Write-Host "  isDeferred: $isDeferred"
               Write-Host "  artDir exists: $(Test-Path $artDir)"
               Write-Host "  copilotLogsDir exists: $(Test-Path $copilotLogsDir)"
@@ -1383,16 +1383,16 @@ stages:
                 }
               }
 
-              if ([string]::IsNullOrWhiteSpace($commentId)) {
-                # Reviewer crashed before posting the initial comment. If deep
+              if ([string]::IsNullOrWhiteSpace($reviewId)) {
+                # Reviewer crashed before posting the initial review. If deep
                 # tests produced results, fall back to DEFERRED mode to post
-                # a degraded comment with test results only.
+                # a degraded review with test results only.
                 if (Test-Path $artDir) {
-                  Write-Host "No AI summary comment ID but deep test artifacts exist — falling back to DEFERRED mode"
-                  $commentId = 'DEFERRED'
+                  Write-Host "No AI summary review ID but deep test artifacts exist — falling back to DEFERRED mode"
+                  $reviewId = 'DEFERRED'
                   $isDeferred = $true
                 } else {
-                  Write-Host "No AI summary comment ID and no deep test artifacts — nothing to do"
+                  Write-Host "No AI summary review ID and no deep test artifacts — nothing to do"
                   exit 0
                 }
               }
@@ -1590,13 +1590,13 @@ stages:
 
               if ($isDeferred) {
                 # Keep deferred mode even if a prior AI Summary exists. The
-                # posting script preserves existing sessions, deletes stale
-                # generated comments, then posts a fresh unified comment.
-                Write-Host "Deferred AI Summary posting will clean up any stale generated comments before posting"
+                # posting script preserves current-run artifacts, hides stale
+                # generated comments/reviews, then posts a fresh summary review.
+                Write-Host "Deferred AI Summary posting will hide stale generated artifacts before posting"
               }
 
               if ($isDeferred) {
-                # ── DEFERRED MODE (first run): Post full comment ──
+                # ── DEFERRED MODE (first run): Post full review ──
                 # Find the PRAgent content dir from CopilotLogs artifact
                 $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
                 if (-not $prAgentDir) {
@@ -1629,7 +1629,7 @@ stages:
                       Write-Host "Replaced in-process results with deep results"
                     }
                   } else {
-                    Write-Host "No deep results — posting review-only comment"
+                    Write-Host "No deep results — posting review-only summary"
                   }
 
                   # Copy PRAgent dir to expected location for post-ai-summary-comment.ps1
@@ -1637,13 +1637,13 @@ stages:
                   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetDir) | Out-Null
                   Copy-Item -Path $prAgentDir.FullName -Destination $targetDir -Recurse -Force
 
-                  # Post the full comment
+                  # Post the full review
                   $postScript = ".github/scripts/post-ai-summary-comment.ps1"
                   if (Test-Path $postScript) {
-                    Write-Host "Posting full AI summary comment with deep results..."
+                    Write-Host "Posting full AI summary review with deep results..."
                     $output = & $postScript -PRNumber $prNumber
                     $output | ForEach-Object { Write-Host $_ }
-                    Write-Host "✅ Full AI summary comment posted with deep results"
+                    Write-Host "✅ Full AI summary review posted with deep results"
                   }
 
                   # Apply labels
@@ -1659,14 +1659,14 @@ stages:
                   }
                 }
               } else {
-                # ── PATCH MODE: Update existing comment with deep results ──
+                # ── PATCH MODE: Update existing review with deep results ──
                 if (-not $deepBlock) {
-                  Write-Host "No deep results and comment already exists — nothing to patch"
+                  Write-Host "No deep results and review already exists — nothing to patch"
                   exit 0
                 }
-                $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join [Environment]::NewLine
+                $existing = (gh api "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --jq '.body') -join [Environment]::NewLine
                 if ([string]::IsNullOrWhiteSpace($existing)) {
-                  Write-Host "Could not fetch comment body — aborting"
+                  Write-Host "Could not fetch review body — aborting"
                   exit 0
                 }
 
@@ -1692,9 +1692,42 @@ stages:
 
                 $tmp = New-TemporaryFile
                 @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
-                gh api -X PATCH "repos/dotnet/maui/issues/comments/$commentId" --input $tmp.FullName | Out-Null
-                Write-Host "✅ Patched comment $commentId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
+                gh api -X PATCH "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --input $tmp.FullName | Out-Null
+                Write-Host "✅ Patched review $reviewId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
               }
-            displayName: 'Post AI summary comment'
+            displayName: 'Post AI summary review'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+  - stage: CleanupReviewLock
+    displayName: 'Cleanup review lock'
+    dependsOn:
+      - ReviewPR
+      - RunDeepUITests
+      - UpdateAISummaryComment
+    condition: always()
+    jobs:
+      - job: CleanupReviewLock
+        displayName: 'Remove PR review in-progress label'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 5
+        steps:
+          - bash: |
+              set -euo pipefail
+
+              PR_NUM="${PARAM_PR_NUMBER}"
+              if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "Skipping lock cleanup; invalid PR number: '${PR_NUM}'"
+                exit 0
+              fi
+
+              echo "Removing s/agent-review-in-progress from PR #${PR_NUM} if present..."
+              gh api \
+                --method DELETE \
+                "repos/dotnet/maui/issues/${PR_NUM}/labels/s%2Fagent-review-in-progress" >/dev/null 2>&1 || true
+            displayName: 'Remove in-progress label'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}

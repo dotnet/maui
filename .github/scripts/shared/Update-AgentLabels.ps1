@@ -10,7 +10,7 @@
     Label categories:
     - Outcome labels (mutually exclusive): agent-approved, agent-changes-requested, agent-review-incomplete
     - Signal labels (additive): agent-gate-passed, agent-gate-failed, agent-fix-win, agent-fix-pr-picked
-    - Manual labels (applied by maintainers): agent-fix-implemented
+    - Manual / queue labels: agent-fix-implemented, agent-ready-for-rerun, agent-review-in-progress
     - Tracking label: agent-reviewed (always applied on completed run)
 
 .NOTES
@@ -36,7 +36,9 @@ $script:SignalLabels = @{
 }
 
 $script:ManualLabels = @{
-    's/agent-fix-implemented' = @{ Description = 'PR author implemented the agent suggested fix'; Color = '7B1FA2' }
+    's/agent-fix-implemented'   = @{ Description = 'PR author implemented the agent suggested fix'; Color = '7B1FA2' }
+    's/agent-ready-for-rerun'   = @{ Description = 'AI review has new PR activity and is ready for rerun'; Color = '5319E7' }
+    's/agent-review-in-progress' = @{ Description = 'AI review is currently running for this PR'; Color = 'FBCA04' }
 }
 
 $script:TrackingLabel = @{
@@ -126,10 +128,19 @@ function Add-Label {
         [string]$Repo = 'maui'
     )
 
-    gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
-        --method POST `
-        -f "labels[]=$LabelName" 2>$null | Out-Null
-    return $LASTEXITCODE -eq 0
+    $tmp = $null
+    try {
+        $tmp = New-TemporaryFile
+        @{ labels = @($LabelName) } | ConvertTo-Json -Compress | Set-Content -LiteralPath $tmp -Encoding utf8 -NoNewline
+        & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
+            --method POST `
+            --input $tmp 1>$null 2>$null
+        return $LASTEXITCODE -eq 0
+    } finally {
+        if ($tmp) {
+            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 # ============================================================
@@ -143,9 +154,122 @@ function Remove-Label {
         [string]$Repo = 'maui'
     )
 
-    gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
-        --method DELETE 2>$null | Out-Null
+    & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels/$([uri]::EscapeDataString($LabelName))" `
+        --method DELETE 1>$null 2>$null
     return $LASTEXITCODE -eq 0
+}
+
+# ============================================================
+# Set-AgentReviewInProgress
+# ============================================================
+function Set-AgentReviewInProgress {
+    <#
+    .SYNOPSIS
+        Applies the persistent in-progress lock label before triggering review.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $label = 's/agent-review-in-progress'
+    $def = $script:ManualLabels[$label]
+    Ensure-LabelExists -LabelName $label -Description $def.Description -Color $def.Color -Owner $Owner -Repo $Repo
+
+    $currentLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    if ($currentLabels -contains $label) {
+        Write-Host "  ✅ Already present: $label" -ForegroundColor Green
+        return $true
+    }
+
+    $ok = Add-Label -PRNumber $PRNumber -LabelName $label -Owner $Owner -Repo $Repo
+    $updatedLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    if ($ok -or $updatedLabels -contains $label) {
+        Write-Host "  ✅ Applied: $label" -ForegroundColor Green
+        return $true
+    }
+
+    Write-Host "  ⚠️  Failed to apply: $label" -ForegroundColor Yellow
+    return $false
+}
+
+# ============================================================
+# Clear-AgentReviewInProgress
+# ============================================================
+function Clear-AgentReviewInProgress {
+    <#
+    .SYNOPSIS
+        Removes the persistent in-progress lock label after review finishes.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $label = 's/agent-review-in-progress'
+    $currentLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    if ($currentLabels -notcontains $label) {
+        Write-Host "  ✅ Not present: $label" -ForegroundColor Green
+        return $true
+    }
+
+    $ok = Remove-Label -PRNumber $PRNumber -LabelName $label -Owner $Owner -Repo $Repo
+    $updatedLabels = Get-AgentLabels -PRNumber $PRNumber -Owner $Owner -Repo $Repo
+    if ($ok -or $updatedLabels -notcontains $label) {
+        Write-Host "  ✅ Removed: $label" -ForegroundColor Green
+        return $true
+    }
+
+    Write-Host "  ⚠️  Failed to remove: $label" -ForegroundColor Yellow
+    return $false
+}
+
+# ============================================================
+# Test-AgentReviewInProgressIsStale
+# ============================================================
+function Test-AgentReviewInProgressIsStale {
+    <#
+    .SYNOPSIS
+        Returns true when the in-progress lock label is older than the stale threshold.
+
+    .DESCRIPTION
+        This is a cancellation safety net. Normal AzDO runs clear the lock in a
+        final cleanup stage; if a run is cancelled before cleanup can start, the
+        scanner/manual trigger can recover after the conservative stale window.
+    #>
+    param(
+        [Parameter(Mandatory)] [string]$PRNumber,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui',
+        [int]$StaleAfterHours = 18
+    )
+
+    $label = 's/agent-review-in-progress'
+    $createdAtValues = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/events?per_page=100" --paginate --jq ".[] | select(.event == `"labeled`" and .label.name == `"$label`") | .created_at" 2>$null)
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ⚠️  Could not inspect label history for PR #$PRNumber; treating $label as fresh" -ForegroundColor Yellow
+        return $false
+    }
+
+    if ($createdAtValues.Count -eq 0) {
+        Write-Host "  ⚠️  No label history found for $label on PR #$PRNumber; treating it as fresh" -ForegroundColor Yellow
+        return $false
+    }
+
+    $latestAppliedAt = $createdAtValues | ForEach-Object {
+        [datetimeoffset]::Parse([string]$_, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+    } | Sort-Object -Descending | Select-Object -First 1
+
+    $age = [datetimeoffset]::UtcNow - $latestAppliedAt
+    if ($age -gt [timespan]::FromHours($StaleAfterHours)) {
+        Write-Host "  ⚠️  $label on PR #$PRNumber is stale (applied $($latestAppliedAt.ToString('u')))" -ForegroundColor Yellow
+        return $true
+    }
+
+    Write-Host "  ✅ $label on PR #$PRNumber is fresh (applied $($latestAppliedAt.ToString('u')))" -ForegroundColor Green
+    return $false
 }
 
 # ============================================================
