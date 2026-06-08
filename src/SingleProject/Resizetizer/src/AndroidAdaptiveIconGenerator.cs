@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				if (monochromeExists)
 				{
-					var tools = SkiaSharpTools.Create(Info.MonochromeIsVector, Info.MonochromeFilename, dpi.Size, null, null, Logger);
+					var tools = SkiaSharpTools.Create(Info.MonochromeIsVector, Info.MonochromeFilename, dpi.Size, null, null, Info.Quality, Logger);
 					tools.Resize(dpi, destination, dpiSizeIsAbsolute: true);
 				}
 				else
