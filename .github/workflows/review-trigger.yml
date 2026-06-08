@@ -63,7 +63,10 @@ jobs:
           fi
           # Match `/review` as the first non-whitespace token, optionally followed by args.
           # Allows arbitrary leading whitespace (spaces, tabs, newlines).
-          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
+          # `/review tests` is reserved for the gh-aw test-failure review workflow.
+          if [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review[[:space:]]+tests([[:space:]]|$) ]]; then
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+          elif [[ "${COMMENT_BODY}" =~ ^[[:space:]]*/review([[:space:]]|$) ]]; then
             echo "matched=true" >> "$GITHUB_OUTPUT"
             echo "command=review" >> "$GITHUB_OUTPUT"
           else
