@@ -36,7 +36,14 @@
 
 .PARAMETER ExcludeBranches
     Comma-separated branches to exclude when computing SR-only commits.
-    Default: origin/main,origin/inflight/current
+    Default: origin/main. Do NOT add inflight/* refs — SR branches cut from
+    main; comparing against inflight produces wrong "what's shipping" answers.
+
+.PARAMETER Candidate
+    Pre-flight / candidate mode. Use when the next SR branch doesn't exist
+    yet but you want to know "what WOULD ship in SRn+1 if cut from main
+    today?". With -Candidate, the script treats `origin/$MainBranch` as the
+    SR-to-be and uses the named -SrBranch as the prior-SR exclude baseline.
 
 .PARAMETER Phase
     Which phase to run: all (default), ci, commits, regressions, open-prs.
@@ -60,6 +67,12 @@
 
 .EXAMPLE
     pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Phase commits
+
+.EXAMPLE
+    # Pre-flight: what would SR8 contain if cut from main today?
+    pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Candidate `
+        -RegressionLabels regressed-in-10.0.70,regressed-in-10.0.80 `
+        -OutputDir /tmp/sr8-candidate
 #>
 
 [CmdletBinding()]
@@ -69,18 +82,32 @@ param(
     [switch]$InferRegressionLabels,
     [string]$Repo = 'dotnet/maui',
     [string]$MainBranch = 'main',
-    [string]$ExcludeBranches = 'origin/main,origin/inflight/current',
+    [string]$ExcludeBranches = 'origin/main',
     [ValidateSet('all', 'ci', 'commits', 'regressions', 'open-prs')]
     [string]$Phase = 'all',
     [string]$OutputDir,
     [ValidateSet('json', 'markdown', 'both')]
     [string]$OutputFormat = 'both',
     [int]$MaxIssues = 100,
-    [switch]$NoFetch
+    [switch]$NoFetch,
+    # Candidate / pre-flight mode: survey what WOULD ship in the next SR if cut
+    # from main today. Requires -SrBranch to be the prior SR (used as the
+    # exclude baseline). Treats origin/main as the "SR-to-be".
+    [switch]$Candidate
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+
+# DETERMINISTIC RULE — SR branches in dotnet/maui ALWAYS cut from `main`.
+# Refuse to operate on any `inflight/*` or `staging/*` ref — those are
+# integration branches, not SR sources. This guard exists because conflating
+# the two leads to wrong "what's shipping" conclusions.
+$Script:ForbiddenSrPatterns = @(
+    '^inflight/'   # inflight/current, inflight/candidate, inflight/ai — NOT SR sources
+    '^staging/'    # any staging area
+    '^backport/'   # in-progress backport branches
+)
 
 # Public AzDO MAUI pipelines on dnceng-public
 $Script:PublicPipelines = @(
@@ -127,26 +154,62 @@ function Invoke-Gh([string[]]$GhArgs) {
 
 function Resolve-Context {
     param([string]$SrBranch, [string]$Repo, [string]$MainBranch,
-          [string[]]$ExcludeBranches, [switch]$NoFetch)
+          [string[]]$ExcludeBranches, [switch]$NoFetch, [switch]$Candidate)
+
+    # HARD VALIDATION — refuse inflight/staging refs as SR sources.
+    # See $Script:ForbiddenSrPatterns at top of file for the rule rationale.
+    foreach ($pat in $Script:ForbiddenSrPatterns) {
+        if ($SrBranch -match $pat) {
+            throw "REFUSED: '$SrBranch' is not a valid SR branch — SR branches in dotnet/maui cut from `main`, never from inflight/staging/backport refs. Use a `release/X.Y.Zxx-srN` branch, or pass -Candidate to pre-flight `main`."
+        }
+    }
+    foreach ($eb in $ExcludeBranches) {
+        $stripped = $eb -replace '^origin/', ''
+        foreach ($pat in $Script:ForbiddenSrPatterns) {
+            if ($stripped -match $pat) {
+                Write-Warn "Exclude branch '$eb' is an inflight/staging ref — dropping. SR contents should only be compared against main or another SR branch."
+                $ExcludeBranches = $ExcludeBranches | Where-Object { $_ -ne $eb }
+            }
+        }
+    }
 
     if (-not $NoFetch) {
         Write-Host "Fetching latest refs..." -ForegroundColor Cyan
         & git fetch --all --quiet 2>$null | Out-Null
     }
 
-    $srRef = "origin/$SrBranch"
-    $srHead = Invoke-Git "rev-parse $srRef"
-    if (-not $srHead) {
-        throw "SR branch '$srRef' not found. Did you push it? (try without -NoFetch)"
+    # Candidate mode: swap roles — main becomes the "SR-to-be", named SrBranch
+    # becomes the exclude baseline (prior SR). This lets us answer "what would
+    # SRn+1 contain if cut today?" without requiring the branch to exist yet.
+    $mode = 'shipped'
+    $effectiveSrRef = "origin/$SrBranch"
+    $effectiveExcludes = $ExcludeBranches
+
+    if ($Candidate) {
+        $mode = 'candidate'
+        $priorSrRef = "origin/$SrBranch"
+        $priorSrSha = Invoke-Git "rev-parse $priorSrRef"
+        if (-not $priorSrSha) {
+            throw "Candidate mode requires -SrBranch to be the prior SR (used as exclude baseline). '$priorSrRef' not found."
+        }
+        $effectiveSrRef = "origin/$MainBranch"
+        # Exclude prior SR from main, so we see only "new since last SR" commits
+        $effectiveExcludes = @($priorSrRef)
+        Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
     }
-    $srSubject = Invoke-Git "log -1 --format=%s $srRef"
+
+    $srHead = Invoke-Git "rev-parse $effectiveSrRef"
+    if (-not $srHead) {
+        throw "Branch '$effectiveSrRef' not found. Did you push it? (try without -NoFetch)"
+    }
+    $srSubject = Invoke-Git "log -1 --format=%s $effectiveSrRef"
 
     $mainHead = Invoke-Git "rev-parse origin/$MainBranch"
     if (-not $mainHead) { Write-Warn "Main branch 'origin/$MainBranch' not found" }
 
     # Validate exclude branches exist; drop missing with warning
     $validExcludes = @()
-    foreach ($b in $ExcludeBranches) {
+    foreach ($b in $effectiveExcludes) {
         $sha = Invoke-Git "rev-parse $b"
         if ($sha) {
             $validExcludes += $b
@@ -157,13 +220,15 @@ function Resolve-Context {
 
     @{
         repo = $Repo
-        srBranch = $SrBranch
-        srRef = $srRef
+        srBranch = if ($Candidate) { $MainBranch } else { $SrBranch }
+        srRef = $effectiveSrRef
         srHeadSha = $srHead
         srHeadSubject = $srSubject
         mainBranch = $MainBranch
         mainHeadSha = $mainHead
         excludeBranches = $validExcludes
+        mode = $mode
+        priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
         fetchedAt = (Get-Date).ToUniversalTime().ToString('o')
     }
 }
@@ -280,10 +345,12 @@ function Get-SrCommits {
         }
     }
 
+    $srcPrsSorted = @($allSourcePrs | Sort-Object)
     @{
         commitCount = $commits.Count
         commits = $commits
-        sourcePrs = @($allSourcePrs | Sort-Object)
+        sourcePrs = $srcPrsSorted
+        sourcePrCount = $srcPrsSorted.Count
         backportPrs = @($allBackportPrs | Sort-Object)
         fixedIssues = @($fixedIssues | Sort-Object)
         reverts = $reverts
@@ -725,9 +792,16 @@ function Format-MarkdownReport {
     $shortHead = if ($ctx.srHeadSha) { $ctx.srHeadSha.Substring(0, 8) } else { '?' }
 
     $sb = [System.Text.StringBuilder]::new()
-    [void]$sb.AppendLine("# Release Readiness — $srBranch")
+    $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'shipped' }
+    if ($mode -eq 'candidate') {
+        [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (vs $($ctx.priorSrBranch))")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine("> 🛫 **Pre-flight mode.** Surveying ``$srBranch`` (== main) against prior SR ``$($ctx.priorSrBranch)``. Shows what WOULD ship if we cut the next SR today.")
+    } else {
+        [void]$sb.AppendLine("# Release Readiness — $srBranch")
+    }
     [void]$sb.AppendLine()
-    [void]$sb.AppendLine("**SR HEAD**: ``$shortHead`` — $($ctx.srHeadSubject)")
+    [void]$sb.AppendLine("**HEAD**: ``$shortHead`` — $($ctx.srHeadSubject)")
     [void]$sb.AppendLine("**Generated**: $($ctx.fetchedAt)")
     [void]$sb.AppendLine("**Regression labels**: $($ctx.regressionLabels -join ', ') _(mode: $($ctx.labelInferenceMode))_")
     [void]$sb.AppendLine()
@@ -838,7 +912,7 @@ function Format-MarkdownReport {
 function Invoke-Main {
     $excludes = $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     $ctx = Resolve-Context -SrBranch $SrBranch -Repo $Repo -MainBranch $MainBranch `
-                           -ExcludeBranches $excludes -NoFetch:$NoFetch
+                           -ExcludeBranches $excludes -NoFetch:$NoFetch -Candidate:$Candidate
 
     # Resolve regression labels
     $labelMode = 'explicit'

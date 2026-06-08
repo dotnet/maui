@@ -103,6 +103,29 @@ $badBranch = 'release/main-sr1-preview'
 $badMatch = [regex]::Match($badBranch, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
 Assert-Eq -Label "Non-standard branch name does NOT match" -Expected $false -Actual $badMatch.Success
 
+# ─────────── SR-source validation rules (no network) ───────────
+
+Write-Host "`n[Unit] SR-source branch validation rules" -ForegroundColor Cyan
+
+# These patterns mirror $Script:ForbiddenSrPatterns in the script. If the
+# script's rule list changes, this test list must be updated to match.
+$forbidden = @('^inflight/', '^staging/', '^backport/')
+
+foreach ($case in @(
+    @{ Branch = 'inflight/current';     ShouldMatch = $true  ; Label = 'inflight/current is forbidden' }
+    @{ Branch = 'inflight/candidate';   ShouldMatch = $true  ; Label = 'inflight/candidate is forbidden' }
+    @{ Branch = 'staging/foo';          ShouldMatch = $true  ; Label = 'staging/* is forbidden' }
+    @{ Branch = 'backport/pr-31149';    ShouldMatch = $true  ; Label = 'backport/* is forbidden' }
+    @{ Branch = 'release/10.0.1xx-sr7'; ShouldMatch = $false ; Label = 'release/*-sr* is allowed' }
+    @{ Branch = 'main';                 ShouldMatch = $false ; Label = 'main is allowed' }
+)) {
+    $hit = $false
+    foreach ($p in $forbidden) {
+        if ($case.Branch -match $p) { $hit = $true; break }
+    }
+    Assert-Eq -Label $case.Label -Expected $case.ShouldMatch -Actual $hit
+}
+
 # ─────────── E2E smoke test against SR7 ───────────
 
 if (-not $SkipE2E) {

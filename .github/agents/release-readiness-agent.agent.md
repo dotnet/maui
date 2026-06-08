@@ -24,10 +24,26 @@ Invoke this agent when the user asks:
 
 When invoked, you will:
 
+### 0. Hard rule — SR branches ALWAYS cut from `main`
+
+In dotnet/maui, SR branches are created from `main`, **never** from `inflight/*`, `staging/*`, or `backport/*` refs. The script enforces this with a hard error — do NOT try to work around it. If the user asks you to "survey inflight/current" or similar, redirect to **Candidate mode** (step 1b) instead.
+
 ### 1. Resolve the SR branch
 - Use the branch the user named, OR the current branch if it matches `release/*-sr*`, OR ask.
 - Confirm the branch exists: `git rev-parse --verify origin/<branch>`.
-- Do NOT proceed if the branch is missing — ask the user to fetch or correct it.
+- If missing, ask the user — do NOT silently substitute.
+
+### 1b. If the SR branch doesn't exist yet → Candidate mode
+
+When the user asks about an SR that hasn't been cut yet (e.g. "is SR8 ready?" and only sr7 exists), use **`-Candidate`** with the most recent existing SR as the baseline:
+
+```bash
+pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Candidate \
+  -RegressionLabels regressed-in-10.0.70,regressed-in-10.0.80 \
+  -OutputDir /tmp/sr8-candidate
+```
+
+The script treats `origin/main` as the "SR-to-be" and uses the named branch as the exclude baseline. Report header will read "CANDIDATE for next SR (vs <prior>)". Frame the verdict as a **pre-flight** — what would ship if cut from main today — not as final ship-readiness.
 
 ### 2. Determine regression labels (the scope question)
 Two paths:
@@ -98,6 +114,8 @@ The user will likely ask:
 - ❌ Re-derive what's in the SR by hand (always use the script's `sourcePrs` list)
 
 ## Anti-Patterns
+
+> ❌ **NEVER survey an `inflight/*` or `staging/*` branch as if it were an SR.** SR branches in dotnet/maui always cut from `main`. The script will refuse — don't try to work around it. For pre-flight, use `-Candidate` mode against `main` instead.
 
 > ❌ **Don't trust `state: MERGED` alone.** Many PRs merge only to `inflight/current`, not `main`. The script's `onMain` field is the authoritative check.
 
