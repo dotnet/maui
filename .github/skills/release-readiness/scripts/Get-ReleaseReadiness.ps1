@@ -45,6 +45,12 @@
     today?". With -Candidate, the script treats `origin/$MainBranch` as the
     SR-to-be and uses the named -SrBranch as the prior-SR exclude baseline.
 
+.PARAMETER InheritFromPriorSr
+    Only valid with -Candidate. Models the dotnet/maui release workflow where
+    SRn+1 is cut from main AND then has SRn merged into it. The "what's
+    shipping" set = (main commits since prior SR) ∪ (prior SR-only commits).
+    Without this flag, candidate mode shows only main-since-priorSR.
+
 .PARAMETER Phase
     Which phase to run: all (default), ci, commits, regressions, open-prs.
 
@@ -73,6 +79,13 @@
     pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Candidate `
         -RegressionLabels regressed-in-10.0.70,regressed-in-10.0.80 `
         -OutputDir /tmp/sr8-candidate
+
+.EXAMPLE
+    # Pre-flight SR8 modeling the SR7→SR8 merge workflow
+    pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Candidate `
+        -InheritFromPriorSr `
+        -RegressionLabels regressed-in-10.0.70,regressed-in-10.0.80 `
+        -OutputDir /tmp/sr8-candidate
 #>
 
 [CmdletBinding()]
@@ -93,7 +106,12 @@ param(
     # Candidate / pre-flight mode: survey what WOULD ship in the next SR if cut
     # from main today. Requires -SrBranch to be the prior SR (used as the
     # exclude baseline). Treats origin/main as the "SR-to-be".
-    [switch]$Candidate
+    [switch]$Candidate,
+    # When set in -Candidate mode, model the dotnet/maui workflow where, after
+    # cutting SRn+1 from main, the prior SR (-SrBranch) is merged in. The
+    # candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits.
+    # Without this flag, candidate mode shows only main-since-priorSR.
+    [switch]$InheritFromPriorSr
 )
 
 $ErrorActionPreference = 'Stop'
@@ -154,7 +172,12 @@ function Invoke-Gh([string[]]$GhArgs) {
 
 function Resolve-Context {
     param([string]$SrBranch, [string]$Repo, [string]$MainBranch,
-          [string[]]$ExcludeBranches, [switch]$NoFetch, [switch]$Candidate)
+          [string[]]$ExcludeBranches, [switch]$NoFetch, [switch]$Candidate,
+          [switch]$InheritFromPriorSr)
+
+    if ($InheritFromPriorSr -and -not $Candidate) {
+        throw "-InheritFromPriorSr is only valid with -Candidate (it models the SR cut-then-merge workflow)."
+    }
 
     # HARD VALIDATION — refuse inflight/staging refs as SR sources.
     # See $Script:ForbiddenSrPatterns at top of file for the rule rationale.
@@ -198,6 +221,10 @@ function Resolve-Context {
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
     }
 
+    if ($Candidate -and $InheritFromPriorSr) {
+        Write-Host "  -InheritFromPriorSr active: SR-to-be contents will be augmented with $priorSrRef-only commits" -ForegroundColor Cyan
+    }
+
     $srHead = Invoke-Git "rev-parse $effectiveSrRef"
     if (-not $srHead) {
         throw "Branch '$effectiveSrRef' not found. Did you push it? (try without -NoFetch)"
@@ -229,22 +256,31 @@ function Resolve-Context {
         excludeBranches = $validExcludes
         mode = $mode
         priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
+        priorSrRef = if ($Candidate) { "origin/$SrBranch" } else { $null }
+        inheritFromPriorSr = [bool]($Candidate -and $InheritFromPriorSr)
         fetchedAt = (Get-Date).ToUniversalTime().ToString('o')
     }
 }
 
 # region ────────────────────── 2. SR COMMITS + SOURCE PR EXTRACTION ───────
 
-function Get-SrCommits {
-    param($Ctx)
+# Internal scanner — extracts source PRs / backports / reverts from commits
+# selected by an arbitrary `git log` rev-spec. Used by Get-SrCommits both for
+# the primary scan and (optionally) for the inherited-from-prior-SR scan.
+function Get-CommitsForRevSpec {
+    param(
+        [string]$RevSpec,           # e.g. "origin/main ^origin/release/10.0.1xx-sr7"
+        [string]$OriginTag = 'primary'
+    )
 
-    Write-Host "Computing SR-only commits..." -ForegroundColor Cyan
-    $excludeArgs = $Ctx.excludeBranches | ForEach-Object { "^$_" }
-    $shaList = Invoke-Git "log --format=%H $($Ctx.srRef) $($excludeArgs -join ' ')"
-    if (-not $shaList) { return @{ commits = @(); sourcePrs = @(); backportPrs = @(); reverts = @() } }
-
+    $shaList = Invoke-Git "log --format=%H $RevSpec"
+    if (-not $shaList) {
+        return @{
+            commits = @(); sourcePrs = @(); backportPrs = @();
+            reverts = @(); fixedIssues = @()
+        }
+    }
     $shas = @($shaList)
-    Write-Host "  Found $($shas.Count) SR-only commits" -ForegroundColor Gray
 
     $commits = @()
     $allSourcePrs = New-Object 'System.Collections.Generic.HashSet[int]'
@@ -329,6 +365,7 @@ function Get-SrCommits {
                 revertsCommit = $revertsCommit
                 revertsPr = $revertsPr
                 revertBackportPr = $backportPr
+                origin = $OriginTag
             }
         }
 
@@ -342,19 +379,73 @@ function Get-SrCommits {
             sourcePr = $sourcePr
             cherrySourceSha = $cherrySourceSha
             fixedIssues = $fixesList
+            origin = $OriginTag
         }
     }
 
-    $srcPrsSorted = @($allSourcePrs | Sort-Object)
     @{
-        commitCount = $commits.Count
         commits = $commits
+        sourcePrs = @($allSourcePrs)
+        backportPrs = @($allBackportPrs)
+        reverts = $reverts
+        fixedIssues = @($fixedIssues)
+    }
+}
+
+function Get-SrCommits {
+    param($Ctx)
+
+    Write-Host "Computing SR-only commits..." -ForegroundColor Cyan
+    $excludeArgs = $Ctx.excludeBranches | ForEach-Object { "^$_" }
+    $primaryRevSpec = "$($Ctx.srRef) $($excludeArgs -join ' ')"
+    $primary = Get-CommitsForRevSpec -RevSpec $primaryRevSpec -OriginTag 'primary'
+    Write-Host "  Found $($primary.commits.Count) primary SR commits" -ForegroundColor Gray
+
+    $inherited = $null
+    if ($Ctx.inheritFromPriorSr -and $Ctx.priorSrRef) {
+        # Inheritance set: commits on prior SR that are NOT yet on main.
+        # When the SR-to-be (main today) has the prior SR merged in, these are
+        # the additional shipping commits.
+        Write-Host "Computing prior-SR-only commits ($($Ctx.priorSrRef) not in $($Ctx.srRef))..." -ForegroundColor Cyan
+        $inheritRevSpec = "$($Ctx.priorSrRef) ^$($Ctx.srRef)"
+        $inherited = Get-CommitsForRevSpec -RevSpec $inheritRevSpec -OriginTag 'inherited'
+        Write-Host "  Found $($inherited.commits.Count) inherited-from-prior-SR commits" -ForegroundColor Gray
+    }
+
+    # Merge primary + inherited into a single SR-contents view.
+    # We keep an `origin` tag on each item so the report can disambiguate.
+    $mergedCommits = @($primary.commits)
+    $mergedReverts = @($primary.reverts)
+    $sourcePrSet = New-Object 'System.Collections.Generic.HashSet[int]'
+    foreach ($n in $primary.sourcePrs) { $sourcePrSet.Add([int]$n) | Out-Null }
+    $backportPrSet = New-Object 'System.Collections.Generic.HashSet[int]'
+    foreach ($n in $primary.backportPrs) { $backportPrSet.Add([int]$n) | Out-Null }
+    $fixedIssueSet = New-Object 'System.Collections.Generic.HashSet[int]'
+    foreach ($n in $primary.fixedIssues) { $fixedIssueSet.Add([int]$n) | Out-Null }
+
+    if ($inherited) {
+        $mergedCommits += $inherited.commits
+        $mergedReverts += $inherited.reverts
+        foreach ($n in $inherited.sourcePrs) { $sourcePrSet.Add([int]$n) | Out-Null }
+        foreach ($n in $inherited.backportPrs) { $backportPrSet.Add([int]$n) | Out-Null }
+        foreach ($n in $inherited.fixedIssues) { $fixedIssueSet.Add([int]$n) | Out-Null }
+    }
+
+    $srcPrsSorted = @($sourcePrSet | Sort-Object)
+    $result = @{
+        commitCount = $mergedCommits.Count
+        primaryCommitCount = $primary.commits.Count
+        inheritedCommitCount = if ($inherited) { $inherited.commits.Count } else { 0 }
+        commits = $mergedCommits
         sourcePrs = $srcPrsSorted
         sourcePrCount = $srcPrsSorted.Count
-        backportPrs = @($allBackportPrs | Sort-Object)
-        fixedIssues = @($fixedIssues | Sort-Object)
-        reverts = $reverts
+        primarySourcePrs = @($primary.sourcePrs | Sort-Object)
+        inheritedSourcePrs = if ($inherited) { @($inherited.sourcePrs | Sort-Object) } else { @() }
+        backportPrs = @($backportPrSet | Sort-Object)
+        fixedIssues = @($fixedIssueSet | Sort-Object)
+        reverts = $mergedReverts
     }
+    return $result
 }
 
 # region ────────────────────── 3. CI STATUS ───────────────────────────────
@@ -576,6 +667,7 @@ function Classify-RegressionCandidate {
 
     # Filter candidates to those with high evidence for this issue
     $strongPrs = @()
+    $sawRevertCandidate = $false
     foreach ($prNum in $CandidatePrs) {
         $info = Get-PrInfo -Repo $Ctx.repo -PrNumber $prNum
         if (-not $info) { continue }
@@ -584,6 +676,12 @@ function Classify-RegressionCandidate {
 
         # Skip PRs that target SR branches (those are backport PRs themselves — examined separately)
         if ($info.baseRefName -like 'release/*') { continue }
+
+        # Detect "Revert ..." titled PRs — these are NOT fixes, they're rollbacks.
+        # When the only candidate PR is a revert, the issue is likely unfixed (or
+        # in a revert-of-revert chain that needs manual verification).
+        $isRevertPr = ($info.title -match '(?i)^(?:\[[^\]]+\]\s+)?Revert\b') -or ($info.title -match '\[Revert\]')
+        if ($isRevertPr) { $sawRevertCandidate = $true; continue }
 
         $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
         $onMain = if ($mergeSha) { Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.mainBranch)" } else { $false }
@@ -607,6 +705,15 @@ function Classify-RegressionCandidate {
     }
 
     if ($strongPrs.Count -eq 0) {
+        if ($sawRevertCandidate) {
+            return @{
+                classification = 'needs-human-review'
+                confidence = 'medium'
+                evidence = @('All candidate fix PRs were Revert PRs — original fix may be missing or in a revert-of-revert chain. Manual verification required.')
+                candidateFixPrs = @()
+                recommendedAction = "Inspect the revert chain manually: original fix → revert → (possible) revert-of-revert. Look for the actual fix PR in `gh pr list --search 'fixes #$($Issue.number)'` excluding revert titles."
+            }
+        }
         return @{
             classification = 'no-fix-yet'
             confidence = 'high'
@@ -793,10 +900,17 @@ function Format-MarkdownReport {
 
     $sb = [System.Text.StringBuilder]::new()
     $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'shipped' }
+    $inherits = ($ctx.ContainsKey('inheritFromPriorSr') -and $ctx['inheritFromPriorSr'])
     if ($mode -eq 'candidate') {
-        [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (vs $($ctx.priorSrBranch))")
-        [void]$sb.AppendLine()
-        [void]$sb.AppendLine("> 🛫 **Pre-flight mode.** Surveying ``$srBranch`` (== main) against prior SR ``$($ctx.priorSrBranch)``. Shows what WOULD ship if we cut the next SR today.")
+        if ($inherits) {
+            [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (main + inherited from $($ctx.priorSrBranch))")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("> 🛫 **Pre-flight mode (cut-then-merge).** Surveying ``$srBranch`` (== main) PLUS commits inherited from prior SR ``$($ctx.priorSrBranch)`` (the SR will be cut from main, then have the prior SR merged into it).")
+        } else {
+            [void]$sb.AppendLine("# Release Readiness — CANDIDATE for next SR (vs $($ctx.priorSrBranch))")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("> 🛫 **Pre-flight mode.** Surveying ``$srBranch`` (== main) against prior SR ``$($ctx.priorSrBranch)``. Shows what WOULD ship if we cut the next SR today.")
+        }
     } else {
         [void]$sb.AppendLine("# Release Readiness — $srBranch")
     }
@@ -835,18 +949,25 @@ function Format-MarkdownReport {
         $sc = $Data['srContents']
         [void]$sb.AppendLine("## What's New in SR — $($sc.commitCount) commits")
         [void]$sb.AppendLine()
-        [void]$sb.AppendLine("- Source PRs included: **$($sc.sourcePrs.Count)** (see ``sr-source-prs.txt``)")
+        if ($inherits -and $sc.ContainsKey('inheritedCommitCount') -and $sc['inheritedCommitCount'] -gt 0) {
+            [void]$sb.AppendLine("- **From main** (since prior SR): $($sc.primaryCommitCount) commits / $($sc.primarySourcePrs.Count) source PRs")
+            [void]$sb.AppendLine("- **Inherited from $($ctx.priorSrBranch)** (will be merged in after cut): $($sc.inheritedCommitCount) commits / $($sc.inheritedSourcePrs.Count) source PRs")
+            [void]$sb.AppendLine("- **Total source PRs** (deduplicated): **$($sc.sourcePrs.Count)** (see ``sr-source-prs.txt``)")
+        } else {
+            [void]$sb.AppendLine("- Source PRs included: **$($sc.sourcePrs.Count)** (see ``sr-source-prs.txt``)")
+        }
         [void]$sb.AppendLine("- Reverts detected: **$($sc.reverts.Count)**")
         if ($sc.reverts.Count -gt 0) {
             [void]$sb.AppendLine()
             [void]$sb.AppendLine('### Reverts')
-            [void]$sb.AppendLine('| Revert commit | Reverts PR | Reverts commit |')
-            [void]$sb.AppendLine('|---|---|---|')
+            [void]$sb.AppendLine('| Revert commit | Reverts PR | Reverts commit | On |')
+            [void]$sb.AppendLine('|---|---|---|---|')
             foreach ($r in $sc.reverts) {
                 $rs = if ($r.revertCommit) { $r.revertCommit.Substring(0, 8) } else { '?' }
                 $rc = if ($r.revertsCommit) { $r.revertsCommit.Substring(0, 8) } else { '?' }
                 $rp = if ($r.revertsPr) { "#$($r.revertsPr)" } else { '?' }
-                [void]$sb.AppendLine("| ``$rs`` | $rp | ``$rc`` |")
+                $ro = if ($r.ContainsKey('origin')) { $r.origin } else { '?' }
+                [void]$sb.AppendLine("| ``$rs`` | $rp | ``$rc`` | $ro |")
             }
         }
         [void]$sb.AppendLine()
@@ -912,7 +1033,8 @@ function Format-MarkdownReport {
 function Invoke-Main {
     $excludes = $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     $ctx = Resolve-Context -SrBranch $SrBranch -Repo $Repo -MainBranch $MainBranch `
-                           -ExcludeBranches $excludes -NoFetch:$NoFetch -Candidate:$Candidate
+                           -ExcludeBranches $excludes -NoFetch:$NoFetch -Candidate:$Candidate `
+                           -InheritFromPriorSr:$InheritFromPriorSr
 
     # Resolve regression labels
     $labelMode = 'explicit'

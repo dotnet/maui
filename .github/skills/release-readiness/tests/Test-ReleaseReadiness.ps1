@@ -172,6 +172,53 @@ if (-not $SkipE2E) {
 
     # Cleanup
     if (Test-Path $outDir) { Remove-Item -Recurse -Force $outDir }
+
+    # ─────────── -InheritFromPriorSr E2E: SR8-candidate-style ───────────
+    Write-Host "`n[E2E] Candidate mode with -InheritFromPriorSr (SR8-style)" -ForegroundColor Cyan
+
+    # Negative: -InheritFromPriorSr without -Candidate must throw
+    $bogusOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-test-bogus-$(Get-Date -Format 'HHmmss')"
+    $stderr = & pwsh -NoProfile -File $scriptPath `
+        -SrBranch 'release/10.0.1xx-sr7' `
+        -InheritFromPriorSr `
+        -Phase commits `
+        -OutputDir $bogusOut `
+        -NoFetch 2>&1
+    $threw = ($LASTEXITCODE -ne 0) -or ($stderr -match 'only valid with -Candidate')
+    Assert-Eq -Label "-InheritFromPriorSr without -Candidate is rejected" `
+              -Expected $true -Actual $threw
+    if (Test-Path $bogusOut) { Remove-Item -Recurse -Force $bogusOut }
+
+    # Positive: candidate mode + inheritance must produce a non-empty union
+    $candOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-test-cand-$(Get-Date -Format 'HHmmss')"
+    & pwsh -NoProfile -File $scriptPath `
+        -SrBranch 'release/10.0.1xx-sr7' `
+        -Candidate -InheritFromPriorSr `
+        -Phase commits `
+        -OutputDir $candOut `
+        -NoFetch 2>&1 | Out-Null
+    $candJson = Join-Path $candOut 'release-readiness.json'
+    if (-not (Test-Path $candJson)) {
+        Write-Host "  ❌ candidate JSON not created" -ForegroundColor Red
+        $script:failed++
+    } else {
+        $cand = Get-Content $candJson -Raw | ConvertFrom-Json
+        $sc = $cand.srContents
+        # Inherited count must be > 0 (SR7 has commits not on main)
+        Assert-Eq -Label "Inherited commit count > 0 when -InheritFromPriorSr is set" `
+                  -Expected $true -Actual ($sc.inheritedCommitCount -gt 0)
+        # Total source PRs must be >= primary alone
+        Assert-Eq -Label "Total sourcePrs >= primarySourcePrs (union grows)" `
+                  -Expected $true -Actual ($sc.sourcePrs.Count -ge $sc.primarySourcePrs.Count)
+        # Metadata flag is persisted
+        Assert-Eq -Label "metadata.inheritFromPriorSr is true" `
+                  -Expected $true -Actual $cand.metadata.inheritFromPriorSr
+        # The well-known SR7 backport (#35428) must appear in the union (it's in SR7-only)
+        $hasInherited = $sc.sourcePrs -contains 35428
+        Assert-Eq -Label "Union sourcePrs contains SR7-only backport #35428" `
+                  -Expected $true -Actual $hasInherited
+    }
+    if (Test-Path $candOut) { Remove-Item -Recurse -Force $candOut }
 }
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan

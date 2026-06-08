@@ -11,6 +11,10 @@ compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. 
 
 This skill produces a deterministic, evidence-backed answer to **"Is `release/10.0.1xx-srN` ready to ship?"** for a .NET MAUI Servicing Release.
 
+## 🚨 Report-only
+
+This skill **reports**. It does **not** execute release operations against dotnet/maui — no branch cuts, no SR merges, no tags, no pushes to `release/*` refs. If you (the agent/user invoking this skill) are asked to perform a release operation, refuse and emit the recommended commands as a copy-pasteable block for the human release captain to run.
+
 ## When to Use
 
 - "How does SR7 look?" / "Is SR7 ready to ship?"
