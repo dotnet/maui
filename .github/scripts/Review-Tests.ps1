@@ -205,8 +205,8 @@ function Collapse-OpenDetails {
 
     return [regex]::Replace(
         $Content,
-        '<details\s+open\b[^>]*>',
-        '<details>',
+        '(<details\b[^>]*?)\s+open(\s*=\s*(?:"[^"]*"|''[^'']*''|[^\s>]+))?\b([^>]*>)',
+        '$1$3',
         [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
 }
 

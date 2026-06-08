@@ -30,7 +30,12 @@ labels: ["pr-review", "testing"]
 # gh-aw slash commands match the first token only, so this workflow listens for
 # `/review` and then a deterministic filter job skips unless the comment uses
 # the canonical `/review tests` subcommand. workflow_dispatch is always allowed.
-if: needs.command-filter.outputs.should-run == 'true'
+if: >-
+  github.event_name == 'workflow_dispatch' ||
+  (github.event_name == 'issue_comment' &&
+   github.event.issue.pull_request &&
+   contains(github.event.comment.body, 'tests') &&
+   needs.command-filter.outputs.should-run == 'true')
 
 permissions:
   contents: read
@@ -64,7 +69,7 @@ safe-outputs:
 
 jobs:
   command-filter:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       should-run: ${{ steps.check.outputs.should-run }}
     steps:
@@ -85,8 +90,7 @@ jobs:
             exit 0
           fi
 
-          TRIMMED_BODY=$(printf '%s' "$COMMENT_BODY" | sed -e 's/^[[:space:]]*//')
-          if [[ "$TRIMMED_BODY" =~ ^/review[[:space:]]+tests([[:space:]]|$) ]]; then
+          if [[ "$COMMENT_BODY" =~ ^[[:space:]]*/review[[:space:]]+tests([[:space:]]|$) ]]; then
             echo "should-run=true" >> "$GITHUB_OUTPUT"
           fi
 
