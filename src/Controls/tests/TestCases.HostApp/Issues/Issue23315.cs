@@ -9,17 +9,36 @@ public class Issue23315 : TestContentPage
 
 	protected override void Init()
 	{
+		var statusLabel = new Label
+		{
+			Text = "Loading...",
+			AutomationId = "StatusLabel",
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
+		};
+
 		WebView webView = new WebView
 		{
 			Source = "foo/bar/baz/test.html"
 		};
 
-		var descriptionLabel = new Label
+		webView.Navigated += async (sender, e) =>
 		{
-			Text = "This test verifies that the WebView can load files from subdirectories correctly. If you see a blank screen, it means the test has failed.",
-			AutomationId = "DescriptionLabel",
-			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.CenterAndExpand
+			if (e.Result != WebNavigationResult.Success)
+			{
+				statusLabel.Text = $"Failed: {e.Result}";
+				return;
+			}
+
+			try
+			{
+				var title = await webView.EvaluateJavaScriptAsync("document.title");
+				statusLabel.Text = title ?? "Empty";
+			}
+			catch (Exception ex)
+			{
+				statusLabel.Text = $"Exception: {ex.Message}";
+			}
 		};
 
 		var grid = new Grid
@@ -27,12 +46,12 @@ public class Issue23315 : TestContentPage
 			RowDefinitions =
 			{
 				new RowDefinition(),
-				new RowDefinition { Height = 300 }
+				new RowDefinition { Height = 100 }
 			}
 		};
 
 		grid.Add(webView, 0, 0);
-		grid.Add(descriptionLabel, 0, 1);
+		grid.Add(statusLabel, 0, 1);
 
 		Content = grid;
 	}

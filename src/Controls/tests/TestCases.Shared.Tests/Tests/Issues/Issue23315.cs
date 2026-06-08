@@ -12,8 +12,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void WebViewCanLoadFileFromSubdirectory()
 		{
-			App.WaitForElement("DescriptionLabel", timeout: TimeSpan.FromSeconds(5));
-			VerifyScreenshot();
+			// The HostApp loads `foo/bar/baz/test.html` whose <title> is "Nested Subdirectory Test File".
+			// When the bug is present on iOS/MacCatalyst, LoadFile strips the directory part
+			// and tries to load only `test.html`, so the navigation fails and the label
+			// never reports the expected title.
+			App.WaitForElement("StatusLabel", timeout: TimeSpan.FromSeconds(10));
+			App.WaitForTextToBePresentInElement("StatusLabel", "Nested Subdirectory Test File");
 		}
 	}
 }
