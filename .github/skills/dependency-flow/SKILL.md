@@ -197,13 +197,15 @@ Always verify the current state with `darc get-subscriptions --target-repo https
 
 ### The combined-PR pattern for start-of-preview (3 subs in 1 PR)
 
-`darc add-subscription` defaults to opening **one PR per call**. The cleaner pattern is to share a single topic branch across all three calls and open ONE PR at the end:
+`darc add-subscription` defaults to opening **one PR per call**. The cleaner pattern is to share a single topic branch across all three calls, **review the staged diff**, and open ONE PR at the end. Note the explicit review step — without it, an agent can silently create a PR with the wrong channel, target branch, or source repo (the exact failure class this section is trying to prevent).
 
 ```bash
 # Pick a topic branch name once
 BRANCH=users/<alias>/maui-preview5-subs
 
-# 1. Stage all 3 subs on the same branch with --no-pr (each call appends one entry)
+# 1. Stage all 3 subs on the same branch with --no-pr (each call appends one entry).
+#    Do NOT pass -q here — leave the per-call confirmation prompts in so you eyeball
+#    each set of inputs (channel, source, target branch) before darc commits.
 for SRC in android macios dotnet; do
   darc add-subscription \
     --no-pr \
@@ -213,11 +215,29 @@ for SRC in android macios dotnet; do
     --target-repo https://github.com/dotnet/maui \
     --target-branch release/11.0.1xx-preview5 \
     --update-frequency everyDay \
-    --batchable \
-    -q
+    --batchable
 done
+```
 
-# 2. Open ONE PR against production
+```bash
+# 2. REQUIRED: review the staged diff against production before opening the PR.
+#    This is the gate that prevents a wrong-channel/wrong-branch sub from going live.
+git fetch origin "$BRANCH":"$BRANCH"
+git diff origin/production..."$BRANCH" -- configuration/subscriptions/dotnet-maui.yml
+
+# Confirm in the diff output:
+#   - Exactly 3 new subscription blocks were added
+#   - Channel reads ".NET 11.0.1xx SDK Preview 5" (NOT ".NET 11.0.1xx SDK")
+#   - Source Repository URL is one of dotnet/android, dotnet/dotnet, dotnet/macios
+#   - Target Repository URL is https://github.com/dotnet/maui
+#   - Target Branch is release/11.0.1xx-preview5
+#   - Update Frequency: everyDay
+#   - Batchable: true
+# Stop and re-stage if any of these are wrong. Do NOT proceed to step 3 without this check.
+```
+
+```bash
+# 3. Open ONE PR against production (only after step 2 passes)
 az repos pr create \
   --organization https://dev.azure.com/dnceng \
   --project internal \
@@ -228,7 +248,7 @@ az repos pr create \
   --description "..."
 ```
 
-⚠️ `add-subscription` is in the explicit-confirmation list below — show the user the exact commands and wait for approval before running. `-q` skips the per-call confirmation prompt, so be especially deliberate about the inputs.
+⚠️ `add-subscription` is in the explicit-confirmation list below — show the user the exact commands and wait for approval before running each step. Never combine all three steps into one un-reviewed script.
 
 **Exemplars:**
 - [PR 60474](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/60474) — Preview 4. Manual-combine of 3 separate PRs (older pattern).
@@ -285,16 +305,11 @@ darc get-subscriptions --ids <new-guid>
 
 Adding batchable subscriptions without merge policies on the target branch produces a `darc add-subscription` warning. The warning is harmless — Maestro PRs still open. If you skip the policy, each batched PR must be reviewed/merged manually.
 
-To enable standard automerge (so Maestro PRs auto-merge when CI passes):
+🚨 **Do NOT run `darc set-repository-policies` from this skill.** That command is in the **NEVER run** list above because merge-policy changes affect repo security, and an agent should not infer that "documenting it as a narrow exception" amounts to standing authorization. If standard-automerge on a new preview branch is genuinely desired:
 
-```bash
-darc set-repository-policies \
-  --repo https://github.com/dotnet/maui \
-  --branch release/11.0.1xx-preview5 \
-  --standard-automerge
-```
-
-⚠️ `set-repository-policies` is in the **NEVER run** list above as a general rule (because merge-policy changes affect repo security). Standing up a **brand-new preview branch's merge policy** is a documented narrow exception. Show the user the exact command and wait for explicit approval before running. Outside this exception, defer to release engineering.
+1. Tell the user the warning came from `darc add-subscription` and is non-blocking.
+2. Direct them to **file a request with release engineering** (the owners of `set-repository-policies` for `dotnet/maui`) to enable `--standard-automerge` on the new preview branch.
+3. Do not propose, draft, or run the `set-repository-policies` command yourself, even with confirmation prompts. Hand it off.
 
 ### Cleanup at preview-ship
 
@@ -314,7 +329,7 @@ When standing up a new preview, **confirm the new preview's subs are in place be
 |-------|--------|----------------|
 | Branch-for-preview (release branch just created) | Add default-channel mapping | `darc add-default-channel --channel ".NET 11.0.1xx SDK Preview N" --branch release/11.0.1xx-previewN --repo https://github.com/dotnet/maui` |
 | Same phase | Add 3 maui subs in one PR | Combined-PR pattern (see above) |
-| Same phase | Optional: enable standard automerge | `darc set-repository-policies ... --standard-automerge` (narrow exception, confirmation required) |
+| Same phase | Optional: enable standard automerge | **Hand off to release engineering** — do not run `set-repository-policies` from this skill. See "Optional merge policies for batchable subs" above. |
 | Mid-cycle | Verify a sub exists | `darc get-subscriptions --ids <guid>` or MCP `maestro_subscription(subscriptionId=...)` |
 | Mid-cycle | Trigger a single sub | `darc trigger-subscriptions --id <guid>` (config PR must be merged first) |
 | Preview-ship | Cleanup prior preview | One PR removing per-preview subscription file, per-preview default-channel file, and the 24 lines for that preview in `dotnet-maui.yml`. Reference [PR 61033](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61033). |
