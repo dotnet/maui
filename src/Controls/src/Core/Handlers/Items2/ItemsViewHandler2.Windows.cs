@@ -130,8 +130,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	// disables the CollectionView itself, by applying the fade to MauiItemsView as a whole.
 	// The default ViewHandler.MapIsEnabled is still invoked first to preserve WinUI's
 	// IsEnabled = false semantics (input blocking, focus, automation).
+	// Declared as 'static new' to suppress CS0108 (this hides the inherited public
+	// ViewHandler.MapIsEnabled); kept private so it does not appear in the public API
+	// surface (no PublicAPI.Unshipped.txt entry needed).
 	// Fixes: https://github.com/dotnet/maui/issues/28343
-	public static new void MapIsEnabled(IViewHandler handler, IView view)
+	static new void MapIsEnabled(IViewHandler handler, IView view)
 	{
 		ViewHandler.MapIsEnabled(handler, view);
 
