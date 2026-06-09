@@ -172,18 +172,21 @@ namespace Microsoft.Maui.Platform
 					_webViewOwnsGesture = false;
 					break;
 				case MotionEventActions.Move:
-					// ACTION_MOVE — reads CanScrollUp (volatile bool, zero JNI) from cached state
-					// instead of calling TryGetCanScrollUp every frame.
-					if (_touchStartedInWebView && _webViewOwnsGesture && _activeTouchScrollState is not null)
+					if (_touchStartedInWebView && _webViewOwnsGesture)
 					{
-						if (!_activeTouchScrollState.CanScrollUp)
+						var shouldRetainOwnership = _activeTouchScrollState is { HasReportedState: true }
+							? _activeTouchScrollState.CanScrollUp
+							: RefreshViewWebViewScrollCapture.TryGetCanScrollUp(_activeTouchWebView, out var canScrollUpFallback) && canScrollUpFallback;
+
+						if (!shouldRetainOwnership)
 						{
 							_webViewOwnsGesture = false;
 						}
-					}
-					if (_touchStartedInWebView && _webViewOwnsGesture)
-					{
-						return false;
+
+						if (_webViewOwnsGesture)
+						{
+							return false;
+						}
 					}
 					break;
 				case MotionEventActions.Cancel:

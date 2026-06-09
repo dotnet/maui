@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics;
+using Android.OS;
 using Android.Views;
 using Android.Webkit;
 
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Platform
 
 		readonly WebViewHandler _handler;
 		readonly Rect _clipRect;
+		volatile bool _detachPending;
 
 		// True after the first layout pass where exactly one dimension is positive and the other is zero.
 		// Auto-sizing layouts produce this intermediate state; a zero-area ClipBounds here
@@ -46,6 +48,8 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnAttachedToWindow()
 		{
+			_detachPending = false;
+
 			base.OnAttachedToWindow();
 
 			// Re-evaluate ClipBounds when re-parented (e.g., wrapped in WrapperView for shadow)
@@ -74,7 +78,21 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnDetachedFromWindow()
 		{
-			RefreshViewWebViewScrollCapture.Detach(this);
+			if (RefreshViewWebViewScrollCapture.IsAttached(this))
+			{
+				_detachPending = true;
+#pragma warning disable CA1422 // Validate platform compatibility
+				new Handler(Looper.MainLooper!).Post(() =>
+#pragma warning restore CA1422 // Validate platform compatibility
+				{
+					if (_detachPending)
+					{
+						_detachPending = false;
+						RefreshViewWebViewScrollCapture.Detach(this);
+					}
+				});
+			}
+
 			base.OnDetachedFromWindow();
 		}
 
@@ -167,6 +185,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (disposing)
 			{
+				_detachPending = false;
 				RefreshViewWebViewScrollCapture.Detach(this);
 			}
 
