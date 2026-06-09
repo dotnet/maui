@@ -388,6 +388,6 @@ When standing up a new preview, **confirm the new preview's subs are in place be
 | Branch-for-preview (release branch just created) | Add default-channel mapping | `darc add-default-channel --channel ".NET 11.0.1xx SDK Preview N" --branch release/11.0.1xx-previewN --repo https://github.com/dotnet/maui` |
 | Same phase | Add 3 maui subs in one PR | Combined-PR pattern (see above) |
 | Same phase | Optional: enable standard automerge | **Hand off to release engineering** — do not run `set-repository-policies` from this skill. See "Optional merge policies for batchable subs" above. |
-| Mid-cycle | Verify a sub exists | `darc get-subscriptions --ids <guid>` or MCP `maestro_subscription(subscriptionId=...)` |
-| Mid-cycle | Trigger a single sub | `darc trigger-subscriptions --id <guid>` (config PR must be merged first) |
+| Mid-cycle | Verify a sub exists | `darc get-subscriptions --ids "<guid>"` or MCP `maestro_subscription(subscriptionId=...)` |
+| Mid-cycle | Trigger a single sub | `darc trigger-subscriptions --id "<guid>"` (config PR must be merged first) |
 | Preview-ship | Cleanup prior preview | One PR removing per-preview subscription file, per-preview default-channel file, and the 24 lines for that preview in `dotnet-maui.yml`. Reference [PR 61033](https://dev.azure.com/dnceng/internal/_git/maestro-configuration/pullrequest/61033). |
