@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _isVisible;
 		bool _disposed;
+		bool? _lastLoopValue;
 		bool _isInternalPositionUpdate;
 
 		List<View> _oldViews;
@@ -90,6 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void SetUpNewElement(CarouselView newElement)
 		{
 			base.SetUpNewElement(newElement);
+			_lastLoopValue = null;
 
 			AddLayoutListener();
 			UpdateItemSpacing();
@@ -104,6 +106,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
+
+			// Reset lifecycle state so the next element setup starts cleanly.
+			_initialized = false;
+			_lastLoopValue = null;
 
 			ClearLayoutListener();
 			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
@@ -339,6 +345,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateLoop()
 		{
 			if (Carousel is null)
+			{
+				return;
+			}
+
+			var loopValue = Carousel.Loop;
+			var previousLoopValue = _lastLoopValue;
+			_lastLoopValue = loopValue;
+
+			// Ignore startup mapper call and repeated same-value mapper calls.
+			if (!_initialized || !previousLoopValue.HasValue || previousLoopValue.Value == loopValue)
 			{
 				return;
 			}
