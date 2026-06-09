@@ -66,6 +66,23 @@
 .PARAMETER NoFetch
     Skip `git fetch`. Use for re-runs with cached refs.
 
+.PARAMETER RepoUrl
+    Base URL of the repository web UI. Used to linkify commit SHAs and PR
+    numbers in the markdown report. Default: https://github.com/dotnet/maui.
+
+.PARAMETER TrackerKey
+    Canonical key used to identify the corresponding tracker issue (e.g.
+    `net10-sr7`). When set, the markdown report includes a hidden HTML
+    comment marker `<!-- release-readiness-tracker: net10-sr7 -->` and a
+    visible "Tracker: …" line so a workflow can match a single tracker
+    issue per SR. Optional; omit for ad-hoc local reports.
+
+.PARAMETER MaxBodyBytes
+    Hard cap on the rendered markdown body. When the report exceeds this,
+    the script truncates and appends a single-line "[Report truncated. See
+    artifacts at <link>.]" message. Default: 60000 (≈60KB, well under
+    GitHub's 65,536-byte issue body limit).
+
 .EXAMPLE
     pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 `
         -RegressionLabels regressed-in-10.0.60,regressed-in-10.0.70 `
@@ -103,6 +120,15 @@ param(
     [string]$OutputFormat = 'both',
     [int]$MaxIssues = 100,
     [switch]$NoFetch,
+    # URL base for linkifying commit SHAs and PR numbers in the markdown
+    # report. Defaults to the public dotnet/maui repo; override for forks.
+    [string]$RepoUrl = 'https://github.com/dotnet/maui',
+    # Canonical key for the tracker issue (e.g. net10-sr7). When set, the
+    # markdown report embeds tracker + idempotency markers. Optional.
+    [string]$TrackerKey,
+    # Body-size cap (bytes) for markdown rendering. GitHub issue body limit
+    # is 65,536 bytes; default 60,000 leaves headroom for marker comments.
+    [int]$MaxBodyBytes = 60000,
     # Candidate / pre-flight mode: survey what WOULD ship in the next SR if cut
     # from main today. Requires -SrBranch to be the prior SR (used as the
     # exclude baseline). Treats origin/main as the "SR-to-be".
@@ -631,9 +657,40 @@ function Get-PrEvidenceType {
 function Get-PrInfo {
     param($Repo, $PrNumber)
     $json = Invoke-Gh @('pr', 'view', $PrNumber, '--repo', $Repo, '--json',
-        'number,title,state,baseRefName,mergedAt,closedAt,body,mergeCommit,author,labels,isDraft')
+        'number,title,state,baseRefName,mergedAt,closedAt,body,mergeCommit,author,labels,isDraft,files')
     if (-not $json) { return $null }
     return ($json | ConvertFrom-Json -ErrorAction SilentlyContinue)
+}
+
+function Test-PrIsToolingOnly {
+    <#
+    .SYNOPSIS
+        Returns $true when every file changed by the PR lives under .github/
+        (or related tooling roots). Such PRs are agent/skill/workflow changes
+        that mention regression issues for context but are NOT product fixes.
+
+    .DESCRIPTION
+        Guards against the self-reference false-positive: when an agent or
+        workflow PR's body says "Fixes #NNNNN" (as documentation context),
+        the regression classifier could otherwise mistake it for a real fix.
+
+        Returns $false when:
+          - $Files is null/empty (cannot make a decision -> leave alone)
+          - ANY file is outside the tooling roots (real product change)
+    #>
+    param($Files)
+    if (-not $Files) { return $false }
+    $count = 0
+    foreach ($f in $Files) {
+        if (-not $f.path) { continue }
+        $count++
+        # Tooling roots — agent infrastructure, workflows, helper scripts,
+        # docs. Product code (src/, tests/, etc.) is intentionally excluded.
+        if ($f.path -notmatch '^(\.github/|eng/scripts/|docs/|README|CONTRIBUTING)') {
+            return $false
+        }
+    }
+    return ($count -gt 0)
 }
 
 function Test-CommitOnBranch {
@@ -676,6 +733,15 @@ function Classify-RegressionCandidate {
 
         # Skip PRs that target SR branches (those are backport PRs themselves — examined separately)
         if ($info.baseRefName -like 'release/*') { continue }
+
+        # False-positive guard: skip PRs whose entire change set lives in
+        # tooling roots (.github/, docs/, eng/scripts/, etc). These are
+        # agent/skill/workflow PRs that mention regression issue numbers in
+        # their body for documentation purposes — they're not real fixes.
+        if (Test-PrIsToolingOnly -Files $info.files) {
+            Write-Verbose "  Skipping #$prNum — tooling-only PR (mentions #$($Issue.number) in body but changes only .github/, docs/, or eng/scripts/)"
+            continue
+        }
 
         # Detect "Revert ..." titled PRs — these are NOT fixes, they're rollbacks.
         # When the only candidate PR is a revert, the issue is likely unfixed (or
@@ -839,7 +905,7 @@ function Get-RegressionCandidates {
     foreach ($label in $Labels) {
         $raw = Invoke-Gh @('issue', 'list', '--repo', $Ctx.repo, '--label', $label,
                            '--state', 'all', '--limit', $MaxIssues.ToString(),
-                           '--json', 'number,title,state,labels,milestone,createdAt')
+                           '--json', 'number,title,state,stateReason,labels,milestone,createdAt,closedAt')
         if (-not $raw) { continue }
         $list = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
         foreach ($iss in $list) {
@@ -856,6 +922,31 @@ function Get-RegressionCandidates {
     foreach ($iss in $allIssues) {
         $i++
         Write-Host "  [$i/$($allIssues.Count)] Issue #$($iss.number)..." -ForegroundColor DarkGray
+
+        # False-positive guard: issues closed as DUPLICATE are not regressions
+        # against this SR — they were rolled up into a canonical issue. Skip
+        # the expensive PR walk and flag them so the report can surface them
+        # under an "informational" tier instead of "no fix yet".
+        $isDuplicate = ($iss.state -eq 'CLOSED') -and ($iss.PSObject.Properties['stateReason']) -and ($iss.stateReason -eq 'DUPLICATE')
+        if ($isDuplicate) {
+            $results += @{
+                issue             = [int]$iss.number
+                title             = $iss.title
+                state             = $iss.state
+                stateReason       = $iss.stateReason
+                labels            = @($iss.labels.name)
+                milestone         = if ($iss.milestone) { $iss.milestone.title } else { $null }
+                createdAt         = $iss.createdAt
+                closedAt          = $iss.closedAt
+                classification    = 'closed-as-duplicate'
+                confidence        = 'high'
+                evidence          = @("Issue closed with stateReason=DUPLICATE — rolled up into a canonical regression. Inspect the closing comment for the canonical issue reference.")
+                candidateFixPrs   = @()
+                recommendedAction = 'Confirm the canonical issue (visible in the close comment) is tracked separately. No action on this issue.'
+            }
+            continue
+        }
+
         $candidatePrs = Get-IssueTimelinePrs -Repo $Ctx.repo -IssueNumber $iss.number
         $classify = Classify-RegressionCandidate -Issue $iss -CandidatePrs $candidatePrs `
                         -Ctx $Ctx -SrContents $SrContents
@@ -864,9 +955,11 @@ function Get-RegressionCandidates {
             issue = [int]$iss.number
             title = $iss.title
             state = $iss.state
+            stateReason = if ($iss.PSObject.Properties['stateReason']) { $iss.stateReason } else { $null }
             labels = @($iss.labels.name)
             milestone = if ($iss.milestone) { $iss.milestone.title } else { $null }
             createdAt = $iss.createdAt
+            closedAt = if ($iss.PSObject.Properties['closedAt']) { $iss.closedAt } else { $null }
             classification = $classify.classification
             confidence = $classify.confidence
             evidence = $classify.evidence
@@ -891,14 +984,238 @@ function Get-OpenSrPrs {
 
 # region ────────────────────── 7. MARKDOWN REPORT ─────────────────────────
 
-function Format-MarkdownReport {
+function Get-VerdictTier {
+    <#
+    .SYNOPSIS
+        Maps a regression-issue classification to a deterministic readiness tier.
+
+    .DESCRIPTION
+        Tier 1 (🔴 blocking): classifications that PREVENT shipping the SR.
+        Tier 2 (🟡 risk):     classifications that REQUIRE human review/decision.
+        Tier 3 (🟢 informational): classifications that ARE NOT actionable.
+
+        The mapping is intentionally simple and deterministic — no scoring,
+        no judgement calls. If the rules need adjustment, edit this table.
+    #>
+    param([string]$Classification)
+    switch ($Classification) {
+        'in-sr-reverted'              { 1; break }
+        'no-fix-yet'                  { 1; break }
+        'rejected-from-sr'            { 2; break }
+        'backport-in-progress'        { 2; break }
+        'merged-on-main-no-backport'  { 2; break }
+        'merged-non-main-only'        { 2; break }
+        'open-on-main'                { 2; break }
+        'needs-human-review'          { 2; break }
+        'in-sr-active'                { 3; break }
+        'closed-as-duplicate'         { 3; break }
+        default                       { 2 }   # unknown → treat as risk
+    }
+}
+
+function Get-OverallVerdict {
+    <#
+    .SYNOPSIS
+        Computes a deterministic 🔴/🟡/🟢 overall verdict from a readiness report.
+
+    .DESCRIPTION
+        Rules (evaluated in order, first match wins):
+
+          🔴 Not Ready when ANY of:
+            - One or more regression classifications in Tier 1
+              (in-sr-reverted, no-fix-yet for an OPEN regression issue)
+            - SR CI overall verdict is 'red-new-failures'  (NOT candidate mode)
+
+          🟡 Conditionally Ready when ANY of:
+            - One or more Tier 2 classifications
+            - SR CI overall verdict is 'red-known-flakes' or 'stale'  (NOT candidate)
+
+          🟢 Ready otherwise.
+
+        For candidate / pre-flight mode, CI staleness is non-blocking and
+        downgraded to advisory (the SR branch doesn't exist yet — staleness
+        of main's CI is normal cycle-time noise).
+
+    .OUTPUTS
+        Hashtable with fields:
+          symbol   = 🔴 / 🟡 / 🟢
+          tier     = 1 / 2 / 3
+          label    = 'Not Ready' / 'Conditionally Ready' / 'Ready'
+          reasons  = string[] explaining each contributing factor
+    #>
     param($Data)
+
+    $isCandidate = $false
+    if ($Data.metadata.ContainsKey('mode') -and $Data.metadata['mode'] -eq 'candidate') {
+        $isCandidate = $true
+    }
+
+    $reasons = New-Object System.Collections.Generic.List[string]
+    $tier1 = $false
+    $tier2 = $false
+
+    # Regression classifications
+    if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
+        $t1Counts = @{}
+        $t2Counts = @{}
+        foreach ($r in $Data['regressions']) {
+            $tier = Get-VerdictTier -Classification $r.classification
+            # `no-fix-yet` only blocks if the issue is still OPEN
+            if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') {
+                $tier = 3
+            }
+            if ($tier -eq 1) {
+                if (-not $t1Counts.ContainsKey($r.classification)) { $t1Counts[$r.classification] = 0 }
+                $t1Counts[$r.classification]++
+                $tier1 = $true
+            } elseif ($tier -eq 2) {
+                if (-not $t2Counts.ContainsKey($r.classification)) { $t2Counts[$r.classification] = 0 }
+                $t2Counts[$r.classification]++
+                $tier2 = $true
+            }
+        }
+        foreach ($k in $t1Counts.Keys | Sort-Object) {
+            $reasons.Add("[Tier 1] $($t1Counts[$k]) × ``$k``") | Out-Null
+        }
+        foreach ($k in $t2Counts.Keys | Sort-Object) {
+            $reasons.Add("[Tier 2] $($t2Counts[$k]) × ``$k``") | Out-Null
+        }
+    }
+
+    # CI status (skipped for candidate mode — main CI is naturally noisy)
+    if (-not $isCandidate -and $Data.ContainsKey('ci') -and $Data['ci']) {
+        switch ($Data['ci'].overall) {
+            'red-new-failures' {
+                $tier1 = $true
+                $reasons.Add("[Tier 1] CI on SR branch: ``red-new-failures``") | Out-Null
+            }
+            'red-known-flakes' {
+                $tier2 = $true
+                $reasons.Add("[Tier 2] CI on SR branch: ``red-known-flakes``") | Out-Null
+            }
+            'stale' {
+                $tier2 = $true
+                $reasons.Add("[Tier 2] CI on SR branch: ``stale`` — re-run before judging") | Out-Null
+            }
+            'unknown' {
+                $tier2 = $true
+                $reasons.Add("[Tier 2] CI verdict ``unknown`` — could not query pipeline") | Out-Null
+            }
+        }
+    } elseif ($isCandidate -and $Data.ContainsKey('ci') -and $Data['ci'] -and
+              $Data['ci'].overall -in @('red-new-failures', 'red-known-flakes', 'stale', 'unknown')) {
+        $reasons.Add("[Advisory] Candidate mode — main CI is ``$($Data['ci'].overall)``. Re-evaluate after SR cut.") | Out-Null
+    }
+
+    if ($tier1) {
+        return @{
+            symbol = '🔴'
+            tier = 1
+            label = 'Not Ready'
+            reasons = $reasons.ToArray()
+        }
+    }
+    if ($tier2) {
+        return @{
+            symbol = '🟡'
+            tier = 2
+            label = 'Conditionally Ready'
+            reasons = $reasons.ToArray()
+        }
+    }
+    return @{
+        symbol = '🟢'
+        tier = 3
+        label = 'Ready'
+        reasons = if ($reasons.Count -gt 0) { $reasons.ToArray() } else { @('No blocking or risk-tier signals detected.') }
+    }
+}
+
+function ConvertTo-LinkedSha {
+    <#
+    .SYNOPSIS Linkify a commit SHA in markdown using $RepoUrl.
+    #>
+    param([string]$Sha, [string]$RepoUrl)
+    if (-not $Sha) { return '?' }
+    $short = if ($Sha.Length -ge 8) { $Sha.Substring(0, 8) } else { $Sha }
+    if (-not $RepoUrl) { return "``$short``" }
+    return "[``$short``]($RepoUrl/commit/$Sha)"
+}
+
+function ConvertTo-LinkedPr {
+    <#
+    .SYNOPSIS Linkify a PR number in markdown using $RepoUrl.
+    #>
+    param($PrNumber, [string]$RepoUrl)
+    if (-not $PrNumber) { return '—' }
+    if (-not $RepoUrl) { return "#$PrNumber" }
+    return "[#$PrNumber]($RepoUrl/pull/$PrNumber)"
+}
+
+function Get-ReportSemanticHash {
+    <#
+    .SYNOPSIS
+        Produces a stable SHA-256 hash of the report's semantic content.
+
+    .DESCRIPTION
+        The hash captures fields that change ONLY when the report's verdict
+        or contents would meaningfully differ — used by the workflow to skip
+        re-posting unchanged trackers (idempotency).
+
+        DELIBERATELY EXCLUDED: fetchedAt timestamp, CI duration, "X minutes
+        ago" relative times, and any other field that drifts on every run.
+    #>
+    param($Data, $Verdict)
+
+    $semantic = @{
+        verdict = $Verdict.symbol
+        srHead = $Data.metadata.srHeadSha
+        ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
+        srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
+                    @($Data['srContents'].sourcePrs | Sort-Object) -join ','
+                } else { '' }
+        regressions = if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
+                          @($Data['regressions'] | Sort-Object issue | ForEach-Object {
+                              "$($_.issue):$($_.classification)"
+                          }) -join '|'
+                      } else { '' }
+        openSrPrs = if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs']) {
+                        @($Data['openSrPrs'] | Sort-Object number | ForEach-Object { $_.number }) -join ','
+                    } else { '' }
+    }
+
+    $json = $semantic | ConvertTo-Json -Depth 5 -Compress
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $sha.ComputeHash($bytes)
+        return ([System.BitConverter]::ToString($hash) -replace '-', '').ToLowerInvariant()
+    } finally {
+        $sha.Dispose()
+    }
+}
+
+function Format-MarkdownReport {
+    param($Data, [string]$RepoUrl, [string]$TrackerKey, [int]$MaxBodyBytes = 60000)
 
     $ctx = $Data.metadata
     $srBranch = $ctx.srBranch
     $shortHead = if ($ctx.srHeadSha) { $ctx.srHeadSha.Substring(0, 8) } else { '?' }
 
+    # Compute verdict + semantic hash (deterministic, used in markers)
+    $verdict = Get-OverallVerdict -Data $Data
+    $semanticHash = Get-ReportSemanticHash -Data $Data -Verdict $verdict
+
     $sb = [System.Text.StringBuilder]::new()
+
+    # === HEADER + MARKERS ===
+    # Markers go FIRST so a workflow scanning for them can short-circuit
+    # without parsing the body.
+    if ($TrackerKey) {
+        [void]$sb.AppendLine("<!-- release-readiness-tracker: $TrackerKey -->")
+    }
+    [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
+
     $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'shipped' }
     $inherits = ($ctx.ContainsKey('inheritFromPriorSr') -and $ctx['inheritFromPriorSr'])
     if ($mode -eq 'candidate') {
@@ -915,7 +1232,21 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine("# Release Readiness — $srBranch")
     }
     [void]$sb.AppendLine()
-    [void]$sb.AppendLine("**HEAD**: ``$shortHead`` — $($ctx.srHeadSubject)")
+
+    # === VERDICT (always second, always visible) ===
+    [void]$sb.AppendLine("## Verdict — $($verdict.symbol) **$($verdict.label)**")
+    [void]$sb.AppendLine()
+    foreach ($r in $verdict.reasons) {
+        [void]$sb.AppendLine("- $r")
+    }
+    [void]$sb.AppendLine()
+
+    # Tracker + provenance line (visible, complements the HTML comment marker)
+    if ($TrackerKey) {
+        [void]$sb.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$mode`` · branch=``$srBranch``")
+    }
+    $shaLinked = ConvertTo-LinkedSha -Sha $ctx.srHeadSha -RepoUrl $RepoUrl
+    [void]$sb.AppendLine("**HEAD**: $shaLinked — $($ctx.srHeadSubject)")
     [void]$sb.AppendLine("**Generated**: $($ctx.fetchedAt)")
     [void]$sb.AppendLine("**Regression labels**: $($ctx.regressionLabels -join ', ') _(mode: $($ctx.labelInferenceMode))_")
     [void]$sb.AppendLine()
@@ -926,7 +1257,17 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
     }
 
-    # CI section
+    # === HUMAN-EDITABLE SECTION ===
+    # Wrapped in begin/end markers so a workflow can preserve manual edits
+    # across re-runs (idempotency).
+    [void]$sb.AppendLine("<!-- release-readiness:human-notes:begin -->")
+    [void]$sb.AppendLine("## Release Captain Notes")
+    [void]$sb.AppendLine()
+    [void]$sb.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
+    [void]$sb.AppendLine("<!-- release-readiness:human-notes:end -->")
+    [void]$sb.AppendLine()
+
+    # === CI section ===
     if ($Data.ContainsKey('ci') -and $Data['ci']) {
         $ciData = $Data['ci']
         [void]$sb.AppendLine("## CI Status — overall: ``$($ciData.overall)``")
@@ -935,16 +1276,16 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine('|---|---|---|---|---|')
         foreach ($p in $ciData.pipelines) {
             $lb = $p.latestBuild
-            $verdict = $p.verdict
+            $pverdict = $p.verdict
             $result = if ($lb) { $lb.result } else { '—' }
             $fresh = if ($lb) { if ($lb.isAtOrAheadOfSrHead) { '✅' } else { '❌ stale' } } else { '—' }
             $buildLink = if ($lb -and $lb.url) { "[$($lb.id)]($($lb.url))" } else { '—' }
-            [void]$sb.AppendLine("| $($p.name) | ``$verdict`` | $result | $fresh | $buildLink |")
+            [void]$sb.AppendLine("| $($p.name) | ``$pverdict`` | $result | $fresh | $buildLink |")
         }
         [void]$sb.AppendLine()
     }
 
-    # SR contents section
+    # === SR contents section ===
     if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
         $sc = $Data['srContents']
         [void]$sb.AppendLine("## What's New in SR — $($sc.commitCount) commits")
@@ -963,17 +1304,17 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine('| Revert commit | Reverts PR | Reverts commit | On |')
             [void]$sb.AppendLine('|---|---|---|---|')
             foreach ($r in $sc.reverts) {
-                $rs = if ($r.revertCommit) { $r.revertCommit.Substring(0, 8) } else { '?' }
-                $rc = if ($r.revertsCommit) { $r.revertsCommit.Substring(0, 8) } else { '?' }
-                $rp = if ($r.revertsPr) { "#$($r.revertsPr)" } else { '?' }
+                $rs = ConvertTo-LinkedSha -Sha $r.revertCommit -RepoUrl $RepoUrl
+                $rc = ConvertTo-LinkedSha -Sha $r.revertsCommit -RepoUrl $RepoUrl
+                $rp = ConvertTo-LinkedPr -PrNumber $r.revertsPr -RepoUrl $RepoUrl
                 $ro = if ($r.ContainsKey('origin')) { $r.origin } else { '?' }
-                [void]$sb.AppendLine("| ``$rs`` | $rp | ``$rc`` | $ro |")
+                [void]$sb.AppendLine("| $rs | $rp | $rc | $ro |")
             }
         }
         [void]$sb.AppendLine()
     }
 
-    # Open SR-targeting PRs
+    # === Open SR-targeting PRs ===
     if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs'] -and $Data['openSrPrs'].Count -gt 0) {
         [void]$sb.AppendLine("## Open PRs Targeting $srBranch — $($Data['openSrPrs'].Count)")
         [void]$sb.AppendLine()
@@ -983,12 +1324,13 @@ function Format-MarkdownReport {
             $title = if ($pr.title.Length -gt 60) { $pr.title.Substring(0, 60) + '...' } else { $pr.title }
             $draft = if ($pr.isDraft) { '✏️' } else { '' }
             $rev = if ($pr.reviewDecision) { $pr.reviewDecision } else { '—' }
-            [void]$sb.AppendLine("| [#$($pr.number)](https://github.com/$($ctx.repo)/pull/$($pr.number)) | $title | $($pr.author.login) | $draft | $rev | $($pr.updatedAt) |")
+            $prLink = ConvertTo-LinkedPr -PrNumber $pr.number -RepoUrl $RepoUrl
+            [void]$sb.AppendLine("| $prLink | $title | $($pr.author.login) | $draft | $rev | $($pr.updatedAt) |")
         }
         [void]$sb.AppendLine()
     }
 
-    # Regressions section
+    # === Regressions section — organized into tiers ===
     if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
         $regs = $Data['regressions']
         $summary = if ($Data.ContainsKey('summary')) { $Data['summary'] } else { @{} }
@@ -1003,29 +1345,81 @@ function Format-MarkdownReport {
         }
         [void]$sb.AppendLine()
 
-        # Group by verdict, present actionables first
-        $tierOrder = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
-                       'merged-non-main-only', 'open-on-main', 'no-fix-yet', 'needs-human-review',
-                       'in-sr-reverted', 'in-sr-active')
-        foreach ($verdict in $tierOrder) {
-            $items = @($regs | Where-Object { $_.classification -eq $verdict })
-            if ($items.Count -eq 0) { continue }
+        # Three deterministic tiers. Order within a tier is alphabetical
+        # over the classification name for stable diffs across runs.
+        $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
+        $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
+                          'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
+        $tier3Classes = @('in-sr-active', 'closed-as-duplicate') | Sort-Object
 
-            [void]$sb.AppendLine("### ``$verdict`` ($($items.Count))")
-            [void]$sb.AppendLine()
-            [void]$sb.AppendLine('| Issue | Title | Fix PRs | Action |')
-            [void]$sb.AppendLine('|---|---|---|---|')
-            foreach ($it in $items) {
-                $title = if ($it.title.Length -gt 50) { $it.title.Substring(0, 50) + '...' } else { $it.title }
-                $prList = @($it.candidateFixPrs | ForEach-Object { "#$($_.number)" }) -join ', '
-                if (-not $prList) { $prList = '—' }
-                [void]$sb.AppendLine("| [#$($it.issue)](https://github.com/$($ctx.repo)/issues/$($it.issue)) | $title | $prList | $($it.recommendedAction) |")
+        $emitTier = {
+            param([string]$Header, [string[]]$Classes, [string]$EmptyLine)
+            $any = $false
+            foreach ($cls in $Classes) {
+                $items = @($regs | Where-Object { $_.classification -eq $cls })
+                # In Tier 1 we suppress no-fix-yet entries whose issue is CLOSED
+                if ($cls -eq 'no-fix-yet') {
+                    $items = @($items | Where-Object { $_.state -eq 'OPEN' })
+                }
+                if ($items.Count -eq 0) { continue }
+                if (-not $any) {
+                    [void]$sb.AppendLine("### $Header")
+                    [void]$sb.AppendLine()
+                    $any = $true
+                }
+                [void]$sb.AppendLine("#### ``$cls`` ($($items.Count))")
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine('| Issue | Title | Fix PRs | Action |')
+                [void]$sb.AppendLine('|---|---|---|---|')
+                # Stable sort: by issue number ascending
+                foreach ($it in ($items | Sort-Object issue)) {
+                    $title = if ($it.title.Length -gt 50) { $it.title.Substring(0, 50) + '...' } else { $it.title }
+                    $prList = @($it.candidateFixPrs | ForEach-Object { ConvertTo-LinkedPr -PrNumber $_.number -RepoUrl $RepoUrl }) -join ', '
+                    if (-not $prList) { $prList = '—' }
+                    $issueLink = if ($RepoUrl) { "[#$($it.issue)]($RepoUrl/issues/$($it.issue))" } else { "#$($it.issue)" }
+                    [void]$sb.AppendLine("| $issueLink | $title | $prList | $($it.recommendedAction) |")
+                }
+                [void]$sb.AppendLine()
             }
-            [void]$sb.AppendLine()
+            if (-not $any -and $EmptyLine) {
+                [void]$sb.AppendLine("### $Header")
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine($EmptyLine)
+                [void]$sb.AppendLine()
+            }
         }
+
+        & $emitTier '🔴 Tier 1 — Blocking' $tier1Classes '_No blocking regressions._'
+        & $emitTier '🟡 Tier 2 — Risk / Review' $tier2Classes '_No risk-tier regressions._'
+        & $emitTier '🟢 Tier 3 — Informational' $tier3Classes $null
     }
 
-    return $sb.ToString()
+    $body = $sb.ToString()
+
+    # === BODY-SIZE CAP ===
+    # GitHub issue body limit is 65,536 bytes. Cap below that and append a
+    # truncation message. We measure UTF-8 bytes, not character count.
+    $bytes = [System.Text.Encoding]::UTF8.GetByteCount($body)
+    if ($bytes -gt $MaxBodyBytes) {
+        $truncateMsg = "`n`n> ⚠️ **Report truncated** ($bytes bytes exceeded cap of $MaxBodyBytes). See full data in workflow artifacts.`n"
+        $tail = [System.Text.Encoding]::UTF8.GetByteCount($truncateMsg)
+        $targetLen = $MaxBodyBytes - $tail
+        if ($targetLen -lt 0) { $targetLen = $MaxBodyBytes }
+        # Walk back to a safe character boundary
+        $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+        if ($targetLen -gt $bodyBytes.Length) { $targetLen = $bodyBytes.Length }
+        $truncatedBytes = New-Object byte[] $targetLen
+        [Array]::Copy($bodyBytes, 0, $truncatedBytes, 0, $targetLen)
+        # UTF-8 boundary repair: trim incomplete continuation bytes from the tail
+        while ($truncatedBytes.Length -gt 0 -and ($truncatedBytes[$truncatedBytes.Length - 1] -band 0xC0) -eq 0x80) {
+            $newArr = New-Object byte[] ($truncatedBytes.Length - 1)
+            [Array]::Copy($truncatedBytes, 0, $newArr, 0, $newArr.Length)
+            $truncatedBytes = $newArr
+        }
+        $body = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) + $truncateMsg
+    }
+
+    return $body
 }
 
 # region ────────────────────── 8. ORCHESTRATOR ────────────────────────────
@@ -1098,9 +1492,24 @@ function Invoke-Main {
 
     $data['warnings'] = @($Script:Warnings)
 
+    # Compute deterministic verdict + semantic hash. Surfaced in JSON so
+    # automation can consume it without re-parsing the markdown.
+    $verdict = Get-OverallVerdict -Data $data
+    $semanticHash = Get-ReportSemanticHash -Data $data -Verdict $verdict
+    $data['verdict'] = @{
+        symbol = $verdict.symbol
+        tier = $verdict.tier
+        label = $verdict.label
+        reasons = $verdict.reasons
+    }
+    $data['semanticHash'] = $semanticHash
+    if ($TrackerKey) {
+        $data['trackerKey'] = $TrackerKey
+    }
+
     # Output
     $jsonOut = $data | ConvertTo-Json -Depth 20 -Compress:$false
-    $mdOut = Format-MarkdownReport -Data $data
+    $mdOut = Format-MarkdownReport -Data $data -RepoUrl $RepoUrl -TrackerKey $TrackerKey -MaxBodyBytes $MaxBodyBytes
 
     if ($OutputDir) {
         if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir | Out-Null }
@@ -1125,4 +1534,10 @@ function Invoke-Main {
     }
 }
 
-Invoke-Main
+# Skip orchestration when dot-sourced for unit tests. Tests do:
+#   $env:GET_RELEASE_READINESS_TEST_MODE = '1'
+#   . path/to/Get-ReleaseReadiness.ps1
+# which makes Invoke-Main a no-op while still loading all functions.
+if (-not $env:GET_RELEASE_READINESS_TEST_MODE) {
+    Invoke-Main
+}
