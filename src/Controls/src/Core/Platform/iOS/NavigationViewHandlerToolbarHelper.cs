@@ -554,16 +554,35 @@ namespace Microsoft.Maui.Controls
         {
             _ = page.ToPlatform(mauiContext);
 
-            var pack = new NavigationHandlerParentingViewController { Child = page };
+            var parentingVC = new NavigationHandlerParentingViewController { Child = page };
 
-            pack.UpdateTitleArea();
+            parentingVC.UpdateTitleArea();
 
-            var pageHandler = (IPlatformViewHandler)page.Handler!;
-            pack.View!.AddSubview(pageHandler.ViewController!.View!);
-            pack.AddChildViewController(pageHandler.ViewController);
-            pageHandler.ViewController.DidMoveToParentViewController(pack);
+            if (page.Handler is not IPlatformViewHandler pageHandler || pageHandler.ViewController is not UIViewController innerVC)
+            {
+                return parentingVC;
+            }
 
-            return pack;
+            // Detach from any existing parent VC before re-parenting.
+            // This handles the case where a page is popped and then pushed again:
+            // the inner VC is still a child of the old (popped) pack, and UIKit
+            // requires the proper WillMove/Remove/Add/DidMove sequence.
+            if (innerVC.ParentViewController is not null)
+            {
+                innerVC.WillMoveToParentViewController(null);
+                innerVC.View?.RemoveFromSuperview();
+                innerVC.RemoveFromParentViewController();
+            }
+
+            if (parentingVC.View is UIView packView && innerVC.View is UIView innerView)
+            {
+                packView.AddSubview(innerView);
+            }
+
+            parentingVC.AddChildViewController(innerVC);
+            innerVC.DidMoveToParentViewController(parentingVC);
+
+            return parentingVC;
         }
     }
 
