@@ -247,31 +247,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (e.PropertyName == SearchHandler.QueryIconProperty.PropertyName)
 			{
-				UpdateImageButton(_searchButton, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material);
+				ApplyImageSource(_searchButton, SearchHandler.QueryIcon, Resource.Drawable.abc_ic_search_api_material);
 			}
 			else if (e.PropertyName == SearchHandler.ClearIconProperty.PropertyName)
 			{
-				UpdateImageButton(_clearButton, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material);
+				ApplyImageSource(_clearButton, SearchHandler.ClearIcon, Resource.Drawable.abc_ic_clear_material);
 			}
 			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
 			{
-				UpdateImageButton(_clearPlaceholderButton, SearchHandler.ClearPlaceholderIconProperty, -1);
+				ApplyImageSource(_clearPlaceholderButton, SearchHandler.ClearPlaceholderIcon, -1);
 				UpdateClearButtonState();
 			}
 		}
 
-		void UpdateImageButton(AImageButton button, BindableProperty property, int defaultImage)
+		void ApplyImageSource(AImageButton button, ImageSource image, int defaultImage)
 		{
 			if (button is null)
 			{
 				return;
 			}
 
-			if (SearchHandler.GetValue(property) is ImageSource image)
+			if (image is not null)
 			{
 				AutomationPropertiesProvider.SetContentDescription(button, image, null, null);
 				image.LoadImage(MauiContext, (r) =>
 				{
+					if (_disposed)
+					{
+						return;
+					}
+
 					button.SetImageDrawable(r?.Value);
 				});
 			}
@@ -359,23 +364,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			result.Focusable = false;
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
-			if (bindable.GetValue(property) is ImageSource image)
-			{
-				AutomationPropertiesProvider.SetContentDescription(result, image, null, null);
-
-				image.LoadImage(MauiContext, (r) =>
-				{
-					result.SetImageDrawable(r?.Value);
-				});
-			}
-			else if (defaultImage > 0 && ContextCompat.GetDrawable(Context, defaultImage) is Drawable defaultDrawable)
-			{
-				result.SetImageDrawable(defaultDrawable);
-			}
-			else
-			{
-				result.SetImageDrawable(null);
-			}
+			ApplyImageSource(result, bindable.GetValue(property) as ImageSource, defaultImage);
 
 			var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(22), LP.MatchParent)
 			{

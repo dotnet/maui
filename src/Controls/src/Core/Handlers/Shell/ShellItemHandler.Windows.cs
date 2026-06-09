@@ -546,6 +546,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				case nameof(SearchHandler.QueryIcon):
 					UpdateQueryIcon();
 					break;
+				// TODO: ClearIcon and ClearPlaceholderIcon are not supported on Windows
+				// (AutoSuggestBox has no built-in clear/placeholder icon API).
+				// Tracked in: https://github.com/dotnet/maui/issues/28619
 				}
 		}
 

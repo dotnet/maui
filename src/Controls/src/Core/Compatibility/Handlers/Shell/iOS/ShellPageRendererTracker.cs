@@ -1222,7 +1222,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateSearchBarIcon(UISearchBar searchBar, ImageSource? source, UISearchBarIcon icon)
 		{
-			if (source != null)
+			if (source is not null)
 			{
 				SetSearchBarIcon(searchBar, source, icon);
 			}
