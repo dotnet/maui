@@ -64,8 +64,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
-			var currentWebViewClient = platformView.WebViewClient;
-			var currentWebChromeClient = platformView.WebChromeClient;
+			// WebView.WebViewClient / WebView.WebChromeClient getters are only available on API 26+.
+			// On older API levels we fall back to the cached references we set in CreatePlatformView.
+			global::Android.Webkit.WebViewClient? currentWebViewClient = null;
+			WebChromeClient? currentWebChromeClient = null;
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				currentWebViewClient = platformView.WebViewClient;
+				currentWebChromeClient = platformView.WebChromeClient;
+			}
 
 			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
@@ -78,7 +86,7 @@ namespace Microsoft.Maui.Handlers
 				(currentWebChromeClient as MauiWebChromeClient)?.Disconnect();
 			}
 
-			// Also clean up originals if they differ
+			// Also clean up originals if they were replaced by a custom handler
 			if (!ReferenceEquals(currentWebViewClient, _webViewClient))
 			{
 				if (OperatingSystem.IsAndroidVersionAtLeast(26))
@@ -87,6 +95,16 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				_webViewClient?.Dispose();
+			}
+
+			if (!ReferenceEquals(currentWebChromeClient, _webChromeClient))
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(26))
+				{
+					_webChromeClient?.Disconnect();
+				}
+
+				_webChromeClient?.Dispose();
 			}
 
 			(currentWebViewClient as IDisposable)?.Dispose();
