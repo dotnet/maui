@@ -191,7 +191,8 @@ This section covers how MAUI's Maestro subscriptions are authored, modified, and
 | `net11.0` | android, macios, dotnet | `.NET 11.0.1xx SDK` | everyDay, batchable |
 | `net11.0` | dotnet-optimization | `.NET 11` | everyWeek |
 | `main` | xharness | `.NET Eng - Latest` | everyWeek |
-| `release/11.0.1xx-previewN` (when active) | android, macios, dotnet | `.NET 11.0.1xx SDK Preview N` | everyDay, batchable |
+| `release/11.0.1xx-previewN` (when active) | android, macios | `.NET 11.0.1xx SDK Preview N` | everyDay, batchable |
+| `release/11.0.1xx-previewN` (when active) | dotnet | `.NET 11.0.1xx SDK Preview N` | none, batchable |
 
 Always verify the current state with `darc get-subscriptions --target-repo https://github.com/dotnet/maui` before making changes — the baseline above ages out.
 
