@@ -269,6 +269,19 @@ Describe 'Resolve-RerunEligibility' {
         $result.Eligible | Should -BeTrue
     }
 
+    It 'recognizes AI Summary comments from the legacy MauiBot account' {
+        $comments = @(
+            New-TestComment -Id 4239128463 -Body (New-AISummaryBody -Sha '6e9af5b') -CreatedAt '2026-04-13T19:37:50Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 4658057491 -Body '@kubaflo , Addressed AI concerns.' -CreatedAt '2026-06-09T08:50:38Z'
+            New-TestComment -Id 4659999999 -Body '/review rerun' -CreatedAt '2026-06-09T09:00:00Z'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 4659999999 -CurrentHeadSha '6e9af5bc8b5d0023400d653500951fb46df44170'
+
+        $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+    }
+
     It 'uses the first session marker from an AI Summary' {
         $body = @"
 <!-- AI Summary -->

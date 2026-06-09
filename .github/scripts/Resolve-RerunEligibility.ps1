@@ -29,6 +29,13 @@ $ReadyForRerunLabel = 's/agent-ready-for-rerun'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
 $ReadyForRerunLabelDescription = 'AI review has new PR activity and is ready for rerun'
 $ReadyForRerunLabelColor = '5319E7'
+$AISummaryAuthorLogins = @(
+    'MauiBot',
+    'maui-bot',
+    'maui-bot[bot]',
+    'github-actions',
+    'github-actions[bot]'
+)
 
 function ConvertTo-DateTimeOffset {
     param([Parameter(Mandatory = $true)]$Value)
@@ -46,6 +53,17 @@ function Test-RerunCommand {
     param([string]$Body)
 
     return ([string]$Body).Trim() -match '(?i)^/review\s+rerun\s*$'
+}
+
+function Test-AISummaryCommentAuthor {
+    param([object]$Comment)
+
+    $login = if ($Comment.user) { [string]$Comment.user.login } else { '' }
+    if ([string]::IsNullOrWhiteSpace($login)) {
+        return $false
+    }
+
+    return @($AISummaryAuthorLogins | Where-Object { $_ -ieq $login }).Count -gt 0
 }
 
 function Normalize-ReviewPipelineRef {
@@ -210,7 +228,7 @@ function Get-LatestAISummaryComment {
         Where-Object {
             $_.body -and
             ([string]$_.body).Contains($AISummaryMarker) -and
-            ($_.user -and $_.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$')
+            (Test-AISummaryCommentAuthor $_)
         } |
         Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true } |
         Select-Object -First 1)
@@ -517,7 +535,7 @@ function Resolve-RerunEligibility {
         return [pscustomobject]@{ Eligible = $false; Reason = 'not-rerun-command'; Label = $ReadyForRerunLabel }
     }
 
-    if ($current.user -and ($current.user.type -eq 'Bot' -or $current.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$')) {
+    if ($current.user -and ($current.user.type -eq 'Bot' -or (Test-AISummaryCommentAuthor $current))) {
         return [pscustomobject]@{ Eligible = $false; Reason = 'bot-comment'; Label = $ReadyForRerunLabel }
     }
 
