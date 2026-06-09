@@ -30,11 +30,7 @@ $ReviewInProgressLabel = 's/agent-review-in-progress'
 $ReadyForRerunLabelDescription = 'AI review has new PR activity and is ready for rerun'
 $ReadyForRerunLabelColor = '5319E7'
 $AISummaryAuthorLogins = @(
-    'MauiBot',
-    'maui-bot',
-    'maui-bot[bot]',
-    'github-actions',
-    'github-actions[bot]'
+    'MauiBot'
 )
 
 function ConvertTo-DateTimeOffset {
@@ -295,7 +291,7 @@ function Test-CommentIsEvidence {
     if ($Comment.user -and $Comment.user.type -eq 'Bot') {
         return $false
     }
-    if ($Comment.user -and $Comment.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$') {
+    if (Test-AISummaryCommentAuthor $Comment) {
         return $false
     }
 
