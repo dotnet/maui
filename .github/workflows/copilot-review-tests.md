@@ -4,6 +4,9 @@ on:
   slash_command:
     name: review
     events: [pull_request_comment]
+  skip-author-associations:
+    issue_comment: [contributor, first_time_contributor, first_timer, mannequin, none]
+    pull_request_review_comment: [contributor, first_time_contributor, first_timer, mannequin, none]
   reaction: none
   status-comment: false
   steps:
@@ -15,16 +18,15 @@ on:
         ISSUE_PULL_REQUEST_URL: ${{ github.event.issue.pull_request.url }}
       run: |
         if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-          echo "should_run=true" >> "$GITHUB_OUTPUT"
           exit 0
         fi
-        echo "should_run=false" >> "$GITHUB_OUTPUT"
         if [ "$EVENT_NAME" != "issue_comment" ] || [ -z "${ISSUE_PULL_REQUEST_URL:-}" ]; then
-          exit 0
+          exit 1
         fi
         if [[ "$COMMENT_BODY" =~ ^[[:space:]]*/review[[:space:]]+tests[[:space:]]*$ ]]; then
-          echo "should_run=true" >> "$GITHUB_OUTPUT"
+          exit 0
         fi
+        exit 1
   workflow_dispatch:
     inputs:
       pr_number:
@@ -53,7 +55,7 @@ labels: ["pr-review", "testing"]
 # exactly `/review tests`. workflow_dispatch is always allowed.
 if: >-
   github.event_name == 'workflow_dispatch' ||
-  needs.pre_activation.outputs.exact_command_should_run == 'true'
+  needs.pre_activation.outputs.exact_command_result == 'success'
 
 permissions:
   contents: read
@@ -79,11 +81,6 @@ safe-outputs:
   report-incomplete:
     create-issue: false
   report-failure-as-issue: false
-
-jobs:
-  pre-activation:
-    outputs:
-      exact_command_should_run: ${{ steps.exact_command.outputs.should_run }}
 
 tools:
   github:

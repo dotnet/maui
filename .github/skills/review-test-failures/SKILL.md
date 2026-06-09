@@ -146,4 +146,5 @@ Rules:
 - Use badge colors: `d1242f` for `Likely PR-caused`, `1a7f37` for `Likely unrelated`, `bf8700` for `Needs human investigation`, and `6e7781` for `Insufficient data`.
 - Use `Data-Partial` when any limitations are present; otherwise use `Data-Complete`.
 - Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
+- Repeated `/review tests` runs append separate non-blocking PR reviews; this workflow does not edit, hide, or supersede earlier review entries.
 - If there are no failing or inconclusive checks, report that no failing test evidence was found and use the noop path in gh-aw.

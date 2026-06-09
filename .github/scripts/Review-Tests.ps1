@@ -307,14 +307,18 @@ function Publish-TestFailureReview {
 
     Set-Content -Path $ReviewBodyPath -Value $ReviewBody -Encoding UTF8
     $payloadPath = [System.IO.Path]::GetTempFileName()
+    $stderrPath = [System.IO.Path]::GetTempFileName()
     @{ body = $ReviewBody; event = "COMMENT" } | ConvertTo-Json -Depth 4 | Set-Content -Path $payloadPath -Encoding UTF8
-    $postOutput = & gh api --method POST "repos/$Repository/pulls/$PRNumber/reviews" --input $payloadPath --jq .html_url 2>&1
+    $postOutput = & gh api --method POST "repos/$Repository/pulls/$PRNumber/reviews" --input $payloadPath --jq .html_url 2>$stderrPath
+    $postExitCode = $LASTEXITCODE
+    $postError = Get-Content -Path $stderrPath -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
     Remove-Item -Path $payloadPath -Force -ErrorAction SilentlyContinue
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to post PR review: $postOutput"
+    Remove-Item -Path $stderrPath -Force -ErrorAction SilentlyContinue
+    if ($postExitCode -ne 0) {
+        throw "Failed to post PR review: $postOutput $postError"
     }
 
-    return ($postOutput | Select-Object -Last 1)
+    return ($postOutput | Where-Object { $_ -is [string] -and $_ -match '^https?://' } | Select-Object -Last 1)
 }
 
 Write-Host "Running local /review tests for PR #$PRNumber"
