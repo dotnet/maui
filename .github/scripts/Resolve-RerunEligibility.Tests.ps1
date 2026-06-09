@@ -270,7 +270,7 @@ Describe 'Resolve-RerunEligibility' {
         $result.Reason | Should -Be 'no-ai-summary'
     }
 
-    It 'recognizes AI Summary comments from the legacy MauiBot account' {
+    It 'recognizes AI Summary comments from the MauiBot account' {
         $comments = @(
             New-TestComment -Id 4239128463 -Body (New-AISummaryBody -Sha '6e9af5b') -CreatedAt '2026-04-13T19:37:50Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 4658057491 -Body '@kubaflo , Addressed AI concerns.' -CreatedAt '2026-06-09T08:50:38Z'
