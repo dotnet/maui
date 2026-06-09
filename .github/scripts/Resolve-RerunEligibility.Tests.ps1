@@ -183,7 +183,7 @@ Describe 'Resolve-RerunEligibility' {
 
     It 'rejects a rerun command when there are no new comments or commits' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
@@ -195,7 +195,7 @@ Describe 'Resolve-RerunEligibility' {
 
     It 'accepts a non-command comment after the latest AI Summary' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'I pushed the requested update.' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
@@ -208,7 +208,7 @@ Describe 'Resolve-RerunEligibility' {
 
     It 'uses AI Summary creation time as the activity checkpoint when the summary was edited later' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T10:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T10:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'I pushed the requested update before the summary edit.' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
@@ -221,8 +221,8 @@ Describe 'Resolve-RerunEligibility' {
 
     It 'selects the newest AI Summary by creation time instead of edit time' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T11:00:00Z' -Login 'maui-bot' -Type 'Bot'
-            New-TestComment -Id 2 -Body (New-AISummaryBody -Sha '2222222') -CreatedAt '2026-05-31T10:00:00Z' -UpdatedAt '2026-05-31T10:00:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha '1111111') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T11:00:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body (New-AISummaryBody -Sha '2222222') -CreatedAt '2026-05-31T10:00:00Z' -UpdatedAt '2026-05-31T10:00:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 3 -Body 'Follow-up after the latest summary.' -CreatedAt '2026-05-31T10:15:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:30:00Z'
         )
@@ -257,7 +257,7 @@ Describe 'Resolve-RerunEligibility' {
         $result.Reason | Should -Be 'no-ai-summary'
     }
 
-    It 'still recognizes AI Summary comments from github-actions[bot]' {
+    It 'ignores AI Summary comments from github-actions[bot]' {
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody -Sha 'abcdef1') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'github-actions[bot]' -Type 'Bot'
             New-TestComment -Id 2 -Body 'A meaningful follow-up after the summary.' -CreatedAt '2026-05-31T09:45:00Z'
@@ -266,7 +266,21 @@ Describe 'Resolve-RerunEligibility' {
 
         $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
 
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'no-ai-summary'
+    }
+
+    It 'recognizes AI Summary comments from the MauiBot account' {
+        $comments = @(
+            New-TestComment -Id 4239128463 -Body (New-AISummaryBody -Sha '6e9af5b') -CreatedAt '2026-04-13T19:37:50Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 4658057491 -Body '@kubaflo , Addressed AI concerns.' -CreatedAt '2026-06-09T08:50:38Z'
+            New-TestComment -Id 4659999999 -Body '/review rerun' -CreatedAt '2026-06-09T09:00:00Z'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 4659999999 -CurrentHeadSha '6e9af5bc8b5d0023400d653500951fb46df44170'
+
         $result.Eligible | Should -BeTrue
+        $result.Reason | Should -Be 'new-comment-after-ai-summary'
     }
 
     It 'uses the first session marker from an AI Summary' {
@@ -283,7 +297,7 @@ new
 
     It 'does not count repeated rerun commands as evidence' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 9 -Body '/review rerun' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
@@ -296,7 +310,7 @@ new
 
     It 'accepts a non-command comment after the previous rerun command' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 8 -Body '/review rerun' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 9 -Body 'Follow-up detail after rerun request.' -CreatedAt '2026-05-31T09:50:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
@@ -310,7 +324,7 @@ new
 
     It 'does not reuse old activity from before a previous rerun command' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 7 -Body 'Old follow-up before the first rerun.' -CreatedAt '2026-05-31T09:40:00Z'
             New-TestComment -Id 8 -Body '/review rerun' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
@@ -324,7 +338,7 @@ new
 
     It 'finds AI Summary content posted as a PR review' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot' -Kind 'review'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User' -Kind 'review'
             New-TestComment -Id 2 -Body 'Follow-up after the review.' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
@@ -337,7 +351,7 @@ new
 
     It 'accepts a current head SHA that differs from the latest reviewed session' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha 'abcdef1') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody -Sha 'abcdef1') -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
@@ -349,7 +363,7 @@ new
 
     It 'accepts a commit after the previous rerun command' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 8 -Body '/review rerun' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
@@ -365,8 +379,8 @@ new
 
     It 'rejects bot rerun comments' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
-            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z' -Login 'MauiBot' -Type 'User'
         )
 
         $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
@@ -377,7 +391,7 @@ new
 
     It 'is idempotent when ready-for-rerun label already exists' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
@@ -389,7 +403,7 @@ new
 
     It 'rejects rerun commands while a review is already in progress' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'Please look at the latest push.' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
@@ -402,7 +416,7 @@ new
 
     It 'builds deterministic rerun context with new comments and commits' {
         $comments = @(
-            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'maui-bot' -Type 'Bot'
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'New author context.' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T09:50:00Z'
         )
