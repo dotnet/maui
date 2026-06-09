@@ -93,6 +93,15 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		// No inset margin when selected.
 		Resources["ItemContainerSelectedInnerMargin"] = new Microsoft.UI.Xaml.Thickness(0);
+
+		// NOTE: "ItemContainerDisabledOpacity" is intentionally NOT overridden here.
+		// WinUI's ItemContainer template references it via {StaticResource ...} which is
+		// resolved once at template parse time against the application's merged dictionaries
+		// — not against per-instance Resources. Setting it here would be a silent no-op.
+		// The override (1.0 instead of the default 0.3) lives in
+		// src/Controls/src/Core/Platform/Windows/CollectionView/ItemsViewStyles.xaml so it
+		// is visible to the StaticResource lookup when ItemContainer's template is inflated.
+		// Fixes: https://github.com/dotnet/maui/issues/28343
 	}
 
 	void SetResources(object value, params string[] keys)
