@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class VisualElementTreeTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void SetupBuilder(bool includeNavigationViewHandler = false)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -32,7 +32,14 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 #if IOS || MACCATALYST
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+					if (includeNavigationViewHandler)
+					{
+						handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+					}
+					else
+					{
+						handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+					}
 #else
 					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 #endif
@@ -43,6 +50,56 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+#if IOS || MACCATALYST
+		[Fact]
+		public async Task Handler_GetVisualTreeElements()
+		{
+			SetupBuilder(includeNavigationViewHandler: true);
+
+			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
+			var label = new Label() { Text = "Find Me" };
+
+			var page = new ContentPage() { Title = "Title Page" };
+			page.Content = new VerticalStackLayout()
+			{
+				label,
+				border
+			};
+
+			var rootPage = await InvokeOnMainThreadAsync(() =>
+				new NavigationPage(page)
+			);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage, async handler =>
+			{
+				// Handler path: NavigationPage frame may not fire BatchCommitted in time,
+				// so wait for the content page to be navigated and loaded first.
+				await OnNavigatedToAsync(page);
+				await OnLoadedAsync(page.Content);
+
+				await OnFrameSetToNotEmpty(border);
+				await OnFrameSetToNotEmpty(label);
+
+				var locationOnScreen = label.GetLocationOnScreen().Value;
+				var labelFrame = label.Frame;
+				var window = rootPage.Window;
+
+				var topLeft = new Graphics.Point(locationOnScreen.X + 1, locationOnScreen.Y + 1);
+				Assert.True(window.GetVisualTreeElements(topLeft).Contains(label), $"Unable to find label using top left coordinate: {topLeft} with label location: {label.GetBoundingBox()}");
+
+				var bottomRight = new Graphics.Point(
+					locationOnScreen.X + labelFrame.Width - 1,
+					locationOnScreen.Y + labelFrame.Height - 1);
+				Assert.True(window.GetVisualTreeElements(bottomRight).Contains(label), $"Unable to find label using bottom right coordinate: {bottomRight} with label location: {label.GetBoundingBox()}");
+
+				Assert.DoesNotContain(label, window.GetVisualTreeElements(
+						locationOnScreen.X + labelFrame.Width + 1,
+						locationOnScreen.Y + labelFrame.Height + 1
+					));
+			});
+		}
+#endif
 
 		[Fact]
 		public async Task GetVisualTreeElements()
@@ -60,7 +117,14 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var rootPage = await InvokeOnMainThreadAsync(() =>
+#if IOS || MACCATALYST
+				// Use setForMaui:false to force old event-based NavigationImpl path.
+				// When UseiOSNavigationViewHandler is enabled globally, NavigationRenderer
+				// doesn't implement RequestNavigation, causing hangs.
+				new NavigationPage(false, page)
+#else
 				new NavigationPage(page)
+#endif
 			);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage, async handler =>

@@ -36,7 +36,52 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(page.HasNavigatedTo);
 				navController.NavigationBar.TapBackButton();
 				await OnNavigatedToAsync(page);
+
 				Assert.True(page.HasNavigatedTo);
+			});
+		}
+
+		[Fact]
+		public async Task Handler_NavigatingBackViaBackButtonFiresNavigatedEvent()
+		{
+			SetupBuilder(includeNavigationViewHandler: true);
+			var page = new ContentPage() { Title = "Root Page" };
+
+			var navPage = new NavigationPage(page) { Title = "App Page" };
+
+			await navPage.PushAsync(new ContentPage() { Title = "Second Page" });
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(navPage.CurrentPage);
+
+				var navController = (navPage.Handler as IPlatformViewHandler)?.ViewController as UINavigationController;
+				Assert.NotNull(navController);
+
+				Assert.False(page.HasNavigatedTo);
+
+				// Pop via UIKit - this triggers the handler's OnNavigationComplete which calls OnNativePopCompleted
+				navController.PopViewController(animated: false);
+				await OnNavigatedToAsync(page, TimeSpan.FromSeconds(5));
+
+				Assert.True(page.HasNavigatedTo);
+			});
+		}
+
+
+		[Fact]
+		public async Task Handler_CanReusePages()
+		{
+			SetupBuilder(includeNavigationViewHandler: true);
+			var navPage = new NavigationPage(new ContentPage { Title = "Root Page" });
+			var reusedPage = new ContentPage { Content = new Label() };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(reusedPage);
+				await navPage.Navigation.PopAsync();
+				await navPage.Navigation.PushAsync(reusedPage);
+				await OnLoadedAsync(reusedPage.Content);
 			});
 		}
 
