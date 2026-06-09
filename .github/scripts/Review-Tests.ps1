@@ -218,7 +218,7 @@ function New-TestFailureReviewBody {
         [string]$ContextJsonPath
     )
 
-    $marker = "<!-- Test Failure Review (local) -->"
+    $marker = "<!-- Tests Failure -->"
     $ReportContent = Collapse-OpenDetails $ReportContent
     if ($ReportContent.Contains($marker)) {
         return $ReportContent
@@ -233,7 +233,6 @@ function New-TestFailureReviewBody {
     $commitFull = [string]$pr.headRefOid
     $commitSha7 = if ($commitFull.Length -ge 7) { $commitFull.Substring(0, 7) } else { "unknown" }
     $commitUrl = if ($commitFull) { "https://github.com/$Repository/commit/$commitFull" } else { "#" }
-    $prTitle = Escape-Html $pr.title
     $prAuthor = $pr.author.login
 
     $verdict = Get-ReportVerdict -Content $ReportContent
@@ -243,28 +242,20 @@ function New-TestFailureReviewBody {
 
     $failureCount = 0
     $platforms = @()
-    $limitations = @()
     if (Test-Path $ContextJsonPath) {
         try {
             $context = Get-Content -Path $ContextJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
             $failureCount = @($context.failures.unique).Count
             $platforms = @($context.failures.unique | ForEach-Object { $_.platform } | Where-Object { $_ -and $_ -ne "unknown" } | Select-Object -Unique)
-            $limitations = @($context.limitations)
         }
         catch {
-            $limitations = @("Could not parse context JSON while formatting comment: $($_.Exception.Message)")
+            Write-Warning "Could not parse context JSON while formatting comment: $($_.Exception.Message)"
         }
     }
 
     $badgeLines = @()
     $badgeLines += New-Badge -Label "Overall" -Message $verdict -Color $verdictColor -Alt "Overall $verdict"
     $badgeLines += New-Badge -Label "Failures" -Message "$failureCount" -Color "8250df" -Alt "Failures $failureCount"
-    if ($limitations.Count -gt 0) {
-        $badgeLines += New-Badge -Label "Data" -Message "Partial" -Color "bf8700" -Alt "Data Partial"
-    }
-    else {
-        $badgeLines += New-Badge -Label "Data" -Message "Complete" -Color "1a7f37" -Alt "Data Complete"
-    }
     foreach ($platform in $platforms) {
         $badgeLines += New-Badge -Label "Platform" -Message $platform -Color "0969da" -Alt "Platform $platform"
     }
@@ -281,9 +272,7 @@ function New-TestFailureReviewBody {
     return @"
 $marker
 
-<details>
-<summary>$verdictIcon <strong>Test Failure Review:</strong> $safeVerdict — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$prTitle</strong></summary>
-<br/>
+## Tests Failure Analysis
 
 $authorPing
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
@@ -291,6 +280,9 @@ $authorPing
 <p align="left">
 $badges
 </p>
+
+<details>
+<summary>$verdictIcon <strong>Test Failure Review:</strong> $safeVerdict - click to expand</summary>
 
 $ReportContent
 
@@ -328,7 +320,7 @@ function Publish-TestFailureReviewComment {
         [string]$CommentBody
     )
 
-    $marker = "<!-- Test Failure Review (local) -->"
+    $marker = "<!-- Tests Failure -->"
     $commentsRaw = & gh api "repos/$Repository/issues/$PRNumber/comments" --paginate 2>$null
     $existing = $null
     if ($LASTEXITCODE -eq 0 -and $commentsRaw) {

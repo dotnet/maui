@@ -206,24 +206,24 @@ Example:
 
 ## Posting results
 
-If dry-run mode is not active, call `add_comment` exactly once with `item_number` set to the target PR number and `body` set to this collapsed top-level shape:
+If dry-run mode is not active, call `add_comment` exactly once with `item_number` set to the target PR number and `body` set to this shape:
 
 ```markdown
-<!-- Test Failure Review -->
+<!-- Tests Failure -->
 
-<details>
-<summary>[icon] <strong>Test Failure Review:</strong> [verdict] — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong></summary>
-<br/>
+## Tests Failure Analysis
 
-> @[PR author] — test-failure review results are available based on commit <a href="[commit URL]"><code>[sha7]</code></a>.
+> @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]).
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
-  <img alt="Data [Complete|Partial]" src="https://img.shields.io/badge/Data-[Complete|Partial]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Platform [platform]" src="https://img.shields.io/badge/Platform-[platform]-0969da?labelColor=30363d&style=flat-square">
 </p>
+
+<details>
+<summary>[icon] <strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
 
 **Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data]
 
@@ -248,5 +248,9 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 ```
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
+
+Do not include a Data badge.
+
+Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
 
 Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
