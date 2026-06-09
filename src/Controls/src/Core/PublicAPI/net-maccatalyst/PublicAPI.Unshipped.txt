@@ -1,6 +1,10 @@
 ﻿#nullable enable
 *REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+~Microsoft.Maui.Controls.Binding.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Binding.ConverterCulture.set -> void
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.set -> void
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 Microsoft.Maui.Controls.BoxView.~BoxView() -> void

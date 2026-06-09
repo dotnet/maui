@@ -1,4 +1,8 @@
 #nullable enable
+~Microsoft.Maui.Controls.Binding.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Binding.ConverterCulture.set -> void
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.set -> void
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
 Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
