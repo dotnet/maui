@@ -200,13 +200,26 @@ Always verify the current state with `darc get-subscriptions --target-repo https
 `darc add-subscription` defaults to opening **one PR per call**. The cleaner pattern is to share a single topic branch across all three calls, **review the staged diff**, and open ONE PR at the end. Note the explicit review step — without it, an agent can silently create a PR with the wrong channel, target branch, or source repo (the exact failure class this section is trying to prevent).
 
 ```bash
-# Pick a topic branch name once
-BRANCH=users/<alias>/maui-preview5-subs
+# Pick a topic branch name once. Quote the assignment so the angle-bracket
+# placeholders aren't parsed as shell redirection if literally pasted.
+BRANCH="users/<alias>/maui-preview5-subs"
 
 # 1. Stage all 3 subs on the same branch with --no-pr (each call appends one entry).
 #    Do NOT pass -q here — leave the per-call confirmation prompts in so you eyeball
 #    each set of inputs (channel, source, target branch) before darc commits.
-for SRC in android macios dotnet; do
+#
+#    Frequency choice is NOT uniform across the 3 source repos. Always verify
+#    against the prior preview's production config (`darc get-subscriptions
+#    --target-repo https://github.com/dotnet/maui --target-branch release/<prev>`)
+#    before staging. The pattern actually shipped for Preview 5 (per merged
+#    maestro-configuration PR #61723) was:
+#      dotnet/android  → everyDay  (small daily deltas, batched)
+#      dotnet/macios   → everyDay  (small daily deltas, batched)
+#      dotnet/dotnet   → none      (VMR is large; manual trigger only via
+#                                   `darc trigger-subscriptions --id <guid>`)
+#    Copying this loop verbatim with `everyDay` for the VMR will produce noisy
+#    daily PRs against the preview branch.
+for SRC in android macios; do
   darc add-subscription \
     --no-pr \
     --configuration-branch "$BRANCH" \
@@ -217,6 +230,17 @@ for SRC in android macios dotnet; do
     --update-frequency everyDay \
     --batchable
 done
+
+# dotnet/dotnet (VMR) — manual frequency on preview branches.
+darc add-subscription \
+  --no-pr \
+  --configuration-branch "$BRANCH" \
+  --channel ".NET 11.0.1xx SDK Preview 5" \
+  --source-repo https://github.com/dotnet/dotnet \
+  --target-repo https://github.com/dotnet/maui \
+  --target-branch release/11.0.1xx-preview5 \
+  --update-frequency none \
+  --batchable
 ```
 
 ```bash
@@ -247,15 +271,29 @@ echo "Draft PR: https://dev.azure.com/dnceng/internal/_git/maestro-configuration
 #    in the diff:
 #   - Exactly 3 new subscription blocks were added to
 #     configuration/subscriptions/dotnet-maui.yml
-#   - Channel string contains the "Preview N" / "preview N" stage qualifier
-#     (case-insensitive — see "Channel-name casing gotcha" below — but the bare
-#     ".NET 11.0.1xx SDK" without a stage qualifier is WRONG)
+#   - Channel string matches the EXACT band+stage for this preview, modulo
+#     casing of the "Preview"/"preview" token only (see "Channel-name casing
+#     gotcha" below). For a release/11.0.1xx-preview5 target, the only
+#     acceptable channels are ".NET 11.0.1xx SDK Preview 5" or
+#     ".NET 11.0.1xx SDK preview 5". REJECT all of:
+#       - ".NET 11.0.1xx SDK"                  (bare — CI-main channel, the
+#                                               PR #35364 failure class)
+#       - ".NET 10.0.1xx SDK Preview 5"        (wrong band — would flow 10.x
+#                                               assets into an 11.x preview branch)
+#       - ".NET 11.0.1xx SDK Preview 4"        (wrong stage number)
+#     Pattern: ".NET <band> SDK <Preview|preview> <N>" where <band> matches
+#     the target branch's band (10.0.1xx, 11.0.1xx, ...) and <N> matches the
+#     preview number in the target branch name.
 #   - Source Repository URL is one of dotnet/android, dotnet/dotnet, dotnet/macios
 #   - Target Repository URL is https://github.com/dotnet/maui
 #   - Target Branch is release/11.0.1xx-preview5
-#   - Update Frequency: everyDay
+#   - Update Frequency: everyDay for android/macios; none for dotnet (VMR)
 #   - Batchable: true
-# If any of these are wrong, abandon the draft PR and re-stage from step 1.
+# If any of these are wrong, abandon the draft PR AND start over with a NEW
+# $BRANCH name (e.g., append "-v2") before restaging from step 1. Re-running
+# step 1 with the same --configuration-branch APPENDS to the existing branch
+# rather than replacing it, which produces duplicate or mixed entries that can
+# sneak past a casual re-review of the AzDO diff.
 # Do NOT mark the PR ready for review until this check passes.
 ```
 
@@ -314,7 +352,9 @@ maestro_channels(filter="preview 5")
 Verify ingestion before triggering:
 
 ```bash
-darc get-subscriptions --ids <new-guid>
+# Quote <new-guid> so the angle brackets aren't parsed as shell redirection
+# if literally pasted.
+darc get-subscriptions --ids "<new-guid>"
 # If this returns the subscription, BAR has ingested it and trigger-subscriptions will work.
 ```
 
