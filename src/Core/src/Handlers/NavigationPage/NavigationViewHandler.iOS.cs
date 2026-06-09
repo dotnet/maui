@@ -41,6 +41,12 @@ namespace Microsoft.Maui.Handlers
 		// Maps IView → UIViewController for the navigation stack
 		readonly Dictionary<IView, UIViewController> _viewControllerMap = new();
 
+		// The MAUI stack expected after the in-flight UIKit navigation (push or pop) completes.
+		// Set in RequestNavigation before calling PushViewController/PopViewController;
+		// consumed in OnNavigationComplete (DidShowViewController) to call NavigationFinished.
+		// When null, DidShowViewController was triggered by a native pop (back button/swipe).
+		List<IView>? _pendingNavigationStack;
+
 		/// <summary>
 		/// The managed UINavigationController, exposed for Controls-layer appearance helpers.
 		/// </summary>
@@ -77,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 
 		void RequestNavigation(NavigationRequest args)
 		{
-			if (_navManager is null)
+			if (_navManager is not NavigationControllerManager navManager)
 			{
 				return;
 			}
@@ -85,6 +91,7 @@ namespace Microsoft.Maui.Handlers
 			var newStack = args.NavigationStack;
 			var oldStack = NavigationStack;
 			bool animated = args.Animated;
+
 
 			if (newStack.Count == 0)
 			{
@@ -101,14 +108,14 @@ namespace Microsoft.Maui.Handlers
 
 					if (index == 0)
 					{
-						_navManager.NavigationController.SetViewControllers(new[] { vc }, false);
+						navManager.NavigationController.SetViewControllers(new[] { vc }, false);
 					}
 					else
 					{
-						var tcs = _navManager.PushViewController(vc, animated && index == newStack.Count - 1);
+						var tcs = navManager.PushViewController(vc, animated && index == newStack.Count - 1);
 						if (!animated || index < newStack.Count - 1)
 						{
-							_navManager.CompletePushImmediately(vc);
+							navManager.CompletePushImmediately(vc);
 						}
 					}
 				}
@@ -123,17 +130,13 @@ namespace Microsoft.Maui.Handlers
 					SyncMiddleOfStack(midStack);
 				}
 
-				// Push the new top page
+				// Push the new top page.
+				// Store expected stack; OnNavigationComplete (DidShowViewController) will call
+				// NavigationFinished once the push animation finishes.
 				var topView = newStack[newStack.Count - 1];
 				var vc = GetOrCreateViewController(topView);
-				var tcs = _navManager.PushViewController(vc, animated);
-
-				tcs.Task.ContinueWith(_ =>
-				{
-					NavigationStack = new List<IView>(newStack);
-					NavigationView.NavigationFinished(NavigationStack);
-				}, TaskScheduler.FromCurrentSynchronizationContext());
-
+				_pendingNavigationStack = new List<IView>(newStack);
+				navManager.PushViewController(vc, animated);
 				return;
 			}
 			else if (newStack.Count < oldStack.Count)
@@ -153,28 +156,17 @@ namespace Microsoft.Maui.Handlers
 
 					if (newStack.Count == 1)
 					{
-						// Pop to root
+						// Pop to root — store expected stack; OnNavigationComplete calls NavigationFinished.
 						var rootVC = GetOrCreateViewController(newStack[0]);
-						var task = _navManager.PopToRootViewController(rootVC, animated);
-						task.ContinueWith(_ =>
-						{
-							CleanupRemovedPages(oldStack, newStack);
-							NavigationStack = new List<IView>(newStack);
-							NavigationView.NavigationFinished(NavigationStack);
-						}, TaskScheduler.FromCurrentSynchronizationContext());
-
+						_pendingNavigationStack = new List<IView>(newStack);
+						navManager.PopToRootViewController(rootVC, animated);
 						return;
 					}
 					else
 					{
-						var task = _navManager.PopViewController(animated);
-						task.ContinueWith(_ =>
-						{
-							CleanupRemovedPages(oldStack, newStack);
-							NavigationStack = new List<IView>(newStack);
-							NavigationView.NavigationFinished(NavigationStack);
-						}, TaskScheduler.FromCurrentSynchronizationContext());
-
+						// Pop — store expected stack; OnNavigationComplete calls NavigationFinished.
+						_pendingNavigationStack = new List<IView>(newStack);
+						navManager.PopViewController(animated);
 						return;
 					}
 				}
@@ -182,7 +174,6 @@ namespace Microsoft.Maui.Handlers
 				{
 					// Top page same — just mid-stack removals
 					SyncMiddleOfStack(newStack);
-					CleanupRemovedPages(oldStack, newStack);
 				}
 			}
 			else
@@ -217,20 +208,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				_navManager.NavigationController.SetViewControllers(expectedVCs, false);
 				_navManager.ClearPendingViewControllers();
-			}
-		}
-
-		void CleanupRemovedPages(IReadOnlyList<IView> oldStack, IReadOnlyList<IView> newStack)
-		{
-			var newSet = new HashSet<IView>(newStack);
-
-			foreach (var view in oldStack)
-			{
-				if (!newSet.Contains(view) && _viewControllerMap.TryGetValue(view, out var vc))
-				{
-					_viewControllerMap.Remove(view);
-					// Don't dispose — the IView still owns the platform view lifecycle
-				}
 			}
 		}
 
@@ -376,13 +353,42 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				// Check if the UIKit stack shrank compared to our tracked stack.
-				// This happens when the native back button is tapped — UIKit pops the VC
-				// directly without going through RequestNavigation.
 				var uikitVCs = navigationController.ViewControllers;
+				var uikitCount = uikitVCs?.Length ?? 0;
+				var mauiCount = handler.NavigationStack.Count;
 
-				if (uikitVCs is not null && uikitVCs.Length < handler.NavigationStack.Count)
+
+				if (handler._pendingNavigationStack is not null)
 				{
+					// A MAUI-initiated push or pop has completed (DidShowViewController fired).
+					// Consume the pending stack and call NavigationFinished synchronously here
+					// on the main thread. This avoids the ContinueWith double-fire issue where
+					// the pop's ContinueWith fires after the second push has begun, incorrectly
+					// completing the push TCS with the wrong (pop) stack.
+					var pendingStack = handler._pendingNavigationStack;
+					handler._pendingNavigationStack = null;
+
+					// If this is a pop, remove the popped pages from the VC map so that
+					// re-pushing the same page instance creates a fresh VC via CreateForPage.
+					// This ensures page.ToPlatform() is called again, which refreshes MAUI's
+					// platform-loaded state so OnLoadedAsync can complete.
+					if (pendingStack.Count < handler.NavigationStack.Count)
+					{
+						var newSet = new HashSet<IView>(pendingStack);
+						foreach (var view in handler.NavigationStack)
+						{
+							if (!newSet.Contains(view))
+								handler._viewControllerMap.Remove(view);
+						}
+					}
+
+					handler.NavigationStack = pendingStack;
+					handler.NavigationView.NavigationFinished(pendingStack);
+				}
+				else if (uikitCount < mauiCount)
+				{
+					// No pending MAUI navigation — UIKit stack shrank due to a native pop
+					// (back button, swipe gesture, long-press history menu).
 					SyncNativeStackToMaui(handler);
 				}
 			}
