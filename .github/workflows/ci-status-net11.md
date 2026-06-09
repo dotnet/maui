@@ -41,7 +41,7 @@ safe-outputs:
     report-as-issue: false
 
 timeout-minutes: 60
-max-effective-tokens: 50M
+max-effective-tokens: -1
 
 network:
   allowed:
