@@ -521,6 +521,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
 				{
+					// Flat-index request: compute the adapter position directly from the data
+					// index. This avoids an item-roundtrip (Find item → GetPositionForItem walks
+					// the groups again via .Equals) and the resulting ambiguity when two groups
+					// contain equal-by-Equals items.
+					if (args.GroupIndex < 0)
+					{
+						return GetAdapterPositionFromFlatDataIndex(args.Index, groupItemSource);
+					}
+
 					item = FindBoundItemInGroup(args, groupItemSource);
 
 					if (item is null)
@@ -535,17 +544,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		private static object FindBoundItemInGroup(ScrollToRequestEventArgs args, IGroupableItemsViewSource groupItemSource)
 		{
-			// When no group index is specified (groupIndex < 0), fall back to flat index lookup.
-			// This handles the case where ScrollTo(index) is called without a group on a grouped CollectionView.
-			if (args.GroupIndex < 0)
-			{
-				return groupItemSource.GetItem(args.Index);
-			}
-
 			var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
 
-			// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a  header (UngroupedItemsSource does not do this)
+			// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header (UngroupedItemsSource does not do this)
 			return group?.GetItem(args.Index + 1);
+		}
+
+		/// <summary>
+		/// Converts a flat data item index (excluding group headers/footers — the cross-platform
+		/// contract used by iOS/Mac/Windows) into a RecyclerView adapter position (which on Android
+		/// does include group headers/footers). Computes the position in one pass, without
+		/// materializing the item, so the caller can skip the second walk that
+		/// <see cref="ItemsViewAdapter{TItemsView, TItemsViewSource}"/>'s
+		/// GetPositionForItem would perform via .Equals.
+		/// </summary>
+		private static int GetAdapterPositionFromFlatDataIndex(int flatIndex, IGroupableItemsViewSource source)
+		{
+			if (flatIndex < 0)
+			{
+				return InvalidPosition;
+			}
+
+			// The outer ItemsView header (if any) sits at adapter position 0.
+			int adapterPosition = source.HasHeader ? 1 : 0;
+			int dataRemaining = flatIndex;
+
+			for (int groupIdx = 0; ; groupIdx++)
+			{
+				var group = source.GetGroupItemsViewSource(groupIdx);
+				if (group is null)
+				{
+					// Index is past the end of the data.
+					return InvalidPosition;
+				}
+
+				int groupHeader = group.HasHeader ? 1 : 0;
+				int dataItemsInGroup = group.Count - groupHeader - (group.HasFooter ? 1 : 0);
+
+				if (dataRemaining < dataItemsInGroup)
+				{
+					// Item is in this group: skip the group header, then offset by the data index.
+					return adapterPosition + groupHeader + dataRemaining;
+				}
+
+				// Skip this whole group (header + items + footer) and keep walking.
+				adapterPosition += group.Count;
+				dataRemaining -= dataItemsInGroup;
+			}
 		}
 
 		protected virtual void UpdateItemSpacing()
