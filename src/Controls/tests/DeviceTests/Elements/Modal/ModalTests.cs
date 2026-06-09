@@ -274,7 +274,11 @@ namespace Microsoft.Maui.DeviceTests
 			if (useShell)
 				window = new Window(new Shell() { CurrentItem = windowPage });
 			else
-				window = new Window(new NavigationPage(windowPage));
+				// Use setForMaui:false to force the old event-based navigation path.
+				// When UseiOSNavigationViewHandler is enabled globally, NavigationPage
+				// defaults to MauiNavigationImpl but NavigationRenderer doesn't implement
+				// the RequestNavigation command, causing PushAsync to hang.
+				window = new Window(new NavigationPage(false, windowPage));
 
 
 			bool appearingFired = false;
@@ -317,6 +321,86 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(appearingFired);
 		}
+
+		// NavigationView Handler test: Handler fires Appearing before UIKit push
+		// (SendHandlerUpdateAsync ordering), so PushModalAsync from Appearing conflicts
+		// with the push animation. The correct handler pattern is to use NavigatedTo,
+		// which fires after NavigationFinished (push complete).
+#if IOS || MACCATALYST
+		[Fact]
+		public async Task Handler_PushModalFromNavigatedTo()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(NavigationPage), typeof(Microsoft.Maui.Handlers.NavigationViewHandler));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					SetupShellHandlers(handlers);
+				});
+			});
+			var windowPage = new ContentPage()
+			{
+				Content = new Label()
+				{
+					Text = "Root Page"
+				}
+			};
+
+			var modalPage = new ContentPage()
+			{
+				Content = new Label()
+				{
+					Text = "last modal page"
+				}
+			};
+
+			Window window = new Window(new NavigationPage(windowPage));
+
+			bool navigatedToFired = false;
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					ContentPage contentPage = new ContentPage()
+					{
+						Content = new Label()
+						{
+							Text = "Second Page"
+						}
+					};
+
+					contentPage.NavigatedTo += async (_, _) =>
+					{
+						if (navigatedToFired)
+							return;
+
+						navigatedToFired = true;
+
+						await windowPage.Navigation.PushModalAsync(new ContentPage()
+						{
+							Content = new Label()
+							{
+								Text = "First modal page"
+							}
+						});
+
+						await windowPage.Navigation.PushModalAsync(modalPage);
+					};
+
+					await window.Page.Navigation.PushAsync(contentPage);
+					await OnLoadedAsync(modalPage);
+					await window.Navigation.PopModalAsync();
+					await window.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+					await OnLoadedAsync(contentPage);
+				});
+
+			Assert.True(navigatedToFired);
+		}
+#endif
 
 		[Theory]
 		[InlineData(true)]
