@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Provider;
 using Android.Webkit;
@@ -69,6 +70,17 @@ namespace Microsoft.Maui.Storage
 				return cached;
 
 			throw new FileNotFoundException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
+		}
+
+		public static Task<string> EnsurePhysicalPathAsync(AndroidUri uri, bool requireExtendedAccess = true)
+		{
+			// file:// URIs do not need provider queries or stream copies.
+			if (string.Equals(uri.Scheme, UriSchemeFile, StringComparison.OrdinalIgnoreCase))
+			{
+				return Task.FromResult(uri.Path);
+			}
+
+			return Task.Run(() => EnsurePhysicalPath(uri, requireExtendedAccess));
 		}
 
 		static string ResolvePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
