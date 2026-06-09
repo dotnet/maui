@@ -125,6 +125,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				url = QueryStringHelper.RemovePossibleQueryString(url);
 				if (_webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
+					// By default local caching is disabled so that user scripts are always re-executed. Applications can
+					// opt specific resources in to caching via BlazorWebView.StaticContentCacheControlProvider.
+					// See https://github.com/dotnet/maui/issues/8279
+					var cacheControlOverride = StaticContentCacheControl.ResolveOverride(VirtualView, new Uri(url), headers["Content-Type"]);
+					if (cacheControlOverride is not null)
+					{
+						headers["Cache-Control"] = cacheControlOverride;
+					}
+
 					var header = $"HTTP/1.0 200 OK\r\n";
 					foreach (var item in headers)
 					{

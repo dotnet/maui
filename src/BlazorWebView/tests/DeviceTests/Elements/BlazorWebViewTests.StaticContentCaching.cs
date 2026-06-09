@@ -30,13 +30,13 @@ public partial class BlazorWebViewTests
 		// Returning null from the provider must preserve the historical default so that the change is non-breaking.
 		var cacheControl = await GetServedCacheControlHeaderAsync(_ => null);
 
-		Assert.Contains("no-store", cacheControl);
+		Assert.Contains("no-store", cacheControl, StringComparison.Ordinal);
 	}
 
 	[Fact]
 	public async Task StaticContentCacheControlProviderReceivesResolvedContentType()
 	{
-		string? observedContentType = null;
+		string observedContentType = null;
 
 		await GetServedCacheControlHeaderAsync(request =>
 		{
@@ -50,7 +50,7 @@ public partial class BlazorWebViewTests
 		Assert.Equal("text/plain", observedContentType);
 	}
 
-	private async Task<string?> GetServedCacheControlHeaderAsync(Func<BlazorWebViewStaticContentRequest, string?> provider)
+	private async Task<string> GetServedCacheControlHeaderAsync(Func<BlazorWebViewStaticContentRequest, string> provider)
 	{
 		EnsureHandlerCreated(builder =>
 		{
@@ -74,7 +74,7 @@ public partial class BlazorWebViewTests
 			Selector = "#app"
 		});
 
-		string? cacheControl = null;
+		string cacheControl = null;
 
 		await AttachAndRun(blazorWebView, async handler =>
 		{
