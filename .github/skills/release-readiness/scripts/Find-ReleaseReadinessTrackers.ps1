@@ -13,9 +13,19 @@
       Lane 1 — in-flight branches
         For every branch matching the strict regex
         `^release/<major>\.0\.\d+xx-sr(\d+)$`, read PatchVersion from its
-        eng/Versions.props. If PatchVersion > HighestShippedPatch (the largest
-        patch in the latest stable `<major>.0.N` tag set, prereleases ignored),
-        the branch is still in flight and needs a tracker.
+        eng/Versions.props. If the stable tag `<major>.0.<PatchVersion>`
+        does NOT exist on origin, the branch is in-flight — the release
+        notes for that exact patch haven't been published yet, so it hasn't
+        shipped. If the tag exists, the branch has already shipped that
+        patch and is skipped.
+
+        Tag existence is the authoritative ship signal (the release-notes
+        publish job creates the tag). This is more robust than comparing
+        the branch's PatchVersion against the highest known patch:
+          - works regardless of ship order (SR8 can ship before SR7)
+          - works for hotfix branches that may reset PatchVersion below
+            the highest known patch
+          - never depends on inferring "shipped" from version arithmetic
 
       Lane 2 — next SR off main
         Identifies the highest SR (across in-flight branches AND shipped tags)
@@ -137,6 +147,54 @@ function Get-StableTagsForMajor {
         if ($_ -match $Script:StrictStableTagRegex) { [int]$Matches[2] } else { 0 }
     })
     return $tags
+}
+
+function Get-ShippedPatchSet {
+    <#
+    .SYNOPSIS
+        Builds a HashSet[int] of shipped patch numbers from a list of stable
+        tags (typically the output of Get-StableTagsForMajor).
+    .DESCRIPTION
+        O(1) lookup is essential for the in-flight loop: each branch needs
+        to ask "does my PatchVersion already have a published tag?".
+
+        Malformed/prerelease/non-matching tags are silently dropped — this
+        function is for the in-flight check only, where only exact stable
+        tag matches count as "shipped".
+    #>
+    param([AllowEmptyCollection()][string[]]$StableTags)
+    $set = [System.Collections.Generic.HashSet[int]]::new()
+    if ($null -eq $StableTags) { return ,$set }
+    foreach ($tag in $StableTags) {
+        if ($tag -and ($tag -match $Script:StrictStableTagRegex)) {
+            [void]$set.Add([int]$Matches[2])
+        }
+    }
+    # Unary comma prevents PS from unrolling the single-object return value.
+    ,$set
+}
+
+function Test-IsBranchInFlight {
+    <#
+    .SYNOPSIS
+        True if the branch is in-flight (its expected stable tag has not
+        been published). False if its tag already exists (shipped).
+    .DESCRIPTION
+        The release-notes pipeline creates the tag `<major>.0.<patch>` when
+        a release publishes. Tag absent → branch hasn't shipped that patch
+        → in-flight. Tag present → already shipped → skip.
+
+        This replaces the older "PatchVersion > HighestShippedPatch" check,
+        which was fragile to out-of-order ships and hotfix branches that
+        reset PatchVersion.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$BranchPatch,
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.HashSet[int]]$ShippedPatches
+    )
+    return -not $ShippedPatches.Contains($BranchPatch)
 }
 
 function Get-RemoteSrBranchesForMajor {
@@ -294,8 +352,12 @@ if ($MajorVersion -le 0) {
 }
 $mainBranchForMajor = Get-MainBranchForVersion -Major $MajorVersion -Repo $Repo
 
-# Step 1: Get the highest shipped stable patch in band.
+# Step 1: Inventory all shipped stable tags for this major.
+# We capture both the full set (authoritative ship signal for Lane 1's
+# tag-existence check) AND the highest patch (informational + used by
+# Lane 2 to derive the "next SR off main" number).
 $stableTags = Get-StableTagsForMajor -Major $MajorVersion
+$shippedPatches = Get-ShippedPatchSet -StableTags $stableTags
 $highestShippedPatch = 0
 $highestShippedTag   = $null
 if ($stableTags.Count -gt 0) {
@@ -304,6 +366,7 @@ if ($stableTags.Count -gt 0) {
         $highestShippedPatch = [int]$Matches[2]
     }
 }
+Write-Host "Shipped patches for major ${MajorVersion}: $(if ($shippedPatches.Count -gt 0) { ($shippedPatches | Sort-Object) -join ', ' } else { '(none)' })" -ForegroundColor Cyan
 Write-Host "Highest shipped stable tag for major ${MajorVersion}: $(if ($highestShippedTag) { $highestShippedTag } else { '(none)' })" -ForegroundColor Cyan
 
 # Step 2: Inspect remote SR branches and classify.
@@ -329,20 +392,22 @@ foreach ($entry in $branches) {
         continue
     }
     $branchPatch = [int]$Matches[2]
+    $expectedTag = $versionInfo.Tag
 
-    if ($branchPatch -gt $highestShippedPatch) {
-        # In-flight: PatchVersion ahead of latest shipped tag → still cooking.
+    if (Test-IsBranchInFlight -BranchPatch $branchPatch -ShippedPatches $shippedPatches) {
+        # In-flight: stable tag `<major>.0.<branchPatch>` not yet published →
+        # release notes haven't gone out → SR is still cooking.
         $recent = Get-RecentCommitCount -Ref $branch -Days $ActivityWindowDays
         $tracker = New-Tracker -Major $MajorVersion -SrNumber $sr -Mode 'in-flight' `
             -BranchName $branch -SurveyRef $branch -PriorSrBranch $null `
             -PriorShippedPatch $highestShippedPatch -PriorShippedTag $highestShippedTag `
-            -ExpectedPatch $branchPatch -ExpectedTag $versionInfo.Tag `
+            -ExpectedPatch $branchPatch -ExpectedTag $expectedTag `
             -HasRecentActivityCount $recent
         $trackers.Add($tracker)
         $inflightBranchesBySr[$sr] = $branch
-        Write-Host "  -> in-flight tracker for SR$sr (patch=$branchPatch, recent=$recent)" -ForegroundColor Green
+        Write-Host "  -> in-flight tracker for SR$sr (patch=$branchPatch, no tag $expectedTag yet, recent=$recent)" -ForegroundColor Green
     } else {
-        Write-Host "  -> SR$sr branch '$branch' has patch $branchPatch <= highest shipped $highestShippedPatch (already shipped)" -ForegroundColor DarkGray
+        Write-Host "  -> SR$sr branch '$branch' patch=$branchPatch already shipped (tag $expectedTag exists)" -ForegroundColor DarkGray
     }
 }
 

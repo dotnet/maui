@@ -321,12 +321,91 @@ if (-not (Test-Path $detectScriptPath)) {
         Assert-Eq -Label "regression labels for major=$($case.Major) sr=$($case.Sr)" `
                   -Expected $expected -Actual $actual
     }
+
+    # ─────────── In-flight tag-existence check ───────────
+    # The authoritative ship signal is the existence of the stable tag
+    # `<major>.0.<patch>` (created when release notes publish). These tests
+    # exercise the two helpers backing that rule.
+
+    Write-Host "`n[Unit] Get-ShippedPatchSet" -ForegroundColor Cyan
+
+    # Builds a HashSet[int] from a tag list, dropping prereleases and noise.
+    $live10Tags = @(
+        '10.0.0', '10.0.1', '10.0.10', '10.0.11', '10.0.20',
+        '10.0.30', '10.0.31', '10.0.40', '10.0.41',
+        '10.0.50', '10.0.51', '10.0.60', '10.0.70'
+    )
+    $set = Get-ShippedPatchSet -StableTags $live10Tags
+    Assert-Eq -Label "set is HashSet[int]" `
+              -Expected $true `
+              -Actual ($set -is [System.Collections.Generic.HashSet[int]])
+    Assert-Eq -Label "set count = 13 distinct shipped patches" -Expected 13 -Actual $set.Count
+    Assert-Eq -Label "set contains shipped patch 70"  -Expected $true  -Actual $set.Contains(70)
+    Assert-Eq -Label "set contains GA patch 0"        -Expected $true  -Actual $set.Contains(0)
+    Assert-Eq -Label "set does NOT contain 71"        -Expected $false -Actual $set.Contains(71)
+    Assert-Eq -Label "set does NOT contain 80"        -Expected $false -Actual $set.Contains(80)
+    Assert-Eq -Label "set does NOT contain 90"        -Expected $false -Actual $set.Contains(90)
+
+    # Prereleases must NOT count as shipped.
+    $mixed = @('10.0.70', '10.0.71-rtm.123', '10.0.71-servicing', '11.0.0-preview.1.26107')
+    $mixedSet = Get-ShippedPatchSet -StableTags $mixed
+    Assert-Eq -Label "prerelease tags ignored: only stable 10.0.70 counts" -Expected 1 -Actual $mixedSet.Count
+    Assert-Eq -Label "prerelease '10.0.71-rtm.123' does NOT mark 71 shipped" -Expected $false -Actual $mixedSet.Contains(71)
+
+    # Edge cases.
+    $emptySet = Get-ShippedPatchSet -StableTags @()
+    Assert-Eq -Label "empty input -> empty set" -Expected 0 -Actual $emptySet.Count
+    $nullSet = Get-ShippedPatchSet -StableTags $null
+    Assert-Eq -Label "null input -> empty set"  -Expected 0 -Actual $nullSet.Count
+
+    # Duplicate tags collapse (HashSet semantics).
+    $dupSet = Get-ShippedPatchSet -StableTags @('10.0.70', '10.0.70', '10.0.71')
+    Assert-Eq -Label "duplicate tags collapse"  -Expected 2 -Actual $dupSet.Count
+
+    Write-Host "`n[Unit] Test-IsBranchInFlight" -ForegroundColor Cyan
+
+    # The current live state: SR7 (patch 71) and SR8 (patch 80) are in-flight,
+    # SR6 (patch 60) is already shipped.
+    Assert-Eq -Label "SR6 patch 60 — tag 10.0.60 exists -> shipped"     -Expected $false -Actual (Test-IsBranchInFlight -BranchPatch 60 -ShippedPatches $set)
+    Assert-Eq -Label "SR7 patch 71 — tag 10.0.71 missing -> in-flight"  -Expected $true  -Actual (Test-IsBranchInFlight -BranchPatch 71 -ShippedPatches $set)
+    Assert-Eq -Label "SR8 patch 80 — tag 10.0.80 missing -> in-flight"  -Expected $true  -Actual (Test-IsBranchInFlight -BranchPatch 80 -ShippedPatches $set)
+
+    # A second-patch ship in an SR family (10.0.31 → SR3 already shipped twice).
+    Assert-Eq -Label "patch 31 — tag 10.0.31 exists -> shipped"         -Expected $false -Actual (Test-IsBranchInFlight -BranchPatch 31 -ShippedPatches $set)
+    Assert-Eq -Label "patch 32 — tag 10.0.32 missing -> in-flight (hypothetical SR3 hotfix branch)" `
+              -Expected $true  -Actual (Test-IsBranchInFlight -BranchPatch 32 -ShippedPatches $set)
+
+    # Out-of-order ship scenario: tag for SR8 (80) exists but not for SR7 (71).
+    # New tag-based rule must still mark SR7 in-flight; the old highest-shipped
+    # comparison would have wrongly classified it as shipped.
+    $outOfOrder = Get-ShippedPatchSet -StableTags @('10.0.0', '10.0.60', '10.0.80')
+    Assert-Eq -Label "out-of-order: SR7 patch 71 still in-flight even though 80 shipped" `
+              -Expected $true  -Actual (Test-IsBranchInFlight -BranchPatch 71 -ShippedPatches $outOfOrder)
+    Assert-Eq -Label "out-of-order: SR8 patch 80 correctly shipped"     -Expected $false -Actual (Test-IsBranchInFlight -BranchPatch 80 -ShippedPatches $outOfOrder)
+
+    # Hotfix branch resetting PatchVersion below highest known patch.
+    # Example: SR2 branch bumped back to patch 22 to prepare a security
+    # release after SR7 already shipped. Tag 10.0.22 doesn't exist → in-flight.
+    $hotfix = Get-ShippedPatchSet -StableTags @('10.0.0', '10.0.20', '10.0.70')
+    Assert-Eq -Label "hotfix: SR2 patch 22 still in-flight when latest shipped is 70" `
+              -Expected $true  -Actual (Test-IsBranchInFlight -BranchPatch 22 -ShippedPatches $hotfix)
+    Assert-Eq -Label "hotfix: SR2 patch 20 is the already-shipped baseline"  -Expected $false -Actual (Test-IsBranchInFlight -BranchPatch 20 -ShippedPatches $hotfix)
+
+    # Empty ship set: every branch must be in-flight.
+    Assert-Eq -Label "no shipped tags yet: patch 0 (GA) in-flight"  -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 0  -ShippedPatches $emptySet)
+    Assert-Eq -Label "no shipped tags yet: patch 11 in-flight"      -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 11 -ShippedPatches $emptySet)
 }
 
 # ─────────── E2E: Run detection against this repo and validate trackers ───────────
 
 if (-not $SkipE2E) {
-    Write-Host "`n[E2E] Detection against live repo (expects SR7, SR8, SR9 trackers)" -ForegroundColor Cyan
+    Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
+    Write-Host "  Under the tag-existence rule we expect FIVE trackers:" -ForegroundColor DarkGray
+    Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - in-flight but inactive (workflow will skip — no recent commits)" -ForegroundColor DarkGray
+    Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - in-flight but inactive (workflow will skip — no recent commits)" -ForegroundColor DarkGray
+    Write-Host "    - SR7 (patch=71, no tag 10.0.71)        - in-flight, active" -ForegroundColor DarkGray
+    Write-Host "    - SR8 (patch=80, no tag 10.0.80)        - in-flight, active" -ForegroundColor DarkGray
+    Write-Host "    - SR9 (candidate off main)              - active" -ForegroundColor DarkGray
 
     $detectOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -340,13 +419,36 @@ if (-not $SkipE2E) {
             Assert-Eq -Label "majorVersion is 10"             -Expected 10 -Actual $detected.majorVersion
             Assert-Eq -Label "mainBranch is 'main'"            -Expected 'main' -Actual $detected.mainBranch
             Assert-Eq -Label "highestShippedTag is '10.0.70'"  -Expected '10.0.70' -Actual $detected.highestShippedTag
-            Assert-Eq -Label "tracker count is 3 (SR7+SR8+SR9)" `
-                      -Expected 3 -Actual $detected.trackers.Count
+            Assert-Eq -Label "tracker count is 5 (SR2+SR3+SR7+SR8+SR9)" `
+                      -Expected 5 -Actual $detected.trackers.Count
 
             $bySr = @{}
             foreach ($t in $detected.trackers) { $bySr[[int]$t.srNumber] = $t }
 
-            # SR7 (in-flight)
+            # SR2 (in-flight, INACTIVE — workflow's activity gate prevents new issue)
+            if ($bySr.ContainsKey(2)) {
+                $sr2 = $bySr[2]
+                Assert-Eq -Label "SR2 mode = in-flight (tag 10.0.21 absent)" `
+                          -Expected 'in-flight' -Actual $sr2.mode
+                Assert-Eq -Label "SR2 expectedTag = 10.0.21"     -Expected '10.0.21' -Actual $sr2.expectedTag
+                Assert-Eq -Label "SR2 hasRecentActivity = false (workflow will skip new issue)" `
+                          -Expected $false -Actual $sr2.hasRecentActivity
+            } else {
+                Write-Host "  ❌ SR2 tracker missing (tag rule should pick it up — patch=21, no tag)" -ForegroundColor Red; $script:failed++
+            }
+
+            # SR3 (in-flight, INACTIVE)
+            if ($bySr.ContainsKey(3)) {
+                $sr3 = $bySr[3]
+                Assert-Eq -Label "SR3 mode = in-flight (tag 10.0.33 absent)" `
+                          -Expected 'in-flight' -Actual $sr3.mode
+                Assert-Eq -Label "SR3 expectedTag = 10.0.33"     -Expected '10.0.33' -Actual $sr3.expectedTag
+                Assert-Eq -Label "SR3 hasRecentActivity = false" -Expected $false -Actual $sr3.hasRecentActivity
+            } else {
+                Write-Host "  ❌ SR3 tracker missing (tag rule should pick it up — patch=33, no tag)" -ForegroundColor Red; $script:failed++
+            }
+
+            # SR7 (in-flight, ACTIVE)
             if ($bySr.ContainsKey(7)) {
                 $sr7 = $bySr[7]
                 Assert-Eq -Label "SR7 mode = in-flight"         -Expected 'in-flight' -Actual $sr7.mode
@@ -354,6 +456,8 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "SR7 branchName"               -Expected 'release/10.0.1xx-sr7' -Actual $sr7.branchName
                 Assert-Eq -Label "SR7 surveyRef = branch"       -Expected 'release/10.0.1xx-sr7' -Actual $sr7.surveyRef
                 Assert-Eq -Label "SR7 milestoneName"            -Expected '.NET 10 SR7' -Actual $sr7.milestoneName
+                Assert-Eq -Label "SR7 expectedTag = 10.0.71"    -Expected '10.0.71' -Actual $sr7.expectedTag
+                Assert-Eq -Label "SR7 hasRecentActivity = true" -Expected $true -Actual $sr7.hasRecentActivity
                 Assert-Eq -Label "SR7 regression labels"        `
                           -Expected 'regressed-in-10.0.60,regressed-in-10.0.70' `
                           -Actual ($sr7.regressionLabels -join ',')
@@ -361,12 +465,14 @@ if (-not $SkipE2E) {
                 Write-Host "  ❌ SR7 tracker missing" -ForegroundColor Red; $script:failed++
             }
 
-            # SR8 (in-flight, just cut)
+            # SR8 (in-flight, ACTIVE)
             if ($bySr.ContainsKey(8)) {
                 $sr8 = $bySr[8]
                 Assert-Eq -Label "SR8 mode = in-flight"         -Expected 'in-flight' -Actual $sr8.mode
                 Assert-Eq -Label "SR8 canonicalKey"             -Expected 'net10-sr8' -Actual $sr8.canonicalKey
                 Assert-Eq -Label "SR8 branchName"               -Expected 'release/10.0.1xx-sr8' -Actual $sr8.branchName
+                Assert-Eq -Label "SR8 expectedTag = 10.0.80"    -Expected '10.0.80' -Actual $sr8.expectedTag
+                Assert-Eq -Label "SR8 hasRecentActivity = true" -Expected $true -Actual $sr8.hasRecentActivity
                 Assert-Eq -Label "SR8 regression labels"        `
                           -Expected 'regressed-in-10.0.70,regressed-in-10.0.80' `
                           -Actual ($sr8.regressionLabels -join ',')
@@ -374,7 +480,7 @@ if (-not $SkipE2E) {
                 Write-Host "  ❌ SR8 tracker missing" -ForegroundColor Red; $script:failed++
             }
 
-            # SR9 (candidate from main)
+            # SR9 (candidate from main, ACTIVE)
             if ($bySr.ContainsKey(9)) {
                 $sr9 = $bySr[9]
                 Assert-Eq -Label "SR9 mode = candidate"         -Expected 'candidate' -Actual $sr9.mode
@@ -384,6 +490,7 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "SR9 priorSrBranch = SR8 branch" `
                           -Expected 'release/10.0.1xx-sr8' -Actual $sr9.priorSrBranch
                 Assert-Eq -Label "SR9 expectedPatch = 90"       -Expected 90 -Actual $sr9.expectedPatch
+                Assert-Eq -Label "SR9 hasRecentActivity = true" -Expected $true -Actual $sr9.hasRecentActivity
                 Assert-Eq -Label "SR9 regression labels"        `
                           -Expected 'regressed-in-10.0.80,regressed-in-10.0.90' `
                           -Actual ($sr9.regressionLabels -join ',')
@@ -391,10 +498,12 @@ if (-not $SkipE2E) {
                 Write-Host "  ❌ SR9 tracker missing" -ForegroundColor Red; $script:failed++
             }
 
-            # Every tracker should have a recent commit count > 0 (this repo IS active)
-            foreach ($t in $detected.trackers) {
-                Assert-Eq -Label "SR$($t.srNumber) hasRecentActivity == true (live repo)" `
-                          -Expected $true -Actual $t.hasRecentActivity
+            # Active SRs (the ones the workflow will actually post) all have activity.
+            foreach ($srNum in @(7, 8, 9)) {
+                if ($bySr.ContainsKey($srNum)) {
+                    Assert-Eq -Label "SR$srNum hasRecentActivity == true (active SR)" `
+                              -Expected $true -Actual $bySr[$srNum].hasRecentActivity
+                }
             }
         }
     } finally {
