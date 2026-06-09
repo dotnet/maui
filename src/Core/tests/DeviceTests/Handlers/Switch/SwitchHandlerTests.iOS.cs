@@ -137,6 +137,9 @@ namespace Microsoft.Maui.DeviceTests
 			var trackSubview = nativeSwitch.GetTrackSubview();
 			Assert.NotNull(trackSubview);
 
+			await Task.Delay(100);
+			Assert.Equal(UISwitchStyle.Automatic, nativeSwitch.PreferredStyle);
+
 			var preservedTrackColor = UIColor.FromRGBA(12, 34, 56, 255);
 			var preservedOnTintColor = UIColor.FromRGBA(78, 90, 123, 255);
 			var preservedThumbColor = UIColor.FromRGBA(45, 67, 89, 255);
@@ -147,6 +150,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			nativeSwitch.MovedToWindow();
 			await Task.Delay(100);
+
+			Assert.Equal(UISwitchStyle.Automatic, nativeSwitch.PreferredStyle);
 
 			Assert.True(
 				ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), preservedTrackColor, tolerance: 0.1),
@@ -515,6 +520,69 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		[Fact(DisplayName = "Mapper Only Color Reapply Uses Sliding Style On iOS/MacCatalyst 26")]
+		public async Task MapperOnlyColorReapplyUsesSlidingStyleOniOSOrMacCatalyst26()
+		{
+			if (!IsIOSOrMacCatalyst26OrNewer())
+			{
+				return;
+			}
+
+			var mapperTrackColor = UIColor.Purple;
+			var mapperRanOffMainThread = false;
+			var switchStub = new SwitchStub
+			{
+				IsOn = false
+			};
+
+			CustomSwitchHandler.TestMapper = new PropertyMapper<ISwitch, ISwitchHandler>(SwitchHandler.Mapper);
+			CustomSwitchHandler.TestMapper.AppendToMapping(nameof(ISwitch.TrackColor), (handler, view) =>
+			{
+				mapperRanOffMainThread |= !NSThread.IsMain;
+
+				if (handler.PlatformView is UISwitch uiSwitch && uiSwitch.GetTrackSubview() is UIView trackSubview)
+				{
+					trackSubview.BackgroundColor = mapperTrackColor;
+				}
+			});
+
+			try
+			{
+				await AttachAndRun<CustomSwitchHandler>(switchStub, async (CustomSwitchHandler handler) =>
+				{
+					var nativeSwitch = GetNativeSwitch(handler);
+
+					await new Func<bool>(() => nativeSwitch.IsReadyForColorReapply())
+						.AssertEventually(message: "Native switch was not ready for mapper-only color reapply.");
+
+					await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Sliding && nativeSwitch.Style == UISwitchStyle.Sliding)
+						.AssertEventually(message: "Mapper-only switch color customization did not opt into Sliding style.");
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), mapperTrackColor, tolerance: 0.1))
+						.AssertEventually(message: "Mapper-only TrackColor customization did not apply during initial color reapply.");
+
+					Assert.Null(switchStub.TrackColor);
+					Assert.Null(switchStub.ThumbColor);
+					Assert.False(mapperRanOffMainThread, "Mapper-only switch color mapper ran off the main thread.");
+
+					var trackSubview = nativeSwitch.GetTrackSubview();
+					Assert.NotNull(trackSubview);
+
+					trackSubview.BackgroundColor = UIColor.Clear;
+					nativeSwitch.MovedToWindow();
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), mapperTrackColor, tolerance: 0.1))
+						.AssertEventually(message: "Lifecycle color reapply skipped the mapper-only TrackColor customization.");
+
+					Assert.False(mapperRanOffMainThread, "Mapper-only lifecycle color reapply ran off the main thread.");
+				});
+			}
+			finally
+			{
+				CustomSwitchHandler.TestMapper = new PropertyMapper<ISwitch, ISwitchHandler>(SwitchHandler.Mapper);
+			}
+		}
+
 		[Fact(DisplayName = "Layout Subviews Does Not Reapply Colors When Not Dirty On iOS/MacCatalyst 26")]
 		public async Task LayoutSubviewsDoesNotReapplyColorsWhenNotDirtyOniOSOrMacCatalyst26()
 		{
@@ -668,6 +736,78 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertSwitchColorsApplied(nativeSwitch, Colors.Red, Colors.Orange, "foregrounding");
 			});
+		}
+
+		[Fact(DisplayName = "Mapper Only Colors Reapply After Will Enter Foreground On iOS 26")]
+		public async Task MapperOnlyColorsReapplyAfterWillEnterForegroundOniOS26()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26))
+			{
+				return;
+			}
+
+			var mapperTrackColor = UIColor.Purple;
+			var mapperRanOffMainThread = false;
+			var switchStub = new SwitchStub
+			{
+				IsOn = true
+			};
+
+			CustomSwitchHandler.TestMapper = new PropertyMapper<ISwitch, ISwitchHandler>(SwitchHandler.Mapper);
+			CustomSwitchHandler.TestMapper.AppendToMapping(nameof(ISwitch.TrackColor), (handler, view) =>
+			{
+				mapperRanOffMainThread |= !NSThread.IsMain;
+
+				if (handler.PlatformView is UISwitch uiSwitch)
+				{
+					uiSwitch.OnTintColor = mapperTrackColor;
+
+					if (uiSwitch.GetTrackSubview() is UIView trackSubview)
+					{
+						trackSubview.BackgroundColor = mapperTrackColor;
+					}
+				}
+			});
+
+			try
+			{
+				await AttachAndRun<CustomSwitchHandler>(switchStub, async (CustomSwitchHandler handler) =>
+				{
+					var nativeSwitch = GetNativeSwitch(handler);
+
+					await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Sliding && nativeSwitch.Style == UISwitchStyle.Sliding)
+						.AssertEventually(message: "Mapper-only foreground test did not opt into Sliding style.");
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.OnTintColor, mapperTrackColor, tolerance: 0.1))
+						.AssertEventually(message: "Mapper-only OnTintColor did not apply during initial color reapply.");
+
+					Assert.Null(switchStub.TrackColor);
+					Assert.Null(switchStub.ThumbColor);
+					Assert.False(mapperRanOffMainThread, "Mapper-only switch color mapper ran off the main thread.");
+
+					var trackSubview = nativeSwitch.GetTrackSubview();
+					Assert.NotNull(trackSubview);
+
+					trackSubview.BackgroundColor = UIColor.Clear;
+					nativeSwitch.OnTintColor = UIColor.Clear;
+
+					NSNotificationCenter.DefaultCenter.PostNotificationName(
+						UIApplication.WillEnterForegroundNotification,
+						UIApplication.SharedApplication);
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.OnTintColor, mapperTrackColor, tolerance: 0.1))
+						.AssertEventually(message: "Mapper-only OnTintColor did not reapply after foregrounding.");
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), mapperTrackColor, tolerance: 0.1))
+						.AssertEventually(message: "Mapper-only track color did not reapply after foregrounding.");
+
+					Assert.False(mapperRanOffMainThread, "Mapper-only foreground color reapply ran off the main thread.");
+				});
+			}
+			finally
+			{
+				CustomSwitchHandler.TestMapper = new PropertyMapper<ISwitch, ISwitchHandler>(SwitchHandler.Mapper);
+			}
 		}
 #endif
 

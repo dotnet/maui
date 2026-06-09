@@ -88,6 +88,10 @@ namespace Microsoft.Maui.Handlers
 				if (platformView is MauiSwitch mauiSwitch)
 				{
 					mauiSwitch.ColorReapplyRequested += OnColorReapplyRequested;
+					if (IsSlidingStyleRequiredForCustomColors())
+					{
+						mauiSwitch.StartMapperColorOverrideDetection();
+					}
 					mauiSwitch.SetNeedsColorReapply();
 				}
 
@@ -221,11 +225,15 @@ namespace Microsoft.Maui.Handlers
 					var reapplyKind = _queuedColorReapplyKind;
 					ClearQueuedColorReapply(platformView);
 
-					if ((reapplyKind.HasFlag(ColorReapplyKind.CustomColors) && view.HasCustomColors()) ||
-						(reapplyKind.HasFlag(ColorReapplyKind.Lifecycle) && !view.ShouldPreserveNativeDefaults()))
+					if (TryDetectMapperColorOverride(handler, view, platformView))
 					{
-						handler.UpdateValue(nameof(ISwitch.TrackColor));
-						handler.UpdateValue(nameof(ISwitch.ThumbColor));
+						return;
+					}
+
+					if ((reapplyKind.HasFlag(ColorReapplyKind.CustomColors) && platformView.HasCustomColorIntent(view)) ||
+						(reapplyKind.HasFlag(ColorReapplyKind.Lifecycle) && !platformView.ShouldPreserveNativeDefaults(view)))
+					{
+						UpdateColorMappings(handler, view, platformView);
 						return;
 					}
 
@@ -258,6 +266,7 @@ namespace Microsoft.Maui.Handlers
 				if (platformView is MauiSwitch mauiSwitch)
 				{
 					mauiSwitch.ColorReapplyRequested -= OnColorReapplyRequested;
+					mauiSwitch.ClearMapperColorOverride();
 				}
 
 				_handler = null;
@@ -290,6 +299,61 @@ namespace Microsoft.Maui.Handlers
 				{
 					virtualView.IsOn = platformView.On;
 				}
+			}
+
+			static bool TryDetectMapperColorOverride(SwitchHandler handler, ISwitch view, UISwitch platformView)
+			{
+				if (!IsSlidingStyleRequiredForCustomColors() ||
+					view.HasCustomColors() ||
+					platformView is not MauiSwitch mauiSwitch ||
+					!mauiSwitch.ShouldDetectMapperColorOverride)
+				{
+					return false;
+				}
+
+				mauiSwitch.CompleteMapperColorOverrideDetection();
+
+				var beforeTrackColor = platformView.CaptureColorState();
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+
+				if (platformView.HasColorStateChanged(beforeTrackColor))
+				{
+					mauiSwitch.MarkMapperColorOverride();
+				}
+
+				var beforeThumbColor = platformView.CaptureColorState();
+				handler.UpdateValue(nameof(ISwitch.ThumbColor));
+
+				if (platformView.HasColorStateChanged(beforeThumbColor))
+				{
+					mauiSwitch.MarkMapperColorOverride();
+				}
+
+				if (!mauiSwitch.HasMapperColorOverride)
+				{
+					return false;
+				}
+
+				UpdateColorMappings(handler, view, platformView);
+				return true;
+			}
+
+			static void UpdateColorMappings(SwitchHandler handler, ISwitch view, UISwitch platformView)
+			{
+				if (!view.HasCustomColors() && platformView is MauiSwitch { HasMapperColorOverride: true })
+				{
+					handler.UpdateValue(nameof(ISwitch.ThumbColor));
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					return;
+				}
+
+				handler.UpdateValue(nameof(ISwitch.TrackColor));
+				handler.UpdateValue(nameof(ISwitch.ThumbColor));
+			}
+
+			static bool IsSlidingStyleRequiredForCustomColors()
+			{
+				return OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26);
 			}
 
 			[Flags]

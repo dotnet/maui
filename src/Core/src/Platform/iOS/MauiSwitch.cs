@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly WeakEventManager _colorReapplyRequestedEventManager = new();
 		bool _hasMauiTrackColorOverride;
+		bool _hasMapperColorOverride;
 		bool _needsColorReapply;
+		bool _shouldDetectMapperColorOverride;
 
 		public MauiSwitch(CGRect frame) : base(frame)
 		{
@@ -57,6 +59,32 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal bool HasMauiTrackColorOverride => _hasMauiTrackColorOverride;
+
+		internal bool HasMapperColorOverride => _hasMapperColorOverride;
+
+		internal bool ShouldDetectMapperColorOverride => _shouldDetectMapperColorOverride;
+
+		internal void StartMapperColorOverrideDetection()
+		{
+			_hasMapperColorOverride = false;
+			_shouldDetectMapperColorOverride = true;
+		}
+
+		internal void MarkMapperColorOverride()
+		{
+			_hasMapperColorOverride = true;
+		}
+
+		internal void CompleteMapperColorOverrideDetection()
+		{
+			_shouldDetectMapperColorOverride = false;
+		}
+
+		internal void ClearMapperColorOverride()
+		{
+			_hasMapperColorOverride = false;
+			_shouldDetectMapperColorOverride = false;
+		}
 
 		internal void MarkMauiTrackColorOverride()
 		{

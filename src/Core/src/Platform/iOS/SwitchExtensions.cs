@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 
 			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
 
-			if (view.ShouldPreserveNativeDefaults())
+			if (uiSwitch.ShouldPreserveNativeDefaults(view))
 			{
 				uiSwitch.ClearCustomColorState();
 				return;
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Platform
 
 			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
 
-			if (view.ShouldPreserveNativeDefaults())
+			if (uiSwitch.ShouldPreserveNativeDefaults(view))
 			{
 				uiSwitch.ClearCustomColorState();
 				return;
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			var preferredStyle = view.HasCustomColors()
+			var preferredStyle = uiSwitch.HasCustomColorIntent(view)
 				? UISwitchStyle.Sliding
 				: UISwitchStyle.Automatic;
 
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Platform
 		static void ReapplyColorsAfterStyleUpdate(this UISwitch uiSwitch, ISwitch view)
 		{
 #if IOS || MACCATALYST
-			if (!IsSlidingStyleRequiredForCustomColors() || !view.HasCustomColors())
+			if (!IsSlidingStyleRequiredForCustomColors() || !uiSwitch.HasCustomColorIntent(view))
 			{
 				return;
 			}
@@ -150,9 +150,46 @@ namespace Microsoft.Maui.Platform
 			return view.TrackColor is not null || view.ThumbColor is not null;
 		}
 
+		internal static bool HasCustomColorIntent(this UISwitch uiSwitch, ISwitch view)
+		{
+			return view.HasCustomColors() || (uiSwitch as MauiSwitch)?.HasMapperColorOverride == true;
+		}
+
 		internal static bool ShouldPreserveNativeDefaults(this ISwitch view)
 		{
 			return IsSlidingStyleRequiredForCustomColors() && !view.HasCustomColors();
+		}
+
+		internal static bool ShouldPreserveNativeDefaults(this UISwitch uiSwitch, ISwitch view)
+		{
+			return IsSlidingStyleRequiredForCustomColors() && !uiSwitch.HasCustomColorIntent(view);
+		}
+
+		internal static SwitchColorState CaptureColorState(this UISwitch uiSwitch)
+		{
+			return new SwitchColorState(uiSwitch.OnTintColor, uiSwitch.ThumbTintColor, uiSwitch.GetTrackColor());
+		}
+
+		internal static bool HasColorStateChanged(this UISwitch uiSwitch, SwitchColorState previousState)
+		{
+			return !AreEqual(uiSwitch.OnTintColor, previousState.OnTintColor)
+				|| !AreEqual(uiSwitch.ThumbTintColor, previousState.ThumbTintColor)
+				|| !AreEqual(uiSwitch.GetTrackColor(), previousState.TrackColor);
+		}
+
+		static bool AreEqual(UIColor? first, UIColor? second)
+		{
+			if (ReferenceEquals(first, second))
+			{
+				return true;
+			}
+
+			if (first is null || second is null)
+			{
+				return false;
+			}
+
+			return first.Equals(second);
 		}
 
 		static void ClearCustomColorState(this UISwitch uiSwitch)
@@ -200,5 +237,21 @@ namespace Microsoft.Maui.Platform
 		{
 			return uISwitch.GetTrackSubview()?.BackgroundColor;
 		}
+	}
+
+	internal readonly struct SwitchColorState
+	{
+		public SwitchColorState(UIColor? onTintColor, UIColor? thumbTintColor, UIColor? trackColor)
+		{
+			OnTintColor = onTintColor;
+			ThumbTintColor = thumbTintColor;
+			TrackColor = trackColor;
+		}
+
+		public UIColor? OnTintColor { get; }
+
+		public UIColor? ThumbTintColor { get; }
+
+		public UIColor? TrackColor { get; }
 	}
 }
