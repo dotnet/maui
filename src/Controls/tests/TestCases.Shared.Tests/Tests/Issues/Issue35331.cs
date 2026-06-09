@@ -12,6 +12,33 @@ public class Issue35331 : _IssuesUITest
 	public override string Issue => "Android TabbedPage inside Modal Navigation does not overlay BottomNavigationView after PushAsync";
 
 	[Test]
+	[Order(1)]
+	[Category(UITestCategories.TabbedPage)]
+	public void ModalTabbedPageDetailPageGoBackRestoresTabBar()
+	{
+		// Open the modal TabbedPage
+		App.WaitForElement("OpenModalButton");
+		App.Tap("OpenModalButton");
+
+		App.WaitForElement("Tab1Label");
+
+		// Push detail page
+		App.Tap("PushDetailButton");
+		App.WaitForElement("DetailPageLabel");
+
+		// Go back from detail page
+		App.Tap("GoBackButton");
+
+		// Verify we're back on Tab 1 with the tab bar restored
+		App.WaitForElement("Tab1Label");
+
+		// Dismiss the modal so the next test starts from a clean state
+		App.Back();
+		App.WaitForElement("OpenModalButton");
+	}
+
+	[Test]
+	[Order(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void ModalTabbedPagePushAsyncShouldOverlayBottomNavigationView()
 	{
@@ -31,28 +58,6 @@ public class Issue35331 : _IssuesUITest
 		// The detail page pushed via PushAsync should fully overlay the screen,
 		// hiding the BottomNavigationView (tab bar). Verify visually.
 		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
-	public void ModalTabbedPageDetailPageGoBackRestoresTabBar()
-	{
-		// Open the modal TabbedPage
-		App.WaitForElement("OpenModalButton");
-		App.Tap("OpenModalButton");
-
-		App.WaitForElement("Tab1Label");
-
-		// Push detail page
-		App.Tap("PushDetailButton");
-		App.WaitForElement("DetailPageLabel");
-
-		// Go back from detail page
-		App.Tap("GoBackButton");
-
-		// Verify we're back on Tab 1 with the tab bar restored
-		App.WaitForElement("Tab1Label");
-		App.WaitForElement("PushDetailButton");
 	}
 
 }
