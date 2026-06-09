@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -110,6 +111,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		[Controls.StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 		[Controls.StructuredItemsView.FooterProperty.PropertyName] = MapFooter,
 		[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
+		[nameof(IView.IsEnabled)] = MapIsEnabled,
 	};
 
 	bool _scrollUpdatePending;
@@ -117,6 +119,24 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 	{
 		handler.UpdateItemsSource();
+	}
+
+	// Whole-list fade for the directly-disabled case (CollectionView.IsEnabled = false),
+	// matching CV1's behavior on Windows. The per-ItemContainer Disabled VisualState fade
+	// is suppressed app-wide via the ItemContainerDisabledOpacity = 1.0 override in
+	// ItemsViewStyles.xaml so a parent-cascade disable (e.g. RefreshView.IsEnabled = false)
+	// does NOT fade items — that scenario doesn't invoke this mapper because MAUI's
+	// VirtualView.IsEnabled remains true. Here we only fade when the user explicitly
+	// disables the CollectionView itself, by applying the fade to MauiItemsView as a whole.
+	// The default ViewHandler.MapIsEnabled is still invoked first to preserve WinUI's
+	// IsEnabled = false semantics (input blocking, focus, automation).
+	// Fixes: https://github.com/dotnet/maui/issues/28343
+	public static new void MapIsEnabled(IViewHandler handler, IView view)
+	{
+		ViewHandler.MapIsEnabled(handler, view);
+
+		if (handler.PlatformView is MauiItemsView miv)
+			miv.Opacity = view.IsEnabled ? 1.0 : 0.3;
 	}
 
 	// Intentionally empty: ItemsUpdatingScrollMode is handled during scroll events
