@@ -97,7 +97,7 @@ Platform mismatch is supporting evidence, not proof by itself. For example, an i
 
 ## Output format
 
-Use a collapsed pull request review body. Start with a stable marker and put the review content inside one top-level `<details>` block so the PR timeline stays compact:
+Use a collapsed PR conversation comment body. Start with a stable marker and put the review content inside one top-level `<details>` block so the PR timeline stays compact:
 
 ```markdown
 <!-- Test Failure Review -->
@@ -146,5 +146,5 @@ Rules:
 - Use badge colors: `d1242f` for `Likely PR-caused`, `1a7f37` for `Likely unrelated`, `bf8700` for `Needs human investigation`, and `6e7781` for `Insufficient data`.
 - Use `Data-Partial` when any limitations are present; otherwise use `Data-Complete`.
 - Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
-- Repeated `/review tests` runs append separate non-blocking PR reviews; this workflow does not edit, hide, or supersede earlier review entries.
+- Repeated `/review tests` runs post a new PR conversation comment and hide older comments from the same workflow.
 - If there are no failing or inconclusive checks, report that no failing test evidence was found and use the noop path in gh-aw.

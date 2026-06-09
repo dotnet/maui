@@ -25,7 +25,7 @@
     Root output directory. A PR-number subdirectory is created below it.
 
 .PARAMETER PostComment
-    Post the generated report as a non-blocking PR review. By default, the
+    Post the generated report as a PR conversation comment. By default, the
     script only writes local artifacts.
 
 .PARAMETER DryRun
@@ -297,28 +297,56 @@ $ReportContent
 "@
 }
 
-function Publish-TestFailureReview {
+function Invoke-GhApiWithJsonPayload {
+    param(
+        [string[]]$Arguments,
+        [hashtable]$Payload,
+        [string]$FailureMessage
+    )
+
+    $payloadPath = [System.IO.Path]::GetTempFileName()
+    $stderrPath = [System.IO.Path]::GetTempFileName()
+    $Payload | ConvertTo-Json -Depth 4 | Set-Content -Path $payloadPath -Encoding UTF8
+    $output = & gh api @Arguments --input $payloadPath --jq .html_url 2>$stderrPath
+    $exitCode = $LASTEXITCODE
+    $errorOutput = Get-Content -Path $stderrPath -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    Remove-Item -Path $payloadPath -Force -ErrorAction SilentlyContinue
+    Remove-Item -Path $stderrPath -Force -ErrorAction SilentlyContinue
+    if ($exitCode -ne 0) {
+        throw "${FailureMessage}: $output $errorOutput"
+    }
+
+    return ($output | Where-Object { $_ -is [string] -and $_ -match '^https?://' } | Select-Object -Last 1)
+}
+
+function Publish-TestFailureReviewComment {
     param(
         [int]$PRNumber,
         [string]$Repository,
-        [string]$ReviewBodyPath,
-        [string]$ReviewBody
+        [string]$CommentPath,
+        [string]$CommentBody
     )
 
-    Set-Content -Path $ReviewBodyPath -Value $ReviewBody -Encoding UTF8
-    $payloadPath = [System.IO.Path]::GetTempFileName()
-    $stderrPath = [System.IO.Path]::GetTempFileName()
-    @{ body = $ReviewBody; event = "COMMENT" } | ConvertTo-Json -Depth 4 | Set-Content -Path $payloadPath -Encoding UTF8
-    $postOutput = & gh api --method POST "repos/$Repository/pulls/$PRNumber/reviews" --input $payloadPath --jq .html_url 2>$stderrPath
-    $postExitCode = $LASTEXITCODE
-    $postError = Get-Content -Path $stderrPath -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
-    Remove-Item -Path $payloadPath -Force -ErrorAction SilentlyContinue
-    Remove-Item -Path $stderrPath -Force -ErrorAction SilentlyContinue
-    if ($postExitCode -ne 0) {
-        throw "Failed to post PR review: $postOutput $postError"
+    $marker = "<!-- Test Failure Review -->"
+    $commentsRaw = & gh api "repos/$Repository/issues/$PRNumber/comments" --paginate 2>$null
+    $existing = $null
+    if ($LASTEXITCODE -eq 0 -and $commentsRaw) {
+        $comments = $commentsRaw | ConvertFrom-Json
+        $existing = @($comments | Where-Object { $_.body -and $_.body.Contains($marker) }) | Select-Object -Last 1
     }
 
-    return ($postOutput | Where-Object { $_ -is [string] -and $_ -match '^https?://' } | Select-Object -Last 1)
+    Set-Content -Path $CommentPath -Value $CommentBody -Encoding UTF8
+    if ($existing -and $existing.id) {
+        return Invoke-GhApiWithJsonPayload `
+            -Arguments @("--method", "PATCH", "repos/$Repository/issues/comments/$($existing.id)") `
+            -Payload @{ body = $CommentBody } `
+            -FailureMessage "Failed to update PR comment"
+    }
+
+    return Invoke-GhApiWithJsonPayload `
+        -Arguments @("--method", "POST", "repos/$Repository/issues/$PRNumber/comments") `
+        -Payload @{ body = $CommentBody } `
+        -FailureMessage "Failed to post PR comment"
 }
 
 Write-Host "Running local /review tests for PR #$PRNumber"
@@ -445,15 +473,15 @@ Set-Content -Path $CommentPath -Value $reviewBody -Encoding UTF8
 Write-Host "Review body: $CommentPath"
 
 if ($PostComment -and -not $DryRun) {
-    Write-Host "Posting report as PR review on #$PRNumber..."
-    $reviewUrl = Publish-TestFailureReview -PRNumber $PRNumber -Repository $Repository -ReviewBodyPath $CommentPath -ReviewBody $reviewBody
-    if ($reviewUrl) {
-        Write-Host "Posted PR review to #${PRNumber}: $reviewUrl"
+    Write-Host "Posting report as PR comment on #$PRNumber..."
+    $commentUrl = Publish-TestFailureReviewComment -PRNumber $PRNumber -Repository $Repository -CommentPath $CommentPath -CommentBody $reviewBody
+    if ($commentUrl) {
+        Write-Host "Posted PR comment to #${PRNumber}: $commentUrl"
     }
     else {
-        Write-Host "Posted PR review to #$PRNumber."
+        Write-Host "Posted PR comment to #$PRNumber."
     }
 }
 else {
-    Write-Host "Not posting. Use -PostComment to publish the generated PR review."
+    Write-Host "Not posting. Use -PostComment to publish the generated PR comment."
 }

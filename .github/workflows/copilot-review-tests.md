@@ -69,11 +69,12 @@ engine:
   model: claude-sonnet-4.6
 
 safe-outputs:
-  submit-pull-request-review:
-    allowed-events: [COMMENT]
+  add-comment:
     max: 1
     target: "*"
-    footer: "none"
+    hide-older-comments: true
+    discussions: false
+    footer: false
   noop:
     report-as-issue: false
   missing-tool:
@@ -178,14 +179,14 @@ test -f CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || in
 test -f CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.md
 ```
 
-If required files are missing, post a short failure report with `submit_pull_request_review` unless dry-run mode is active.
+If required files are missing, post a short failure report with `add_comment` unless dry-run mode is active.
 
 ## Dry-run mode
 
 When triggered via `workflow_dispatch`, `${{ inputs.suppress_output }}` controls output:
 
-- If `true`, perform the review and log the final report in your response, but do not call `submit_pull_request_review`.
-- If `false` or empty, post the report as a non-blocking PR review comment.
+- If `true`, perform the review and log the final report in your response, but do not call `add_comment`.
+- If `false` or empty, post the report as a PR conversation comment.
 
 ## When no action is needed
 
@@ -199,7 +200,7 @@ Example:
 
 ## Posting results
 
-If dry-run mode is not active, call `submit_pull_request_review` exactly once with `pull_request_number` set to the target PR number, `event` set to `COMMENT`, and `body` set to this collapsed top-level shape:
+If dry-run mode is not active, call `add_comment` exactly once with `item_number` set to the target PR number and `body` set to this collapsed top-level shape:
 
 ```markdown
 <!-- Test Failure Review -->
