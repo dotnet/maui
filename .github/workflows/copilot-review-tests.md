@@ -18,15 +18,16 @@ on:
         ISSUE_PULL_REQUEST_URL: ${{ github.event.issue.pull_request.url }}
       run: |
         if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-          exit 0
+          echo "should_run=true" >> "$GITHUB_OUTPUT"; exit 0
         fi
         if [ "$EVENT_NAME" != "issue_comment" ] || [ -z "${ISSUE_PULL_REQUEST_URL:-}" ]; then
-          exit 1
+          echo "should_run=false" >> "$GITHUB_OUTPUT"; exit 0
         fi
         if [[ "$COMMENT_BODY" =~ ^[[:space:]]*/review[[:space:]]+tests[[:space:]]*$ ]]; then
-          exit 0
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "should_run=false" >> "$GITHUB_OUTPUT"
         fi
-        exit 1
   workflow_dispatch:
     inputs:
       pr_number:
@@ -55,7 +56,12 @@ labels: ["pr-review", "testing"]
 # exactly `/review tests`. workflow_dispatch is always allowed.
 if: >-
   github.event_name == 'workflow_dispatch' ||
-  needs.pre_activation.outputs.exact_command_result == 'success'
+  needs.pre_activation.outputs.exact_command_should_run == 'true'
+
+jobs:
+  pre-activation:
+    outputs:
+      exact_command_should_run: ${{ steps.exact_command.outputs.should_run }}
 
 permissions:
   contents: read

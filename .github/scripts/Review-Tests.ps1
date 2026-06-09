@@ -218,7 +218,7 @@ function New-TestFailureReviewBody {
         [string]$ContextJsonPath
     )
 
-    $marker = "<!-- Test Failure Review -->"
+    $marker = "<!-- Test Failure Review (local) -->"
     $ReportContent = Collapse-OpenDetails $ReportContent
     if ($ReportContent.Contains($marker)) {
         return $ReportContent
@@ -237,6 +237,7 @@ function New-TestFailureReviewBody {
     $prAuthor = $pr.author.login
 
     $verdict = Get-ReportVerdict -Content $ReportContent
+    $safeVerdict = Escape-Html $verdict
     $verdictColor = Get-VerdictColor -Verdict $verdict
     $verdictIcon = Get-VerdictIcon -Verdict $verdict
 
@@ -281,7 +282,7 @@ function New-TestFailureReviewBody {
 $marker
 
 <details>
-<summary>$verdictIcon <strong>Test Failure Review:</strong> $verdict — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$prTitle</strong></summary>
+<summary>$verdictIcon <strong>Test Failure Review:</strong> $safeVerdict — <a href="$commitUrl"><code>$commitSha7</code></a> · <strong>$prTitle</strong></summary>
 <br/>
 
 $authorPing
@@ -327,7 +328,7 @@ function Publish-TestFailureReviewComment {
         [string]$CommentBody
     )
 
-    $marker = "<!-- Test Failure Review -->"
+    $marker = "<!-- Test Failure Review (local) -->"
     $commentsRaw = & gh api "repos/$Repository/issues/$PRNumber/comments" --paginate 2>$null
     $existing = $null
     if ($LASTEXITCODE -eq 0 -and $commentsRaw) {
