@@ -534,15 +534,18 @@ function Invoke-TestRunWithRetry {
         if ($attempt -lt $MaxRetries) {
             Write-Host "  ⚠️ Environment error (attempt $attempt/$MaxRetries): $($result.Error) — retrying in 30s..." -ForegroundColor Yellow
 
-            # On app launch failures, reboot the simulator/emulator to recover
-            if ($result.Error -match "APP_LAUNCH_FAILURE|exit code.*83|app.*crash" -and $script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
-                Write-Host "  🔄 Rebooting device ($($script:BootedDeviceUdid)) to recover from app launch failure..." -ForegroundColor Yellow
+            # Device test environment failures can leave the emulator/simulator in
+            # a bad package-manager state for the next without/with-fix attempt.
+            if ($result.Error -match "APP_LAUNCH_FAILURE|exit code.*83|app.*crash|package.*install|package.*operation|command timed out|XHarness exit 78" -and $script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
+                Write-Host "  🔄 Rebooting device ($($script:BootedDeviceUdid)) to recover from environment error: $($result.Error)" -ForegroundColor Yellow
                 if ($Platform -in @("ios", "catalyst", "maccatalyst")) {
                     xcrun simctl shutdown $script:BootedDeviceUdid 2>$null
                     Start-Sleep -Seconds 5
                     xcrun simctl boot $script:BootedDeviceUdid 2>$null
                 } elseif ($Platform -eq "android") {
                     adb -s $script:BootedDeviceUdid reboot 2>$null
+                    Start-Sleep -Seconds 10
+                    adb -s $script:BootedDeviceUdid wait-for-device 2>$null
                 }
             }
 
@@ -633,6 +636,9 @@ function Get-TestResultFromOutput {
     $envErrorPatterns = @(
         @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
         @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
+        @{ Pattern = "XHarness exit code:\s*78"; Message = "Package installation failed (XHarness exit 78)" }
+        @{ Pattern = "PACKAGE_INSTALLATION_FAILURE"; Message = "Package installation failed (XHarness package installation failure)" }
+        @{ Pattern = "Waiting for command timed out: execution may be compromised"; Message = "Device package operation timed out" }
         @{ Pattern = "Application test run crashed"; Message = "App crashed during test run" }
         @{ Pattern = "SIGABRT.*load_aot_module"; Message = "App crashed during AOT loading" }
         @{ Pattern = "AppiumServerHasNotBeenStartedLocally"; Message = "Appium server failed to start" }
