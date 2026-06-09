@@ -97,14 +97,16 @@ Platform mismatch is supporting evidence, not proof by itself. For example, an i
 
 ## Output format
 
-Use an AI-summary-style comment format. Start with a stable marker, a short status header, badges, and one expandable review session:
+Use a collapsed pull request review body. Start with a stable marker and put the review content inside one top-level `<details>` block so the PR timeline stays compact:
 
 ```markdown
 <!-- Test Failure Review -->
 
-## Test Failure Review
+<details>
+<summary>[icon] <strong>Test Failure Review:</strong> [verdict] — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong></summary>
+<br/>
 
-> @[PR author] — new test-failure review results are available based on this last commit: <a href="[commit URL]"><code>[sha7]</code></a>.
+> @[PR author] — test-failure review results are available based on commit <a href="[commit URL]"><code>[sha7]</code></a>.
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
 <p align="left">
@@ -113,11 +115,6 @@ Use an AI-summary-style comment format. Start with a stable marker, a short stat
   <img alt="Data [Complete|Partial]" src="https://img.shields.io/badge/Data-[Complete|Partial]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Platform [platform]" src="https://img.shields.io/badge/Platform-[platform]-0969da?labelColor=30363d&style=flat-square">
 </p>
-
-<!-- SESSION:[sha7] START -->
-<details>
-<summary>[icon] <strong>Test Failure Review</strong> — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong> · <em>[UTC timestamp]</em></summary>
-<br/>
 
 **Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data]
 
@@ -139,7 +136,6 @@ Use an AI-summary-style comment format. Start with a stable marker, a short stat
 </details>
 
 </details>
-<!-- SESSION:[sha7] END -->
 ```
 
 Rules:
