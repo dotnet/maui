@@ -140,8 +140,7 @@ function Add-Label {
             return $true
         }
 
-        $message = ($output | ForEach-Object { [string]$_ }) -join "`n"
-        $message = $message.Trim()
+        $message = ($output | Out-String).Trim()
         if ([string]::IsNullOrWhiteSpace($message)) {
             $message = "gh api exited with code $exitCode."
         } elseif ($message.Length -gt 1000) {
