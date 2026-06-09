@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Media
 			=> PhotoAsync(options, true, true);
 
 		public Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions options)
-			=> PhotosAsync(options, true, true);
+			=> PhotosAsync(options, true);
 
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 		{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Media
 			=> PhotoAsync(options, false, true);
 
 		public Task<List<FileResult>> PickVideosAsync(MediaPickerOptions options)
-			=> PhotosAsync(options, false, true);
+			=> PhotosAsync(options, false);
 
 		public Task<FileResult> CaptureVideoAsync(MediaPickerOptions options)
 		{
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		async Task<List<FileResult>> PhotosAsync(MediaPickerOptions options, bool photo, bool pickExisting)
+		async Task<List<FileResult>> PhotosAsync(MediaPickerOptions options, bool photo)
 		{
 			// iOS 14+ only supports multiple selection
 			// TODO throw exception?
@@ -181,54 +181,35 @@ namespace Microsoft.Maui.Media
 				return [];
 			}
 
-			if (!photo && !pickExisting)
-			{
-				await Permissions.EnsureGrantedAsync<Permissions.Microphone>();
-			}
-
-			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
-			if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0))
-			{
-				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
-			}
-
-			if (!pickExisting)
-			{
-				await Permissions.EnsureGrantedAsync<Permissions.Camera>();
-			}
-
 			var vc = WindowStateManager.Default.GetCurrentUIViewController(true);
 			var tcs = new TaskCompletionSource<List<FileResult>>();
 			UIViewController pickerRef = null;
 
 			PHPickerFileResult.CleanupTemporaryFiles();
 
-			if (pickExisting)
+			var config = new PHPickerConfiguration
 			{
-				var config = new PHPickerConfiguration
-				{
-					Filter = photo
-						? PHPickerFilter.ImagesFilter
-						: PHPickerFilter.VideosFilter,
-					SelectionLimit = options?.SelectionLimit ?? 1
-				};
+				Filter = photo
+					? PHPickerFilter.ImagesFilter
+					: PHPickerFilter.VideosFilter,
+				SelectionLimit = options?.SelectionLimit ?? 1
+			};
 
-				if (!photo)
-				{
-					config.PreferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationMode.Compatible;
-				}
-
-				var picker = new PHPickerViewController(config)
-				{
-					Delegate = new Media.PhotoPickerDelegate
-					{
-						CompletedHandler = res =>
-							_ = CompletePickerResultsAsync(res, options, tcs)
-					}
-				};
-
-				pickerRef = picker;
+			if (!photo)
+			{
+				config.PreferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationMode.Compatible;
 			}
+
+			var picker = new PHPickerViewController(config)
+			{
+				Delegate = new Media.PhotoPickerDelegate
+				{
+					CompletedHandler = res =>
+						_ = CompletePickerResultsAsync(res, options, tcs)
+				}
+			};
+
+			pickerRef = picker;
 
 			if (!string.IsNullOrWhiteSpace(options?.Title))
 			{
@@ -289,17 +270,20 @@ namespace Microsoft.Maui.Media
 				return [];
 
 			var fileResults = new List<FileResult>(results.Length);
+			PHPickerFileResult fileResult = null;
 			try
 			{
 				foreach (var file in results)
 				{
-					var fileResult = new PHPickerFileResult(file.ItemProvider);
+					fileResult = new PHPickerFileResult(file.ItemProvider);
 					await fileResult.LoadFileRepresentationAsync().ConfigureAwait(false);
 					fileResults.Add(fileResult);
+					fileResult = null;
 				}
 			}
 			catch
 			{
+				fileResult?.Dispose();
 				DisposeFileResults(fileResults);
 				throw;
 			}
@@ -538,6 +522,7 @@ namespace Microsoft.Maui.Media
 					await rotatedStream.CopyToAsync(fileStream).ConfigureAwait(false);
 				}
 
+				// Ownership transfers to the returned FileResult; stale files are swept from the MediaPicker temp folder.
 				return new FileResult(tempFilePath, original.FileName);
 			}
 			catch (Exception ex)
@@ -1300,7 +1285,7 @@ namespace Microsoft.Maui.Media
 
 					using (var fileStream = File.Create(processedPath))
 					{
-						await processedStream.CopyToAsync(fileStream);
+						await processedStream.CopyToAsync(fileStream).ConfigureAwait(false);
 					}
 
 					File.SetLastWriteTimeUtc(processedPath, DateTime.UtcNow);
