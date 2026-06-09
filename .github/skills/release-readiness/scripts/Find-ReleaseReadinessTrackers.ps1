@@ -76,7 +76,7 @@
 
 .EXAMPLE
     # Run for a non-current major version (cross-major support)
-    pwsh ./Find-ReleaseReadinessTrackers.ps1 -MajorVersion 9 -OutputJson /tmp/sr-trackers.json
+    pwsh ./Find-ReleaseReadinessTrackers.ps1 -MajorVersion 9 -OutputJson CustomAgentLogsTmp/release-readiness/sr-trackers.json
 
 .OUTPUTS
     JSON: { detectedAt, repo, majorVersion, mainBranch, highestShippedPatch,

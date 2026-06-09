@@ -513,12 +513,18 @@ if (-not $SkipE2E) {
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan
     $badRepoOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-badrepo-$(Get-Date -Format 'HHmmss').json"
-    & pwsh -NoProfile -File $detectScriptPath -NoFetch -Repo /tmp -OutputJson $badRepoOut 2>&1 | Out-Null
-    $exit = $LASTEXITCODE
-    $jsonCreated = Test-Path $badRepoOut
-    Assert-Eq -Label "exits non-zero on non-git path"           -Expected $true -Actual ($exit -ne 0)
-    Assert-Eq -Label "does not write JSON on failure (fail-closed)" -Expected $false -Actual $jsonCreated
-    if ($jsonCreated) { Remove-Item -Force $badRepoOut }
+    $badRepoPath = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-non-git-$(Get-Date -Format 'HHmmss')"
+    try {
+        New-Item -ItemType Directory -Path $badRepoPath -Force | Out-Null
+        & pwsh -NoProfile -File $detectScriptPath -NoFetch -Repo $badRepoPath -OutputJson $badRepoOut 2>&1 | Out-Null
+        $exit = $LASTEXITCODE
+        $jsonCreated = Test-Path $badRepoOut
+        Assert-Eq -Label "exits non-zero on non-git path"           -Expected $true -Actual ($exit -ne 0)
+        Assert-Eq -Label "does not write JSON on failure (fail-closed)" -Expected $false -Actual $jsonCreated
+    } finally {
+        if (Test-Path $badRepoOut) { Remove-Item -Force $badRepoOut }
+        if (Test-Path $badRepoPath) { Remove-Item -Recurse -Force $badRepoPath }
+    }
 }
 
 # ─────────── Unit tests for Get-ReleaseReadiness internals ───────────
@@ -589,6 +595,53 @@ $engNotScriptsFiles = @(
 Assert-Eq -Label "eng/cake/ is NOT classified as tooling (only eng/scripts/ is)" -Expected $false `
     -Actual (Test-PrIsToolingOnly -Files $engNotScriptsFiles)
 
+# ───── Classify-RegressionCandidate (contradictory evidence guard) ─────
+Write-Host "`n[Unit] Classify-RegressionCandidate (contradictory merged backport)" -ForegroundColor Cyan
+
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number = $PrNumber
+        title = 'Fix regression'
+        state = 'MERGED'
+        baseRefName = 'main'
+        mergedAt = '2026-01-01T00:00:00Z'
+        closedAt = '2026-01-01T00:00:00Z'
+        body = 'Fixes #35000'
+        mergeCommit = [pscustomobject]@{ oid = 'abc1234def5678' }
+        files = @([pscustomobject]@{ path = 'src/Core/src/Layouts/Layout.cs'; additions = 1; deletions = 0 })
+    }
+}
+
+function Get-BackportPrsForSr {
+    param($Repo, $SrBranch, $SourcePrNumber)
+    return @([pscustomobject]@{
+        number = 36000
+        title = 'Backport fix regression'
+        state = 'MERGED'
+        mergedAt = '2026-01-02T00:00:00Z'
+        closedAt = '2026-01-02T00:00:00Z'
+    })
+}
+
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return $true
+}
+
+$classification = Classify-RegressionCandidate `
+    -Issue @{ number = 35000 } `
+    -CandidatePrs @(35001) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr7'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "merged backport absent from SR sourcePrSet requires review" `
+    -Expected 'needs-human-review' -Actual $classification.classification
+Assert-Eq -Label "contradictory merged backport evidence is low confidence" `
+    -Expected 'low' -Actual $classification.confidence
+Assert-Eq -Label "contradictory evidence explains missing SR git contents" `
+    -Expected $true -Actual (($classification.evidence -join "`n") -match 'not found in SR git contents')
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 
@@ -638,24 +691,23 @@ $dataYellow = @{
 $v = Get-OverallVerdict -Data $dataYellow
 Assert-Eq -Label "backport-in-progress → 🟡 Conditionally Ready" -Expected '🟡' -Actual $v.symbol
 
-# Yellow: red-known-flakes CI
+# Yellow: red-needs-review CI
 $dataYellowCi = @{
     metadata = @{ mode = 'shipped' }
     regressions = @(@{ classification = 'in-sr-active'; state = 'CLOSED' })
-    ci = @{ overall = 'red-known-flakes' }
+    ci = @{ overall = 'red-needs-review' }
 }
 $v = Get-OverallVerdict -Data $dataYellowCi
-Assert-Eq -Label "red-known-flakes (shipped) → 🟡" -Expected '🟡' -Actual $v.symbol
+Assert-Eq -Label "red-needs-review (shipped) → 🟡" -Expected '🟡' -Actual $v.symbol
 
-# Red: red-new-failures
-$dataRedCi = @{
+# Yellow: partial-unknown CI
+$dataPartialUnknownCi = @{
     metadata = @{ mode = 'shipped' }
     regressions = @(@{ classification = 'in-sr-active'; state = 'CLOSED' })
-    ci = @{ overall = 'red-new-failures' }
+    ci = @{ overall = 'partial-unknown' }
 }
-$v = Get-OverallVerdict -Data $dataRedCi
-Assert-Eq -Label "red-new-failures (shipped) → 🔴" -Expected '🔴' -Actual $v.symbol
-Assert-Eq -Label "red-new-failures (shipped) → tier 1" -Expected 1 -Actual $v.tier
+$v = Get-OverallVerdict -Data $dataPartialUnknownCi
+Assert-Eq -Label "partial-unknown (shipped) → 🟡" -Expected '🟡' -Actual $v.symbol
 
 # Red: open no-fix-yet
 $dataRedRegr = @{
@@ -693,19 +745,19 @@ Assert-Eq -Label "in-sr-reverted → 🔴" -Expected '🔴' -Actual $v.symbol
 $dataCandidateCi = @{
     metadata = @{ mode = 'candidate' }
     regressions = @()
-    ci = @{ overall = 'red-known-flakes' }
+    ci = @{ overall = 'red-needs-review' }
 }
 $v = Get-OverallVerdict -Data $dataCandidateCi
-Assert-Eq -Label "candidate + red-known-flakes does NOT block → 🟢" -Expected '🟢' -Actual $v.symbol
+Assert-Eq -Label "candidate + red-needs-review does NOT block → 🟢" -Expected '🟢' -Actual $v.symbol
 
-# Even red-new-failures in candidate mode is advisory only
-$dataCandidateRed = @{
+# Unknown CI in candidate mode is advisory only
+$dataCandidateUnknown = @{
     metadata = @{ mode = 'candidate' }
     regressions = @()
-    ci = @{ overall = 'red-new-failures' }
+    ci = @{ overall = 'partial-unknown' }
 }
-$v = Get-OverallVerdict -Data $dataCandidateRed
-Assert-Eq -Label "candidate + red-new-failures does NOT block → 🟢" -Expected '🟢' -Actual $v.symbol
+$v = Get-OverallVerdict -Data $dataCandidateUnknown
+Assert-Eq -Label "candidate + partial-unknown does NOT block → 🟢" -Expected '🟢' -Actual $v.symbol
 
 # ───── ConvertTo-LinkedSha / ConvertTo-LinkedPr ─────
 Write-Host "`n[Unit] Markdown linkification helpers" -ForegroundColor Cyan

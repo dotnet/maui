@@ -32,13 +32,13 @@ This skill **reports**. It does **not** execute release operations against dotne
 pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
   -SrBranch release/10.0.1xx-sr7 \
   -RegressionLabels regressed-in-10.0.60,regressed-in-10.0.70 \
-  -OutputDir /tmp/sr7-readiness
+  -OutputDir CustomAgentLogsTmp/release-readiness/sr7-readiness
 
 # Auto-infer regression labels (interactive — agent should confirm before using for automation)
 pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
   -SrBranch release/10.0.1xx-sr7 \
   -InferRegressionLabels \
-  -OutputDir /tmp/sr7-readiness
+  -OutputDir CustomAgentLogsTmp/release-readiness/sr7-readiness
 
 # Just the SR commit + source-PR list (foundation for any cherry-pick verification)
 pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
@@ -92,7 +92,6 @@ Each candidate fix PR is classified with confidence + evidence:
 | `merged-non-main-only` | Fix merged but only to `inflight/current` (or similar), not `main` |
 | `open-on-main` | Fix PR is OPEN against main, not yet merged |
 | `no-fix-yet` | No fix PR cross-referenced from the regression issue |
-| `out-of-scope` | Issue lacks any of the `-RegressionLabels` (used for sanity checks, not normally surfaced) |
 | `needs-human-review` | Evidence is contradictory or weak (e.g. cross-reference only mentions the issue) |
 
 ## CI Status Categories
@@ -100,10 +99,10 @@ Each candidate fix PR is classified with confidence + evidence:
 | CI verdict | Meaning |
 |------------|---------|
 | `green` | Latest build on SR HEAD succeeded across all pipelines |
-| `red-known-flakes` | Failures match historical fixture-flake patterns (Appium `OneTimeSetUp`, etc.) |
-| `red-new-failures` | Failures don't match known flake patterns — manual investigation needed |
+| `red-needs-review` | Latest build failed or partially succeeded — investigate failures before judging ship-readiness |
 | `stale` | Latest build is older than the current SR HEAD — must re-run before judging |
-| `unknown` | Couldn't query pipeline (auth / outage) |
+| `partial-unknown` | At least one pipeline couldn't be queried, but no queried pipeline is red or stale |
+| `unknown` | No pipeline result could be classified |
 
 ## Methodology
 
@@ -140,5 +139,5 @@ The test harness asserts the known-answer set from the SR7 readiness analysis:
 
 - #35313 → `in-sr-active` (Android regression, fixed by #35356, backported as #35428)
 - #35344 → `in-sr-active` (Android scroll perf regression; primary fix #35379's backport #35442 was closed unmerged, but follow-on SafeArea fix #35664 was backported as #35693 — script correctly surfaces the partial fix that actually shipped)
-- #35326 → `out-of-scope` (NOT labeled `regressed-in-10.0.60`)
+- #35326 is intentionally absent from the regression scan because it is NOT labeled `regressed-in-10.0.60`
 - #35771 → `no-fix-yet` (10.0.70 regression, no fix PR exists)

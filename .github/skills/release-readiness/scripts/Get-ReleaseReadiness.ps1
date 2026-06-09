@@ -86,7 +86,7 @@
 .EXAMPLE
     pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 `
         -RegressionLabels regressed-in-10.0.60,regressed-in-10.0.70 `
-        -OutputDir /tmp/sr7
+        -OutputDir CustomAgentLogsTmp/release-readiness/sr7
 
 .EXAMPLE
     pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Phase commits
@@ -95,14 +95,14 @@
     # Pre-flight: what would SR8 contain if cut from main today?
     pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Candidate `
         -RegressionLabels regressed-in-10.0.70,regressed-in-10.0.80 `
-        -OutputDir /tmp/sr8-candidate
+        -OutputDir CustomAgentLogsTmp/release-readiness/sr8-candidate
 
 .EXAMPLE
     # Pre-flight SR8 modeling the SR7→SR8 merge workflow
     pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Candidate `
         -InheritFromPriorSr `
         -RegressionLabels regressed-in-10.0.70,regressed-in-10.0.80 `
-        -OutputDir /tmp/sr8-candidate
+        -OutputDir CustomAgentLogsTmp/release-readiness/sr8-candidate
 #>
 
 [CmdletBinding()]
@@ -486,9 +486,7 @@ function Get-PipelineLatestBuilds {
 
     $url = "https://dev.azure.com/$org/$project/_apis/build/builds?definitions=$defId&branchName=$branchSpec&`$top=5&api-version=7.1"
     try {
-        $resp = curl -s -L --max-time 30 "$url" 2>$null
-        if (-not $resp) { return $null }
-        $obj = $resp | ConvertFrom-Json -ErrorAction Stop
+        $obj = Invoke-RestMethod -Uri $url -TimeoutSec 30 -ErrorAction Stop
         if (-not $obj.value) { return $null }
         return $obj.value
     } catch {
@@ -521,9 +519,7 @@ function Get-CIStatus {
         $isAtOrAhead = $false
         if ($sourceSha -and $Ctx.srHeadSha) {
             # Is SR HEAD an ancestor of (or equal to) the build's source SHA?
-            $check = Invoke-Git "merge-base --is-ancestor $($Ctx.srHeadSha) $sourceSha"
-            $isAtOrAhead = ($LASTEXITCODE -eq 0)
-            if (-not $isAtOrAhead -and $sourceSha -eq $Ctx.srHeadSha) { $isAtOrAhead = $true }
+            $isAtOrAhead = Test-CommitOnBranch -Sha $Ctx.srHeadSha -BranchRef $sourceSha
         }
 
         $verdict = if (-not $isAtOrAhead) {
@@ -793,6 +789,7 @@ function Classify-RegressionCandidate {
     $perPrVerdicts = @()
     foreach ($pr in $strongPrs) {
         $verdict = $null
+        $confidence = 'high'
         $evidence = @()
 
         # In-SR (with revert check)
@@ -822,8 +819,9 @@ function Classify-RegressionCandidate {
                         $evidence += "Backport PR #$($mergedBackport.number) in SR (active)"
                     }
                 } else {
-                    $verdict = 'in-sr-active'
-                    $evidence += "Backport PR #$($mergedBackport.number) marked merged (SR contents may need refresh)"
+                    $verdict = 'needs-human-review'
+                    $confidence = 'low'
+                    $evidence += "Backport PR #$($mergedBackport.number) is MERGED in GitHub but not found in SR git contents — re-run without -NoFetch or verify the merge target manually"
                 }
             }
             elseif ($openBackport) {
@@ -837,9 +835,11 @@ function Classify-RegressionCandidate {
             elseif ($pr.state -eq 'MERGED') {
                 if ($pr.onMain) {
                     $verdict = 'merged-on-main-no-backport'
+                    $confidence = 'medium'
                     $evidence += "PR #$($pr.number) merged to main, no backport PR opened"
                 } else {
                     $verdict = 'merged-non-main-only'
+                    $confidence = 'medium'
                     $evidence += "PR #$($pr.number) merged but NOT on main (likely inflight-only)"
                 }
             }
@@ -849,11 +849,12 @@ function Classify-RegressionCandidate {
             }
             else {
                 $verdict = 'needs-human-review'
+                $confidence = 'low'
                 $evidence += "PR #$($pr.number) in unexpected state: $($pr.state)"
             }
         }
 
-        $perPrVerdicts += @{ pr = $pr; verdict = $verdict; evidence = $evidence }
+        $perPrVerdicts += @{ pr = $pr; verdict = $verdict; confidence = $confidence; evidence = $evidence }
     }
 
     # Pick the highest-priority verdict (in-sr-active > backport-in-progress > ... > no-fix-yet)
@@ -884,7 +885,7 @@ function Classify-RegressionCandidate {
 
     @{
         classification = $best.verdict
-        confidence = 'high'
+        confidence = $best.confidence
         evidence = $best.evidence
         candidateFixPrs = @($strongPrs | ForEach-Object { @{
             number = $_.number; title = $_.title; state = $_.state
@@ -1024,11 +1025,10 @@ function Get-OverallVerdict {
           🔴 Not Ready when ANY of:
             - One or more regression classifications in Tier 1
               (in-sr-reverted, no-fix-yet for an OPEN regression issue)
-            - SR CI overall verdict is 'red-new-failures'  (NOT candidate mode)
-
           🟡 Conditionally Ready when ANY of:
             - One or more Tier 2 classifications
-            - SR CI overall verdict is 'red-known-flakes' or 'stale'  (NOT candidate)
+            - SR CI overall verdict is 'red-needs-review', 'stale',
+              'partial-unknown', or 'unknown'  (NOT candidate)
 
           🟢 Ready otherwise.
 
@@ -1085,17 +1085,17 @@ function Get-OverallVerdict {
     # CI status (skipped for candidate mode — main CI is naturally noisy)
     if (-not $isCandidate -and $Data.ContainsKey('ci') -and $Data['ci']) {
         switch ($Data['ci'].overall) {
-            'red-new-failures' {
-                $tier1 = $true
-                $reasons.Add("[Tier 1] CI on SR branch: ``red-new-failures``") | Out-Null
-            }
-            'red-known-flakes' {
+            'red-needs-review' {
                 $tier2 = $true
-                $reasons.Add("[Tier 2] CI on SR branch: ``red-known-flakes``") | Out-Null
+                $reasons.Add("[Tier 2] CI on SR branch: ``red-needs-review`` — investigate failures before judging") | Out-Null
             }
             'stale' {
                 $tier2 = $true
                 $reasons.Add("[Tier 2] CI on SR branch: ``stale`` — re-run before judging") | Out-Null
+            }
+            'partial-unknown' {
+                $tier2 = $true
+                $reasons.Add("[Tier 2] CI verdict ``partial-unknown`` — one or more pipeline queries failed") | Out-Null
             }
             'unknown' {
                 $tier2 = $true
@@ -1103,7 +1103,7 @@ function Get-OverallVerdict {
             }
         }
     } elseif ($isCandidate -and $Data.ContainsKey('ci') -and $Data['ci'] -and
-              $Data['ci'].overall -in @('red-new-failures', 'red-known-flakes', 'stale', 'unknown')) {
+              $Data['ci'].overall -in @('red-needs-review', 'stale', 'partial-unknown', 'unknown')) {
         $reasons.Add("[Advisory] Candidate mode — main CI is ``$($Data['ci'].overall)``. Re-evaluate after SR cut.") | Out-Null
     }
 

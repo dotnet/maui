@@ -347,13 +347,13 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 12. **release-readiness** (`.github/skills/release-readiness/SKILL.md`)
     - **Purpose**: Surveys an SR (servicing release) branch for ship-readiness — CI status, cherry-pick coverage, regression coverage, open SR-targeting PRs
     - **Trigger phrases**: "release readiness for SRN", "is SR7 ready to ship", "survey the SR branch", "SR ship readiness"
-    - **Scripts**: `Get-ReleaseReadiness.ps1` (single fat script, ~970 lines)
+    - **Scripts**: `Get-ReleaseReadiness.ps1`
     - **Output**: JSON + Markdown report, list of source PRs in SR, classification of regression issues (in-sr-active, rejected-from-sr, no-fix-yet, etc.)
     - **Note**: Deterministic and reproducible — does NOT depend on MCP tools. For WorkIQ enrichment, use the `release-readiness-agent` instead.
 
 #### Internal Skills (Used by Agents)
 
-12. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+13. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.

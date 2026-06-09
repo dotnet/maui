@@ -63,7 +63,7 @@ When the user asks about an SR that hasn't been cut yet (e.g. "is SR8 ready?" an
 ```bash
 pwsh ./Get-ReleaseReadiness.ps1 -SrBranch release/10.0.1xx-sr7 -Candidate \
   -RegressionLabels regressed-in-10.0.70,regressed-in-10.0.80 \
-  -OutputDir /tmp/sr8-candidate
+  -OutputDir CustomAgentLogsTmp/release-readiness/sr8-candidate
 ```
 
 The script treats `origin/main` as the "SR-to-be" and uses the named branch as the exclude baseline. Report header will read "CANDIDATE for next SR (vs <prior>)". Frame the verdict as a **pre-flight** — what would ship if cut from main today — not as final ship-readiness.
@@ -87,7 +87,7 @@ Never silently accept inferred labels for the final report.
 pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
   -SrBranch <branch> \
   -RegressionLabels <labels> \
-  -OutputDir /tmp/<branch-slug>-readiness
+  -OutputDir CustomAgentLogsTmp/release-readiness/<branch-slug>-readiness
 ```
 
 For large repos this can take 60-120s (one timeline walk per regression issue). Tell the user it's running.
@@ -106,7 +106,7 @@ workiq.ask_work_iq:
 Attach WorkIQ findings to your report as "Why rejected:" detail bullets under each rejected entry. If WorkIQ returns nothing, say so explicitly — never guess.
 
 ### 6. Present the verdict
-Lead with a 1-2 sentence overall verdict (green / red-flakes / red-new / blocked), then the per-pipeline CI table, then the regression-tier tables, then recommended actions.
+Lead with a 1-2 sentence overall verdict (green / red-needs-review / blocked), then the per-pipeline CI table, then the regression-tier tables, then recommended actions.
 
 Use the structure from the script's `release-readiness.md` output as a starting point, but:
 - Inline WorkIQ context for rejected backports
