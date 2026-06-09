@@ -425,6 +425,185 @@
                                   VerticalAlignment="Stretch"/>
         </ControlTemplate>
 
+        <!-- CV2 default ItemContainer template. Mirrors WinUI's stock ItemContainer template
+             (selection visuals, multi-select checkbox) but intentionally OMITS the
+             DisabledStates VisualStateGroup. WinUI's default Disabled VisualState animates
+             PART_ContainerRoot.Opacity to 0.3 and blocks pointer input — which causes items
+             to fade and become unresponsive whenever an ancestor (e.g. RefreshView) sets
+             IsEnabled = false (the cascade still flows, but with no Disabled state defined,
+             no Storyboard runs). CV1's ListViewItem and iOS/Android equivalents do not
+             exhibit this behavior; this template keeps CV2 visually and behaviorally
+             consistent with them. ItemContainer renders its Child directly into
+             PART_ContainerRoot (matching WinUI's default template), so no ContentPresenter
+             is declared here — adding one would conflict with the framework's Child hosting.
+             Fixes: https://github.com/dotnet/maui/issues/28343 -->
+        <ControlTemplate x:Key="MauiItemContainerTemplate"
+                         TargetType="controls:ItemContainer">
+                <Grid x:Name="PART_ContainerRoot"
+                      Background="{TemplateBinding Background}"
+                      CornerRadius="{TemplateBinding CornerRadius}">
+                        <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CombinedStates">
+                                        <VisualState x:Name="UnselectedNormal"/>
+                                        <VisualState x:Name="UnselectedPointerOver">
+                                                <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Fill">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerPointerOverBackground}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Stroke">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerPointerOverBorderBrush}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="UnselectedPressed">
+                                                <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Fill">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerPressedBackground}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Stroke">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerPressedBorderBrush}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="SelectedNormal">
+                                                <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="PART_SelectionVisual"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         Duration="0"
+                                                                         To="1"/>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionVisual"
+                                                                                       Storyboard.TargetProperty="BorderBrush">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectionVisualBackground}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Fill">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedBackground}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Stroke">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedInnerBorderBrush}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Margin">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedInnerMargin}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="SelectedPointerOver">
+                                                <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="PART_SelectionVisual"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         Duration="0"
+                                                                         To="1"/>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Fill">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedPointerOverBackground}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionVisual"
+                                                                                       Storyboard.TargetProperty="BorderBrush">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectionVisualPointerOverBackground}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Stroke">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedInnerBorderBrush}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Margin">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedInnerMargin}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="SelectedPressed">
+                                                <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="PART_SelectionVisual"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         Duration="0"
+                                                                         To="1"/>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Fill">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedPressedBackground}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionVisual"
+                                                                                       Storyboard.TargetProperty="BorderBrush">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectionVisualPressedBackground}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Stroke">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedInnerBorderBrush}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CommonVisual"
+                                                                                       Storyboard.TargetProperty="Margin">
+                                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                                        Value="{ThemeResource ItemContainerSelectedInnerMargin}"/>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                        </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="MultiSelectStates">
+                                        <VisualState x:Name="Single"/>
+                                        <VisualState x:Name="Multiple">
+                                                <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="PART_SelectionCheckbox"
+                                                                         Storyboard.TargetProperty="Opacity"
+                                                                         Duration="0"
+                                                                         To="1"/>
+                                                </Storyboard>
+                                        </VisualState>
+                                </VisualStateGroup>
+                                <!-- DisabledStates intentionally omitted: see template-level comment.
+                                     A cascaded IsEnabled = false from a parent (RefreshView) still flows
+                                     through, but with no Disabled VisualState defined the framework's
+                                     GoToState("Disabled") is a no-op — no Storyboard animates Opacity
+                                     and no input block is applied. -->
+                        </VisualStateManager.VisualStateGroups>
+
+                        <!-- Placeholder for Child: ItemContainer adds its Child as an additional
+                             visual child of this Grid (PART_ContainerRoot). Do NOT add a
+                             ContentPresenter here — that would conflict with the framework's
+                             Child hosting. -->
+
+                        <Grid x:Name="PART_SelectionVisual"
+                              x:DeferLoadStrategy="Lazy"
+                              BorderBrush="Transparent"
+                              BorderThickness="3"
+                              Background="Transparent"
+                              CornerRadius="{TemplateBinding CornerRadius}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              IsHitTestVisible="False"
+                              Opacity="0"/>
+                        <Rectangle x:Name="PART_CommonVisual"
+                                   Stroke="{ThemeResource ItemContainerBorderBrush}"
+                                   StrokeThickness="{ThemeResource ItemContainerSelectedInnerThickness}"
+                                   HorizontalAlignment="Stretch"
+                                   VerticalAlignment="Stretch"
+                                   IsHitTestVisible="False"/>
+                        <CheckBox x:Name="PART_SelectionCheckbox"
+                                  Style="{StaticResource ItemContainerSelectionCheckboxStyle}"
+                                  x:DeferLoadStrategy="Lazy"
+                                  Opacity="0"/>
+                </Grid>
+        </ControlTemplate>
+
         <!-- CV2 ItemContainer theme resource overrides (checkbox alignment,
              selection visuals, selected fill) are applied in code on each
              MauiItemsView instance via its Resources dictionary so they only

@@ -46,62 +46,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		ItemTransitionProvider = null;
 
 		ApplyItemContainerResourceOverrides();
-
-		// Break the WinUI 3 IsEnabled cascade at this boundary. When an ancestor
-		// (e.g. RefreshView) is disabled, WinUI coerces IsEnabled = false on every
-		// child Control via the visual tree. Inside CV2, that propagates through
-		// ScrollViewer → ItemsRepeater → ItemContainer, where ItemContainer's
-		// Disabled VisualState animates PART_ContainerRoot.Opacity to 0.3 AND blocks
-		// pointer input — effectively freezing scroll/tap and washing out items.
-		// CV1's ListView does not exhibit this because ListViewItem's Disabled state
-		// is benign, and iOS/Android RefreshView don't propagate disabled to content.
-		// We restore the user-intended IsEnabled value whenever the cascade tries to
-		// override it. <see cref="UserIsEnabled"/> is set by the handler's MapIsEnabled
-		// to track the MAUI VirtualView.IsEnabled value, so an explicit
-		// CollectionView.IsEnabled = false from the user is still honoured.
-		// Fixes: https://github.com/dotnet/maui/issues/28343
-		RegisterPropertyChangedCallback(IsEnabledProperty, OnIsEnabledChanged);
-	}
-
-	bool _userIsEnabled = true;
-	bool _restoringIsEnabled;
-
-	/// <summary>
-	/// The CollectionView's MAUI-level IsEnabled value, set by the handler's
-	/// MapIsEnabled. Used to distinguish between an explicit user disable
-	/// (which we honour) and a cascaded disable from an ancestor Control
-	/// (which we suppress).
-	/// </summary>
-	internal bool UserIsEnabled
-	{
-		get => _userIsEnabled;
-		set
-		{
-			_userIsEnabled = value;
-			IsEnabled = value;
-		}
-	}
-
-	void OnIsEnabledChanged(DependencyObject sender, DependencyProperty dp)
-	{
-		if (_restoringIsEnabled)
-			return;
-
-		// If MAUI says the CollectionView should be enabled but WinUI just coerced
-		// IsEnabled = false (because an ancestor was disabled), restore it. The
-		// _restoringIsEnabled guard prevents re-entrancy from the Set below.
-		if (_userIsEnabled && !IsEnabled)
-		{
-			_restoringIsEnabled = true;
-			try
-			{
-				IsEnabled = true;
-			}
-			finally
-			{
-				_restoringIsEnabled = false;
-			}
-		}
 	}
 
 	/// <summary>

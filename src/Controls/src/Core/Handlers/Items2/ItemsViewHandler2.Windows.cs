@@ -10,7 +10,6 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -111,7 +110,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		[Controls.StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 		[Controls.StructuredItemsView.FooterProperty.PropertyName] = MapFooter,
 		[Controls.StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
-		[nameof(IView.IsEnabled)] = MapIsEnabled,
 	};
 
 	bool _scrollUpdatePending;
@@ -119,21 +117,6 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 	{
 		handler.UpdateItemsSource();
-	}
-
-	// Route IsEnabled through MauiItemsView.UserIsEnabled so the value is treated as
-	// the MAUI-intended state. MauiItemsView restores IsEnabled = true whenever an
-	// ancestor cascade (e.g. RefreshView disabled) tries to coerce it to false,
-	// preventing the cascade from disabling ScrollViewer/ItemsRepeater/ItemContainer
-	// inside the collection. Explicit CollectionView.IsEnabled = false from the user
-	// is still honoured because UserIsEnabled is set to false here.
-	// Fixes: https://github.com/dotnet/maui/issues/28343
-	public static new void MapIsEnabled(IViewHandler handler, IView view)
-	{
-		if (handler.PlatformView is MauiItemsView miv)
-			miv.UserIsEnabled = view.IsEnabled;
-		else
-			ViewHandler.MapIsEnabled(handler, view);
 	}
 
 	// Intentionally empty: ItemsUpdatingScrollMode is handled during scroll events

@@ -24,10 +24,18 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		(Microsoft.UI.Xaml.Controls.ControlTemplate)Microsoft.UI.Xaml.Application.Current.Resources["NonSelectableItemContainerTemplate"];
 
 	/// <summary>
-	/// Caches the default ItemContainer template so it can be restored
-	/// when a header/footer container is recycled for a regular item.
+	/// Default ControlTemplate applied to regular CV2 ItemContainers. Mirrors WinUI's
+	/// stock template (selection visuals, multi-select checkbox) but omits the
+	/// DisabledStates VisualStateGroup so an ancestor's cascaded IsEnabled = false
+	/// (e.g. RefreshView.IsEnabled = false) cannot fade items to 30% opacity or block
+	/// pointer input. CV1 (ListViewItem) and iOS/Android equivalents do not exhibit
+	/// the disabled cascade visual; this keeps CV2 consistent.
+	/// Defined in ItemsViewStyles.xaml.
+	/// Fixes: https://github.com/dotnet/maui/issues/28343
 	/// </summary>
-	Microsoft.UI.Xaml.Controls.ControlTemplate? _defaultItemContainerTemplate;
+	static Microsoft.UI.Xaml.Controls.ControlTemplate MauiItemContainerTemplate =>
+		(Microsoft.UI.Xaml.Controls.ControlTemplate)Microsoft.UI.Xaml.Application.Current.Resources["MauiItemContainerTemplate"];
+
 	internal static readonly BindableProperty OriginTemplateProperty =
 		BindableProperty.CreateAttached(
 			"OriginTemplate", typeof(DataTemplate), typeof(ItemFactory), null);
@@ -133,27 +141,22 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				HorizontalAlignment = HorizontalAlignment.Stretch
 			};
 
-			// Prevent group headers/footers from being selectable by swapping
-			// the ItemContainer's ControlTemplate to one that has no checkbox
-			// or selection visuals. This is stable across all selection modes
-			// and visual state transitions.
-			// Must be set every time to handle recycled containers correctly.
+			// Apply CV2's custom ControlTemplate. For regular items, MauiItemContainerTemplate
+			// preserves selection visuals but omits the DisabledStates VSG so a cascaded
+			// IsEnabled = false from a parent (e.g. RefreshView) cannot fade items or block
+			// input. For group headers/footers, NonSelectableItemContainerTemplate is a bare
+			// ContentPresenter (no checkbox, no selection highlight, no disabled state).
+			// Setting Template every time ensures correct behaviour for recycled containers.
 			if (wrapper is not null)
 			{
 				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
 				if (isHeaderOrFooter)
 				{
-					// Cache the default template once for later restoration
-					_defaultItemContainerTemplate ??= container.Template;
 					container.Template = NonSelectableItemContainerTemplate;
 				}
 				else
 				{
-					// Restore the default template for regular items (recycled from header/footer)
-					if (_defaultItemContainerTemplate is not null && container.Template == NonSelectableItemContainerTemplate)
-					{
-						container.Template = _defaultItemContainerTemplate;
-					}
+					container.Template = MauiItemContainerTemplate;
 
 					// When in multi-select mode, push content right so it doesn't
 					// overlap the WinUI ItemContainer checkbox.
