@@ -287,6 +287,10 @@ namespace Microsoft.Maui.Platform
 			// leaving a blank gap on cutout devices.
 			bool appBarHasContent = HasVisibleAppBarContent(appBarLayout);
 
+			// Cache the AppBar state on the listener so SafeAreaExtensions can read it
+			// without walking the view tree. Must be set before ApplySafeAreaInsets runs.
+			FindListenerForView(v)?.SetAppBarContentState(appBarHasContent);
+
 			// Apply padding to AppBarLayout based on content and system insets
 			if (appBarLayout is not null)
 			{
@@ -382,10 +386,23 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-        public bool IsViewTracked(AView view)
+		/// <summary>
+		/// Whether the AppBarLayout sibling currently has visible content (toolbar shown).
+		/// Set at the start of every <see cref="ApplyDefaultWindowInsets"/> call so that
+		/// <see cref="SafeAreaExtensions"/> can read it without walking the view tree.
+		/// </summary>
+		internal bool AppBarHasContent { get; private set; }
+
+		internal void SetAppBarContentState(bool hasContent)
+		{
+			AppBarHasContent = hasContent;
+		}
+
+		public bool IsViewTracked(AView view)
         {
             return _trackedViews.Contains(view);
         }
+
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)
