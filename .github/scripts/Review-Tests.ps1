@@ -218,13 +218,13 @@ function New-TestFailureReviewBody {
         [string]$ContextJsonPath
     )
 
-    $marker = "<!-- Tests Failure -->"
+    $marker = "<!-- Tests Failure (local) -->"
     $ReportContent = Collapse-OpenDetails $ReportContent
     if ($ReportContent.Contains($marker)) {
         return $ReportContent
     }
 
-    $prJson = & gh pr view $PRNumber --repo $Repository --json title,author,headRefOid,url 2>&1
+    $prJson = & gh pr view $PRNumber --repo $Repository --json author,headRefOid 2>&1
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to fetch PR metadata for comment formatting: $prJson"
     }
@@ -261,10 +261,10 @@ function New-TestFailureReviewBody {
     }
 
     $authorPing = if ($prAuthor) {
-        "> @$prAuthor — test-failure review results are available based on commit <a href=""$commitUrl""><code>$commitSha7</code></a>."
+        "> @$prAuthor — test-failure review results are available based on commit [`$commitSha7`]($commitUrl)."
     }
     else {
-        "> Test-failure review results are available based on commit <a href=""$commitUrl""><code>$commitSha7</code></a>."
+        "> Test-failure review results are available based on commit [`$commitSha7`]($commitUrl)."
     }
 
     $badges = $badgeLines -join "`n"
@@ -320,12 +320,20 @@ function Publish-TestFailureReviewComment {
         [string]$CommentBody
     )
 
-    $marker = "<!-- Tests Failure -->"
+    $localMarkers = @(
+        "<!-- Tests Failure (local) -->",
+        "<!-- Test Failure Review (local) -->"
+    )
     $commentsRaw = & gh api "repos/$Repository/issues/$PRNumber/comments" --paginate 2>$null
     $existing = $null
     if ($LASTEXITCODE -eq 0 -and $commentsRaw) {
         $comments = $commentsRaw | ConvertFrom-Json
-        $existing = @($comments | Where-Object { $_.body -and $_.body.Contains($marker) }) | Select-Object -Last 1
+        $existing = @(
+            $comments | Where-Object {
+                $body = $_.body
+                $body -and @($localMarkers | Where-Object { $body.Contains($_) }).Count -gt 0
+            }
+        ) | Select-Object -Last 1
     }
 
     Set-Content -Path $CommentPath -Value $CommentBody -Encoding UTF8
