@@ -8,6 +8,18 @@
         <local:ViewToHandlerConverter x:Key="ViewToRenderer"/>
         <local:ViewToHandlerConverter x:Key="ViewToHandler"/>
 
+        <!-- Override WinUI 3's default ItemContainer disabled opacity (0.3) with 1.0
+             so the Disabled VisualState's Opacity animation becomes a no-op visual change.
+             When an ancestor (e.g. RefreshView) sets IsEnabled = false, the cascade reaches
+             every ItemContainer and runs the Disabled Storyboard which fades PART_ContainerRoot
+             to 30% opacity, washing out item backgrounds. CV1's ListView/ItemContentControl
+             do not exhibit this behavior, and iOS/Android RefreshView do not propagate disabled
+             to content either. Defining this StaticResource at the root of the merged dictionary
+             ensures it is visible to {StaticResource ItemContainerDisabledOpacity} lookups
+             inside WinUI's stock ItemContainer template when it is parsed.
+             Fixes: https://github.com/dotnet/maui/issues/28343 -->
+        <x:Double x:Key="ItemContainerDisabledOpacity">1.0</x:Double>
+
         <ItemsPanelTemplate x:Key="HorizontalListItemsPanel">
                 <ItemsStackPanel Orientation="Horizontal"/>
         </ItemsPanelTemplate>
