@@ -86,6 +86,10 @@ public class Issue34930 : Shell
 			hideKeyboardButton.Clicked += (s, e) =>
 			{
 				searchHandler.HideSoftInputAsync();
+#if ANDROID
+				// On Android, HideSoftInputAsync only dismisses the IME and does not clear native focus; clear it explicitly so the Unfocused event fires.
+				Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView?.ClearFocus();
+#endif
 			};
 
 			Shell.SetSearchHandler(this, searchHandler);
