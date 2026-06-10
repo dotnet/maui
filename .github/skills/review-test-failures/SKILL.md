@@ -144,7 +144,7 @@ Rules:
 - Include explicit limitations when data is unavailable.
 - Cite concrete evidence for every verdict.
 - Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
-- Use badge colors: `d1242f` for `Likely PR-caused`, `1a7f37` for `Likely unrelated`, `bf8700` for `Needs human investigation`, and `6e7781` for `Insufficient data`.
+- Use badge colors: `d1242f` for `Likely PR-caused`, `1a7f37` for `Likely unrelated` and `No failures found`, `bf8700` for `Needs human investigation`, and `6e7781` for `Insufficient data`.
 - Do not include a Data badge.
 - Do not use emojis anywhere in the posted comment.
 - Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
