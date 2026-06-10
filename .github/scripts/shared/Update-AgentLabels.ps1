@@ -132,10 +132,23 @@ function Add-Label {
     try {
         $tmp = New-TemporaryFile
         @{ labels = @($LabelName) } | ConvertTo-Json -Compress | Set-Content -LiteralPath $tmp -Encoding utf8 -NoNewline
-        & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
+        $output = & gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" `
             --method POST `
-            --input $tmp 1>$null 2>$null
-        return $LASTEXITCODE -eq 0
+            --input $tmp 2>&1
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 0) {
+            return $true
+        }
+
+        $message = ($output | Out-String).Trim()
+        if ([string]::IsNullOrWhiteSpace($message)) {
+            $message = "gh api exited with code $exitCode."
+        } elseif ($message.Length -gt 1000) {
+            $message = $message.Substring(0, 1000) + '...'
+        }
+
+        Write-Host "  ⚠️  Failed to add label '$LabelName' to PR #$PRNumber (gh api exit code $exitCode): $message" -ForegroundColor Yellow
+        return $false
     } finally {
         if ($tmp) {
             Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
