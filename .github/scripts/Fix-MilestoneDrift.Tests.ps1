@@ -443,3 +443,127 @@ Describe 'Test-PrBelongsToVersion' {
         }
     }
 }
+
+Describe 'Close-LinkedIssue' {
+    BeforeEach {
+        $script:_ghViewState = 'OPEN'
+        $script:_ghViewExit  = 0
+        $script:_ghCloseExit = 0
+        $script:_lastCloseComment = $null
+
+        Mock Invoke-GhCli {
+            # `$Arguments` is the splat array because Invoke-GhCli declares it as
+            # [Parameter(ValueFromRemainingArguments)]. Be tolerant of either shape.
+            $a = @($Arguments)
+
+            if ($a.Count -ge 2 -and $a[0] -eq 'issue' -and $a[1] -eq 'view') {
+                $global:LASTEXITCODE = $script:_ghViewExit
+                if ($script:_ghViewExit -ne 0) { return 'simulated gh view failure' }
+                return "{`"state`":`"$($script:_ghViewState)`",`"number`":42,`"title`":`"test`"}"
+            }
+
+            if ($a.Count -ge 2 -and $a[0] -eq 'issue' -and $a[1] -eq 'close') {
+                $global:LASTEXITCODE = $script:_ghCloseExit
+                # Capture the comment text for assertion convenience.
+                $commentIndex = [array]::IndexOf($a, '--comment')
+                if ($commentIndex -ge 0 -and $commentIndex + 1 -lt $a.Count) {
+                    $script:_lastCloseComment = $a[$commentIndex + 1]
+                }
+                if ($script:_ghCloseExit -ne 0) { return 'simulated gh close failure' }
+                return ''
+            }
+
+            $global:LASTEXITCODE = 0
+            return ''
+        }
+    }
+
+    It 'no-ops when the issue is already closed (no gh issue close call)' {
+        $script:_ghViewState = 'CLOSED'
+
+        Close-LinkedIssue -IssueNumber 42 -PrNumber 100 -BaseRef 'net11.0' -Apply $true
+
+        Assert-MockCalled Invoke-GhCli -Times 1 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'issue' -and @($Arguments)[1] -eq 'view'
+        }
+        Assert-MockCalled Invoke-GhCli -Times 0 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'issue' -and @($Arguments)[1] -eq 'close'
+        }
+    }
+
+    It 'no-ops when the issue is already closed in lowercase state' {
+        $script:_ghViewState = 'closed'
+
+        Close-LinkedIssue -IssueNumber 42 -PrNumber 100 -BaseRef 'net11.0' -Apply $true
+
+        Assert-MockCalled Invoke-GhCli -Times 0 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'issue' -and @($Arguments)[1] -eq 'close'
+        }
+    }
+
+    It 'calls gh issue close with the correct args when issue is open and -Apply is set' {
+        $script:_ghViewState = 'OPEN'
+
+        Close-LinkedIssue -IssueNumber 42 -PrNumber 100 -BaseRef 'net11.0' -Apply $true
+
+        Assert-MockCalled Invoke-GhCli -Times 1 -Exactly -Scope It -ParameterFilter {
+            $a = @($Arguments)
+            ($a[0] -eq 'issue') -and ($a[1] -eq 'close') -and
+            ($a -contains '42') -and ($a -contains 'dotnet/maui') -and
+            ($a -contains '--reason') -and ($a -contains 'completed') -and ($a -contains '--comment')
+        }
+        # Comment text should reference the PR and the base ref
+        $script:_lastCloseComment | Should -Not -BeNullOrEmpty
+        $script:_lastCloseComment | Should -Match '#100'
+        $script:_lastCloseComment | Should -Match 'net11\.0'
+    }
+
+    It 'does NOT call gh issue close in dry-run mode (Apply = $false)' {
+        $script:_ghViewState = 'OPEN'
+
+        Close-LinkedIssue -IssueNumber 42 -PrNumber 100 -BaseRef 'net11.0' -Apply $false
+
+        Assert-MockCalled Invoke-GhCli -Times 0 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'issue' -and @($Arguments)[1] -eq 'close'
+        }
+        # But we DID check the issue state (the view call)
+        Assert-MockCalled Invoke-GhCli -Times 1 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'issue' -and @($Arguments)[1] -eq 'view'
+        }
+    }
+
+    It 'warns and returns when gh issue view fails (no close call, no throw)' {
+        $script:_ghViewExit = 1
+
+        { Close-LinkedIssue -IssueNumber 42 -PrNumber 100 -BaseRef 'net11.0' -Apply $true -WarningAction SilentlyContinue } |
+            Should -Not -Throw
+
+        Assert-MockCalled Invoke-GhCli -Times 0 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'issue' -and @($Arguments)[1] -eq 'close'
+        }
+    }
+
+    It 'warns and returns when gh issue close fails (does not throw)' {
+        $script:_ghViewState = 'OPEN'
+        $script:_ghCloseExit = 1
+
+        { Close-LinkedIssue -IssueNumber 42 -PrNumber 100 -BaseRef 'net11.0' -Apply $true -WarningAction SilentlyContinue } |
+            Should -Not -Throw
+
+        # We did attempt the close even though it failed
+        Assert-MockCalled Invoke-GhCli -Times 1 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'issue' -and @($Arguments)[1] -eq 'close'
+        }
+    }
+
+    It 'falls back to a placeholder branch label when BaseRef is empty' {
+        $script:_ghViewState = 'OPEN'
+
+        Close-LinkedIssue -IssueNumber 42 -PrNumber 100 -BaseRef '' -Apply $true
+
+        Assert-MockCalled Invoke-GhCli -Times 1 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'issue' -and @($Arguments)[1] -eq 'close'
+        }
+        $script:_lastCloseComment | Should -Match 'unknown branch'
+    }
+}

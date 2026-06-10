@@ -36,6 +36,12 @@
 .PARAMETER CreateIssue
     Create a GitHub issue in dotnet/maui with the milestone drift report.
 
+.PARAMETER CloseFixedIssues
+    Close issues that are referenced as fixed by the analyzed PR(s). Use this for
+    PRs merged to a non-default branch (e.g. net11.0, release/*) because GitHub
+    only auto-closes linked issues for PRs merged to the default branch (main).
+    Honors -Apply (dry-run when -Apply is not set).
+
 .EXAMPLE
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -RepoPath ~/Projects/maui -Verbose
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -Apply
@@ -50,7 +56,8 @@ param(
     [string]$RepoPath = ".",
     [string]$Output,
     [switch]$Apply,
-    [switch]$CreateIssue
+    [switch]$CreateIssue,
+    [switch]$CloseFixedIssues
 )
 
 # Safety: never process PRs merged before 2026
@@ -350,6 +357,81 @@ function Get-LinkedIssues([string]$Body, [string]$Title) {
     return ($issues | Sort-Object)
 }
 
+function Invoke-GhCli {
+    # Thin shim around the `gh` CLI so Pester tests can Mock it without spawning a real
+    # process. Returns the combined stdout/stderr text; callers can check $LASTEXITCODE.
+    [CmdletBinding()]
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+    return (& gh @Arguments 2>&1)
+}
+
+function Close-LinkedIssue {
+    <#
+    .SYNOPSIS
+        Closes a GitHub issue that was fixed by a PR merged to a non-default branch.
+    .DESCRIPTION
+        GitHub only auto-closes "fixes #N" linked issues when the PR is merged to
+        the default branch. For PRs merged to net11.0, release/*, etc. the issue
+        stays open. This helper closes the issue and leaves a breadcrumb comment.
+
+        - If the issue is already closed: no-op (logs and returns).
+        - If -Apply is not set on the script: dry-run (logs intent, no gh call).
+        - gh failures are warned, not thrown — one bad issue shouldn't fail the
+          whole milestone-drift run.
+    .PARAMETER IssueNumber
+        Issue to close.
+    .PARAMETER PrNumber
+        PR that fixed it (referenced in the comment).
+    .PARAMETER BaseRef
+        Branch the PR was merged to (referenced in the comment).
+    .PARAMETER Apply
+        When false, dry-run only.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][int]$IssueNumber,
+        [Parameter(Mandatory)][int]$PrNumber,
+        [Parameter(Mandatory)][AllowEmptyString()][AllowNull()][string]$BaseRef,
+        [Parameter(Mandatory)][bool]$Apply
+    )
+
+    # Check current state. Don't double-close.
+    $stateJson = Invoke-GhCli 'issue' 'view' "$IssueNumber" '--repo' 'dotnet/maui' '--json' 'state,number,title'
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Close-LinkedIssue: failed to fetch issue #$IssueNumber state: $stateJson"
+        return
+    }
+
+    try {
+        $issue = $stateJson | ConvertFrom-Json
+    } catch {
+        Write-Warning "Close-LinkedIssue: failed to parse gh response for issue #$IssueNumber`: $_"
+        return
+    }
+
+    # `gh issue view --json state` returns "OPEN" / "CLOSED" (uppercase). Match case-insensitively
+    # so we're robust if gh ever changes casing.
+    if ($issue.state -and $issue.state.ToString().ToUpperInvariant() -eq 'CLOSED') {
+        Write-Host "  ℹ️  issue #$IssueNumber already closed — no action needed"
+        return
+    }
+
+    $baseLabel = if ($BaseRef) { $BaseRef } else { '(unknown branch)' }
+    $comment = "Closed by #$PrNumber (merged to ``$baseLabel``). GitHub only auto-closes for PRs merged to the default branch; this issue was fixed by a PR merged to a non-default branch."
+
+    if (-not $Apply) {
+        Write-Host "  [dry-run] would close issue #$IssueNumber as completed (merged to $baseLabel via PR #$PrNumber)"
+        return
+    }
+
+    $closeResult = Invoke-GhCli 'issue' 'close' "$IssueNumber" '--repo' 'dotnet/maui' '--reason' 'completed' '--comment' $comment
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Close-LinkedIssue: failed to close issue #$IssueNumber via gh: $closeResult"
+        return
+    }
+    Write-Host "  ✅ closed issue #$IssueNumber as completed (merged to $baseLabel via PR #$PrNumber)"
+}
+
 function Set-ItemMilestone([int]$ItemNumber, [int]$MilestoneNumber) {
     $body = @{ milestone = $MilestoneNumber } | ConvertTo-Json
     $result = $body | gh api "repos/dotnet/maui/issues/$ItemNumber" -X PATCH --input - 2>&1
@@ -575,6 +657,9 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         if (-not $issue) { continue }
         $report.IssuesChecked++
         Test-AndRecordCorrection "issue" $issueNum $issue.Title $issue.Url $issue.Milestone $expectedMs $match $PrNum $report
+        if ($script:CloseFixedIssues) {
+            Close-LinkedIssue -IssueNumber $issueNum -PrNumber $PrNum -BaseRef $pr.BaseRef -Apply ([bool]$script:Apply)
+        }
     }
 
     return $report
@@ -677,6 +762,9 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
             if (-not $issue) { continue }
             $report.IssuesChecked++
             Test-AndRecordCorrection "issue" $issueNum $issue.Title $issue.Url $issue.Milestone $expectedMs $match $prNum $report
+            if ($script:CloseFixedIssues) {
+                Close-LinkedIssue -IssueNumber $issueNum -PrNumber $prNum -BaseRef $pr.BaseRef -Apply ([bool]$script:Apply)
+            }
         }
     }
 
@@ -836,6 +924,11 @@ if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') 
 
 if ($Apply) {
     Write-Host "⚠️  --Apply mode: Will modify GitHub milestones!"
+}
+
+if ($CloseFixedIssues) {
+    $applyHint = if ($Apply) { '' } else { ' (dry-run — pass -Apply to actually close)' }
+    Write-Host "ℹ️  --CloseFixedIssues mode: will close issues linked as fixed by the PR(s)$applyHint"
 }
 
 if ($PrNumber -gt 0) {

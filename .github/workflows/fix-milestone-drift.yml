@@ -25,6 +25,11 @@ on:
         required: false
         type: boolean
         default: false
+      close_fixed_issues:
+        description: 'Close issues linked as fixed by the PR (use for PRs merged to non-default branches like net11.0)'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -50,6 +55,8 @@ jobs:
           INPUT_TAG: ${{ inputs.tag }}
           INPUT_APPLY: ${{ inputs.apply }}
           INPUT_CREATE_ISSUE: ${{ inputs.create_issue }}
+          INPUT_CLOSE_FIXED_ISSUES: ${{ inputs.close_fixed_issues }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           ARGS=()
@@ -57,6 +64,14 @@ jobs:
           if [ "$EVENT_NAME" = "pull_request_target" ]; then
             # Auto-trigger: set milestone on the merged PR
             ARGS+=('-PrNumber' "$INPUT_PR_NUMBER" '-Apply')
+            # GitHub only auto-closes "fixes #N" issues for PRs merged to the
+            # default branch (main). For PRs merged to net*.0 development
+            # branches the issue stays open, so we close it ourselves.
+            # We deliberately do NOT auto-close for release/* or inflight/*
+            # branches — those need extra human judgment.
+            if [[ "$PR_BASE_REF" == net*.0 ]]; then
+              ARGS+=('-CloseFixedIssues')
+            fi
           else
             # Manual trigger: use provided inputs
             if [ -n "$INPUT_PR_NUMBER" ]; then
@@ -73,6 +88,10 @@ jobs:
 
             if [ "$INPUT_CREATE_ISSUE" = "true" ]; then
               ARGS+=('-CreateIssue')
+            fi
+
+            if [ "$INPUT_CLOSE_FIXED_ISSUES" = "true" ]; then
+              ARGS+=('-CloseFixedIssues')
             fi
           fi
 
