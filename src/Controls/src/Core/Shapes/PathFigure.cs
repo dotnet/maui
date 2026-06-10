@@ -13,25 +13,14 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Segments")]
 	public sealed class PathFigure : BindableObject, IAnimatable
 	{
-		readonly NotifyCollectionChangedEventHandler _pathSegmentCollectionChangedHandler;
-		readonly PropertyChangedEventHandler _pathSegmentPropertyChangedHandler;
-		readonly WeakNotifyCollectionChangedProxy _segmentCollectionChangedProxy = new();
-		readonly Dictionary<PathSegment, WeakNotifyPropertyChangedProxy> _segmentPropertyChangedProxies = new();
+		readonly List<PathSegment> _subscribedSegments = new();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PathFigure"/> class.
 		/// </summary>
 		public PathFigure()
 		{
-			_pathSegmentCollectionChangedHandler = OnPathSegmentCollectionChanged;
-			_pathSegmentPropertyChangedHandler = OnPathSegmentPropertyChanged;
 			Segments = new PathSegmentCollection();
-		}
-
-		~PathFigure()
-		{
-			_segmentCollectionChangedProxy.Unsubscribe();
-			UnsubscribeFromAllPathSegmentPropertyChanged();
 		}
 
 		/// <summary>Bindable property for <see cref="Segments"/>.</summary>
@@ -108,13 +97,14 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdatePathSegmentCollection(PathSegmentCollection oldCollection, PathSegmentCollection newCollection)
 		{
-			_segmentCollectionChangedProxy.Unsubscribe();
+			oldCollection?.CollectionChanged -= OnPathSegmentCollectionChanged;
+
 			UnsubscribeFromAllPathSegmentPropertyChanged();
 
 			if (newCollection == null)
 				return;
 
-			_segmentCollectionChangedProxy.Subscribe(newCollection, _pathSegmentCollectionChangedHandler);
+			newCollection.CollectionChanged += OnPathSegmentCollectionChanged;
 
 			foreach (var newPathSegment in newCollection)
 			{
@@ -126,7 +116,10 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			if (e.Action == NotifyCollectionChangedAction.Reset)
 			{
-				UnsubscribeFromAllPathSegmentPropertyChanged();
+				for (int i = _subscribedSegments.Count - 1; i >= 0; i--)
+				{
+					UnsubscribeFromPathSegmentPropertyChanged(_subscribedSegments[i]);
+				}
 
 				if (sender is PathSegmentCollection pathSegmentCollection)
 				{
@@ -165,37 +158,39 @@ namespace Microsoft.Maui.Controls.Shapes
 			Invalidate();
 		}
 
-		void OnPathSegmentPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			Invalidate();
-		}
-
 		void SubscribeToPathSegmentPropertyChanged(PathSegment pathSegment)
 		{
-			if (_segmentPropertyChangedProxies.ContainsKey(pathSegment))
+			if (_subscribedSegments.Contains(pathSegment))
+			{
 				return;
+			}
 
-			var weakProxy = new WeakNotifyPropertyChangedProxy(pathSegment, _pathSegmentPropertyChangedHandler);
-			_segmentPropertyChangedProxies[pathSegment] = weakProxy;
+			pathSegment.PropertyChanged += OnPathSegmentPropertyChanged;
+			_subscribedSegments.Add(pathSegment);
 		}
 
 		void UnsubscribeFromPathSegmentPropertyChanged(PathSegment pathSegment)
 		{
-			if (!_segmentPropertyChangedProxies.TryGetValue(pathSegment, out var weakProxy))
+			if (!_subscribedSegments.Contains(pathSegment))
+			{
 				return;
+			}
 
-			weakProxy.Unsubscribe();
-			_segmentPropertyChangedProxies.Remove(pathSegment);
+			pathSegment.PropertyChanged -= OnPathSegmentPropertyChanged;
+			_subscribedSegments.Remove(pathSegment);
 		}
 
 		void UnsubscribeFromAllPathSegmentPropertyChanged()
 		{
-			foreach (var weakProxy in _segmentPropertyChangedProxies.Values)
+			for (int i = _subscribedSegments.Count - 1; i >= 0; i--)
 			{
-				weakProxy.Unsubscribe();
+				UnsubscribeFromPathSegmentPropertyChanged(_subscribedSegments[i]);
 			}
+		}
 
-			_segmentPropertyChangedProxies.Clear();
+		void OnPathSegmentPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			Invalidate();
 		}
 
 		void Invalidate()
