@@ -111,6 +111,7 @@ Every bug fix needs a regression test. Modified code must be checked against git
 - CHECK: Test covers the specific scenario from the issue report, not a generic case
 - CHECK: Shared code changes are tested on all affected platforms
 - CHECK: Previously-fixed issue numbers are cross-referenced when modifying the same code area
+- CHECK: If `regression-check/risks.json` exists and contains `REVERT` entries, list the affected fix PRs/issues and require author acknowledgment that the reverted fix is intentional. The regression cross-reference script (`Find-RegressionRisks.ps1`) detects when a PR deletes lines that were previously added by a labeled bug-fix PR.
 - CHECK: UI tests run on all applicable platforms unless there is a specific technical limitation
 - CHECK: Snapshot baselines updated across all platforms when changing background color, font, or layout
 - CHECK: Screenshot size matches capture method — a size mismatch means the capture changed, not the rendering

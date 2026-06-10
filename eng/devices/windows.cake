@@ -201,29 +201,20 @@ Task("buildOnly")
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
-// Helper function to wait for a specific test result file with timeout
-Func<string, string, bool> WaitForCategoryTestResult = (string expectedFile, string categoryName) => {
-	var timeoutInSeconds = 480; // 8 minutes per category
-	var waited = 0;
-	
-	Information($"Waiting for test results file: {expectedFile}");
-	
-	while (!FileExists(expectedFile) && waited < timeoutInSeconds) {
-		System.Threading.Thread.Sleep(1000);
-		waited++;
-		
-		if (waited % 10 == 0) { // Log every 10 seconds
-			Information($"Still waiting for {categoryName} test results... ({waited}s)");
-		}
-	}
-	
-	if (FileExists(expectedFile)) {
-		Information($"✓ Found test results for {categoryName} after {waited} seconds");
-		return true;
-	} else {
-		Warning($"✗ Timeout waiting for {categoryName} test results after {waited} seconds");
+// Launch a packaged app via IApplicationActivationManager and wait for it to fully exit.
+// This gives us the real PID (Start-Process shell:AppsFolder\... only returns the launcher PID),
+// so we can synchronously wait for the test runner to finish and release its result-file handle.
+// Returns true if the app exited cleanly within the timeout.
+Func<string, string, int, bool> LaunchPackagedAndWait = (string appArgs, string description, int timeoutSeconds) => {
+	var scriptPath = MakeAbsolute((FilePath)"./Run-PackagedAppAndWait.ps1").FullPath;
+	var psArgs = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -PackageName \"{PACKAGEID}\" -AppArguments \"{appArgs.Replace("\"", "\\\"")}\" -TimeoutSeconds {timeoutSeconds}";
+	Information($"Launching packaged app ({description}): {appArgs}");
+	var exitCode = StartProcess("powershell", psArgs);
+	if (exitCode != 0) {
+		Warning($"Run-PackagedAppAndWait exited with code {exitCode} for {description}");
 		return false;
 	}
+	return true;
 };
 
 // Helper function to filter categories based on testFilter parameter
@@ -350,28 +341,41 @@ Task("testOnly")
 		var cerPath = cerPaths.First();
 		Information($"Found MSIX, installing: {msixPath}");
 
+		int InstallAppxPackage(FilePath path) {
+			var absPath = MakeAbsolute(path).FullPath;
+			Information("Installing MSIX: {0}", absPath);
+			// $ProgressPreference='SilentlyContinue' suppresses Add-AppxPackage's
+			// progress output which otherwise chokes cake's stdout pipe.
+			return StartProcess("powershell",
+				"-NoProfile -Command \"$ProgressPreference='SilentlyContinue'; Add-AppxPackage -Path '" + absPath + "'; if (-not $?) { exit 1 }\"");
+		}
+
 		// Install dependencies
 		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
 		foreach (var dep in dependencies) {
-			Information("Installing Dependency MSIX: {0}", dep);
 			try {
-				StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
-			} catch { 
+				var depExit = InstallAppxPackage(dep);
+				if (depExit != 0) {
+					Warning($"Failed to install dependency (exit code {depExit}): {dep}");
+				}
+			} catch {
 				Warning($"Failed to install dependency: {dep}");
 			}
 		}
 
 		// Install the DeviceTests app
-		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
+		var installExit = InstallAppxPackage(msixPath);
+		if (installExit != 0) {
+			throw new Exception($"Failed to install app MSIX (exit code {installExit}): {msixPath}");
+		}
 
 		if (isControlsProjectTestRun)
 		{
-			// Start the app once, this will trigger the discovery of the test categories
-			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
-			StartProcess("powershell", startArgsInitial);
-
-			Information($"Waiting 10 seconds for category discovery to finish...");
-			System.Threading.Thread.Sleep(10000);
+			// Start the app once to trigger the discovery of the test categories; we wait
+			// for the actual app process to exit, then read the categories file.
+			if (!LaunchPackagedAndWait($"\"{testResultsFile}\" \"-1\"", "category discovery", 120)) {
+				throw new Exception("Category discovery run did not complete successfully");
+			}
 
 			if (!FileExists(testsToRunFile)) {
 				throw new Exception("Test categories file was not created during discovery phase");
@@ -395,15 +399,10 @@ Task("testOnly")
 				var expectedResultFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}_{categoryName}.xml";
 				
 				Information($"Running category {originalIndex}: {categoryName} (filtered {i + 1}/{filteredCategories.Length})");
-				
-				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + originalIndex + "\"";
-				Information(startArgs);
 
-				// Start the DeviceTests app for packaged
-				StartProcess("powershell", startArgs);
-
-				// Wait for this specific category's results
-				if (WaitForCategoryTestResult(expectedResultFile, categoryName)) {
+				// Start the DeviceTests app and wait for the process to exit, then verify the result file exists.
+				var launched = LaunchPackagedAndWait($"\"{testResultsFile}\" \"{originalIndex}\"", $"category {categoryName}", 480);
+				if (launched && FileExists(expectedResultFile)) {
 					completedCategories.Add(categoryName);
 					Information($"✓ Category {categoryName} completed successfully");
 				} else {
@@ -414,15 +413,9 @@ Task("testOnly")
 		}
 		else
 		{
-			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\"";
-
-			Information(startArgs);
-
-			// Start the DeviceTests app for packaged
-			StartProcess("powershell", startArgs);
-			
-			// Wait for the single test result file
-			if (WaitForCategoryTestResult(testResultsFile, "All Tests")) {
+			// Start the DeviceTests app and wait for it to fully exit.
+			var launched = LaunchPackagedAndWait($"\"{testResultsFile}\"", "All Tests", 480);
+			if (launched && FileExists(testResultsFile)) {
 				completedCategories.Add("All Tests");
 			} else {
 				failedCategories.Add("All Tests");
@@ -433,11 +426,10 @@ Task("testOnly")
 	{
 		if (isControlsProjectTestRun)
 		{
-			// Start the app once, this will trigger the discovery of the test categories
+			// Start the app once, this will trigger the discovery of the test categories.
+			// Cake's StartProcess blocks until the unpackaged exe exits, so the discovery
+			// file is fully flushed by the time this returns.
 			StartProcess(TEST_APP, testResultsFile + " -1");
-			
-			Information($"Waiting 10 seconds for category discovery to finish...");
-			System.Threading.Thread.Sleep(10000);
 
 			if (!FileExists(testsToRunFile)) {
 				throw new Exception("Test categories file was not created during discovery phase");
@@ -462,25 +454,24 @@ Task("testOnly")
 				
 				Information($"Running category {originalIndex}: {categoryName} (filtered {i + 1}/{filteredCategories.Length})");
 				
-				// Start the DeviceTests app for unpackaged
+				// Start the DeviceTests app for unpackaged — StartProcess blocks until exit.
 				StartProcess(TEST_APP, testResultsFile + " " + originalIndex);
 
-				// Wait for this specific category's results
-				if (WaitForCategoryTestResult(expectedResultFile, categoryName)) {
+				if (FileExists(expectedResultFile)) {
 					completedCategories.Add(categoryName);
 					Information($"✓ Category {categoryName} completed successfully");
 				} else {
 					failedCategories.Add(categoryName);
-					Error($"✗ Category {categoryName} failed or timed out");
+					Error($"✗ Category {categoryName} did not produce a result file: {expectedResultFile}");
 				}
 			}
 		}
 		else
 		{
+			// StartProcess blocks until the unpackaged exe exits.
 			StartProcess(TEST_APP, testResultsFile);
-			
-			// Wait for the single test result file
-			if (WaitForCategoryTestResult(testResultsFile, "All Tests")) {
+
+			if (FileExists(testResultsFile)) {
 				completedCategories.Add("All Tests");
 			} else {
 				failedCategories.Add("All Tests");
