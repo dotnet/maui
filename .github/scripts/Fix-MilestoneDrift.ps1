@@ -63,119 +63,15 @@ if ($MyInvocation.InvocationName -ne '.') {
     $ErrorActionPreference = "Stop"
 }
 
+# Import shared MAUI release versioning helpers. Pulls in:
+#   Get-CurrentMajorVersion, Get-MainBranchForVersion, Get-VersionFromGitRef,
+#   ConvertTo-Milestone, ConvertBranchToMilestone, Get-TagSortKey, Find-PreviousTag
+# Module uses Set-StrictMode internally; importing it does not leak strict mode
+# to this script's caller (unlike dot-sourcing), which is why the conditional
+# StrictMode dance above is still needed for Pester compatibility.
+Import-Module (Join-Path $PSScriptRoot 'shared/MauiReleaseVersioning.psm1') -Force
+
 #region ── Milestone mapping helpers ──────────────────────────────────────
-
-function Get-CurrentMajorVersion([string]$Repo) {
-    <# Reads MajorVersion from eng/Versions.props on origin/main. #>
-    $versionXml = git -C $Repo --no-pager show origin/main:eng/Versions.props 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        $joined = ($versionXml -join "`n")
-        if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
-            return [int]$Matches[1]
-        }
-    }
-    throw "Could not read MajorVersion from origin/main:eng/Versions.props"
-}
-
-function Get-MainBranchForVersion([int]$Major, [string]$Repo) {
-    <# Determines which development branch owns a .NET version by reading
-       MajorVersion from eng/Versions.props on main. If main's MajorVersion
-       matches, the version lives on main. Otherwise it's on net{Major}.0.
-       This works correctly across version transitions — when main moves
-       from .NET 10 to .NET 11, MajorVersion in Versions.props changes too. #>
-    $versionXml = git -C $Repo --no-pager show origin/main:eng/Versions.props 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        $joined = ($versionXml -join "`n")
-        if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
-            $mainMajor = [int]$Matches[1]
-            if ($mainMajor -eq $Major) { return "main" }
-            Write-Verbose "origin/main has MajorVersion=$mainMajor, not $Major — version lives on net$Major.0"
-            return "net$Major.0"
-        }
-    }
-    Write-Warning "Could not read MajorVersion from origin/main:eng/Versions.props — falling back to net$Major.0"
-    return "net$Major.0"
-}
-
-function Get-VersionFromGitRef([string]$GitRef, [string]$Repo) {
-    <# Reads version info from eng/Versions.props at a specific git ref.
-       Returns a hashtable with Tag (synthetic release tag like "10.0.60"),
-       PreLabel (e.g. "preview", "rc", or $null for stable),
-       and PreIter (e.g. 3).
-       Fetches the commit if not available locally (e.g. PRs merged to inflight). #>
-    $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        # Ref not in local history — fetch it.
-        # Strip "origin/" prefix for the fetch refspec (git fetch origin <branch>, not origin/origin/<branch>)
-        $fetchRef = $GitRef -replace '^origin/', ''
-        Write-Verbose "  Fetching ref $fetchRef..."
-        $null = git -C $Repo fetch origin $fetchRef --quiet 2>&1
-        $versionXml = git -C $Repo --no-pager show "${GitRef}:eng/Versions.props" 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Could not read Versions.props at $GitRef (even after fetch)"
-            return $null
-        }
-    }
-    $joined = ($versionXml -join "`n")
-    if ($joined -match '<MajorVersion>(\d+)</MajorVersion>') {
-        $major = $Matches[1]
-    } else {
-        Write-Warning "Could not parse MajorVersion from Versions.props at $GitRef"
-        return $null
-    }
-    if ($joined -match '<PatchVersion>(\d+)</PatchVersion>') {
-        $patch = $Matches[1]
-    } else {
-        Write-Warning "Could not parse PatchVersion from Versions.props at $GitRef"
-        return $null
-    }
-
-    # Detect pre-release label (preview, rc) and iteration
-    $preLabel = $null
-    $preIter = $null
-    if ($joined -match '<PreReleaseVersionLabel[^>]*>([^<]+)</PreReleaseVersionLabel>') {
-        $rawLabel = $Matches[1]
-        # Only treat "preview" and "rc" as pre-release; "ci.main", "ci.inflight", "servicing" are stable builds
-        if ($rawLabel -match '^(preview|rc)$') {
-            $preLabel = $rawLabel
-            if ($joined -match '<PreReleaseVersionIteration>(\d+)</PreReleaseVersionIteration>') {
-                $preIter = [int]$Matches[1]
-            }
-        }
-    }
-
-    return @{
-        Tag       = "$major.0.$patch"
-        PreLabel  = $preLabel
-        PreIter   = $preIter
-    }
-}
-
-function ConvertTo-Milestone([string]$ReleaseTag, [string]$PreLabel, [int]$PreIter) {
-    <# Converts version info to a milestone name:
-       "10.0.50"                    → ".NET 10 SR5"
-       "10.0.41"                    → ".NET 10 SR4.1"
-       "10.0.0"                     → ".NET 10.0 GA"
-       "11.0.0" + preview + 3       → ".NET 11.0-preview3"
-       "11.0.0" + rc + 1            → ".NET 11.0-rc1" #>
-    if ($ReleaseTag -notmatch '^(\d+)\.0\.(\d+)$') { return $null }
-    $major = [int]$Matches[1]; $patch = [int]$Matches[2]
-
-    # Pre-release: preview/rc milestones
-    if ($PreLabel -and $PreIter -gt 0) {
-        return ".NET $major.0-$PreLabel$PreIter"
-    }
-    if ($PreLabel -and $PreIter -le 0) {
-        Write-Warning "PreReleaseVersionLabel is '$PreLabel' but PreReleaseVersionIteration is missing or 0 — falling back to GA/SR mapping"
-    }
-
-    if ($patch -eq 0)  { return ".NET $major.0 GA" }
-    if ($patch -lt 10) { return ".NET $major.0 SR1" }
-    $sr = [math]::Floor($patch / 10)
-    $sub = $patch % 10
-    if ($sub -eq 0) { return ".NET $major SR$sr" }
-    return ".NET $major SR$sr.$sub"
-}
 
 function Get-PatchVersion([string]$ReleaseTag) {
     if ($ReleaseTag -match '^(\d+)\.0\.(\d+)$') { return [int]$Matches[2] }
@@ -185,15 +81,6 @@ function Get-PatchVersion([string]$ReleaseTag) {
 function Test-IsReleaseTag([string]$ReleaseTag, [int]$Major) {
     # Matches stable tags (10.0.50) and preview/RC tags (11.0.0-preview.3.26203.7)
     return ($ReleaseTag -match "^$Major\.0\.")
-}
-
-function Get-TagSortKey([string]$ReleaseTag) {
-    <# Returns a numeric sort key for ordering tags chronologically.
-       preview1 (100) < preview7 (107) < rc1 (200) < rc2 (201) < GA/stable (500+patch) #>
-    if ($ReleaseTag -match '-preview\.(\d+)') { return 100 + [int]$Matches[1] }
-    if ($ReleaseTag -match '-rc\.(\d+)')      { return 200 + [int]$Matches[1] }
-    if ($ReleaseTag -match '^(\d+)\.0\.(\d+)$') { return 500 + [int]$Matches[2] }
-    return 0
 }
 
 function Test-MilestoneMatch([string]$Actual, [string]$Expected) {
@@ -224,21 +111,6 @@ function Find-MatchingMilestone([string]$Expected, [hashtable]$AllMilestones) {
         }
     }
     return $null
-}
-
-function Find-PreviousTag([string]$ReleaseTag, [string[]]$AllTags) {
-    <# Finds the immediately preceding tag for the same major version.
-       Works for both stable tags (10.0.50 → 10.0.41) and preview/RC tags
-       (11.0.0-preview.3.x → 11.0.0-preview.2.x). #>
-    if ($ReleaseTag -notmatch '^(\d+)\.') { return $null }
-    $major = [int]$Matches[1]
-    $thisKey = Get-TagSortKey $ReleaseTag
-
-    # Find all tags for this major version with a lower sort key
-    $candidates = $AllTags | Where-Object {
-        ($_ -match "^$major\.0\.") -and (Get-TagSortKey $_) -lt $thisKey
-    } | Sort-Object { Get-TagSortKey $_ }
-    return ($candidates | Select-Object -Last 1)
 }
 
 function Test-PrBelongsToVersion([string]$BaseRef, [string]$MainBranch, [int]$Major) {
@@ -334,24 +206,6 @@ function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {
             $previousTag = if ($i -gt 0) { $srTags[$i - 1] } else { $null }
             return @{ Tag = $current; PreviousTag = $previousTag }
         }
-    }
-    return $null
-}
-
-function ConvertBranchToMilestone([string]$BranchName) {
-    <# Converts a release branch name to a milestone name:
-       release/10.0.1xx        → ".NET 10.0 GA"
-       release/10.0.1xx-sr5    → ".NET 10 SR5"
-       release/11.0.1xx-preview3 → ".NET 11.0-preview3"
-       release/11.0.1xx-rc1    → ".NET 11.0-rc1" #>
-    if ($BranchName -match '^release/(\d+)\.0\.\d+xx$') {
-        return ".NET $([int]$Matches[1]).0 GA"
-    }
-    if ($BranchName -match '^release/(\d+)\.0\.\d+xx-sr(\d+)$') {
-        return ".NET $([int]$Matches[1]) SR$([int]$Matches[2])"
-    }
-    if ($BranchName -match '^release/(\d+)\.0\.\d+xx-(preview|rc)(\d+)$') {
-        return ".NET $([int]$Matches[1]).0-$($Matches[2])$([int]$Matches[3])"
     }
     return $null
 }
