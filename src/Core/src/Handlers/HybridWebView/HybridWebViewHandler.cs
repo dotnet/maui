@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Handlers
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
 
 		internal const string InvokeDotNetPath = "__hwvInvokeDotNet";
+		internal const string SendMessagePath = "__hwvSendMessage";
 		internal const string HybridWebViewDotJsPath = "_framework/hybridwebview.js";
 
 		internal const string InvokeDotNetTokenHeaderName = "X-Maui-Invoke-Token";

@@ -99,32 +99,28 @@ namespace Microsoft.Maui.Platform
 			{
 				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
 
-				// Only accept requests that have the expected headers
-				if (!HybridWebViewHandler.HasExpectedHeaders(request.RequestHeaders))
+				if (!TryValidateBridgeRequest(request, "InvokeDotNet", logger, out var requestBody, out var error))
 				{
-					logger?.LogError("InvokeDotNet endpoint missing or invalid request header");
-					return new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
-				}
-
-				// Only accept POST requests
-				if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
-				{
-					logger?.LogError("InvokeDotNet endpoint only accepts POST requests. Received: {Method}", request.Method);
-					return new WebResourceResponse(null, "UTF-8", 405, "Method Not Allowed", null, null);
-				}
-
-				// On Android, POST body is not available in ShouldInterceptRequest, so we use a custom header
-				string? requestBody = null;
-				request.RequestHeaders?.TryGetValue(HybridWebViewHandler.InvokeDotNetBodyHeaderName, out requestBody);
-				if (string.IsNullOrEmpty(requestBody))
-				{
-					logger?.LogError("InvokeDotNet request missing X-Maui-Request-Body header");
-					return new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
+					return error;
 				}
 
 				var contentBytesTask = Handler.InvokeDotNetAsync(stringBody: requestBody);
 				var responseStream = new AsyncStream(contentBytesTask, logger);
 				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
+			}
+
+			// 1.c. Try the special SendMessage path (JS -> .NET messages).
+			if (relativePath == HybridWebViewHandler.SendMessagePath)
+			{
+				logger?.LogDebug("Request for {Url} will be handled by the .NET message receiver.", fullUrl);
+
+				if (!TryValidateBridgeRequest(request, "SendMessage", logger, out var messageBody, out var error))
+				{
+					return error;
+				}
+
+				HybridWebViewHelper.ProcessRawMessage(Handler, Handler.VirtualView, messageBody);
+				return new WebResourceResponse(null, "UTF-8", 204, "No Content", null, new MemoryStream());
 			}
 
 			// 2. If nothing found yet, try to get static content from the asset path
@@ -159,6 +155,40 @@ namespace Microsoft.Maui.Platform
 			// 3.b. Otherwise, return a 404
 			logger?.LogDebug("Request for {Url} could not be fulfilled.", fullUrl);
 			return new WebResourceResponse(null, "UTF-8", 404, "Not Found", null, null);
+		}
+
+		// Validates a POST-only bridge request that carries its body in the
+		// X-Maui-Request-Body header (Android does not expose the POST body to
+		// ShouldInterceptRequest). On success returns true with the body in `body`;
+		// on failure returns false with the appropriate error response in `errorResponse`.
+		private static bool TryValidateBridgeRequest(IWebResourceRequest request, string endpointName, ILogger? logger, [NotNullWhen(true)] out string? body, [NotNullWhen(false)] out WebResourceResponse? errorResponse)
+		{
+			body = null;
+
+			if (!HybridWebViewHandler.HasExpectedHeaders(request.RequestHeaders))
+			{
+				logger?.LogError("{Endpoint} endpoint missing or invalid request header", endpointName);
+				errorResponse = new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
+				return false;
+			}
+
+			if (!string.Equals(request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+			{
+				logger?.LogError("{Endpoint} endpoint only accepts POST requests. Received: {Method}", endpointName, request.Method);
+				errorResponse = new WebResourceResponse(null, "UTF-8", 405, "Method Not Allowed", null, null);
+				return false;
+			}
+
+			request.RequestHeaders?.TryGetValue(HybridWebViewHandler.InvokeDotNetBodyHeaderName, out body);
+			if (string.IsNullOrEmpty(body))
+			{
+				logger?.LogError("{Endpoint} request missing X-Maui-Request-Body header", endpointName);
+				errorResponse = new WebResourceResponse(null, "UTF-8", 400, "Bad Request", null, null);
+				return false;
+			}
+
+			errorResponse = null;
+			return true;
 		}
 
 		private Stream? PlatformOpenAppPackageFile(string filename)
