@@ -63,6 +63,20 @@ internal class MauiCarouselRecyclerView2 :
                 : RecyclerView.Horizontal;
         }
 
+        // While the EmptyView is showing, the RecyclerView holds a single non-carousel
+        // item. Material's CarouselLayoutManager applies keyline masking sized for
+        // full-viewport carousel items; applied to a normally-sized EmptyView the mask
+        // collapses on a later layout pass, so the EmptyView appears for one frame and
+        // then disappears. Use a plain LinearLayoutManager for the empty state — this
+        // mirrors the LinearLayoutManager-based Handler1 path where the EmptyView renders
+        // correctly. The empty-view branch in UpdateEmptyViewVisibility swaps in the
+        // EmptyViewAdapter before calling SelectLayoutManager, so GetAdapter() reflects
+        // the empty state here.
+        if (GetAdapter() is Items.EmptyViewAdapter)
+        {
+            return new LinearLayoutManager(Context, orientation, false);
+        }
+
         return new CarouselLayoutManager(CreateCarouselStrategy(), orientation);
     }
 
@@ -85,6 +99,14 @@ internal class MauiCarouselRecyclerView2 :
     {
         // Detach any previous snap helper to avoid duplicate fling listeners.
         _carouselSnapHelper?.AttachToRecyclerView(null);
+        _carouselSnapHelper = null;
+
+        // CarouselSnapHelper requires a CarouselLayoutManager. While the EmptyView is
+        // showing we use a LinearLayoutManager, so don't attach the snap helper.
+        if (GetLayoutManager() is not CarouselLayoutManager)
+        {
+            return;
+        }
 
         // CarouselLayoutManager ships its own snap helper; attach it directly.
         // Deliberately do NOT call base.UpdateSnapBehavior() so MAUI's SnapManager
@@ -97,9 +119,20 @@ internal class MauiCarouselRecyclerView2 :
     {
         base.UpdateLayoutManager();
 
-        // The base swaps the LayoutManager; the previously attached CarouselSnapHelper
-        // still references the old LayoutManager internally. Re-attach so snapping
-        // continues to track the current Material CarouselLayoutManager.
+        // base.UpdateLayoutManager() early-returns when the ItemsLayout object is
+        // unchanged, which is the case on every EmptyView <-> items transition. That
+        // leaves the layout manager from the previous state attached. Ensure items always
+        // use the Material CarouselLayoutManager and the EmptyView uses a plain
+        // LinearLayoutManager.
+        var needsCarousel = GetAdapter() is not Items.EmptyViewAdapter;
+        var hasCarousel = GetLayoutManager() is CarouselLayoutManager;
+        if (needsCarousel != hasCarousel)
+        {
+            SetLayoutManager(SelectLayoutManager(ItemsLayout));
+        }
+
+        // Re-attach the CarouselSnapHelper to the current Material layout manager. The
+        // helper is skipped while a LinearLayoutManager is active for the EmptyView.
         UpdateSnapBehavior();
     }
 
@@ -127,6 +160,17 @@ internal class MauiCarouselRecyclerView2 :
 
     protected override Items.RecyclerViewScrollListener<CarouselView, Items.IItemsViewSource> CreateScrollListener()
         => new CarouselViewOnScrollListener2(Carousel, ItemsViewAdapter, () => _carouselSnapHelper);
+
+    // -----------------------------------------------------------------------
+    // Empty-view adapter — the EmptyView is shown with a plain LinearLayoutManager
+    // (see SelectLayoutManager), so the empty/header/footer holders do NOT need to be
+    // wrapped in a MaskableFrameLayout. Using the shared EmptyViewAdapter directly also
+    // avoids the masking that MaskableFrameLayout applies when no CarouselLayoutManager
+    // is present to set its mask rect (which would otherwise clip the EmptyView away).
+    // -----------------------------------------------------------------------
+
+    protected override Items.EmptyViewAdapter CreateEmptyViewAdapter()
+        => new Items.EmptyViewAdapter(ItemsView);
 
     // -----------------------------------------------------------------------
     // Dispose / teardown
