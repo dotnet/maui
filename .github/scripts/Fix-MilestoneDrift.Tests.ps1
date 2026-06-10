@@ -567,3 +567,179 @@ Describe 'Close-LinkedIssue' {
         $script:_lastCloseComment | Should -Match 'unknown branch'
     }
 }
+
+Describe 'Get-MilestoneSortKey' {
+    It 'returns null for null/empty/whitespace' {
+        Get-MilestoneSortKey $null   | Should -Be $null
+        Get-MilestoneSortKey ''      | Should -Be $null
+        Get-MilestoneSortKey '   '   | Should -Be $null
+    }
+
+    It 'returns null for non-release placeholder milestones' {
+        Get-MilestoneSortKey 'Backlog'             | Should -Be $null
+        Get-MilestoneSortKey '.NET 11 Planning'    | Should -Be $null
+        Get-MilestoneSortKey 'Future'              | Should -Be $null
+        Get-MilestoneSortKey 'Triage'              | Should -Be $null
+    }
+
+    It 'orders preview/rc/GA/SR within a major correctly' {
+        $p1  = Get-MilestoneSortKey '.NET 11.0-preview1'
+        $p3  = Get-MilestoneSortKey '.NET 11.0-preview3'
+        $rc1 = Get-MilestoneSortKey '.NET 11.0-rc1'
+        $ga  = Get-MilestoneSortKey '.NET 11.0 GA'
+        $sr1 = Get-MilestoneSortKey '.NET 11 SR1'
+
+        ($p1 -lt $p3) | Should -BeTrue
+        ($p3 -lt $rc1) | Should -BeTrue
+        ($rc1 -lt $ga) | Should -BeTrue
+        ($ga -lt $sr1) | Should -BeTrue
+    }
+
+    It 'orders SR sub-patches between SRs (SR4 < SR4.1 < SR5)' {
+        $sr4   = Get-MilestoneSortKey '.NET 10 SR4'
+        $sr4_1 = Get-MilestoneSortKey '.NET 10 SR4.1'
+        $sr5   = Get-MilestoneSortKey '.NET 10 SR5'
+
+        ($sr4 -lt $sr4_1) | Should -BeTrue
+        ($sr4_1 -lt $sr5) | Should -BeTrue
+    }
+
+    It 'orders earlier majors before later majors' {
+        $net10_sr6 = Get-MilestoneSortKey '.NET 10 SR6'
+        $net11_p1  = Get-MilestoneSortKey '.NET 11.0-preview1'
+        ($net10_sr6 -lt $net11_p1) | Should -BeTrue
+    }
+}
+
+Describe 'Compare-MauiMilestone' {
+    It 'returns -1 when A is earlier (.NET 10 SR6 < .NET 11.0-preview3)' {
+        Compare-MauiMilestone '.NET 10 SR6' '.NET 11.0-preview3' | Should -Be -1
+    }
+
+    It 'returns 1 when A is later (.NET 11.0-preview3 > .NET 10 SR6)' {
+        Compare-MauiMilestone '.NET 11.0-preview3' '.NET 10 SR6' | Should -Be 1
+    }
+
+    It 'returns 0 when both are the same milestone' {
+        Compare-MauiMilestone '.NET 11.0-preview3' '.NET 11.0-preview3' | Should -Be 0
+    }
+
+    It 'returns null when either side is non-comparable (Backlog/Planning/none)' {
+        Compare-MauiMilestone 'Backlog' '.NET 11.0-preview3' | Should -Be $null
+        Compare-MauiMilestone '.NET 11.0-preview3' '.NET 11 Planning' | Should -Be $null
+        Compare-MauiMilestone $null '.NET 11.0-preview3' | Should -Be $null
+        Compare-MauiMilestone '' '.NET 11.0-preview3' | Should -Be $null
+    }
+
+    It 'returns -1 for preview before rc (.NET 11.0-preview7 < .NET 11.0-rc1)' {
+        Compare-MauiMilestone '.NET 11.0-preview7' '.NET 11.0-rc1' | Should -Be -1
+    }
+}
+
+Describe 'Test-MilestoneValidForIssue' {
+    BeforeEach {
+        # Clear cache between tests so each starts fresh.
+        $script:milestoneValidationCache = @{}
+
+        # Default search response: empty array.
+        $script:_searchJson = '[]'
+        $script:_searchExit = 0
+        # Default Get-PrInfo response: PR with no milestone.
+        $script:_prMilestones = @{}
+
+        Mock Invoke-GhCli {
+            $a = @($Arguments)
+            if ($a.Count -ge 2 -and $a[0] -eq 'search' -and $a[1] -eq 'prs') {
+                $global:LASTEXITCODE = $script:_searchExit
+                if ($script:_searchExit -ne 0) { return 'simulated gh search failure' }
+                return $script:_searchJson
+            }
+            $global:LASTEXITCODE = 0
+            return ''
+        }
+
+        Mock Get-PrInfo {
+            param([int]$PrNum)
+            if ($script:_prMilestones.ContainsKey($PrNum)) {
+                return @{ Number = $PrNum; Milestone = $script:_prMilestones[$PrNum]; Title = "PR $PrNum"; Url = "u"; Body = ''; BaseRef = 'main' }
+            }
+            return $null
+        }
+    }
+
+    It 'returns false when no PRs reference the issue' {
+        $script:_searchJson = '[]'
+        Test-MilestoneValidForIssue -IssueNumber 9999 -Milestone '.NET 10 SR6' | Should -BeFalse
+    }
+
+    It 'returns false for null/empty milestone (no validation needed)' {
+        Test-MilestoneValidForIssue -IssueNumber 42 -Milestone $null | Should -BeFalse
+        Test-MilestoneValidForIssue -IssueNumber 42 -Milestone ''   | Should -BeFalse
+    }
+
+    It 'returns true when a linking fix-PR has the target milestone' {
+        $script:_searchJson = '[{"number":501,"title":"Fix bug","body":"Fixes #34490","url":"u"}]'
+        $script:_prMilestones[501] = '.NET 10 SR6'
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
+    }
+
+    It 'returns false when a PR mentions the issue but does not use a fix verb' {
+        # Just a casual mention "#34490" — should not count as a fix
+        $script:_searchJson = '[{"number":888,"title":"Related work","body":"See #34490 for context","url":"u"}]'
+        $script:_prMilestones[888] = '.NET 10 SR6'
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeFalse
+    }
+
+    It 'returns false when fixing PR has no milestone' {
+        $script:_searchJson = '[{"number":513,"title":"net11 fix","body":"Fixes #34490","url":"u"}]'
+        # PR 513 has no milestone (not in $_prMilestones)
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeFalse
+    }
+
+    It 'returns false when fixing PR has a different milestone' {
+        $script:_searchJson = '[{"number":513,"title":"net11 fix","body":"Fixes #34490","url":"u"}]'
+        $script:_prMilestones[513] = '.NET 11.0-preview3'
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeFalse
+    }
+
+    It 'returns true if ANY of multiple linking PRs validates the milestone' {
+        # Two PRs link the issue; only the second has the matching milestone.
+        $script:_searchJson = '[{"number":513,"title":"net11 fix","body":"Fixes #34490","url":"u"},{"number":501,"title":"sr6 fix","body":"Fixes #34490","url":"u"}]'
+        $script:_prMilestones[513] = '.NET 11.0-preview3'
+        $script:_prMilestones[501] = '.NET 10 SR6'
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
+    }
+
+    It 'returns false (and warns, does not throw) when gh search fails' {
+        $script:_searchExit = 1
+        { Test-MilestoneValidForIssue -IssueNumber 42 -Milestone '.NET 10 SR6' -WarningAction SilentlyContinue } |
+            Should -Not -Throw
+        Test-MilestoneValidForIssue -IssueNumber 42 -Milestone '.NET 10 SR6' -WarningAction SilentlyContinue | Should -BeFalse
+    }
+
+    It 'caches lookups so a second call does not re-query gh' {
+        $script:_searchJson = '[{"number":501,"title":"Fix bug","body":"Fixes #34490","url":"u"}]'
+        $script:_prMilestones[501] = '.NET 10 SR6'
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
+
+        # gh search should have been hit exactly once
+        Assert-MockCalled Invoke-GhCli -Times 1 -Exactly -Scope It -ParameterFilter {
+            @($Arguments)[0] -eq 'search' -and @($Arguments)[1] -eq 'prs'
+        }
+    }
+
+    It 'matches a fix verb that uses an owner/repo prefix (org/repo#NNN)' {
+        # Real-world bodies sometimes write "Fixes dotnet/maui#34490"
+        $script:_searchJson = '[{"number":501,"title":"Fix bug","body":"Fixes dotnet/maui#34490","url":"u"}]'
+        $script:_prMilestones[501] = '.NET 10 SR6'
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
+    }
+}

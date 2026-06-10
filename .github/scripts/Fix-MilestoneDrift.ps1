@@ -438,6 +438,83 @@ function Set-ItemMilestone([int]$ItemNumber, [int]$MilestoneNumber) {
     if ($LASTEXITCODE -ne 0) { throw "Failed to set milestone on #$ItemNumber`: $result" }
 }
 
+# Cache of milestone-validity lookups so we don't re-query gh for the same (issue, milestone) pair.
+$script:milestoneValidationCache = @{}
+
+function Test-MilestoneValidForIssue {
+    <#
+    .SYNOPSIS
+        Checks whether an issue's current milestone is "valid" — i.e., a real fix PR
+        for this issue shipped under that milestone — so we shouldn't override it.
+    .DESCRIPTION
+        Searches all merged PRs that reference the issue (in the body), filters to
+        ones with an actual Fixes/Closes/Resolves verb for this exact issue number,
+        and returns $true if any of them has a milestone matching $Milestone.
+
+        Used to avoid clobbering an earlier-release milestone (e.g., .NET 10 SR6)
+        when a follow-up fix later shipped in net11.0 — see GitHub PR #35858
+        follow-up for context.
+
+        Returns $false if:
+          - The milestone is not a comparable release (Backlog/Planning/none)
+          - No linking PR has that milestone
+          - The gh search fails (conservative — let the script fall back to normal correction)
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][int]$IssueNumber,
+        [Parameter(Mandatory)][AllowEmptyString()][AllowNull()][string]$Milestone
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Milestone)) { return $false }
+
+    $cacheKey = "$IssueNumber|$Milestone"
+    if ($script:milestoneValidationCache.ContainsKey($cacheKey)) {
+        return [bool]$script:milestoneValidationCache[$cacheKey]
+    }
+
+    $json = Invoke-GhCli 'search' 'prs' "#$IssueNumber in:body" `
+        '--repo' 'dotnet/maui' '--merged' '--limit' '50' `
+        '--json' 'number,title,body,url'
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Test-MilestoneValidForIssue: gh search failed for issue #$IssueNumber`: $json"
+        $script:milestoneValidationCache[$cacheKey] = $false
+        return $false
+    }
+
+    try {
+        $prs = $json | ConvertFrom-Json
+    } catch {
+        Write-Warning "Test-MilestoneValidForIssue: failed to parse gh search response for issue #$IssueNumber`: $_"
+        $script:milestoneValidationCache[$cacheKey] = $false
+        return $false
+    }
+
+    foreach ($pr in @($prs)) {
+        # Re-use the same regex Get-LinkedIssues uses, but pinned to THIS issue number,
+        # so a casual `#34490` mention doesn't count — we want only real Fixes/Closes/Resolves.
+        $body = if ($pr.body) { [string]$pr.body } else { '' }
+        $title = if ($pr.title) { [string]$pr.title } else { '' }
+        $combined = "$title`n$body"
+        if ($combined -notmatch "(?i)(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+(?:[a-z0-9_\-./]+)?#$IssueNumber\b") {
+            continue
+        }
+
+        # Fetch milestone for this linking PR.
+        $prInfo = Get-PrInfo $pr.number
+        if (-not $prInfo) { continue }
+        if (-not $prInfo.Milestone) { continue }
+
+        if (Test-MilestoneMatch $prInfo.Milestone $Milestone) {
+            $script:milestoneValidationCache[$cacheKey] = $true
+            return $true
+        }
+    }
+
+    $script:milestoneValidationCache[$cacheKey] = $false
+    return $false
+}
+
 #endregion
 
 #region ── Correction helpers ─────────────────────────────────────────────
@@ -469,6 +546,31 @@ function Test-AndRecordCorrection(
     if ($existing) {
         Write-Verbose "  ⏭️  $ItemType #$ItemNumber`: already queued for correction (via PR #$($existing.RelatedPr))"
         return
+    }
+
+    # Earlier-milestone validation: if this is an ISSUE whose current milestone is an
+    # earlier release than the target AND we can confirm a fix PR shipped in that earlier
+    # release, KEEP the earlier milestone (earliest release wins). PRs are skipped — they
+    # land in exactly one branch, so the target is by definition correct for them.
+    if ($ItemType -eq 'issue' -and -not [string]::IsNullOrWhiteSpace($CurrentMilestone)) {
+        $cmp = Compare-MauiMilestone $CurrentMilestone $ExpectedMs
+        if ($null -ne $cmp -and $cmp -lt 0) {
+            if (Test-MilestoneValidForIssue -IssueNumber $ItemNumber -Milestone $CurrentMilestone) {
+                if (-not $Report.ContainsKey('Kept')) { $Report.Kept = [System.Collections.ArrayList]::new() }
+                $kept = @{
+                    ItemType   = $ItemType
+                    Number     = $ItemNumber
+                    Title      = $ItemTitle
+                    Url        = $ItemUrl
+                    Current    = $CurrentMilestone
+                    Expected   = $ExpectedMs
+                }
+                if ($RelatedPr -gt 0) { $kept.RelatedPr = $RelatedPr }
+                [void]$Report.Kept.Add($kept)
+                Write-Host "  [KEEP] issue #$ItemNumber`: keeping earlier valid milestone '$CurrentMilestone' (target was '$ExpectedMs')"
+                return
+            }
+        }
     }
 
     $correction = @{
@@ -789,9 +891,21 @@ function Write-Report([hashtable]$Report) {
     }
     Write-Host "  Issues checked: $($Report.IssuesChecked)"
     Write-Host "  Already correct: $($Report.AlreadyCorrect)"
+    $keptCount = if ($Report.ContainsKey('Kept')) { $Report.Kept.Count } else { 0 }
+    if ($keptCount -gt 0) {
+        Write-Host "  Kept earlier milestone: $keptCount"
+    }
     Write-Host "  Corrections needed: $($Report.Corrections.Count)"
     if ($Report.Errors.Count -gt 0) { Write-Host "  Errors: $($Report.Errors.Count)" }
     Write-Host ""
+
+    if ($keptCount -gt 0) {
+        foreach ($k in $Report.Kept) {
+            $via = if ($k.ContainsKey('RelatedPr') -and $k.RelatedPr) { " (via PR #$($k.RelatedPr))" } else { "" }
+            Write-Host "  [KEEP] $($k.ItemType) #$($k.Number)$via`: keeping '$($k.Current)' (target was '$($k.Expected)')"
+        }
+        Write-Host ""
+    }
 
     if ($Report.Corrections.Count -eq 0) {
         if ($Report.Errors.Count -gt 0 -and $Report.PrsChecked -eq 0) {
@@ -812,6 +926,7 @@ function Write-Report([hashtable]$Report) {
 }
 
 function Save-ReportJson([hashtable]$Report, [string]$Path) {
+    $keptItems = if ($Report.ContainsKey('Kept')) { @($Report.Kept) } else { @() }
     $data = @{
         tag                = $Report.Tag
         previous_tag       = if ($Report.ContainsKey('PreviousTag')) { $Report.PreviousTag } else { $null }
@@ -823,10 +938,12 @@ function Save-ReportJson([hashtable]$Report, [string]$Path) {
             prs_skipped_wrong_branch = if ($Report.ContainsKey('PrsSkippedWrongBranch')) { $Report.PrsSkippedWrongBranch } else { 0 }
             issues_checked     = $Report.IssuesChecked
             already_correct    = $Report.AlreadyCorrect
+            kept_earlier       = $keptItems.Count
             corrections_needed = $Report.Corrections.Count
             errors             = $Report.Errors.Count
         }
         corrections        = @($Report.Corrections)
+        kept               = $keptItems
         errors             = @($Report.Errors)
     }
     $data | ConvertTo-Json -Depth 5 | Set-Content -Path $Path -Encoding utf8
@@ -879,11 +996,26 @@ function New-GitHubIssue([hashtable]$Report, [bool]$WasApplied) {
     [void]$sb.AppendLine("| PRs checked | $($Report.PrsChecked) |")
     [void]$sb.AppendLine("| Issues checked | $($Report.IssuesChecked) |")
     [void]$sb.AppendLine("| Already correct | $($Report.AlreadyCorrect) |")
+    if ($Report.ContainsKey('Kept') -and $Report.Kept.Count -gt 0) {
+        [void]$sb.AppendLine("| Kept earlier milestone | $($Report.Kept.Count) |")
+    }
     [void]$sb.AppendLine("| Corrections needed | $($Report.Corrections.Count) |")
     if ($Report.Errors.Count -gt 0) {
         [void]$sb.AppendLine("| Errors | $($Report.Errors.Count) |")
     }
     [void]$sb.AppendLine()
+
+    if ($Report.ContainsKey('Kept') -and $Report.Kept.Count -gt 0) {
+        [void]$sb.AppendLine("### Kept (earlier milestone validated)")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine("| Type | Item | Via PR | Kept | Target |")
+        [void]$sb.AppendLine("|------|------|--------|------|--------|")
+        foreach ($k in $Report.Kept) {
+            $via = if ($k.ContainsKey('RelatedPr') -and $k.RelatedPr) { "#$($k.RelatedPr)" } else { "—" }
+            [void]$sb.AppendLine("| $($k.ItemType) | #$($k.Number) | $via | $($k.Current) | $($k.Expected) |")
+        }
+        [void]$sb.AppendLine()
+    }
 
     if ($Report.Corrections.Count -eq 0) {
         [void]$sb.AppendLine("✅ All milestones are correct!")

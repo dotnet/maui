@@ -266,6 +266,86 @@ function Find-PreviousTag {
     return ($candidates | Select-Object -Last 1)
 }
 
+function Get-MilestoneSortKey {
+    <#
+    .SYNOPSIS
+        Returns a numeric chronological sort key for a release milestone name.
+    .DESCRIPTION
+        Higher key = released later. Comparable across major versions.
+
+        Phase ordering within a major:
+          preview1..preview9  (100..109)
+          rc1..rc9            (200..209)
+          GA                  (300)
+          SR1, SR1.1, SR1.2, ..., SR2, ... (400 + N*10 + sub)
+
+        Returns $null for non-release milestones (Backlog, Planning, Future, etc.)
+        so callers can detect "not comparable" and fall back to default behavior.
+    .EXAMPLE
+        Get-MilestoneSortKey '.NET 11.0-preview3'   -> 11103
+        Get-MilestoneSortKey '.NET 10 SR6'          -> 10460
+        Get-MilestoneSortKey '.NET 10 SR4.1'        -> 10441
+        Get-MilestoneSortKey '.NET 10.0 GA'         -> 10300
+        Get-MilestoneSortKey '.NET 11.0-rc1'        -> 11201
+        Get-MilestoneSortKey 'Backlog'              -> $null
+        Get-MilestoneSortKey '.NET 11 Planning'     -> $null
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Position = 0)][AllowEmptyString()][AllowNull()][string]$Milestone
+    )
+    if ([string]::IsNullOrWhiteSpace($Milestone)) { return $null }
+
+    # ".NET 11.0-preview3"
+    if ($Milestone -match '^\.NET (\d+)\.0-preview(\d+)$') {
+        return ([int]$Matches[1]) * 1000 + 100 + [int]$Matches[2]
+    }
+    # ".NET 11.0-rc1"
+    if ($Milestone -match '^\.NET (\d+)\.0-rc(\d+)$') {
+        return ([int]$Matches[1]) * 1000 + 200 + [int]$Matches[2]
+    }
+    # ".NET 11.0 GA"
+    if ($Milestone -match '^\.NET (\d+)\.0 GA$') {
+        return ([int]$Matches[1]) * 1000 + 300
+    }
+    # ".NET 10 SR5.1" (sub-patch — check before bare SR)
+    if ($Milestone -match '^\.NET (\d+) SR(\d+)\.(\d+)$') {
+        return ([int]$Matches[1]) * 1000 + 400 + ([int]$Matches[2] * 10) + [int]$Matches[3]
+    }
+    # ".NET 10 SR5"
+    if ($Milestone -match '^\.NET (\d+) SR(\d+)$') {
+        return ([int]$Matches[1]) * 1000 + 400 + ([int]$Matches[2] * 10)
+    }
+    # Backlog, Planning, Future, or anything we don't recognize — not orderable
+    return $null
+}
+
+function Compare-MauiMilestone {
+    <#
+    .SYNOPSIS
+        Compares two MAUI release milestones chronologically.
+    .DESCRIPTION
+        Returns -1 if A is earlier, 0 if same, 1 if A is later.
+        Returns $null if either milestone is non-comparable (Backlog/Planning/none).
+    .EXAMPLE
+        Compare-MauiMilestone '.NET 10 SR6' '.NET 11.0-preview3'  -> -1
+        Compare-MauiMilestone '.NET 11.0-preview3' '.NET 10 SR6'  -> 1
+        Compare-MauiMilestone '.NET 10 SR6' '.NET 10 SR6'         -> 0
+        Compare-MauiMilestone 'Backlog' '.NET 11.0-preview3'      -> $null
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Position = 0)][AllowEmptyString()][AllowNull()][string]$A,
+        [Parameter(Position = 1)][AllowEmptyString()][AllowNull()][string]$B
+    )
+    $ka = Get-MilestoneSortKey $A
+    $kb = Get-MilestoneSortKey $B
+    if ($null -eq $ka -or $null -eq $kb) { return $null }
+    if ($ka -lt $kb) { return -1 }
+    if ($ka -gt $kb) { return 1 }
+    return 0
+}
+
 # Explicit exports - keeps internal helpers private if any are added later.
 Export-ModuleMember -Function `
     Get-CurrentMajorVersion, `
@@ -274,4 +354,6 @@ Export-ModuleMember -Function `
     ConvertTo-Milestone, `
     ConvertBranchToMilestone, `
     Get-TagSortKey, `
-    Find-PreviousTag
+    Find-PreviousTag, `
+    Get-MilestoneSortKey, `
+    Compare-MauiMilestone
