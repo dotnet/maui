@@ -212,6 +212,8 @@ public class XamlGenerator : IIncrementalGenerator
 						compilation,
 						xmlnsCache,
 						typeCache,
+						sourceProductionContext,
+						xamlItem.ProjectItem,
 						out var parsedNewRoot,
 						out var effectiveNewIds,
 						out var newNextNodeId,

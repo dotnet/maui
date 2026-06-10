@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 /// Verifies that the XamlGenerator + XamlHotReloadState + UpdateComponentCodeWriter
 /// correctly emit UC source files when XAML property values change between generator runs.
 /// </summary>
+[Collection("XamlHotReloadTests")]
 public class XamlIncrementalHotReloadPipelineTests : IDisposable
 {
 	// -----------------------------------------------------------------------
@@ -65,6 +66,341 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		</ContentPage>
 		""";
 
+	// V1 with two children: Label + Button
+	const string PageXamlV4_TwoChildren = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Button Text="Click me" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V5: Remove Button, keep only Label (remove child)
+	const string PageXamlV5_ChildRemoved = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V6: Reorder — Button before Label (swap children)
+	const string PageXamlV6_ChildrenReordered = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Button Text="Click me" />
+		        <Label Text="Hello" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V7: Nested layout — add a Grid inside VerticalStackLayout with children
+	const string PageXamlV7_NestedLayout = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Grid>
+		            <Label Text="Nested" />
+		            <Button Text="Inner" />
+		        </Grid>
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V8: Replace child type — swap Label for an Entry (different element type)
+	const string PageXamlV8_ChildReplaced = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Entry Placeholder="Type here" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V9: Three children — Label, Button, Entry (add multiple)
+	const string PageXamlV9_MultipleAdded = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Button Text="Click me" />
+		        <Entry Placeholder="Type here" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// --- Type converter test variants ---
+
+	// V10: Label with BackgroundColor (Color converter)
+	const string PageXamlV10_ColorProperty = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" BackgroundColor="Red" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V11: Label with BackgroundColor changed to Blue
+	const string PageXamlV11_ColorChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" BackgroundColor="Blue" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V12: Label with Padding (Thickness converter)
+	const string PageXamlV12_ThicknessProperty = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" Padding="10,20,30,40" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V13: Label with Padding changed
+	const string PageXamlV13_ThicknessChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" Padding="5" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V14: Label with FontSize (double) and FontAttributes (enum)
+	const string PageXamlV14_EnumAndDouble = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" FontSize="24" FontAttributes="Bold" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V15: Label with FontSize and FontAttributes changed
+	const string PageXamlV15_EnumAndDoubleChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" FontSize="18" FontAttributes="Italic" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V16: Grid with ColumnDefinitions (GridLength converter)
+	const string PageXamlV16_GridLength = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid ColumnDefinitions="*,2*,Auto" RowDefinitions="100,*">
+		        <Label Text="Hello" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	// V17: Grid with ColumnDefinitions changed
+	const string PageXamlV17_GridLengthChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid ColumnDefinitions="*,*,*" RowDefinitions="50,*">
+		        <Label Text="Hello" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	// V18: Add a new child with a Binding markup extension
+	const string PageXamlV18_NewChildWithBinding = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Label Text="{Binding Name}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V19: Add a new child with StaticResource and DynamicResource
+	const string PageXamlV19_NewChildWithResources = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Label TextColor="{DynamicResource PrimaryColor}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V20: x:DataType known — Binding should produce a compiled TypedBinding
+	const string PageXamlV1_WithDataType = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestApp"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="local:MyViewModel">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	const string PageXamlV20_NewChildWithCompiledBinding = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestApp"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="local:MyViewModel">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <Label Text="{Binding Name}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V21: Same bindings but x:DataType changed to a different ViewModel
+	const string PageXamlV1_BindingWithDataType = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestApp"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="local:MyViewModel">
+		    <VerticalStackLayout>
+		        <Label Text="{Binding Name}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	const string PageXamlV21_DataTypeChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             xmlns:local="clr-namespace:TestApp"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="local:OtherViewModel">
+		    <VerticalStackLayout>
+		        <Label Text="{Binding Title}" />
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V22: Root content swap — VerticalStackLayout → Grid (different direct child of ContentPage)
+	const string PageXamlV22_RootContentSwap = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid>
+		        <Label Text="In Grid" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	// V23: Add a ScrollView (content container) inside VerticalStackLayout
+	const string PageXamlV23_NewContentContainer = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <VerticalStackLayout>
+		        <Label Text="Hello" />
+		        <ScrollView>
+		            <Label Text="Scrollable" />
+		        </ScrollView>
+		    </VerticalStackLayout>
+		</ContentPage>
+		""";
+
+	// V24: Grid with attached properties
+	const string PageXamlV24_GridWithAttached = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid>
+		        <Label Text="Hello" Grid.Row="0" Grid.Column="0" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	const string PageXamlV25_GridAttachedChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage">
+		    <Grid>
+		        <Label Text="Hello" Grid.Row="1" Grid.Column="2" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	// V26: Grid with attached property using binding (before)
+	const string PageXamlV26_GridAttachedWithBinding = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="TestApp.MyViewModel">
+		    <Grid>
+		        <Label Text="Hello" Grid.Row="0" />
+		    </Grid>
+		</ContentPage>
+		""";
+
+	// V27: Grid with attached property changed to binding
+	const string PageXamlV27_GridAttachedBindingChanged = """
+		<?xml version="1.0" encoding="utf-8" ?>
+		<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+		             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		             x:Class="TestApp.MainPage"
+		             x:DataType="TestApp.MyViewModel">
+		    <Grid>
+		        <Label Text="Hello" Grid.Row="{Binding RowIndex}" />
+		    </Grid>
+		</ContentPage>
+		""";
+
 	const string PageRelativePath = "MainPage.xaml";
 
 	static SourceGeneratorDriver.AdditionalFile MakeFile(string xaml, bool ihr = true) =>
@@ -86,8 +422,20 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		string xamlV1,
 		string xamlV2,
 		bool enableIHR = true)
+		=> TwoRunsWithSource(xamlV1, xamlV2, additionalSource: null, enableIHR);
+
+	// Helper that allows injecting extra C# source (e.g., a ViewModel type for x:DataType)
+	(GeneratorDriverRunResult run1, GeneratorDriverRunResult run2) TwoRunsWithSource(
+		string xamlV1,
+		string xamlV2,
+		string? additionalSource,
+		bool enableIHR = true)
 	{
 		var compilation = CreateCompilation();
+		if (additionalSource != null)
+			compilation = compilation.AddSyntaxTrees(
+				CSharpSyntaxTree.ParseText(additionalSource));
+
 		var fileV1 = MakeFile(xamlV1, enableIHR);
 		var fileV2 = MakeFile(xamlV2, enableIHR);
 
@@ -225,6 +573,78 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(ucSource);
 		Assert.Contains("Button", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_ChildRemoved_EmitsUCWithClearAndUnregister()
+	{
+		// Arrange: Start with two children (Label + Button), then remove the Button
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV4_TwoChildren, PageXamlV5_ChildRemoved);
+
+		// Assert: UC emitted with child removal
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Clear()", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Unregister", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_ChildrenReordered_EmitsUCWithClearAndReAdd()
+	{
+		// Arrange: Start with Label then Button, swap to Button then Label
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV4_TwoChildren, PageXamlV6_ChildrenReordered);
+
+		// Assert: UC emitted with reorder (clear + re-add in new order)
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Clear()", ucSource!, StringComparison.Ordinal);
+		// Both children should be re-added (retained)
+		Assert.Contains("Add(", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_NestedLayoutAdded_EmitsUCWithGridAndChildren()
+	{
+		// Arrange: Add a Grid with nested children inside VerticalStackLayout
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV7_NestedLayout);
+
+		// Assert: UC emitted with Grid creation and nested children
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Grid", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Nested", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Inner", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_ChildReplaced_EmitsUCWithRemoveAndAdd()
+	{
+		// Arrange: Replace Label with Entry (different element type)
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV8_ChildReplaced);
+
+		// Assert: UC emitted with both removal and addition
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Entry", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Unregister", ucSource!, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_MultipleChildrenAdded_EmitsUCWithAllNewElements()
+	{
+		// Arrange: Go from 1 child (Label) to 3 children (Label + Button + Entry)
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV9_MultipleAdded);
+
+		// Assert: UC emitted with both new elements
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Button", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("Entry", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -405,6 +825,240 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.True(hasSelf);
 		Assert.Equal(xaml, storedXaml);
 		Assert.Equal(1, storedVer);
+	}
+
+	// -----------------------------------------------------------------------
+	// Type converter tests — verify UC uses compile-time converters from IC
+	// -----------------------------------------------------------------------
+
+	[Fact]
+	public void SecondRun_ColorPropertyChange_EmitsColorConverterExpression()
+	{
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV10_ColorProperty, PageXamlV11_ColorChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// Should contain a Color expression, NOT TypeDescriptor.GetConverter
+		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
+		// The Color converter should emit something like Color.FromArgb or new Color
+		Assert.Contains("Color", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_ThicknessPropertyChange_EmitsThicknessExpression()
+	{
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV12_ThicknessProperty, PageXamlV13_ThicknessChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
+		// Should contain Thickness constructor
+		Assert.Contains("Thickness", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_EnumPropertyChange_EmitsEnumLiteral()
+	{
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV14_EnumAndDouble, PageXamlV15_EnumAndDoubleChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
+		// FontAttributes is an enum — should emit FontAttributes.Italic
+		Assert.Contains("Italic", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SecondRun_GridLengthChange_EmitsGridLengthExpression()
+	{
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV16_GridLength, PageXamlV17_GridLengthChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// Grid ColumnDefinitions/RowDefinitions may use a collection converter
+		// At minimum, verify UC is generated (not null) and doesn't fall back to TypeDescriptor
+		Assert.DoesNotContain("TypeDescriptor", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NewChildWithBinding_UCContainsBindingSetup()
+	{
+		// V1 → V18: Add a Label with Text="{Binding Name}"
+		// The new element should have its Binding property set up, not skipped.
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV18_NewChildWithBinding);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// The UC should create a new Label
+		Assert.Contains("new global::Microsoft.Maui.Controls.Label()", uc, StringComparison.Ordinal);
+		// Should contain binding setup (SetBinding or Binding constructor) on the new element
+		Assert.True(
+			uc.Contains("SetBinding", StringComparison.Ordinal) ||
+			uc.Contains("Binding", StringComparison.Ordinal),
+			$"Expected Binding setup in UC for new element, got:\n{uc}");
+	}
+
+	[Fact]
+	public void NewChildWithDynamicResource_UCContainsResourceSetup()
+	{
+		// V1 → V19: Add a Label with TextColor="{DynamicResource PrimaryColor}"
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV19_NewChildWithResources);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Label()", uc, StringComparison.Ordinal);
+		// Should contain DynamicResource setup on the new element
+		Assert.Contains("SetDynamicResource", uc, StringComparison.Ordinal);
+		Assert.Contains("PrimaryColor", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NewChildWithCompiledBinding_UCContainsTypedBinding()
+	{
+		// V1 (with x:DataType) → V20: Add a Label with Text="{Binding Name}"
+		// When x:DataType is known, the UC should emit a compiled TypedBinding
+		// with a local helper method (CreateTypedBindingFrom_*).
+		XamlHotReloadState.Reset();
+		const string viewModel = """
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					public string Name { get; set; }
+				}
+			}
+			""";
+		var (_, run2) = TwoRunsWithSource(
+			PageXamlV1_WithDataType,
+			PageXamlV20_NewChildWithCompiledBinding,
+			additionalSource: viewModel);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("new global::Microsoft.Maui.Controls.Label()", uc, StringComparison.Ordinal);
+		// Compiled binding should produce TypedBinding and the helper method
+		Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("CreateTypedBindingFrom_", uc, StringComparison.Ordinal);
+		Assert.Contains("SetBinding", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void XDataTypeChange_UCRecompilesBindingsWithNewType()
+	{
+		// Changing x:DataType from MyViewModel to OtherViewModel should produce a UC
+		// that re-emits all bindings with the new TypedBinding<OtherViewModel, ...>
+		XamlHotReloadState.Reset();
+		const string viewModels = """
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					public string Name { get; set; }
+				}
+				public class OtherViewModel
+				{
+					public string Title { get; set; }
+				}
+			}
+			""";
+		var (_, run2) = TwoRunsWithSource(
+			PageXamlV1_BindingWithDataType,
+			PageXamlV21_DataTypeChanged,
+			additionalSource: viewModels);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// UC should NOT trigger structural fallback (no "return;" before binding setup)
+		// It should contain SetBinding with TypedBinding for the new type
+		Assert.Contains("SetBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("OtherViewModel", uc, StringComparison.Ordinal);
+		// Should NOT reference old type
+		Assert.DoesNotContain("MyViewModel", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void RootContentSwap_UCReplacesContent()
+	{
+		// ContentPage.Content changes from VerticalStackLayout to Grid
+		// This is a root-level child list change that should use Content property assignment
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV22_RootContentSwap);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Should create a new Grid and set it as Content
+		Assert.Contains("new global::Microsoft.Maui.Controls.Grid()", uc, StringComparison.Ordinal);
+		Assert.Contains(".Content", uc, StringComparison.Ordinal);
+		// Should NOT have a structural fallback for root child changes
+		Assert.DoesNotContain("Root-level child list change not supported", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void NewContentContainer_UCCreatesChildWithContentProperty()
+	{
+		// Adding a ScrollView (content container, not Layout) with a child Label
+		// should use Content property assignment, not Children.Add()
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV23_NewContentContainer);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Should create the ScrollView
+		Assert.Contains("new global::Microsoft.Maui.Controls.ScrollView()", uc, StringComparison.Ordinal);
+		// Should set its Content property (not use Add())
+		Assert.Contains(".Content", uc, StringComparison.Ordinal);
+		// Should NOT fall back
+		Assert.DoesNotContain("Non-layout container", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedPropertyChange_UCUsesSetValue()
+	{
+		// Changing Grid.Row and Grid.Column should emit SetValue() calls
+		XamlHotReloadState.Reset();
+		var (_, run2) = TwoRuns(PageXamlV24_GridWithAttached, PageXamlV25_GridAttachedChanged);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("SetValue", uc, StringComparison.Ordinal);
+		Assert.Contains("RowProperty", uc, StringComparison.Ordinal);
+		Assert.Contains("ColumnProperty", uc, StringComparison.Ordinal);
+		// Should NOT use direct property assignment (element.Grid.Row = value)
+		Assert.DoesNotContain("__uc_0.Grid.Row", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedPropertyWithBinding_UCEmitsSetBinding()
+	{
+		// Changing Grid.Row from "0" to "{Binding RowIndex}" should emit a SetBinding or Binding call
+		XamlHotReloadState.Reset();
+		const string viewModel = """
+			namespace TestApp
+			{
+				public class MyViewModel
+				{
+					public int RowIndex { get; set; }
+				}
+			}
+			""";
+		var (_, run2) = TwoRunsWithSource(
+			PageXamlV26_GridAttachedWithBinding,
+			PageXamlV27_GridAttachedBindingChanged,
+			additionalSource: viewModel);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Should emit a SetBinding with Grid.RowProperty on the Label
+		Assert.Contains("SetBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("Grid.RowProperty", uc, StringComparison.Ordinal);
+		Assert.Contains("RowIndex", uc, StringComparison.Ordinal);
+		// Target element should be Label (not Grid)
+		Assert.Contains("Label", uc, StringComparison.Ordinal);
+		// Should NOT use SetValue (that's for literal values, not bindings)
+		Assert.DoesNotContain("SetValue", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------
