@@ -348,11 +348,14 @@ static class CSharpExpressionHelpers
 		"FontImage",
 	};
 
-	static bool IsKnownMarkupExtension(string name)
+	internal static bool IsKnownMarkupExtensionName(string name)
 	{
 		return KnownMarkupExtensions.Contains(name)
 			|| KnownMarkupExtensions.Contains(name + "Extension");
 	}
+
+	// Keep backward compat for existing callers
+	static bool IsKnownMarkupExtension(string name) => IsKnownMarkupExtensionName(name);
 
 	/// <summary>
 	/// Extracts the C# code from an expression value and transforms quotes.

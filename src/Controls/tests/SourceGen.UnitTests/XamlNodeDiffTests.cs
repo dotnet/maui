@@ -143,6 +143,40 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
+	public void AttachedPropertyChanged_ReturnsPropertyDiff()
+	{
+		var old = Parse(Page("<Grid><Label Text=\"Hello\" Grid.Row=\"0\" /></Grid>"));
+		var @new = Parse(Page("<Grid><Label Text=\"Hello\" Grid.Row=\"1\" /></Grid>"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var nodeDiff = Assert.Single(diff.NodeChanges);
+		var propDiff = Assert.Single(nodeDiff.PropertyChanges);
+		// Attached property: LocalName is "Grid.Row" (full dotted name)
+		Assert.Equal("Grid.Row", propDiff.PropertyName.LocalName);
+		Assert.Equal(PropertyDiffKind.Set, propDiff.Kind);
+		Assert.Equal("1", propDiff.NewValue);
+	}
+
+	[Fact]
+	public void AttachedPropertyChangedToBinding_ReturnsMarkupNodeDiff()
+	{
+		var old = Parse(Page("<Grid><Label Text=\"Hello\" Grid.Row=\"0\" /></Grid>"));
+		var @new = Parse(Page("<Grid><Label Text=\"Hello\" Grid.Row=\"{Binding RowIndex}\" /></Grid>"));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		var nodeDiff = Assert.Single(diff.NodeChanges);
+		var propDiff = Assert.Single(nodeDiff.PropertyChanges);
+		Assert.Equal("Grid.Row", propDiff.PropertyName.LocalName);
+		Assert.Equal(PropertyDiffKind.Set, propDiff.Kind);
+		// Binding creates a MarkupNode, not a plain value
+		Assert.NotNull(propDiff.NewNode);
+	}
+
+	[Fact]
 	public void MultipleChangedProperties_ReturnsAllDiffs()
 	{
 		var old = Parse(Page("<Label Text=\"Hello\" TextColor=\"Blue\" />"));
@@ -302,9 +336,10 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void ReorderedChildren_DuplicateTypes_MatchedPositionally()
+	public void ReorderedChildren_DuplicateTypes_SmartMatching_DetectsReorder()
 	{
-		// Two Labels — matched positionally within type group, property swap detected
+		// Two Labels swapped — smart matching detects this as a reorder (0 property changes)
+		// rather than 2 property changes (old positional matching behavior)
 		var old = Parse(Page("""
 			<VerticalStackLayout>
 				<Label Text="A" />
@@ -321,9 +356,13 @@ public class XamlNodeDiffTests
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
 		Assert.NotNull(diff);
-		// Positional match → detected as property changes, no child list change
-		Assert.Equal(2, diff.NodeChanges.Count);
-		Assert.Empty(diff.ChildListChanges);
+		// Smart matching: detects swap → child list change (reorder), no property changes
+		Assert.Empty(diff.NodeChanges);
+		Assert.Single(diff.ChildListChanges);
+		var change = diff.ChildListChanges[0];
+		Assert.Equal(2, change.NewChildren.Count);
+		Assert.True(change.NewChildren.All(c => c.Kind == ChildChangeKind.Retained));
+		Assert.Empty(change.RemovedNodeIds);
 	}
 
 	[Fact]
@@ -930,15 +969,36 @@ public class XamlNodeDiffTests
 	}
 
 	[Fact]
-	public void XDataType_Changed_ReturnsNull()
+	public void XDataType_Changed_NoBindings_EmptyDiff()
 	{
-		// x:DataType drives compiled bindings → any change is structural
+		// x:DataType changed but no bindings → no property diffs needed (incremental, not structural)
 		var old = Parse(Page("<Label />", extraAttrs: "x:DataType=\"MyViewModel\""));
 		var @new = Parse(Page("<Label />", extraAttrs: "x:DataType=\"OtherViewModel\""));
 
 		var diff = XamlNodeDiff.ComputeDiff(old, @new);
 
-		Assert.Null(diff);
+		Assert.NotNull(diff);
+		Assert.Empty(diff.NodeChanges);
+		Assert.Empty(diff.ChildListChanges);
+	}
+
+	[Fact]
+	public void XDataType_Changed_BindingsForceRefreshed()
+	{
+		// x:DataType changed → all binding MarkupNodes should appear as changed
+		var old = Parse(Page("<Label Text=\"{Binding Name}\" />", extraAttrs: "x:DataType=\"MyViewModel\""));
+		var @new = Parse(Page("<Label Text=\"{Binding Name}\" />", extraAttrs: "x:DataType=\"OtherViewModel\""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// The Label's Text binding should be forced into the diff even though it's identical
+		Assert.Single(diff.NodeChanges);
+		var nd = diff.NodeChanges[0];
+		Assert.Single(nd.PropertyChanges);
+		Assert.Equal("Text", nd.PropertyChanges[0].PropertyName.LocalName);
+		Assert.Equal(PropertyDiffKind.Set, nd.PropertyChanges[0].Kind);
+		Assert.NotNull(nd.PropertyChanges[0].NewNode); // MarkupNode
 	}
 
 	[Fact]
@@ -1957,5 +2017,203 @@ public class XamlNodeDiffTests
 		// Editor property change
 		Assert.Single(d23.NodeChanges);
 		Assert.Equal("Bio", d23.NodeChanges[0].PropertyChanges[0].NewValue);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Smart same-type sibling matching
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void SmartMatching_XNameBased_DetectsReorder()
+	{
+		// Two Labels with x:Name — swapped positions. x:Name matching identifies them.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label x:Name="first" Text="Hello" />
+				<Label x:Name="second" Text="World" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label x:Name="second" Text="World" />
+				<Label x:Name="first" Text="Hello" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// x:Name matching → perfect reorder, zero property changes
+		Assert.Empty(diff.NodeChanges);
+		Assert.Single(diff.ChildListChanges);
+		Assert.Empty(diff.ChildListChanges[0].RemovedNodeIds);
+		Assert.Equal(2, diff.ChildListChanges[0].NewChildren.Count);
+		Assert.True(diff.ChildListChanges[0].NewChildren.All(c => c.Kind == ChildChangeKind.Retained));
+	}
+
+	[Fact]
+	public void SmartMatching_XNameBased_ReorderWithPropertyChange()
+	{
+		// Two Labels with x:Name — swapped and one property changed.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label x:Name="first" Text="Hello" />
+				<Label x:Name="second" Text="World" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label x:Name="second" Text="Universe" />
+				<Label x:Name="first" Text="Hello" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Reorder detected + 1 property change on "second"
+		Assert.Single(diff.NodeChanges);
+		Assert.Equal("Universe", diff.NodeChanges[0].PropertyChanges[0].NewValue);
+		Assert.Single(diff.ChildListChanges);
+	}
+
+	[Fact]
+	public void SmartMatching_CostBased_MultipleProperties_DetectsSwap()
+	{
+		// Two Labels with multiple properties each — swapped. Cost matching should detect
+		// 0-cost assignment (swap) vs 4+ property changes (positional).
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Hello" FontSize="20" />
+				<Label Text="World" FontSize="14" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="World" FontSize="14" />
+				<Label Text="Hello" FontSize="20" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Cost matching detects perfect swap → reorder, 0 property changes
+		Assert.Empty(diff.NodeChanges);
+		Assert.Single(diff.ChildListChanges);
+		Assert.True(diff.ChildListChanges[0].NewChildren.All(c => c.Kind == ChildChangeKind.Retained));
+	}
+
+	[Fact]
+	public void SmartMatching_CostBased_OnePropDiffers_PrefersCheapest()
+	{
+		// Two Labels — only Text differs but positional match has lower cost than swap.
+		// old[0] Text="A" → new[0] Text="A2" (1 diff)
+		// old[1] Text="B" → new[1] Text="B"  (0 diffs)
+		// Positional cost: 1. Swap cost: 2 (A↔B, B↔A2). Positional wins.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Label Text="B" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A2" />
+				<Label Text="B" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Positional is cheaper → 1 property change, no child list change
+		Assert.Single(diff.NodeChanges);
+		Assert.Equal("A2", diff.NodeChanges[0].PropertyChanges[0].NewValue);
+		Assert.Empty(diff.ChildListChanges);
+	}
+
+	[Fact]
+	public void SmartMatching_ThreeLabels_RotatedOrder()
+	{
+		// Three Labels rotated: [A, B, C] → [C, A, B]
+		// Cost matching should detect the rotation as a reorder.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="A" />
+				<Label Text="B" />
+				<Label Text="C" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="C" />
+				<Label Text="A" />
+				<Label Text="B" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Perfect rotation → reorder with 0 property changes
+		Assert.Empty(diff.NodeChanges);
+		Assert.Single(diff.ChildListChanges);
+		Assert.Equal(3, diff.ChildListChanges[0].NewChildren.Count);
+		Assert.True(diff.ChildListChanges[0].NewChildren.All(c => c.Kind == ChildChangeKind.Retained));
+	}
+
+	[Fact]
+	public void SmartMatching_MixedTypes_OnlyDuplicatesUseSmartMatch()
+	{
+		// Mixed types: Button (unique) + two Labels (duplicate).
+		// Labels are swapped. Smart matching should handle the Labels correctly.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="First" />
+				<Button Text="Click" />
+				<Label Text="Second" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Second" />
+				<Button Text="Click" />
+				<Label Text="First" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Smart matching detects Label swap → reorder, Button stays in place
+		Assert.Empty(diff.NodeChanges);
+		Assert.Single(diff.ChildListChanges);
+		Assert.Empty(diff.ChildListChanges[0].RemovedNodeIds);
+	}
+
+	[Fact]
+	public void SmartMatching_IdenticalDuplicates_StaysPositional()
+	{
+		// Two identical Labels (same properties) — no change.
+		// Smart matching should not produce any diffs.
+		var old = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Same" />
+				<Label Text="Same" />
+			</VerticalStackLayout>
+			"""));
+		var @new = Parse(Page("""
+			<VerticalStackLayout>
+				<Label Text="Same" />
+				<Label Text="Same" />
+			</VerticalStackLayout>
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.Empty(diff.NodeChanges);
+		Assert.Empty(diff.ChildListChanges);
 	}
 }

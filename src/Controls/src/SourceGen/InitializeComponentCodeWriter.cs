@@ -265,6 +265,8 @@ $$"""
 		Compilation compilation,
 		AssemblyAttributes xmlnsCache,
 		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem projectItem,
 		out SGRootNode? parsedNewRoot,
 		out Dictionary<ElementNode, string>? effectiveNewIds,
 		out int newNextNodeId,
@@ -317,6 +319,9 @@ $$"""
 
 		parsedNewRoot = newRoot;
 
+		// Set Parent pointers on all nodes (needed for x:DataType resolution in UC)
+		newRoot.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
+
 		// Assign fresh IDs to the new tree (starting from nextNodeId to avoid collision with old IDs)
 		var newIds = NodeIdHelper.AssignIds(newRoot, nextNodeId, out newNextNodeId);
 
@@ -324,7 +329,7 @@ $$"""
 		if (diff is null || diff.IsEmpty)
 			return null;
 
-		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds);
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)

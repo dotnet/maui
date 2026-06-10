@@ -311,7 +311,8 @@ static class XamlNodeDiff
 	static bool DiffNode(ElementNode oldNode, ElementNode newNode,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
-		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
+		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
+		bool forceBindingRefresh = false)
 	{
 		// Structural check: element type must match
 		if (!XmlTypeEquals(oldNode.XmlType, newNode.XmlType))
@@ -330,14 +331,17 @@ static class XamlNodeDiff
 
 		// Diff properties (simple value attributes)
 		var propDiffs = new List<PropertyDiff>();
-		if (!DiffProperties(oldNode, newNode, propDiffs))
+		if (!DiffProperties(oldNode, newNode, propDiffs, forceBindingRefresh, out var xDataTypeChanged))
 			return false;
 
 		if (propDiffs.Count > 0)
 			nodeChanges.Add(new NodeDiff(nodeId, propDiffs, newNode.XmlType));
 
+		// If x:DataType changed on this node, propagate to all descendant bindings
+		bool childForceRefresh = forceBindingRefresh || xDataTypeChanged;
+
 		// Diff children
-		return DiffChildren(oldNode, newNode, nodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+		return DiffChildren(oldNode, newNode, nodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, childForceRefresh);
 	}
 
 	/// <summary>
@@ -349,7 +353,8 @@ static class XamlNodeDiff
 		string parentNodeId,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
-		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
+		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
+		bool forceBindingRefresh = false)
 	{
 		int oldCount = oldNode.CollectionItems.Count;
 		int newCount = newNode.CollectionItems.Count;
@@ -376,13 +381,15 @@ static class XamlNodeDiff
 		{
 			if (oldCount != newCount)
 				return false;
-			return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+			return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
 		}
 
 		// All children are elements. Fast path: same count + same positional types → no child list change
 		if (oldCount == newCount)
 		{
 			bool positionalMatch = true;
+			bool hasDuplicateTypes = false;
+			var typeCounts = new Dictionary<string, int>();
 			for (int i = 0; i < oldCount; i++)
 			{
 				var oe = (ElementNode)oldNode.CollectionItems[i];
@@ -392,13 +399,71 @@ static class XamlNodeDiff
 					positionalMatch = false;
 					break;
 				}
+				var sig = TypeSignature(oe.XmlType);
+				typeCounts.TryGetValue(sig, out int cnt);
+				typeCounts[sig] = cnt + 1;
+				if (cnt + 1 > 1)
+					hasDuplicateTypes = true;
 			}
 			if (positionalMatch)
-				return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+			{
+				// If no duplicate types, positional is unambiguous — use fast path
+				if (!hasDuplicateTypes)
+					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
+
+				// Duplicate types exist — use cost-based matching to find optimal assignment.
+				// If the optimal assignment is the identity (same as positional), use fast path.
+				// Otherwise fall through to DiffChildrenWithMatching which also uses cost matching.
+				var oldChildren = new ElementNode[oldCount];
+				var newChildren = new ElementNode[oldCount];
+				for (int i = 0; i < oldCount; i++)
+				{
+					oldChildren[i] = (ElementNode)oldNode.CollectionItems[i];
+					newChildren[i] = (ElementNode)newNode.CollectionItems[i];
+				}
+
+				// Build type groups and compute cost-based matching
+				var groups = new Dictionary<string, List<int>>();
+				for (int i = 0; i < oldCount; i++)
+				{
+					var sig = TypeSignature(oldChildren[i].XmlType);
+					if (!groups.TryGetValue(sig, out var list))
+					{
+						list = new List<int>();
+						groups[sig] = list;
+					}
+					list.Add(i);
+				}
+
+				bool isIdentity = true;
+				foreach (var kvp in groups)
+				{
+					if (kvp.Value.Count <= 1)
+						continue; // unique type — positional is optimal
+
+					var indices = kvp.Value;
+					var tempMatched = new List<(int oldIdx, int newIdx)>();
+					var tempRemoved = new List<int>();
+					var tempAdded = new List<int>();
+					MatchTypeGroupByCost(indices, indices, oldChildren, newChildren,
+						tempMatched, tempRemoved, tempAdded);
+					foreach (var (oi, ni) in tempMatched)
+					{
+						if (oi != ni) { isIdentity = false; break; }
+					}
+					if (!isIdentity) break;
+				}
+
+				if (isIdentity)
+					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
+
+				// Optimal matching differs from positional — fall through to general case
+				// which will produce a ChildListChangeDiff with reorder
+			}
 		}
 
 		// General case: type-based matching for reorder/add/remove
-		return DiffChildrenWithMatching(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges);
+		return DiffChildrenWithMatching(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
 	}
 
 	/// <summary>
@@ -410,7 +475,8 @@ static class XamlNodeDiff
 		string parentNodeId,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
-		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
+		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
+		bool forceBindingRefresh = false)
 	{
 		int count = oldNode.CollectionItems.Count;
 		for (int i = 0; i < count; i++)
@@ -420,7 +486,7 @@ static class XamlNodeDiff
 
 			if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
 			{
-				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges))
+				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh))
 					return false;
 			}
 			else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
@@ -452,7 +518,8 @@ static class XamlNodeDiff
 		string parentNodeId,
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
-		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges)
+		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
+		bool forceBindingRefresh = false)
 	{
 		int oldCount = oldNode.CollectionItems.Count;
 		int newCount = newNode.CollectionItems.Count;
@@ -489,7 +556,7 @@ static class XamlNodeDiff
 			list.Add(i);
 		}
 
-		// Match by type and position within type group
+		// Match by type using cost-based matching within each type group
 		var matched = new List<(int oldIdx, int newIdx)>();
 		var addedNewIndices = new List<int>();
 		var removedOldIndices = new List<int>();
@@ -504,24 +571,30 @@ static class XamlNodeDiff
 			oldGroups.TryGetValue(key, out var oldIdxList);
 			newGroups.TryGetValue(key, out var newIdxList);
 
-			int oldLen = oldIdxList?.Count ?? 0;
-			int newLen = newIdxList?.Count ?? 0;
-			int matchCount = oldLen < newLen ? oldLen : newLen;
-
-			for (int i = 0; i < matchCount; i++)
-				matched.Add((oldIdxList![i], newIdxList![i]));
-
-			for (int i = matchCount; i < oldLen; i++)
-				removedOldIndices.Add(oldIdxList![i]);
-
-			for (int i = matchCount; i < newLen; i++)
-				addedNewIndices.Add(newIdxList![i]);
+			if (oldIdxList != null && newIdxList != null)
+			{
+				// Both sides have this type — use cost-based matching
+				MatchTypeGroupByCost(oldIdxList, newIdxList, oldChildren, newChildren,
+					matched, removedOldIndices, addedNewIndices);
+			}
+			else if (oldIdxList != null)
+			{
+				// Type only in old — all removed
+				foreach (var idx in oldIdxList)
+					removedOldIndices.Add(idx);
+			}
+			else if (newIdxList != null)
+			{
+				// Type only in new — all added
+				foreach (var idx in newIdxList)
+					addedNewIndices.Add(idx);
+			}
 		}
 
 		// Recursively diff matched pairs (old IDs are transplanted inside DiffNode)
 		foreach (var (oldIdx, newIdx) in matched)
 		{
-			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges))
+			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh))
 				return false;
 		}
 
@@ -596,10 +669,16 @@ static class XamlNodeDiff
 	/// Diffs the <see cref="ElementNode.Properties"/> dictionaries of two nodes.
 	/// All property changes are recorded — simple <see cref="ValueNode"/> values, markup extensions,
 	/// and nested elements alike. Only changes to codegen-sensitive <c>x:</c> properties
-	/// (e.g. <c>x:Name</c>, <c>x:Class</c>, <c>x:DataType</c>) trigger structural fallback.
+	/// (e.g. <c>x:Name</c>, <c>x:Class</c>) trigger structural fallback.
+	/// When <paramref name="forceBindingRefresh"/> is <see langword="true"/>, all binding MarkupNode
+	/// properties are treated as changed even if the markup string is identical — this propagates
+	/// <c>x:DataType</c> changes from ancestor nodes.
 	/// </summary>
-	static bool DiffProperties(ElementNode oldNode, ElementNode newNode, List<PropertyDiff> diffs)
+	static bool DiffProperties(ElementNode oldNode, ElementNode newNode, List<PropertyDiff> diffs,
+		bool forceBindingRefresh, out bool xDataTypeChanged)
 	{
+		xDataTypeChanged = false;
+
 		// Check all properties in the old node
 		foreach (var kvp in oldNode.Properties)
 		{
@@ -608,12 +687,24 @@ static class XamlNodeDiff
 
 			if (newNode.Properties.TryGetValue(name, out var newPropNode))
 			{
+				// x:DataType is a compile-time directive, not a runtime property.
+				// Detect change but don't emit a PropertyDiff.
+				if (IsXDataType(name))
+				{
+					if (!NodeValueEquals(oldPropNode, newPropNode))
+						xDataTypeChanged = true;
+					continue;
+				}
+
 				// Codegen-sensitive x: property changed → structural regardless of value
 				if (IsCodegenSensitive(name) && !NodeValueEquals(oldPropNode, newPropNode))
 					return false;
 
 				// Both sides have the property — compare values
-				if (!NodeValueEquals(oldPropNode, newPropNode))
+				bool valueChanged = !NodeValueEquals(oldPropNode, newPropNode);
+				bool forceThisBinding = forceBindingRefresh && IsBindingMarkup(newPropNode);
+
+				if (valueChanged || forceThisBinding)
 				{
 					if (newPropNode is ValueNode newVal)
 					{
@@ -632,6 +723,11 @@ static class XamlNodeDiff
 			else
 			{
 				// Property was removed in new version
+				if (IsXDataType(name))
+				{
+					xDataTypeChanged = true;
+					continue;
+				}
 				if (IsCodegenSensitive(name))
 					return false; // removing x:Name/x:Class/etc. → structural
 				// Carry the old node for complex properties so codegen knows what's being cleared
@@ -645,6 +741,11 @@ static class XamlNodeDiff
 		{
 			if (!oldNode.Properties.ContainsKey(kvp.Key))
 			{
+				if (IsXDataType(kvp.Key))
+				{
+					xDataTypeChanged = true;
+					continue;
+				}
 				if (IsCodegenSensitive(kvp.Key))
 					return false; // adding x:Name/x:Class/etc. → structural
 
@@ -667,6 +768,8 @@ static class XamlNodeDiff
 	/// <summary>
 	/// Returns <see langword="true"/> when <paramref name="name"/> is a codegen-sensitive
 	/// <c>x:</c> attribute whose change requires full code regeneration (structural fallback).
+	/// Note: <c>x:DataType</c> is NOT included — it is handled incrementally by forcing
+	/// all binding MarkupNodes in the subtree to re-emit with the new type.
 	/// </summary>
 	static bool IsCodegenSensitive(XmlName name)
 	{
@@ -677,7 +780,6 @@ static class XamlNodeDiff
 		{
 			case "Name":
 			case "Class":
-			case "DataType":
 			case "ClassModifier":
 			case "FieldModifier":
 			case "TypeArguments":
@@ -687,6 +789,22 @@ static class XamlNodeDiff
 				return false;
 		}
 	}
+
+	/// <summary>
+	/// Returns <see langword="true"/> when the property is <c>x:DataType</c>,
+	/// which is a compile-time directive (not a runtime property) that affects compiled bindings.
+	/// </summary>
+	static bool IsXDataType(XmlName name)
+		=> name.NamespaceURI == "x" && name.LocalName == "DataType";
+
+	/// <summary>
+	/// Returns <see langword="true"/> when the value node is a binding markup extension
+	/// (e.g. <c>{Binding ...}</c>, <c>{TemplateBinding ...}</c>) that depends on <c>x:DataType</c>.
+	/// </summary>
+	static bool IsBindingMarkup(INode node)
+		=> node is MarkupNode mn
+			&& (mn.MarkupString.StartsWith("{Binding", StringComparison.Ordinal)
+				|| mn.MarkupString.StartsWith("{TemplateBinding", StringComparison.Ordinal));
 
 	// -------------------------------------------------------------------------
 	// Helpers
@@ -778,6 +896,246 @@ static class XamlNodeDiff
 
 	static bool StringEquals(string? a, string? b) =>
 		string.Equals(a, b, StringComparison.Ordinal);
+
+	/// <summary>
+	/// Returns the x:Name value from an element, or null if not set.
+	/// </summary>
+	static string? GetXName(ElementNode node)
+	{
+		var key = new XmlName("x", "Name");
+		if (node.Properties.TryGetValue(key, out var propNode) && propNode is ValueNode vn)
+			return vn.Value?.ToString();
+		return null;
+	}
+
+	/// <summary>
+	/// Counts the number of differing properties (and children) between two elements.
+	/// Used as the "cost" of matching old[i] to new[j] in the sibling matching algorithm.
+	/// </summary>
+	static int CountNodeDiffCost(ElementNode a, ElementNode b)
+	{
+		int cost = 0;
+
+		// Count property differences
+		foreach (var kvp in a.Properties)
+		{
+			if (b.Properties.TryGetValue(kvp.Key, out var bProp))
+			{
+				if (!NodeValueEquals(kvp.Value, bProp))
+					cost++;
+			}
+			else
+				cost++; // removed property
+		}
+		foreach (var kvp in b.Properties)
+		{
+			if (!a.Properties.ContainsKey(kvp.Key))
+				cost++; // added property
+		}
+
+		// Count children differences (rough: just count mismatches)
+		int childMin = Math.Min(a.CollectionItems.Count, b.CollectionItems.Count);
+		int childMax = Math.Max(a.CollectionItems.Count, b.CollectionItems.Count);
+		cost += childMax - childMin; // added/removed children
+		for (int i = 0; i < childMin; i++)
+		{
+			if (!NodeValueEquals(a.CollectionItems[i], b.CollectionItems[i]))
+				cost++;
+		}
+
+		return cost;
+	}
+
+	/// <summary>
+	/// Finds the minimum-cost matching between same-type siblings.
+	/// Priority 1: Match by x:Name (exact identity match, cost 0).
+	/// Priority 2: Compute cost matrix and find min-cost assignment.
+	/// For N≤8, uses brute-force permutation search. For N>8, uses greedy matching.
+	/// Returns a list of (oldIdx, newIdx) pairs for matched elements,
+	/// plus lists of unmatched old (removed) and unmatched new (added) indices.
+	/// </summary>
+	static void MatchTypeGroupByCost(
+		List<int> oldIndices, List<int> newIndices,
+		ElementNode[] oldChildren, ElementNode[] newChildren,
+		List<(int oldIdx, int newIdx)> matched,
+		List<int> removedOldIndices, List<int> addedNewIndices)
+	{
+		int oldLen = oldIndices.Count;
+		int newLen = newIndices.Count;
+
+		// Track which indices are already matched
+		var matchedOld = new bool[oldLen];
+		var matchedNew = new bool[newLen];
+
+		// Priority 1: Match by x:Name
+		for (int oi = 0; oi < oldLen; oi++)
+		{
+			var oldName = GetXName(oldChildren[oldIndices[oi]]);
+			if (oldName == null)
+				continue;
+			for (int ni = 0; ni < newLen; ni++)
+			{
+				if (matchedNew[ni])
+					continue;
+				var newName = GetXName(newChildren[newIndices[ni]]);
+				if (string.Equals(oldName, newName, StringComparison.Ordinal))
+				{
+					matched.Add((oldIndices[oi], newIndices[ni]));
+					matchedOld[oi] = true;
+					matchedNew[ni] = true;
+					break;
+				}
+			}
+		}
+
+		// Collect unmatched indices for cost-based matching
+		var unmatchedOld = new List<int>();
+		var unmatchedNew = new List<int>();
+		for (int i = 0; i < oldLen; i++)
+			if (!matchedOld[i]) unmatchedOld.Add(i);
+		for (int i = 0; i < newLen; i++)
+			if (!matchedNew[i]) unmatchedNew.Add(i);
+
+		if (unmatchedOld.Count > 0 && unmatchedNew.Count > 0)
+		{
+			int uOld = unmatchedOld.Count;
+			int uNew = unmatchedNew.Count;
+			int matchCount = Math.Min(uOld, uNew);
+
+			// Build cost matrix
+			var cost = new int[uOld, uNew];
+			for (int oi = 0; oi < uOld; oi++)
+				for (int ni = 0; ni < uNew; ni++)
+					cost[oi, ni] = CountNodeDiffCost(
+						oldChildren[oldIndices[unmatchedOld[oi]]],
+						newChildren[newIndices[unmatchedNew[ni]]]);
+
+			if (matchCount <= 8)
+			{
+				// Brute-force: try all permutations to find minimum total cost
+				var bestAssignment = MinCostAssignmentBruteForce(cost, uOld, uNew);
+				foreach (var (oi, ni) in bestAssignment)
+					matched.Add((oldIndices[unmatchedOld[oi]], newIndices[unmatchedNew[ni]]));
+
+				// Mark matched
+				var assignedOld = new HashSet<int>();
+				var assignedNew = new HashSet<int>();
+				foreach (var (oi, ni) in bestAssignment)
+				{
+					assignedOld.Add(oi);
+					assignedNew.Add(ni);
+				}
+				for (int i = 0; i < uOld; i++)
+					if (!assignedOld.Contains(i)) removedOldIndices.Add(oldIndices[unmatchedOld[i]]);
+				for (int i = 0; i < uNew; i++)
+					if (!assignedNew.Contains(i)) addedNewIndices.Add(newIndices[unmatchedNew[i]]);
+			}
+			else
+			{
+				// Greedy: repeatedly pick the lowest-cost pair
+				var usedOld = new bool[uOld];
+				var usedNew = new bool[uNew];
+				for (int m = 0; m < matchCount; m++)
+				{
+					int bestOi = -1, bestNi = -1, bestCost = int.MaxValue;
+					for (int oi = 0; oi < uOld; oi++)
+					{
+						if (usedOld[oi]) continue;
+						for (int ni = 0; ni < uNew; ni++)
+						{
+							if (usedNew[ni]) continue;
+							if (cost[oi, ni] < bestCost)
+							{
+								bestCost = cost[oi, ni];
+								bestOi = oi;
+								bestNi = ni;
+							}
+						}
+					}
+					if (bestOi >= 0)
+					{
+						matched.Add((oldIndices[unmatchedOld[bestOi]], newIndices[unmatchedNew[bestNi]]));
+						usedOld[bestOi] = true;
+						usedNew[bestNi] = true;
+					}
+				}
+				for (int i = 0; i < uOld; i++)
+					if (!usedOld[i]) removedOldIndices.Add(oldIndices[unmatchedOld[i]]);
+				for (int i = 0; i < uNew; i++)
+					if (!usedNew[i]) addedNewIndices.Add(newIndices[unmatchedNew[i]]);
+			}
+		}
+		else
+		{
+			// Only one side has unmatched — all are added or removed
+			for (int i = 0; i < unmatchedOld.Count; i++)
+				removedOldIndices.Add(oldIndices[unmatchedOld[i]]);
+			for (int i = 0; i < unmatchedNew.Count; i++)
+				addedNewIndices.Add(newIndices[unmatchedNew[i]]);
+		}
+	}
+
+	/// <summary>
+	/// Brute-force min-cost assignment for small N (≤8).
+	/// Finds the assignment of min(rows,cols) pairs that minimizes total cost.
+	/// </summary>
+	static List<(int row, int col)> MinCostAssignmentBruteForce(int[,] cost, int rows, int cols)
+	{
+		int matchCount = Math.Min(rows, cols);
+		var bestAssignment = new List<(int, int)>();
+		int bestTotalCost = int.MaxValue;
+
+		// Generate all matchCount-permutations from the larger set
+		if (rows <= cols)
+		{
+			// Each old row picks a unique column
+			var assignment = new int[matchCount];
+			var usedCols = new bool[cols];
+			FindBestAssignment(cost, assignment, usedCols, 0, matchCount, cols, 0, ref bestTotalCost, ref bestAssignment, true);
+		}
+		else
+		{
+			// Each new column picks a unique row
+			var assignment = new int[matchCount];
+			var usedRows = new bool[rows];
+			FindBestAssignment(cost, assignment, usedRows, 0, matchCount, rows, 0, ref bestTotalCost, ref bestAssignment, false);
+		}
+
+		return bestAssignment;
+	}
+
+	static void FindBestAssignment(
+		int[,] cost, int[] assignment, bool[] used,
+		int depth, int matchCount, int maxIdx, int currentCost,
+		ref int bestCost, ref List<(int, int)> bestAssignment, bool rowsArePrimary)
+	{
+		if (currentCost >= bestCost)
+			return; // prune
+
+		if (depth == matchCount)
+		{
+			bestCost = currentCost;
+			bestAssignment = new List<(int, int)>(matchCount);
+			for (int i = 0; i < matchCount; i++)
+			{
+				bestAssignment.Add(rowsArePrimary
+					? (i, assignment[i])
+					: (assignment[i], i));
+			}
+			return;
+		}
+
+		for (int idx = 0; idx < maxIdx; idx++)
+		{
+			if (used[idx])
+				continue;
+			assignment[depth] = idx;
+			used[idx] = true;
+			int pairCost = rowsArePrimary ? cost[depth, idx] : cost[idx, depth];
+			FindBestAssignment(cost, assignment, used, depth + 1, matchCount, maxIdx, currentCost + pairCost, ref bestCost, ref bestAssignment, rowsArePrimary);
+			used[idx] = false;
+		}
+	}
 
 	/// <summary>
 	/// Builds a stable child node ID by combining the parent path and the child's type + sibling index.
