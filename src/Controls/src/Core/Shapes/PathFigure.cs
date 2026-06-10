@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Segments")]
 	public sealed class PathFigure : BindableObject, IAnimatable
 	{
+		readonly NotifyCollectionChangedEventHandler _pathSegmentCollectionChangedHandler;
+		readonly PropertyChangedEventHandler _pathSegmentPropertyChangedHandler;
 		readonly WeakNotifyCollectionChangedProxy _segmentCollectionChangedProxy = new();
 		readonly Dictionary<PathSegment, WeakNotifyPropertyChangedProxy> _segmentPropertyChangedProxies = new();
 
@@ -21,7 +23,15 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public PathFigure()
 		{
+			_pathSegmentCollectionChangedHandler = OnPathSegmentCollectionChanged;
+			_pathSegmentPropertyChangedHandler = OnPathSegmentPropertyChanged;
 			Segments = new PathSegmentCollection();
+		}
+
+		~PathFigure()
+		{
+			_segmentCollectionChangedProxy.Unsubscribe();
+			UnsubscribeFromAllPathSegmentPropertyChanged();
 		}
 
 		/// <summary>Bindable property for <see cref="Segments"/>.</summary>
@@ -104,7 +114,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (newCollection == null)
 				return;
 
-			_segmentCollectionChangedProxy.Subscribe(newCollection, OnPathSegmentCollectionChanged);
+			_segmentCollectionChangedProxy.Subscribe(newCollection, _pathSegmentCollectionChangedHandler);
 
 			foreach (var newPathSegment in newCollection)
 			{
@@ -165,7 +175,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (_segmentPropertyChangedProxies.ContainsKey(pathSegment))
 				return;
 
-			var weakProxy = new WeakNotifyPropertyChangedProxy(pathSegment, OnPathSegmentPropertyChanged);
+			var weakProxy = new WeakNotifyPropertyChangedProxy(pathSegment, _pathSegmentPropertyChangedHandler);
 			_segmentPropertyChangedProxies[pathSegment] = weakProxy;
 		}
 
