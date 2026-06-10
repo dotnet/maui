@@ -166,6 +166,7 @@ function Get-VerdictColor {
     switch -Regex ($Verdict) {
         'Likely PR-caused' { return 'd1242f' }
         'Likely unrelated' { return '1a7f37' }
+        'No failures found' { return '1a7f37' }
         'Insufficient data' { return '6e7781' }
         default { return 'bf8700' }
     }
