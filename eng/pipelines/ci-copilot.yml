@@ -1752,6 +1752,10 @@ stages:
       - RunDeepUITests
       - UpdateAISummaryComment
     condition: always()
+    variables:
+      reviewPrResult: $[ dependencies.ReviewPR.result ]
+      runDeepUITestsResult: $[ dependencies.RunDeepUITests.result ]
+      updateAISummaryCommentResult: $[ dependencies.UpdateAISummaryComment.result ]
     jobs:
       - job: AnalyzeTokenUsage
         displayName: 'Publish Copilot token usage artifact'
@@ -1797,3 +1801,72 @@ stages:
               artifact: 'CopilotTokenUsage'
               publishLocation: 'pipeline'
             condition: always()
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+
+              if ([string]::IsNullOrWhiteSpace($env:VIGILANT_GUIDE_DISPATCH_TOKEN)) {
+                Write-Host "##[warning]Agent statistics dispatch token is not configured; skipping update dispatch."
+                exit 0
+              }
+
+              $summaryPath = Join-Path "$(Build.ArtifactStagingDirectory)/copilot-token-usage" "token-usage-summary.json"
+              if (-not (Test-Path $summaryPath)) {
+                Write-Host "##[warning]Copilot token usage summary was not produced at $summaryPath; skipping agent statistics dispatch."
+                exit 0
+              }
+
+              $summary = Get-Content -Path $summaryPath -Raw -Encoding UTF8 | ConvertFrom-Json
+              $stageResults = [ordered]@{
+                ReviewPR               = "$(reviewPrResult)"
+                RunDeepUITests         = "$(runDeepUITestsResult)"
+                UpdateAISummaryComment = "$(updateAISummaryCommentResult)"
+                AnalyzeCopilotTokenUsage = "$(Agent.JobStatus)"
+              }
+
+              $pipelineResult = 'succeeded'
+              if ($stageResults.Values -contains 'Failed') {
+                $pipelineResult = 'failed'
+              } elseif ($stageResults.Values -contains 'SucceededWithIssues') {
+                $pipelineResult = 'partiallySucceeded'
+              }
+
+              $payload = [ordered]@{
+                event_type = 'maui-copilot-token-usage'
+                client_payload = [ordered]@{
+                  schemaVersion = 1
+                  build = [ordered]@{
+                    id            = "$(Build.BuildId)"
+                    number        = "$(Build.BuildNumber)"
+                    url           = "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
+                    sourceBranch  = "$(Build.SourceBranch)"
+                    sourceVersion = "$(Build.SourceVersion)"
+                    requestedFor  = "$(Build.RequestedFor)"
+                    prNumber      = "${{ parameters.PRNumber }}"
+                    platform      = "${{ parameters.Platform }}"
+                    result        = $pipelineResult
+                    stageResults  = $stageResults
+                  }
+                  summary = $summary
+                }
+              }
+
+              $headers = @{
+                Authorization = "Bearer $env:VIGILANT_GUIDE_DISPATCH_TOKEN"
+                Accept = 'application/vnd.github+json'
+                'X-GitHub-Api-Version' = '2022-11-28'
+              }
+              $body = $payload | ConvertTo-Json -Depth 100 -Compress
+              Invoke-RestMethod `
+                -Method Post `
+                -Uri 'https://api.github.com/repos/dotnet/maui-vigilant-guide/dispatches' `
+                -Headers $headers `
+                -ContentType 'application/json' `
+                -Body $body | Out-Null
+
+              Write-Host "Dispatched Copilot token usage summary to dotnet/maui-vigilant-guide for build $(Build.BuildId)."
+            displayName: 'Dispatch agent statistics update'
+            condition: always()
+            continueOnError: true
+            env:
+              VIGILANT_GUIDE_DISPATCH_TOKEN: $(VIGILANT_GUIDE_DISPATCH_TOKEN)

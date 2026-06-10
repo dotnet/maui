@@ -209,6 +209,7 @@ function New-StageSummaryRows {
             inputTokens       = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'inputTokens' }) } else { 0 }
             outputTokens      = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'outputTokens' }) } else { 0 }
             cachedInputTokens = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'cachedInputTokens' }) } else { 0 }
+            reasoningOutputTokens = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'reasoningOutputTokens' }) } else { 0 }
             totalTokens       = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'totalTokens' }) } else { 0 }
             aicUsed           = if ($hasRecords) { Get-NullableDecimalSum -Values @($stageRecords | ForEach-Object { Get-RecordAicUsed -Record $_ }) } else { 0 }
             durationMs        = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { $_.durationMs }) } else { 0 }
@@ -249,6 +250,8 @@ function New-StepSummaryRows {
             invocationCount = $items.Count
             inputTokens     = Get-NullableSum -Values @($items | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'inputTokens' })
             outputTokens    = Get-NullableSum -Values @($items | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'outputTokens' })
+            cachedInputTokens = Get-NullableSum -Values @($items | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'cachedInputTokens' })
+            reasoningOutputTokens = Get-NullableSum -Values @($items | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'reasoningOutputTokens' })
             totalTokens     = Get-NullableSum -Values @($items | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'totalTokens' })
             aicUsed         = Get-NullableDecimalSum -Values @($items | ForEach-Object { Get-RecordAicUsed -Record $_ })
             durationMs      = Get-NullableSum -Values @($items | ForEach-Object { $_.durationMs })
@@ -284,6 +287,7 @@ function New-CopilotTokenUsageSummary {
             inputTokens       = Get-NullableSum -Values @($Records | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'inputTokens' })
             outputTokens      = Get-NullableSum -Values @($Records | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'outputTokens' })
             cachedInputTokens = Get-NullableSum -Values @($Records | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'cachedInputTokens' })
+            reasoningOutputTokens = Get-NullableSum -Values @($Records | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'reasoningOutputTokens' })
             totalTokens       = Get-NullableSum -Values @($Records | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'totalTokens' })
             aicUsed           = Get-NullableDecimalSum -Values @($Records | ForEach-Object { Get-RecordAicUsed -Record $_ })
             durationMs        = Get-NullableSum -Values @($Records | ForEach-Object { $_.durationMs })
@@ -324,6 +328,7 @@ function New-CopilotTokenUsageMarkdown {
     [void]$lines.Add("| Input tokens | $(Format-UsageValue $Summary.totals.inputTokens) |")
     [void]$lines.Add("| Output tokens | $(Format-UsageValue $Summary.totals.outputTokens) |")
     [void]$lines.Add("| Cached input tokens | $(Format-UsageValue $Summary.totals.cachedInputTokens) |")
+    [void]$lines.Add("| Reasoning output tokens | $(Format-UsageValue $Summary.totals.reasoningOutputTokens) |")
     [void]$lines.Add("| Total tokens | $(Format-UsageValue $Summary.totals.totalTokens) |")
     [void]$lines.Add("| AIC used | $(Format-UsageValue $Summary.totals.aicUsed) |")
     [void]$lines.Add("| Elapsed ms | $(Format-UsageValue $Summary.totals.durationMs) |")
@@ -333,10 +338,10 @@ function New-CopilotTokenUsageMarkdown {
     [void]$lines.Add('')
     [void]$lines.Add('## By stage')
     [void]$lines.Add('')
-    [void]$lines.Add('| Stage | Invocations | Input | Output | Cached input | Total | AIC used | Elapsed ms | API ms | Note |')
-    [void]$lines.Add('|---|---:|---:|---:|---:|---:|---:|---:|---:|---|')
+    [void]$lines.Add('| Stage | Invocations | Input | Output | Cached input | Reasoning | Total | AIC used | Elapsed ms | API ms | Note |')
+    [void]$lines.Add('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|')
     foreach ($stage in @($Summary.stages)) {
-        [void]$lines.Add("| $($stage.stageName) | $($stage.invocationCount) | $(Format-UsageValue $stage.inputTokens) | $(Format-UsageValue $stage.outputTokens) | $(Format-UsageValue $stage.cachedInputTokens) | $(Format-UsageValue $stage.totalTokens) | $(Format-UsageValue $stage.aicUsed) | $(Format-UsageValue $stage.durationMs) | $(Format-UsageValue $stage.apiDurationMs) | $($stage.note) |")
+        [void]$lines.Add("| $($stage.stageName) | $($stage.invocationCount) | $(Format-UsageValue $stage.inputTokens) | $(Format-UsageValue $stage.outputTokens) | $(Format-UsageValue $stage.cachedInputTokens) | $(Format-UsageValue $stage.reasoningOutputTokens) | $(Format-UsageValue $stage.totalTokens) | $(Format-UsageValue $stage.aicUsed) | $(Format-UsageValue $stage.durationMs) | $(Format-UsageValue $stage.apiDurationMs) | $($stage.note) |")
     }
     [void]$lines.Add('')
     [void]$lines.Add('## By Copilot step')
@@ -344,10 +349,10 @@ function New-CopilotTokenUsageMarkdown {
     if (@($Summary.steps).Count -eq 0) {
         [void]$lines.Add('No Copilot invocations were recorded.')
     } else {
-        [void]$lines.Add('| Stage | Phase | Step | Model | Invocations | Input | Output | Total | AIC used | Elapsed ms | API ms |')
-        [void]$lines.Add('|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|')
+        [void]$lines.Add('| Stage | Phase | Step | Model | Invocations | Input | Output | Cached input | Reasoning | Total | AIC used | Elapsed ms | API ms |')
+        [void]$lines.Add('|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
         foreach ($step in @($Summary.steps)) {
-            [void]$lines.Add("| $($step.stageName) | $($step.scriptPhase) | $($step.copilotStep) | $($step.model) | $($step.invocationCount) | $(Format-UsageValue $step.inputTokens) | $(Format-UsageValue $step.outputTokens) | $(Format-UsageValue $step.totalTokens) | $(Format-UsageValue $step.aicUsed) | $(Format-UsageValue $step.durationMs) | $(Format-UsageValue $step.apiDurationMs) |")
+            [void]$lines.Add("| $($step.stageName) | $($step.scriptPhase) | $($step.copilotStep) | $($step.model) | $($step.invocationCount) | $(Format-UsageValue $step.inputTokens) | $(Format-UsageValue $step.outputTokens) | $(Format-UsageValue $step.cachedInputTokens) | $(Format-UsageValue $step.reasoningOutputTokens) | $(Format-UsageValue $step.totalTokens) | $(Format-UsageValue $step.aicUsed) | $(Format-UsageValue $step.durationMs) | $(Format-UsageValue $step.apiDurationMs) |")
         }
     }
 
@@ -374,7 +379,7 @@ $csvPath = Join-Path $OutputDir 'token-usage-by-step.csv'
 if (@($summary.steps).Count -gt 0) {
     @($summary.steps) | Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8
 } else {
-    'stageName,scriptPhase,copilotStep,model,invocationCount,inputTokens,outputTokens,totalTokens,aicUsed,durationMs,apiDurationMs,turnCount,toolCount' |
+    'stageName,scriptPhase,copilotStep,model,invocationCount,inputTokens,outputTokens,cachedInputTokens,reasoningOutputTokens,totalTokens,aicUsed,durationMs,apiDurationMs,turnCount,toolCount' |
         Set-Content -Path $csvPath -Encoding UTF8
 }
 

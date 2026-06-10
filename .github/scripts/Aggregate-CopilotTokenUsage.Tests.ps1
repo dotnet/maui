@@ -41,6 +41,7 @@ Describe 'Aggregate-CopilotTokenUsage.ps1' {
                 inputTokens       = 100
                 outputTokens      = 40
                 cachedInputTokens = 10
+                reasoningOutputTokens = 5
                 totalTokens       = 140
             }
         } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $nested 'copilot-token-usage-a.json') -Encoding UTF8
@@ -60,17 +61,21 @@ Describe 'Aggregate-CopilotTokenUsage.ps1' {
         $summary.recordCount | Should -Be 1
         $summary.totals.inputTokens | Should -Be 100
         $summary.totals.outputTokens | Should -Be 40
+        $summary.totals.cachedInputTokens | Should -Be 10
+        $summary.totals.reasoningOutputTokens | Should -Be 5
         $summary.totals.totalTokens | Should -Be 140
         $summary.totals.aicUsed | Should -Be 7.5
 
         $reviewStage = $summary.stages | Where-Object { $_.stageName -eq 'ReviewPR' }
         $reviewStage.invocationCount | Should -Be 1
         $reviewStage.totalTokens | Should -Be 140
+        $reviewStage.reasoningOutputTokens | Should -Be 5
         $reviewStage.aicUsed | Should -Be 7.5
 
         $deepStage = $summary.stages | Where-Object { $_.stageName -eq 'RunDeepUITests' }
         $deepStage.invocationCount | Should -Be 0
         $deepStage.totalTokens | Should -Be 0
+        $deepStage.reasoningOutputTokens | Should -Be 0
         $deepStage.aicUsed | Should -Be 0
         $deepStage.note | Should -Be 'No Copilot invocation observed in this stage.'
     }
