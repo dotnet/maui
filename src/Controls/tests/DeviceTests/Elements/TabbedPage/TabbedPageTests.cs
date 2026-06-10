@@ -325,23 +325,8 @@ namespace Microsoft.Maui.DeviceTests
 			tabbedPage.CurrentPage = firstPage;
 			var secondPage = tabbedPage.Children[1];
 
-			// Temporary bootstrap workaround: same as D5 — TabbedRenderer + NavigationViewHandler
-			// doesn't reliably fire NavigationPage.Loaded before CreateHandlerAndAddToWindow's gate.
-			// TODO: Remove this bootstrap path once team decides on product/harness lifecycle fix.
-			var bootstrapPage = new ContentPage
-			{
-				Title = "Bootstrap",
-				Content = new Label { Text = "Bootstrap" }
-			};
-			tabbedPage.Children.Insert(0, bootstrapPage);
-			tabbedPage.CurrentPage = bootstrapPage;
-
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
 			{
-				// Remove bootstrap and switch to firstPage
-				tabbedPage.Children.Remove(bootstrapPage);
-				tabbedPage.CurrentPage = firstPage;
-
 				await OnNavigatedToAsync(firstPage);
 				tabbedPage.Children.Remove(firstPage);
 				await OnNavigatedToAsync(secondPage);
@@ -498,20 +483,9 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, pages);
-			var bootstrapPage = new ContentPage
-			{
-				Title = "Bootstrap",
-				Content = new Label { Text = "Bootstrap" }
-			};
-			tabbedPage.Children.Insert(0, bootstrapPage);
-			tabbedPage.CurrentPage = bootstrapPage;
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
 			{
-				// Temporary D5 workaround: force initial loaded gate through a plain ContentPage.
-				// TODO: Remove this bootstrap path once team decides on product/harness lifecycle fix.
-				tabbedPage.Children.Remove(bootstrapPage);
-				tabbedPage.CurrentPage = pages[0];
 				await OnNavigatedToAsync(pages[0].CurrentPage);
 				await OnLoadedAsync((pages[0].CurrentPage as ContentPage).Content);
 

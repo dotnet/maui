@@ -46,5 +46,29 @@ namespace Microsoft.Maui.Platform
         /// The consumer should update its virtual navigation stack accordingly.
         /// </summary>
         void OnInteractivePopCompleted();
+
+        /// <summary>
+        /// Called when the managed UINavigationController's ViewDidAppear fires.
+        /// This indicates the VC is fully visible and its View is in the UIWindow.
+        /// Used to re-evaluate loaded state on the NavigationPage element when hosted
+        /// inside a parent container (UITabBarController, FlyoutPage) where the initial
+        /// KVO-based loaded watcher may not fire reliably.
+        /// </summary>
+        void OnNavigationControllerDidAppear();
+
+        /// <summary>
+        /// Called when the managed UINavigationController's ViewDidDisappear fires.
+        /// This indicates the VC is no longer visible (e.g., tab switched away).
+        /// Used to fire Page.Disappearing on the NavigationPage element.
+        /// </summary>
+        void OnNavigationControllerDidDisappear();
+
+        /// <summary>
+        /// Called when the managed UINavigationController's ViewDidLayoutSubviews fires.
+        /// The consumer should arrange its virtual view to match the UIKit layout bounds.
+        /// This ensures the MAUI element's Frame reflects the actual platform layout,
+        /// which is required for loaded gates that check Frame validity.
+        /// </summary>
+        void OnViewDidLayoutSubviews(CoreGraphics.CGRect bounds);
     }
 }

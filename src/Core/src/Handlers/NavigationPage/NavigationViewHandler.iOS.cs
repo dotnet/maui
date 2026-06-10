@@ -34,6 +34,22 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		internal static Action<IStackNavigationView, IView>? OnNativePopCompleted { get; set; }
 
+		/// <summary>
+		/// Optional callback invoked when the UINavigationController's ViewDidAppear fires.
+		/// The Controls layer sets this to re-evaluate the Loaded state on the NavigationPage
+		/// element, ensuring the Loaded event fires when hosted inside a parent container
+		/// (TabbedPage, FlyoutPage) where the initial KVO-based watcher may miss the window assignment.
+		/// Also fires SendAppearing on the NavigationPage element for tab switch scenarios.
+		/// </summary>
+		internal static Action<IStackNavigationView>? OnNavigationControllerDidAppear { get; set; }
+
+		/// <summary>
+		/// Optional callback invoked when the UINavigationController's ViewDidDisappear fires.
+		/// The Controls layer sets this to fire SendDisappearing on the NavigationPage element
+		/// when the user switches away from this tab or the NavigationPage is otherwise hidden.
+		/// </summary>
+		internal static Action<IStackNavigationView>? OnNavigationControllerDidDisappear { get; set; }
+
 		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
 
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
@@ -407,6 +423,40 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				SyncNativeStackToMaui(handler);
+			}
+
+			public void OnNavigationControllerDidAppear()
+			{
+				if (!_handlerRef.TryGetTarget(out var handler) || ((IElementHandler)handler).VirtualView is null)
+				{
+					return;
+				}
+
+				NavigationViewHandler.OnNavigationControllerDidAppear?.Invoke(handler.NavigationView);
+			}
+
+			public void OnNavigationControllerDidDisappear()
+			{
+				if (!_handlerRef.TryGetTarget(out var handler) || ((IElementHandler)handler).VirtualView is null)
+				{
+					return;
+				}
+
+				NavigationViewHandler.OnNavigationControllerDidDisappear?.Invoke(handler.NavigationView);
+			}
+
+			public void OnViewDidLayoutSubviews(CoreGraphics.CGRect bounds)
+			{
+				if (!_handlerRef.TryGetTarget(out var handler) || ((IElementHandler)handler).VirtualView is null)
+				{
+					return;
+				}
+
+				// Propagate UIKit layout to the MAUI NavigationPage element.
+				// This mirrors NavigationRenderer.ViewDidLayoutSubviews → Element.Arrange().
+				// Without this, NavigationPage.Frame remains {-1,-1} under the handler because
+				// no one calls Arrange on it when UIKit lays out the nav controller's view.
+				handler.VirtualView?.Arrange(bounds.ToRectangle());
 			}
 
 			/// <summary>
