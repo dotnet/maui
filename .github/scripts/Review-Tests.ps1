@@ -261,10 +261,10 @@ function New-TestFailureReviewBody {
     }
 
     $authorPing = if ($prAuthor) {
-        "> @$prAuthor — test-failure review results are available based on commit [`$commitSha7`]($commitUrl)."
+        "> @$prAuthor — test-failure review results are available based on commit [``$commitSha7``]($commitUrl)."
     }
     else {
-        "> Test-failure review results are available based on commit [`$commitSha7`]($commitUrl)."
+        "> Test-failure review results are available based on commit [``$commitSha7``]($commitUrl)."
     }
 
     $badges = $badgeLines -join "`n"
