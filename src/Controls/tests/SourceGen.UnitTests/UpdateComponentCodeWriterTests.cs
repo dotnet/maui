@@ -323,9 +323,12 @@ $"""
 		Assert.Contains("\"0\"", result, System.StringComparison.Ordinal);
 		// Should cast parent to Layout
 		Assert.Contains("as global::Microsoft.Maui.Controls.Layout", result, System.StringComparison.Ordinal);
-		// Should contain Clear and Add calls
-		Assert.Contains(".Clear()", result, System.StringComparison.Ordinal);
-		Assert.Contains(".Add(", result, System.StringComparison.Ordinal);
+		// M13 optimization: pure reorders are emitted as RemoveAt + Insert (in-place reorder)
+		// rather than destructive Clear + re-Add. This preserves the underlying IView/handler
+		// state of the retained children.
+		Assert.DoesNotContain(".Clear()", result, System.StringComparison.Ordinal);
+		Assert.Contains("RemoveAt", result, System.StringComparison.Ordinal);
+		Assert.Contains(".Insert(", result, System.StringComparison.Ordinal);
 		// With stable IDs, retained children keep their old IDs — no ReRoot needed
 		Assert.DoesNotContain("ReRoot", result, System.StringComparison.Ordinal);
 	}

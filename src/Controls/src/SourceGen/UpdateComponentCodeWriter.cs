@@ -42,7 +42,10 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// </remarks>
 static class UpdateComponentCodeWriter
 {
-	static readonly string NewLine = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n";
+	// Always emit "\n" so generated source is deterministic across OS hosts (CI Windows vs. dev macOS/Linux).
+	// Roslyn caches generator output by content hash; per-OS line endings would invalidate caching and
+	// produce different .g.cs checksums per host.
+	const string NewLine = "\n";
 
 	/// <summary>
 	/// Generates the code for a single <c>if (__version == fromVersion) { ... __version = toVersion; }</c> block.
@@ -98,33 +101,38 @@ static class UpdateComponentCodeWriter
 			}
 
 			var varName = $"__uc_{compIdx++}";
-			codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
-			codeWriter.Indent++;
-			codeWriter.WriteLine("return;");
-			codeWriter.Indent--;
+			codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
+			using (PrePost.NewBlock(codeWriter))
+			{
+				INamedTypeSymbol? nodeType = null;
+				if (nodeDiff.NodeXmlType is { } xmlType
+					&& xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out nodeType)
+					&& nodeType != null)
+				{
+					var fqName = nodeType.ToFQDisplayString();
+					var castPrefix = $"(({fqName}){varName}!).";
 
-			INamedTypeSymbol? nodeType = null;
-			string castPrefix;
-			if (nodeDiff.NodeXmlType is { } xmlType
-				&& xmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out nodeType)
-				&& nodeType != null)
-			{
-				var fqName = nodeType.ToFQDisplayString();
-				castPrefix = $"(({fqName}){varName}!).";
-			}
-			else
-			{
-				castPrefix = $"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.";
-			}
-
-			foreach (var propDiff in nodeDiff.PropertyChanges)
-			{
-				EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+					foreach (var propDiff in nodeDiff.PropertyChanges)
+					{
+						EmitPropertyChange(codeWriter, castPrefix, propDiff, nodeType, varName, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+					}
+				}
+				else
+				{
+					// Node XAML type couldn't be resolved (e.g., unknown xmlns); we can't emit
+					// a typed cast and `(x as BindableObject)?.Prop = value` is not valid C#
+					// (conditional access on LHS of assignment). Skip emission and leave a
+					// breadcrumb so the failure mode is visible in generated source.
+					codeWriter.WriteLine($"// Property changes on '{nodeDiff.NodeId}' skipped: node XAML type could not be resolved.");
+				}
 			}
 
 			codeWriter.WriteLine();
 		}
 
+		// Always bump __version, even when individual TryGet probes missed. Skipping the bump
+		// would strand the instance at fromVersion and force the same (already-failed) patch
+		// to re-run on every subsequent UpdateComponent() invocation, never making progress.
 		codeWriter.WriteLine($"__version = {toVersion};");
 
 		codeWriter.Flush();
@@ -232,6 +240,7 @@ static class UpdateComponentCodeWriter
 		// Resolve the parent variable and type
 		string parentVar;
 		INamedTypeSymbol? parentType;
+		bool guardedByParentTryGet = false;
 		if (isRoot)
 		{
 			parentVar = "this";
@@ -240,10 +249,13 @@ static class UpdateComponentCodeWriter
 		else
 		{
 			parentVar = $"__rp_{changeIdx}";
-			codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{change.ParentNodeId}\", out var {parentVar}))");
+			// B5 fix: wrap the entire emission in `if (TryGet) { ... }` instead of early-return,
+			// so a missing parent only skips this change — the outer `__version = toVersion;`
+			// assignment must still execute or the instance would be stranded at the old version.
+			codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{change.ParentNodeId}\", out var {parentVar}))");
+			codeWriter.WriteLine("{");
 			codeWriter.Indent++;
-			codeWriter.WriteLine("return;");
-			codeWriter.Indent--;
+			guardedByParentTryGet = true;
 			parentType = change.ParentXmlType?.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var pts) == true ? pts : null;
 		}
 
@@ -251,11 +263,16 @@ static class UpdateComponentCodeWriter
 		bool isLayout = parentType != null && InheritsFrom(parentType, "global::Microsoft.Maui.Controls.Layout");
 		string? contentPropertyName = null;
 		if (!isLayout && parentType != null)
-			contentPropertyName = FindContentPropertyName(parentType);
+			contentPropertyName = parentType.GetContentPropertyName(context: null);
 
 		if (!isLayout && contentPropertyName == null)
 		{
 			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no content property — skipped");
+			if (guardedByParentTryGet)
+			{
+				codeWriter.Indent--;
+				codeWriter.WriteLine("}");
+			}
 			return;
 		}
 
@@ -266,9 +283,12 @@ static class UpdateComponentCodeWriter
 				codeWriter.WriteLine($"var {layoutVar} = (global::Microsoft.Maui.Controls.Layout){parentVar};");
 			else
 				codeWriter.WriteLine($"var {layoutVar} = {parentVar} as global::Microsoft.Maui.Controls.Layout;");
-			codeWriter.WriteLine($"if ({layoutVar} == null) return;");
 
-			// Save references to all retained children by their old node IDs
+			var okVar = $"__lok_{changeIdx}";
+			codeWriter.WriteLine($"bool {okVar} = {layoutVar} != null;");
+
+			// Probe references to all retained children by their old node IDs; if any are missing,
+			// flip {okVar} false rather than returning — see B5 fix comment above.
 			int retainedIdx = 0;
 			for (int i = 0; i < change.NewChildren.Count; i++)
 			{
@@ -278,27 +298,70 @@ static class UpdateComponentCodeWriter
 				var childVar = $"__rc_{changeIdx}_{retainedIdx++}";
 				codeWriter.WriteLine($"if (!global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{entry.OldNodeId}\", out var {childVar}))");
 				codeWriter.Indent++;
-				codeWriter.WriteLine("return;");
+				codeWriter.WriteLine($"{okVar} = false;");
 				codeWriter.Indent--;
 			}
 
-			// Clear children
-			codeWriter.WriteLine($"{layoutVar}.Clear();");
-
-			// Re-add retained children and create+add new children in new order
-			retainedIdx = 0;
-			for (int i = 0; i < change.NewChildren.Count; i++)
+			codeWriter.WriteLine($"if ({okVar})");
+			using (PrePost.NewBlock(codeWriter))
 			{
-				var entry = change.NewChildren[i];
-				if (entry.Kind == ChildChangeKind.Retained)
+				// M13 optimization: if this change is a pure reorder (no adds, no removes),
+				// emit per-position Insert/RemoveAt patches so retained children keep their
+				// platform-side handler state (animation, focus, scroll position). Otherwise
+				// fall back to Clear + re-Add which is correct but destructive.
+				bool hasAdded = false;
+				for (int i = 0; i < change.NewChildren.Count; i++)
 				{
-					var childVar = $"__rc_{changeIdx}_{retainedIdx++}";
-					codeWriter.WriteLine($"{layoutVar}.Add((global::Microsoft.Maui.IView){childVar}!);");
+					if (change.NewChildren[i].Kind == ChildChangeKind.Added) { hasAdded = true; break; }
 				}
-				else // Added
+				bool pureReorder = !hasAdded && change.RemovedNodeIds.Count == 0;
+
+				if (pureReorder)
 				{
-					var newElement = entry.NewElement!;
-					EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+					// Build a stable per-index var lookup for the retained children we already probed.
+					var retainedVars = new List<string>(change.NewChildren.Count);
+					int rIdx = 0;
+					for (int i = 0; i < change.NewChildren.Count; i++)
+					{
+						retainedVars.Add($"__rc_{changeIdx}_{rIdx++}");
+					}
+
+					// Walk target positions; remove the existing element and re-insert at the
+					// correct index when it's out of place. RemoveAt + Insert preserves the
+					// IView instance and its handler — no Clear() and no re-handler-creation.
+					for (int i = 0; i < retainedVars.Count; i++)
+					{
+						var v = retainedVars[i];
+						codeWriter.WriteLine($"if ({i} < {layoutVar}!.Count && !object.ReferenceEquals({layoutVar}[{i}], {v}))");
+						using (PrePost.NewBlock(codeWriter))
+						{
+							codeWriter.WriteLine($"int __existing = {layoutVar}.IndexOf((global::Microsoft.Maui.IView){v}!);");
+							codeWriter.WriteLine($"if (__existing >= 0) {layoutVar}.RemoveAt(__existing);");
+							codeWriter.WriteLine($"{layoutVar}.Insert({i}, (global::Microsoft.Maui.IView){v}!);");
+						}
+					}
+				}
+				else
+				{
+					// Clear children
+					codeWriter.WriteLine($"{layoutVar}!.Clear();");
+
+					// Re-add retained children and create+add new children in new order
+					int retainedIdx2 = 0;
+					for (int i = 0; i < change.NewChildren.Count; i++)
+					{
+						var entry = change.NewChildren[i];
+						if (entry.Kind == ChildChangeKind.Retained)
+						{
+							var childVar = $"__rc_{changeIdx}_{retainedIdx2++}";
+							codeWriter.WriteLine($"{layoutVar}.Add((global::Microsoft.Maui.IView){childVar}!);");
+						}
+						else // Added
+						{
+							var newElement = entry.NewElement!;
+							EmitNewElement(codeWriter, newElement, layoutVar, entry.NewNodeId, newIds, ref addedCounter, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+						}
+					}
 				}
 			}
 		}
@@ -306,15 +369,23 @@ static class UpdateComponentCodeWriter
 		{
 			// Content property container (ContentPage, ContentView, ScrollView, Border, etc.)
 			// These have a single content property — set directly instead of using Children.Add()
-			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, isRoot, contentPropertyName!, ref addedCounter, newIds, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			EmitContentPropertyChange(codeWriter, change, changeIdx, parentVar, parentType, isRoot, contentPropertyName!, ref addedCounter, newIds, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 		}
 
-		// With stable IDs, retained children keep their old IDs — no re-registration needed.
-
-		// Unregister removed children and their entire subtrees
+		// Unregister removed children and their entire subtrees.
+		// `change.RemovedNodeIds` already includes all descendants (collected by CollectSubtreeIds
+		// in XamlNodeDiff). Since the generated node IDs are flat integer strings without any
+		// hierarchical path component, an instance-level Unregister(nodeId) per ID is the correct
+		// (and only) way to clean up the registry — there is no prefix to match against.
 		foreach (var removedId in change.RemovedNodeIds)
 		{
 			codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this, \"{removedId}\");");
+		}
+
+		if (guardedByParentTryGet)
+		{
+			codeWriter.Indent--;
+			codeWriter.WriteLine("}");
 		}
 	}
 
@@ -327,6 +398,7 @@ static class UpdateComponentCodeWriter
 		ChildListChangeDiff change,
 		int changeIdx,
 		string parentVar,
+		INamedTypeSymbol? parentType,
 		bool isRoot,
 		string contentPropertyName,
 		ref int addedCounter,
@@ -338,15 +410,20 @@ static class UpdateComponentCodeWriter
 		SourceProductionContext sourceProductionContext,
 		ProjectItem? projectItem)
 	{
-		string target = isRoot ? $"this.{contentPropertyName}" : $"(({parentVar} as global::Microsoft.Maui.Controls.BindableObject)!).GetType().GetProperty(\"{contentPropertyName}\")";
+		// Use a typed cast when we know the parent's type — avoids `dynamic`, which pulls in
+		// Microsoft.CSharp and is incompatible with NativeAOT / full trimming. Falls back to
+		// dynamic only if parent type resolution failed.
+		string parentAccessor;
+		if (isRoot)
+			parentAccessor = "this";
+		else if (parentType != null)
+			parentAccessor = $"(({parentType.ToFQDisplayString()}){parentVar}!)";
+		else
+			parentAccessor = $"((dynamic){parentVar}!)";
 
 		if (change.NewChildren.Count == 0)
 		{
-			// All children removed — clear the content property
-			if (isRoot)
-				codeWriter.WriteLine($"this.{contentPropertyName} = null!;");
-			else
-				codeWriter.WriteLine($"((dynamic){parentVar}!).{contentPropertyName} = null!;");
+			codeWriter.WriteLine($"{parentAccessor}.{contentPropertyName} = null!;");
 			return;
 		}
 
@@ -368,8 +445,10 @@ static class UpdateComponentCodeWriter
 		if (!newElement.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var childType)
 			|| childType == null)
 		{
-			codeWriter.WriteLine($"// Cannot resolve type '{newElement.XmlType.Name}' — fallback");
-			codeWriter.WriteLine("return;");
+			// Skip emission for this unresolvable change; do NOT emit `return;` — that would
+			// abort the entire UpdateComponent() and bypass the trailing `__version = toVersion;`,
+			// stranding the live instance at the old version. See B5 design note in GeneratePatchBody.
+			codeWriter.WriteLine($"// Cannot resolve type '{newElement.XmlType.Name}' — content change skipped");
 			return;
 		}
 
@@ -383,36 +462,10 @@ static class UpdateComponentCodeWriter
 		EmitNewElementChildren(codeWriter, newElement, childVar, entry.NewNodeId, newIds, ref addedCounter, childType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
 
 		// Set as content
-		if (isRoot)
-			codeWriter.WriteLine($"this.{contentPropertyName} = (global::Microsoft.Maui.IView){childVar};");
-		else
-			codeWriter.WriteLine($"((dynamic){parentVar}!).{contentPropertyName} = (global::Microsoft.Maui.IView){childVar};");
+		codeWriter.WriteLine($"{parentAccessor}.{contentPropertyName} = (global::Microsoft.Maui.IView){childVar};");
 
 		// Register the new child
 		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{entry.NewNodeId}\", {childVar});");
-	}
-
-	/// <summary>
-	/// Finds the content property name for a type by walking the [ContentProperty] attribute
-	/// on the type and its base types.
-	/// </summary>
-	static string? FindContentPropertyName(INamedTypeSymbol type)
-	{
-		var current = type;
-		while (current != null)
-		{
-			foreach (var attr in current.GetAttributes())
-			{
-				if (attr.AttributeClass?.Name is "ContentPropertyAttribute"
-					&& attr.ConstructorArguments.Length == 1
-					&& attr.ConstructorArguments[0].Value is string name)
-				{
-					return name;
-				}
-			}
-			current = current.BaseType;
-		}
-		return null;
 	}
 
 	/// <summary>
@@ -438,8 +491,8 @@ static class UpdateComponentCodeWriter
 		if (!element.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol)
 			|| typeSymbol == null)
 		{
-			codeWriter.WriteLine($"// Cannot resolve type '{element.XmlType.Name}' — fallback");
-			codeWriter.WriteLine("return;");
+			// Skip without emitting `return;` (see EmitContentPropertyChange note).
+			codeWriter.WriteLine($"// Cannot resolve type '{element.XmlType.Name}' — element creation skipped");
 			return;
 		}
 
@@ -480,8 +533,11 @@ static class UpdateComponentCodeWriter
 	{
 		foreach (var kvp in element.Properties)
 		{
+			// Skip XAML directives (x:Name, x:Class, x:DataType, x:FieldModifier, x:TypeArguments, etc.).
+			// After XamlParser.ParsePropertyName normalization these all use the literal "x" prefix
+			// as their NamespaceURI (see XmlName.xName/xKey/xClass/etc).
 			if (kvp.Key.NamespaceURI == "x")
-				continue; // skip x:Name, x:Class, etc.
+				continue;
 
 			if (kvp.Value is ValueNode valueNode)
 			{
@@ -546,7 +602,10 @@ static class UpdateComponentCodeWriter
 		bool isLayout = InheritsFrom(typeSymbol, "global::Microsoft.Maui.Controls.Layout");
 		if (isLayout)
 		{
-			var childLayoutVar = $"__nal_{varName.GetHashCode():X8}";
+			// Deterministic, collision-free local var name: `varName` is already unique
+			// (`__na_N` where N comes from addedCounter). Suffix avoids `String.GetHashCode()`
+			// which is randomized per-process and would break Roslyn output caching.
+			var childLayoutVar = $"__nal{varName}";
 			codeWriter.WriteLine($"var {childLayoutVar} = (global::Microsoft.Maui.Controls.Layout){varName};");
 
 			for (int i = 0; i < element.CollectionItems.Count; i++)
@@ -565,11 +624,11 @@ static class UpdateComponentCodeWriter
 		else
 		{
 			// Content property container — set the first element child as content
-			var contentProp = FindContentPropertyName(typeSymbol);
+			var contentProp = typeSymbol.GetContentPropertyName(context: null);
 			if (contentProp == null)
 			{
-				codeWriter.WriteLine($"// Non-layout container '{typeSymbol.Name}' has no [ContentProperty] — fallback");
-				codeWriter.WriteLine("return;");
+				// Skip without `return;` — see EmitContentPropertyChange note.
+				codeWriter.WriteLine($"// Non-layout container '{typeSymbol.Name}' has no [ContentProperty] — grandchild emission skipped");
 				return;
 			}
 
@@ -587,8 +646,8 @@ static class UpdateComponentCodeWriter
 					if (!childElement.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var childType)
 						|| childType == null)
 					{
-						codeWriter.WriteLine($"// Cannot resolve type '{childElement.XmlType.Name}' — fallback");
-						codeWriter.WriteLine("return;");
+						// Skip without `return;` — see EmitContentPropertyChange note.
+						codeWriter.WriteLine($"// Cannot resolve type '{childElement.XmlType.Name}' — content child skipped");
 						return;
 					}
 
@@ -640,9 +699,6 @@ static class UpdateComponentCodeWriter
 			resourceElements.Add(singleElement);
 		}
 
-		if (resourceElements.Count == 0)
-			return false;
-
 		// Verify all resources have x:Key — required for dictionary patching
 		var keyedResources = new List<(string key, ElementNode element)>();
 		foreach (var elem in resourceElements)
@@ -651,9 +707,6 @@ static class UpdateComponentCodeWriter
 				keyedResources.Add((key, elem));
 			// Resources without x:Key (e.g., implicit styles) are skipped
 		}
-
-		if (keyedResources.Count == 0)
-			return false;
 
 		// Pre-compute which resources can actually be encoded as C# expressions.
 		// Resources we can't encode (custom types, converters, etc.) are left untouched.
@@ -667,15 +720,36 @@ static class UpdateComponentCodeWriter
 				codeWriter.WriteLine($"// Cannot encode resource '{key}' \u2014 left untouched");
 		}
 
-		if (emittableResources.Count == 0)
-			return false;
+		// Bail out only if the previous emit registered no managed keys AND there is nothing new
+		// to emit. If we ever managed keys before, we must still emit the removal loop so that
+		// clearing all resources (or changing them to an empty / fully-unencodable set) takes
+		// effect — otherwise stale keys remain in this.Resources forever.
+		// The runtime helper GetResourceKeys returns Array.Empty when nothing was registered,
+		// so the emitted foreach degenerates to a no-op in the truly-never-emitted case.
+		if (keyedResources.Count == 0 && emittableResources.Count == 0)
+		{
+			codeWriter.WriteLine("foreach (var __rk in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this))");
+			codeWriter.Indent++;
+			codeWriter.WriteLine("this.Resources.Remove(__rk);");
+			codeWriter.Indent--;
+			codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, global::System.Array.Empty<string>());");
+			return true;
+		}
 
-		// Remove old resource keys that are no longer in the new XAML (only keys we manage)
+		// Remove old resource keys that are no longer in the new XAML (only keys we manage).
+		// Include ALL keyed resources (not just emittable) so we don't accidentally remove
+		// a resource that became non-emittable but is still present in the XAML.
+		// IMPORTANT: enumerate in sorted order so generator output is deterministic
+		// (HashSet<string> enumeration order is implementation-defined).
+		var allNewKeysSorted = keyedResources.Select(kr => kr.key)
+			.Distinct(StringComparer.Ordinal)
+			.OrderBy(k => k, StringComparer.Ordinal)
+			.ToList();
 		codeWriter.WriteLine("foreach (var __rk in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this))");
 		using (PrePost.NewBlock(codeWriter))
 		{
-			var newKeysList = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
-			codeWriter.WriteLine($"if (global::System.Array.IndexOf(new string[] {{ {newKeysList} }}, __rk) < 0)");
+			var allKeysList = string.Join(", ", allNewKeysSorted.Select(k => $"\"{EscapeString(k)}\""));
+			codeWriter.WriteLine($"if (global::System.Array.IndexOf(new string[] {{ {allKeysList} }}, __rk) < 0)");
 			codeWriter.Indent++;
 			codeWriter.WriteLine("this.Resources.Remove(__rk);");
 			codeWriter.Indent--;
@@ -721,10 +795,7 @@ static class UpdateComponentCodeWriter
 			var rawValue = valueNode.Value?.ToString() ?? string.Empty;
 
 			// Use the IC converter pipeline via a synthetic property lookup
-			var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
-			var ctx = new SourceGenContext(
-				new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
-				xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+			var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
 
 			try
 			{
@@ -765,13 +836,42 @@ static class UpdateComponentCodeWriter
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
+		// "_Content" is synthetic — resolve via the root type's [ContentProperty]. See note in EmitPropertyChange.
+		if (propName == "_Content")
+		{
+			var contentPropName = rootType.GetContentPropertyName(context: null);
+			if (string.IsNullOrEmpty(contentPropName))
+			{
+				codeWriter.WriteLine($"// Type '{rootType.Name}' has no [ContentProperty] — text content change skipped");
+				return;
+			}
+			propName = contentPropName!;
+		}
+
+		// Event handlers: unsubscribe old, subscribe new
+		if (TryEmitEventChange(codeWriter, propDiff, rootType, "this.", rootType))
+			return;
+
+		// Attached properties on root element (e.g., Shell.NavBarIsVisible on ContentPage)
+		if (propName.Contains('.'))
+		{
+			if (propDiff.Kind == PropertyDiffKind.Clear)
+				EmitAttachedPropertyClear(codeWriter, propDiff, "this", compilation, xmlnsCache, typeCache);
+			else
+				TryEmitAttachedPropertyChange(codeWriter, propDiff, "this", rootType, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			return;
+		}
+
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
 			var bpFieldName = $"{propName}Property";
 			var bp = FindStaticField(rootType, bpFieldName);
 			if (bp != null)
 			{
-				codeWriter.WriteLine($"this.ClearValue({rootType.ToFQDisplayString()}.{bpFieldName});");
+				var fqType = rootType.ToFQDisplayString();
+				// Remove any existing binding before clearing (prevents zombie bindings)
+				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
+				codeWriter.WriteLine($"(this as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqType}.{bpFieldName});");
 				return;
 			}
 			codeWriter.WriteLine($"// Property '{propName}' cleared on root — skipped (no BP found)");
@@ -799,6 +899,8 @@ static class UpdateComponentCodeWriter
 			return;
 		}
 
+		// Remove any existing binding before setting a static value
+		EmitRemoveBindingIfNeeded(codeWriter, "this", rootType, propName);
 		codeWriter.WriteLine($"this.{propName} = {valueExpr};");
 	}
 
@@ -817,8 +919,33 @@ static class UpdateComponentCodeWriter
 	{
 		var propName = propDiff.PropertyName.LocalName;
 
+		// "_Content" is a synthetic property name produced by the diff when the parent's
+		// direct text content (e.g. <Label>Hello</Label>) changes. Resolve it to the type's
+		// [ContentProperty] target before any other handling — otherwise we'd emit an assignment
+		// to a non-existent member.
+		if (propName == "_Content" && nodeType != null)
+		{
+			var contentPropName = nodeType.GetContentPropertyName(context: null);
+			if (string.IsNullOrEmpty(contentPropName))
+			{
+				codeWriter.WriteLine($"// Type '{nodeType.Name}' has no [ContentProperty] — text content change skipped");
+				return;
+			}
+			propName = contentPropName!;
+		}
+
+		// Event handlers: unsubscribe old, subscribe new
+		if (TryEmitEventChange(codeWriter, propDiff, nodeType, castPrefix, rootType))
+			return;
+
 		if (propDiff.Kind == PropertyDiffKind.Clear)
 		{
+			if (propName.Contains('.'))
+			{
+				// Attached property clear: "Grid.Row" → Grid.RowProperty
+				EmitAttachedPropertyClear(codeWriter, propDiff, varName, compilation, xmlnsCache, typeCache);
+				return;
+			}
 			// Use ClearValue via the BindableObject API when we know the bindable property field
 			if (nodeType != null)
 			{
@@ -827,7 +954,10 @@ static class UpdateComponentCodeWriter
 				var bp = FindStaticField(nodeType, bpFieldName);
 				if (bp != null)
 				{
-					codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({nodeType.ToFQDisplayString()}.{bpFieldName});");
+					var fqType = nodeType.ToFQDisplayString();
+					// Remove any existing binding before clearing (prevents zombie bindings)
+					codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
+					codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqType}.{bpFieldName});");
 					return;
 				}
 			}
@@ -863,12 +993,63 @@ static class UpdateComponentCodeWriter
 			return;
 		}
 
+		// Remove any existing binding before setting a static value
+		EmitRemoveBindingIfNeeded(codeWriter, varName, nodeType, propName);
 		codeWriter.WriteLine($"{castPrefix}{propName} = {valueExpr};");
 	}
 
 	// -----------------------------------------------------------------------
 	// Attached property handling
 	// -----------------------------------------------------------------------
+
+	/// <summary>
+	/// Emits code to clear an attached property (e.g., <c>Grid.Row</c> removed from XAML).
+	/// Resolves the declaring type (Grid) rather than the element type (Button).
+	/// </summary>
+	static void EmitAttachedPropertyClear(
+		IndentedTextWriter codeWriter,
+		PropertyDiff propDiff,
+		string varName,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	{
+		var propName = propDiff.PropertyName.LocalName;
+		var dotIdx = propName.IndexOf('.');
+		if (dotIdx <= 0 || dotIdx >= propName.Length - 1)
+		{
+			codeWriter.WriteLine($"// Invalid attached property format '{propName}' — skipped");
+			return;
+		}
+		var declaringTypeName = propName.Substring(0, dotIdx);
+		var attachedPropName = propName.Substring(dotIdx + 1);
+
+		// Resolve the declaring type (e.g., "Grid" → Microsoft.Maui.Controls.Grid)
+		var declaringXmlType = new XmlType(propDiff.PropertyName.NamespaceURI, declaringTypeName, null);
+		if (!declaringXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var declaringType)
+			|| declaringType == null)
+		{
+			declaringXmlType = new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", declaringTypeName, null);
+			if (!declaringXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out declaringType)
+				|| declaringType == null)
+			{
+				codeWriter.WriteLine($"// Cannot resolve attached property declaring type '{declaringTypeName}' for clear — skipped");
+				return;
+			}
+		}
+
+		var bpFieldName = $"{attachedPropName}Property";
+		var bpField = FindStaticField(declaringType, bpFieldName);
+		if (bpField == null)
+		{
+			codeWriter.WriteLine($"// Cannot find '{declaringType.Name}.{bpFieldName}' for clear — skipped");
+			return;
+		}
+
+		var fqDeclaring = declaringType.ToFQDisplayString();
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqDeclaring}.{bpFieldName});");
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.ClearValue({fqDeclaring}.{bpFieldName});");
+	}
 
 	/// <summary>
 	/// Emits code for an attached property change like <c>Grid.Row="1"</c>.
@@ -889,6 +1070,11 @@ static class UpdateComponentCodeWriter
 	{
 		var propName = propDiff.PropertyName.LocalName;
 		var dotIdx = propName.IndexOf('.');
+		if (dotIdx <= 0 || dotIdx >= propName.Length - 1)
+		{
+			codeWriter.WriteLine($"// Invalid attached property format '{propName}' — skipped");
+			return;
+		}
 		var declaringTypeName = propName.Substring(0, dotIdx);
 		var attachedPropName = propName.Substring(dotIdx + 1);
 
@@ -943,6 +1129,8 @@ static class UpdateComponentCodeWriter
 		}
 
 		var fqDeclaring = declaringType.ToFQDisplayString();
+		// Remove any existing binding before setting the new value (prevents zombie bindings)
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqDeclaring}.{bpFieldName});");
 		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.SetValue({fqDeclaring}.{bpFieldName}, {valueExpr});");
 	}
 
@@ -988,10 +1176,7 @@ static class UpdateComponentCodeWriter
 		var fqType = targetType.ToFQDisplayString();
 
 		// Try IC's ConvertTo with a synthetic property-like context
-		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
-		var ctx = new SourceGenContext(
-			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
 
 		var valueNode = new ValueNode(rawValue, null, -1, -1);
 		try
@@ -1089,10 +1274,7 @@ static class UpdateComponentCodeWriter
 		var markupString = markupNode.MarkupString;
 
 		// Build a minimal SourceGenContext for ExpandMarkupsVisitor's parser
-		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
-		var ctx = new SourceGenContext(
-			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
 
 		// Classification: expression or markup extension?
 		bool TryResolveMarkup(string name)
@@ -1165,12 +1347,9 @@ static class UpdateComponentCodeWriter
 		ProjectItem? projectItem)
 	{
 		// Build a SourceGenContext with a capture writer
-		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
 		var captureStringWriter = new StringWriter(CultureInfo.InvariantCulture);
 		var captureWriter = new IndentedTextWriter(captureStringWriter, "\t") { NewLine = NewLine };
-		var ctx = new SourceGenContext(
-			captureWriter, compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem, captureWriter);
 
 		// Create a synthetic parent variable so SetPropertyValue can emit "parent.SetValue(...)"
 		var parentAccessor = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
@@ -1212,7 +1391,10 @@ static class UpdateComponentCodeWriter
 						if (propSymbol != null)
 						{
 							var castType = propSymbol.Type.ToFQDisplayString();
-							captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ({castType})this.Resources[\"{EscapeString(resourceKey)}\"];");
+							// M8 fix: use full StaticResource lookup. Walk starts from the *target* element
+							// (parentAccessor), not `this` — otherwise resources scoped on an intermediate
+							// parent (e.g., a ContentView's own <ResourceDictionary>) would be missed.
+							captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ({castType})global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.FindStaticResource({parentAccessor}, {Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(resourceKey, quote: true)})!;");
 						}
 					}
 				}
@@ -1266,6 +1448,7 @@ static class UpdateComponentCodeWriter
 
 	/// <summary>
 	/// Emits a <c>SetBinding</c> call with a <c>TypedBinding</c> for a C# expression.
+	/// Delegates to <see cref="SetPropertyHelpers.SetExpressionBindingForUC"/> for shared codegen.
 	/// </summary>
 	static bool TryEmitExpressionBinding(
 		IndentedTextWriter codeWriter,
@@ -1286,82 +1469,15 @@ static class UpdateComponentCodeWriter
 		if (bpField == null)
 			return false;
 
-		// Find x:DataType by walking up the parent chain
+		// Resolve x:DataType using shared resolver
 		if (!TryResolveXDataType(markupNode, compilation, xmlnsCache, typeCache, out var dataTypeSymbol) || dataTypeSymbol == null)
 			return false;
 
 		var expressionCode = CSharpExpressionHelpers.GetExpressionCode(markupString);
-
-		// Transform quotes
-		var transformedExpression = CSharpExpressionHelpers.TransformQuotesWithSemantics(
-			expressionCode, compilation, dataTypeSymbol, rootType);
-
-		// Analyze expression
-		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, rootType);
-		var handlers = analysis.Handlers;
-
-		// Resolve expression result type
-		var expressionType = ResolveExpressionTypeForUC(expressionCode, dataTypeSymbol, compilation);
-		var sourceTypeName = dataTypeSymbol.ToFQDisplayString();
-		var propertyTypeName = expressionType?.ToFQDisplayString() ?? "object";
+		var setBindingTarget = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
 		var bpName = bpField.ToFQDisplayString();
 
-		// Wrap in scoped block if we have captures
-		bool hasCaptures = analysis.Captures.Count > 0;
-		if (hasCaptures)
-		{
-			codeWriter.WriteLine("{");
-			codeWriter.Indent++;
-			foreach (var capture in analysis.Captures)
-			{
-				codeWriter.WriteLine($"var {capture.CaptureVariable} = this.{capture.InvocationExpression};");
-			}
-		}
-
-		var setBindingTarget = isRoot ? "this" : $"(({ownerType.ToFQDisplayString()}){targetAccessor}!)";
-		codeWriter.WriteLine($"{setBindingTarget}.SetBinding({bpName},");
-		codeWriter.Indent++;
-		codeWriter.WriteLine($"new global::Microsoft.Maui.Controls.Internals.TypedBinding<{sourceTypeName}, {propertyTypeName}>(");
-		codeWriter.Indent++;
-
-		// Getter
-		var getterExpression = analysis.TransformedExpression;
-		if (getterExpression.Contains("?."))
-			getterExpression += "!";
-		codeWriter.WriteLine($"__source => ({getterExpression}, true),");
-
-		// Setter
-		if (analysis.IsSettable)
-			codeWriter.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
-		else
-			codeWriter.WriteLine("null,");
-
-		// Handlers array
-		if (handlers.Count == 0)
-		{
-			codeWriter.WriteLine("null));");
-		}
-		else
-		{
-			codeWriter.WriteLine($"new global::System.Tuple<global::System.Func<{sourceTypeName}, object>, string>[] {{");
-			codeWriter.Indent++;
-			for (int i = 0; i < handlers.Count; i++)
-			{
-				var handler = handlers[i];
-				var comma = i < handlers.Count - 1 ? "," : "";
-				codeWriter.WriteLine($"new(static __source => {handler.ParentExpression}, \"{handler.PropertyName}\"){comma}");
-			}
-			codeWriter.Indent--;
-			codeWriter.WriteLine("}));");
-		}
-		codeWriter.Indent -= 2;
-
-		if (hasCaptures)
-		{
-			codeWriter.Indent--;
-			codeWriter.WriteLine("}");
-		}
-
+		SetPropertyHelpers.SetExpressionBindingForUC(codeWriter, setBindingTarget, bpName, expressionCode, dataTypeSymbol, rootType, compilation);
 		return true;
 	}
 
@@ -1417,38 +1533,6 @@ static class UpdateComponentCodeWriter
 	}
 
 	/// <summary>
-	/// Resolves the result type of a C# expression for TypedBinding TProperty.
-	/// Simplified version that tries member lookup on the data type.
-	/// </summary>
-	static ITypeSymbol? ResolveExpressionTypeForUC(string expression, ITypeSymbol dataType, Compilation compilation)
-	{
-		// Simple property access: "PropertyName"
-		var trimmed = expression.Trim();
-		var members = dataType.GetMembers(trimmed);
-		foreach (var member in members)
-		{
-			if (member is IPropertySymbol prop)
-				return prop.Type;
-			if (member is IFieldSymbol field)
-				return field.Type;
-		}
-
-		// Method call: "MethodName()" — strip parens and look up return type
-		if (trimmed.EndsWith("()", StringComparison.Ordinal))
-		{
-			var methodName = trimmed.Substring(0, trimmed.Length - 2);
-			foreach (var member in dataType.GetMembers(methodName))
-			{
-				if (member is IMethodSymbol method)
-					return method.ReturnType;
-			}
-		}
-
-		// Complex expression — fall back to object
-		return compilation.GetSpecialType(SpecialType.System_Object);
-	}
-
-	/// <summary>
 	/// Returns a C# expression string for <paramref name="rawXamlValue"/> using the same
 	/// type converter pipeline as InitializeComponent (Color, Thickness, Enum, GridLength, etc.).
 	/// Falls back to <c>TypeDescriptor.GetConverter</c> at runtime only when no compile-time
@@ -1474,10 +1558,7 @@ static class UpdateComponentCodeWriter
 			return null;
 
 		// Build a lightweight SourceGenContext for the converter pipeline
-		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
-		var ctx = new SourceGenContext(
-			new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
-			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+		var ctx = CreateConversionContext(compilation, sourceProductionContext, xmlnsCache, typeCache, rootType, projectItem);
 
 		// Create a synthetic ValueNode to feed into IC's ConvertTo
 		var valueNode = new ValueNode(rawXamlValue, null, -1, -1);
@@ -1507,6 +1588,22 @@ static class UpdateComponentCodeWriter
 		return $"({fqTypeName})global::System.ComponentModel.TypeDescriptor.GetConverter(typeof({fqTypeName})).ConvertFromInvariantString(\"{EscapeString(rawValue)}\")!";
 	}
 
+	/// <summary>
+	/// Emits <c>RemoveBinding</c> if the property has a corresponding BindableProperty field.
+	/// This prevents zombie bindings from overwriting newly set static values.
+	/// </summary>
+	static void EmitRemoveBindingIfNeeded(IndentedTextWriter codeWriter, string varName, INamedTypeSymbol? nodeType, string propName)
+	{
+		if (nodeType == null)
+			return;
+		var bpFieldName = $"{propName}Property";
+		var bp = FindStaticField(nodeType, bpFieldName);
+		if (bp == null)
+			return;
+		var fqType = nodeType.ToFQDisplayString();
+		codeWriter.WriteLine($"({varName} as global::Microsoft.Maui.Controls.BindableObject)?.RemoveBinding({fqType}.{bpFieldName});");
+	}
+
 	static IPropertySymbol? FindProperty(INamedTypeSymbol type, string name)
 	{
 		var current = (ITypeSymbol)type;
@@ -1523,19 +1620,7 @@ static class UpdateComponentCodeWriter
 	}
 
 	static IFieldSymbol? FindStaticField(INamedTypeSymbol type, string name)
-	{
-		var current = (ITypeSymbol)type;
-		while (current != null)
-		{
-			foreach (var member in current.GetMembers(name))
-			{
-				if (member is IFieldSymbol field && field.IsStatic)
-					return field;
-			}
-			current = current.BaseType!;
-		}
-		return null;
-	}
+		=> type.GetAllFields(name, context: null).FirstOrDefault(f => f.IsStatic);
 
 	/// <summary>
 	/// Checks whether <paramref name="type"/> inherits from a type with the given fully-qualified
@@ -1553,17 +1638,75 @@ static class UpdateComponentCodeWriter
 		return false;
 	}
 
+	// Use Roslyn's SymbolDisplay.FormatLiteral so all C0 control characters (\u0001-\u001f),
+	// surrogate pairs, and uncommon escapes are handled correctly. Callers wrap with their
+	// own quotes (`\"{EscapeString(x)}\"`), so pass quote: false.
 	static string EscapeString(string value) =>
-		value.Replace("\\", "\\\\")
-			.Replace("\"", "\\\"")
-			.Replace("\0", "\\0")
-			.Replace("\a", "\\a")
-			.Replace("\b", "\\b")
-			.Replace("\f", "\\f")
-			.Replace("\n", "\\n")
-			.Replace("\r", "\\r")
-			.Replace("\t", "\\t")
-			.Replace("\v", "\\v");
+		Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(value, quote: false);
+
+	/// <summary>
+	/// Tries to emit event handler subscribe/unsubscribe for a property diff.
+	/// Returns <see langword="true"/> if the property is an event and was handled.
+	/// <paramref name="varPrefix"/> should end with <c>.</c> (e.g., <c>"this."</c> or <c>"((Button)v!)."</c>).
+	/// </summary>
+	static bool TryEmitEventChange(
+		IndentedTextWriter codeWriter,
+		PropertyDiff propDiff,
+		INamedTypeSymbol? nodeType,
+		string varPrefix,
+		INamedTypeSymbol rootType)
+	{
+		if (nodeType == null)
+			return false;
+
+		var propName = propDiff.PropertyName.LocalName;
+
+		// Check if this property name matches an event on the target type
+		var eventSymbol = nodeType.GetAllEvents(context: null).FirstOrDefault(e => e.Name == propName);
+		if (eventSymbol == null)
+			return false;
+
+		if (propDiff.Kind == PropertyDiffKind.Clear)
+		{
+			// Event handler removed — unsubscribe old handler if known
+			if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
+				codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+			else
+				codeWriter.WriteLine($"// Event '{propName}' cleared — old handler unknown or invalid, cannot unsubscribe");
+			return true;
+		}
+
+		// Kind == Set: unsubscribe old, subscribe new
+		var newHandler = propDiff.NewValue;
+		if (newHandler == null || !IsValidCSharpIdentifier(newHandler))
+		{
+			// Still unsubscribe old handler even if new is invalid
+			if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
+				codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+			codeWriter.WriteLine($"// Event '{propName}' new handler is not a valid identifier — skipped subscribe");
+			return true;
+		}
+
+		if (propDiff.OldValue != null && IsValidCSharpIdentifier(propDiff.OldValue))
+			codeWriter.WriteLine($"{varPrefix}{propName} -= {propDiff.OldValue};");
+
+		codeWriter.WriteLine($"{varPrefix}{propName} += {newHandler};");
+		return true;
+	}
+
+	static bool IsValidCSharpIdentifier(string name)
+	{
+		if (string.IsNullOrEmpty(name))
+			return false;
+		if (!char.IsLetter(name[0]) && name[0] != '_')
+			return false;
+		for (int i = 1; i < name.Length; i++)
+		{
+			if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
+				return false;
+		}
+		return true;
+	}
 
 	/// <summary>
 	/// Emits the diff summary as a C# comment block at the top of the method body.
@@ -1594,5 +1737,25 @@ static class UpdateComponentCodeWriter
 #pragma warning disable CS8765
 		public override bool TryGetValue(string key, out string? value) { value = null; return false; }
 #pragma warning restore CS8765
+	}
+
+	/// <summary>
+	/// Creates a <see cref="SourceGenContext"/> for UC value conversion.
+	/// Uses a dummy writer since UC only needs the context for type resolution and converters.
+	/// </summary>
+	static SourceGenContext CreateConversionContext(
+		Compilation compilation,
+		SourceProductionContext sourceProductionContext,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		ProjectItem? projectItem,
+		IndentedTextWriter? writer = null)
+	{
+		var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+		return new SourceGenContext(
+			writer ?? new IndentedTextWriter(new StringWriter()),
+			compilation, sourceProductionContext,
+			xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
 	}
 }

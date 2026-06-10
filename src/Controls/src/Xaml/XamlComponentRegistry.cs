@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls.Xaml;
 /// This class is trim-safe: it stores <see cref="object"/> references with no reflection on user types.
 /// </para>
 /// </remarks>
+/// <remarks>This type is public for source-generator access only. It is not intended to be used directly.</remarks>
+[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 public static class XamlComponentRegistry
 {
 	// ConditionalWeakTable allows the page instance to be GC'd; its entry is then automatically removed.
@@ -149,11 +151,15 @@ public static class XamlComponentRegistry
 
 	/// <summary>
 	/// Renames all component registrations whose node ID starts with <paramref name="oldPrefix"/>
-	/// so that the prefix is replaced by <paramref name="newPrefix"/>. Used by generated
-	/// <c>UpdateComponent</c> methods after a same-parent child reorder to keep the registry
-	/// in sync with the new position-based node IDs (including all descendants).
+	/// so that the prefix is replaced by <paramref name="newPrefix"/>. Provided as a utility for
+	/// callers that use hierarchical slash-separated node IDs.
 	/// </summary>
-	public static void ReRoot(object page, string oldPrefix, string newPrefix)
+	/// <remarks>
+	/// The current XAML source generator assigns flat integer IDs and does not call this method;
+	/// retained children keep their original IDs across hot-reload patches. Retained as
+	/// <c>internal</c> for future hierarchical ID schemes and to back test coverage.
+	/// </remarks>
+	internal static void ReRoot(object page, string oldPrefix, string newPrefix)
 	{
 		if (page is null)
 			throw new ArgumentNullException(nameof(page));
@@ -195,10 +201,17 @@ public static class XamlComponentRegistry
 	}
 
 	/// <summary>
-	/// Removes all component registrations whose node ID starts with <paramref name="nodeIdPrefix"/>
-	/// (the node itself and all descendants). Used by generated <c>UpdateComponent</c> methods
-	/// when a child element is removed during incremental hot reload.
+	/// Removes all component registrations whose node ID starts with the given prefix
+	/// (the node itself and all descendants whose ID matches the pattern
+	/// <c>prefix/...</c>). Provided as a utility for callers that use hierarchical
+	/// slash-separated node IDs.
 	/// </summary>
+	/// <remarks>
+	/// The current XAML source generator assigns flat integer IDs (e.g. "0", "1") and
+	/// emits one Unregister call per removed descendant (descendants are pre-collected by the
+	/// diff). This method is therefore not used by the generator today; it remains for callers
+	/// that adopt a hierarchical ID scheme.
+	/// </remarks>
 	public static void UnregisterSubtree(object page, string nodeIdPrefix)
 	{
 		if (page is null)
@@ -220,6 +233,7 @@ public static class XamlComponentRegistry
 	// -------------------------------------------------------------------------
 
 	static readonly ConditionalWeakTable<object, HashSet<string>> s_resourceKeys = new();
+	static readonly object s_resourceKeysLock = new();
 
 	/// <summary>
 	/// Stores the set of resource dictionary keys registered by the page's <c>InitializeComponent</c>
@@ -230,9 +244,16 @@ public static class XamlComponentRegistry
 	{
 		if (page is null)
 			throw new ArgumentNullException(nameof(page));
+		if (keys is null)
+			throw new ArgumentNullException(nameof(keys));
 
-		s_resourceKeys.Remove(page);
-		s_resourceKeys.Add(page, new HashSet<string>(keys, StringComparer.Ordinal));
+		// Remove+Add on ConditionalWeakTable is not atomic; serialize concurrent calls
+		// on the same instance to avoid an ArgumentException ("key already present").
+		lock (s_resourceKeysLock)
+		{
+			s_resourceKeys.Remove(page);
+			s_resourceKeys.Add(page, new HashSet<string>(keys, StringComparer.Ordinal));
+		}
 	}
 
 	/// <summary>
@@ -250,6 +271,42 @@ public static class XamlComponentRegistry
 			return result;
 		}
 		return Array.Empty<string>();
+	}
+
+	/// <summary>
+	/// Resolves <paramref name="key"/> using full StaticResource lookup semantics: walks the
+	/// element parent chain (each <see cref="IResourcesProvider"/>'s <c>Resources</c>),
+	/// then falls back to <c>Application.Current.Resources</c> and system resources.
+	/// Returns <see langword="null"/> if not found.
+	/// </summary>
+	/// <remarks>
+	/// Generator-only helper used by <c>UpdateComponent()</c> to re-resolve resources for
+	/// converter and binding-source swaps during incremental hot reload. Matches the
+	/// behavior of <see cref="Microsoft.Maui.Controls.Xaml.StaticResourceExtension.ProvideValue"/>
+	/// without requiring an <c>IServiceProvider</c>.
+	/// </remarks>
+	public static object? FindStaticResource(object element, string key)
+	{
+		if (element is null)
+			throw new ArgumentNullException(nameof(element));
+		if (key is null)
+			throw new ArgumentNullException(nameof(key));
+
+		var current = element as Microsoft.Maui.Controls.IElementDefinition;
+		while (current is not null)
+		{
+			if (current is Microsoft.Maui.Controls.IResourcesProvider rp && rp.IsResourcesCreated && rp.Resources.TryGetValue(key, out var value))
+				return value;
+			if (current is Microsoft.Maui.Controls.Application app && app.SystemResources is { } sysRes && sysRes.TryGetValue(key, out var sysValue))
+				return sysValue;
+			current = current.Parent;
+		}
+
+		// Fallback: Application.Current
+		var appCurrent = Microsoft.Maui.Controls.Application.Current;
+		if (appCurrent is Microsoft.Maui.Controls.IResourcesProvider appRp && appRp.IsResourcesCreated && appRp.Resources.TryGetValue(key, out var appValue))
+			return appValue;
+		return null;
 	}
 
 	// -------------------------------------------------------------------------
@@ -334,21 +391,22 @@ public static class XamlComponentRegistry
 
 		public void ReRoot(string oldPrefix, string newPrefix)
 		{
-			var keysToRename = new List<string>();
+			// Two-phase rename so a key-collision (e.g., two children swapping ID prefixes)
+			// doesn't clobber a freshly-renamed entry. Collect first, remove all old keys
+			// next, insert all new keys last.
+			var renames = new List<(string OldKey, string NewKey, WeakReference<object> Value)>();
 			foreach (var key in _entries.Keys)
 			{
 				if (IsNodeOrDescendant(key, oldPrefix))
-					keysToRename.Add(key);
-			}
-			foreach (var oldKey in keysToRename)
-			{
-				var newKey = newPrefix + oldKey.Substring(oldPrefix.Length);
-				if (_entries.TryGetValue(oldKey, out var value))
 				{
-					_entries.Remove(oldKey);
-					_entries[newKey] = value;
+					var newKey = newPrefix + key.Substring(oldPrefix.Length);
+					renames.Add((key, newKey, _entries[key]));
 				}
 			}
+			foreach (var r in renames)
+				_entries.Remove(r.OldKey);
+			foreach (var r in renames)
+				_entries[r.NewKey] = r.Value;
 		}
 
 		public void Remove(string nodeId)

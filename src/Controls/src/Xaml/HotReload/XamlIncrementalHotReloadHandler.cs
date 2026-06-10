@@ -8,31 +8,39 @@ using System.Reflection;
 // The .NET hot-reload infrastructure passes the list of updated types to UpdateApplication();
 // this handler calls the generated UpdateComponent() method on each live instance.
 #pragma warning disable IL2026
-// [assembly: global::System.Reflection.Metadata.MetadataUpdateHandler(
-//     typeof(global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler))]
+[assembly: global::System.Reflection.Metadata.MetadataUpdateHandler(
+	typeof(global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler))]
 #pragma warning restore IL2026
 
 namespace Microsoft.Maui.Controls.Xaml;
 
 /// <summary>
 /// SDK-level <c>[MetadataUpdateHandler]</c> for XAML Incremental Hot Reload.
-/// Tracks live page instances via weak references and invokes the generated
-/// <c>UpdateComponent()</c> method on the main thread when metadata is updated.
+/// Looks up live page instances via <see cref="XamlComponentRegistry.GetInstances"/> and
+/// invokes the generated <c>UpdateComponent()</c> method on the main thread when metadata
+/// is updated.
 /// </summary>
-internal static class XamlIncrementalHotReloadHandler
+/// <remarks>This type is public for source-generator access only. It is not intended to be used directly.</remarks>
+[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+public static class XamlIncrementalHotReloadHandler
 {
-	static readonly List<WeakReference> s_instances = new();
-
 	/// <summary>
-	/// Call from page constructors (after InitializeComponent) to register the
-	/// instance for incremental hot-reload updates.
+	/// Generator-only entry point retained for backward compatibility with previously
+	/// compiled <c>InitializeComponent()</c> bodies. <see cref="XamlComponentRegistry.Register"/>
+	/// already records every page instance, so live-instance enumeration is sourced from
+	/// <see cref="XamlComponentRegistry.GetInstances"/>. This method only validates its
+	/// argument and respects the <c>IsIncrementalHotReloadEnabled</c> feature switch.
 	/// </summary>
 	public static void Track(object instance)
 	{
-		lock (s_instances)
-		{
-			s_instances.Add(new WeakReference(instance));
-		}
+		if (instance is null)
+			throw new ArgumentNullException(nameof(instance));
+
+		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
+			return;
+
+		// No-op: XamlComponentRegistry.Register has already tracked this instance via
+		// its secondary type-indexed weak-reference list.
 	}
 
 	/// <summary>
@@ -54,6 +62,12 @@ internal static class XamlIncrementalHotReloadHandler
 		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
 			return;
 
+		// M9: Batch dispatch — collect ALL (instance, method, type) tuples across every updated
+		// type, then issue a single MainThread.BeginInvokeOnMainThread that iterates them.
+		// One UI-thread hop instead of N hops per type change reduces dispatch overhead and
+		// keeps property mutations contiguous (avoids interleaving with unrelated UI work).
+		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
+
 		foreach (var type in updatedTypes)
 		{
 #pragma warning disable IL2070, IL2075
@@ -68,48 +82,38 @@ internal static class XamlIncrementalHotReloadHandler
 			if (ucMethod is null)
 				continue;
 
-			List<WeakReference> snapshot;
-			lock (s_instances)
-			{
-				snapshot = new List<WeakReference>(s_instances);
-			}
+			// M10: Use XamlComponentRegistry's authoritative instance index instead of
+			// maintaining a parallel weak-reference list inside the handler. Avoids the
+			// "register here / register there" double-bookkeeping that risked drift.
+			var instances = XamlComponentRegistry.GetInstances(type);
+			if (instances.Count == 0)
+				continue;
 
-			foreach (var weakRef in snapshot)
-			{
-				if (!weakRef.IsAlive)
-					continue;
-
-				var instance = weakRef.Target;
-				if (instance is null || instance.GetType() != type)
-					continue;
-
-				var capturedInstance = instance;
-				var capturedMethod = ucMethod;
-				var capturedType = type;
-
-				global::Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
-				{
-					try
-					{
-						capturedMethod.Invoke(capturedInstance, null);
-					}
-#pragma warning disable CA1031
-					catch (Exception ex)
-					{
-						var inner = ex.InnerException ?? ex;
-						System.Diagnostics.Debug.WriteLine(
-							$"[XIHR] UpdateComponent failed for {capturedType.Name}: {inner.Message}");
-					}
-#pragma warning restore CA1031
-				});
-			}
+			foreach (var instance in instances)
+				dispatchBatch.Add((instance, ucMethod, type));
 		}
 
-		// Cleanup dead refs
-		lock (s_instances)
+		if (dispatchBatch.Count == 0)
+			return;
+
+		global::Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
 		{
-			s_instances.RemoveAll(w => !w.IsAlive);
-		}
+			foreach (var (capturedInstance, capturedMethod, capturedType) in dispatchBatch)
+			{
+				try
+				{
+					capturedMethod.Invoke(capturedInstance, null);
+				}
+#pragma warning disable CA1031
+				catch (Exception ex)
+				{
+					var inner = ex.InnerException ?? ex;
+					System.Diagnostics.Debug.WriteLine(
+						$"[XIHR] UpdateComponent failed for {capturedType.Name}: {inner.Message}");
+				}
+#pragma warning restore CA1031
+			}
+		});
 	}
 }
 #endif

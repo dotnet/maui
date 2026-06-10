@@ -15,11 +15,15 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <remarks>
 /// This class uses mutable static state intentionally: Roslyn incremental generators run
 /// in-process during a build session, so state persists across incremental builds.  Each entry
-/// maps a <c>(AssemblyName, RelativePath)</c> pair to the XAML content, version counter, and
-/// the list of accumulated patch bodies (each an <c>if (__version == N)</c> block).
+/// maps a <c>(AssemblyName, TargetFramework, RelativePath)</c> tuple to the XAML content,
+/// version counter, and the list of accumulated patch bodies (each an <c>if (__version == N)</c> block).
 ///
-/// Keyed on assembly name to prevent cross-project cache bleeding when different projects
-/// contain identically-named XAML files (e.g. both have a <c>MainPage.xaml</c>).
+/// Keyed on <c>(AssemblyName, TargetFramework, RelativePath)</c> to prevent:
+/// <list type="bullet">
+///   <item>Cross-project cache bleeding when different projects contain identically-named XAML files.</item>
+///   <item>Cross-TFM cache contamination in multi-target builds where the same XAML file is
+///         compiled once per target framework in the same generator host process.</item>
+/// </list>
 ///
 /// Thread-safety: the dictionary is protected by a lock. Generator output callbacks may run
 /// on parallel threads in Roslyn's pipeline.
@@ -28,8 +32,8 @@ internal static class XamlHotReloadState
 {
 	static readonly object _lock = new();
 
-	// Maps (assemblyName, relativePath) → CacheEntry
-	static readonly Dictionary<(string AssemblyName, string RelativePath), CacheEntry> _cache = new();
+	// Maps (assemblyName, targetFramework, relativePath) → CacheEntry
+	static readonly Dictionary<(string AssemblyName, string TargetFramework, string RelativePath), CacheEntry> _cache = new();
 
 	internal sealed class CacheEntry
 	{
@@ -63,11 +67,11 @@ internal static class XamlHotReloadState
 	/// Tries to retrieve the previously stored XAML text, parsed root, and version for the given file.
 	/// Returns <see langword="false"/> when no entry exists (first run).
 	/// </summary>
-	public static bool TryGetPrevious(string assemblyName, string relativePath, out string previousXaml, out SGRootNode? previousRoot, out Dictionary<ElementNode, string>? previousNodeIds, out int nextNodeId, out int previousVersion)
+	public static bool TryGetPrevious(string assemblyName, string targetFramework, string relativePath, out string previousXaml, out SGRootNode? previousRoot, out Dictionary<ElementNode, string>? previousNodeIds, out int nextNodeId, out int previousVersion)
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, relativePath), out var entry))
+			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 			{
 				previousXaml = entry.XamlText;
 				previousRoot = entry.ParsedRoot;
@@ -90,14 +94,14 @@ internal static class XamlHotReloadState
 	/// Stores (or replaces) the current XAML text, parsed root, and version for the given file,
 	/// and appends a patch body if provided.
 	/// </summary>
-	public static void Update(string assemblyName, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, string? patchBody = null)
+	public static void Update(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version, string? patchBody = null)
 	{
 		lock (_lock)
 		{
-			if (!_cache.TryGetValue((assemblyName, relativePath), out var entry))
+			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 			{
 				entry = new CacheEntry();
-				_cache[(assemblyName, relativePath)] = entry;
+				_cache[(assemblyName, targetFramework, relativePath)] = entry;
 			}
 			entry.XamlText = xamlText;
 			entry.ParsedRoot = parsedRoot;
@@ -112,14 +116,14 @@ internal static class XamlHotReloadState
 	/// <summary>
 	/// Stores the XAML text, parsed root, and version, and clears all accumulated patches (structural change).
 	/// </summary>
-	public static void UpdateAndClearPatches(string assemblyName, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version)
+	public static void UpdateAndClearPatches(string assemblyName, string targetFramework, string relativePath, string xamlText, SGRootNode? parsedRoot, Dictionary<ElementNode, string>? nodeIds, int nextNodeId, int version)
 	{
 		lock (_lock)
 		{
-			if (!_cache.TryGetValue((assemblyName, relativePath), out var entry))
+			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 			{
 				entry = new CacheEntry();
-				_cache[(assemblyName, relativePath)] = entry;
+				_cache[(assemblyName, targetFramework, relativePath)] = entry;
 			}
 			entry.XamlText = xamlText;
 			entry.ParsedRoot = parsedRoot;
@@ -133,68 +137,50 @@ internal static class XamlHotReloadState
 	/// <summary>
 	/// Returns the current version for the given file, or 0 if not cached.
 	/// </summary>
-	public static int GetVersion(string assemblyName, string relativePath)
+	public static int GetVersion(string assemblyName, string targetFramework, string relativePath)
 	{
 		lock (_lock)
 		{
-			return _cache.TryGetValue((assemblyName, relativePath), out var entry) ? entry.Version : 0;
+			return _cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) ? entry.Version : 0;
 		}
 	}
 
 	/// <summary>
 	/// Returns the cached parsed root for the given file, or null if not cached.
 	/// </summary>
-	public static SGRootNode? GetParsedRoot(string assemblyName, string relativePath)
+	public static SGRootNode? GetParsedRoot(string assemblyName, string targetFramework, string relativePath)
 	{
 		lock (_lock)
 		{
-			return _cache.TryGetValue((assemblyName, relativePath), out var entry) ? entry.ParsedRoot : null;
+			return _cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) ? entry.ParsedRoot : null;
 		}
 	}
 
 	/// <summary>
-	/// Returns the cached node-ID dictionary for the given file, or null if not cached.
+	/// Returns a defensive copy of the cached node-ID dictionary for the given file, or
+	/// <see langword="null"/> if not cached. Mirrors <see cref="TryGetPrevious"/>'s contract —
+	/// callers must never see the live <see cref="CacheEntry.NodeIds"/> reference.
 	/// </summary>
-	public static Dictionary<ElementNode, string>? GetNodeIds(string assemblyName, string relativePath)
+	public static Dictionary<ElementNode, string>? GetNodeIds(string assemblyName, string targetFramework, string relativePath)
 	{
 		lock (_lock)
 		{
-			return _cache.TryGetValue((assemblyName, relativePath), out var entry) ? entry.NodeIds : null;
+			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry) && entry.NodeIds != null)
+				return new Dictionary<ElementNode, string>(entry.NodeIds);
+			return null;
 		}
 	}
 
 	/// <summary>
 	/// Returns a copy of the accumulated patch bodies for the given file.
 	/// </summary>
-	public static List<string> GetPatchBodies(string assemblyName, string relativePath)
+	public static List<string> GetPatchBodies(string assemblyName, string targetFramework, string relativePath)
 	{
 		lock (_lock)
 		{
-			if (_cache.TryGetValue((assemblyName, relativePath), out var entry))
+			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 				return new List<string>(entry.PatchBodies);
 			return new List<string>();
-		}
-	}
-
-	/// <summary>
-	/// Removes entries for files no longer present in the current compilation.
-	/// Called during pipeline execution with the set of files being processed.
-	/// </summary>
-	public static void PruneStaleEntries(string assemblyName, HashSet<string> activeRelativePaths)
-	{
-		lock (_lock)
-		{
-			var keysToRemove = new List<(string, string)>();
-			foreach (var key in _cache.Keys)
-			{
-				if (string.Equals(key.AssemblyName, assemblyName, System.StringComparison.Ordinal)
-					&& !activeRelativePaths.Contains(key.RelativePath))
-				{
-					keysToRemove.Add(key);
-				}
-			}
-			foreach (var key in keysToRemove)
-				_cache.Remove(key);
 		}
 	}
 
