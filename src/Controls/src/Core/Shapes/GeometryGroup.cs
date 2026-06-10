@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -11,6 +12,8 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public class GeometryGroup : Geometry
 	{
+		readonly List<Geometry> _subscribedChildren = new();
+
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
 			BindableProperty.Create(nameof(Children), typeof(GeometryCollection), typeof(GeometryGroup), null,
@@ -55,15 +58,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdateChildren(GeometryCollection oldCollection, GeometryCollection newCollection)
 		{
-			if (oldCollection != null)
-			{
-				oldCollection.CollectionChanged -= OnChildrenCollectionChanged;
+			oldCollection?.CollectionChanged -= OnChildrenCollectionChanged;
 
-				foreach (var oldChildren in oldCollection)
-				{
-					oldChildren.PropertyChanged -= OnChildrenPropertyChanged;
-				}
-			}
+			UnsubscribeFromAllChildrenPropertyChanged();
 
 			if (newCollection == null)
 				return;
@@ -72,12 +69,31 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			foreach (var newChildren in newCollection)
 			{
-				newChildren.PropertyChanged += OnChildrenPropertyChanged;
+				SubscribeToChildrenPropertyChanged(newChildren);
 			}
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				for (int i = _subscribedChildren.Count - 1; i >= 0; i--)
+				{
+					UnsubscribeFromChildrenPropertyChanged(_subscribedChildren[i]);
+				}
+
+				if (sender is GeometryCollection geometryCollection)
+				{
+					foreach (var geometry in geometryCollection)
+					{
+						SubscribeToChildrenPropertyChanged(geometry);
+					}
+				}
+
+				Invalidate();
+				return;
+			}
+
 			if (e.OldItems != null)
 			{
 				foreach (var oldItem in e.OldItems)
@@ -85,7 +101,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (!(oldItem is Geometry oldGeometry))
 						continue;
 
-					oldGeometry.PropertyChanged -= OnChildrenPropertyChanged;
+					UnsubscribeFromChildrenPropertyChanged(oldGeometry);
 				}
 			}
 
@@ -96,11 +112,37 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (!(newItem is Geometry newGeometry))
 						continue;
 
-					newGeometry.PropertyChanged += OnChildrenPropertyChanged;
+					SubscribeToChildrenPropertyChanged(newGeometry);
 				}
 			}
 
 			Invalidate();
+		}
+
+		void SubscribeToChildrenPropertyChanged(Geometry geometry)
+		{
+			if (_subscribedChildren.Contains(geometry))
+				return;
+
+			geometry.PropertyChanged += OnChildrenPropertyChanged;
+			_subscribedChildren.Add(geometry);
+		}
+
+		void UnsubscribeFromChildrenPropertyChanged(Geometry geometry)
+		{
+			if (!_subscribedChildren.Contains(geometry))
+				return;
+
+			geometry.PropertyChanged -= OnChildrenPropertyChanged;
+			_subscribedChildren.Remove(geometry);
+		}
+
+		void UnsubscribeFromAllChildrenPropertyChanged()
+		{
+			for (int i = _subscribedChildren.Count - 1; i >= 0; i--)
+			{
+				UnsubscribeFromChildrenPropertyChanged(_subscribedChildren[i]);
+			}
 		}
 
 		void OnChildrenPropertyChanged(object sender, PropertyChangedEventArgs e)
