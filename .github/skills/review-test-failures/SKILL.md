@@ -97,26 +97,26 @@ Platform mismatch is supporting evidence, not proof by itself. For example, an i
 
 ## Output format
 
-Use a collapsed PR conversation comment body. Start with a stable marker and put the review content inside one top-level `<details>` block so the PR timeline stays compact:
+Use a compact PR conversation comment body. Start with a stable marker, put the attribution and badges before the collapsible content, and put only the detailed review inside one top-level `<details>` block:
 
 ```markdown
-<!-- Test Failure Review -->
+<!-- Tests Failure -->
 
-<details>
-<summary>[icon] <strong>Test Failure Review:</strong> [verdict] — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong></summary>
-<br/>
+## Tests Failure Analysis
 
-> @[PR author] — test-failure review results are available based on commit <a href="[commit URL]"><code>[sha7]</code></a>.
+> @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]).
 > To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
-  <img alt="Data [Complete|Partial]" src="https://img.shields.io/badge/Data-[Complete|Partial]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Platform [platform]" src="https://img.shields.io/badge/Platform-[platform]-0969da?labelColor=30363d&style=flat-square">
 </p>
 
-**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data]
+<details>
+<summary><strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
+
+**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data | No failures found]
 
 [One or two sentences summarizing the strongest evidence.]
 
@@ -143,8 +143,10 @@ Rules:
 - Keep the visible summary short and decisive.
 - Include explicit limitations when data is unavailable.
 - Cite concrete evidence for every verdict.
-- Use badge colors: `d1242f` for `Likely PR-caused`, `1a7f37` for `Likely unrelated`, `bf8700` for `Needs human investigation`, and `6e7781` for `Insufficient data`.
-- Use `Data-Partial` when any limitations are present; otherwise use `Data-Complete`.
+- Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
+- Use badge colors: `d1242f` for `Likely PR-caused`, `1a7f37` for `Likely unrelated` and `No failures found`, `bf8700` for `Needs human investigation`, and `6e7781` for `Insufficient data`.
+- Do not include a Data badge.
+- Do not use emojis anywhere in the posted comment.
 - Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
 - Repeated `/review tests` runs post a new PR conversation comment and hide older comments from the same workflow.
-- If there are no failing or inconclusive checks, report that no failing test evidence was found and use the noop path in gh-aw.
+- If there are no failing or inconclusive checks, still post the standard visible report with `Overall` = `No failures found`, `Failures` = `0`, no platform badges, and a recommendation that no test-failure action is needed. Use badge color `1a7f37`.
