@@ -14,6 +14,8 @@ public class Issue7814 : TestContentPage
 		_verticalOffsetLabel = CreateOffsetLabel("Issue7814VerticalScrollYLabel", VerticalOffsetPrefix);
 		_horizontalOffsetLabel = CreateOffsetLabel("Issue7814HorizontalScrollXLabel", HorizontalOffsetPrefix);
 
+		Grid.SetColumn(_horizontalOffsetLabel, 1);
+
 		var outerScrollView = new ScrollView
 		{
 			AutomationId = "Issue7814OuterScrollView",
@@ -21,6 +23,7 @@ public class Issue7814 : TestContentPage
 			Content = CreateScrollableContent()
 		};
 		outerScrollView.Scrolled += (_, e) => UpdateOffset(_verticalOffsetLabel, VerticalOffsetPrefix, e.ScrollY);
+		Grid.SetRow(outerScrollView, 1);
 
 		Content = new Grid
 		{
@@ -42,10 +45,10 @@ public class Issue7814 : TestContentPage
 					Children =
 					{
 						_verticalOffsetLabel,
-						_horizontalOffsetLabel.Column(1)
+						_horizontalOffsetLabel
 					}
 				},
-				outerScrollView.Row(1)
+				outerScrollView
 			}
 		};
 	}
