@@ -10,20 +10,28 @@ public class Issue7814 : TestContentPage
 {
 	const string VerticalOffsetPrefix = "VerticalScrollY";
 	const string HorizontalOffsetPrefix = "HorizontalScrollX";
+#if ANDROID
 	const string TouchParentPositionPrefix = "TouchParentPosition";
 	const string TouchStatusPrefix = "TouchStatus";
+	const string TouchClaimViewId = "Issue7814TouchClaimView";
+	const string TouchReleaseViewId = "Issue7814TouchReleaseView";
+#endif
 
 	Label _verticalOffsetLabel = null!;
 	Label _horizontalOffsetLabel = null!;
+#if ANDROID
 	Label _touchParentPositionLabel = null!;
 	Label _touchStatusLabel = null!;
+#endif
 
 	protected override void Init()
 	{
 		_verticalOffsetLabel = CreateOffsetLabel("Issue7814VerticalScrollYLabel", VerticalOffsetPrefix);
 		_horizontalOffsetLabel = CreateOffsetLabel("Issue7814HorizontalScrollXLabel", HorizontalOffsetPrefix);
+#if ANDROID
 		_touchParentPositionLabel = CreateOffsetLabel("Issue7814TouchParentPositionLabel", TouchParentPositionPrefix);
 		_touchStatusLabel = CreateOffsetLabel("Issue7814TouchStatusLabel", TouchStatusPrefix);
+#endif
 
 		Grid.SetColumn(_horizontalOffsetLabel, 1);
 
@@ -51,7 +59,9 @@ public class Issue7814 : TestContentPage
 					RowDefinitions =
 					{
 						new RowDefinition(GridLength.Auto),
+#if ANDROID
 						new RowDefinition(GridLength.Auto)
+#endif
 					},
 					ColumnDefinitions =
 					{
@@ -62,8 +72,10 @@ public class Issue7814 : TestContentPage
 					{
 						_verticalOffsetLabel,
 						Column(_horizontalOffsetLabel, 1),
+#if ANDROID
 						Row(_touchParentPositionLabel, 1),
 						Column(Row(_touchStatusLabel, 1), 1)
+#endif
 					}
 				},
 				outerScrollView
@@ -133,7 +145,9 @@ public class Issue7814 : TestContentPage
 		};
 		horizontalScrollView.Scrolled += (_, e) => UpdateOffset(_horizontalOffsetLabel, HorizontalOffsetPrefix, e.ScrollX);
 
+#if ANDROID
 		var touchClaimRegressionParent = CreateTouchClaimRegressionParent();
+#endif
 
 		return new VerticalStackLayout
 		{
@@ -154,6 +168,7 @@ public class Issue7814 : TestContentPage
 					Margin = new Thickness(12, 0)
 				},
 				horizontalScrollView,
+#if ANDROID
 				new Label
 				{
 					Text = "Touch-claiming row in a vertical CollectionView inside a horizontal parent",
@@ -161,6 +176,7 @@ public class Issue7814 : TestContentPage
 					Margin = new Thickness(12, 0)
 				},
 				touchClaimRegressionParent,
+#endif
 				new BoxView
 				{
 					HeightRequest = 900,
@@ -170,6 +186,7 @@ public class Issue7814 : TestContentPage
 		};
 	}
 
+#if ANDROID
 	View CreateTouchClaimRegressionParent()
 	{
 		var carouselView = new CarouselView
@@ -194,7 +211,7 @@ public class Issue7814 : TestContentPage
 			WidthRequest = 360,
 			HeightRequest = 360,
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
-			ItemsSource = Enumerable.Range(1, 12).Select(index => $"Touch row {index}").ToList(),
+			ItemsSource = CreateTouchClaimRows(),
 			ItemTemplate = new DataTemplate(CreateTouchClaimRow)
 		};
 
@@ -217,14 +234,15 @@ public class Issue7814 : TestContentPage
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center
 		};
-		contentLabel.SetBinding(Label.TextProperty, ".");
+		contentLabel.SetBinding(Label.TextProperty, nameof(TouchClaimRow.Text));
 
 		var touchClaimView = new Issue7814TouchClaimView
 		{
-			AutomationId = "Issue7814TouchClaimView",
 			BackgroundColor = Colors.LightGreen,
 			TouchStateChanged = state => _touchStatusLabel.Text = state
 		};
+		touchClaimView.SetBinding(AutomationIdProperty, nameof(TouchClaimRow.AutomationId));
+		touchClaimView.SetBinding(Issue7814TouchClaimView.ReleaseTouchOwnershipOnMoveProperty, nameof(TouchClaimRow.ReleaseTouchOwnershipOnMove));
 
 		return new Grid
 		{
@@ -238,6 +256,20 @@ public class Issue7814 : TestContentPage
 			}
 		};
 	}
+
+	static List<TouchClaimRow> CreateTouchClaimRows()
+	{
+		var rows = new List<TouchClaimRow>
+		{
+			new("Touch row keeps ownership", TouchClaimViewId, false),
+			new("Touch row releases ownership", TouchReleaseViewId, true)
+		};
+
+		rows.AddRange(Enumerable.Range(3, 10).Select(index => new TouchClaimRow($"Touch row {index}", $"Issue7814TouchFillerView{index}", false)));
+
+		return rows;
+	}
+#endif
 
 	static T Row<T>(T view, int row) where T : View
 	{
@@ -269,9 +301,21 @@ public class Issue7814 : TestContentPage
 	}
 }
 
+#if ANDROID
+public record TouchClaimRow(string Text, string AutomationId, bool ReleaseTouchOwnershipOnMove);
+
 public class Issue7814TouchClaimView : View
 {
+	public static readonly BindableProperty ReleaseTouchOwnershipOnMoveProperty =
+		BindableProperty.Create(nameof(ReleaseTouchOwnershipOnMove), typeof(bool), typeof(Issue7814TouchClaimView), false);
+
 	public Action<string> TouchStateChanged { get; set; }
+
+	public bool ReleaseTouchOwnershipOnMove
+	{
+		get => (bool)GetValue(ReleaseTouchOwnershipOnMoveProperty);
+		set => SetValue(ReleaseTouchOwnershipOnMoveProperty, value);
+	}
 
 	internal void SendTouchState(string state)
 	{
@@ -279,7 +323,6 @@ public class Issue7814TouchClaimView : View
 	}
 }
 
-#if ANDROID
 public class Issue7814TouchClaimViewHandler : ViewHandler<Issue7814TouchClaimView, AView>
 {
 	int _moveCount;
@@ -325,12 +368,12 @@ public class Issue7814TouchClaimViewHandler : ViewHandler<Issue7814TouchClaimVie
 				break;
 			case Android.Views.MotionEventActions.Move:
 				_moveCount++;
-				RequestTouchOwnership();
+				RequestTouchOwnership(!VirtualView.ReleaseTouchOwnershipOnMove);
 				VirtualView.SendTouchState($"TouchStatus: Move {_moveCount}");
 				e.Handled = true;
 				break;
 			case Android.Views.MotionEventActions.Up:
-				RequestTouchOwnership();
+				RequestTouchOwnership(!VirtualView.ReleaseTouchOwnershipOnMove);
 				VirtualView.SendTouchState($"TouchStatus: Up {_moveCount}");
 				e.Handled = true;
 				break;
@@ -341,9 +384,9 @@ public class Issue7814TouchClaimViewHandler : ViewHandler<Issue7814TouchClaimVie
 		}
 	}
 
-	void RequestTouchOwnership()
+	void RequestTouchOwnership(bool disallowIntercept = true)
 	{
-		PlatformView?.Parent?.RequestDisallowInterceptTouchEvent(true);
+		PlatformView?.Parent?.RequestDisallowInterceptTouchEvent(disallowIntercept);
 	}
 }
 #endif

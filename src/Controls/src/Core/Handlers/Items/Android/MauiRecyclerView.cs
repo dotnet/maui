@@ -800,7 +800,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			public void RequestDisallowInterceptTouchEvent(bool disallowIntercept)
 			{
-				if (_gestureOwner == GestureOwner.Undecided)
+				if (_gestureOwner != GestureOwner.Parent)
 				{
 					_descendantDisallowedIntercept = disallowIntercept;
 				}
@@ -853,12 +853,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return false;
 				}
 
-				if (_descendantDisallowedIntercept)
-				{
-					_gestureOwner = GestureOwner.RecyclerView;
-					return false;
-				}
-
 				var target = FindParentScrollTarget(e, canScrollHorizontally);
 
 				if (target is null)
@@ -870,7 +864,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (_descendantDisallowedIntercept)
 				{
-					_gestureOwner = GestureOwner.RecyclerView;
 					handled = recyclerViewHandled;
 					return true;
 				}

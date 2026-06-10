@@ -16,6 +16,7 @@ public class Issue7814 : _IssuesUITest
 	const string TouchParentPositionLabelId = "Issue7814TouchParentPositionLabel";
 	const string TouchStatusLabelId = "Issue7814TouchStatusLabel";
 	const string TouchClaimViewId = "Issue7814TouchClaimView";
+	const string TouchReleaseViewId = "Issue7814TouchReleaseView";
 
 	public Issue7814(TestDevice testDevice) : base(testDevice)
 	{
@@ -90,6 +91,44 @@ public class Issue7814 : _IssuesUITest
 		{
 			Assert.That(touchStatusAfterGesture, Does.Contain("Up"), "The row touch-claiming view should receive the whole drag.");
 			Assert.That(parentPositionAfterGesture, Is.EqualTo(parentPositionBeforeGesture), "The horizontal parent CarouselView should not steal the claimed row gesture.");
+		});
+	}
+
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void TouchReleasingRowInsideVerticalCollectionViewNestedInHorizontalParentHandsHorizontalGestureToParent()
+	{
+		if (App is not AppiumAndroidApp)
+		{
+			Assert.Ignore("The Issue7814 touch-dispatch change is Android-specific.");
+		}
+
+		App.WaitForElement(OuterScrollViewId);
+		ScrollUntilVisible(TouchReleaseViewId);
+
+		var parentPositionBeforeGesture = GetTouchParentPosition();
+		var touchViewRect = GetVisibleRect(TouchReleaseViewId);
+
+		App.DragCoordinates(
+			touchViewRect.Right - 20,
+			touchViewRect.Top + (touchViewRect.Height / 2),
+			touchViewRect.Left + 20,
+			touchViewRect.Top + (touchViewRect.Height / 2));
+
+		App.RetryAssert(() =>
+		{
+			Assert.That(GetTouchParentPosition(), Is.GreaterThan(parentPositionBeforeGesture), "The horizontal parent CarouselView should take over after the row releases the gesture.");
+		});
+
+		App.RetryAssert(() =>
+		{
+			var touchStatusAfterGesture = App.FindElement(TouchStatusLabelId).GetText();
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(touchStatusAfterGesture, Does.Contain("Cancel"), "The row touch-claiming view should be cancelled after releasing the gesture.");
+				Assert.That(touchStatusAfterGesture, Does.Not.Contain("Up"), "The row touch-claiming view should not complete a released gesture.");
+			});
 		});
 	}
 
