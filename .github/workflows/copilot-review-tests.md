@@ -194,15 +194,17 @@ When triggered via `workflow_dispatch`, `${{ inputs.suppress_output }}` controls
 - If `true`, perform the review and log the final report in your response, but do not call `add_comment`.
 - If `false` or empty, post the report as a PR conversation comment.
 
-## When no action is needed
+## When no failures are found
 
-If the gathered context shows no failing, pending, or inconclusive checks and no extracted failures, call `noop` with a concise reason. Do not post a PR comment in that case.
+If the gathered context shows no failing, pending, or inconclusive checks and no extracted failures, still post a PR conversation comment with `add_comment` unless dry-run mode is active. Use the same collapsed shape as other results with:
 
-Example:
+- Overall verdict: `No failures found`
+- Overall badge color: `1a7f37`
+- Failures badge value: `0`
+- No platform badges
+- Recommended action: no test-failure action is needed
 
-```json
-{"noop": {"message": "No failing or inconclusive test evidence was found for this PR."}}
-```
+Only call `noop` when dry-run mode is active and no PR comment should be posted.
 
 ## Posting results
 
@@ -225,7 +227,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 <details>
 <summary>[icon] <strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
 
-**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data]
+**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data | No failures found]
 
 [One or two sentences summarizing the strongest evidence.]
 

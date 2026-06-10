@@ -275,7 +275,7 @@ $marker
 ## Tests Failure Analysis
 
 $authorPing
-> To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
+> To request a fresh review after new comments, commits, or CI runs, comment ``/review tests``.
 
 <p align="left">
 $badges
@@ -404,15 +404,15 @@ $prompt = @"
 You are running the dotnet/maui /review tests workflow locally.
 
 Task:
-- Read and follow `.github/skills/review-test-failures/SKILL.md`.
+- Read and follow ``.github/skills/review-test-failures/SKILL.md``.
 - Analyze PR #$PRNumber in $Repository using the gathered context files below.
 - Produce the final report using the skill's output format.
-- Write the final report to `$ReportPath`.
+- Write the final report to ``$ReportPath``.
 - Also return the report in your final response.
 
 Context files:
-- JSON: `$ContextJsonPath`
-- Markdown: `$ContextMarkdownPath`
+- JSON: ``$ContextJsonPath``
+- Markdown: ``$ContextMarkdownPath``
 
 Rules:
 - Do not modify source files.

@@ -116,7 +116,7 @@ Use a compact PR conversation comment body. Start with a stable marker, put the 
 <details>
 <summary>[icon] <strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
 
-**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data]
+**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data | No failures found]
 
 [One or two sentences summarizing the strongest evidence.]
 
@@ -148,4 +148,4 @@ Rules:
 - Do not include a Data badge.
 - Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
 - Repeated `/review tests` runs post a new PR conversation comment and hide older comments from the same workflow.
-- If there are no failing or inconclusive checks, report that no failing test evidence was found and use the noop path in gh-aw.
+- If there are no failing or inconclusive checks, still post the standard visible report with `Overall` = `No failures found`, `Failures` = `0`, no platform badges, and a recommendation that no test-failure action is needed. Use badge color `1a7f37`.
