@@ -117,10 +117,10 @@ interface DotNetInvokeResult {
         } else {
             // Android WebView. Sends are chained through a single promise to preserve
             // FIFO ordering that callers had with the previous synchronous bridge.
-            let sendQueue: Promise<unknown> = Promise.resolve();
+            let sendQueue: Promise<unknown> | undefined;
             sendMessageFunction = msg => {
                 const url = `${window.location.origin}/${SendMessageEndpoint}`;
-                sendQueue = sendQueue.then(() => fetch(url, {
+                const doSend = () => fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain',
@@ -130,7 +130,8 @@ interface DotNetInvokeResult {
                     body: msg
                 }).catch(err => {
                     console.error('HybridWebView: failed to send message to .NET host.', err);
-                }));
+                });
+                sendQueue = sendQueue ? sendQueue.then(doSend) : doSend();
             };
         }
     }
