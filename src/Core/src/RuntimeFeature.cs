@@ -158,6 +158,8 @@ namespace Microsoft.Maui
 
 #if NET11_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsIncrementalHotReloadEnabled)}")]
+		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+		[FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
 #endif
 		internal static bool IsIncrementalHotReloadEnabled =>
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsIncrementalHotReloadEnabled)}", out bool isEnabled)

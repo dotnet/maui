@@ -417,6 +417,45 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	static Compilation CreateCompilation() =>
 		SourceGeneratorDriver.CreateMauiCompilation("TestApp");
 
+	// 3-run helper for testing version-chain preservation across no-op edits.
+	(GeneratorDriverRunResult run1, GeneratorDriverRunResult run2, GeneratorDriverRunResult run3) ThreeRuns(
+		string xamlV1,
+		string xamlV2,
+		string xamlV3,
+		bool enableIHR = true)
+	{
+		var compilation = CreateCompilation();
+		var fileV1 = MakeFile(xamlV1, enableIHR);
+		var fileV2 = MakeFile(xamlV2, enableIHR);
+		var fileV3 = MakeFile(xamlV3, enableIHR);
+
+		ISourceGenerator generator = new XamlGenerator().AsSourceGenerator();
+		var options = new Microsoft.CodeAnalysis.GeneratorDriverOptions(
+			disabledOutputs: Microsoft.CodeAnalysis.IncrementalGeneratorOutputKind.None,
+			trackIncrementalGeneratorSteps: true);
+
+		Microsoft.CodeAnalysis.GeneratorDriver driver = CSharpGeneratorDriver.Create([generator], driverOptions: options)
+			.AddAdditionalTexts(System.Collections.Immutable.ImmutableArray.Create<Microsoft.CodeAnalysis.AdditionalText>(fileV1.Text))
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV1]));
+
+		driver = driver.RunGenerators(compilation);
+		var r1 = driver.GetRunResult();
+
+		driver = driver
+			.ReplaceAdditionalText(fileV1.Text, fileV2.Text)
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV2]))
+			.RunGenerators(compilation);
+		var r2 = driver.GetRunResult();
+
+		driver = driver
+			.ReplaceAdditionalText(fileV2.Text, fileV3.Text)
+			.WithUpdatedAnalyzerConfigOptions(new OptionsProvider([fileV3]))
+			.RunGenerators(compilation);
+		var r3 = driver.GetRunResult();
+
+		return (r1, r2, r3);
+	}
+
 	// Helper to run generator twice, simulating a XAML edit
 	(GeneratorDriverRunResult run1, GeneratorDriverRunResult run2) TwoRuns(
 		string xamlV1,
@@ -512,7 +551,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			compilation, file, assertNoCompilationErrors: false);
 
 		// Assert: state was seeded at version 0 (spec: __version starts at 0)
-		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _, out _, out _, out var version);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", "net11.0", PageRelativePath, out _, out _, out _, out _, out var version);
 		Assert.True(hasPrev, "XamlHotReloadState should be seeded after first run");
 		Assert.Equal(0, version);
 	}
@@ -563,6 +602,46 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
+	public void NoOpEdit_BetweenPatches_PreservesVersionChain()
+	{
+		// Regression for round-3 review finding: a semantically empty XAML edit (e.g., adding
+		// a comment) used to call UpdateAndClearPatches, resetting __version to 0 and clearing
+		// PatchBodies. Live instances at version 1+ would then strand when the next real edit
+		// emits `if (__version == 0)` — they would silently ignore every future patch.
+		XamlHotReloadState.Reset();
+
+		// V1 — seed at version 0
+		// V2 — real property change → patch at version 0→1
+		// V3 — same as V2 but with an extra XML comment (no semantic change)
+		var v3WithComment = PageXamlV2_PropertyChange.Replace(
+			"x:Class=\"TestApp.MainPage\"",
+			"x:Class=\"TestApp.MainPage\"><!-- harmless comment --",
+			StringComparison.Ordinal);
+
+		var (_, run2, run3) = ThreeRuns(PageXamlV1, PageXamlV2_PropertyChange, v3WithComment);
+
+		// Run 2 must emit the patch
+		Assert.NotNull(FindUCSource(run2, "uc.xsg"));
+
+		// State after run 3: version preserved, exactly one patch retained
+		Assert.True(XamlHotReloadState.TryGetPrevious("TestApp", "net11.0", PageRelativePath,
+			out _, out _, out _, out _, out var versionAfterNoOp));
+		Assert.Equal(1, versionAfterNoOp);
+		Assert.Single(XamlHotReloadState.GetPatchBodies("TestApp", "net11.0", PageRelativePath));
+
+		// Round-4 fix: UC is re-emitted in the emptyDiff branch so it doesn't transiently
+		// disappear from the compilation. The patches MUST still be gated on version 0→1
+		// (NOT regenerated as 0→0, which would mean version state was reset).
+		var run3Uc = FindUCSource(run3, "uc.xsg");
+		Assert.NotNull(run3Uc);
+		Assert.Contains("__version == 0", run3Uc!, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", run3Uc!, StringComparison.Ordinal);
+		// Defensive: the broken pre-round-3 behavior would have produced no UC at all OR
+		// a UC that no longer references version 1.
+		Assert.DoesNotContain("__version == 1", run3Uc!, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void SecondRun_StructuralChange_EmitsUCWithChildAdd()
 	{
 		// Arrange: V3 adds a Button child — our child add/remove support handles this incrementally
@@ -590,18 +669,20 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 	}
 
 	[Fact]
-	public void SecondRun_ChildrenReordered_EmitsUCWithClearAndReAdd()
+	public void SecondRun_ChildrenReordered_EmitsUCWithReorderInPlace()
 	{
 		// Arrange: Start with Label then Button, swap to Button then Label
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV4_TwoChildren, PageXamlV6_ChildrenReordered);
 
-		// Assert: UC emitted with reorder (clear + re-add in new order)
+		// Assert: UC emitted with in-place reorder via RemoveAt + Insert (M13 optimization).
+		// Pure reorders (no Add/Remove) must preserve platform-side handler state by reusing
+		// the existing IView instances, so Clear() is NOT emitted.
 		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(ucSource);
-		Assert.Contains("Clear()", ucSource!, StringComparison.Ordinal);
-		// Both children should be re-added (retained)
-		Assert.Contains("Add(", ucSource!, StringComparison.Ordinal);
+		Assert.DoesNotContain("Clear()", ucSource!, StringComparison.Ordinal);
+		Assert.Contains("RemoveAt", ucSource!, StringComparison.Ordinal);
+		Assert.Contains(".Insert(", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -672,7 +753,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			compilation, file, assertNoCompilationErrors: false);
 
 		// Assert: state NOT seeded when IHR is disabled
-		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _, out _, out _, out _);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", "net11.0", PageRelativePath, out _, out _, out _, out _, out _);
 		Assert.False(hasPrev, "XamlHotReloadState should NOT be seeded when IHR is disabled");
 	}
 
@@ -814,14 +895,14 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		const string relPath = "MainPage.xaml";
 
 		// Seed with assembly "App1"
-		XamlHotReloadState.Update("App1", relPath, xaml, null, null, 0, 1);
+		XamlHotReloadState.Update("App1", "net11.0", relPath, xaml, null, null, 0, 1);
 
 		// "App2" with same relative path should NOT see "App1" state
-		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", relPath, out _, out _, out _, out _, out _);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", "net11.0", relPath, out _, out _, out _, out _, out _);
 		Assert.False(hasPrev, "Different assembly should not see another assembly's state");
 
 		// "App1" SHOULD see its own state
-		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", relPath, out var storedXaml, out _, out _, out _, out var storedVer);
+		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", "net11.0", relPath, out var storedXaml, out _, out _, out _, out var storedVer);
 		Assert.True(hasSelf);
 		Assert.Equal(xaml, storedXaml);
 		Assert.Equal(1, storedVer);
@@ -1498,9 +1579,665 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 
 		Assert.NotNull(uc);
 		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
-		// UC must emit a runtime Resources lookup to set the converter on the BindingExtension
+		// UC must emit a full-walk StaticResource lookup (parent chain → app → system) to set
+		// the converter on the BindingExtension. M8 fix replaced this.Resources[key] (page-only)
+		// with the dedicated XamlComponentRegistry.FindStaticResource helper.
 		Assert.Contains("InvertedStatusConverter", uc, StringComparison.Ordinal);
-		Assert.Contains("this.Resources[\"InvertedStatusConverter\"]", uc, StringComparison.Ordinal);
+		Assert.Contains("XamlComponentRegistry.FindStaticResource(", uc, StringComparison.Ordinal);
+		Assert.Contains("\"InvertedStatusConverter\"", uc, StringComparison.Ordinal);
+		// M8 follow-up: lookup must walk from the actual target element (parentAccessor),
+		// NOT from `this` — otherwise resources scoped on intermediate parents are missed.
+		Assert.DoesNotContain("FindStaticResource(this,", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void StyleChange_UCGeneratesPatch()
+	{
+		// Changing an inline Style's Setters should produce a UC patch.
+		// The Style subtree is complex, so the UC may rebuild it structurally.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello">
+			            <Label.Style>
+			                <Style TargetType="Label">
+			                    <Setter Property="TextColor" Value="Red" />
+			                </Style>
+			            </Label.Style>
+			        </Label>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello">
+			            <Label.Style>
+			                <Style TargetType="Label">
+			                    <Setter Property="TextColor" Value="Blue" />
+			                    <Setter Property="FontSize" Value="24" />
+			                </Style>
+			            </Label.Style>
+			        </Label>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// UC must reference the Style property in some form
+		Assert.Contains("Style", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void StyleResourceChange_UCUpdatesResourceDictionary()
+	{
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Style x:Key="MyLabelStyle" TargetType="Label">
+			            <Setter Property="TextColor" Value="Red" />
+			        </Style>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" Style="{StaticResource MyLabelStyle}" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Style x:Key="MyLabelStyle" TargetType="Label">
+			            <Setter Property="TextColor" Value="Blue" />
+			            <Setter Property="FontSize" Value="24" />
+			        </Style>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" Style="{StaticResource MyLabelStyle}" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("MyLabelStyle", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TriggerAdded_UCGeneratesPatch()
+	{
+		// Adding a Trigger to an Entry should produce a UC patch.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Entry Placeholder="Type here" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Entry Placeholder="Type here">
+			            <Entry.Triggers>
+			                <Trigger TargetType="Entry" Property="IsFocused" Value="True">
+			                    <Setter Property="BackgroundColor" Value="LightYellow" />
+			                </Trigger>
+			            </Entry.Triggers>
+			        </Entry>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("Trigger", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void DataTriggerChange_UCGeneratesPatch()
+	{
+		// Changing a DataTrigger's Setter values should produce a UC patch.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello">
+			            <Label.Triggers>
+			                <DataTrigger TargetType="Label" Binding="{Binding IsActive}" Value="True">
+			                    <Setter Property="TextColor" Value="Green" />
+			                </DataTrigger>
+			            </Label.Triggers>
+			        </Label>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label Text="Hello">
+			            <Label.Triggers>
+			                <DataTrigger TargetType="Label" Binding="{Binding IsActive}" Value="True">
+			                    <Setter Property="TextColor" Value="Red" />
+			                    <Setter Property="FontAttributes" Value="Bold" />
+			                </DataTrigger>
+			            </Label.Triggers>
+			        </Label>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("Trigger", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void VisualStateManagerChange_UCGeneratesPatch()
+	{
+		// Changing VSM Setters should produce a UC patch.
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Button Text="Click">
+			            <VisualStateManager.VisualStateGroups>
+			                <VisualStateGroup Name="CommonStates">
+			                    <VisualState Name="Normal">
+			                        <VisualState.Setters>
+			                            <Setter Property="BackgroundColor" Value="White" />
+			                        </VisualState.Setters>
+			                    </VisualState>
+			                    <VisualState Name="Pressed">
+			                        <VisualState.Setters>
+			                            <Setter Property="BackgroundColor" Value="LightGray" />
+			                        </VisualState.Setters>
+			                    </VisualState>
+			                </VisualStateGroup>
+			            </VisualStateManager.VisualStateGroups>
+			        </Button>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Button Text="Click">
+			            <VisualStateManager.VisualStateGroups>
+			                <VisualStateGroup Name="CommonStates">
+			                    <VisualState Name="Normal">
+			                        <VisualState.Setters>
+			                            <Setter Property="BackgroundColor" Value="White" />
+			                        </VisualState.Setters>
+			                    </VisualState>
+			                    <VisualState Name="Pressed">
+			                        <VisualState.Setters>
+			                            <Setter Property="BackgroundColor" Value="DarkGray" />
+			                            <Setter Property="Scale" Value="0.95" />
+			                        </VisualState.Setters>
+			                    </VisualState>
+			                </VisualStateGroup>
+			            </VisualStateManager.VisualStateGroups>
+			        </Button>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		Assert.Contains("VisualState", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void BehaviorAdded_UCGeneratesPatch()
+	{
+		// Adding a Behavior to an Entry. Behaviors are a complex collection property
+		// that the UC processes through the IC pipeline.
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+				public class NumericValidationBehavior : Microsoft.Maui.Controls.Behavior<Microsoft.Maui.Controls.Entry>
+				{
+				}
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Entry Placeholder="Enter number" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Entry Placeholder="Enter number">
+			            <Entry.Behaviors>
+			                <local:NumericValidationBehavior />
+			            </Entry.Behaviors>
+			        </Entry>
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// Behavior is a complex property — UC should mention it (even as skipped comment)
+		Assert.Contains("Behavior", uc, StringComparison.Ordinal);
+	}
+
+	// -----------------------------------------------------------------------
+	// Binding cleanup and property clear tests
+	// -----------------------------------------------------------------------
+
+	[Fact]
+	public void PropertyClear_UCEmitsRemoveBindingBeforeClearValue()
+	{
+		// When a property is removed from XAML, UC should RemoveBinding + ClearValue
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="Hello" BackgroundColor="Red" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Must emit RemoveBinding before ClearValue to prevent zombie bindings
+		Assert.Contains("RemoveBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("ClearValue", uc, StringComparison.Ordinal);
+		// RemoveBinding must come before ClearValue
+		var removeIdx = uc!.IndexOf("RemoveBinding", StringComparison.Ordinal);
+		var clearIdx = uc.IndexOf("ClearValue", StringComparison.Ordinal);
+		Assert.True(removeIdx < clearIdx, "RemoveBinding should come before ClearValue");
+	}
+
+	[Fact]
+	public void PropertySet_UCEmitsRemoveBindingBeforeStaticValue()
+	{
+		// When a bound property is replaced with a static value, UC should remove the old binding
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="Hello" TextColor="Red" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="Hello" TextColor="Blue" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// RemoveBinding should be emitted before the new property assignment
+		Assert.Contains("RemoveBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("TextColorProperty", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedPropertyClear_UCResolvesDeclaringType()
+	{
+		// When Grid.Row is removed, UC should use Grid.RowProperty (not Button.Grid.RowProperty)
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Grid>
+			        <Button x:Name="btn" Text="Click" Grid.Row="1" />
+			    </Grid>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Grid>
+			        <Button x:Name="btn" Text="Click" />
+			    </Grid>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Must reference Grid.RowProperty (declaring type), not Button
+		Assert.Contains("Grid.RowProperty", uc, StringComparison.Ordinal);
+		Assert.Contains("RemoveBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("ClearValue", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void CompiledBinding_UCResolvesNestedPropertyType()
+	{
+		// Verify UC resolves dotted binding paths (User.DisplayName) to the correct type
+		// using shared SetPropertyHelpers.ResolveExpressionType (not a UC-specific clone).
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+			    public class UserModel
+			    {
+			        public string DisplayName { get; set; }
+			    }
+			    public class MainViewModel
+			    {
+			        public UserModel User { get; set; }
+			    }
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage"
+			             x:DataType="local:MainViewModel">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="{Binding User.DisplayName}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage"
+			             x:DataType="local:MainViewModel">
+			    <VerticalStackLayout>
+			        <Label x:Name="lbl" Text="{Binding User.DisplayName, Mode=OneWay}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		if (uc != null)
+		{
+			// UC should emit a compiled TypedBinding with resolved nested type (string, not object)
+			Assert.Contains("TypedBinding", uc, StringComparison.Ordinal);
+			Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string>", uc, StringComparison.Ordinal);
+		}
+		else
+		{
+			// Binding Mode change is a markup-extension property change — may be treated as structural.
+			// Verify the IC at least contains a compiled TypedBinding with the correct type.
+			var icSource = run2.Results.SelectMany(r => r.GeneratedSources)
+				.Where(s => s.HintName.Contains("MainPage", StringComparison.Ordinal))
+				.Select(s => s.SourceText.ToString())
+				.FirstOrDefault() ?? "";
+			Assert.Contains("TypedBinding<global::TestApp.MainViewModel, string>", icSource, StringComparison.Ordinal);
+		}
+	}
+
+	[Fact]
+	public void EventHandler_UCEmitsUnsubscribeAndSubscribe()
+	{
+		// Changing Clicked="OnClicked" to Clicked="OnClicked2" should emit -= old, += new
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Clicked="OnClicked" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Clicked="OnClicked2" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.Contains("Clicked -= OnClicked", uc, StringComparison.Ordinal);
+		Assert.Contains("Clicked += OnClicked2", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void EventHandler_UCEmitsUnsubscribeOnClear()
+	{
+		// Removing Clicked="OnClicked" should emit -= OnClicked
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Text="Hello" Clicked="OnClicked" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		Assert.Contains("Clicked -= OnClicked", uc, StringComparison.Ordinal);
+		Assert.DoesNotContain("Clicked +=", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void AttachedPropertySet_UCEmitsRemoveBindingBeforeSetValue()
+	{
+		// Changing Grid.Row on a child should emit RemoveBinding before SetValue
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Grid><Label x:Name="lbl" Grid.Row="0" Text="Hello" /></Grid>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Grid><Label x:Name="lbl" Grid.Row="2" Text="Hello" /></Grid>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// Must have RemoveBinding before SetValue for the attached property
+		Assert.Contains("RemoveBinding", uc, StringComparison.Ordinal);
+		Assert.Contains("SetValue", uc, StringComparison.Ordinal);
+		var removeIdx = uc!.IndexOf("RemoveBinding", StringComparison.Ordinal);
+		var setIdx = uc.IndexOf("SetValue", StringComparison.Ordinal);
+		Assert.True(removeIdx < setIdx, "RemoveBinding must come before SetValue for attached properties");
+	}
+
+	[Fact]
+	public void EventHandler_InvalidIdentifier_UCSkips()
+	{
+		// If an event handler name contains special chars, UC should skip it safely
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <Button x:Name="btn" Text="Hello" Clicked="bad;handler" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// Should NOT emit += with the invalid handler name
+		Assert.DoesNotContain("+= bad;handler", uc, StringComparison.Ordinal);
+		Assert.Contains("not a valid identifier", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ResourceChange_NonEmittableKeyNotRemoved()
+	{
+		// When a Color resource becomes a Style (non-emittable), the key must NOT be removed
+		XamlHotReloadState.Reset();
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="Primary">Red</Color>
+			        <Color x:Key="Accent">Blue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Test" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Style x:Key="Primary" TargetType="Label">
+			            <Setter Property="TextColor" Value="Red" />
+			        </Style>
+			        <Color x:Key="Accent">Green</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Test" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+		// The key array in the removal guard must include "Primary" even though it's non-emittable.
+		// This prevents the old Color resource from being removed while the new Style can't be emitted.
+		Assert.Contains("\"Primary\"", uc, StringComparison.Ordinal);
+		Assert.Contains("\"Accent\"", uc, StringComparison.Ordinal);
+		// Accent (still a Color) should be updated
+		Assert.Contains("Resources[\"Accent\"]", uc, StringComparison.Ordinal);
 	}
 
 	// -----------------------------------------------------------------------

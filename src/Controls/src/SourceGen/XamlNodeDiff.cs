@@ -21,7 +21,7 @@ enum PropertyDiffKind
 /// <summary>
 /// Describes a change to a single property on an element node.
 /// </summary>
-readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string? newValue, INode? newNode = null)
+readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string? newValue, INode? newNode = null, string? oldValue = null)
 {
 	/// <summary>The XAML attribute name of the changed property (e.g. <c>Text</c>, <c>TextColor</c>).</summary>
 	public XmlName PropertyName { get; } = propertyName;
@@ -42,6 +42,12 @@ readonly struct PropertyDiff(XmlName propertyName, PropertyDiffKind kind, string
 	/// The code writer inspects this to decide how to emit the property assignment.
 	/// </summary>
 	public INode? NewNode { get; } = newNode;
+
+	/// <summary>
+	/// The previous string value, used for event handler unsubscription during hot reload.
+	/// Only populated when the old value was a simple <see cref="ValueNode"/>.
+	/// </summary>
+	public string? OldValue { get; } = oldValue;
 }
 
 /// <summary>
@@ -329,9 +335,16 @@ static class XamlNodeDiff
 		if (depth > 0)
 			effective[newNode] = nodeId;
 
+		// Pre-scan: if this node's own x:DataType is changing, we must treat the node's own
+		// bindings as needing refresh too (not just descendant bindings). Otherwise a binding
+		// whose markup string is unchanged but whose type context shifted would silently keep
+		// its stale compiled binding accessor.
+		bool xDataTypeChangesOnThisNode = DetectXDataTypeChange(oldNode, newNode);
+		bool effectiveForce = forceBindingRefresh || xDataTypeChangesOnThisNode;
+
 		// Diff properties (simple value attributes)
 		var propDiffs = new List<PropertyDiff>();
-		if (!DiffProperties(oldNode, newNode, propDiffs, forceBindingRefresh, out var xDataTypeChanged))
+		if (!DiffProperties(oldNode, newNode, propDiffs, effectiveForce, out var xDataTypeChanged))
 			return false;
 
 		if (propDiffs.Count > 0)
@@ -561,10 +574,15 @@ static class XamlNodeDiff
 		var addedNewIndices = new List<int>();
 		var removedOldIndices = new List<int>();
 
-		// Collect all type keys from both sides
-		var allKeys = new HashSet<string>();
-		foreach (var key in oldGroups.Keys) allKeys.Add(key);
-		foreach (var key in newGroups.Keys) allKeys.Add(key);
+		// Collect all type keys from both sides, sorted for deterministic enumeration
+		// (HashSet<string> enumeration order is implementation-defined, which would
+		// produce non-deterministic codegen since the order of matched/added/removed
+		// entries influences emitted output).
+		var allKeysSet = new HashSet<string>();
+		foreach (var key in oldGroups.Keys) allKeysSet.Add(key);
+		foreach (var key in newGroups.Keys) allKeysSet.Add(key);
+		var allKeys = new List<string>(allKeysSet);
+		allKeys.Sort(System.StringComparer.Ordinal);
 
 		foreach (var key in allKeys)
 		{
@@ -709,7 +727,8 @@ static class XamlNodeDiff
 					if (newPropNode is ValueNode newVal)
 					{
 						// New is a simple value (regardless of what old was: value, binding, etc.)
-						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, newVal.Value?.ToString()));
+						var oldVal = oldPropNode is ValueNode ov ? ov.Value?.ToString() : null;
+						diffs.Add(new PropertyDiff(name, PropertyDiffKind.Set, newVal.Value?.ToString(), oldValue: oldVal));
 					}
 					else
 					{
@@ -732,7 +751,8 @@ static class XamlNodeDiff
 					return false; // removing x:Name/x:Class/etc. → structural
 				// Carry the old node for complex properties so codegen knows what's being cleared
 				var oldNodeRef = oldPropNode is not ValueNode ? oldPropNode : null;
-				diffs.Add(new PropertyDiff(name, PropertyDiffKind.Clear, null, oldNodeRef));
+				var oldClearVal = oldPropNode is ValueNode ovClear ? ovClear.Value?.ToString() : null;
+				diffs.Add(new PropertyDiff(name, PropertyDiffKind.Clear, null, oldNodeRef, oldClearVal));
 			}
 		}
 
@@ -773,6 +793,9 @@ static class XamlNodeDiff
 	/// </summary>
 	static bool IsCodegenSensitive(XmlName name)
 	{
+		// After XamlParser.ParsePropertyName normalization, all x: directives use the
+		// literal "x" prefix as their NamespaceURI (see XmlName.xName / xKey / xClass /
+		// xFieldModifier / xTypeArguments — all constructed as new XmlName("x", ...)).
 		if (name.NamespaceURI != "x")
 			return false;
 
@@ -795,7 +818,7 @@ static class XamlNodeDiff
 	/// which is a compile-time directive (not a runtime property) that affects compiled bindings.
 	/// </summary>
 	static bool IsXDataType(XmlName name)
-		=> name.NamespaceURI == "x" && name.LocalName == "DataType";
+		=> name.LocalName == "DataType" && name.NamespaceURI == "x";
 
 	/// <summary>
 	/// Returns <see langword="true"/> when the value node is a binding markup extension
@@ -805,6 +828,29 @@ static class XamlNodeDiff
 		=> node is MarkupNode mn
 			&& (mn.MarkupString.StartsWith("{Binding", StringComparison.Ordinal)
 				|| mn.MarkupString.StartsWith("{TemplateBinding", StringComparison.Ordinal));
+
+	/// <summary>
+	/// Returns <see langword="true"/> when the value of <c>x:DataType</c> on this node
+	/// differs between <paramref name="oldNode"/> and <paramref name="newNode"/> (including
+	/// addition or removal). Used to decide whether the node's own bindings need a refresh.
+	/// </summary>
+	static bool DetectXDataTypeChange(ElementNode oldNode, ElementNode newNode)
+	{
+		INode? oldDt = null, newDt = null;
+		foreach (var kvp in oldNode.Properties)
+		{
+			if (IsXDataType(kvp.Key)) { oldDt = kvp.Value; break; }
+		}
+		foreach (var kvp in newNode.Properties)
+		{
+			if (IsXDataType(kvp.Key)) { newDt = kvp.Value; break; }
+		}
+		if (oldDt is null && newDt is null)
+			return false;
+		if (oldDt is null || newDt is null)
+			return true;
+		return !NodeValueEquals(oldDt, newDt);
+	}
 
 	// -------------------------------------------------------------------------
 	// Helpers

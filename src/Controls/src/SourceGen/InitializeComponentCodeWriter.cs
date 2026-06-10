@@ -114,9 +114,10 @@ static class InitializeComponentCodeWriter
 				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
 				{
 					var asmName = compilation.AssemblyName ?? string.Empty;
+					var tfm = xamlItem.ProjectItem.TargetFramework ?? string.Empty;
 					var relPath = xamlItem.ProjectItem.RelativePath ?? string.Empty;
-					var cachedRoot = XamlHotReloadState.GetParsedRoot(asmName, relPath);
-					var cachedIds = XamlHotReloadState.GetNodeIds(asmName, relPath);
+					var cachedRoot = XamlHotReloadState.GetParsedRoot(asmName, tfm, relPath);
+					var cachedIds = XamlHotReloadState.GetNodeIds(asmName, tfm, relPath);
 					if (cachedRoot != null && cachedIds != null)
 						nodeIds = NodeIdHelper.TransferIds(root, cachedIds, cachedRoot);
 					else
@@ -125,7 +126,7 @@ static class InitializeComponentCodeWriter
 
 				using (newblock())
 				{
-					if (xamlItem.ProjectItem.EnableDiagnostics)
+					if (xamlItem.ProjectItem.EnableDiagnostics && !xamlItem.ProjectItem.EnableIncrementalHotReload)
 					{
 						codeWriter.WriteLine(
 $$"""
@@ -211,14 +212,16 @@ $$"""
 						}
 						if (resourceKeys.Count > 0)
 						{
-							var keysArray = string.Join(", ", resourceKeys.Select(k => $"\"{k}\""));
+							var keysArray = string.Join(", ", resourceKeys.Select(k => Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(k, quote: true)));
 							codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArray} }});");
 						}
 
 						// Set __version to the latest version from state (so fresh instances skip all UC patches)
 						var assemblyName = compilation.AssemblyName ?? string.Empty;
-						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, xamlItem.ProjectItem.RelativePath ?? string.Empty);
+						var tfm = xamlItem.ProjectItem.TargetFramework ?? string.Empty;
+						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, tfm, xamlItem.ProjectItem.RelativePath ?? string.Empty);
 						codeWriter.WriteLine($"__version = {latestVersion};");
+						codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(this);");
 					}
 				}
 			}
@@ -292,6 +295,13 @@ $$"""
 	/// Set to <see langword="true"/> when the new XAML fails to parse.
 	/// The caller must NOT update <see cref="XamlHotReloadState"/> (keep last-good state).
 	/// </param>
+	/// <param name="emptyDiff">
+	/// Set to <see langword="true"/> when the new XAML parsed cleanly but produced no semantic
+	/// diff (e.g., a formatting / comment-only edit). Callers must NOT reset the version chain
+	/// or clear accumulated patches in this case — doing so would strand live instances at the
+	/// previous version when the next real edit emits <c>if (__version == 0)</c>. Refresh the
+	/// cached XAML text and parsed tree only.
+	/// </param>
 	public static string? TryGeneratePatchBody(
 		SGRootNode? cachedOldRoot,
 		Dictionary<ElementNode, string>? cachedOldIds,
@@ -309,9 +319,11 @@ $$"""
 		out SGRootNode? parsedNewRoot,
 		out Dictionary<ElementNode, string>? effectiveNewIds,
 		out int newNextNodeId,
-		out bool parseError)
+		out bool parseError,
+		out bool emptyDiff)
 	{
 		parseError = false;
+		emptyDiff = false;
 		parsedNewRoot = null;
 		effectiveNewIds = null;
 		newNextNodeId = nextNodeId;
@@ -365,8 +377,13 @@ $$"""
 		var newIds = NodeIdHelper.AssignIds(newRoot, nextNodeId, out newNextNodeId);
 
 		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot, oldIds, newIds, out effectiveNewIds);
-		if (diff is null || diff.IsEmpty)
+		if (diff is null)
 			return null;
+		if (diff.IsEmpty)
+		{
+			emptyDiff = true;
+			return null;
+		}
 
 		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem);
 	}

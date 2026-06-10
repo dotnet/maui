@@ -890,6 +890,78 @@ static class SetPropertyHelpers
 
 	/// <summary>
 	/// Generates a TypedBinding for a C# expression that references x:DataType members.
+	/// Overload for UC: accepts string accessors instead of IC's ILocalValue/IFieldSymbol.
+	/// </summary>
+	internal static void SetExpressionBindingForUC(IndentedTextWriter writer, string targetAccessor, string bpFieldFqn, string expression, ITypeSymbol dataTypeSymbol, INamedTypeSymbol rootType, Compilation compilation)
+	{
+		var sourceTypeName = dataTypeSymbol.ToFQDisplayString();
+
+		var transformedExpression = CSharpExpressionHelpers.TransformQuotesWithSemantics(
+			expression, compilation, dataTypeSymbol, rootType);
+
+		var analysis = ExpressionAnalyzer.Analyze(transformedExpression, "__source", dataTypeSymbol, rootType);
+		var handlers = analysis.Handlers;
+
+		var expressionType = ResolveExpressionType(expression, dataTypeSymbol, context: null);
+		var propertyTypeName = expressionType?.ToFQDisplayString() ?? "object";
+
+		bool hasCaptures = analysis.Captures.Count > 0;
+		if (hasCaptures)
+		{
+			writer.WriteLine("{");
+			writer.Indent++;
+			foreach (var capture in analysis.Captures)
+			{
+				writer.WriteLine($"var {capture.CaptureVariable} = this.{capture.InvocationExpression};");
+			}
+		}
+
+		writer.WriteLine($"{targetAccessor}.SetBinding({bpFieldFqn},");
+		writer.Indent++;
+		writer.WriteLine($"new global::Microsoft.Maui.Controls.Internals.TypedBinding<{sourceTypeName}, {propertyTypeName}>(");
+		writer.Indent++;
+
+		var getterExpression = analysis.TransformedExpression;
+		if (getterExpression.Contains("?.") && !getterExpression.EndsWith("!", StringComparison.Ordinal))
+			getterExpression += "!";
+		writer.WriteLine($"__source => ({getterExpression}, true),");
+
+		// UC intentionally skips the ExpressionNotSettable diagnostic (Descriptors.ExpressionNotSettable)
+		// that IC emits for TwoWay-default BPs with non-settable expressions. During hot reload,
+		// the developer is iterating rapidly and a warning would be noise — the IC already warned at build time.
+		if (analysis.IsSettable && IsExpressionWritable(expression, dataTypeSymbol, context: null))
+			writer.WriteLine($"(__source, __value) => {analysis.TransformedExpression} = __value,");
+		else
+			writer.WriteLine("null,");
+
+		if (handlers.Count == 0)
+		{
+			writer.WriteLine($"null));");
+		}
+		else
+		{
+			writer.WriteLine($"new global::System.Tuple<global::System.Func<{sourceTypeName}, object>, string>[] {{");
+			writer.Indent++;
+			for (int i = 0; i < handlers.Count; i++)
+			{
+				var handler = handlers[i];
+				var comma = i < handlers.Count - 1 ? "," : "";
+				writer.WriteLine($"new(static __source => {handler.ParentExpression}, \"{handler.PropertyName}\"){comma}");
+			}
+			writer.Indent--;
+			writer.WriteLine($"}}));");
+		}
+		writer.Indent -= 2;
+
+		if (hasCaptures)
+		{
+			writer.Indent--;
+			writer.WriteLine("}");
+		}
+	}
+
+	/// <summary>
+	/// Generates a TypedBinding for a C# expression that references x:DataType members.
 	/// </summary>
 	static void SetExpressionBinding(IndentedTextWriter writer, ILocalValue parentVar, IFieldSymbol bpFieldSymbol, string expression, ITypeSymbol dataTypeSymbol, SourceGenContext context, ValueNode valueNode)
 	{
@@ -936,7 +1008,7 @@ static class SetPropertyHelpers
 			// TransformedExpression already has identifiers prefixed with __source. where needed
 			// Add null-forgiving operator if expression contains ?. to suppress nullability warnings
 			var getterExpression = analysis.TransformedExpression;
-			if (getterExpression.Contains("?."))
+			if (getterExpression.Contains("?.") && !getterExpression.EndsWith("!", StringComparison.Ordinal))
 				getterExpression += "!";
 			writer.WriteLine($"__source => ({getterExpression}, true),");
 
@@ -994,7 +1066,7 @@ static class SetPropertyHelpers
 	/// For example, "Price" on SimpleViewModel resolves to decimal, "User.DisplayName" resolves to string.
 	/// For complex expressions (operators, method calls, interpolation), returns null to fall back to object.
 	/// </summary>
-	static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext context)
+	internal static ITypeSymbol? ResolveExpressionType(string expression, ITypeSymbol dataType, SourceGenContext? context)
 	{
 		if (string.IsNullOrWhiteSpace(expression))
 			return null;
@@ -1078,7 +1150,7 @@ static class SetPropertyHelpers
 	/// if it only has a getter (expression-bodied or getter-only property).
 	/// Returns false for complex expressions that are not simple property chains.
 	/// </summary>
-	static bool IsExpressionWritable(string expression, ITypeSymbol dataType, SourceGenContext context)
+	static bool IsExpressionWritable(string expression, ITypeSymbol dataType, SourceGenContext? context)
 	{
 		if (string.IsNullOrWhiteSpace(expression))
 			return false;
