@@ -191,6 +191,46 @@ public class XamlGenerator : IIncrementalGenerator
 
 				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
 				sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, "xsg"), code);
+
+				// Incremental Hot Reload: if enabled and we have a previous XAML for this file,
+				// compute a diff and emit an UpdateComponent file.
+				var assemblyName = compilation.AssemblyName ?? string.Empty;
+				if (xamlItem.ProjectItem.EnableIncrementalHotReload
+					&& xamlItem.Xaml is not null
+					&& XamlHotReloadState.TryGetPrevious(assemblyName, relativePath, out var previousXaml, out var previousVersion)
+					&& previousXaml != xamlItem.Xaml
+					&& InitializeComponentCodeWriter.TryGetRootType(xamlItem, compilation, xmlnsCache, out var rootType, out var accessModifier)
+					&& rootType != null)
+				{
+					var ucCode = InitializeComponentCodeWriter.TryGenerateUpdateComponent(
+						previousXaml,
+						xamlItem.Xaml,
+						fromVersion: previousVersion,
+						toVersion: previousVersion + 1,
+						rootType,
+						accessModifier,
+						compilation,
+						xmlnsCache,
+						typeCache);
+
+					if (ucCode != null)
+					{
+						var version = previousVersion + 1;
+						sourceProductionContext.AddSource(GetHintName(xamlItem.ProjectItem, $"uc_v{previousVersion}to{version}.xsg"), ucCode);
+						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, version);
+					}
+					else
+					{
+						// Structural change or no-op: reset version to 1 to match IC hardcoded __version = 1
+						XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, 1);
+					}
+				}
+				else if (xamlItem.ProjectItem.EnableIncrementalHotReload && xamlItem.Xaml is not null)
+				{
+					// First run: seed the cache (version 1, since IC sets __version = 1).
+					// The SDK-level XamlIncrementalHotReloadHandler handles dispatch for all pages.
+					XamlHotReloadState.Update(assemblyName, relativePath, xamlItem.Xaml, 1);
+				}
 			}
 			catch (Exception e)
 			{

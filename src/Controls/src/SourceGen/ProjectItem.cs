@@ -44,6 +44,27 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 		}
 	}
 
+	/// <summary>
+	/// Whether to emit <c>XamlComponentRegistry.Register()</c> calls and the <c>__version</c> field
+	/// into the generated <c>InitializeComponent()</c> partial.  Required for incremental XAML Hot Reload.
+	/// Defaults to <see langword="false"/> until the feature is complete.
+	/// </summary>
+	public bool EnableIncrementalHotReload
+	{
+		get
+		{
+			if (Options.IsTrue("build_metadata.additionalfiles.EnableIncrementalHotReload"))
+				return true;
+			if (Options.IsFalse("build_metadata.additionalfiles.EnableIncrementalHotReload"))
+				return false;
+			if (Options.IsTrue("build_property.EnableMauiIncrementalHotReload"))
+				return true;
+			if (Options.IsFalse("build_property.EnableMauiIncrementalHotReload"))
+				return false;
+			return false; // default off until feature complete
+		}
+	}
+
 	public string Kind
 		=> Options.GetValueOrDefault("build_metadata.additionalfiles.GenKind", "None");
 

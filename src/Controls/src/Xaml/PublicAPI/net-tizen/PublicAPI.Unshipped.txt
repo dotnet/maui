@@ -1,3 +1,8 @@
 #nullable enable
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.get -> System.Globalization.CultureInfo
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.set -> void
+Microsoft.Maui.Controls.Xaml.XamlComponentRegistry
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetInstances(System.Type! pageType) -> System.Collections.Generic.IReadOnlyList<object!>!
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(object! page, string! nodeId, object! component) -> void
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(object! page, string! nodeId, out object? component) -> bool
+static Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(object! page) -> void
