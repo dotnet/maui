@@ -10,6 +10,7 @@
 #nullable enable
 
 using System;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -146,7 +147,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var icSource = FindSourceByHintSuffix(result, ".xsg.cs");
 		Assert.NotNull(icSource);
 
-		var ucSource = FindSourceByHintSuffix(result, ".uc_v1to2.xsg.cs");
+		var ucSource = FindUCSource(result, "uc.xsg");
 		Assert.Null(ucSource);
 	}
 
@@ -162,10 +163,10 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		SourceGeneratorDriver.RunGenerator<XamlGenerator>(
 			compilation, file, assertNoCompilationErrors: false);
 
-		// Assert: state was seeded
-		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out var version);
+		// Assert: state was seeded at version 0 (spec: __version starts at 0)
+		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _, out _, out _, out var version);
 		Assert.True(hasPrev, "XamlHotReloadState should be seeded after first run");
-		Assert.Equal(1, version);
+		Assert.Equal(0, version);
 	}
 
 	[Fact]
@@ -175,12 +176,13 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV2_PropertyChange);
 
-		// Assert: UC source exists in run2
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		// Assert: UC source exists in run2 with fixed hint name "uc.xsg"
+		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(ucSource);
 
-		// Should contain UpdateComponent method with Text property assignment
-		Assert.Contains("UpdateComponent_v1to2", ucSource, StringComparison.Ordinal);
+		// Should contain single UpdateComponent method (not versioned)
+		Assert.Contains("void UpdateComponent()", ucSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("UpdateComponent_v", ucSource, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -190,8 +192,8 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV2_PropertyChange);
 
-		// Find the UC source specifically (contains "uc_v1to2")
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		// Find the UC source
+		var ucSource = FindUCSource(run2, "uc.xsg");
 
 		Assert.NotNull(ucSource);
 		Assert.Contains("\"World\"", ucSource, StringComparison.Ordinal);
@@ -203,25 +205,26 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV2_PropertyChange);
 
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.NotNull(ucSource);
 
-		// Guard: if (__version != 1) return;
-		Assert.Contains("__version != 1", ucSource, StringComparison.Ordinal);
-		// Version bump
-		Assert.Contains("__version = 2", ucSource, StringComparison.Ordinal);
+		// Per spec: if (__version == 0) { ... __version = 1; }
+		Assert.Contains("__version == 0", ucSource, StringComparison.Ordinal);
+		// Version bump inside the if block
+		Assert.Contains("__version = 1", ucSource, StringComparison.Ordinal);
 	}
 
 	[Fact]
-	public void SecondRun_StructuralChange_NoUCEmitted()
+	public void SecondRun_StructuralChange_EmitsUCWithChildAdd()
 	{
-		// Arrange
+		// Arrange: V3 adds a Button child — our child add/remove support handles this incrementally
 		XamlHotReloadState.Reset();
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV3_StructuralChange);
 
-		// Assert: no UC source for structural change
-		var ucSource = FindUCSource(run2, "uc_v1to2");
-		Assert.Null(ucSource);
+		// Assert: UC source IS emitted for child additions (not structural fallback)
+		var ucSource = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(ucSource);
+		Assert.Contains("Button", ucSource!, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -232,7 +235,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		var (_, run2) = TwoRuns(PageXamlV1, PageXamlV1); // no change
 
 		// Assert: no UC for identical XAML
-		var ucSource = FindUCSource(run2, "uc_v1to2");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 		Assert.Null(ucSource);
 	}
 
@@ -249,7 +252,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 			compilation, file, assertNoCompilationErrors: false);
 
 		// Assert: state NOT seeded when IHR is disabled
-		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("TestApp", PageRelativePath, out _, out _, out _, out _, out _);
 		Assert.False(hasPrev, "XamlHotReloadState should NOT be seeded when IHR is disabled");
 	}
 
@@ -316,7 +319,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 
 		// Act
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
-		var ucSource = FindUCSource(run2, "uc_v");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 
 		// Assert: must use out-var pattern, NOT "var __uc = TryGet(...)"
 		if (ucSource != null)
@@ -358,7 +361,7 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 
 		// Act
 		var (_, run2) = TwoRuns(xamlV1, xamlV2);
-		var ucSource = FindUCSource(run2, "uc_v");
+		var ucSource = FindUCSource(run2, "uc.xsg");
 
 		// Assert: root property change should emit this.Title = "World" (not registry lookup)
 		if (ucSource != null)
@@ -391,14 +394,14 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		const string relPath = "MainPage.xaml";
 
 		// Seed with assembly "App1"
-		XamlHotReloadState.Update("App1", relPath, xaml, 1);
+		XamlHotReloadState.Update("App1", relPath, xaml, null, null, 0, 1);
 
 		// "App2" with same relative path should NOT see "App1" state
-		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", relPath, out _, out _);
+		var hasPrev = XamlHotReloadState.TryGetPrevious("App2", relPath, out _, out _, out _, out _, out _);
 		Assert.False(hasPrev, "Different assembly should not see another assembly's state");
 
 		// "App1" SHOULD see its own state
-		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", relPath, out var storedXaml, out var storedVer);
+		var hasSelf = XamlHotReloadState.TryGetPrevious("App1", relPath, out var storedXaml, out _, out _, out _, out var storedVer);
 		Assert.True(hasSelf);
 		Assert.Equal(xaml, storedXaml);
 		Assert.Equal(1, storedVer);

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Xaml;
 
 /// <summary>
 /// Runtime registry that maps live page/view instances to their child components by stable node ID.
-/// Used by XSG-generated <c>InitializeComponent()</c> and <c>UpdateComponent_vNtoM()</c> methods
+/// Used by XSG-generated <c>InitializeComponent()</c> and <c>UpdateComponent()</c> methods
 /// to find live objects during incremental XAML Hot Reload without re-inflation.
 /// </summary>
 /// <remarks>
@@ -61,7 +61,7 @@ public static class XamlComponentRegistry
 
 	/// <summary>
 	/// Tries to retrieve the live component registered under <paramref name="nodeId"/> for <paramref name="page"/>.
-	/// Called from generated <c>UpdateComponent_vNtoM()</c>.
+	/// Called from generated <c>UpdateComponent()</c>.
 	/// </summary>
 	/// <returns><see langword="true"/> if found and the weak reference is still alive.</returns>
 	public static bool TryGet(object page, string nodeId, out object? component)
@@ -81,6 +81,25 @@ public static class XamlComponentRegistry
 
 		component = null;
 		return false;
+	}
+
+	/// <summary>
+	/// Convenience alias matching the spec's <c>RegisterComponent(element, nodeId)</c> signature.
+	/// Registers the <paramref name="element"/> both as page owner and component under <paramref name="nodeId"/>.
+	/// Intended for root-level self-registration (e.g. <c>RegisterComponent(this, "")</c>).
+	/// </summary>
+	public static void RegisterComponent(object element, string nodeId) =>
+		Register(element, nodeId, element);
+
+	/// <summary>
+	/// Convenience alias matching the spec's <c>GetComponent(nodeId)</c> signature.
+	/// Retrieves the component registered under <paramref name="nodeId"/> for <paramref name="page"/>.
+	/// Returns <see langword="null"/> if not found.
+	/// </summary>
+	public static object? GetComponent(object page, string nodeId)
+	{
+		TryGet(page, nodeId, out var component);
+		return component;
 	}
 
 	/// <summary>
@@ -128,6 +147,74 @@ public static class XamlComponentRegistry
 		UntrackInstance(page);
 	}
 
+	/// <summary>
+	/// Renames all component registrations whose node ID starts with <paramref name="oldPrefix"/>
+	/// so that the prefix is replaced by <paramref name="newPrefix"/>. Used by generated
+	/// <c>UpdateComponent</c> methods after a same-parent child reorder to keep the registry
+	/// in sync with the new position-based node IDs (including all descendants).
+	/// </summary>
+	public static void ReRoot(object page, string oldPrefix, string newPrefix)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+		if (oldPrefix is null)
+			throw new ArgumentNullException(nameof(oldPrefix));
+		if (newPrefix is null)
+			throw new ArgumentNullException(nameof(newPrefix));
+
+		if (string.Equals(oldPrefix, newPrefix, StringComparison.Ordinal))
+			return;
+
+		if (s_table.TryGetValue(page, out var map))
+		{
+			lock (map)
+			{
+				map.ReRoot(oldPrefix, newPrefix);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Removes a single component registration for the given <paramref name="nodeId"/> under <paramref name="page"/>.
+	/// Called from generated <c>UpdateComponent()</c> when a child element is removed during incremental hot reload.
+	/// </summary>
+	public static void Unregister(object page, string nodeId)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+		if (nodeId is null)
+			throw new ArgumentNullException(nameof(nodeId));
+
+		if (s_table.TryGetValue(page, out var map))
+		{
+			lock (map)
+			{
+				map.Remove(nodeId);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Removes all component registrations whose node ID starts with <paramref name="nodeIdPrefix"/>
+	/// (the node itself and all descendants). Used by generated <c>UpdateComponent</c> methods
+	/// when a child element is removed during incremental hot reload.
+	/// </summary>
+	public static void UnregisterSubtree(object page, string nodeIdPrefix)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+		if (nodeIdPrefix is null)
+			throw new ArgumentNullException(nameof(nodeIdPrefix));
+
+		if (s_table.TryGetValue(page, out var map))
+		{
+			lock (map)
+			{
+				map.RemoveSubtree(nodeIdPrefix);
+			}
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// Instance tracking helpers
 	// -------------------------------------------------------------------------
@@ -167,6 +254,10 @@ public static class XamlComponentRegistry
 				if (!list[i].TryGetTarget(out var target) || ReferenceEquals(target, page))
 					list.RemoveAt(i);
 			}
+
+			// Prune the Type key when no instances remain
+			if (list.Count == 0)
+				s_instancesByType.Remove(type);
 		}
 	}
 
@@ -203,5 +294,51 @@ public static class XamlComponentRegistry
 			component = null;
 			return false;
 		}
+
+		public void ReRoot(string oldPrefix, string newPrefix)
+		{
+			var keysToRename = new List<string>();
+			foreach (var key in _entries.Keys)
+			{
+				if (IsNodeOrDescendant(key, oldPrefix))
+					keysToRename.Add(key);
+			}
+			foreach (var oldKey in keysToRename)
+			{
+				var newKey = newPrefix + oldKey.Substring(oldPrefix.Length);
+				if (_entries.TryGetValue(oldKey, out var value))
+				{
+					_entries.Remove(oldKey);
+					_entries[newKey] = value;
+				}
+			}
+		}
+
+		public void Remove(string nodeId)
+		{
+			_entries.Remove(nodeId);
+		}
+
+		public void RemoveSubtree(string nodeIdPrefix)
+		{
+			var keysToRemove = new List<string>();
+			foreach (var key in _entries.Keys)
+			{
+				if (IsNodeOrDescendant(key, nodeIdPrefix))
+					keysToRemove.Add(key);
+			}
+			foreach (var key in keysToRemove)
+				_entries.Remove(key);
+		}
+
+		/// <summary>
+		/// Returns true if <paramref name="key"/> is exactly <paramref name="prefix"/>
+		/// or is a descendant path (prefix followed by '/'). Prevents "Label_1" from
+		/// matching "Label_10", "Label_11", etc.
+		/// </summary>
+		static bool IsNodeOrDescendant(string key, string prefix) =>
+			key.Length == prefix.Length
+				? string.Equals(key, prefix, StringComparison.Ordinal)
+				: key.Length > prefix.Length && key.StartsWith(prefix, StringComparison.Ordinal) && key[prefix.Length] == '/';
 	}
 }
