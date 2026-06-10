@@ -131,6 +131,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+~virtual Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.CreateEmptyViewAdapter() -> Microsoft.Maui.Controls.Handlers.Items.EmptyViewAdapter
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
