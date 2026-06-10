@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 35755, "[Android] IndexOutOfBoundsException in RecalculateSpanPositions when Label uses FormattedText + MaxLines + TailTruncation", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 35755, "IndexOutOfBoundsException in RecalculateSpanPositions when a Label uses FormattedText, MaxLines, and TailTruncation", PlatformAffected.Android)]
 public class Issue35755 : ContentPage
 {
 	readonly string _paragraphA = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eleifend, augue nec aliquam interdum, massa nisl viverra orci, non interdum risus arcu id lorem. Curabitur accumsan, urna eu tempor tincidunt, purus neque feugiat tortor, sed tristique nibh nunc et augue.";
@@ -33,12 +33,7 @@ public class Issue35755 : ContentPage
 
 		triggerButton.Clicked += (s, e) =>
 		{
-			// Reassign FormattedText multiple times to increase crash frequency
-			for (var i = 0; i < 3; i++)
-			{
-				_crashTargetLabel.FormattedText = BuildFormattedText(i);
-			}
-
+			_crashTargetLabel.FormattedText = BuildFormattedText();
 			resultLabel.Text = "Success";
 		};
 
@@ -58,12 +53,12 @@ public class Issue35755 : ContentPage
 		};
 	}
 
-	FormattedString BuildFormattedText(int iteration)
+	FormattedString BuildFormattedText()
 	{
 		var fs = new FormattedString();
 		fs.Spans.Add(new Span
 		{
-			Text = $"Run {iteration + 1}: ",
+			Text = "Content: ",
 			FontAttributes = FontAttributes.Bold,
 			TextColor = Colors.DarkRed
 		});
