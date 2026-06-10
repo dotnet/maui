@@ -126,7 +126,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (layout == null)
 				return;
 
-			// Pre-compute the last visible offset so out-of-range spans are skipped.
+			// Fix for https://github.com/dotnet/maui/issues/35755: skip spans in the
+			// ellipsized tail to avoid IndexOutOfBoundsException.
 			var lastLayoutLine = layout.LineCount - 1;
 			if (lastLayoutLine < 0)
 				return;
@@ -172,11 +173,12 @@ namespace Microsoft.Maui.Controls.Platform
 				var spanStartLine = layout.GetLineForOffset(spanStartOffset);
 				var spanEndLine = layout.GetLineForOffset(spanEndOffset);
 
-				// Skip spans that start beyond the visible layout range.
+				// Safe for TailTruncation only: both offsets share the same string prefix.
 				if (spanStartOffset >= layoutEndOffset)
 					continue;
 
-				// Clamp spanEndLine so the inner loop never walks past the last laid-out line.
+				// OEM guard: some Layout subclasses don't cap GetLineForOffset at lineCount-1.
+				// Not dead code — see https://github.com/dotnet/maui/issues/35755
 				spanEndLine = System.Math.Min(spanEndLine, lastLayoutLine);
 
 				// Go through all lines that are affected by the span and calculate a rectangle for each
