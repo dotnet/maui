@@ -926,7 +926,11 @@ function Write-Report([hashtable]$Report) {
 }
 
 function Save-ReportJson([hashtable]$Report, [string]$Path) {
-    $keptItems = if ($Report.ContainsKey('Kept')) { @($Report.Kept) } else { @() }
+    # NB: `if (...) { @() } else { @() }` collapses an empty `@()` to $null in a PowerShell
+    # assignment under StrictMode, which trips the later .Count call. Use a typed cast
+    # ([object[]]) so we always end up with an array, even when there are zero kept items.
+    [object[]]$keptItems = @()
+    if ($Report.ContainsKey('Kept')) { $keptItems = @($Report.Kept) }
     $data = @{
         tag                = $Report.Tag
         previous_tag       = if ($Report.ContainsKey('PreviousTag')) { $Report.PreviousTag } else { $null }
