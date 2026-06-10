@@ -87,7 +87,8 @@ public class Issue34930 : Shell
 			{
 				searchHandler.HideSoftInputAsync();
 #if ANDROID
-				// On Android, HideSoftInputAsync only dismisses the IME and does not clear native focus; clear it explicitly so the Unfocused event fires.
+				// HideSoftInputAsync intentionally does not clear focus on Android (per PR #29278/#29600 design — forcing focus dismissal as a side-effect was explicitly rejected).
+				// ClearFocus is called here only to satisfy the UI test assertion; this is test-only behavior.
 				Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.Window?.DecorView?.ClearFocus();
 #endif
 			};
