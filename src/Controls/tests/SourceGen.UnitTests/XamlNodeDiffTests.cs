@@ -2216,4 +2216,95 @@ public class XamlNodeDiffTests
 		Assert.Empty(diff.NodeChanges);
 		Assert.Empty(diff.ChildListChanges);
 	}
+
+	// ---------------------------------------------------------------------------
+	// Resource dictionary changes
+	// ---------------------------------------------------------------------------
+
+	[Fact]
+	public void ResourceAdded_ProducesRootPropertyDiff()
+	{
+		var old = Parse(Page("""
+			<ContentPage.Resources>
+				<Color x:Key="AccentColor">DarkBlue</Color>
+			</ContentPage.Resources>
+			<Label Text="Hello" />
+			"""));
+		var @new = Parse(Page("""
+			<ContentPage.Resources>
+				<Color x:Key="AccentColor">DarkBlue</Color>
+				<Color x:Key="SecondaryColor">Red</Color>
+			</ContentPage.Resources>
+			<Label Text="Hello" />
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		// Resource changes should appear as a root node property change on "Resources"
+		Assert.NotEmpty(diff.NodeChanges);
+		var rootChange = diff.NodeChanges.First(n => string.IsNullOrEmpty(n.NodeId));
+		var resProp = rootChange.PropertyChanges.First(p => p.PropertyName.LocalName == "Resources");
+		Assert.Equal(PropertyDiffKind.Set, resProp.Kind);
+		Assert.NotNull(resProp.NewNode);
+		// The new node should be a ListNode containing all resource elements
+		Assert.IsType<ListNode>(resProp.NewNode);
+		var listNode = (ListNode)resProp.NewNode;
+		Assert.Equal(2, listNode.CollectionItems.Count);
+	}
+
+	[Fact]
+	public void ResourceRemoved_ProducesRootPropertyDiff()
+	{
+		var old = Parse(Page("""
+			<ContentPage.Resources>
+				<Color x:Key="AccentColor">DarkBlue</Color>
+				<Color x:Key="SecondaryColor">Red</Color>
+			</ContentPage.Resources>
+			<Label Text="Hello" />
+			"""));
+		var @new = Parse(Page("""
+			<ContentPage.Resources>
+				<Color x:Key="AccentColor">DarkBlue</Color>
+			</ContentPage.Resources>
+			<Label Text="Hello" />
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.NotEmpty(diff.NodeChanges);
+		var rootChange = diff.NodeChanges.First(n => string.IsNullOrEmpty(n.NodeId));
+		var resProp = rootChange.PropertyChanges.First(p => p.PropertyName.LocalName == "Resources");
+		Assert.Equal(PropertyDiffKind.Set, resProp.Kind);
+		Assert.NotNull(resProp.NewNode);
+		// With single resource remaining, parser uses ElementNode (not ListNode)
+		Assert.IsType<ElementNode>(resProp.NewNode);
+	}
+
+	[Fact]
+	public void ResourceValueChanged_ProducesRootPropertyDiff()
+	{
+		var old = Parse(Page("""
+			<ContentPage.Resources>
+				<Color x:Key="AccentColor">DarkBlue</Color>
+			</ContentPage.Resources>
+			<Label Text="Hello" />
+			"""));
+		var @new = Parse(Page("""
+			<ContentPage.Resources>
+				<Color x:Key="AccentColor">Red</Color>
+			</ContentPage.Resources>
+			<Label Text="Hello" />
+			"""));
+
+		var diff = XamlNodeDiff.ComputeDiff(old, @new);
+
+		Assert.NotNull(diff);
+		Assert.NotEmpty(diff.NodeChanges);
+		var rootChange = diff.NodeChanges.First(n => string.IsNullOrEmpty(n.NodeId));
+		var resProp = rootChange.PropertyChanges.First(p => p.PropertyName.LocalName == "Resources");
+		Assert.Equal(PropertyDiffKind.Set, resProp.Kind);
+		Assert.NotNull(resProp.NewNode);
+	}
 }

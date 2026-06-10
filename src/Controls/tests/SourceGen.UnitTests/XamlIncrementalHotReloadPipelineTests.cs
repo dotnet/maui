@@ -1061,8 +1061,450 @@ public class XamlIncrementalHotReloadPipelineTests : IDisposable
 		Assert.DoesNotContain("SetValue", uc, StringComparison.Ordinal);
 	}
 
+	[Fact]
+	public void ResourceAdded_UCDoesNotEmitUnreachableCode()
+	{
+		// Adding a resource in ContentPage.Resources should not produce CS0162 (unreachable code)
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Must contain __version = 1 (version was incremented)
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// Must NOT have "return;" before __version assignment (causes CS0162)
+		var versionIdx = uc!.IndexOf("__version = 1", StringComparison.Ordinal);
+		var bodyStart = uc.IndexOf("{", uc.IndexOf("__version == 0"), StringComparison.Ordinal);
+		var bodySection = uc.Substring(bodyStart, versionIdx - bodyStart);
+		Assert.DoesNotContain("return;", bodySection, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ResourceRemoved_UCDoesNotEmitUnreachableCode()
+	{
+		// Removing a resource from ContentPage.Resources should not produce CS0162
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		var versionIdx = uc!.IndexOf("__version = 1", StringComparison.Ordinal);
+		var bodyStart = uc.IndexOf("{", uc.IndexOf("__version == 0"), StringComparison.Ordinal);
+		var bodySection = uc.Substring(bodyStart, versionIdx - bodyStart);
+		Assert.DoesNotContain("return;", bodySection, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ResourceAdded_UCEmitsResourceDictionaryAdd()
+	{
+		// Adding a resource should emit this.Resources["key"] = value
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("Resources", uc, StringComparison.Ordinal);
+		Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
+		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ResourceRemoved_UCEmitsResourceDictionaryRemove()
+	{
+		// Removing a resource should emit this.Resources.Remove("key")
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <Color x:Key="SecondaryColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		// Uses targeted remove — old keys not in new set are removed
+		Assert.Contains("Resources", uc, StringComparison.Ordinal);
+		Assert.Contains("Remove", uc, StringComparison.Ordinal);
+		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
+		Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ResourceValueChanged_UCEmitsResourceUpdate()
+	{
+		// Changing a resource value should emit this.Resources["key"] = newValue
+		XamlHotReloadState.Reset();
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">Red</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="Hello" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRuns(xamlV1, xamlV2);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("Resources", uc, StringComparison.Ordinal);
+		Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+	}
+
+
+[Fact]
+public void ResourceWithConverters_UCDoesNotRegisterUnencodableKeys()
+{
+// When resources include custom types (converters) that can't be encoded as C# expressions,
+// the UC should NOT register those keys — otherwise they get removed on next patch.
+XamlHotReloadState.Reset();
+const string xamlV1 = """
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.MainPage">
+    <ContentPage.Resources>
+        <Color x:Key="AccentColor">DarkBlue</Color>
+    </ContentPage.Resources>
+    <Label Text="Hello" />
+</ContentPage>
+""";
+const string xamlV2 = """
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApp.MainPage">
+    <ContentPage.Resources>
+        <Color x:Key="AccentColor">Red</Color>
+        <Color x:Key="SecondaryColor">Green</Color>
+    </ContentPage.Resources>
+    <Label Text="Hello" />
+</ContentPage>
+""";
+
+var (_, run2) = TwoRuns(xamlV1, xamlV2);
+var uc = FindUCSource(run2, "uc.xsg");
+
+Assert.NotNull(uc);
+// Only emittable keys (Color values) should be in RegisterResourceKeys
+Assert.Contains("AccentColor", uc, StringComparison.Ordinal);
+Assert.Contains("SecondaryColor", uc, StringComparison.Ordinal);
+Assert.Contains("RegisterResourceKeys", uc, StringComparison.Ordinal);
+// The registered keys should only contain the color keys
+Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+}
+
+	[Fact]
+	public void ConverterResourceAdded_UCEmitsNewInstance()
+	{
+		// Adding a converter resource (custom type) should emit a new instance in UC.
+		// Previously, custom types returned null from BuildResourceValueExpression and were skipped.
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+				public class StatusColorConverter : Microsoft.Maui.Controls.IValueConverter
+				{
+					public object? Convert(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+					public object? ConvertBack(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+				}
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <local:StatusColorConverter x:Key="StatusConverter" />
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// UC must add the converter resource to the dictionary
+		Assert.Contains("StatusConverter", uc, StringComparison.Ordinal);
+		Assert.Contains("new global::TestApp.StatusColorConverter()", uc, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ConverterResourceRemoved_UCEmitsRemove()
+	{
+		// Removing a converter resource should emit Resources.Remove("key") in UC.
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+				public class StatusColorConverter : Microsoft.Maui.Controls.IValueConverter
+				{
+					public object? Convert(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+					public object? ConvertBack(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+				}
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			        <local:StatusColorConverter x:Key="StatusConverter" />
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="AccentColor">DarkBlue</Color>
+			    </ContentPage.Resources>
+			    <Label Text="Hello" />
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// UC must remove the converter from the dictionary
+		Assert.Contains("Resources.Remove", uc, StringComparison.Ordinal);
+		// The converter key should no longer be registered
+		Assert.DoesNotContain("\"StatusConverter\"", uc.Substring(uc.IndexOf("RegisterResourceKeys")), StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void ConverterSwap_UCCompilesCleanly()
+	{
+		// Swapping StaticResource converter key in a Binding should produce
+		// compilable UC code and not crash.
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+				public class MainViewModel
+				{
+					public string Status { get; set; } = "Ready";
+				}
+				public class StatusColorConverter : Microsoft.Maui.Controls.IValueConverter
+				{
+					public object? Convert(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+					public object? ConvertBack(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+				}
+				public class InvertedStatusColorConverter : Microsoft.Maui.Controls.IValueConverter
+				{
+					public object? Convert(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+					public object? ConvertBack(object? value, System.Type targetType, object? parameter, System.Globalization.CultureInfo culture) => null;
+				}
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage"
+			             x:DataType="local:MainViewModel">
+			    <ContentPage.Resources>
+			        <local:StatusColorConverter x:Key="StatusConverter" />
+			        <local:InvertedStatusColorConverter x:Key="InvertedStatusConverter" />
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="{Binding Status}"
+			               TextColor="{Binding Status, Converter={StaticResource StatusConverter}}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage"
+			             x:DataType="local:MainViewModel">
+			    <ContentPage.Resources>
+			        <local:StatusColorConverter x:Key="StatusConverter" />
+			        <local:InvertedStatusColorConverter x:Key="InvertedStatusConverter" />
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label Text="{Binding Status}"
+			               TextColor="{Binding Status, Converter={StaticResource InvertedStatusConverter}}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+
+		Assert.NotNull(uc);
+		Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
+		// UC must emit a runtime Resources lookup to set the converter on the BindingExtension
+		Assert.Contains("InvertedStatusConverter", uc, StringComparison.Ordinal);
+		Assert.Contains("this.Resources[\"InvertedStatusConverter\"]", uc, StringComparison.Ordinal);
+	}
+
 	// -----------------------------------------------------------------------
-	// Helpers
+	// Helpers (pipeline)
 	// -----------------------------------------------------------------------
 
 	static string? FindUCSource(GeneratorDriverRunResult result, string hintFragment)

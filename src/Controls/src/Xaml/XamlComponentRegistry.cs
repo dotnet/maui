@@ -216,6 +216,43 @@ public static class XamlComponentRegistry
 	}
 
 	// -------------------------------------------------------------------------
+	// Resource key tracking
+	// -------------------------------------------------------------------------
+
+	static readonly ConditionalWeakTable<object, HashSet<string>> s_resourceKeys = new();
+
+	/// <summary>
+	/// Stores the set of resource dictionary keys registered by the page's <c>InitializeComponent</c>
+	/// or <c>UpdateComponent</c>. Used during incremental hot reload to determine which keys
+	/// were removed and need to be deleted from <c>Resources</c>.
+	/// </summary>
+	public static void RegisterResourceKeys(object page, string[] keys)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+
+		s_resourceKeys.Remove(page);
+		s_resourceKeys.Add(page, new HashSet<string>(keys, StringComparer.Ordinal));
+	}
+
+	/// <summary>
+	/// Returns the previously registered resource keys for the given page, or an empty array.
+	/// </summary>
+	public static string[] GetResourceKeys(object page)
+	{
+		if (page is null)
+			throw new ArgumentNullException(nameof(page));
+
+		if (s_resourceKeys.TryGetValue(page, out var keys))
+		{
+			var result = new string[keys.Count];
+			keys.CopyTo(result);
+			return result;
+		}
+		return Array.Empty<string>();
+	}
+
+	// -------------------------------------------------------------------------
 	// Instance tracking helpers
 	// -------------------------------------------------------------------------
 

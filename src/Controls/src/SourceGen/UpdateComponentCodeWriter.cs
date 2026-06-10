@@ -255,8 +255,7 @@ static class UpdateComponentCodeWriter
 
 		if (!isLayout && contentPropertyName == null)
 		{
-			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no content property — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Container '{parentType?.Name ?? "unknown"}' is not a Layout and has no content property — skipped");
 			return;
 		}
 
@@ -606,6 +605,154 @@ static class UpdateComponentCodeWriter
 		}
 	}
 
+	// -----------------------------------------------------------------------
+	// Resource dictionary patching
+	// -----------------------------------------------------------------------
+
+	/// <summary>
+	/// Emits code to patch the page's <c>Resources</c> dictionary from the new XAML node.
+	/// Removes old resource keys not present in the new XAML, then adds/updates all new keyed resources.
+	/// Tracks resource keys via <see cref="XamlComponentRegistry"/> so subsequent patches know what to remove.
+	/// </summary>
+	/// <returns><see langword="true"/> if resource emission was handled; <see langword="false"/> to fall through.</returns>
+	static bool TryEmitResourceDictionaryChange(
+		IndentedTextWriter codeWriter,
+		INode newNode,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		// Collect resource elements from the new node
+		var resourceElements = new List<ElementNode>();
+		if (newNode is ListNode listNode)
+		{
+			foreach (var item in listNode.CollectionItems)
+			{
+				if (item is ElementNode en)
+					resourceElements.Add(en);
+			}
+		}
+		else if (newNode is ElementNode singleElement)
+		{
+			resourceElements.Add(singleElement);
+		}
+
+		if (resourceElements.Count == 0)
+			return false;
+
+		// Verify all resources have x:Key — required for dictionary patching
+		var keyedResources = new List<(string key, ElementNode element)>();
+		foreach (var elem in resourceElements)
+		{
+			if (elem.Properties.TryGetValue(XmlName.xKey, out var keyNode) && keyNode is ValueNode keyVal && keyVal.Value is string key)
+				keyedResources.Add((key, elem));
+			// Resources without x:Key (e.g., implicit styles) are skipped
+		}
+
+		if (keyedResources.Count == 0)
+			return false;
+
+		// Pre-compute which resources can actually be encoded as C# expressions.
+		// Resources we can't encode (custom types, converters, etc.) are left untouched.
+		var emittableResources = new List<(string key, string valueExpr)>();
+		foreach (var (key, elem) in keyedResources)
+		{
+			var valueExpr = BuildResourceValueExpression(elem, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem);
+			if (valueExpr != null)
+				emittableResources.Add((key, valueExpr));
+			else
+				codeWriter.WriteLine($"// Cannot encode resource '{key}' \u2014 left untouched");
+		}
+
+		if (emittableResources.Count == 0)
+			return false;
+
+		// Remove old resource keys that are no longer in the new XAML (only keys we manage)
+		codeWriter.WriteLine("foreach (var __rk in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetResourceKeys(this))");
+		using (PrePost.NewBlock(codeWriter))
+		{
+			var newKeysList = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
+			codeWriter.WriteLine($"if (global::System.Array.IndexOf(new string[] {{ {newKeysList} }}, __rk) < 0)");
+			codeWriter.Indent++;
+			codeWriter.WriteLine("this.Resources.Remove(__rk);");
+			codeWriter.Indent--;
+		}
+
+		// Add/update emittable resources
+		foreach (var (key, valueExpr) in emittableResources)
+		{
+			codeWriter.WriteLine($"this.Resources[\"{EscapeString(key)}\"] = {valueExpr};");
+		}
+
+		// Register only the keys we manage for next patch
+		var keysArrayExpr = string.Join(", ", emittableResources.Select(kr => $"\"{EscapeString(kr.key)}\""));
+		codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArrayExpr} }});");
+
+		return true;
+	}
+
+	/// <summary>
+	/// Builds a C# expression for a resource element value.
+	/// For known types (Color, etc.), uses the IC compile-time converter pipeline.
+	/// </summary>
+	static string? BuildResourceValueExpression(
+		ElementNode element,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache,
+		INamedTypeSymbol rootType,
+		SourceProductionContext sourceProductionContext,
+		ProjectItem? projectItem)
+	{
+		// Resolve the element type (e.g., Color, x:String, etc.)
+		if (!element.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var typeSymbol)
+			|| typeSymbol == null)
+			return null;
+
+		var fqName = typeSymbol.ToFQDisplayString();
+
+		// For value-typed resources (Color, x:Double, x:String, etc.),
+		// the value is typically in the element's CollectionItems as a ValueNode
+		if (element.CollectionItems.Count == 1 && element.CollectionItems[0] is ValueNode valueNode)
+		{
+			var rawValue = valueNode.Value?.ToString() ?? string.Empty;
+
+			// Use the IC converter pipeline via a synthetic property lookup
+			var pi = projectItem ?? new ProjectItem(EmptyAdditionalText.Instance, EmptyConfigOptions.Instance);
+			var ctx = new SourceGenContext(
+				new IndentedTextWriter(new StringWriter()), compilation, sourceProductionContext,
+				xmlnsCache, typeCache, rootType, rootType.BaseType, pi);
+
+			try
+			{
+				var result = valueNode.ConvertTo(typeSymbol, ctx.Writer, ctx, null);
+				if (result != null && result != "default" && result != string.Empty)
+					return result;
+			}
+			catch
+			{
+				// Converter threw — fall through
+			}
+
+			// Fallback: TypeDescriptor
+			return BuildTypeDescriptorExpression(rawValue, fqName);
+		}
+
+		// For custom types (converters, etc.) with no value content,
+		// emit a new instance if the type has a parameterless constructor
+		if (element.CollectionItems.Count == 0 || element.CollectionItems.All(c => c is not ValueNode))
+		{
+			var hasParameterlessCtor = typeSymbol.InstanceConstructors.Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public);
+			if (hasParameterlessCtor)
+				return $"new {fqName}()";
+		}
+
+		return null;
+	}
+
 	static void EmitRootPropertyChange(
 		IndentedTextWriter codeWriter,
 		PropertyDiff propDiff,
@@ -627,17 +774,19 @@ static class UpdateComponentCodeWriter
 				codeWriter.WriteLine($"this.ClearValue({rootType.ToFQDisplayString()}.{bpFieldName});");
 				return;
 			}
-			codeWriter.WriteLine($"// Property '{propName}' cleared on root — fallback to runtime reload");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Property '{propName}' cleared on root — skipped (no BP found)");
 			return;
 		}
 
 		if (propDiff.NewNode != null)
 		{
+			// Resource dictionary: emit Clear() + re-add all keyed resources
+			if (propName == "Resources" && TryEmitResourceDictionaryChange(codeWriter, propDiff.NewNode, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
+				return;
+
 			if (TryEmitMarkupNodeChange(codeWriter, propDiff, rootType, "this", isRoot: true, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
-			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Complex root property '{propName}' ({propDiff.NewNode.GetType().Name}) — skipped (not yet supported)");
 			return;
 		}
 
@@ -646,8 +795,7 @@ static class UpdateComponentCodeWriter
 
 		if (valueExpr == null)
 		{
-			codeWriter.WriteLine($"// Cannot encode root '{propName}' = \"{EscapeString(rawValue)}\" inline — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Cannot encode root '{propName}' = \"{EscapeString(rawValue)}\" inline — skipped");
 			return;
 		}
 
@@ -683,8 +831,7 @@ static class UpdateComponentCodeWriter
 					return;
 				}
 			}
-			codeWriter.WriteLine($"// Property '{propName}' cleared — fallback to runtime reload");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Property '{propName}' cleared — skipped (no BP found)");
 			return;
 		}
 
@@ -702,8 +849,7 @@ static class UpdateComponentCodeWriter
 		{
 			if (nodeType != null && TryEmitMarkupNodeChange(codeWriter, propDiff, nodeType, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
-			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — not supported");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Complex property '{propName}' ({propDiff.NewNode.GetType().Name}) — skipped (not yet supported)");
 			return;
 		}
 
@@ -712,9 +858,8 @@ static class UpdateComponentCodeWriter
 
 		if (valueExpr == null)
 		{
-			// Cannot encode value inline — use runtime fallback
-			codeWriter.WriteLine($"// Cannot encode '{propName}' = \"{EscapeString(rawValue)}\" inline — fallback to runtime reload");
-			codeWriter.WriteLine("return;");
+			// Cannot encode value inline — skip this property
+			codeWriter.WriteLine($"// Cannot encode '{propName}' = \"{EscapeString(rawValue)}\" inline — skipped");
 			return;
 		}
 
@@ -757,8 +902,7 @@ static class UpdateComponentCodeWriter
 			if (!declaringXmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out declaringType)
 				|| declaringType == null)
 			{
-				codeWriter.WriteLine($"// Cannot resolve attached property declaring type '{declaringTypeName}' — fallback");
-				codeWriter.WriteLine("return;");
+				codeWriter.WriteLine($"// Cannot resolve attached property declaring type '{declaringTypeName}' — skipped");
 				return;
 			}
 		}
@@ -767,8 +911,7 @@ static class UpdateComponentCodeWriter
 		var bpField = FindStaticField(declaringType, bpFieldName);
 		if (bpField == null)
 		{
-			codeWriter.WriteLine($"// Cannot find '{declaringType.Name}.{bpFieldName}' — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Cannot find '{declaringType.Name}.{bpFieldName}' — skipped");
 			return;
 		}
 
@@ -779,8 +922,7 @@ static class UpdateComponentCodeWriter
 			var markupOwner = elementType ?? declaringType;
 			if (TryEmitMarkupNodeChange(codeWriter, propDiff, markupOwner, varName, isRoot: false, compilation, xmlnsCache, typeCache, rootType, sourceProductionContext, projectItem))
 				return;
-			codeWriter.WriteLine($"// Complex attached property '{propName}' — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Complex attached property '{propName}' — skipped");
 			return;
 		}
 
@@ -796,8 +938,7 @@ static class UpdateComponentCodeWriter
 
 		if (valueExpr == null)
 		{
-			codeWriter.WriteLine($"// Cannot encode attached '{propName}' = \"{EscapeString(rawValue)}\" — fallback");
-			codeWriter.WriteLine("return;");
+			codeWriter.WriteLine($"// Cannot encode attached '{propName}' = \"{EscapeString(rawValue)}\" — skipped");
 			return;
 		}
 
@@ -1051,6 +1192,31 @@ static class UpdateComponentCodeWriter
 			}
 			foreach (var child in elementNode.CollectionItems)
 				child.Accept(setPropsVisitor, elementNode);
+
+			// Step 2.5: Patch StaticResource lookups that failed in the UC's synthetic tree.
+			// When a Binding has Converter={StaticResource X}, the IC pipeline can't resolve it
+			// because the UC tree has no parent chain to walk up for Resources. Emit runtime lookups
+			// BEFORE TryProvideValue creates the TypedBinding (which reads extension.Converter).
+			if (ctx.Variables.TryGetValue(elementNode, out var extVar))
+			{
+				foreach (var kvp in elementNode.Properties)
+				{
+					if (kvp.Value is ElementNode propElement
+						&& propElement.XmlType.Name == "StaticResourceExtension"
+						&& propElement.CollectionItems.Count == 1
+						&& propElement.CollectionItems[0] is ValueNode keyVal
+						&& keyVal.Value is string resourceKey)
+					{
+						var propLocalName = kvp.Key.LocalName;
+						var propSymbol = extVar.Type.GetAllProperties(propLocalName, ctx).FirstOrDefault();
+						if (propSymbol != null)
+						{
+							var castType = propSymbol.Type.ToFQDisplayString();
+							captureWriter.WriteLine($"{extVar.ValueAccessor}.{propLocalName} = ({castType})this.Resources[\"{EscapeString(resourceKey)}\"];");
+						}
+					}
+				}
+			}
 
 			// Step 3: TryProvideValue — handles late extensions (Binding, StaticResource, AppThemeBinding, etc.)
 			// and falls back to runtime ProvideValue() for unknown IMarkupExtension implementors
