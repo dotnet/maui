@@ -114,7 +114,7 @@ Use a compact PR conversation comment body. Start with a stable marker, put the 
 </p>
 
 <details>
-<summary>[icon] <strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
+<summary><strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
 
 **Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data | No failures found]
 
@@ -146,6 +146,7 @@ Rules:
 - Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
 - Use badge colors: `d1242f` for `Likely PR-caused`, `1a7f37` for `Likely unrelated`, `bf8700` for `Needs human investigation`, and `6e7781` for `Insufficient data`.
 - Do not include a Data badge.
+- Do not use emojis anywhere in the posted comment.
 - Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
 - Repeated `/review tests` runs post a new PR conversation comment and hide older comments from the same workflow.
 - If there are no failing or inconclusive checks, still post the standard visible report with `Overall` = `No failures found`, `Failures` = `0`, no platform badges, and a recommendation that no test-failure action is needed. Use badge color `1a7f37`.

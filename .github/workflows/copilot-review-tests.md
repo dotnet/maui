@@ -225,7 +225,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 </p>
 
 <details>
-<summary>[icon] <strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
+<summary><strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
 
 **Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data | No failures found]
 
@@ -252,6 +252,8 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
 
 Do not include a Data badge.
+
+Do not use emojis anywhere in the posted comment.
 
 Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
 

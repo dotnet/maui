@@ -171,17 +171,6 @@ function Get-VerdictColor {
     }
 }
 
-function Get-VerdictIcon {
-    param([string]$Verdict)
-
-    switch -Regex ($Verdict) {
-        'Likely PR-caused' { return '🔴' }
-        'Likely unrelated' { return '🟢' }
-        'Insufficient data' { return '⚪' }
-        default { return '🟠' }
-    }
-}
-
 function New-Badge {
     param(
         [string]$Label,
@@ -238,7 +227,6 @@ function New-TestFailureReviewBody {
     $verdict = Get-ReportVerdict -Content $ReportContent
     $safeVerdict = Escape-Html $verdict
     $verdictColor = Get-VerdictColor -Verdict $verdict
-    $verdictIcon = Get-VerdictIcon -Verdict $verdict
 
     $failureCount = 0
     $platforms = @()
@@ -282,7 +270,7 @@ $badges
 </p>
 
 <details>
-<summary>$verdictIcon <strong>Test Failure Review:</strong> $safeVerdict - click to expand</summary>
+<summary><strong>Test Failure Review:</strong> $safeVerdict - click to expand</summary>
 
 $ReportContent
 
