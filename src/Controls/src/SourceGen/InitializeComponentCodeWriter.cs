@@ -97,8 +97,10 @@ static class InitializeComponentCodeWriter
 			{
 				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
 				{
+					codeWriter.WriteLine("#pragma warning disable CS0414 // __version is read by UpdateComponent (generated on XAML edit)");
 					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 					codeWriter.WriteLine("private int __version = 0;");
+					codeWriter.WriteLine("#pragma warning restore CS0414");
 					codeWriter.WriteLine();
 				}
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
@@ -176,10 +178,48 @@ $$"""
 								codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {kvp.Value.ValueAccessor});");
 							}
 						}
+						// Register resource keys for hot reload (so UC can remove stale keys)
+						var resourceKeys = new System.Collections.Generic.List<string>();
+						var xKeyName = new XmlName("x", "Key");
+						if (root!.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resourcesNode))
+						{
+							var elements = resourcesNode is ListNode ln ? ln.CollectionItems.OfType<ElementNode>() :
+								resourcesNode is ElementNode singleEn ? new[] { singleEn } : System.Array.Empty<ElementNode>();
+							foreach (var elem in elements)
+							{
+								if (elem.Properties.TryGetValue(xKeyName, out var keyNode)
+									&& keyNode is ValueNode kv && kv.Value is string keyStr)
+								{
+									// Register keys for resources we can encode in UC:
+									// Value-type resources have a single ValueNode child (Color, String, etc.)
+									if (elem.CollectionItems.Count == 1 && elem.CollectionItems[0] is ValueNode)
+									{
+										resourceKeys.Add(keyStr);
+									}
+									// Custom types (converters, etc.) with a public parameterless constructor
+									else if (elem.CollectionItems.Count == 0 || elem.CollectionItems.All(c => c is not ValueNode))
+									{
+										if (elem.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var resTypeSymbol)
+											&& resTypeSymbol != null
+											&& resTypeSymbol.InstanceConstructors.Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Microsoft.CodeAnalysis.Accessibility.Public))
+										{
+											resourceKeys.Add(keyStr);
+										}
+									}
+								}
+							}
+						}
+						if (resourceKeys.Count > 0)
+						{
+							var keysArray = string.Join(", ", resourceKeys.Select(k => $"\"{k}\""));
+							codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterResourceKeys(this, new string[] {{ {keysArray} }});");
+						}
+
 						// Set __version to the latest version from state (so fresh instances skip all UC patches)
 						var assemblyName = compilation.AssemblyName ?? string.Empty;
 						var latestVersion = XamlHotReloadState.GetVersion(assemblyName, xamlItem.ProjectItem.RelativePath ?? string.Empty);
 						codeWriter.WriteLine($"__version = {latestVersion};");
+						codeWriter.WriteLine("global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.Track(this);");
 					}
 				}
 			}
