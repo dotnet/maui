@@ -93,6 +93,9 @@ namespace Microsoft.Maui.Controls.Xaml
 					dataTypeProvider = dtProvider;
 					typeResolver.TryResolve(dataTypeProvider.BindingDataType, out bindingXDataType);
 				}
+				// Runtime inflation still creates a string-path Binding. This path is intentionally
+				// not trim-safe for AOT (it is reflection-based and carries trim warnings).
+				// SourceGen/XamlC TypedBinding generation is the trim-safe path.
 				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
 				{
 					UpdateSourceEventName = UpdateSourceEventName,
