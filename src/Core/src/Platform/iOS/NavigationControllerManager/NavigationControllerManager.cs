@@ -206,6 +206,49 @@ namespace Microsoft.Maui.Platform
 
                 return true;
             }
+
+            public override void ViewDidAppear(bool animated)
+            {
+                base.ViewDidAppear(animated);
+
+                // Re-trigger KVO observers on the PlatformView's layer to fire loaded detection.
+                // MAUI's loaded detection for non-IUIViewLifeCycleEvents views uses KVO on the
+                // layer's bounds/frame. When a parent container (UITabBarController, FlyoutPage)
+                // adds this VC, the View may receive its UIWindow assignment without a bounds/frame
+                // change, leaving the OnLoaded watcher stuck. At ViewDidAppear, the View IS in
+                // the UIWindow, so manually firing KVO makes the watcher re-check IsLoaded() → true.
+                if (View?.Layer is CoreAnimation.CALayer layer && View.Window is not null)
+                {
+                    var key = new Foundation.NSString("bounds");
+                    layer.WillChangeValue(key);
+                    layer.DidChangeValue(key);
+                }
+
+                if (_managerRef.TryGetTarget(out var manager))
+                {
+                    manager._delegate.OnNavigationControllerDidAppear();
+                }
+            }
+
+            public override void ViewDidDisappear(bool animated)
+            {
+                base.ViewDidDisappear(animated);
+
+                if (_managerRef.TryGetTarget(out var manager))
+                {
+                    manager._delegate.OnNavigationControllerDidDisappear();
+                }
+            }
+
+            public override void ViewDidLayoutSubviews()
+            {
+                base.ViewDidLayoutSubviews();
+
+                if (_managerRef.TryGetTarget(out var manager) && View is not null)
+                {
+                    manager._delegate.OnViewDidLayoutSubviews(View.Bounds);
+                }
+            }
         }
 
         #endregion
