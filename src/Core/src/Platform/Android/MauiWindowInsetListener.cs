@@ -287,6 +287,10 @@ namespace Microsoft.Maui.Platform
 			// leaving a blank gap on cutout devices.
 			bool appBarHasContent = HasVisibleAppBarContent(appBarLayout);
 
+			// Cache the AppBar state on the listener so SafeAreaExtensions can read it
+			// without walking the view tree. Must be set before ApplySafeAreaInsets runs.
+			FindRegisteredListener(v)?.SetAppBarContentState(appBarHasContent);
+
 			// Apply padding to AppBarLayout based on content and system insets
 			if (appBarLayout is not null)
 			{
@@ -382,10 +386,28 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-        public bool IsViewTracked(AView view)
+		/// <summary>
+		/// Whether the AppBarLayout sibling currently has visible content (toolbar shown).
+		/// Set at the start of every <see cref="ApplyDefaultWindowInsets"/> call so that
+		/// <see cref="SafeAreaExtensions"/> can read it without walking the view tree.
+		/// <para>
+		/// <c>null</c> = state unknown (e.g. after navigation, before the next root inset dispatch);
+		/// falls back to position-based logic in <see cref="SafeAreaExtensions"/>.
+		/// <c>true</c> = AppBar confirmed visible. <c>false</c> = AppBar confirmed hidden.
+		/// </para>
+		/// </summary>
+		internal bool? AppBarHasContent { get; private set; }
+
+		internal void SetAppBarContentState(bool hasContent)
+		{
+			AppBarHasContent = hasContent;
+		}
+
+		public bool IsViewTracked(AView view)
         {
             return _trackedViews.Contains(view);
         }
+
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)
@@ -404,6 +426,11 @@ namespace Microsoft.Maui.Platform
 			{
 				ResetView(view);
 			}
+
+			// Reset AppBar state so that child-view inset dispatches triggered during navigation
+			// (before the next root ApplyDefaultWindowInsets runs) fall back to position-based
+			// logic rather than reading a stale cached value from the previous page.
+			AppBarHasContent = null;
 		}
 
 		/// <summary>
