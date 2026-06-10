@@ -95,10 +95,22 @@ static class InitializeComponentCodeWriter
 			codeWriter.WriteLine($"{accessModifier} partial class {rootType.Name}");
 			using (newblock())
 			{
+				if (xamlItem.ProjectItem.EnableIncrementalHotReload)
+				{
+					codeWriter.WriteLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
+					codeWriter.WriteLine("private int __version = 0;");
+					codeWriter.WriteLine();
+				}
 				var methodName = genSwitch ? "InitializeComponentSourceGen" : "InitializeComponent";
 				codeWriter.WriteLine($"private partial void {methodName}()");
 				root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var baseType);
 				var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType, xamlItem.ProjectItem);
+
+				// Compute stable node IDs before Visit() mutates the tree (markup expansion etc.)
+				var nodeIds = xamlItem.ProjectItem.EnableIncrementalHotReload
+					? NodeIdHelper.AssignIds(root)
+					: null;
+
 				using (newblock())
 				{
 					if (xamlItem.ProjectItem.EnableDiagnostics)
@@ -126,7 +138,7 @@ $$"""
 
 		if (rlr?.ResourceContent != null)
 		{
-			this.InitializeComponentRuntime();
+			this.InitializeComponentRuntime();{{(nodeIds != null ? "\n\t\t\tglobal::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Unregister(this);\n\t\t\t__version = 0;" : "")}}
 			return;
 		}
 
@@ -140,12 +152,110 @@ $$"""
 						WriteMultiLineString(codeWriter, localMethod);
 						codeWriter.WriteLine();
 					}
+
+					// Emit Register calls and __version bump for incremental hot reload
+					if (nodeIds != null)
+					{
+						codeWriter.WriteLine();
+						foreach (var kvp in sgcontext.Variables)
+						{
+							if (kvp.Key is ElementNode en
+								&& nodeIds.TryGetValue(en, out var nodeId)
+								&& !string.IsNullOrEmpty(nodeId))
+							{
+								codeWriter.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.Register(this, \"{nodeId}\", {kvp.Value.ValueAccessor});");
+							}
+						}
+						codeWriter.WriteLine("__version = 1;");
+					}
 				}
 			}
 		exit:
 			codeWriter.Flush();
 			return codeWriter.InnerWriter.ToString();
 		}
+	}
+
+	/// <summary>
+	/// Extracts the <see cref="INamedTypeSymbol"/> and access modifier for a XAML item.
+	/// Returns <see langword="false"/> when the item has no <c>x:Class</c> or the type cannot be resolved.
+	/// </summary>
+	public static bool TryGetRootType(
+		XamlProjectItemForIC xamlItem,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		out INamedTypeSymbol? rootType,
+		out string accessModifier)
+	{
+		accessModifier = "public";
+		rootType = null;
+
+		if (xamlItem.Xaml is null)
+			return false;
+
+		SGRootNode root;
+		try
+		{
+			root = GeneratorHelpers.ParseXaml(xamlItem.Xaml, xmlnsCache)!;
+		}
+		catch
+		{
+			return false;
+		}
+
+		if (!root.Properties.TryGetValue(XmlName.xClass, out var classNode))
+			return false;
+
+		if ((classNode as ValueNode)?.Value is not string rootClass)
+			return false;
+
+		if (root.Properties.TryGetValue(XmlName.xClassModifier, out var classModifierNode))
+		{
+			var classModifier = (classModifierNode as ValueNode)?.Value as string;
+			accessModifier = classModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "public";
+		}
+
+		XmlnsHelper.ParseXmlns(rootClass, out var rootTypeName, out var rootClrNamespace, out _, out _);
+		rootType = compilation.GetTypeByMetadataName($"{rootClrNamespace}.{rootTypeName}");
+		return rootType != null;
+	}
+
+	/// <summary>
+	/// Generates an <c>UpdateComponent_v{fromVersion}to{toVersion}</c> source from two XAML versions.
+	/// Returns <see langword="null"/> when the diff is structural (full reload required) or there are no
+	/// property-only changes.
+	/// </summary>
+	public static string? TryGenerateUpdateComponent(
+		string oldXaml,
+		string newXaml,
+		int fromVersion,
+		int toVersion,
+		INamedTypeSymbol rootType,
+		string accessModifier,
+		Compilation compilation,
+		AssemblyAttributes xmlnsCache,
+		IDictionary<XmlType, INamedTypeSymbol> typeCache)
+	{
+		SGRootNode? oldRoot;
+		SGRootNode? newRoot;
+		try
+		{
+			oldRoot = GeneratorHelpers.ParseXaml(oldXaml, xmlnsCache);
+			newRoot = GeneratorHelpers.ParseXaml(newXaml, xmlnsCache);
+		}
+		catch
+		{
+			return null; // parse error → fall back to full IC
+		}
+
+		if (oldRoot is null || newRoot is null)
+			return null;
+
+		var diff = XamlNodeDiff.ComputeDiff(oldRoot, newRoot);
+		if (diff is null || diff.IsEmpty)
+			return null;
+
+		return UpdateComponentCodeWriter.GenerateUpdateComponent(rootType, accessModifier, diff, fromVersion, toVersion, compilation, xmlnsCache, typeCache);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)
