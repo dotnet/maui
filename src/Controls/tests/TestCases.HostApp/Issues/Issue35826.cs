@@ -80,16 +80,17 @@ public class Issue35826ChildActivity : AndroidX.AppCompat.App.AppCompatActivity
 
 		_resultLabel = new Android.Widget.TextView(this)
 		{
-			Text = "Result: Ready",
-			ContentDescription = "ChildActivityResultLabel"
+			Text = "Result: Ready"
 		};
 		_resultLabel.SetPadding(0, 0, 0, 50);
+		SetViewIdResourceName(_resultLabel, "ChildActivityResultLabel");
 
 		var pickButton = new Android.Widget.Button(this)
 		{
-			Text = "Pick Photos",
-			ContentDescription = "ChildActivityPickButton"
+			Text = "Pick Photos"
 		};
+		SetViewIdResourceName(pickButton, "ChildActivityPickButton");
+
 		pickButton.Click += async (_, _) =>
 		{
 			_resultLabel.Text = "Result: Picking...";
@@ -109,6 +110,27 @@ public class Issue35826ChildActivity : AndroidX.AppCompat.App.AppCompatActivity
 		layout.AddView(_resultLabel);
 		layout.AddView(pickButton);
 		SetContentView(layout);
+	}
+
+	// Sets ViewIdResourceName on a native Android view so Appium can locate it by
+	// resource-id (the same mechanism MAUI uses for AutomationId on Android).
+	void SetViewIdResourceName(Android.Views.View view, string automationId)
+	{
+		var resourceName = $"{PackageName}:id/{automationId}";
+		AndroidX.Core.View.ViewCompat.SetAccessibilityDelegate(view, new AutomationIdDelegate(resourceName));
+	}
+
+	class AutomationIdDelegate : AndroidX.Core.View.AccessibilityDelegateCompat
+	{
+		readonly string _resourceName;
+
+		public AutomationIdDelegate(string resourceName) => _resourceName = resourceName;
+
+		public override void OnInitializeAccessibilityNodeInfo(Android.Views.View host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat info)
+		{
+			base.OnInitializeAccessibilityNodeInfo(host, info);
+			info.ViewIdResourceName = _resourceName;
+		}
 	}
 }
 #endif
