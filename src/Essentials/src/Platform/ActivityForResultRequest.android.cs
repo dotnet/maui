@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using AndroidX.Activity;
 using AndroidX.Activity.Result;
@@ -20,39 +21,42 @@ namespace Microsoft.Maui.ApplicationModel;
 /// <see href="https://developer.android.com/training/basics/intents/result">Google docs</see>
 /// </para>
 /// This must be unconditionally registered every time our activity is created.
+/// Each <see cref="ComponentActivity"/> instance gets its own launcher so that
+/// multi-activity apps can call MediaPicker independently from any activity in
+/// the back stack without invalidating launchers registered by other activities.
 /// </remarks>
 internal abstract class ActivityForResultRequest<TContract, TResult>
 	where TContract : ActivityResultContract, new()
 	where TResult : JavaObject
 {
-	protected ActivityResultLauncher launcher;
+	// Tracks one ActivityResultLauncher per ComponentActivity instance.
+	// ConditionalWeakTable holds weak references to keys, so entries are automatically
+	// eligible for collection when the activity is no longer referenced.
+	readonly ConditionalWeakTable<ComponentActivity, ActivityResultLauncher> _activityLaunchers = new();
+
 	protected TaskCompletionSource<TResult> tcs = null;
-	protected WeakReference<ComponentActivity> registeredActivity = null;
 
 	/// <summary>
-	/// Gets a value indicating whether the request is registered.
+	/// Gets a value indicating whether the request is registered for the current activity.
 	/// </summary>
-	protected bool IsRegistered => launcher is not null;
+	protected bool IsRegistered => GetLauncherForCurrentActivity() is not null;
 
 	/// <summary>
 	/// Registers this request to start an activity for a result.
+	/// Each <see cref="ComponentActivity"/> instance receives its own launcher so that
+	/// child activities can use MediaPicker independently of the main activity.
 	/// </summary>
 	/// <param name="componentActivity">The component activity to register the request with.</param>
 	public void Register(ComponentActivity componentActivity)
 	{
-		// Only register if we don't have a valid registration already
-		// This prevents temporary activities from invalidating the launcher registered with the main activity
-		if (registeredActivity?.TryGetTarget(out var existingActivity) == true &&
-			!existingActivity.IsDestroyed && !existingActivity.IsFinishing)
-		{
+		// Skip if already registered for this specific activity instance (e.g. called again after config change).
+		if (_activityLaunchers.TryGetValue(componentActivity, out _))
 			return;
-		}
 
 		var contract = new TContract();
 		var callback = new ActivityResultCallback<TResult>(result => tcs?.SetResult(result));
-
-		launcher = componentActivity.RegisterForActivityResult(contract, callback);
-		registeredActivity = new WeakReference<ComponentActivity>(componentActivity);
+		var launcher = componentActivity.RegisterForActivityResult(contract, callback);
+		_activityLaunchers.Add(componentActivity, launcher);
 	}
 
 	/// <summary>
@@ -68,7 +72,8 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	{
 		tcs = new TaskCompletionSource<TResult>();
 
-		if (!IsRegistered)
+		var launcher = GetLauncherForCurrentActivity();
+		if (launcher is null)
 		{
 			Trace.WriteLine("""
 			                ActivityForResultRequest is not registered; cancelling the request. 
@@ -88,5 +93,16 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 
 		return tcs.Task;
+	}
+
+	ActivityResultLauncher GetLauncherForCurrentActivity()
+	{
+		if (ActivityStateManager.Default.GetCurrentActivity() is ComponentActivity currentActivity &&
+			_activityLaunchers.TryGetValue(currentActivity, out var launcher))
+		{
+			return launcher;
+		}
+
+		return null;
 	}
 }
