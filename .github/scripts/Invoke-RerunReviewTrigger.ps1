@@ -311,7 +311,13 @@ foreach ($item in $items) {
         }
 
         Write-Host "Processing PR #$prNumber decision=$decision reason=$(ConvertTo-SafeLogValue $reason)"
-        $pr = gh api "repos/$Owner/$Repo/pulls/$prNumber" | ConvertFrom-Json
+        $prJson = & gh api "repos/$Owner/$Repo/pulls/$prNumber" 2>$null
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prJson)) {
+            $global:LASTEXITCODE = 0
+            Write-Host "  ⏭️ PR #$prNumber could not be loaded; skipping stale decision"
+            continue
+        }
+        $pr = $prJson | ConvertFrom-Json
         if ($pr.state -ne 'open') {
             Write-Host "  ⏭️ PR #$prNumber is not open ($($pr.state)); skipping"
             continue
@@ -402,3 +408,5 @@ foreach ($item in $items) {
         continue
     }
 }
+
+exit 0
