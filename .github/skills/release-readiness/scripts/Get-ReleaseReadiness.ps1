@@ -1767,6 +1767,84 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
     }
 
+    # === OPEN FIX PRs INBOUND (hoisted high — actionable intelligence) ===
+    # Regression issues whose fix is in flight as an open PR (either against main
+    # awaiting merge, or already targeting SR as a backport). These deserve more
+    # visibility than buried in Tier 2 — they're the pre-backport pipeline the
+    # release captain needs to watch.
+    if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
+        $openFixRows = New-Object System.Collections.Generic.List[hashtable]
+        foreach ($r in $Data['regressions']) {
+            if ($r.classification -ne 'open-on-main' -and $r.classification -ne 'backport-in-progress') { continue }
+            if (-not $r.candidateFixPrs -or $r.candidateFixPrs.Count -eq 0) { continue }
+
+            $issLink = "[#$($r.issue)]($RepoUrl/issues/$($r.issue))"
+            $titleShort = if ($r.title.Length -gt 70) { $r.title.Substring(0, 70) + '...' } else { $r.title }
+            $issCell = "$issLink — $titleShort"
+
+            if ($r.classification -eq 'backport-in-progress') {
+                # The open backport PR targets the SR branch directly — pick the
+                # first OPEN one from the candidate fix PR's backports array.
+                foreach ($cp in $r.candidateFixPrs) {
+                    # Hashtables expose ContainsKey; PSCustomObjects expose .PSObject.Properties.
+                    # Test both since candidateFixPrs records can be either shape.
+                    $hasBackports = $false
+                    if ($cp -is [hashtable] -or $cp -is [System.Collections.IDictionary]) {
+                        $hasBackports = $cp.ContainsKey('backports') -and $cp['backports']
+                    } elseif ($cp.PSObject.Properties['backports']) {
+                        $hasBackports = [bool]$cp.backports
+                    }
+                    if (-not $hasBackports) { continue }
+                    $openBp = $cp.backports | Where-Object { $_.state -eq 'OPEN' } | Select-Object -First 1
+                    if ($openBp) {
+                        $prLink = "[#$($openBp.number)]($RepoUrl/pull/$($openBp.number))"
+                        [void]$openFixRows.Add(@{
+                            prCell  = $prLink
+                            baseCell = "``$srBranch``"
+                            issCell = $issCell
+                            statusCell = "🟡 backport OPEN on SR"
+                            actionCell = 'Land this PR before ship'
+                        })
+                        break
+                    }
+                }
+            } else {
+                # open-on-main: fix PR is OPEN against main (or another non-SR base).
+                # Pick the first candidate PR whose state is OPEN.
+                $openMain = $r.candidateFixPrs | Where-Object { $_.state -eq 'OPEN' } | Select-Object -First 1
+                if ($openMain) {
+                    $prLink = "[#$($openMain.number)]($RepoUrl/pull/$($openMain.number))"
+                    $base = if ($openMain.baseRef) { "``$($openMain.baseRef)``" } else { '`main`' }
+                    [void]$openFixRows.Add(@{
+                        prCell  = $prLink
+                        baseCell = $base
+                        issCell = $issCell
+                        statusCell = '🔵 OPEN — awaiting main merge'
+                        actionCell = 'Watch for merge, then open backport to SR'
+                    })
+                }
+            }
+        }
+
+        if ($openFixRows.Count -gt 0) {
+            [void]$sb.AppendLine("## 📥 Open Fix PRs Inbound — $($openFixRows.Count) PR(s)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('_Fix PRs in flight for regression issues. Land these (or their backports) before ship to close out the regression list._')
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| Fix PR | Base | Regression issue | Status | Next action |')
+            [void]$sb.AppendLine('|---|---|---|---|---|')
+            foreach ($row in $openFixRows) {
+                $prCell    = ($row.prCell     -replace '\|', '\|').Trim()
+                $baseCell  = ($row.baseCell   -replace '\|', '\|').Trim()
+                $issCell   = ($row.issCell    -replace '\|', '\|').Trim()
+                $statCell  = ($row.statusCell -replace '\|', '\|').Trim()
+                $actCell   = ($row.actionCell -replace '\|', '\|').Trim()
+                [void]$sb.AppendLine("| $prCell | $baseCell | $issCell | $statCell | $actCell |")
+            }
+            [void]$sb.AppendLine()
+        }
+    }
+
     # === SHIP-READINESS CHECKS (full table — non-blocking + blocking) ===
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks'] -and $Data['shipChecks'].Count -gt 0) {
         [void]$sb.AppendLine("## Ship-readiness checks")

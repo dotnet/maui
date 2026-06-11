@@ -1371,6 +1371,83 @@ $verdictDataReady = @{
 $verdictReadyResult = Get-OverallVerdict -Data $verdictDataReady
 Assert-Eq -Label "READY-only ship checks: verdict stays at tier 3 (Ready)" -Expected 3 -Actual $verdictReadyResult.tier
 
+# ───── Open Fix PRs Inbound — hoisted regression-fix watchlist ─────
+Write-Host "`n[Unit] Open Fix PRs Inbound (hoisted regression-fix watchlist)" -ForegroundColor Cyan
+
+# Two open-on-main + one backport-in-progress = 3 rows; one in-sr-active filtered out
+$mdDataInbound = @{} + $mdData
+$mdDataInbound['metadata'] = @{} + $mdData.metadata
+$mdDataInbound['metadata']['srBranch'] = 'release/10.0.1xx-sr8'
+$mdDataInbound['regressions'] = @(
+    @{ issue = 9001; title = 'Open-on-main regression 1'; state = 'OPEN'
+       classification = 'open-on-main'; confidence = 'high'; evidence = @()
+       candidateFixPrs = @(
+           @{ number = 4001; title = 'Fix 9001'; state = 'OPEN'; baseRef = 'main'; onMain = $false; backports = @() }
+       )
+       recommendedAction = 'Wait for main merge, then open backport' }
+    @{ issue = 9002; title = 'Open-on-main regression 2 with very long title that should be truncated when rendered to keep the column readable'
+       state = 'OPEN'
+       classification = 'open-on-main'; confidence = 'high'; evidence = @()
+       candidateFixPrs = @(
+           @{ number = 4002; title = 'Fix 9002'; state = 'OPEN'; baseRef = 'main'; onMain = $false; backports = @() }
+       )
+       recommendedAction = 'Wait for main merge, then open backport' }
+    @{ issue = 9003; title = 'Backport-in-progress regression'; state = 'OPEN'
+       classification = 'backport-in-progress'; confidence = 'high'; evidence = @()
+       candidateFixPrs = @(
+           @{ number = 4003; title = 'Fix 9003'; state = 'MERGED'; baseRef = 'main'; onMain = $true
+              backports = @(
+                  @{ number = 4099; state = 'OPEN'; title = 'Backport: fix 9003' }
+              ) }
+       )
+       recommendedAction = 'Track backport PR to completion' }
+    @{ issue = 9004; title = 'Already shipped regression'; state = 'CLOSED'
+       classification = 'in-sr-active'; confidence = 'high'; evidence = @()
+       candidateFixPrs = @()
+       recommendedAction = 'No action — fix is shipping' }
+)
+$mdInbound = Format-MarkdownReport -Data $mdDataInbound -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+
+Assert-Eq -Label "Open Fix PRs Inbound: section header emitted with count 3" -Expected $true `
+    -Actual ($mdInbound -match '## 📥 Open Fix PRs Inbound — 3 PR\(s\)')
+# Extract just the inbound section so we can check what's inside it
+# (other PR/issue numbers like #4003, #9004 legitimately appear in the lower
+# regression breakdown tables — they're just not allowed in the Inbound row set).
+$inboundSection = if ($mdInbound -match '(?s)## 📥 Open Fix PRs Inbound[^\n]*\n(.*?)\n## ') { $Matches[1] } else { '' }
+Assert-Eq -Label "Open Fix PRs Inbound: links open-on-main PR #4001" -Expected $true `
+    -Actual ($inboundSection -match '\[#4001\]\(https://github.com/dotnet/maui/pull/4001\)')
+Assert-Eq -Label "Open Fix PRs Inbound: links open-on-main PR #4002" -Expected $true `
+    -Actual ($inboundSection -match '\[#4002\]\(https://github.com/dotnet/maui/pull/4002\)')
+Assert-Eq -Label "Open Fix PRs Inbound: links backport-in-progress PR #4099 (not source #4003)" -Expected $true `
+    -Actual (($inboundSection -match '\[#4099\]') -and -not ($inboundSection -match '\[#4003\]'))
+Assert-Eq -Label "Open Fix PRs Inbound: in-sr-active regression (#9004) NOT listed in Inbound rows" -Expected $false `
+    -Actual ($inboundSection -match '#9004')
+Assert-Eq -Label "Open Fix PRs Inbound: status column distinguishes main vs SR" -Expected $true `
+    -Actual (($inboundSection -match '🔵 OPEN — awaiting main merge') -and ($inboundSection -match '🟡 backport OPEN on SR'))
+Assert-Eq -Label "Open Fix PRs Inbound: long titles truncated at 70 chars" -Expected $true `
+    -Actual ($inboundSection -match 'Open-on-main regression 2[^|]*\.\.\.')
+
+# Section is appended ABOVE Ship-readiness checks (just under Blocking)
+$inboundIdx = $mdInbound.IndexOf('## 📥 Open Fix PRs Inbound')
+$shipChecksIdx = $mdInbound.IndexOf('## Ship-readiness checks')
+$blockingIdx = if ($mdInbound -match '(?m)^## (?:🔴 Blocking|🟢 No blocking)') { $mdInbound.IndexOf($Matches[0]) } else { -1 }
+Assert-Eq -Label "Open Fix PRs Inbound: appears AFTER Blocking section" -Expected $true `
+    -Actual ($blockingIdx -ge 0 -and $inboundIdx -gt $blockingIdx)
+Assert-Eq -Label "Open Fix PRs Inbound: appears BEFORE Ship-readiness checks" -Expected $true `
+    -Actual ($shipChecksIdx -lt 0 -or $inboundIdx -lt $shipChecksIdx)
+
+# Empty case: no regressions in flight → no section
+$mdDataNoInbound = @{} + $mdData
+$mdDataNoInbound['regressions'] = @(
+    @{ issue = 9005; title = 'no-fix-yet'; state = 'OPEN'; classification = 'no-fix-yet'
+       confidence = 'high'; evidence = @(); candidateFixPrs = @(); recommendedAction = 'investigate' }
+)
+$mdNoInbound = Format-MarkdownReport -Data $mdDataNoInbound -RepoUrl 'https://github.com/dotnet/maui' `
+                                     -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+Assert-Eq -Label "Open Fix PRs Inbound: no section when no open fix PRs in flight" -Expected $false `
+    -Actual ($mdNoInbound -match 'Open Fix PRs Inbound')
+
 # ───── ci-scan freshness + rendering ─────
 Write-Host "`n[Unit] Format-CiScanIssueRows + freshness" -ForegroundColor Cyan
 
