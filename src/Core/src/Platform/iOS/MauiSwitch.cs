@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Platform
 		bool _hasMauiTrackColorOverride;
 		bool _hasMapperColorOverride;
 		bool _needsColorReapply;
+		bool _needsNativeDefaultCleanup;
 		bool _shouldDetectMapperColorOverride;
 
 		public MauiSwitch(CGRect frame) : base(frame)
@@ -29,6 +30,13 @@ namespace Microsoft.Maui.Platform
 			RequestColorReapply();
 		}
 
+		internal void SetNeedsNativeDefaultCleanup()
+		{
+			_needsNativeDefaultCleanup = true;
+			SetNeedsLayout();
+			RequestColorReapply();
+		}
+
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
@@ -41,7 +49,7 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
-			if (_needsColorReapply)
+			if (_needsColorReapply || _needsNativeDefaultCleanup)
 			{
 				RequestColorReapply();
 			}
@@ -63,6 +71,8 @@ namespace Microsoft.Maui.Platform
 		internal bool HasMapperColorOverride => _hasMapperColorOverride;
 
 		internal bool ShouldDetectMapperColorOverride => _shouldDetectMapperColorOverride;
+
+		internal bool NeedsNativeDefaultCleanup => _needsNativeDefaultCleanup;
 
 		internal void StartMapperColorOverrideDetection()
 		{
@@ -99,6 +109,17 @@ namespace Microsoft.Maui.Platform
 		internal void ClearNeedsColorReapply()
 		{
 			_needsColorReapply = false;
+		}
+
+		internal void ClearNeedsNativeDefaultCleanup()
+		{
+			_needsNativeDefaultCleanup = false;
+		}
+
+		internal void ClearPendingColorReapply()
+		{
+			_needsColorReapply = false;
+			_needsNativeDefaultCleanup = false;
 		}
 	}
 }

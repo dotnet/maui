@@ -78,6 +78,7 @@ namespace Microsoft.Maui.Handlers
 			IUITraitChangeRegistration? _traitChangeRegistration;
 			UISwitch? _queuedColorReapplyPlatformView;
 			ColorReapplyKind _queuedColorReapplyKind;
+			bool _colorReapplyDispatchPending;
 
 			public void Connect(SwitchHandler handler, ISwitch virtualView, UISwitch platformView)
 			{
@@ -161,7 +162,13 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (sender is UISwitch platformView)
 				{
-					QueueColorReapply(platformView, ColorReapplyKind.Lifecycle);
+					var kind = ColorReapplyKind.Lifecycle;
+					if (sender is MauiSwitch { NeedsNativeDefaultCleanup: true })
+					{
+						kind |= ColorReapplyKind.NativeDefaults;
+					}
+
+					QueueColorReapply(platformView, kind);
 				}
 			}
 
@@ -174,18 +181,21 @@ namespace Microsoft.Maui.Handlers
 
 				_queuedColorReapplyKind |= kind;
 
-				if (ReferenceEquals(_queuedColorReapplyPlatformView, platformView))
+				var platformViewChanged = !ReferenceEquals(_queuedColorReapplyPlatformView, platformView);
+				if (platformViewChanged)
 				{
-					return;
+					_queuedColorReapplyPlatformView = platformView;
 				}
 
-				_queuedColorReapplyPlatformView = platformView;
-
-				DispatchColorReapply(platformView, 0);
+				if (!_colorReapplyDispatchPending || platformViewChanged)
+				{
+					DispatchColorReapply(platformView, 0);
+				}
 			}
 
 			void DispatchColorReapply(UISwitch platformView, int attempt)
 			{
+				_colorReapplyDispatchPending = true;
 				DispatchQueue.MainQueue.DispatchAfter(
 					new DispatchTime(DispatchTime.Now, ColorReapplyDelay),
 					() => ProcessColorReapply(platformView, attempt));
@@ -201,12 +211,14 @@ namespace Microsoft.Maui.Handlers
 						return;
 					}
 
+					_colorReapplyDispatchPending = false;
+
 					if (VirtualView is not ISwitch view ||
 						Handler is not SwitchHandler handler ||
 						!ReferenceEquals(PlatformView, platformView) ||
 						!ReferenceEquals(handler.PlatformView, platformView))
 					{
-						ClearQueuedColorReapply(platformView);
+						ClearAllQueuedColorReapply(platformView);
 						return;
 					}
 
@@ -218,12 +230,21 @@ namespace Microsoft.Maui.Handlers
 							return;
 						}
 
-						ClearQueuedColorReapply(platformView);
 						return;
 					}
 
 					var reapplyKind = _queuedColorReapplyKind;
 					ClearQueuedColorReapply(platformView);
+
+					if (reapplyKind.HasFlag(ColorReapplyKind.NativeDefaults))
+					{
+						(platformView as MauiSwitch)?.ClearNeedsNativeDefaultCleanup();
+						if (platformView.ShouldPreserveNativeDefaults(view))
+						{
+							platformView.ClearCustomColorState();
+							return;
+						}
+					}
 
 					if (TryDetectMapperColorOverride(handler, view, platformView))
 					{
@@ -244,7 +265,7 @@ namespace Microsoft.Maui.Handlers
 				}
 				catch (Exception ex)
 				{
-					ClearQueuedColorReapply(platformView);
+					ClearAllQueuedColorReapply(platformView);
 					Handler?.MauiContext?.CreateLogger<SwitchHandler>()?.LogError(ex, "Unable to reapply switch colors.");
 				}
 			}
@@ -257,7 +278,14 @@ namespace Microsoft.Maui.Handlers
 					_queuedColorReapplyPlatformView = null;
 				}
 
+				_colorReapplyDispatchPending = false;
 				(platformView as MauiSwitch)?.ClearNeedsColorReapply();
+			}
+
+			void ClearAllQueuedColorReapply(UISwitch platformView)
+			{
+				ClearQueuedColorReapply(platformView);
+				(platformView as MauiSwitch)?.ClearNeedsNativeDefaultCleanup();
 			}
 
 			public void Disconnect(UISwitch platformView)
@@ -274,7 +302,8 @@ namespace Microsoft.Maui.Handlers
 				_platformView = null;
 				_queuedColorReapplyPlatformView = null;
 				_queuedColorReapplyKind = ColorReapplyKind.None;
-				(platformView as MauiSwitch)?.ClearNeedsColorReapply();
+				_colorReapplyDispatchPending = false;
+				(platformView as MauiSwitch)?.ClearPendingColorReapply();
 
 				if (_willEnterForegroundObserver is not null)
 				{
@@ -362,7 +391,8 @@ namespace Microsoft.Maui.Handlers
 				None = 0,
 				TrackOff = 1,
 				CustomColors = 2,
-				Lifecycle = 4
+				Lifecycle = 4,
+				NativeDefaults = 8
 			}
 		}
 	}

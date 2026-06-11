@@ -19,11 +19,14 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			uiSwitch.CompleteMapperColorOverrideDetection(view);
+
 			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
 
 			if (uiSwitch.ShouldPreserveNativeDefaults(view))
 			{
 				uiSwitch.ClearCustomColorState();
+				uiSwitch.ReapplyNativeDefaultsAfterStyleUpdate(styleChanged);
 				return;
 			}
 
@@ -44,9 +47,12 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			(uiSwitch as MauiSwitch)?.MarkMauiTrackColorOverride();
-
 			var trackColor = view.TrackColor?.ToPlatform();
+
+			if (trackColor is not null)
+			{
+				(uiSwitch as MauiSwitch)?.MarkMauiTrackColorOverride();
+			}
 
 			if (view.IsOn)
 			{
@@ -82,11 +88,14 @@ namespace Microsoft.Maui.Platform
 			if (view == null)
 				return;
 
+			uiSwitch.CompleteMapperColorOverrideDetection(view);
+
 			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
 
 			if (uiSwitch.ShouldPreserveNativeDefaults(view))
 			{
 				uiSwitch.ClearCustomColorState();
+				uiSwitch.ReapplyNativeDefaultsAfterStyleUpdate(styleChanged);
 				return;
 			}
 
@@ -145,6 +154,33 @@ namespace Microsoft.Maui.Platform
 #endif
 		}
 
+		static void ReapplyNativeDefaultsAfterStyleUpdate(this UISwitch uiSwitch, bool styleChanged)
+		{
+#if IOS || MACCATALYST
+			if (!styleChanged || !IsSlidingStyleRequiredForCustomColors())
+			{
+				return;
+			}
+
+			if (uiSwitch is MauiSwitch mauiSwitch)
+			{
+				mauiSwitch.SetNeedsNativeDefaultCleanup();
+			}
+			else if (uiSwitch.IsReadyForColorReapply())
+			{
+				uiSwitch.ClearCustomColorState();
+			}
+#endif
+		}
+
+		static void CompleteMapperColorOverrideDetection(this UISwitch uiSwitch, ISwitch view)
+		{
+			if (view.HasCustomColors())
+			{
+				(uiSwitch as MauiSwitch)?.CompleteMapperColorOverrideDetection();
+			}
+		}
+
 		internal static bool HasCustomColors(this ISwitch view)
 		{
 			return view.TrackColor is not null || view.ThumbColor is not null;
@@ -192,7 +228,7 @@ namespace Microsoft.Maui.Platform
 			return first.Equals(second);
 		}
 
-		static void ClearCustomColorState(this UISwitch uiSwitch)
+		internal static void ClearCustomColorState(this UISwitch uiSwitch)
 		{
 			uiSwitch.OnTintColor = null;
 			uiSwitch.ThumbTintColor = null;
