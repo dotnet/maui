@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 			return OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : UIColor.FromRGBA(120, 120, 128, 40);
 		}
 
-		async Task AssertUntouchedDefaultSwitchSkipsLifecycleColorReapply(UISwitch nativeSwitch)
+		async Task AssertDefaultSwitchDoesNotReapplyColors(UISwitch nativeSwitch)
 		{
 			var trackSubview = nativeSwitch.GetTrackSubview();
 			Assert.NotNull(trackSubview);
@@ -166,23 +166,19 @@ namespace Microsoft.Maui.DeviceTests
 				"Default switch thumb tint color was unexpectedly cleared or reapplied.");
 		}
 
-		async Task AssertSwitchReturnsToNativeDefaults(UISwitch nativeSwitch, string messageSuffix)
+		void AssertSwitchUsesNativeDefaults(MauiSwitch nativeSwitch)
 		{
-			await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Automatic)
-				.AssertEventually(message: $"Native switch did not return to Automatic style after {messageSuffix}.");
-
-			await new Func<bool>(() => nativeSwitch.OnTintColor is null)
-				.AssertEventually(message: $"Native switch OnTintColor did not clear after {messageSuffix}.");
-
-			await new Func<bool>(() => nativeSwitch.ThumbTintColor is null)
-				.AssertEventually(message: $"Native switch ThumbTintColor did not clear after {messageSuffix}.");
-
-			await new Func<bool>(() => nativeSwitch.GetTrackColor() is null)
-				.AssertEventually(message: $"Native switch track background did not clear after {messageSuffix}.");
+			Assert.Equal(UISwitchStyle.Automatic, nativeSwitch.PreferredStyle);
+			Assert.Null(nativeSwitch.OnTintColor);
+			Assert.Null(nativeSwitch.ThumbTintColor);
+			Assert.Null(nativeSwitch.GetTrackColor());
+			Assert.False(nativeSwitch.HasMauiManagedTrackBackground);
 		}
 
-		void ForcePostStyleResetCycle(UISwitch nativeSwitch)
+		async Task AssertDeferredNativeDefaultCleanupClearsRestyledColors(MauiSwitch nativeSwitch, string messageSuffix)
 		{
+			Assert.True(nativeSwitch.NeedsNativeDefaultCleanup);
+
 			var trackSubview = nativeSwitch.GetTrackSubview();
 			Assert.NotNull(trackSubview);
 
@@ -190,9 +186,14 @@ namespace Microsoft.Maui.DeviceTests
 			nativeSwitch.OnTintColor = UIColor.FromRGBA(78, 90, 123, 255);
 			nativeSwitch.ThumbTintColor = UIColor.FromRGBA(45, 67, 89, 255);
 
-			nativeSwitch.SetNeedsLayout();
-			nativeSwitch.LayoutIfNeeded();
 			nativeSwitch.LayoutSubviews();
+
+			await new Func<bool>(() =>
+					!nativeSwitch.NeedsNativeDefaultCleanup
+					&& nativeSwitch.OnTintColor is null
+					&& nativeSwitch.ThumbTintColor is null
+					&& nativeSwitch.GetTrackColor() is null)
+				.AssertEventually(message: $"Deferred native-default cleanup did not clear restyled colors after {messageSuffix}.");
 		}
 
 		/// <summary>
@@ -378,7 +379,7 @@ namespace Microsoft.Maui.DeviceTests
 				var nativeSwitch = GetNativeSwitch(handler);
 
 				Assert.Equal(UISwitchStyle.Automatic, nativeSwitch.PreferredStyle);
-				await AssertUntouchedDefaultSwitchSkipsLifecycleColorReapply(nativeSwitch);
+				await AssertDefaultSwitchDoesNotReapplyColors(nativeSwitch);
 			});
 		}
 
@@ -428,7 +429,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
 			{
-				var nativeSwitch = GetNativeSwitch(handler);
+				var nativeSwitch = Assert.IsType<MauiSwitch>(GetNativeSwitch(handler));
 
 				await AssertSwitchColorsApplied(nativeSwitch, Colors.Red, Colors.Orange, "resetting custom colors");
 
@@ -436,9 +437,9 @@ namespace Microsoft.Maui.DeviceTests
 				switchStub.ThumbColor = null;
 				handler.UpdateValue(nameof(ISwitch.TrackColor));
 				handler.UpdateValue(nameof(ISwitch.ThumbColor));
-				ForcePostStyleResetCycle(nativeSwitch);
 
-				await AssertSwitchReturnsToNativeDefaults(nativeSwitch, "clearing custom track and thumb colors");
+				AssertSwitchUsesNativeDefaults(nativeSwitch);
+				await AssertDeferredNativeDefaultCleanupClearsRestyledColors(nativeSwitch, "clearing custom track and thumb colors");
 			});
 		}
 
@@ -458,23 +459,21 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
 			{
-				var nativeSwitch = GetNativeSwitch(handler);
-				var mauiSwitch = Assert.IsType<MauiSwitch>(nativeSwitch);
+				var nativeSwitch = Assert.IsType<MauiSwitch>(GetNativeSwitch(handler));
 
 				await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Sliding && nativeSwitch.Style == UISwitchStyle.Sliding)
 					.AssertEventually(message: "Track-only custom color did not opt the switch into Sliding style.");
 
 				await new Func<bool>(() =>
 					ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), Colors.Red.ToPlatform(), tolerance: 0.1)
-					&& mauiSwitch.HasMauiManagedTrackBackground)
+					&& nativeSwitch.HasMauiManagedTrackBackground)
 					.AssertEventually(message: "Track-only custom color did not apply the custom track color.");
 
 				switchStub.TrackColor = null;
 				handler.UpdateValue(nameof(ISwitch.TrackColor));
-				ForcePostStyleResetCycle(nativeSwitch);
 
-				await AssertSwitchReturnsToNativeDefaults(nativeSwitch, "clearing the track-only custom color");
-				Assert.False(mauiSwitch.HasMauiManagedTrackBackground);
+				AssertSwitchUsesNativeDefaults(nativeSwitch);
+				await AssertDeferredNativeDefaultCleanupClearsRestyledColors(nativeSwitch, "clearing the track-only custom color");
 			});
 		}
 
@@ -494,15 +493,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
 			{
-				var nativeSwitch = GetNativeSwitch(handler);
-				var mauiSwitch = Assert.IsType<MauiSwitch>(nativeSwitch);
+				var nativeSwitch = Assert.IsType<MauiSwitch>(GetNativeSwitch(handler));
 
 				await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Sliding && nativeSwitch.Style == UISwitchStyle.Sliding)
 					.AssertEventually(message: "Thumb-only custom color did not opt the switch into Sliding style.");
 
 				await new Func<bool>(() =>
 					ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), GetDefaultOffTrackColor(), tolerance: 0.1)
-					&& mauiSwitch.HasMauiManagedTrackBackground)
+					&& nativeSwitch.HasMauiManagedTrackBackground)
 					.AssertEventually(message: "Thumb-only custom color did not apply the managed fallback off-track color.");
 
 				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, Colors.Orange.ToPlatform(), tolerance: 0.1))
@@ -510,10 +508,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				switchStub.ThumbColor = null;
 				handler.UpdateValue(nameof(ISwitch.ThumbColor));
-				ForcePostStyleResetCycle(nativeSwitch);
 
-				await AssertSwitchReturnsToNativeDefaults(nativeSwitch, "clearing the thumb-only custom color");
-				Assert.False(mauiSwitch.HasMauiManagedTrackBackground);
+				AssertSwitchUsesNativeDefaults(nativeSwitch);
+				await AssertDeferredNativeDefaultCleanupClearsRestyledColors(nativeSwitch, "clearing the thumb-only custom color");
 			});
 		}
 

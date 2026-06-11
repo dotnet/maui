@@ -26,13 +26,12 @@ namespace Microsoft.Maui.Platform
 
 			if (uiSwitch.ShouldPreserveNativeDefaults(view))
 			{
+				uiSwitch.ClearCustomColorState();
+
 				if (styleChanged)
 				{
 					uiSwitch.ReapplyNativeDefaultsAfterStyleUpdate();
-					return;
 				}
-
-				uiSwitch.ClearCustomColorState();
 				return;
 			}
 
@@ -96,13 +95,12 @@ namespace Microsoft.Maui.Platform
 
 			if (uiSwitch.ShouldPreserveNativeDefaults(view))
 			{
+				uiSwitch.ClearCustomColorState();
+
 				if (styleChanged)
 				{
 					uiSwitch.ReapplyNativeDefaultsAfterStyleUpdate();
-					return;
 				}
-
-				uiSwitch.ClearCustomColorState();
 				return;
 			}
 

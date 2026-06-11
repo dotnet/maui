@@ -60,7 +60,6 @@ namespace Microsoft.Maui.Handlers
 		class SwitchProxy
 		{
 			static readonly TimeSpan ColorReapplyDelay = TimeSpan.FromMilliseconds(10);
-			const int MaxColorReapplyAttempts = 5;
 
 			WeakReference<SwitchHandler>? _handler;
 			WeakReference<ISwitch>? _virtualView;
@@ -77,8 +76,8 @@ namespace Microsoft.Maui.Handlers
 			NSObject? _windowDidBecomeKeyObserver;
 			IUITraitChangeRegistration? _traitChangeRegistration;
 			UISwitch? _queuedColorReapplyPlatformView;
+			UISwitch? _scheduledColorReapplyPlatformView;
 			ColorReapplyKind _queuedColorReapplyKind;
-			bool _colorReapplyDispatchPending;
 
 			public void Connect(SwitchHandler handler, ISwitch virtualView, UISwitch platformView)
 			{
@@ -187,31 +186,33 @@ namespace Microsoft.Maui.Handlers
 					_queuedColorReapplyPlatformView = platformView;
 				}
 
-				if (!_colorReapplyDispatchPending || platformViewChanged)
+				if (!ReferenceEquals(_scheduledColorReapplyPlatformView, platformView))
 				{
-					DispatchColorReapply(platformView, 0);
+					DispatchColorReapply(platformView);
 				}
 			}
 
-			void DispatchColorReapply(UISwitch platformView, int attempt)
+			void DispatchColorReapply(UISwitch platformView)
 			{
-				_colorReapplyDispatchPending = true;
+				_scheduledColorReapplyPlatformView = platformView;
 				DispatchQueue.MainQueue.DispatchAfter(
 					new DispatchTime(DispatchTime.Now, ColorReapplyDelay),
-					() => ProcessColorReapply(platformView, attempt));
+					() => ProcessColorReapply(platformView));
 			}
 
-			void ProcessColorReapply(UISwitch platformView, int attempt)
+			void ProcessColorReapply(UISwitch platformView)
 			{
 				try
 				{
-					if (!ReferenceEquals(_queuedColorReapplyPlatformView, platformView))
+					if (ReferenceEquals(_scheduledColorReapplyPlatformView, platformView))
 					{
-						(platformView as MauiSwitch)?.ClearNeedsColorReapply();
-						return;
+						_scheduledColorReapplyPlatformView = null;
 					}
 
-					_colorReapplyDispatchPending = false;
+					if (!ReferenceEquals(_queuedColorReapplyPlatformView, platformView))
+					{
+						return;
+					}
 
 					if (VirtualView is not ISwitch view ||
 						Handler is not SwitchHandler handler ||
@@ -224,12 +225,6 @@ namespace Microsoft.Maui.Handlers
 
 					if (!platformView.IsReadyForColorReapply())
 					{
-						if (attempt < MaxColorReapplyAttempts)
-						{
-							DispatchColorReapply(platformView, attempt + 1);
-							return;
-						}
-
 						return;
 					}
 
@@ -285,7 +280,11 @@ namespace Microsoft.Maui.Handlers
 					_queuedColorReapplyPlatformView = null;
 				}
 
-				_colorReapplyDispatchPending = false;
+				if (ReferenceEquals(_scheduledColorReapplyPlatformView, platformView))
+				{
+					_scheduledColorReapplyPlatformView = null;
+				}
+
 				(platformView as MauiSwitch)?.ClearNeedsColorReapply();
 			}
 
@@ -308,8 +307,8 @@ namespace Microsoft.Maui.Handlers
 				_virtualView = null;
 				_platformView = null;
 				_queuedColorReapplyPlatformView = null;
+				_scheduledColorReapplyPlatformView = null;
 				_queuedColorReapplyKind = ColorReapplyKind.None;
-				_colorReapplyDispatchPending = false;
 				(platformView as MauiSwitch)?.ClearPendingColorReapply();
 
 				if (_willEnterForegroundObserver is not null)
@@ -347,6 +346,14 @@ namespace Microsoft.Maui.Handlers
 					return false;
 				}
 
+				if (HasMapperColorCustomization(handler))
+				{
+					mauiSwitch.MarkMapperColorOverride();
+					mauiSwitch.CompleteMapperColorOverrideDetection();
+					UpdateColorMappings(handler, view, platformView);
+					return true;
+				}
+
 				platformView.ClearCustomColorState(clearTrackColor: true);
 				mauiSwitch.CompleteMapperColorOverrideDetection();
 
@@ -373,6 +380,12 @@ namespace Microsoft.Maui.Handlers
 
 				UpdateColorMappings(handler, view, platformView);
 				return true;
+			}
+
+			static bool HasMapperColorCustomization(SwitchHandler handler)
+			{
+				return handler._mapper.GetProperty(nameof(ISwitch.TrackColor)) != SwitchHandler.DefaultTrackColorMapper
+					|| handler._mapper.GetProperty(nameof(ISwitch.ThumbColor)) != SwitchHandler.DefaultThumbColorMapper;
 			}
 
 			static void UpdateColorMappings(SwitchHandler handler, ISwitch view, UISwitch platformView)

@@ -29,6 +29,10 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
+		internal static readonly System.Action<IElementHandler, IElement>? DefaultThumbColorMapper = Mapper.GetProperty(nameof(ISwitch.ThumbColor));
+
+		internal static readonly System.Action<IElementHandler, IElement>? DefaultTrackColorMapper = Mapper.GetProperty(nameof(ISwitch.TrackColor));
+
 		public SwitchHandler() : base(Mapper, CommandMapper)
 		{
 		}
