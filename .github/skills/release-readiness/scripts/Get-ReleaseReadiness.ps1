@@ -137,7 +137,13 @@ param(
     # cutting SRn+1 from main, the prior SR (-SrBranch) is merged in. The
     # candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits.
     # Without this flag, candidate mode shows only main-since-priorSR.
-    [switch]$InheritFromPriorSr
+    [switch]$InheritFromPriorSr,
+    # Skip Maestro/BAR operational checks (default-channel mapping + per-commit
+    # BAR build lookup). These run via `darc` CLI and require BAR auth. When darc
+    # isn't installed (e.g. minimal CI image), the checks auto-skip and emit
+    # UNKNOWN status with verification commands — this switch lets a caller force
+    # the skip even when darc IS available (e.g. known auth-failure environment).
+    [switch]$SkipMaestroChecks
 )
 
 $ErrorActionPreference = 'Stop'
@@ -463,6 +469,173 @@ function Get-ReleaseShipChecks {
 
     return $checks
 }
+
+# region ──────────────── 0.5 MAESTRO / BAR OPERATIONAL CHECKS ───────────────
+#
+# These check that the SR branch is wired into Build Asset Registry (BAR) so
+# builds auto-flow to consumers. They require the `darc` CLI; in CI environments
+# without darc they downgrade to UNKNOWN with verification commands, so the
+# report never silently skips them — a release captain reading the issue still
+# sees "BAR mapping: UNKNOWN — verify locally with: darc get-default-channels …"
+#
+# Real-world failure they catch: a new SR branch (e.g. release/10.0.1xx-sr8) is
+# cut from main but nobody runs `darc add-default-channel`. CI builds succeed,
+# but nothing flows to BAR, so at ship time there's no build to promote. The
+# script would otherwise report all-green, hiding the problem.
+
+function Test-DarcAvailable {
+    <#
+    .SYNOPSIS
+        Cached probe for the `darc` CLI. Returns $true if `darc` is on PATH.
+    .NOTES
+        We deliberately use `Get-Command` instead of `darc --version`. darc itself
+        sets a non-zero exit code under certain conditions (auth-not-yet, telemetry
+        prompts) even when the executable is fully functional — so a `--version`
+        exit-code check produces false negatives on dev boxes. The downstream
+        Invoke-DarcJson wrapper handles real auth/network failures by surfacing
+        them as `Success = $false`, which the check renders as UNKNOWN.
+    #>
+    $cached = Get-Variable -Name '_darcAvailable' -Scope Script -ValueOnly -ErrorAction SilentlyContinue
+    if ($null -ne $cached) { return $cached }
+    $cmd = Get-Command darc -ErrorAction SilentlyContinue
+    $script:_darcAvailable = ($null -ne $cmd)
+    return $script:_darcAvailable
+}
+
+function Invoke-DarcJson {
+    <#
+    .SYNOPSIS
+        Runs `darc <args> --output-format json` and returns a result object that
+        unambiguously distinguishes failure from empty-but-successful responses.
+    .OUTPUTS
+        [PSCustomObject] with Success (bool) and Data (array, never $null when Success).
+        Returning a hashtable-style result avoids PowerShell's auto-unwrap of `@()`
+        across function boundaries, which would otherwise conflate "darc auth failed"
+        with "darc succeeded but returned no items".
+    #>
+    param([string[]]$DarcArgs)
+    try {
+        $jsonOutput = & darc @DarcArgs --output-format json 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            return [PSCustomObject]@{ Success = $false; Data = @() }
+        }
+        $joined = ($jsonOutput | Out-String)
+        if ([string]::IsNullOrWhiteSpace($joined)) {
+            return [PSCustomObject]@{ Success = $true; Data = @() }
+        }
+        $parsed = $joined | ConvertFrom-Json -ErrorAction Stop
+        if ($null -eq $parsed) {
+            return [PSCustomObject]@{ Success = $true; Data = @() }
+        }
+        return [PSCustomObject]@{ Success = $true; Data = @($parsed) }
+    } catch {
+        return [PSCustomObject]@{ Success = $false; Data = @() }
+    }
+}
+
+function Get-MaestroOperationalChecks {
+    <#
+    .SYNOPSIS
+        Runs Maestro/BAR operational checks for an in-flight SR branch:
+          1. SR branch is in BAR default-channel mappings (so builds auto-flow)
+          2. BAR has a build for SR HEAD commit (so promotion will have something)
+
+        SKIPPED entirely (returns @()) when:
+          - $SkipChecks is set (caller opt-out)
+          - $Ctx.mode is 'candidate' (SR branch doesn't exist yet — false positive)
+          - SR branch name doesn't match release/X.Y.Zxx-srN (custom shapes, RC, etc.)
+
+        When darc isn't available, emits UNKNOWN checks with verification commands
+        instead of silently skipping. This is intentional: the report should always
+        document what was NOT checked so the release captain can fill the gap.
+    .OUTPUTS
+        Array of New-ReadinessCheck records (merged into shipChecks downstream).
+    #>
+    param($Ctx, [switch]$SkipChecks)
+
+    if ($SkipChecks) { return @() }
+    if ($Ctx.mode -eq 'candidate') { return @() }
+
+    # Derive expected channel from SR branch shape. dotnet/maui convention: all
+    # SR branches in a major.minor cycle share ONE channel (no per-SR channel).
+    # Refusing to compute channel for non-SR shapes avoids posting incorrect
+    # add-default-channel commands.
+    $branchMatch = [regex]::Match($Ctx.srBranch, '^release/(\d+\.\d+\.\d+xx)-sr\d+$')
+    if (-not $branchMatch.Success) { return @() }
+    $sdkBand = $branchMatch.Groups[1].Value
+    $expectedChannel = ".NET $sdkBand SDK"
+    $repoUrl = "https://github.com/$($Ctx.repo)"
+
+    $checks = @()
+    $darcReady = Test-DarcAvailable
+
+    # === Check 1: SR branch wired into BAR default-channel mappings ===
+    # The critical check. If missing, no SR builds reach BAR — release captain
+    # has nothing to promote at ship time.
+    $mappingArea = "BAR default-channel mapping ($($Ctx.srBranch) → $expectedChannel)"
+    if (-not $darcReady) {
+        $checks += New-ReadinessCheck -Area $mappingArea -Status 'UNKNOWN' `
+            -Details "``darc`` CLI not available in this environment — cannot query BAR. Verify manually." `
+            -NextAction "Locally: ``darc get-default-channels --source-repo $repoUrl`` and search for ``$($Ctx.srBranch)``. If missing, escalate to release engineering: ``darc add-default-channel --channel ""$expectedChannel"" --branch $($Ctx.srBranch) --repo $repoUrl``"
+    } else {
+        $defaultChannels = Invoke-DarcJson -DarcArgs @('get-default-channels', '--source-repo', $repoUrl)
+        if (-not $defaultChannels.Success) {
+            $checks += New-ReadinessCheck -Area $mappingArea -Status 'UNKNOWN' `
+                -Details "``darc get-default-channels --source-repo $repoUrl`` failed (likely auth, network, or BAR outage)." `
+                -NextAction "Run locally and inspect: ``darc get-default-channels --source-repo $repoUrl``"
+        } else {
+            $srMapping = @($defaultChannels.Data | Where-Object {
+                $_.branch -eq $Ctx.srBranch -and $_.enabled
+            })
+            if ($srMapping.Count -gt 0) {
+                $m = $srMapping[0]
+                $checks += New-ReadinessCheck -Area $mappingArea -Status 'READY' `
+                    -Details "``$($Ctx.srBranch)`` is wired to channel **$($m.channel.name)** (BAR mapping id $($m.id))." `
+                    -NextAction "No action needed."
+            } else {
+                $checks += New-ReadinessCheck -Area $mappingArea -Status 'BLOCKED' `
+                    -Details "``$($Ctx.srBranch)`` has NO default-channel mapping in BAR. CI builds on this branch are NOT auto-flowing to **$expectedChannel** — the release captain will have no build to promote when shipping." `
+                    -NextAction "Escalate to release engineering: ``darc add-default-channel --channel ""$expectedChannel"" --branch $($Ctx.srBranch) --repo $repoUrl`` (do NOT run unprompted — requires release-eng approval)."
+            }
+        }
+    }
+
+    # === Check 2: BAR has a build for SR HEAD commit ===
+    # Secondary signal. If mapping is OK but no build for HEAD: CI is still
+    # running OR something blocked publishing. WATCH (not BLOCKED) because
+    # transient — re-running the report tomorrow will resolve it.
+    if (-not $Ctx.srHeadSha) { return $checks }
+    $headShort = $Ctx.srHeadSha.Substring(0, 8)
+    $buildArea = "BAR build for SR HEAD ($headShort)"
+    if (-not $darcReady) {
+        $checks += New-ReadinessCheck -Area $buildArea -Status 'UNKNOWN' `
+            -Details "``darc`` CLI not available — cannot verify BAR has a build for SR HEAD." `
+            -NextAction "Locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``"
+    } else {
+        $builds = Invoke-DarcJson -DarcArgs @('get-build', '--repo', $repoUrl, '--commit', $Ctx.srHeadSha)
+        if (-not $builds.Success) {
+            $checks += New-ReadinessCheck -Area $buildArea -Status 'UNKNOWN' `
+                -Details "``darc get-build`` failed for SR HEAD ``$headShort``." `
+                -NextAction "Run locally: ``darc get-build --repo $repoUrl --commit $($Ctx.srHeadSha)``"
+        } elseif ($builds.Data.Count -eq 0) {
+            $checks += New-ReadinessCheck -Area $buildArea -Status 'WATCH' `
+                -Details "No BAR build found for SR HEAD ``$headShort``. May be normal if CI is still running, OR a symptom of the default-channel mapping being absent (see prior check)." `
+                -NextAction "Wait for CI to complete on SR HEAD; re-run readiness report. If mapping is also missing (above), fix that first."
+        } else {
+            # Sort by BAR build id (monotonic, locale-independent) to pick the latest.
+            $latest = @($builds.Data | Sort-Object id -Descending)[0]
+            $chans = if ($latest.channels) { ($latest.channels -join ', ') } else { '_none_' }
+            $buildLink = if ($latest.buildLink) { " ([build $($latest.id)]($($latest.buildLink)))" } else { " (build $($latest.id))" }
+            $checks += New-ReadinessCheck -Area $buildArea -Status 'READY' `
+                -Details "Build **$($latest.buildNumber)**$buildLink for SR HEAD ``$headShort`` is in BAR; channels: $chans." `
+                -NextAction "No action needed."
+        }
+    }
+
+    return $checks
+}
+
+# endregion
 
 # region ────────────────────── 1. CONTEXT RESOLUTION ──────────────────────
 
@@ -2202,6 +2375,21 @@ function Invoke-Main {
         $data['shipChecks'] = @($data['shipChecks']) + @($signalResult.Checks)
         $data['ciScanIssues'] = @($signalResult.CiScanIssues)
         $data['kbeIssues']    = @($signalResult.KbeIssues)
+    }
+
+    # Maestro/BAR operational checks — verify the SR branch is wired into BAR's
+    # default-channel mappings and the SR HEAD commit has a published build.
+    # Runs via `darc` CLI; falls back to UNKNOWN with verification commands when
+    # darc isn't available (CI environments without the tool installed). Append
+    # to shipChecks so BLOCKED results escalate the verdict the same way.
+    if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
+        $maestroChecks = Get-MaestroOperationalChecks -Ctx $ctx -SkipChecks:$SkipMaestroChecks
+        if ($maestroChecks -and $maestroChecks.Count -gt 0) {
+            if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
+                $data['shipChecks'] = @()
+            }
+            $data['shipChecks'] = @($data['shipChecks']) + @($maestroChecks)
+        }
     }
 
     if ($Phase -in 'all', 'regressions') {

@@ -1718,6 +1718,191 @@ $hashLike = [PSCustomObject]@{ value = @('a','b') }
 $hashVal = Get-AzdoProp $hashLike 'value'
 Assert-Eq -Label "Get-AzdoProp returns array value when 'value' present" -Expected '2' -Actual "$($hashVal.Count)"
 
+# ──────────────────────────────────────────────────────────────────────────
+# Get-MaestroOperationalChecks — BAR / darc default-channel & build lookups
+# ──────────────────────────────────────────────────────────────────────────
+Write-Host "`n[Unit] Get-MaestroOperationalChecks — BAR default-channel + per-commit build" -ForegroundColor Cyan
+
+function Invoke-MaestroChecksWithMocks {
+    <#
+        Test harness for Get-MaestroOperationalChecks.
+        Mocks Test-DarcAvailable + Invoke-DarcJson so we exercise the real check
+        logic without needing darc, BAR auth, or network access.
+
+        Parameters:
+          -DarcAvailable          $true|$false — controls Test-DarcAvailable response
+          -DefaultChannelsAuthFail switch — when set, mock returns Success=$false
+          -DefaultChannelsResponse  array of mock mappings (used when not auth-failing).
+                                    Empty array = darc returned no mappings.
+          -BuildAuthFail           switch — when set, mock returns Success=$false
+          -BuildResponse           array of mock builds; empty = no builds for HEAD
+          -SrBranch / -SrHeadSha / -Mode / -SkipChecks — passed through to ctx
+    #>
+    param(
+        [bool]$DarcAvailable = $true,
+        [switch]$DefaultChannelsAuthFail,
+        $DefaultChannelsResponse = @(),
+        [switch]$BuildAuthFail,
+        $BuildResponse = @(),
+        [string]$SrBranch = 'release/10.0.1xx-sr8',
+        [string]$SrHeadSha = 'a11840bfdeadbeefcafebabe1234567890abcdef',
+        [string]$Mode = 'in-flight',
+        [switch]$SkipChecks
+    )
+    $script:_mockDarcAvail = $DarcAvailable
+    $script:_mockDCAuthFail = [bool]$DefaultChannelsAuthFail
+    $script:_mockDC = @($DefaultChannelsResponse)
+    $script:_mockBuildAuthFail = [bool]$BuildAuthFail
+    $script:_mockBuilds = @($BuildResponse)
+
+    function global:Test-DarcAvailable { return $script:_mockDarcAvail }
+    function global:Invoke-DarcJson {
+        param([string[]]$DarcArgs)
+        if ($DarcArgs[0] -eq 'get-default-channels') {
+            if ($script:_mockDCAuthFail) {
+                return [PSCustomObject]@{ Success = $false; Data = @() }
+            }
+            return [PSCustomObject]@{ Success = $true; Data = @($script:_mockDC) }
+        }
+        if ($DarcArgs[0] -eq 'get-build') {
+            if ($script:_mockBuildAuthFail) {
+                return [PSCustomObject]@{ Success = $false; Data = @() }
+            }
+            return [PSCustomObject]@{ Success = $true; Data = @($script:_mockBuilds) }
+        }
+        return [PSCustomObject]@{ Success = $false; Data = @() }
+    }
+
+    try {
+        $ctx = @{
+            repo       = 'dotnet/maui'
+            srBranch   = $SrBranch
+            srRef      = "origin/$SrBranch"
+            srHeadSha  = $SrHeadSha
+            mode       = $Mode
+            mainBranch = 'main'
+        }
+        return Get-MaestroOperationalChecks -Ctx $ctx -SkipChecks:$SkipChecks
+    } finally {
+        Remove-Item function:global:Test-DarcAvailable -ErrorAction SilentlyContinue
+        Remove-Item function:global:Invoke-DarcJson -ErrorAction SilentlyContinue
+    }
+}
+
+# Helper: find a check whose Area STARTS WITH a prefix (the SR HEAD short SHA
+# varies per test fixture, so we can't match the full Area string).
+function Get-MaestroCheckByPrefix {
+    param($Checks, [string]$Prefix)
+    @($Checks | Where-Object { $_.Area.StartsWith($Prefix) }) | Select-Object -First 1
+}
+
+# Fixture: realistic get-default-channels response (subset, includes SR7 + SR8
+# absent, mirroring the real-world SR8-not-wired state we discovered).
+$mockChannelsWithSr7 = @(
+    [PSCustomObject]@{ id = 6945; repository = 'https://github.com/dotnet/maui'; branch = 'release/10.0.1xx-sr7'; enabled = $true; channel = [PSCustomObject]@{ id = 5174; name = '.NET 10.0.1xx SDK'; classification = 'product' } }
+    [PSCustomObject]@{ id = 6604; repository = 'https://github.com/dotnet/maui'; branch = 'main';                  enabled = $true; channel = [PSCustomObject]@{ id = 5174; name = '.NET 10.0.1xx SDK'; classification = 'product' } }
+)
+$mockChannelsWithSr8 = $mockChannelsWithSr7 + @(
+    [PSCustomObject]@{ id = 7100; repository = 'https://github.com/dotnet/maui'; branch = 'release/10.0.1xx-sr8'; enabled = $true; channel = [PSCustomObject]@{ id = 5174; name = '.NET 10.0.1xx SDK'; classification = 'product' } }
+)
+$mockChannelsSr8Disabled = $mockChannelsWithSr7 + @(
+    [PSCustomObject]@{ id = 7100; repository = 'https://github.com/dotnet/maui'; branch = 'release/10.0.1xx-sr8'; enabled = $false; channel = [PSCustomObject]@{ id = 5174; name = '.NET 10.0.1xx SDK'; classification = 'product' } }
+)
+$mockBuildForHead = @(
+    [PSCustomObject]@{
+        id = 318278; repository = 'https://github.com/dotnet/maui'; branch = 'release/10.0.1xx-sr8'
+        commit = 'a11840bfdeadbeefcafebabe1234567890abcdef'; buildNumber = '20260610.5'
+        dateProduced = '6/11/2026 1:53 AM'; buildLink = 'https://dev.azure.com/dnceng/internal/_build/results?buildId=2997620'
+        azdoBuildId = 2997620; released = $false; channels = @('.NET 10.0.1xx SDK')
+    }
+)
+
+# ── Scenario 1: darc unavailable (CI) — both checks UNKNOWN with hints ──
+$s1 = Invoke-MaestroChecksWithMocks -DarcAvailable $false
+Assert-Eq -Label "darc-unavailable: emits exactly 2 checks" -Expected 2 -Actual @($s1).Count
+$s1Map = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'BAR default-channel'
+Assert-Eq -Label "darc-unavailable: mapping check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Map.Status
+Assert-Eq -Label "darc-unavailable: mapping NextAction mentions add-default-channel" -Expected $true `
+    -Actual ($s1Map.NextAction -match 'add-default-channel')
+$s1Build = Get-MaestroCheckByPrefix -Checks $s1 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "darc-unavailable: build check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s1Build.Status
+
+# ── Scenario 2: SR branch present in BAR mappings + build for HEAD → 2x READY ──
+$s2 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $mockBuildForHead
+$s2Map = Get-MaestroCheckByPrefix -Checks $s2 -Prefix 'BAR default-channel'
+Assert-Eq -Label "sr-mapped + build-present: mapping is READY" -Expected 'READY' -Actual $s2Map.Status
+Assert-Eq -Label "sr-mapped + build-present: mapping details name the channel" -Expected $true `
+    -Actual ($s2Map.Details -match '\.NET 10\.0\.1xx SDK')
+$s2Build = Get-MaestroCheckByPrefix -Checks $s2 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "sr-mapped + build-present: build check is READY" -Expected 'READY' -Actual $s2Build.Status
+Assert-Eq -Label "sr-mapped + build-present: build details show build number" -Expected $true `
+    -Actual ($s2Build.Details -match '20260610\.5')
+
+# ── Scenario 3: SR branch MISSING from BAR (the SR8 real-world bug) → BLOCKED ──
+$s3 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr7 -BuildResponse @()
+$s3Map = Get-MaestroCheckByPrefix -Checks $s3 -Prefix 'BAR default-channel'
+Assert-Eq -Label "sr-not-mapped: mapping is BLOCKED" -Expected 'BLOCKED' -Actual $s3Map.Status
+Assert-Eq -Label "sr-not-mapped: mapping details mention 'NO default-channel mapping'" -Expected $true `
+    -Actual ($s3Map.Details -match 'NO default-channel mapping')
+Assert-Eq -Label "sr-not-mapped: mapping NextAction has the exact darc add-default-channel command" -Expected $true `
+    -Actual ($s3Map.NextAction -match 'darc add-default-channel.*--channel ".NET 10\.0\.1xx SDK"')
+
+# ── Scenario 4: SR mapping exists but disabled → still BLOCKED (treated as missing) ──
+$s4 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsSr8Disabled
+$s4Map = Get-MaestroCheckByPrefix -Checks $s4 -Prefix 'BAR default-channel'
+Assert-Eq -Label "sr-mapped-but-disabled: still BLOCKED" -Expected 'BLOCKED' -Actual $s4Map.Status
+
+# ── Scenario 5: get-default-channels returns null (auth failure) → UNKNOWN ──
+$s5 = Invoke-MaestroChecksWithMocks -DefaultChannelsAuthFail
+$s5Map = Get-MaestroCheckByPrefix -Checks $s5 -Prefix 'BAR default-channel'
+Assert-Eq -Label "darc-call-failed: mapping is UNKNOWN with auth-issue hint" -Expected 'UNKNOWN' -Actual $s5Map.Status
+Assert-Eq -Label "darc-call-failed: mapping details mention auth/network" -Expected $true `
+    -Actual ($s5Map.Details -match 'auth')
+
+# ── Scenario 6: mapping OK but no build for HEAD → WATCH (CI in flight) ──
+$s6 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse @()
+$s6Build = Get-MaestroCheckByPrefix -Checks $s6 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "no-build-for-head: build check is WATCH (not BLOCKED — transient)" -Expected 'WATCH' -Actual $s6Build.Status
+
+# ── Scenario 7: candidate mode → no checks emitted (SR doesn't exist yet) ──
+$s7 = Invoke-MaestroChecksWithMocks -Mode 'candidate' -DefaultChannelsResponse $mockChannelsWithSr8
+Assert-Eq -Label "candidate-mode: emits 0 checks" -Expected 0 -Actual @($s7).Count
+
+# ── Scenario 8: -SkipChecks switch → no checks emitted ──
+$s8 = Invoke-MaestroChecksWithMocks -SkipChecks -DefaultChannelsResponse $mockChannelsWithSr8
+Assert-Eq -Label "skip-checks: emits 0 checks" -Expected 0 -Actual @($s8).Count
+
+# ── Scenario 9: non-SR branch shape → no checks (don't guess channel name) ──
+$s9 = Invoke-MaestroChecksWithMocks -SrBranch 'release/11.0.1xx-preview5' -DefaultChannelsResponse $mockChannelsWithSr8
+Assert-Eq -Label "preview-branch (not -srN): emits 0 checks (channel inference doesn't apply)" -Expected 0 -Actual @($s9).Count
+
+# ── Scenario 10: SR HEAD SHA absent from ctx → only mapping check, no build check ──
+$s10 = Invoke-MaestroChecksWithMocks -SrHeadSha '' -DefaultChannelsResponse $mockChannelsWithSr8
+$s10Build = Get-MaestroCheckByPrefix -Checks $s10 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "no-head-sha: build check is absent (only mapping emitted)" -Expected $true -Actual ($null -eq $s10Build)
+Assert-Eq -Label "no-head-sha: still emits exactly 1 check (the mapping)" -Expected 1 -Actual @($s10).Count
+
+# ── Scenario 11: get-build returns null (auth failure) → build check UNKNOWN ──
+$s11 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildAuthFail
+$s11Build = Get-MaestroCheckByPrefix -Checks $s11 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "build-call-failed: build check is UNKNOWN" -Expected 'UNKNOWN' -Actual $s11Build.Status
+
+# ── Scenario 12: multiple builds for HEAD → picks highest BAR id ──
+$multipleBuilds = @(
+    [PSCustomObject]@{ id = 318100; buildNumber = '20260609.1'; buildLink = 'https://example/1'; channels = @('.NET 10.0.1xx SDK') }
+    [PSCustomObject]@{ id = 318278; buildNumber = '20260610.5'; buildLink = 'https://example/2'; channels = @('.NET 10.0.1xx SDK') }
+    [PSCustomObject]@{ id = 318200; buildNumber = '20260609.7'; buildLink = 'https://example/3'; channels = @('.NET 10.0.1xx SDK') }
+)
+$s12 = Invoke-MaestroChecksWithMocks -DefaultChannelsResponse $mockChannelsWithSr8 -BuildResponse $multipleBuilds
+$s12Build = Get-MaestroCheckByPrefix -Checks $s12 -Prefix 'BAR build for SR HEAD'
+Assert-Eq -Label "multiple-builds: details report highest-id build (20260610.5)" -Expected $true `
+    -Actual ($s12Build.Details -match '20260610\.5')
+
+# ── Scenario 13: SR7 branch (real, currently mapped) → READY (sanity) ──
+$s13 = Invoke-MaestroChecksWithMocks -SrBranch 'release/10.0.1xx-sr7' -DefaultChannelsResponse $mockChannelsWithSr7 -BuildResponse $mockBuildForHead
+$s13Map = Get-MaestroCheckByPrefix -Checks $s13 -Prefix 'BAR default-channel'
+Assert-Eq -Label "sr7-already-mapped: READY" -Expected 'READY' -Actual $s13Map.Status
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })
