@@ -105,6 +105,18 @@ workiq.ask_work_iq:
 
 Attach WorkIQ findings to your report as "Why rejected:" detail bullets under each rejected entry. If WorkIQ returns nothing, say so explicitly — never guess.
 
+### 5b. Resolve any `UNKNOWN` ship checks via MCP
+
+The script's ship-check section may include `UNKNOWN` rows when a tool isn't available in the running environment. **You** can resolve those via MCP and patch the report:
+
+| `UNKNOWN` row | MCP tool to call | What to do with the result |
+|---|---|---|
+| `BAR default-channel mapping (release/X.Y.Zxx-srN → .NET <band> SDK)` | `maestro_default_channels` with `repository: https://github.com/dotnet/maui` | Find the mapping for `branch: release/X.Y.Zxx-srN`. If present + enabled → upgrade row to `READY`. If missing or disabled → upgrade row to `BLOCKED` and surface the exact `darc add-default-channel` command from the script's `Next action`. |
+| `BAR build for SR HEAD (<short-sha>)` | `maestro_builds` with `commit: <full-sha>` and `repository: https://github.com/dotnet/maui` | If at least one build is returned → upgrade row to `READY` and cite the buildNumber/id. If empty → upgrade row to `WATCH` (transient, CI still running). |
+| `Milestone hygiene` (API failure) | Re-run `gh auth status` and retry the script; the milestone checks use plain `gh api` so an auth-fail UNKNOWN means your gh token isn't scoped right. |
+
+Always cite the MCP query result in your write-up (e.g. "Verified via `maestro_default_channels`: SR8 is **not** in the mapping list — see darc command above").
+
 ### 6. Present the verdict
 Lead with a 1-2 sentence overall verdict (green / red-needs-review / blocked), then the per-pipeline CI table, then the regression-tier tables, then recommended actions.
 

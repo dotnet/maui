@@ -135,6 +135,8 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
 | `-OutputFormat` | No | `both` | `json`, `markdown`, or `both`. |
 | `-MaxIssues` | No | `100` | Cap on regression issues to walk. |
 | `-NoFetch` | No | off | Skip `git fetch`. |
+| `-SkipMaestroChecks` | No | off | Skip BAR/darc operational checks (default-channel mapping + per-HEAD build lookup). Auto-skipped silently if `darc` isn't on PATH; this switch forces the skip even when darc IS available. |
+| `-SkipMilestoneChecks` | No | off | Skip GitHub-milestone hygiene checks (current/next milestone existence + stale-open detection). |
 
 ### `Get-PreviewReadiness.ps1` (Preview)
 
@@ -198,6 +200,27 @@ Each candidate fix PR is classified with confidence + evidence:
 | `stale` | Latest build is older than the survey ref HEAD — must re-run before judging |
 | `partial-unknown` | At least one pipeline couldn't be queried, but no queried pipeline is red or stale |
 | `unknown` | No pipeline result could be classified |
+
+## Ship-readiness checks (`Get-ReleaseReadiness.ps1`)
+
+The SR readiness report rolls operational checks into a single **Blocking** summary at the top, so a release captain sees what must clear before ship without scrolling. Each check emits `READY`, `WATCH`, `BLOCKED`, or `UNKNOWN`:
+
+| Check | When | Status meanings |
+|-------|------|-----------------|
+| **`Versions.props bump`** | All SR runs | `BLOCKED` if `eng/Versions.props` on `main` hasn't been bumped past the current SR cycle (next SR has nowhere to flow). |
+| **`Bug template lists SR version`** | All SR runs | `BLOCKED` if `.github/ISSUE_TEMPLATE/bug-report.yml` on `main` is missing an entry for the SR being shipped (users can't file bugs against the version). |
+| **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. |
+| **`BAR default-channel mapping`** | SR branches matching `release/X.Y.Zxx-srN` | `BLOCKED` if the SR branch is not wired to the `.NET <band> SDK` channel in BAR. `UNKNOWN` if `darc` isn't on PATH (report includes the exact verification command). |
+| **`BAR build for SR HEAD`** | When darc is available + SR HEAD SHA known | `READY` if BAR has a published build for the SR HEAD commit. `WATCH` (not blocking — transient) if CI hasn't published one yet. |
+| **`Milestone for current cycle`** | SR + preview branches | `BLOCKED` if the current cycle's milestone (e.g. `.NET 10 SR8` or `.NET 11.0-preview6`) doesn't exist in the GitHub milestone list — fixed issues have nowhere to land. |
+| **`Milestone for next cycle`** | SR + preview branches | `BLOCKED` if the next cycle's milestone isn't pre-created — open issues can't roll forward when current ships. |
+| **`Stale open milestones`** | SR + preview branches | `BLOCKED` if any milestones in the same major + same cycle type (SR or preview) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). |
+| **`CI Failure Scanner signals`** | All SR runs | `WATCH` if fresh ci-scan issues are filed in the last 24h. |
+| **`Known Build Errors`** | All SR runs | `WATCH` if open Known Build Error issues exist that may explain background CI noise. |
+
+### Maestro / BAR check gating
+
+The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When darc isn't installed (most CI environments), both checks emit `UNKNOWN` with the exact local-verification command embedded in the row's `Next action` — so the report **never silently skips** them. The release-readiness agent runs the same checks via the `maestro_*` MCP tools when the script reports `UNKNOWN`.
 
 ## Methodology
 
