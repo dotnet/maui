@@ -832,6 +832,100 @@ Assert-Eq -Label "contradictory merged backport evidence is low confidence" `
 Assert-Eq -Label "contradictory evidence explains missing SR git contents" `
     -Expected $true -Actual (($classification.evidence -join "`n") -match 'not found in SR git contents')
 
+# ───── Bug regression: issue fixed by SR-direct PR (closing keyword on SR commit) ─────
+# Real-world case: issue #35756 (TabbedPage modal) was fixed by PR #35768 opened
+# directly against release/10.0.1xx-sr7. A later PR #35803 opened against main
+# also closes the same issue (forward-flow). The classifier MUST recognize the
+# SR commit's closing keyword and classify 'in-sr-active', not 'open-on-main'.
+Write-Host "`n[Unit] Classify-RegressionCandidate (issue fixed by SR-direct PR)" -ForegroundColor Cyan
+
+# Mock: PR #35803 is an OPEN PR against main (the forward-flow companion). The
+# classifier would normally pick it up via timeline cross-references and report
+# 'open-on-main'. With the fix, the SR-direct fix in srContents.fixedIssues
+# takes precedence.
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix OnNavigatedTo not firing after PopModalAsync'
+        state       = 'OPEN'
+        baseRefName = 'main'
+        mergedAt    = $null
+        closedAt    = $null
+        body        = 'Fixes #35756'
+        mergeCommit = $null
+        files       = @([pscustomobject]@{ path = 'src/Controls/src/Core/Page.cs'; additions = 5; deletions = 1 })
+    }
+}
+function Get-BackportPrsForSr { param($Repo, $SrBranch, $SourcePrNumber) return @() }
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $false }
+
+$srContentsWithDirectFix = @{
+    sourcePrs    = @(35768)
+    backportPrs  = @()
+    reverts      = @()
+    fixedIssues  = @(35756)
+    commits      = @(
+        @{
+            sha             = 'ddf238c74fb10bc42b1722495117e216cd43d772'
+            author          = 'praveenkumarkarunanithi'
+            date            = '2026-06-05T17:17:07+05:30'
+            subject         = 'Fix OnNavigatedTo not firing after PopModalAsync (#35768)'
+            isRevert        = $false
+            backportPr      = 35768
+            sourcePr        = $null
+            cherrySourceSha = $null
+            fixedIssues     = @(35756)
+            origin          = 'primary'
+        }
+    )
+}
+
+$cls = Classify-RegressionCandidate `
+    -Issue @{ number = 35756 } `
+    -CandidatePrs @(35803) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents $srContentsWithDirectFix
+
+Assert-Eq -Label "SR-direct fix (closing keyword on SR commit) → in-sr-active not open-on-main" `
+    -Expected 'in-sr-active' -Actual $cls.classification
+Assert-Eq -Label "SR-direct fix → high confidence" `
+    -Expected 'high' -Actual $cls.confidence
+Assert-Eq -Label "SR-direct fix → evidence cites the SR fix PR (#35768)" `
+    -Expected $true -Actual (($cls.evidence -join "`n") -match '#35768')
+Assert-Eq -Label "SR-direct fix → candidateFixPrs surfaces the SR PR (not the open main PR)" `
+    -Expected 35768 -Actual ([int]$cls.candidateFixPrs[0].number)
+Assert-Eq -Label "SR-direct fix → recommendedAction says no action" `
+    -Expected $true -Actual ($cls.recommendedAction -match 'No action')
+
+# Edge: SR-direct fix that was REVERTED on SR should classify as in-sr-reverted
+$srContentsWithRevertedFix = @{
+    sourcePrs    = @(35768)
+    backportPrs  = @()
+    reverts      = @(@{ revertsPr = $null; revertBackportPr = 35768 })
+    fixedIssues  = @(35756)
+    commits      = @(
+        @{ backportPr = 35768; sourcePr = $null; fixedIssues = @(35756); isRevert = $false }
+    )
+}
+$clsRev = Classify-RegressionCandidate `
+    -Issue @{ number = 35756 } `
+    -CandidatePrs @(35803) `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents $srContentsWithRevertedFix
+
+Assert-Eq -Label "SR-direct fix REVERTED → classified as in-sr-reverted" `
+    -Expected 'in-sr-reverted' -Actual $clsRev.classification
+
+# Edge: backward compat — partial SrContents shape (no .commits field) shouldn't throw
+$cls2 = Classify-RegressionCandidate `
+    -Issue @{ number = 99999 } `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Partial SrContents (no commits/fixedIssues) does not throw" `
+    -Expected 'no-fix-yet' -Actual $cls2.classification
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 

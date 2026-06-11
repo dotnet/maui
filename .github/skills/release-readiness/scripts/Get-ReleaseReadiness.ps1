@@ -1456,6 +1456,72 @@ function Classify-RegressionCandidate {
         if ($r.revertBackportPr) { $revertedPrSet[$r.revertBackportPr] = $true }
     }
 
+    # === EARLY-EXIT: issue is already fixed by a commit IN the SR contents ===
+    #
+    # Bug this guards against: some fixes are opened DIRECTLY against an SR branch
+    # (e.g. urgent partner regressions, SR-hotfix PRs like #35768 against
+    # release/10.0.1xx-sr7). They have no main-side companion at fix time —
+    # any later main PR (e.g. #35803) is just forward-flow, not the original fix.
+    #
+    # The downstream candidate-PR walk below would happily pick the OPEN main PR
+    # and classify as 'open-on-main' ("waiting to merge then backport"), even
+    # though the SR already has the fix.
+    #
+    # $SrContents.fixedIssues is the deterministic ground truth: it's populated
+    # from `Fixes #N` / `Closes #N` closing keywords in the bodies of PRs that
+    # actually merged into the SR contents (or its inherited prior-SR contents).
+    # If the issue is in there, the fix has shipped — period.
+    #
+    # Defensive: $SrContents shape can be partial in unit-test fixtures (missing
+    # .commits / .fixedIssues). Production Get-SrCommits always populates both.
+    $hasCommits = if ($SrContents -is [hashtable]) { $SrContents.ContainsKey('commits') }
+                  else { $SrContents.PSObject.Properties.Name -contains 'commits' }
+    $fixingSrCommits = @()
+    if ($hasCommits) {
+        $fixingSrCommits = @($SrContents.commits | Where-Object {
+            $_.fixedIssues -and ($_.fixedIssues -contains [int]$Issue.number)
+        })
+    }
+    if ($fixingSrCommits.Count -gt 0) {
+        # Determine the canonical SR fix PR (prefer the explicit backport/sourcePr;
+        # the SR commit always has at least one of those if it was a real PR merge).
+        $fixPrs = @()
+        foreach ($c in $fixingSrCommits) {
+            if ($c.backportPr) { $fixPrs += [int]$c.backportPr }
+            elseif ($c.sourcePr) { $fixPrs += [int]$c.sourcePr }
+        }
+        $fixPrs = @($fixPrs | Sort-Object -Unique)
+
+        # If EVERY fixing PR was reverted on SR, the fix didn't actually ship.
+        $unreverted = @($fixPrs | Where-Object { -not $revertedPrSet.ContainsKey($_) })
+
+        if ($unreverted.Count -gt 0) {
+            $prList = ($unreverted | ForEach-Object { "#$_" }) -join ', '
+            return @{
+                classification    = 'in-sr-active'
+                confidence        = 'high'
+                evidence          = @("SR contents already include a fix for #$($Issue.number) via $prList (closing keyword on merged SR commit)")
+                candidateFixPrs   = @($unreverted | ForEach-Object {
+                    @{ number = $_; baseRef = 'release/*'; state = 'MERGED'; onMain = $false; evidenceType = 'sr-direct-fix'; backports = @(); title = '' }
+                })
+                recommendedAction = 'No action — fix is already shipping in this SR'
+            }
+        } elseif ($fixPrs.Count -gt 0) {
+            # Every fix PR we found was reverted — still surface it as reverted
+            # so the captain sees the regression isn't actually fixed.
+            $prList = ($fixPrs | ForEach-Object { "#$_" }) -join ', '
+            return @{
+                classification    = 'in-sr-reverted'
+                confidence        = 'high'
+                evidence          = @("All SR fixes for #$($Issue.number) were reverted on SR: $prList")
+                candidateFixPrs   = @()
+                recommendedAction = 'Investigate: SR fix was reverted; needs a new fix or revert-of-revert'
+            }
+        }
+        # If we found fixing commits but couldn't extract any PR number,
+        # fall through to the candidate-PR walk (best-effort).
+    }
+
     # Filter candidates to those with high evidence for this issue
     $strongPrs = @()
     $sawRevertCandidate = $false
