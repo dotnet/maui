@@ -940,6 +940,7 @@ foreach ($case in @(
     @{ Cls = 'needs-human-review';         Tier = 2 }
     @{ Cls = 'in-sr-active';               Tier = 3 }
     @{ Cls = 'closed-as-duplicate';        Tier = 3 }
+    @{ Cls = 'out-of-scope-future-sr';     Tier = 3 }
     @{ Cls = 'something-unknown';          Tier = 2 }   # safe-default: risk
 )) {
     Assert-Eq -Label "Get-VerdictTier '$($case.Cls)' = $($case.Tier)" `
@@ -2382,6 +2383,45 @@ Assert-Eq -Label "T13: patch=0 (preview) → cadence second-tuesday" -Expected '
 # Scenario T14: patch=100 (triple digit, % 10 == 0) → 2nd-Tuesday
 $t14 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 100
 Assert-Eq -Label "T14: patch=100 → cadence second-tuesday" -Expected 'second-tuesday' -Actual $t14.Cadence
+
+# ───── Get-ExpectedShipDate with MainBumpDate anchoring ─────
+# The real bug: without an anchor, the fallback rolls forward when the SR's
+# month passes — so SR8 (patch=80, expected June 9) wrongly slid into July 14
+# (SR9's window) once June 9 passed. MainBumpDate fixes that.
+
+# T15: SR8 — main bumped 70→80 on 2026-05-13 → SR8 ships 2nd Tue of June (06-09).
+# Today = 2026-06-01 (BEFORE June 9) → date = June 9, days = 8, not missed.
+$t15 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-01') -PatchVersion 80 -MainBumpDate ([DateTime]'2026-05-13')
+Assert-Eq -Label "T15: bump 05-13 + today 06-01 → 2026-06-09"    -Expected '2026-06-09'      -Actual $t15.Date.ToString('yyyy-MM-dd')
+Assert-Eq -Label "T15: days from 06-01 = 8"                       -Expected 8                 -Actual $t15.DaysFromNow
+Assert-Eq -Label "T15: not missed"                                -Expected $false            -Actual $t15.MissedWindow
+Assert-Eq -Label "T15: anchorSource = main-bump"                  -Expected 'main-bump'       -Actual $t15.AnchorSource
+Assert-Eq -Label "T15: cadence = second-tuesday"                  -Expected 'second-tuesday'  -Actual $t15.Cadence
+
+# T16: SR8 — main bumped 70→80 on 2026-05-13. Today = 2026-06-11 (AFTER June 9).
+# WITHOUT anchor, function would say July 14 (SR9 territory). WITH anchor,
+# we get the correct June 9 date but flagged as missed.
+$t16 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 80 -MainBumpDate ([DateTime]'2026-05-13')
+Assert-Eq -Label "T16: bump 05-13 + today 06-11 → 2026-06-09 (still anchored)" -Expected '2026-06-09' -Actual $t16.Date.ToString('yyyy-MM-dd')
+Assert-Eq -Label "T16: missedWindow = true"                       -Expected $true             -Actual $t16.MissedWindow
+Assert-Eq -Label "T16: days from 06-11 = -2"                      -Expected -2                -Actual $t16.DaysFromNow
+Assert-Eq -Label "T16: cadence = second-tuesday-missed"           -Expected 'second-tuesday-missed' -Actual $t16.Cadence
+
+# T17: SR9 — main bumped 80→90 on 2026-06-15 → SR9 ships 2nd Tue of July (07-14).
+# Today = 2026-06-11 → before bump, so this is more theoretical, but if you call
+# with bump date 06-15 you get July 14.
+$t17 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 90 -MainBumpDate ([DateTime]'2026-06-15')
+Assert-Eq -Label "T17: bump 06-15 → 2026-07-14"                   -Expected '2026-07-14'      -Actual $t17.Date.ToString('yyyy-MM-dd')
+Assert-Eq -Label "T17: anchorSource = main-bump"                  -Expected 'main-bump'       -Actual $t17.AnchorSource
+
+# T18: anchor wins over fallback even when both would give same answer.
+$t18 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-01') -PatchVersion 80
+Assert-Eq -Label "T18: no MainBumpDate → fallback (current-month anchor)" -Expected 'fallback-current-month' -Actual $t18.AnchorSource
+
+# T19: hotfix patch ignores MainBumpDate (cadence wins).
+$t19 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 81 -MainBumpDate ([DateTime]'2026-05-13')
+Assert-Eq -Label "T19: patch=81 + MainBumpDate → asap-hotfix"     -Expected 'asap-hotfix'     -Actual $t19.Cadence
+Assert-Eq -Label "T19: missedWindow = false for hotfix"           -Expected $false            -Actual $t19.MissedWindow
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })

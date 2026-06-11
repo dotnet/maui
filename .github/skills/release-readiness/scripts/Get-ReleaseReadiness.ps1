@@ -312,15 +312,27 @@ function Get-ExpectedShipDate {
         Returns the expected ship date for a .NET MAUI release.
     .DESCRIPTION
         Cadence depends on the PatchVersion being shipped:
-          - Multiples of 10 (80, 90, 100…) and previews → 2nd Tuesday of the month
+          - Multiples of 10 (80, 90, 100…) and previews → 2nd Tuesday of a month
             (cross-team .NET convention — used by dotnet/sdk, runtime, MAUI, VS, etc.)
           - Anything else (81, 82, 91…) → ASAP hotfix, no cadence
 
+        Anchoring (which month's 2nd Tuesday?):
+          - If `-MainBumpDate` is provided, the anchor is the month immediately
+            AFTER main was bumped to this SR's cycle base PatchVersion. This is
+            the deterministic mapping the team actually uses: main bumped 70→80
+            on 2026-05-13 → SR8 ships 2nd Tuesday of June 2026 = June 9.
+          - If no anchor: fall back to "next 2nd Tuesday from today". This is
+            only correct when readying the *current* SR before its window;
+            after the window passes, the fallback wrongly slides into the next
+            SR's slot. Production callers should always pass MainBumpDate.
+
         Returns [PSCustomObject]@{
-            Cadence       = 'second-tuesday' | 'asap-hotfix'
+            Cadence       = 'second-tuesday' | 'second-tuesday-missed' | 'asap-hotfix'
             Date          = [DateTime] (UTC, 00:00) | $null when ASAP
-            DaysFromNow   = [int] | $null
-            FormattedLong = "Tuesday July 14, 2026" | "ASAP (hotfix patch)"
+            DaysFromNow   = [int] | $null  (negative when the window passed)
+            FormattedLong = "Tuesday June 9, 2026" | "ASAP (hotfix patch)"
+            MissedWindow  = [bool]
+            AnchorSource  = 'main-bump' | 'fallback-current-month' | 'fallback-rolled'
             Note          = explanation string suitable for the report header
         }
     .NOTES
@@ -330,7 +342,8 @@ function Get-ExpectedShipDate {
     #>
     param(
         [DateTime]$ReferenceDate = [DateTime]::UtcNow.Date,
-        [Nullable[int]]$PatchVersion = $null
+        [Nullable[int]]$PatchVersion = $null,
+        [Nullable[DateTime]]$MainBumpDate = $null
     )
     # Hotfix patch (not a multiple of 10) → no cadence, ship ASAP.
     if ($null -ne $PatchVersion -and ($PatchVersion % 10) -ne 0) {
@@ -339,6 +352,8 @@ function Get-ExpectedShipDate {
             Date          = $null
             DaysFromNow   = $null
             FormattedLong = 'ASAP (hotfix patch)'
+            MissedWindow  = $false
+            AnchorSource  = 'asap'
             Note          = "PatchVersion ``$PatchVersion`` is a hotfix on top of an existing release — ships as soon as ready, no 2nd-Tuesday wait."
         }
     }
@@ -355,19 +370,120 @@ function Get-ExpectedShipDate {
         return $firstTuesday.AddDays(7)
     }
 
-    $candidate = _SecondTuesdayOf -Year $today.Year -Month $today.Month
-    if ($candidate -lt $today) {
-        # This month's already passed — roll to next month.
-        $next = $today.AddMonths(1)
-        $candidate = _SecondTuesdayOf -Year $next.Year -Month $next.Month
+    $anchorSource = $null
+    if ($MainBumpDate) {
+        # Anchor on the month AFTER main was bumped to this SR's cycle.
+        # Convention: main bumped to N*10 in month M → SR_N ships month (M+1).
+        $bumpedMonth = $MainBumpDate.Date.AddMonths(1)
+        $candidate = _SecondTuesdayOf -Year $bumpedMonth.Year -Month $bumpedMonth.Month
+        $anchorSource = 'main-bump'
+    } else {
+        # Fallback: "next 2nd Tuesday from today". Only safe BEFORE the window.
+        $candidate = _SecondTuesdayOf -Year $today.Year -Month $today.Month
+        $anchorSource = 'fallback-current-month'
+        if ($candidate -lt $today) {
+            $next = $today.AddMonths(1)
+            $candidate = _SecondTuesdayOf -Year $next.Year -Month $next.Month
+            $anchorSource = 'fallback-rolled'
+        }
+    }
+
+    $daysFromNow = [int]($candidate - $today).TotalDays
+    $missedWindow = ($anchorSource -eq 'main-bump' -and $daysFromNow -lt 0)
+
+    if ($missedWindow) {
+        $cadence = 'second-tuesday-missed'
+        $note = "Scheduled ship date for this SR was the 2nd Tuesday of $($candidate.ToString('MMMM yyyy')) (anchored on the main-bump for this cycle). That date has passed — coordinate with the release captain on the next valid window."
+    } else {
+        $cadence = 'second-tuesday'
+        $note = '.NET releases ship on the 2nd Tuesday of each month.'
     }
 
     [PSCustomObject]@{
-        Cadence       = 'second-tuesday'
+        Cadence       = $cadence
         Date          = $candidate
-        DaysFromNow   = [int]($candidate - $today).TotalDays
+        DaysFromNow   = $daysFromNow
         FormattedLong = $candidate.ToString('dddd MMMM d, yyyy')
-        Note          = '.NET releases ship on the 2nd Tuesday of each month.'
+        MissedWindow  = $missedWindow
+        AnchorSource  = $anchorSource
+        Note          = $note
+    }
+}
+
+function Get-MainBumpDateForCycle {
+    <#
+    .SYNOPSIS
+        Finds the date `origin/main` was bumped to a particular PatchVersion.
+    .DESCRIPTION
+        Walks `git log` for commits on main that ADDED `<PatchVersion>$CycleBase</PatchVersion>`
+        in eng/Versions.props, returning the MOST RECENT such commit. The date
+        of that commit anchors the SR's ship-date calculation: an SR with
+        cycle base N*10 ships the 2nd Tuesday of the month AFTER main bumped
+        to N*10.
+
+        Critical caveats `git log -S` does NOT handle:
+          1. `-S` matches commits where the count of the substring CHANGED —
+             so it matches both the "add 80" commit (70→80) AND the "remove
+             80" commit (80→90). We need only the ADD commit.
+          2. The same PatchVersion value (e.g. 80) recurs across major-version
+             cycles: MAUI 8.x, 9.x and 10.x each had a `<PatchVersion>80</PatchVersion>`
+             line at different points in history. If MajorVersion is provided,
+             we validate the commit had the matching `<MajorVersion>` value,
+             which eliminates the cross-major ambiguity entirely.
+
+        Returns [PSCustomObject]@{ Sha; Date (UTC); Subject } or $null.
+    #>
+    param(
+        [Parameter(Mandatory)][int]$CycleBase,
+        [Nullable[int]]$MajorVersion = $null,
+        [string]$MainRef = 'origin/main'
+    )
+    $needle = "<PatchVersion>$CycleBase</PatchVersion>"
+    try {
+        # Default order is newest-first. Walk candidates and pick the most
+        # recent one where the line was ADDED (not removed) AND, if requested,
+        # the MajorVersion at that commit matches.
+        $shas = git log -S $needle --pretty='%H' $MainRef -- eng/Versions.props 2>$null
+        if (-not $shas) { return $null }
+        foreach ($s in @($shas)) {
+            $sTrim = $s.Trim(); if (-not $sTrim) { continue }
+
+            # Verify the diff ADDED the line (the bump event), not removed it
+            # (a subsequent re-bump that took us past this cycle).
+            $diff = git show --no-color --format= $sTrim -- eng/Versions.props 2>$null
+            $addedNeedle = $false
+            foreach ($line in ($diff -split "`r?`n")) {
+                if ($line -like "+*" -and $line -notlike "+++*" -and $line -match [regex]::Escape($needle)) {
+                    $addedNeedle = $true; break
+                }
+            }
+            if (-not $addedNeedle) { continue }
+
+            # Validate MajorVersion at that commit (eliminates cross-major collisions).
+            if ($null -ne $MajorVersion) {
+                $content = git show "$($sTrim):eng/Versions.props" 2>$null
+                if (-not $content) { continue }
+                # `git show` returns an [Object[]] of lines. Join to a single
+                # string so the regex match works against the whole file
+                # rather than per-line (where the MajorVersion match would
+                # never fire because each individual line doesn't contain it).
+                if ($content -is [array]) { $content = $content -join "`n" }
+                if ($content -notmatch "<MajorVersion>$MajorVersion</MajorVersion>") { continue }
+            }
+
+            $line2 = git show -s --format='%cI%x09%s' $sTrim 2>$null
+            if (-not $line2) { continue }
+            $parts = $line2 -split "`t", 2
+            if ($parts.Count -lt 2) { continue }
+            return [PSCustomObject]@{
+                Sha     = $sTrim
+                Date    = ([DateTime]::Parse($parts[0])).ToUniversalTime()
+                Subject = $parts[1]
+            }
+        }
+        return $null
+    } catch {
+        return $null
     }
 }
 
@@ -479,8 +595,55 @@ function Get-ReleaseShipChecks {
         $labelOk = ($vp.PreReleaseVersionLabel -eq $expectedLabel)
         $stabilizeOk = ($vp.StabilizePackageVersion -eq $expectedStabilize)
         if ($labelOk -and $stabilizeOk) {
+            # Provenance: was the flip done by an SR-direct commit, or just
+            # inherited from the previous SR via the catch-up merge?
+            #
+            # Walk NON-MERGE commits on this SR branch that aren't on the
+            # previous SR branch and aren't on main. Look for one that ADDED
+            # the `servicing` label line. If none → the flip is inherited via
+            # merge from the previous SR (functionally fine, the branch WILL
+            # produce stable packages, but worth surfacing so the release
+            # captain knows there was no deliberate SR-direct flip PR).
+            $prevSrBranch = "release/$major.$minor.1xx-sr$($targetSr - 1)"
+            $prevSrRef    = "origin/$prevSrBranch"
+            $mainRef      = if ($Ctx -is [hashtable]) {
+                if ($Ctx.ContainsKey('mainBranch')) { "origin/$($Ctx['mainBranch'])" } else { 'origin/main' }
+            } elseif ($Ctx.PSObject.Properties.Name -contains 'mainBranch') {
+                "origin/$($Ctx.mainBranch)"
+            } else { 'origin/main' }
+            $flipDirectSha = $null
+            try {
+                $shas = git log --no-merges --pretty='%H' "origin/$($Ctx.srBranch)" "^$prevSrRef" "^$mainRef" -- eng/Versions.props 2>$null
+                foreach ($s in @($shas)) {
+                    $sTrim = $s.Trim(); if (-not $sTrim) { continue }
+                    $diff = git show --no-color --format= $sTrim -- eng/Versions.props 2>$null
+                    if ($diff -match '(?m)^\+\s*<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>') {
+                        $flipDirectSha = $sTrim
+                        break
+                    }
+                }
+            } catch { }
+
+            if ($flipDirectSha) {
+                $shortSha = $flipDirectSha.Substring(0, [Math]::Min(10, $flipDirectSha.Length))
+                $details = "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` (set by SR-direct commit ``$shortSha``) — branch is configured to produce stable release packages."
+            } else {
+                # Find the merge commit on this SR branch that brought in `prevSrBranch`.
+                $mergeShaShort = $null
+                try {
+                    $mergeSha = git log --merges --pretty='%H' --first-parent "origin/$($Ctx.srBranch)" -- eng/Versions.props 2>$null | Select-Object -First 1
+                    if ($mergeSha) { $mergeShaShort = $mergeSha.Trim().Substring(0, 10) }
+                } catch { }
+                $provenance = if ($mergeShaShort) {
+                    "inherited from ``$prevSrBranch`` via catch-up merge ``$mergeShaShort``"
+                } else {
+                    "inherited from ``$prevSrBranch``"
+                }
+                $details = "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch IS configured to produce stable release packages, but the values were $provenance, not from an SR-direct flip PR (no commit on ``$($Ctx.srBranch)`` alone has set ``PreReleaseVersionLabel=servicing``). Functionally fine; surfaced so the release captain knows the workflow deviated from the previous SR's pattern (e.g., SR$($targetSr-1)'s explicit flip PR)."
+            }
+
             $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
-                -Details "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch is configured to produce stable release packages." `
+                -Details $details `
                 -NextAction "No change needed."
         } else {
             $missing = @()
@@ -1722,6 +1885,49 @@ function Get-RegressionCandidates {
     }
     Write-Host "  Found $($allIssues.Count) unique regression issues" -ForegroundColor Gray
 
+    # === Future-SR scope guard ===
+    # Three deterministic signals identify issues that match the regression
+    # label set but actually belong to a DIFFERENT SR (typically the next one):
+    #
+    #   (1) Versioned label is for a future SR.
+    #       e.g. SR8 readiness + `regressed-in-10.0.90` → SR9 candidate.
+    #
+    #   (2) Milestone explicitly names a different SR.
+    #       e.g. SR8 readiness + milestone `.NET 10 SR9` → SR9 candidate.
+    #       Triagers set milestones as the canonical "which cycle owns this".
+    #
+    #   (3) Only label is `regressed-in-inflight/current` AND main has been
+    #       bumped past this SR's cycle.
+    #       e.g. SR8 readiness + main's PatchVersion = 90 → "inflight/current"
+    #       describes content that's now SR9-bound. Reuses the same Versions.props
+    #       inspection the "Main bumped to next cycle" ship check uses.
+    #
+    # In-scope range for SR-N (cycleNum): patch ∈ [cycleNum*10, (cycleNum+1)*10 - 1]
+    # (covers SR8 = 80..89, accommodating hotfix patches like 81/82/...)
+    $srBranchMatch = [regex]::Match($Ctx.srBranch, '^release/(\d+)\.0\.\d+xx-sr(\d+)$')
+    $scopeMajor = $null; $scopeMinPatch = $null; $scopeMaxPatch = $null; $scopeCycleNum = $null
+    if ($srBranchMatch.Success) {
+        $scopeMajor    = [int]$srBranchMatch.Groups[1].Value
+        $scopeCycleNum = [int]$srBranchMatch.Groups[2].Value
+        $scopeMinPatch = $scopeCycleNum * 10
+        $scopeMaxPatch = ($scopeCycleNum + 1) * 10 - 1
+    }
+
+    # Signal (3): probe main's PatchVersion to know which cycle main is on.
+    # If main is past this SR's cycle, `regressed-in-inflight/current` no
+    # longer points at THIS SR's content.
+    $mainIsPastThisSr = $false
+    if ($scopeMajor -and $Ctx.mainBranch) {
+        try {
+            $vpMain = Get-VersionsPropsState -Ref "origin/$($Ctx.mainBranch)"
+            if ($vpMain -and $vpMain.Patch -gt $scopeMaxPatch) {
+                $mainIsPastThisSr = $true
+            }
+        } catch {
+            # If we can't read main's Versions.props, fall back to label-only logic.
+        }
+    }
+
     $results = @()
     $i = 0
     foreach ($iss in $allIssues) {
@@ -1750,6 +1956,93 @@ function Get-RegressionCandidates {
                 recommendedAction = 'Confirm the canonical issue (visible in the close comment) is tracked separately. No action on this issue.'
             }
             continue
+        }
+
+        # Future-SR scope check (only when we know this SR's version range)
+        if ($scopeMajor) {
+            $issueLabels = @($iss.labels.name)
+            $issueMilestone = if ($iss.milestone) { $iss.milestone.title } else { $null }
+
+            # --- Signal (1): versioned regression labels (HIGHEST priority) ---
+            # A `regressed-in-X.Y.Z` label states a historical fact ("the
+            # regression appeared in X.Y.Z"). If the user explicitly named
+            # that label in -RegressionLabels (or it's within this SR's patch
+            # range), the issue is IN-SCOPE regardless of milestone — the bug
+            # is still present in this SR even if triagers plan to ship the
+            # fix in a later SR (which would show up as a milestone mismatch).
+            $versionedRegressionLabels = @()
+            foreach ($lbl in $issueLabels) {
+                $vm = [regex]::Match($lbl, '^regressed-in-(\d+)\.0\.(\d+)$')
+                if ($vm.Success) {
+                    $versionedRegressionLabels += @{
+                        label = $lbl
+                        major = [int]$vm.Groups[1].Value
+                        patch = [int]$vm.Groups[2].Value
+                    }
+                }
+            }
+            $anyLabelInScope = $false
+            foreach ($vrl in $versionedRegressionLabels) {
+                if ($vrl.major -eq $scopeMajor -and $vrl.patch -ge $scopeMinPatch -and $vrl.patch -le $scopeMaxPatch) {
+                    $anyLabelInScope = $true; break
+                }
+                # Allow PRIOR SRs that the user explicitly named in -Labels (carry-over scope)
+                if (($vrl.major -lt $scopeMajor) -or
+                    ($vrl.major -eq $scopeMajor -and $vrl.patch -lt $scopeMinPatch)) {
+                    if ($Labels -contains $vrl.label) { $anyLabelInScope = $true; break }
+                }
+            }
+
+            # If any versioned label puts the issue in scope, do NOT exclude it.
+            # Milestone-mismatch / inflight-bumped signals are subordinate.
+            if (-not $anyLabelInScope) {
+                $evidence = $null
+
+                # --- Signal (1b): all versioned labels point to a different SR ---
+                if ($versionedRegressionLabels.Count -gt 0) {
+                    $futureList = ($versionedRegressionLabels | ForEach-Object { $_.label }) -join ', '
+                    $evidence = "Versioned label(s) $futureList map to a different SR (this SR covers patches $scopeMinPatch..$scopeMaxPatch)."
+                }
+
+                # --- Signal (2): explicit milestone for a different SR ---
+                if (-not $evidence -and $issueMilestone) {
+                    $mm = [regex]::Match($issueMilestone, '^\.NET\s+(\d+)(?:\.0)?\s+SR(\d+)$')
+                    if ($mm.Success) {
+                        $milestoneMajor    = [int]$mm.Groups[1].Value
+                        $milestoneCycleNum = [int]$mm.Groups[2].Value
+                        if ($milestoneMajor -ne $scopeMajor -or $milestoneCycleNum -ne $scopeCycleNum) {
+                            $evidence = "Milestone ``$issueMilestone`` is a different SR cycle than this readiness scope (.NET $scopeMajor SR$scopeCycleNum). The triager assigned it to a different SR — treat as out of scope here."
+                        }
+                    }
+                }
+
+                # --- Signal (3): only `regressed-in-inflight/current` AND main has moved past ---
+                if (-not $evidence -and $mainIsPastThisSr -and $versionedRegressionLabels.Count -eq 0) {
+                    if ($issueLabels -contains 'regressed-in-inflight/current') {
+                        $mainPatchStr = if ($vpMain) { $vpMain.Patch } else { '(unknown)' }
+                        $evidence = "Only regression label is ``regressed-in-inflight/current``, and ``origin/$($Ctx.mainBranch)`` has been bumped to PatchVersion $mainPatchStr (past this SR's cycle $scopeMinPatch..$scopeMaxPatch). 'inflight' now describes the next SR's content, not this one."
+                    }
+                }
+
+                if ($evidence) {
+                    $results += @{
+                        issue             = [int]$iss.number
+                        title             = $iss.title
+                        state             = $iss.state
+                        stateReason       = if ($iss.PSObject.Properties['stateReason']) { $iss.stateReason } else { $null }
+                        labels            = $issueLabels
+                        milestone         = $issueMilestone
+                        createdAt         = $iss.createdAt
+                        closedAt          = if ($iss.PSObject.Properties['closedAt']) { $iss.closedAt } else { $null }
+                        classification    = 'out-of-scope-future-sr'
+                        confidence        = 'high'
+                        evidence          = @($evidence)
+                        candidateFixPrs   = @()
+                        recommendedAction = "Out of scope for this SR. Will be tracked under the relevant SR's readiness."
+                    }
+                    continue
+                }
+            }
         }
 
         $candidatePrs = Get-IssueTimelinePrs -Repo $Ctx.repo -IssueNumber $iss.number
@@ -1920,6 +2213,7 @@ function Get-VerdictTier {
         'needs-human-review'          { 2; break }
         'in-sr-active'                { 3; break }
         'closed-as-duplicate'         { 3; break }
+        'out-of-scope-future-sr'      { 3; break }
         default                       { 2 }   # unknown → treat as risk
     }
 }
@@ -2282,9 +2576,25 @@ function Format-MarkdownReport {
         $vpForShipDate = Get-VersionsPropsState -Ref $srRefForShipDate
         if ($vpForShipDate) { $patchForShipDate = [int]$vpForShipDate.Patch }
     }
-    $shipDate = Get-ExpectedShipDate -PatchVersion $patchForShipDate
+    # Anchor on main-bump date for this SR's cycle, so the date doesn't slide
+    # into the next SR's window once this SR's calendar month passes.
+    $mainBumpDateForShip = $null
+    if ($null -ne $patchForShipDate) {
+        $cycleBaseForShip = [int]([Math]::Floor($patchForShipDate / 10) * 10)
+        $majorForShip = $null
+        if ($vpForShipDate -and $vpForShipDate.Major) { $majorForShip = [int]$vpForShipDate.Major }
+        $bumpInfoForShip = if ($null -ne $majorForShip) {
+            Get-MainBumpDateForCycle -CycleBase $cycleBaseForShip -MajorVersion $majorForShip
+        } else {
+            Get-MainBumpDateForCycle -CycleBase $cycleBaseForShip
+        }
+        if ($bumpInfoForShip) { $mainBumpDateForShip = $bumpInfoForShip.Date }
+    }
+    $shipDate = Get-ExpectedShipDate -PatchVersion $patchForShipDate -MainBumpDate $mainBumpDateForShip
     if ($shipDate.Cadence -eq 'asap-hotfix') {
         [void]$sb.AppendLine("**Expected ship date**: 🚑 $($shipDate.FormattedLong) — $($shipDate.Note)")
+    } elseif ($shipDate.MissedWindow) {
+        [void]$sb.AppendLine("**Expected ship date**: ⚠️ $($shipDate.FormattedLong) — **window passed** ($([Math]::Abs($shipDate.DaysFromNow)) day(s) ago). $($shipDate.Note)")
     } else {
         $whenSuffix = if ($shipDate.DaysFromNow -eq 0) {
             '🚨 **shipping today**'
@@ -2590,7 +2900,7 @@ function Format-MarkdownReport {
         $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
         $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
                           'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
-        $tier3Classes = @('in-sr-active', 'closed-as-duplicate') | Sort-Object
+        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'out-of-scope-future-sr') | Sort-Object
 
         $emitTier = {
             param([string]$Header, [string[]]$Classes, [string]$EmptyLine)
@@ -2816,7 +3126,23 @@ function Invoke-Main {
         $vpForJson = Get-VersionsPropsState -Ref $srRefForJson
         if ($vpForJson) { $patchForJson = [int]$vpForJson.Patch }
     }
-    $shipDateInfo = Get-ExpectedShipDate -PatchVersion $patchForJson
+    $mainBumpDateForJson = $null
+    $mainBumpShaForJson = $null
+    if ($null -ne $patchForJson) {
+        $cycleBaseForJson = [int]([Math]::Floor($patchForJson / 10) * 10)
+        $majorForJson = $null
+        if ($vpForJson -and $vpForJson.Major) { $majorForJson = [int]$vpForJson.Major }
+        $bumpInfoForJson = if ($null -ne $majorForJson) {
+            Get-MainBumpDateForCycle -CycleBase $cycleBaseForJson -MajorVersion $majorForJson
+        } else {
+            Get-MainBumpDateForCycle -CycleBase $cycleBaseForJson
+        }
+        if ($bumpInfoForJson) {
+            $mainBumpDateForJson = $bumpInfoForJson.Date
+            $mainBumpShaForJson = $bumpInfoForJson.Sha
+        }
+    }
+    $shipDateInfo = Get-ExpectedShipDate -PatchVersion $patchForJson -MainBumpDate $mainBumpDateForJson
     $data['expectedShipDate'] = @{
         cadence       = $shipDateInfo.Cadence
         date          = if ($shipDateInfo.Date) { $shipDateInfo.Date.ToString('yyyy-MM-dd') } else { $null }
@@ -2824,6 +3150,10 @@ function Invoke-Main {
         formattedLong = $shipDateInfo.FormattedLong
         note          = $shipDateInfo.Note
         patchVersion  = $patchForJson
+        missedWindow  = $shipDateInfo.MissedWindow
+        anchorSource  = $shipDateInfo.AnchorSource
+        mainBumpDate  = if ($mainBumpDateForJson) { $mainBumpDateForJson.ToString('yyyy-MM-dd') } else { $null }
+        mainBumpSha   = $mainBumpShaForJson
     }
     if ($TrackerKey) {
         $data['trackerKey'] = $TrackerKey
