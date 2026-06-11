@@ -345,11 +345,7 @@ namespace Microsoft.Maui.Handlers
 					return false;
 				}
 
-				if (mauiSwitch.ShouldResetMapperColorOverrideDetectionBaseline)
-				{
-					platformView.ClearCustomColorState(clearTrackColor: true);
-				}
-
+				platformView.ClearCustomColorState(clearTrackColor: true);
 				mauiSwitch.CompleteMapperColorOverrideDetection();
 
 				var beforeTrackColor = platformView.CaptureColorState();

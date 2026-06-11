@@ -50,36 +50,31 @@ namespace Microsoft.Maui.Platform
 
 			var trackColor = view.TrackColor?.ToPlatform();
 
-			if (trackColor is not null)
-			{
-				(uiSwitch as MauiSwitch)?.MarkMauiTrackColorOverride();
-			}
-
 			if (view.IsOn)
 			{
 				if (trackColor is not null)
 				{
 					uiSwitch.OnTintColor = trackColor;
-					uIView.BackgroundColor = trackColor;
+					uiSwitch.SetManagedTrackBackground(uIView, trackColor);
 				}
 				else
 				{
 					uiSwitch.OnTintColor = null;
-					uIView.BackgroundColor = null;
+					uiSwitch.SetManagedTrackBackground(uIView, null);
 				}
 			}
 			else
 			{
 				if (trackColor is not null)
 				{
-					uIView.BackgroundColor = trackColor;
+					uiSwitch.SetManagedTrackBackground(uIView, trackColor);
 				}
 				else
 				{
 					// iOS 13+ uses the UIColor.SecondarySystemFill to support Light and Dark mode
 					// else, use the RGBA equivalent of UIColor.SecondarySystemFill in Light mode
 					var fallbackColor = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : DefaultBackgroundColor;
-					uIView.BackgroundColor = fallbackColor;
+					uiSwitch.SetManagedTrackBackground(uIView, fallbackColor);
 				}
 			}
 		}
@@ -243,16 +238,17 @@ namespace Microsoft.Maui.Platform
 			uiSwitch.OnTintColor = null;
 			uiSwitch.ThumbTintColor = null;
 
-			if (clearTrackColor)
+			if (clearTrackColor || uiSwitch is MauiSwitch { HasMauiManagedTrackBackground: true })
 			{
 				uiSwitch.GetTrackSubview()?.BackgroundColor = null;
-				(uiSwitch as MauiSwitch)?.ClearMauiTrackColorOverride();
+				(uiSwitch as MauiSwitch)?.ClearMauiManagedTrackBackground();
 			}
-			else if (uiSwitch is MauiSwitch mauiSwitch && mauiSwitch.HasMauiTrackColorOverride)
-			{
-				uiSwitch.GetTrackSubview()?.BackgroundColor = null;
-				mauiSwitch.ClearMauiTrackColorOverride();
-			}
+		}
+
+		static void SetManagedTrackBackground(this UISwitch uiSwitch, UIView trackSubview, UIColor? color)
+		{
+			trackSubview.BackgroundColor = color;
+			(uiSwitch as MauiSwitch)?.MarkMauiManagedTrackBackground();
 		}
 
 		internal static bool IsReadyForColorReapply(this UISwitch uiSwitch)

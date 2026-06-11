@@ -7,12 +7,11 @@ namespace Microsoft.Maui.Platform
 	internal class MauiSwitch : UISwitch
 	{
 		readonly WeakEventManager _colorReapplyRequestedEventManager = new();
-		bool _hasMauiTrackColorOverride;
+		bool _hasMauiManagedTrackBackground;
 		bool _hadMauiCustomColorIntent;
 		bool _hasMapperColorOverride;
 		bool _needsColorReapply;
 		bool _needsNativeDefaultCleanup;
-		bool _shouldResetMapperColorOverrideDetectionBaseline;
 		bool _shouldDetectMapperColorOverride;
 
 		public MauiSwitch(CGRect frame) : base(frame)
@@ -68,11 +67,9 @@ namespace Microsoft.Maui.Platform
 			_colorReapplyRequestedEventManager.HandleEvent(this, EventArgs.Empty, nameof(ColorReapplyRequested));
 		}
 
-		internal bool HasMauiTrackColorOverride => _hasMauiTrackColorOverride;
+		internal bool HasMauiManagedTrackBackground => _hasMauiManagedTrackBackground;
 
 		internal bool HasMapperColorOverride => _hasMapperColorOverride;
-
-		internal bool ShouldResetMapperColorOverrideDetectionBaseline => _shouldResetMapperColorOverrideDetectionBaseline;
 
 		internal bool ShouldDetectMapperColorOverride => _shouldDetectMapperColorOverride;
 
@@ -88,9 +85,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_hadMauiCustomColorIntent && !hasMauiCustomColorIntent)
 			{
-				_hasMapperColorOverride = false;
-				_shouldDetectMapperColorOverride = true;
-				_shouldResetMapperColorOverrideDetectionBaseline = true;
+				StartMapperColorOverrideDetection();
 			}
 
 			_hadMauiCustomColorIntent = hasMauiCustomColorIntent;
@@ -104,7 +99,6 @@ namespace Microsoft.Maui.Platform
 		internal void CompleteMapperColorOverrideDetection()
 		{
 			_shouldDetectMapperColorOverride = false;
-			_shouldResetMapperColorOverrideDetectionBaseline = false;
 		}
 
 		internal void ClearMapperColorOverride()
@@ -112,17 +106,16 @@ namespace Microsoft.Maui.Platform
 			_hadMauiCustomColorIntent = false;
 			_hasMapperColorOverride = false;
 			_shouldDetectMapperColorOverride = false;
-			_shouldResetMapperColorOverrideDetectionBaseline = false;
 		}
 
-		internal void MarkMauiTrackColorOverride()
+		internal void MarkMauiManagedTrackBackground()
 		{
-			_hasMauiTrackColorOverride = true;
+			_hasMauiManagedTrackBackground = true;
 		}
 
-		internal void ClearMauiTrackColorOverride()
+		internal void ClearMauiManagedTrackBackground()
 		{
-			_hasMauiTrackColorOverride = false;
+			_hasMauiManagedTrackBackground = false;
 		}
 
 		internal void ClearNeedsColorReapply()

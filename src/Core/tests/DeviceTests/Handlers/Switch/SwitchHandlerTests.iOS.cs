@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 			return OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : UIColor.FromRGBA(120, 120, 128, 40);
 		}
 
-		async Task AssertDefaultSwitchDoesNotReapplyColors(UISwitch nativeSwitch)
+		async Task AssertUntouchedDefaultSwitchSkipsLifecycleColorReapply(UISwitch nativeSwitch)
 		{
 			var trackSubview = nativeSwitch.GetTrackSubview();
 			Assert.NotNull(trackSubview);
@@ -164,6 +164,21 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(
 				ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, preservedThumbColor, tolerance: 0.1),
 				"Default switch thumb tint color was unexpectedly cleared or reapplied.");
+		}
+
+		async Task AssertSwitchReturnsToNativeDefaults(UISwitch nativeSwitch, string messageSuffix)
+		{
+			await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Automatic)
+				.AssertEventually(message: $"Native switch did not return to Automatic style after {messageSuffix}.");
+
+			await new Func<bool>(() => nativeSwitch.OnTintColor is null)
+				.AssertEventually(message: $"Native switch OnTintColor did not clear after {messageSuffix}.");
+
+			await new Func<bool>(() => nativeSwitch.ThumbTintColor is null)
+				.AssertEventually(message: $"Native switch ThumbTintColor did not clear after {messageSuffix}.");
+
+			await new Func<bool>(() => nativeSwitch.GetTrackColor() is null)
+				.AssertEventually(message: $"Native switch track background did not clear after {messageSuffix}.");
 		}
 
 		/// <summary>
@@ -349,7 +364,7 @@ namespace Microsoft.Maui.DeviceTests
 				var nativeSwitch = GetNativeSwitch(handler);
 
 				Assert.Equal(UISwitchStyle.Automatic, nativeSwitch.PreferredStyle);
-				await AssertDefaultSwitchDoesNotReapplyColors(nativeSwitch);
+				await AssertUntouchedDefaultSwitchSkipsLifecycleColorReapply(nativeSwitch);
 			});
 		}
 
@@ -408,14 +423,41 @@ namespace Microsoft.Maui.DeviceTests
 				handler.UpdateValue(nameof(ISwitch.TrackColor));
 				handler.UpdateValue(nameof(ISwitch.ThumbColor));
 
-				Assert.Equal(UISwitchStyle.Automatic, nativeSwitch.PreferredStyle);
-				Assert.Null(nativeSwitch.OnTintColor);
-				Assert.Null(nativeSwitch.ThumbTintColor);
-				Assert.False(
-					ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), Colors.Red.ToPlatform(), tolerance: 0.1),
-					"Native switch track color kept the stale custom color after custom colors were cleared.");
+				await AssertSwitchReturnsToNativeDefaults(nativeSwitch, "clearing custom track and thumb colors");
+			});
+		}
 
-				await AssertDefaultSwitchDoesNotReapplyColors(nativeSwitch);
+		[Fact(DisplayName = "Thumb Only Custom Color Clears To Automatic Style On iOS/MacCatalyst 26")]
+		public async Task ThumbOnlyCustomColorClearsToAutomaticStyleOniOSOrMacCatalyst26()
+		{
+			if (!IsIOSOrMacCatalyst26OrNewer())
+			{
+				return;
+			}
+
+			var switchStub = new SwitchStub
+			{
+				IsOn = false,
+				ThumbColor = Colors.Orange
+			};
+
+			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
+			{
+				var nativeSwitch = GetNativeSwitch(handler);
+
+				await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Sliding && nativeSwitch.Style == UISwitchStyle.Sliding)
+					.AssertEventually(message: "Thumb-only custom color did not opt the switch into Sliding style.");
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), GetDefaultOffTrackColor(), tolerance: 0.1))
+					.AssertEventually(message: "Thumb-only custom color did not apply the managed fallback off-track color.");
+
+				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, Colors.Orange.ToPlatform(), tolerance: 0.1))
+					.AssertEventually(message: "Thumb-only custom color did not apply the custom thumb tint color.");
+
+				switchStub.ThumbColor = null;
+				handler.UpdateValue(nameof(ISwitch.ThumbColor));
+
+				await AssertSwitchReturnsToNativeDefaults(nativeSwitch, "clearing the thumb-only custom color");
 			});
 		}
 
