@@ -716,11 +716,21 @@ function Invoke-DetectionForMajor {
                 }
             }
             $recent = Get-RecentCommitCount -Ref $candidateRef -Days $ActivityWindowDays
+            # priorSrBranch: prefer the immediate prior SR's branch (sr<N-1>) since
+            # the candidate by definition follows it. Falling back to "highest in-flight"
+            # can pick stale forgotten branches (e.g. an old sr2/sr3 left around) — those
+            # are NOT the prior of a current candidate.
+            $priorSrNumber = $nextSr - 1
+            $priorSrBranchName = "release/$Major.0.1xx-sr$priorSrNumber"
+            $priorSrBranchExists = $srBranches | Where-Object { $_.branch -eq $priorSrBranchName }
             $priorSrBranch = $null
-            if ($inflightBranchesBySr.Count -gt 0) {
-                $priorSr = ($inflightBranchesBySr.Keys | Sort-Object | Select-Object -Last 1)
-                $priorSrBranch = $inflightBranchesBySr[$priorSr]
-            } elseif ($highestShippedSr -ge 1) {
+            if ($priorSrBranchExists) {
+                $priorSrBranch = $priorSrBranchName
+            } elseif ($inflightBranchesBySr.Count -gt 0) {
+                $inflightPrior = ($inflightBranchesBySr.Keys | Where-Object { $_ -lt $nextSr } | Sort-Object | Select-Object -Last 1)
+                if ($inflightPrior) { $priorSrBranch = $inflightBranchesBySr[$inflightPrior] }
+            }
+            if (-not $priorSrBranch -and $highestShippedSr -ge 1) {
                 $priorSrBranch = "release/$Major.0.1xx-sr$highestShippedSr"
             }
             $tracker = New-Tracker -Major $Major -SrNumber $nextSr -Mode 'candidate' `

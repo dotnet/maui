@@ -698,6 +698,16 @@ function Get-SrCommits {
 
 # region ────────────────────── 3. CI STATUS ───────────────────────────────
 
+# Safe property accessor for AzDO API responses under Set-StrictMode -Version Latest.
+# AzDO build objects omit 'result' / 'finishTime' until the build is completed,
+# and PSObject access throws under strict mode when a property is missing.
+function Get-AzdoProp {
+    param($Obj, [string]$Name)
+    if ($null -eq $Obj) { return $null }
+    if (-not ($Obj.PSObject -and $Obj.PSObject.Properties[$Name])) { return $null }
+    return $Obj.$Name
+}
+
 function Get-PipelineLatestBuilds {
     param($Pipeline, [string]$SrBranch, [string]$SrHead)
 
@@ -709,8 +719,9 @@ function Get-PipelineLatestBuilds {
     $url = "https://dev.azure.com/$org/$project/_apis/build/builds?definitions=$defId&branchName=$branchSpec&`$top=5&api-version=7.1"
     try {
         $obj = Invoke-RestMethod -Uri $url -TimeoutSec 30 -ErrorAction Stop
-        if (-not $obj.value) { return $null }
-        return $obj.value
+        $builds = Get-AzdoProp $obj 'value'
+        if (-not $builds) { return $null }
+        return $builds
     } catch {
         Write-Warn "Failed to query pipeline $($Pipeline.Name): $_"
         return $null
@@ -737,7 +748,13 @@ function Get-CIStatus {
         }
 
         $latest = $builds | Select-Object -First 1
-        $sourceSha = $latest.sourceVersion
+        $sourceSha = Get-AzdoProp $latest 'sourceVersion'
+        $status = Get-AzdoProp $latest 'status'
+        $result = Get-AzdoProp $latest 'result'
+        $finishTime = Get-AzdoProp $latest 'finishTime'
+        $links = Get-AzdoProp $latest '_links'
+        $buildUrl = if ($links) { Get-AzdoProp (Get-AzdoProp $links 'web') 'href' } else { $null }
+
         $isAtOrAhead = $false
         if ($sourceSha -and $Ctx.srHeadSha) {
             # Is SR HEAD an ancestor of (or equal to) the build's source SHA?
@@ -746,11 +763,13 @@ function Get-CIStatus {
 
         $verdict = if (-not $isAtOrAhead) {
             'stale'
-        } elseif ($latest.result -eq 'succeeded') {
+        } elseif ($status -in @('inProgress','notStarted')) {
+            'running'
+        } elseif ($result -eq 'succeeded') {
             'green'
-        } elseif ($latest.result -eq 'partiallySucceeded') {
+        } elseif ($result -eq 'partiallySucceeded') {
             'red-needs-review'
-        } elseif ($latest.result -eq 'failed') {
+        } elseif ($result -eq 'failed') {
             'red-needs-review'  # downstream agent classifies known-flakes vs new
         } else {
             'unknown'
@@ -760,17 +779,17 @@ function Get-CIStatus {
             name = $p.Name; definitionId = $p.DefinitionId
             verdict = $verdict
             latestBuild = @{
-                id = $latest.id
-                buildNumber = $latest.buildNumber
-                result = $latest.result
-                status = $latest.status
+                id = Get-AzdoProp $latest 'id'
+                buildNumber = Get-AzdoProp $latest 'buildNumber'
+                result = $result
+                status = $status
                 sourceSha = $sourceSha
                 isAtOrAheadOfSrHead = $isAtOrAhead
-                completedAt = $latest.finishTime
-                url = $latest._links.web.href
+                completedAt = $finishTime
+                url = $buildUrl
             }
             recentBuilds = @($builds | Select-Object -First 5 | ForEach-Object {
-                @{ id = $_.id; result = $_.result; sourceSha = $_.sourceVersion; completedAt = $_.finishTime }
+                @{ id = Get-AzdoProp $_ 'id'; result = Get-AzdoProp $_ 'result'; sourceSha = Get-AzdoProp $_ 'sourceVersion'; completedAt = Get-AzdoProp $_ 'finishTime' }
             })
             url = "https://dev.azure.com/$($p.Org)/$($p.Project)/_build?definitionId=$($p.DefinitionId)&branchFilter=$($Ctx.srBranch)"
         }
@@ -781,6 +800,7 @@ function Get-CIStatus {
     foreach ($r in $results) {
         if ($r.verdict -eq 'stale') { $overall = 'stale'; break }
         if ($r.verdict -like 'red-*') { $overall = 'red-needs-review' }
+        if ($r.verdict -eq 'running' -and $overall -eq 'green') { $overall = 'running' }
         if ($r.verdict -eq 'unknown' -and $overall -eq 'green') { $overall = 'partial-unknown' }
     }
 
@@ -1781,7 +1801,7 @@ function Format-MarkdownReport {
         foreach ($p in $ciData.pipelines) {
             $lb = $p.latestBuild
             $pverdict = $p.verdict
-            $result = if ($lb) { $lb.result } else { '—' }
+            $result = if ($lb -and $lb.result) { $lb.result } elseif ($lb -and $lb.status -in @('inProgress','notStarted')) { "_$($lb.status)_" } else { '—' }
             $fresh = if ($lb) { if ($lb.isAtOrAheadOfSrHead) { '✅' } else { '❌ stale' } } else { '—' }
             $buildLink = if ($lb -and $lb.url) { "[$($lb.id)]($($lb.url))" } else { '—' }
             [void]$sb.AppendLine("| $($p.name) | ``$pverdict`` | $result | $fresh | $buildLink |")
