@@ -143,7 +143,10 @@ param(
     # isn't installed (e.g. minimal CI image), the checks auto-skip and emit
     # UNKNOWN status with verification commands — this switch lets a caller force
     # the skip even when darc IS available (e.g. known auth-failure environment).
-    [switch]$SkipMaestroChecks
+    [switch]$SkipMaestroChecks,
+    # Skip milestone hygiene checks (current+next milestone existence + stale-open
+    # milestone detection). Useful for repos that don't use milestone-per-release.
+    [switch]$SkipMilestoneChecks
 )
 
 $ErrorActionPreference = 'Stop'
@@ -630,6 +633,171 @@ function Get-MaestroOperationalChecks {
                 -Details "Build **$($latest.buildNumber)**$buildLink for SR HEAD ``$headShort`` is in BAR; channels: $chans." `
                 -NextAction "No action needed."
         }
+    }
+
+    return $checks
+}
+
+# endregion
+
+# region ───────────────── 0.6 MILESTONE HYGIENE CHECKS ───────────────────────
+#
+# Ship-readiness checks against the GitHub milestone list:
+#   1. Current cycle's milestone exists (e.g. ".NET 10 SR8" must exist if
+#      we're shipping SR8). Without it, fixed issues have no milestone to land on.
+#   2. Next cycle's milestone exists (e.g. ".NET 10 SR9" or ".NET 11.0-preview6").
+#      Without it, unfinished work has nowhere to roll forward when current ships.
+#   3. Stale open milestones with past due_on are flagged. After a release ships,
+#      its milestone should be closed; lingering open milestones are release hygiene
+#      gaps that accumulate misfiled issues and confuse triage.
+#
+# These checks are evidence-backed and queried via `gh api repos/.../milestones` —
+# no auth issues in normal CI; the GH MCP/CI environments always have a token.
+
+function Get-AllMilestones {
+    <#
+    .SYNOPSIS
+        Fetches all milestones (open + closed) for a repo via `gh api`. Returns
+        a Success/Data envelope (same pattern as Invoke-DarcJson) so callers can
+        distinguish "API call failed" from "no milestones exist".
+    .NOTES
+        Query parameters MUST be embedded in the URL — passing them via `-f`
+        switches `gh api` to POST mode (treats them as form body), which the
+        milestones endpoint rejects with HTTP 422.
+    #>
+    param([string]$Repo)
+    try {
+        $raw = Invoke-Gh @('api', "repos/$Repo/milestones?state=all&per_page=100", '--paginate')
+        if (-not $raw) { return [PSCustomObject]@{ Success = $true; Data = @() } }
+        $parsed = $raw | ConvertFrom-Json
+        return [PSCustomObject]@{ Success = $true; Data = @($parsed) }
+    } catch {
+        return [PSCustomObject]@{ Success = $false; Data = @() }
+    }
+}
+
+function Get-MilestoneHygieneChecks {
+    <#
+    .SYNOPSIS
+        Runs three milestone-related ship-readiness checks against the repo's
+        GitHub milestone list. SKIPPED entirely (returns @()) when:
+          - $SkipChecks is set
+          - Branch shape doesn't match an SR or preview release naming convention
+            (custom shapes / RC / hotfix branches — can't reliably derive the
+            expected milestone title).
+        Returns BLOCKED checks when:
+          - Current cycle's milestone is missing
+          - Next cycle's milestone is missing
+          - There are open milestones with past-due due_on dates (excluding the
+            current cycle and long-running organizational milestones like Backlog
+            and ".NET <major> Planning").
+    .OUTPUTS
+        Array of New-ReadinessCheck records (merged into shipChecks downstream).
+    #>
+    param($Ctx, [switch]$SkipChecks)
+
+    if ($SkipChecks) { return @() }
+
+    # In candidate mode we're surveying main as the next SR/preview. The cycle
+    # we're prepping is the prior branch's cycle number + 1. In in-flight mode
+    # we use srBranch directly.
+    $branchToParse = if ($Ctx.mode -eq 'candidate') { $Ctx.priorSrBranch } else { $Ctx.srBranch }
+    if (-not $branchToParse) { return @() }
+
+    # Parse SR shape first (release/10.0.1xx-sr8), then preview (release/11.0.1xx-preview5).
+    $srMatch = [regex]::Match($branchToParse, '^release/(\d+)\.0\.\d+xx-sr(\d+)$')
+    $previewMatch = [regex]::Match($branchToParse, '^release/(\d+)\.0\.\d+xx-preview(\d+)$')
+
+    $expectedTitlesCurrent = @()
+    $expectedTitlesNext    = @()
+    $cycleLabel = ''
+
+    if ($srMatch.Success) {
+        $major = [int]$srMatch.Groups[1].Value
+        $cycleNum = [int]$srMatch.Groups[2].Value
+        if ($Ctx.mode -eq 'candidate') { $cycleNum++ }
+        # MAUI uses both legacy ".NET X.0 SRn" and current ".NET X SRn" forms;
+        # treat either as satisfying the check so we don't trigger false BLOCKED
+        # on historical milestones.
+        $expectedTitlesCurrent = @(".NET $major SR$cycleNum", ".NET $major.0 SR$cycleNum")
+        $expectedTitlesNext    = @(".NET $major SR$($cycleNum + 1)", ".NET $major.0 SR$($cycleNum + 1)")
+        $cycleLabel = "SR$cycleNum"
+    } elseif ($previewMatch.Success) {
+        $major = [int]$previewMatch.Groups[1].Value
+        $cycleNum = [int]$previewMatch.Groups[2].Value
+        if ($Ctx.mode -eq 'candidate') { $cycleNum++ }
+        $expectedTitlesCurrent = @(".NET $major.0-preview$cycleNum")
+        $expectedTitlesNext    = @(".NET $major.0-preview$($cycleNum + 1)")
+        $cycleLabel = "preview$cycleNum"
+    } else {
+        # Unknown branch shape — can't derive milestone names. Skip silently.
+        return @()
+    }
+
+    $milestonesResult = Get-AllMilestones -Repo $Ctx.repo
+    if (-not $milestonesResult.Success) {
+        return @(New-ReadinessCheck -Area "Milestone hygiene" -Status 'UNKNOWN' `
+            -Details "Failed to query milestones from GitHub API for ``$($Ctx.repo)``." `
+            -NextAction "Re-run with valid 'gh' auth: ``gh auth status`` and ``gh api repos/$($Ctx.repo)/milestones``")
+    }
+
+    $allMs = $milestonesResult.Data
+    $checks = @()
+
+    # === Check 1: Current cycle's milestone exists ===
+    $currentMs = @($allMs | Where-Object { $expectedTitlesCurrent -contains $_.title })
+    $currentTitle = $expectedTitlesCurrent[0]
+    if ($currentMs.Count -eq 0) {
+        $checks += New-ReadinessCheck -Area "Milestone for current cycle ($currentTitle)" -Status 'BLOCKED' `
+            -Details "No milestone matching ``$currentTitle`` exists in ``$($Ctx.repo)``. Fixed issues from this cycle have no milestone to land on, and the release notes generator will have nothing to query." `
+            -NextAction "Create the milestone: ``gh api repos/$($Ctx.repo)/milestones -f title=""$currentTitle"" -f state=open``"
+    }
+
+    # === Check 2: Next cycle's milestone exists ===
+    $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
+    $nextTitle = $expectedTitlesNext[0]
+    if ($nextMs.Count -eq 0) {
+        $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'BLOCKED' `
+            -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to." `
+            -NextAction "Create the milestone: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+    }
+
+    # === Check 3: Stale open milestones with past due_on ===
+    # Filtered by cycle to avoid cross-train noise: when surveying an SR cycle,
+    # flag only stale `.NET <same-major> SR*` milestones; when surveying a preview
+    # cycle, flag only stale `.NET <same-major>.0-preview*`. A 7-day grace period
+    # after due_on lets the actively-shipping release still appear open without
+    # triggering BLOCKED.
+    # Also excluded:
+    #   - the current cycle (still being prepped)
+    #   - "Backlog" (intentional long-running)
+    #   - ".NET N Planning" (intentional long-running planning ms)
+    #   - milestones without due_on (caller has no schedule, no signal)
+    $now = (Get-Date).ToUniversalTime()
+    $graceCutoff = $now.AddDays(-7)
+    $cycleFilter = if ($srMatch.Success) {
+        # Match ".NET <major> SR<n>" and ".NET <major>.0 SR<n>" (and SR<n>.<patch>)
+        "^\.NET\s+$major(\.0)?\s+SR\d+(\.\d+)?$"
+    } else {
+        # Match ".NET <major>.0-preview<n>"
+        "^\.NET\s+$major\.0-preview\d+$"
+    }
+    $staleMs = @($allMs | Where-Object {
+        $_.state -eq 'open' -and
+        $_.due_on -and
+        ([datetime]$_.due_on).ToUniversalTime() -lt $graceCutoff -and
+        ($expectedTitlesCurrent -notcontains $_.title) -and
+        ($_.title -match $cycleFilter)
+    } | Sort-Object { [datetime]$_.due_on })
+
+    if ($staleMs.Count -gt 0) {
+        $list = ($staleMs | ForEach-Object {
+            $dueDate = ([datetime]$_.due_on).ToUniversalTime().ToString('yyyy-MM-dd')
+            "[$($_.title)](https://github.com/$($Ctx.repo)/milestone/$($_.number)) (due $dueDate, $($_.open_issues) open)"
+        }) -join '; '
+        $checks += New-ReadinessCheck -Area "Stale open milestones ($($staleMs.Count))" -Status 'BLOCKED' `
+            -Details "$($staleMs.Count) milestone(s) in the .NET $major cycle are past due (>7 days) and still open: $list. These represent already-shipped releases that were never closed out — accumulating open issues that should have been rolled forward." `
+            -NextAction "For each: triage the open issues (close-as-fixed, move to current cycle, or move to Backlog), then close the milestone: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
     }
 
     return $checks
@@ -2389,6 +2557,20 @@ function Invoke-Main {
                 $data['shipChecks'] = @()
             }
             $data['shipChecks'] = @($data['shipChecks']) + @($maestroChecks)
+        }
+    }
+
+    # Milestone hygiene checks — confirm the current cycle's milestone exists,
+    # the next cycle's milestone has been pre-created, and no past-due milestones
+    # are still open from already-shipped releases. Uses gh API (always available
+    # in CI), so no UNKNOWN fallback needed beyond the per-call try/catch.
+    if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
+        $milestoneChecks = Get-MilestoneHygieneChecks -Ctx $ctx -SkipChecks:$SkipMilestoneChecks
+        if ($milestoneChecks -and $milestoneChecks.Count -gt 0) {
+            if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
+                $data['shipChecks'] = @()
+            }
+            $data['shipChecks'] = @($data['shipChecks']) + @($milestoneChecks)
         }
     }
 

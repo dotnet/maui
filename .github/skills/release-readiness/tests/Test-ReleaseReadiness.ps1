@@ -1903,6 +1903,227 @@ $s13 = Invoke-MaestroChecksWithMocks -SrBranch 'release/10.0.1xx-sr7' -DefaultCh
 $s13Map = Get-MaestroCheckByPrefix -Checks $s13 -Prefix 'BAR default-channel'
 Assert-Eq -Label "sr7-already-mapped: READY" -Expected 'READY' -Actual $s13Map.Status
 
+# =========================================================================
+# Get-MilestoneHygieneChecks — current/next milestone existence + stale detection
+# =========================================================================
+Write-Host "`n[Unit] Get-MilestoneHygieneChecks — current/next milestone existence + stale detection" -ForegroundColor Cyan
+
+# Mock harness — overrides Get-AllMilestones globally with a fixture, exercises
+# the real Get-MilestoneHygieneChecks logic, then restores. Mirrors the
+# Maestro mock pattern so any test scaffolding learning here transfers.
+function Invoke-MilestoneChecksWithMocks {
+    param(
+        [switch]$ApiFail,
+        $MilestonesResponse = @(),
+        [string]$SrBranch = 'release/10.0.1xx-sr8',
+        [string]$PriorSrBranch,
+        [string]$Mode = 'in-flight',
+        [switch]$SkipChecks
+    )
+    $script:_mockMsApiFail = [bool]$ApiFail
+    $script:_mockMsData = @($MilestonesResponse)
+
+    function global:Get-AllMilestones {
+        param([string]$Repo)
+        if ($script:_mockMsApiFail) {
+            return [PSCustomObject]@{ Success = $false; Data = @() }
+        }
+        return [PSCustomObject]@{ Success = $true; Data = @($script:_mockMsData) }
+    }
+
+    try {
+        $ctx = @{
+            repo          = 'dotnet/maui'
+            srBranch      = if ($Mode -eq 'candidate') { 'main' } else { $SrBranch }
+            priorSrBranch = if ($Mode -eq 'candidate') { $PriorSrBranch } else { $null }
+            mode          = $Mode
+        }
+        return Get-MilestoneHygieneChecks -Ctx $ctx -SkipChecks:$SkipChecks
+    } finally {
+        Remove-Item function:global:Get-AllMilestones -ErrorAction SilentlyContinue
+    }
+}
+
+function Get-MilestoneCheckByPrefix {
+    param($Checks, [string]$Prefix)
+    if (-not $Checks) { return $null }
+    return @($Checks) | Where-Object { $_.Area -like "$Prefix*" } | Select-Object -First 1
+}
+
+# Helper to build mock milestone objects with the shape returned by gh API
+function New-MockMilestone {
+    param(
+        [string]$Title,
+        [string]$State = 'open',
+        [int]$Number = 100,
+        [int]$OpenIssues = 0,
+        $DueOn = $null  # ISO-8601 string; null = no due date
+    )
+    [PSCustomObject]@{
+        title       = $Title
+        state       = $State
+        number      = $Number
+        open_issues = $OpenIssues
+        due_on      = $DueOn
+    }
+}
+
+# === Common fixtures ===
+# Past dates relative to now so the test stays valid as time passes
+$daysAgo30  = (Get-Date).ToUniversalTime().AddDays(-30).ToString('o')
+$daysAgo60  = (Get-Date).ToUniversalTime().AddDays(-60).ToString('o')
+$daysAgo3   = (Get-Date).ToUniversalTime().AddDays(-3).ToString('o')   # within grace
+$daysAgo10  = (Get-Date).ToUniversalTime().AddDays(-10).ToString('o')  # past grace
+$daysAhead30 = (Get-Date).ToUniversalTime().AddDays(30).ToString('o')
+
+$mockMsAllPresent = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -OpenIssues 50 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+    (New-MockMilestone -Title 'Backlog')  # no due date — always excluded
+    (New-MockMilestone -Title '.NET 11 Planning')  # planning excluded
+)
+
+# ── Scenario M1: Current + next milestone exist, nothing stale → 0 checks ──
+$m1 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $mockMsAllPresent
+Assert-Eq -Label "M1: all present, no stale → 0 checks emitted" -Expected 0 -Actual @($m1).Count
+
+# ── Scenario M2: SR8 milestone missing → BLOCKED current ──
+$m2Data = @(
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+)
+$m2 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m2Data
+$m2Curr = Get-MilestoneCheckByPrefix -Checks $m2 -Prefix 'Milestone for current cycle'
+Assert-Eq -Label "M2: current missing → BLOCKED check emitted" -Expected 'BLOCKED' -Actual $m2Curr.Status
+Assert-Eq -Label "M2: current missing → details name the exact missing title" -Expected $true `
+    -Actual ($m2Curr.Details -match '\.NET 10 SR8')
+Assert-Eq -Label "M2: current missing → action has gh api create command" -Expected $true `
+    -Actual ($m2Curr.NextAction -match 'gh api repos/dotnet/maui/milestones')
+
+# ── Scenario M3: SR9 milestone missing → BLOCKED next ──
+$m3Data = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -OpenIssues 50 -DueOn $daysAhead30)
+)
+$m3 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m3Data
+$m3Next = Get-MilestoneCheckByPrefix -Checks $m3 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M3: next missing → BLOCKED check emitted" -Expected 'BLOCKED' -Actual $m3Next.Status
+Assert-Eq -Label "M3: next missing → action proposes creating SR9" -Expected $true `
+    -Actual ($m3Next.NextAction -match '\.NET 10 SR9')
+
+# ── Scenario M4: Legacy ".NET 10.0 SR8" naming also satisfies current check ──
+$m4Data = @(
+    (New-MockMilestone -Title '.NET 10.0 SR8' -Number 117 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+)
+$m4 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m4Data
+$m4Curr = Get-MilestoneCheckByPrefix -Checks $m4 -Prefix 'Milestone for current cycle'
+Assert-Eq -Label "M4: legacy 'X.0 SRn' title satisfies current check" -Expected $true -Actual ($null -eq $m4Curr)
+
+# ── Scenario M5: Stale .NET 10 milestone past 7-day grace → BLOCKED ──
+$m5Data = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR6' -Number 115 -OpenIssues 76 -DueOn $daysAgo60)
+    (New-MockMilestone -Title '.NET 10 SR7' -Number 116 -OpenIssues 63 -DueOn $daysAgo30)
+)
+$m5 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m5Data
+$m5Stale = Get-MilestoneCheckByPrefix -Checks $m5 -Prefix 'Stale open milestones'
+Assert-Eq -Label "M5: stale SR6+SR7 → BLOCKED check emitted" -Expected 'BLOCKED' -Actual $m5Stale.Status
+Assert-Eq -Label "M5: stale count reflected in area" -Expected $true -Actual ($m5Stale.Area -match '\(2\)')
+Assert-Eq -Label "M5: details mention SR6 by title" -Expected $true -Actual ($m5Stale.Details -match 'SR6')
+Assert-Eq -Label "M5: details mention SR7 by title" -Expected $true -Actual ($m5Stale.Details -match 'SR7')
+
+# ── Scenario M6: Past-due within 7-day grace → NOT flagged ──
+$m6Data = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR7' -Number 116 -OpenIssues 5 -DueOn $daysAgo3)  # within grace
+)
+$m6 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m6Data
+$m6Stale = Get-MilestoneCheckByPrefix -Checks $m6 -Prefix 'Stale open milestones'
+Assert-Eq -Label "M6: within 7-day grace → no stale check" -Expected $true -Actual ($null -eq $m6Stale)
+
+# ── Scenario M7: Closed milestone past due → NOT flagged ──
+$m7Data = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR6' -Number 115 -State 'closed' -DueOn $daysAgo60)
+)
+$m7 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m7Data
+$m7Stale = Get-MilestoneCheckByPrefix -Checks $m7 -Prefix 'Stale open milestones'
+Assert-Eq -Label "M7: closed milestone never flagged stale" -Expected $true -Actual ($null -eq $m7Stale)
+
+# ── Scenario M8: Backlog with no due_on → NOT flagged ──
+$m8Data = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+    (New-MockMilestone -Title 'Backlog' -Number 1 -OpenIssues 3000)  # no due
+)
+$m8 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m8Data
+Assert-Eq -Label "M8: Backlog never flagged stale" -Expected 0 -Actual @($m8).Count
+
+# ── Scenario M9: Cross-major staleness → NOT flagged (cycle isolation) ──
+# Surveying SR8 of .NET 10; stale .NET 9 SR9 should NOT flag (different major).
+$m9Data = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 9 SR9' -Number 50 -OpenIssues 10 -DueOn $daysAgo60)
+)
+$m9 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m9Data
+$m9Stale = Get-MilestoneCheckByPrefix -Checks $m9 -Prefix 'Stale open milestones'
+Assert-Eq -Label "M9: .NET 9 stale milestones don't flag when surveying .NET 10 SR" -Expected $true -Actual ($null -eq $m9Stale)
+
+# ── Scenario M10: Cross-cycle staleness → NOT flagged (SR/preview isolation) ──
+# Surveying SR8 of .NET 10; stale .NET 10.0-preview1 should NOT flag (preview vs SR).
+$m10Data = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10.0-preview1' -Number 40 -OpenIssues 5 -DueOn $daysAgo60)
+)
+$m10 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m10Data
+$m10Stale = Get-MilestoneCheckByPrefix -Checks $m10 -Prefix 'Stale open milestones'
+Assert-Eq -Label "M10: preview milestones don't flag when surveying an SR cycle" -Expected $true -Actual ($null -eq $m10Stale)
+
+# ── Scenario M11: Preview branch surveys preview milestones ──
+$m11Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview5' -Number 200 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 11.0-preview6' -Number 201 -DueOn $daysAhead30)
+)
+$m11 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview5' -MilestonesResponse $m11Data
+Assert-Eq -Label "M11: preview branch all-present → 0 checks" -Expected 0 -Actual @($m11).Count
+
+# ── Scenario M12: Preview branch missing next-preview → BLOCKED ──
+$m12Data = @(
+    (New-MockMilestone -Title '.NET 11.0-preview5' -Number 200 -DueOn $daysAhead30)
+)
+$m12 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview5' -MilestonesResponse $m12Data
+$m12Next = Get-MilestoneCheckByPrefix -Checks $m12 -Prefix 'Milestone for next cycle'
+Assert-Eq -Label "M12: preview6 missing → BLOCKED next-cycle check" -Expected 'BLOCKED' -Actual $m12Next.Status
+Assert-Eq -Label "M12: details name preview6 by exact title" -Expected $true `
+    -Actual ($m12Next.Area -match '\.NET 11\.0-preview6')
+
+# ── Scenario M13: Candidate mode for SR (priorSr = SR7 → candidate is SR8) ──
+$m13Data = @(
+    (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -DueOn $daysAhead30)
+    (New-MockMilestone -Title '.NET 10 SR9' -Number 118 -DueOn $daysAhead30)
+)
+$m13 = Invoke-MilestoneChecksWithMocks -Mode 'candidate' -PriorSrBranch 'release/10.0.1xx-sr7' -MilestonesResponse $m13Data
+Assert-Eq -Label "M13: candidate-mode SR (prior=SR7) accepts SR8/SR9 → 0 checks" -Expected 0 -Actual @($m13).Count
+
+# ── Scenario M14: -SkipChecks → 0 checks even with missing milestones ──
+$m14 = Invoke-MilestoneChecksWithMocks -SkipChecks -MilestonesResponse @()
+Assert-Eq -Label "M14: SkipChecks emits 0 checks" -Expected 0 -Actual @($m14).Count
+
+# ── Scenario M15: Non-SR / non-preview branch → 0 checks (silent skip) ──
+$m15 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/10.0.1xx-rc1' -MilestonesResponse @()
+Assert-Eq -Label "M15: RC branch shape → 0 checks (can't infer milestone name)" -Expected 0 -Actual @($m15).Count
+
+# ── Scenario M16: API failure → UNKNOWN check (gh auth gap) ──
+$m16 = Invoke-MilestoneChecksWithMocks -ApiFail
+$m16Unk = Get-MilestoneCheckByPrefix -Checks $m16 -Prefix 'Milestone hygiene'
+Assert-Eq -Label "M16: API fail → UNKNOWN status" -Expected 'UNKNOWN' -Actual $m16Unk.Status
+Assert-Eq -Label "M16: API fail action mentions gh auth status" -Expected $true `
+    -Actual ($m16Unk.NextAction -match 'gh auth status')
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })
