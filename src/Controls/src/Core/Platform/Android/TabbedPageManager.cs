@@ -297,11 +297,21 @@ public class TabbedPageManager
 
 						_tabplacementId = id;
 
-						fm
+						var transaction = fm
 							.BeginTransactionEx()
 							.ReplaceEx(id, _tabLayoutFragment)
-							.SetReorderingAllowed(true)
-							.Commit();
+							.SetReorderingAllowed(true);
+
+						// Re-apply top chrome after the fragment transaction completes so that
+						// UpdateTopChrome runs with the TabLayout already parented under the
+						// AppBarLayout. RunOnCommit fires after OnCreateView returns and the
+						// view is attached to its container — no race window.
+						if (!IsBottomTabPlacement)
+						{
+							transaction.RunOnCommit(new Java.Lang.Runnable(UpdateSystemChrome));
+						}
+
+						transaction.Commit();
 					});
 		}
 	}
@@ -586,6 +596,8 @@ public class TabbedPageManager
 				_tabLayout.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToPlatform());
 			}
 		}
+
+		UpdateSystemChrome();
 	}
 
 	public virtual void UpdateBarBackground()
@@ -629,6 +641,38 @@ public class TabbedPageManager
 			_bottomNavigationView.UpdateBackground(_currentBarBackground);
 		else
 			_tabLayout.UpdateBackground(_currentBarBackground);
+
+		UpdateSystemChrome();
+	}
+
+	void UpdateSystemChrome()
+	{
+		if (Element is null)
+		{
+			return;
+		}
+
+		var background = GetEffectiveBarBackground();
+		var foreground = Element.BarTextColor ?? BarSelectedItemColor ?? BarItemColor;
+
+		if (IsBottomTabPlacement)
+		{
+			AndroidSystemChrome.UpdateBottomChrome(_bottomNavigationView, background, foreground);
+		}
+		else
+		{
+			AndroidSystemChrome.UpdateTopChrome(_tabLayout, background, foreground);
+		}
+	}
+
+	Brush GetEffectiveBarBackground()
+	{
+		if (Element.BarBackground is not null)
+		{
+			return Element.BarBackground;
+		}
+
+		return Element.BarBackgroundColor is null ? null : new SolidColorBrush(Element.BarBackgroundColor);
 	}
 
 	protected virtual ColorStateList GetItemTextColorStates()
@@ -881,6 +925,8 @@ public class TabbedPageManager
 			_bottomNavigationView.ItemTextColor = _currentBarTextColorStateList;
 		else
 			_tabLayout.TabTextColors = _currentBarTextColorStateList;
+
+		UpdateSystemChrome();
 	}
 
 	void SetIconColorFilter(Page page, TabLayout.Tab tab)
