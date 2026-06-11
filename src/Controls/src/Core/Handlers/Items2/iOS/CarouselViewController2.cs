@@ -334,7 +334,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			//_gotoPosition = -1;
+			_gotoPosition = -1;
 
 			// We need to update the position while modifying the collection.
 			targetPosition = GetTargetPosition();
@@ -473,7 +473,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (goToPosition != carouselPosition || forceScroll)
+			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
 			{
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
@@ -565,6 +565,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (currentItemIndex.Row < 0)
 			{
 				return;
+			}
+
+			if (currentItemIndex.Row == _gotoPosition)
+			{
+				_gotoPosition = -1;
 			}
 
 			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);
