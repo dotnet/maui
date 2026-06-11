@@ -371,6 +371,28 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return new TitleViewContainer(titleView);
 		}
 
+		/// <summary>
+		/// Re-applies the navigation bar frame to the current TitleView container.
+		/// On iOS 26+ the TitleView container uses autoresizing masks with an explicitly set frame
+		/// (see <see cref="CreateTitleViewContainer"/>), so the frame is not automatically recomputed
+		/// when the navigation bar resizes during rotation or window size changes. This explicitly
+		/// resizes the container to match the navigation bar's new dimensions.
+		/// </summary>
+		internal void UpdateTitleViewFrameForOrientation()
+		{
+			if (NavigationItem?.TitleView is not TitleViewContainer titleViewContainer)
+			{
+				return;
+			}
+
+			var navigationBarFrame = ViewController?.NavigationController?.NavigationBar.Frame;
+			if (navigationBarFrame.HasValue)
+			{
+				titleViewContainer.Frame = new CGRect(0, 0, navigationBarFrame.Value.Width, navigationBarFrame.Value.Height);
+				titleViewContainer.LayoutIfNeeded();
+			}
+		}
+
 		void OnTitleViewParentSet(object? sender, EventArgs e)
 		{
 			if (sender is Element element)

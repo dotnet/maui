@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
@@ -298,6 +299,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_appearanceTracker?.SetAppearance(MoreNavigationController, _shellAppearance);
 			}
 			base.DidMoveToParentViewController(parent);
+		}
+
+		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+		{
+			base.ViewWillTransitionToSize(toSize, coordinator);
+
+			// On iOS 26+ the TitleView container uses autoresizing masks with an explicitly set frame,
+			// so it does not automatically resize when the navigation bar changes width during rotation.
+			// Re-apply the frame for the pushed pages' TitleViews alongside the transition.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				coordinator.AnimateAlongsideTransition(_ =>
+				{
+					foreach (var tracker in _trackers.Values)
+					{
+						(tracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+					}
+				}, null);
+			}
 		}
 
 		public override void ViewDidLoad()
