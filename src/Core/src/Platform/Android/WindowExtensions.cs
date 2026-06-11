@@ -137,12 +137,10 @@ namespace Microsoft.Maui
 			{
 				var restoreColor = new AColor(_navigationBarColor);
 
-				// System-default nav bar colors appear as black with edge-to-edge enabled:
-				//   • Transparent  (0x00000000) — Material3 theme + SetDecorFitsSystemWindows(false)
-				//   • Opaque black (0xFF000000) — older API / emulator default
-				// Both have RGB = 0. Use the theme's window background color instead so that
-				// Shell→ShellContent and Shell→TabBar get the same white surface nav bar.
-				if ((_navigationBarColor & 0x00FFFFFF) == 0 && window.Context?.Theme is { } theme)
+				// Only substitute the transparent edge-to-edge default navigation bar color.
+				// Preserve any explicit captured native value (including opaque black 0xFF000000)
+				// so temporary MAUI overrides can be restored exactly.
+				if (_navigationBarColor == 0 && window.Context?.Theme is { } theme)
 				{
 					var typedValue = new TypedValue();
 					if (theme.ResolveAttribute(global::Android.Resource.Attribute.ColorBackground, typedValue, true)

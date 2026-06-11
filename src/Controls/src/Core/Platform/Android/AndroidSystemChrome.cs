@@ -3,11 +3,14 @@ using System;
 using System.Runtime.CompilerServices;
 using Android.App;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
+using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using AGraphics = Android.Graphics;
 using AView = Android.Views.View;
 using AWindow = Android.Views.Window;
 
@@ -130,16 +133,26 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (Brush.IsNullOrEmpty(background))
 			{
+				ViewCompat.SetBackgroundTintMode(appBarLayout, null);
+				ViewCompat.SetBackgroundTintList(appBarLayout, null);
 				appBarLayout.Background = originalBackground.CreateDrawable();
 				return;
 			}
 
 			if (background is SolidColorBrush { Color: not null } solidColorBrush)
 			{
-				appBarLayout.SetBackgroundColor(solidColorBrush.Color.ToPlatform());
+				if (appBarLayout.Background is null)
+				{
+					appBarLayout.Background = originalBackground.CreateDrawable();
+				}
+
+				ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
+				ViewCompat.SetBackgroundTintList(appBarLayout, ColorStateList.ValueOf(solidColorBrush.Color.ToPlatform()));
 				return;
 			}
 
+			ViewCompat.SetBackgroundTintMode(appBarLayout, null);
+			ViewCompat.SetBackgroundTintList(appBarLayout, null);
 			appBarLayout.UpdateBackground(background);
 		}
 
