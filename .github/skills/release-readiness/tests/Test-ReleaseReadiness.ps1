@@ -1448,6 +1448,155 @@ $mdNoInbound = Format-MarkdownReport -Data $mdDataNoInbound -RepoUrl 'https://gi
 Assert-Eq -Label "Open Fix PRs Inbound: no section when no open fix PRs in flight" -Expected $false `
     -Actual ($mdNoInbound -match 'Open Fix PRs Inbound')
 
+# ───── Get-ReleaseShipChecks: 'Main bumped to next SR cycle' check ─────
+# Verifies that when surveying an in-flight SR, the script ALSO blocks if
+# main hasn't bumped its PatchVersion past the SR being shipped. (Convention:
+# right after release/X.Y.Zxx-srN is cut, main bumps to (N+1)*10 so any PR
+# merging during SR$N stabilization correctly targets the NEXT SR cycle.)
+Write-Host "`n[Unit] Get-ReleaseShipChecks — 'Main bumped to next SR cycle'" -ForegroundColor Cyan
+
+function Build-VersionsPropsXml {
+    param([int]$Major, [int]$Minor, [int]$Patch)
+    @"
+<Project>
+  <PropertyGroup>
+    <MajorVersion>$Major</MajorVersion>
+    <MinorVersion>$Minor</MinorVersion>
+    <PatchVersion>$Patch</PatchVersion>
+  </PropertyGroup>
+</Project>
+"@
+}
+
+# Tiny bug-report.yml that always satisfies the version-with-bug dropdown check
+# (we're focused on the new main-bumped check, not the template check).
+$bugYamlAllowsAll = @'
+- type: dropdown
+  id: version-with-bug
+  attributes:
+    options:
+      - "10.0.80 (SR8)"
+      - "10.0.90 (SR9)"
+'@
+
+function Invoke-ShipChecksWithMockedVersions {
+    param(
+        [hashtable]$SrVersion,    # @{Major;Minor;Patch} for the SR branch
+        [hashtable]$MainVersion,  # @{Major;Minor;Patch} for main
+        [string]$SrBranch = 'release/10.0.1xx-sr8',
+        [string]$MainBranch = 'main',
+        [switch]$Candidate
+    )
+    # Wrap Get-FileFromRef so the script's existing Get-VersionsPropsState /
+    # Get-BugTemplateVersions read from these in-memory blobs.
+    $srRef   = "origin/$SrBranch"
+    $mainRef = "origin/$MainBranch"
+    $srXml   = Build-VersionsPropsXml @SrVersion
+    $mainXml = if ($MainVersion) { Build-VersionsPropsXml @MainVersion } else { $null }
+
+    $script:_origGetFile = Get-Command Get-FileFromRef -CommandType Function
+    function global:Get-FileFromRef {
+        param([string]$Path, [string]$Ref)
+        if ($Path -eq 'eng/Versions.props') {
+            if ($Ref -eq $script:_mockSrRef)   { return $script:_mockSrXml }
+            if ($Ref -eq $script:_mockMainRef) { return $script:_mockMainXml }
+            return $null
+        }
+        if ($Path -eq '.github/ISSUE_TEMPLATE/bug-report.yml') {
+            return $script:_mockBugYaml
+        }
+        return $null
+    }
+    $script:_mockSrRef    = $srRef
+    $script:_mockMainRef  = $mainRef
+    $script:_mockSrXml    = $srXml
+    $script:_mockMainXml  = $mainXml
+    $script:_mockBugYaml  = $bugYamlAllowsAll
+
+    try {
+        $ctx = @{
+            srBranch   = if ($Candidate) { $MainBranch } else { $SrBranch }
+            srRef      = if ($Candidate) { "origin/$MainBranch" } else { "origin/$SrBranch" }
+            mainBranch = $MainBranch
+            mode       = if ($Candidate) { 'candidate' } else { 'in-flight' }
+            priorSrBranch = if ($Candidate) { $SrBranch } else { $null }
+        }
+        return Get-ReleaseShipChecks -Ctx $ctx
+    } finally {
+        Remove-Item function:global:Get-FileFromRef -ErrorAction SilentlyContinue
+    }
+}
+
+# Helper: scoped check lookup
+function Get-CheckByAreaPrefix {
+    param($Checks, [string]$Prefix)
+    @($Checks | Where-Object { $_.Area.StartsWith($Prefix) }) | Select-Object -First 1
+}
+
+# Scenario 1: SR8 in-flight, main STILL at same cycle (10.0.80) — BLOCKED
+$checks1 = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=80 } `
+    -SrBranch 'release/10.0.1xx-sr8'
+
+$mainBumpCheck = Get-CheckByAreaPrefix -Checks $checks1 -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-not-bumped: emits 'Main bumped to SR9 cycle' check" -Expected $true `
+    -Actual ($null -ne $mainBumpCheck)
+Assert-Eq -Label "Main-not-bumped (main=80, SR8=80): status BLOCKED" -Expected 'BLOCKED' -Actual $mainBumpCheck.Status
+Assert-Eq -Label "Main-not-bumped: details mention same cycle" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.Details -match 'same cycle'))
+Assert-Eq -Label "Main-not-bumped: next action points to 90" -Expected $true `
+    -Actual ([bool]($mainBumpCheck.NextAction -match '\b90\b'))
+
+# Scenario 2: SR8 in-flight, main already bumped to 10.0.90 — READY
+$checks2 = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90 } `
+    -SrBranch 'release/10.0.1xx-sr8'
+
+$mainBumpCheck2 = Get-CheckByAreaPrefix -Checks $checks2 -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-bumped-to-90: status READY"  -Expected 'READY' -Actual $mainBumpCheck2.Status
+Assert-Eq -Label "Main-bumped-to-90: details show 90 satisfied" -Expected $true `
+    -Actual ([bool]($mainBumpCheck2.Details -match 'at or past'))
+
+# Scenario 3: SR8 in-flight, main past the major train (11.0.x) — READY
+$checks3 = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=11; Minor=0; Patch=10 } `
+    -SrBranch 'release/10.0.1xx-sr8'
+
+$mainBumpCheck3 = Get-CheckByAreaPrefix -Checks $checks3 -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-past-major (11.0): status READY"  -Expected 'READY' -Actual $mainBumpCheck3.Status
+Assert-Eq -Label "Main-past-major: details mention moved past train" -Expected $true `
+    -Actual ([bool]($mainBumpCheck3.Details -match 'moved past'))
+
+# Scenario 4: SR8 in-flight, main bumped multiple cycles ahead (10.0.110 for hypothetical SR11) — READY
+$checks4 = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=110 } `
+    -SrBranch 'release/10.0.1xx-sr8'
+
+$mainBumpCheck4 = Get-CheckByAreaPrefix -Checks $checks4 -Prefix 'Main bumped to SR9 cycle'
+Assert-Eq -Label "Main-way-ahead (patch=110): status READY"  -Expected 'READY' -Actual $mainBumpCheck4.Status
+
+# Scenario 5: Candidate mode → the new check is SKIPPED (no double-counting with the
+# existing 'Versions.props bump (main → SRn)' check that already targets main)
+$checks5 = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=80 } `
+    -SrBranch 'release/10.0.1xx-sr8' `
+    -Candidate
+
+$mainBumpCheck5 = Get-CheckByAreaPrefix -Checks $checks5 -Prefix 'Main bumped to'
+Assert-Eq -Label "Candidate mode: 'Main bumped to' check NOT emitted (avoids redundancy)" -Expected $true `
+    -Actual ($null -eq $mainBumpCheck5)
+
+# Scenario 6: SR-branch check still works (existing behavior — guard against regressions)
+$srBranchCheck = Get-CheckByAreaPrefix -Checks $checks1 -Prefix 'Versions.props bump (SR8)'
+Assert-Eq -Label "Existing SR-branch check still emitted alongside new main-bump check" -Expected $true `
+    -Actual ($null -ne $srBranchCheck)
+Assert-Eq -Label "Existing SR-branch check stays READY when SR is at 80" -Expected 'READY' -Actual $srBranchCheck.Status
+
 # ───── ci-scan freshness + rendering ─────
 Write-Host "`n[Unit] Format-CiScanIssueRows + freshness" -ForegroundColor Cyan
 

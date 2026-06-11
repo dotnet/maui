@@ -382,6 +382,53 @@ function Get-ReleaseShipChecks {
         }
     }
 
+    # === Main bumped to NEXT SR cycle ===
+    # Convention: as soon as a release/X.Y.Zxx-srN branch is cut, main MUST bump
+    # PatchVersion to (N+1)*10 so any new PRs landing on main during SR$N
+    # stabilization correctly target the next SR cycle, not the SR being shipped.
+    #
+    # If main is still at the same PatchVersion as the SR-to-ship, it's a hard
+    # ship-blocker: the moment SR$N tags, every "10.0.80" PR on main suddenly
+    # claims to be in a release that already shipped without it.
+    #
+    # Skip in candidate mode — there, main IS the surveyed ref and the check
+    # above already covers the same ground from the other direction.
+    if (-not $isCandidate) {
+        $mainRef = "origin/$($Ctx.mainBranch)"
+        $vpMain = Get-VersionsPropsState -Ref $mainRef
+        $nextSr = $targetSr + 1
+        $expectedNextPatchPrefix = $nextSr * 10
+        $mainArea = "Main bumped to SR$nextSr cycle"
+
+        if (-not $vpMain) {
+            $checks += New-ReadinessCheck -Area $mainArea -Status 'UNKNOWN' `
+                -Details "Could not read eng/Versions.props from ``$mainRef``." `
+                -NextAction "Inspect the file manually."
+        } else {
+            # If main has moved to a newer major/minor (e.g. GA happened, main is
+            # on 11.0 while we ship 10.0 SR8), this check no longer applies — main
+            # is past this cycle entirely.
+            $mainPastMajor = ($vpMain.Major -gt $major) -or `
+                             ($vpMain.Major -eq $major -and $vpMain.Minor -gt $minor)
+            $mainBumpedThisCycle = ($vpMain.Major -eq $major -and $vpMain.Minor -eq $minor `
+                                    -and $vpMain.Patch -ge $expectedNextPatchPrefix)
+
+            if ($mainPastMajor) {
+                $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main has moved past the $major.$minor train entirely (no bump needed for SR$targetSr stabilization)." `
+                    -NextAction "No bump needed."
+            } elseif ($mainBumpedThisCycle) {
+                $checks += New-ReadinessCheck -Area $mainArea -Status 'READY' `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — main is at or past ``$major.$minor.$expectedNextPatchPrefix`` so PRs merging during SR$targetSr stabilization target SR$nextSr correctly." `
+                    -NextAction "No bump needed."
+            } else {
+                $checks += New-ReadinessCheck -Area $mainArea -Status 'BLOCKED' `
+                    -Details "``$mainRef`` reports ``$($vpMain.FullVersion)`` — same cycle as the SR being shipped. Once SR$targetSr tags, every PR currently merging to main as ``$($vpMain.FullVersion)`` would falsely claim to ship in SR$targetSr." `
+                    -NextAction "Bump eng/Versions.props on main: set <PatchVersion> from $($vpMain.Patch) to $expectedNextPatchPrefix (SR$nextSr cycle) before shipping SR$targetSr."
+            }
+        }
+    }
+
     # === Bug template version listing ===
     # Issue templates live on the default branch (main) — they're global per repo.
     $templateRef = "origin/$($Ctx.mainBranch)"
