@@ -12,9 +12,6 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-if ($PSVersionTable.PSVersion -ge [version]'7.3') {
-    $PSNativeCommandUseErrorActionPreference = $true
-}
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
 
@@ -81,12 +78,16 @@ function Get-PlatformFromLabels {
     return 'android'
 }
 
-$searchResult = gh pr list `
+$searchJson = gh pr list `
     --repo "$Owner/$Repo" `
     --state open `
     --label $ReadyForRerunLabel `
     --limit $MaxPRs `
-    --json number,title,url,headRefOid,isDraft,labels,author | ConvertFrom-Json
+    --json number,title,url,headRefOid,isDraft,labels,author
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to list open PRs labeled '$ReadyForRerunLabel' (gh pr list exited with code $LASTEXITCODE)."
+}
+$searchResult = $searchJson | ConvertFrom-Json
 
 $candidates = @()
 foreach ($pr in @($searchResult)) {
