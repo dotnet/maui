@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Platform
 		{
 			_needsNativeDefaultCleanup = true;
 			SetNeedsLayout();
-			RequestColorReapply();
 		}
 
 		public override void MovedToWindow()

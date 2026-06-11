@@ -248,12 +248,14 @@ namespace Microsoft.Maui.Handlers
 
 					if (reapplyKind.HasFlag(ColorReapplyKind.NativeDefaults))
 					{
-						(platformView as MauiSwitch)?.ClearNeedsNativeDefaultCleanup();
 						if (platformView.ShouldPreserveNativeDefaults(view))
 						{
 							platformView.ClearCustomColorState();
+							(platformView as MauiSwitch)?.ClearNeedsNativeDefaultCleanup();
 							return;
 						}
+
+						(platformView as MauiSwitch)?.ClearNeedsNativeDefaultCleanup();
 					}
 
 					if ((reapplyKind.HasFlag(ColorReapplyKind.CustomColors) && platformView.HasCustomColorIntent(view)) ||

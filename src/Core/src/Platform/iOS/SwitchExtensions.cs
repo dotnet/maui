@@ -26,8 +26,13 @@ namespace Microsoft.Maui.Platform
 
 			if (uiSwitch.ShouldPreserveNativeDefaults(view))
 			{
+				if (styleChanged)
+				{
+					uiSwitch.ReapplyNativeDefaultsAfterStyleUpdate();
+					return;
+				}
+
 				uiSwitch.ClearCustomColorState();
-				uiSwitch.ReapplyNativeDefaultsAfterStyleUpdate(styleChanged);
 				return;
 			}
 
@@ -91,8 +96,13 @@ namespace Microsoft.Maui.Platform
 
 			if (uiSwitch.ShouldPreserveNativeDefaults(view))
 			{
+				if (styleChanged)
+				{
+					uiSwitch.ReapplyNativeDefaultsAfterStyleUpdate();
+					return;
+				}
+
 				uiSwitch.ClearCustomColorState();
-				uiSwitch.ReapplyNativeDefaultsAfterStyleUpdate(styleChanged);
 				return;
 			}
 
@@ -151,10 +161,10 @@ namespace Microsoft.Maui.Platform
 #endif
 		}
 
-		static void ReapplyNativeDefaultsAfterStyleUpdate(this UISwitch uiSwitch, bool styleChanged)
+		static void ReapplyNativeDefaultsAfterStyleUpdate(this UISwitch uiSwitch)
 		{
 #if IOS || MACCATALYST
-			if (!styleChanged || !IsSlidingStyleRequiredForCustomColors())
+			if (!IsSlidingStyleRequiredForCustomColors())
 			{
 				return;
 			}
