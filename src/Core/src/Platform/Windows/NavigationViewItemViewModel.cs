@@ -104,7 +104,14 @@ namespace Microsoft.Maui.Platform
 		public WIconElement? Icon
 		{
 			get { return _icon; }
-			set { this.SetProperty(ref _icon, value, OnPropertyChanged); }
+			set
+			{
+				this.SetProperty(ref _icon, value, OnPropertyChanged);
+				// After the binding fires (and WinUI applies its initial visual-state transitions),
+				// re-apply the current Foreground to the new icon element so the custom disabled
+				// color isn't overridden by WinUI's default Disabled visual state.
+				UpdateForeground();
+			}
 		}
 
 		public WBrush? Foreground

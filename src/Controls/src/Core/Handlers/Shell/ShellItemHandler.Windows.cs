@@ -265,12 +265,15 @@ namespace Microsoft.Maui.Controls.Handlers
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
 					vm.Content = bsi.Title;
-					vm.IsEnabled = bsi.IsEnabled;
 
-					if (_shellAppearanceElement?.EffectiveTabBarDisabledColor is Color disabledColor)
-					{
-						vm.DisabledForeground = disabledColor.ToPlatform();
-					}
+						// Set DisabledForeground BEFORE IsEnabled so that when the IsEnabled setter
+						// calls UpdateForeground(), DisabledForeground is already available.
+						if (_shellAppearanceElement?.EffectiveTabBarDisabledColor is Color disabledColor)
+						{
+							vm.DisabledForeground = disabledColor.ToPlatform();
+						}
+
+						vm.IsEnabled = bsi.IsEnabled;
 
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
 
