@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			uiSwitch.UpdateMauiCustomColorIntent(view);
 			uiSwitch.CompleteMapperColorOverrideDetection(view);
 
 			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
@@ -88,6 +89,7 @@ namespace Microsoft.Maui.Platform
 			if (view == null)
 				return;
 
+			uiSwitch.UpdateMauiCustomColorIntent(view);
 			uiSwitch.CompleteMapperColorOverrideDetection(view);
 
 			var styleChanged = uiSwitch.UpdatePreferredStyle(view);
@@ -181,6 +183,14 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		static void UpdateMauiCustomColorIntent(this UISwitch uiSwitch, ISwitch view)
+		{
+			if (IsSlidingStyleRequiredForCustomColors())
+			{
+				(uiSwitch as MauiSwitch)?.UpdateMauiCustomColorIntent(view.HasCustomColors());
+			}
+		}
+
 		internal static bool HasCustomColors(this ISwitch view)
 		{
 			return view.TrackColor is not null || view.ThumbColor is not null;
@@ -228,12 +238,17 @@ namespace Microsoft.Maui.Platform
 			return first.Equals(second);
 		}
 
-		internal static void ClearCustomColorState(this UISwitch uiSwitch)
+		internal static void ClearCustomColorState(this UISwitch uiSwitch, bool clearTrackColor = false)
 		{
 			uiSwitch.OnTintColor = null;
 			uiSwitch.ThumbTintColor = null;
 
-			if (uiSwitch is MauiSwitch mauiSwitch && mauiSwitch.HasMauiTrackColorOverride)
+			if (clearTrackColor)
+			{
+				uiSwitch.GetTrackSubview()?.BackgroundColor = null;
+				(uiSwitch as MauiSwitch)?.ClearMauiTrackColorOverride();
+			}
+			else if (uiSwitch is MauiSwitch mauiSwitch && mauiSwitch.HasMauiTrackColorOverride)
 			{
 				uiSwitch.GetTrackSubview()?.BackgroundColor = null;
 				mauiSwitch.ClearMauiTrackColorOverride();

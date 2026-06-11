@@ -583,6 +583,87 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		[Theory(DisplayName = "Mapper Color Reapply Survives Maui Custom Color Reset On iOS/MacCatalyst 26")]
+		[InlineData(true, true)]
+		[InlineData(false, true)]
+		public async Task MapperColorReapplySurvivesMauiCustomColorResetOniOSOrMacCatalyst26(bool hasInitialTrackColor, bool hasInitialThumbColor)
+		{
+			if (!IsIOSOrMacCatalyst26OrNewer())
+			{
+				return;
+			}
+
+			var mapperTrackColor = UIColor.Purple;
+			var mapperRanOffMainThread = false;
+			var switchStub = new SwitchStub
+			{
+				IsOn = false,
+				TrackColor = hasInitialTrackColor ? Colors.Red : null,
+				ThumbColor = hasInitialThumbColor ? Colors.Orange : null
+			};
+
+			CustomSwitchHandler.TestMapper = new PropertyMapper<ISwitch, ISwitchHandler>(SwitchHandler.Mapper);
+			CustomSwitchHandler.TestMapper.AppendToMapping(nameof(ISwitch.TrackColor), (handler, view) =>
+			{
+				mapperRanOffMainThread |= !NSThread.IsMain;
+
+				if (handler.PlatformView is UISwitch uiSwitch && uiSwitch.GetTrackSubview() is UIView trackSubview)
+				{
+					trackSubview.BackgroundColor = mapperTrackColor;
+					uiSwitch.OnTintColor = mapperTrackColor;
+				}
+			});
+
+			try
+			{
+				await AttachAndRun<CustomSwitchHandler>(switchStub, async (CustomSwitchHandler handler) =>
+				{
+					var nativeSwitch = GetNativeSwitch(handler);
+
+					await new Func<bool>(() => nativeSwitch.IsReadyForColorReapply())
+						.AssertEventually(message: "Native switch was not ready for mapper reset detection.");
+
+					await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Sliding && nativeSwitch.Style == UISwitchStyle.Sliding)
+						.AssertEventually(message: "Initial MAUI custom colors did not opt into Sliding style.");
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), mapperTrackColor, tolerance: 0.1))
+						.AssertEventually(message: "Custom TrackColor mapper did not apply during initial mapping.");
+
+					Assert.False(mapperRanOffMainThread, "Custom switch color mapper ran off the main thread.");
+
+					switchStub.TrackColor = null;
+					switchStub.ThumbColor = null;
+					handler.UpdateValue(nameof(ISwitch.TrackColor));
+					handler.UpdateValue(nameof(ISwitch.ThumbColor));
+
+					await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Sliding && nativeSwitch.Style == UISwitchStyle.Sliding)
+						.AssertEventually(message: "Mapper-only switch color customization did not keep Sliding style after MAUI colors were reset.");
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), mapperTrackColor, tolerance: 0.1))
+						.AssertEventually(message: "Mapper-only TrackColor customization did not survive MAUI color reset.");
+
+					Assert.Null(switchStub.TrackColor);
+					Assert.Null(switchStub.ThumbColor);
+					Assert.False(mapperRanOffMainThread, "Mapper-only reset color reapply ran off the main thread.");
+
+					var trackSubview = nativeSwitch.GetTrackSubview();
+					Assert.NotNull(trackSubview);
+
+					trackSubview.BackgroundColor = UIColor.Clear;
+					nativeSwitch.MovedToWindow();
+
+					await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), mapperTrackColor, tolerance: 0.1))
+						.AssertEventually(message: "Lifecycle color reapply skipped the mapper-only TrackColor customization after MAUI color reset.");
+
+					Assert.False(mapperRanOffMainThread, "Mapper-only lifecycle color reapply after reset ran off the main thread.");
+				});
+			}
+			finally
+			{
+				CustomSwitchHandler.TestMapper = new PropertyMapper<ISwitch, ISwitchHandler>(SwitchHandler.Mapper);
+			}
+		}
+
 		[Fact(DisplayName = "Layout Subviews Does Not Reapply Colors When Not Dirty On iOS/MacCatalyst 26")]
 		public async Task LayoutSubviewsDoesNotReapplyColorsWhenNotDirtyOniOSOrMacCatalyst26()
 		{

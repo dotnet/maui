@@ -236,6 +236,16 @@ namespace Microsoft.Maui.Handlers
 					var reapplyKind = _queuedColorReapplyKind;
 					ClearQueuedColorReapply(platformView);
 
+					if (TryDetectMapperColorOverride(handler, view, platformView))
+					{
+						if (reapplyKind.HasFlag(ColorReapplyKind.NativeDefaults))
+						{
+							(platformView as MauiSwitch)?.ClearNeedsNativeDefaultCleanup();
+						}
+
+						return;
+					}
+
 					if (reapplyKind.HasFlag(ColorReapplyKind.NativeDefaults))
 					{
 						(platformView as MauiSwitch)?.ClearNeedsNativeDefaultCleanup();
@@ -244,11 +254,6 @@ namespace Microsoft.Maui.Handlers
 							platformView.ClearCustomColorState();
 							return;
 						}
-					}
-
-					if (TryDetectMapperColorOverride(handler, view, platformView))
-					{
-						return;
 					}
 
 					if ((reapplyKind.HasFlag(ColorReapplyKind.CustomColors) && platformView.HasCustomColorIntent(view)) ||
@@ -338,6 +343,11 @@ namespace Microsoft.Maui.Handlers
 					!mauiSwitch.ShouldDetectMapperColorOverride)
 				{
 					return false;
+				}
+
+				if (mauiSwitch.ShouldResetMapperColorOverrideDetectionBaseline)
+				{
+					platformView.ClearCustomColorState(clearTrackColor: true);
 				}
 
 				mauiSwitch.CompleteMapperColorOverrideDetection();
