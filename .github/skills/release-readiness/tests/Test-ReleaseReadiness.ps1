@@ -2207,6 +2207,88 @@ Assert-Eq -Label "M16: API fail → UNKNOWN status" -Expected 'UNKNOWN' -Actual 
 Assert-Eq -Label "M16: API fail action mentions gh auth status" -Expected $true `
     -Actual ($m16Unk.NextAction -match 'gh auth status')
 
+# ───── Get-ExpectedShipDate: deterministic 2nd-Tuesday math + hotfix cadence ─────
+# .NET releases ship on the 2nd Tuesday of every month for x0 patches (80, 90, 100…)
+# and previews. Hotfix patches (81, 82…) ship ASAP — no cadence.
+Write-Host "`n[Unit] Get-ExpectedShipDate (2nd Tuesday + hotfix)" -ForegroundColor Cyan
+
+# 2nd Tuesday calendar for sanity (verified independently):
+#   June 2026:  2nd Tue = June 9
+#   July 2026:  2nd Tue = July 14
+#   Aug 2026:   2nd Tue = Aug 11
+#   May 2026:   2nd Tue = May 12
+#   Feb 2026:   2nd Tue = Feb 10 (no leap-week issue)
+
+# Scenario T1: x0 patch + BEFORE this month's 2nd Tuesday → use this month
+$t1 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-01') -PatchVersion 80
+Assert-Eq -Label "T1: 06-01 + patch=80 → cadence second-tuesday" -Expected 'second-tuesday' -Actual $t1.Cadence
+Assert-Eq -Label "T1: 06-01 → June 9 2026"  -Expected '2026-06-09' -Actual $t1.Date.ToString('yyyy-MM-dd')
+Assert-Eq -Label "T1: days from 06-01 = 8"   -Expected 8           -Actual $t1.DaysFromNow
+
+# Scenario T2: x0 patch + AFTER this month's 2nd Tuesday → roll to next month
+$t2 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 80
+Assert-Eq -Label "T2: 06-11 (past June 9) → July 14 2026" -Expected '2026-07-14' -Actual $t2.Date.ToString('yyyy-MM-dd')
+Assert-Eq -Label "T2: days from 06-11 = 33"                -Expected 33           -Actual $t2.DaysFromNow
+
+# Scenario T3: today IS the 2nd Tuesday → return today (DaysFromNow = 0)
+$t3 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-09') -PatchVersion 80
+Assert-Eq -Label "T3: 06-09 IS June's 2nd Tue → 06-09 returned" -Expected '2026-06-09' -Actual $t3.Date.ToString('yyyy-MM-dd')
+Assert-Eq -Label "T3: days from shipping day = 0"               -Expected 0           -Actual $t3.DaysFromNow
+
+# Scenario T4: month starts on a Tuesday → first Tue is day 1, second Tue is day 8
+# Sept 2026 starts on a Tuesday (Sept 1 = Tue).
+$t4 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-09-01') -PatchVersion 90
+Assert-Eq -Label "T4: 09-01 (month starts on Tue) → Sept 8" -Expected '2026-09-08' -Actual $t4.Date.ToString('yyyy-MM-dd')
+
+# Scenario T5: month rollover crossing year boundary — December past 2nd Tue → January
+$t5 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-12-15') -PatchVersion 100
+Assert-Eq -Label "T5: 12-15 (past Dec 8) → Jan 12 2027" -Expected '2027-01-12' -Actual $t5.Date.ToString('yyyy-MM-dd')
+
+# Scenario T6: formatted string includes day-of-week + month name
+$t6 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 80
+Assert-Eq -Label "T6: FormattedLong contains 'Tuesday'" -Expected $true -Actual ([bool]($t6.FormattedLong -match '^Tuesday'))
+Assert-Eq -Label "T6: FormattedLong contains 'July'"    -Expected $true -Actual ([bool]($t6.FormattedLong -match 'July'))
+Assert-Eq -Label "T6: FormattedLong contains '14'"      -Expected $true -Actual ([bool]($t6.FormattedLong -match '\b14\b'))
+Assert-Eq -Label "T6: FormattedLong contains '2026'"    -Expected $true -Actual ([bool]($t6.FormattedLong -match '2026'))
+
+# Scenario T7: month starts on Wednesday (e.g. Jul 2026: Jul 1 = Wed) — first Tue = Jul 7, second Tue = Jul 14
+$t7 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-07-01') -PatchVersion 80
+Assert-Eq -Label "T7: 07-01 (month starts on Wed) → Jul 14" -Expected '2026-07-14' -Actual $t7.Date.ToString('yyyy-MM-dd')
+
+# Scenario T8: time-of-day portion shouldn't affect the result
+$t8 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-09T23:59:00Z') -PatchVersion 80
+Assert-Eq -Label "T8: time-of-day stripped → 06-09 still recognized as shipping day" -Expected 0 -Actual $t8.DaysFromNow
+
+# Scenario T9: patch=$null (caller doesn't know) → defaults to 2nd-Tuesday cadence
+$t9 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11')
+Assert-Eq -Label "T9: patch=$null → cadence second-tuesday (back-compat)" -Expected 'second-tuesday' -Actual $t9.Cadence
+Assert-Eq -Label "T9: patch=$null → still produces a date"                -Expected '2026-07-14' -Actual $t9.Date.ToString('yyyy-MM-dd')
+
+# Scenario T10: hotfix patch (81) → ASAP, NO cadence
+$t10 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 81
+Assert-Eq -Label "T10: patch=81 → cadence asap-hotfix"     -Expected 'asap-hotfix' -Actual $t10.Cadence
+Assert-Eq -Label "T10: patch=81 → Date is null"            -Expected $true         -Actual ($null -eq $t10.Date)
+Assert-Eq -Label "T10: patch=81 → DaysFromNow is null"     -Expected $true         -Actual ($null -eq $t10.DaysFromNow)
+Assert-Eq -Label "T10: patch=81 → FormattedLong mentions ASAP" -Expected $true     -Actual ([bool]($t10.FormattedLong -match 'ASAP'))
+Assert-Eq -Label "T10: patch=81 → Note mentions hotfix"    -Expected $true         -Actual ([bool]($t10.Note -match 'hotfix'))
+Assert-Eq -Label "T10: patch=81 → Note quotes the patch"   -Expected $true         -Actual ([bool]($t10.Note -match '\b81\b'))
+
+# Scenario T11: hotfix mid-range (85) → still ASAP
+$t11 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 85
+Assert-Eq -Label "T11: patch=85 → cadence asap-hotfix" -Expected 'asap-hotfix' -Actual $t11.Cadence
+
+# Scenario T12: another decade boundary — patch=91 (SR9 hotfix) → ASAP
+$t12 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 91
+Assert-Eq -Label "T12: patch=91 → cadence asap-hotfix" -Expected 'asap-hotfix' -Actual $t12.Cadence
+
+# Scenario T13: preview/major-zero patch (0) → 2nd-Tuesday (0 % 10 == 0)
+$t13 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 0
+Assert-Eq -Label "T13: patch=0 (preview) → cadence second-tuesday" -Expected 'second-tuesday' -Actual $t13.Cadence
+
+# Scenario T14: patch=100 (triple digit, % 10 == 0) → 2nd-Tuesday
+$t14 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersion 100
+Assert-Eq -Label "T14: patch=100 → cadence second-tuesday" -Expected 'second-tuesday' -Actual $t14.Cadence
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

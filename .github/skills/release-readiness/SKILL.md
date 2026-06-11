@@ -219,6 +219,17 @@ The SR readiness report rolls operational checks into a single **Blocking** summ
 | **`CI Failure Scanner signals`** | All SR runs | `WATCH` if fresh ci-scan issues are filed in the last 24h. |
 | **`Known Build Errors`** | All SR runs | `WATCH` if open Known Build Error issues exist that may explain background CI noise. |
 
+### Expected ship date
+
+The header line **`Expected ship date`** is rendered from `Get-ExpectedShipDate`, which reads `PatchVersion` from the survey ref's `eng/Versions.props` and applies the .NET release cadence:
+
+| PatchVersion | Cadence | Example |
+|--------------|---------|---------|
+| Multiple of 10 (`80`, `90`, `100`…) — also **previews** (patch=`0`) | 2nd Tuesday of the month | SR8 (`10.0.80`) → next 2nd Tuesday |
+| Anything else (`81`, `82`, `91`…) | **ASAP** — no fixed cadence | SR8 hotfix `10.0.81` → as soon as ready |
+
+Surfaced in JSON as `expectedShipDate.{cadence, date, daysFromNow, formattedLong, note, patchVersion}` so downstream automation doesn't redo the math.
+
 ### Maestro / BAR check gating
 
 The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When darc isn't installed (most CI environments), both checks emit `UNKNOWN` with the exact local-verification command embedded in the row's `Next action` — so the report **never silently skips** them. The release-readiness agent runs the same checks via the `maestro_*` MCP tools when the script reports `UNKNOWN`.

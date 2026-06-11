@@ -306,6 +306,71 @@ function Get-BugTemplateVersions {
     return @($values)
 }
 
+function Get-ExpectedShipDate {
+    <#
+    .SYNOPSIS
+        Returns the expected ship date for a .NET MAUI release.
+    .DESCRIPTION
+        Cadence depends on the PatchVersion being shipped:
+          - Multiples of 10 (80, 90, 100…) and previews → 2nd Tuesday of the month
+            (cross-team .NET convention — used by dotnet/sdk, runtime, MAUI, VS, etc.)
+          - Anything else (81, 82, 91…) → ASAP hotfix, no cadence
+
+        Returns [PSCustomObject]@{
+            Cadence       = 'second-tuesday' | 'asap-hotfix'
+            Date          = [DateTime] (UTC, 00:00) | $null when ASAP
+            DaysFromNow   = [int] | $null
+            FormattedLong = "Tuesday July 14, 2026" | "ASAP (hotfix patch)"
+            Note          = explanation string suitable for the report header
+        }
+    .NOTES
+        $ReferenceDate is for testability — production callers pass [DateTime]::UtcNow.Date.
+        $PatchVersion = $null → assume 2nd-Tuesday cadence (back-compat for callers
+        that don't know the patch yet).
+    #>
+    param(
+        [DateTime]$ReferenceDate = [DateTime]::UtcNow.Date,
+        [Nullable[int]]$PatchVersion = $null
+    )
+    # Hotfix patch (not a multiple of 10) → no cadence, ship ASAP.
+    if ($null -ne $PatchVersion -and ($PatchVersion % 10) -ne 0) {
+        return [PSCustomObject]@{
+            Cadence       = 'asap-hotfix'
+            Date          = $null
+            DaysFromNow   = $null
+            FormattedLong = 'ASAP (hotfix patch)'
+            Note          = "PatchVersion ``$PatchVersion`` is a hotfix on top of an existing release — ships as soon as ready, no 2nd-Tuesday wait."
+        }
+    }
+
+    # 2nd-Tuesday cadence.
+    $today = $ReferenceDate.Date
+
+    function _SecondTuesdayOf {
+        param([int]$Year, [int]$Month)
+        $first = [DateTime]::new($Year, $Month, 1)
+        # DayOfWeek: Sunday=0, Monday=1, Tuesday=2. Offset to reach the first Tuesday.
+        $offset = (2 - [int]$first.DayOfWeek + 7) % 7
+        $firstTuesday = $first.AddDays($offset)
+        return $firstTuesday.AddDays(7)
+    }
+
+    $candidate = _SecondTuesdayOf -Year $today.Year -Month $today.Month
+    if ($candidate -lt $today) {
+        # This month's already passed — roll to next month.
+        $next = $today.AddMonths(1)
+        $candidate = _SecondTuesdayOf -Year $next.Year -Month $next.Month
+    }
+
+    [PSCustomObject]@{
+        Cadence       = 'second-tuesday'
+        Date          = $candidate
+        DaysFromNow   = [int]($candidate - $today).TotalDays
+        FormattedLong = $candidate.ToString('dddd MMMM d, yyyy')
+        Note          = '.NET releases ship on the 2nd Tuesday of each month.'
+    }
+}
+
 function New-ReadinessCheck {
     <#
     .SYNOPSIS
@@ -2134,6 +2199,36 @@ function Format-MarkdownReport {
     $shaLinked = ConvertTo-LinkedSha -Sha $ctx.srHeadSha -RepoUrl $RepoUrl
     [void]$sb.AppendLine("**HEAD**: $shaLinked — $($ctx.srHeadSubject)")
     [void]$sb.AppendLine("**Generated**: $($ctx.fetchedAt)")
+    # Expected ship date — cadence depends on PatchVersion:
+    #   - x0 patches (80, 90…) + previews → 2nd Tuesday of the month
+    #   - hotfix patches (81, 82…)        → ASAP, no cadence
+    # Read patch from the survey ref's Versions.props. In candidate mode srRef
+    # is main (so we'd see e.g. 90 for upcoming SR9, still 2nd-Tuesday cadence).
+    # Defensive: $ctx may be a hashtable, PSCustomObject, or test fixture with
+    # no srRef at all — fall back to 2nd-Tuesday cadence in that case.
+    $patchForShipDate = $null
+    $srRefForShipDate = if ($ctx -is [hashtable]) {
+        if ($ctx.ContainsKey('srRef')) { $ctx['srRef'] } else { $null }
+    } elseif ($ctx.PSObject.Properties.Name -contains 'srRef') {
+        $ctx.srRef
+    } else { $null }
+    if ($srRefForShipDate) {
+        $vpForShipDate = Get-VersionsPropsState -Ref $srRefForShipDate
+        if ($vpForShipDate) { $patchForShipDate = [int]$vpForShipDate.Patch }
+    }
+    $shipDate = Get-ExpectedShipDate -PatchVersion $patchForShipDate
+    if ($shipDate.Cadence -eq 'asap-hotfix') {
+        [void]$sb.AppendLine("**Expected ship date**: 🚑 $($shipDate.FormattedLong) — $($shipDate.Note)")
+    } else {
+        $whenSuffix = if ($shipDate.DaysFromNow -eq 0) {
+            '🚨 **shipping today**'
+        } elseif ($shipDate.DaysFromNow -eq 1) {
+            '⚠️ tomorrow'
+        } else {
+            "in $($shipDate.DaysFromNow) days"
+        }
+        [void]$sb.AppendLine("**Expected ship date**: $($shipDate.FormattedLong) — $whenSuffix ($($shipDate.Note))")
+    }
     [void]$sb.AppendLine("**Regression labels**: $($ctx.regressionLabels -join ', ') _(mode: $($ctx.labelInferenceMode))_")
     [void]$sb.AppendLine()
 
@@ -2642,6 +2737,28 @@ function Invoke-Main {
         reasons = $verdict.reasons
     }
     $data['semanticHash'] = $semanticHash
+    # Expected ship date — surfaced in JSON so downstream automation doesn't
+    # repeat the cadence math. ASAP hotfixes return null date + cadence='asap-hotfix'.
+    $metaForJson = $data.metadata
+    $srRefForJson = if ($metaForJson -is [hashtable]) {
+        if ($metaForJson.ContainsKey('srRef')) { $metaForJson['srRef'] } else { $null }
+    } elseif ($metaForJson.PSObject.Properties.Name -contains 'srRef') {
+        $metaForJson.srRef
+    } else { $null }
+    $patchForJson = $null
+    if ($srRefForJson) {
+        $vpForJson = Get-VersionsPropsState -Ref $srRefForJson
+        if ($vpForJson) { $patchForJson = [int]$vpForJson.Patch }
+    }
+    $shipDateInfo = Get-ExpectedShipDate -PatchVersion $patchForJson
+    $data['expectedShipDate'] = @{
+        cadence       = $shipDateInfo.Cadence
+        date          = if ($shipDateInfo.Date) { $shipDateInfo.Date.ToString('yyyy-MM-dd') } else { $null }
+        daysFromNow   = $shipDateInfo.DaysFromNow
+        formattedLong = $shipDateInfo.FormattedLong
+        note          = $shipDateInfo.Note
+        patchVersion  = $patchForJson
+    }
     if ($TrackerKey) {
         $data['trackerKey'] = $TrackerKey
     }
