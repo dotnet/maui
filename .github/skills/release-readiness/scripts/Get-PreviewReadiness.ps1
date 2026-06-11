@@ -326,6 +326,89 @@ function Get-XcodeRequirements {
     }
 }
 
+function Get-BugTemplateVersions {
+    <#
+    .SYNOPSIS
+        Reads the `version-with-bug` dropdown options from .github/ISSUE_TEMPLATE/bug-report.yml at $Branch.
+    .DESCRIPTION
+        Returns an array of dropdown option strings (without leading `- ` markers).
+        Used to verify the bug template has been updated to include the version
+        we're about to ship — releasing a version that's missing from the template
+        means users can't file bug reports against it (they'd have to pick
+        "Unknown/Other"). Returns @() if the file is missing or the dropdown isn't found.
+    .NOTES
+        The file is a GitHub issue-form YAML. The relevant block looks like:
+            - type: dropdown
+              id: version-with-bug
+              attributes:
+                label: Version with bug
+                options:
+                  - 11.0.0-preview.4
+                  - 10.0.70
+                  ...
+        We do a lightweight scan rather than parsing YAML to keep the dependency surface small.
+    #>
+    param([string]$BranchName)
+
+    try {
+        $yaml = Get-ContentFromRepo -Path ".github/ISSUE_TEMPLATE/bug-report.yml" -Ref $BranchName
+    } catch {
+        return @()
+    }
+    if ([string]::IsNullOrWhiteSpace($yaml)) { return @() }
+
+    $lines = $yaml -split "`n"
+    $inVersionDropdown = $false
+    $inOptions = $false
+    $optionsIndent = -1
+    $values = New-Object System.Collections.Generic.List[string]
+
+    foreach ($rawLine in $lines) {
+        $line = $rawLine.TrimEnd("`r")
+
+        # Detect entry into the `version-with-bug` dropdown's options block.
+        if (-not $inVersionDropdown) {
+            if ($line -match '^\s*id:\s*version-with-bug\s*$') {
+                $inVersionDropdown = $true
+            }
+            continue
+        }
+
+        # Once inside the dropdown, look for `options:` and capture its child indent.
+        if (-not $inOptions) {
+            if ($line -match '^(\s*)options:\s*$') {
+                $inOptions = $true
+                $optionsIndent = $Matches[1].Length
+            }
+            # Bail out if we hit the next top-level block before finding options.
+            if ($line -match '^\s*-\s*type:\s*') { break }
+            continue
+        }
+
+        # We're inside the options list. Capture `- value` rows.
+        if ($line -match '^(\s*)-\s+(.+?)\s*$') {
+            $indent = $Matches[1].Length
+            if ($indent -gt $optionsIndent) {
+                $value = $Matches[2].Trim()
+                # Strip surrounding quotes if any
+                $value = $value.Trim("'").Trim('"')
+                if (-not [string]::IsNullOrWhiteSpace($value)) {
+                    [void]$values.Add($value)
+                }
+                continue
+            }
+        }
+
+        # Empty or differently-indented line ends the options block.
+        if ($line -match '^\s*$') { continue }
+        if ($line -match '^(\s*)\S' -and $Matches[1].Length -le $optionsIndent) {
+            break
+        }
+    }
+
+    return @($values)
+}
+
 function Get-OpenPullRequests {
     param([string]$BaseBranch)
 
@@ -625,6 +708,27 @@ if ($surveyExists) {
     } catch {
         $checks += New-Check -Area "Xcode variables" -Status "UNKNOWN" -Details "Could not read required Xcode variables from ``$SurveyRef``." -NextAction "Inspect eng/pipelines/common/variables.yml on ``$SurveyRef``."
     }
+
+    # --- Bug template version listing check ---
+    # Releasing a preview that's not in .github/ISSUE_TEMPLATE/bug-report.yml's
+    # `version-with-bug` dropdown means users can't file targeted bug reports
+    # against it. Read the template from main (issue templates are global per repo)
+    # and verify the dropdown contains an entry matching this preview.
+    try {
+        $expectedVersion = "$majorVersion.0.0-preview.$previewNumber"
+        $templateBranch = if ($mainBranch) { $mainBranch } else { 'main' }
+        $templateVersions = Get-BugTemplateVersions -BranchName $templateBranch
+        if ($templateVersions.Count -eq 0) {
+            $checks += New-Check -Area "Bug template versions" -Status "UNKNOWN" -Details "Could not read .github/ISSUE_TEMPLATE/bug-report.yml from ``$templateBranch`` or its version-with-bug dropdown is empty." -NextAction "Inspect the bug template manually."
+        } elseif ($templateVersions -contains $expectedVersion) {
+            $checks += New-Check -Area "Bug template versions" -Status "READY" -Details "``$expectedVersion`` listed in bug-report.yml on ``$templateBranch``." -NextAction "No action needed."
+        } else {
+            $sample = ($templateVersions | Select-Object -First 3) -join ', '
+            $checks += New-Check -Area "Bug template versions" -Status "BLOCKED" -Details "``$expectedVersion`` NOT in .github/ISSUE_TEMPLATE/bug-report.yml version-with-bug dropdown on ``$templateBranch``. Top entries: $sample." -NextAction "Add ``$expectedVersion`` to the dropdown (PR against ``$templateBranch``) before shipping."
+        }
+    } catch {
+        $checks += New-Check -Area "Bug template versions" -Status "UNKNOWN" -Details "Failed to evaluate bug template: $($_.Exception.Message)" -NextAction "Inspect .github/ISSUE_TEMPLATE/bug-report.yml manually."
+    }
 }
 
 # --- Inflight branch (net<major>.0) bump check ---
@@ -823,6 +927,26 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("")
 [void]$md.AppendLine("**Overall status:** **$overallStatus**")
 [void]$md.AppendLine("")
+
+# === BLOCKING SUMMARY (hoisted to top) ===
+# Surface the actual blocking items right under the verdict so release captains
+# don't have to scroll past CI tables, PR tables, and the full check list to see
+# what's preventing ship. The full check table still appears below for context.
+$blockingChecks = @($checks | Where-Object { $_.Status -eq 'BLOCKED' })
+if ($blockingChecks.Count -gt 0) {
+    [void]$md.AppendLine("## 🔴 Blocking — $($blockingChecks.Count) item(s)")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("| Area | Details | Next action |")
+    [void]$md.AppendLine("|------|---------|-------------|")
+    foreach ($bc in $blockingChecks) {
+        [void]$md.AppendLine("| $(Format-MarkdownCell $bc.Area) | $(Format-MarkdownCell $bc.Details) | $(Format-MarkdownCell $bc.NextAction) |")
+    }
+    [void]$md.AppendLine("")
+} else {
+    [void]$md.AppendLine("## 🟢 No blocking items")
+    [void]$md.AppendLine("")
+}
+
 [void]$md.AppendLine("Generated at $generatedAt for ``$Repository``.")
 [void]$md.AppendLine("")
 [void]$md.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$Mode`` · branch=``$Branch`` · survey=``$SurveyRef``")

@@ -194,6 +194,228 @@ function Invoke-Gh([string[]]$GhArgs) {
     }
 }
 
+function Get-FileFromRef {
+    <#
+    .SYNOPSIS
+        Reads a file from the local repo at the given ref. Tries `git show` first (fast,
+        offline); falls back to `gh api` if the local ref isn't available.
+    #>
+    param([string]$Path, [string]$Ref)
+    $local = Invoke-Git "show ${Ref}:${Path}"
+    if ($local) { return ($local -join "`n") }
+
+    # Strip leading origin/ for gh api ref
+    $apiRef = $Ref -replace '^origin/', ''
+    $encodedRef = [System.Uri]::EscapeDataString($apiRef)
+    $b64 = Invoke-Gh @('api', "repos/$($script:Repo)/contents/$Path`?ref=$encodedRef",
+                       '--jq', '.content')
+    if (-not $b64) { return $null }
+    try {
+        return [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(($b64 -replace '\s', '')))
+    } catch {
+        return $null
+    }
+}
+
+function Get-VersionsPropsState {
+    <#
+    .SYNOPSIS
+        Parses eng/Versions.props at $Ref and returns the version-bump state.
+    .DESCRIPTION
+        Returns @{ Major; Minor; Patch; PreReleaseVersionLabel; PreReleaseVersionIteration;
+                   StabilizePackageVersion; FullVersion } or $null if the file is
+        unreadable. FullVersion is "<Major>.<Minor>.<Patch>" — the version that this
+        branch's builds would emit.
+    #>
+    param([string]$Ref)
+    $content = Get-FileFromRef -Path 'eng/Versions.props' -Ref $Ref
+    if (-not $content) { return $null }
+
+    function _Extract([string]$xml, [string]$tag) {
+        if ($xml -match "<$tag(?:\s[^>]*)?>\s*([^<]*)\s*</$tag>") { return $Matches[1].Trim() }
+        return $null
+    }
+
+    $major = _Extract $content 'MajorVersion'
+    $minor = _Extract $content 'MinorVersion'
+    $patch = _Extract $content 'PatchVersion'
+    if (-not $major -or -not $minor -or $null -eq $patch) { return $null }
+
+    @{
+        Major                       = [int]$major
+        Minor                       = [int]$minor
+        Patch                       = [int]$patch
+        PreReleaseVersionLabel      = (_Extract $content 'PreReleaseVersionLabel')
+        PreReleaseVersionIteration  = (_Extract $content 'PreReleaseVersionIteration')
+        StabilizePackageVersion     = (_Extract $content 'StabilizePackageVersion')
+        FullVersion                 = "$major.$minor.$patch"
+    }
+}
+
+function Get-BugTemplateVersions {
+    <#
+    .SYNOPSIS
+        Reads the version-with-bug dropdown from .github/ISSUE_TEMPLATE/bug-report.yml
+        at $Ref. See Get-PreviewReadiness for the matching helper.
+    #>
+    param([string]$Ref)
+
+    $yaml = Get-FileFromRef -Path '.github/ISSUE_TEMPLATE/bug-report.yml' -Ref $Ref
+    if ([string]::IsNullOrWhiteSpace($yaml)) { return @() }
+
+    $lines = $yaml -split "`n"
+    $inDropdown = $false
+    $inOptions = $false
+    $optionsIndent = -1
+    $values = New-Object System.Collections.Generic.List[string]
+
+    foreach ($rawLine in $lines) {
+        $line = $rawLine.TrimEnd("`r")
+        if (-not $inDropdown) {
+            if ($line -match '^\s*id:\s*version-with-bug\s*$') { $inDropdown = $true }
+            continue
+        }
+        if (-not $inOptions) {
+            if ($line -match '^(\s*)options:\s*$') {
+                $inOptions = $true
+                $optionsIndent = $Matches[1].Length
+            }
+            if ($line -match '^\s*-\s*type:\s*') { break }
+            continue
+        }
+        if ($line -match '^(\s*)-\s+(.+?)\s*$') {
+            $indent = $Matches[1].Length
+            if ($indent -gt $optionsIndent) {
+                $value = $Matches[2].Trim().Trim("'").Trim('"')
+                if (-not [string]::IsNullOrWhiteSpace($value)) { [void]$values.Add($value) }
+                continue
+            }
+        }
+        if ($line -match '^\s*$') { continue }
+        if ($line -match '^(\s*)\S' -and $Matches[1].Length -le $optionsIndent) { break }
+    }
+    return @($values)
+}
+
+function New-ReadinessCheck {
+    <#
+    .SYNOPSIS
+        Constructs a readiness-check record used by the Blocking summary at the top
+        of the markdown report. Status: READY | WATCH | BLOCKED | UNKNOWN.
+    #>
+    param(
+        [string]$Area,
+        [ValidateSet('READY', 'WATCH', 'BLOCKED', 'UNKNOWN')][string]$Status,
+        [string]$Details,
+        [string]$NextAction
+    )
+    [PSCustomObject]@{
+        Area       = $Area
+        Status     = $Status
+        Details    = $Details
+        NextAction = $NextAction
+    }
+}
+
+function Get-ReleaseShipChecks {
+    <#
+    .SYNOPSIS
+        Runs the "ready to ship" checks for the SR/candidate report:
+          - Versions.props bumped to match the SR cycle (Major.Minor.Patch in [N0..N9])
+          - Bug template's version-with-bug dropdown contains the expected SR version
+
+        In CANDIDATE mode the checks still run, but the messaging notes that
+        the bumps + template updates happen AFTER the SR is cut, so a BLOCKED
+        status in candidate mode is a soft heads-up rather than a hard blocker
+        of the candidate itself.
+    .OUTPUTS
+        Array of check records (see New-ReadinessCheck).
+    #>
+    param($Ctx)
+
+    $checks = @()
+    $isCandidate = ($Ctx.mode -eq 'candidate')
+
+    # Determine the SR number from the SR branch name. In shipped mode, srBranch
+    # IS the release branch (release/X.Y.Zxx-srN). In candidate mode, srBranch is
+    # main and the prior-SR name lives in priorSrBranch — we want NEXT SR (= prior + 1).
+    $srBranchName = if ($isCandidate) { $Ctx.priorSrBranch } else { $Ctx.srBranch }
+    $srMatch = [regex]::Match($srBranchName, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
+    if (-not $srMatch.Success) {
+        $checks += New-ReadinessCheck -Area 'Versions.props bump' -Status 'UNKNOWN' `
+            -Details "Could not parse SR number from '$srBranchName'." `
+            -NextAction "Verify the branch matches release/X.Y.Zxx-srN."
+        return $checks
+    }
+    $major = [int]$srMatch.Groups[1].Value
+    $minor = [int]$srMatch.Groups[2].Value
+    $priorSr = [int]$srMatch.Groups[3].Value
+    $targetSr = if ($isCandidate) { $priorSr + 1 } else { $priorSr }
+    $expectedPatchPrefix = $targetSr * 10   # SR8 → 80, SR9 → 90, SR10 → 100
+
+    # Which ref do we read Versions.props from?
+    # Shipped mode: the SR branch itself.
+    # Candidate mode: main (which would carry the bump once SR-prior cuts).
+    $versionsRef = if ($isCandidate) { "origin/$($Ctx.mainBranch)" } else { $Ctx.srRef }
+    $vp = Get-VersionsPropsState -Ref $versionsRef
+
+    if (-not $vp) {
+        $checks += New-ReadinessCheck -Area 'Versions.props bump' -Status 'UNKNOWN' `
+            -Details "Could not read eng/Versions.props from ``$versionsRef``." `
+            -NextAction "Inspect the file manually."
+    } else {
+        $patchInRange = ($vp.Patch -ge $expectedPatchPrefix -and $vp.Patch -lt ($expectedPatchPrefix + 10))
+        $majorMinorMatch = ($vp.Major -eq $major -and $vp.Minor -eq $minor)
+        $area = if ($isCandidate) { "Versions.props bump (main → SR$targetSr)" } else { "Versions.props bump (SR$targetSr)" }
+        if ($majorMinorMatch -and $patchInRange) {
+            $checks += New-ReadinessCheck -Area $area -Status 'READY' `
+                -Details "``$versionsRef`` reports ``$($vp.FullVersion)`` — within expected SR$targetSr range [$expectedPatchPrefix..$($expectedPatchPrefix + 9)]." `
+                -NextAction "No bump needed."
+        } else {
+            $candidateHint = if ($isCandidate) {
+                " (Expected after SR$priorSr cut: bump main's PatchVersion from $($vp.Patch) to $expectedPatchPrefix.)"
+            } else { "" }
+            $checks += New-ReadinessCheck -Area $area -Status 'BLOCKED' `
+                -Details "``$versionsRef`` reports ``$($vp.FullVersion)``; expected ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` for SR$targetSr.$candidateHint" `
+                -NextAction "Bump eng/Versions.props (MajorVersion/MinorVersion/PatchVersion) before shipping SR$targetSr."
+        }
+    }
+
+    # === Bug template version listing ===
+    # Issue templates live on the default branch (main) — they're global per repo.
+    $templateRef = "origin/$($Ctx.mainBranch)"
+    $templateVersions = Get-BugTemplateVersions -Ref $templateRef
+    # Acceptable: any entry matching $major.$minor.<patch-in-SR-range>, with or
+    # without an "SR$targetSr" or similar suffix.
+    $matchPattern = "^$major\.$minor\.(\d+)"
+    $matchingEntries = @($templateVersions | Where-Object {
+        if ($_ -match $matchPattern) {
+            $p = [int]$Matches[1]
+            return ($p -ge $expectedPatchPrefix -and $p -lt ($expectedPatchPrefix + 10))
+        }
+        return $false
+    })
+
+    $bugArea = "Bug template lists SR$targetSr version"
+    if ($templateVersions.Count -eq 0) {
+        $checks += New-ReadinessCheck -Area $bugArea -Status 'UNKNOWN' `
+            -Details "Could not read .github/ISSUE_TEMPLATE/bug-report.yml from ``$templateRef`` or the version-with-bug dropdown is empty." `
+            -NextAction "Inspect the bug template manually."
+    } elseif ($matchingEntries.Count -gt 0) {
+        $first = $matchingEntries[0]
+        $checks += New-ReadinessCheck -Area $bugArea -Status 'READY' `
+            -Details "Bug template lists ``$first`` (and $($matchingEntries.Count - 1) other SR$targetSr entries)." `
+            -NextAction "No template update needed."
+    } else {
+        $sample = ($templateVersions | Select-Object -First 3) -join ', '
+        $checks += New-ReadinessCheck -Area $bugArea -Status 'BLOCKED' `
+            -Details "No entry matching ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` found in version-with-bug dropdown on ``$templateRef``. Top entries: $sample." `
+            -NextAction "Add the SR$targetSr version (e.g. ``$major.$minor.$expectedPatchPrefix``) to .github/ISSUE_TEMPLATE/bug-report.yml before shipping."
+    }
+
+    return $checks
+}
+
 # region ────────────────────── 1. CONTEXT RESOLUTION ──────────────────────
 
 function Resolve-Context {
@@ -1107,6 +1329,16 @@ function Get-OverallVerdict {
         $reasons.Add("[Advisory] Candidate mode — main CI is ``$($Data['ci'].overall)``. Re-evaluate after SR cut.") | Out-Null
     }
 
+    # Ship-readiness checks (versions.props bumped, bug template updated).
+    # Each BLOCKED check escalates the verdict to Tier 1 (Not Ready).
+    if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
+        $blockedShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'BLOCKED' })
+        foreach ($sc in $blockedShipChecks) {
+            $tier1 = $true
+            $reasons.Add("[Tier 1] Ship check BLOCKED: $($sc.Area)") | Out-Null
+        }
+    }
+
     if ($tier1) {
         return @{
             symbol = '🔴'
@@ -1205,6 +1437,11 @@ function Get-ReportSemanticHash {
         openSrPrs = if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs']) {
                         @($Data['openSrPrs'] | Sort-Object number | ForEach-Object { $_.number }) -join ','
                     } else { '' }
+        shipChecks = if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
+                         @($Data['shipChecks'] | Sort-Object Area | ForEach-Object {
+                             "$($_.Area):$($_.Status)"
+                         }) -join '|'
+                     } else { '' }
     }
 
     $json = $semantic | ConvertTo-Json -Depth 5 -Compress
@@ -1277,6 +1514,75 @@ function Format-MarkdownReport {
     if ($Data.ContainsKey('warnings') -and $Data['warnings'].Count -gt 0) {
         [void]$sb.AppendLine("> ⚠️ **Warnings:**")
         foreach ($w in $Data['warnings']) { [void]$sb.AppendLine("> - $w") }
+        [void]$sb.AppendLine()
+    }
+
+    # === BLOCKING SUMMARY (hoisted to top, right under the verdict) ===
+    # Surface every BLOCKED ship-check AND every Tier 1 regression so the
+    # release captain sees what's preventing ship without scrolling past
+    # CI tables, open-PR tables, and the full tier breakdown below.
+    $blockingItems = New-Object System.Collections.Generic.List[hashtable]
+    if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
+        foreach ($sc in $Data['shipChecks']) {
+            if ($sc.Status -eq 'BLOCKED') {
+                [void]$blockingItems.Add(@{
+                    area = "🛠️ $($sc.Area)"
+                    details = $sc.Details
+                    action = $sc.NextAction
+                })
+            }
+        }
+    }
+    if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
+        foreach ($r in $Data['regressions']) {
+            $tier = Get-VerdictTier -Classification $r.classification
+            if ($r.classification -eq 'no-fix-yet' -and $r.state -ne 'OPEN') { $tier = 3 }
+            if ($tier -eq 1) {
+                $issLink = "[#$($r.issue)]($RepoUrl/issues/$($r.issue))"
+                [void]$blockingItems.Add(@{
+                    area = "🐞 $issLink — $($r.classification)"
+                    details = $r.title
+                    action = $r.recommendedAction
+                })
+            }
+        }
+    }
+
+    if ($blockingItems.Count -gt 0) {
+        [void]$sb.AppendLine("## 🔴 Blocking — $($blockingItems.Count) item(s)")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine('| Area | Details | Next action |')
+        [void]$sb.AppendLine('|---|---|---|')
+        foreach ($b in $blockingItems) {
+            $area = ($b.area -replace '\|', '\|').Trim()
+            $details = ($b.details -replace '\|', '\|').Trim()
+            $action = ($b.action -replace '\|', '\|').Trim()
+            [void]$sb.AppendLine("| $area | $details | $action |")
+        }
+        [void]$sb.AppendLine()
+    } else {
+        [void]$sb.AppendLine("## 🟢 No blocking items")
+        [void]$sb.AppendLine()
+    }
+
+    # === SHIP-READINESS CHECKS (full table — non-blocking + blocking) ===
+    if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks'] -and $Data['shipChecks'].Count -gt 0) {
+        [void]$sb.AppendLine("## Ship-readiness checks")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine('| Check | Status | Details | Next action |')
+        [void]$sb.AppendLine('|---|---|---|---|')
+        foreach ($sc in $Data['shipChecks']) {
+            $statusEmoji = switch ($sc.Status) {
+                'READY'   { '🟢 READY' }
+                'WATCH'   { '🟡 WATCH' }
+                'BLOCKED' { '🔴 BLOCKED' }
+                default   { "⚪ $($sc.Status)" }
+            }
+            $area = ($sc.Area -replace '\|', '\|').Trim()
+            $details = ($sc.Details -replace '\|', '\|').Trim()
+            $action = ($sc.NextAction -replace '\|', '\|').Trim()
+            [void]$sb.AppendLine("| $area | $statusEmoji | $details | $action |")
+        }
         [void]$sb.AppendLine()
     }
 
@@ -1534,6 +1840,13 @@ function Invoke-Main {
 
     if ($Phase -in 'all', 'open-prs') {
         $data['openSrPrs'] = Get-OpenSrPrs -Ctx $ctx
+    }
+
+    # Run version + bug-template checks (cheap; included in all phases except 'ci'-only).
+    # These surface the "is versions.props bumped?" and "is the bug template updated?"
+    # questions as blocking items at the top of the report.
+    if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
+        $data['shipChecks'] = Get-ReleaseShipChecks -Ctx $ctx
     }
 
     if ($Phase -in 'all', 'regressions') {

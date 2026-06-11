@@ -1277,6 +1277,100 @@ Assert-Eq -Label "Candidate (found): unrelated PRs (#3001, #3003) NOT listed" -E
 Assert-Eq -Label "Candidate (found): pointer to full PR list rendered" -Expected $true `
     -Actual ($mdCandFound -match 'is%3Apr\+is%3Aopen\+base%3Amain')
 
+# ───── Ship-readiness checks: blocking summary + table ─────
+Write-Host "`n[Unit] Ship-readiness checks (versions.props + bug template)" -ForegroundColor Cyan
+
+# Baseline: no shipChecks key → empty blocking summary, no table
+$mdNoShipChecks = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
+                                        -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "No shipChecks key: still emits '🟢 No blocking items' (only Tier 1 regressions matter)" -Expected $true `
+    -Actual ($mdNoShipChecks -match '🟢 No blocking items')
+Assert-Eq -Label "No shipChecks key: no Ship-readiness checks table" -Expected $false `
+    -Actual ($mdNoShipChecks -match 'Ship-readiness checks')
+
+# Single BLOCKED ship check
+$mdDataBlocked = @{} + $mdData
+$mdDataBlocked['shipChecks'] = @(
+    [PSCustomObject]@{
+        Area       = 'versions.props PatchVersion'
+        Status     = 'BLOCKED'
+        Details    = "Current PatchVersion 80 is below expected range [90..99] for SR9"
+        NextAction = "Bump <PatchVersion> in eng/Versions.props on main from 80 to 90"
+    },
+    [PSCustomObject]@{
+        Area       = 'Bug-report template version dropdown'
+        Status     = 'READY'
+        Details    = "Found 10.0.71 in version-with-bug dropdown"
+        NextAction = 'None'
+    }
+)
+$mdBlocked = Format-MarkdownReport -Data $mdDataBlocked -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "BLOCKED ship check: blocking summary header reflects count" -Expected $true `
+    -Actual ($mdBlocked -match '🔴 Blocking — \d+ item')
+Assert-Eq -Label "BLOCKED ship check: blocking summary mentions versions.props area" -Expected $true `
+    -Actual ($mdBlocked -match '🛠️ versions.props PatchVersion')
+Assert-Eq -Label "BLOCKED ship check: blocking summary contains the next-action text" -Expected $true `
+    -Actual ($mdBlocked -match 'Bump <PatchVersion>')
+Assert-Eq -Label "BLOCKED ship check: full Ship-readiness checks table emitted" -Expected $true `
+    -Actual ($mdBlocked -match 'Ship-readiness checks')
+Assert-Eq -Label "BLOCKED ship check: table shows READY entry for bug template (transparency)" -Expected $true `
+    -Actual ($mdBlocked -match 'Bug-report template[^|]*\|\s*🟢 READY')
+# Extract just the blocking-summary section (from its heading to the next ## heading)
+# and assert it does NOT mention the READY check.
+$blockingSection = if ($mdBlocked -match '(?s)## 🔴 Blocking[^\n]*\n(.*?)\n## ') { $Matches[1] } else { '' }
+Assert-Eq -Label "READY ship check: NOT listed in blocking summary section" -Expected $false `
+    -Actual ($blockingSection -match 'Bug-report template')
+
+# Only READY ship checks → 🟢 No blocking items (when no Tier 1 regressions)
+$mdDataReady = @{} + $mdData
+$mdDataReady['shipChecks'] = @(
+    [PSCustomObject]@{
+        Area = 'versions.props'; Status = 'READY';
+        Details = 'PatchVersion=71 in expected range [70..79] for SR7';
+        NextAction = 'None'
+    }
+)
+$mdReady = Format-MarkdownReport -Data $mdDataReady -RepoUrl 'https://github.com/dotnet/maui' `
+                                 -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "All ship checks READY (no Tier 1 regressions): '🟢 No blocking items'" -Expected $true `
+    -Actual ($mdReady -match '🟢 No blocking items')
+
+# Hash includes shipChecks state (changing a ship check status flips the hash)
+$h1 = if ($mdReady -match '<!-- release-readiness-hash: sha=([0-9a-f]{64}) -->') { $Matches[1] } else { $null }
+$h2 = if ($mdBlocked -match '<!-- release-readiness-hash: sha=([0-9a-f]{64}) -->') { $Matches[1] } else { $null }
+Assert-Eq -Label "Hash changes when a ship check flips from READY → BLOCKED" -Expected $true `
+    -Actual ($h1 -and $h2 -and $h1 -ne $h2)
+
+# Get-OverallVerdict: BLOCKED ship check forces Not Ready
+Write-Host "`n[Unit] Get-OverallVerdict — BLOCKED ship checks force Not Ready" -ForegroundColor Cyan
+
+$verdictData = @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @(
+        [PSCustomObject]@{ Area = 'versions.props'; Status = 'BLOCKED'; Details = 'patch not bumped'; NextAction = 'bump it' }
+    )
+}
+$verdict = Get-OverallVerdict -Data $verdictData
+Assert-Eq -Label "Verdict tier 1 when shipChecks contains BLOCKED entry" -Expected 1 -Actual $verdict.tier
+Assert-Eq -Label "Verdict label is 'Not Ready'" -Expected 'Not Ready' -Actual $verdict.label
+Assert-Eq -Label "Verdict reasons list mentions BLOCKED ship-check area" -Expected $true `
+    -Actual ([bool](@($verdict.reasons) -match 'Ship check BLOCKED: versions\.props'))
+
+# WATCH or READY ship checks must not escalate
+$verdictDataReady = @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @(
+        [PSCustomObject]@{ Area = 'versions.props'; Status = 'READY'; Details = 'OK'; NextAction = 'None' }
+    )
+}
+$verdictReadyResult = Get-OverallVerdict -Data $verdictDataReady
+Assert-Eq -Label "READY-only ship checks: verdict stays at tier 3 (Ready)" -Expected 3 -Actual $verdictReadyResult.tier
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })
