@@ -14,11 +14,48 @@ on:
         required: false
         type: number
         default: 5
+  steps:
+    - name: Build rerun candidate context
+      id: rerun_context
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+        MAX_PRS: ${{ inputs.max_prs || '5' }}
+        REPO_OWNER: ${{ github.repository_owner }}
+        REPO_NAME: ${{ github.event.repository.name }}
+      run: |
+        $max = 5
+        if ($env:MAX_PRS -match '^\d+$') {
+          $max = [Math]::Max(1, [Math]::Min(20, [int]$env:MAX_PRS))
+        }
+        $output = "CustomAgentLogsTmp/RerunScanner/candidates.json"
+        .github/scripts/Query-RerunReadyPRs.ps1 `
+          -Owner $env:REPO_OWNER `
+          -Repo $env:REPO_NAME `
+          -MaxPRs $max `
+          -OutputPath $output | Out-Null
+        $json = Get-Content -Raw -LiteralPath $output
+        $delimiter = "EOF_$([Guid]::NewGuid().ToString('N'))"
+        "candidates<<$delimiter" >> $env:GITHUB_OUTPUT
+        $json >> $env:GITHUB_OUTPUT
+        $delimiter >> $env:GITHUB_OUTPUT
+    - name: Upload rerun candidate context
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: rerun-candidates
+        path: CustomAgentLogsTmp/RerunScanner/candidates.json
+        if-no-files-found: error
+        retention-days: 1
 
 permissions:
   contents: read
   issues: read
   pull-requests: read
+
+jobs:
+  pre-activation:
+    outputs:
+      rerun_candidates: ${{ steps.rerun_context.outputs.candidates }}
 
 concurrency:
   # Serialize scheduled and manual scanner runs so each queued PR is evaluated
@@ -103,38 +140,6 @@ safe-outputs:
             }
             .github/scripts/Invoke-RerunReviewTrigger.ps1 @scriptArgs
 
-steps:
-  - name: Build rerun candidate context
-    id: rerun_context
-    shell: pwsh
-    env:
-      GH_TOKEN: ${{ github.token }}
-      MAX_PRS: ${{ inputs.max_prs || '5' }}
-      REPO_OWNER: ${{ github.repository_owner }}
-      REPO_NAME: ${{ github.event.repository.name }}
-    run: |
-      $max = 5
-      if ($env:MAX_PRS -match '^\d+$') {
-        $max = [Math]::Max(1, [Math]::Min(20, [int]$env:MAX_PRS))
-      }
-      $output = "CustomAgentLogsTmp/RerunScanner/candidates.json"
-      .github/scripts/Query-RerunReadyPRs.ps1 `
-        -Owner $env:REPO_OWNER `
-        -Repo $env:REPO_NAME `
-        -MaxPRs $max `
-        -OutputPath $output | Out-Null
-      $json = Get-Content -Raw -LiteralPath $output
-      $delimiter = "EOF_$([Guid]::NewGuid().ToString('N'))"
-      "candidates<<$delimiter" >> $env:GITHUB_OUTPUT
-      $json >> $env:GITHUB_OUTPUT
-      $delimiter >> $env:GITHUB_OUTPUT
-  - name: Upload rerun candidate context
-    uses: actions/upload-artifact@v7.0.1
-    with:
-      name: rerun-candidates
-      path: CustomAgentLogsTmp/RerunScanner/candidates.json
-      if-no-files-found: error
-      retention-days: 1
 ---
 
 # Rerun Review Scanner
@@ -175,7 +180,7 @@ using a global concurrency group that could cancel unrelated maintainer
 The deterministic scanner found these candidates:
 
 ```json
-${{ steps.rerun_context.outputs.candidates }}
+${{ needs.pre_activation.outputs.rerun_candidates }}
 ```
 
 For each candidate in `candidates`:
