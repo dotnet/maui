@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 		public bool CachingEnabled
 		{
 			get => (bool)GetValue(CachingEnabledProperty);
-			set => SetValue(CachingEnabledProperty, value);
+			set => SetValue(CachingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets or sets the URI of the image to load. This is a bindable property.</summary>

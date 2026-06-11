@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 		public bool HasUnevenRows
 		{
 			get { return (bool)GetValue(HasUnevenRowsProperty); }
-			set { SetValue(HasUnevenRowsProperty, value); }
+			set { SetValue(HasUnevenRowsProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

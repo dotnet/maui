@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsBusy
 		{
 			get { return (bool)GetValue(IsBusyProperty); }
-			set { SetValue(IsBusyProperty, value); }
+			set { SetValue(IsBusyProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls
 		public bool IgnoresContainerArea
 		{
 			get { return (bool)GetValue(IgnoresContainerAreaProperty); }
-			set { SetValue(IgnoresContainerAreaProperty, value); }
+			set { SetValue(IgnoresContainerAreaProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

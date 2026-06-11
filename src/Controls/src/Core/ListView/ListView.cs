@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls
 		public bool HasUnevenRows
 		{
 			get { return (bool)GetValue(HasUnevenRowsProperty); }
-			set { SetValue(HasUnevenRowsProperty, value); }
+			set { SetValue(HasUnevenRowsProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the string, binding, or view that will be displayed at the top of the list view. This is a bindable property.</summary>
@@ -230,21 +230,21 @@ namespace Microsoft.Maui.Controls
 		public bool IsGroupingEnabled
 		{
 			get { return (bool)GetValue(IsGroupingEnabledProperty); }
-			set { SetValue(IsGroupingEnabledProperty, value); }
+			set { SetValue(IsGroupingEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets a value that tells whether the user can swipe down to cause the application to refresh. This is a bindable property.</summary>
 		public bool IsPullToRefreshEnabled
 		{
 			get { return (bool)GetValue(IsPullToRefreshEnabledProperty); }
-			set { SetValue(IsPullToRefreshEnabledProperty, value); }
+			set { SetValue(IsPullToRefreshEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets a value that tells whether the list view is currently refreshing. This is a bindable property.</summary>
 		public bool IsRefreshing
 		{
 			get { return (bool)GetValue(IsRefreshingProperty); }
-			set { SetValue(IsRefreshingProperty, value); }
+			set { SetValue(IsRefreshingProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the command that is run when the list view enters the refreshing state. This is a bindable property.</summary>

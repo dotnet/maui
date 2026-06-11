@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls
 		public bool AllowDrop
 		{
 			get { return (bool)GetValue(AllowDropProperty); }
-			set { SetValue(AllowDropProperty, value); }
+			set { SetValue(AllowDropProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

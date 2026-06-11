@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 		public bool CanMixGroups
 		{
 			get { return (bool)GetValue(CanMixGroupsProperty); }
-			set { SetValue(CanMixGroupsProperty, value); }
+			set { SetValue(CanMixGroupsProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="CanReorderItems"/>.</summary>
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 		public bool CanReorderItems
 		{
 			get { return (bool)GetValue(CanReorderItemsProperty); }
-			set { SetValue(CanReorderItemsProperty, value); }
+			set { SetValue(CanReorderItemsProperty, BooleanBoxes.Box(value)); }
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

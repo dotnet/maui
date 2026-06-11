@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsRefreshing
 		{
 			get { return (bool)GetValue(IsRefreshingProperty); }
-			set { SetValue(IsRefreshingProperty, value); }
+			set { SetValue(IsRefreshingProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsRefreshEnabled
 		{
 			get { return (bool)GetValue(IsRefreshEnabledProperty); }
-			set { SetValue(IsRefreshEnabledProperty, value); }
+			set { SetValue(IsRefreshEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <inheritdoc/>
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls
 		bool IRefreshView.IsRefreshing
 		{
 			get => IsRefreshing;
-			set { SetValue(IsRefreshingProperty, value, SetterSpecificity.FromHandler); }
+			set { SetValue(IsRefreshingProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler); }
 		}
 
 		private protected override string GetDebuggerDisplay()

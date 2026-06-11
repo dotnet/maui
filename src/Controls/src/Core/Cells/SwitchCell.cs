@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 		public bool On
 		{
 			get { return (bool)GetValue(OnProperty); }
-			set { SetValue(OnProperty, value); }
+			set { SetValue(OnProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the text displayed next to the switch. This is a bindable property.</summary>

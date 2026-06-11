@@ -95,14 +95,14 @@ namespace Microsoft.Maui.Controls
 		public bool IsGestureEnabled
 		{
 			get { return (bool)GetValue(IsGestureEnabledProperty); }
-			set { SetValue(IsGestureEnabledProperty, value); }
+			set { SetValue(IsGestureEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets a value that indicates whether the flyout is presented. This is a bindable property.</summary>
 		public bool IsPresented
 		{
 			get { return (bool)GetValue(IsPresentedProperty); }
-			set { SetValue(IsPresentedProperty, value); }
+			set { SetValue(IsPresentedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the flyout page that is used to present a menu or navigation options.</summary>

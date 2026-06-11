@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
+			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
 		}
 	}
 }

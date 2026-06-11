@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsLinkActive
 		{
 			get { return (bool)GetValue(IsLinkActiveProperty); }
-			set { SetValue(IsLinkActiveProperty, value); }
+			set { SetValue(IsLinkActiveProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets a dictionary of application-specific key-value pairs.</summary>

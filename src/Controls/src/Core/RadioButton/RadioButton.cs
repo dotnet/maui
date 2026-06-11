@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsChecked
 		{
 			get { return (bool)GetValue(IsCheckedProperty); }
-			set { SetValue(IsCheckedProperty, value); }
+			set { SetValue(IsCheckedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
+			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -752,7 +752,7 @@ namespace Microsoft.Maui.Controls
 		bool IRadioButton.IsChecked
 		{
 			get => IsChecked;
-			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		private protected override string GetDebuggerDisplay()

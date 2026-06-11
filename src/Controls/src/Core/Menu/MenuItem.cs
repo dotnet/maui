@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsDestructive
 		{
 			get => (bool)GetValue(IsDestructiveProperty);
-			set => SetValue(IsDestructiveProperty, value);
+			set => SetValue(IsDestructiveProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>The text of the menu item. This is a bindable property.</summary>
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get => (bool)GetValue(IsEnabledProperty);
-			set => SetValue(IsEnabledProperty, value);
+			set => SetValue(IsEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		public event EventHandler Clicked;

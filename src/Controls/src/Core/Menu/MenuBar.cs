@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		readonly ObservableCollection<IMenuBarItem> _menus = new ObservableCollection<IMenuBarItem>();

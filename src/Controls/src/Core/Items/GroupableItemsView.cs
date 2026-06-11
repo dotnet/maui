@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsGrouped
 		{
 			get => (bool)GetValue(IsGroupedProperty);
-			set => SetValue(IsGroupedProperty, value);
+			set => SetValue(IsGroupedProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Bindable property for <see cref="GroupHeaderTemplate"/>.</summary>

@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls
 		public bool HideSingle
 		{
 			get => (bool)GetValue(HideSingleProperty);
-			set => SetValue(HideSingleProperty, value);
+			set => SetValue(HideSingleProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>

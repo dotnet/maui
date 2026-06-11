@@ -1620,7 +1620,7 @@ namespace Microsoft.Maui.Controls
 		public bool FlyoutIsPresented
 		{
 			get => (bool)GetValue(FlyoutIsPresentedProperty);
-			set => SetValue(FlyoutIsPresentedProperty, value);
+			set => SetValue(FlyoutIsPresentedProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets the collection of <see cref="ShellItem"/> objects in the Shell. This is a bindable property.</summary>

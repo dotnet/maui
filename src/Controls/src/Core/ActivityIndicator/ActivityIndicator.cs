@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsRunning
 		{
 			get { return (bool)GetValue(IsRunningProperty); }
-			set { SetValue(IsRunningProperty, value); }
+			set { SetValue(IsRunningProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <inheritdoc/>

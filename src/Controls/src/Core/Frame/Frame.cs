@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 		public bool HasShadow
 		{
 			get { return (bool)GetValue(HasShadowProperty); }
-			set { SetValue(HasShadowProperty, value); }
+			set { SetValue(HasShadowProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the border color for the frame. This is a bindable property.</summary>

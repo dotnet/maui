@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsPassword
 		{
 			get { return (bool)GetValue(IsPasswordProperty); }
-			set { SetValue(IsPasswordProperty, value); }
+			set { SetValue(IsPasswordProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

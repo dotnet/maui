@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsChecked
 		{
 			get => (bool)GetValue(IsCheckedProperty);
-			set => SetValue(IsCheckedProperty, value);
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value));
 		}
 
 		protected internal override void ChangeVisualState()
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls
 		bool ICheckBox.IsChecked
 		{
 			get => IsChecked;
-			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		ICommand ICommandElement.Command => Command;

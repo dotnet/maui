@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get => (bool)GetValue(IsVisibleProperty);
-			set => SetValue(IsVisibleProperty, value);
+			set => SetValue(IsVisibleProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 		public bool FlyoutItemIsVisible
 		{
 			get => (bool)GetValue(FlyoutItemIsVisibleProperty);
-			set => SetValue(FlyoutItemIsVisibleProperty, value);
+			set => SetValue(FlyoutItemIsVisibleProperty, BooleanBoxes.Box(value));
 		}
 
 

@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls
 			public bool IsSelected
 			{
 				get => (bool)GetValue(SelectedStateProperty);
-				set => SetValue(SelectedStateProperty, value);
+				set => SetValue(SelectedStateProperty, BooleanBoxes.Box(value));
 			}
 
 			public GColor SelectedTabColor

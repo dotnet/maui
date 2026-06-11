@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, value); }
+			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

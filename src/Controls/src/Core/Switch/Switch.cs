@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsToggled
 		{
 			get { return (bool)GetValue(IsToggledProperty); }
-			set { SetValue(IsToggledProperty, value); }
+			set { SetValue(IsToggledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		protected internal override void ChangeVisualState()
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls
 		bool ISwitch.IsOn
 		{
 			get => IsToggled;
-			set => SetValue(IsToggledProperty, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsToggledProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		private protected override string GetDebuggerDisplay()

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 		public bool HideSoftInputOnTapped
 		{
 			get { return (bool)GetValue(HideSoftInputOnTappedProperty); }
-			set { SetValue(HideSoftInputOnTappedProperty, value); }
+			set { SetValue(HideSoftInputOnTappedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

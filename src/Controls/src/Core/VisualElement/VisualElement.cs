@@ -642,7 +642,7 @@ namespace Microsoft.Maui.Controls
 		public bool InputTransparent
 		{
 			get { return (bool)GetValue(InputTransparentProperty); }
-			set { SetValue(InputTransparentProperty, value); }
+			set { SetValue(InputTransparentProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -655,7 +655,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -728,7 +728,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, value); }
+			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -2105,7 +2105,7 @@ namespace Microsoft.Maui.Controls
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
-			set => SetValue(IsFocusedPropertyKey, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsFocusedPropertyKey, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		/// <inheritdoc/>

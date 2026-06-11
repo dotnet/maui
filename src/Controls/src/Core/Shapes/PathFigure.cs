@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public bool IsClosed
 		{
-			set { SetValue(IsClosedProperty, value); }
+			set { SetValue(IsClosedProperty, BooleanBoxes.Box(value)); }
 			get { return (bool)GetValue(IsClosedProperty); }
 		}
 
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public bool IsFilled
 		{
-			set { SetValue(IsFilledProperty, value); }
+			set { SetValue(IsFilledProperty, BooleanBoxes.Box(value)); }
 			get { return (bool)GetValue(IsFilledProperty); }
 		}
 

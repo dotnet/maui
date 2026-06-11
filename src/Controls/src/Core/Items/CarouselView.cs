@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 		public bool Loop
 		{
 			get { return (bool)GetValue(LoopProperty); }
-			set { SetValue(LoopProperty, value); }
+			set { SetValue(LoopProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="PeekAreaInsets"/>.</summary>
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsBounceEnabled
 		{
 			get { return (bool)GetValue(IsBounceEnabledProperty); }
-			set { SetValue(IsBounceEnabledProperty, value); }
+			set { SetValue(IsBounceEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="IsSwipeEnabled"/>.</summary>
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsSwipeEnabled
 		{
 			get { return (bool)GetValue(IsSwipeEnabledProperty); }
-			set { SetValue(IsSwipeEnabledProperty, value); }
+			set { SetValue(IsSwipeEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="IsScrollAnimated"/>.</summary>
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsScrollAnimated
 		{
 			get { return (bool)GetValue(IsScrollAnimatedProperty); }
-			set { SetValue(IsScrollAnimatedProperty, value); }
+			set { SetValue(IsScrollAnimatedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>

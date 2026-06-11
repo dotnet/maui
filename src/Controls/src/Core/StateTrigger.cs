@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		public new bool IsActive
 		{
 			get => (bool)GetValue(IsActiveProperty);
-			set => SetValue(IsActiveProperty, value);
+			set => SetValue(IsActiveProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Bindable property for <see cref="IsActive"/>.</summary>

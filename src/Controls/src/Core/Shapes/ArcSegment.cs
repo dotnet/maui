@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public bool IsLargeArc
 		{
-			set { SetValue(IsLargeArcProperty, value); }
+			set { SetValue(IsLargeArcProperty, BooleanBoxes.Box(value)); }
 			get { return (bool)GetValue(IsLargeArcProperty); }
 		}
 	}

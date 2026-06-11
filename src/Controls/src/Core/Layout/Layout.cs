@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsClippedToBounds
 		{
 			get => (bool)GetValue(IsClippedToBoundsProperty);
-			set => SetValue(IsClippedToBoundsProperty, value);
+			set => SetValue(IsClippedToBoundsProperty, BooleanBoxes.Box(value));
 		}
 
 		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls
 		public bool CascadeInputTransparent
 		{
 			get => (bool)GetValue(CascadeInputTransparentProperty);
-			set => SetValue(CascadeInputTransparentProperty, value);
+			set => SetValue(CascadeInputTransparentProperty, BooleanBoxes.Box(value));
 		}
 
 		private protected override string GetDebuggerDisplay()

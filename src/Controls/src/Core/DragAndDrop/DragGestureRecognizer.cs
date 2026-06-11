@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls
 		public bool CanDrag
 		{
 			get { return (bool)GetValue(CanDragProperty); }
-			set { SetValue(CanDragProperty, value); }
+			set { SetValue(CanDragProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

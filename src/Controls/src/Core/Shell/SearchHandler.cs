@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsFocused(bool value)
 		{
-			SetValue(IsFocusedPropertyKey, value, specificity: SetterSpecificity.FromHandler);
+			SetValue(IsFocusedPropertyKey, BooleanBoxes.Box(value), specificity: SetterSpecificity.FromHandler);
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
+			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
@@ -484,7 +484,7 @@ namespace Microsoft.Maui.Controls
 		public bool ClearPlaceholderEnabled
 		{
 			get { return (bool)GetValue(ClearPlaceholderEnabledProperty); }
-			set { SetValue(ClearPlaceholderEnabledProperty, value); }
+			set { SetValue(ClearPlaceholderEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the accessibility help text for the clear placeholder icon. This is a bindable property.</summary>
@@ -534,7 +534,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsSearchEnabled
 		{
 			get { return (bool)GetValue(IsSearchEnabledProperty); }
-			set { SetValue(IsSearchEnabledProperty, value); }
+			set { SetValue(IsSearchEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the collection of items to display as search suggestions. This is a bindable property.</summary>
@@ -593,12 +593,12 @@ namespace Microsoft.Maui.Controls
 		public bool ShowsResults
 		{
 			get { return (bool)GetValue(ShowsResultsProperty); }
-			set { SetValue(ShowsResultsProperty, value); }
+			set { SetValue(ShowsResultsProperty, BooleanBoxes.Box(value)); }
 		}
 
-		bool ClearPlaceholderEnabledCore { set => SetValue(ClearPlaceholderEnabledProperty, value); }
+		bool ClearPlaceholderEnabledCore { set => SetValue(ClearPlaceholderEnabledProperty, BooleanBoxes.Box(value)); }
 
-		bool IsSearchEnabledCore { set => SetValue(IsSearchEnabledProperty, value); }
+		bool IsSearchEnabledCore { set => SetValue(IsSearchEnabledProperty, BooleanBoxes.Box(value)); }
 
 		protected virtual void OnClearPlaceholderClicked()
 		{
