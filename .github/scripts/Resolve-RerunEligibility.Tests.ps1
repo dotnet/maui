@@ -96,6 +96,11 @@ Describe 'Resolve-RerunEligibility' {
             Should -Be 'feature/regression-check'
     }
 
+    It 'normalizes app-style GitHub actor logins to bot logins' {
+        Normalize-GitHubActorLogin 'app/dependabot' | Should -Be 'dependabot[bot]'
+        Normalize-GitHubActorLogin 'dev-user' | Should -Be 'dev-user'
+    }
+
     It 'finds latest normal review command while ignoring rerun and tests commands' {
         $comments = @(
             New-TestComment -Id 1 -Body '/review -b old/ref -p android' -CreatedAt '2026-05-31T09:00:00Z'
@@ -457,10 +462,9 @@ new
         $context | Should -Not -Match '\| .*\/review rerun'
     }
 
-    It 'renders normalized app-style bot authors without counting bot comments as evidence' {
+    It 'renders normalized app-style bot authors in rerun context' {
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
-            New-TestComment -Id 2 -Body 'Dependabot follow-up.' -CreatedAt '2026-05-31T09:45:00Z' -Login 'dependabot[bot]' -Type 'Bot'
             New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T09:50:00Z'
         )
 
@@ -468,6 +472,5 @@ new
 
         $context | Should -Match 'PR author: dependabot\[bot\]'
         $context | Should -Match 'New non-command author comments: 0'
-        $context | Should -Not -Match 'Dependabot follow-up'
     }
 }

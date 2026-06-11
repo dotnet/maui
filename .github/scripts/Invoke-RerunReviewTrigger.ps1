@@ -280,6 +280,7 @@ if ($items.Count -eq 0) {
     exit 0
 }
 $candidates = @(Get-CandidateItems -Path $env:RERUN_CANDIDATES_PATH)
+$hadProcessingFailure = $false
 
 foreach ($item in $items) {
     $prNumber = 0
@@ -321,17 +322,24 @@ foreach ($item in $items) {
         }
 
         Write-Host "Processing PR #$prNumber decision=$decision reason=$(ConvertTo-SafeLogValue $reason)"
-        $prOutput = @(& gh api "repos/$Owner/$Repo/pulls/$prNumber" 2>&1)
-        $prExitCode = $LASTEXITCODE
-        $prJson = ($prOutput | Out-String).Trim()
+        $prStdErrFile = New-TemporaryFile
+        try {
+            $prOutput = @(& gh api "repos/$Owner/$Repo/pulls/$prNumber" 2> $prStdErrFile)
+            $prExitCode = $LASTEXITCODE
+            $prJson = ($prOutput | Out-String).Trim()
+            $prStdErr = (Get-Content -Raw -LiteralPath $prStdErrFile -ErrorAction SilentlyContinue).Trim()
+        } finally {
+            Remove-Item -LiteralPath $prStdErrFile -Force -ErrorAction SilentlyContinue
+        }
         if ($prExitCode -ne 0) {
-            if (Test-GhApiPrNotFound -Output $prJson) {
+            $prError = if ([string]::IsNullOrWhiteSpace($prStdErr)) { $prJson } else { $prStdErr }
+            if (Test-GhApiPrNotFound -Output $prError) {
                 $global:LASTEXITCODE = 0
                 Write-Host "  ⏭️ PR #$prNumber no longer exists; skipping stale decision"
                 continue
             }
 
-            throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prJson)"
+            throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prError)"
         }
         if ([string]::IsNullOrWhiteSpace($prJson)) {
             throw "Failed to load PR #$prNumber via gh api: empty response."
@@ -428,8 +436,13 @@ foreach ($item in $items) {
     } catch {
         $target = if ($prNumber -gt 0) { "PR #$prNumber" } else { "agent decision" }
         Write-Host "::error::Failed to process $target`: $(ConvertTo-SafeLogValue ([string]$_))"
+        $hadProcessingFailure = $true
         continue
     }
+}
+
+if ($hadProcessingFailure) {
+    exit 1
 }
 
 exit 0
