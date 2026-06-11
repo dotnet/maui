@@ -1,3 +1,4 @@
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -72,3 +73,4 @@ public class Issue35826 : _IssuesUITest
 		App.WaitForElement(OpenChildActivityButton);
 	}
 }
+#endif
