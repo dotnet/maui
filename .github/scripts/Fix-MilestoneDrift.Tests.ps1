@@ -638,14 +638,15 @@ Describe 'Compare-MauiMilestone' {
 
 Describe 'Test-MilestoneValidForIssue' {
     BeforeEach {
-        # Clear cache between tests so each starts fresh.
+        # Clear caches between tests so each starts fresh.
         $script:milestoneValidationCache = @{}
 
         # Default search response: empty array.
         $script:_searchJson = '[]'
         $script:_searchExit = 0
-        # Default Get-PrInfo response: PR with no milestone.
-        $script:_prMilestones = @{}
+        # Default shipped-in mapping: { PrNumber => @(milestone-names) }.
+        # Empty means "no PR has shipped in any milestone we ask about".
+        $script:_prShipped = @{}
 
         Mock Invoke-GhCli {
             $a = @($Arguments)
@@ -658,12 +659,13 @@ Describe 'Test-MilestoneValidForIssue' {
             return ''
         }
 
-        Mock Get-PrInfo {
-            param([int]$PrNum)
-            if ($script:_prMilestones.ContainsKey($PrNum)) {
-                return @{ Number = $PrNum; Milestone = $script:_prMilestones[$PrNum]; Title = "PR $PrNum"; Url = "u"; Body = ''; BaseRef = 'main' }
+        # Mock the commit-in-tag check so tests don't need a real git repo / tags.
+        Mock Test-PrShippedInMilestone {
+            param([int]$PrNumber, [string]$Milestone)
+            if ($script:_prShipped.ContainsKey($PrNumber)) {
+                return ($script:_prShipped[$PrNumber] -contains $Milestone)
             }
-            return $null
+            return $false
         }
     }
 
@@ -677,9 +679,9 @@ Describe 'Test-MilestoneValidForIssue' {
         Test-MilestoneValidForIssue -IssueNumber 42 -Milestone ''   | Should -BeFalse
     }
 
-    It 'returns true when a linking fix-PR has the target milestone' {
+    It 'returns true when a linking fix-PR commit is in the milestone tag' {
         $script:_searchJson = '[{"number":501,"title":"Fix bug","body":"Fixes #34490","url":"u"}]'
-        $script:_prMilestones[501] = '.NET 10 SR6'
+        $script:_prShipped[501] = @('.NET 10 SR6')
 
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
     }
@@ -687,30 +689,32 @@ Describe 'Test-MilestoneValidForIssue' {
     It 'returns false when a PR mentions the issue but does not use a fix verb' {
         # Just a casual mention "#34490" — should not count as a fix
         $script:_searchJson = '[{"number":888,"title":"Related work","body":"See #34490 for context","url":"u"}]'
-        $script:_prMilestones[888] = '.NET 10 SR6'
+        $script:_prShipped[888] = @('.NET 10 SR6')
 
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeFalse
     }
 
-    It 'returns false when fixing PR has no milestone' {
+    It 'returns false when the fixing PR did not ship in the milestone tag' {
+        # PR fixes the issue but its commit is only in a later release (e.g. SR7.1).
+        # This is the key tightening: trusting the PR''s milestone field alone is not enough.
         $script:_searchJson = '[{"number":513,"title":"net11 fix","body":"Fixes #34490","url":"u"}]'
-        # PR 513 has no milestone (not in $_prMilestones)
+        $script:_prShipped[513] = @('.NET 10 SR7.1')
 
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeFalse
     }
 
-    It 'returns false when fixing PR has a different milestone' {
+    It 'returns false when fixing PR has shipped in nothing yet' {
         $script:_searchJson = '[{"number":513,"title":"net11 fix","body":"Fixes #34490","url":"u"}]'
-        $script:_prMilestones[513] = '.NET 11.0-preview3'
+        # 513 is in no tag
 
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeFalse
     }
 
     It 'returns true if ANY of multiple linking PRs validates the milestone' {
-        # Two PRs link the issue; only the second has the matching milestone.
+        # Two PRs link the issue; only the second has shipped in the matching milestone.
         $script:_searchJson = '[{"number":513,"title":"net11 fix","body":"Fixes #34490","url":"u"},{"number":501,"title":"sr6 fix","body":"Fixes #34490","url":"u"}]'
-        $script:_prMilestones[513] = '.NET 11.0-preview3'
-        $script:_prMilestones[501] = '.NET 10 SR6'
+        $script:_prShipped[513] = @('.NET 11.0-preview3')
+        $script:_prShipped[501] = @('.NET 10 SR6')
 
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
     }
@@ -724,7 +728,7 @@ Describe 'Test-MilestoneValidForIssue' {
 
     It 'caches lookups so a second call does not re-query gh' {
         $script:_searchJson = '[{"number":501,"title":"Fix bug","body":"Fixes #34490","url":"u"}]'
-        $script:_prMilestones[501] = '.NET 10 SR6'
+        $script:_prShipped[501] = @('.NET 10 SR6')
 
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
@@ -738,8 +742,46 @@ Describe 'Test-MilestoneValidForIssue' {
     It 'matches a fix verb that uses an owner/repo prefix (org/repo#NNN)' {
         # Real-world bodies sometimes write "Fixes dotnet/maui#34490"
         $script:_searchJson = '[{"number":501,"title":"Fix bug","body":"Fixes dotnet/maui#34490","url":"u"}]'
-        $script:_prMilestones[501] = '.NET 10 SR6'
+        $script:_prShipped[501] = @('.NET 10 SR6')
 
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
+    }
+}
+
+Describe 'Test-MilestoneValidForPr' {
+    BeforeEach {
+        $script:_prShippedForPr = @{}
+        Mock Test-PrShippedInMilestone {
+            param([int]$PrNumber, [string]$Milestone)
+            if ($script:_prShippedForPr.ContainsKey($PrNumber)) {
+                return ($script:_prShippedForPr[$PrNumber] -contains $Milestone)
+            }
+            return $false
+        }
+    }
+
+    It 'returns false for null/empty milestone' {
+        Test-MilestoneValidForPr -PrNumber 100 -Milestone $null | Should -BeFalse
+        Test-MilestoneValidForPr -PrNumber 100 -Milestone ''    | Should -BeFalse
+    }
+
+    It 'returns true when the PR commit is in a tag mapping to the milestone (cherry-pick case)' {
+        # PR #34527 originally shipped in 10.0.60 (SR6) and was later cherry-picked
+        # to 10.0.80 (SR8). When auditing SR8, we should KEEP it on SR6.
+        $script:_prShippedForPr[34527] = @('.NET 10 SR6', '.NET 10 SR7', '.NET 10 SR8')
+
+        Test-MilestoneValidForPr -PrNumber 34527 -Milestone '.NET 10 SR6' | Should -BeTrue
+    }
+
+    It 'returns false when the PR has only shipped in the target milestone (not in the earlier one)' {
+        # PR was milestoned for SR7 but actually only landed in SR8.
+        $script:_prShippedForPr[35008] = @('.NET 10 SR8')
+
+        Test-MilestoneValidForPr -PrNumber 35008 -Milestone '.NET 10 SR7' | Should -BeFalse
+    }
+
+    It 'returns false when the PR has shipped nowhere yet (in flight)' {
+        # No entry — Test-PrShippedInMilestone returns false.
+        Test-MilestoneValidForPr -PrNumber 99999 -Milestone '.NET 10 SR7' | Should -BeFalse
     }
 }

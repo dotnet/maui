@@ -441,6 +441,116 @@ function Set-ItemMilestone([int]$ItemNumber, [int]$MilestoneNumber) {
 # Cache of milestone-validity lookups so we don't re-query gh for the same (issue, milestone) pair.
 $script:milestoneValidationCache = @{}
 
+# Caches used by the commit-in-tag validation. Populated lazily.
+$script:milestoneTagsCache = @{}
+$script:tagPrCache = @{}
+
+# Script-scoped context set by Invoke-AnalyzeRelease so validators can resolve
+# milestone → tag mappings without re-fetching.
+$script:validationRepoPath = $null
+$script:validationAllTags = $null
+$script:validationMajor = 0
+
+function Initialize-MilestoneValidationContext {
+    <# Reset and seed per-run validation context. Call from Invoke-AnalyzeRelease. #>
+    param(
+        [Parameter(Mandatory)][string]$RepoPath,
+        [Parameter(Mandatory)][string[]]$AllTags,
+        [Parameter(Mandatory)][int]$Major
+    )
+    $script:milestoneValidationCache = @{}
+    $script:milestoneTagsCache = @{}
+    $script:tagPrCache = @{}
+    $script:validationRepoPath = $RepoPath
+    $script:validationAllTags = $AllTags
+    $script:validationMajor = $Major
+}
+
+function Get-TagsForMilestone {
+    <#
+    .SYNOPSIS
+        Returns release tags whose ConvertTo-Milestone result matches the given milestone name.
+    .DESCRIPTION
+        e.g. ".NET 10 SR6" → @("10.0.60") (and 10.0.61 only if it maps back to SR6, which it
+        doesn't — 10.0.61 maps to ".NET 10 SR6.1"). Empty array if the milestone is not a
+        comparable release (Backlog/Planning) or no tag matches.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][AllowNull()][string]$Milestone
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Milestone)) { return @() }
+    if (-not $script:validationAllTags -or $script:validationMajor -le 0) { return @() }
+
+    if ($script:milestoneTagsCache.ContainsKey($Milestone)) {
+        return @($script:milestoneTagsCache[$Milestone])
+    }
+
+    $matchingTags = [System.Collections.Generic.List[string]]::new()
+    foreach ($tag in $script:validationAllTags) {
+        if (-not (Test-IsReleaseTag $tag $script:validationMajor)) { continue }
+        $tagMs = ConvertTo-Milestone $tag
+        if ([string]::IsNullOrWhiteSpace($tagMs)) { continue }
+        if (Test-MilestoneMatch $tagMs $Milestone) {
+            [void]$matchingTags.Add($tag)
+        }
+    }
+
+    $script:milestoneTagsCache[$Milestone] = $matchingTags.ToArray()
+    return @($script:milestoneTagsCache[$Milestone])
+}
+
+function Get-PrsInTag {
+    <# Returns (cached) the set of PR numbers reachable from a tag. #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Tag
+    )
+    if (-not $script:validationRepoPath) { return @() }
+    if ($script:tagPrCache.ContainsKey($Tag)) {
+        return $script:tagPrCache[$Tag]
+    }
+    try {
+        $prs = Get-PrNumbersReachableFromTag $Tag $script:validationRepoPath
+    } catch {
+        Write-Warning "Get-PrsInTag: failed to read PRs reachable from ${Tag}: $_"
+        $prs = @()
+    }
+    # Store as HashSet for O(1) Contains lookups.
+    $set = [System.Collections.Generic.HashSet[int]]::new()
+    foreach ($p in $prs) { [void]$set.Add([int]$p) }
+    $script:tagPrCache[$Tag] = $set
+    return $set
+}
+
+function Test-PrShippedInMilestone {
+    <#
+    .SYNOPSIS
+        Returns $true iff a PR's merge commit is reachable from a tag that maps to $Milestone.
+    .DESCRIPTION
+        Used by earliest-release-wins validation. A PR is considered to have "shipped in
+        milestone X" only when its commit is actually present in at least one release tag
+        that ConvertTo-Milestone maps to X. This rejects:
+          - PRs that were milestoned for X but never made it (still on `inflight/*`)
+          - Issues whose linking PR was cherry-picked to a later branch but never landed in X
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][int]$PrNumber,
+        [Parameter(Mandatory)][AllowEmptyString()][AllowNull()][string]$Milestone
+    )
+
+    $tags = @(Get-TagsForMilestone -Milestone $Milestone)
+    if ($tags.Count -eq 0) { return $false }
+
+    foreach ($tag in $tags) {
+        $prs = Get-PrsInTag -Tag $tag
+        if ($prs -and $prs.Contains([int]$PrNumber)) { return $true }
+    }
+    return $false
+}
+
 function Test-MilestoneValidForIssue {
     <#
     .SYNOPSIS
@@ -500,12 +610,11 @@ function Test-MilestoneValidForIssue {
             continue
         }
 
-        # Fetch milestone for this linking PR.
-        $prInfo = Get-PrInfo $pr.number
-        if (-not $prInfo) { continue }
-        if (-not $prInfo.Milestone) { continue }
-
-        if (Test-MilestoneMatch $prInfo.Milestone $Milestone) {
+        # The linking PR must actually have its commit in a tag that maps to $Milestone.
+        # Trusting the PR's own milestone field isn't enough — that field can be stale
+        # (e.g. a hotfix PR milestoned `.NET 10 SR7` but only present in tag 10.0.71
+        # which maps to `.NET 10 SR7.1`).
+        if (Test-PrShippedInMilestone -PrNumber ([int]$pr.number) -Milestone $Milestone) {
             $script:milestoneValidationCache[$cacheKey] = $true
             return $true
         }
@@ -513,6 +622,32 @@ function Test-MilestoneValidForIssue {
 
     $script:milestoneValidationCache[$cacheKey] = $false
     return $false
+}
+
+function Test-MilestoneValidForPr {
+    <#
+    .SYNOPSIS
+        Returns $true iff the PR's commit is reachable from a tag that maps to $Milestone
+        — meaning the PR genuinely shipped in that release and we shouldn't override the
+        milestone to a later one.
+    .DESCRIPTION
+        Mirrors the issue-side check, but for PRs themselves. The motivating case: a PR
+        merged to SR6's release branch was later cherry-picked to SR8 via main flow. Its
+        commit therefore appears in BOTH `10.0.60` and `10.0.80`. An SR8 audit would
+        otherwise stomp the (correct) `.NET 10 SR6` milestone.
+
+        Returns $false when:
+          - Milestone is null/empty or isn't a comparable release (Backlog/Planning)
+          - No tag maps to $Milestone
+          - The PR's commit isn't in any of those tags
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][int]$PrNumber,
+        [Parameter(Mandatory)][AllowEmptyString()][AllowNull()][string]$Milestone
+    )
+    if ([string]::IsNullOrWhiteSpace($Milestone)) { return $false }
+    return Test-PrShippedInMilestone -PrNumber $PrNumber -Milestone $Milestone
 }
 
 #endregion
@@ -548,14 +683,24 @@ function Test-AndRecordCorrection(
         return
     }
 
-    # Earlier-milestone validation: if this is an ISSUE whose current milestone is an
-    # earlier release than the target AND we can confirm a fix PR shipped in that earlier
-    # release, KEEP the earlier milestone (earliest release wins). PRs are skipped — they
-    # land in exactly one branch, so the target is by definition correct for them.
-    if ($ItemType -eq 'issue' -and -not [string]::IsNullOrWhiteSpace($CurrentMilestone)) {
+    # Earlier-milestone validation: if the current milestone is an earlier real release
+    # than the target AND we can prove the fix shipped in that release, KEEP the earlier
+    # milestone (earliest release wins).
+    #   - For ISSUES: confirm a fix-linking PR's commit is reachable from a tag mapping
+    #     to the current milestone.
+    #   - For PRS: confirm the PR's own commit is reachable from such a tag (catches the
+    #     cherry-pick scenario where the same PR ships in multiple release branches).
+    if (-not [string]::IsNullOrWhiteSpace($CurrentMilestone)) {
         $cmp = Compare-MauiMilestone $CurrentMilestone $ExpectedMs
         if ($null -ne $cmp -and $cmp -lt 0) {
-            if (Test-MilestoneValidForIssue -IssueNumber $ItemNumber -Milestone $CurrentMilestone) {
+            $isValidEarlier = $false
+            if ($ItemType -eq 'issue') {
+                $isValidEarlier = Test-MilestoneValidForIssue -IssueNumber $ItemNumber -Milestone $CurrentMilestone
+            } elseif ($ItemType -eq 'pr') {
+                $isValidEarlier = Test-MilestoneValidForPr -PrNumber $ItemNumber -Milestone $CurrentMilestone
+            }
+
+            if ($isValidEarlier) {
                 if (-not $Report.ContainsKey('Kept')) { $Report.Kept = [System.Collections.ArrayList]::new() }
                 $kept = @{
                     ItemType   = $ItemType
@@ -567,7 +712,7 @@ function Test-AndRecordCorrection(
                 }
                 if ($RelatedPr -gt 0) { $kept.RelatedPr = $RelatedPr }
                 [void]$Report.Kept.Add($kept)
-                Write-Host "  [KEEP] issue #$ItemNumber`: keeping earlier valid milestone '$CurrentMilestone' (target was '$ExpectedMs')"
+                Write-Host "  [KEEP] $ItemType #$ItemNumber`: keeping earlier valid milestone '$CurrentMilestone' (target was '$ExpectedMs')"
                 return
             }
         }
@@ -787,6 +932,9 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
 
     $allTags = Get-AllTags $Repo
     if ($ReleaseTag -notin $allTags) { throw "Tag $ReleaseTag not found in repo" }
+
+    # Seed validation context so Test-MilestoneValid* helpers can resolve milestone → tag.
+    Initialize-MilestoneValidationContext -RepoPath $Repo -AllTags ([string[]]$allTags) -Major $Major
 
     if (-not $PrevTag) {
         $PrevTag = Find-PreviousTag $ReleaseTag $allTags
