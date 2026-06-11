@@ -6,8 +6,8 @@
 .DESCRIPTION
     This script is intentionally deterministic: it never uses AI and never
     inspects untrusted text semantically. A rerun is eligible only when there is
-    new PR activity after the previous AI Summary or previous /review rerun:
-    a new non-command comment, or a new commit.
+    new PR-author activity after the previous AI Summary or previous /review rerun:
+    a new non-command PR-author comment, or a new commit.
 #>
 
 param(
@@ -27,7 +27,7 @@ $ErrorActionPreference = 'Stop'
 $AISummaryMarker = '<!-- AI Summary -->'
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
-$ReadyForRerunLabelDescription = 'AI review has new PR activity and is ready for rerun'
+$ReadyForRerunLabelDescription = 'AI review has a new PR-author comment or commit and is ready for rerun'
 $ReadyForRerunLabelColor = '5319E7'
 $AISummaryAuthorLogins = @(
     'MauiBot'
@@ -279,10 +279,20 @@ function Get-LatestReviewedSha {
 function Test-CommentIsEvidence {
     param(
         [Parameter(Mandatory = $true)]$Comment,
-        [Parameter(Mandatory = $true)][Int64]$CurrentCommentId
+        [Parameter(Mandatory = $true)][Int64]$CurrentCommentId,
+        [string]$PRAuthorLogin
     )
 
     if ([Int64]$Comment.id -eq $CurrentCommentId) {
+        return $false
+    }
+    if ([string]::IsNullOrWhiteSpace($PRAuthorLogin)) {
+        return $false
+    }
+    if (-not $Comment.user -or [string]::IsNullOrWhiteSpace([string]$Comment.user.login)) {
+        return $false
+    }
+    if (-not ([string]$Comment.user.login).Equals($PRAuthorLogin, [StringComparison]::OrdinalIgnoreCase)) {
         return $false
     }
     if (Test-RerunCommand $Comment.body) {
@@ -302,11 +312,12 @@ function Test-HasEvidenceCommentAfter {
     param(
         [object[]]$Comments,
         [Parameter(Mandatory = $true)][datetimeoffset]$Checkpoint,
-        [Parameter(Mandatory = $true)][Int64]$CurrentCommentId
+        [Parameter(Mandatory = $true)][Int64]$CurrentCommentId,
+        [string]$PRAuthorLogin
     )
 
     return [bool]@($Comments | Where-Object {
-        (Test-CommentIsEvidence -Comment $_ -CurrentCommentId $CurrentCommentId) -and
+        (Test-CommentIsEvidence -Comment $_ -CurrentCommentId $CurrentCommentId -PRAuthorLogin $PRAuthorLogin) -and
         (Get-ObjectDate $_ 'created_at') -gt $Checkpoint
     } | Select-Object -First 1)
 }
@@ -401,6 +412,7 @@ function New-RerunContextMarkdown {
         [object[]]$Comments,
         [object[]]$Commits,
         [string]$CurrentHeadSha,
+        [string]$PRAuthorLogin,
         [object[]]$CurrentLabels = @()
     )
 
@@ -426,7 +438,7 @@ function New-RerunContextMarkdown {
     $evidenceComments = @()
     if ($checkpoint) {
         $evidenceComments = @($Comments | Where-Object {
-            (Test-CommentIsEvidence -Comment $_ -CurrentCommentId 0) -and
+            (Test-CommentIsEvidence -Comment $_ -CurrentCommentId 0 -PRAuthorLogin $PRAuthorLogin) -and
             (Get-ObjectDate $_ 'created_at') -gt $checkpoint
         } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $false }, @{ Expression = { [Int64]$_.id }; Descending = $false })
     }
@@ -465,6 +477,7 @@ function New-RerunContextMarkdown {
     } else {
         $lines.Add('- Activity checkpoint: none')
     }
+    $lines.Add("- PR author: $(if ([string]::IsNullOrWhiteSpace($PRAuthorLogin)) { 'unknown' } else { $PRAuthorLogin })")
     $lines.Add("- Latest reviewed SHA: $(if ($latestReviewedSha) { $latestReviewedSha } else { 'unknown' })")
     $lines.Add("- Current head SHA: $(if ($CurrentHeadSha) { $CurrentHeadSha } else { 'unknown' })")
     $lines.Add("- Current head differs from latest reviewed SHA: $($headDiffers.ToString().ToLowerInvariant())")
@@ -473,7 +486,7 @@ function New-RerunContextMarkdown {
     $lines.Add('')
     $lines.Add('## New activity since checkpoint')
     $lines.Add('')
-    $lines.Add("- New non-command comments: $($evidenceComments.Count)")
+    $lines.Add("- New non-command author comments: $($evidenceComments.Count)")
     $lines.Add("- New commits: $($newCommits.Count)")
     $lines.Add('')
 
@@ -519,6 +532,7 @@ function Resolve-RerunEligibility {
         [object[]]$Commits,
         [Parameter(Mandatory = $true)][Int64]$CurrentCommentId,
         [string]$CurrentHeadSha,
+        [string]$PRAuthorLogin,
         [object[]]$CurrentLabels = @()
     )
 
@@ -565,8 +579,8 @@ function Resolve-RerunEligibility {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
     }
 
-    if (Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $checkpoint -CurrentCommentId $CurrentCommentId) {
-        $reason = if ($checkpointReason -eq 'previous-rerun') { 'new-comment-after-previous-rerun' } else { 'new-comment-after-ai-summary' }
+    if (Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $checkpoint -CurrentCommentId $CurrentCommentId -PRAuthorLogin $PRAuthorLogin) {
+        $reason = if ($checkpointReason -eq 'previous-rerun') { 'new-author-comment-after-previous-rerun' } else { 'new-author-comment-after-ai-summary' }
         return [pscustomobject]@{ Eligible = $true; Reason = $reason; Label = $ReadyForRerunLabel }
     }
 
@@ -603,6 +617,7 @@ if ($ContextOutputPath) {
         -Comments $comments `
         -Commits $commits `
         -CurrentHeadSha $pr.head.sha `
+        -PRAuthorLogin $pr.user.login `
         -CurrentLabels $labels
     $contextDir = Split-Path -Parent $ContextOutputPath
     if ($contextDir) {
@@ -627,6 +642,7 @@ $result = Resolve-RerunEligibility `
     -Commits $commits `
     -CurrentCommentId $CurrentCommentId `
     -CurrentHeadSha $pr.head.sha `
+    -PRAuthorLogin $pr.user.login `
     -CurrentLabels $labels
 
 Write-Host "Rerun eligibility: $($result.Eligible) ($($result.Reason))"

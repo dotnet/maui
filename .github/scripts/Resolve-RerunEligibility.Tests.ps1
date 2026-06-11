@@ -193,17 +193,30 @@ Describe 'Resolve-RerunEligibility' {
         $result.Reason | Should -Be 'no-new-comments-or-commits'
     }
 
-    It 'accepts a non-command comment after the latest AI Summary' {
+    It 'accepts a non-command PR author comment after the latest AI Summary' {
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'I pushed the requested update.' -CreatedAt '2026-05-31T09:45:00Z'
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
+    }
+
+    It 'rejects a non-author maintainer comment after the latest AI Summary' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'Could you please check the AI suggestions?' -CreatedAt '2026-05-31T09:45:00Z' -Login 'kubaflo' -Kind 'review'
+            New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z' -Login 'kubaflo'
+        )
+
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
+
+        $result.Eligible | Should -BeFalse
+        $result.Reason | Should -Be 'no-new-comments-or-commits'
     }
 
     It 'uses AI Summary creation time as the activity checkpoint when the summary was edited later' {
@@ -213,10 +226,10 @@ Describe 'Resolve-RerunEligibility' {
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
     }
 
     It 'selects the newest AI Summary by creation time instead of edit time' {
@@ -227,10 +240,10 @@ Describe 'Resolve-RerunEligibility' {
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:30:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha '2222222abcdef'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha '2222222abcdef' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
     }
 
     It 'ignores forged AI Summary comments from non-bots' {
@@ -277,10 +290,10 @@ Describe 'Resolve-RerunEligibility' {
             New-TestComment -Id 4659999999 -Body '/review rerun' -CreatedAt '2026-06-09T09:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 4659999999 -CurrentHeadSha '6e9af5bc8b5d0023400d653500951fb46df44170'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 4659999999 -CurrentHeadSha '6e9af5bc8b5d0023400d653500951fb46df44170' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
     }
 
     It 'uses the first session marker from an AI Summary' {
@@ -308,7 +321,7 @@ new
         $result.Reason | Should -Be 'no-new-comments-or-commits'
     }
 
-    It 'accepts a non-command comment after the previous rerun command' {
+    It 'accepts a non-command PR author comment after the previous rerun command' {
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 8 -Body '/review rerun' -CreatedAt '2026-05-31T09:45:00Z'
@@ -316,10 +329,10 @@ new
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-previous-rerun'
+        $result.Reason | Should -Be 'new-author-comment-after-previous-rerun'
     }
 
     It 'does not reuse old activity from before a previous rerun command' {
@@ -343,10 +356,10 @@ new
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'
         )
 
-        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123'
+        $result = Resolve-RerunEligibility -Comments $comments -Commits @() -CurrentCommentId 10 -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'dev-user'
 
         $result.Eligible | Should -BeTrue
-        $result.Reason | Should -Be 'new-comment-after-ai-summary'
+        $result.Reason | Should -Be 'new-author-comment-after-ai-summary'
     }
 
     It 'accepts a current head SHA that differs from the latest reviewed session' {
@@ -418,20 +431,22 @@ new
         $comments = @(
             New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
             New-TestComment -Id 2 -Body 'New author context.' -CreatedAt '2026-05-31T09:45:00Z'
+            New-TestComment -Id 11 -Body 'Reviewer reminder.' -CreatedAt '2026-05-31T09:46:00Z' -Login 'reviewer'
             New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T09:50:00Z'
         )
         $commits = @(
             New-TestCommit -Sha 'fedcba9876543210' -Date '2026-05-31T09:48:00Z'
         )
 
-        $context = New-RerunContextMarkdown -Comments $comments -Commits $commits -CurrentHeadSha 'fedcba9876543210' -CurrentLabels @('s/agent-review-in-progress')
+        $context = New-RerunContextMarkdown -Comments $comments -Commits $commits -CurrentHeadSha 'fedcba9876543210' -PRAuthorLogin 'dev-user' -CurrentLabels @('s/agent-review-in-progress')
 
         $context | Should -Match '# Rerun Context'
-        $context | Should -Match 'New non-command comments: 1'
+        $context | Should -Match 'New non-command author comments: 1'
         $context | Should -Match 'New commits: 1'
         $context | Should -Match '`s/agent-ready-for-rerun` present: false'
         $context | Should -Match '`s/agent-review-in-progress` present: true'
         $context | Should -Match 'New author context'
+        $context | Should -Not -Match 'Reviewer reminder'
         $context | Should -Match 'fedcba9'
         $context | Should -Not -Match '\| .*\/review rerun'
     }
