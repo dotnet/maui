@@ -336,9 +336,10 @@ function Get-ReleaseShipChecks {
     $checks = @()
     $isCandidate = ($Ctx.mode -eq 'candidate')
 
-    # Determine the SR number from the SR branch name. In shipped mode, srBranch
-    # IS the release branch (release/X.Y.Zxx-srN). In candidate mode, srBranch is
-    # main and the prior-SR name lives in priorSrBranch — we want NEXT SR (= prior + 1).
+    # Determine the SR number from the SR branch name. In live-SR mode (not
+    # candidate), srBranch IS the release branch (release/X.Y.Zxx-srN). In
+    # candidate mode, srBranch is main and the prior-SR name lives in
+    # priorSrBranch — we want NEXT SR (= prior + 1).
     $srBranchName = if ($isCandidate) { $Ctx.priorSrBranch } else { $Ctx.srBranch }
     $srMatch = [regex]::Match($srBranchName, '^release/(\d+)\.(\d+)\.\d+xx-sr(\d+)$')
     if (-not $srMatch.Success) {
@@ -452,7 +453,13 @@ function Resolve-Context {
     # Candidate mode: swap roles — main becomes the "SR-to-be", named SrBranch
     # becomes the exclude baseline (prior SR). This lets us answer "what would
     # SRn+1 contain if cut today?" without requiring the branch to exist yet.
-    $mode = 'shipped'
+    # Two modes encoded in the surveyed context:
+    #   - 'in-flight' (default): -SrBranch points at an existing release/*-srN branch.
+    #     We're surveying its current state for ship-readiness.
+    #   - 'candidate': -Candidate is set, so the named SrBranch is actually the
+    #     PRIOR SR (used as exclude baseline) and we're simulating "what would the
+    #     NEXT SR contain if cut off main today?". Compatible legacy alias: 'shipped'.
+    $mode = 'in-flight'
     $effectiveSrRef = "origin/$SrBranch"
     $effectiveExcludes = $ExcludeBranches
 
@@ -1671,7 +1678,7 @@ function Format-MarkdownReport {
     }
     [void]$sb.AppendLine("<!-- release-readiness-hash: sha=$semanticHash -->")
 
-    $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'shipped' }
+    $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'in-flight' }
     $inherits = ($ctx.ContainsKey('inheritFromPriorSr') -and $ctx['inheritFromPriorSr'])
     if ($mode -eq 'candidate') {
         if ($inherits) {
@@ -1856,7 +1863,7 @@ function Format-MarkdownReport {
     # === Open SR-targeting PRs ===
     #
     # Two modes:
-    #   - Live SR (mode == 'shipped'): show the full table — these are real
+    #   - Live SR (mode != 'candidate'): show the full table — these are real
     #     backport PRs targeting the SR branch, which is a small, useful set.
     #   - Candidate (mode == 'candidate'): srBranch is main, so this query
     #     returns 100+ open PRs targeting main — far too noisy for a tracker
