@@ -532,7 +532,10 @@ function Get-PrsInTag {
     )
     if (-not $script:validationRepoPath) { return $null }
     if ($script:tagPrCache.ContainsKey($Tag)) {
-        return $script:tagPrCache[$Tag]
+        # Same unary-comma protection as the fresh-read return below — otherwise a
+        # cached 1-element HashSet gets unwrapped to Int32 (no .Contains) and a
+        # cached 0-element HashSet gets unwrapped to $null (mistaken for git failure).
+        return ,$script:tagPrCache[$Tag]
     }
     try {
         $prs = Get-PrNumbersReachableFromTag $Tag $script:validationRepoPath
@@ -640,8 +643,12 @@ function Test-MilestoneValidForIssue {
     # If the search fails we return $null (uncertain) — better to leave the milestone
     # alone than to silently overwrite a valid earlier one based on a partial result.
     $query = "#$IssueNumber in:title,body OR issues/$IssueNumber in:body"
+    # --limit 100: hardened against the (rare but real) case of a heavily-referenced issue
+    # where the actual fixing PR gets sorted past position 50 by gh's relevance ranking.
+    # Pre-100 the validator would silently return $false → clobber a possibly-valid earlier
+    # milestone. 100 is the gh search per-page max; below pagination concerns kick in.
     $json = Invoke-GhCli 'search' 'prs' $query `
-        '--repo' 'dotnet/maui' '--merged' '--limit' '50' `
+        '--repo' 'dotnet/maui' '--merged' '--limit' '100' `
         '--json' 'number,title,body,url'
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "Test-MilestoneValidForIssue: gh search failed for issue #$IssueNumber (query: '$query'): $json"

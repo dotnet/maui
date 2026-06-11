@@ -1187,3 +1187,47 @@ Describe 'Test-AndRecordCorrection — PR-side tristate propagation (PR #35858 r
         if ($report.ContainsKey('Kept')) { $report.Kept.Count | Should -Be 0 }
     }
 }
+
+Describe 'Get-PrsInTag — unary-comma preserves HashSet on cache hit (PR #35858 round-3 finding)' {
+    BeforeEach {
+        Initialize-MilestoneValidationContext `
+            -RepoPath '.' `
+            -AllTags @('10.0.60') `
+            -Major 10
+    }
+
+    It 'Test-PrShippedInMilestone works on a cache hit for a tag with 1 reachable PR' {
+        # Pre-fix: the cache-hit path returned the HashSet directly. PowerShell unwrapped
+        # the 1-element HashSet enumerable to Int32 on the way back to the caller, so the
+        # second Test-PrShippedInMilestone call threw "Int32 does not contain method Contains".
+        # GPT-5.5 round-3 caught this.
+        Mock Get-PrNumbersReachableFromTag { return @(101) }
+        Test-PrShippedInMilestone -PrNumber 101 -Milestone '.NET 10 SR6' | Should -BeTrue
+        # Second call hits the cache — must still produce a definitive answer.
+        Test-PrShippedInMilestone -PrNumber 101 -Milestone '.NET 10 SR6' | Should -BeTrue
+        Test-PrShippedInMilestone -PrNumber 999 -Milestone '.NET 10 SR6' | Should -BeFalse
+    }
+
+    It 'Test-PrShippedInMilestone returns $false (not $null) on a cache hit for a tag with 0 PRs' {
+        # Pre-fix: a cached empty HashSet got unwrapped to $null on the second read, which
+        # the tristate code (legitimately) treats as "git failure / uncertain" — incorrectly
+        # converting a deterministic empty read into a permanent skip-this-correction state.
+        Mock Get-PrNumbersReachableFromTag { return @() }
+        Test-PrShippedInMilestone -PrNumber 42 -Milestone '.NET 10 SR6' | Should -BeFalse
+        # Second call (cache hit) — must still be a definitive false, not the uncertain $null.
+        $second = Test-PrShippedInMilestone -PrNumber 42 -Milestone '.NET 10 SR6'
+        $second | Should -BeFalse
+        ($null -eq $second) | Should -BeFalse
+    }
+
+    It 'Get-PrNumbersReachableFromTag is invoked exactly once per tag even across many lookups' {
+        # Verifies the cache is hit (which is the whole point of returning the cached
+        # HashSet — performance — and is precisely why the unwrap bug matters).
+        Mock Get-PrNumbersReachableFromTag { return @(101, 102, 103) }
+        Test-PrShippedInMilestone -PrNumber 101 -Milestone '.NET 10 SR6' | Should -BeTrue
+        Test-PrShippedInMilestone -PrNumber 102 -Milestone '.NET 10 SR6' | Should -BeTrue
+        Test-PrShippedInMilestone -PrNumber 103 -Milestone '.NET 10 SR6' | Should -BeTrue
+        Test-PrShippedInMilestone -PrNumber 999 -Milestone '.NET 10 SR6' | Should -BeFalse
+        Assert-MockCalled Get-PrNumbersReachableFromTag -Times 1 -Exactly
+    }
+}
