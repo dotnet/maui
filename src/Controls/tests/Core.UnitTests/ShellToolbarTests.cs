@@ -303,6 +303,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ShellTitleBindingIsNotOverwrittenByCurrentPageTitle()
+		{
+			var contentPage = new ContentPage() { Title = "Page Title" };
+			var titleView = new VerticalStackLayout();
+			var viewModel = new TestShellViewModel() { Text = "App Title" };
+
+			TestShell testShell = new TestShell(contentPage);
+			_ = new Window()
+			{
+				Page = testShell
+			};
+
+			testShell.SetBinding(Shell.TitleProperty, new Binding(nameof(TestShellViewModel.Text), BindingMode.TwoWay, source: viewModel));
+			Shell.SetTitleView(contentPage, titleView);
+
+			Assert.Empty(testShell.Toolbar.Title);
+			Assert.Equal("App Title", testShell.Title);
+			Assert.Equal("App Title", viewModel.Text);
+
+			contentPage.Title = "Updated Page Title";
+
+			Assert.Equal("App Title", testShell.Title);
+			Assert.Equal("App Title", viewModel.Text);
+		}
+
+		[Fact]
 		public void ContentPageColorsPropagateToShellToolbar()
 		{
 			var contentPage = new ContentPage() { Title = "Test Title" };

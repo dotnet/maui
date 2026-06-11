@@ -205,6 +205,9 @@ namespace Microsoft.Maui.Controls
 			if (titleContext == null)
 				return false;
 
+			if (titleContext.Bindings.Count > 0)
+				return true;
+
 			var specificity = titleContext.Values.GetSpecificity();
 			return specificity != SetterSpecificity.DefaultValue && specificity != SetterSpecificity.FromHandler;
 		}
