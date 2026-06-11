@@ -15,6 +15,10 @@ on:
         type: number
         default: 5
   steps:
+    - name: Checkout repository scripts
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
     - name: Build rerun candidate context
       id: rerun_context
       shell: pwsh
