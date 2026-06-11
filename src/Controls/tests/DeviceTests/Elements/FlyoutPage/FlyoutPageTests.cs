@@ -35,11 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-#else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#endif
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Border, BorderHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();

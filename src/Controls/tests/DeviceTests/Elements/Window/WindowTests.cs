@@ -45,12 +45,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					SetupShellHandlers(handlers);
 
-#if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 #else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 #endif

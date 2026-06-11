@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(bool includeNavigationViewHandler = false)
+		void SetupBuilder(bool includeNavigationViewHandler = true)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -437,12 +437,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task CanReusePages()
 		{
 			SetupBuilder();
-			// Use internal constructor with setForMaui:false to force the old event-based
-			// navigation path. When UseiOSNavigationViewHandler is enabled globally,
-			// NavigationPage defaults to MauiNavigationImpl which calls RequestNavigation
-			// via CommandMapper — but NavigationRenderer doesn't have that command mapping,
-			// causing a permanent hang. setForMaui:false uses NavigationImpl instead.
-			var navPage = new NavigationPage(false, new ContentPage { Title = "Page 1" });
+			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
 			var reusedPage = new ContentPage
 			{
 				Content = new Label()

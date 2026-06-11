@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class VisualElementTreeTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(bool includeNavigationViewHandler = false)
+		void SetupBuilder(bool includeNavigationViewHandler = true)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GetVisualTreeElements()
 		{
-			SetupBuilder();
+			SetupBuilder(includeNavigationViewHandler: false);
 
 			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
 			var label = new Label() { Text = "Find Me" };
