@@ -78,6 +78,16 @@ function Test-GhApiPrNotFound {
     return $Output -match '(?i)\bHTTP\s+(404|410)\b' -or $Output -match '(?i)\b(Not Found|Gone)\b'
 }
 
+function ConvertTo-TrimmedString {
+    param([AllowNull()][object]$Value)
+
+    if ($null -eq $Value) {
+        return ''
+    }
+
+    return ([string]$Value).Trim()
+}
+
 function Add-CommentReaction {
     param(
         [Parameter(Mandatory = $true)][Int64]$CommentId,
@@ -326,8 +336,8 @@ foreach ($item in $items) {
         try {
             $prOutput = @(& gh api "repos/$Owner/$Repo/pulls/$prNumber" 2> $prStdErrFile)
             $prExitCode = $LASTEXITCODE
-            $prJson = ($prOutput | Out-String).Trim()
-            $prStdErr = (Get-Content -Raw -LiteralPath $prStdErrFile -ErrorAction SilentlyContinue).Trim()
+            $prJson = ConvertTo-TrimmedString ($prOutput | Out-String)
+            $prStdErr = ConvertTo-TrimmedString (Get-Content -Raw -LiteralPath $prStdErrFile -ErrorAction SilentlyContinue)
         } finally {
             Remove-Item -LiteralPath $prStdErrFile -Force -ErrorAction SilentlyContinue
         }

@@ -12,6 +12,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+if ($PSVersionTable.PSVersion -ge [version]'7.3') {
+    $PSNativeCommandUseErrorActionPreference = $true
+}
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
 
