@@ -304,16 +304,20 @@ function Get-MilestoneSortKey {
     if ($Milestone -match '^\.NET (\d+)\.0-rc(\d+)$') {
         return ([int]$Matches[1]) * 1000 + 200 + [int]$Matches[2]
     }
-    # ".NET 11.0 GA"
-    if ($Milestone -match '^\.NET (\d+)\.0 GA$') {
+    # ".NET 11.0 GA" / ".NET 11 GA" (accept both — production uses both forms)
+    if ($Milestone -match '^\.NET (\d+)(?:\.0)? GA$') {
         return ([int]$Matches[1]) * 1000 + 300
     }
-    # ".NET 10 SR5.1" (sub-patch — check before bare SR)
-    if ($Milestone -match '^\.NET (\d+) SR(\d+)\.(\d+)$') {
+    # ".NET 10 SR5.1" / ".NET 10.0 SR5.1" (sub-patch — check before bare SR)
+    # Production milestone names use BOTH forms (e.g. ".NET 10 SR4.1" AND ".NET 10.0 SR2.1"),
+    # so the `.0` between major and SR must be optional. Without this, Compare-MauiMilestone
+    # returns $null for ".NET 10.0 SR*" milestones and the earliest-release-wins guard
+    # silently fails open.
+    if ($Milestone -match '^\.NET (\d+)(?:\.0)? SR(\d+)\.(\d+)$') {
         return ([int]$Matches[1]) * 1000 + 400 + ([int]$Matches[2] * 10) + [int]$Matches[3]
     }
-    # ".NET 10 SR5"
-    if ($Milestone -match '^\.NET (\d+) SR(\d+)$') {
+    # ".NET 10 SR5" / ".NET 10.0 SR5"
+    if ($Milestone -match '^\.NET (\d+)(?:\.0)? SR(\d+)$') {
         return ([int]$Matches[1]) * 1000 + 400 + ([int]$Matches[2] * 10)
     }
     # Backlog, Planning, Future, or anything we don't recognize — not orderable

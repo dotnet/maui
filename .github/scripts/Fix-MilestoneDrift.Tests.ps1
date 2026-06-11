@@ -318,6 +318,23 @@ Describe 'Get-LinkedIssues' {
         $result | Should -Contain 555
         $result | Should -Contain 666
     }
+
+    It 'extracts cross-repo `Fixes dotnet/maui#NNNNN` form (PR #35858 finding F)' {
+        # External contributors frequently use the cross-repo shorthand even within the
+        # same repo. Pre-fix, this regex required `#` immediately after the verb, so the
+        # `dotnet/maui` prefix made it silently ignored — meaning issues that should have
+        # been included in milestone-correction sweeps were skipped.
+        $result = Get-LinkedIssues "Fixes dotnet/maui#34490" "Title"
+        $result | Should -Contain 34490
+    }
+
+    It 'extracts cross-repo form combined with other syntaxes' {
+        $result = @(Get-LinkedIssues "Closes dotnet/maui#1`nResolves #2`nFixes dotnet/maui#3" "Title")
+        $result | Should -Contain 1
+        $result | Should -Contain 2
+        $result | Should -Contain 3
+        $result | Should -HaveCount 3
+    }
 }
 
 Describe 'ConvertBranchToMilestone' {
@@ -609,6 +626,31 @@ Describe 'Get-MilestoneSortKey' {
         $net11_p1  = Get-MilestoneSortKey '.NET 11.0-preview1'
         ($net10_sr6 -lt $net11_p1) | Should -BeTrue
     }
+
+    It 'accepts the `.NET 10.0 GA` form (optional `.0` between major and GA) — production milestones use this naming' {
+        # Production has BOTH `.NET 10 SR4`-style and `.NET 10.0 SR4`-style names live —
+        # silently scoring the .0 form as null caused the validator to fail open and
+        # treat valid milestones as un-comparable. See PR #35858 finding B.
+        $ga      = Get-MilestoneSortKey '.NET 10.0 GA'
+        $sr1     = Get-MilestoneSortKey '.NET 10.0 SR1'
+        $sr2_1   = Get-MilestoneSortKey '.NET 10.0 SR2.1'
+        $sr4     = Get-MilestoneSortKey '.NET 10.0 SR4'
+        $ga      | Should -Not -Be $null
+        $sr1     | Should -Not -Be $null
+        $sr2_1   | Should -Not -Be $null
+        $sr4     | Should -Not -Be $null
+        ($ga -lt $sr1)     | Should -BeTrue
+        ($sr1 -lt $sr2_1)  | Should -BeTrue
+        ($sr2_1 -lt $sr4)  | Should -BeTrue
+    }
+
+    It 'treats `.NET 10 SR4` and `.NET 10.0 SR4` as equal (alternate spellings of the same release)' {
+        $a = Get-MilestoneSortKey '.NET 10 SR4'
+        $b = Get-MilestoneSortKey '.NET 10.0 SR4'
+        $a | Should -Not -Be $null
+        $b | Should -Not -Be $null
+        $a | Should -Be $b
+    }
 }
 
 Describe 'Compare-MauiMilestone' {
@@ -719,11 +761,15 @@ Describe 'Test-MilestoneValidForIssue' {
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
     }
 
-    It 'returns false (and warns, does not throw) when gh search fails' {
+    It 'returns $null (uncertain, not $false) when gh search fails — caller must skip rather than clobber valid earlier milestone' {
         $script:_searchExit = 1
         { Test-MilestoneValidForIssue -IssueNumber 42 -Milestone '.NET 10 SR6' -WarningAction SilentlyContinue } |
             Should -Not -Throw
-        Test-MilestoneValidForIssue -IssueNumber 42 -Milestone '.NET 10 SR6' -WarningAction SilentlyContinue | Should -BeFalse
+        $result = Test-MilestoneValidForIssue -IssueNumber 42 -Milestone '.NET 10 SR6' -WarningAction SilentlyContinue
+        $result | Should -BeNullOrEmpty
+        # Specifically $null, not $false — $false would mean "no linking PR ships here" (definitive)
+        # and would cause Test-AndRecordCorrection to queue a destructive correction.
+        ($null -eq $result) | Should -BeTrue
     }
 
     It 'caches lookups so a second call does not re-query gh' {
@@ -733,8 +779,10 @@ Describe 'Test-MilestoneValidForIssue' {
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
 
-        # gh search should have been hit exactly once
-        Assert-MockCalled Invoke-GhCli -Times 1 -Exactly -Scope It -ParameterFilter {
+        # First call makes 2 gh searches (one for `#N`, one for `issues/N` URL form);
+        # second call is fully cached. So gh search should have been hit exactly twice total,
+        # not 4 — the cache catches the second invocation.
+        Assert-MockCalled Invoke-GhCli -Times 2 -Exactly -Scope It -ParameterFilter {
             @($Arguments)[0] -eq 'search' -and @($Arguments)[1] -eq 'prs'
         }
     }
@@ -742,6 +790,25 @@ Describe 'Test-MilestoneValidForIssue' {
     It 'matches a fix verb that uses an owner/repo prefix (org/repo#NNN)' {
         # Real-world bodies sometimes write "Fixes dotnet/maui#34490"
         $script:_searchJson = '[{"number":501,"title":"Fix bug","body":"Fixes dotnet/maui#34490","url":"u"}]'
+        $script:_prShipped[501] = @('.NET 10 SR6')
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
+    }
+
+    It 'matches a fix verb that uses the full URL form (issues/N) — PR #35858 finding D' {
+        # When a PR body links the issue ONLY via the URL form (`Fixes https://.../issues/N`)
+        # — never the `#N` shorthand — the original `#N in:body` query missed it entirely.
+        # The supplementary `issues/N in:body` query covers that case.
+        $script:_searchJson = '[{"number":501,"title":"Fix bug","body":"Fixes https://github.com/dotnet/maui/issues/34490","url":"u"}]'
+        $script:_prShipped[501] = @('.NET 10 SR6')
+
+        Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
+    }
+
+    It 'matches a fix verb when the issue number is only in the PR title (not body)' {
+        # The first query `#N in:title,body` covers title-only linking — pre-fix the query
+        # was `in:body` only, missing title-only links.
+        $script:_searchJson = '[{"number":501,"title":"Fix #34490 in renderer","body":"Some unrelated body.","url":"u"}]'
         $script:_prShipped[501] = @('.NET 10 SR6')
 
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
@@ -783,5 +850,160 @@ Describe 'Test-MilestoneValidForPr' {
     It 'returns false when the PR has shipped nowhere yet (in flight)' {
         # No entry — Test-PrShippedInMilestone returns false.
         Test-MilestoneValidForPr -PrNumber 99999 -Milestone '.NET 10 SR7' | Should -BeFalse
+    }
+}
+
+Describe 'Test-AndRecordCorrection — earliest-release-wins guard (PR #35858 findings A, C, E)' {
+    BeforeEach {
+        # Mock the underlying validators so the test focuses on dispatch logic.
+        Mock Test-MilestoneValidForIssue {
+            param([int]$IssueNumber, [string]$Milestone)
+            if ($script:_validForIssue.ContainsKey("$IssueNumber|$Milestone")) {
+                return $script:_validForIssue["$IssueNumber|$Milestone"]
+            }
+            return $false
+        }
+        Mock Test-MilestoneValidForPr {
+            param([int]$PrNumber, [string]$Milestone)
+            if ($script:_validForPr.ContainsKey("$PrNumber|$Milestone")) {
+                return $script:_validForPr["$PrNumber|$Milestone"]
+            }
+            return $false
+        }
+        $script:_validForIssue = @{}
+        $script:_validForPr = @{}
+        # Helper inlined in each It (Pester 5 doesn't carry function defs out of BeforeEach).
+        $script:_newReport = {
+            @{
+                TotalPrs       = 1
+                PrsChecked     = 0
+                IssuesChecked  = 0
+                AlreadyCorrect = 0
+                Corrections    = [System.Collections.ArrayList]::new()
+                Errors         = [System.Collections.ArrayList]::new()
+            }
+        }
+    }
+
+    It 'finding E: deduplicates the SAME issue across multiple linking PRs in the Kept bucket' {
+        # The same issue can be discovered via multiple linking PRs during a tag-range walk
+        # (e.g. a backport PR and the original PR both reference the issue). Pre-fix, each
+        # touch appended a new row, polluting the report.
+        $script:_validForIssue['34490|.NET 10 SR6'] = $true
+        $report = & $script:_newReport
+
+        $resolvedMs = @{ Number = 999; Title = '.NET 10 SR8' }
+        Test-AndRecordCorrection 'issue' 34490 'Bug' 'u1' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 501 $report
+        Test-AndRecordCorrection 'issue' 34490 'Bug' 'u1' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 502 $report
+        Test-AndRecordCorrection 'issue' 34490 'Bug' 'u1' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 503 $report
+
+        $report.ContainsKey('Kept') | Should -BeTrue
+        $report.Kept.Count | Should -Be 1
+        $report.Kept[0].Number | Should -Be 34490
+    }
+
+    It 'finding E: does NOT collapse Kept entries for different issues that share a milestone' {
+        $script:_validForIssue['34490|.NET 10 SR6'] = $true
+        $script:_validForIssue['34491|.NET 10 SR6'] = $true
+        $report = & $script:_newReport
+        $resolvedMs = @{ Number = 999; Title = '.NET 10 SR8' }
+
+        Test-AndRecordCorrection 'issue' 34490 'BugA' 'u1' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 501 $report
+        Test-AndRecordCorrection 'issue' 34491 'BugB' 'u2' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 502 $report
+
+        $report.Kept.Count | Should -Be 2
+    }
+
+    It 'finding C: when validator returns $null (uncertain) — does NOT queue a correction (defensive)' {
+        # Earlier milestone + validator inconclusive ==> we MUST keep the current milestone.
+        # Pre-fix, $null was coerced to $false and a destructive correction got queued.
+        $script:_validForIssue['34490|.NET 10 SR6'] = $null
+        $report = & $script:_newReport
+        $resolvedMs = @{ Number = 999; Title = '.NET 10 SR8' }
+
+        Test-AndRecordCorrection 'issue' 34490 'Bug' 'u1' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 501 $report `
+            -WarningAction SilentlyContinue
+
+        $report.Corrections.Count | Should -Be 0
+        # Also NOT counted as kept — we don't have positive evidence either way.
+        if ($report.ContainsKey('Kept')) { $report.Kept.Count | Should -Be 0 }
+    }
+
+    It 'finding C: when validator returns $false (no linking PR shipped there) — DOES queue a correction' {
+        # This is the legitimate clobber path: earlier milestone was wrong, no fix actually
+        # shipped there, the target milestone is correct. Pre-fix and post-fix both work.
+        $script:_validForIssue['34490|.NET 10 SR6'] = $false
+        $report = & $script:_newReport
+        $resolvedMs = @{ Number = 999; Title = '.NET 10 SR8' }
+
+        Test-AndRecordCorrection 'issue' 34490 'Bug' 'u1' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 501 $report
+
+        $report.Corrections.Count | Should -Be 1
+        $report.Corrections[0].Number | Should -Be 34490
+    }
+
+    It 'findings A + E together: PR-side KEEP path also dedups (cherry-pick case)' {
+        # A cherry-picked PR can match in multiple linking searches. Same dedup applies.
+        $script:_validForPr['34527|.NET 10 SR6'] = $true
+        $report = & $script:_newReport
+        $resolvedMs = @{ Number = 999; Title = '.NET 10 SR8' }
+
+        Test-AndRecordCorrection 'pr' 34527 'Cherry' 'u' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 0 $report
+        Test-AndRecordCorrection 'pr' 34527 'Cherry' 'u' '.NET 10 SR6' '.NET 10 SR8' $resolvedMs 0 $report
+
+        $report.Kept.Count | Should -Be 1
+    }
+}
+
+Describe 'Invoke-AnalyzeSinglePr — validation context seeding (PR #35858 finding A)' {
+    BeforeEach {
+        # Stand up the bare minimum mocks so Invoke-AnalyzeSinglePr can run start-to-finish
+        # without touching git, gh, or the file system.
+        $script:_initCalled = $false
+        $script:_initArgs = $null
+        Mock Initialize-MilestoneValidationContext {
+            param([string]$RepoPath, [string[]]$AllTags, [int]$Major)
+            $script:_initCalled = $true
+            $script:_initArgs = @{ RepoPath = $RepoPath; AllTags = $AllTags; Major = $Major }
+        }
+        Mock Get-PrInfo {
+            return @{
+                Number         = 42
+                Title          = 'Test PR'
+                Url            = 'u'
+                Milestone      = ''
+                BaseRef        = 'net11.0'
+                MergedAt       = '2025-01-01T00:00:00Z'
+                MergeCommitSha = 'abc123'
+                Body           = ''
+            }
+        }
+        Mock Get-AllTags { return @('10.0.60', '10.0.70', '11.0.0-preview.3') }
+        # Drive the "found in release branch" fast-path so $expectedMs is set early and
+        # we don't fall through to Find-TagContainingPr (which needs real git history).
+        Mock Get-VersionFromGitRef { return @{ Tag = '11.0.0'; PreLabel = 'preview'; PreIter = 3 } }
+        Mock Find-ReleaseBranchForCommit { return @{ Branch = 'release/11.0.1xx-preview3'; Milestone = '.NET 11.0-preview3' } }
+        Mock ConvertBranchToMilestone { return '.NET 11.0-preview3' }
+        Mock Get-MainBranchForVersion { return 'net11.0' }
+        Mock Get-AllMilestones { return @(@{ Number = 99; Title = '.NET 11.0-preview3' }) }
+        Mock Find-MatchingMilestone { return @{ Number = 99; Title = '.NET 11.0-preview3' } }
+        Mock Test-PrBelongsToVersion { return $true }
+        Mock Get-CurrentMajorVersion { return 11 }
+        Mock Get-LinkedIssues { return @() }
+        Mock Test-AndRecordCorrection { }
+    }
+
+    It 'seeds the validation context BEFORE Test-AndRecordCorrection is reached (so KEEP guard is not dead code)' {
+        # Pre-fix: Initialize-MilestoneValidationContext was never called in single-PR mode.
+        # That meant $script:validationAllTags stayed $null, Get-TagsForMilestone returned @(),
+        # Test-PrShippedInMilestone always returned $false, and Test-MilestoneValidForIssue
+        # never returned $true — making the entire KEEP branch unreachable in the live
+        # workflow path (the path the cron + auto-trigger actually exercise).
+        Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.' | Out-Null
+
+        $script:_initCalled | Should -BeTrue
+        $script:_initArgs.Major | Should -Be 11
+        # The tags array we passed in must reach the initializer (so KEEP queries have data to work with).
+        $script:_initArgs.AllTags | Should -Contain '10.0.60'
     }
 }

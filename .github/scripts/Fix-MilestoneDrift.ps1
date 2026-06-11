@@ -346,7 +346,12 @@ function Get-IssueInfo([int]$IssueNumber) {
 function Get-LinkedIssues([string]$Body, [string]$Title) {
     $text = "$Title`n$Body"
     $issues = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($m in [regex]::Matches($text, '(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+#(\d+)', 'IgnoreCase')) {
+    # Match `Fixes #N`, `Fixes owner/repo#N`, `Fixes GH-N`, etc. The optional prefix
+    # `[A-Za-z0-9_\-./]+` covers both the cross-repo short form (`dotnet/maui#NNN`)
+    # and any single-token qualifier. Without it, a PR that says `Fixes dotnet/maui#12345`
+    # is silently dropped — but the validator's regex (Test-MilestoneValidForIssue)
+    # accepts the prefix, so we'd be internally inconsistent.
+    foreach ($m in [regex]::Matches($text, '(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+(?:[A-Za-z0-9_\-./]+)?#(\d+)', 'IgnoreCase')) {
         [void]$issues.Add([int]$m.Groups[1].Value)
     }
     # Match URLs only when preceded by a fixing keyword (mirrors GitHub auto-close behavior).
@@ -557,18 +562,22 @@ function Test-MilestoneValidForIssue {
         Checks whether an issue's current milestone is "valid" — i.e., a real fix PR
         for this issue shipped under that milestone — so we shouldn't override it.
     .DESCRIPTION
-        Searches all merged PRs that reference the issue (in the body), filters to
-        ones with an actual Fixes/Closes/Resolves verb for this exact issue number,
-        and returns $true if any of them has a milestone matching $Milestone.
+        Searches all merged PRs that reference the issue (by `#N` in title/body OR by
+        `issues/N` URL form in body), filters to ones with an actual Fixes/Closes/Resolves
+        verb for this exact issue number, and returns $true if any of them has its merge
+        commit reachable from a tag matching $Milestone.
 
         Used to avoid clobbering an earlier-release milestone (e.g., .NET 10 SR6)
         when a follow-up fix later shipped in net11.0 — see GitHub PR #35858
         follow-up for context.
 
-        Returns $false if:
-          - The milestone is not a comparable release (Backlog/Planning/none)
-          - No linking PR has that milestone
-          - The gh search fails (conservative — let the script fall back to normal correction)
+        Returns:
+          - $true  — at least one linking fix PR shipped in $Milestone
+          - $false — milestone is non-comparable, or we successfully queried and no
+                     linking PR was found / shipped in this milestone
+          - $null  — UNCERTAIN: gh search or parse failed. Caller must treat this as
+                     "do not touch this item" (failing open here would silently destroy
+                     legitimate earlier-release milestones on transient gh failures).
     #>
     [CmdletBinding()]
     param(
@@ -580,33 +589,54 @@ function Test-MilestoneValidForIssue {
 
     $cacheKey = "$IssueNumber|$Milestone"
     if ($script:milestoneValidationCache.ContainsKey($cacheKey)) {
-        return [bool]$script:milestoneValidationCache[$cacheKey]
+        # Cache stores $true / $false / $null verbatim — propagate exactly.
+        return $script:milestoneValidationCache[$cacheKey]
     }
 
-    $json = Invoke-GhCli 'search' 'prs' "#$IssueNumber in:body" `
-        '--repo' 'dotnet/maui' '--merged' '--limit' '50' `
-        '--json' 'number,title,body,url'
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Test-MilestoneValidForIssue: gh search failed for issue #$IssueNumber`: $json"
-        $script:milestoneValidationCache[$cacheKey] = $false
-        return $false
+    # Two searches widen coverage so we don't miss valid linking PRs:
+    #   1. `#N in:title,body` — handles `Fixes #N` whether it appears in body or title.
+    #   2. `issues/N in:body` — handles URL-form (`Fixes https://github.com/.../issues/N`)
+    #      where the body never contains the literal `#N` token.
+    # If either search fails we return $null (uncertain) — better to leave the milestone
+    # alone than to silently overwrite a valid earlier one based on a partial result.
+    $prHashes = [System.Collections.Generic.Dictionary[int, object]]::new()
+
+    foreach ($query in @("#$IssueNumber in:title,body", "issues/$IssueNumber in:body")) {
+        $json = Invoke-GhCli 'search' 'prs' $query `
+            '--repo' 'dotnet/maui' '--merged' '--limit' '50' `
+            '--json' 'number,title,body,url'
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Test-MilestoneValidForIssue: gh search failed for issue #$IssueNumber (query: '$query'): $json"
+            $script:milestoneValidationCache[$cacheKey] = $null
+            return $null
+        }
+
+        try {
+            $prs = $json | ConvertFrom-Json
+        } catch {
+            Write-Warning "Test-MilestoneValidForIssue: failed to parse gh search response for issue #$IssueNumber (query: '$query'): $_"
+            $script:milestoneValidationCache[$cacheKey] = $null
+            return $null
+        }
+
+        foreach ($pr in @($prs)) {
+            if ($null -eq $pr -or $null -eq $pr.number) { continue }
+            $n = [int]$pr.number
+            if (-not $prHashes.ContainsKey($n)) { $prHashes[$n] = $pr }
+        }
     }
 
-    try {
-        $prs = $json | ConvertFrom-Json
-    } catch {
-        Write-Warning "Test-MilestoneValidForIssue: failed to parse gh search response for issue #$IssueNumber`: $_"
-        $script:milestoneValidationCache[$cacheKey] = $false
-        return $false
-    }
-
-    foreach ($pr in @($prs)) {
+    foreach ($pr in $prHashes.Values) {
         # Re-use the same regex Get-LinkedIssues uses, but pinned to THIS issue number,
         # so a casual `#34490` mention doesn't count — we want only real Fixes/Closes/Resolves.
+        # The optional `[a-z0-9_\-./]+` prefix handles cross-repo (`dotnet/maui#N`).
+        # Also accept the URL form `Fixes https://github.com/.../issues/N`.
         $body = if ($pr.body) { [string]$pr.body } else { '' }
         $title = if ($pr.title) { [string]$pr.title } else { '' }
         $combined = "$title`n$body"
-        if ($combined -notmatch "(?i)(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+(?:[a-z0-9_\-./]+)?#$IssueNumber\b") {
+        $hashMatch = $combined -match "(?i)(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+(?:[a-z0-9_\-./]+)?#$IssueNumber\b"
+        $urlMatch  = $combined -match "(?i)(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?)\s+https?://github\.com/dotnet/maui/issues/$IssueNumber\b"
+        if (-not ($hashMatch -or $urlMatch)) {
             continue
         }
 
@@ -687,7 +717,9 @@ function Test-AndRecordCorrection(
     # than the target AND we can prove the fix shipped in that release, KEEP the earlier
     # milestone (earliest release wins).
     #   - For ISSUES: confirm a fix-linking PR's commit is reachable from a tag mapping
-    #     to the current milestone.
+    #     to the current milestone. Validator may also return $null (uncertain — gh search
+    #     failed); when that happens we MUST skip this item to avoid silently clobbering
+    #     a possibly-valid earlier milestone on transient API errors.
     #   - For PRS: confirm the PR's own commit is reachable from such a tag (catches the
     #     cherry-pick scenario where the same PR ships in multiple release branches).
     if (-not [string]::IsNullOrWhiteSpace($CurrentMilestone)) {
@@ -700,7 +732,26 @@ function Test-AndRecordCorrection(
                 $isValidEarlier = Test-MilestoneValidForPr -PrNumber $ItemNumber -Milestone $CurrentMilestone
             }
 
+            if ($null -eq $isValidEarlier) {
+                # Validator could not determine (transient failure). Do NOT queue a correction
+                # — overwriting a possibly-valid earlier milestone on a transient failure is the
+                # exact data-loss case the earliest-release-wins guard exists to prevent.
+                Write-Warning "  ⚠️  $ItemType #$ItemNumber`: milestone validation was inconclusive (likely transient gh failure); skipping to preserve current milestone '$CurrentMilestone'"
+                return
+            }
+
             if ($isValidEarlier) {
+                # Dedup: the same issue/PR can be reached multiple times in tag-mode walks
+                # (e.g. issue linked from multiple PRs in the same range, or a cherry-picked
+                # PR matching multiple linking-PR scans). Without this guard, $Report.Kept
+                # accumulates duplicate rows that pollute the JSON report and the rolled-up
+                # GitHub issue table.
+                $keepKey = "$ItemType`:$ItemNumber"
+                if (-not $Report.ContainsKey('_keptItems')) { $Report._keptItems = [System.Collections.Generic.HashSet[string]]::new() }
+                if (-not $Report._keptItems.Add($keepKey)) {
+                    Write-Verbose "  ⏭️  $ItemType #$ItemNumber`: already in KEEP set (via earlier linking PR)"
+                    return
+                }
                 if (-not $Report.ContainsKey('Kept')) { $Report.Kept = [System.Collections.ArrayList]::new() }
                 $kept = @{
                     ItemType   = $ItemType
@@ -748,6 +799,7 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
     $preLabel = $null
     $preIter = 0
     $versionInfo = $null
+    $allTags = $null  # declared so the validation-context seeding below can probe it under StrictMode
 
     # Fetch PR info first — we need merge_commit_sha for version detection
     $pr = Get-PrInfo $PrNum
@@ -855,6 +907,15 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
     $Branch = Get-MainBranchForVersion $Major $Repo
     Write-Host "  Main branch for .NET $Major`: $Branch"
     Write-Host "  Expected milestone: $expectedMs"
+
+    # Seed validation context so the earliest-release-wins guard (Test-MilestoneValidForIssue /
+    # Test-MilestoneValidForPr) works in single-PR mode too — without this, $script:validationAllTags
+    # stays $null, Get-TagsForMilestone returns @(), Test-PrShippedInMilestone short-circuits to $false,
+    # and the KEEP branch in Test-AndRecordCorrection is silently dead code. Reuse $allTags from the
+    # explicit-tag path above when present to avoid an extra git call.
+    if (-not $allTags) { $allTags = Get-AllTags $Repo }
+    Initialize-MilestoneValidationContext -RepoPath $Repo -AllTags ([string[]]$allTags) -Major $Major
+
     Write-Host "Fetching GitHub milestones..."
     $allMilestones = Get-AllMilestones
     $match = Find-MatchingMilestone $expectedMs $allMilestones
