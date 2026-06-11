@@ -1165,6 +1165,53 @@ $hash3 = if ($md3 -match '<!-- release-readiness-hash: sha=([0-9a-f]{64}) -->') 
 Assert-Eq -Label "Hash stable across only-timestamp re-runs (idempotent posts)" `
     -Expected $hash1 -Actual $hash3
 
+# ───── @-mention defang: tracker issues must never tag real users ─────
+Write-Host "`n[Unit] @-mention defang (no real-user tagging in tracker issues)" -ForegroundColor Cyan
+
+# Format-GitHubHandle helper — exercises the at-emit-time defense
+Assert-Eq -Label "Format-GitHubHandle: regular login wrapped in backticks" `
+    -Expected '`jfversluis`' -Actual (Format-GitHubHandle -Login 'jfversluis')
+Assert-Eq -Label "Format-GitHubHandle: bot/app ref preserved + wrapped" `
+    -Expected '`app/dotnet-maestro`' -Actual (Format-GitHubHandle -Login 'app/dotnet-maestro')
+Assert-Eq -Label "Format-GitHubHandle: strips leading @ before wrapping" `
+    -Expected '`mattleibow`' -Actual (Format-GitHubHandle -Login '@mattleibow')
+Assert-Eq -Label "Format-GitHubHandle: empty login → fallback" `
+    -Expected 'unknown' -Actual (Format-GitHubHandle -Login '')
+Assert-Eq -Label "Format-GitHubHandle: null login → fallback" `
+    -Expected 'unknown' -Actual (Format-GitHubHandle -Login $null)
+Assert-Eq -Label "Format-GitHubHandle: custom fallback honored" `
+    -Expected 'n/a' -Actual (Format-GitHubHandle -Login '' -Fallback 'n/a')
+
+# Safety-net regex: even if a PR title or commit subject contains `@user`,
+# the final rendered body must defang it. Inject a hostile title via openSrPrs.
+$mdDataWithAt = @{} + $mdData
+$mdDataWithAt['openSrPrs'] = @(
+    @{
+        number = 99001
+        title = '[BUG] CC @maintainer please review @another/user soon'
+        author = @{ login = 'jfversluis' }
+        isDraft = $false
+        reviewDecision = 'APPROVED'
+        updatedAt = '2025-01-01T00:00:00Z'
+    }
+)
+$mdWithAt = Format-MarkdownReport -Data $mdDataWithAt -RepoUrl 'https://github.com/dotnet/maui' `
+                                  -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+
+# Find any bare @-mentions that survived (i.e. @-followed-by-username NOT inside backticks)
+$bareMentionPattern = '(^|[^a-zA-Z0-9/`])@([a-zA-Z0-9][a-zA-Z0-9_-]*(?:/[a-zA-Z0-9][a-zA-Z0-9_-]*)?)'
+$bareMatches = [regex]::Matches($mdWithAt, $bareMentionPattern)
+Assert-Eq -Label "Safety net: zero bare @-mentions in rendered body even with hostile title" `
+    -Expected 0 -Actual $bareMatches.Count
+
+# Specific assertions: every hostile mention got backticked
+Assert-Eq -Label "Hostile PR title: @maintainer defanged to `maintainer`" -Expected $true `
+    -Actual ($mdWithAt -match '`maintainer`')
+Assert-Eq -Label "Hostile PR title: @another/user defanged to `another/user`" -Expected $true `
+    -Actual ($mdWithAt -match '`another/user`')
+Assert-Eq -Label "Author column also defanged (no bare @jfversluis)" -Expected $true `
+    -Actual ($mdWithAt -match '`jfversluis`')
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

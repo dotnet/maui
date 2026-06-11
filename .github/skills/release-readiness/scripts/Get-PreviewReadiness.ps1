@@ -487,6 +487,29 @@ function Format-MarkdownCell {
     return ($Value -replace "\|", "\|").Trim()
 }
 
+function Format-GitHubHandle {
+    <#
+    .SYNOPSIS Render a GitHub login as a code span so it does NOT trigger an @-mention notification.
+    .DESCRIPTION
+        GitHub treats `@username` in issue/PR bodies as a notification mention. To safely surface
+        an author's handle in a report (without spamming them on every nightly run), wrap the
+        login in backticks: `` `username` `` is rendered as a code span and is NOT interpreted as a mention.
+        Handles bot/app refs (e.g. ``app/dotnet-maestro``) as well.
+    .PARAMETER Login
+        The raw GitHub login (with or without a leading ``@``). May be ``$null`` / empty.
+    .PARAMETER Fallback
+        Text to return when Login is null/empty. Defaults to ``unknown``.
+    #>
+    param(
+        [Parameter(Mandatory = $false)][AllowNull()][AllowEmptyString()][string]$Login,
+        [string]$Fallback = 'unknown'
+    )
+    if ([string]::IsNullOrWhiteSpace($Login)) { return $Fallback }
+    $clean = $Login.TrimStart('@').Trim()
+    if ([string]::IsNullOrWhiteSpace($clean)) { return $Fallback }
+    return "``$clean``"
+}
+
 function Add-CheckTable {
     param(
         [System.Text.StringBuilder]$Builder,
@@ -519,7 +542,7 @@ function Add-PRTable {
     $rows = @($PRs | Select-Object -First $MaxRows)
     foreach ($pr in $rows) {
         $action = Get-PRAction -PR $pr
-        $author = if ($pr.author -and $pr.author.login) { "@$($pr.author.login)" } else { "unknown" }
+        $author = Format-GitHubHandle -Login $pr.author.login
         [void]$Builder.AppendLine("| [#$($pr.number)]($($pr.url)) | $(Format-MarkdownCell $pr.title) | $author | ``$($pr.baseRefName)`` | **$($action.Status)** | $($action.Age)d | $(Format-MarkdownCell $action.Action) |")
     }
     if ($PRs.Count -gt $MaxRows) {
@@ -869,6 +892,19 @@ if ($nonReady.Count -eq 0) {
 [void]$md.AppendLine("")
 
 $markdownBody = $md.ToString()
+
+# ===================================================================
+# SAFETY NET: defang any remaining bare @-mentions in the final body.
+# Primary defense is Format-GitHubHandle at emit time, but PR/issue
+# titles or commit messages can contain raw `@user` references that
+# would notify real users every time this report is filed. Wrap any
+# `@handle` in backticks so GitHub renders it as a code span (no mention).
+# ===================================================================
+$markdownBody = [regex]::Replace(
+    $markdownBody,
+    '(^|[^a-zA-Z0-9/`])@([a-zA-Z0-9][a-zA-Z0-9_-]*(?:/[a-zA-Z0-9][a-zA-Z0-9_-]*)?)',
+    '$1`$2`'
+)
 
 # ===================================================================
 # OUTPUT

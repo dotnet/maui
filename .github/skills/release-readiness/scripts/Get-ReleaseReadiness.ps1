@@ -1152,6 +1152,29 @@ function ConvertTo-LinkedPr {
     return "[#$PrNumber]($RepoUrl/pull/$PrNumber)"
 }
 
+function Format-GitHubHandle {
+    <#
+    .SYNOPSIS Render a GitHub login as a code span so it does NOT trigger an @-mention notification.
+    .DESCRIPTION
+        GitHub treats `@username` in issue/PR bodies as a notification mention. To safely surface
+        an author's handle in a report (without spamming them on every nightly run), wrap the
+        login in backticks: `` `username` `` is rendered as a code span and is NOT interpreted as a mention.
+        Handles bot/app refs (e.g. ``app/dotnet-maestro``) as well.
+    .PARAMETER Login
+        The raw GitHub login (with or without a leading ``@``). May be ``$null`` / empty.
+    .PARAMETER Fallback
+        Text to return when Login is null/empty. Defaults to ``unknown``.
+    #>
+    param(
+        [Parameter(Mandatory = $false)][AllowNull()][AllowEmptyString()][string]$Login,
+        [string]$Fallback = 'unknown'
+    )
+    if ([string]::IsNullOrWhiteSpace($Login)) { return $Fallback }
+    $clean = $Login.TrimStart('@').Trim()
+    if ([string]::IsNullOrWhiteSpace($clean)) { return $Fallback }
+    return "``$clean``"
+}
+
 function Get-ReportSemanticHash {
     <#
     .SYNOPSIS
@@ -1325,7 +1348,7 @@ function Format-MarkdownReport {
             $draft = if ($pr.isDraft) { '✏️' } else { '' }
             $rev = if ($pr.reviewDecision) { $pr.reviewDecision } else { '—' }
             $prLink = ConvertTo-LinkedPr -PrNumber $pr.number -RepoUrl $RepoUrl
-            [void]$sb.AppendLine("| $prLink | $title | $($pr.author.login) | $draft | $rev | $($pr.updatedAt) |")
+            [void]$sb.AppendLine("| $prLink | $title | $(Format-GitHubHandle $pr.author.login) | $draft | $rev | $($pr.updatedAt) |")
         }
         [void]$sb.AppendLine()
     }
@@ -1395,6 +1418,17 @@ function Format-MarkdownReport {
     }
 
     $body = $sb.ToString()
+
+    # === SAFETY NET: defang any bare @-mentions ===
+    # Primary defense is Format-GitHubHandle at emit time, but PR/issue
+    # titles or commit messages can contain raw `@user` references that
+    # would notify real users every time this report is filed. Wrap any
+    # `@handle` in backticks so GitHub renders it as a code span (no mention).
+    $body = [regex]::Replace(
+        $body,
+        '(^|[^a-zA-Z0-9/`])@([a-zA-Z0-9][a-zA-Z0-9_-]*(?:/[a-zA-Z0-9][a-zA-Z0-9_-]*)?)',
+        '$1`$2`'
+    )
 
     # === BODY-SIZE CAP ===
     # GitHub issue body limit is 65,536 bytes. Cap below that and append a
