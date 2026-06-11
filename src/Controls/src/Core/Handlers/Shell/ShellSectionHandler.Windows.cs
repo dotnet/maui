@@ -53,10 +53,14 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (_shellSection != null)
 			{
-				((IShellSectionController)_shellSection).RemoveDisplayedPageObserver(this);
 				((IShellSectionController)_shellSection).NavigationRequested -= OnNavigationRequested;
 
 				((IShellSectionController)_shellSection).ItemsCollectionChanged -= OnItemsCollectionChanged;
+
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					item.PropertyChanged -= OnShellContentPropertyChanged;
+				}
 
 				if (_lastShell?.Target is IShellController shell)
 				{
@@ -87,39 +91,60 @@ namespace Microsoft.Maui.Controls.Handlers
 				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
 				((IShellSectionController)_shellSection).ItemsCollectionChanged += OnItemsCollectionChanged;
 
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					item.PropertyChanged += OnShellContentPropertyChanged;
+				}
+
 				var shell = _shellSection.FindParentOfType<Shell>() as IShellController;
 				if (shell != null)
 				{
 					_lastShell = new WeakReference(shell);
 					shell.AddAppearanceObserver(this, _shellSection);
 				}
-
-				// AddDisplayedPageObserver immediately invokes the callback with the current page,
-				// but at that point PendingNavigationTask is already set from MapCurrentItem
-				// (which runs via base.SetVirtualView above), so it is safely skipped.
-				((IShellSectionController)_shellSection).AddDisplayedPageObserver(this, OnDisplayedPageChanged);
 			}
 		}
 
-		// Called when ShellSection.DisplayedPage changes — covers both content changes and
-		// navigation pushes. We only act on content changes (stack depth == 1, no pending nav).
-		void OnDisplayedPageChanged(Page page)
+		// Called when ShellContent.Content changes on a specific tab — forces Windows to
+		// rebuild the navigation stack so the new page becomes visible.
+		// Using PropertyChanged on each ShellContent (rather than AddDisplayedPageObserver)
+		// avoids false triggers during tab switches: OnCurrentItemChanged (the BindableProperty
+		// propertyChanged callback) fires BEFORE the handler's MapCurrentItem (which fires via
+		// the PropertyChanged event), so PendingNavigationTask is not yet set when
+		// DisplayedPage changes during a tab switch.
+		void OnShellContentPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (VirtualView is null)
+			{
 				return;
+			}
 
-			// Push/pop navigation is handled by OnNavigationRequested; skip those cases.
+			if (e.PropertyName != ShellContent.ContentProperty.PropertyName)
+			{
+				return;
+			}
+
+			if (sender is not ShellContent shellContent)
+			{
+				return;
+			}
+
+			// Only sync when the changed content belongs to the active tab at root level.
+			if (shellContent != VirtualView.CurrentItem)
+			{
+				return;
+			}
+
 			if (VirtualView.Stack.Count > 1)
+			{
 				return;
+			}
 
-			// Tab switches are handled by MapCurrentItem which sets PendingNavigationTask first
-			// (because the property mapper fires before the propertyChanged callback that calls
-			// UpdateDisplayedPage). Skip when another navigation is already in flight.
 			if (VirtualView.PendingNavigationTask != null)
+			{
 				return;
+			}
 
-			// ContentCache has been updated by OnContentChanged at this point, so
-			// SyncNavigationStack will correctly pick up the new page via GetOrCreateContent().
 			SyncNavigationStack(false, null);
 		}
 
@@ -133,6 +158,23 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection is null)
 				return;
 
+			if (e.OldItems != null)
+			{
+				foreach (ShellContent item in e.OldItems)
+				{
+					item.PropertyChanged -= OnShellContentPropertyChanged;
+				}
+			}
+				
+
+			if (e.NewItems != null)
+			{
+				foreach (ShellContent item in e.NewItems)
+				{
+					item.PropertyChanged += OnShellContentPropertyChanged;
+				}
+			}
+				
 			if (_shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
 			{
 				shellItemHandler.MapMenuItems();
@@ -187,8 +229,13 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void DisconnectHandler(WFrame platformView)
 		{
 			if (_shellSection != null)
-				((IShellSectionController)_shellSection).RemoveDisplayedPageObserver(this);
-
+			{
+				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				{
+					item.PropertyChanged -= OnShellContentPropertyChanged;
+				}
+			}
+				
 			_navigationManager?.Disconnect(VirtualView, platformView);
 			base.DisconnectHandler(platformView);
 		}
