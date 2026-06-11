@@ -18,9 +18,9 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 #endif
 
 #if IOS || MACCATALYST
-using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
 using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
+using NavigationCompatRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -32,13 +32,24 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
-		protected virtual void SetupBuilder()
+		void SetupBuilder(bool includeNavigationViewHandler = true)
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
+#if IOS || MACCATALYST
+					if (includeNavigationViewHandler)
+					{
+						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					}
+					else
+					{
+						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationCompatRenderer));
+					}
+#else
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler<Window, WindowHandlerStub>();
@@ -253,7 +264,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
 		{
-			SetupBuilder();
+			SetupBuilder(includeNavigationViewHandler: false);
 			var windowPage = new ContentPage()
 			{
 				Content = new Label()
@@ -273,14 +284,21 @@ namespace Microsoft.Maui.DeviceTests
 			Window window;
 
 			if (useShell)
+			{
 				window = new Window(new Shell() { CurrentItem = windowPage });
+			}
 			else
+			{
+#if IOS || MACCATALYST
 				// Use setForMaui:false to force the old event-based navigation path.
 				// When UseiOSNavigationViewHandler is enabled globally, NavigationPage
 				// defaults to MauiNavigationImpl but NavigationRenderer doesn't implement
 				// the RequestNavigation command, causing PushAsync to hang.
 				window = new Window(new NavigationPage(false, windowPage));
-
+#else
+				window = new Window(new NavigationPage(windowPage));
+#endif
+			}
 
 			bool appearingFired = false;
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
