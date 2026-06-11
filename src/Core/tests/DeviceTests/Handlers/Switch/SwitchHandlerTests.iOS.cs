@@ -444,20 +444,29 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRun(switchStub, async (SwitchHandler handler) =>
 			{
 				var nativeSwitch = GetNativeSwitch(handler);
+				var mauiSwitch = Assert.IsType<MauiSwitch>(nativeSwitch);
 
 				await new Func<bool>(() => nativeSwitch.PreferredStyle == UISwitchStyle.Sliding && nativeSwitch.Style == UISwitchStyle.Sliding)
 					.AssertEventually(message: "Thumb-only custom color did not opt the switch into Sliding style.");
 
-				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), GetDefaultOffTrackColor(), tolerance: 0.1))
+				await new Func<bool>(() =>
+					ColorComparison.ARGBEquivalent(nativeSwitch.GetTrackColor(), GetDefaultOffTrackColor(), tolerance: 0.1)
+					&& mauiSwitch.HasMauiManagedTrackBackground)
 					.AssertEventually(message: "Thumb-only custom color did not apply the managed fallback off-track color.");
 
 				await new Func<bool>(() => ColorComparison.ARGBEquivalent(nativeSwitch.ThumbTintColor, Colors.Orange.ToPlatform(), tolerance: 0.1))
 					.AssertEventually(message: "Thumb-only custom color did not apply the custom thumb tint color.");
 
+				var trackSubview = nativeSwitch.GetTrackSubview();
+				Assert.NotNull(trackSubview);
+
+				trackSubview.BackgroundColor = UIColor.FromRGBA(12, 34, 56, 255);
+
 				switchStub.ThumbColor = null;
 				handler.UpdateValue(nameof(ISwitch.ThumbColor));
 
 				await AssertSwitchReturnsToNativeDefaults(nativeSwitch, "clearing the thumb-only custom color");
+				Assert.False(mauiSwitch.HasMauiManagedTrackBackground);
 			});
 		}
 
