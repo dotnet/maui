@@ -1769,10 +1769,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._isEnabledExplicit = (bool)value;
-				return visualElement.IsEnabledCore;
+				return BooleanBoxes.Box(visualElement.IsEnabledCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1792,10 +1792,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._inputTransparentExplicit = (bool)value;
-				return visualElement.InputTransparentCore;
+				return BooleanBoxes.Box(visualElement.InputTransparentCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)

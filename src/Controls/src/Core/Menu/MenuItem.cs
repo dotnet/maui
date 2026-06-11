@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (bindable is not MenuItem menuItem)
 			{
-				return false;
+				return BooleanBoxes.FalseBox;
 			}
 
 			menuItem._isEnabledExplicit = (bool)value;
@@ -130,23 +130,23 @@ namespace Microsoft.Maui.Controls
 			if (!menuItem._isEnabledExplicit)
 			{
 				// No need to check GetCanExecute or the Parent's state
-				return false;
+				return BooleanBoxes.FalseBox;
 			}
 
 			var canExecute = CommandElement.GetCanExecute(menuItem, CommandProperty);
 			if (!canExecute)
 			{
-				return false;
+				return BooleanBoxes.FalseBox;
 			}
 
 			// IsEnabled is not explicitly set to false, and the command can be
 			// executed. The only thing left to verify is Parent.IsEnabled
 			if (menuItem.Parent is MenuItem parentMenuItem && !parentMenuItem.IsEnabled)
 			{
-				return false;
+				return BooleanBoxes.FalseBox;
 			}
 
-			return true;
+			return BooleanBoxes.TrueBox;
 		}
 
 		IImageSource IImageSourcePart.Source => this.IconImageSource;
