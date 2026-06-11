@@ -1338,19 +1338,50 @@ function Format-MarkdownReport {
     }
 
     # === Open SR-targeting PRs ===
+    #
+    # Two modes:
+    #   - Live SR (mode == 'shipped'): show the full table — these are real
+    #     backport PRs targeting the SR branch, which is a small, useful set.
+    #   - Candidate (mode == 'candidate'): srBranch is main, so this query
+    #     returns 100+ open PRs targeting main — far too noisy for a tracker
+    #     issue. Instead, surface only the dotnet/maui "candidate PR" if one
+    #     exists (e.g. "June 8th, Candidate" — the PR that promotes a specific
+    #     main commit as the basis for cutting the next SR).
     if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs'] -and $Data['openSrPrs'].Count -gt 0) {
-        [void]$sb.AppendLine("## Open PRs Targeting $srBranch — $($Data['openSrPrs'].Count)")
-        [void]$sb.AppendLine()
-        [void]$sb.AppendLine('| PR | Title | Author | Draft? | Review | Updated |')
-        [void]$sb.AppendLine('|---|---|---|---|---|---|')
-        foreach ($pr in $Data['openSrPrs']) {
-            $title = if ($pr.title.Length -gt 60) { $pr.title.Substring(0, 60) + '...' } else { $pr.title }
-            $draft = if ($pr.isDraft) { '✏️' } else { '' }
-            $rev = if ($pr.reviewDecision) { $pr.reviewDecision } else { '—' }
-            $prLink = ConvertTo-LinkedPr -PrNumber $pr.number -RepoUrl $RepoUrl
-            [void]$sb.AppendLine("| $prLink | $title | $(Format-GitHubHandle $pr.author.login) | $draft | $rev | $($pr.updatedAt) |")
+        if ($mode -eq 'candidate') {
+            # Find a PR whose title looks like a candidate-promotion PR.
+            # Be conservative — require a word boundary so "CandidateView" doesn't match.
+            $candidatePrs = @($Data['openSrPrs'] | Where-Object {
+                $_.title -match '(?i)\bcandidate\b'
+            })
+            [void]$sb.AppendLine("## Candidate PR for next SR cut")
+            [void]$sb.AppendLine()
+            if ($candidatePrs.Count -eq 0) {
+                [void]$sb.AppendLine("_No open PR titled `*Candidate*` found targeting ``$srBranch``. Open one when ready to promote a main commit as the SR cut point._")
+            } else {
+                foreach ($cp in $candidatePrs) {
+                    $cpLink = ConvertTo-LinkedPr -PrNumber $cp.number -RepoUrl $RepoUrl
+                    $cpTitle = if ($cp.title.Length -gt 80) { $cp.title.Substring(0, 80) + '...' } else { $cp.title }
+                    [void]$sb.AppendLine("- $cpLink — $cpTitle (by $(Format-GitHubHandle $cp.author.login), updated $($cp.updatedAt))")
+                }
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("_Full list of $($Data['openSrPrs'].Count) open PRs targeting ``$srBranch`` omitted to reduce noise; see [the PR list]($RepoUrl/pulls?q=is%3Apr+is%3Aopen+base%3A$srBranch)._")
+            }
+            [void]$sb.AppendLine()
+        } else {
+            [void]$sb.AppendLine("## Open PRs Targeting $srBranch — $($Data['openSrPrs'].Count)")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine('| PR | Title | Author | Draft? | Review | Updated |')
+            [void]$sb.AppendLine('|---|---|---|---|---|---|')
+            foreach ($pr in $Data['openSrPrs']) {
+                $title = if ($pr.title.Length -gt 60) { $pr.title.Substring(0, 60) + '...' } else { $pr.title }
+                $draft = if ($pr.isDraft) { '✏️' } else { '' }
+                $rev = if ($pr.reviewDecision) { $pr.reviewDecision } else { '—' }
+                $prLink = ConvertTo-LinkedPr -PrNumber $pr.number -RepoUrl $RepoUrl
+                [void]$sb.AppendLine("| $prLink | $title | $(Format-GitHubHandle $pr.author.login) | $draft | $rev | $($pr.updatedAt) |")
+            }
+            [void]$sb.AppendLine()
         }
-        [void]$sb.AppendLine()
     }
 
     # === Regressions section — organized into tiers ===

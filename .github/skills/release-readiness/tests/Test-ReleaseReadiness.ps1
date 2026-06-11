@@ -1212,6 +1212,71 @@ Assert-Eq -Label "Hostile PR title: @another/user defanged to `another/user`" -E
 Assert-Eq -Label "Author column also defanged (no bare @jfversluis)" -Expected $true `
     -Actual ($mdWithAt -match '`jfversluis`')
 
+# ───── Candidate-mode open-PR collapse: avoid noisy main-PR dump ─────
+Write-Host "`n[Unit] Candidate-mode open-PR collapse (link to candidate PR only)" -ForegroundColor Cyan
+
+# Shipped-mode (live SR) baseline: full table renders, all rows present.
+$mdDataShipped = @{} + $mdData
+$mdDataShipped['metadata'] = @{} + $mdData.metadata
+$mdDataShipped['metadata']['mode'] = 'shipped'
+$mdDataShipped['openSrPrs'] = @(
+    @{ number = 1001; title = 'Backport: fix A'; author = @{ login = 'alice' }; isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-01T00:00:00Z' }
+    @{ number = 1002; title = 'Backport: fix B'; author = @{ login = 'bob' };   isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-02T00:00:00Z' }
+)
+$mdShipped = Format-MarkdownReport -Data $mdDataShipped -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "Shipped mode: full 'Open PRs Targeting' header still emitted" -Expected $true `
+    -Actual ($mdShipped -match 'Open PRs Targeting release/10.0.1xx-sr7 — 2')
+Assert-Eq -Label "Shipped mode: full table renders both rows" -Expected $true `
+    -Actual (($mdShipped -match '\| \[#1001\]') -and ($mdShipped -match '\| \[#1002\]'))
+Assert-Eq -Label "Shipped mode: NO 'Candidate PR for next SR cut' heading" -Expected $false `
+    -Actual ($mdShipped -match 'Candidate PR for next SR cut')
+
+# Candidate mode with NO candidate PR: emit explanatory note, suppress full table.
+$mdDataCandNone = @{} + $mdData
+$mdDataCandNone['metadata'] = @{} + $mdData.metadata
+$mdDataCandNone['metadata']['mode'] = 'candidate'
+$mdDataCandNone['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr7'
+$mdDataCandNone['metadata']['srBranch'] = 'main'
+$mdDataCandNone['openSrPrs'] = @(
+    @{ number = 2001; title = 'Random WIP fix';     author = @{ login = 'alice' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-01T00:00:00Z' }
+    @{ number = 2002; title = 'Bump dependencies';  author = @{ login = 'bob' };   isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-02T00:00:00Z' }
+)
+$mdCandNone = Format-MarkdownReport -Data $mdDataCandNone -RepoUrl 'https://github.com/dotnet/maui' `
+                                    -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+Assert-Eq -Label "Candidate (no candidate PR): heading is 'Candidate PR for next SR cut'" -Expected $true `
+    -Actual ($mdCandNone -match 'Candidate PR for next SR cut')
+Assert-Eq -Label "Candidate (no candidate PR): explanatory note rendered" -Expected $true `
+    -Actual ($mdCandNone -match 'No open PR titled')
+Assert-Eq -Label "Candidate (no candidate PR): noisy PR rows NOT rendered" -Expected $false `
+    -Actual (($mdCandNone -match '\| \[#2001\]') -or ($mdCandNone -match '\| \[#2002\]'))
+Assert-Eq -Label "Candidate (no candidate PR): old 'Open PRs Targeting' header NOT emitted" -Expected $false `
+    -Actual ($mdCandNone -match 'Open PRs Targeting main')
+
+# Candidate mode WITH a candidate PR: emit single link + omit full table.
+$mdDataCandFound = @{} + $mdData
+$mdDataCandFound['metadata'] = @{} + $mdData.metadata
+$mdDataCandFound['metadata']['mode'] = 'candidate'
+$mdDataCandFound['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr8'
+$mdDataCandFound['metadata']['srBranch'] = 'main'
+$mdDataCandFound['openSrPrs'] = @(
+    @{ number = 3001; title = 'Random WIP fix';        author = @{ login = 'alice' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-01T00:00:00Z' }
+    @{ number = 3002; title = 'June 8th, Candidate';   author = @{ login = 'PureWeen' }; isDraft = $false; reviewDecision = 'REVIEW_REQUIRED'; updatedAt = '2026-06-08T00:00:00Z' }
+    @{ number = 3003; title = 'Unrelated noise';       author = @{ login = 'bob' };   isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-02T00:00:00Z' }
+)
+$mdCandFound = Format-MarkdownReport -Data $mdDataCandFound -RepoUrl 'https://github.com/dotnet/maui' `
+                                     -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "Candidate (found): heading is 'Candidate PR for next SR cut'" -Expected $true `
+    -Actual ($mdCandFound -match 'Candidate PR for next SR cut')
+Assert-Eq -Label "Candidate (found): linked the actual candidate PR (#3002)" -Expected $true `
+    -Actual ($mdCandFound -match '\[#3002\]\(https://github.com/dotnet/maui/pull/3002\)')
+Assert-Eq -Label "Candidate (found): author defanged in link line" -Expected $true `
+    -Actual ($mdCandFound -match '`PureWeen`')
+Assert-Eq -Label "Candidate (found): unrelated PRs (#3001, #3003) NOT listed" -Expected $false `
+    -Actual (($mdCandFound -match '\| \[#3001\]') -or ($mdCandFound -match '\| \[#3003\]'))
+Assert-Eq -Label "Candidate (found): pointer to full PR list rendered" -Expected $true `
+    -Actual ($mdCandFound -match 'is%3Apr\+is%3Aopen\+base%3Amain')
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })
