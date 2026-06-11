@@ -1456,14 +1456,28 @@ Assert-Eq -Label "Open Fix PRs Inbound: no section when no open fix PRs in fligh
 Write-Host "`n[Unit] Get-ReleaseShipChecks — 'Main bumped to next SR cycle'" -ForegroundColor Cyan
 
 function Build-VersionsPropsXml {
-    param([int]$Major, [int]$Minor, [int]$Patch)
+    param(
+        [int]$Major,
+        [int]$Minor,
+        [int]$Patch,
+        # Optional servicing-flip fields. When $null, the element is omitted
+        # (mirrors a freshly-cut SR branch that hasn't been flipped yet).
+        [string]$PreReleaseVersionLabel,
+        [string]$StabilizePackageVersion
+    )
+    $labelLine = if ($PreReleaseVersionLabel) {
+        "    <PreReleaseVersionLabel>$PreReleaseVersionLabel</PreReleaseVersionLabel>`n"
+    } else { "" }
+    $stabilizeLine = if ($StabilizePackageVersion) {
+        "    <StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">$StabilizePackageVersion</StabilizePackageVersion>`n"
+    } else { "" }
     @"
 <Project>
   <PropertyGroup>
     <MajorVersion>$Major</MajorVersion>
     <MinorVersion>$Minor</MinorVersion>
     <PatchVersion>$Patch</PatchVersion>
-  </PropertyGroup>
+$labelLine$stabilizeLine  </PropertyGroup>
 </Project>
 "@
 }
@@ -1481,8 +1495,8 @@ $bugYamlAllowsAll = @'
 
 function Invoke-ShipChecksWithMockedVersions {
     param(
-        [hashtable]$SrVersion,    # @{Major;Minor;Patch} for the SR branch
-        [hashtable]$MainVersion,  # @{Major;Minor;Patch} for main
+        [hashtable]$SrVersion,    # @{Major;Minor;Patch [;PreReleaseVersionLabel;StabilizePackageVersion]} for the SR branch
+        [hashtable]$MainVersion,  # @{Major;Minor;Patch [;PreReleaseVersionLabel;StabilizePackageVersion]} for main
         [string]$SrBranch = 'release/10.0.1xx-sr8',
         [string]$MainBranch = 'main',
         [switch]$Candidate
@@ -1596,6 +1610,75 @@ $srBranchCheck = Get-CheckByAreaPrefix -Checks $checks1 -Prefix 'Versions.props 
 Assert-Eq -Label "Existing SR-branch check still emitted alongside new main-bump check" -Expected $true `
     -Actual ($null -ne $srBranchCheck)
 Assert-Eq -Label "Existing SR-branch check stays READY when SR is at 80" -Expected 'READY' -Actual $srBranchCheck.Status
+
+# ───── Get-ReleaseShipChecks: 'Servicing-release flip' check ─────
+# When an SR branch is cut from main, eng/Versions.props MUST be flipped to
+# servicing-release mode (PreReleaseVersionLabel=servicing, StabilizePackageVersion=true).
+# Without it, the SR builds prerelease packages and never ships as stable —
+# CI stays green so nothing else catches it.
+Write-Host "`n[Unit] Get-ReleaseShipChecks — 'Servicing-release flip'" -ForegroundColor Cyan
+
+# Scenario A: SR8 fully flipped — READY
+$flipChecksA = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='true' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$flipCheckA = Get-CheckByAreaPrefix -Checks $flipChecksA -Prefix 'Versions.props servicing flip (SR8)'
+Assert-Eq -Label "Flip-applied: emits 'Versions.props servicing flip (SR8)' check" -Expected $true `
+    -Actual ($null -ne $flipCheckA)
+Assert-Eq -Label "Flip-applied (servicing + true): status READY" -Expected 'READY' -Actual $flipCheckA.Status
+
+# Scenario B: SR8 with label still ci.main — BLOCKED
+$flipChecksB = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='true' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90 } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$flipCheckB = Get-CheckByAreaPrefix -Checks $flipChecksB -Prefix 'Versions.props servicing flip (SR8)'
+Assert-Eq -Label "Flip-missing-label (ci.main): status BLOCKED" -Expected 'BLOCKED' -Actual $flipCheckB.Status
+Assert-Eq -Label "Flip-missing-label: details mention PreReleaseVersionLabel" -Expected $true `
+    -Actual ([bool]($flipCheckB.Details -match 'PreReleaseVersionLabel'))
+Assert-Eq -Label "Flip-missing-label: details mention actual ci.main value" -Expected $true `
+    -Actual ([bool]($flipCheckB.Details -match 'ci\.main'))
+Assert-Eq -Label "Flip-missing-label: details do NOT flag StabilizePackageVersion" -Expected $true `
+    -Actual (-not ($flipCheckB.Details -match 'StabilizePackageVersion'))
+
+# Scenario C: SR8 with StabilizePackageVersion=false — BLOCKED
+$flipChecksC = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='servicing'; StabilizePackageVersion='false' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90 } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$flipCheckC = Get-CheckByAreaPrefix -Checks $flipChecksC -Prefix 'Versions.props servicing flip (SR8)'
+Assert-Eq -Label "Flip-missing-stabilize (false): status BLOCKED" -Expected 'BLOCKED' -Actual $flipCheckC.Status
+Assert-Eq -Label "Flip-missing-stabilize: details mention StabilizePackageVersion" -Expected $true `
+    -Actual ([bool]($flipCheckC.Details -match 'StabilizePackageVersion'))
+Assert-Eq -Label "Flip-missing-stabilize: details do NOT flag PreReleaseVersionLabel" -Expected $true `
+    -Actual (-not ($flipCheckC.Details -match 'PreReleaseVersionLabel'))
+
+# Scenario D: SR8 with BOTH missing entirely (fresh branch cut, never flipped) — BLOCKED with both flagged
+$flipChecksD = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80 } `
+    -MainVersion @{ Major=10; Minor=0; Patch=90 } `
+    -SrBranch 'release/10.0.1xx-sr8'
+$flipCheckD = Get-CheckByAreaPrefix -Checks $flipChecksD -Prefix 'Versions.props servicing flip (SR8)'
+Assert-Eq -Label "Flip-never-applied: status BLOCKED" -Expected 'BLOCKED' -Actual $flipCheckD.Status
+Assert-Eq -Label "Flip-never-applied: details flag PreReleaseVersionLabel" -Expected $true `
+    -Actual ([bool]($flipCheckD.Details -match 'PreReleaseVersionLabel'))
+Assert-Eq -Label "Flip-never-applied: details flag StabilizePackageVersion" -Expected $true `
+    -Actual ([bool]($flipCheckD.Details -match 'StabilizePackageVersion'))
+Assert-Eq -Label "Flip-never-applied: details mark unset values" -Expected $true `
+    -Actual ([bool]($flipCheckD.Details -match '<unset>'))
+Assert-Eq -Label "Flip-never-applied: next action references the prior SR's diff" -Expected $true `
+    -Actual ([bool]($flipCheckD.NextAction -match 'release/10\.0\.1xx-sr7'))
+
+# Scenario E: Candidate mode → flip check SKIPPED (main is supposed to be ci.main/false)
+$flipChecksE = Invoke-ShipChecksWithMockedVersions `
+    -SrVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -MainVersion @{ Major=10; Minor=0; Patch=80; PreReleaseVersionLabel='ci.main'; StabilizePackageVersion='false' } `
+    -SrBranch 'release/10.0.1xx-sr8' `
+    -Candidate
+$flipCheckE = Get-CheckByAreaPrefix -Checks $flipChecksE -Prefix 'Versions.props servicing flip'
+Assert-Eq -Label "Candidate mode: servicing-flip check NOT emitted" -Expected $true `
+    -Actual ($null -eq $flipCheckE)
 
 # ───── ci-scan freshness + rendering ─────
 Write-Host "`n[Unit] Format-CiScanIssueRows + freshness" -ForegroundColor Cyan

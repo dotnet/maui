@@ -391,6 +391,42 @@ function Get-ReleaseShipChecks {
         }
     }
 
+    # === Servicing-release flip ===
+    # When an SR branch is cut from main, two eng/Versions.props values MUST be
+    # flipped to switch the branch from "CI build" mode to "stable release" mode:
+    #   - PreReleaseVersionLabel:  ci.main  ->  servicing
+    #   - StabilizePackageVersion: false    ->  true   (default value, may be unset)
+    #
+    # Without these flips, the SR branch still produces prerelease packages
+    # (`1.2.3-servicing-…` or `1.2.3-ci-…`) — never a stable `1.2.3` package.
+    # The build will succeed and CI will be green, so nothing else catches this:
+    # the only symptom is that the released NuGet packages never actually become
+    # stable. This is exactly the trap the check exists to slam shut.
+    #
+    # Skip in candidate mode — the candidate IS main, where these values are
+    # SUPPOSED to read ci.main / false. The flip happens AFTER the SR is cut.
+    if (-not $isCandidate -and $vp) {
+        $flipArea = "Versions.props servicing flip (SR$targetSr)"
+        $expectedLabel = 'servicing'
+        $expectedStabilize = 'true'
+        $actualLabel = if ($vp.PreReleaseVersionLabel) { $vp.PreReleaseVersionLabel } else { '<unset>' }
+        $actualStabilize = if ($vp.StabilizePackageVersion) { $vp.StabilizePackageVersion } else { '<unset>' }
+        $labelOk = ($vp.PreReleaseVersionLabel -eq $expectedLabel)
+        $stabilizeOk = ($vp.StabilizePackageVersion -eq $expectedStabilize)
+        if ($labelOk -and $stabilizeOk) {
+            $checks += New-ReadinessCheck -Area $flipArea -Status 'READY' `
+                -Details "``$versionsRef`` has ``PreReleaseVersionLabel=servicing`` and ``StabilizePackageVersion=true`` — branch is configured to produce stable release packages." `
+                -NextAction "No change needed."
+        } else {
+            $missing = @()
+            if (-not $labelOk) { $missing += "``PreReleaseVersionLabel=$actualLabel`` (expected ``servicing``)" }
+            if (-not $stabilizeOk) { $missing += "``StabilizePackageVersion=$actualStabilize`` (expected ``true``)" }
+            $checks += New-ReadinessCheck -Area $flipArea -Status 'BLOCKED' `
+                -Details "``$versionsRef`` is NOT flipped to servicing-release mode: $($missing -join '; '). Without these flips the branch builds prerelease packages and will not ship as a stable .NET release — CI stays green so nothing else catches it." `
+                -NextAction "Edit eng/Versions.props on ``$($Ctx.srBranch)``: set ``<PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>`` and ``<StabilizePackageVersion Condition=`"'`$(StabilizePackageVersion)' == ''`">true</StabilizePackageVersion>``. See ``release/$major.$minor.1xx-sr$($targetSr - 1)`` for the canonical diff."
+        }
+    }
+
     # === Main bumped to NEXT SR cycle ===
     # Convention: as soon as a release/X.Y.Zxx-srN branch is cut, main MUST bump
     # PatchVersion to (N+1)*10 so any new PRs landing on main during SR$N
