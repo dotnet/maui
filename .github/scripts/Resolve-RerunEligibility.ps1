@@ -276,6 +276,21 @@ function Get-LatestReviewedSha {
     return $matches[0].Groups[1].Value.ToLowerInvariant()
 }
 
+function Normalize-GitHubActorLogin {
+    param([string]$Login)
+
+    if ([string]::IsNullOrWhiteSpace($Login)) {
+        return ''
+    }
+
+    $trimmed = $Login.Trim()
+    if ($trimmed -match '^app/([^/\s]+)$') {
+        return "$($Matches[1])[bot]"
+    }
+
+    return $trimmed
+}
+
 function Test-CommentIsEvidence {
     param(
         [Parameter(Mandatory = $true)]$Comment,
@@ -292,7 +307,9 @@ function Test-CommentIsEvidence {
     if (-not $Comment.user -or [string]::IsNullOrWhiteSpace([string]$Comment.user.login)) {
         return $false
     }
-    if (-not ([string]$Comment.user.login).Equals($PRAuthorLogin, [StringComparison]::OrdinalIgnoreCase)) {
+    $normalizedAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    $normalizedCommentLogin = Normalize-GitHubActorLogin ([string]$Comment.user.login)
+    if (-not $normalizedCommentLogin.Equals($normalizedAuthorLogin, [StringComparison]::OrdinalIgnoreCase)) {
         return $false
     }
     if (Test-RerunCommand $Comment.body) {
@@ -419,6 +436,7 @@ function New-RerunContextMarkdown {
     $latestSummary = Get-LatestAISummaryComment -Comments $Comments
     $latestRerun = Get-LatestRerunComment -Comments $Comments
     $checkpointRerun = if ($latestRerun) { Get-LatestRerunCommentBefore -Comments $Comments -CurrentCommentId ([Int64]$latestRerun.id) } else { $null }
+    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
     $readyLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
     $inProgressLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0
 
@@ -438,7 +456,7 @@ function New-RerunContextMarkdown {
     $evidenceComments = @()
     if ($checkpoint) {
         $evidenceComments = @($Comments | Where-Object {
-            (Test-CommentIsEvidence -Comment $_ -CurrentCommentId 0 -PRAuthorLogin $PRAuthorLogin) -and
+            (Test-CommentIsEvidence -Comment $_ -CurrentCommentId 0 -PRAuthorLogin $normalizedPRAuthorLogin) -and
             (Get-ObjectDate $_ 'created_at') -gt $checkpoint
         } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $false }, @{ Expression = { [Int64]$_.id }; Descending = $false })
     }
@@ -477,7 +495,7 @@ function New-RerunContextMarkdown {
     } else {
         $lines.Add('- Activity checkpoint: none')
     }
-    $lines.Add("- PR author: $(if ([string]::IsNullOrWhiteSpace($PRAuthorLogin)) { 'unknown' } else { $PRAuthorLogin })")
+    $lines.Add("- PR author: $(if ([string]::IsNullOrWhiteSpace($normalizedPRAuthorLogin)) { 'unknown' } else { $normalizedPRAuthorLogin })")
     $lines.Add("- Latest reviewed SHA: $(if ($latestReviewedSha) { $latestReviewedSha } else { 'unknown' })")
     $lines.Add("- Current head SHA: $(if ($CurrentHeadSha) { $CurrentHeadSha } else { 'unknown' })")
     $lines.Add("- Current head differs from latest reviewed SHA: $($headDiffers.ToString().ToLowerInvariant())")
@@ -579,7 +597,8 @@ function Resolve-RerunEligibility {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
     }
 
-    if (Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $checkpoint -CurrentCommentId $CurrentCommentId -PRAuthorLogin $PRAuthorLogin) {
+    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    if (Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $checkpoint -CurrentCommentId $CurrentCommentId -PRAuthorLogin $normalizedPRAuthorLogin) {
         $reason = if ($checkpointReason -eq 'previous-rerun') { 'new-author-comment-after-previous-rerun' } else { 'new-author-comment-after-ai-summary' }
         return [pscustomobject]@{ Eligible = $true; Reason = $reason; Label = $ReadyForRerunLabel }
     }

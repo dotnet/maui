@@ -68,6 +68,16 @@ function ConvertTo-SafeLogValue {
     return $safe
 }
 
+function Test-GhApiPrNotFound {
+    param([string]$Output)
+
+    if ([string]::IsNullOrWhiteSpace($Output)) {
+        return $false
+    }
+
+    return $Output -match '(?i)\bHTTP\s+(404|410)\b' -or $Output -match '(?i)\b(Not Found|Gone)\b'
+}
+
 function Add-CommentReaction {
     param(
         [Parameter(Mandatory = $true)][Int64]$CommentId,
@@ -311,13 +321,26 @@ foreach ($item in $items) {
         }
 
         Write-Host "Processing PR #$prNumber decision=$decision reason=$(ConvertTo-SafeLogValue $reason)"
-        $prJson = & gh api "repos/$Owner/$Repo/pulls/$prNumber" 2>$null
-        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prJson)) {
-            $global:LASTEXITCODE = 0
-            Write-Host "  ⏭️ PR #$prNumber could not be loaded; skipping stale decision"
-            continue
+        $prOutput = @(& gh api "repos/$Owner/$Repo/pulls/$prNumber" 2>&1)
+        $prExitCode = $LASTEXITCODE
+        $prJson = ($prOutput | Out-String).Trim()
+        if ($prExitCode -ne 0) {
+            if (Test-GhApiPrNotFound -Output $prJson) {
+                $global:LASTEXITCODE = 0
+                Write-Host "  ⏭️ PR #$prNumber no longer exists; skipping stale decision"
+                continue
+            }
+
+            throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prJson)"
         }
-        $pr = $prJson | ConvertFrom-Json
+        if ([string]::IsNullOrWhiteSpace($prJson)) {
+            throw "Failed to load PR #$prNumber via gh api: empty response."
+        }
+        try {
+            $pr = $prJson | ConvertFrom-Json
+        } catch {
+            throw "Failed to parse PR #$prNumber response from gh api: $(ConvertTo-SafeLogValue ([string]$_))"
+        }
         if ($pr.state -ne 'open') {
             Write-Host "  ⏭️ PR #$prNumber is not open ($($pr.state)); skipping"
             continue

@@ -101,7 +101,8 @@ foreach ($pr in @($searchResult)) {
     $latestRerun = Get-LatestRerunComment -Comments $activity
     $reviewOptionAuthors = @(Get-ReviewOptionAuthorLogins -Comments $activity)
     $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity -AllowedAuthorLogins $reviewOptionAuthors
-    $authorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
+    $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
+    $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
     $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -PRAuthorLogin $authorLogin -CurrentLabels $labels
     $platform = if ($reviewOptions.Platform) { $reviewOptions.Platform } else { Get-PlatformFromLabels -Labels $labels }
     $pipelineRef = if ($reviewOptions.PipelineRef) { $reviewOptions.PipelineRef } else { 'main' }

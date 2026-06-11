@@ -69,6 +69,12 @@ BeforeAll {
 }
 
 Describe 'Resolve-RerunEligibility' {
+    It 'normalizes app-style GitHub bot author logins' {
+        Normalize-GitHubActorLogin 'app/dependabot' | Should -Be 'dependabot[bot]'
+        Normalize-GitHubActorLogin ' dependabot[bot] ' | Should -Be 'dependabot[bot]'
+        Normalize-GitHubActorLogin '' | Should -Be ''
+    }
+
     It 'parses review command branch and platform options for reruns' {
         $parsed = ConvertFrom-ReviewCommand '/review -b feature/regression-check -p ios'
 
@@ -449,5 +455,19 @@ new
         $context | Should -Not -Match 'Reviewer reminder'
         $context | Should -Match 'fedcba9'
         $context | Should -Not -Match '\| .*\/review rerun'
+    }
+
+    It 'renders normalized app-style bot authors without counting bot comments as evidence' {
+        $comments = @(
+            New-TestComment -Id 1 -Body (New-AISummaryBody) -CreatedAt '2026-05-31T09:00:00Z' -UpdatedAt '2026-05-31T09:30:00Z' -Login 'MauiBot' -Type 'User'
+            New-TestComment -Id 2 -Body 'Dependabot follow-up.' -CreatedAt '2026-05-31T09:45:00Z' -Login 'dependabot[bot]' -Type 'Bot'
+            New-TestComment -Id 3 -Body '/review rerun' -CreatedAt '2026-05-31T09:50:00Z'
+        )
+
+        $context = New-RerunContextMarkdown -Comments $comments -Commits @() -CurrentHeadSha 'abcdef123' -PRAuthorLogin 'app/dependabot'
+
+        $context | Should -Match 'PR author: dependabot\[bot\]'
+        $context | Should -Match 'New non-command author comments: 0'
+        $context | Should -Not -Match 'Dependabot follow-up'
     }
 }
