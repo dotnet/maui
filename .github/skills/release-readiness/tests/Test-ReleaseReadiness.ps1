@@ -503,11 +503,12 @@ if (-not (Test-Path $detectScriptPath)) {
 
 if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
-    Write-Host "  Under the tag-existence rule we expect THREE trackers:" -ForegroundColor DarkGray
+    Write-Host "  Under the tag-existence rule we expect FOUR trackers:" -ForegroundColor DarkGray
     Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - in-flight but inactive (workflow will skip — no recent commits)" -ForegroundColor DarkGray
     Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - in-flight but inactive (workflow will skip — no recent commits)" -ForegroundColor DarkGray
+    Write-Host "    - SR8 (patch=80, no tag 10.0.80)        - in-flight, active" -ForegroundColor DarkGray
     Write-Host "    - SR9 (candidate off main)              - active" -ForegroundColor DarkGray
-    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); SR8 shipped 2026-06-11 (tag 10.0.80); neither produces a tracker." -ForegroundColor DarkGray
+    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); no longer produces a tracker." -ForegroundColor DarkGray
 
     $detectOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -520,11 +521,11 @@ if (-not $SkipE2E) {
 
             Assert-Eq -Label "majorVersion is 10"             -Expected 10 -Actual $detected.majorVersion
             Assert-Eq -Label "mainBranch is 'main'"            -Expected 'main' -Actual $detected.mainBranch
-            Assert-Eq -Label "highestShippedTag is '10.0.80'"  -Expected '10.0.80' -Actual $detected.highestShippedTag
+            Assert-Eq -Label "highestShippedTag is '10.0.71'"  -Expected '10.0.71' -Actual $detected.highestShippedTag
             Assert-Eq -Label "highestShippedPreviewTag carries net10's last preview" `
                       -Expected '10.0.0-preview.7.25406.3' -Actual $detected.highestShippedPreviewTag
-            Assert-Eq -Label "tracker count is 3 (SR2+SR3+SR9 — SR7, SR8 shipped)" `
-                      -Expected 3 -Actual $detected.trackers.Count
+            Assert-Eq -Label "tracker count is 4 (SR2+SR3+SR8+SR9 — SR7 shipped)" `
+                      -Expected 4 -Actual $detected.trackers.Count
             # All trackers in single-major net10 mode must be SR-flavored. (Net10's
             # previews 1–7 all shipped + no in-flight preview branch -> no preview tracker.)
             foreach ($t in $detected.trackers) {
@@ -565,11 +566,20 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "SR7 tracker absent (shipped)" -Expected $true -Actual $true
             }
 
-            # SR8 (shipped 2026-06-11 as 10.0.80 — Lane 1 should NOT emit a tracker)
+            # SR8 (in-flight, ACTIVE)
             if ($bySr.ContainsKey(8)) {
-                Write-Host "  ❌ SR8 tracker should NOT be present (tag 10.0.80 shipped 2026-06-11)" -ForegroundColor Red; $script:failed++
+                $sr8 = $bySr[8]
+                Assert-Eq -Label "SR8 mode = in-flight"         -Expected 'in-flight' -Actual $sr8.mode
+                Assert-Eq -Label "SR8 canonicalKey"             -Expected 'net10-sr8' -Actual $sr8.canonicalKey
+                Assert-Eq -Label "SR8 branchName"               -Expected 'release/10.0.1xx-sr8' -Actual $sr8.branchName
+                Assert-Eq -Label "SR8 branchExists = true"      -Expected $true -Actual $sr8.branchExists
+                Assert-Eq -Label "SR8 expectedTag = 10.0.80"    -Expected '10.0.80' -Actual $sr8.expectedTag
+                Assert-Eq -Label "SR8 hasRecentActivity = true" -Expected $true -Actual $sr8.hasRecentActivity
+                Assert-Eq -Label "SR8 regression labels"        `
+                          -Expected 'regressed-in-10.0.70,regressed-in-10.0.80' `
+                          -Actual ($sr8.regressionLabels -join ',')
             } else {
-                Assert-Eq -Label "SR8 tracker absent (shipped)" -Expected $true -Actual $true
+                Write-Host "  ❌ SR8 tracker missing" -ForegroundColor Red; $script:failed++
             }
 
             # SR9 (candidate from main, ACTIVE)
@@ -594,8 +604,8 @@ if (-not $SkipE2E) {
             }
 
             # Active SRs (the ones the workflow will actually post) all have activity.
-            # SR7 shipped 2026-06-05; SR8 shipped 2026-06-11; only SR9 (candidate) is active.
-            foreach ($srNum in @(9)) {
+            # SR7 shipped 2026-06-05 (no longer in the tracker set); only SR8 + SR9 are active.
+            foreach ($srNum in @(8, 9)) {
                 if ($bySr.ContainsKey($srNum)) {
                     Assert-Eq -Label "SR$srNum hasRecentActivity == true (active SR)" `
                               -Expected $true -Actual $bySr[$srNum].hasRecentActivity
@@ -609,14 +619,14 @@ if (-not $SkipE2E) {
     # ──────────── E2E: -AllActiveMajors multi-major envelope ────────────
     # In the unified post-consolidation shape, one invocation must surface every
     # active major (main's + any net<N>.0 ≥ main). Expected current state:
-    #   - net10 -> 3 SR trackers (SR2, SR3, SR9), no preview tracker
-    #     (SR7 shipped 2026-06-05; SR8 shipped 2026-06-11; every net10 preview branch already shipped + net10.0 isn't in preview cycle)
+    #   - net10 -> 4 SR trackers (SR2, SR3, SR8, SR9), no preview tracker
+    #     (SR7 shipped 2026-06-05; every net10 preview branch already shipped + net10.0 isn't in preview cycle)
     #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 1 preview tracker
     #     (preview6 candidate from net11.0)
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
-    Write-Host "    - net10 trackers: 3 SR (sr2/sr3/sr9), 0 preview (SR7+SR8 shipped)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: 4 SR (sr2/sr3/sr8/sr9), 0 preview (SR7 shipped 2026-06-05)" -ForegroundColor DarkGray
     Write-Host "    - net11 trackers: 0 SR (pre-GA), 1 preview (preview6 candidate from net11.0)" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
@@ -640,11 +650,11 @@ if (-not $SkipE2E) {
             if ($byMajor.ContainsKey(10)) {
                 $net10 = $byMajor[10]
                 Assert-Eq -Label "net10 mainBranch is 'main'"               -Expected 'main' -Actual $net10.mainBranch
-                Assert-Eq -Label "net10 highestShippedTag is '10.0.80'"      -Expected '10.0.80' -Actual $net10.highestShippedTag
-                Assert-Eq -Label "net10 tracker count is 3 (no preview lane, SR7+SR8 shipped)" -Expected 3 -Actual $net10.trackers.Count
+                Assert-Eq -Label "net10 highestShippedTag is '10.0.71'"      -Expected '10.0.71' -Actual $net10.highestShippedTag
+                Assert-Eq -Label "net10 tracker count is 4 (no preview lane, SR7 shipped)" -Expected 4 -Actual $net10.trackers.Count
                 $srCount = @($net10.trackers | Where-Object branchType -eq 'sr').Count
                 $previewCount = @($net10.trackers | Where-Object branchType -eq 'preview').Count
-                Assert-Eq -Label "net10 has 3 SR trackers"      -Expected 3 -Actual $srCount
+                Assert-Eq -Label "net10 has 4 SR trackers"      -Expected 4 -Actual $srCount
                 Assert-Eq -Label "net10 has 0 preview trackers" -Expected 0 -Actual $previewCount
             } else {
                 Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
