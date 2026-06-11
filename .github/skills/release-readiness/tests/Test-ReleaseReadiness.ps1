@@ -394,18 +394,121 @@ if (-not (Test-Path $detectScriptPath)) {
     # Empty ship set: every branch must be in-flight.
     Assert-Eq -Label "no shipped tags yet: patch 0 (GA) in-flight"  -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 0  -ShippedPatches $emptySet)
     Assert-Eq -Label "no shipped tags yet: patch 11 in-flight"      -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 11 -ShippedPatches $emptySet)
+
+    # ─────────── Preview-tag regex contract ───────────
+    Write-Host "`n[Unit] Preview tag regex (<major>.0.0-preview.<N>.<date>[.<build>])" -ForegroundColor Cyan
+    $previewTagCases = @(
+        @{ Tag = '11.0.0-preview.5.26304.4';  Match = $true;  Major = 11; PreviewN = 5 }   # GA preview with build
+        @{ Tag = '11.0.0-preview.1.26107';    Match = $true;  Major = 11; PreviewN = 1 }   # GA preview without build suffix
+        @{ Tag = '10.0.0-preview.7.25406.3';  Match = $true;  Major = 10; PreviewN = 7 }   # net10 preview7
+        @{ Tag = '11.0.0-preview.10.26999';   Match = $true;  Major = 11; PreviewN = 10 }  # double-digit preview
+        @{ Tag = '10.0.70';                   Match = $false }                              # stable tag should NOT match
+        @{ Tag = '11.0.0-rc.1.26404.4';       Match = $false }                              # rc, not preview
+        @{ Tag = '11.0.0-preview.5';          Match = $false }                              # missing date
+        @{ Tag = '11.0.0-preview.5.26304x';   Match = $false }                              # garbage suffix
+    )
+    foreach ($case in $previewTagCases) {
+        $m = [regex]::Match($case.Tag, $Script:StrictPreviewTagRegex)
+        Assert-Eq -Label "tag '$($case.Tag)' match=$($case.Match)" -Expected $case.Match -Actual $m.Success
+        if ($case.Match) {
+            Assert-Eq -Label "  -> major=$($case.Major)"       -Expected $case.Major    -Actual ([int]$m.Groups[1].Value)
+            Assert-Eq -Label "  -> previewN=$($case.PreviewN)" -Expected $case.PreviewN -Actual ([int]$m.Groups[2].Value)
+        }
+    }
+
+    # ─────────── Preview-branch regex contract ───────────
+    Write-Host "`n[Unit] Preview branch regex (release/<major>.0.<patchband>xx-preview<N>)" -ForegroundColor Cyan
+    $previewBranchCases = @(
+        @{ Branch = 'release/11.0.1xx-preview6';   Match = $true;  Major = 11; PreviewN = 6 }
+        @{ Branch = 'release/10.0.1xx-preview7';   Match = $true;  Major = 10; PreviewN = 7 }
+        @{ Branch = 'release/11.0.1xx-preview10';  Match = $true;  Major = 11; PreviewN = 10 }
+        @{ Branch = 'release/10.0.1xx-sr7';        Match = $false }                                # SR branch must NOT match preview
+        @{ Branch = 'release/11.0.1xx-preview6.1'; Match = $false }                                # no dotted suffix
+        @{ Branch = 'release/11.0.1xx-previewa';   Match = $false }                                # preview number must be digits
+        @{ Branch = 'release/11.0.1xx-preview6/x'; Match = $false }                                # no trailing path
+        @{ Branch = 'release/11.0.0-preview6';     Match = $false }                                # missing patch band
+    )
+    foreach ($case in $previewBranchCases) {
+        $m = [regex]::Match($case.Branch, $Script:StrictPreviewBranchRegex)
+        Assert-Eq -Label "branch '$($case.Branch)' match=$($case.Match)" -Expected $case.Match -Actual $m.Success
+        if ($case.Match) {
+            Assert-Eq -Label "  -> major=$($case.Major)"       -Expected $case.Major    -Actual ([int]$m.Groups[1].Value)
+            Assert-Eq -Label "  -> previewN=$($case.PreviewN)" -Expected $case.PreviewN -Actual ([int]$m.Groups[2].Value)
+        }
+    }
+
+    # ─────────── Preview regression label inference ───────────
+    Write-Host "`n[Unit] Preview regression-label inference" -ForegroundColor Cyan
+    foreach ($case in @(
+        @{ Major = 11; Preview = 1; Expected = @('regressed-in-11.0.0-preview1') }                              # preview1 has only its own label
+        @{ Major = 11; Preview = 6; Expected = @('regressed-in-11.0.0-preview5', 'regressed-in-11.0.0-preview6') }
+        @{ Major = 12; Preview = 3; Expected = @('regressed-in-12.0.0-preview2', 'regressed-in-12.0.0-preview3') }
+    )) {
+        $actual = (New-PreviewRegressionLabelList -Major $case.Major -PreviewNumber $case.Preview) -join ','
+        $expected = $case.Expected -join ','
+        Assert-Eq -Label "preview labels for major=$($case.Major) preview=$($case.Preview)" `
+                  -Expected $expected -Actual $actual
+    }
+
+    # ─────────── Get-ShippedPreviewSet ───────────
+    Write-Host "`n[Unit] Get-ShippedPreviewSet" -ForegroundColor Cyan
+    $live11Previews = @(
+        '11.0.0-preview.1.26107',
+        '11.0.0-preview.2.26152.10',
+        '11.0.0-preview.3.26203.7',
+        '11.0.0-preview.4.26230.3',
+        '11.0.0-preview.5.26304.4'
+    )
+    $previewSet = Get-ShippedPreviewSet -PreviewTags $live11Previews
+    Assert-Eq -Label "preview set is HashSet[int]" `
+              -Expected $true `
+              -Actual ($previewSet -is [System.Collections.Generic.HashSet[int]])
+    Assert-Eq -Label "preview set count = 5"                   -Expected 5     -Actual $previewSet.Count
+    Assert-Eq -Label "preview set contains 5"                  -Expected $true -Actual $previewSet.Contains(5)
+    Assert-Eq -Label "preview set does NOT contain 6"          -Expected $false -Actual $previewSet.Contains(6)
+
+    # Multiple tags for the same preview N collapse (preview3 had 3 ship-day candidates in practice).
+    $multiTag = @('11.0.0-preview.5.26301.1', '11.0.0-preview.5.26304.4', '11.0.0-preview.6.26350.0')
+    $multiSet = Get-ShippedPreviewSet -PreviewTags $multiTag
+    Assert-Eq -Label "multiple tags for same preview N collapse" -Expected 2 -Actual $multiSet.Count
+    Assert-Eq -Label "multi: contains 5"                          -Expected $true -Actual $multiSet.Contains(5)
+    Assert-Eq -Label "multi: contains 6"                          -Expected $true -Actual $multiSet.Contains(6)
+
+    # Stable tags must not pollute preview set.
+    $stableMix = @('10.0.70', '11.0.0', '11.0.0-preview.5.26304.4')
+    $mixSet = Get-ShippedPreviewSet -PreviewTags $stableMix
+    Assert-Eq -Label "stable tags ignored by preview set" -Expected 1     -Actual $mixSet.Count
+    Assert-Eq -Label "preview set only contains 5"         -Expected $true -Actual $mixSet.Contains(5)
+
+    # Empty/null inputs.
+    $emptyPreviewSet = Get-ShippedPreviewSet -PreviewTags @()
+    Assert-Eq -Label "empty preview input -> empty set" -Expected 0 -Actual $emptyPreviewSet.Count
+    $nullPreviewSet = Get-ShippedPreviewSet -PreviewTags $null
+    Assert-Eq -Label "null preview input -> empty set"  -Expected 0 -Actual $nullPreviewSet.Count
+
+    # ─────────── Test-IsPreviewBranchInFlight ───────────
+    Write-Host "`n[Unit] Test-IsPreviewBranchInFlight" -ForegroundColor Cyan
+    # Live state: net11 has previews 1–5 shipped; preview6 is the in-flight candidate.
+    Assert-Eq -Label "preview1 (tag exists) -> NOT in-flight" -Expected $false -Actual (Test-IsPreviewBranchInFlight -PreviewNumber 1 -ShippedPreviews $previewSet)
+    Assert-Eq -Label "preview5 (tag exists) -> NOT in-flight" -Expected $false -Actual (Test-IsPreviewBranchInFlight -PreviewNumber 5 -ShippedPreviews $previewSet)
+    Assert-Eq -Label "preview6 (no tag)     -> in-flight"     -Expected $true  -Actual (Test-IsPreviewBranchInFlight -PreviewNumber 6 -ShippedPreviews $previewSet)
+    Assert-Eq -Label "preview7 (no tag)     -> in-flight"     -Expected $true  -Actual (Test-IsPreviewBranchInFlight -PreviewNumber 7 -ShippedPreviews $previewSet)
+
+    # Empty shipped set: every preview is in-flight.
+    Assert-Eq -Label "no shipped previews: preview1 in-flight"  -Expected $true -Actual (Test-IsPreviewBranchInFlight -PreviewNumber 1 -ShippedPreviews $emptyPreviewSet)
+    Assert-Eq -Label "no shipped previews: preview20 in-flight" -Expected $true -Actual (Test-IsPreviewBranchInFlight -PreviewNumber 20 -ShippedPreviews $emptyPreviewSet)
 }
 
 # ─────────── E2E: Run detection against this repo and validate trackers ───────────
 
 if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
-    Write-Host "  Under the tag-existence rule we expect FIVE trackers:" -ForegroundColor DarkGray
+    Write-Host "  Under the tag-existence rule we expect FOUR trackers:" -ForegroundColor DarkGray
     Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - in-flight but inactive (workflow will skip — no recent commits)" -ForegroundColor DarkGray
     Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - in-flight but inactive (workflow will skip — no recent commits)" -ForegroundColor DarkGray
-    Write-Host "    - SR7 (patch=71, no tag 10.0.71)        - in-flight, active" -ForegroundColor DarkGray
     Write-Host "    - SR8 (patch=80, no tag 10.0.80)        - in-flight, active" -ForegroundColor DarkGray
     Write-Host "    - SR9 (candidate off main)              - active" -ForegroundColor DarkGray
+    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); no longer produces a tracker." -ForegroundColor DarkGray
 
     $detectOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -418,9 +521,17 @@ if (-not $SkipE2E) {
 
             Assert-Eq -Label "majorVersion is 10"             -Expected 10 -Actual $detected.majorVersion
             Assert-Eq -Label "mainBranch is 'main'"            -Expected 'main' -Actual $detected.mainBranch
-            Assert-Eq -Label "highestShippedTag is '10.0.70'"  -Expected '10.0.70' -Actual $detected.highestShippedTag
-            Assert-Eq -Label "tracker count is 5 (SR2+SR3+SR7+SR8+SR9)" `
-                      -Expected 5 -Actual $detected.trackers.Count
+            Assert-Eq -Label "highestShippedTag is '10.0.71'"  -Expected '10.0.71' -Actual $detected.highestShippedTag
+            Assert-Eq -Label "highestShippedPreviewTag carries net10's last preview" `
+                      -Expected '10.0.0-preview.7.25406.3' -Actual $detected.highestShippedPreviewTag
+            Assert-Eq -Label "tracker count is 4 (SR2+SR3+SR8+SR9 — SR7 shipped)" `
+                      -Expected 4 -Actual $detected.trackers.Count
+            # All trackers in single-major net10 mode must be SR-flavored. (Net10's
+            # previews 1–7 all shipped + no in-flight preview branch -> no preview tracker.)
+            foreach ($t in $detected.trackers) {
+                Assert-Eq -Label "tracker '$($t.canonicalKey)' has branchType='sr'" `
+                          -Expected 'sr' -Actual $t.branchType
+            }
 
             $bySr = @{}
             foreach ($t in $detected.trackers) { $bySr[[int]$t.srNumber] = $t }
@@ -448,21 +559,11 @@ if (-not $SkipE2E) {
                 Write-Host "  ❌ SR3 tracker missing (tag rule should pick it up — patch=33, no tag)" -ForegroundColor Red; $script:failed++
             }
 
-            # SR7 (in-flight, ACTIVE)
+            # SR7 (shipped 2026-06-05 as 10.0.71 — Lane 1 should NOT emit a tracker)
             if ($bySr.ContainsKey(7)) {
-                $sr7 = $bySr[7]
-                Assert-Eq -Label "SR7 mode = in-flight"         -Expected 'in-flight' -Actual $sr7.mode
-                Assert-Eq -Label "SR7 canonicalKey"             -Expected 'net10-sr7' -Actual $sr7.canonicalKey
-                Assert-Eq -Label "SR7 branchName"               -Expected 'release/10.0.1xx-sr7' -Actual $sr7.branchName
-                Assert-Eq -Label "SR7 surveyRef = branch"       -Expected 'release/10.0.1xx-sr7' -Actual $sr7.surveyRef
-                Assert-Eq -Label "SR7 milestoneName"            -Expected '.NET 10 SR7' -Actual $sr7.milestoneName
-                Assert-Eq -Label "SR7 expectedTag = 10.0.71"    -Expected '10.0.71' -Actual $sr7.expectedTag
-                Assert-Eq -Label "SR7 hasRecentActivity = true" -Expected $true -Actual $sr7.hasRecentActivity
-                Assert-Eq -Label "SR7 regression labels"        `
-                          -Expected 'regressed-in-10.0.60,regressed-in-10.0.70' `
-                          -Actual ($sr7.regressionLabels -join ',')
+                Write-Host "  ❌ SR7 tracker should NOT be present (tag 10.0.71 shipped 2026-06-05)" -ForegroundColor Red; $script:failed++
             } else {
-                Write-Host "  ❌ SR7 tracker missing" -ForegroundColor Red; $script:failed++
+                Assert-Eq -Label "SR7 tracker absent (shipped)" -Expected $true -Actual $true
             }
 
             # SR8 (in-flight, ACTIVE)
@@ -471,6 +572,7 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "SR8 mode = in-flight"         -Expected 'in-flight' -Actual $sr8.mode
                 Assert-Eq -Label "SR8 canonicalKey"             -Expected 'net10-sr8' -Actual $sr8.canonicalKey
                 Assert-Eq -Label "SR8 branchName"               -Expected 'release/10.0.1xx-sr8' -Actual $sr8.branchName
+                Assert-Eq -Label "SR8 branchExists = true"      -Expected $true -Actual $sr8.branchExists
                 Assert-Eq -Label "SR8 expectedTag = 10.0.80"    -Expected '10.0.80' -Actual $sr8.expectedTag
                 Assert-Eq -Label "SR8 hasRecentActivity = true" -Expected $true -Actual $sr8.hasRecentActivity
                 Assert-Eq -Label "SR8 regression labels"        `
@@ -485,7 +587,10 @@ if (-not $SkipE2E) {
                 $sr9 = $bySr[9]
                 Assert-Eq -Label "SR9 mode = candidate"         -Expected 'candidate' -Actual $sr9.mode
                 Assert-Eq -Label "SR9 canonicalKey"             -Expected 'net10-sr9' -Actual $sr9.canonicalKey
-                Assert-Eq -Label "SR9 branchName empty"         -Expected $true -Actual ([string]::IsNullOrEmpty($sr9.branchName))
+                Assert-Eq -Label "SR9 branchName = canonical proposed slug" `
+                          -Expected 'release/10.0.1xx-sr9' -Actual $sr9.branchName
+                Assert-Eq -Label "SR9 branchExists = false (not cut yet)" `
+                          -Expected $false -Actual $sr9.branchExists
                 Assert-Eq -Label "SR9 surveyRef = main"         -Expected 'main' -Actual $sr9.surveyRef
                 Assert-Eq -Label "SR9 priorSrBranch = SR8 branch" `
                           -Expected 'release/10.0.1xx-sr8' -Actual $sr9.priorSrBranch
@@ -499,7 +604,8 @@ if (-not $SkipE2E) {
             }
 
             # Active SRs (the ones the workflow will actually post) all have activity.
-            foreach ($srNum in @(7, 8, 9)) {
+            # SR7 shipped 2026-06-05 (no longer in the tracker set); only SR8 + SR9 are active.
+            foreach ($srNum in @(8, 9)) {
                 if ($bySr.ContainsKey($srNum)) {
                     Assert-Eq -Label "SR$srNum hasRecentActivity == true (active SR)" `
                               -Expected $true -Actual $bySr[$srNum].hasRecentActivity
@@ -508,6 +614,90 @@ if (-not $SkipE2E) {
         }
     } finally {
         if (Test-Path $detectOut) { Remove-Item -Force $detectOut }
+    }
+
+    # ──────────── E2E: -AllActiveMajors multi-major envelope ────────────
+    # In the unified post-consolidation shape, one invocation must surface every
+    # active major (main's + any net<N>.0 ≥ main). Expected current state:
+    #   - net10 -> 4 SR trackers (SR2, SR3, SR8, SR9), no preview tracker
+    #     (SR7 shipped 2026-06-05; every net10 preview branch already shipped + net10.0 isn't in preview cycle)
+    #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 1 preview tracker
+    #     (preview6 candidate from net11.0)
+    Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
+    Write-Host "  Expected:" -ForegroundColor DarkGray
+    Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: 4 SR (sr2/sr3/sr8/sr9), 0 preview (SR7 shipped 2026-06-05)" -ForegroundColor DarkGray
+    Write-Host "    - net11 trackers: 0 SR (pre-GA), 1 preview (preview6 candidate from net11.0)" -ForegroundColor DarkGray
+
+    $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
+    try {
+        & pwsh -NoProfile -File $detectScriptPath -NoFetch -AllActiveMajors -OutputJson $multiOut 2>&1 | Out-Null
+        if (-not (Test-Path $multiOut)) {
+            Write-Host "  ❌ allmajors detection JSON not created" -ForegroundColor Red; $script:failed++
+        } else {
+            $multi = Get-Content $multiOut -Raw | ConvertFrom-Json
+            Assert-Eq -Label "AllActiveMajors envelope has no top-level trackers" `
+                      -Expected $false -Actual ($multi.PSObject.Properties.Name -contains 'trackers')
+            Assert-Eq -Label "AllActiveMajors envelope has top-level majors[]" `
+                      -Expected $true  -Actual ($multi.PSObject.Properties.Name -contains 'majors')
+            Assert-Eq -Label "majors[] contains exactly 2 entries (net10 + net11)" `
+                      -Expected 2      -Actual $multi.majors.Count
+
+            $byMajor = @{}
+            foreach ($m in $multi.majors) { $byMajor[[int]$m.majorVersion] = $m }
+
+            # net10 — same as single-major run, all SR trackers.
+            if ($byMajor.ContainsKey(10)) {
+                $net10 = $byMajor[10]
+                Assert-Eq -Label "net10 mainBranch is 'main'"               -Expected 'main' -Actual $net10.mainBranch
+                Assert-Eq -Label "net10 highestShippedTag is '10.0.71'"      -Expected '10.0.71' -Actual $net10.highestShippedTag
+                Assert-Eq -Label "net10 tracker count is 4 (no preview lane, SR7 shipped)" -Expected 4 -Actual $net10.trackers.Count
+                $srCount = @($net10.trackers | Where-Object branchType -eq 'sr').Count
+                $previewCount = @($net10.trackers | Where-Object branchType -eq 'preview').Count
+                Assert-Eq -Label "net10 has 4 SR trackers"      -Expected 4 -Actual $srCount
+                Assert-Eq -Label "net10 has 0 preview trackers" -Expected 0 -Actual $previewCount
+            } else {
+                Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
+            }
+
+            # net11 — pre-GA: no SR trackers; expects preview6 candidate from net11.0.
+            if ($byMajor.ContainsKey(11)) {
+                $net11 = $byMajor[11]
+                Assert-Eq -Label "net11 mainBranch is 'net11.0'"          -Expected 'net11.0' -Actual $net11.mainBranch
+                Assert-Eq -Label "net11 highestShippedTag is null (pre-GA)" -Expected $true -Actual ([string]::IsNullOrEmpty($net11.highestShippedTag))
+                Assert-Eq -Label "net11 highestShippedPreviewTag carries preview5 tag" `
+                          -Expected '11.0.0-preview.5.26304.4' -Actual $net11.highestShippedPreviewTag
+                Assert-Eq -Label "net11 tracker count is 1 (preview6 only)" -Expected 1 -Actual $net11.trackers.Count
+                $previewTrackers = @($net11.trackers | Where-Object branchType -eq 'preview')
+                Assert-Eq -Label "net11 has 1 preview tracker"            -Expected 1 -Actual $previewTrackers.Count
+                $srTrackers = @($net11.trackers | Where-Object branchType -eq 'sr')
+                Assert-Eq -Label "net11 has 0 SR trackers (pre-GA -> Lane 2 skipped)" -Expected 0 -Actual $srTrackers.Count
+
+                $preview6 = $previewTrackers[0]
+                Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
+                Assert-Eq -Label "preview6 mode = candidate"          -Expected 'candidate'           -Actual $preview6.mode
+                Assert-Eq -Label "preview6 surveyRef = net11.0"       -Expected 'net11.0'             -Actual $preview6.surveyRef
+                Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
+                Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
+                Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
+                Assert-Eq -Label "preview6 issue title format"        `
+                          -Expected '[Release Readiness] .NET 11.0 preview6 — candidate from net11.0' `
+                          -Actual $preview6.issueTitle
+                Assert-Eq -Label "preview6 branchName = canonical proposed slug" `
+                          -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
+                Assert-Eq -Label "preview6 branchExists = false (no branch yet)" `
+                          -Expected $false -Actual $preview6.branchExists
+                Assert-Eq -Label "preview6 hasRecentActivity = true (active preview cycle)" `
+                          -Expected $true -Actual $preview6.hasRecentActivity
+                Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
+                          -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
+                          -Actual ($preview6.regressionLabels -join ',')
+            } else {
+                Write-Host "  ❌ majors[] missing net11 entry" -ForegroundColor Red; $script:failed++
+            }
+        }
+    } finally {
+        if (Test-Path $multiOut) { Remove-Item -Force $multiOut }
     }
 
     # Fail-closed: bad repo path should exit non-zero

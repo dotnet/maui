@@ -1,15 +1,15 @@
 ---
 name: release-readiness
-description: Assesses whether a .NET MAUI Servicing Release (SR) branch is ready to ship. Surveys CI pipelines, computes what's actually NEW in the SR (commits + source PRs with revert detection), and cross-references open `regressed-in-*` issues against SR contents to identify port candidates, rejected backports, and unresolved regressions.
+description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews. Surveys CI pipelines, computes what's actually NEW in the branch (commits + source PRs with revert detection), and cross-references open `regressed-in-*` issues against branch contents to identify port candidates, rejected backports, and unresolved regressions. Supports both in-flight and pre-cut (candidate) modes for SR and Preview branches.
 metadata:
   author: dotnet-maui
-  version: "1.0"
+  version: "2.0"
 compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. `az` CLI is optional but recommended for internal pipeline status. Run from a checkout of `dotnet/maui`.
 ---
 
 # Release Readiness
 
-This skill produces a deterministic, evidence-backed answer to **"Is `release/10.0.1xx-srN` ready to ship?"** for a .NET MAUI Servicing Release.
+This skill produces deterministic, evidence-backed answers to **"Is `<release branch>` ready to ship?"** for .NET MAUI release branches — both **Servicing Releases (SR)** and **Previews**, in both **in-flight** and **candidate** (pre-cut) modes.
 
 ## 🚨 Report-only
 
@@ -17,90 +17,185 @@ This skill **reports**. It does **not** execute release operations against dotne
 
 ## When to Use
 
-- "How does SR7 look?" / "Is SR7 ready to ship?"
-- "What's blocking SR7?"
-- "Are there any regression fixes I should backport to SR7?"
-- "What's new in SR7 since the last sync?"
-- Release candidate triage / weekly release review
+- "How does SR8 look?" / "Is SR8 ready to ship?"
+- "What's blocking SR9 candidate?" / "What would ship if we cut SR9 today?"
+- "How does net11 preview6 look?" / "Are we ready to cut preview6 from net11.0?"
+- "Are there any regression fixes I should backport to SR8?"
+- "What's new in SR8 since the last sync?"
+- Daily release-tracking automation across all active majors
 
 > **For per-PR regression risk** (deletions reverting prior bug-fix lines), use [`find-regression-risk`](../find-regression-risk/SKILL.md) instead — it answers a different question.
 
+## Architecture
+
+This skill has **three** PowerShell entry points and one workflow:
+
+| Script | Branch type | Purpose |
+|--------|-------------|---------|
+| [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | both | Detects active in-flight & candidate trackers (SR and Preview) across all active majors using a four-lane algorithm and the **tag-existence rule** ("a release is in flight unless its tag already exists"). Emits a single tracker JSON consumed by the workflow. |
+| [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) | SR | Full readiness report for a single SR branch (in-flight or `-Candidate`). |
+| [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview | Full readiness report for a single Preview branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`). |
+| [`release-readiness.yml`](../../workflows/release-readiness.yml) | both | Daily cron + manual dispatch + PR validation. Runs `Find-Trackers -AllActiveMajors`, fans out a matrix job per tracker, and writes idempotent `[Release Readiness]` issues per branch. |
+
+### Tag-existence rule (canonical signal)
+
+The trackers detector is grounded in **tag existence as the source of truth for "shipped vs in-flight"**. A release is in-flight if and only if its expected tag has NOT been published — branch existence, commit recency, and milestone state are all secondary signals.
+
+- SR shipped tag pattern: `<major>.0.<patch>` (e.g. `10.0.71` shipped → SR7 no longer produces a tracker)
+- Preview shipped tag pattern: `<major>.0.0-preview.<N>.<date>[.<build>]` (e.g. `11.0.0-preview.5.26304.4` shipped → preview5 no longer produces a tracker)
+
 ## Quick Start
 
+### One-shot daily report (matches what the workflow runs)
+
 ```bash
-# Full report on SR7 with explicit regression labels (recommended for automation)
-pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
-  -SrBranch release/10.0.1xx-sr7 \
-  -RegressionLabels regressed-in-10.0.60,regressed-in-10.0.70 \
-  -OutputDir CustomAgentLogsTmp/release-readiness/sr7-readiness
+# Detect every active in-flight + candidate tracker across all active majors
+pwsh .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
+  -AllActiveMajors \
+  -OutputJson trackers.json
 
-# Auto-infer regression labels (interactive — agent should confirm before using for automation)
-pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
-  -SrBranch release/10.0.1xx-sr7 \
-  -InferRegressionLabels \
-  -OutputDir CustomAgentLogsTmp/release-readiness/sr7-readiness
+# Emits a JSON envelope with one tracker per active branch, each carrying:
+#   branchType:    'sr' | 'preview'
+#   branchName:    canonical proposed branch slug (always populated)
+#   branchExists:  true if the branch is on origin, false for candidates
+#   mode:          'in-flight' | 'candidate'
+#   surveyRef:     ref to actually survey (branch itself, or net<major>.0 for candidates)
+#   canonicalKey:  stable join key (e.g. net10-sr8, net11-preview6)
+#   issueTitle:    title for the daily tracker issue
+#   regressionLabels: list of regressed-in-* labels relevant to this branch
+```
 
-# Just the SR commit + source-PR list (foundation for any cherry-pick verification)
-pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
-  -SrBranch release/10.0.1xx-sr7 \
-  -Phase commits
+### SR (Servicing Release)
 
-# Only CI status
+```bash
+# In-flight SR
 pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
-  -SrBranch release/10.0.1xx-sr7 \
-  -Phase ci
+  -SrBranch release/10.0.1xx-sr8 \
+  -RegressionLabels regressed-in-10.0.70,regressed-in-10.0.80 \
+  -TrackerKey net10-sr8 \
+  -OutputDir CustomAgentLogsTmp/release-readiness/sr8
+
+# SR candidate (no branch yet — survey main; pass the PRIOR SR as -SrBranch)
+pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
+  -SrBranch release/10.0.1xx-sr8 \
+  -Candidate \
+  -RegressionLabels regressed-in-10.0.80,regressed-in-10.0.90 \
+  -TrackerKey net10-sr9 \
+  -OutputDir CustomAgentLogsTmp/release-readiness/sr9-candidate
+```
+
+### Preview
+
+```bash
+# In-flight preview
+pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+  -Branch release/11.0.1xx-preview6 \
+  -Mode in-flight \
+  -TrackerKey net11-preview6 \
+  -OutputDir CustomAgentLogsTmp/release-readiness/preview6
+
+# Preview candidate (branch not cut yet — survey net11.0 instead)
+pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+  -Branch release/11.0.1xx-preview6 \
+  -Mode candidate \
+  -SurveyRef net11.0 \
+  -TrackerKey net11-preview6 \
+  -OutputDir CustomAgentLogsTmp/release-readiness/preview6-candidate
 ```
 
 ## Parameters
 
+### `Find-ReleaseReadinessTrackers.ps1`
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `-MajorVersion` | 0 (auto from `eng/Versions.props`) | Single major to scan. |
+| `-AllActiveMajors` | off | Scan every active major (current + lower in-flight). Mutually exclusive with `-MajorVersion`. |
+| `-Repo` | cwd | Path to a checkout of dotnet/maui. |
+| `-ActivityWindowDays` | 7 | Recent-commit window used to compute `recentCommitCount`. |
+| `-NoFetch` | off | Skip `git fetch` (faster re-runs). |
+| `-OutputJson` | — | File to write the tracker envelope JSON. |
+| `-MaxBranches` | 50 | Safety cap on how many SR/preview branches to enumerate per major. |
+
+### `Get-ReleaseReadiness.ps1` (SR)
+
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `-SrBranch` | Yes | — | SR branch name (e.g. `release/10.0.1xx-sr7`) |
-| `-RegressionLabels` | One of these | — | Comma-separated `regressed-in-*` labels. Required unless `-InferRegressionLabels` is set. |
-| `-InferRegressionLabels` | One of these | off | Auto-infer labels from the SR's version family (e.g. `release/10.0.1xx-sr7` → `regressed-in-10.0.60,70`). Agent should always confirm before using. |
-| `-Repo` | No | `dotnet/maui` | Repository in `owner/name` form |
-| `-MainBranch` | No | `main` | Stable branch used for ancestry checks |
-| `-ExcludeBranches` | No | `origin/main,origin/inflight/current` | Branches to exclude when computing SR-only commits |
-| `-Phase` | No | `all` | `all`, `ci`, `commits`, `regressions`, or `open-prs` |
-| `-OutputDir` | No | — | If set, writes `release-readiness.{json,md}` and `sr-source-prs.txt` |
-| `-OutputFormat` | No | `both` | `json`, `markdown`, or `both` |
-| `-MaxIssues` | No | `100` | Cap on regression issues to walk |
-| `-NoFetch` | No | off | Skip `git fetch` (use cached refs — faster for re-runs) |
+| `-SrBranch` | Yes | — | SR branch name (e.g. `release/10.0.1xx-sr8`). In `-Candidate` mode, pass the **prior** SR — it's the exclude baseline for "what's new". |
+| `-Candidate` | No | off | Pre-flight mode — survey `main` (with `-SrBranch` as the prior-SR baseline) to show what WOULD ship in the next SR. |
+| `-InheritFromPriorSr` | No | off | In `-Candidate` mode, model the workflow where the prior SR is merged into the new branch after cut. Candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits. |
+| `-RegressionLabels` | One of these | — | Comma-separated `regressed-in-*` labels. |
+| `-InferRegressionLabels` | One of these | off | Auto-infer from `-SrBranch`. Agent should confirm before relying on this for automation. |
+| `-Repo` | No | `dotnet/maui` | Repository in `owner/name` form. |
+| `-MainBranch` | No | `main` | Stable branch used for ancestry checks. |
+| `-ExcludeBranches` | No | `origin/main` | Branches to exclude from SR-only commit computation. |
+| `-Phase` | No | `all` | `all`, `ci`, `commits`, `regressions`, or `open-prs`. |
+| `-TrackerKey` | No | — | Canonical key (e.g. `net10-sr8`) embedded in the markdown body for idempotent issue lookup. |
+| `-OutputDir` | No | — | If set, writes `release-readiness.{json,md}` and `sr-source-prs.txt`. |
+| `-OutputFormat` | No | `both` | `json`, `markdown`, or `both`. |
+| `-MaxIssues` | No | `100` | Cap on regression issues to walk. |
+| `-NoFetch` | No | off | Skip `git fetch`. |
+
+### `Get-PreviewReadiness.ps1` (Preview)
+
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `-Branch` | Yes | — | Preview branch name (e.g. `release/11.0.1xx-preview6`). Required even for candidate runs — used to derive milestone, tracker key, and regression labels. |
+| `-Mode` | No | `in-flight` | `in-flight` (survey the preview branch itself) or `candidate` (survey `-SurveyRef` instead — typically `net<major>.0`). |
+| `-SurveyRef` | No | computed | Ref to actually survey. Defaults to `$Branch` for in-flight; `net<major>.0` for candidate. |
+| `-Repository` | No | `dotnet/maui` | Repository in `owner/name` form. |
+| `-TrackerKey` | No | derived | Canonical key (default: `net<major>-preview<N>`) embedded for idempotent issue lookup. |
+| `-OutputDir` | No | — | If set, writes `preview-readiness.{json,md}`. |
+| `-OutputFormat` | No | `markdown` | `markdown`, `json`, or `both`. |
+| `-IncludeInternal`, `-InternalBuildId` | No | — | Release-captain only — augments report with internal pipeline status when AzDO auth is available. |
+| `-PublicSafe` | No | `$true` | Sanitizes non-READY internal status from public output. |
 
 ## Outputs
 
-When `-OutputDir` is set:
+| File | Producer | Purpose |
+|------|----------|---------|
+| `trackers.json` | Find-Trackers | List of active tracker descriptors with detection evidence (one envelope per major) |
+| `release-readiness.{json,md}` | Get-ReleaseReadiness | Full SR readiness report |
+| `sr-source-prs.txt` | Get-ReleaseReadiness | Flat newline-delimited source PR list; use `grep -qxF NNNNN file` for instant cherry-pick verification |
+| `sr-commits.json` | Get-ReleaseReadiness | Raw SR-only commit metadata |
+| `preview-readiness.{json,md}` | Get-PreviewReadiness | Full Preview readiness report |
 
-| File | Purpose |
-|------|---------|
-| `release-readiness.json` | Structured data with evidence + provenance for every conclusion |
-| `release-readiness.md` | Human-readable verdict tables + recommendations |
-| `sr-source-prs.txt` | Flat newline-delimited list of source PR numbers — usable with `grep -qxF NNNNN file` for instant cherry-pick verification |
-| `sr-commits.json` | Raw SR-only commit metadata |
+## Daily workflow
 
-## Verdict Classification
+`.github/workflows/release-readiness.yml` runs **weekdays at 08:30 UTC** plus `workflow_dispatch` + `pull_request` validation:
+
+1. **`detect-trackers`** — runs `Find-Trackers -AllActiveMajors`, emits a matrix of tracker descriptors.
+2. **`per-tracker-report`** — matrix-expanded job per tracker:
+   - Dispatches to `Get-ReleaseReadiness.ps1` (SR) or `Get-PreviewReadiness.ps1` (Preview) based on `branchType`.
+   - Looks for an open tracker issue by the canonical marker `<!-- release-readiness-tracker: <key> -->`.
+     - **Refresh path**: reuse the oldest open tracker issue (edit title + body); close any duplicates.
+     - **Create path**: open a new issue with `report` / `s/triaged` / `area-release-readiness` labels.
+   - **Activity gate**: skip new-issue creation when `recentCommitCount == 0` AND no open tracker issue exists. (Existing open issues are still refreshed.)
+3. **`validate`** — PR-trigger path. Runs the test suite + smoke-runs all three scripts. **Does not create or modify issues.**
+
+## Verdict Classification (SR & Preview)
 
 Each candidate fix PR is classified with confidence + evidence:
 
 | Verdict | Meaning |
 |---------|---------|
-| `in-sr-active` | Source PR is in SR and not subsequently reverted |
-| `in-sr-reverted` | Backport landed but a later commit on SR reverts it |
-| `rejected-from-sr` | A backport PR targeting SR was opened and CLOSED unmerged |
-| `backport-in-progress` | A backport PR targeting SR is OPEN |
+| `in-sr-active` | Source PR is in the release branch and not subsequently reverted |
+| `in-sr-reverted` | Backport landed but a later commit reverts it |
+| `rejected-from-sr` | A backport PR targeting the release branch was opened and CLOSED unmerged |
+| `backport-in-progress` | A backport PR targeting the release branch is OPEN |
 | `merged-on-main-no-backport` | Fix merged to `main`, no backport PR exists |
 | `merged-non-main-only` | Fix merged but only to `inflight/current` (or similar), not `main` |
 | `open-on-main` | Fix PR is OPEN against main, not yet merged |
 | `no-fix-yet` | No fix PR cross-referenced from the regression issue |
-| `needs-human-review` | Evidence is contradictory or weak (e.g. cross-reference only mentions the issue) |
+| `needs-human-review` | Evidence is contradictory or weak |
 
 ## CI Status Categories
 
 | CI verdict | Meaning |
 |------------|---------|
-| `green` | Latest build on SR HEAD succeeded across all pipelines |
+| `green` | Latest build on the survey ref succeeded across all pipelines |
 | `red-needs-review` | Latest build failed or partially succeeded — investigate failures before judging ship-readiness |
-| `stale` | Latest build is older than the current SR HEAD — must re-run before judging |
+| `stale` | Latest build is older than the survey ref HEAD — must re-run before judging |
 | `partial-unknown` | At least one pipeline couldn't be queried, but no queried pipeline is red or stale |
 | `unknown` | No pipeline result could be classified |
 
@@ -114,10 +209,14 @@ Three critical gotchas this skill encodes — see [references/methodology.md](re
 
 3. **Forward-flow / non-main merges**: A fix can merge into `inflight/current` only, not `main` (real example: PR #35609). The skill checks `git merge-base --is-ancestor $mergeCommit origin/main` before claiming a fix is "on main, just needs backport".
 
+## Shared module
+
+This skill depends on `.github/scripts/shared/MauiReleaseVersioning.psm1` for canonical milestone/version parsing (e.g. `Get-CurrentMajorVersion`, `ConvertBranchToMilestone`, `Get-MilestoneSortKey`, `Compare-MauiMilestone`). The module is also consumed by `Fix-MilestoneDrift.ps1` to keep milestone classification consistent across all release-related automation.
+
 ## Integration
 
 - **Custom agent**: `.github/agents/release-readiness-agent.agent.md` wraps this skill — handles regression-label confirmation, runs the script, then uses WorkIQ to add context for `rejected-from-sr` PRs.
-- **WorkIQ**: NOT called from this script (PowerShell can't invoke MCP tools). The agent enriches the script's JSON output with WorkIQ context where needed.
+- **WorkIQ**: NOT called from the PowerShell scripts (PowerShell can't invoke MCP tools). The agent enriches the script's JSON output with WorkIQ context where needed.
 
 ## Anti-Patterns
 
@@ -129,15 +228,18 @@ Three critical gotchas this skill encodes — see [references/methodology.md](re
 
 > ❌ **Don't run with `-InferRegressionLabels` for automated workflows** without surfacing the inferred labels for confirmation. Label inference is brittle for non-standard SR cycles.
 
+> ❌ **Don't infer "in-flight" from branch existence alone.** The detector uses the **tag-existence rule** — a release is in-flight if and only if its expected tag has not been published. Branches can linger after their release ships (and SR branches don't exist yet for SR candidates).
+
 ## Tests
 
 ```powershell
 pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1
 ```
 
-The test harness asserts the known-answer set from the SR7 readiness analysis:
+The harness covers:
 
-- #35313 → `in-sr-active` (Android regression, fixed by #35356, backported as #35428)
-- #35344 → `in-sr-active` (Android scroll perf regression; primary fix #35379's backport #35442 was closed unmerged, but follow-on SafeArea fix #35664 was backported as #35693 — script correctly surfaces the partial fix that actually shipped)
-- #35326 is intentionally absent from the regression scan because it is NOT labeled `regressed-in-10.0.60`
-- #35771 → `no-fix-yet` (10.0.70 regression, no fix PR exists)
+- **Lane 1–4 detection** (shipped patch set, SR-from-main candidate, in-flight SR branches, preview lane) against the live `dotnet/maui` clone
+- **Tracker emission** for SR2/SR3 (inactive), SR8 (active in-flight), SR9 (active candidate), and net11 preview6 (active candidate)
+- **`-AllActiveMajors`** end-to-end across net10 + net11 with the expected tracker counts
+- **`Get-ReleaseReadiness`** verdict classification using known-answer data from the SR7 readiness analysis (e.g. #35313 → `in-sr-active`, #35344 → `in-sr-active` via the SafeArea follow-on fix, #35771 → `no-fix-yet`)
+- **Idempotent body hash** stability across re-runs (the daily workflow relies on this to no-op when nothing material changed)
