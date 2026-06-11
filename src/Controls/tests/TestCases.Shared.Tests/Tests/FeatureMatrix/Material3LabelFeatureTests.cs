@@ -13,6 +13,8 @@ public class Material3LabelFeatureTests : _GalleryUITest
 {
 	public override string GalleryPageName => "Label Feature Matrix";
 
+	public const string SimpleFormattedText = "SimpleFormattedText";
+
 	public Material3LabelFeatureTests(TestDevice device)
 		: base(device)
 	{
@@ -22,6 +24,10 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3Label_VerifyLabelWithFormattedText()
 	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement(SimpleFormattedText);
+		App.Tap(SimpleFormattedText);
 		App.WaitForElement("This is a Basic Label");
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -39,6 +45,8 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement(SimpleFormattedText);
+		App.Tap(SimpleFormattedText);
 		App.WaitForElement("HorizontalTextStart");
 		App.Tap("HorizontalTextStart");
 		App.WaitForElement("VerticalTextStart");
@@ -55,6 +63,8 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement(SimpleFormattedText);
+		App.Tap(SimpleFormattedText);
 		App.WaitForElement("HorizontalTextCenter");
 		App.Tap("HorizontalTextCenter");
 		App.WaitForElement("VerticalTextCenter");
@@ -71,6 +81,8 @@ public class Material3LabelFeatureTests : _GalleryUITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement(SimpleFormattedText);
+		App.Tap(SimpleFormattedText);
 		App.WaitForElement("HorizontalTextEnd");
 		App.Tap("HorizontalTextEnd");
 		App.WaitForElement("VerticalTextEnd");
