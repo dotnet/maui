@@ -266,6 +266,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			View.UpdateFlowDirection(_context.Shell);
 			NavigationBar.UpdateFlowDirection(_context.Shell);
+
+			if (TabBarController?.TabBar is not null)
+			{
+				TabBarController.TabBar.UpdateFlowDirection(_context.Shell);
+			}
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -597,6 +602,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
+				ShellItemRenderer.UpdateTabBarItemBadge(TabBarItem, ShellSection, TabBarController?.TabBar);
 			});
 		}
 

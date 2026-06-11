@@ -49,8 +49,8 @@
     <TargetPlatformMinVersion>12.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
-    <SupportedOSPlatformVersion>23.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>23.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>24.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsTizen)' == 'True'">
     <SupportedOSPlatformVersion>6.5</SupportedOSPlatformVersion>
