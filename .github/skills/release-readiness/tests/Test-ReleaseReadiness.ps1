@@ -1371,6 +1371,104 @@ $verdictDataReady = @{
 $verdictReadyResult = Get-OverallVerdict -Data $verdictDataReady
 Assert-Eq -Label "READY-only ship checks: verdict stays at tier 3 (Ready)" -Expected 3 -Actual $verdictReadyResult.tier
 
+# ───── ci-scan freshness + rendering ─────
+Write-Host "`n[Unit] Format-CiScanIssueRows + freshness" -ForegroundColor Cyan
+
+$nowUtc = (Get-Date).ToUniversalTime()
+$ciScanIssues = @(
+    [PSCustomObject]@{ number = 35864; url = 'https://github.com/dotnet/maui/issues/35864'; title = 'Recurring CarouselView timeout';
+                       createdAt = $nowUtc.AddHours(-6).ToString('o') }
+    [PSCustomObject]@{ number = 35854; url = 'https://github.com/dotnet/maui/issues/35854'; title = 'Env instability CV Android';
+                       createdAt = $nowUtc.AddDays(-3).ToString('o') }
+    [PSCustomObject]@{ number = 35738; url = 'https://github.com/dotnet/maui/issues/35738'; title = 'Flaky iOS RootViewSize test';
+                       createdAt = $nowUtc.AddDays(-10).ToString('o') }
+)
+$rows = Format-CiScanIssueRows -Issues $ciScanIssues -RepoUrl 'https://github.com/dotnet/maui'
+Assert-Eq -Label "Fresh issue (<24h) gets 🆕 marker" -Expected $true `
+    -Actual ($rows -match '🆕\s*\[#35864\]')
+Assert-Eq -Label "Older issue (>24h) does NOT get 🆕 marker" -Expected $false `
+    -Actual ($rows -match '🆕\s*\[#35854\]')
+Assert-Eq -Label "Age column shows '6h ago' for ~6-hour-old issue" -Expected $true `
+    -Actual ($rows -match '6h ago')
+Assert-Eq -Label "Age column shows 'Nd ago' for older issues" -Expected $true `
+    -Actual ($rows -match '\d+d ago')
+Assert-Eq -Label "Format-CiScanIssueRows returns null for empty input" -Expected $true `
+    -Actual ($null -eq (Format-CiScanIssueRows -Issues @() -RepoUrl 'https://github.com/dotnet/maui'))
+
+# Truncation behavior: > MaxRows
+$manyIssues = 1..20 | ForEach-Object {
+    [PSCustomObject]@{ number = 40000 + $_; url = "https://github.com/dotnet/maui/issues/$(40000+$_)";
+                       title = "Auto-filed $_"; createdAt = $nowUtc.AddDays(-$_).ToString('o') }
+}
+$rowsCapped = Format-CiScanIssueRows -Issues $manyIssues -RepoUrl 'https://github.com/dotnet/maui' -MaxRows 5
+Assert-Eq -Label "Cap respected (MaxRows=5 shows 5 issue rows)" -Expected 5 `
+    -Actual ([regex]::Matches($rowsCapped, '\| \[#400').Count)
+Assert-Eq -Label "Cap explanation rendered with '…and N more' note" -Expected $true `
+    -Actual ($rowsCapped -match '…and 15 more')
+Assert-Eq -Label "Cap explanation links to filtered issue list" -Expected $true `
+    -Actual ($rowsCapped -match 'label%3Aci-scan')
+
+# Markdown includes ci-scan section when ciScanIssues are present
+Write-Host "`n[Unit] SR markdown includes 'Recent CI Failure Scanner signals' section" -ForegroundColor Cyan
+
+$mdDataWithCiScan = @{} + $mdData
+$mdDataWithCiScan['ciScanIssues'] = $ciScanIssues
+$mdWithCiScan = Format-MarkdownReport -Data $mdDataWithCiScan -RepoUrl 'https://github.com/dotnet/maui' `
+                                      -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "ci-scan section header rendered when issues present" -Expected $true `
+    -Actual ($mdWithCiScan -match 'Recent CI Failure Scanner signals')
+Assert-Eq -Label "ci-scan section explanatory note rendered" -Expected $true `
+    -Actual ($mdWithCiScan -match 'runs every 12h')
+Assert-Eq -Label "ci-scan section links to a fresh issue" -Expected $true `
+    -Actual ($mdWithCiScan -match '🆕\s*\[#35864\]')
+
+# Without ciScanIssues key → no ci-scan section
+$mdNoCiScan = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
+                                    -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "No ciScanIssues key: section NOT rendered" -Expected $false `
+    -Actual ($mdNoCiScan -match 'Recent CI Failure Scanner signals')
+
+# ───── Regression test: ConvertTo-Utc handles both string + DateTime inputs ─────
+# ConvertFrom-Json already returns DateTime (Kind=Utc) for ISO-8601 'Z' strings.
+# A naive [DateTime]::Parse(...) re-converts to Kind=Unspecified, which then
+# ToUniversalTime() misinterprets as Local, silently shifting age by the host's
+# UTC offset (e.g. PDT-shifted age becomes negative). Lock the contract.
+Write-Host "`n[Unit] ConvertTo-Utc handles DateTime + string input identically" -ForegroundColor Cyan
+
+# String input
+$strUtc = ConvertTo-Utc -Value '2026-06-11T01:53:28Z'
+Assert-Eq -Label "String 'Z' input → Kind=Utc" -Expected ([DateTimeKind]::Utc) -Actual $strUtc.Kind
+Assert-Eq -Label "String 'Z' input → correct hour" -Expected 1 -Actual $strUtc.Hour
+
+# DateTime input (already Utc — what ConvertFrom-Json produces)
+$dtUtc = [DateTime]::SpecifyKind('2026-06-11T01:53:28', [DateTimeKind]::Utc)
+$out = ConvertTo-Utc -Value $dtUtc
+Assert-Eq -Label "DateTime (Utc) input → preserved" -Expected $dtUtc.Hour -Actual $out.Hour
+Assert-Eq -Label "DateTime (Utc) input → Kind stays Utc" -Expected ([DateTimeKind]::Utc) -Actual $out.Kind
+
+# DateTime input (Unspecified — assume UTC, don't apply local offset)
+$dtUnspec = [DateTime]::SpecifyKind('2026-06-11T01:53:28', [DateTimeKind]::Unspecified)
+$out2 = ConvertTo-Utc -Value $dtUnspec
+Assert-Eq -Label "DateTime (Unspecified) input → assumed UTC (no offset shift)" -Expected 1 -Actual $out2.Hour
+
+# Null / bad input
+Assert-Eq -Label "Null input returns null" -Expected $true -Actual ($null -eq (ConvertTo-Utc -Value $null))
+Assert-Eq -Label "Garbage string returns null" -Expected $true -Actual ($null -eq (ConvertTo-Utc -Value 'not-a-date'))
+
+# End-to-end: Format-CiScanIssueRows with a DateTime (Utc) field — must produce
+# the SAME age as the equivalent string. This is the exact bug we just hit.
+$twoHoursAgo = (Get-Date).ToUniversalTime().AddHours(-2)
+$twoHoursAgoUtc = [DateTime]::SpecifyKind($twoHoursAgo, [DateTimeKind]::Utc)
+$issueWithDtField = @(
+    [PSCustomObject]@{ number = 99999; url = 'https://github.com/dotnet/maui/issues/99999';
+                       title = 'Bug repro'; createdAt = $twoHoursAgoUtc }
+)
+$rowsDt = Format-CiScanIssueRows -Issues $issueWithDtField -RepoUrl 'https://github.com/dotnet/maui'
+Assert-Eq -Label "DateTime createdAt (Utc): age positive (no '-Nh ago' bug)" -Expected $false `
+    -Actual ($rowsDt -match '-\d+h ago')
+Assert-Eq -Label "DateTime createdAt (Utc): rendered as 2h or 3h ago, not negative" -Expected $true `
+    -Actual ($rowsDt -match '[23]h ago')
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

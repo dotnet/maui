@@ -449,7 +449,7 @@ function Get-IssuesByLabel {
         "--label",
         $Label,
         "--json",
-        "number,title,url,labels,milestone,updatedAt"
+        "number,title,url,labels,milestone,createdAt,updatedAt"
     ) -Description "list issues with label '$Label'"
 
     return ConvertFrom-JsonOrEmptyArray $json
@@ -504,6 +504,69 @@ function Get-ReleaseRelevantIssuesByLabel {
         Where-Object { Test-IssueReleaseRelevant -Issue $_ -Major $Major -Preview $Preview }
 
     return @($deduped)
+}
+
+function Get-CiScanIssues {
+    <#
+    .SYNOPSIS
+        Returns open `ci-scan` issues (auto-filed by the CI Failure Scanner
+        workflow every 12h). These are NOT filtered by major/preview because
+        the scanner targets `main` regardless of which release we're shipping
+        — every fresh ci-scan signal is a candidate noise source for the
+        current release.
+    #>
+    [OutputType([object[]])]
+    param()
+
+    $issues = Get-IssuesByLabel -Label 'ci-scan'
+    return @($issues | Sort-Object {
+        $u = ConvertTo-UtcDateTime -Value $_.createdAt
+        if ($u) { $u } else { [DateTime]::MinValue }
+    } -Descending)
+}
+
+function Test-IssueIsFresh {
+    <#
+    .SYNOPSIS
+        Returns $true if the issue was created within the last $HoursThreshold
+        hours. Used to escalate ci-scan checks to WATCH when scanner activity
+        is recent.
+    #>
+    param($Issue, [int]$HoursThreshold = 24)
+
+    if (-not $Issue.PSObject.Properties['createdAt'] -or -not $Issue.createdAt) { return $false }
+    $createdUtc = ConvertTo-UtcDateTime -Value $Issue.createdAt
+    if (-not $createdUtc) { return $false }
+    return ((Get-Date).ToUniversalTime() - $createdUtc).TotalHours -lt $HoursThreshold
+}
+
+function ConvertTo-UtcDateTime {
+    <#
+    .SYNOPSIS
+        Normalizes a value that may be a DateTime (Utc/Local/Unspecified) or a
+        string into a UTC DateTime. Returns $null if conversion fails.
+    .NOTES
+        ConvertFrom-Json parses ISO-8601 'Z' strings into DateTime with Kind=Utc,
+        but [DateTime]::Parse on a string returns Kind=Unspecified, which
+        .ToUniversalTime() then misinterprets as Local — silently shifting by
+        the host's UTC offset. Use this helper everywhere age is computed.
+    #>
+    param([object]$Value)
+
+    if ($null -eq $Value) { return $null }
+
+    if ($Value -is [DateTime]) {
+        if ($Value.Kind -eq [DateTimeKind]::Utc)   { return $Value }
+        if ($Value.Kind -eq [DateTimeKind]::Local) { return $Value.ToUniversalTime() }
+        return [DateTime]::SpecifyKind($Value, [DateTimeKind]::Utc)
+    }
+
+    try {
+        $dto = [DateTimeOffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture)
+        return $dto.UtcDateTime
+    } catch {
+        return $null
+    }
 }
 
 function Get-PRAction {
@@ -653,6 +716,52 @@ function Add-IssueTable {
         $labels = (@($issue.labels | ForEach-Object { $_.name }) -join ", ")
         $milestone = if ($issue.milestone -and $issue.milestone.title) { $issue.milestone.title } else { "" }
         [void]$Builder.AppendLine("| [#$($issue.number)]($($issue.url)) | $(Format-MarkdownCell $issue.title) | $(Format-MarkdownCell $labels) | $(Format-MarkdownCell $milestone) |")
+    }
+    [void]$Builder.AppendLine("")
+}
+
+function Add-CiScanTable {
+    <#
+    .SYNOPSIS
+        Renders open ci-scan issues with creation age. Fresh issues (<24h)
+        are visually flagged with 🆕 so release captains can spot recent
+        scanner activity at a glance. Sorted newest-first; capped at $MaxRows.
+    #>
+    param(
+        [System.Text.StringBuilder]$Builder,
+        [array]$Issues,
+        [int]$MaxRows = 15
+    )
+
+    if ($Issues.Count -eq 0) {
+        [void]$Builder.AppendLine("_No open ``ci-scan`` issues — scanner has not flagged recurring CI failures recently._")
+        [void]$Builder.AppendLine("")
+        return
+    }
+
+    [void]$Builder.AppendLine("| Issue | Title | Filed |")
+    [void]$Builder.AppendLine("|-------|-------|-------|")
+    $rows = $Issues | Select-Object -First $MaxRows
+    foreach ($issue in $rows) {
+        $marker = ""
+        $ageDisplay = "—"
+        if ($issue.PSObject.Properties['createdAt'] -and $issue.createdAt) {
+            $createdUtc = ConvertTo-UtcDateTime -Value $issue.createdAt
+            if ($createdUtc) {
+                $hoursAgo = ((Get-Date).ToUniversalTime() - $createdUtc).TotalHours
+                $ageDisplay = if ($hoursAgo -lt 24) {
+                    "{0:N0}h ago" -f $hoursAgo
+                } else {
+                    "{0:N0}d ago" -f ($hoursAgo / 24)
+                }
+                if ($hoursAgo -lt 24) { $marker = "🆕 " }
+            }
+        }
+        [void]$Builder.AppendLine("| $marker[#$($issue.number)]($($issue.url)) | $(Format-MarkdownCell $issue.title) | $ageDisplay |")
+    }
+    if ($Issues.Count -gt $MaxRows) {
+        [void]$Builder.AppendLine("")
+        [void]$Builder.AppendLine("_…and $($Issues.Count - $MaxRows) more. Full list: [open ci-scan issues](https://github.com/$Repository/issues?q=is%3Aopen+is%3Aissue+label%3Aci-scan+sort%3Acreated-desc)._")
     }
     [void]$Builder.AppendLine("")
 }
@@ -820,6 +929,20 @@ if ($kbeIssues.Count -gt 0) {
     $checks += New-Check -Area "Known Build Errors" -Status "READY" -Details "No release-relevant open KBE issues found by public search." -NextAction "Continue monitoring."
 }
 
+# --- ci-scan signals (auto-filed by CI Failure Scanner every 12h) ---
+# Fresh issues (created in last 24h) escalate to WATCH so release captains
+# notice that the scanner just found something — likely affects this release.
+$ciScanIssues = @(Get-CiScanIssues)
+$freshCiScan = @($ciScanIssues | Where-Object { Test-IssueIsFresh -Issue $_ -HoursThreshold 24 })
+if ($freshCiScan.Count -gt 0) {
+    $detail = "$($freshCiScan.Count) ci-scan issue(s) filed in the last 24h ($($ciScanIssues.Count) total open). Likely affects this release."
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details $detail -NextAction "Review the freshest ci-scan issues; decide whether any affect ship-readiness."
+} elseif ($ciScanIssues.Count -gt 0) {
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details "$($ciScanIssues.Count) open ci-scan issue(s) (none filed in the last 24h)." -NextAction "Review recent ci-scan issues for ship-impact patterns."
+} else {
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "READY" -Details "No open ci-scan issues — scanner has not flagged recurring CI failures." -NextAction "Continue monitoring."
+}
+
 # --- CI truth (placeholder; #35052 wiring not yet done) ---
 $checks += New-Check -Area "CI truth" -Status "INSUFFICIENT_DATA" -Details "#35052 structured CI evidence is not wired into this script yet." -NextAction "Do not infer release readiness from GitHub checks alone; consume #35052 output when available."
 
@@ -913,6 +1036,7 @@ $report = [PSCustomObject]@{
     InflightPullRequests  = $inflightHumanPRs
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
+    CiScanIssues          = $ciScanIssues
 }
 
 $md = [System.Text.StringBuilder]::new()
@@ -997,6 +1121,12 @@ Add-IssueTable -Builder $md -Issues $priorityIssues
 [void]$md.AppendLine("## Known Build Error watch list")
 [void]$md.AppendLine("")
 Add-IssueTable -Builder $md -Issues $kbeIssues
+
+[void]$md.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
+[void]$md.AppendLine("")
+[void]$md.AppendLine("_Auto-filed by the CI Failure Scanner workflow (runs every 12h on ``main``). Fresh issues (<24h) are flagged 🆕._")
+[void]$md.AppendLine("")
+Add-CiScanTable -Builder $md -Issues $ciScanIssues
 
 [void]$md.AppendLine("## Maintainer next actions")
 [void]$md.AppendLine("")

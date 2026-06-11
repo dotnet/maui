@@ -1205,6 +1205,112 @@ function Get-OpenSrPrs {
     return @($raw | ConvertFrom-Json -ErrorAction SilentlyContinue)
 }
 
+function Get-OpenIssuesByLabel {
+    <#
+    .SYNOPSIS
+        Returns open issues labeled $Label. Includes createdAt so callers can
+        compute freshness for ci-scan-style escalation. Returns an array.
+    #>
+    [OutputType([object[]])]
+    param([string]$Label)
+
+    $raw = Invoke-Gh @('issue', 'list', '--repo', $script:Repo, '--state', 'open',
+                       '--limit', '100', '--label', $Label,
+                       '--json', 'number,title,url,labels,createdAt,updatedAt')
+    if (-not $raw) { return @() }
+    $issues = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if (-not $issues) { return @() }
+    return @($issues)
+}
+
+function Get-CiScanIssuesForSr {
+    <#
+    .SYNOPSIS
+        Returns open `ci-scan` issues sorted newest-first. Not filtered by
+        SR version — the scanner targets `main`, so every signal is a
+        potential noise/blocker source for any in-flight SR.
+    #>
+    [OutputType([object[]])]
+    param()
+
+    $issues = Get-OpenIssuesByLabel -Label 'ci-scan'
+    return @($issues | Sort-Object {
+        $u = ConvertTo-Utc -Value $_.createdAt
+        if ($u) { $u } else { [DateTime]::MinValue }
+    } -Descending)
+}
+
+function Test-CiScanIsFresh {
+    <#
+    .SYNOPSIS
+        Returns $true if the ci-scan issue was filed within the last $HoursThreshold
+        hours (default 24). Used to escalate the ship-check to WATCH.
+    #>
+    param($Issue, [int]$HoursThreshold = 24)
+    if (-not $Issue.PSObject.Properties['createdAt'] -or -not $Issue.createdAt) { return $false }
+    $createdUtc = ConvertTo-Utc -Value $Issue.createdAt
+    if (-not $createdUtc) { return $false }
+    return ((Get-Date).ToUniversalTime() - $createdUtc).TotalHours -lt $HoursThreshold
+}
+
+function Get-CiSignalChecks {
+    <#
+    .SYNOPSIS
+        Builds two readiness-check records:
+          1. CI Failure Scanner signals (ci-scan label, escalates if any <24h)
+          2. Known Build Errors (KBE label, WATCH if any open, READY otherwise)
+        Returns @{ Checks = [array]; CiScanIssues = [array]; KbeIssues = [array] }.
+    #>
+    param()
+
+    Write-Host "Querying ci-scan and Known Build Error issue lists..." -ForegroundColor Cyan
+    $ciScan = @(Get-CiScanIssuesForSr)
+    $kbe    = @(Get-OpenIssuesByLabel -Label 'Known Build Error')
+
+    $checks = @()
+
+    $fresh = @($ciScan | Where-Object { Test-CiScanIsFresh -Issue $_ -HoursThreshold 24 })
+    if ($fresh.Count -gt 0) {
+        $checks += New-ReadinessCheck `
+            -Area 'CI Failure Scanner signals' `
+            -Status 'WATCH' `
+            -Details "$($fresh.Count) ci-scan issue(s) filed in the last 24h ($($ciScan.Count) total open). Likely affects this SR." `
+            -NextAction 'Review the freshest ci-scan issues to confirm none block ship.'
+    } elseif ($ciScan.Count -gt 0) {
+        $checks += New-ReadinessCheck `
+            -Area 'CI Failure Scanner signals' `
+            -Status 'WATCH' `
+            -Details "$($ciScan.Count) open ci-scan issue(s) (none filed in the last 24h)." `
+            -NextAction 'Skim recent ci-scan issues for impact patterns; mark accepted-known if appropriate.'
+    } else {
+        $checks += New-ReadinessCheck `
+            -Area 'CI Failure Scanner signals' `
+            -Status 'READY' `
+            -Details 'No open ci-scan issues — scanner has not flagged recurring CI failures.' `
+            -NextAction 'Continue monitoring.'
+    }
+
+    if ($kbe.Count -gt 0) {
+        $checks += New-ReadinessCheck `
+            -Area 'Known Build Errors' `
+            -Status 'WATCH' `
+            -Details "$($kbe.Count) open Known Build Error issue(s). May explain background CI noise." `
+            -NextAction 'Cross-check against any SR build failures to distinguish accepted-known vs new regressions.'
+    } else {
+        $checks += New-ReadinessCheck `
+            -Area 'Known Build Errors' `
+            -Status 'READY' `
+            -Details 'No open Known Build Error issues found.' `
+            -NextAction 'Continue monitoring.'
+    }
+
+    return @{
+        Checks       = $checks
+        CiScanIssues = $ciScan
+        KbeIssues    = $kbe
+    }
+}
+
 # region ────────────────────── 7. MARKDOWN REPORT ─────────────────────────
 
 function Get-VerdictTier {
@@ -1382,6 +1488,75 @@ function ConvertTo-LinkedPr {
     if (-not $PrNumber) { return '—' }
     if (-not $RepoUrl) { return "#$PrNumber" }
     return "[#$PrNumber]($RepoUrl/pull/$PrNumber)"
+}
+
+function Format-CiScanIssueRows {
+    <#
+    .SYNOPSIS
+        Builds the rows of the ci-scan section for the SR markdown report.
+        Returns the table body as a single string (already terminated with newlines).
+        Returns $null if there's nothing to render. Fresh issues (<24h) are
+        flagged with 🆕.
+    #>
+    param([array]$Issues, [string]$RepoUrl, [int]$MaxRows = 15)
+    if (-not $Issues -or $Issues.Count -eq 0) { return $null }
+
+    $sb = [System.Text.StringBuilder]::new()
+    [void]$sb.AppendLine('| Issue | Title | Filed |')
+    [void]$sb.AppendLine('|---|---|---|')
+    $rows = $Issues | Select-Object -First $MaxRows
+    foreach ($iss in $rows) {
+        $marker = ''
+        $ageDisplay = '—'
+        if ($iss.PSObject.Properties['createdAt'] -and $iss.createdAt) {
+            $createdUtc = ConvertTo-Utc -Value $iss.createdAt
+            if ($createdUtc) {
+                $hoursAgo = ((Get-Date).ToUniversalTime() - $createdUtc).TotalHours
+                $ageDisplay = if ($hoursAgo -lt 24) { '{0:N0}h ago' -f $hoursAgo }
+                              else                  { '{0:N0}d ago' -f ($hoursAgo / 24) }
+                if ($hoursAgo -lt 24) { $marker = '🆕 ' }
+            }
+        }
+        $issLink = "[#$($iss.number)]($RepoUrl/issues/$($iss.number))"
+        $title = ($iss.title -replace '\|', '\|').Trim()
+        [void]$sb.AppendLine("| $marker$issLink | $title | $ageDisplay |")
+    }
+    if ($Issues.Count -gt $MaxRows) {
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine("_…and $($Issues.Count - $MaxRows) more. Full list: [open ci-scan issues]($RepoUrl/issues?q=is%3Aopen+is%3Aissue+label%3Aci-scan+sort%3Acreated-desc)._")
+    }
+    return $sb.ToString()
+}
+
+function ConvertTo-Utc {
+    <#
+    .SYNOPSIS
+        Normalizes a value that may be a DateTime (Utc/Local/Unspecified) or a
+        string into a UTC DateTime. Returns $null if conversion fails.
+    .NOTES
+        `ConvertFrom-Json` already parses ISO-8601 'Z' strings into DateTime
+        with Kind=Utc. But `[DateTime]::Parse(...)` on a string produces
+        Kind=Unspecified, which `.ToUniversalTime()` then misinterprets as
+        Local — silently shifting the value by the host's UTC offset. Use
+        this helper everywhere age/freshness is computed.
+    #>
+    param([object]$Value)
+
+    if ($null -eq $Value) { return $null }
+
+    if ($Value -is [DateTime]) {
+        if ($Value.Kind -eq [DateTimeKind]::Utc) { return $Value }
+        if ($Value.Kind -eq [DateTimeKind]::Local) { return $Value.ToUniversalTime() }
+        # Unspecified — assume UTC (gh JSON normally returns 'Z' suffix)
+        return [DateTime]::SpecifyKind($Value, [DateTimeKind]::Utc)
+    }
+
+    try {
+        $dto = [DateTimeOffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture)
+        return $dto.UtcDateTime
+    } catch {
+        return $null
+    }
 }
 
 function Format-GitHubHandle {
@@ -1610,6 +1785,21 @@ function Format-MarkdownReport {
             $fresh = if ($lb) { if ($lb.isAtOrAheadOfSrHead) { '✅' } else { '❌ stale' } } else { '—' }
             $buildLink = if ($lb -and $lb.url) { "[$($lb.id)]($($lb.url))" } else { '—' }
             [void]$sb.AppendLine("| $($p.name) | ``$pverdict`` | $result | $fresh | $buildLink |")
+        }
+        [void]$sb.AppendLine()
+    }
+
+    # === Recent CI Failure Scanner signals (ci-scan label) ===
+    if ($Data.ContainsKey('ciScanIssues') -and $Data['ciScanIssues']) {
+        [void]$sb.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine("_Auto-filed by the CI Failure Scanner workflow (runs every 12h on ``main``). Fresh issues (<24h) are flagged 🆕._")
+        [void]$sb.AppendLine()
+        $rows = Format-CiScanIssueRows -Issues $Data['ciScanIssues'] -RepoUrl $RepoUrl
+        if ($rows) {
+            [void]$sb.Append($rows)
+        } else {
+            [void]$sb.AppendLine('_No open ci-scan issues._')
         }
         [void]$sb.AppendLine()
     }
@@ -1847,6 +2037,19 @@ function Invoke-Main {
     # questions as blocking items at the top of the report.
     if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
         $data['shipChecks'] = Get-ReleaseShipChecks -Ctx $ctx
+    }
+
+    # CI scanner + KBE issue signals — merged into shipChecks so they appear in the
+    # ship-readiness table AND can escalate the verdict (fresh ci-scan → WATCH; never
+    # BLOCKED automatically because the scanner can be noisy).
+    if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
+        $signalResult = Get-CiSignalChecks
+        if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
+            $data['shipChecks'] = @()
+        }
+        $data['shipChecks'] = @($data['shipChecks']) + @($signalResult.Checks)
+        $data['ciScanIssues'] = @($signalResult.CiScanIssues)
+        $data['kbeIssues']    = @($signalResult.KbeIssues)
     }
 
     if ($Phase -in 'all', 'regressions') {
