@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests;
@@ -6,6 +7,28 @@ namespace Microsoft.Maui.DeviceTests;
 [Category(TestCategory.Graphics)]
 public partial class GraphicsTests : TestBase
 {
+	[Fact]
+	public void RadialGradientWithZeroSizeDoesNotThrow()
+	{
+		var paint = new RadialGradientPaintStub(Colors.Red, Colors.Blue)
+		{
+			Center = new Point(0.5, 0.5),
+			Radius = 0.5
+		};
+
+		var context = global::Android.App.Application.Context;
+		using var drawable = new Microsoft.Maui.Graphics.MauiDrawable(context);
+
+		drawable.SetBounds(0, 0, 0, 0);
+		drawable.SetBackground(paint);
+
+		using var bitmap = global::Android.Graphics.Bitmap.CreateBitmap(1, 1, global::Android.Graphics.Bitmap.Config.Argb8888!);
+		using var canvas = new global::Android.Graphics.Canvas(bitmap);
+
+		var ex = Record.Exception(() => drawable.Draw(canvas));
+		Assert.Null(ex);
+	}
+
 	[Theory]
 	[InlineData(0, 0, 0, 0)]
 	[InlineData(10, 10, 100, 100)]
