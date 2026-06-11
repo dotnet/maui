@@ -290,7 +290,10 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeSearchBar(searchBarHandler).Query;
 
 		ImeAction GetNativeReturnType(SearchBarHandler searchBarHandler) =>
-			(ImeAction)GetNativeSearchBar(searchBarHandler).ImeOptions;
+			// Mask out ImeFlags (e.g., NoFullscreen) so only the action bits are compared.
+			// ImeOptions may contain 0x02000000 (NoFullscreen) OR'd with the action value
+			// since PR #35197 sets that flag to prevent full-screen extract mode in landscape.
+			(ImeAction)((int)GetNativeSearchBar(searchBarHandler).ImeOptions & (int)ImeAction.ImeMaskAction);
 
 		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
 			GetNativeSearchBar(searchBarHandler).SetQuery(text, false);
