@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		ShellItem? _shellItem;
 		SearchHandler? _currentSearchHandler;
 		IShellAppearanceElement? _shellAppearanceElement;
+		readonly HashSet<ShellSection> _badgeTrackedSections = new();
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -42,8 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnNavigationViewLoaded(object sender, RoutedEventArgs e)
 		{
-			if (PlatformView is not null)
-				PlatformView.Loaded -= OnNavigationViewLoaded;
+			PlatformView?.Loaded -= OnNavigationViewLoaded;
 
 			UpdateSearchHandler();
 			MapMenuItems();
@@ -75,8 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			base.ConnectHandler(platformView);
 
-			if (mauiNavView is not null)
-				mauiNavView.SelectionChanged += OnNavigationTabChanged;
+			mauiNavView?.SelectionChanged += OnNavigationTabChanged;
 
 			if (VirtualView.Parent is Shell shell)
 			{
@@ -98,16 +97,17 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.SuggestionChosen -= OnSearchBoxSuggestionChosen;
 					autoSuggestBox.GotFocus -= OnSearchBoxGotFocus;
 					autoSuggestBox.LostFocus -= OnSearchBoxLostFocus;
+					autoSuggestBox.Loaded -= AutoSuggestBoxOnLoaded;
 				}
 			}
 
 			platformView.Loaded -= OnNavigationViewLoaded;
 
-			if (_currentShellSection != null)
-				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
+			_currentShellSection?.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
-			if (_currentSearchHandler != null)
-				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+			_currentSearchHandler?.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+
+			UntrackAllBadgeSections();
 
 			if (_shellItem?.Parent is IShellController controller)
 			{
@@ -139,6 +139,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					controller.RemoveAppearanceObserver(this);
 					((IShellItemController)_shellItem).ItemsCollectionChanged -= OnItemsChanged;
+					UntrackAllBadgeSections();
 				}
 
 				_shellItem = (ShellItem)view;
@@ -280,6 +281,9 @@ namespace Microsoft.Maui.Controls.Handlers
 					}
 
 					vm.Icon = iconSource?.CreateIconElement();
+					vm.BadgeText = bsi.BadgeText;
+					vm.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+					vm.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
 				}
 			});
 
@@ -287,6 +291,69 @@ namespace Microsoft.Maui.Controls.Handlers
 				navView.SelectedItem = selectedItem;
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			TrackBadgeSections();
+		}
+
+		void TrackBadgeSections()
+		{
+			UntrackAllBadgeSections();
+
+			if (_shellItem is not IShellItemController shellItemController)
+				return;
+
+			foreach (var section in shellItemController.GetItems())
+			{
+				if (_badgeTrackedSections.Add(section))
+				{
+					section.PropertyChanged += OnShellSectionBadgePropertyChanged;
+				}
+			}
+		}
+
+		void UntrackAllBadgeSections()
+		{
+			foreach (var section in _badgeTrackedSections)
+			{
+				section.PropertyChanged -= OnShellSectionBadgePropertyChanged;
+			}
+			_badgeTrackedSections.Clear();
+		}
+
+		void OnShellSectionBadgePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName != BaseShellItem.BadgeTextProperty.PropertyName &&
+				e.PropertyName != BaseShellItem.BadgeColorProperty.PropertyName &&
+				e.PropertyName != BaseShellItem.BadgeTextColorProperty.PropertyName)
+				return;
+
+			if (sender is not BaseShellItem bsi)
+				return;
+
+			// Find the matching ViewModel and update it directly
+			foreach (var navItem in _mainLevelTabs)
+			{
+				if (navItem.Data == bsi)
+				{
+					navItem.BadgeText = bsi.BadgeText;
+					navItem.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+					navItem.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
+					return;
+				}
+
+				if (navItem.MenuItemsSource is not null)
+				{
+					foreach (var subItem in navItem.MenuItemsSource)
+					{
+						if (subItem.Data == bsi)
+						{
+							subItem.BadgeText = bsi.BadgeText;
+							subItem.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+							subItem.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
+							return;
+						}
+					}
+				}
+			}
 		}
 
 		void UpdateSearchHandler()
@@ -300,10 +367,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			var newSearchHandler = shell.GetEffectiveValue<SearchHandler?>(Shell.SearchHandlerProperty, null);
 			if (newSearchHandler != _currentSearchHandler)
 			{
-				if (_currentSearchHandler is not null)
-				{
-					_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
-				}
+				_currentSearchHandler?.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
 
 				_currentSearchHandler = newSearchHandler;
 
@@ -318,16 +382,24 @@ namespace Microsoft.Maui.Controls.Handlers
 						autoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
 						autoSuggestBox.GotFocus += OnSearchBoxGotFocus;
 						autoSuggestBox.LostFocus += OnSearchBoxLostFocus;
+						autoSuggestBox.Loaded += AutoSuggestBoxOnLoaded;
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
-					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
-					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
-					autoSuggestBox.Text = _currentSearchHandler.Query;
 					autoSuggestBox.UpdateTextOnSelect = false;
-
+					autoSuggestBox.UpdateSearchHandlerText(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerPlaceholder(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerIsEnabled(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerCharacterSpacing(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerTextColor(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerPlaceholderColor(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
+					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
+					
 					_currentSearchHandler.PropertyChanged += OnCurrentSearchHandlerPropertyChanged;
 
 					autoSuggestBox.Visibility = _currentSearchHandler.SearchBoxVisibility == SearchBoxVisibility.Hidden ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
@@ -345,12 +417,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					UpdateQueryIcon();
 				}
-				else if (autoSuggestBox is not null)
+				else
 				{
 					// there is no current search handler, so hide the autoSuggestBox
-					autoSuggestBox.Visibility = UI.Xaml.Visibility.Collapsed;
+					autoSuggestBox?.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
+		}
+
+		void AutoSuggestBoxOnLoaded(object sender, RoutedEventArgs e)
+		{
+			if (VirtualView is null || _currentSearchHandler is null || PlatformView is not NavigationView mauiNavView)
+			{
+				return;
+			}
+
+			mauiNavView.AutoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
 		}
 
 		void OnSearchBoxGotFocus(object sender, RoutedEventArgs e)
@@ -369,7 +451,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				return;
 
 			if (args.Reason != Microsoft.UI.Xaml.Controls.AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
+			{
 				_currentSearchHandler.Query = sender.Text;
+			}
 		}
 
 		void OnSearchBoxSuggestionChosen(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxSuggestionChosenEventArgs args)
@@ -454,19 +538,42 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (PlatformView is not NavigationView mauiNavView)
 				return;
 
+			var autoSuggestBox = mauiNavView.AutoSuggestBox;
 			switch (e.PropertyName)
 			{
+				case nameof(SearchHandler.Query):
+				case nameof(SearchHandler.TextTransform):
+					autoSuggestBox.UpdateSearchHandlerText(_currentSearchHandler);
+					break;
 				case nameof(SearchHandler.Placeholder):
-					mauiNavView.AutoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
+					autoSuggestBox.UpdateSearchHandlerPlaceholder(_currentSearchHandler);
 					break;
 				case nameof(SearchHandler.IsSearchEnabled):
-					mauiNavView.AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
+					autoSuggestBox.UpdateSearchHandlerIsEnabled(_currentSearchHandler);
 					break;
 				case nameof(SearchHandler.ItemsSource):
-					mauiNavView.AutoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					break;
-				case nameof(SearchHandler.Query):
-					mauiNavView.AutoSuggestBox.Text = _currentSearchHandler.Query;
+				case nameof(SearchHandler.TextColor):
+					autoSuggestBox.UpdateSearchHandlerTextColor(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.PlaceholderColor):
+					autoSuggestBox.UpdateSearchHandlerPlaceholderColor(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.CancelButtonColor):
+					autoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.BackgroundColor):
+					autoSuggestBox.UpdateSearchHandlerBackground(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.CharacterSpacing):
+					autoSuggestBox.UpdateSearchHandlerCharacterSpacing(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.HorizontalTextAlignment):
+					autoSuggestBox.UpdateSearchHandlerHorizontalTextAlignment(_currentSearchHandler);
+					break;
+				case nameof(SearchHandler.VerticalTextAlignment):
+					autoSuggestBox.UpdateSearchHandlerVerticalTextAlignment(_currentSearchHandler);
 					break;
 			}
 		}
@@ -497,10 +604,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentShellSection == VirtualView.CurrentItem)
 				return;
 
-			if (_currentShellSection != null)
-			{
-				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
-			}
+			_currentShellSection?.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
 			_currentShellSection = VirtualView.CurrentItem;
 
@@ -522,10 +626,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			MapMenuItems();
 
-			if (_currentShellSection != null)
-			{
-				_currentShellSection.PropertyChanged += OnCurrentShellSectionPropertyChanged;
-			}
+			_currentShellSection?.PropertyChanged += OnCurrentShellSectionPropertyChanged;
 		}
 
 		void OnCurrentShellSectionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <Configuration>Release</Configuration>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Essentials.AI.Benchmarks</AssemblyName>
     <RootNamespace>Microsoft.Maui.Essentials.AI.Benchmarks</RootNamespace>
     <IsPackable>false</IsPackable>

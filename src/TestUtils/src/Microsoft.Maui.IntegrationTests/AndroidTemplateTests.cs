@@ -122,6 +122,44 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 
+		[Fact]
+		public void RunOnAndroid_MauiNativeAOT()
+		{
+			var id = "maui";
+			var framework = DotNetCurrent;
+			var config = "Release";
+
+			SetTestIdentifier(id, framework, config, "NativeAOT");
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.True(DotnetInternal.New(id, projectDir, framework, output: _output),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			var buildProps = AOTTemplateTest.PrepareNativeAotBuildPropsAndroid(BuildProps);
+
+			// Restrict to Android-only to avoid restoring NativeAOT packages for other platforms (e.g., iOS)
+			// which may not be available in the configured NuGet sources
+			buildProps.Add($"TargetFrameworks={framework}-android");
+
+			// NativeAOT requires an explicit runtime identifier matching the emulator ABI
+			var runtimeIdentifier = _emulatorFixture.TestAvd.Abi == "arm64-v8a" ? "android-arm64" : "android-x64";
+
+			AddInstrumentation(projectDir);
+
+			Assert.True(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android",
+				properties: buildProps, runtimeIdentifier: runtimeIdentifier, output: _output),
+				$"Project {Path.GetFileName(projectFile)} failed to build and install. Check test output/attachments for errors.");
+
+			// Write xh-results to the log directory for artifact collection
+			var xhResultsDir = Path.Combine(TestEnvironment.GetLogDirectory(), "xh-results", Path.GetFileName(projectDir));
+			Directory.CreateDirectory(xhResultsDir);
+
+			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
+			Assert.True(XHarness.RunAndroid(testPackage, xhResultsDir, -1, output: _output),
+				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
+		}
+
 		void AddInstrumentation(string projectDir)
 		{
 			var androidDir = Path.Combine(projectDir, "Platforms", "Android");

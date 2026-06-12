@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
-		AppCompatAlertDialog? _dialog;
+		protected AppCompatAlertDialog? _dialog;
 
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(Context);
@@ -102,6 +102,20 @@ namespace Microsoft.Maui.Handlers
 				else
 					pickerHandler.DismissDialog();
 			}
+		}
+
+		internal static void MapIsEnabled(IPickerHandler handler, IPicker picker)
+		{
+			var platformView = handler.PlatformView;
+			if (platformView == null)
+				return;
+
+			// Set native enabled state
+			platformView.Enabled = picker.IsEnabled;
+
+			// Ensure touch events propagate to parent views when disabled
+			platformView.Clickable = picker.IsEnabled;
+			platformView.Focusable = picker.IsEnabled;
 		}
 
 		internal static void MapFocus(IPickerHandler handler, IPicker picker, object? args)

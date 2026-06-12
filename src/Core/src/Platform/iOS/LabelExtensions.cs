@@ -85,7 +85,9 @@ namespace Microsoft.Maui.Platform
 #endif
 			};
 
+#pragma warning disable CS0618 // 'NSError.NSError()' is obsolete
 			NSError nsError = new();
+#pragma warning restore CS0618
 
 			// NOTE: Sometimes this will crash with some sort of consistency error.
 			// https://github.com/dotnet/maui/issues/25946

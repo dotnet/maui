@@ -26,9 +26,20 @@ namespace Microsoft.Maui.Controls
 			object original = value;
 			try
 			{
-				convertTo = Nullable.GetUnderlyingType(convertTo) ?? convertTo;
-
+				var underlyingType = Nullable.GetUnderlyingType(convertTo);
 				var stringValue = value as string ?? string.Empty;
+
+				// Handle empty string conversion to nullable types
+				// Empty string should convert to null for nullable value types
+				// Only apply to actual string values to avoid converting non-string inputs
+				// See: https://github.com/dotnet/maui/issues/8342
+				if (underlyingType != null && value is string && string.IsNullOrEmpty(stringValue))
+				{
+					value = null!;
+					return true;
+				}
+
+				convertTo = underlyingType ?? convertTo;
 				// see: https://bugzilla.xamarin.com/show_bug.cgi?id=32871
 				// do not canonicalize "*.[.]"; "1." should not update bound BindableProperty
 				if (stringValue.EndsWith(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal) && DecimalTypes.Contains(convertTo))
@@ -38,7 +49,11 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// do not canonicalize "-0"; user will likely enter a period after "-0"
-				if (stringValue == "-0" && DecimalTypes.Contains(convertTo))
+				// Only block when the string starts with "-0" and parses to exactly zero
+				// (e.g. "-0", "-0.0"), so that valid values like "0.5" or "-0.5" still convert.
+				if (stringValue.StartsWith("-0") && DecimalTypes.Contains(convertTo)
+				 && double.TryParse(stringValue, System.Globalization.NumberStyles.Any, CultureInfo.CurrentCulture, out var parsedNegZero)
+				 && parsedNegZero == 0.0)
 				{
 					value = original;
 					return false;

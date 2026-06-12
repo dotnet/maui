@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		async void OnStartAnimationButtonClicked(object sender, EventArgs e)
+		async void OnStartAnimationButtonClicked(object? sender, EventArgs e)
 		{
 			SetIsEnabledButtonState(false, true);
 
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages
 			SetIsEnabledButtonState(true, false);
 		}
 
-		void OnStartCustomAnimationButtonClicked(object sender, EventArgs e)
+		void OnStartCustomAnimationButtonClicked(object? sender, EventArgs e)
 		{
 			var parentAnimation = new Animation();
 			var scaleUpAnimation = new Animation(v => DotNetBotImage.Scale = v, 1, 2, Easing.SpringIn);
@@ -51,7 +51,7 @@ namespace Maui.Controls.Sample.Pages
 			parentAnimation.Commit(this, "CustomAnimation", 16, 4000, null, (v, c) => SetIsEnabledButtonState(true, false));
 		}
 
-		void OnCancelAnimationButtonClicked(object sender, EventArgs e)
+		void OnCancelAnimationButtonClicked(object? sender, EventArgs e)
 		{
 			Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(DotNetBotImage);
 			SetIsEnabledButtonState(true, false);

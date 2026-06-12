@@ -7,6 +7,7 @@ using Android.Content;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
+using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using static Android.Views.View;
@@ -25,6 +26,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _inputTransparent;
 		bool _isEnabled;
 		bool? _focusableDefaultValue;
+		GestureItemTouchListener? _recyclerViewTouchListener;
 		protected virtual VisualElement? Element => _handler?.VirtualView as VisualElement;
 
 		View? View => Element as View;
@@ -140,7 +142,8 @@ namespace Microsoft.Maui.Controls.Platform
 				new PanGestureHandler(() => View),
 				new SwipeGestureHandler(() => View),
 				InitializeDragAndDropHandler(),
-				pointerHandler
+				pointerHandler,
+				new LongPressGestureHandler(() => _handler, () => View)
 			);
 
 			var detector = new TapAndPanGestureDetector(context, listener);
@@ -216,17 +219,31 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			// Always unsubscribe first to avoid duplicates
-
+			ClearRecyclerViewTouchListener(platformView);
 			platformView.Touch -= OnPlatformViewTouched;
 			platformView.KeyPress -= OnKeyPress;
 
 
 			if (shouldAddTouchEvent)
 			{
-				platformView.Touch += OnPlatformViewTouched;
+				// For RecyclerView-based views (e.g., CollectionView), use AddOnItemTouchListener
+				// instead of the Touch event. Child item views (made clickable by SelectableViewHolder's
+				// SetOnClickListener) consume touch events, preventing them from reaching the
+				// Touch event handler. OnItemTouchListener.OnInterceptTouchEvent fires BEFORE children
+				// get the event, ensuring TapGestureRecognizers on the CollectionView receive
+				// all touch events regardless of child handling.
+				if (platformView is RecyclerView recyclerView)
+				{
+					_recyclerViewTouchListener = new GestureItemTouchListener(this);
+					recyclerView.AddOnItemTouchListener(_recyclerViewTouchListener);
+				}
+				else
+				{
+					platformView.Touch += OnPlatformViewTouched;
+				}
 
-				// If we have a TapGestureRecognizer, we need to handle key presses
-				if (View.HasAccessibleTapGesture())
+				// If we have a TapGestureRecognizer or LongPressGestureRecognizer, we need to handle key presses
+				if (View.HasAccessibleTapGesture() || View.HasAccessibleLongPressGesture())
 				{
 					platformView.KeyPress += OnKeyPress;
 					_focusableDefaultValue ??= platformView.Focusable;
@@ -253,9 +270,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			if (e.KeyCode.IsConfirmKey() &&
-				View.HasAccessibleTapGesture(out var tapGestureRecognizer) &&
-				e.Event.HasNoModifiers)
+			if (e.KeyCode.IsConfirmKey() && e.Event.HasNoModifiers)
 			{
 				if (!platformView.Enabled)
 				{
@@ -264,7 +279,15 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				if (!e.Event.IsCanceled)
-					tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
+				{
+					// Prefer Tap over LongPress for accessibility key activation.
+					// A confirm key press is a discrete action that maps to Tap semantics.
+					// LongPress only fires if no Tap recognizer exists.
+					if (View.HasAccessibleTapGesture(out var tapGestureRecognizer))
+						tapGestureRecognizer.SendTapped(View, (v) => Point.Zero);
+					else if (View.HasAccessibleLongPressGesture(out var longPressGestureRecognizer))
+						longPressGestureRecognizer.SendLongPressed(View, (v) => Point.Zero);
+				}
 			}
 
 			e.Handled = false;
@@ -292,6 +315,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformView.Focusable = _focusableDefaultValue ?? platformView.Focusable;
 				_focusableDefaultValue = null;
+				ClearRecyclerViewTouchListener(platformView);
 				platformView.Touch -= OnPlatformViewTouched;
 				platformView.KeyPress -= OnKeyPress;
 			}
@@ -405,6 +429,52 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_isEnabled = Element.IsEnabled;
+		}
+
+		void ClearRecyclerViewTouchListener(AView platformView)
+		{
+			if (_recyclerViewTouchListener is not null && platformView is RecyclerView recyclerView)
+			{
+				recyclerView.RemoveOnItemTouchListener(_recyclerViewTouchListener);
+				_recyclerViewTouchListener.Dispose();
+				_recyclerViewTouchListener = null;
+			}
+		}
+
+		// Forwards touch events from RecyclerView to the gesture system before children get them.
+		// OnInterceptTouchEvent is called by RecyclerView BEFORE dispatching to child views,
+		// so we receive all touch events even when clickable child item views would otherwise
+		// consume them (due to SelectableViewHolder's SetOnClickListener).
+		sealed class GestureItemTouchListener : Java.Lang.Object, RecyclerView.IOnItemTouchListener
+		{
+			readonly GesturePlatformManager _manager;
+
+			public GestureItemTouchListener(GesturePlatformManager manager)
+			{
+				_manager = manager;
+			}
+
+			public bool OnInterceptTouchEvent(RecyclerView rv, MotionEvent e)
+			{
+				if (!_manager._disposed)
+				{
+					_manager.OnTouchEvent(e);
+				}
+
+				// Return false: don't intercept the event - let children handle it normally
+				// (item selection via OnClickListener continues to work)
+				return false;
+			}
+
+			public void OnTouchEvent(RecyclerView rv, MotionEvent e)
+			{
+				// Only called if OnInterceptTouchEvent previously returned true; no-op here.
+			}
+
+			public void OnRequestDisallowInterceptTouchEvent(bool disallowIntercept)
+			{
+				// No-op: we never intercept, so this callback has no effect.
+			}
 		}
 	}
 }

@@ -17,7 +17,7 @@ parameters:
   poolName: 'Azure Pipelines'
   skipDotNet: false
   buildType: 'buildAndTest' # [ buildAndTest, buildOnly, testOnly ]
-  useCoreClr: false # Use CoreCLR for Android builds
+  useCoreClr: false # Use CoreCLR for Android, iOS, and Catalyst builds
 
 steps:
 
