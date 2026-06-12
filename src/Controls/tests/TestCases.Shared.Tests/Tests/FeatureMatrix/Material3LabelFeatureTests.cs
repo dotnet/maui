@@ -28,6 +28,8 @@ public class Material3LabelFeatureTests : _GalleryUITest
 		App.Tap("Options");
 		App.WaitForElement(SimpleFormattedText);
 		App.Tap(SimpleFormattedText);
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
 		App.WaitForElement("This is a Basic Label");
 		App.WaitForElement("Options");
 		App.Tap("Options");
