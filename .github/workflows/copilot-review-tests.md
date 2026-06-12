@@ -215,8 +215,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 <summary>[icon] <strong>Test Failure Review:</strong> [verdict] — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong></summary>
 <br/>
 
-> @[PR author] — test-failure review results are available based on commit <a href="[commit URL]"><code>[sha7]</code></a>.
-> To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
+> @[PR author] — test-failure review results are available based on commit <a href="[commit URL]"><code>[sha7]</code></a>. To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">

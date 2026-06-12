@@ -519,8 +519,6 @@ try {
     Write-Host "⚠️ Failed to fetch commit info: $_" -ForegroundColor Yellow
     $commitJson = $null
 }
-$commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
-$commitTitle = $commitTitle -replace '&','&amp;' -replace '<','&lt;' -replace '>','&gt;'
 $commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
 $commitFull = if ($commitJson) { $commitJson.sha } else { "" }
 $commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
@@ -592,7 +590,7 @@ if ($existingRaw) {
 
 $authorPing = ""
 if ($prAuthor) {
-    $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>.`n> **$commitTitle**"
+    $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>."
     $authorPing += ' To request a fresh review after new comments or commits, comment `/review rerun`.'
 }
 
