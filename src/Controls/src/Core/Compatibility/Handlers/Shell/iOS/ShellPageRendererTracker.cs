@@ -209,12 +209,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ToolbarReady() && _context?.Shell?.Toolbar is not null)
 			{
 				NavigationItem.Title = _context.Shell.Toolbar.Title;
+				return;
 			}
-			else if (Page?.IsSet(Page.TitleProperty) == true)
-			{
-				// Update back-stack pages so iOS back button/history menu reflects title changes
-				NavigationItem.Title = Page.Title;
-			}
+
+			// Update back-stack pages so iOS back button/history menu reflects title changes
+			NavigationItem.Title = Page?.Title;
 		}
 
 
