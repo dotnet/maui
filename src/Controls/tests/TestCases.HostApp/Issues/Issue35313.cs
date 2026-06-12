@@ -76,7 +76,7 @@ public class Issue35313 : ContentPage
 		{
 			Text = "End",
 			AutomationId = "ScrollToEndButton",
-			Command = new Command(() => _collectionView.ScrollTo(54))
+			Command = new Command(() => _collectionView.ScrollTo(49))
 		};
 
 		var buttonRow = new HorizontalStackLayout

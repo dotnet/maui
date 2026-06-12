@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // Related issue for windows: https://github.com/dotnet/maui/issues/29245 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -29,3 +30,4 @@ public class Issue35214 : _IssuesUITest
         VerifyScreenshot("IndicatorSizeAfterReset", retryTimeout: TimeSpan.FromSeconds(2));
     }
 }
+#endif

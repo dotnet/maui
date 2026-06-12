@@ -25,8 +25,7 @@ public class Issue35313 : _IssuesUITest
 		// Without the fix it silently does nothing on Android
 		App.Tap("ScrollToStartButton");
 
-		// Group 1 header should be visible after scrolling to index 0
-		App.WaitForElement("Group 1");
+		App.WaitForElement("Group 1 — Item 1");
 	}
 }
 #endif

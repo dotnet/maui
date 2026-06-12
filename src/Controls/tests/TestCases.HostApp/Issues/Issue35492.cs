@@ -23,7 +23,7 @@ sealed class Issue35492MainPage : ContentPage
 {
     readonly Label _pageCountLabel;
     readonly Label _aliveCountLabel;
-    readonly List<WeakReference<Issue35492CollectionPage>> _trackedPages = new();
+    readonly List<WeakReference> _trackedPages = new();
     int _pagesPushed;
  
     public Issue35492MainPage()
@@ -101,17 +101,23 @@ sealed class Issue35492MainPage : ContentPage
         _pageCountLabel.Text = $"Pages pushed: {_pagesPushed}";
  
         var page = new Issue35492CollectionPage();
-        _trackedPages.Add(new WeakReference<Issue35492CollectionPage>(page));
+        _trackedPages.Add(new WeakReference(page));
         UpdateAliveCount();
  
         await Navigation.PushAsync(page, false);
     }
  
-    void OnForceGc(object sender, EventArgs e)
+    async void OnForceGc(object sender, EventArgs e)
     {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: false);
+        try
+        {
+            await GarbageCollectionHelper.WaitForGC(10000, _trackedPages.ToArray());
+        }
+        catch
+        {
+            // Keep the count visible for UITest assertion when GC does not complete in time.
+        }
+
         UpdateAliveCount();
     }
  
@@ -120,7 +126,7 @@ sealed class Issue35492MainPage : ContentPage
         var alive = 0;
         foreach (var pageRef in _trackedPages)
         {
-            if (pageRef.TryGetTarget(out _))
+            if (pageRef.IsAlive)
                 alive++;
         }
  
