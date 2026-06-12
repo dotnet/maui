@@ -8,6 +8,8 @@ abstract Microsoft.Maui.HybridWebViewInvoker.InvokeMethodAsync(string! methodNam
 override Microsoft.Maui.Handlers.LabelHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.StepperHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+~override Microsoft.Maui.Handlers.TabbedViewHandler.ConnectHandler(UIKit.UIView platformView) -> void
+~override Microsoft.Maui.Handlers.TabbedViewHandler.DisconnectHandler(UIKit.UIView platformView) -> void
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
 override Microsoft.Maui.Platform.MauiTextView.TextAlignment.set -> void
 override Microsoft.Maui.Platform.MauiView.DidUpdateFocus(UIKit.UIFocusUpdateContext! context, UIKit.UIFocusAnimationCoordinator! coordinator) -> void

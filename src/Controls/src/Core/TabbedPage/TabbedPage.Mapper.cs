@@ -28,13 +28,14 @@ namespace Microsoft.Maui.Controls
 
 #endif
 
-#if WINDOWS || ANDROID || TIZEN
+#if WINDOWS || ANDROID || TIZEN || IOS || MACCATALYST
 			TabbedViewHandler.PlatformViewFactory = OnCreatePlatformView;
 #endif
 
 #if IOS
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty), MapPrefersHomeIndicatorAutoHiddenProperty);
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty), MapPrefersPrefersStatusBarHiddenProperty);
+			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(PlatformConfiguration.iOSSpecific.TabbedPage.TranslucencyModeProperty.PropertyName, MapTranslucencyMode);
 #endif
 		}
 	}

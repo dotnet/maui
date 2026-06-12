@@ -164,5 +164,13 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}", out bool isEnabled)
 				? isEnabled
 				: IsCssEnabledByDefault;
+
+#if NET11_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(UseiOSTabbedViewHandler)}")]
+#endif
+		public static bool UseiOSTabbedViewHandler =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(UseiOSTabbedViewHandler)}", out bool isEnabled)
+				? isEnabled
+				: IsUseiOSTabbedViewHandlerEnabledByDefault;
 	}
 }
