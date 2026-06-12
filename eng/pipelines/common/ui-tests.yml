@@ -98,6 +98,7 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 platform: windows
+                runtimeVariant: "CoreCLR"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
   # Material3 Build Stage - Separate build with UseMaterial3=true (Android-only)
@@ -267,6 +268,7 @@ stages:
                       path: ${{ project.winui }}
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      runtimeVariant: "CoreCLR"
                       testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                   

@@ -8,7 +8,7 @@ parameters:
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
   configuration: "Release"
-  runtimeVariant: "Mono"
+  runtimeVariant: "CoreCLR"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   testFilter: ''
   headless: true
