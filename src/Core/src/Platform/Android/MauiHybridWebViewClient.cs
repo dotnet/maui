@@ -49,7 +49,9 @@ namespace Microsoft.Maui.Platform
 
 			// Only inject the scroll-capture observer when the WebView is hosted inside
 			// a RefreshView – avoids unnecessary JS overhead for standalone HybridWebViews.
-			if (RefreshViewWebViewScrollCapture.IsAttached(view))
+			if (view is not null &&
+				RefreshViewWebViewScrollCapture.IsAttached(view) &&
+				RefreshViewWebViewScrollCapture.IsInsideMauiSwipeRefreshLayout(view))
 			{
 				RefreshViewWebViewScrollCapture.InjectObserver(view);
 			}
