@@ -194,37 +194,39 @@ When triggered via `workflow_dispatch`, `${{ inputs.suppress_output }}` controls
 - If `true`, perform the review and log the final report in your response, but do not call `add_comment`.
 - If `false` or empty, post the report as a PR conversation comment.
 
-## When no action is needed
+## When no failures are found
 
-If the gathered context shows no failing, pending, or inconclusive checks and no extracted failures, call `noop` with a concise reason. Do not post a PR comment in that case.
+If the gathered context shows no failing, pending, or inconclusive checks and no extracted failures, still post a PR conversation comment with `add_comment` unless dry-run mode is active. Use the same collapsed shape as other results with:
 
-Example:
+- Overall verdict: `No failures found`
+- Overall badge color: `1a7f37`
+- Failures badge value: `0`
+- No platform badges
+- Recommended action: no test-failure action is needed
 
-```json
-{"noop": {"message": "No failing or inconclusive test evidence was found for this PR."}}
-```
+Only call `noop` when dry-run mode is active and no PR comment should be posted.
 
 ## Posting results
 
-If dry-run mode is not active, call `add_comment` exactly once with `item_number` set to the target PR number and `body` set to this collapsed top-level shape:
+If dry-run mode is not active, call `add_comment` exactly once with `item_number` set to the target PR number and `body` set to this shape:
 
 ```markdown
-<!-- Test Failure Review -->
+<!-- Tests Failure -->
 
-<details>
-<summary>[icon] <strong>Test Failure Review:</strong> [verdict] — <a href="[commit URL]"><code>[sha7]</code></a> · <strong>[PR title]</strong></summary>
-<br/>
+## Tests Failure Analysis
 
-> @[PR author] — test-failure review results are available based on commit <a href="[commit URL]"><code>[sha7]</code></a>. To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
+> @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]). To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
-  <img alt="Data [Complete|Partial]" src="https://img.shields.io/badge/Data-[Complete|Partial]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Platform [platform]" src="https://img.shields.io/badge/Platform-[platform]-0969da?labelColor=30363d&style=flat-square">
 </p>
 
-**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data]
+<details>
+<summary><strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
+
+**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data | No failures found]
 
 [One or two sentences summarizing the strongest evidence.]
 
@@ -247,5 +249,11 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 ```
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
+
+Do not include a Data badge.
+
+Do not use emojis anywhere in the posted comment.
+
+Use Markdown links, not raw `<a>` tags. gh-aw safe outputs sanitize raw anchors before posting.
 
 Do not use `<details open>` anywhere. Every collapsible section must be collapsed by default.
