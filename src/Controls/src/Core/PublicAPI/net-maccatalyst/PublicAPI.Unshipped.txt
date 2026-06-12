@@ -3,3 +3,6 @@ override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? property
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellTableViewController.LoadView() -> void
 *REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+Microsoft.Maui.Controls.Platform.IGesturePlatformManager
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider.CreateGesturePlatformManager() -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!

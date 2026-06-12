@@ -1,2 +1,5 @@
 #nullable enable
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
+Microsoft.Maui.Controls.Platform.IGesturePlatformManager
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider
+Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider.CreateGesturePlatformManager() -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
