@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			_shellSection = (ShellSection)view;
 			if (_shellSection != null)
 			{
-				_subscribedItems ??= new HashSet<ShellContent>();
+				_subscribedItems ??= new List<ShellContent>();
 				_subscribedItems.Clear();
 
 				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
