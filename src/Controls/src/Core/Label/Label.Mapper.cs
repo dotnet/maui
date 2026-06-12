@@ -144,11 +144,17 @@ namespace Microsoft.Maui.Controls
 
 		static void MapFont(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			// if there is formatted text,
-			// then we re-apply the whole formatted text
-			if (label.HasFormattedTextSpans && !handler.IsConnectingHandler())
+			if (label.HasFormattedTextSpans)
 			{
-				handler.UpdateValue(nameof(FormattedText));
+				// if there is formatted text,
+				// then we re-apply the whole formatted text.
+				// During connection, MapText already set the correct AttributedText
+				// with font info embedded. We must not call baseMethod here as
+				// setting UILabel.Font replaces the AttributedText on iOS.
+				if (!handler.IsConnectingHandler())
+				{
+					handler.UpdateValue(nameof(FormattedText));
+				}
 			}
 			else if (label.TextType == TextType.Text || !IsDefaultFont(label))
 			{
