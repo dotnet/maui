@@ -691,7 +691,7 @@ public static class AppleSharedMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier}");
+			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier} -p:MSBuildEnableWorkloadResolver=false");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
@@ -754,7 +754,7 @@ public static class ExtendedIosMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: "-p:TargetPlatformIdentifier=maccatalyst");
+			Build(projectFile, additionalArgs: "-p:TargetPlatformIdentifier=maccatalyst -p:MSBuildEnableWorkloadResolver=false");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
@@ -818,7 +818,7 @@ public static class AppleXMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier}");
+			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier} -p:MSBuildEnableWorkloadResolver=false");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
@@ -932,7 +932,7 @@ public static class LegacyIosMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier}");
+			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier} -p:MSBuildEnableWorkloadResolver=false");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
