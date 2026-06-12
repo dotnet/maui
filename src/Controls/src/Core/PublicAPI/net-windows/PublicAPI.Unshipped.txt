@@ -27,6 +27,7 @@ Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Ma
 Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
 Microsoft.Maui.Controls.Span.InvalidateStyle() -> void
 Microsoft.Maui.Controls.StyleableElement.InvalidateStyle() -> void
+override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
