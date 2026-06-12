@@ -82,9 +82,9 @@ namespace Microsoft.Maui.Platform
 
 				handler!.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
 			}
-			else if (isLayoutLoad && _navigationResult == WebNavigationResult.Failure)
+			else if (isLayoutLoad && (_navigationResult == WebNavigationResult.Failure || _navigationResult == WebNavigationResult.Cancel))
 			{
-				// Navigation failed — reset the layout flag so a subsequent successful load
+				// Navigation failed or canceled — reset the layout flag so a subsequent successful load
 				// does not incorrectly trigger ClearHistory() (#35788).
 				mauiWebView!.IsLoadingForLayout = false;
 			}
