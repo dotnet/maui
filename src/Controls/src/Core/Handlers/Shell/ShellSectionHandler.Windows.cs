@@ -58,9 +58,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				((IShellSectionController)_shellSection).ItemsCollectionChanged -= OnItemsCollectionChanged;
 
-				foreach (var item in ((IShellSectionController)_shellSection).GetItems())
+				if (_subscribedItems != null)
 				{
-					item.PropertyChanged -= OnShellContentPropertyChanged;
+					foreach (var item in _subscribedItems)
+					{
+						item.PropertyChanged -= OnShellContentPropertyChanged;
+					}
+					_subscribedItems.Clear();
 				}
 
 				if (_lastShell?.Target is IShellController shell)
@@ -68,7 +72,6 @@ namespace Microsoft.Maui.Controls.Handlers
 					shell.RemoveAppearanceObserver(this);
 				}
 				_lastShell = null;
-				_subscribedItems?.Clear();
 			}
 
 			// If we've already connected to the navigation manager
