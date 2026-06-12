@@ -145,20 +145,41 @@ Task("GenerateMsixCert")
 	else
 	{
 		// Cert already exists in LocalMachine\TrustedPeople. Make sure it's also in CurrentUser\My
-		// so the build can sign with it. CurrentUser\My is writable without admin.
+		// with a usable user-scoped private key so the build can sign with it. A cert installed by
+		// an older version of this script may live in CurrentUser\My but reference a private key
+		// stored in the machine key container (C:\ProgramData\Microsoft\Crypto\...), which is
+		// unreadable from a non-elevated process — signtool would then fail mid-build. Verify by
+		// touching the private key, not just by checking HasPrivateKey.
 		var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
 		currentUserMyStore.Open(OpenFlags.ReadOnly);
-		var alreadyInMyStore = currentUserMyStore.Certificates
+		var matchingCert = currentUserMyStore.Certificates
 			.Cast<X509Certificate2>()
-			.Any(c => c.Thumbprint == certificateThumbprint);
+			.FirstOrDefault(c => c.Thumbprint == certificateThumbprint);
+		var usable = false;
+		if (matchingCert != null && matchingCert.HasPrivateKey)
+		{
+			try
+			{
+				using var key = matchingCert.GetRSAPrivateKey();
+				usable = key != null && key.ExportParameters(false) != null;
+			}
+			catch (System.Security.Cryptography.CryptographicException)
+			{
+				// Private key handle exists but the key material is in a container we can't read
+				// (typically a machine key container without admin rights).
+				usable = false;
+			}
+		}
 		currentUserMyStore.Close();
 
-		if (!alreadyInMyStore)
+		if (!usable)
 		{
 			Warning(
-				"Cert {0} is in LocalMachine\\TrustedPeople but not in CurrentUser\\My. " +
-				"The build will not be able to sign the MSIX. Run this task elevated once to " +
-				"reinstall the cert into both stores.",
+				"Cert {0} is in LocalMachine\\TrustedPeople but no usable user-scoped private key " +
+				"was found in CurrentUser\\My (the cert may be missing, or its private key may live " +
+				"in the machine key container and require elevation to read). The build will not be " +
+				"able to sign the MSIX. Run this task elevated once to reinstall the cert into both " +
+				"stores with a user-scoped key.",
 				certificateThumbprint);
 		}
 	}
