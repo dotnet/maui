@@ -295,6 +295,24 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			var targetsPath = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.SingleProject.targets"));
 			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+
+			// Assign the synthetic TargetPlatformIdentifier from a private test-only property
+			// inside a target rather than as a global 'dotnet build' property. Passing a platform
+			// TPI globally makes the SDK attempt workload resolution during evaluation for what is a
+			// plain net10.0 (non-platform) project, which fails on CI agents without that workload
+			// (NETSDK1208 / NETSDK1178) before the SingleProject targets under test ever run. Setting
+			// it here — after SDK evaluation but before the SingleProject compile-filtering targets —
+			// keeps the tests workload-neutral while still exercising the TPI-dependent logic (the
+			// allow-list built by _MauiCollectPlatformSpecificCompileItems determines which files are
+			// compiled, so it does not rely on the evaluation-time per-TPI Compile metadata flip).
+			var applyTpiTarget = NewElement("Target")
+				.WithAttribute("Name", "_ApplyTestTargetPlatformIdentifier")
+				.WithAttribute("BeforeTargets", "_MauiNormalizePlatformSpecificFolders;_MauiCollectPlatformSpecificCompileItems;_MauiRemovePlatformCompileItems")
+				.WithAttribute("Condition", " '$(_SingleProjectTestTargetPlatformIdentifier)' != '' ");
+			var tpiPropertyGroup = NewElement("PropertyGroup");
+			tpiPropertyGroup.Add(NewElement("TargetPlatformIdentifier").WithValue("$(_SingleProjectTestTargetPlatformIdentifier)"));
+			applyTpiTarget.Add(tpiPropertyGroup);
+			project.Add(applyTpiTarget);
 		}
 
 		void AddMauiReferences(XElement project)
@@ -691,7 +709,7 @@ public static class AppleSharedMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier} -p:MSBuildEnableWorkloadResolver=false");
+			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
@@ -754,7 +772,7 @@ public static class ExtendedIosMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: "-p:TargetPlatformIdentifier=maccatalyst -p:MSBuildEnableWorkloadResolver=false");
+			Build(projectFile, additionalArgs: "-p:_SingleProjectTestTargetPlatformIdentifier=maccatalyst");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
@@ -818,7 +836,7 @@ public static class AppleXMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier} -p:MSBuildEnableWorkloadResolver=false");
+			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
@@ -932,7 +950,7 @@ public static class LegacyIosMarker
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
 
-			Build(projectFile, additionalArgs: $"-p:TargetPlatformIdentifier={targetPlatformIdentifier} -p:MSBuildEnableWorkloadResolver=false");
+			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
 
 			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
 			AssertExists(testDll, nonEmpty: true);
