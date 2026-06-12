@@ -39,9 +39,8 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default,
-			LineBreakMode defaultLineBreakMode = LineBreakMode.WordWrap)
-			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultLineBreakMode, defaultCharacterSpacing: 0d);
+			TextTransform defaultTextTransform = TextTransform.Default)
+			=> formattedString.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
 
 		internal static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -82,9 +81,8 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default,
-			LineBreakMode defaultLineBreakMode = LineBreakMode.WordWrap)
-			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultLineBreakMode, defaultCharacterSpacing: 0d);
+			TextTransform defaultTextTransform = TextTransform.Default)
+			=> span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, LineBreakMode.WordWrap, defaultCharacterSpacing: 0d);
 
 		internal static NSAttributedString ToNSAttributedString(
 			this Span span,
@@ -94,7 +92,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont,
 			Color? defaultColor,
 			TextTransform defaultTextTransform,
-			LineBreakMode defaultLineBreakMode,
+			LineBreakMode lineBreakMode,
 			double defaultCharacterSpacing = 0d)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
@@ -125,27 +123,16 @@ namespace Microsoft.Maui.Controls.Platform
 				_ => UITextAlignment.Left
 			};
 
-			#if !MACOS
-			style.LineBreakMode = defaultLineBreakMode switch
+			style.LineBreakMode = lineBreakMode switch
 			{
 				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
 				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
 				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
-				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
 				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
 				_ => UILineBreakMode.WordWrap
 			};
-			#else
-			style.LineBreakMode = defaultLineBreakMode switch
-			{
-				LineBreakMode.NoWrap => NSLineBreakMode.Clipping,
-				LineBreakMode.CharacterWrap => NSLineBreakMode.CharWrapping,
-				LineBreakMode.HeadTruncation => NSLineBreakMode.TruncatingHead,
-				LineBreakMode.MiddleTruncation => NSLineBreakMode.TruncatingMiddle,
-				LineBreakMode.TailTruncation => NSLineBreakMode.TruncatingTail,
-				_ => NSLineBreakMode.ByWordWrapping
-			};
-			#endif
 
 			var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 			var hasUnderline = false;
