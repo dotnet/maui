@@ -139,6 +139,23 @@ jobs:
           "Reason: ${{ steps.rerun.outputs.reason }}" >> $env:GITHUB_STEP_SUMMARY
           "Label: ${{ steps.rerun.outputs.label }}" >> $env:GITHUB_STEP_SUMMARY
 
+      - name: Delete the /review rerun command comment
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          # Runs after eligibility resolution, which reads this comment by id, so the
+          # comment must still exist while Resolve-RerunEligibility.ps1 runs. The actor
+          # was authorized by the permission check at the start of this job. A failed
+          # delete must never fail the job.
+          if gh api -X DELETE "repos/${REPO}/issues/comments/${COMMENT_ID}" --silent; then
+            echo "Deleted /review rerun command comment ${COMMENT_ID}"
+          else
+            echo "::warning::Could not delete /review rerun command comment ${COMMENT_ID}"
+          fi
+
   trigger-review:
     needs: match
     if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'review'
@@ -281,6 +298,22 @@ jobs:
           echo "PR #${PR_NUMBER}: ${PR_TITLE}"
           echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Delete the /review command comment
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          # The command is recognized, the actor is authorized, and the PR is open, so
+          # remove the command comment to keep the PR conversation clean. A failed delete
+          # must never fail the review trigger.
+          if gh api -X DELETE "repos/${REPO}/issues/comments/${COMMENT_ID}" --silent; then
+            echo "Deleted /review command comment ${COMMENT_ID}"
+          else
+            echo "::warning::Could not delete /review command comment ${COMMENT_ID}"
+          fi
 
       - name: Checkout repository scripts
         uses: actions/checkout@v4

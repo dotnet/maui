@@ -9,6 +9,10 @@ on:
     pull_request_review_comment: [contributor, first_time_contributor, first_timer, mannequin, none]
   reaction: none
   status-comment: false
+  # Grant the pre-activation job (the on.steps below) issues:write so it can delete the
+  # triggering `/review tests` comment once the command is recognized and authorized.
+  permissions:
+    issues: write
   steps:
     - name: Confirm exact /review tests command
       id: exact_command
@@ -28,6 +32,36 @@ on:
         else
           echo "should_run=false" >> "$GITHUB_OUTPUT"
         fi
+    - name: Delete the /review tests command comment when authorized
+      if: github.event_name == 'issue_comment' && steps.exact_command.outputs.should_run == 'true'
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        github-token: ${{ github.token }}
+        script: |
+          // Only delete when the command is exactly `/review tests` (should_run) AND the
+          // commenter is an authorized collaborator (write/maintain/admin). This mirrors
+          // the workflow's own role gate but is self-contained, so an unauthorized user's
+          // comment is always left visible. A failed delete must not block activation.
+          const { owner, repo } = context.repo;
+          const actor = context.actor;
+          let permission = 'none';
+          try {
+            const res = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });
+            permission = res.data.permission;
+          } catch (e) {
+            core.info(`Permission lookup for ${actor} failed: ${e.message}`);
+          }
+          if (!['admin', 'maintain', 'write'].includes(permission)) {
+            core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);
+            return;
+          }
+          const commentId = context.payload.comment.id;
+          try {
+            await github.rest.issues.deleteComment({ owner, repo, comment_id: commentId });
+            core.info(`Deleted /review tests command comment ${commentId}.`);
+          } catch (e) {
+            core.warning(`Could not delete /review tests command comment ${commentId}: ${e.message}`);
+          }
   workflow_dispatch:
     inputs:
       pr_number:
