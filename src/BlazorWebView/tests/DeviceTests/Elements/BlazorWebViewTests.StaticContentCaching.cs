@@ -50,7 +50,30 @@ public partial class BlazorWebViewTests
 		Assert.Equal("text/plain", observedContentType);
 	}
 
-	private async Task<string> GetServedCacheControlHeaderAsync(Func<BlazorWebViewStaticContentRequest, string> provider)
+	[Fact]
+	public async Task StaticContentCacheControlProviderReceivesQueryString()
+	{
+		// The provider must receive the original request URI including the query string so that apps can make
+		// cache-busting decisions based on versioned URLs (e.g. img.png?v=2). The query is only stripped when
+		// resolving the file on disk. See https://github.com/dotnet/maui/issues/8279
+		Uri observedUri = null;
+
+		await GetServedCacheControlHeaderAsync(
+			request =>
+			{
+				if (request.Uri.AbsolutePath.EndsWith(CacheControlTestFilePath, StringComparison.Ordinal))
+				{
+					observedUri = request.Uri;
+				}
+				return null;
+			},
+			fetchQueryString: "?v=2");
+
+		Assert.NotNull(observedUri);
+		Assert.Contains("v=2", observedUri.Query, StringComparison.Ordinal);
+	}
+
+	private async Task<string> GetServedCacheControlHeaderAsync(Func<BlazorWebViewStaticContentRequest, string> provider, string fetchQueryString = "")
 	{
 		EnsureHandlerCreated(builder =>
 		{
@@ -86,7 +109,7 @@ public partial class BlazorWebViewTests
 
 			cacheControl = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<string>(platformWebView,
 				$$"""
-				const response = await fetch('/{{CacheControlTestFilePath}}');
+				const response = await fetch('/{{CacheControlTestFilePath}}{{fetchQueryString}}');
 				return response.headers.get('cache-control');
 				""");
 		});

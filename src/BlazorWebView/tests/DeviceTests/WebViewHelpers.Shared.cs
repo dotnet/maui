@@ -73,7 +73,18 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 			// Deserialize the result from controlDiv
 			if (TryDeserialize<T>(result, out var value))
+			{
+				// A bare string result is double-encoded: the page JSON.stringify's it and the platform
+				// bridge serializes it again when read back, so a single deserialize leaves a wrapping
+				// layer of quotes. Peel any remaining JSON-string layers so callers get the raw value.
+				if (value is string str)
+				{
+					while (TryDeserialize<string>(str, out var peeled) && peeled is not null && peeled != str)
+						str = peeled;
+					return (T)(object)str;
+				}
 				return value;
+			}
 
 			// sometimes the result is serialized by the platform, so we need to deserialize it as a string first
 			if (TryDeserialize<string>(result, out var resultString))

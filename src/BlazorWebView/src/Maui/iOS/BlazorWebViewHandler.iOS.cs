@@ -293,7 +293,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						dic.Add((NSString)"Content-Length", (NSString)responseBytes.Length.ToString(CultureInfo.InvariantCulture));
 						dic.Add((NSString)"Content-Type", (NSString)contentType);
 						// By default local caching is disabled so that user scripts are always re-executed. Applications can
-						// opt specific resources in to caching via BlazorWebView.StaticContentCacheControlProvider.
+						// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
+						// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
 						// See https://github.com/dotnet/maui/issues/8279
 						var cacheControl = StaticContentCacheControl.ResolveOverride(_webViewHandler.VirtualView, new Uri(url), contentType)
 							?? StaticContentCacheControl.Default;
