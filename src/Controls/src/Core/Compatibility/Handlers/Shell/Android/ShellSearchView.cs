@@ -236,9 +236,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnSearchHandlerPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (SearchHandler is null || _textBlock is null)
+			{
+				return;
+			}
+
 			if (e.PropertyName == SearchHandler.IsSearchEnabledProperty.PropertyName)
 			{
 				_textBlock.Enabled = SearchHandler.IsSearchEnabled;
+			}
+			else if (e.PropertyName == SearchHandler.ClearPlaceholderEnabledProperty.PropertyName)
+			{
+				UpdateClearButtonState();
 			}
 		}
 
