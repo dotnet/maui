@@ -80,7 +80,38 @@ if (-not (Test-Path $FindingsFile)) {
 # ============================================================================
 
 Write-Host "Loading findings from: $FindingsFile" -ForegroundColor Cyan
-$findings = Get-Content -Path $FindingsFile -Raw -Encoding UTF8 | ConvertFrom-Json
+$rawJson = Get-Content -Path $FindingsFile -Raw -Encoding UTF8
+$parsed = $rawJson | ConvertFrom-Json
+
+# Diagnostic: log what the parser sees
+Write-Host "  Parsed type: $($parsed.GetType().FullName)" -ForegroundColor Gray
+if ($parsed -is [System.Management.Automation.PSCustomObject]) {
+    Write-Host "  Object properties: $(($parsed.PSObject.Properties | ForEach-Object { $_.Name }) -join ', ')" -ForegroundColor Gray
+}
+
+# The agent may produce:
+#   1. A bare array [...] of findings
+#   2. An object wrapper {"findings": [...]} or {"schemaVersion":1, "findings":[...]}
+#   3. An object wrapper {"items": [...]}
+#   4. A single finding object {...}
+# Detect and unwrap all forms robustly.
+$findings = @()
+if ($parsed -is [System.Collections.IEnumerable] -and $parsed -isnot [string]) {
+    # Already an array
+    $findings = @($parsed)
+} elseif ($parsed.PSObject.Properties.Match('findings').Count -gt 0 -and $null -ne $parsed.findings) {
+    # Object wrapper with explicit 'findings' property
+    $findings = @($parsed.findings)
+} elseif ($parsed.PSObject.Properties.Match('items').Count -gt 0 -and $null -ne $parsed.items) {
+    # Alternative wrapper with 'items' property
+    $findings = @($parsed.items)
+} elseif ($parsed.PSObject.Properties.Match('file').Count -gt 0 -or $parsed.PSObject.Properties.Match('path').Count -gt 0) {
+    # Single finding object — wrap in array
+    $findings = @($parsed)
+} else {
+    Write-Host "  ⚠️ Unrecognized findings format — dumping first 200 chars:" -ForegroundColor Yellow
+    Write-Host "  $($rawJson.Substring(0, [Math]::Min(200, $rawJson.Length)))" -ForegroundColor Gray
+}
 
 if (-not $findings -or $findings.Count -eq 0) {
     Write-Host "No findings to post." -ForegroundColor Green
@@ -88,6 +119,7 @@ if (-not $findings -or $findings.Count -eq 0) {
 }
 
 Write-Host "  Found $($findings.Count) inline findings" -ForegroundColor Gray
+Write-Host "  First finding keys: $(($findings[0].PSObject.Properties | ForEach-Object { $_.Name }) -join ', ')" -ForegroundColor Gray
 
 # Load summary if available
 $summaryBody = ""
@@ -120,7 +152,7 @@ foreach ($f in $findings) {
     # Defense-in-depth: reject suspicious paths so a malformed/hostile finding
     # cannot poison the whole review post (especially in the fallback branch
     # below where the GitHub diff fetch failed and we can't cross-validate).
-    $p = [string]$f.path
+    $p = if ($f.path) { [string]$f.path } elseif ($f.file) { [string]$f.file } else { '' }
     if ([string]::IsNullOrWhiteSpace($p) -or
         $p.Contains('..') -or
         $p.StartsWith('/') -or
@@ -135,7 +167,7 @@ foreach ($f in $findings) {
     $comment = @{
         path = $p
         line = [int]$f.line
-        body = $f.body
+        body = if ($f.body) { [string]$f.body } elseif ($f.message) { [string]$f.message } elseif ($f.content) { [string]$f.content } else { "(no description)" }
     }
     # GitHub API requires 'side' for pull request review comments
     $comment['side'] = 'RIGHT'

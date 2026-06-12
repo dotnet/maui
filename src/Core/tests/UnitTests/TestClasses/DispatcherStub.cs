@@ -10,13 +10,11 @@ namespace Microsoft.Maui.UnitTests
 	{
 		readonly Func<bool>? _isInvokeRequired;
 		readonly Action<Action>? _invokeOnMainThread;
-		readonly bool _dispatchReturnValue;
 
-		public DispatcherStub(Func<bool>? isInvokeRequired, Action<Action>? invokeOnMainThread, bool dispatchReturnValue = true)
+		public DispatcherStub(Func<bool>? isInvokeRequired, Action<Action>? invokeOnMainThread)
 		{
 			_isInvokeRequired = isInvokeRequired;
 			_invokeOnMainThread = invokeOnMainThread;
-			_dispatchReturnValue = dispatchReturnValue;
 
 			ManagedThreadId = Environment.CurrentManagedThreadId;
 		}
@@ -28,9 +26,6 @@ namespace Microsoft.Maui.UnitTests
 
 		public bool Dispatch(Action action)
 		{
-			if (!_dispatchReturnValue)
-				return false;
-
 			if (_invokeOnMainThread is null)
 				action();
 			else

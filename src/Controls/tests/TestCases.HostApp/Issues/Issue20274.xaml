@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue20274"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+
+    <Grid RowDefinitions="auto,auto, *"> 
+        <Button Text="Change State" AutomationId="Button" Clicked="Button_Clicked"/>
+        <Label Grid.Row="1" AutomationId="Label" HeightRequest="50" VerticalTextAlignment="Center" x:Name="label"/>
+        <CollectionView 
+                            Grid.Row="2" IsEnabled="False"
+                SelectionMode="Single" x:Name="collectionView" SelectionChanged="collectionView_SelectionChanged"
+                ItemsSource="{Binding Items}">
+          <CollectionView.ItemTemplate>
+            <DataTemplate>
+              <Label Margin="10"
+                  Padding="10"
+                              AutomationId="ItemsLabel"
+                  VerticalTextAlignment="Center"
+                  HorizontalTextAlignment="Start"
+                  Text="{Binding Name}" />
+            </DataTemplate>
+          </CollectionView.ItemTemplate>
+        </CollectionView>
+	</Grid>
+  
+</ContentPage>

@@ -15,6 +15,10 @@ public class Issue19866 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void StatusBarTapScrollsCollectionViewToTop()
 	{
+		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+		{
+			Assert.Ignore("Ignored due to a bug issue in iOS 26.4"); // Issue Link: https://github.com/dotnet/maui/issues/35420
+		}
 		// Verify first item is visible initially
 		App.WaitForElement("Item 0");
 
@@ -28,7 +32,7 @@ public class Issue19866 : _IssuesUITest
 
 		// Tap the status bar area to trigger iOS scroll-to-top
 		var rect = App.WaitForElement("TestCollectionView").GetRect();
-		App.TapCoordinates(rect.X + (rect.Width / 2), 5);
+		App.TapCoordinates(rect.X + 25, 5);
 
 		// Verify first item is visible again after scroll-to-top
 		App.WaitForElement("Item 0", timeout: TimeSpan.FromSeconds(5));

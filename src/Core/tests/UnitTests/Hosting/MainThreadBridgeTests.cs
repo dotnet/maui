@@ -10,6 +10,11 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
+	// Builds MauiApp instances that resolve the static DispatcherProvider.Current via DI,
+	// and mutates MainThread/DispatcherProvider static state in its lifecycle. Serialize with
+	// DispatcherTests and the other MauiApp-building hosting tests via the shared
+	// MainThreadStaticState collection to avoid ObjectDisposedException races on the
+	// DispatcherProviderStub's internal ThreadLocal during MauiApp.Build().
 	[Collection("MainThreadStaticState")]
 	public class MainThreadBridgeTests : IDisposable
 	{
@@ -222,34 +227,6 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 				// Verify the bridge connected the dispatcher's IsDispatchRequired to MainThread.IsMainThread
 				Assert.True(MainThread.IsMainThread);
-			}
-			finally
-			{
-				DispatcherProvider.SetCurrent(null);
-			}
-		}
-
-		[Fact]
-		public void MauiAppBuild_DispatchReturnsFalse_Throws()
-		{
-			// Regression: if IDispatcher.Dispatch returns false (dispatch refused),
-			// MainThread.BeginInvokeOnMainThread must throw rather than silently dropping
-			// the action (which would hang InvokeOnMainThreadAsync forever).
-			var dispatcherStub = new DispatcherStub(
-				isInvokeRequired: () => true,
-				invokeOnMainThread: null,
-				dispatchReturnValue: false);
-
-			var dispatcherProvider = new TestDispatcherProvider(dispatcherStub);
-			DispatcherProvider.SetCurrent(dispatcherProvider);
-
-			try
-			{
-				var builder = MauiApp.CreateBuilder();
-				using var app = builder.Build();
-
-				Assert.Throws<InvalidOperationException>(
-					() => MainThread.BeginInvokeOnMainThread(() => { }));
 			}
 			finally
 			{

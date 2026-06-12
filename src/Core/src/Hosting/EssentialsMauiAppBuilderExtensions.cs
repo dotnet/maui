@@ -163,11 +163,7 @@ namespace Microsoft.Maui.Hosting
 
 				MainThread.SetCustomImplementation(
 					isMainThread: () => !dispatcher.IsDispatchRequired,
-					beginInvokeOnMainThread: action =>
-					{
-						if (!dispatcher.Dispatch(action))
-							throw new InvalidOperationException("The dispatcher failed to queue the action on the main thread.");
-					});
+					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
 			}
 		}
 #endif
@@ -233,9 +229,13 @@ namespace Microsoft.Maui.Hosting
 			{
 				// SetDefault pattern types
 				BridgeIfRegistered<IAccelerometer>(services, Accelerometer.SetDefault);
-#if ANDROID
-				BridgeIfRegistered<IActivityStateManager>(services, ActivityStateManager.SetDefault);
-#endif
+				// IActivityStateManager is intentionally NOT bridged. It is Android-only, and its
+				// platform default is already initialized — with its ActivityLifecycleCallbacks
+				// registered — by ApplicationModel.Platform.Init() during UseEssentials(), before this
+				// bridge runs at MauiApp.Build() time. Replacing ActivityStateManager.Default after that
+				// point would leave the original lifecycle listener registered while the replacement
+				// missed the initial Init(Application) call. Custom (non-Android) backends never reach
+				// the Android-only code path, so bridging it here serves no purpose.
 				BridgeIfRegistered<IBarometer>(services, Barometer.SetDefault);
 				BridgeIfRegistered<IBattery>(services, Battery.SetDefault);
 				BridgeIfRegistered<IBrowser>(services, Browser.SetDefault);
@@ -263,7 +263,22 @@ namespace Microsoft.Maui.Hosting
 				BridgeIfRegistered<ITextToSpeech>(services, TextToSpeech.SetDefault);
 				BridgeIfRegistered<IVersionTracking>(services, VersionTracking.SetDefault);
 				BridgeIfRegistered<IVibration>(services, Vibration.SetDefault);
-				BridgeIfRegistered<IWebAuthenticator>(services, WebAuthenticator.SetDefault);
+				// IWebAuthenticator: on Android/iOS/MacCatalyst the platform callback activities
+				// and lifecycle hooks (WebAuthenticatorCallbackActivity.OnResume, Platform.OpenUrl,
+				// ContinueUserActivity) cast WebAuthenticator.Default to IPlatformWebAuthenticatorCallback
+				// via AsPlatformCallback(). Only bridge a DI implementation that supports that contract
+				// on those platforms, mirroring the IAppActions guard below, to avoid a
+				// PlatformNotSupportedException at runtime.
+				var webAuthenticator = services.GetService<IWebAuthenticator>();
+				if (webAuthenticator is not null)
+				{
+#if ANDROID || __IOS__ || __MACCATALYST__
+					if (webAuthenticator is IPlatformWebAuthenticatorCallback)
+						WebAuthenticator.SetDefault(webAuthenticator);
+#else
+					WebAuthenticator.SetDefault(webAuthenticator);
+#endif
+				}
 #if WINDOWS || __IOS__ || __MACCATALYST__
 				BridgeIfRegistered<IWindowStateManager>(services, WindowStateManager.SetDefault);
 #endif
