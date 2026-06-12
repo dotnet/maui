@@ -929,14 +929,31 @@ namespace Microsoft.Maui.Layouts
 					// targetStarSize, that means we have enough room to expand all of our star rows/columns
 					// to their full size.
 
-					var starDefinitions = defs.Where(d => d.IsStar).ToArray();
-					var portions = starDefinitions.Select(d => targetStarSize * d.GridLength.Value).ToArray();
-					var totalPixels = portions.Sum() * density;
+					int numStarDefs = 0;
+					for (int k = 0; k < defs.Length; k++)
+						if (defs[k].IsStar) numStarDefs++;
+
+					var starDefIndices = new int[numStarDefs];
+					var portions = new double[numStarDefs];
+					double portionsTotal = 0;
+					int si = 0;
+					for (int k = 0; k < defs.Length; k++)
+					{
+						if (defs[k].IsStar)
+						{
+							starDefIndices[si] = k;
+							portions[si] = targetStarSize * defs[k].GridLength.Value;
+							portionsTotal += portions[si];
+							si++;
+						}
+					}
+
+					var totalPixels = portionsTotal * density;
 					var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
 
-					for (int i = 0; i < starDefinitions.Length; i++)
+					for (int i = 0; i < numStarDefs; i++)
 					{
-						starDefinitions[i].Size = DensityValue.FromPixels(pixelAllocations[i], density);
+						defs[starDefIndices[i]].Size = DensityValue.FromPixels(pixelAllocations[i], density);
 					}
 
 					return;
@@ -960,12 +977,20 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				// Use density-aware distribution for pixel-perfect proportional allocation
-				var proportionalStarDefinitions = defs.Where(d => d.IsStar).ToArray();
-				var proportionalPortions = new double[proportionalStarDefinitions.Length];
+				int numPropStarDefs = 0;
+				for (int k = 0; k < defs.Length; k++)
+					if (defs[k].IsStar) numPropStarDefs++;
 
-				for (int i = 0; i < proportionalStarDefinitions.Length; i++)
+				var propStarDefIndices = new int[numPropStarDefs];
+				var proportionalPortions = new double[numPropStarDefs];
+				int psi = 0;
+				for (int k = 0; k < defs.Length; k++)
+					if (defs[k].IsStar) propStarDefIndices[psi++] = k;
+
+				double proportionalPortionsTotal = 0;
+				for (int i = 0; i < numPropStarDefs; i++)
 				{
-					var definition = proportionalStarDefinitions[i];
+					var definition = defs[propStarDefIndices[i]];
 					double fullTargetSize = targetStarSize * definition.GridLength.Value;
 
 					if (definition.MinimumSize < fullTargetSize)
@@ -978,14 +1003,15 @@ namespace Microsoft.Maui.Layouts
 					{
 						proportionalPortions[i] = definition.MinimumSize;
 					}
+					proportionalPortionsTotal += proportionalPortions[i];
 				}
 
-				var proportionalTotalPixels = proportionalPortions.Sum() * density;
+				var proportionalTotalPixels = proportionalPortionsTotal * density;
 				var proportionalPixelAllocations = DensityValue.DistributePixels(proportionalTotalPixels, density, proportionalPortions);
 
-				for (int i = 0; i < proportionalStarDefinitions.Length; i++)
+				for (int i = 0; i < numPropStarDefs; i++)
 				{
-					proportionalStarDefinitions[i].Size = DensityValue.FromPixels(proportionalPixelAllocations[i], density);
+					defs[propStarDefIndices[i]].Size = DensityValue.FromPixels(proportionalPixelAllocations[i], density);
 				}
 			}
 
@@ -996,10 +1022,14 @@ namespace Microsoft.Maui.Layouts
 			/// <returns>The display density, or 1.0 if not available.</returns>
 			double GetDensity()
 			{
-				// Try to get density from the grid view if it implements IViewWithWindow
-				if (_grid is IViewWithWindow viewWithWindow && viewWithWindow.Window != null)
+				// Walk up the parent chain to find the containing window for density-aware calculations.
+				// This avoids coupling Core layout to Controls-specific window plumbing (IViewWithWindow).
+				IElement? current = _grid;
+				while (current != null)
 				{
-					return viewWithWindow.Window.RequestDisplayDensity();
+					if (current is IWindow window)
+						return window.RequestDisplayDensity();
+					current = current.Parent;
 				}
 
 				return 1.0;
