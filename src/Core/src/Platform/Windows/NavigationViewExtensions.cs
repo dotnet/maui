@@ -164,6 +164,14 @@ namespace Microsoft.Maui.Platform
 				foreach (var item in items)
 				{
 					item.DisabledForeground = brush;
+
+					if (item.MenuItemsSource is { } subItems)
+					{
+						foreach (var subItem in subItems)
+						{
+							subItem.DisabledForeground = brush;
+						}
+					}
 				}
 			}
 		}

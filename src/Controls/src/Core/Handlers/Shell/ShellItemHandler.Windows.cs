@@ -266,14 +266,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					vm.Content = bsi.Title;
 
-						// Set DisabledForeground BEFORE IsEnabled so that when the IsEnabled setter
-						// calls UpdateForeground(), DisabledForeground is already available.
-						if (_shellAppearanceElement?.EffectiveTabBarDisabledColor is Color disabledColor)
-						{
-							vm.DisabledForeground = disabledColor.ToPlatform();
-						}
-
-						vm.IsEnabled = bsi.IsEnabled;
+					// Set DisabledForeground BEFORE IsEnabled so that when the IsEnabled setter
+					// calls UpdateForeground(), DisabledForeground is already available.
+					vm.DisabledForeground = _shellAppearanceElement?.EffectiveTabBarDisabledColor?.ToPlatform();
+					vm.IsEnabled = bsi.IsEnabled;
 
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
 
