@@ -116,6 +116,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private WebResourceResponse? GetResponse(string requestUri, ILogger? logger)
 		{
 			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(requestUri);
+			var originalRequestUri = requestUri;
 			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
 
 			logger?.HandlingWebRequest(requestUri);
@@ -128,9 +129,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				var contentType = headers["Content-Type"];
 
 				// By default local caching is disabled so that user scripts are always re-executed. Applications can
-				// opt specific resources in to caching via BlazorWebView.StaticContentCacheControlProvider.
+				// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
+				// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
 				// See https://github.com/dotnet/maui/issues/8279
-				var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_webViewHandler?.VirtualView, new Uri(requestUri), contentType);
+				var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_webViewHandler?.VirtualView, new Uri(originalRequestUri), contentType);
 				if (cacheControlOverride is not null)
 				{
 					headers["Cache-Control"] = cacheControlOverride;

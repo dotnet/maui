@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	public sealed class BlazorWebViewStaticContentRequest
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="BlazorWebViewStaticContentRequest"/> struct.
+		/// Initializes a new instance of the <see cref="BlazorWebViewStaticContentRequest"/> class.
 		/// </summary>
 		/// <param name="uri">The absolute URI of the requested static content.</param>
 		/// <param name="contentType">The resolved MIME content type of the requested static content.</param>

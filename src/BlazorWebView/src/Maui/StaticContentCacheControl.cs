@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	internal static class StaticContentCacheControl
 	{
 		// Historical default that disables all WebView caching of served content so that user scripts are always
-		// re-executed. It is applied unless the application opts a resource in to caching via
+		// re-executed. It is applied unless the application opts a resource into caching via
 		// BlazorWebView.StaticContentCacheControlProvider. See https://github.com/dotnet/maui/issues/8279
 		internal const string Default = "no-cache, max-age=0, must-revalidate, no-store";
 

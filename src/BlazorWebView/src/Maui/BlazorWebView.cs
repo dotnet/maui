@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// (such as images, fonts, or stylesheets) served from the app's content root.
 		/// <para>
 		/// By default no callback is set and all served content uses <c>no-cache, max-age=0, must-revalidate,
-		/// no-store</c>, which disables WebView caching. Provide a callback to opt specific resources in to caching,
+		/// no-store</c>, which disables WebView caching. Provide a callback to opt specific resources into caching,
 		/// for example to stop images from flickering when navigating between pages. Return <see langword="null"/>
 		/// from the callback to keep the default behavior for a given request.
 		/// </para>
