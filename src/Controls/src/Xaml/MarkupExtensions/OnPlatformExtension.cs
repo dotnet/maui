@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -31,14 +32,21 @@ namespace Microsoft.Maui.Controls.Xaml
 		/// </summary>
 		public object Android { get; set; } = s_notset;
 
-		internal object GTK { get; set; } = s_notset;
+		/// <summary>
+		/// Gets or sets the value to use on GTK.
+		/// </summary>
+		public object GTK { get; set; } = s_notset;
 
 		/// <summary>
 		/// Gets or sets the value to use on iOS.
 		/// </summary>
 		public object iOS { get; set; } = s_notset;
 
-		internal object macOS { get; set; } = s_notset;
+		/// <summary>
+		/// Gets or sets the value to use on macOS.
+		/// </summary>
+		/// <remarks>Note, this is different than <see cref="MacCatalyst"/>.</remarks>
+		public object macOS { get; set; } = s_notset;
 
 		/// <summary>
 		/// Gets or sets the value to use on Mac Catalyst.
@@ -56,7 +64,10 @@ namespace Microsoft.Maui.Controls.Xaml
 		[Obsolete("Use WinUI instead.")]
 		public object UWP { get; set; } = s_notset;
 
-		internal object WPF { get; set; } = s_notset;
+		/// <summary>
+		/// Gets or sets the value to use on WPF.
+		/// </summary>
+		public object WPF { get; set; } = s_notset;
 
 		/// <summary>
 		/// Gets or sets the value to use on Windows (WinUI).
@@ -166,60 +177,52 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		bool TryGetValueForPlatform(out object value)
 		{
-			if (DeviceInfo.Platform == DevicePlatform.Android && Android != s_notset)
-			{
-				value = Android;
+			// Resolve the value by comparing the current platform string against the
+			// per-platform values, the same way the data-driven element form (OnPlatform<T>/On)
+			// does. This lets custom backends (e.g. GTK/Linux) resolve a value as long as
+			// DeviceInfo.Platform.ToString() matches one of the keys below.
+			var lookup = BuildPlatformLookup();
+			if (lookup.TryGetValue(DeviceInfo.Platform.ToString(), out value))
 				return true;
-			}
-			if (DeviceInfo.Platform == DevicePlatform.Create("GTK") && GTK != s_notset)
-			{
-				value = GTK;
-				return true;
-			}
-			if (DeviceInfo.Platform == DevicePlatform.iOS && iOS != s_notset)
-			{
-				value = iOS;
-				return true;
-			}
-			if (DeviceInfo.Platform == DevicePlatform.macOS && macOS != s_notset)
-			{
-				value = macOS;
-				return true;
-			}
-			if (DeviceInfo.Platform == DevicePlatform.MacCatalyst && MacCatalyst != s_notset)
-			{
-				value = MacCatalyst;
-				return true;
-			}
-			if (DeviceInfo.Platform == DevicePlatform.Tizen && Tizen != s_notset)
-			{
-				value = Tizen;
-				return true;
-			}
-			if (DeviceInfo.Platform == DevicePlatform.WinUI && WinUI != s_notset)
-			{
-				value = WinUI;
-				return true;
-			}
-#pragma warning disable CS0618 // Type or member is obsolete
-			if (DeviceInfo.Platform == DevicePlatform.WinUI && UWP != s_notset)
-			{
-				value = UWP;
-				return true;
-			}
-			if (DeviceInfo.Platform == DevicePlatform.Create("UWP") && UWP != s_notset)
-			{
-				value = UWP;
-				return true;
-			}
-#pragma warning restore CS0618 // Type or member is obsolete
-			if (DeviceInfo.Platform == DevicePlatform.Create("WPF") && WPF != s_notset)
-			{
-				value = WPF;
-				return true;
-			}
+
 			value = Default;
 			return value != s_notset;
+		}
+
+		Dictionary<string, object> BuildPlatformLookup()
+		{
+			// Case-insensitive so that a custom backend reporting e.g. "gtk" still matches "GTK".
+			var lookup = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+			AddIfSet(lookup, nameof(DevicePlatform.Android), Android);
+			AddIfSet(lookup, "GTK", GTK);
+			AddIfSet(lookup, nameof(DevicePlatform.iOS), iOS);
+			AddIfSet(lookup, nameof(DevicePlatform.macOS), macOS);
+			AddIfSet(lookup, nameof(DevicePlatform.MacCatalyst), MacCatalyst);
+			AddIfSet(lookup, nameof(DevicePlatform.Tizen), Tizen);
+			AddIfSet(lookup, nameof(DevicePlatform.WinUI), WinUI);
+			AddIfSet(lookup, "WPF", WPF);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (UWP != s_notset)
+			{
+				// "UWP" still matches a custom backend reporting the legacy "UWP" platform string.
+				lookup["UWP"] = UWP;
+
+				// UWP is a backwards-compatible alias for WinUI: only fall back to it for the
+				// WinUI platform when no explicit WinUI value was provided (WinUI takes precedence).
+				if (!lookup.ContainsKey(nameof(DevicePlatform.WinUI)))
+					lookup[nameof(DevicePlatform.WinUI)] = UWP;
+			}
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			return lookup;
+
+			static void AddIfSet(Dictionary<string, object> lookup, string key, object value)
+			{
+				if (value != s_notset)
+					lookup[key] = value;
+			}
 		}
 	}
 }

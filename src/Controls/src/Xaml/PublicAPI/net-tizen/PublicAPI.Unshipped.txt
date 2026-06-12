@@ -1,1 +1,7 @@
 #nullable enable
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.GTK.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.GTK.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.macOS.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.macOS.set -> void
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.WPF.get -> object
+~Microsoft.Maui.Controls.Xaml.OnPlatformExtension.WPF.set -> void

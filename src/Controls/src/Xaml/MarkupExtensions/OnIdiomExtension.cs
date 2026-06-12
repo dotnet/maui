@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -140,17 +141,36 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		object GetValue()
 		{
-			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
-				return Phone ?? Default;
-			if (DeviceInfo.Idiom == DeviceIdiom.Tablet)
-				return Tablet ?? Default;
-			if (DeviceInfo.Idiom == DeviceIdiom.Desktop)
-				return Desktop ?? Default;
-			if (DeviceInfo.Idiom == DeviceIdiom.TV)
-				return TV ?? Default;
-			if (DeviceInfo.Idiom == DeviceIdiom.Watch)
-				return Watch ?? Default;
+			// Resolve the value by comparing the current idiom string against the per-idiom
+			// values, so custom idioms registered through DeviceIdiom.Create(...) can resolve
+			// a value the same way the data-driven element form does. Falls back to Default.
+			var lookup = BuildIdiomLookup();
+			if (lookup.TryGetValue(DeviceInfo.Idiom.ToString(), out var value))
+				return value;
+
 			return Default;
+		}
+
+		Dictionary<string, object> BuildIdiomLookup()
+		{
+			// Case-insensitive so that a custom backend reporting e.g. "phone" still matches "Phone".
+			var lookup = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+			AddIfSet(lookup, nameof(DeviceIdiom.Phone), Phone);
+			AddIfSet(lookup, nameof(DeviceIdiom.Tablet), Tablet);
+			AddIfSet(lookup, nameof(DeviceIdiom.Desktop), Desktop);
+			AddIfSet(lookup, nameof(DeviceIdiom.TV), TV);
+			AddIfSet(lookup, nameof(DeviceIdiom.Watch), Watch);
+
+			return lookup;
+
+			static void AddIfSet(Dictionary<string, object> lookup, string key, object value)
+			{
+				// null is the "not set" sentinel for OnIdiomExtension, matching the previous
+				// "Idiom ?? Default" behavior where an unset idiom falls back to Default.
+				if (value != null)
+					lookup[key] = value;
+			}
 		}
 	}
 }

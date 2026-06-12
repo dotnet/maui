@@ -137,6 +137,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			image = new Image().LoadFromXaml(xaml);
 			Assert.Equal("Images/icon_twitter_preferred.png", (image.Source as FileImageSource).File);
 		}
+
+		[Fact]
+		// Issue 35695: the {OnPlatform} markup extension is data-driven, so a custom backend
+		// (here GTK/Linux) can express a platform-conditional value just like first-party platforms.
+		public void MarkupExtensionResolvesCustomPlatform()
+		{
+			var xaml = @"
+			<Label xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
+				xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+				Text=""{OnPlatform Default=default, GTK=gtk}"" />";
+
+			mockDeviceInfo.Platform = DevicePlatform.Create("GTK");
+			var label = new Label().LoadFromXaml(xaml);
+			Assert.Equal("gtk", label.Text);
+
+			// An unknown platform falls back to Default.
+			mockDeviceInfo.Platform = DevicePlatform.Create("Web");
+			label = new Label().LoadFromXaml(xaml);
+			Assert.Equal("default", label.Text);
+		}
 	}
 
 	[Collection("Xaml Inflation")]

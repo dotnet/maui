@@ -288,6 +288,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[InlineData("{OnPlatform Android=20, UWP=25}", "WinUI", 25)]
 		[InlineData("{OnPlatform Android=20, WinUI=25, UWP=20}", "WinUI", 25)]
 		[InlineData("{OnPlatform Android=20, UWP=25}", "UWP", 25)]
+		// GTK, macOS and WPF are now public, so custom/community backends can express
+		// platform-conditional values for them through the {OnPlatform} markup extension.
+		[InlineData("{OnPlatform Android=20, GTK=25}", "GTK", 25)]
+		[InlineData("{OnPlatform iOS=20, macOS=25}", "macOS", 25)]
+		[InlineData("{OnPlatform Android=20, WPF=25}", "WPF", 25)]
+		// Matching is data-driven and case-insensitive, like the element form.
+		[InlineData("{OnPlatform Android=23, iOS=25}", "android", 23)]
+		[InlineData("{OnPlatform Android=23, GTK=25}", "gtk", 25)]
+		// A platform the framework doesn't know about falls back to Default.
+		[InlineData("{OnPlatform iOS=23, Default=20}", "Web", 20)]
 		[InlineData("{OnPlatform 20}", "Android", 20)]
 		[InlineData("{OnPlatform 20}", "iOS", 20)]
 		[InlineData("{OnPlatform 20}", "Tizen", 20)]
@@ -318,6 +328,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Desktop", 26)]
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "TV", 30)]
 		[InlineData("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", "Watch", 10)]
+		// Matching is data-driven and case-insensitive; unknown idioms fall back to Default.
+		[InlineData("{OnIdiom Phone=23, Tablet=25}", "phone", 23)]
+		[InlineData("{OnIdiom Phone=23, Default=20}", "Car", 20)]
 		[InlineData("{OnIdiom Phone=23}", "Desktop", default(int))]
 		public void OnIdiomExtension(string markup, string idiom, int expected)
 		{
