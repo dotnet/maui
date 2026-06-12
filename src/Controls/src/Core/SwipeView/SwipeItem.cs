@@ -36,11 +36,6 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<EventArgs> Invoked;
 
-		static void OnIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var swipeItem = (SwipeItem)bindable;
-			swipeItem.Handler?.UpdateValue(nameof(ISwipeItemMenuItem.Visibility));
-		}
 		Paint ISwipeItemMenuItem.Background => new SolidPaint(BackgroundColor);
 
 		Visibility ISwipeItemMenuItem.Visibility => this.IsVisible ? Visibility.Visible : Visibility.Collapsed;
