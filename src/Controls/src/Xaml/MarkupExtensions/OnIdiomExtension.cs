@@ -153,8 +153,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		Dictionary<string, object> BuildIdiomLookup()
 		{
-			// Case-insensitive so that a custom backend reporting e.g. "phone" still matches "Phone".
-			var lookup = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+			// Keyed by idiom string using Ordinal (case-sensitive) comparison, matching
+			// DeviceIdiom equality and the data-driven element form.
+			var lookup = new Dictionary<string, object>(StringComparer.Ordinal);
 
 			AddIfSet(lookup, nameof(DeviceIdiom.Phone), Phone);
 			AddIfSet(lookup, nameof(DeviceIdiom.Tablet), Tablet);

@@ -191,8 +191,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		Dictionary<string, object> BuildPlatformLookup()
 		{
-			// Case-insensitive so that a custom backend reporting e.g. "gtk" still matches "GTK".
-			var lookup = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+			// Keyed by platform string using Ordinal (case-sensitive) comparison, matching
+			// DevicePlatform equality, the element form (OnPlatform<T>/On) and the compile-time
+			// SimplifyOnPlatformVisitor, so runtime and compiled XAML resolve identically.
+			var lookup = new Dictionary<string, object>(StringComparer.Ordinal);
 
 			AddIfSet(lookup, nameof(DevicePlatform.Android), Android);
 			AddIfSet(lookup, "GTK", GTK);
