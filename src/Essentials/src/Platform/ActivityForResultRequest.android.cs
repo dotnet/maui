@@ -34,12 +34,22 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	// eligible for collection when the activity is no longer referenced.
 	readonly ConditionalWeakTable<ComponentActivity, ActivityResultLauncher> _activityLaunchers = new();
 
-	protected TaskCompletionSource<TResult> tcs = null;
+	// Tracks pending TaskCompletionSource per ComponentActivity to prevent race conditions.
+	// This prevents Activity B from overwriting Activity A's pending request.
+	readonly ConditionalWeakTable<ComponentActivity, TaskCompletionSource<TResult>> _pendingRequests = new();
 
 	/// <summary>
-	/// Gets a value indicating whether the request is registered for the current activity.
+	/// Gets a value indicating whether the request has a launcher registered for the current activity.
 	/// </summary>
-	protected bool IsRegistered => GetLauncherForCurrentActivity() is not null;
+	/// <remarks>
+	/// This property name was clarified from <c>IsRegistered</c> to better reflect that it checks
+	/// for a launcher for the currently-focused activity, not whether any registration has occurred.
+	/// </remarks>
+	protected bool HasLauncherForCurrentActivity => GetLauncherForCurrentActivity() is not null;
+
+	// Deprecated: Use HasLauncherForCurrentActivity instead
+	[Obsolete("Use HasLauncherForCurrentActivity instead. IsRegistered is misleading because it only checks the current activity.", false)]
+	protected bool IsRegistered => HasLauncherForCurrentActivity;
 
 	/// <summary>
 	/// Registers this request to start an activity for a result.
@@ -54,7 +64,18 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 			return;
 
 		var contract = new TContract();
-		var callback = new ActivityResultCallback<TResult>(result => tcs?.SetResult(result));
+
+		var activity = componentActivity;
+		var callback = new ActivityResultCallback<TResult>(result =>
+		{
+			// Only complete if this activity has a pending request
+			if (_pendingRequests.TryGetValue(activity, out var tcs))
+			{
+				_pendingRequests.Remove(activity);
+				tcs?.SetResult(result);
+			}
+		});
+
 		var launcher = componentActivity.RegisterForActivityResult(contract, callback);
 		_activityLaunchers.Add(componentActivity, launcher);
 	}
@@ -70,15 +91,35 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	public Task<TResult> Launch<T>(T input)
 		where T : JavaObject
 	{
-		tcs = new TaskCompletionSource<TResult>();
-
-		var launcher = GetLauncherForCurrentActivity();
-		if (launcher is null)
+		var launchingActivity = ActivityStateManager.Default.GetCurrentActivity() as ComponentActivity;
+		if (launchingActivity is null)
 		{
 			Trace.WriteLine("""
-			                ActivityForResultRequest is not registered; cancelling the request. 
+			                ActivityForResultRequest.Launch() called but current activity is null.
 			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
 			                """);
+			var canceledTcs = new TaskCompletionSource<TResult>();
+			canceledTcs.SetCanceled();
+			return canceledTcs.Task;
+		}
+
+		if (_pendingRequests.TryGetValue(launchingActivity, out var existingTcs))
+		{
+			_pendingRequests.Remove(launchingActivity);
+			existingTcs?.TrySetCanceled();
+		}
+
+		var tcs = new TaskCompletionSource<TResult>();
+		_pendingRequests.Add(launchingActivity, tcs);
+
+		// Get the launcher for this specific activity
+		if (!_activityLaunchers.TryGetValue(launchingActivity, out var launcher))
+		{
+			Trace.WriteLine("""
+			                ActivityForResultRequest is not registered for the launching activity; cancelling the request.
+			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
+			                """);
+			_pendingRequests.Remove(launchingActivity);
 			tcs.SetCanceled();
 			return tcs.Task;
 		}
@@ -89,10 +130,26 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 		catch (Exception ex)
 		{
+			_pendingRequests.Remove(launchingActivity);
 			tcs.SetException(ex);
 		}
 
 		return tcs.Task;
+	}
+
+	/// <summary>
+	/// Cancels any pending request for the specified activity.
+	/// This should be called from the activity's OnDestroy() or when the activity is being destroyed
+	/// to ensure the pending task is completed rather than hanging indefinitely.
+	/// </summary>
+	/// <param name="componentActivity">The activity whose pending request should be cancelled.</param>
+	internal void CancelPendingRequest(ComponentActivity componentActivity)
+	{
+		if (_pendingRequests.TryGetValue(componentActivity, out var tcs))
+		{
+			_pendingRequests.Remove(componentActivity);
+			tcs?.TrySetCanceled();
+		}
 	}
 
 	ActivityResultLauncher GetLauncherForCurrentActivity()
