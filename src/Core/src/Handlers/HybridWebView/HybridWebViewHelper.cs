@@ -425,7 +425,9 @@ internal static partial class HybridWebViewHelper
 				}
 				break;
 			case "__RawMessage":
-				virtualView?.RawMessageReceived(messageContent);
+				// Payload is URL-encoded in JS (HybridWebView.ts sendRawMessage) so it survives
+				// transports that restrict the byte set (Android fetch header forbids CR/LF/NUL).
+				virtualView?.RawMessageReceived(Uri.UnescapeDataString(messageContent));
 				break;
 			default:
 				throw new ArgumentException($"The message type '{messageType}' is not recognized.", nameof(rawMessage));

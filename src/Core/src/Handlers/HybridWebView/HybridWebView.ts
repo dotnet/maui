@@ -27,11 +27,6 @@ interface Window {
             };
         };
     };
-
-    // Declare the global object that we have added on Android.
-    hybridWebViewHost?: {
-        sendMessage: (message: string) => void;
-    };
 }
 
 // Must stay in sync with HybridWebViewHandler.InvokeDotNetPath / SendMessagePath.
@@ -202,7 +197,10 @@ interface DotNetInvokeResult {
      * @param message The message to send to the .NET host application.
      */
     function sendRawMessage(message: string) {
-        sendMessageToDotNet('__RawMessage', message);
+        // URL-encode the payload so it survives transports that restrict the byte set
+        // (the Android fetch X-Maui-Request-Body header rejects CR/LF/NUL). Decoded
+        // on the .NET side in HybridWebViewHelper.ProcessRawMessage.
+        sendMessageToDotNet('__RawMessage', encodeURIComponent(message));
     }
 
     /*

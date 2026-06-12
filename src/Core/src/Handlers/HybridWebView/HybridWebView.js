@@ -145,7 +145,10 @@
      * @param message The message to send to the .NET host application.
      */
     function sendRawMessage(message) {
-        sendMessageToDotNet('__RawMessage', message);
+        // URL-encode the payload so it survives transports that restrict the byte set
+        // (the Android fetch X-Maui-Request-Body header rejects CR/LF/NUL). Decoded
+        // on the .NET side in HybridWebViewHelper.ProcessRawMessage.
+        sendMessageToDotNet('__RawMessage', encodeURIComponent(message));
     }
     /*
      * Invoke a .NET method on the InvokeJavaScriptTarget instance.
