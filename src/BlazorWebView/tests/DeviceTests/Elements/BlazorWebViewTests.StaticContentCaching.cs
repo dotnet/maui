@@ -73,7 +73,33 @@ public partial class BlazorWebViewTests
 		Assert.Contains("v=2", observedUri.Query, StringComparison.Ordinal);
 	}
 
-	private async Task<string> GetServedCacheControlHeaderAsync(Func<BlazorWebViewStaticContentRequest, string> provider, string fetchQueryString = "")
+	[Fact]
+	public async Task StaticContentCacheControlProviderReceivesQueryStringForFolderServedContent()
+	{
+		// On WinUI, _framework/blazor.modules.json is served through the folder-serving path
+		// (WinUIWebViewManager.TryServeFromFolderAsync) rather than the in-memory file provider that backs the
+		// other static assets in these tests. That path must also pass the original request URI (including the
+		// query string) to the provider, otherwise apps cannot make cache-busting decisions for folder-served
+		// content. See https://github.com/dotnet/maui/issues/8279
+		Uri observedUri = null;
+
+		await GetServedCacheControlHeaderAsync(
+			request =>
+			{
+				if (request.Uri.AbsolutePath.EndsWith("blazor.modules.json", StringComparison.Ordinal))
+				{
+					observedUri = request.Uri;
+				}
+				return null;
+			},
+			fetchPath: "_framework/blazor.modules.json",
+			fetchQueryString: "?v=2");
+
+		Assert.NotNull(observedUri);
+		Assert.Contains("v=2", observedUri.Query, StringComparison.Ordinal);
+	}
+
+	private async Task<string> GetServedCacheControlHeaderAsync(Func<BlazorWebViewStaticContentRequest, string> provider, string fetchPath = CacheControlTestFilePath, string fetchQueryString = "")
 	{
 		EnsureHandlerCreated(builder =>
 		{
@@ -109,7 +135,7 @@ public partial class BlazorWebViewTests
 
 			cacheControl = await WebViewHelpers.ExecuteAsyncScriptAndWaitForResult<string>(platformWebView,
 				$$"""
-				const response = await fetch('/{{CacheControlTestFilePath}}{{fetchQueryString}}');
+				const response = await fetch('/{{fetchPath}}{{fetchQueryString}}');
 				return response.headers.get('cache-control');
 				""");
 		});

@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// brings in a default implementation.
 				if (relativePath != null &&
 					string.Equals(relativePath, "_framework/blazor.modules.json", StringComparison.Ordinal) &&
-					await TryServeFromFolderAsync(eventArgs, allowFallbackOnHostPage: false, requestUri, relativePath))
+					await TryServeFromFolderAsync(eventArgs, allowFallbackOnHostPage: false, requestUri, url, relativePath))
 				{
 					_logger.ResponseContentBeingSent(requestUri, 200);
 				}
@@ -128,6 +128,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						eventArgs,
 						allowFallbackOnHostPage,
 						requestUri,
+						url,
 						relativePath);
 				}
 
@@ -161,6 +162,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			CoreWebView2WebResourceRequestedEventArgs eventArgs,
 			bool allowFallbackOnHostPage,
 			string requestUri,
+			string originalRequestUri,
 			string relativePath)
 		{
 			// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
@@ -203,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			if (stream != null)
 			{
-				ApplyStaticContentCacheControlOverride(headers, requestUri);
+				ApplyStaticContentCacheControlOverride(headers, originalRequestUri);
 				var headerString = GetHeaderString(headers);
 
 				_logger.ResponseContentBeingSent(requestUri, statusCode);
