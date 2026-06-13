@@ -142,6 +142,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ThrowsWhenHandlerProvidedManagerIsNull()
+		{
+			var handler = Substitute.For<IViewHandler, IGesturePlatformManagerProvider>();
+			var gesturePlatformManagerProvider = (IGesturePlatformManagerProvider)handler;
+			var view = Substitute.For<IControlsView>();
+
+			gesturePlatformManagerProvider.CreateGesturePlatformManager().Returns((IGesturePlatformManager)null);
+			view.Handler.Returns((IViewHandler)handler);
+
+			Assert.Throws<InvalidOperationException>(() => new GestureManager(view));
+			gesturePlatformManagerProvider.Received(1).CreateGesturePlatformManager();
+		}
+
+		[Fact]
 		public void HandlerProvidedManagerIsDisposedOnDisconnect()
 		{
 			var handler = Substitute.For<IViewHandler, IGesturePlatformManagerProvider>();

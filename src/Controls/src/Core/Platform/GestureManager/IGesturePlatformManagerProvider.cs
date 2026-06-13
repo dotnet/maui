@@ -6,9 +6,13 @@ namespace Microsoft.Maui.Controls.Platform
 	public interface IGesturePlatformManagerProvider
 	{
 		/// <summary>
-		/// Creates a gesture platform manager for the handler connection.
+		/// Creates a new gesture platform manager for the handler connection.
 		/// </summary>
-		/// <returns>A gesture platform manager owned and disposed by <see cref="GestureManager"/>.</returns>
+		/// <returns>
+		/// A new gesture platform manager instance owned and disposed by <see cref="GestureManager"/>.
+		/// This method must return a new instance for each call because <see cref="GestureManager"/>
+		/// disposes and recreates the manager on each connect or handler change.
+		/// </returns>
 		IGesturePlatformManager CreateGesturePlatformManager();
 	}
 }
