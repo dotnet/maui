@@ -209,5 +209,79 @@ namespace Microsoft.Maui.UnitTests.Extensions
 			Assert.Same(expectedResult, result);
 			await ((IViewScreenshot)screenshot).Received(1).CaptureViewAsync(platformView);
 		}
+
+		[Fact]
+		public async Task CaptureAsync_View_CapturesContainerView_WhenContainerViewPresent()
+		{
+			// Parity with the #if PLATFORM path (view.ToPlatform()): when the handler has a
+			// container view (clip/shadow/border), it must be captured, not the inner PlatformView.
+			var expectedResult = Substitute.For<IScreenshotResult>();
+			var platformView = new object();
+			var containerView = new object();
+
+			var screenshot = Substitute.For<IScreenshot, IViewScreenshot>();
+			screenshot.IsCaptureSupported.Returns(true);
+			((IViewScreenshot)screenshot).CaptureViewAsync(containerView)
+				.Returns(Task.FromResult<IScreenshotResult>(expectedResult));
+
+			var services = new ServiceCollection()
+				.AddSingleton(screenshot)
+				.BuildServiceProvider();
+			var mauiContext = new MauiContext(services);
+
+			var handler = Substitute.For<IViewHandler>();
+			handler.PlatformView.Returns(platformView);
+			handler.ContainerView.Returns(containerView);
+			handler.MauiContext.Returns(mauiContext);
+
+			var view = Substitute.For<IView>();
+			view.Handler.Returns(handler);
+
+			var result = await view.CaptureAsync();
+
+			Assert.Same(expectedResult, result);
+			await ((IViewScreenshot)screenshot).Received(1).CaptureViewAsync(containerView);
+			await ((IViewScreenshot)screenshot).DidNotReceive().CaptureViewAsync(platformView);
+		}
+
+		[Fact]
+		public async Task CaptureAsync_View_ReturnsNull_WhenMauiContextIsNull()
+		{
+			var handler = Substitute.For<IViewHandler>();
+			handler.PlatformView.Returns(new object());
+			handler.MauiContext.Returns((IMauiContext)null);
+
+			var view = Substitute.For<IView>();
+			view.Handler.Returns(handler);
+
+			var result = await view.CaptureAsync();
+
+			Assert.Null(result);
+		}
+
+		[Fact]
+		public async Task CaptureAsync_View_ReturnsNull_WhenViewScreenshotReturnsNull()
+		{
+			var screenshot = Substitute.For<IScreenshot, IViewScreenshot>();
+			screenshot.IsCaptureSupported.Returns(true);
+			((IViewScreenshot)screenshot).CaptureViewAsync(Arg.Any<object>())
+				.Returns(Task.FromResult<IScreenshotResult>(null));
+
+			var services = new ServiceCollection()
+				.AddSingleton(screenshot)
+				.BuildServiceProvider();
+			var mauiContext = new MauiContext(services);
+
+			var handler = Substitute.For<IViewHandler>();
+			handler.PlatformView.Returns(new object());
+			handler.MauiContext.Returns(mauiContext);
+
+			var view = Substitute.For<IView>();
+			view.Handler.Returns(handler);
+
+			var result = await view.CaptureAsync();
+
+			Assert.Null(result);
+		}
 	}
 }

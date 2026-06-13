@@ -77,8 +77,7 @@ namespace Microsoft.Maui
 
 			return CaptureAsync(platformView);
 #else
-			var handler = view?.Handler;
-			if (handler?.PlatformView is not { } platformView)
+			if (view?.Handler is not { } handler || handler.PlatformView is null)
 				return Task.FromResult<IScreenshotResult?>(null);
 
 			var screenshot = handler.MauiContext?.Services?.GetService(typeof(IScreenshot)) as IScreenshot;
@@ -88,6 +87,12 @@ namespace Microsoft.Maui
 			if (screenshot is not IViewScreenshot viewScreenshot)
 				return Task.FromResult<IScreenshotResult?>(null);
 
+			// Prefer the container view (where clip/shadow/border are applied), mirroring the
+			// #if PLATFORM path's view.ToPlatform() (ContainerView ?? PlatformView), so those
+			// visual effects are included for third-party backends that use the container
+			// mechanism. Falls back to the raw platform view, and stays graceful (no throw)
+			// to preserve this path's "return null when unavailable" contract.
+			var platformView = (view.Handler as IViewHandler)?.ContainerView ?? handler.PlatformView;
 			return viewScreenshot.CaptureViewAsync(platformView);
 #endif
 		}
