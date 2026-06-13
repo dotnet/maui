@@ -76,8 +76,38 @@ Task("GenerateMsixCert")
 	// to ReadWrite (which requires admin on LocalMachine) when we actually need to create the cert.
 	var localTrustedPeopleStore = new X509Store("TrustedPeople", StoreLocation.LocalMachine);
 	localTrustedPeopleStore.Open(OpenFlags.ReadOnly);
-	certificateThumbprint = localTrustedPeopleStore.Certificates.FirstOrDefault(c => c.Subject.Contains(certCN))?.Thumbprint;
+	var expectedSubject = "CN=" + certCN;
+	certificateThumbprint = localTrustedPeopleStore.Certificates
+		.Cast<X509Certificate2>()
+		.FirstOrDefault(c => c.Subject == expectedSubject)?.Thumbprint;
 	localTrustedPeopleStore.Close();
+
+	// If a cert exists, verify it has a usable user-scoped private key in CurrentUser\My. A cert
+	// installed by an older version of this script may reference a private key in the machine key
+	// container (C:\ProgramData\Microsoft\Crypto\...), which is unreadable from a non-elevated
+	// process — signtool would then fail mid-build with an opaque "No certificates were found that
+	// met all the given criteria". If unusable, remove the stale entries and fall through to the
+	// creation path below.
+	if (!string.IsNullOrEmpty(certificateThumbprint) && !IsCurrentUserSigningCertUsable(certificateThumbprint))
+	{
+		Information("Existing cert {0} has no usable user-scoped private key; removing and recreating.", certificateThumbprint);
+		try
+		{
+			RemoveCertByThumbprint(StoreLocation.LocalMachine, "TrustedPeople", certificateThumbprint);
+			RemoveCertByThumbprint(StoreLocation.CurrentUser, "My", certificateThumbprint);
+		}
+		catch (System.Security.Cryptography.CryptographicException ex)
+		{
+			throw new Exception(
+				"Cert " + certificateThumbprint + " exists in LocalMachine\\TrustedPeople but its private key " +
+				"is not accessible from this non-elevated process, and removing the stale cert also requires " +
+				"elevation. Please remove the stale entries manually and re-run this task elevated once:\n" +
+				"  Remove-Item Cert:\\LocalMachine\\TrustedPeople\\" + certificateThumbprint + "\n" +
+				"  Remove-Item Cert:\\CurrentUser\\My\\" + certificateThumbprint,
+				ex);
+		}
+		certificateThumbprint = null;
+	}
 
 	if (string.IsNullOrEmpty(certificateThumbprint))
 	{
@@ -144,48 +174,74 @@ Task("GenerateMsixCert")
 	}
 	else
 	{
-		// Cert already exists in LocalMachine\TrustedPeople. Make sure it's also in CurrentUser\My
-		// with a usable user-scoped private key so the build can sign with it. A cert installed by
-		// an older version of this script may live in CurrentUser\My but reference a private key
-		// stored in the machine key container (C:\ProgramData\Microsoft\Crypto\...), which is
-		// unreadable from a non-elevated process — signtool would then fail mid-build. Verify by
-		// touching the private key, not just by checking HasPrivateKey.
-		var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
-		currentUserMyStore.Open(OpenFlags.ReadOnly);
-		var matchingCert = currentUserMyStore.Certificates
-			.Cast<X509Certificate2>()
-			.FirstOrDefault(c => c.Thumbprint == certificateThumbprint);
-		var usable = false;
-		if (matchingCert != null && matchingCert.HasPrivateKey)
-		{
-			try
-			{
-				using var key = matchingCert.GetRSAPrivateKey();
-				usable = key != null && key.ExportParameters(false) != null;
-			}
-			catch (System.Security.Cryptography.CryptographicException)
-			{
-				// Private key handle exists but the key material is in a container we can't read
-				// (typically a machine key container without admin rights).
-				usable = false;
-			}
-		}
-		currentUserMyStore.Close();
-
-		if (!usable)
-		{
-			Warning(
-				"Cert {0} is in LocalMachine\\TrustedPeople but no usable user-scoped private key " +
-				"was found in CurrentUser\\My (the cert may be missing, or its private key may live " +
-				"in the machine key container and require elevation to read). The build will not be " +
-				"able to sign the MSIX. Run this task elevated once to reinstall the cert into both " +
-				"stores with a user-scoped key.",
-				certificateThumbprint);
-		}
+		Information("Reusing existing cert {0} from CurrentUser\\My.", certificateThumbprint);
 	}
 
 	Information("Cert thumbprint: " + certificateThumbprint ?? "null");
 });
+
+// Verifies the cert with the given thumbprint exists in CurrentUser\My and that its private key
+// can actually be used for signing. Uses SignData rather than ExportParameters because reading
+// public parameters never touches the private key container and would succeed even when the key
+// material lives in an inaccessible machine key container.
+bool IsCurrentUserSigningCertUsable(string thumbprint)
+{
+	var store = new X509Store("My", StoreLocation.CurrentUser);
+	try
+	{
+		store.Open(OpenFlags.ReadOnly);
+		var cert = store.Certificates
+			.Cast<X509Certificate2>()
+			.FirstOrDefault(c => c.Thumbprint == thumbprint);
+		if (cert == null || !cert.HasPrivateKey)
+		{
+			return false;
+		}
+		try
+		{
+			using var key = cert.GetRSAPrivateKey();
+			if (key == null)
+			{
+				return false;
+			}
+			// Exercise the actual signing path; throws CryptographicException when the private key
+			// material is in a container we can't access.
+			key.SignData(Array.Empty<byte>(), System.Security.Cryptography.HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+			return true;
+		}
+		catch (System.Security.Cryptography.CryptographicException)
+		{
+			return false;
+		}
+	}
+	finally
+	{
+		store.Close();
+	}
+}
+
+// Removes the cert with the given thumbprint from the specified store. Propagates
+// CryptographicException so the caller can surface a meaningful error when removal requires
+// elevation we don't have.
+void RemoveCertByThumbprint(StoreLocation location, string storeName, string thumbprint)
+{
+	var store = new X509Store(storeName, location);
+	try
+	{
+		store.Open(OpenFlags.ReadWrite);
+		var cert = store.Certificates
+			.Cast<X509Certificate2>()
+			.FirstOrDefault(c => c.Thumbprint == thumbprint);
+		if (cert != null)
+		{
+			store.Remove(cert);
+		}
+	}
+	finally
+	{
+		store.Close();
+	}
+}
 
 Task("buildOnly")
 	.IsDependentOn("GenerateMsixCert")
