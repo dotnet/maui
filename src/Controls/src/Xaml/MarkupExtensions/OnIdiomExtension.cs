@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -143,35 +142,25 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			// Resolve the value by comparing the current idiom string against the per-idiom
 			// values, so custom idioms registered through DeviceIdiom.Create(...) can resolve
-			// a value the same way the data-driven element form does. Falls back to Default.
-			var lookup = BuildIdiomLookup();
-			if (lookup.TryGetValue(DeviceInfo.Idiom.ToString(), out var value))
-				return value;
+			// a value the same string-based way the data-driven element form does. Ordinal
+			// (case-sensitive), matching DeviceIdiom equality. Falls back to Default.
+			// null is the "not set" sentinel, matching the previous "Idiom ?? Default" behavior.
+			var idiom = DeviceInfo.Idiom.ToString();
+
+			if (Matches(idiom, nameof(DeviceIdiom.Phone)) && Phone != null)
+				return Phone;
+			if (Matches(idiom, nameof(DeviceIdiom.Tablet)) && Tablet != null)
+				return Tablet;
+			if (Matches(idiom, nameof(DeviceIdiom.Desktop)) && Desktop != null)
+				return Desktop;
+			if (Matches(idiom, nameof(DeviceIdiom.TV)) && TV != null)
+				return TV;
+			if (Matches(idiom, nameof(DeviceIdiom.Watch)) && Watch != null)
+				return Watch;
 
 			return Default;
-		}
 
-		Dictionary<string, object> BuildIdiomLookup()
-		{
-			// Keyed by idiom string using Ordinal (case-sensitive) comparison, matching
-			// DeviceIdiom equality and the data-driven element form.
-			var lookup = new Dictionary<string, object>(StringComparer.Ordinal);
-
-			AddIfSet(lookup, nameof(DeviceIdiom.Phone), Phone);
-			AddIfSet(lookup, nameof(DeviceIdiom.Tablet), Tablet);
-			AddIfSet(lookup, nameof(DeviceIdiom.Desktop), Desktop);
-			AddIfSet(lookup, nameof(DeviceIdiom.TV), TV);
-			AddIfSet(lookup, nameof(DeviceIdiom.Watch), Watch);
-
-			return lookup;
-
-			static void AddIfSet(Dictionary<string, object> lookup, string key, object value)
-			{
-				// null is the "not set" sentinel for OnIdiomExtension, matching the previous
-				// "Idiom ?? Default" behavior where an unset idiom falls back to Default.
-				if (value != null)
-					lookup[key] = value;
-			}
+			static bool Matches(string idiom, string key) => string.Equals(idiom, key, StringComparison.Ordinal);
 		}
 	}
 }
