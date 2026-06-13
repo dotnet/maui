@@ -177,7 +177,7 @@ Task("GenerateMsixCert")
 		Information("Reusing existing cert {0} from CurrentUser\\My.", certificateThumbprint);
 	}
 
-	Information("Cert thumbprint: " + certificateThumbprint ?? "null");
+	Information("Cert thumbprint: {0}", certificateThumbprint ?? "null");
 });
 
 // Verifies the cert with the given thumbprint exists in CurrentUser\My and that its private key
