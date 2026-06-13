@@ -71,15 +71,43 @@ Task("GenerateMsixCert")
 	.WithCriteria(isPackagedTestRun)
 	.Does(() =>
 {
-	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key
+	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key.
+	// Open read-only first so we can detect an existing cert without requiring admin. Only escalate
+	// to ReadWrite (which requires admin on LocalMachine) when we actually need to create the cert.
 	var localTrustedPeopleStore = new X509Store("TrustedPeople", StoreLocation.LocalMachine);
-	localTrustedPeopleStore.Open(OpenFlags.ReadWrite);
+	localTrustedPeopleStore.Open(OpenFlags.ReadOnly);
+	var expectedSubject = "CN=" + certCN;
+	certificateThumbprint = localTrustedPeopleStore.Certificates
+		.Cast<X509Certificate2>()
+		.FirstOrDefault(c => c.Subject == expectedSubject)?.Thumbprint;
+	localTrustedPeopleStore.Close();
 
-	// We need to have the key also in CurrentUser -> My so that the msix can be built and signed
-	// with the key by passing the key's thumbprint to the build
-	var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
-	currentUserMyStore.Open(OpenFlags.ReadWrite);
-	certificateThumbprint = localTrustedPeopleStore.Certificates.FirstOrDefault(c => c.Subject.Contains(certCN))?.Thumbprint;
+	// If a cert exists, verify it has a usable user-scoped private key in CurrentUser\My. A cert
+	// installed by an older version of this script may reference a private key in the machine key
+	// container (C:\ProgramData\Microsoft\Crypto\...), which is unreadable from a non-elevated
+	// process — signtool would then fail mid-build with an opaque "No certificates were found that
+	// met all the given criteria". If unusable, remove the stale entries and fall through to the
+	// creation path below.
+	if (!string.IsNullOrEmpty(certificateThumbprint) && !IsCurrentUserSigningCertUsable(certificateThumbprint))
+	{
+		Information("Existing cert {0} has no usable user-scoped private key; removing and recreating.", certificateThumbprint);
+		try
+		{
+			RemoveCertByThumbprint(StoreLocation.LocalMachine, "TrustedPeople", certificateThumbprint);
+			RemoveCertByThumbprint(StoreLocation.CurrentUser, "My", certificateThumbprint);
+		}
+		catch (System.Security.Cryptography.CryptographicException ex)
+		{
+			throw new Exception(
+				"Cert " + certificateThumbprint + " exists in LocalMachine\\TrustedPeople but its private key " +
+				"is not accessible from this non-elevated process, and removing the stale cert also requires " +
+				"elevation. Please remove the stale entries manually and re-run this task elevated once:\n" +
+				"  Remove-Item Cert:\\LocalMachine\\TrustedPeople\\" + certificateThumbprint + "\n" +
+				"  Remove-Item Cert:\\CurrentUser\\My\\" + certificateThumbprint,
+				ex);
+		}
+		certificateThumbprint = null;
+	}
 
 	if (string.IsNullOrEmpty(certificateThumbprint))
 	{
@@ -111,17 +139,109 @@ Task("GenerateMsixCert")
 			cert.FriendlyName = certCN;
 		}
 
-		var tmpCert = new X509Certificate2(cert.Export(X509ContentType.Pfx), "", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
+		// Store the private key in the *user* key container (not the machine container) so the
+		// current non-elevated user can use it to sign. LocalMachine\TrustedPeople only needs the
+		// cert's public key for sideload trust validation, so a user-scope private key is enough.
+		// Using MachineKeySet here would put the key in C:\ProgramData\Microsoft\Crypto\...
+		// which is unreadable from a non-admin process — signtool then fails with "No certificates
+		// were found that met all the given criteria" even though the cert is visible in the store.
+		var tmpCert = new X509Certificate2(cert.Export(X509ContentType.Pfx), "", X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.PersistKeySet);
 		certificateThumbprint = tmpCert.Thumbprint;
-		localTrustedPeopleStore.Add(tmpCert);
+
+		// Writing to LocalMachine\TrustedPeople requires admin. If we don't have it, fail with a
+		// clear message rather than the raw "Access is denied" from the store.
+		try
+		{
+			localTrustedPeopleStore.Open(OpenFlags.ReadWrite);
+			localTrustedPeopleStore.Add(tmpCert);
+			localTrustedPeopleStore.Close();
+		}
+		catch (System.Security.Cryptography.CryptographicException ex)
+		{
+			throw new Exception(
+				"Failed to install signing cert into LocalMachine\\TrustedPeople. " +
+				"This step requires an elevated (administrator) shell on first run. " +
+				"After the cert is created once, subsequent runs can be performed without elevation.",
+				ex);
+		}
+
+		// CurrentUser\My only needs admin if the process doesn't own the profile, so do it after
+		// the LocalMachine write succeeded.
+		var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
+		currentUserMyStore.Open(OpenFlags.ReadWrite);
 		currentUserMyStore.Add(tmpCert);
+		currentUserMyStore.Close();
+	}
+	else
+	{
+		Information("Reusing existing cert {0} from CurrentUser\\My.", certificateThumbprint);
 	}
 
-	localTrustedPeopleStore.Close();
-	currentUserMyStore.Close();
-
-	Information("Cert thumbprint: " + certificateThumbprint ?? "null");
+	Information("Cert thumbprint: {0}", certificateThumbprint ?? "null");
 });
+
+// Verifies the cert with the given thumbprint exists in CurrentUser\My and that its private key
+// can actually be used for signing. Uses SignData rather than ExportParameters because reading
+// public parameters never touches the private key container and would succeed even when the key
+// material lives in an inaccessible machine key container.
+bool IsCurrentUserSigningCertUsable(string thumbprint)
+{
+	var store = new X509Store("My", StoreLocation.CurrentUser);
+	try
+	{
+		store.Open(OpenFlags.ReadOnly);
+		var cert = store.Certificates
+			.Cast<X509Certificate2>()
+			.FirstOrDefault(c => c.Thumbprint == thumbprint);
+		if (cert == null || !cert.HasPrivateKey)
+		{
+			return false;
+		}
+		try
+		{
+			using var key = cert.GetRSAPrivateKey();
+			if (key == null)
+			{
+				return false;
+			}
+			// Exercise the actual signing path; throws CryptographicException when the private key
+			// material is in a container we can't access.
+			key.SignData(Array.Empty<byte>(), System.Security.Cryptography.HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+			return true;
+		}
+		catch (System.Security.Cryptography.CryptographicException)
+		{
+			return false;
+		}
+	}
+	finally
+	{
+		store.Close();
+	}
+}
+
+// Removes the cert with the given thumbprint from the specified store. Propagates
+// CryptographicException so the caller can surface a meaningful error when removal requires
+// elevation we don't have.
+void RemoveCertByThumbprint(StoreLocation location, string storeName, string thumbprint)
+{
+	var store = new X509Store(storeName, location);
+	try
+	{
+		store.Open(OpenFlags.ReadWrite);
+		var cert = store.Certificates
+			.Cast<X509Certificate2>()
+			.FirstOrDefault(c => c.Thumbprint == thumbprint);
+		if (cert != null)
+		{
+			store.Remove(cert);
+		}
+	}
+	finally
+	{
+		store.Close();
+	}
+}
 
 Task("buildOnly")
 	.IsDependentOn("GenerateMsixCert")
