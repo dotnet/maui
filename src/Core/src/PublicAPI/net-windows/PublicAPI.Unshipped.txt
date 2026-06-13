@@ -1,4 +1,13 @@
 #nullable enable
+Microsoft.Maui.Platform.MauiLayoutAutomationPeer
+Microsoft.Maui.Platform.MauiLayoutAutomationPeer.MauiLayoutAutomationPeer(Microsoft.Maui.Platform.LayoutPanel! owner) -> void
+override Microsoft.Maui.Platform.LayoutPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetAutomationControlTypeCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationControlType
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetClassNameCore() -> string!
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetLocalizedControlTypeCore() -> string!
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.IsContentElementCore() -> bool
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.IsControlElementCore() -> bool
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.IsKeyboardFocusableCore() -> bool
 Microsoft.Maui.HybridWebViewInvoker
 Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void
 Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!

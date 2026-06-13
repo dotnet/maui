@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,8 +15,22 @@ namespace Microsoft.Maui.Controls
 			if (handler.IsConnectingHandler() && element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) is null)
 				return;
 
-			Platform.AccessibilityExtensions.SetAutomationPropertiesAccessibilityView(
-				handler.PlatformView as Microsoft.UI.Xaml.FrameworkElement, element);
+			if (handler.PlatformView is not FrameworkElement platformView)
+				return;
+
+			var isInAccessibleTree = (bool?)element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
+			if (isInAccessibleTree == true)
+			{
+				platformView.SetValue(NativeAutomationProperties.AccessibilityViewProperty, AccessibilityView.Content);
+			}
+			else if (isInAccessibleTree == false)
+			{
+				platformView.SetValue(NativeAutomationProperties.AccessibilityViewProperty, AccessibilityView.Raw);
+			}
+			else
+			{
+				platformView.ClearValue(NativeAutomationProperties.AccessibilityViewProperty);
+			}
 		}
 
 		public static void MapAutomationPropertiesLabeledBy(IElementHandler handler, Element element)
