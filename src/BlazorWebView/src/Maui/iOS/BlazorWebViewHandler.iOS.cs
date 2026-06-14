@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
 						// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
 						// See https://github.com/dotnet/maui/issues/8279
-						var cacheControl = StaticContentCacheControl.ResolveOverride(_webViewHandler.VirtualView, new Uri(url), contentType)
+						var cacheControl = StaticContentCacheControl.ResolveOverride(_webViewHandler.VirtualView, url, contentType)
 							?? StaticContentCacheControl.Default;
 						dic.Add((NSString)"Cache-Control", (NSString)cacheControl);
 						if (urlSchemeTask.Request.Url != null)
