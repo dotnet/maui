@@ -84,13 +84,16 @@ public class Issue7814 : _IssuesUITest
 			touchViewRect.Left + 20,
 			touchViewRect.Top + (touchViewRect.Height / 2));
 
-		var touchStatusAfterGesture = App.FindElement(TouchStatusLabelId).GetText();
-		var parentPositionAfterGesture = GetTouchParentPosition();
-
-		Assert.Multiple(() =>
+		App.RetryAssert(() =>
 		{
-			Assert.That(touchStatusAfterGesture, Does.Contain("Up"), "The row touch-claiming view should receive the whole drag.");
-			Assert.That(parentPositionAfterGesture, Is.EqualTo(parentPositionBeforeGesture), "The horizontal parent CarouselView should not steal the claimed row gesture.");
+			var touchStatusAfterGesture = App.FindElement(TouchStatusLabelId).GetText();
+			var parentPositionAfterGesture = GetTouchParentPosition();
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(touchStatusAfterGesture, Does.Contain("Up"), "The row touch-claiming view should receive the whole drag.");
+				Assert.That(parentPositionAfterGesture, Is.EqualTo(parentPositionBeforeGesture), "The horizontal parent CarouselView should not steal the claimed row gesture.");
+			});
 		});
 	}
 
