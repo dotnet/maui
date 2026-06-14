@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="CachingEnabled"/>.</summary>
 		public static readonly BindableProperty CachingEnabledProperty = BindableProperty.Create(
-			nameof(CachingEnabled), typeof(bool), typeof(UriImageSource), true);
+			nameof(CachingEnabled), typeof(bool), typeof(UriImageSource), BooleanBoxes.TrueBox);
 
 		/// <summary>Gets a value indicating whether this image source is empty.</summary>
 		public override bool IsEmpty => Uri == null;
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls
 		public bool CachingEnabled
 		{
 			get => (bool)GetValue(CachingEnabledProperty);
-			set => SetValue(CachingEnabledProperty, value);
+			set => SetValue(CachingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets or sets the URI of the image to load. This is a bindable property.</summary>
