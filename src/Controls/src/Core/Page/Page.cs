@@ -50,14 +50,14 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
 
-		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create(nameof(IgnoresContainerArea), typeof(bool), typeof(Page), false);
+		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create(nameof(IgnoresContainerArea), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
 		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
-		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
+		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), BooleanBoxes.FalseBox, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsBusy
 		{
 			get { return (bool)GetValue(IsBusyProperty); }
-			set { SetValue(IsBusyProperty, value); }
+			set { SetValue(IsBusyProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls
 		public bool IgnoresContainerArea
 		{
 			get { return (bool)GetValue(IgnoresContainerAreaProperty); }
-			set { SetValue(IgnoresContainerAreaProperty, value); }
+			set { SetValue(IgnoresContainerAreaProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
