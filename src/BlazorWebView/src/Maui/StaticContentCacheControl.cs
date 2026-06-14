@@ -10,10 +10,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal const string Default = "no-cache, max-age=0, must-revalidate, no-store";
 
 		// Returns the application-provided Cache-Control override for the request, or null to use the default.
-		internal static string? ResolveOverride(IBlazorWebView? blazorWebView, Uri uri, string contentType)
+		internal static string? ResolveOverride(IBlazorWebView? blazorWebView, string requestUri, string contentType)
 		{
 			var provider = blazorWebView?.StaticContentCacheControlProvider;
 			if (provider is null)
+			{
+				return null;
+			}
+
+			// The request handlers run on background threads, so guard against a malformed URI rather than letting
+			// an unexpected UriFormatException surface as a crash. If parsing fails we keep the default header.
+			if (!Uri.TryCreate(requestUri, UriKind.Absolute, out var uri))
 			{
 				return null;
 			}
