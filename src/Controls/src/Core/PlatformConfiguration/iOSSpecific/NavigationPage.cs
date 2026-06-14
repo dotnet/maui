@@ -3,6 +3,7 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using System;
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.NavigationPage;
 
 	/// <summary>The navigation page instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		[Obsolete("IsNavigationBarTranslucent is deprecated. The Translucent will be enabled by default by setting the BarBackgroundColor to a transparent color.")]
 		public static void SetIsNavigationBarTranslucent(BindableObject element, bool value)
 		{
-			element.SetValue(IsNavigationBarTranslucentProperty, value);
+			element.SetValue(IsNavigationBarTranslucentProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		#region PrefersLargeTitles
 		/// <summary>Bindable property for <see cref="PrefersLargeTitles"/>.</summary>
-		public static readonly BindableProperty PrefersLargeTitlesProperty = BindableProperty.Create(nameof(PrefersLargeTitles), typeof(bool), typeof(Page), false);
+		public static readonly BindableProperty PrefersLargeTitlesProperty = BindableProperty.Create(nameof(PrefersLargeTitles), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
 
 		/// <summary>Returns the large title preference of <paramref name="element"/>.</summary>
 		/// <param name="element">The element whose large title preference to get.</param>
@@ -134,7 +135,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to prefer large titles; otherwise, <see langword="false"/>.</param>
 		public static void SetPrefersLargeTitles(BindableObject element, bool value)
 		{
-			element.SetValue(PrefersLargeTitlesProperty, value);
+			element.SetValue(PrefersLargeTitlesProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets whether iOS 11+ large titles are displayed in the navigation bar.</summary>
@@ -158,7 +159,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		#region HideNavigationBarSeparator
 		/// <summary>Bindable property for <see cref="HideNavigationBarSeparator"/>.</summary>
-		public static readonly BindableProperty HideNavigationBarSeparatorProperty = BindableProperty.Create(nameof(HideNavigationBarSeparator), typeof(bool), typeof(Page), false);
+		public static readonly BindableProperty HideNavigationBarSeparatorProperty = BindableProperty.Create(nameof(HideNavigationBarSeparator), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
 
 		/// <summary>Returns <see langword="true"/> if the separator is hidden. Otherwise, returns <see langword="false"/>.</summary>
 		/// <param name="element">The element for which to return whether the navigation bar separator is hidden.</param>
@@ -173,7 +174,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to hide the separator; otherwise, <see langword="false"/>.</param>
 		public static void SetHideNavigationBarSeparator(BindableObject element, bool value)
 		{
-			element.SetValue(HideNavigationBarSeparatorProperty, value);
+			element.SetValue(HideNavigationBarSeparatorProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets whether to hide the navigation bar separator line on iOS.</summary>

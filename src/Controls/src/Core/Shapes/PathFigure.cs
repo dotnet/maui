@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -36,11 +37,11 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <summary>Bindable property for <see cref="IsClosed"/>.</summary>
 		public static readonly BindableProperty IsClosedProperty =
-			BindableProperty.Create(nameof(IsClosed), typeof(bool), typeof(PathFigure), false);
+			BindableProperty.Create(nameof(IsClosed), typeof(bool), typeof(PathFigure), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="IsFilled"/>.</summary>
 		public static readonly BindableProperty IsFilledProperty =
-			BindableProperty.Create(nameof(IsFilled), typeof(bool), typeof(PathFigure), true);
+			BindableProperty.Create(nameof(IsFilled), typeof(bool), typeof(PathFigure), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Gets or sets the collection of path segments that define this figure. This is a bindable property.
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public bool IsClosed
 		{
-			set { SetValue(IsClosedProperty, value); }
+			set { SetValue(IsClosedProperty, BooleanBoxes.Box(value)); }
 			get { return (bool)GetValue(IsClosedProperty); }
 		}
 
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public bool IsFilled
 		{
-			set { SetValue(IsFilledProperty, value); }
+			set { SetValue(IsFilledProperty, BooleanBoxes.Box(value)); }
 			get { return (bool)GetValue(IsFilledProperty); }
 		}
 

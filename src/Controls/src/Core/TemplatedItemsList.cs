@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Internals
 		static readonly BindableProperty IndexProperty = BindableProperty.Create("Index", typeof(int), typeof(TItem), -1);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-		static readonly BindablePropertyKey IsGroupHeaderPropertyKey = BindableProperty.CreateAttachedReadOnly("IsGroupHeader", typeof(bool), typeof(Cell), false);
+		static readonly BindablePropertyKey IsGroupHeaderPropertyKey = BindableProperty.CreateAttachedReadOnly("IsGroupHeader", typeof(bool), typeof(Cell), BooleanBoxes.FalseBox);
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		readonly BindableProperty _itemSourceProperty;

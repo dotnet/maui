@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 		public const string DefaultItemVisualState = "DefaultItem";
 
 		/// <summary>Bindable property for <see cref="Loop"/>.</summary>
-		public static readonly BindableProperty LoopProperty = BindableProperty.Create(nameof(Loop), typeof(bool), typeof(CarouselView), true, BindingMode.OneTime);
+		public static readonly BindableProperty LoopProperty = BindableProperty.Create(nameof(Loop), typeof(bool), typeof(CarouselView), BooleanBoxes.TrueBox, BindingMode.OneTime);
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the carousel loops back to the first item after reaching the last item.
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 		public bool Loop
 		{
 			get { return (bool)GetValue(LoopProperty); }
-			set { SetValue(LoopProperty, value); }
+			set { SetValue(LoopProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="PeekAreaInsets"/>.</summary>
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsBounceEnabled"/>.</summary>
 		public static readonly BindableProperty IsBounceEnabledProperty =
-			BindableProperty.Create(nameof(IsBounceEnabled), typeof(bool), typeof(CarouselView), true);
+			BindableProperty.Create(nameof(IsBounceEnabled), typeof(bool), typeof(CarouselView), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Gets or sets a value indicating whether bounce effects are enabled when scrolling reaches the end of the carousel.
@@ -124,12 +124,12 @@ namespace Microsoft.Maui.Controls
 		public bool IsBounceEnabled
 		{
 			get { return (bool)GetValue(IsBounceEnabledProperty); }
-			set { SetValue(IsBounceEnabledProperty, value); }
+			set { SetValue(IsBounceEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="IsSwipeEnabled"/>.</summary>
 		public static readonly BindableProperty IsSwipeEnabledProperty =
-			BindableProperty.Create(nameof(IsSwipeEnabled), typeof(bool), typeof(CarouselView), true);
+			BindableProperty.Create(nameof(IsSwipeEnabled), typeof(bool), typeof(CarouselView), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Gets or sets a value indicating whether swipe gestures are enabled for navigation.
@@ -142,12 +142,12 @@ namespace Microsoft.Maui.Controls
 		public bool IsSwipeEnabled
 		{
 			get { return (bool)GetValue(IsSwipeEnabledProperty); }
-			set { SetValue(IsSwipeEnabledProperty, value); }
+			set { SetValue(IsSwipeEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="IsScrollAnimated"/>.</summary>
 		public static readonly BindableProperty IsScrollAnimatedProperty =
-		BindableProperty.Create(nameof(IsScrollAnimated), typeof(bool), typeof(CarouselView), true);
+		BindableProperty.Create(nameof(IsScrollAnimated), typeof(bool), typeof(CarouselView), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Gets or sets a value indicating whether scrolling between items is animated.
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsScrollAnimated
 		{
 			get { return (bool)GetValue(IsScrollAnimatedProperty); }
-			set { SetValue(IsScrollAnimatedProperty, value); }
+			set { SetValue(IsScrollAnimatedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>

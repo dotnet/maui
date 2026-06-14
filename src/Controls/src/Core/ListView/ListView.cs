@@ -26,10 +26,10 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _visualChildren;
 
 		/// <summary>Bindable property for <see cref="IsPullToRefreshEnabled"/>.</summary>
-		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create(nameof(IsPullToRefreshEnabled), typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create(nameof(IsPullToRefreshEnabled), typeof(bool), typeof(ListView), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="IsRefreshing"/>.</summary>
-		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(ListView), false, BindingMode.TwoWay);
+		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(ListView), BooleanBoxes.FalseBox, BindingMode.TwoWay);
 
 		/// <summary>Bindable property for <see cref="RefreshCommand"/>.</summary>
 		public static readonly BindableProperty RefreshCommandProperty = BindableProperty.Create(nameof(RefreshCommand), typeof(ICommand), typeof(ListView), null, propertyChanged: OnRefreshCommandChanged);
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty SelectionModeProperty = BindableProperty.Create(nameof(SelectionMode), typeof(ListViewSelectionMode), typeof(ListView), ListViewSelectionMode.Single);
 
 		/// <summary>Bindable property for <see cref="HasUnevenRows"/>.</summary>
-		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create(nameof(HasUnevenRows), typeof(bool), typeof(ListView), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="RowHeight"/>.</summary>
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create(nameof(RowHeight), typeof(int), typeof(ListView), -1);
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: OnGroupHeaderTemplateChanged);
 
 		/// <summary>Bindable property for <see cref="IsGroupingEnabled"/>.</summary>
-		public static readonly BindableProperty IsGroupingEnabledProperty = BindableProperty.Create(nameof(IsGroupingEnabled), typeof(bool), typeof(ListView), false);
+		public static readonly BindableProperty IsGroupingEnabledProperty = BindableProperty.Create(nameof(IsGroupingEnabled), typeof(bool), typeof(ListView), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="SeparatorVisibility"/>.</summary>
 		public static readonly BindableProperty SeparatorVisibilityProperty = BindableProperty.Create(nameof(SeparatorVisibility), typeof(SeparatorVisibility), typeof(ListView), SeparatorVisibility.Default);
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls
 		public bool HasUnevenRows
 		{
 			get { return (bool)GetValue(HasUnevenRowsProperty); }
-			set { SetValue(HasUnevenRowsProperty, value); }
+			set { SetValue(HasUnevenRowsProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the string, binding, or view that will be displayed at the top of the list view. This is a bindable property.</summary>
@@ -230,21 +230,21 @@ namespace Microsoft.Maui.Controls
 		public bool IsGroupingEnabled
 		{
 			get { return (bool)GetValue(IsGroupingEnabledProperty); }
-			set { SetValue(IsGroupingEnabledProperty, value); }
+			set { SetValue(IsGroupingEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets a value that tells whether the user can swipe down to cause the application to refresh. This is a bindable property.</summary>
 		public bool IsPullToRefreshEnabled
 		{
 			get { return (bool)GetValue(IsPullToRefreshEnabledProperty); }
-			set { SetValue(IsPullToRefreshEnabledProperty, value); }
+			set { SetValue(IsPullToRefreshEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets a value that tells whether the list view is currently refreshing. This is a bindable property.</summary>
 		public bool IsRefreshing
 		{
 			get { return (bool)GetValue(IsRefreshingProperty); }
-			set { SetValue(IsRefreshingProperty, value); }
+			set { SetValue(IsRefreshingProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the command that is run when the list view enters the refreshing state. This is a bindable property.</summary>
@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Controls
 			if (!RefreshAllowed)
 				return;
 
-			SetValue(IsRefreshingProperty, true, SetterSpecificity.FromHandler);
+			SetValue(IsRefreshingProperty, BooleanBoxes.TrueBox, SetterSpecificity.FromHandler);
 			OnRefreshing(EventArgs.Empty);
 
 			ICommand command = RefreshCommand;
@@ -395,7 +395,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Exits the refreshing state by setting the <see cref="Microsoft.Maui.Controls.ListView.IsRefreshing"/> property to <see langword="false"/>.</summary>
 		public void EndRefresh()
 		{
-			SetValue(IsRefreshingProperty, false, SetterSpecificity.FromHandler);
+			SetValue(IsRefreshingProperty, BooleanBoxes.FalseBox, SetterSpecificity.FromHandler);
 		}
 
 		public event EventHandler<ItemVisibilityEventArgs> ItemAppearing;
