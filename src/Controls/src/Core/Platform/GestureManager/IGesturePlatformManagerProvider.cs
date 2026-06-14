@@ -3,7 +3,8 @@ namespace Microsoft.Maui.Controls.Platform
 	/// <summary>
 	/// Provides gesture platform manager instances for a handler connection.
 	/// </summary>
-	public interface IGesturePlatformManagerProvider
+	// TODO: Make this public in a future release alongside IGesturePlatformManager. See #33364.
+	internal interface IGesturePlatformManagerProvider
 	{
 		/// <summary>
 		/// Creates a new gesture platform manager for the handler connection.

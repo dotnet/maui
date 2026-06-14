@@ -27,9 +27,6 @@ Microsoft.Maui.Controls.LongPressedEventArgs.Parameter.get -> object?
 Microsoft.Maui.Controls.LongPressingEventArgs
 Microsoft.Maui.Controls.LongPressingEventArgs.LongPressingEventArgs(Microsoft.Maui.GestureStatus status) -> void
 Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.GestureStatus
-Microsoft.Maui.Controls.Platform.IGesturePlatformManager
-Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider
-Microsoft.Maui.Controls.Platform.IGesturePlatformManagerProvider.CreateGesturePlatformManager() -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
 Microsoft.Maui.Controls.Span.InvalidateStyle() -> void
 Microsoft.Maui.Controls.StyleableElement.InvalidateStyle() -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
