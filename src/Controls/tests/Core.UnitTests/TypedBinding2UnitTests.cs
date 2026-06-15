@@ -1738,6 +1738,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, viewmodel.InvocationListSize());
 		}
 
+		[Fact]
+		public void BindingKeepsSubscriptionAliveAfterGarbageCollection()
+		{
+			var viewmodel = new TestViewModel();
+			var button = new Button();
+			var binding = new TypedBinding<TestViewModel, string>(
+				getter: vm => (vm.Foo, true),
+				setter: (vm, s) => vm.Foo = s,
+				handlersCount: 1,
+				handlers: GetHandlers);
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(TestViewModel source)
+			{
+				yield return (source, "Foo");
+			}
+
+			button.SetBinding(Button.TextProperty, binding);
+			button.BindingContext = viewmodel;
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			viewmodel.Foo = "Bar";
+
+			Assert.Equal("Bar", button.Text);
+			Assert.Equal(1, viewmodel.InvocationListSize());
+		}
+
 		public class IndexedViewModel : INotifyPropertyChanged
 		{
 			Dictionary<string, object> dict = new Dictionary<string, object>();
