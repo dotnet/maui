@@ -187,7 +187,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			sb.AppendLine($"            if (target is not {info.TargetTypeName} typedTarget)");
 			sb.AppendLine($"                throw new InvalidOperationException($\"Type mismatch: expected {info.TargetTypeName.Split('.').Last()} but got {{target.GetType().FullName}}\");");
 			sb.AppendLine();
-			sb.AppendLine($"            global::Microsoft.Maui.HybridWebViewInvoker.SetInvoker(hybridWebView, new Invoker_{index}(typedTarget, jsonSerializerContext));");
+			sb.AppendLine($"            new Invoker_{index}(typedTarget, jsonSerializerContext).AttachTo(hybridWebView);");
 			sb.AppendLine("        }");
 			sb.AppendLine();
 
@@ -198,6 +198,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			sb.AppendLine("            private readonly global::System.Text.Json.Serialization.JsonSerializerContext _ctx;");
 			sb.AppendLine();
 			sb.AppendLine($"            public Invoker_{index}({info.TargetTypeName} target, global::System.Text.Json.Serialization.JsonSerializerContext ctx)");
+			sb.AppendLine($"                : base(target, typeof({info.TargetTypeName}))");
 			sb.AppendLine("            {");
 			sb.AppendLine("                _target = target;");
 			sb.AppendLine("                _ctx = ctx;");

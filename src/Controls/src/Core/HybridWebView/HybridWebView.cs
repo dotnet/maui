@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
-	public class HybridWebView : View, IHybridWebView
+	public class HybridWebView : View, IHybridWebView, IHybridWebViewInvokerHost
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
@@ -38,15 +38,35 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HybridRootProperty, value); }
 		}
 
+		IHybridWebViewInvoker? _invoker;
+
+		IHybridWebViewInvoker? IHybridWebViewInvokerHost.Invoker => _invoker;
+
+		void IHybridWebViewInvokerHost.SetInvoker(IHybridWebViewInvoker invoker)
+		{
+			_invoker = invoker ?? throw new ArgumentNullException(nameof(invoker));
+		}
+
 		/// <inheritdoc/>
-		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
+		object? IHybridWebView.InvokeJavaScriptTarget
+		{
+			get => GetInvoker().InvokeJavaScriptTarget;
+			set => GetInvoker().InvokeJavaScriptTarget = value;
+		}
 
 		/// <inheritdoc/>
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? IHybridWebView.InvokeJavaScriptType
 		{
-			get => HybridWebViewInvoker.GetInvokeJavaScriptType(this);
-			set => HybridWebViewInvoker.SetInvokeJavaScriptType(this, value);
+			get => GetInvoker().InvokeJavaScriptType;
+			set => GetInvoker().InvokeJavaScriptType = value;
+		}
+
+		IHybridWebViewInvoker GetInvoker()
+		{
+			return _invoker
+				?? throw new InvalidOperationException(
+					$"No invoker is configured. Call {nameof(SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
 		}
 
 		[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
@@ -60,9 +80,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(target));
 			}
 
-			HybridWebViewInvoker.SetInvoker(this, new ReflectionHybridWebViewInvoker(target, typeof(T)));
-			((IHybridWebView)this).InvokeJavaScriptTarget = target;
-			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
+			new ReflectionHybridWebViewInvoker(target, typeof(T)).AttachTo(this);
 		}
 
 		/// <inheritdoc/>

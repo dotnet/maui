@@ -1,7 +1,6 @@
 #nullable enable
-Microsoft.Maui.HybridWebViewInvoker
-static Microsoft.Maui.HybridWebViewInvoker.SetInvoker(Microsoft.Maui.IHybridWebView! hybridWebView, Microsoft.Maui.IHybridWebViewInvoker! invoker) -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.IHybridWebViewInvoker
-Microsoft.Maui.IHybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
+Microsoft.Maui.IHybridWebViewInvoker.AttachTo(Microsoft.Maui.IHybridWebView! hybridWebView) -> void
+abstract Microsoft.Maui.IHybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength

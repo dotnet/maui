@@ -16,21 +16,20 @@ namespace Microsoft.Maui
 #endif
 	internal sealed class ReflectionHybridWebViewInvoker : IHybridWebViewInvoker
 	{
-		private readonly object _target;
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-		private readonly Type _targetType;
-
 		public ReflectionHybridWebViewInvoker(object target, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType)
+			: base(target, targetType)
 		{
-			_target = target;
-			_targetType = targetType;
 		}
 
 		[UnconditionalSuppressMessage("Trimming", "IL2075:DynamicallyAccessedMembers", Justification = "The legacy overload preserves the target type and its public members with DynamicallyAccessedMembers.")]
-		public async Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues)
+		public override async Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues)
 		{
-			var method = _targetType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
-				?? throw new InvalidOperationException($"The method '{methodName}' was not found on type '{_targetType.FullName}'.");
+			var target = InvokeJavaScriptTarget
+				?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+			var targetType = InvokeJavaScriptType
+				?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptType)} property must have a value in order to invoke a .NET method from JavaScript.");
+			var method = targetType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
+				?? throw new InvalidOperationException($"The method '{methodName}' was not found on type '{targetType.FullName}'.");
 
 			var parameters = method.GetParameters();
 			if (paramJsonValues is not null && parameters.Length != paramJsonValues.Length)
@@ -51,7 +50,7 @@ namespace Microsoft.Maui
 			object? returnValue;
 			try
 			{
-				returnValue = method.Invoke(_target, args);
+				returnValue = method.Invoke(target, args);
 			}
 			catch (TargetInvocationException tie) when (tie.InnerException is not null)
 			{
