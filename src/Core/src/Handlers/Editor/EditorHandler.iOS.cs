@@ -55,11 +55,14 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			// When the height constraint is infinite, the handler substitutes a finite value.
-			// This flag tracks whether the substitute came from SizeThatFits (a content measurement,
-			// not a real bound). If so, the cap at the bottom must be skipped — the base already
-			// returns the correct size. When the substitute is Bounds.Height (a real frame bound),
-			// the flag stays false and the cap applies to preserve scrollability.
+			// Tracks whether the height constraint represents a content measurement rather
+			// than a real upper bound. When true, the cap at the bottom is skipped — either
+			// the base already returns the correct size (SizeThatFits substitution) or the
+			// caller provided a finite constraint and the standard MAUI measure contract
+			// applies (children may report DesiredSize larger than the constraint; the
+			// parent decides how to arrange). When false, the substitute came from
+			// Bounds.Height (a real frame bound) and the cap applies to preserve
+			// scrollability after rotation (#35114).
 			bool heightSubstitutedFromSizeThatFits = false;
 
 			if (double.IsInfinity(widthConstraint) || double.IsInfinity(heightConstraint))
@@ -94,6 +97,11 @@ namespace Microsoft.Maui.Handlers
 						heightSubstitutedFromSizeThatFits = true; // not a real bound — cap will be skipped
 					}
 				}
+			}
+			else
+			{
+				// Caller-provided finite constraint — not a substituted bound. Skip the cap.
+				heightSubstitutedFromSizeThatFits = true;
 			}
 
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
