@@ -627,23 +627,15 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		private class PropertyChangeHandler : IPropertyChangeHandler
+		private class PropertyChangeHandler(
+			TypedBinding<TSource, TProperty> binding,
+			int handlersCount,
+			Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers) : IPropertyChangeHandler
 		{
-			private readonly TypedBinding<TSource, TProperty> _binding;
-			private readonly PropertyChangeListener?[] _listeners;
-			private readonly string?[] _propertyNames;
-			private readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? _handlers;
-
-			public PropertyChangeHandler(
-				TypedBinding<TSource, TProperty> binding,
-				int handlersCount,
-				Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers)
-			{
-				_binding = binding;
-				_listeners = new PropertyChangeListener?[handlersCount];
-				_propertyNames = new string?[handlersCount];
-				_handlers = handlers;
-			}
+			private readonly TypedBinding<TSource, TProperty> _binding = binding;
+			private readonly PropertyChangeListener?[] _listeners = new PropertyChangeListener?[handlersCount];
+			private readonly string?[] _propertyNames = new string?[handlersCount];
+			private readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? _handlers = handlers;
 
 			public void Subscribe(object sourceObject)
 			{
