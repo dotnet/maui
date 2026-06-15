@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <see cref="MauiCarouselRecyclerView2"/> for details.
 /// </para>
 /// </summary>
-internal partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselView>
+public partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselView>
 {
     double _widthConstraint;
     double _heightConstraint;
@@ -47,11 +47,6 @@ internal partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselVie
         return carouselView;
     }
 
-
-    // -----------------------------------------------------------------------
-    // Property mappers
-    // -----------------------------------------------------------------------
-
     public static PropertyMapper<CarouselView, CarouselViewHandler2> Mapper =
         new(Items.ItemsViewHandler<CarouselView>.ItemsViewMapper)
         {
@@ -67,17 +62,9 @@ internal partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselVie
 
     public CarouselViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper) { }
 
-    // -----------------------------------------------------------------------
-    // Map methods — same surface as CarouselViewHandler for MAUI API compatibility
-    // -----------------------------------------------------------------------
-
     public static void MapIsSwipeEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
     {
-        if (handler.PlatformView is IMauiCarouselRecyclerView2 carousel2)
-        {
-            carousel2.IsSwipeEnabled = carouselView.IsSwipeEnabled;
-        }
-        else if (handler.PlatformView is Items.IMauiCarouselRecyclerView carousel)
+        if (handler.PlatformView is Items.IMauiCarouselRecyclerView carousel)
         {
             carousel.IsSwipeEnabled = carouselView.IsSwipeEnabled;
         }
@@ -91,7 +78,6 @@ internal partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselVie
 
     public static void MapPeekAreaInsets(CarouselViewHandler2 handler, CarouselView carouselView)
     {
-
     }
 
     public static void MapPosition(CarouselViewHandler2 handler, CarouselView carouselView)
@@ -101,11 +87,7 @@ internal partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselVie
             return;
         }
 
-        if (handler.PlatformView is IMauiCarouselRecyclerView2 carousel2)
-        {
-            carousel2.UpdateFromPosition();
-        }
-        else if (handler.PlatformView is Items.IMauiCarouselRecyclerView carousel)
+        if (handler.PlatformView is Items.IMauiCarouselRecyclerView carousel)
         {
             carousel.UpdateFromPosition();
         }
@@ -113,11 +95,7 @@ internal partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselVie
 
     public static void MapCurrentItem(CarouselViewHandler2 handler, CarouselView carouselView)
     {
-        if (handler.PlatformView is IMauiCarouselRecyclerView2 carousel2)
-        {
-            carousel2.UpdateFromCurrentItem();
-        }
-        else if (handler.PlatformView is Items.IMauiCarouselRecyclerView carousel)
+        if (handler.PlatformView is Items.IMauiCarouselRecyclerView carousel)
         {
             carousel.UpdateFromCurrentItem();
         }
@@ -130,10 +108,6 @@ internal partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselVie
             recyclerView.UpdateLayoutManager();
         }
     }
-
-    // -----------------------------------------------------------------------
-    // Size / arrange — mirror CarouselViewHandler for correct item sizing
-    // -----------------------------------------------------------------------
 
     public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
     {
@@ -166,10 +140,6 @@ internal partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselVie
 
         base.PlatformArrange(frame);
     }
-
-    // -----------------------------------------------------------------------
-    // Item size helpers (used by SizedItemContentView callbacks)
-    // -----------------------------------------------------------------------
 
     double GetItemWidth()
     {

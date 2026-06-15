@@ -24,9 +24,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// is locked to <c>ItemsSource.Count</c> to guard the adapter side.
 /// </para>
 /// </summary>
-internal class MauiCarouselRecyclerView2 :
-    Items.MauiCarouselRecyclerView,
-    IMauiCarouselRecyclerView2
+public class MauiCarouselRecyclerView2 :
+    Items.MauiCarouselRecyclerView
 {
     CarouselSnapHelper _carouselSnapHelper;
     bool _disposed;
@@ -47,10 +46,6 @@ internal class MauiCarouselRecyclerView2 :
     // for the Material3 handler (e.g. edge-jump strategy, duplicate-buffer
     // adapter, or a CarouselLayoutManager fork with virtual-range support).
     protected override bool IsLoopEnabled => false;
-
-    // -----------------------------------------------------------------------
-    // Layout manager — swap LinearLayoutManager for CarouselLayoutManager
-    // -----------------------------------------------------------------------
 
     protected override LayoutManager SelectLayoutManager(IItemsLayout layoutSpecification)
     {
@@ -90,11 +85,6 @@ internal class MauiCarouselRecyclerView2 :
     /// strategy-aware sizing, this can become user-selectable via an attached property.
     /// </summary>
     protected virtual CarouselStrategy CreateCarouselStrategy() => new FullScreenCarouselStrategy();
-
-    // -----------------------------------------------------------------------
-    // Snap — replace MAUI snap manager with CarouselSnapHelper
-    // -----------------------------------------------------------------------
-
     protected override void UpdateSnapBehavior()
     {
         // Detach any previous snap helper to avoid duplicate fling listeners.
@@ -143,38 +133,16 @@ internal class MauiCarouselRecyclerView2 :
         ScrollTo(args);
     }
 
-    // -----------------------------------------------------------------------
-    // Spacing decoration — CarouselLayoutManager manages item sizes via its
-    // strategy, so we use a no-op decoration. PeekAreaInsets are applied as
-    // RecyclerView padding by the handler instead.
-    // -----------------------------------------------------------------------
-
     protected override RecyclerView.ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
         => new NoOpItemDecoration();
 
     sealed class NoOpItemDecoration : RecyclerView.ItemDecoration { }
 
-    // -----------------------------------------------------------------------
-    // Scroll listener — override to use CarouselLayoutManager-aware listener
-    // -----------------------------------------------------------------------
-
     protected override Items.RecyclerViewScrollListener<CarouselView, Items.IItemsViewSource> CreateScrollListener()
         => new CarouselViewOnScrollListener2(Carousel, ItemsViewAdapter, () => _carouselSnapHelper);
 
-    // -----------------------------------------------------------------------
-    // Empty-view adapter — the EmptyView is shown with a plain LinearLayoutManager
-    // (see SelectLayoutManager), so the empty/header/footer holders do NOT need to be
-    // wrapped in a MaskableFrameLayout. Using the shared EmptyViewAdapter directly also
-    // avoids the masking that MaskableFrameLayout applies when no CarouselLayoutManager
-    // is present to set its mask rect (which would otherwise clip the EmptyView away).
-    // -----------------------------------------------------------------------
-
     protected override Items.EmptyViewAdapter CreateEmptyViewAdapter()
         => new Items.EmptyViewAdapter(ItemsView);
-
-    // -----------------------------------------------------------------------
-    // Dispose / teardown
-    // -----------------------------------------------------------------------
 
     protected override void Dispose(bool disposing)
     {
@@ -186,21 +154,5 @@ internal class MauiCarouselRecyclerView2 :
         }
 
         base.Dispose(disposing);
-    }
-
-    // -----------------------------------------------------------------------
-    // IMauiCarouselRecyclerView2 — forward to base IMauiCarouselRecyclerView impl
-    // -----------------------------------------------------------------------
-
-    void IMauiCarouselRecyclerView2.UpdateFromCurrentItem()
-        => ((Items.IMauiCarouselRecyclerView)this).UpdateFromCurrentItem();
-
-    void IMauiCarouselRecyclerView2.UpdateFromPosition()
-        => ((Items.IMauiCarouselRecyclerView)this).UpdateFromPosition();
-
-    bool IMauiCarouselRecyclerView2.IsSwipeEnabled
-    {
-        get => IsSwipeEnabled;
-        set => IsSwipeEnabled = value;
     }
 }

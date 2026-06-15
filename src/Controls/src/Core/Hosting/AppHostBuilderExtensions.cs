@@ -14,6 +14,7 @@ using Microsoft.Maui.Platform;
 #if ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Controls.Handlers.Items2;
 #elif WINDOWS
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
@@ -98,7 +99,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
             handlersCollection.AddHandler<Entry, EntryHandler2>();
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-			handlersCollection.AddHandler<CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+			handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
 		}
 		else
 		{

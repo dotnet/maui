@@ -13,13 +13,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <see cref="MaskableFrameLayout"/>, satisfying the Material <see cref="CarouselLayoutManager"/>
 /// requirement that every direct RecyclerView child must be a <see cref="MaskableFrameLayout"/>.
 /// </summary>
-internal sealed class CarouselViewAdapter2
+public class CarouselViewAdapter2
     : Items.CarouselViewAdapter<CarouselView, Items.IItemsViewSource>
 {
     readonly Func<Context, Items.ItemContentView> _createItemContentView;
     readonly Func<bool> _isHorizontal;
 
-    internal CarouselViewAdapter2(
+    public CarouselViewAdapter2(
         CarouselView carouselView,
         Func<Context, Items.ItemContentView> createItemContentView,
         Func<bool> isHorizontal)
@@ -46,11 +46,6 @@ internal sealed class CarouselViewAdapter2
     /// set to <c>false</c>.
     /// </summary>
     public override int ItemCount => ItemsSource?.Count ?? 0;
-
-    // -----------------------------------------------------------------------
-    // ViewHolder creation — wrap ItemContentView in MaskableFrameLayout
-    // -----------------------------------------------------------------------
-
     public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
     {
         var context = parent.Context;
@@ -102,10 +97,6 @@ internal sealed class CarouselViewAdapter2
         // so we pass the root ItemTemplate directly.
         return new MaskableCarouselItemViewHolder(maskable, itemContentView, ItemsView.ItemTemplate);
     }
-
-    // -----------------------------------------------------------------------
-    // Bind / recycle
-    // -----------------------------------------------------------------------
 
     public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
     {

@@ -15,11 +15,10 @@ Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, Sy
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 Microsoft.Maui.Controls.BoxView.~BoxView() -> void
-Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2
-Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.IsSwipeEnabled.get -> bool
-Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.IsSwipeEnabled.set -> void
-Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.UpdateFromCurrentItem() -> void
-Microsoft.Maui.Controls.Handlers.Items2.IMauiCarouselRecyclerView2.UpdateFromPosition() -> void
+Microsoft.Maui.Controls.Handlers.Items2.CarouselViewAdapter2
+Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2
+Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.CarouselViewHandler2() -> void
+Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer
 Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.get -> double
@@ -45,6 +44,13 @@ Microsoft.Maui.Controls.LongPressingEventArgs.Status.get -> Microsoft.Maui.Gestu
 Microsoft.Maui.Controls.Span.InvalidateStyle() -> void
 Microsoft.Maui.Controls.StyleableElement.InvalidateStyle() -> void
 override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewAdapter2.ItemCount.get -> int
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.IsLoopEnabled.get -> bool
+override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.UpdateLayoutManager() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.UpdateSnapBehavior() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
@@ -90,6 +96,8 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
+~Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.CarouselViewHandler2(Microsoft.Maui.PropertyMapper mapper = null) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.MauiCarouselRecyclerView2(Android.Content.Context context, System.Func<Microsoft.Maui.Controls.IItemsLayout> getItemsLayout, System.Func<Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource>> getAdapter) -> void
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResourcesChangedEventArgs(System.Collections.Generic.IEnumerable<string> keys, System.Func<string, object> resolver) -> void
@@ -108,6 +116,17 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewAdapter2.OnBindViewHolder(AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder holder, int position) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewAdapter2.OnCreateViewHolder(Android.Views.ViewGroup parent, int viewType) -> AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewAdapter2.OnViewRecycled(Java.Lang.Object holder) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.CreateAdapter() -> Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource>
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.CreatePlatformView() -> AndroidX.RecyclerView.Widget.RecyclerView
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.GetItemsLayout() -> Microsoft.Maui.Controls.IItemsLayout
+~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.CreateEmptyViewAdapter() -> Microsoft.Maui.Controls.Handlers.Items.EmptyViewAdapter
+~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.CreateScrollListener() -> Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource>
+~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.CreateSpacingDecoration(Microsoft.Maui.Controls.IItemsLayout itemsLayout) -> AndroidX.RecyclerView.Widget.RecyclerView.ItemDecoration
+~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.ScrollToRequested(object sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.SelectLayoutManager(Microsoft.Maui.Controls.IItemsLayout layoutSpecification) -> AndroidX.RecyclerView.Widget.RecyclerView.LayoutManager
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler2 handler, Microsoft.Maui.Controls.Editor editor) -> void
 ~static Microsoft.Maui.Controls.Entry.MapImeOptions(Microsoft.Maui.Handlers.EntryHandler2 handler, Microsoft.Maui.Controls.Entry entry) -> void
@@ -115,6 +134,12 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor.get -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapCurrentItem(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsBounceEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsSwipeEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapPeekAreaInsets(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapPosition(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>
 ~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
 ~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler2 handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
@@ -132,6 +157,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.CreateEmptyViewAdapter() -> Microsoft.Maui.Controls.Handlers.Items.EmptyViewAdapter
+~virtual Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.CreateCarouselStrategy() -> Google.Android.Material.Carousel.CarouselStrategy
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.set -> void
