@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement
 	{
 		static int s_remappedForControls;
-
 		internal override void RemapForControls()
 		{
 			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)

@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Entry
 	{
 		static int s_remappedForControls;
-
 		internal override void RemapForControls()
 		{
 			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
@@ -16,7 +15,7 @@ namespace Microsoft.Maui.Controls
 
 			base.RemapForControls();
 
-				// Adjust the mappings to preserve Controls.Entry legacy behaviors
+			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 #if ANDROID
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
 #elif WINDOWS
