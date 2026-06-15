@@ -12,5 +12,11 @@
                 HorizontalOptions="Center"
                 AutomationId="ContentPageSafeAreaButton"
                 WidthRequest="400"/>
+
+        <Button Text="Border SafeArea"
+                Clicked="OnBorderSafeAreaButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="BorderSafeAreaButton"
+                WidthRequest="400"/>
     </VerticalStackLayout>
 </ContentPage>
