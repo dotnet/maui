@@ -26,7 +26,7 @@ on:
         type: boolean
         default: false
       close_fixed_issues:
-        description: 'Close issues linked as fixed by the PR (use for PRs merged to non-default branches like net11.0)'
+        description: '[PR-mode] Close issues linked as fixed by the PR (for PRs merged to net*.0 branches that GitHub does NOT auto-close). [Tag-mode] BULK: closes every linked open issue across the whole PrevTag..ReleaseTag range — use deliberately and with -apply only when you intend to fan out closures across the entire tag cohort.'
         required: false
         type: boolean
         default: false
@@ -75,6 +75,13 @@ jobs:
           else
             # Manual trigger: use provided inputs
             if [ -n "$INPUT_PR_NUMBER" ]; then
+              # The Fix-MilestoneDrift.ps1 -PrNumber param is [int]; fail fast with a
+              # clear message rather than letting PowerShell emit a parameter-binding
+              # error for a non-numeric input.
+              if [[ ! "$INPUT_PR_NUMBER" =~ ^[0-9]+$ ]]; then
+                echo "::error::pr_number input must be a positive integer (got: '$INPUT_PR_NUMBER')"
+                exit 1
+              fi
               ARGS+=('-PrNumber' "$INPUT_PR_NUMBER")
             fi
 

@@ -54,6 +54,12 @@
       pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -Tag 10.0.50 -RepoPath . -Output /dev/null -Verbose
       # Expected: finds 10.0.41 as previous tag, scans ~78 PRs, all .NET 10
 
+      # 8. URL-form linked-issue validation — covers the `Fixes https://github.com/dotnet/maui/issues/N`
+      #    branch of Test-MilestoneValidForIssue. Pick a PR whose body uses the URL form for "Fixes".
+      pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 35662 -RepoPath . -Verbose
+      # Expected: linked issue #35615 resolved via the URL form (body says "Fixes https://github.com/dotnet/maui/issues/35615").
+      # If the URL branch ever regresses, this dry-run will skip the issue under "Linked issues: (none)".
+
     Key things to verify after changes:
       - inflight/* and darc/* PRs read from origin/main (they feed into main)
       - net11.0 PRs read from origin/net11.0 (never from origin/main)
@@ -319,7 +325,7 @@ Describe 'Get-LinkedIssues' {
         $result | Should -Contain 666
     }
 
-    It 'extracts cross-repo `Fixes dotnet/maui#NNNNN` form (PR #35858 finding F)' {
+    It 'extracts cross-repo `Fixes dotnet/maui#NNNNN` form' {
         # External contributors frequently use the cross-repo shorthand even within the
         # same repo. Pre-fix, this regex required `#` immediately after the verb, so the
         # `dotnet/maui` prefix made it silently ignored — meaning issues that should have
@@ -793,7 +799,7 @@ Describe 'Test-MilestoneValidForIssue' {
         ($null -eq $result) | Should -BeTrue
     }
 
-    It 'does NOT cache $null — retries on a later call so a transient gh failure doesn''t permanently disable KEEP for the run (PR #35858 round-2)' {
+    It 'does NOT cache $null — retries on a later call so a transient gh failure doesn''t permanently disable KEEP for the run' {
         # First call: gh fails → return $null (uncertain). DO NOT cache.
         $script:_searchExit = 1
         Test-MilestoneValidForIssue -IssueNumber 7 -Milestone '.NET 10 SR6' -WarningAction SilentlyContinue | Should -BeNullOrEmpty
@@ -819,7 +825,7 @@ Describe 'Test-MilestoneValidForIssue' {
         }
     }
 
-    It 'uses a single OR query covering both `#N` and `issues/N` linking forms (PR #35858 round-2)' {
+    It 'uses a single OR query covering both `#N` and `issues/N` linking forms' {
         # Verify the actual query string includes the OR clause — pre-fix this was two
         # separate API calls, which doubled rate-limit pressure and could discard
         # positive evidence on partial failure.
@@ -840,7 +846,7 @@ Describe 'Test-MilestoneValidForIssue' {
         Test-MilestoneValidForIssue -IssueNumber 34490 -Milestone '.NET 10 SR6' | Should -BeTrue
     }
 
-    It 'matches a fix verb that uses the full URL form (issues/N) — PR #35858 finding D' {
+    It 'matches a fix verb that uses the full URL form (issues/N)' {
         # When a PR body links the issue ONLY via the URL form (`Fixes https://.../issues/N`)
         # — never the `#N` shorthand — the original `#N in:body` query missed it entirely.
         # The supplementary `issues/N in:body` query covers that case.
@@ -898,7 +904,7 @@ Describe 'Test-MilestoneValidForPr' {
     }
 }
 
-Describe 'Test-AndRecordCorrection — earliest-release-wins guard (PR #35858 findings A, C, E)' {
+Describe 'Test-AndRecordCorrection — earliest-release-wins guard' {
     BeforeEach {
         # Mock the underlying validators so the test focuses on dispatch logic.
         Mock Test-MilestoneValidForIssue {
@@ -1000,7 +1006,7 @@ Describe 'Test-AndRecordCorrection — earliest-release-wins guard (PR #35858 fi
     }
 }
 
-Describe 'Invoke-AnalyzeSinglePr — validation context seeding (PR #35858 finding A)' {
+Describe 'Invoke-AnalyzeSinglePr — validation context seeding' {
     BeforeEach {
         # Stand up the bare minimum mocks so Invoke-AnalyzeSinglePr can run start-to-finish
         # without touching git, gh, or the file system.
@@ -1053,7 +1059,7 @@ Describe 'Invoke-AnalyzeSinglePr — validation context seeding (PR #35858 findi
     }
 }
 
-Describe 'Get-TagsForMilestone — cross-major filter (PR #35858 round-2 critical finding)' {
+Describe 'Get-TagsForMilestone — cross-major filter' {
     BeforeEach {
         # Seed validation context as a live workflow run would: target major = 11.
         # We MUST be able to look up tags for a .NET 10 milestone (the cross-major
@@ -1096,7 +1102,7 @@ Describe 'Get-TagsForMilestone — cross-major filter (PR #35858 round-2 critica
     }
 }
 
-Describe 'Test-PrShippedInMilestone — tristate on git failure (PR #35858 round-2 finding)' {
+Describe 'Test-PrShippedInMilestone — tristate on git failure' {
     BeforeEach {
         Initialize-MilestoneValidationContext `
             -RepoPath '.' `
@@ -1153,7 +1159,7 @@ Describe 'Test-PrShippedInMilestone — tristate on git failure (PR #35858 round
     }
 }
 
-Describe 'Test-AndRecordCorrection — PR-side tristate propagation (PR #35858 round-2)' {
+Describe 'Test-AndRecordCorrection — PR-side tristate propagation' {
     BeforeEach {
         Mock Test-MilestoneValidForPr {
             param([int]$PrNumber, [string]$Milestone)
@@ -1188,7 +1194,7 @@ Describe 'Test-AndRecordCorrection — PR-side tristate propagation (PR #35858 r
     }
 }
 
-Describe 'Get-PrsInTag — unary-comma preserves HashSet on cache hit (PR #35858 round-3 finding)' {
+Describe 'Get-PrsInTag — unary-comma preserves HashSet on cache hit' {
     BeforeEach {
         Initialize-MilestoneValidationContext `
             -RepoPath '.' `
