@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls
 	public partial class CheckBox
 	{
 		static int s_remappedForControls;
-
 		internal override void RemapForControls()
 		{
 			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
@@ -18,7 +17,7 @@ namespace Microsoft.Maui.Controls
 
 			base.RemapForControls();
 
-				CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
+			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
 		}
 
 		internal static void MapColor(ICheckBoxHandler handler, ICheckBox view)
