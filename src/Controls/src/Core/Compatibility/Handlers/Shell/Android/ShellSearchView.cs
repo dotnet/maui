@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			int padding = (int)context.ToPixels(8);
 
-			_searchButton = CreateImageButton(context, searchHandler, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material, padding, 0, "SearchIcon");
+			_searchButton = CreateImageButton(context, searchHandler, SearchHandler.QueryIconProperty, Resource.Drawable.abc_ic_search_api_material, padding, 0, "SearchIcon", searchHandler.TextColor?.ToPlatform());
 
 			lp = new LinearLayout.LayoutParams(0, LP.MatchParent)
 			{
@@ -211,8 +211,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// A note on accessibility. The _textBlocks hint is what android defaults to reading in the screen
 			// reader. Therefore, we do not need to set something else.
 
-			_clearButton = CreateImageButton(context, searchHandler, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material, 0, padding, nameof(SearchHandler.ClearIcon));
-			_clearPlaceholderButton = CreateImageButton(context, searchHandler, SearchHandler.ClearPlaceholderIconProperty, -1, 0, padding, nameof(SearchHandler.ClearPlaceholderIcon));
+			_clearButton = CreateImageButton(context, searchHandler, SearchHandler.ClearIconProperty, Resource.Drawable.abc_ic_clear_material, 0, padding, nameof(SearchHandler.ClearIcon), searchHandler.CancelButtonColor?.ToPlatform());
+			_clearPlaceholderButton = CreateImageButton(context, searchHandler, SearchHandler.ClearPlaceholderIconProperty, -1, 0, padding, nameof(SearchHandler.ClearPlaceholderIcon), searchHandler.TextColor?.ToPlatform());
 
 			linearLayout.AddView(_searchButton);
 			linearLayout.AddView(_textBlock);
@@ -247,24 +247,33 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (e.PropertyName == SearchHandler.QueryIconProperty.PropertyName)
 			{
-				ApplyImageSource(_searchButton, SearchHandler.QueryIcon, Resource.Drawable.abc_ic_search_api_material);
+				ApplyImageSource(_searchButton, SearchHandler.QueryIcon, Resource.Drawable.abc_ic_search_api_material, SearchHandler.TextColor?.ToPlatform());
 			}
 			else if (e.PropertyName == SearchHandler.ClearIconProperty.PropertyName)
 			{
-				ApplyImageSource(_clearButton, SearchHandler.ClearIcon, Resource.Drawable.abc_ic_clear_material);
+				ApplyImageSource(_clearButton, SearchHandler.ClearIcon, Resource.Drawable.abc_ic_clear_material, SearchHandler.CancelButtonColor?.ToPlatform());
 			}
 			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
 			{
-				ApplyImageSource(_clearPlaceholderButton, SearchHandler.ClearPlaceholderIcon, -1);
+				ApplyImageSource(_clearPlaceholderButton, SearchHandler.ClearPlaceholderIcon, -1, SearchHandler.TextColor?.ToPlatform());
 				UpdateClearButtonState();
 			}
 		}
 
-		void ApplyImageSource(AImageButton button, ImageSource image, int defaultImage)
+		void ApplyImageSource(AImageButton button, ImageSource image, int defaultImage, AColor? tint = null)
 		{
 			if (button is null)
 			{
 				return;
+			}
+
+			void ApplyTint()
+			{
+				if (tint.HasValue)
+				{
+					button.Drawable?.Mutate();
+					button.Drawable?.SetColorFilter(tint.Value, FilterMode.SrcIn);
+				}
 			}
 
 			if (image is not null)
@@ -278,11 +287,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 
 					button.SetImageDrawable(r?.Value);
+					ApplyTint();
 				});
 			}
 			else if (defaultImage > 0 && ContextCompat.GetDrawable(Context, defaultImage) is Drawable defaultDrawable)
 			{
 				button.SetImageDrawable(defaultDrawable);
+				ApplyTint();
 			}
 			else
 			{
@@ -356,7 +367,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 		}
 
-		AImageButton CreateImageButton(Context context, BindableObject bindable, BindableProperty property, int defaultImage, int leftMargin, int rightMargin, string tag)
+		AImageButton CreateImageButton(Context context, BindableObject bindable, BindableProperty property, int defaultImage, int leftMargin, int rightMargin, string tag, AColor? tint = null)
 		{
 			var result = new AImageButton(context);
 			result.Tag = tag;
@@ -364,7 +375,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			result.Focusable = false;
 			result.SetScaleType(ImageView.ScaleType.FitCenter);
 
-			ApplyImageSource(result, bindable.GetValue(property) as ImageSource, defaultImage);
+			ApplyImageSource(result, bindable.GetValue(property) as ImageSource, defaultImage, tint);
 
 			var lp = new LinearLayout.LayoutParams((int)Context.ToPixels(22), LP.MatchParent)
 			{
