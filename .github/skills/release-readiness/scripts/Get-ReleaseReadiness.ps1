@@ -2145,23 +2145,54 @@ function Get-CiScanIssueBranch {
     return $null
 }
 
+function Get-CiScanLabels {
+    <#
+    .SYNOPSIS
+        Returns the set of `ci-scan*` labels defined in the repo. Each
+        per-branch scanner workflow uses a distinct label (`ci-scan` for
+        main, `ci-scan-net11` for net11.0, etc.), so we must enumerate
+        all of them to avoid missing branch-specific signals.
+    #>
+    $raw = Invoke-Gh @('label', 'list', '--repo', $script:Repo,
+                       '--search', 'ci-scan', '--limit', '50', '--json', 'name')
+    if (-not $raw) { return @() }
+    $labels = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if (-not $labels) { return @() }
+    return @($labels | Where-Object { $_.name -match '^ci-scan(-|$)' } | ForEach-Object { $_.name })
+}
+
 function Get-CiScanIssuesForSr {
     <#
     .SYNOPSIS
-        Returns open `ci-scan` issues sorted newest-first, filtered to those
-        whose `**Branch**: <name>` body marker matches $Branch. Returns
-        @{ Matched=[array]; FilteredOut=int; Total=int }.
+        Returns open ci-scan issues sorted newest-first, filtered to those
+        whose `**Branch**: <name>` body marker matches $Branch. Queries ALL
+        `ci-scan*` labels (one per scanner variant) and dedupes by issue
+        number. Returns @{ Matched=[array]; FilteredOut=int; Total=int }.
     .DESCRIPTION
         The CI Failure Scanner has per-branch workflow variants (e.g.
-        ci-status-main, ci-status-net11). Each files issues with a
-        `**Branch**: <name>` bullet so we can scope a SR's CI signals to
-        only the branch being shipped. Issues lacking the marker are kept
-        (treated as repo-wide / unknown) so we don't silently drop
-        pre-format issues.
+        ci-status-main → ci-scan label, ci-status-net11 → ci-scan-net11
+        label). Each files issues with a `**Branch**: <name>` bullet so
+        we can scope a SR's CI signals to only the branch being shipped.
+        Issues lacking the marker are kept (treated as repo-wide /
+        unknown) so we don't silently drop pre-format issues.
     #>
     param([string]$Branch)
 
-    $issues = Get-OpenIssuesByLabel -Label 'ci-scan' -IncludeBody
+    $labels = Get-CiScanLabels
+    if (-not $labels -or $labels.Count -eq 0) {
+        $labels = @('ci-scan')
+    }
+    $seen = @{}
+    $issues = @()
+    foreach ($label in $labels) {
+        $batch = Get-OpenIssuesByLabel -Label $label -IncludeBody
+        foreach ($issue in $batch) {
+            if (-not $seen.ContainsKey($issue.number)) {
+                $seen[$issue.number] = $true
+                $issues += $issue
+            }
+        }
+    }
     $sorted = @($issues | Sort-Object {
         $u = ConvertTo-Utc -Value $_.createdAt
         if ($u) { $u } else { [DateTime]::MinValue }

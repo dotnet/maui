@@ -535,24 +535,57 @@ function Get-ReleaseRelevantIssuesByLabel {
     return @($deduped)
 }
 
+function Get-CiScanLabels {
+    <#
+    .SYNOPSIS
+        Returns the set of `ci-scan*` labels defined in the repo. Each
+        per-branch scanner workflow uses a distinct label (`ci-scan` for
+        main, `ci-scan-net11` for net11.0, etc.), so we must enumerate
+        all of them to avoid missing branch-specific signals.
+    #>
+    $json = Invoke-GitHubWithRetry -Arguments @(
+        "label", "list", "--repo", $Repository,
+        "--search", "ci-scan", "--limit", "50", "--json", "name"
+    ) -Description "list ci-scan* labels"
+    $labels = ConvertFrom-JsonOrEmptyArray $json
+    return @($labels | Where-Object { $_.name -match '^ci-scan(-|$)' } | ForEach-Object { $_.name })
+}
+
 function Get-CiScanIssues {
     <#
     .SYNOPSIS
-        Returns open `ci-scan` issues (auto-filed by the CI Failure Scanner
+        Returns open ci-scan issues (auto-filed by the CI Failure Scanner
         workflow every 12h) filtered to those whose `**Branch**: <name>` body
-        marker matches $Branch. Returns @{ Matched=[array]; FilteredOut=int; Total=int }.
+        marker matches $Branch. Queries ALL `ci-scan*` labels (one per
+        scanner variant) and dedupes by issue number.
+        Returns @{ Matched=[array]; FilteredOut=int; Total=int }.
     .DESCRIPTION
         The CI Failure Scanner has per-branch workflow variants (e.g.
-        ci-status-main, ci-status-net11) that each file issues with a
-        `**Branch**: <branch>` bullet in the body. Filtering by branch
-        localizes the signal — Preview6 surveying net11.0 should NOT show
-        main-branch failures, because they may or may not affect net11.0.
-        Issues lacking a parseable Branch line are kept (treated as
-        repo-wide / unknown) so we don't silently drop pre-format issues.
+        ci-status-main → ci-scan label, ci-status-net11 → ci-scan-net11
+        label). Each files issues with a `**Branch**: <branch>` bullet in
+        the body. Filtering by branch localizes the signal — Preview6
+        surveying net11.0 should only show signals from the net11.0
+        scanner. Issues lacking a parseable Branch line are kept (treated
+        as repo-wide / unknown) so we don't silently drop pre-format issues.
     #>
     param([string]$Branch)
 
-    $issues = Get-IssuesByLabel -Label 'ci-scan' -IncludeBody
+    $labels = Get-CiScanLabels
+    if (-not $labels -or $labels.Count -eq 0) {
+        # Defensive fallback if the label discovery returns nothing.
+        $labels = @('ci-scan')
+    }
+    $seen = @{}
+    $issues = @()
+    foreach ($label in $labels) {
+        $batch = Get-IssuesByLabel -Label $label -IncludeBody
+        foreach ($issue in $batch) {
+            if (-not $seen.ContainsKey($issue.number)) {
+                $seen[$issue.number] = $true
+                $issues += $issue
+            }
+        }
+    }
     $sorted = @($issues | Sort-Object {
         $u = ConvertTo-UtcDateTime -Value $_.createdAt
         if ($u) { $u } else { [DateTime]::MinValue }

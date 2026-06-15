@@ -1915,6 +1915,27 @@ Assert-Eq -Label "returns null for empty body" -Expected $null `
     -Actual (Get-CiScanIssueBranch -Issue $issueEmptyBody)
 
 
+# ───── Get-CiScanLabels filters repo labels to ^ci-scan(-|$) ─────
+# `gh label list --search ci-scan` does a substring match and can return
+# unrelated labels (e.g. `area-infrastructure` shows up in MAUI because the
+# scanner workflows reference it). The discovery helper must regex-filter
+# the returned set so we don't query non-scanner labels.
+Write-Host "`n[Unit] Get-CiScanLabels regex filters returned label set" -ForegroundColor Cyan
+
+$labelRegex = '^ci-scan(-|$)'
+
+Assert-Eq -Label "'ci-scan' matches" -Expected $true `
+    -Actual ('ci-scan' -match $labelRegex)
+Assert-Eq -Label "'ci-scan-net11' matches" -Expected $true `
+    -Actual ('ci-scan-net11' -match $labelRegex)
+Assert-Eq -Label "'ci-scan-net12' matches (future-proof)" -Expected $true `
+    -Actual ('ci-scan-net12' -match $labelRegex)
+Assert-Eq -Label "'area-infrastructure' does NOT match" -Expected $false `
+    -Actual ('area-infrastructure' -match $labelRegex)
+Assert-Eq -Label "'ci-scanner-bot' does NOT match (no hyphen-or-end after ci-scan)" -Expected $false `
+    -Actual ('ci-scanner-bot' -match $labelRegex)
+
+
 # ───── Regression test: ConvertTo-Utc handles both string + DateTime inputs ─────
 # ConvertFrom-Json already returns DateTime (Kind=Utc) for ISO-8601 'Z' strings.
 # A naive [DateTime]::Parse(...) re-converts to Kind=Unspecified, which then
