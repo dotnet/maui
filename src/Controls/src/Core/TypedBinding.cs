@@ -660,27 +660,28 @@ namespace Microsoft.Maui.Controls.Internals
 						break;
 
 					_propertyNames[index] = propertyName;
-					var listener = _listeners[index] ??= new(this);
-					index++;
+					var listener = _listeners[index] ??= new(this, index);
 
 					// Check if we're already subscribed to the same object
 					if (listener.TryGetSource(out var existingSource) && ReferenceEquals(part, existingSource))
 					{
 						// Already subscribed to the same object, no need to re-subscribe
+						index++;
 						continue;
 					}
 
 					// Different object or first subscription, unsubscribe from old and subscribe to new
 					listener.Unsubscribe();
 					listener.Subscribe(part);
+					index++;
 				}
 
 				Unsubscribe(startIndex: index);
 			}
 
-			void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+			void OnPropertyChanged(int listenerIndex, object? sender, PropertyChangedEventArgs e)
 			{
-				if (ShouldApplyChanges(sender, e.PropertyName))
+				if (ShouldApplyChanges(listenerIndex, sender, e.PropertyName))
 				{
 					var dispatcher = (sender as BindableObject)?.Dispatcher ?? Dispatcher.GetForCurrentThread();
 					if (dispatcher is not null && !dispatcher.IsDispatchRequired)
@@ -694,20 +695,32 @@ namespace Microsoft.Maui.Controls.Internals
 				}
 			}
 
-			bool ShouldApplyChanges(object? sender, string? propertyName)
+			bool ShouldApplyChanges(int listenerIndex, object? sender, string? propertyName)
 			{
-				for (int i = 0; i < _listeners.Length; i++)
+				if ((uint)listenerIndex >= (uint)_listeners.Length
+					|| _listeners[listenerIndex] is not { } listener
+					|| !listener.TryGetSource(out var source)
+					|| !ReferenceEquals(source, sender))
 				{
-					if (_listeners[i] is {} listener
-						&& listener.TryGetSource(out var source)
-						&& ReferenceEquals(source, sender)
-						&& MatchEventPropertyName(_propertyNames[i], propertyName))
-					{
-						return true;
-					}
+					return false;
 				}
 
-				return false;
+				if (string.IsNullOrEmpty(propertyName))
+				{
+					for (int i = 0; i < listenerIndex; i++)
+					{
+						if (_listeners[i] is { } previousListener
+							&& previousListener.TryGetSource(out var previousSource)
+							&& ReferenceEquals(previousSource, source))
+						{
+							return false;
+						}
+					}
+
+					return true;
+				}
+
+				return string.Equals(_propertyNames[listenerIndex], propertyName, StringComparison.Ordinal);
 			}
 
 			void ApplyChanges()
@@ -715,13 +728,7 @@ namespace Microsoft.Maui.Controls.Internals
 				_binding.Apply(fromTarget: false);
 			}
 
-			static bool MatchEventPropertyName(string? expectedPropertyName, string? eventPropertyName)
-			{
-				return string.IsNullOrEmpty(eventPropertyName)
-					|| string.Equals(expectedPropertyName, eventPropertyName, StringComparison.Ordinal);
-			}
-
-			private sealed class PropertyChangeListener(PropertyChangeHandler handler)
+			private sealed class PropertyChangeListener(PropertyChangeHandler handler, int listenerIndex)
 			{
 				private readonly WeakReference<PropertyChangeHandler> _handler = new(handler);
 				private WeakReference<INotifyPropertyChanged>? _source;
@@ -767,7 +774,7 @@ namespace Microsoft.Maui.Controls.Internals
 				{
 					if (_handler.TryGetTarget(out var handler))
 					{
-						handler.OnPropertyChanged(sender, e);
+						handler.OnPropertyChanged(listenerIndex, sender, e);
 					}
 					else
 					{

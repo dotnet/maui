@@ -1818,6 +1818,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void IndexedViewModelWithDuplicateSourceHandlersAppliesOnce()
+		{
+			var label = new Label();
+			var viewModel = new IndexedViewModel();
+			var getterCallCount = 0;
+
+			var binding = new TypedBinding<Tuple<IndexedViewModel, object>, object>(
+				getter: vm =>
+				{
+					getterCallCount++;
+					return (vm.Item1["Foo"], true);
+				},
+				setter: null,
+				handlersCount: 2,
+				handlers: GetHandlers);
+
+			static IEnumerable<ValueTuple<INotifyPropertyChanged, string>> GetHandlers(Tuple<IndexedViewModel, object> source)
+			{
+				yield return (source.Item1, "Item");
+				yield return (source.Item1, "Item[Foo]");
+			}
+
+			label.BindingContext = new Tuple<IndexedViewModel, object>(viewModel, new object());
+			label.SetBinding(Label.TextProperty, binding);
+			getterCallCount = 0;
+
+			viewModel["Foo"] = "Baz";
+
+			Assert.Equal("Baz", label.Text);
+			Assert.Equal(1, getterCallCount);
+		}
+
+		[Fact]
 		public void OneTimeBindingDoesntUpdateOnPropertyChanged()
 		{
 			var view = new VisualElement();
