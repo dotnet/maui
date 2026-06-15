@@ -882,8 +882,20 @@ if ($SurveyRef -ne $mainBranch -and $inflightExists) {
 
 $allReleasePRs = @($targetPRs) + @($inflightPRs)
 $maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" })
-$targetHumanPRs = @($targetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
+$targetHumanPRsRaw = @($targetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
 $inflightHumanPRs = @($inflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
+
+# Carve out main → $SurveyRef merge-up PRs from the human-PR set so they're
+# only counted/listed once (in the hoisted "🔴 High-priority items" section)
+# instead of double-counted as generic "Release branch PRs". MAUI convention:
+#   - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
+#   - title like "[automated] Merge branch 'main' => 'net11.0'"
+$mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
+    ($_.headRefName -and $_.headRefName -match '^merge/.+-to-') -or
+    ($_.title -and $_.title -match '^\[automated\] Merge branch')
+})
+$mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
+$targetHumanPRs = @($targetHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
 
 if ($maestroPRs.Count -eq 0) {
     $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details "No open Maestro PRs target ``$SurveyRef`` or ``$mainBranch``." -NextAction "Continue monitoring for new dependency-flow PRs."
@@ -917,10 +929,33 @@ if ($SurveyRef -ne $mainBranch) {
 $priorityIssues = Get-ReleaseRelevantIssuesByLabel -Labels @("p/0", "p/1") -Major $majorVersion -Preview $previewNumber
 $kbeIssues = Get-ReleaseRelevantIssuesByLabel -Labels @("Known Build Error") -Major $majorVersion -Preview $previewNumber
 
-if ($priorityIssues.Count -gt 0) {
-    $checks += New-Check -Area "Priority blockers" -Status "BLOCKED" -Details "$($priorityIssues.Count) open P/0 or P/1 issue(s) look release-relevant." -NextAction "Triage whether each blocks this release target."
+# Carve out P/0 issues separately — these are surfaced in the hoisted
+# "🔴 High-priority items" section at the top of the report so the release
+# captain sees them before any other content. P/1 issues still flow through
+# the regular "Priority blockers" check below.
+$p0Issues = @($priorityIssues | Where-Object {
+    @($_.labels | ForEach-Object { $_.name }) -contains 'p/0'
+})
+
+if ($p0Issues.Count -gt 0) {
+    $checks += New-Check -Area "P/0 priority blockers" -Status "BLOCKED" -Details "$($p0Issues.Count) open P/0 issue(s) look release-relevant. See 🔴 High-priority items at top." -NextAction "Resolve or downgrade each P/0 before shipping."
 } else {
-    $checks += New-Check -Area "Priority blockers" -Status "READY" -Details "No open release-relevant P/0 or P/1 issues found by public search." -NextAction "Confirm with release owners."
+    $checks += New-Check -Area "P/0 priority blockers" -Status "READY" -Details "No open release-relevant P/0 issues found." -NextAction "Confirm with release owners."
+}
+
+$p1Issues = @($priorityIssues | Where-Object {
+    -not (@($_.labels | ForEach-Object { $_.name }) -contains 'p/0')
+})
+if ($p1Issues.Count -gt 0) {
+    $checks += New-Check -Area "P/1 priority blockers" -Status "WATCH" -Details "$($p1Issues.Count) open P/1 issue(s) look release-relevant." -NextAction "Triage whether each blocks this release target."
+} else {
+    $checks += New-Check -Area "P/1 priority blockers" -Status "READY" -Details "No open release-relevant P/1 issues found by public search." -NextAction "No action required."
+}
+
+if ($mergeUpPRs.Count -gt 0) {
+    $checks += New-Check -Area "Merge-up PRs (main → $SurveyRef)" -Status "BLOCKED" -Details "$($mergeUpPRs.Count) open merge-up PR(s). See 🔴 High-priority items at top. Stuck merge-up PRs block daily flow and accumulate conflicts." -NextAction "Resolve and merge each before shipping."
+} else {
+    $checks += New-Check -Area "Merge-up PRs (main → $SurveyRef)" -Status "READY" -Details "No open merge-up PRs from ``main`` → ``$SurveyRef``." -NextAction "Continue monitoring."
 }
 
 if ($kbeIssues.Count -gt 0) {
@@ -1052,11 +1087,72 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("**Overall status:** **$overallStatus**")
 [void]$md.AppendLine("")
 
+# === HIGH-PRIORITY ITEMS (hoisted to the very top) ===
+# Three categories the release captain must see BEFORE anything else:
+#   1. P/0 priority blockers — open issues labeled p/0 (release-blocking severity).
+#   2. Maestro dependency-flow PRs — open Maestro PRs against the survey ref.
+#      A stuck Maestro PR blocks all upstream dependency flow into this branch.
+#   3. Merge-up PRs (main → survey ref) — daily-flow sync PRs whose head ref
+#      matches `merge/...-to-...` or title starts with "[automated] Merge branch".
+#      A stuck merge-up PR accumulates conflicts and starves the release branch
+#      of new fixes from main.
+# Each item is itemized (one row per issue/PR) so the captain can see exactly
+# what's outstanding without drilling into the per-category PR tables below.
+$highPriorityRows = New-Object System.Collections.Generic.List[hashtable]
+foreach ($iss in $p0Issues) {
+    [void]$highPriorityRows.Add(@{
+        kind = '🔥 P/0 issue'
+        link = "[#$($iss.number)]($($iss.url))"
+        title = $iss.title
+        actor = if ($iss.milestone -and $iss.milestone.title) { $iss.milestone.title } else { '' }
+        nextAction = 'Resolve or downgrade before shipping.'
+    })
+}
+foreach ($pr in $maestroPRs) {
+    $action = Get-PRAction -PR $pr
+    [void]$highPriorityRows.Add(@{
+        kind = '📦 Maestro PR'
+        link = "[#$($pr.number)]($($pr.url))"
+        title = $pr.title
+        actor = "base ``$($pr.baseRefName)``, $($action.Age)d old"
+        nextAction = $action.Action
+    })
+}
+foreach ($pr in $mergeUpPRs) {
+    $action = Get-PRAction -PR $pr
+    [void]$highPriorityRows.Add(@{
+        kind = "🔀 Merge-up PR (main → $SurveyRef)"
+        link = "[#$($pr.number)]($($pr.url))"
+        title = $pr.title
+        actor = "base ``$($pr.baseRefName)``, $($action.Age)d old"
+        nextAction = $action.Action
+    })
+}
+
+if ($highPriorityRows.Count -gt 0) {
+    [void]$md.AppendLine("## 🔴 High-priority items — $($highPriorityRows.Count) item(s)")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("_P/0 issues, Maestro PRs, and ``main`` → ``$SurveyRef`` merge-up PRs. Resolve these before treating the release as ready._")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("| Kind | Item | Title | Context | Next action |")
+    [void]$md.AppendLine("|------|------|-------|---------|-------------|")
+    foreach ($row in $highPriorityRows) {
+        [void]$md.AppendLine("| $(Format-MarkdownCell $row.kind) | $($row.link) | $(Format-MarkdownCell $row.title) | $(Format-MarkdownCell $row.actor) | $(Format-MarkdownCell $row.nextAction) |")
+    }
+    [void]$md.AppendLine("")
+}
+
 # === BLOCKING SUMMARY (hoisted to top) ===
-# Surface the actual blocking items right under the verdict so release captains
-# don't have to scroll past CI tables, PR tables, and the full check list to see
-# what's preventing ship. The full check table still appears below for context.
-$blockingChecks = @($checks | Where-Object { $_.Status -eq 'BLOCKED' })
+# Surface aggregate BLOCKED checks (e.g. CI red, versions.props not bumped).
+# The three high-priority categories above already enumerate individual items,
+# so exclude them here to avoid duplicate rows under two separate headings.
+$highPriorityCheckAreas = @(
+    'P/0 priority blockers',
+    "Merge-up PRs (main → $SurveyRef)"
+)
+$blockingChecks = @($checks | Where-Object {
+    $_.Status -eq 'BLOCKED' -and -not ($highPriorityCheckAreas -contains $_.Area)
+})
 if ($blockingChecks.Count -gt 0) {
     [void]$md.AppendLine("## 🔴 Blocking — $($blockingChecks.Count) item(s)")
     [void]$md.AppendLine("")
@@ -1066,7 +1162,7 @@ if ($blockingChecks.Count -gt 0) {
         [void]$md.AppendLine("| $(Format-MarkdownCell $bc.Area) | $(Format-MarkdownCell $bc.Details) | $(Format-MarkdownCell $bc.NextAction) |")
     }
     [void]$md.AppendLine("")
-} else {
+} elseif ($highPriorityRows.Count -eq 0) {
     [void]$md.AppendLine("## 🟢 No blocking items")
     [void]$md.AppendLine("")
 }
