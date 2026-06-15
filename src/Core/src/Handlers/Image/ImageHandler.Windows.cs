@@ -71,8 +71,13 @@ namespace Microsoft.Maui.Handlers
 			// unconstrained here and rely on layout constraints.
 			if (VirtualView.Aspect == Aspect.AspectFit)
 			{
-				// Use cached size to avoid timing-dependent behavior from BitmapSource properties
-				var imageSize = _cachedImageSize;
+				// Read the live decoded size first: WinUI sets PixelWidth/PixelHeight synchronously
+				// once decoding completes, before firing ImageOpened. Reading live here closes the
+				// race window where the cache is still Zero but the bitmap is already decoded (#32393).
+				// Fall back to cache only when the live size is not yet available.
+				var imageSize = GetImageSize();
+				if (imageSize.Width <= 0 || imageSize.Height <= 0)
+					imageSize = _cachedImageSize;
 				double w = possibleSize.Width;
 				double h = possibleSize.Height;
 
@@ -280,7 +285,7 @@ namespace Microsoft.Maui.Handlers
 
 		private Graphics.Size GetImageSize()
 		{
-			if (PlatformView.Source is BitmapSource bitmap)
+			if (PlatformView?.Source is BitmapSource bitmap)
 			{
 				// BitmapSource may not have PixelWidth/PixelHeight set until image is loaded
 				if (bitmap.PixelWidth > 0 && bitmap.PixelHeight > 0)
