@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 #if WINDOWS || IOS || MACCATALYST || TIZEN || ANDROID
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler(typeof(Handlers.Compatibility.FrameRenderer))]
+	[VisualElementRemappingHandler(typeof(Handlers.Compatibility.FrameRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement, IView, IContentView

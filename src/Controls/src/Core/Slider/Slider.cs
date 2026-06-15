@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[SliderHandler]
 #else
-	[ElementHandler(typeof(SliderHandler))]
+	[SliderRemappingHandler(typeof(SliderHandler))]
 #endif
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>, ISlider
 	{
@@ -34,6 +34,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(SliderHandler2);
 
 				return typeof(SliderHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				Slider.RemapForControls();
 			}
 		}
 #endif

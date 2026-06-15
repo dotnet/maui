@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// A <see cref="View" /> used to draw a solid colored rectangle.
 	/// </summary>
-	[ElementHandler(typeof(BoxViewHandler))]
+	[VisualElementRemappingHandler(typeof(BoxViewHandler))]
 	public partial class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>, IShapeView, IShape
 	{
 		WeakBrushChangedProxy _fillProxy = null;

@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 	[TypeConverter(typeof(ShellSectionTypeConverter))]
 	[DebuggerTypeProxy(typeof(ShellSectionDebugView))]
 #if WINDOWS || TIZEN
-	[ElementHandler(typeof(Handlers.ShellSectionHandler))]
+	[VisualElementRemappingHandler(typeof(Handlers.ShellSectionHandler))]
 #endif
 	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation
 	{

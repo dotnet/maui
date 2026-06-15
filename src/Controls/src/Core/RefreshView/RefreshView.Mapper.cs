@@ -1,23 +1,25 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class RefreshView
 	{
-		internal override void RemapForControls(HashSet<Type> remapped)
-		{
-			if (remapped.Add(typeof(RefreshView)))
-			{
-				base.RemapForControls(remapped);
+		static int s_remappedForControls;
 
-				// Adjust the mappings to preserve Controls.RefreshView legacy behaviors
+		internal new static void RemapForControls()
+		{
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			VisualElement.RemapForControls();
+
+			// Adjust the mappings to preserve Controls.RefreshView legacy behaviors
 #if WINDOWS
-				RefreshViewHandler.Mapper.ReplaceMapping<RefreshView, IRefreshViewHandler>(PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName, MapRefreshPullDirection);
+			RefreshViewHandler.Mapper.ReplaceMapping<RefreshView, IRefreshViewHandler>(PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName, MapRefreshPullDirection);
 #endif
-			}
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="IsChecked"/> property to determine or set the state.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler(typeof(CheckBoxHandler))]
+	[CheckBoxRemappingHandler(typeof(CheckBoxHandler))]
 	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;

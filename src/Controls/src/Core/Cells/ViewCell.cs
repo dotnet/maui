@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("View")]
 #if WINDOWS || IOS || MACCATALYST || ANDROID
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler(typeof(Handlers.Compatibility.ViewCellRenderer))]
+	[ElementRemappingHandler(typeof(Handlers.Compatibility.ViewCellRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 	public class ViewCell : Cell

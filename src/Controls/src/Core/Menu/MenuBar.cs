@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-	[ElementHandler(typeof(MenuBarHandler))]
+	[ElementRemappingHandler(typeof(MenuBarHandler))]
 	public partial class MenuBar : Element, IMenuBar
 	{
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>

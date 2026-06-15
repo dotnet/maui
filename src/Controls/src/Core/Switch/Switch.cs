@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[SwitchHandler]
 #else
-	[ElementHandler(typeof(SwitchHandler))]
+	[VisualElementRemappingHandler(typeof(SwitchHandler))]
 #endif
 	public partial class Switch : View, IElementConfiguration<Switch>, ISwitch
 	{
@@ -33,6 +33,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(SwitchHandler2);
 
 				return typeof(SwitchHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				VisualElement.RemapForControls();
 			}
 		}
 #endif

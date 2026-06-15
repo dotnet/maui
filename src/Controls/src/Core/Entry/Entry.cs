@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[EntryHandler]
 #else
-	[ElementHandler(typeof(EntryHandler))]
+	[EntryRemappingHandler(typeof(EntryHandler))]
 #endif
 	public partial class Entry : InputView, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>, IEntry
 	{
@@ -29,6 +29,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(EntryHandler2);
 
 				return typeof(EntryHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				Entry.RemapForControls();
 			}
 		}
 #endif

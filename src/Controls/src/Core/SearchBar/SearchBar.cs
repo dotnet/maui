@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[SearchBarHandler]
 #else
-	[ElementHandler(typeof(SearchBarHandler))]
+	[SearchBarRemappingHandler(typeof(SearchBarHandler))]
 #endif
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
@@ -37,6 +37,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(SearchBarHandler2);
 
 				return typeof(SearchBarHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				SearchBar.RemapForControls();
 			}
 		}
 #endif

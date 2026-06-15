@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <summary>
 	/// A <see cref="Shape"/> that draws a rectangle, optionally with rounded corners via <see cref="RadiusX"/> and <see cref="RadiusY"/>.
 	/// </summary>
-	[ElementHandler(typeof(RectangleHandler))]
+	[ShapeRemappingHandler(typeof(RectangleHandler))]
 	public sealed partial class Rectangle : Shape, IShape
 	{
 		/// <summary>

@@ -113,9 +113,10 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			while (type is not null)
 			{
-				var elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>();
+				var elementHandlerAttribute = Attribute.GetCustomAttribute(type, typeof(ElementHandlerAttribute), inherit: false) as ElementHandlerAttribute;
 				if (elementHandlerAttribute is not null)
 				{
+					elementHandlerAttribute.RemapForControls();
 					return elementHandlerAttribute;
 				}
 

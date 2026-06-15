@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	[ElementHandler(typeof(RoundRectangleHandler))]
+	[ShapeRemappingHandler(typeof(RoundRectangleHandler))]
 	public sealed partial class RoundRectangle : Shape, IShape, IRoundRectangle
 	{
 		public RoundRectangle() : base()

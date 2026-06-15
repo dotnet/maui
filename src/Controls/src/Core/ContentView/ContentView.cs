@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ElementHandler(typeof(ContentViewHandler))]
+	[VisualElementRemappingHandler(typeof(ContentViewHandler))]
 	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>

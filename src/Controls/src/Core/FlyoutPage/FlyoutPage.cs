@@ -16,9 +16,9 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Detail))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #if IOS || MACCATALYST
-	[ElementHandler(typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer))]
+	[FlyoutPageRemappingHandler(typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer))]
 #elif WINDOWS || ANDROID || TIZEN
-	[ElementHandler(typeof(FlyoutViewHandler))]
+	[FlyoutPageRemappingHandler(typeof(FlyoutViewHandler))]
 #endif
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
 	{

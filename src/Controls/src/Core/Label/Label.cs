@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[LabelHandler]
 #else
-	[ElementHandler(typeof(LabelHandler))]
+	[LabelRemappingHandler(typeof(LabelHandler))]
 #endif
 	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement, ILabel
 	{
@@ -34,6 +34,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(LabelHandler2);
 
 				return typeof(LabelHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				Label.RemapForControls();
 			}
 		}
 #endif

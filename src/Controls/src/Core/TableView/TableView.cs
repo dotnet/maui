@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Root))]
 #if WINDOWS || IOS || MACCATALYST || TIZEN || ANDROID
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler(typeof(Handlers.Compatibility.TableViewRenderer))]
+	[VisualElementRemappingHandler(typeof(Handlers.Compatibility.TableViewRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement

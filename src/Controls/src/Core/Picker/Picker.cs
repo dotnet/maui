@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[PickerHandler]
 #else
-	[ElementHandler(typeof(PickerHandler))]
+	[PickerRemappingHandler(typeof(PickerHandler))]
 #endif
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
@@ -42,6 +42,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(PickerHandler2);
 
 				return typeof(PickerHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				Picker.RemapForControls();
 			}
 		}
 #endif

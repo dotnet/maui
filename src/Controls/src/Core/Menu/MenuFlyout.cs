@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 {
 
 #if WINDOWS || MACCATALYST
-	[ElementHandler(typeof(MenuFlyoutHandler))]
+	[ElementRemappingHandler(typeof(MenuFlyoutHandler))]
 #endif
 	public class MenuFlyout : FlyoutBase, IMenuFlyout // Same pattern as MenuBarItem
 	{

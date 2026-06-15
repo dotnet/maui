@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[EditorHandler]
 #else
-	[ElementHandler(typeof(EditorHandler))]
+	[EditorRemappingHandler(typeof(EditorHandler))]
 #endif
 	public partial class Editor : InputView, IEditorController, ITextAlignmentElement, IElementConfiguration<Editor>, IEditor
 	{
@@ -29,6 +29,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(EditorHandler2);
 
 				return typeof(EditorHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				Editor.RemapForControls();
 			}
 		}
 #endif

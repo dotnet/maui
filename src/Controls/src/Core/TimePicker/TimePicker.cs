@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[TimePickerHandler]
 #else
-	[ElementHandler(typeof(TimePickerHandler))]
+	[TimePickerRemappingHandler(typeof(TimePickerHandler))]
 #endif
 	public partial class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>, ITimePicker
 	{
@@ -35,6 +35,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(TimePickerHandler2);
 
 				return typeof(TimePickerHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				TimePicker.RemapForControls();
 			}
 		}
 #endif

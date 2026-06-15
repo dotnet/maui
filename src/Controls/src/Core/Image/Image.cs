@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[ImageHandler]
 #else
-	[ElementHandler(typeof(ImageHandler))]
+	[VisualElementRemappingHandler(typeof(ImageHandler))]
 #endif
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement, IImage
 	{
@@ -33,6 +33,11 @@ namespace Microsoft.Maui.Controls
 					return typeof(ImageHandler2);
 
 				return typeof(ImageHandler);
+			}
+
+			protected internal override void RemapForControls()
+			{
+				VisualElement.RemapForControls();
 			}
 		}
 #endif

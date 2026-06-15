@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <summary>
 	/// A shape that draws a closed polygon from a series of connected lines.
 	/// </summary>
-	[ElementHandler(typeof(PolygonHandler))]
+	[ShapeRemappingHandler(typeof(PolygonHandler))]
 	public sealed partial class Polygon : Shape, IShape
 	{
 		/// <summary>
