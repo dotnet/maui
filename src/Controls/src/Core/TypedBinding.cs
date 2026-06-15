@@ -646,6 +646,14 @@ namespace Microsoft.Maui.Controls.Internals
 
 				int index = 0;
 
+				if (_listeners.Length == 1
+					&& _listeners[0] is { } singleListener
+					&& singleListener.TryGetSource(out var existingSingleSource)
+					&& ReferenceEquals(existingSingleSource, source))
+				{
+					return;
+				}
+
 				foreach ((INotifyPropertyChanged? part, string propertyName) in _handlers(source))
 				{
 					if (part is null || index >= _listeners.Length)
@@ -674,8 +682,15 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				if (ShouldApplyChanges(sender, e.PropertyName))
 				{
-					var dispatcher = (sender as BindableObject)?.Dispatcher;
-					dispatcher.DispatchIfRequired(ApplyChanges);
+					var dispatcher = (sender as BindableObject)?.Dispatcher ?? Dispatcher.GetForCurrentThread();
+					if (dispatcher is not null && !dispatcher.IsDispatchRequired)
+					{
+						ApplyChanges();
+					}
+					else
+					{
+						dispatcher.DispatchIfRequired(ApplyChanges);
+					}
 				}
 			}
 
