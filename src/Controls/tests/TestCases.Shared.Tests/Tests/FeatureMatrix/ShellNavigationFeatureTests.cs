@@ -876,8 +876,9 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("QueryIntermediateReceivedNameLabel").GetText(), Is.EqualTo("ForIntermediate"));
 		// Intermediate page should NOT have received "location" (unprefixed, meant for last page only)
 		Assert.That(App.FindElement("QueryIntermediateReceivedLocationLabel").GetText(), Is.EqualTo("(none)"));
-		// IQA should have been called exactly once
-		Assert.That(App.FindElement("QueryIntermediateCallCountLabel").GetText(), Is.EqualTo("1"));
+		// IQA fires once on forward push and again on pop-back (stored params re-applied) —
+		// same contract verified for the detail page in PassData_Dictionary_PersistsWhenNavigatingToIntermediatePageAndBack.
+		Assert.That(App.FindElement("QueryIntermediateCallCountLabel").GetText(), Is.EqualTo("2"));
 
 		// cleanup
 		App.Tap("QueryIntermediateGoBackButton");
@@ -997,6 +998,13 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		App.Tap("IconOverrideBank");
 		NavigateToDetail1AndWait();
 		ShellScreenshot();
+
+		// cleanup — return to MainPage so subsequent tests start from a known state
+		App.WaitForElement("Detail1GoBackButton");
+		App.Tap("Detail1GoBackButton");
+		App.WaitForElement("MainPageIdentityLabel");
+		App.Tap("Reset");
+		App.WaitForElement("MainPageIdentityLabel");
 	}
 #endif
 
