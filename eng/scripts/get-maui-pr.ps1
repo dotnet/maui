@@ -146,12 +146,33 @@ function Get-PullRequestInfo {
     }
 }
 
-# Get build information from GitHub Checks API
+# Check if a build is currently in progress for this PR via Azure DevOps API
+function Test-BuildInProgress {
+    param([int]$PrNumber)
+
+    try {
+        $buildsUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_apis/build/builds?api-version=7.1&branchName=refs/pull/$PrNumber/merge&`$top=10"
+        $response = Invoke-RestMethod -Uri $buildsUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
+        
+        foreach ($build in $response.value) {
+            if ($build.definition.name -eq "maui-pr" -and $build.status -in @("inProgress", "notStarted", "postponed")) {
+                return $true
+            }
+        }
+        return $false
+    }
+    catch {
+        return $false
+    }
+}
+
+# Get build information from GitHub Checks API, with AzDO fallback
 function Get-BuildInfo {
-    param([string]$SHA)
+    param([string]$SHA, [int]$PrNumber)
 
     Write-Info "Looking for build artifacts for commit $($SHA.Substring(0, 7))..."
     
+    # Strategy 1: Try GitHub Checks API
     try {
         $checksUrl = "https://api.github.com/repos/$GitHubRepo/commits/$SHA/check-runs"
         $response = Invoke-RestMethod -Uri $checksUrl -Headers ($GitHubHeaders + @{
@@ -163,34 +184,87 @@ function Get-BuildInfo {
             $_.name -like "maui-pr*" -and $_.name -notlike "*uitests*" -and $_.status -eq "completed" -and $_.details_url -match 'buildId='
         } | Select-Object -First 1
         
-        if (-not $buildCheck) {
-            throw "No completed build found for this PR. The build may still be in progress or may have failed."
-        }
-        
-        if ($buildCheck.conclusion -ne "success") {
-            Write-Warn "Build completed with status: $($buildCheck.conclusion)"
-            if (-not $Yes) {
-                $continue = Read-Host "Do you want to continue anyway? (y/N)"
-                if ($continue -ne "y" -and $continue -ne "Y") {
-                    throw "Build was not successful. Aborting."
+        if ($buildCheck) {
+            if ($buildCheck.conclusion -ne "success") {
+                Write-Warn "Build completed with status: $($buildCheck.conclusion)"
+                if (-not $Yes) {
+                    $continue = Read-Host "Do you want to continue anyway? (y/N)"
+                    if ($continue -ne "y" -and $continue -ne "Y") {
+                        throw "Build was not successful. Aborting."
+                    }
+                }
+            }
+            
+            # Extract build ID from details URL
+            if ($buildCheck.details_url -match 'buildId=(\d+)') {
+                Write-Success "Found build ID: $($Matches[1]) (via GitHub Checks)"
+                return @{
+                    BuildId = $Matches[1]
+                    Status = $buildCheck.conclusion
+                    Url = $buildCheck.details_url
                 }
             }
         }
-        
-        # Extract build ID from details URL
-        if ($buildCheck.details_url -match 'buildId=(\d+)') {
-            return @{
-                BuildId = $Matches[1]
-                Status = $buildCheck.conclusion
-                Url = $buildCheck.details_url
-            }
-        }
-        
-        throw "Could not extract build ID from check run details."
     }
     catch {
-        throw "Failed to get build information: $_"
+        Write-Info "GitHub Checks API lookup failed, trying Azure DevOps directly..."
     }
+    
+    # Strategy 2: Query Azure DevOps directly (handles merge commits not reported to GitHub)
+    Write-Info "Searching Azure DevOps directly for PR #$PrNumber builds..."
+    try {
+        $buildsUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_apis/build/builds?api-version=7.1&branchName=refs/pull/$PrNumber/merge&`$top=10"
+        $response = Invoke-RestMethod -Uri $buildsUrl -Headers @{ "User-Agent" = "MAUI-PR-Script" } -TimeoutSec 30
+        
+        $completedBuild = $response.value | Where-Object {
+            $_.definition.name -eq "maui-pr" -and $_.status -eq "completed"
+        } | Select-Object -First 1
+        
+        if ($completedBuild) {
+            # Validate build ID is numeric
+            if ("$($completedBuild.id)" -notmatch '^\d+$') {
+                throw "Invalid build ID received from Azure DevOps API"
+            }
+            
+            # Check if a newer build is in progress (user may have pushed a new commit)
+            $inProgressBuild = $response.value | Where-Object {
+                $_.definition.name -eq "maui-pr" -and $_.status -in @("inProgress", "notStarted", "postponed")
+            } | Select-Object -First 1
+            if ($inProgressBuild) {
+                Write-Warn "A newer build is currently in progress. The available artifacts may be from a previous commit."
+                Write-Warn "If you just pushed changes, wait for the new build to complete."
+            }
+            
+            if ($completedBuild.result -ne "succeeded") {
+                Write-Warn "Build completed with result: $($completedBuild.result)"
+                if (-not $Yes) {
+                    $continue = Read-Host "Do you want to continue anyway? (y/N)"
+                    if ($continue -ne "y" -and $continue -ne "Y") {
+                        throw "Build was not successful. Aborting."
+                    }
+                }
+            }
+            
+            $buildUrl = "https://dev.azure.com/$AzureDevOpsOrg/$AzureDevOpsProject/_build/results?buildId=$($completedBuild.id)"
+            Write-Success "Found build ID: $($completedBuild.id) (via Azure DevOps)"
+            return @{
+                BuildId = "$($completedBuild.id)"
+                Status = $completedBuild.result
+                Url = $buildUrl
+            }
+        }
+    }
+    catch {
+        Write-Info "Azure DevOps direct lookup also failed."
+    }
+    
+    # No build found - check if one is in progress
+    $buildInProgress = Test-BuildInProgress -PrNumber $PrNumber
+    if ($buildInProgress) {
+        throw "No completed build found, but a build is currently in progress for PR #$PrNumber. Please wait for it to complete and try again. Check status: https://github.com/dotnet/maui/pull/$PrNumber"
+    }
+    
+    throw "No completed build found for PR #$PrNumber. The PR may not have triggered CI builds yet (draft PRs don't auto-trigger builds), or the build may have failed. Check: https://github.com/dotnet/maui/pull/$PrNumber"
 }
 
 # Get artifacts from Azure DevOps
@@ -468,7 +542,7 @@ try {
     Write-Info "Current target framework: .NET $targetNetVersion.0"
     
     Write-Step "Finding build artifacts"
-    $buildInfo = Get-BuildInfo -SHA $prInfo.SHA
+    $buildInfo = Get-BuildInfo -SHA $prInfo.SHA -PrNumber $PrNumber
     
     Write-Step "Downloading artifacts"
     $downloadUrl = Get-BuildArtifacts -BuildId $buildInfo.BuildId

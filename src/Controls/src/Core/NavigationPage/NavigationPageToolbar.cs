@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Controls
 				NavigationPage.BarTextColorProperty) ||
 				e.IsOneOf(
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
-					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))
+					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty) ||
+				e.Is(FlyoutPage.FlyoutLayoutBehaviorProperty) ||
+				e.Is(NavigationPage.BackButtonAccessibilityLabelProperty))
 			{
 				ApplyChanges(_currentNavigationPage);
 			}
@@ -180,9 +182,12 @@ namespace Microsoft.Maui.Controls
 
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
+			// Show drawer toggle (hamburger icon) when FlyoutPage should display toolbar button
+			// and either we're on the root page or the back button is explicitly hidden.
+			// This ensures flyout access remains available even when back button is disabled (#21646)
 			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
 #if !WINDOWS // TODO NET 10 : Move this logic to ShouldShowToolbarButton
-				&& !anyPagesPushed.Value
+				&& (!anyPagesPushed.Value || !BackButtonVisible)
 #endif
 				)
 				_drawerToggleVisible = true;
@@ -244,10 +249,16 @@ namespace Microsoft.Maui.Controls
 			else
 				BarHeight = null;
 
-			if (previousPage != null)
+			if (previousPage is not null)
+			{
 				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
+				BackButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(previousPage);
+			}
 			else
+			{
 				BackButtonTitle = null;
+				BackButtonAccessibilityLabel = null;
+			}
 
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 

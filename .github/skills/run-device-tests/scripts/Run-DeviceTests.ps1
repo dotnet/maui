@@ -12,7 +12,7 @@
     - Windows: android, windows
 
 .PARAMETER Project
-    The device test project to run. Valid values: Controls, Core, Essentials, Graphics, BlazorWebView
+    The device test project to run. Valid values: Controls, Core, Essentials, Graphics, BlazorWebView, AI
 
 .PARAMETER Platform
     Target platform. Valid values depend on OS:
@@ -65,7 +65,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true, Position = 0)]
-    [ValidateSet("Controls", "Core", "Essentials", "Graphics", "BlazorWebView")]
+    [ValidateSet("Controls", "Core", "Essentials", "Graphics", "BlazorWebView", "AI")]
     [string]$Project,
 
     [Parameter(Mandatory = $false)]
@@ -128,6 +128,7 @@ $ProjectPaths = @{
     "Essentials"    = "src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj"
     "Graphics"      = "src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj"
     "BlazorWebView" = "src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj"
+    "AI"            = "src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj"
 }
 
 $AppNames = @{
@@ -136,6 +137,7 @@ $AppNames = @{
     "Essentials"    = "Microsoft.Maui.Essentials.DeviceTests"
     "Graphics"      = "Microsoft.Maui.Graphics.DeviceTests"
     "BlazorWebView" = "Microsoft.Maui.MauiBlazorWebView.DeviceTests"
+    "AI"            = "Microsoft.Maui.Essentials.AI.DeviceTests"
 }
 
 # Android package names (lowercase)
@@ -145,6 +147,7 @@ $AndroidPackageNames = @{
     "Essentials"    = "com.microsoft.maui.essentials.devicetests"
     "Graphics"      = "com.microsoft.maui.graphics.devicetests"
     "BlazorWebView" = "com.microsoft.maui.mauiblazorwebview.devicetests"
+    "AI"            = "com.microsoft.maui.ai.devicetests"
 }
 
 # Platform-specific configurations
@@ -175,7 +178,7 @@ $PlatformConfigs = @{
     }
     "windows" = @{
         Tfm = "net10.0-windows10.0.19041.0"
-        RuntimeIdentifier = "win10-x64"
+        RuntimeIdentifier = "win-x64"
         AppExtension = ".exe"
         XHarnessTarget = $null
         UsesXHarness = $false
@@ -239,6 +242,8 @@ try {
 
     $projectPath = $ProjectPaths[$Project]
     $appName = $AppNames[$Project]
+    # Derive artifact folder name from the project file name (e.g., "Essentials.AI.DeviceTests" from the .csproj)
+    $artifactName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
     
     Write-Host ""
     Write-Host "Project:       $Project" -ForegroundColor Yellow
@@ -269,7 +274,11 @@ try {
     )
 
     # Add RuntimeIdentifier if specified
-    if ($platformConfig.RuntimeIdentifier) {
+    # NOTE: For Windows we deliberately do NOT pass `-r` here; RuntimeIdentifierOverride
+    # is set in the windows-specific block below to ensure the RID propagates to ALL
+    # referenced projects (e.g. TestUtils.DeviceTests). Plain `-r` is suppressed on
+    # non-leaf project references and causes PRI/asset file resolution failures.
+    if ($platformConfig.RuntimeIdentifier -and $Platform -ne "windows") {
         $buildArgs += "-r", $platformConfig.RuntimeIdentifier
     }
 
@@ -291,8 +300,28 @@ try {
             $buildArgs += "/p:AndroidPackageFormat=apk"
         }
         "windows" {
+            # NOTE: WindowsAppSDKSelfContained MUST NOT be passed via command line because it
+            # propagates to ALL referenced projects (including library dependencies like
+            # Graphics.csproj) and breaks them with:
+            #   "WindowsAppSDKSelfContained requires a supported Windows architecture"
+            # Instead, pass _MauiDeviceTestUnpackaged=true. The
+            # Microsoft.Maui.TestUtils.DeviceTests.Runners.props file (imported from each
+            # device test csproj) converts that signal into WindowsAppSDKSelfContained=true
+            # ONLY on the device test project itself.
+            #
+            # Also: use RuntimeIdentifierOverride (NOT `-r`/RuntimeIdentifier) so the RID
+            # propagates to every ProjectReference (e.g. TestUtils.DeviceTests). Plain
+            # RuntimeIdentifier is auto-suppressed on non-leaf project references, which
+            # leaves dependency PRI/asset files in the non-RID output folder while the
+            # test app itself is built at the RID-specific path, producing PRI175 errors.
+            #
+            # See eng/devices/windows.cake (buildOnly task, lines 145-188) for the
+            # canonical CI pattern.
+            $buildArgs += "/p:RuntimeIdentifierOverride=$($platformConfig.RuntimeIdentifier)"
             $buildArgs += "/p:WindowsPackageType=None"
-            $buildArgs += "/p:WindowsAppSDKSelfContained=true"
+            $buildArgs += "/p:SelfContained=true"
+            $buildArgs += "/p:_MauiDeviceTestUnpackaged=true"
+            $buildArgs += "/p:UseMonoRuntime=false"
         }
     }
 
@@ -316,11 +345,11 @@ try {
     # Construct app path based on platform
     switch ($Platform) {
         "ios" {
-            $appPath = "artifacts/bin/$Project.DeviceTests/$Configuration/$tfmFolder/$ridFolder/$appName.app"
+            $appPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder/$ridFolder/$appName.app"
         }
         "maccatalyst" {
             # MacCatalyst apps may have different names - search for .app bundle
-            $appSearchPath = "artifacts/bin/$Project.DeviceTests/$Configuration/$tfmFolder/$ridFolder"
+            $appSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder/$ridFolder"
             $appBundle = Get-ChildItem -Path $appSearchPath -Filter "*.app" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($appBundle) {
                 $appPath = $appBundle.FullName
@@ -330,7 +359,7 @@ try {
         }
         "android" {
             # Android APK path - look for signed APK
-            $apkSearchPath = "artifacts/bin/$Project.DeviceTests/$Configuration/$tfmFolder"
+            $apkSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder"
             $apkFile = Get-ChildItem -Path $apkSearchPath -Filter "*-Signed.apk" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($apkFile) {
                 $appPath = $apkFile.FullName
@@ -345,14 +374,20 @@ try {
             }
         }
         "windows" {
-            $appPath = "artifacts/bin/$Project.DeviceTests/$Configuration/$tfmFolder/$ridFolder/$appName.exe"
+            $exeSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder"
+            $exeFile = Get-ChildItem -Path $exeSearchPath -Filter "$appName.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exeFile) {
+                $appPath = $exeFile.FullName
+            } else {
+                $appPath = "$exeSearchPath/$ridFolder/$appName.exe"
+            }
         }
     }
     
     if (-not (Test-Path $appPath)) {
         Write-Error "Built app not found at: $appPath"
         Write-Info "Searching for app in artifacts..."
-        Get-ChildItem -Path "artifacts/bin/$Project.DeviceTests" -Recurse -ErrorAction SilentlyContinue | 
+        Get-ChildItem -Path "artifacts/bin/$artifactName" -Recurse -ErrorAction SilentlyContinue | 
             Where-Object { $_.Name -match "$appName" } |
             ForEach-Object { Write-Host "  Found: $($_.FullName)" }
         exit 1
@@ -585,9 +620,10 @@ try {
         $passCount = ([regex]::Matches($logContent, '\[PASS\]')).Count
         $failCount = ([regex]::Matches($logContent, '\[FAIL\]')).Count
         
+        # Use Write-Output for results so they're captured by callers (not just Write-Host)
         Write-Host ""
-        Write-Host "  Passed: $passCount" -ForegroundColor Green
-        Write-Host "  Failed: $failCount" -ForegroundColor $(if ($failCount -gt 0) { "Red" } else { "Green" })
+        Write-Output "  Passed: $passCount"
+        Write-Output "  Failed: $failCount"
         Write-Host ""
         Write-Host "  Log file: $($logFile.FullName)" -ForegroundColor Gray
         
@@ -604,11 +640,11 @@ try {
     Write-Host ""
     if ($testExitCode -eq 0) {
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Green
-        Write-Host "  Tests completed successfully" -ForegroundColor Green
+        Write-Output "  Tests completed successfully"
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Green
     } else {
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
-        Write-Host "  Tests completed with exit code: $testExitCode" -ForegroundColor Yellow
+        Write-Output "  Tests completed with exit code: $testExitCode"
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     }
 

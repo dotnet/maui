@@ -133,7 +133,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				if (_groupSource[n] is INotifyCollectionChanged && _groupSource[n] is IEnumerable list)
+				var group = _groupSource[n];
+
+				if (group is INotifyCollectionChanged && group is IEnumerable list && group is not string)
 				{
 					_groups.Add(new ObservableItemsSource(list, controller, n));
 				}
@@ -240,8 +242,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// Only count items that are actual groups (IEnumerable but not string); flat scalar items
+			// must not increment _groupCount or trigger InsertSections on UICollectionView.
+			// string implements IEnumerable<char> but represents a scalar value, not a group.
+			int count = 0;
+
+			foreach (var item in args.NewItems)
+			{
+				if (item is IEnumerable and not string)
+				{
+					count++;
+				}
+			}
+
+			// None of the new items are groups; no section changes needed
+			if (count == 0)
+			{
+				return;
+			}
+
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupSource.IndexOf(args.NewItems[0]);
-			var count = args.NewItems.Count;
 			_groupCount += count;
 
 			// Adding a group will change the section index for all subsequent groups, so the easiest thing to do
@@ -270,12 +290,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// Only count items that are actual groups (IEnumerable but not string); flat scalar items
+			// must not decrement _groupCount or trigger DeleteSections for sections that were never created.
+			int count = 0;
+
+			foreach (var item in args.OldItems)
+			{
+				if (item is IEnumerable and not string)
+				{
+					count++;
+				}
+			}
+
+			// None of the removed items are groups; no section changes needed
+			if (count == 0)
+			{
+				return;
+			}
+
 			// Removing a group will change the section index for all subsequent groups, so the easiest thing to do
 			// is to reset all the group tracking to get it up-to-date
 			ResetGroupTracking();
 
 			// Since we have a start index, we can be more clever about removing the item(s) (and get the nifty animations)
-			var count = args.OldItems.Count;
 			_groupCount -= count;
 
 			// Queue up the updates to the UICollectionView
@@ -408,12 +445,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GroupsCount()
 		{
-			if (_groupSource is IList list)
-				return list.Count;
-
 			int count = 0;
+			if (_groupSource is IList list)
+			{
+				foreach (var group in list)
+				{
+					// Accept any IEnumerable except string (string implements IEnumerable<char>
+					// but represents a scalar value, not a group).
+					if (group is IEnumerable and not string)
+					{
+						count++;
+					}
+				}
+				return count;
+			}
+
 			foreach (var item in _groupSource)
-				count++;
+			{
+				if (item is IEnumerable and not string)
+				{
+					count++;
+				}
+			}
 			return count;
 		}
 	}

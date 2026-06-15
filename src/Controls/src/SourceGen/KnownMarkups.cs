@@ -273,7 +273,7 @@ internal class KnownMarkups
 
 		if (key is null)
 			throw new Exception();
-		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{key}\")";
+		value = $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{CSharpExpressionHelpers.EscapeForString(key)}\")";
 		return true;
 	}
 
@@ -343,23 +343,37 @@ internal class KnownMarkups
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
 		
-		// Check if the binding has a Source property with a RelativeSource.
-		// In this case, we should NOT compile the binding using x:DataType because
-		// the source type will be determined at runtime by the RelativeSource, not x:DataType.
+		// When Source is RelativeSource, the type is determined at runtime — skip compilation.
+		// When Source is x:Reference, resolve the referenced element's type and compile against it.
+		// Otherwise, use x:DataType from the current scope.
 		bool hasRelativeSource = HasRelativeSourceBinding(markupNode);
 		
 		context.Variables.TryGetValue(markupNode, out ILocalValue? extVariable);
 		
 		if (   !hasRelativeSource
-			&& extVariable is not null
-			&& TryGetXDataType(markupNode, context, out dataTypeSymbol)
-			&& dataTypeSymbol is not null)
+			&& extVariable is not null)
 		{
-			var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, GetBindingPath(markupNode), extVariable, context);
-			if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression) && newBindingExpression is not null)
+			ITypeSymbol? xRefSourceType = TryResolveXReferenceSourceType(markupNode, context);
+			dataTypeSymbol = xRefSourceType;
+			if (dataTypeSymbol is null)
+				TryGetXDataType(markupNode, context, out dataTypeSymbol);
+
+			if (dataTypeSymbol is not null)
 			{
-				value = newBindingExpression;
-				return true;
+				var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, GetBindingPath(markupNode), extVariable, context);
+				if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression, out Diagnostic? propertyNotFoundDiagnostic) && newBindingExpression is not null)
+				{
+					value = newBindingExpression;
+					return true;
+				}
+
+				// Emit property-not-found diagnostic only for x:DataType-sourced bindings.
+				// For x:Reference bindings, silently fall back to runtime — these bindings
+				// were never compiled before, so emitting a new warning would be a regression.
+				if (propertyNotFoundDiagnostic is not null && xRefSourceType is null)
+				{
+					context.ReportDiagnostic(propertyNotFoundDiagnostic);
+				}
 			}
 		}
 
@@ -548,10 +562,9 @@ internal class KnownMarkups
 				return false;
 			}
 
-			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol) && symbol is not null)
+			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? symbol) || symbol is null)
 			{
-				// TODO report the right diagnostic
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Cannot resolve x:DataType type"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.TypeResolution, location, dataTypeName));
 				return false;
 			}
 
@@ -630,27 +643,70 @@ internal class KnownMarkups
 				&& propertyName.LocalName == "BindingContext";
 		}
 
-		// Checks if the binding has a Source property that is a RelativeSource extension.
+		// Checks if the binding has a Source property set to RelativeSource.
 		// When a binding uses RelativeSource, the source type is determined at runtime,
 		// so we should NOT compile the binding using x:DataType.
 		static bool HasRelativeSourceBinding(ElementNode bindingNode)
 		{
-			// Check if Source property exists
 			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
 				&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
 			{
 				return false;
 			}
 
-			// Check if the Source is a RelativeSourceExtension
 			if (sourceNode is ElementNode sourceElementNode)
 			{
-				// Check if the element is a RelativeSourceExtension
-				return sourceElementNode.XmlType.Name == "RelativeSourceExtension"
-					|| sourceElementNode.XmlType.Name == "RelativeSource";
+				return sourceElementNode.XmlType.Name is "RelativeSourceExtension"
+					or "RelativeSource";
 			}
 
 			return false;
+		}
+
+		// When Source={x:Reference Name} is set on a binding, resolves the referenced element's type
+		// by walking namescopes (same logic as ProvideValueForReferenceExtension).
+		// Returns null if Source is not an x:Reference or the name cannot be resolved.
+		static ITypeSymbol? TryResolveXReferenceSourceType(ElementNode bindingNode, SourceGenContext context)
+		{
+			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
+				&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
+				return null;
+
+			if (sourceNode is not ElementNode refNode)
+				return null;
+
+			if (refNode.XmlType.Name is not "ReferenceExtension" and not "Reference")
+				return null;
+
+			// Extract the Name from the x:Reference markup
+			if (!refNode.Properties.TryGetValue(new XmlName("", "Name"), out INode? refNameNode)
+				&& !refNode.Properties.TryGetValue(new XmlName(null, "Name"), out refNameNode))
+			{
+				refNameNode = refNode.CollectionItems.Count > 0 ? refNode.CollectionItems[0] : null;
+			}
+
+			if (refNameNode is not ValueNode vn || vn.Value is not string name)
+				return null;
+
+			// Walk namescopes to find the referenced element's type
+			ElementNode? node = bindingNode;
+			var currentContext = context;
+			while (currentContext is not null && node is not null)
+			{
+				while (currentContext is not null && !currentContext.Scopes.ContainsKey(node))
+					currentContext = currentContext.ParentContext;
+				if (currentContext is null)
+					break;
+				var namescope = currentContext.Scopes[node];
+				if (namescope.namesInScope != null && namescope.namesInScope.ContainsKey(name))
+					return namescope.namesInScope[name].Type;
+				INode n = node;
+				while (n.Parent is ListNode ln)
+					n = ln.Parent;
+				node = n.Parent as ElementNode;
+			}
+
+			return null;
 		}
 	}
 

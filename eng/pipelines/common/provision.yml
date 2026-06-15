@@ -32,6 +32,7 @@ parameters:
   expiryInHours: 1
   base64Encode: false
   skipInternalFeeds: true
+  skipCertificates: false
 
 steps:
 
@@ -168,9 +169,19 @@ steps:
       done
 
       if [[ -z "$XCODE_PATH" ]]; then
-        echo "ERROR: No suitable Xcode version found for requested version ${ORIGINAL_VERSION}"
+        echo "WARNING: No exact match for requested Xcode version ${ORIGINAL_VERSION}"
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        exit 1
+        echo "Falling back to latest available Xcode on this agent..."
+        # Find the latest Xcode by sorting version numbers
+        LATEST_XCODE=$(ls -1d /Applications/Xcode_*.app 2>/dev/null | sed 's|/Applications/Xcode_||;s|\.app||' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
+        if [[ -n "$LATEST_XCODE" ]]; then
+          XCODE_VERSION="$LATEST_XCODE"
+          XCODE_PATH="/Applications/Xcode_${LATEST_XCODE}.app"
+          echo "Using latest available Xcode: ${XCODE_VERSION} at ${XCODE_PATH}"
+        else
+          echo "ERROR: No Xcode installations found in /Applications"
+          exit 1
+        fi
       fi
 
       sudo xcode-select -s "$XCODE_PATH"
@@ -195,7 +206,17 @@ steps:
         # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
         if [[ "${MAJOR}" == "26" && "${MINOR}" == "0" ]]; then
           DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion 26.0"
+        elif [[ "${MAJOR}" -ge "26" ]]; then
+          # Pin the simulator version to match the selected Xcode version.
+          # Without -buildVersion, xcodebuild downloads the LATEST available simulator
+          # runtime, which may not match the selected Xcode's SDK (e.g., Xcode 26.2
+          # ships iphonesimulator SDK 23C53 but -downloadPlatform iOS may install
+          # iOS 26.3.1 which is incompatible, causing actool/ibtool failures).
+          # Include -architectureVariant universal (carried forward from the 26.0
+          # block) for x64 simulator support on Apple Silicon CI agents.
+          DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
         else
+          # For Xcode < 26, iOS simulator version != Xcode version; download latest compatible
           DOWNLOAD_ARGS="-downloadPlatform iOS"
         fi
 
@@ -229,6 +250,14 @@ steps:
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
+
+    - script: |
+        xcrun simctl runtime list -v || true
+        xcrun simctl runtime match list -v || true
+      displayName: Show simulator info
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      timeoutInMinutes: 5
 
     # Also install iOS 18.5 simulator for integration tests that require it
     - script: |
@@ -356,3 +385,9 @@ steps:
     condition: succeeded()
     env:
       AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
+
+# Cache Gradle downloads to avoid transient network failures during Android binding builds
+- ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
+  - template: /eng/pipelines/common/cache-gradle.yml@self
+    parameters:
+      checkoutDirectory: ${{ parameters.checkoutDirectory }}

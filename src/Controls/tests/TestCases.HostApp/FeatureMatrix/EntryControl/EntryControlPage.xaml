@@ -47,7 +47,7 @@
                                  Unfocused="EntryControl_Unfocused"
                                  AutomationId="TestEntry"/>
 
-              <Grid HeightRequest="130"/>
+              <Grid x:Name="grid"/>
 
               <Button Text="Options"
                       FontSize="11"
