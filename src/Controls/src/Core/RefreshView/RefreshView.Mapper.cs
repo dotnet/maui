@@ -1,25 +1,27 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class RefreshView
 	{
-		static RefreshView()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
-			// See https://github.com/dotnet/maui/issues/31939
-			CommandProperty.DependsOn(CommandParameterProperty);
+			if (remapped.Add(typeof(RefreshView)))
+			{
+				base.RemapForControls(remapped);
 
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(RefreshView), typeof(VisualElement));
+				// Register dependency: Command depends on CommandParameter for CanExecute evaluation
+				// See https://github.com/dotnet/maui/issues/31939
+				CommandProperty.DependsOn(CommandParameterProperty);
 
-			// Adjust the mappings to preserve Controls.RefreshView legacy behaviors
+				// Adjust the mappings to preserve Controls.RefreshView legacy behaviors
 #if WINDOWS
-			RefreshViewHandler.Mapper.ReplaceMapping<RefreshView, IRefreshViewHandler>(PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName, MapRefreshPullDirection);
+				RefreshViewHandler.Mapper.ReplaceMapping<RefreshView, IRefreshViewHandler>(PlatformConfiguration.WindowsSpecific.RefreshView.RefreshPullDirectionProperty.PropertyName, MapRefreshPullDirection);
 #endif
+			}
 		}
 	}
 }

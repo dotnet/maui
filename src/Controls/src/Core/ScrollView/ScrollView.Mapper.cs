@@ -1,21 +1,23 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class ScrollView
 	{
-		static ScrollView()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(ScrollView), typeof(VisualElement));
+			if (remapped.Add(typeof(ScrollView)))
+			{
+				base.RemapForControls(remapped);
 
-			// Adjust the mappings to preserve Controls.ScrollView legacy behaviors
+				// Adjust the mappings to preserve Controls.ScrollView legacy behaviors
 #if IOS
-			ScrollViewHandler.Mapper.ReplaceMapping<ScrollView, IScrollViewHandler>(PlatformConfiguration.iOSSpecific.ScrollView.ShouldDelayContentTouchesProperty.PropertyName, MapShouldDelayContentTouches);
+				ScrollViewHandler.Mapper.ReplaceMapping<ScrollView, IScrollViewHandler>(PlatformConfiguration.iOSSpecific.ScrollView.ShouldDelayContentTouchesProperty.PropertyName, MapShouldDelayContentTouches);
 #endif
+			}
 		}
 	}
 }

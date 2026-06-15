@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 #if IOS || MACCATALYST
@@ -14,46 +15,28 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public partial class VisualElement
 	{
-		static VisualElement() => RemapIfNeeded();
-
-		internal static new void RemapIfNeeded()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			RemappingHelper.RemapIfNeeded(typeof(VisualElement), RemapForControls);
-		}
-
-		internal static new void RemapForControls()
-		{
-			RemapForControls(ViewHandler.ViewMapper, ViewHandler.ViewCommandMapper);
-		}
-
-		internal static void RemapForControls(
-			IPropertyMapper<IView, IViewHandler> viewMapper,
-			CommandMapper<IView, IViewHandler> commandMapper)
-		{
-			Element.RemapIfNeeded();
+			if (remapped.Add(typeof(VisualElement)))
+			{
+				base.RemapForControls(remapped);
 
 #if WINDOWS
-			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
 #endif
-			// The five keys below are pure redirects: they re-dispatch into the canonical
-			// `Background`/`Semantics` key, which recomputes the very same composite value they contribute
-			// to. Because they are registered here - after the Core `Background`/`Semantics` keys already
-			// present on ViewHandler.ViewMapper - a bulk `UpdateProperties` pass always maps the canonical
-			// key first, making each redirect's own turn in that pass provably redundant. The wrappers skip
-			// exactly that one turn (see `IsRedundantBulkPassRedirect`) and nothing else; the canonical
-			// mapping itself is left untouched, so a derived handler is free to own/override it.
-			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColorForControls);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSourceForControls);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
-			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColorForControls);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSourceForControls);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
+				ViewHandler.ViewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
 
-			viewMapper.AppendToMapping<VisualElement, IViewHandler>(nameof(IViewHandler.ContainerView), MapContainerView);
+				ViewHandler.ViewMapper.AppendToMapping<VisualElement, IViewHandler>(nameof(IViewHandler.ContainerView), MapContainerView);
 
-			commandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
+				ViewHandler.ViewCommandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
+			}
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view) =>
