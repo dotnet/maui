@@ -146,7 +146,14 @@ param(
     [switch]$SkipMaestroChecks,
     # Skip milestone hygiene checks (current+next milestone existence + stale-open
     # milestone detection). Useful for repos that don't use milestone-per-release.
-    [switch]$SkipMilestoneChecks
+    [switch]$SkipMilestoneChecks,
+    # Query internal (dnceng/internal) AzDO pipelines in addition to the public
+    # dnceng-public ones. Off by default: the public Actions runner has no
+    # internal AzDO credentials, so the query always returns 401 — which in
+    # turn permanently parks the verdict at 🟡 Conditionally Ready with a
+    # bogus "unknown" Tier 2 reason. Enable when running locally with AzDO
+    # auth (az login / PAT) and you actually want internal signal.
+    [switch]$IncludeInternal
 )
 
 $ErrorActionPreference = 'Stop'
@@ -475,9 +482,15 @@ function Get-MainBumpDateForCycle {
             if (-not $line2) { continue }
             $parts = $line2 -split "`t", 2
             if ($parts.Count -lt 2) { continue }
+            # Date is `git log --format=%cI` (committer date, ISO-8601 with
+            # 'Z' / offset). Route through ConvertTo-Utc so culture-sensitive
+            # [DateTime]::Parse doesn't silently shift the value on hosts
+            # whose locale doesn't accept ISO-8601 directly.
+            $dateUtc = ConvertTo-Utc -Value $parts[0]
+            if (-not $dateUtc) { continue }
             return [PSCustomObject]@{
                 Sha     = $sTrim
-                Date    = ([DateTime]::Parse($parts[0])).ToUniversalTime()
+                Date    = $dateUtc
                 Subject = $parts[1]
             }
         }
@@ -1032,12 +1045,18 @@ function Get-MilestoneHygieneChecks {
     }
 
     # === Check 2: Next cycle's milestone exists ===
+    # Surfaced as CLEANUP (not BLOCKED) — a missing roll-forward milestone is a
+    # follow-up concern, not a ship blocker. The current cycle can still ship
+    # while the next milestone hasn't been created yet; release captain can
+    # create it any time before the next cycle starts. In candidate mode this
+    # is especially conservative: SR9 candidate would otherwise BLOCK on
+    # missing SR10, even though we're not yet ready to cut SR9.
     $nextMs = @($allMs | Where-Object { $expectedTitlesNext -contains $_.title })
     $nextTitle = $expectedTitlesNext[0]
     if ($nextMs.Count -eq 0) {
-        $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'BLOCKED' `
-            -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to." `
-            -NextAction "Create the milestone: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
+        $checks += New-ReadinessCheck -Area "Milestone for next cycle ($nextTitle)" -Status 'CLEANUP' `
+            -Details "No milestone matching ``$nextTitle`` exists. Once ``$cycleLabel`` ships, open issues will have nowhere to roll forward to — but ``$cycleLabel`` can ship first." `
+            -NextAction "Create the milestone before the next cycle begins: ``gh api repos/$($Ctx.repo)/milestones -f title=""$nextTitle"" -f state=open``"
     }
 
     # === Check 3: Stale open milestones with past due_on ===
@@ -1095,14 +1114,18 @@ function Get-CandidatePrChecks {
         "next SR cut" to track.
     .DESCRIPTION
         Convention: the Candidate PR has "Candidate" in the title (word
-        boundary, case-insensitive — e.g. "June 8th, Candidate"). It's
-        normally opened against ``main`` (not the SR branch), so we scan
-        ALL open PRs on main, not just $openSrPrs.
+        boundary, case-insensitive — e.g. "June 8th, Candidate") AND is
+        opened by a maintainer (OWNER/MEMBER/COLLABORATOR). The
+        authorAssociation gate prevents an unrelated community PR titled
+        "Candidate ..." from spoofing the cut PR. It's normally opened
+        against ``main`` (not the SR branch), so we scan ALL open PRs on
+        main, not just $openSrPrs.
 
         Status semantics:
           - in-flight mode  → returns @() (no check; SR is already cut)
           - candidate mode, candidate PR open → WATCH (must land before cut)
           - candidate mode, no candidate PR found → WATCH (informational)
+          - candidate mode, gh query failed → WATCH (missing signal)
 
         Never BLOCKED: a missing candidate PR is normal early in the
         cycle. The release captain decides when to open one.
@@ -1123,30 +1146,51 @@ function Get-CandidatePrChecks {
         $nextSr = "SR$([int]$Matches[1] + 1)"
     }
 
-    # Scan open PRs targeting main (the Candidate PR is opened on main, not
-    # on the SR branch, since the SR branch may not exist yet in candidate
-    # mode). Cheap: one gh call returning up to 100 open PRs on main.
-    $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
-                       '--base', $Ctx.mainBranch, '--limit', '100',
-                       '--json', 'number,title,author,updatedAt,url')
-    $mainPrs = @()
-    if ($raw) {
-        $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-        if ($parsed) { $mainPrs = @($parsed) }
-    }
-
-    # Be conservative — require word boundary so "CandidateView" doesn't match.
-    $candidates = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
-
     $area = if ($nextSr) {
         "Candidate PR for next SR cut ($nextSr)"
     } else {
         "Candidate PR for next SR cut"
     }
 
-    if ($candidates.Count -eq 0) {
+    # Scan open PRs targeting main (the Candidate PR is opened on main, not
+    # on the SR branch, since the SR branch may not exist yet in candidate
+    # mode). Cheap: one gh call returning up to 100 open PRs on main.
+    # Include authorAssociation in the json projection so we can gate on
+    # OWNER/MEMBER/COLLABORATOR — without this, ANY open PR with
+    # "Candidate" in its title would spoof the cut PR.
+    $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
+                       '--base', $Ctx.mainBranch, '--limit', '100',
+                       '--json', 'number,title,author,authorAssociation,updatedAt,url')
+    if ($null -eq $raw) {
+        # gh failed — distinguish from "no Candidate PR found" so the
+        # verdict doesn't silently READY on tool failure.
         return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
-            -Details "No open PR matching ``*Candidate*`` found on ``$($Ctx.mainBranch)``. The Candidate PR is the mechanism that promotes a specific main commit as the SR cut point." `
+            -Details "Could not query open PRs on ``$($Ctx.mainBranch)`` (``gh pr list`` exited non-zero). Cut readiness cannot be evaluated until the query succeeds." `
+            -NextAction "Verify ``gh auth status`` and rerun. If gh is unavailable in this environment, check the Candidate PR manually.")
+    }
+    $mainPrs = @()
+    $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if ($parsed) { $mainPrs = @($parsed) }
+
+    # Word-boundary match so "CandidateView" doesn't spoof.
+    $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
+
+    # Author gating: only PRs from a maintainer count. Outside contributors
+    # never open SR-cut PRs by convention. GraphQL returns authorAssociation
+    # as the enum 'OWNER' | 'MEMBER' | 'COLLABORATOR' | 'CONTRIBUTOR' | etc.
+    $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
+    $candidates = @($titleMatches | Where-Object {
+        $assoc = if ($_.PSObject.Properties['authorAssociation']) { $_.authorAssociation } else { $null }
+        $assoc -and ($maintainerAssociations -contains $assoc)
+    })
+    $rejectedBySpoofGate = $titleMatches.Count - $candidates.Count
+
+    if ($candidates.Count -eq 0) {
+        $rejectNote = if ($rejectedBySpoofGate -gt 0) {
+            " ($rejectedBySpoofGate non-maintainer PR(s) titled 'Candidate' were excluded as not real cut PRs)"
+        } else { '' }
+        return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
+            -Details "No open PR matching ``*Candidate*`` from a maintainer (OWNER/MEMBER/COLLABORATOR) found on ``$($Ctx.mainBranch)``$rejectNote. The Candidate PR is the mechanism that promotes a specific main commit as the SR cut point." `
             -NextAction "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR.")
     }
 
@@ -1487,7 +1531,16 @@ function Get-CIStatus {
 
     Write-Host "Querying CI pipelines..." -ForegroundColor Cyan
     $results = @()
-    $allPipelines = $Script:PublicPipelines + $Script:InternalPipelines
+    # Internal dnceng/internal pipelines require AzDO auth that the default
+    # GitHub Actions runner does NOT have — querying them in public CI mode
+    # always 401s and emits a permanent "unknown" tier-2 escalation. Caller
+    # must explicitly opt in via -IncludeInternal (e.g. local run with az
+    # login or PAT) for these to be queried at all.
+    $allPipelines = if ($IncludeInternal) {
+        $Script:PublicPipelines + $Script:InternalPipelines
+    } else {
+        $Script:PublicPipelines
+    }
 
     foreach ($p in $allPipelines) {
         $builds = Get-PipelineLatestBuilds -Pipeline $p -SrBranch $Ctx.srBranch -SrHead $Ctx.srHeadSha
@@ -2178,12 +2231,18 @@ function Get-OpenSrPrs {
 function Get-OpenIssuesByLabel {
     <#
     .SYNOPSIS
-        Returns open issues labeled $Label. Includes createdAt so callers can
-        compute freshness for ci-scan-style escalation. Returns an array.
+        Returns open issues labeled $Label with an error envelope.
+    .DESCRIPTION
+        Returns @{ QueryFailed=[bool]; Issues=[array] }. Wrapping the
+        result distinguishes "no issues found" from "query failed" —
+        without it, downstream signal checks emit a false-green READY
+        when gh fails (auth expired, rate-limited, network outage) since
+        `if (-not $issues)` matches both cases.
     .PARAMETER IncludeBody
-        Include the issue body in the result (needed for ci-scan branch filtering).
+        Include the issue body in the result. Kept for historical callers;
+        new code doesn't need it because branch filtering now uses the
+        label name (Get-CiScanLabelForBranch) instead of body markers.
     #>
-    [OutputType([object[]])]
     param(
         [string]$Label,
         [switch]$IncludeBody
@@ -2195,109 +2254,107 @@ function Get-OpenIssuesByLabel {
     $raw = Invoke-Gh @('issue', 'list', '--repo', $script:Repo, '--state', 'open',
                        '--limit', '100', '--label', $Label,
                        '--json', $fields)
-    if (-not $raw) { return @() }
+    if ($null -eq $raw) {
+        # Invoke-Gh returns $null only on non-zero exit (failure). A
+        # successful but empty result is '[]', a non-null string. Treat
+        # this case as "query failed" so callers can downgrade to WATCH.
+        return @{ QueryFailed = $true; Issues = @() }
+    }
     $issues = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if (-not $issues) { return @() }
-    return @($issues)
+    if (-not $issues) { return @{ QueryFailed = $false; Issues = @() } }
+    return @{ QueryFailed = $false; Issues = @($issues) }
 }
 
-function Get-CiScanIssueBranch {
+function Get-CiScanLabelForBranch {
     <#
     .SYNOPSIS
-        Extracts the `**Branch**: <name>` line from a ci-scan issue body.
-        Returns $null if the marker is absent.
-    .NOTES
-        The CI Failure Scanner workflow (.github/workflows/ci-status-*.md) emits
-        a Markdown bullet "- **Branch**: <branch>" in every issue body so
-        downstream tooling can localize a signal to its source branch without
-        parsing AzDO build payloads. See Get-PreviewReadiness.ps1 for the
-        parallel implementation used by Preview readiness.
-    #>
-    param($Issue)
+        Maps a branch name to the single `ci-scan*` label its scanner
+        workflow writes. Returns $null when no scanner runs against that
+        branch.
+    .DESCRIPTION
+        The CI Failure Scanner has one workflow per scanned branch
+        (.github/workflows/ci-status-main.md → 'main' → 'ci-scan';
+         .github/workflows/ci-status-net11.md → 'net11.0' → 'ci-scan-net11').
+        The label name fully encodes the branch — no need to crack the
+        issue body open to figure out where it came from.
 
-    if (-not $Issue.PSObject.Properties['body'] -or -not $Issue.body) { return $null }
-    if ($Issue.body -match '\*\*Branch\*\*:\s*([^\s,\n<]+)') {
-        return $Matches[1]
+        Mapping:
+          main                                  → ci-scan
+          netN.0                                → ci-scan-netN
+          release/N.0.<patch>xx-previewM        → ci-scan-netN   (upstream)
+          release/N.0.<patch>xx-srM             → $null          (no scanner)
+          anything else                         → $null          (no scanner)
+
+        Preview branches return the parent net<N>.0 label so an in-flight
+        preview readiness check still surfaces signals from the branch the
+        preview was cut from. SR branches have no continuous scanner, so
+        their ci-scan set is correctly empty.
+
+        Add a case here when a new ci-status-*.md workflow is introduced
+        (e.g. for a future netN.0 — see .github/workflows/ci-status-*.md).
+    #>
+    param([string]$Branch)
+
+    if ([string]::IsNullOrWhiteSpace($Branch)) { return $null }
+    if ($Branch -eq 'main') { return 'ci-scan' }
+    if ($Branch -match '^net(\d+)\.0$') { return "ci-scan-net$($Matches[1])" }
+    if ($Branch -match '^release/(\d+)\.0\.\d+xx-preview\d+$') {
+        return "ci-scan-net$($Matches[1])"
     }
     return $null
-}
-
-function Get-CiScanLabels {
-    <#
-    .SYNOPSIS
-        Returns the set of `ci-scan*` labels defined in the repo. Each
-        per-branch scanner workflow uses a distinct label (`ci-scan` for
-        main, `ci-scan-net11` for net11.0, etc.), so we must enumerate
-        all of them to avoid missing branch-specific signals.
-    #>
-    $raw = Invoke-Gh @('label', 'list', '--repo', $script:Repo,
-                       '--search', 'ci-scan', '--limit', '50', '--json', 'name')
-    if (-not $raw) { return @() }
-    $labels = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if (-not $labels) { return @() }
-    return @($labels | Where-Object { $_.name -match '^ci-scan(-|$)' } | ForEach-Object { $_.name })
 }
 
 function Get-CiScanIssuesForSr {
     <#
     .SYNOPSIS
-        Returns open ci-scan issues sorted newest-first, filtered to those
-        whose `**Branch**: <name>` body marker matches $Branch. Queries ALL
-        `ci-scan*` labels (one per scanner variant) and dedupes by issue
-        number. Returns @{ Matched=[array]; FilteredOut=int; Total=int }.
+        Returns open ci-scan issues for the scanner attached to $Branch.
+        Returns @{ Matched=[array]; FilteredOut=int; Total=int; QueryFailed=[bool]; ScannerLabel=[string]|$null }.
     .DESCRIPTION
-        The CI Failure Scanner has per-branch workflow variants (e.g.
-        ci-status-main → ci-scan label, ci-status-net11 → ci-scan-net11
-        label). Each files issues with a `**Branch**: <name>` bullet so
-        we can scope a SR's CI signals to only the branch being shipped.
-        Issues lacking the marker are kept (treated as repo-wide /
-        unknown) so we don't silently drop pre-format issues.
+        Uses Get-CiScanLabelForBranch to resolve the single relevant label
+        and queries only that one — no more cross-branch dedup or body
+        marker parsing. When the branch has no scanner (most SR branches),
+        ScannerLabel is $null and Matched is empty.
+
+        QueryFailed flips $true if the underlying `gh issue list` call
+        failed (gh missing, auth expired, transient outage). Callers must
+        treat that case as "no signal" rather than "no issues" to avoid
+        emitting a false-green READY on tool failure.
     #>
     param([string]$Branch)
 
-    $labels = Get-CiScanLabels
-    if (-not $labels -or $labels.Count -eq 0) {
-        $labels = @('ci-scan')
-    }
-    $seen = @{}
-    $issues = @()
-    foreach ($label in $labels) {
-        $batch = Get-OpenIssuesByLabel -Label $label -IncludeBody
-        foreach ($issue in $batch) {
-            if (-not $seen.ContainsKey($issue.number)) {
-                $seen[$issue.number] = $true
-                $issues += $issue
-            }
+    $label = Get-CiScanLabelForBranch -Branch $Branch
+    if (-not $label) {
+        return @{
+            Matched      = @()
+            FilteredOut  = 0
+            Total        = 0
+            QueryFailed  = $false
+            ScannerLabel = $null
         }
     }
-    $sorted = @($issues | Sort-Object {
+
+    $result = Get-OpenIssuesByLabel -Label $label -IncludeBody
+    if ($result.QueryFailed) {
+        return @{
+            Matched      = @()
+            FilteredOut  = 0
+            Total        = 0
+            QueryFailed  = $true
+            ScannerLabel = $label
+        }
+    }
+
+    $sorted = @($result.Issues | Sort-Object {
         $u = ConvertTo-Utc -Value $_.createdAt
         if ($u) { $u } else { [DateTime]::MinValue }
     } -Descending)
 
-    if ([string]::IsNullOrWhiteSpace($Branch)) {
-        return @{ Matched = $sorted; FilteredOut = 0; Total = $sorted.Count }
-    }
-
-    $matched = New-Object System.Collections.Generic.List[object]
-    $filteredOut = 0
-    foreach ($issue in $sorted) {
-        $issueBranch = Get-CiScanIssueBranch -Issue $issue
-        if ($null -eq $issueBranch) {
-            [void]$matched.Add($issue)
-            continue
-        }
-        if ($issueBranch -eq $Branch) {
-            [void]$matched.Add($issue)
-        } else {
-            $filteredOut++
-        }
-    }
-
     return @{
-        Matched     = $matched.ToArray()
-        FilteredOut = $filteredOut
-        Total       = $sorted.Count
+        Matched      = $sorted
+        FilteredOut  = 0
+        Total        = $sorted.Count
+        QueryFailed  = $false
+        ScannerLabel = $label
     }
 }
 
@@ -2322,9 +2379,10 @@ function Get-CiSignalChecks {
           2. Known Build Errors (KBE label, WATCH if any open, READY otherwise)
         Returns @{ Checks = [array]; CiScanIssues = [array]; CiScanFilteredOut = [int]; KbeIssues = [array] }.
     .PARAMETER Branch
-        The SR branch whose ci-scan signals to surface (e.g. release/10.0.1xx-sr8).
-        Issues whose body `**Branch**: <name>` marker doesn't match are excluded
-        as not relevant to this SR.
+        The branch whose ci-scan signals to surface. The scanner-label
+        mapping (Get-CiScanLabelForBranch) decides which `ci-scan*` label
+        to query; branches without a per-branch scanner (most SR branches)
+        emit a 'no scanner' READY entry instead of a confusing 'no signals'.
     #>
     param([string]$Branch)
 
@@ -2332,38 +2390,61 @@ function Get-CiSignalChecks {
     $ciScanResult = Get-CiScanIssuesForSr -Branch $Branch
     $ciScan = @($ciScanResult.Matched)
     $ciScanFilteredOut = $ciScanResult.FilteredOut
-    $kbe    = @(Get-OpenIssuesByLabel -Label 'Known Build Error')
+    $ciScanQueryFailed = [bool]$ciScanResult.QueryFailed
+    $ciScanLabel = $ciScanResult.ScannerLabel
+    $kbeResult = Get-OpenIssuesByLabel -Label 'Known Build Error'
+    $kbe = @($kbeResult.Issues)
+    $kbeQueryFailed = [bool]$kbeResult.QueryFailed
 
     $checks = @()
 
-    $fresh = @($ciScan | Where-Object { Test-CiScanIsFresh -Issue $_ -HoursThreshold 24 })
-    $filteredNote = if ($ciScanFilteredOut -gt 0) { " ($ciScanFilteredOut other-branch issue(s) filtered out)" } else { "" }
-    if ($fresh.Count -gt 0) {
+    if ($ciScanQueryFailed) {
+        # gh failed (auth/network/rate-limit). Emit WATCH so the verdict
+        # acknowledges the missing signal instead of silently READY-ing.
         $checks += New-ReadinessCheck `
             -Area 'CI Failure Scanner signals' `
             -Status 'WATCH' `
-            -Details "$($fresh.Count) ci-scan issue(s) targeting ``$Branch`` filed in the last 24h ($($ciScan.Count) total open on this branch$filteredNote). Likely affects this SR." `
-            -NextAction 'Review the freshest ci-scan issues to confirm none block ship.'
-    } elseif ($ciScan.Count -gt 0) {
-        $checks += New-ReadinessCheck `
-            -Area 'CI Failure Scanner signals' `
-            -Status 'WATCH' `
-            -Details "$($ciScan.Count) open ci-scan issue(s) targeting ``$Branch`` (none filed in the last 24h$filteredNote)." `
-            -NextAction 'Skim recent ci-scan issues for impact patterns; mark accepted-known if appropriate.'
-    } else {
-        $readyDetail = if ($ciScanFilteredOut -gt 0) {
-            "No ci-scan issues targeting ``$Branch`` ($ciScanFilteredOut open issue(s) target other branches and were filtered out)."
-        } else {
-            'No open ci-scan issues — scanner has not flagged recurring CI failures.'
-        }
+            -Details "Could not query ci-scan issues (label ``$ciScanLabel`` — gh exited non-zero). Treating as unknown signal so the verdict reflects the missing data." `
+            -NextAction "Verify ``gh auth status`` and rerun. If gh is unavailable in this environment, accept the WATCH and triage ci-scan manually."
+    } elseif (-not $ciScanLabel) {
+        # No scanner runs against this branch — that's expected for SR
+        # branches, which are not continuously scanned. Distinguish this
+        # from 'scanner ran and found nothing' so the report is honest.
         $checks += New-ReadinessCheck `
             -Area 'CI Failure Scanner signals' `
             -Status 'READY' `
-            -Details $readyDetail `
-            -NextAction 'Continue monitoring.'
+            -Details "No per-branch CI Failure Scanner is configured for ``$Branch``. Add an entry to Get-CiScanLabelForBranch if a scanner is added later." `
+            -NextAction 'No action — SR branches are not continuously scanned.'
+    } else {
+        $fresh = @($ciScan | Where-Object { Test-CiScanIsFresh -Issue $_ -HoursThreshold 24 })
+        if ($fresh.Count -gt 0) {
+            $checks += New-ReadinessCheck `
+                -Area 'CI Failure Scanner signals' `
+                -Status 'WATCH' `
+                -Details "$($fresh.Count) ci-scan issue(s) on ``$Branch`` (label ``$ciScanLabel``) filed in the last 24h ($($ciScan.Count) total open). Likely affects this release." `
+                -NextAction 'Review the freshest ci-scan issues to confirm none block ship.'
+        } elseif ($ciScan.Count -gt 0) {
+            $checks += New-ReadinessCheck `
+                -Area 'CI Failure Scanner signals' `
+                -Status 'WATCH' `
+                -Details "$($ciScan.Count) open ci-scan issue(s) on ``$Branch`` (label ``$ciScanLabel``, none filed in the last 24h)." `
+                -NextAction 'Skim recent ci-scan issues for impact patterns; mark accepted-known if appropriate.'
+        } else {
+            $checks += New-ReadinessCheck `
+                -Area 'CI Failure Scanner signals' `
+                -Status 'READY' `
+                -Details "No open ci-scan issues on ``$Branch`` (label ``$ciScanLabel``) — scanner has not flagged recurring CI failures." `
+                -NextAction 'Continue monitoring.'
+        }
     }
 
-    if ($kbe.Count -gt 0) {
+    if ($kbeQueryFailed) {
+        $checks += New-ReadinessCheck `
+            -Area 'Known Build Errors' `
+            -Status 'WATCH' `
+            -Details 'Could not query the Known Build Error issue list (gh exited non-zero). Treating as unknown signal so the verdict reflects the missing data.' `
+            -NextAction "Verify ``gh auth status`` and rerun. If gh is unavailable, triage Known Build Error issues manually."
+    } elseif ($kbe.Count -gt 0) {
         $checks += New-ReadinessCheck `
             -Area 'Known Build Errors' `
             -Status 'WATCH' `
@@ -2510,13 +2591,24 @@ function Get-OverallVerdict {
         $reasons.Add("[Advisory] Candidate mode — main CI is ``$($Data['ci'].overall)``. Re-evaluate after SR cut.") | Out-Null
     }
 
-    # Ship-readiness checks (versions.props bumped, bug template updated).
-    # Each BLOCKED check escalates the verdict to Tier 1 (Not Ready).
+    # Ship-readiness checks (versions.props bumped, bug template updated,
+    # ci-scan/KBE signals, etc.). Mirrors the worst-wins escalation used by
+    # Get-PreviewReadiness:
+    #   - BLOCKED → Tier 1 (Not Ready). Must be resolved before ship.
+    #   - WATCH   → Tier 2 (Conditionally Ready). Worth eyeballing; doesn't
+    #              block but the verdict acknowledges the soft signal.
+    # CLEANUP and UNKNOWN do NOT escalate the verdict — they're follow-ups
+    # or missing data, not ship signals.
     if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
         $blockedShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'BLOCKED' })
         foreach ($sc in $blockedShipChecks) {
             $tier1 = $true
             $reasons.Add("[Tier 1] Ship check BLOCKED: $($sc.Area)") | Out-Null
+        }
+        $watchShipChecks = @($Data['shipChecks'] | Where-Object { $_.Status -eq 'WATCH' })
+        foreach ($sc in $watchShipChecks) {
+            $tier2 = $true
+            $reasons.Add("[Tier 2] Ship check WATCH: $($sc.Area)") | Out-Null
         }
     }
 

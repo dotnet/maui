@@ -462,26 +462,99 @@ function Get-IssuesByLabel {
     return ConvertFrom-JsonOrEmptyArray $json
 }
 
-function Get-CiScanIssueBranch {
+function Get-CiScanLabelForBranch {
     <#
     .SYNOPSIS
-        Extracts the `**Branch**: <name>` line from a ci-scan issue body.
-        Returns $null if the line is missing or unparseable.
-    .NOTES
-        The CI Failure Scanner workflow (.github/workflows/ci-status-*.md)
-        emits a Markdown bullet "- **Branch**: <branch>" in every issue body
-        so downstream tooling can localize a signal to its source branch
-        without parsing the AzDO build details. This helper reads that line.
-    #>
-    param($Issue)
+        Maps a branch/ref name to the single `ci-scan*` label its scanner
+        workflow writes. Returns $null when no scanner runs against the ref.
+    .DESCRIPTION
+        The CI Failure Scanner has one workflow per scanned branch
+        (.github/workflows/ci-status-main.md → 'main' → 'ci-scan';
+         .github/workflows/ci-status-net11.md → 'net11.0' → 'ci-scan-net11').
+        Label name fully encodes the branch — no need to crack open the
+        issue body to figure out where it came from.
 
-    if (-not $Issue.PSObject.Properties['body'] -or -not $Issue.body) { return $null }
-    # Match "**Branch**: <name>" allowing optional leading dash/space.
-    # <name> stops at whitespace, comma, or newline so we get just the ref.
-    if ($Issue.body -match '\*\*Branch\*\*:\s*([^\s,\n<]+)') {
-        return $Matches[1]
+        Mapping:
+          main                                  → ci-scan
+          netN.0                                → ci-scan-netN
+          release/N.0.<patch>xx-previewM        → ci-scan-netN   (upstream)
+          release/N.0.<patch>xx-srM             → $null          (no scanner)
+          anything else                         → $null          (no scanner)
+
+        Preview branches return the parent net<N>.0 label so an in-flight
+        preview readiness check still surfaces signals from the branch
+        the preview was cut from — the per-branch ci-status-*.md workflow
+        runs against net<N>.0, not the preview branch.
+
+        Add a case here when a new ci-status-*.md workflow is introduced.
+        Must be kept in sync with the matching helper in
+        scripts/Get-ReleaseReadiness.ps1.
+    #>
+    param([string]$Branch)
+
+    if ([string]::IsNullOrWhiteSpace($Branch)) { return $null }
+    if ($Branch -eq 'main') { return 'ci-scan' }
+    if ($Branch -match '^net(\d+)\.0$') { return "ci-scan-net$($Matches[1])" }
+    if ($Branch -match '^release/(\d+)\.0\.\d+xx-preview\d+$') {
+        return "ci-scan-net$($Matches[1])"
     }
     return $null
+}
+
+function Get-CiScanIssues {
+    <#
+    .SYNOPSIS
+        Returns open ci-scan issues for the scanner attached to $Branch.
+        Returns @{ Matched=[array]; FilteredOut=int; Total=int;
+                   QueryFailed=[bool]; ScannerLabel=[string]|$null }.
+    .DESCRIPTION
+        Uses Get-CiScanLabelForBranch to resolve the single relevant label
+        (e.g. net11.0 → ci-scan-net11) and queries only that one — no more
+        cross-branch dedup or body marker parsing. When the branch has no
+        scanner, ScannerLabel is $null and Matched is empty.
+
+        QueryFailed flips $true if the underlying `gh issue list` call
+        throws after retries. Callers must treat that case as "no signal"
+        rather than "no issues" to avoid emitting a false-green READY on
+        tool failure.
+    #>
+    param([string]$Branch)
+
+    $label = Get-CiScanLabelForBranch -Branch $Branch
+    if (-not $label) {
+        return @{
+            Matched      = @()
+            FilteredOut  = 0
+            Total        = 0
+            QueryFailed  = $false
+            ScannerLabel = $null
+        }
+    }
+
+    try {
+        $batch = Get-IssuesByLabel -Label $label -IncludeBody
+    } catch {
+        return @{
+            Matched      = @()
+            FilteredOut  = 0
+            Total        = 0
+            QueryFailed  = $true
+            ScannerLabel = $label
+        }
+    }
+
+    $sorted = @($batch | Sort-Object {
+        $u = ConvertTo-UtcDateTime -Value $_.createdAt
+        if ($u) { $u } else { [DateTime]::MinValue }
+    } -Descending)
+
+    return @{
+        Matched      = $sorted
+        FilteredOut  = 0
+        Total        = $sorted.Count
+        QueryFailed  = $false
+        ScannerLabel = $label
+    }
 }
 
 function Test-IssueReleaseRelevant {
@@ -540,90 +613,6 @@ function Get-ReleaseRelevantIssuesByLabel {
     # the array type even when empty.
     if ($null -eq $deduped) { return ,@() }
     return ,@($deduped)
-}
-
-function Get-CiScanLabels {
-    <#
-    .SYNOPSIS
-        Returns the set of `ci-scan*` labels defined in the repo. Each
-        per-branch scanner workflow uses a distinct label (`ci-scan` for
-        main, `ci-scan-net11` for net11.0, etc.), so we must enumerate
-        all of them to avoid missing branch-specific signals.
-    #>
-    $json = Invoke-GitHubWithRetry -Arguments @(
-        "label", "list", "--repo", $Repository,
-        "--search", "ci-scan", "--limit", "50", "--json", "name"
-    ) -Description "list ci-scan* labels"
-    $labels = ConvertFrom-JsonOrEmptyArray $json
-    return @($labels | Where-Object { $_.name -match '^ci-scan(-|$)' } | ForEach-Object { $_.name })
-}
-
-function Get-CiScanIssues {
-    <#
-    .SYNOPSIS
-        Returns open ci-scan issues (auto-filed by the CI Failure Scanner
-        workflow every 12h) filtered to those whose `**Branch**: <name>` body
-        marker matches $Branch. Queries ALL `ci-scan*` labels (one per
-        scanner variant) and dedupes by issue number.
-        Returns @{ Matched=[array]; FilteredOut=int; Total=int }.
-    .DESCRIPTION
-        The CI Failure Scanner has per-branch workflow variants (e.g.
-        ci-status-main → ci-scan label, ci-status-net11 → ci-scan-net11
-        label). Each files issues with a `**Branch**: <branch>` bullet in
-        the body. Filtering by branch localizes the signal — Preview6
-        surveying net11.0 should only show signals from the net11.0
-        scanner. Issues lacking a parseable Branch line are kept (treated
-        as repo-wide / unknown) so we don't silently drop pre-format issues.
-    #>
-    param([string]$Branch)
-
-    $labels = Get-CiScanLabels
-    if (-not $labels -or $labels.Count -eq 0) {
-        # Defensive fallback if the label discovery returns nothing.
-        $labels = @('ci-scan')
-    }
-    $seen = @{}
-    $issues = @()
-    foreach ($label in $labels) {
-        $batch = Get-IssuesByLabel -Label $label -IncludeBody
-        foreach ($issue in $batch) {
-            if (-not $seen.ContainsKey($issue.number)) {
-                $seen[$issue.number] = $true
-                $issues += $issue
-            }
-        }
-    }
-    $sorted = @($issues | Sort-Object {
-        $u = ConvertTo-UtcDateTime -Value $_.createdAt
-        if ($u) { $u } else { [DateTime]::MinValue }
-    } -Descending)
-
-    if ([string]::IsNullOrWhiteSpace($Branch)) {
-        $result = @{ Matched = $sorted; FilteredOut = 0; Total = $sorted.Count }
-        return $result
-    }
-
-    $matched = New-Object System.Collections.Generic.List[object]
-    $filteredOut = 0
-    foreach ($issue in $sorted) {
-        $issueBranch = Get-CiScanIssueBranch -Issue $issue
-        if ($null -eq $issueBranch) {
-            [void]$matched.Add($issue)
-            continue
-        }
-        if ($issueBranch -eq $Branch) {
-            [void]$matched.Add($issue)
-        } else {
-            $filteredOut++
-        }
-    }
-
-    $result = @{
-        Matched     = $matched.ToArray()
-        FilteredOut = $filteredOut
-        Total       = $sorted.Count
-    }
-    return $result
 }
 
 function Test-IssueIsFresh {
@@ -1075,23 +1064,33 @@ if ($kbeIssues.Count -gt 0) {
 # failures when we're surveying net11.0) are excluded as not relevant.
 # Fresh issues (created in last 24h) escalate to WATCH so release captains
 # notice that the scanner just found something on this branch.
+# Branch-scoped (was: dedup-and-filter; now: one label lookup via
+# Get-CiScanLabelForBranch). For in-flight previews the parent net<N>.0
+# scanner is queried; for SR-style refs there is no scanner and we surface
+# that fact explicitly instead of a misleading "no signals". gh failures
+# escalate to WATCH so a missing query doesn't silently READY the verdict.
 $ciScanResult = Get-CiScanIssues -Branch $SurveyRef
 $ciScanIssues = @($ciScanResult.Matched)
 $ciScanFilteredOut = $ciScanResult.FilteredOut
+$ciScanQueryFailed = [bool]$ciScanResult.QueryFailed
+$ciScanLabel = $ciScanResult.ScannerLabel
 $freshCiScan = @($ciScanIssues | Where-Object { Test-IssueIsFresh -Issue $_ -HoursThreshold 24 })
-$filteredNote = if ($ciScanFilteredOut -gt 0) { " ($ciScanFilteredOut other-branch issue(s) filtered out)" } else { "" }
-if ($freshCiScan.Count -gt 0) {
-    $detail = "$($freshCiScan.Count) ci-scan issue(s) targeting ``$SurveyRef`` filed in the last 24h ($($ciScanIssues.Count) total open on this branch$filteredNote). Likely affects this release."
+
+if ($ciScanQueryFailed) {
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" `
+        -Details "Could not query ci-scan issues (label ``$ciScanLabel`` — gh exited non-zero after retries). Treating as missing signal so the verdict reflects unknown state." `
+        -NextAction "Verify ``gh auth status`` and rerun. If gh is unavailable, triage ci-scan manually."
+} elseif (-not $ciScanLabel) {
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "READY" `
+        -Details "No per-branch CI Failure Scanner is configured for ``$SurveyRef``. Add a case to Get-CiScanLabelForBranch if a scanner is added later." `
+        -NextAction "No action — this branch is not continuously scanned."
+} elseif ($freshCiScan.Count -gt 0) {
+    $detail = "$($freshCiScan.Count) ci-scan issue(s) on ``$SurveyRef`` (label ``$ciScanLabel``) filed in the last 24h ($($ciScanIssues.Count) total open). Likely affects this release."
     $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details $detail -NextAction "Review the freshest ci-scan issues; decide whether any affect ship-readiness."
 } elseif ($ciScanIssues.Count -gt 0) {
-    $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details "$($ciScanIssues.Count) open ci-scan issue(s) targeting ``$SurveyRef`` (none filed in the last 24h$filteredNote)." -NextAction "Review recent ci-scan issues for ship-impact patterns."
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details "$($ciScanIssues.Count) open ci-scan issue(s) on ``$SurveyRef`` (label ``$ciScanLabel``, none filed in the last 24h)." -NextAction "Review recent ci-scan issues for ship-impact patterns."
 } else {
-    $readyDetail = if ($ciScanFilteredOut -gt 0) {
-        "No ci-scan issues targeting ``$SurveyRef`` ($ciScanFilteredOut open issue(s) target other branches and were filtered out)."
-    } else {
-        "No open ci-scan issues — scanner has not flagged recurring CI failures."
-    }
-    $checks += New-Check -Area "CI Failure Scanner signals" -Status "READY" -Details $readyDetail -NextAction "Continue monitoring."
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "READY" -Details "No open ci-scan issues on ``$SurveyRef`` (label ``$ciScanLabel``) — scanner has not flagged recurring CI failures." -NextAction "Continue monitoring."
 }
 
 # --- CI truth (placeholder; #35052 wiring not yet done) ---

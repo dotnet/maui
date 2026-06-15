@@ -166,12 +166,15 @@ jobs:
             # SR readiness:
             #   in-flight  → -SrBranch <branchName>           (no Candidate flag)
             #   candidate  → -SrBranch <priorSrBranch> -Candidate
-            REG_LABEL_ARG=()
-            if [ -n "$REG_LABELS" ]; then
-              REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
-            else
-              REG_LABEL_ARG=(-InferRegressionLabels)
+            # Find-ReleaseReadinessTrackers's New-RegressionLabelList always
+            # returns at least one label for every SR, so REG_LABELS is never
+            # empty here — wire the labels through directly without the
+            # legacy -InferRegressionLabels fallback.
+            if [ -z "$REG_LABELS" ]; then
+              echo "::error::SR tracker $TRACKER_KEY missing regressionLabels (Find-Trackers should always emit ≥1)"
+              exit 1
             fi
+            REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
 
             CANDIDATE_ARG=()
             if [ "$MODE" = "candidate" ]; then
@@ -365,12 +368,14 @@ jobs:
 
             echo "::group::Validate ${CANONICAL} (${BRANCH_TYPE})"
             if [ "$BRANCH_TYPE" = "sr" ]; then
-              REG_LABEL_ARG=()
-              if [ -n "$REG_LABELS" ]; then
-                REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
-              else
-                REG_LABEL_ARG=(-InferRegressionLabels)
+              # New-RegressionLabelList always emits ≥1 label, so the
+              # -InferRegressionLabels fallback is unreachable. Wire labels
+              # through directly and fail loudly if upstream regressed.
+              if [ -z "$REG_LABELS" ]; then
+                echo "::error::SR tracker $CANONICAL missing regressionLabels"
+                exit 1
               fi
+              REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
               CANDIDATE_ARG=()
               if [ "$MODE" = "candidate" ]; then
                 SR_ARG="$PRIOR_SR"

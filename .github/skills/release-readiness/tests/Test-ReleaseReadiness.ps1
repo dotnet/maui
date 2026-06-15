@@ -1886,54 +1886,30 @@ $mdNoCiScan = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/d
 Assert-Eq -Label "No ciScanIssues key: section NOT rendered" -Expected $false `
     -Actual ($mdNoCiScan -match 'Recent CI Failure Scanner signals')
 
-# Get-CiScanIssueBranch: extracts branch from body marker
-Write-Host "`n[Unit] Get-CiScanIssueBranch parses Branch marker" -ForegroundColor Cyan
-$issueWithBranch = [PSCustomObject]@{
-    body = "## Summary`nstuff`n## Build Information`n- **Pipeline**: maui-pr`n- **Branch**: net11.0`n- **First seen**: 2026-06-11"
-}
-Assert-Eq -Label "extracts 'net11.0' from body marker" -Expected 'net11.0' `
-    -Actual (Get-CiScanIssueBranch -Issue $issueWithBranch)
+# Get-CiScanLabelForBranch: deterministic branch → label mapping
+# Replaces both Get-CiScanIssueBranch (body-marker parser, deleted) and
+# Get-CiScanLabels (label-list filter, deleted). Same convention: the
+# label name fully encodes the source branch (`ci-scan` = main,
+# `ci-scan-net11` = net11.0, `ci-scan-net12` = net12.0, etc.).
+# Preview branches are mapped to their parent net<N>.0 so an in-flight
+# preview readiness still surfaces signals from the branch the preview
+# was cut from.
+Write-Host "`n[Unit] Get-CiScanLabelForBranch returns canonical label per branch" -ForegroundColor Cyan
 
-$issueMainBranch = [PSCustomObject]@{
-    body = "Random text`n- **Branch**: main`nmore stuff"
-}
-Assert-Eq -Label "extracts 'main' from body marker" -Expected 'main' `
-    -Actual (Get-CiScanIssueBranch -Issue $issueMainBranch)
-
-$issueSrBranch = [PSCustomObject]@{
-    body = "- **Branch**: release/10.0.1xx-sr8`n"
-}
-Assert-Eq -Label "extracts SR branch with slashes/dots" -Expected 'release/10.0.1xx-sr8' `
-    -Actual (Get-CiScanIssueBranch -Issue $issueSrBranch)
-
-$issueNoMarker = [PSCustomObject]@{ body = "## Just summary, no branch marker" }
-Assert-Eq -Label "returns null when no Branch marker" -Expected $null `
-    -Actual (Get-CiScanIssueBranch -Issue $issueNoMarker)
-
-$issueEmptyBody = [PSCustomObject]@{ body = '' }
-Assert-Eq -Label "returns null for empty body" -Expected $null `
-    -Actual (Get-CiScanIssueBranch -Issue $issueEmptyBody)
-
-
-# ───── Get-CiScanLabels filters repo labels to ^ci-scan(-|$) ─────
-# `gh label list --search ci-scan` does a substring match and can return
-# unrelated labels (e.g. `area-infrastructure` shows up in MAUI because the
-# scanner workflows reference it). The discovery helper must regex-filter
-# the returned set so we don't query non-scanner labels.
-Write-Host "`n[Unit] Get-CiScanLabels regex filters returned label set" -ForegroundColor Cyan
-
-$labelRegex = '^ci-scan(-|$)'
-
-Assert-Eq -Label "'ci-scan' matches" -Expected $true `
-    -Actual ('ci-scan' -match $labelRegex)
-Assert-Eq -Label "'ci-scan-net11' matches" -Expected $true `
-    -Actual ('ci-scan-net11' -match $labelRegex)
-Assert-Eq -Label "'ci-scan-net12' matches (future-proof)" -Expected $true `
-    -Actual ('ci-scan-net12' -match $labelRegex)
-Assert-Eq -Label "'area-infrastructure' does NOT match" -Expected $false `
-    -Actual ('area-infrastructure' -match $labelRegex)
-Assert-Eq -Label "'ci-scanner-bot' does NOT match (no hyphen-or-end after ci-scan)" -Expected $false `
-    -Actual ('ci-scanner-bot' -match $labelRegex)
+Assert-Eq -Label "'main' → 'ci-scan'" -Expected 'ci-scan' `
+    -Actual (Get-CiScanLabelForBranch -Branch 'main')
+Assert-Eq -Label "'net11.0' → 'ci-scan-net11'" -Expected 'ci-scan-net11' `
+    -Actual (Get-CiScanLabelForBranch -Branch 'net11.0')
+Assert-Eq -Label "'net12.0' → 'ci-scan-net12' (future-proof)" -Expected 'ci-scan-net12' `
+    -Actual (Get-CiScanLabelForBranch -Branch 'net12.0')
+Assert-Eq -Label "preview branch → parent net<N>.0 label" -Expected 'ci-scan-net11' `
+    -Actual (Get-CiScanLabelForBranch -Branch 'release/11.0.1xx-preview6')
+Assert-Eq -Label "SR branch → null (no scanner configured)" -Expected $null `
+    -Actual (Get-CiScanLabelForBranch -Branch 'release/10.0.1xx-sr8')
+Assert-Eq -Label "empty branch → null" -Expected $null `
+    -Actual (Get-CiScanLabelForBranch -Branch '')
+Assert-Eq -Label "garbage branch → null" -Expected $null `
+    -Actual (Get-CiScanLabelForBranch -Branch 'feature/foo')
 
 
 # ───── Get-CandidatePrChecks computes nextSr label from priorSrBranch ─────
@@ -2307,13 +2283,16 @@ Assert-Eq -Label "M2: current missing → details name the exact missing title" 
 Assert-Eq -Label "M2: current missing → action has gh api create command" -Expected $true `
     -Actual ($m2Curr.NextAction -match 'gh api repos/dotnet/maui/milestones')
 
-# ── Scenario M3: SR9 milestone missing → BLOCKED next ──
+# ── Scenario M3: SR9 milestone missing → CLEANUP next ──
+# Per Finding #5 follow-up: missing roll-forward milestone is housekeeping,
+# not a ship blocker. The current cycle (SR8) can still ship while the
+# next milestone (SR9) is created later.
 $m3Data = @(
     (New-MockMilestone -Title '.NET 10 SR8' -Number 117 -OpenIssues 50 -DueOn $daysAhead30)
 )
 $m3 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m3Data
 $m3Next = Get-MilestoneCheckByPrefix -Checks $m3 -Prefix 'Milestone for next cycle'
-Assert-Eq -Label "M3: next missing → BLOCKED check emitted" -Expected 'BLOCKED' -Actual $m3Next.Status
+Assert-Eq -Label "M3: next missing → CLEANUP check emitted (not ship-blocker)" -Expected 'CLEANUP' -Actual $m3Next.Status
 Assert-Eq -Label "M3: next missing → action proposes creating SR9" -Expected $true `
     -Actual ($m3Next.NextAction -match '\.NET 10 SR9')
 
@@ -2399,13 +2378,15 @@ $m11Data = @(
 $m11 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview5' -MilestonesResponse $m11Data
 Assert-Eq -Label "M11: preview branch all-present → 0 checks" -Expected 0 -Actual @($m11).Count
 
-# ── Scenario M12: Preview branch missing next-preview → BLOCKED ──
+# ── Scenario M12: Preview branch missing next-preview → CLEANUP ──
+# Per Finding #5 follow-up: missing roll-forward (preview6) milestone is
+# cleanup, not a ship blocker for preview5.
 $m12Data = @(
     (New-MockMilestone -Title '.NET 11.0-preview5' -Number 200 -DueOn $daysAhead30)
 )
 $m12 = Invoke-MilestoneChecksWithMocks -SrBranch 'release/11.0.1xx-preview5' -MilestonesResponse $m12Data
 $m12Next = Get-MilestoneCheckByPrefix -Checks $m12 -Prefix 'Milestone for next cycle'
-Assert-Eq -Label "M12: preview6 missing → BLOCKED next-cycle check" -Expected 'BLOCKED' -Actual $m12Next.Status
+Assert-Eq -Label "M12: preview6 missing → CLEANUP next-cycle check (not ship-blocker)" -Expected 'CLEANUP' -Actual $m12Next.Status
 Assert-Eq -Label "M12: details name preview6 by exact title" -Expected $true `
     -Actual ($m12Next.Area -match '\.NET 11\.0-preview6')
 
