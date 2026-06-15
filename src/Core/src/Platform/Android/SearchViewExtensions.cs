@@ -292,8 +292,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// material3 searchbar extension methods
-		// TODO: material3 - make it public in .net 11
-		internal static void UpdateText(this EditText editText, ISearchBar searchBar)
+		public static void UpdateText(this EditText editText, ISearchBar searchBar)
 		{
 			// Check if text is already the same to prevent unnecessary updates and TextWatcher loops
 			var currentText = editText.Text ?? string.Empty;
@@ -307,7 +306,7 @@ namespace Microsoft.Maui.Platform
 			editText.Text = newText;
 		}
 
-		internal static void UpdateBackground(this TextInputLayout textInputLayout, ISearchBar searchBar)
+		public static void UpdateBackground(this TextInputLayout textInputLayout, ISearchBar searchBar)
 		{
 			var background = searchBar.Background;
 
@@ -351,7 +350,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateCancelButtonColor(this TextInputLayout textInputLayout, ISearchBar searchBar)
+		public static void UpdateCancelButtonColor(this TextInputLayout textInputLayout, ISearchBar searchBar)
 		{
 			// For TextInputLayout, the cancel/clear button is the end icon
 			if (searchBar.CancelButtonColor is not null)
@@ -392,7 +391,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		internal static void UpdateReturnType(this EditText editText, ISearchBar searchBar)
+		public static void UpdateReturnType(this EditText editText, ISearchBar searchBar)
 		{
 			editText.ImeOptions = searchBar.ReturnType.ToPlatform();
 

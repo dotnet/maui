@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls
 
 			if (property.IsReadOnly)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				MauiLogger<BindableObject>.Log(LogLevel.Warning, $"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls
 
 			if (property.IsReadOnly)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				MauiLogger<BindableObject>.Log(LogLevel.Warning, $"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls
 
 			if (targetProperty.IsReadOnly && binding.Mode == BindingMode.OneWay)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the a OneWay Binding \"{targetProperty.PropertyName}\" because it is readonly.");
+				MauiLogger<BindableObject>.Log(LogLevel.Warning, $"Cannot set the a OneWay Binding \"{targetProperty.PropertyName}\" because it is readonly.");
 				return;
 			}
 
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls
 				var currentValue = context.Values.GetValue();
 
 				context.Values.Remove(currentSpecificity);
-				context.Values[SetterSpecificity.FromBinding] = currentValue;
+				context.Values.SetValue(SetterSpecificity.FromBinding, currentValue);
 			}
 
 			BindingBase oldBinding = null;
@@ -276,13 +276,13 @@ namespace Microsoft.Maui.Controls
 
 			if (oldBinding != null && specificity < oldSpecificity)
 			{
-				context.Bindings[specificity] = binding;
+				context.Bindings.SetValue(specificity, binding);
 				return;
 			}
 
 			oldBinding?.Unapply();
 
-			context.Bindings[specificity] = binding ?? throw new ArgumentNullException(nameof(binding));
+			context.Bindings.SetValue(specificity, binding ?? throw new ArgumentNullException(nameof(binding)));
 
 			targetProperty.BindingChanging?.Invoke(this, oldBinding, binding);
 
@@ -457,7 +457,7 @@ namespace Microsoft.Maui.Controls
 
 			if (property.IsReadOnly)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				MauiLogger<BindableObject>.Log(LogLevel.Warning, $"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 			SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource, SetValuePrivateFlags.Default, SetterSpecificity.ManualValueSetter);
@@ -485,7 +485,7 @@ namespace Microsoft.Maui.Controls
 
 			if (property.IsReadOnly)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
+				MauiLogger<BindableObject>.Log(LogLevel.Warning, $"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
 				return;
 			}
 
@@ -526,13 +526,13 @@ namespace Microsoft.Maui.Controls
 
 			if (!converted && !property.TryConvert(ref value))
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot convert {value} to type '{property.ReturnType}'");
+				MauiLogger<BindableObject>.Log(LogLevel.Warning, $"Cannot convert {value} to type '{property.ReturnType}'");
 				return;
 			}
 
 			if (property.ValidateValue != null && !property.ValidateValue(this, value))
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Value is an invalid value for {property.PropertyName}");
+				MauiLogger<BindableObject>.Log(LogLevel.Warning, $"Value is an invalid value for {property.PropertyName}");
 				return;
 			}
 
@@ -591,7 +591,7 @@ namespace Microsoft.Maui.Controls
 			//We keep setter of lower specificity so we can unapply
 			if (specificity < originalSpecificity)
 			{
-				context.Values[specificity] = value;
+				context.Values.SetValue(specificity, value);
 				return;
 			}
 
@@ -609,7 +609,7 @@ namespace Microsoft.Maui.Controls
 				OnPropertyChanging(property.PropertyName);
 			}
 
-			context.Values[specificity] = value;
+			context.Values.SetValue(specificity, value);
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
@@ -707,7 +707,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var defaultValueCreator = property.DefaultValueCreator;
 			var context = new BindablePropertyContext { Property = property };
-			context.Values[SetterSpecificity.DefaultValue] = defaultValueCreator != null ? defaultValueCreator(this) : property.DefaultValue;
+			context.Values.SetValue(SetterSpecificity.DefaultValue, defaultValueCreator != null ? defaultValueCreator(this) : property.DefaultValue);
 
 			if (defaultValueCreator != null)
 				context.Attributes = BindableContextAttributes.IsDefaultValueCreated;
@@ -746,7 +746,7 @@ namespace Microsoft.Maui.Controls
 				return; //used to fail;
 
 			var currentbinding = context.Bindings.GetValue();
-			var binding = context.Bindings[specificity];
+			var binding = context.Bindings.GetValue(specificity);
 			var isCurrent = binding == currentbinding;
 
 			if (isCurrent)
@@ -827,11 +827,11 @@ namespace Microsoft.Maui.Controls
 		{
 			public BindableContextAttributes Attributes;
 
-			public SetterSpecificityList<BindingBase> Bindings = new();
+			public SetterSpecificityList<BindingBase> Bindings;
 
 			public Queue<SetValueArgs> DelayedSetters;
 			public BindableProperty Property;
-			public readonly SetterSpecificityList<object> Values = new(3);
+			public SetterSpecificityList<object> Values;
 		}
 
 

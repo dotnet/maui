@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
@@ -30,6 +31,12 @@ namespace Microsoft.Maui.Controls.Maps
 		/// <summary>Bindable property for <see cref="IsZoomEnabled"/>.</summary>
 		public static readonly BindableProperty IsZoomEnabledProperty = BindableProperty.Create(nameof(IsZoomEnabled), typeof(bool), typeof(Map), true);
 
+		/// <summary>Bindable property for <see cref="IsClusteringEnabled"/>.</summary>
+		public static readonly BindableProperty IsClusteringEnabledProperty = BindableProperty.Create(nameof(IsClusteringEnabled), typeof(bool), typeof(Map), default(bool));
+
+		/// <summary>Bindable property for <see cref="MapStyle"/>.</summary>
+		public static readonly BindableProperty MapStyleProperty = BindableProperty.Create(nameof(MapStyle), typeof(string), typeof(Map), default(string));
+
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(Map), default(IEnumerable),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable)o, (IEnumerable)n));
@@ -42,10 +49,15 @@ namespace Microsoft.Maui.Controls.Maps
 		public static readonly BindableProperty ItemTemplateSelectorProperty = BindableProperty.Create(nameof(ItemTemplateSelector), typeof(DataTemplateSelector), typeof(Map), default(DataTemplateSelector),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemTemplateSelectorPropertyChanged());
 
+		/// <summary>Bindable property for <see cref="Region"/>.</summary>
+		public static readonly BindableProperty RegionProperty = BindableProperty.Create(nameof(Region), typeof(MapSpan), typeof(Map), null,
+			propertyChanged: (b, o, n) => ((Map)b).OnRegionPropertyChanged((MapSpan?)n));
+
 		readonly ObservableCollection<Pin> _pins = new();
 		readonly ObservableCollection<MapElement> _mapElements = new();
 		MapSpan? _visibleRegion;
 		MapSpan? _lastMoveToRegion;
+		Location? _lastUserLocation;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Map"/> class with a region.
@@ -112,6 +124,21 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
+		/// Gets or sets a value that indicates if pin clustering is enabled. Default value is <see langword="false"/>.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// When enabled, pins that are close together will be grouped into clusters.
+		/// As the user zooms in, clusters will expand to show individual pins.
+		/// Use <see cref="Pin.ClusteringIdentifier"/> to control which pins cluster together.
+		/// </remarks>
+		public bool IsClusteringEnabled
+		{
+			get => (bool)GetValue(IsClusteringEnabledProperty);
+			set => SetValue(IsClusteringEnabledProperty, value);
+		}
+
+		/// <summary>
 		/// Gets or sets the style of the map. Default value is <see cref="MapType.Street"/>. 
 		/// This is a bindable property.
 		/// </summary>
@@ -119,6 +146,28 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			get { return (MapType)GetValue(MapTypeProperty); }
 			set { SetValue(MapTypeProperty, value); }
+		}
+
+		/// <summary>
+		/// Gets or sets the custom map style as a JSON string.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// This property is only supported on Android where it accepts a Google Maps style JSON string
+		/// generated from the Google Maps Styling Wizard (https://mapstyle.withgoogle.com/).
+		/// On iOS, MacCatalyst, and Windows this property has no effect as the native map controls
+		/// do not support custom JSON styling.
+		/// Set to <see langword="null"/> to revert to the default map style.
+		/// </remarks>
+#if !NETSTANDARD
+		[System.Runtime.Versioning.UnsupportedOSPlatform("ios")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("maccatalyst")]
+		[System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+#endif
+		public string? MapStyle
+		{
+			get { return (string?)GetValue(MapStyleProperty); }
+			set { SetValue(MapStyleProperty, value); }
 		}
 
 		/// <summary>
@@ -160,6 +209,16 @@ namespace Microsoft.Maui.Controls.Maps
 		}
 
 		/// <summary>
+		/// Gets or sets the region displayed by the map. Setting this property moves the map to the specified region.
+		/// This is a bindable property.
+		/// </summary>
+		public MapSpan? Region
+		{
+			get { return (MapSpan?)GetValue(RegionProperty); }
+			set { SetValue(RegionProperty, value); }
+		}
+
+		/// <summary>
 		/// Gets the elements (pins, polygons, polylines, etc.) currently added to this map.
 		/// </summary>
 		public IList<MapElement> MapElements => _mapElements;
@@ -168,6 +227,40 @@ namespace Microsoft.Maui.Controls.Maps
 		/// Occurs when the user clicks/taps on the map control.
 		/// </summary>
 		public event EventHandler<MapClickedEventArgs>? MapClicked;
+
+		/// <summary>
+		/// Occurs when a pin cluster is clicked/tapped.
+		/// </summary>
+		/// <remarks>
+		/// This event only fires when <see cref="IsClusteringEnabled"/> is set to true.
+		/// The event provides information about the cluster including the pins it contains.
+		/// </remarks>
+		public event EventHandler<ClusterClickedEventArgs>? ClusterClicked;
+
+		/// <summary>
+		/// Occurs when the user long-presses/holds on the map control.
+		/// </summary>
+		public event EventHandler<MapClickedEventArgs>? MapLongClicked;
+
+		/// <summary>
+		/// Occurs when the user's location is updated on the map.
+		/// </summary>
+		/// <remarks>
+		/// This event fires when the platform map handler reports a location update.
+		/// The handler only sends updates when <see cref="IsShowingUser"/> is set to true
+		/// and location permissions have been granted.
+		/// </remarks>
+		public event EventHandler<UserLocationChangedEventArgs>? UserLocationChanged;
+
+		/// <summary>
+		/// Gets the last known user location from the map, or null if not available.
+		/// </summary>
+		/// <remarks>
+		/// This property requires <see cref="IsShowingUser"/> to be set to true
+		/// and location permissions to be granted. The location is updated as the
+		/// user moves and the map receives location updates.
+		/// </remarks>
+		public Location? LastUserLocation => _lastUserLocation;
 
 		/// <summary>
 		/// Gets the currently visible region of the map.
@@ -191,7 +284,15 @@ namespace Microsoft.Maui.Controls.Maps
 		/// </summary>
 		/// <param name="mapSpan">A <see cref="MapSpan"/> object containing details on what region should be shown.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="mapSpan"/> is <see langword="null"/>.</exception>
-		public void MoveToRegion(MapSpan mapSpan)
+		public void MoveToRegion(MapSpan mapSpan) => MoveToRegion(mapSpan, true);
+
+		/// <summary>
+		/// Adjusts the viewport of the map control to view the specified region, with control over animation.
+		/// </summary>
+		/// <param name="mapSpan">A <see cref="MapSpan"/> object containing details on what region should be shown.</param>
+		/// <param name="animated">Whether the transition should be animated.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="mapSpan"/> is <see langword="null"/>.</exception>
+		public void MoveToRegion(MapSpan mapSpan, bool animated)
 		{
 			if (mapSpan is null)
 			{
@@ -199,7 +300,7 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 
 			_lastMoveToRegion = mapSpan;
-			Handler?.Invoke(nameof(IMap.MoveToRegion), _lastMoveToRegion);
+			Handler?.Invoke(nameof(IMap.MoveToRegion), new MoveToRegionRequest(_lastMoveToRegion, animated));
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
@@ -224,11 +325,35 @@ namespace Microsoft.Maui.Controls.Maps
 			OnPropertyChanged(nameof(VisibleRegion));
 		}
 
+		void OnRegionPropertyChanged(MapSpan? newRegion)
+		{
+			if (newRegion is not null)
+			{
+				MoveToRegion(newRegion);
+			}
+		}
+
 		void PinsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.NewItems is not null && e.NewItems.Cast<Pin>().Any(pin => pin.Label is null))
 			{
 				throw new ArgumentException("Pin must have a Label to be added to a map");
+			}
+
+			if (e.NewItems is not null)
+			{
+				foreach (Pin pin in e.NewItems)
+				{
+					pin.Parent = this;
+				}
+			}
+
+			if (e.OldItems is not null)
+			{
+				foreach (Pin pin in e.OldItems)
+				{
+					pin.Parent = null;
+				}
 			}
 
 			Handler?.UpdateValue(nameof(IMap.Pins));
