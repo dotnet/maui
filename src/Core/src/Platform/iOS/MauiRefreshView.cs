@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 			{
 				// ContentOffset.Y < 0 means the scroll view is mid-pull (being dragged down for refresh).
 				// Adjusting the offset here would fight the  bail out early.gesture 
-				if (scrollView.ContentOffset.Y < 0)
+				if (refreshing && scrollView.ContentOffset.Y < 0)
 					return true;
 
 				if (refreshing)

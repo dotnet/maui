@@ -40,6 +40,17 @@ public class Issue24533 : ContentPage
 		}
 	}
 
+	string _verticalOffsetText = "VerticalOffset: 0.00";
+	public string VerticalOffsetText
+	{
+		get => _verticalOffsetText;
+		set
+		{
+			_verticalOffsetText = value;
+			OnPropertyChanged(nameof(VerticalOffsetText));
+		}
+	}
+
 		int count;
 
 	public Issue24533()
@@ -60,11 +71,10 @@ public class Issue24533 : ContentPage
 				stack.Children.Add(label);
 				return stack;
 			}),
-
-			
 		};
+		collectionView.Scrolled += CollectionView_Scrolled;
 
-		var btn = new Button { Text = "Load More", AutomationId="Footer" };
+		var btn = new Button { Text = "Load More", AutomationId="Footer", HeightRequest = 60 };
 		btn.Clicked += Button_Clicked;
 		collectionView.Footer =	 btn;
 			
@@ -81,7 +91,20 @@ public class Issue24533 : ContentPage
 		refreshView.SetBinding(RefreshView.CommandProperty, nameof(RefreshCommand));
 		refreshView.Content = collectionView;
 
-		Content = refreshView;
+		var verticalOffsetLabel = new Label
+		{
+			AutomationId = "VerticalOffsetLabel"
+		};
+		verticalOffsetLabel.SetBinding(Label.TextProperty, nameof(VerticalOffsetText));
+
+		Content = new StackLayout
+		{
+			Children =
+			{
+				verticalOffsetLabel,
+				refreshView
+			}
+		};
 
 		// Set BindingContext to itself (so bindings work)
 		BindingContext = this;
@@ -105,5 +128,10 @@ public class Issue24533 : ContentPage
 		count += 20;
 
 		IsLoading = false;
+	}
+
+	void CollectionView_Scrolled(object sender, ItemsViewScrolledEventArgs e)
+	{
+		VerticalOffsetText = $"VerticalOffset: {e.VerticalOffset:F2}";
 	}
 }
