@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -24,6 +25,12 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// For internal use only.
 		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		HybridWebViewInvoker Invoker { get; set; }
+
+		/// <summary>
+		/// For internal use only.
+		/// </summary>
 		object? InvokeJavaScriptTarget { get; set; }
 
 		/// <summary>
@@ -36,7 +43,7 @@ namespace Microsoft.Maui
 #if !NETSTANDARD
 		[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
 #endif
-		void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class;
+		void SetInvokeJavaScriptTarget<T>(T target) where T : class;
 
 		/// <summary>
 		///  Sets the object that will be the target of JavaScript calls from the web view. The public methods on this object

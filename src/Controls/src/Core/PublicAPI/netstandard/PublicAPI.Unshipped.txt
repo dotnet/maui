@@ -1,6 +1,4 @@
 ﻿#nullable enable
-Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
-Microsoft.Maui.Controls.HybridWebView.SetInvoker(Microsoft.Maui.HybridWebViewInvoker! invoker) -> void
 ~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.get -> string
 ~Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabel.set -> void
 ~Microsoft.Maui.Controls.BaseShellItem.BadgeColor.get -> Microsoft.Maui.Graphics.Color
@@ -16,6 +14,9 @@ Microsoft.Maui.Controls.BoxView.~BoxView() -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommand.set -> void
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.get -> object
 ~Microsoft.Maui.Controls.Editor.ReturnCommandParameter.set -> void
+Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
+Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.Keys.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs.ResolveValue(string key) -> object

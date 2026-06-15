@@ -37,49 +37,39 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HybridRootProperty, value); }
 		}
 
-		/// <summary>
-		/// Sets the invoker used to dispatch JavaScript calls to .NET methods.
-		/// </summary>
-		/// <param name="invoker">The invoker used to dispatch JavaScript calls.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetInvoker(HybridWebViewInvoker invoker)
+		public HybridWebViewInvoker Invoker
 		{
-			HybridWebViewInvoker.SetInvoker(this, invoker);
+			get => field ?? throw new InvalidOperationException($"No invoker is configured. Call {nameof(SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
+			set;
 		}
 
 		/// <inheritdoc/>
 		object? IHybridWebView.InvokeJavaScriptTarget
 		{
-			get => GetInvoker().InvokeJavaScriptTarget;
-			set => GetInvoker().InvokeJavaScriptTarget = value;
+			get => Invoker.InvokeJavaScriptTarget;
+			set => Invoker.InvokeJavaScriptTarget = value;
 		}
 
 		/// <inheritdoc/>
 		Type? IHybridWebView.InvokeJavaScriptType
 		{
-			get => GetInvoker().InvokeJavaScriptType;
-			set => GetInvoker().InvokeJavaScriptType = value;
-		}
-
-		HybridWebViewInvoker GetInvoker()
-		{
-			return HybridWebViewInvoker.GetInvoker(this)
-				?? throw new InvalidOperationException(
-					$"No invoker is configured. Call {nameof(SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
+			get => Invoker.InvokeJavaScriptType;
+			set => Invoker.InvokeJavaScriptType = value;
 		}
 
 		[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
 #if !NETSTANDARD
 		[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
 #endif
-		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
+		public void SetInvokeJavaScriptTarget<T>(T target) where T : class
 		{
 			if (target is null)
 			{
 				throw new ArgumentNullException(nameof(target));
 			}
 
-			SetInvoker(new ReflectionHybridWebViewInvoker(target, typeof(T)));
+			Invoker = new ReflectionHybridWebViewInvoker(target, typeof(T));
 		}
 
 		/// <inheritdoc/>

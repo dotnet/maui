@@ -16,12 +16,11 @@ namespace Microsoft.Maui
 #endif
 	internal sealed class ReflectionHybridWebViewInvoker : HybridWebViewInvoker
 	{
-		public ReflectionHybridWebViewInvoker(object target, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType)
+		public ReflectionHybridWebViewInvoker(object target, Type targetType)
 			: base(target, targetType)
 		{
 		}
 
-		[UnconditionalSuppressMessage("Trimming", "IL2075:DynamicallyAccessedMembers", Justification = "The legacy overload preserves the target type and its public members with DynamicallyAccessedMembers.")]
 		public override async Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues)
 		{
 			var target = InvokeJavaScriptTarget

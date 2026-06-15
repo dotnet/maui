@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui
@@ -13,8 +12,6 @@ namespace Microsoft.Maui
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class HybridWebViewInvoker
 	{
-		static readonly ConditionalWeakTable<IHybridWebView, InvokerHolder> s_invokers = new();
-
 		/// <summary>
 		/// Creates a new invoker for the specified JavaScript invocation target.
 		/// </summary>
@@ -30,33 +27,6 @@ namespace Microsoft.Maui
 
 		internal Type? InvokeJavaScriptType { get; set; }
 
-		internal static void SetInvoker(IHybridWebView hybridWebView, HybridWebViewInvoker invoker)
-		{
-			if (hybridWebView is null)
-			{
-				throw new ArgumentNullException(nameof(hybridWebView));
-			}
-
-			if (invoker is null)
-			{
-				throw new ArgumentNullException(nameof(invoker));
-			}
-
-			s_invokers.GetOrCreateValue(hybridWebView).Invoker = invoker;
-		}
-
-		internal static HybridWebViewInvoker? GetInvoker(IHybridWebView hybridWebView)
-		{
-			if (hybridWebView is null)
-			{
-				throw new ArgumentNullException(nameof(hybridWebView));
-			}
-
-			return s_invokers.TryGetValue(hybridWebView, out var holder)
-				? holder.Invoker
-				: null;
-		}
-
 		/// <summary>
 		/// Invokes the named .NET method with JSON-serialized parameters and returns a JSON-serialized result.
 		/// </summary>
@@ -64,10 +34,5 @@ namespace Microsoft.Maui
 		/// <param name="paramJsonValues">JSON-serialized parameter values, or null for parameterless methods.</param>
 		/// <returns>JSON-serialized result, or null for void methods or null returns.</returns>
 		public abstract Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues);
-
-		sealed class InvokerHolder
-		{
-			public HybridWebViewInvoker? Invoker { get; set; }
-		}
 	}
 }
