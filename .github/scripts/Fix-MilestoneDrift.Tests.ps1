@@ -54,11 +54,18 @@
       pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -Tag 10.0.50 -RepoPath . -Output /dev/null -Verbose
       # Expected: finds 10.0.41 as previous tag, scans ~78 PRs, all .NET 10
 
-      # 8. URL-form linked-issue validation — covers the `Fixes https://github.com/dotnet/maui/issues/N`
-      #    branch of Test-MilestoneValidForIssue. Pick a PR whose body uses the URL form for "Fixes".
+      # 8. URL-form linked-issue discovery — covers the `Get-LinkedIssues` parser branch
+      #    that extracts `Fixes https://github.com/dotnet/maui/issues/N` (the `#N` shorthand
+      #    is the same-repo path; the URL form is the cross-origin form that an external
+      #    contributor or copy-pasted-from-browser link will use).
       pwsh -File .github/scripts/Fix-MilestoneDrift.ps1 -PrNumber 35662 -RepoPath . -Verbose
-      # Expected: linked issue #35615 resolved via the URL form (body says "Fixes https://github.com/dotnet/maui/issues/35615").
-      # If the URL branch ever regresses, this dry-run will skip the issue under "Linked issues: (none)".
+      # Expected: report says `Issues checked: 1` (issue #35615 was found via the URL form).
+      # If the URL branch ever regresses, `Issues checked` will drop to 0 instead.
+      # Note: this dry-run does NOT exercise Test-MilestoneValidForIssue because PR 35662
+      # and issue #35615 share a milestone (.NET 10 SR9), so Test-AndRecordCorrection
+      # short-circuits before calling the validator. The Pester test at the
+      # `'matches a fix verb that uses the full URL form (issues/N)'` It-block covers
+      # the validator's URL-form OR query directly.
 
     Key things to verify after changes:
       - inflight/* and darc/* PRs read from origin/main (they feed into main)
@@ -342,7 +349,7 @@ Describe 'Get-LinkedIssues' {
         $result | Should -HaveCount 3
     }
 
-    It 'DOES NOT cross-pollute from other repos — `Fixes dotnet/runtime#42` must NOT be extracted as MAUI #42 (PR #35858 follow-up finding)' {
+    It 'DOES NOT cross-pollute from other repos — `Fixes dotnet/runtime#42` must NOT be extracted as MAUI #42' {
         # Round-2 review caught this: an over-broad `[A-Za-z0-9_\-./]+?` prefix would
         # silently treat any cross-repo reference as a MAUI issue. The validator would
         # then clobber dotnet/maui#42's milestone based on a fix in dotnet/runtime#42.
@@ -936,7 +943,7 @@ Describe 'Test-AndRecordCorrection — earliest-release-wins guard' {
         }
     }
 
-    It 'finding E: deduplicates the SAME issue across multiple linking PRs in the Kept bucket' {
+    It 'deduplicates the SAME issue across multiple linking PRs in the Kept bucket' {
         # The same issue can be discovered via multiple linking PRs during a tag-range walk
         # (e.g. a backport PR and the original PR both reference the issue). Pre-fix, each
         # touch appended a new row, polluting the report.
@@ -953,7 +960,7 @@ Describe 'Test-AndRecordCorrection — earliest-release-wins guard' {
         $report.Kept[0].Number | Should -Be 34490
     }
 
-    It 'finding E: does NOT collapse Kept entries for different issues that share a milestone' {
+    It 'does NOT collapse Kept entries for different issues that share a milestone' {
         $script:_validForIssue['34490|.NET 10 SR6'] = $true
         $script:_validForIssue['34491|.NET 10 SR6'] = $true
         $report = & $script:_newReport
@@ -965,7 +972,7 @@ Describe 'Test-AndRecordCorrection — earliest-release-wins guard' {
         $report.Kept.Count | Should -Be 2
     }
 
-    It 'finding C: when validator returns $null (uncertain) — does NOT queue a correction (defensive)' {
+    It 'when validator returns $null (uncertain) — does NOT queue a correction (defensive)' {
         # Earlier milestone + validator inconclusive ==> we MUST keep the current milestone.
         # Pre-fix, $null was coerced to $false and a destructive correction got queued.
         $script:_validForIssue['34490|.NET 10 SR6'] = $null
@@ -980,7 +987,7 @@ Describe 'Test-AndRecordCorrection — earliest-release-wins guard' {
         if ($report.ContainsKey('Kept')) { $report.Kept.Count | Should -Be 0 }
     }
 
-    It 'finding C: when validator returns $false (no linking PR shipped there) — DOES queue a correction' {
+    It 'when validator returns $false (no linking PR shipped there) — DOES queue a correction' {
         # This is the legitimate clobber path: earlier milestone was wrong, no fix actually
         # shipped there, the target milestone is correct. Pre-fix and post-fix both work.
         $script:_validForIssue['34490|.NET 10 SR6'] = $false
@@ -993,7 +1000,7 @@ Describe 'Test-AndRecordCorrection — earliest-release-wins guard' {
         $report.Corrections[0].Number | Should -Be 34490
     }
 
-    It 'findings A + E together: PR-side KEEP path also dedups (cherry-pick case)' {
+    It 'PR-side KEEP path also dedups identical (PR, milestone) pairs (cherry-pick case)' {
         # A cherry-picked PR can match in multiple linking searches. Same dedup applies.
         $script:_validForPr['34527|.NET 10 SR6'] = $true
         $report = & $script:_newReport
