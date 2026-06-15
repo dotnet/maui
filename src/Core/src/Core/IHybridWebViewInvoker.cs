@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui
@@ -12,6 +13,8 @@ namespace Microsoft.Maui
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class IHybridWebViewInvoker
 	{
+		static readonly ConditionalWeakTable<IHybridWebView, InvokerHolder> s_invokers = new();
+
 		/// <summary>
 		/// Creates a new invoker for the specified JavaScript invocation target.
 		/// </summary>
@@ -28,23 +31,31 @@ namespace Microsoft.Maui
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		internal Type? InvokeJavaScriptType { get; set; }
 
-		/// <summary>
-		/// Attaches the invoker to a HybridWebView instance.
-		/// </summary>
-		/// <param name="hybridWebView">The hybrid web view that owns the invoker.</param>
-		public void AttachTo(IHybridWebView hybridWebView)
+		internal static void SetInvoker(IHybridWebView hybridWebView, IHybridWebViewInvoker invoker)
 		{
 			if (hybridWebView is null)
 			{
 				throw new ArgumentNullException(nameof(hybridWebView));
 			}
 
-			if (hybridWebView is not IHybridWebViewInvokerHost host)
+			if (invoker is null)
 			{
-				throw new InvalidOperationException("HybridWebView invokers can only be attached to Microsoft.Maui.Controls.HybridWebView instances.");
+				throw new ArgumentNullException(nameof(invoker));
 			}
 
-			host.SetInvoker(this);
+			s_invokers.GetOrCreateValue(hybridWebView).Invoker = invoker;
+		}
+
+		internal static IHybridWebViewInvoker? GetInvoker(IHybridWebView hybridWebView)
+		{
+			if (hybridWebView is null)
+			{
+				throw new ArgumentNullException(nameof(hybridWebView));
+			}
+
+			return s_invokers.TryGetValue(hybridWebView, out var holder)
+				? holder.Invoker
+				: null;
 		}
 
 		/// <summary>
@@ -54,12 +65,10 @@ namespace Microsoft.Maui
 		/// <param name="paramJsonValues">JSON-serialized parameter values, or null for parameterless methods.</param>
 		/// <returns>JSON-serialized result, or null for void methods or null returns.</returns>
 		public abstract Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues);
-	}
 
-	internal interface IHybridWebViewInvokerHost
-	{
-		IHybridWebViewInvoker? Invoker { get; }
-
-		void SetInvoker(IHybridWebViewInvoker invoker);
+		sealed class InvokerHolder
+		{
+			public IHybridWebViewInvoker? Invoker { get; set; }
+		}
 	}
 }

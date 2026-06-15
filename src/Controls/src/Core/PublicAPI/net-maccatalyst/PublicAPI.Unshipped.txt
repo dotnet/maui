@@ -1,5 +1,6 @@
 ﻿#nullable enable
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.Controls.HybridWebView.SetInvoker(Microsoft.Maui.IHybridWebViewInvoker! invoker) -> void
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 ~Microsoft.Maui.Controls.AppThemeBinding.Dark.get -> object

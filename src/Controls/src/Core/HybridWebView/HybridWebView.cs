@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
-	public class HybridWebView : View, IHybridWebView, IHybridWebViewInvokerHost
+	public class HybridWebView : View, IHybridWebView
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
@@ -38,13 +39,14 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HybridRootProperty, value); }
 		}
 
-		IHybridWebViewInvoker? _invoker;
-
-		IHybridWebViewInvoker? IHybridWebViewInvokerHost.Invoker => _invoker;
-
-		void IHybridWebViewInvokerHost.SetInvoker(IHybridWebViewInvoker invoker)
+		/// <summary>
+		/// Sets the invoker used to dispatch JavaScript calls to .NET methods.
+		/// </summary>
+		/// <param name="invoker">The invoker used to dispatch JavaScript calls.</param>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SetInvoker(IHybridWebViewInvoker invoker)
 		{
-			_invoker = invoker ?? throw new ArgumentNullException(nameof(invoker));
+			IHybridWebViewInvoker.SetInvoker(this, invoker);
 		}
 
 		/// <inheritdoc/>
@@ -64,7 +66,7 @@ namespace Microsoft.Maui.Controls
 
 		IHybridWebViewInvoker GetInvoker()
 		{
-			return _invoker
+			return IHybridWebViewInvoker.GetInvoker(this)
 				?? throw new InvalidOperationException(
 					$"No invoker is configured. Call {nameof(SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
 		}
@@ -80,7 +82,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(target));
 			}
 
-			new ReflectionHybridWebViewInvoker(target, typeof(T)).AttachTo(this);
+			SetInvoker(new ReflectionHybridWebViewInvoker(target, typeof(T)));
 		}
 
 		/// <inheritdoc/>

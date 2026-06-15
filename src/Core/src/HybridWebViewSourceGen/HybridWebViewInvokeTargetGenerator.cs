@@ -187,7 +187,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			sb.AppendLine($"            if (target is not {info.TargetTypeName} typedTarget)");
 			sb.AppendLine($"                throw new InvalidOperationException($\"Type mismatch: expected {info.TargetTypeName.Split('.').Last()} but got {{target.GetType().FullName}}\");");
 			sb.AppendLine();
-			sb.AppendLine($"            new Invoker_{index}(typedTarget, jsonSerializerContext).AttachTo(hybridWebView);");
+			sb.AppendLine($"            hybridWebView.SetInvoker(new Invoker_{index}(typedTarget, jsonSerializerContext));");
 			sb.AppendLine("        }");
 			sb.AppendLine();
 
