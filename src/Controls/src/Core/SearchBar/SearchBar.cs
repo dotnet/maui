@@ -54,6 +54,13 @@ namespace Microsoft.Maui.Controls
 			nameof(SearchCommandParameter), typeof(object), typeof(SearchBar), null,
 			propertyChanged: CommandElement.OnCommandParameterChanged);
 
+		static SearchBar()
+		{
+			// Register dependency: SearchCommand depends on SearchCommandParameter for CanExecute evaluation
+			// See https://github.com/dotnet/maui/issues/31939
+			SearchCommandProperty.DependsOn(SearchCommandParameterProperty);
+		}
+
 		/// <summary>
 		/// Bindable property for the text displayed in the search bar.
 		/// This is a bindable property.

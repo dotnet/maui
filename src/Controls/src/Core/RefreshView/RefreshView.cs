@@ -100,6 +100,13 @@ namespace Microsoft.Maui.Controls
 				null,
 				propertyChanged: CommandElement.OnCommandParameterChanged);
 
+		static RefreshView()
+		{
+			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
+			// See https://github.com/dotnet/maui/issues/31939
+			CommandProperty.DependsOn(CommandParameterProperty);
+		}
+
 		/// <summary>
 		/// Gets or sets the parameter to pass to the refresh command.
 		/// </summary>
