@@ -532,7 +532,14 @@ function Get-ReleaseRelevantIssuesByLabel {
         Sort-Object number -Unique |
         Where-Object { Test-IssueReleaseRelevant -Issue $_ -Major $Major -Preview $Preview }
 
-    return @($deduped)
+    # PowerShell unwraps single-element arrays on function return, so a
+    # naked `return @($deduped)` with a $null/empty pipeline result yields
+    # $null at the call site (then `.Count` blows up under StrictMode).
+    # The leading comma forces a single-element outer array containing our
+    # real array, which PowerShell unwraps to the inner array — preserving
+    # the array type even when empty.
+    if ($null -eq $deduped) { return ,@() }
+    return ,@($deduped)
 }
 
 function Get-CiScanLabels {
@@ -1294,6 +1301,24 @@ if ($cleanupChecks.Count -gt 0) {
     [void]$md.AppendLine("")
 }
 
+# === Recent CI Failure Scanner signals (hoisted near the top so signals
+#     specific to this release branch are surfaced before the deeper
+#     readiness checklist / PR tables) ===
+[void]$md.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
+[void]$md.AppendLine("")
+$ciScanBlurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$SurveyRef`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
+if ($ciScanFilteredOut -gt 0) {
+    $ciScanBlurb += " _$ciScanFilteredOut other-branch issue(s) were excluded as not relevant to this release._"
+}
+[void]$md.AppendLine($ciScanBlurb)
+[void]$md.AppendLine("")
+if ($ciScanIssues.Count -eq 0) {
+    [void]$md.AppendLine("_No ci-scan issues target ``$SurveyRef``._")
+    [void]$md.AppendLine("")
+} else {
+    Add-CiScanTable -Builder $md -Issues $ciScanIssues
+}
+
 [void]$md.AppendLine("Generated at $generatedAt for ``$Repository``.")
 [void]$md.AppendLine("")
 [void]$md.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$Mode`` · branch=``$Branch`` · survey=``$SurveyRef``")
@@ -1344,21 +1369,6 @@ Add-IssueTable -Builder $md -Issues $priorityIssues
 [void]$md.AppendLine("## Known Build Error watch list")
 [void]$md.AppendLine("")
 Add-IssueTable -Builder $md -Issues $kbeIssues
-
-[void]$md.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
-[void]$md.AppendLine("")
-$ciScanBlurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$SurveyRef`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
-if ($ciScanFilteredOut -gt 0) {
-    $ciScanBlurb += " _$ciScanFilteredOut other-branch issue(s) were excluded as not relevant to this release._"
-}
-[void]$md.AppendLine($ciScanBlurb)
-[void]$md.AppendLine("")
-if ($ciScanIssues.Count -eq 0) {
-    [void]$md.AppendLine("_No ci-scan issues target ``$SurveyRef``._")
-    [void]$md.AppendLine("")
-} else {
-    Add-CiScanTable -Builder $md -Issues $ciScanIssues
-}
 
 [void]$md.AppendLine("## Maintainer next actions")
 [void]$md.AppendLine("")

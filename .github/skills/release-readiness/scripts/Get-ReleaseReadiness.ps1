@@ -2818,6 +2818,34 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
     }
 
+    # === Recent CI Failure Scanner signals (hoisted near the top so signals
+    #     specific to this release branch are surfaced before deeper
+    #     readiness / SR contents / regression analysis) ===
+    if ($Data.ContainsKey('ciScanIssues')) {
+        $ciScanBranch = $ctx.srBranch
+        $ciScanFilteredOut = if ($Data.ContainsKey('ciScanFilteredOut')) { [int]$Data['ciScanFilteredOut'] } else { 0 }
+        $ciScanIssuesData = @($Data['ciScanIssues'])
+        [void]$sb.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
+        [void]$sb.AppendLine()
+        $blurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$ciScanBranch`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
+        if ($ciScanFilteredOut -gt 0) {
+            $blurb += " _$ciScanFilteredOut other-branch issue(s) were excluded as not relevant to this SR._"
+        }
+        [void]$sb.AppendLine($blurb)
+        [void]$sb.AppendLine()
+        if ($ciScanIssuesData.Count -gt 0) {
+            $rows = Format-CiScanIssueRows -Issues $ciScanIssuesData -RepoUrl $RepoUrl
+            if ($rows) {
+                [void]$sb.Append($rows)
+            } else {
+                [void]$sb.AppendLine("_No ci-scan issues target ``$ciScanBranch``._")
+            }
+        } else {
+            [void]$sb.AppendLine("_No ci-scan issues target ``$ciScanBranch``._")
+        }
+        [void]$sb.AppendLine()
+    }
+
     # === OPEN FIX PRs INBOUND (hoisted high — actionable intelligence) ===
     # Regression issues whose fix is in flight as an open PR (either against main
     # awaiting merge, or already targeting SR as a backport). These deserve more
@@ -2946,31 +2974,7 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
     }
 
-    # === Recent CI Failure Scanner signals (ci-scan label) ===
-    if ($Data.ContainsKey('ciScanIssues')) {
-        $ciScanBranch = $ctx.srBranch
-        $ciScanFilteredOut = if ($Data.ContainsKey('ciScanFilteredOut')) { [int]$Data['ciScanFilteredOut'] } else { 0 }
-        $ciScanIssuesData = @($Data['ciScanIssues'])
-        [void]$sb.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
-        [void]$sb.AppendLine()
-        $blurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$ciScanBranch`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
-        if ($ciScanFilteredOut -gt 0) {
-            $blurb += " _$ciScanFilteredOut other-branch issue(s) were excluded as not relevant to this SR._"
-        }
-        [void]$sb.AppendLine($blurb)
-        [void]$sb.AppendLine()
-        if ($ciScanIssuesData.Count -gt 0) {
-            $rows = Format-CiScanIssueRows -Issues $ciScanIssuesData -RepoUrl $RepoUrl
-            if ($rows) {
-                [void]$sb.Append($rows)
-            } else {
-                [void]$sb.AppendLine("_No ci-scan issues target ``$ciScanBranch``._")
-            }
-        } else {
-            [void]$sb.AppendLine("_No ci-scan issues target ``$ciScanBranch``._")
-        }
-        [void]$sb.AppendLine()
-    }
+    # === Recent CI Failure Scanner signals: hoisted to top, see earlier block ===
 
     # === SR contents section ===
     if ($Data.ContainsKey('srContents') -and $Data['srContents']) {
