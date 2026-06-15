@@ -490,12 +490,22 @@ function Get-MainBumpDateForCycle {
 function New-ReadinessCheck {
     <#
     .SYNOPSIS
-        Constructs a readiness-check record used by the Blocking summary at the top
-        of the markdown report. Status: READY | WATCH | BLOCKED | UNKNOWN.
+        Constructs a readiness-check record used by the Blocking / Cleanup summaries
+        at the top of the markdown report.
+    .DESCRIPTION
+        Status semantics:
+          READY    — check passed
+          WATCH    — soft signal worth eyeballing; doesn't block ship
+          BLOCKED  — must be resolved before ship; escalates verdict to Tier 1 (Not Ready)
+          CLEANUP  — known follow-up that doesn't prevent ship (stale milestones,
+                     bug-template entries that need to be added soon, etc.). Surfaces
+                     in a dedicated "🧹 Cleanup follow-ups" section so it doesn't get
+                     lost, but does NOT escalate the overall verdict.
+          UNKNOWN  — check couldn't run (missing tool, no data); surfaces as ⚪
     #>
     param(
         [string]$Area,
-        [ValidateSet('READY', 'WATCH', 'BLOCKED', 'UNKNOWN')][string]$Status,
+        [ValidateSet('READY', 'WATCH', 'BLOCKED', 'CLEANUP', 'UNKNOWN')][string]$Status,
         [string]$Details,
         [string]$NextAction
     )
@@ -729,9 +739,13 @@ function Get-ReleaseShipChecks {
             -NextAction "No template update needed."
     } else {
         $sample = ($templateVersions | Select-Object -First 3) -join ', '
-        $checks += New-ReadinessCheck -Area $bugArea -Status 'BLOCKED' `
+        # CLEANUP, not BLOCKED — missing the dropdown entry doesn't prevent the
+        # build from shipping; it just means the bug-report form won't list this
+        # version for the first few days. Surface prominently so it gets done,
+        # but don't escalate the verdict to Not Ready.
+        $checks += New-ReadinessCheck -Area $bugArea -Status 'CLEANUP' `
             -Details "No entry matching ``$major.$minor.[$expectedPatchPrefix..$($expectedPatchPrefix + 9)]`` found in version-with-bug dropdown on ``$templateRef``. Top entries: $sample." `
-            -NextAction "Add the SR$targetSr version (e.g. ``$major.$minor.$expectedPatchPrefix``) to .github/ISSUE_TEMPLATE/bug-report.yml before shipping."
+            -NextAction "Add the SR$targetSr version (e.g. ``$major.$minor.$expectedPatchPrefix``) to .github/ISSUE_TEMPLATE/bug-report.yml — can land before or shortly after ship."
     }
 
     return $checks
@@ -1059,7 +1073,11 @@ function Get-MilestoneHygieneChecks {
             $dueDate = ([datetime]$_.due_on).ToUniversalTime().ToString('yyyy-MM-dd')
             "[$($_.title)](https://github.com/$($Ctx.repo)/milestone/$($_.number)) (due $dueDate, $($_.open_issues) open)"
         }) -join '; '
-        $checks += New-ReadinessCheck -Area "Stale open milestones ($($staleMs.Count))" -Status 'BLOCKED' `
+        # CLEANUP, not BLOCKED — stale milestones from already-shipped releases are
+        # a housekeeping debt (issues need to be rolled forward / closed-as-fixed),
+        # but they don't prevent THIS release from shipping. Surface prominently so
+        # it gets triaged, but don't escalate the verdict to Not Ready.
+        $checks += New-ReadinessCheck -Area "Stale open milestones ($($staleMs.Count))" -Status 'CLEANUP' `
             -Details "$($staleMs.Count) milestone(s) in the .NET $major cycle are past due (>7 days) and still open: $list. These represent already-shipped releases that were never closed out — accumulating open issues that should have been rolled forward." `
             -NextAction "For each: triage the open issues (close-as-fixed, move to current cycle, or move to Backlog), then close the milestone: ``gh api -X PATCH repos/$($Ctx.repo)/milestones/<number> -f state=closed``"
     }
@@ -2662,6 +2680,40 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine()
     }
 
+    # === CLEANUP FOLLOW-UPS (hoisted under the blocking summary) ===
+    # CLEANUP-status ship checks are real follow-ups (stale milestones, missing
+    # bug-template entries) that should get done but don't prevent shipping.
+    # Surface them prominently so they don't get lost, but keep them separate
+    # from the 🔴 Blocking table — the release captain shouldn't have to wade
+    # past housekeeping to find the actual ship blockers.
+    $cleanupItems = New-Object System.Collections.Generic.List[hashtable]
+    if ($Data.ContainsKey('shipChecks') -and $Data['shipChecks']) {
+        foreach ($sc in $Data['shipChecks']) {
+            if ($sc.Status -eq 'CLEANUP') {
+                [void]$cleanupItems.Add(@{
+                    area = "🧹 $($sc.Area)"
+                    details = $sc.Details
+                    action = $sc.NextAction
+                })
+            }
+        }
+    }
+    if ($cleanupItems.Count -gt 0) {
+        [void]$sb.AppendLine("## 🧹 Cleanup follow-ups — $($cleanupItems.Count) item(s)")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine("_These are housekeeping items that should be addressed but do NOT block this release._")
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine('| Area | Details | Next action |')
+        [void]$sb.AppendLine('|---|---|---|')
+        foreach ($c in $cleanupItems) {
+            $area = ($c.area -replace '\|', '\|').Trim()
+            $details = ($c.details -replace '\|', '\|').Trim()
+            $action = ($c.action -replace '\|', '\|').Trim()
+            [void]$sb.AppendLine("| $area | $details | $action |")
+        }
+        [void]$sb.AppendLine()
+    }
+
     # === OPEN FIX PRs INBOUND (hoisted high — actionable intelligence) ===
     # Regression issues whose fix is in flight as an open PR (either against main
     # awaiting merge, or already targeting SR as a backport). These deserve more
@@ -2751,6 +2803,7 @@ function Format-MarkdownReport {
                 'READY'   { '🟢 READY' }
                 'WATCH'   { '🟡 WATCH' }
                 'BLOCKED' { '🔴 BLOCKED' }
+                'CLEANUP' { '🧹 CLEANUP' }
                 default   { "⚪ $($sc.Status)" }
             }
             $area = ($sc.Area -replace '\|', '\|').Trim()

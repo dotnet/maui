@@ -1466,6 +1466,37 @@ $verdictDataReady = @{
 $verdictReadyResult = Get-OverallVerdict -Data $verdictDataReady
 Assert-Eq -Label "READY-only ship checks: verdict stays at tier 3 (Ready)" -Expected 3 -Actual $verdictReadyResult.tier
 
+# CLEANUP ship checks must surface in the report but MUST NOT escalate the verdict.
+# This locks the contract: CLEANUP = "housekeeping that needs doing, but doesn't
+# prevent shipping". Used for stale-milestone backlog, missing bug-template entry, etc.
+$verdictDataCleanup = @{
+    metadata = @{ mode = 'shipped' }
+    regressions = @()
+    ci = @{ overall = 'green' }
+    shipChecks = @(
+        [PSCustomObject]@{ Area = 'Stale open milestones (2)'; Status = 'CLEANUP'; Details = 'SR6+SR7 still open'; NextAction = 'triage' }
+        [PSCustomObject]@{ Area = 'Bug template lists SR8 version'; Status = 'CLEANUP'; Details = 'missing 10.0.80 entry'; NextAction = 'add entry' }
+    )
+}
+$verdictCleanupResult = Get-OverallVerdict -Data $verdictDataCleanup
+Assert-Eq -Label "CLEANUP-only ship checks: verdict stays at tier 3 (Ready)" -Expected 3 -Actual $verdictCleanupResult.tier
+Assert-Eq -Label "CLEANUP-only ship checks: no Tier 1 reason about BLOCKED ship check" -Expected $false `
+    -Actual ([bool](@($verdictCleanupResult.reasons) -match 'Ship check BLOCKED'))
+
+# Markdown rendering: CLEANUP renders a separate '🧹 Cleanup follow-ups' section
+# and stays out of the '🔴 Blocking' table.
+$mdDataCleanup = @{} + $mdData
+$mdDataCleanup['shipChecks'] = @(
+    [PSCustomObject]@{ Area = 'Stale open milestones (2)'; Status = 'CLEANUP'; Details = 'SR6+SR7 open'; NextAction = 'triage' }
+)
+$mdCleanup = Format-MarkdownReport -Data $mdDataCleanup -RepoUrl 'https://github.com/dotnet/maui'
+Assert-Eq -Label "CLEANUP renders dedicated '🧹 Cleanup follow-ups' section" -Expected $true `
+    -Actual ($mdCleanup -match '## 🧹 Cleanup follow-ups')
+Assert-Eq -Label "CLEANUP does NOT appear in '🔴 Blocking' table" -Expected $false `
+    -Actual ($mdCleanup -match '🔴 Blocking[\s\S]*Stale open milestones')
+Assert-Eq -Label "CLEANUP renders '🧹 CLEANUP' badge in full ship-checks table" -Expected $true `
+    -Actual ($mdCleanup -match '🧹 CLEANUP')
+
 # ───── Open Fix PRs Inbound — hoisted regression-fix watchlist ─────
 Write-Host "`n[Unit] Open Fix PRs Inbound (hoisted regression-fix watchlist)" -ForegroundColor Cyan
 
@@ -2205,7 +2236,7 @@ $m5Data = @(
 )
 $m5 = Invoke-MilestoneChecksWithMocks -MilestonesResponse $m5Data
 $m5Stale = Get-MilestoneCheckByPrefix -Checks $m5 -Prefix 'Stale open milestones'
-Assert-Eq -Label "M5: stale SR6+SR7 → BLOCKED check emitted" -Expected 'BLOCKED' -Actual $m5Stale.Status
+Assert-Eq -Label "M5: stale SR6+SR7 → CLEANUP check emitted (housekeeping, not blocking)" -Expected 'CLEANUP' -Actual $m5Stale.Status
 Assert-Eq -Label "M5: stale count reflected in area" -Expected $true -Actual ($m5Stale.Area -match '\(2\)')
 Assert-Eq -Label "M5: details mention SR6 by title" -Expected $true -Actual ($m5Stale.Details -match 'SR6')
 Assert-Eq -Label "M5: details mention SR7 by title" -Expected $true -Actual ($m5Stale.Details -match 'SR7')
