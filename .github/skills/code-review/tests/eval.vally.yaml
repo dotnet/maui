@@ -263,15 +263,21 @@ stimuli:
         - code-review
 
 scoring:
-  weights:
-    # Weights are keyed by grader TYPE (Vally schema), not by the `name`
-    # field on a grader instance. The structural floor (`output-matches`)
-    # gets a small weight — its only job is to catch silent-LGTM
-    # regressions. The LLM judge (`prompt` type) carries the bulk of
-    # the signal, graded against the full per-stimulus rubric.
-    output-matches: 0.2
-    prompt: 0.8
-  # 0.6 = the judge must score the rubric at >= 60% (~3/5 on the
-  # scale_1_5 scoring) AND the floor must hit. A single rubric criterion
-  # failing isn't enough to fail the scenario; a silent LGTM is.
+  # NOTE: @microsoft/vally@0.6.0 does NOT consume `scoring.weights` — the
+  # scorer ignores it (verified in dist/scoring/scorer.js +
+  # dist/pipeline/grading.js). Only `scoring.threshold` is active. A trial's
+  # score is the UNWEIGHTED mean of its graders' [0,1] scores; the stimulus
+  # score is the mean across runs; the skill passes when that mean >=
+  # threshold. The `prompt` grader contributes ONE holistic score (its rubric
+  # criteria are aggregated by the judge into a single overall_score, then
+  # normalized) — rubric criteria are not individually AND-gated, which is
+  # exactly the de-brittling we want.
+  #
+  # We keep exactly two graders per stimulus (one structural floor +
+  # one LLM judge) so the judge carries ~50% of every score. With
+  # threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4):
+  #   - correct review:  (floor 1.0 + judge ~0.75) / 2 = ~0.875  -> PASS
+  #   - silent LGTM:     (floor 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
+  # which is the falsifiability property (acceptance criterion #4) the
+  # corpus exists to guarantee.
   threshold: 0.6
