@@ -206,8 +206,16 @@ namespace Microsoft.Maui.ApplicationModel
 			_onActivityStateChanged(activity, ActivityState.Created);
 		}
 
-		void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity) =>
+		void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity)
+		{
+			if (activity is ComponentActivity componentActivity)
+			{
+				PickVisualMediaForResult.Instance.CancelPendingRequest(componentActivity);
+				PickMultipleVisualMediaForResult.Instance.CancelPendingRequest(componentActivity);
+			}
+
 			_onActivityStateChanged(activity, ActivityState.Destroyed);
+		}
 
 		void Application.IActivityLifecycleCallbacks.OnActivityPaused(Activity activity)
 		{

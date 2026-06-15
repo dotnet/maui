@@ -72,7 +72,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 			if (_pendingRequests.TryGetValue(activity, out var tcs))
 			{
 				_pendingRequests.Remove(activity);
-				tcs?.SetResult(result);
+				tcs?.TrySetResult(result);
 			}
 		});
 
@@ -103,10 +103,30 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 			return canceledTcs.Task;
 		}
 
+		return Launch(launchingActivity, input);
+	}
+
+	/// <summary>
+	/// Launches the activity result request for a specific activity instance.
+	/// </summary>
+	/// <typeparam name="T">The type of the input parameter.</typeparam>
+	/// <param name="launchingActivity">The activity that owns the request lifecycle and launcher.</param>
+	/// <param name="input">The input parameter to launch the request with.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation, containing the result of the activity.
+	/// </returns>
+	public Task<TResult> Launch<T>(ComponentActivity launchingActivity, T input)
+		where T : JavaObject
+	{
+		if (launchingActivity is null)
+			throw new ArgumentNullException(nameof(launchingActivity));
+
 		if (_pendingRequests.TryGetValue(launchingActivity, out var existingTcs))
 		{
-			_pendingRequests.Remove(launchingActivity);
-			existingTcs?.TrySetCanceled();
+			Trace.WriteLine("ActivityForResultRequest already has a pending request for this activity; rejecting overlapping launch.");
+			var overlappingRequestTcs = new TaskCompletionSource<TResult>();
+			overlappingRequestTcs.SetException(new InvalidOperationException("An activity result request is already in progress for this activity."));
+			return overlappingRequestTcs.Task;
 		}
 
 		var tcs = new TaskCompletionSource<TResult>();
@@ -131,7 +151,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		catch (Exception ex)
 		{
 			_pendingRequests.Remove(launchingActivity);
-			tcs.SetException(ex);
+			tcs.TrySetException(ex);
 		}
 
 		return tcs.Task;
