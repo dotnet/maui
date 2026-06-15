@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
 #if IOS || MACCATALYST
 using UIKit;
@@ -9,11 +10,11 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Page"/> that manages two panes of information: a flyout that presents a menu or navigation, and a detail that presents the selected content.</summary>
 	public partial class FlyoutPage
 	{
-		static FlyoutPage()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(FlyoutPage), typeof(VisualElement));
+			if (remapped.Add(typeof(FlyoutPage)))
+			{
+				base.RemapForControls(remapped);
 
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(FlyoutLayoutBehavior), MapFlyoutLayoutBehavior);
 #if IOS || MACCATALYST
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Controls
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapCollapseStyle);
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapsedPaneWidthProperty), MapCollapsedPaneWidth);
 #endif
+			}
 		}
 
 		internal static void MapFlyoutLayoutBehavior(IFlyoutViewHandler handler, IFlyoutView view)

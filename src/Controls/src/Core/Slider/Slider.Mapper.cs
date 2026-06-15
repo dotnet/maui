@@ -1,20 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Slider
 	{
-		static Slider()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(Slider), typeof(VisualElement));
+			if (remapped.Add(typeof(Slider)))
+			{
+				base.RemapForControls(remapped);
 
-			// Adjust the mappings to preserve Controls.Slider legacy behaviors
+				// Adjust the mappings to preserve Controls.Slider legacy behaviors
 #if IOS
-			SliderHandler.Mapper.ReplaceMapping<Slider, ISliderHandler>(PlatformConfiguration.iOSSpecific.Slider.UpdateOnTapProperty.PropertyName, MapUpdateOnTap);
+				SliderHandler.Mapper.ReplaceMapping<Slider, ISliderHandler>(PlatformConfiguration.iOSSpecific.Slider.UpdateOnTapProperty.PropertyName, MapUpdateOnTap);
 #endif
+			}
 		}
 	}
 }

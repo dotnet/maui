@@ -10,11 +10,17 @@ namespace Microsoft.Maui.Controls
 {
 
 	public partial class Toolbar
+		: IControlsMapperRemappable
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		static Toolbar()
+		void IControlsMapperRemappable.RemapForControls(HashSet<Type> remapped) => RemapForControls(remapped);
+
+		internal virtual void RemapForControls(HashSet<Type> remapped)
 		{
+			if (!remapped.Add(typeof(Toolbar)))
+				return;
+
 #if ANDROID || WINDOWS || TIZEN
 			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(IToolbar.IsVisible), MapIsVisible);
 			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(IToolbar.BackButtonVisible), MapBackButtonVisible);

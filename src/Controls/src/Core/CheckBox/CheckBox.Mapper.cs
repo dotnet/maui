@@ -9,17 +9,18 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class CheckBox
 	{
-		static CheckBox()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
-			// See https://github.com/dotnet/maui/issues/31939
-			CommandProperty.DependsOn(CommandParameterProperty);
+			if (remapped.Add(typeof(CheckBox)))
+			{
+				base.RemapForControls(remapped);
 
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(CheckBox), typeof(VisualElement));
+				// Register dependency: Command depends on CommandParameter for CanExecute evaluation
+				// See https://github.com/dotnet/maui/issues/31939
+				CommandProperty.DependsOn(CommandParameterProperty);
 
-			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
+				CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
+			}
 		}
 
 		internal static void MapColor(ICheckBoxHandler handler, ICheckBox view)

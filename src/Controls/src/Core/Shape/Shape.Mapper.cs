@@ -11,13 +11,14 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Shape
 	{
-		static Shape()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(Shape), typeof(VisualElement));
+			if (remapped.Add(typeof(Shape)))
+			{
+				base.RemapForControls(remapped);
 
-			ShapeViewHandler.Mapper.ReplaceMapping<IShapeView, IShapeViewHandler>(nameof(StrokeDashArray), MapStrokeDashArray);
+				ShapeViewHandler.Mapper.ReplaceMapping<IShapeView, IShapeViewHandler>(nameof(StrokeDashArray), MapStrokeDashArray);
+			}
 		}
 	}
 }
