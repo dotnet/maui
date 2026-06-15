@@ -1085,6 +1085,83 @@ function Get-MilestoneHygieneChecks {
     return $checks
 }
 
+function Get-CandidatePrChecks {
+    <#
+    .SYNOPSIS
+        Builds a ship-readiness check for the open "Candidate" PR — the PR
+        that promotes a specific main commit as the basis for cutting the
+        next SR. Only meaningful in candidate mode: once the SR branch is
+        actually cut we switch to in-flight mode and there's no longer a
+        "next SR cut" to track.
+    .DESCRIPTION
+        Convention: the Candidate PR has "Candidate" in the title (word
+        boundary, case-insensitive — e.g. "June 8th, Candidate"). It's
+        normally opened against ``main`` (not the SR branch), so we scan
+        ALL open PRs on main, not just $openSrPrs.
+
+        Status semantics:
+          - in-flight mode  → returns @() (no check; SR is already cut)
+          - candidate mode, candidate PR open → WATCH (must land before cut)
+          - candidate mode, no candidate PR found → WATCH (informational)
+
+        Never BLOCKED: a missing candidate PR is normal early in the
+        cycle. The release captain decides when to open one.
+    .OUTPUTS
+        Array of New-ReadinessCheck records (merged into shipChecks downstream).
+    #>
+    param($Ctx, [switch]$SkipChecks)
+
+    if ($SkipChecks) { return ,@() }
+    if ($Ctx.mode -ne 'candidate') { return ,@() }
+
+    $repoUrl = "https://github.com/$($Ctx.repo)"
+
+    # Compute next SR label from priorSrBranch (set by Resolve-Context in
+    # candidate mode). priorSrBranch = e.g. 'release/10.0.1xx-sr8' → next is SR9.
+    $nextSr = $null
+    if ($Ctx.priorSrBranch -and $Ctx.priorSrBranch -match 'sr(\d+)$') {
+        $nextSr = "SR$([int]$Matches[1] + 1)"
+    }
+
+    # Scan open PRs targeting main (the Candidate PR is opened on main, not
+    # on the SR branch, since the SR branch may not exist yet in candidate
+    # mode). Cheap: one gh call returning up to 100 open PRs on main.
+    $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
+                       '--base', $Ctx.mainBranch, '--limit', '100',
+                       '--json', 'number,title,author,updatedAt,url')
+    $mainPrs = @()
+    if ($raw) {
+        $parsed = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+        if ($parsed) { $mainPrs = @($parsed) }
+    }
+
+    # Be conservative — require word boundary so "CandidateView" doesn't match.
+    $candidates = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
+
+    $area = if ($nextSr) {
+        "Candidate PR for next SR cut ($nextSr)"
+    } else {
+        "Candidate PR for next SR cut"
+    }
+
+    if ($candidates.Count -eq 0) {
+        return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
+            -Details "No open PR matching ``*Candidate*`` found on ``$($Ctx.mainBranch)``. The Candidate PR is the mechanism that promotes a specific main commit as the SR cut point." `
+            -NextAction "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR.")
+    }
+
+    # Build a compact detail string listing all open candidate PRs (almost
+    # always 1, but if multiple are open the release captain should pick).
+    $links = ($candidates | ForEach-Object {
+        $titleShort = if ($_.title.Length -gt 60) { $_.title.Substring(0, 60) + '...' } else { $_.title }
+        "[#$($_.number)]($repoUrl/pull/$($_.number)) — $titleShort"
+    }) -join '; '
+
+    return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
+        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR promotes a specific main commit as the SR cut point — it must be merged (and the SR branch cut from it) before the SR cycle starts." `
+        -NextAction "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit.")
+}
+
 # endregion
 
 # region ────────────────────── 1. CONTEXT RESOLUTION ──────────────────────
@@ -3255,6 +3332,20 @@ function Invoke-Main {
                 $data['shipChecks'] = @()
             }
             $data['shipChecks'] = @($data['shipChecks']) + @($milestoneChecks)
+        }
+    }
+
+    # Candidate-PR check (candidate mode only) — surface the open PR that
+    # promotes a specific main commit as the SR cut point. Most important
+    # PR in the cycle: SR can't be cut until it merges. Renders as a WATCH
+    # check in the ship-readiness table.
+    if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
+        $candidateChecks = Get-CandidatePrChecks -Ctx $ctx
+        if ($candidateChecks -and $candidateChecks.Count -gt 0) {
+            if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
+                $data['shipChecks'] = @()
+            }
+            $data['shipChecks'] = @($data['shipChecks']) + @($candidateChecks)
         }
     }
 

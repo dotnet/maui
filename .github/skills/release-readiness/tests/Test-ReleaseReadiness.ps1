@@ -1936,6 +1936,32 @@ Assert-Eq -Label "'ci-scanner-bot' does NOT match (no hyphen-or-end after ci-sca
     -Actual ('ci-scanner-bot' -match $labelRegex)
 
 
+# ───── Get-CandidatePrChecks computes nextSr label from priorSrBranch ─────
+# The check label uses 'SR9' (next SR) not 'SR8' (prior SR / branch passed
+# to -SrBranch in candidate mode). Lock the regex that extracts the SR
+# number from the prior SR branch name and increments it.
+Write-Host "`n[Unit] nextSr label derivation from priorSrBranch" -ForegroundColor Cyan
+
+function Get-NextSrLabel {
+    param([string]$PriorSrBranch)
+    if ($PriorSrBranch -and $PriorSrBranch -match 'sr(\d+)$') {
+        return "SR$([int]$Matches[1] + 1)"
+    }
+    return $null
+}
+
+Assert-Eq -Label "release/10.0.1xx-sr8 → SR9" -Expected 'SR9' `
+    -Actual (Get-NextSrLabel 'release/10.0.1xx-sr8')
+Assert-Eq -Label "release/9.0.2xx-sr5 → SR6" -Expected 'SR6' `
+    -Actual (Get-NextSrLabel 'release/9.0.2xx-sr5')
+Assert-Eq -Label "release/10.0.1xx-sr10 → SR11 (two-digit)" -Expected 'SR11' `
+    -Actual (Get-NextSrLabel 'release/10.0.1xx-sr10')
+Assert-Eq -Label "main → null (not an SR branch)" -Expected $null `
+    -Actual (Get-NextSrLabel 'main')
+Assert-Eq -Label "empty → null" -Expected $null `
+    -Actual (Get-NextSrLabel '')
+
+
 # ───── Regression test: ConvertTo-Utc handles both string + DateTime inputs ─────
 # ConvertFrom-Json already returns DateTime (Kind=Utc) for ISO-8601 'Z' strings.
 # A naive [DateTime]::Parse(...) re-converts to Kind=Unspecified, which then
