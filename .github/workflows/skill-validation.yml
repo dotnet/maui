@@ -677,6 +677,7 @@ jobs:
           HAS_ENTRIES: ${{ needs.discover-eval.outputs.has_entries }}
           DISCOVER_RESULT: ${{ needs.discover-eval.result }}
           IS_CONTRIBUTOR: ${{ needs.pr-gate.outputs.is_contributor || 'true' }}
+          HEAD_SHA: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
         with:
           script: |
             const fs = require('fs');
@@ -685,16 +686,24 @@ jobs:
             const prNumber = parseInt(process.env.PR_NUMBER, 10);
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const marker = '<!-- skill-validation-results -->';
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-            });
-            const headSha = pr.data.head.sha || '';
+            // Metadata fetch is decorative; never let a transient failure (rate-limit/5xx) sink the whole results comment.
+            let prData = {};
+            try {
+              const r = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+              prData = r.data;
+            } catch (e) {
+              console.log('pulls.get failed, using fallbacks:', e.message);
+            }
+            // Use the gated SHA the validation actually ran against — the live PR head may have moved during a slow /evaluate-skills run.
+            const headSha = process.env.HEAD_SHA || prData.head?.sha || '';
             const headSha7 = headSha ? headSha.substring(0, 7) : 'unknown';
             const commitUrl = headSha ? `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/commit/${headSha}` : runUrl;
-            const prTitle = (pr.data.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const prAuthor = pr.data.user?.login || '';
+            const prTitle = (prData.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const prAuthor = prData.user?.login || '';
             const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 
             function badge(label, message, color) {
@@ -1037,7 +1046,7 @@ jobs:
             }
             const overallStatus = staticStatus === 'Failed' || evalStatus === 'Failed'
               ? 'Failed'
-              : staticStatus === 'Passed'
+              : (staticStatus === 'Passed' && (evalStatus === 'Passed' || evalStatus === 'Skipped'))
                 ? 'Passed'
                 : 'Needs attention';
             const overallIcon = overallStatus === 'Passed' ? '✅' : overallStatus === 'Failed' ? '❌' : '⚠️';
