@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -14,11 +14,13 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		void IControlsMapperRemappable.RemapForControls(HashSet<Type> remapped) => RemapForControls(remapped);
+		void IControlsMapperRemappable.RemapForControls() => RemapForControls();
 
-		internal virtual void RemapForControls(HashSet<Type> remapped)
+		static int s_remappedForControls;
+
+		internal virtual void RemapForControls()
 		{
-			if (!remapped.Add(typeof(Toolbar)))
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
 				return;
 
 #if ANDROID || WINDOWS || TIZEN
