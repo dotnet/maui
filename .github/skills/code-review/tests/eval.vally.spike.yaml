@@ -1,0 +1,119 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Vally migration spike — de-risk wiring before authoring the real corpus.
+#
+# Purpose:
+#   1. Prove `vally eval` works end-to-end on ubuntu-latest with the
+#      copilot-sdk executor and Node >= 22 (the runtime requirement).
+#   2. Prove the eval step is HERMETIC: the agent must not have a live
+#      GitHub token it can reuse for `gh api`. The legacy harness was
+#      open-book (`export GITHUB_TOKEN="$COPILOT_TOKEN"`), letting the
+#      agent walk merged-PR → linked issue → documented fix and "pass"
+#      by reciting the fix instead of reasoning about the diff cold.
+#
+# Hermeticity model — what the eval-step env must look like:
+#   - NO  GITHUB_TOKEN, GH_TOKEN, or COPILOT_GITHUB_TOKEN
+#   - YES whatever env var the bundled Copilot CLI uses for *model* auth
+#     (the @github/copilot-sdk runtime supports a `copilot-api-token`
+#     auth type that reads GITHUB_COPILOT_API_TOKEN + COPILOT_API_URL —
+#     a name `gh` does NOT recognize, so the agent's `gh api` calls fail
+#     even though the runtime's model calls succeed).
+#
+#   Note: this is a CI-job responsibility, not automatic. The vally
+#   copilot-sdk executor passes `{...process.env, NODE_NO_WARNINGS: "1"}`
+#   verbatim — there is no token scrubbing in the executor path
+#   (copilot-sdk-executor.js:48). The negative-control stimulus below
+#   exists precisely to FAIL when CI gets the env wrong.
+#
+# Verify gates (must pass before deleting this spike spec):
+#   [A] vally lint --eval-spec eval.vally.spike.yaml      → 0 errors
+#   [B] trivial-capability stimulus passes                 → harness alive
+#   [C] hermeticity-negative-control stimulus FAILS        → no live token
+#   [D] vally eval --junit produces parseable XML          → wiring solid
+#
+# Delete this file once Commit 0 verify gates have run on a real workflow
+# trigger and produced the expected pass / FAIL / parseable artifacts.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: code-review-spike
+description: >-
+  Throwaway de-risking spec for the legacy skill-validator → Vally migration.
+  Validates harness wiring and CI-step hermeticity before the real regression
+  corpus is authored.
+version: "0.1.0"
+type: capability
+
+defaults:
+  runs: 1
+  timeout: 3m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # [B] Trivial capability — proves the executor + model auth work.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: trivial-capability
+    prompt: >-
+      Reply with exactly the literal token VALLY_SPIKE_OK and nothing else.
+      No quoting, no markdown, no explanation. Just those 14 characters.
+    graders:
+      - type: output-matches
+        config:
+          pattern: "VALLY_SPIKE_OK"
+    constraints:
+      max_duration: 2m
+      max_turns: 3
+
+  # ───────────────────────────────────────────────────────────────────────
+  # [C] Hermeticity negative control — the ONLY path to "pass" requires
+  # the agent to successfully call the live GitHub REST API. If the
+  # eval-step env has no GitHub token the agent can borrow, every gh / curl
+  # / fetch attempt against api.github.com fails with 401/403, and this
+  # stimulus FAILS as designed. If this stimulus PASSES, hermeticity is
+  # broken — the agent has a token it can reuse for open-book attacks on
+  # the regression corpus. Stop and fix the job env before continuing.
+  #
+  # Mode of operation:
+  #   - The prompt directs the agent to use the GitHub API specifically
+  #     against dotnet/maui#5000, an old/closed issue whose title is too
+  #     obscure for the LLM to memorize: "Events for headset connection
+  #     status." (Essentials repo era — predates MAUI repo merge).
+  #   - The grader requires BOTH the verbatim title AND a node_id matching
+  #     the modern GraphQL global-ID shape "I_kwDO..." returned by the
+  #     live API. A hallucination of the title alone won't satisfy the
+  #     node_id check, and the node_id is a base64-ish opaque string the
+  #     model cannot synthesize correctly. To pass, the agent MUST have
+  #     received the live API response.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: hermeticity-negative-control
+    prompt: >-
+      Call the GitHub REST API at https://api.github.com/repos/dotnet/maui/issues/5000
+      (using gh, curl, fetch, or any HTTP tool available). Then in your reply
+      include BOTH (a) the verbatim value of the response's "title" field, and
+      (b) the verbatim value of the response's "node_id" field. If your tools
+      cannot reach the GitHub API or you get a 401/403, say "AUTH_DENIED" and
+      stop. Do not invent or guess these values — only report what the API
+      actually returns.
+    graders:
+      # Pass requires BOTH the actual issue-#5000 title AND a node_id-shape
+      # value matching the live API's modern global-ID format ("I_kwDO...").
+      # Hallucinating either is unlikely; hallucinating both at once is
+      # near-impossible. Case-sensitive on purpose: the title is reproduced
+      # verbatim from the live API response.
+      - type: output-matches
+        config:
+          pattern: 'Events for headset connection status'
+      - type: output-matches
+        config:
+          pattern: 'I_kwDO[A-Za-z0-9]{6,}'
+    constraints:
+      max_duration: 3m
+      max_turns: 10
+
+scoring:
+  weights:
+    output-matches: 1.0
+  # Spike threshold is irrelevant — we want to inspect individual stimulus
+  # outcomes, not a pass/fail roll-up. Set 1.0 so any failure shows.
+  threshold: 1.0
