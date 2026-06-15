@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> containing a developer-defined <see cref="Microsoft.Maui.Controls.View"/>.</summary>
 	[Obsolete("The controls which use ViewCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	[ContentProperty("View")]
-#if WINDOWS || IOS || MACCATALYST || ANDROID || TIZEN
+#if WINDOWS || IOS || MACCATALYST || ANDROID
 #pragma warning disable CS0618 // Type or member is obsolete
 	[ElementHandler(typeof(Handlers.Compatibility.ViewCellRenderer))]
 #pragma warning restore CS0618 // Type or member is obsolete
