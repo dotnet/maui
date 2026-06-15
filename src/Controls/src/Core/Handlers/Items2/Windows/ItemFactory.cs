@@ -140,6 +140,12 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			// Must be set every time to handle recycled containers correctly.
 			if (wrapper is not null)
 			{
+				// Refresh the role from the current context before reading it.
+				// A wrapper pulled from _recyclePool retains the role it had when first created.
+				// Without this, a recycled header wrapper bound to a regular item keeps
+				// IsHeaderOrFooter=true (making the item non-selectable), and vice-versa.
+				wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
+
 				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
 				if (isHeaderOrFooter)
 				{

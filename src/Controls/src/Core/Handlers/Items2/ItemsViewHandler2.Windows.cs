@@ -397,7 +397,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		{
 			foreach (var item in enumerable)
 			{
-				if (item is IEnumerable && item is not string)
+				// Exclude strings (already handled) and arrays (e.g. int[], byte[]) —
+				// primitive arrays are not group containers; treating them as groups would
+				// silently flatten List<int[]> / List<byte[]> sources into their elements.
+				if (item is IEnumerable && item is not string && item is not Array)
 				{
 					return true;
 				}
