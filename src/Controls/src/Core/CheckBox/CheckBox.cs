@@ -53,6 +53,13 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for the <see cref="CommandParameter"/> property.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(CheckBox), null, propertyChanged: CommandElement.OnCommandParameterChanged);
 
+		static CheckBox()
+		{
+			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
+			// See https://github.com/dotnet/maui/issues/31939
+			CommandProperty.DependsOn(CommandParameterProperty);
+		}
+
 		/// <summary>
 		/// Gets or sets the command that is executed when the CheckBox is checked or unchecked. This is a bindable property.
 		/// </summary>
