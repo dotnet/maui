@@ -1,6 +1,6 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 #if IOS || MACCATALYST
@@ -11,11 +11,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage
 	{
-		internal override void RemapForControls(HashSet<Type> remapped)
+		static int s_remappedForControls;
+
+		internal override void RemapForControls()
 		{
-			if (remapped.Add(typeof(NavigationPage)))
-			{
-				base.RemapForControls(remapped);
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			base.RemapForControls();
 
 			// Adjust the mappings to preserve Controls.NavigationPage legacy behaviors
 #if IOS || MACCATALYST
@@ -105,7 +108,6 @@ namespace Microsoft.Maui.Controls
 				}
 			};
 #endif
-			}
 		}
 	}
 }
