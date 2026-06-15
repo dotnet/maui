@@ -320,6 +320,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+			if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
+				previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					foreach (var tracker in _trackers.Values)
+					{
+						(tracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+					}
+				}
+			}
+		}
+
 		public override void ViewDidLoad()
 		{
 			if (_disposed)

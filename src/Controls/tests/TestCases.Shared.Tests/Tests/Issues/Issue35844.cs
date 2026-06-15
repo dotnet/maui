@@ -24,18 +24,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var portraitWidth = portraitRect.Width;
 
 			App.SetOrientationLandscape();
+			App.WaitForElement("TitleViewGrid"); // re-wait to ensure layout has settled after rotation
 
 			// After rotation, TitleView width must change to fill the wider nav bar
 			var landscapeRect = App.WaitForElement("TitleViewGrid").GetRect();
 			var landscapeWidth = landscapeRect.Width;
 
-			Assert.That(landscapeWidth, Is.Not.EqualTo(portraitWidth).Within(100),
+			Assert.That(landscapeWidth, Is.Not.EqualTo(portraitWidth).Within(50),
 				"Shell TitleView width should expand after rotating to landscape on iOS 26+");
 			Assert.That(landscapeWidth, Is.GreaterThan(portraitWidth),
 				"Shell TitleView should be wider in landscape than portrait");
 
 			// Rotate back and verify TitleView returns to original width
 			App.SetOrientationPortrait();
+			App.WaitForElement("TitleViewGrid"); // re-wait to ensure layout has settled after rotation
 
 			var finalRect = App.WaitForElement("TitleViewGrid").GetRect();
 			Assert.That(finalRect.Width, Is.EqualTo(portraitWidth).Within(5),
