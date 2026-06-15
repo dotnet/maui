@@ -1,21 +1,23 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class DatePicker
 	{
-		static DatePicker()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(DatePicker), typeof(VisualElement));
+			if (remapped.Add(typeof(DatePicker)))
+			{
+				base.RemapForControls(remapped);
 
-			// Adjust the mappings to preserve Controls.DatePicker legacy behaviors
+				// Adjust the mappings to preserve Controls.DatePicker legacy behaviors
 #if IOS
-			DatePickerHandler.Mapper.ReplaceMapping<DatePicker, IDatePickerHandler>(PlatformConfiguration.iOSSpecific.DatePicker.UpdateModeProperty.PropertyName, MapUpdateMode);
+				DatePickerHandler.Mapper.ReplaceMapping<DatePicker, IDatePickerHandler>(PlatformConfiguration.iOSSpecific.DatePicker.UpdateModeProperty.PropertyName, MapUpdateMode);
 #endif
+			}
 		}
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -409,6 +410,20 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Equal(1, CountingElementHandlerAttribute.InstanceCount);
 		}
 
+		[Fact]
+		public void SetVirtualViewRunsControlsMapperRemapOncePerKey()
+		{
+			RemappableViewStub.Reset();
+
+			new ViewHandlerStub().SetVirtualView(new RemappableViewStub());
+			new ViewHandlerStub().SetVirtualView(new DerivedRemappableViewStub());
+			new ViewHandlerStub().SetVirtualView(new DerivedRemappableViewStub());
+
+			Assert.Equal(1, RemappableViewStub.RemapCount);
+			Assert.Equal(1, RemappableViewStub.DerivedRemapCount);
+			Assert.Equal(new[] { "base", "derived" }, RemappableViewStub.RemapOrder);
+		}
+
 		[ElementHandler(typeof(AttributedViewHandlerStub))]
 		class AttributedViewStub : ViewStub { }
 		class DerivedAttributedViewStub : AttributedViewStub { }
@@ -454,5 +469,46 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			public override Type GetHandlerType() => typeof(AttributedViewHandlerStub);
 		}
+
+		class RemappableViewStub : ViewStub, IControlsMapperRemappable
+		{
+			public static int RemapCount { get; private set; }
+			public static int DerivedRemapCount { get; protected set; }
+			public static List<string> RemapOrder { get; } = new();
+
+			void IControlsMapperRemappable.RemapForControls(HashSet<Type> remapped) => RemapForControls(remapped);
+
+			protected virtual void RemapForControls(HashSet<Type> remapped)
+			{
+				if (remapped.Add(typeof(RemapCountingKey)))
+				{
+					RemapCount++;
+					RemapOrder.Add("base");
+				}
+			}
+
+			public static void Reset()
+			{
+				RemapCount = 0;
+				DerivedRemapCount = 0;
+				RemapOrder.Clear();
+			}
+		}
+
+		class DerivedRemappableViewStub : RemappableViewStub
+		{
+			protected override void RemapForControls(HashSet<Type> remapped)
+			{
+				if (remapped.Add(typeof(DerivedRemapCountingKey)))
+				{
+					base.RemapForControls(remapped);
+					DerivedRemapCount++;
+					RemapOrder.Add("derived");
+				}
+			}
+		}
+
+		class RemapCountingKey { }
+		class DerivedRemapCountingKey { }
 	}
 }

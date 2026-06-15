@@ -9,42 +9,43 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Microsoft.Maui.Controls.View"/> that displays text.</summary>
 	public partial class Label
 	{
-		static Label()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(Label), typeof(VisualElement));
+			if (remapped.Add(typeof(Label)))
+			{
+				base.RemapForControls(remapped);
 
-			// Adjust the mappings to preserve Controls.Label legacy behaviors
-			// ILabel does not include the TextType property, so we map it here to handle HTML text
-			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
+				// Adjust the mappings to preserve Controls.Label legacy behaviors
+				// ILabel does not include the TextType property, so we map it here to handle HTML text
+				// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
 
-			// these just refresh Text / FormattedText
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(TextType), MapTextType);
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(TextTransform), MapTextTransform);
+				// these just refresh Text / FormattedText
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(TextType), MapTextType);
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(TextTransform), MapTextTransform);
 
-			// these are really a single property
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(Text), MapText);
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(FormattedText), MapFormattedText);
+				// these are really a single property
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(Text), MapText);
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(FormattedText), MapFormattedText);
 
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(LineBreakMode), MapLineBreakMode);
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(MaxLines), MapMaxLines);
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(LineBreakMode), MapLineBreakMode);
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(MaxLines), MapMaxLines);
 
 #if ANDROID || IOS
-			// these are for platforms that do no support view properties reaching spans
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(ILabel.Font), MapFont);
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(TextColor), MapTextColor);
+				// these are for platforms that do no support view properties reaching spans
+				LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(ILabel.Font), MapFont);
+				LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(TextColor), MapTextColor);
 
-			// these are for properties that should only apply to plain text (not spans nor html)
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(TextDecorations), MapTextDecorations);
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(CharacterSpacing), MapCharacterSpacing);
-			LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(LineHeight), MapLineHeight);
+				// these are for properties that should only apply to plain text (not spans nor html)
+				LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(TextDecorations), MapTextDecorations);
+				LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(CharacterSpacing), MapCharacterSpacing);
+				LabelHandler.Mapper.ModifyMapping<Label, ILabelHandler>(nameof(LineHeight), MapLineHeight);
 #endif
 
-			// platform-specifics
+				// platform-specifics
 #if WINDOWS
-			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
+				LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
 #endif
+			}
 		}
 
 

@@ -1,50 +1,52 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Entry
 	{
-		static Entry()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(Entry), typeof(VisualElement));
-
-			// Adjust the mappings to preserve Controls.Entry legacy behaviors
-#if ANDROID
-			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
-#elif WINDOWS
-			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
-#elif IOS
-			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.iOSSpecific.Entry.CursorColorProperty.PropertyName, MapCursorColor);
-			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName, MapAdjustsFontSizeToFitWidth);
-#endif
-			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(Text), MapText);
-			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(TextTransform), MapText);
-
-			// Material3 Entry Handler mappings
-#if ANDROID
-			if (RuntimeFeature.IsMaterial3Enabled)
+			if (remapped.Add(typeof(Entry)))
 			{
-				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
-				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(Text), MapText);
-				EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(TextTransform), MapText);
-				EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
-				EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
-				EntryHandler2.CommandMapper.PrependToMapping(nameof(IEntry.Focus), InputView.MapFocus);
-			}
+				base.RemapForControls(remapped);
+
+				// Adjust the mappings to preserve Controls.Entry legacy behaviors
+#if ANDROID
+				EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
+#elif WINDOWS
+				EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
+#elif IOS
+				EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.iOSSpecific.Entry.CursorColorProperty.PropertyName, MapCursorColor);
+				EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName, MapAdjustsFontSizeToFitWidth);
+#endif
+				EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(Text), MapText);
+				EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(TextTransform), MapText);
+
+				// Material3 Entry Handler mappings
+#if ANDROID
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName, MapImeOptions);
+					EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(Text), MapText);
+					EntryHandler2.Mapper.ReplaceMapping<Entry, EntryHandler2>(nameof(TextTransform), MapText);
+					EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+					EntryHandler2.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
+					EntryHandler2.CommandMapper.PrependToMapping(nameof(IEntry.Focus), InputView.MapFocus);
+				}
 #endif
 
 #if IOS || ANDROID
-			EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
-			EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
+				EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+				EntryHandler.Mapper.AppendToMapping(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
 #endif
 
 #if ANDROID
-			EntryHandler.CommandMapper.PrependToMapping(nameof(IEntry.Focus), InputView.MapFocus);
+				EntryHandler.CommandMapper.PrependToMapping(nameof(IEntry.Focus), InputView.MapFocus);
 #endif
+			}
 		}
 	}
 }

@@ -1,21 +1,23 @@
 ﻿#nullable disable
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class NavigationPage
 	{
-		static NavigationPage()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			// Force VisualElement's static constructor to run first so base-level
-			// mapper remappings are applied before these Control-specific ones.
-			RemappingHelper.EnsureBaseTypeRemapped(typeof(NavigationPage), typeof(VisualElement));
+			if (remapped.Add(typeof(NavigationPage)))
+			{
+				base.RemapForControls(remapped);
 
-			// Adjust the mappings to preserve Controls.NavigationPage legacy behaviors
+				// Adjust the mappings to preserve Controls.NavigationPage legacy behaviors
 #if IOS
-			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName, MapPrefersLargeTitles);
+				NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName, MapPrefersLargeTitles);
 #endif
+			}
 		}
 	}
 }
