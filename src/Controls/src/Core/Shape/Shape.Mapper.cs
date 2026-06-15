@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Shapes
 	public partial class Shape
 	{
 		static int s_remappedForControls;
-
 		internal override void RemapForControls()
 		{
 			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
@@ -20,7 +19,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			base.RemapForControls();
 
-				ShapeViewHandler.Mapper.ReplaceMapping<IShapeView, IShapeViewHandler>(nameof(StrokeDashArray), MapStrokeDashArray);
+			ShapeViewHandler.Mapper.ReplaceMapping<IShapeView, IShapeViewHandler>(nameof(StrokeDashArray), MapStrokeDashArray);
 		}
 	}
 }

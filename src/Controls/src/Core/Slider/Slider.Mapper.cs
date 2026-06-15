@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Controls
 	public partial class Slider
 	{
 		static int s_remappedForControls;
-
 		internal override void RemapForControls()
 		{
 			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.Controls
 
 			base.RemapForControls();
 
-				// Adjust the mappings to preserve Controls.Slider legacy behaviors
+			// Adjust the mappings to preserve Controls.Slider legacy behaviors
 #if IOS
 			SliderHandler.Mapper.ReplaceMapping<Slider, ISliderHandler>(PlatformConfiguration.iOSSpecific.Slider.UpdateOnTapProperty.PropertyName, MapUpdateOnTap);
 #endif

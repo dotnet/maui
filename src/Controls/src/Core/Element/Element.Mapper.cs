@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Controls
 		void IControlsMapperRemappable.RemapForControls() => RemapForControls();
 
 		static int s_remappedForControls;
-
 		internal virtual void RemapForControls()
 		{
 			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
