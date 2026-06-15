@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -472,43 +473,48 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 		class RemappableViewStub : ViewStub, IControlsMapperRemappable
 		{
+			static int s_remappedForControls;
+
 			public static int RemapCount { get; private set; }
 			public static int DerivedRemapCount { get; protected set; }
 			public static List<string> RemapOrder { get; } = new();
 
-			void IControlsMapperRemappable.RemapForControls(HashSet<Type> remapped) => RemapForControls(remapped);
+			void IControlsMapperRemappable.RemapForControls() => RemapForControls();
 
-			protected virtual void RemapForControls(HashSet<Type> remapped)
+			protected virtual void RemapForControls()
 			{
-				if (remapped.Add(typeof(RemapCountingKey)))
-				{
-					RemapCount++;
-					RemapOrder.Add("base");
-				}
+				if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+					return;
+
+				RemapCount++;
+				RemapOrder.Add("base");
 			}
 
 			public static void Reset()
 			{
+				s_remappedForControls = 0;
 				RemapCount = 0;
 				DerivedRemapCount = 0;
 				RemapOrder.Clear();
+				DerivedRemappableViewStub.ResetDerived();
 			}
 		}
 
 		class DerivedRemappableViewStub : RemappableViewStub
 		{
-			protected override void RemapForControls(HashSet<Type> remapped)
+			static int s_remappedForControls;
+
+			public static void ResetDerived() => s_remappedForControls = 0;
+
+			protected override void RemapForControls()
 			{
-				if (remapped.Add(typeof(DerivedRemapCountingKey)))
-				{
-					base.RemapForControls(remapped);
-					DerivedRemapCount++;
-					RemapOrder.Add("derived");
-				}
+				if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+					return;
+
+				base.RemapForControls();
+				DerivedRemapCount++;
+				RemapOrder.Add("derived");
 			}
 		}
-
-		class RemapCountingKey { }
-		class DerivedRemapCountingKey { }
 	}
 }

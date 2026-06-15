@@ -1,20 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class SwipeView
 	{
-		internal override void RemapForControls(HashSet<Type> remapped)
+		static int s_remappedForControls;
+
+		internal override void RemapForControls()
 		{
-			if (remapped.Add(typeof(SwipeView)))
-			{
-				base.RemapForControls(remapped);
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			base.RemapForControls();
 
 				// Adjusted the mapping to preserve SwipeView.Entry legacy behavior
-				SwipeViewHandler.Mapper.AppendToMapping<SwipeView, ISwipeViewHandler>(nameof(Background), MapBackground);
-			}
+			SwipeViewHandler.Mapper.AppendToMapping<SwipeView, ISwipeViewHandler>(nameof(Background), MapBackground);
 		}
 
 		static void MapBackground(ISwipeViewHandler handler, SwipeView swipeView)

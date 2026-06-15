@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is IControlsMapperRemappable remappable)
 			{
-				ControlsMapperRemapper.EnsureRemapped(remappable);
+				remappable.RemapForControls();
 			}
 
 			if (PlatformView is null)

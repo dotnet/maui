@@ -1,6 +1,6 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
@@ -8,21 +8,23 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Window
 	{
-		internal override void RemapForControls(HashSet<Type> remapped)
+		static int s_remappedForControls;
+
+		internal override void RemapForControls()
 		{
-			if (remapped.Add(typeof(Window)))
-			{
-				base.RemapForControls(remapped);
+			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
+				return;
+
+			base.RemapForControls();
 
 #if ANDROID
-				// This property is also on the Application Mapper since that's where the attached property exists
-				WindowHandler.Mapper.ReplaceMapping<IWindow, IWindowHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);
+			// This property is also on the Application Mapper since that's where the attached property exists
+			WindowHandler.Mapper.ReplaceMapping<IWindow, IWindowHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);
 #endif
 
 #if WINDOWS
-				WindowHandler.Mapper.PrependToMapping<Window, IWindowHandler>(nameof(ITitledElement.Title), MapTitle);
+			WindowHandler.Mapper.PrependToMapping<Window, IWindowHandler>(nameof(ITitledElement.Title), MapTitle);
 #endif
-			}
 		}
 	}
 }
