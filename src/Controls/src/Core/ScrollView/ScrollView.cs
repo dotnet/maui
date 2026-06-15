@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	[ScrollViewRemappingHandler(typeof(ScrollViewHandler))]
+	[ElementHandler(typeof(ScrollViewHandler))]
 #pragma warning disable CS0618 // Type or member is obsolete
 	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
 #pragma warning restore CS0618 // Type or member is obsolete

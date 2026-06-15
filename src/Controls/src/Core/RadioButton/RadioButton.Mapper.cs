@@ -1,6 +1,6 @@
 #nullable disable
 using System;
-using System.Threading;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
@@ -12,23 +12,21 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		static int s_remappedForControls;
-
-		internal new static void RemapForControls()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
+			if (remapped.Add(typeof(RadioButton)))
+			{
+				base.RemapForControls(remapped);
 
-			VisualElement.RemapForControls();
-
-			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);
+				RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);
 #if ANDROID || WINDOWS
-			//On iOS, since a custom approach is used for RadioButton, TextTransform is applied through the Label control.
-			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(TextTransform), MapContent);
+				//On iOS, since a custom approach is used for RadioButton, TextTransform is applied through the Label control.
+				RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(TextTransform), MapContent);
 #endif
 #if ANDROID
-			RadioButtonHandler.PlatformViewFactory = CreatePlatformView;
+				RadioButtonHandler.PlatformViewFactory = CreatePlatformView;
 #endif
+			}
 		}
 	}
 }

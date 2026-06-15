@@ -1,27 +1,25 @@
 ﻿#nullable disable
 using System;
-using System.Threading;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Application
 	{
-		static int s_remappedForControls;
-
-		internal new static void RemapForControls()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
+			if (remapped.Add(typeof(Application)))
+			{
+				base.RemapForControls(remapped);
 
-			Element.RemapForControls();
-
-			// Adjust the mappings to preserve Controls.Application legacy behaviors
+				// Adjust the mappings to preserve Controls.Application legacy behaviors
 #if ANDROID
-			// There is also a mapper on Window for this property since this property is relevant at the window level for
-			// Android not the application level
-			ApplicationHandler.Mapper.ReplaceMapping<Application, ApplicationHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);
+				// There is also a mapper on Window for this property since this property is relevant at the window level for
+				// Android not the application level
+				ApplicationHandler.Mapper.ReplaceMapping<Application, ApplicationHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);
 #endif
+			}
 		}
 	}
 }

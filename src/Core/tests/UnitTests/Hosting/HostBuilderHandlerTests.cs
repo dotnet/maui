@@ -1,5 +1,5 @@
 using System;
-using System.Threading;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -411,20 +411,17 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
-		public void HostBuilderRunsElementHandlerAttributeRemapOnce()
+		public void SetVirtualViewRunsControlsMapperRemapOncePerKey()
 		{
-			RemapCountingElementHandlerAttribute.Reset();
+			RemappableViewStub.Reset();
 
-			var mauiApp = MauiApp.CreateBuilder()
-				.Build();
+			new ViewHandlerStub().SetVirtualView(new RemappableViewStub());
+			new ViewHandlerStub().SetVirtualView(new DerivedRemappableViewStub());
+			new ViewHandlerStub().SetVirtualView(new DerivedRemappableViewStub());
 
-			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
-
-			Assert.Same(typeof(AttributedViewHandlerStub), mauiHandlersFactory.GetHandlerType(typeof(RemapCountingAttributedViewStub)));
-			Assert.IsType<AttributedViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(DerivedRemapCountingAttributedViewStub)));
-			Assert.Same(typeof(AttributedViewHandlerStub), mauiHandlersFactory.GetHandlerType(typeof(DerivedRemapCountingAttributedViewStub)));
-
-			Assert.Equal(1, RemapCountingElementHandlerAttribute.RemapCount);
+			Assert.Equal(1, RemappableViewStub.RemapCount);
+			Assert.Equal(1, RemappableViewStub.DerivedRemapCount);
+			Assert.Equal(new[] { "base", "derived" }, RemappableViewStub.RemapOrder);
 		}
 
 		[ElementHandler(typeof(AttributedViewHandlerStub))]
@@ -473,30 +470,45 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			public override Type GetHandlerType() => typeof(AttributedViewHandlerStub);
 		}
 
-		[RemapCountingElementHandler]
-		class RemapCountingAttributedViewStub : ViewStub { }
-		class DerivedRemapCountingAttributedViewStub : RemapCountingAttributedViewStub { }
-		class RemapCountingElementHandlerAttribute : ElementHandlerAttribute
+		class RemappableViewStub : ViewStub, IControlsMapperRemappable
 		{
-			static int s_remapped;
-
 			public static int RemapCount { get; private set; }
+			public static int DerivedRemapCount { get; protected set; }
+			public static List<string> RemapOrder { get; } = new();
+
+			void IControlsMapperRemappable.RemapForControls(HashSet<Type> remapped) => RemapForControls(remapped);
+
+			protected virtual void RemapForControls(HashSet<Type> remapped)
+			{
+				if (remapped.Add(typeof(RemapCountingKey)))
+				{
+					RemapCount++;
+					RemapOrder.Add("base");
+				}
+			}
 
 			public static void Reset()
 			{
 				RemapCount = 0;
-				s_remapped = 0;
+				DerivedRemapCount = 0;
+				RemapOrder.Clear();
 			}
-
-			protected internal override void RemapForControls()
-			{
-				if (Interlocked.CompareExchange(ref s_remapped, 1, 0) != 0)
-					return;
-
-				RemapCount++;
-			}
-
-			public override Type GetHandlerType() => typeof(AttributedViewHandlerStub);
 		}
+
+		class DerivedRemappableViewStub : RemappableViewStub
+		{
+			protected override void RemapForControls(HashSet<Type> remapped)
+			{
+				if (remapped.Add(typeof(DerivedRemapCountingKey)))
+				{
+					base.RemapForControls(remapped);
+					DerivedRemapCount++;
+					RemapOrder.Add("derived");
+				}
+			}
+		}
+
+		class RemapCountingKey { }
+		class DerivedRemapCountingKey { }
 	}
 }

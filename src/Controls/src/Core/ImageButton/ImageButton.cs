@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// <see cref="ImageButton"/> is similar to <see cref="Button"/> but displays an image instead of text.
 	/// It supports all standard button features including commands, events, borders, and visual states.
 	/// </remarks>
-	[ImageButtonRemappingHandler(typeof(ImageButtonHandler))]
+	[ElementHandler(typeof(ImageButtonHandler))]
 	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, ICommandElement, IImageElement, IImageButton
 	{
 		const int DefaultCornerRadius = -1;

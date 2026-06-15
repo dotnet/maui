@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[DatePickerHandler]
 #else
-	[DatePickerRemappingHandler(typeof(DatePickerHandler))]
+	[ElementHandler(typeof(DatePickerHandler))]
 #endif
 	public partial class DatePicker : View, IFontElement, ITextElement, IElementConfiguration<DatePicker>, IDatePicker
 	{
@@ -34,11 +34,6 @@ namespace Microsoft.Maui.Controls
 					return typeof(DatePickerHandler2);
 
 				return typeof(DatePickerHandler);
-			}
-
-			protected internal override void RemapForControls()
-			{
-				DatePicker.RemapForControls();
 			}
 		}
 #endif

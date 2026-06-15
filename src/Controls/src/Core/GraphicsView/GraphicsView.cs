@@ -5,7 +5,7 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	[VisualElementRemappingHandler(typeof(GraphicsViewHandler))]
+	[ElementHandler(typeof(GraphicsViewHandler))]
 	public class GraphicsView : View, IGraphicsView
 	{
 		public event EventHandler<TouchEventArgs> StartHoverInteraction;

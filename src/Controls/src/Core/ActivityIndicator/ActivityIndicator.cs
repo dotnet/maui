@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[ActivityIndicatorHandler]
 #else
-	[VisualElementRemappingHandler(typeof(ActivityIndicatorHandler))]
+	[ElementHandler(typeof(ActivityIndicatorHandler))]
 #endif
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>, IActivityIndicator
 	{
@@ -32,11 +32,6 @@ namespace Microsoft.Maui.Controls
 					return typeof(ActivityIndicatorHandler2);
 
 				return typeof(ActivityIndicatorHandler);
-			}
-
-			protected internal override void RemapForControls()
-			{
-				VisualElement.RemapForControls();
 			}
 		}
 #endif

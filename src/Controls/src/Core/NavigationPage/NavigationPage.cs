@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.Page"/> that manages the navigation and user-experience of a stack of other pages.</summary>
 #if IOS || MACCATALYST
-	[NavigationPageRemappingHandler(typeof(Handlers.Compatibility.NavigationRenderer))]
+	[ElementHandler(typeof(Handlers.Compatibility.NavigationRenderer))]
 #elif WINDOWS || ANDROID || TIZEN
-	[NavigationPageRemappingHandler(typeof(NavigationViewHandler))]
+	[ElementHandler(typeof(NavigationViewHandler))]
 #endif
 	public partial class NavigationPage : Page, IPageContainer<Page>, IBarElement, IElementConfiguration<NavigationPage>, IStackNavigationView, IToolbarElement
 	{

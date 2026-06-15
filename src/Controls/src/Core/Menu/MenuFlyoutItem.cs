@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Represents a MenuFlyoutItem.
 	/// </summary>
-	[ElementRemappingHandler(typeof(MenuFlyoutItemHandler))]
+	[ElementHandler(typeof(MenuFlyoutItemHandler))]
 	public partial class MenuFlyoutItem : MenuItem, IMenuFlyoutItem
 	{
 		/// <summary>

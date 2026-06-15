@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Content))]
 #if ANDROID || IOS || MACCATALYST || TIZEN
-	[VisualElementRemappingHandler(typeof(SwipeItemViewHandler))]
+	[ElementHandler(typeof(SwipeItemViewHandler))]
 #endif
 	public partial class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView
 	{

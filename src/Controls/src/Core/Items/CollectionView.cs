@@ -10,9 +10,9 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.SelectableItemsView"/> that presents a collection of items.</summary>
 #if IOS || MACCATALYST
-	[VisualElementRemappingHandler(typeof(Handlers.Items2.CollectionViewHandler2))]
+	[ElementHandler(typeof(Handlers.Items2.CollectionViewHandler2))]
 #else
-	[VisualElementRemappingHandler(typeof(Handlers.Items.CollectionViewHandler))]
+	[ElementHandler(typeof(Handlers.Items.CollectionViewHandler))]
 #endif
 	public class CollectionView : ReorderableItemsView
 	{

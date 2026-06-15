@@ -1,52 +1,50 @@
 ﻿#nullable disable
 using System;
-using System.Threading;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class SearchBar
 	{
-		static int s_remappedForControls;
-
-		internal new static void RemapForControls()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
+			if (remapped.Add(typeof(SearchBar)))
+			{
+				base.RemapForControls(remapped);
 
-			VisualElement.RemapForControls();
-
-			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
+				// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
 #if IOS
-			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(PlatformConfiguration.iOSSpecific.SearchBar.SearchBarStyleProperty.PropertyName, MapSearchBarStyle);
-			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(IsEnabled), MapUserInteraction);
-			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(ISearchBar.IsReadOnly), MapUserInteraction);
-			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(InputTransparent), MapUserInteraction);
+				SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(PlatformConfiguration.iOSSpecific.SearchBar.SearchBarStyleProperty.PropertyName, MapSearchBarStyle);
+				SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(IsEnabled), MapUserInteraction);
+				SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(ISearchBar.IsReadOnly), MapUserInteraction);
+				SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(InputTransparent), MapUserInteraction);
 #endif
 #if ANDROID
-			if (RuntimeFeature.IsMaterial3Enabled)
-			{
-				// Material3 SearchBar handler mappings
-				SearchBarHandler2.Mapper.ReplaceMapping<SearchBar, SearchBarHandler2>(nameof(Text), MapText);
-				SearchBarHandler2.Mapper.ReplaceMapping<SearchBar, SearchBarHandler2>(nameof(TextTransform), MapText);
-			}
-			else
-			{
+				if (RuntimeFeature.IsMaterial3Enabled)
+				{
+					// Material3 SearchBar handler mappings
+					SearchBarHandler2.Mapper.ReplaceMapping<SearchBar, SearchBarHandler2>(nameof(Text), MapText);
+					SearchBarHandler2.Mapper.ReplaceMapping<SearchBar, SearchBarHandler2>(nameof(TextTransform), MapText);
+				}
+				else
+				{
+					SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(Text), MapText);
+					SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(TextTransform), MapText);
+				}
+#else
 				SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(Text), MapText);
 				SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(TextTransform), MapText);
-			}
-#else
-			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(Text), MapText);
-			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(TextTransform), MapText);
 #endif
 
 #if IOS || ANDROID
-			SearchBarHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+				SearchBarHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
 #endif
 
 #if ANDROID
-			SearchBarHandler.CommandMapper.PrependToMapping(nameof(ISearchBar.Focus), InputView.MapFocus);
+				SearchBarHandler.CommandMapper.PrependToMapping(nameof(ISearchBar.Focus), InputView.MapFocus);
 #endif
+			}
 		}
 	}
 }

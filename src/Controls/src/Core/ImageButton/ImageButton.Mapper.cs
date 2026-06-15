@@ -1,23 +1,21 @@
 using System;
-using System.Threading;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class ImageButton
 	{
-		static int s_remappedForControls;
-
-		internal new static void RemapForControls()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
-
-			VisualElement.RemapForControls();
+			if (remapped.Add(typeof(ImageButton)))
+			{
+				base.RemapForControls(remapped);
 
 #if ANDROID
-			ImageButtonHandler.Mapper.ReplaceMapping<ImageButton, IImageButtonHandler>(PlatformConfiguration.AndroidSpecific.ImageButton.RippleColorProperty.PropertyName, MapRippleColor);
-			ImageButtonHandler.Mapper.AppendToMapping<ImageButton, IImageButtonHandler>(nameof(Background), MapRippleColor);
+				ImageButtonHandler.Mapper.ReplaceMapping<ImageButton, IImageButtonHandler>(PlatformConfiguration.AndroidSpecific.ImageButton.RippleColorProperty.PropertyName, MapRippleColor);
+				ImageButtonHandler.Mapper.AppendToMapping<ImageButton, IImageButtonHandler>(nameof(Background), MapRippleColor);
 #endif
+			}
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// background, shape, padding, and more to create visually rich containers.
 	/// </remarks>
 	[ContentProperty(nameof(Content))]
-	[VisualElementRemappingHandler(typeof(BorderHandler))]
+	[ElementHandler(typeof(BorderHandler))]
 	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;

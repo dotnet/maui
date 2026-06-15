@@ -24,8 +24,4 @@ internal class ElementHandlerAttribute : Attribute
 	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 	public virtual Type GetHandlerType()
 		=> _handlerType ?? throw new InvalidOperationException($"{GetType().FullName} must provide a handler type or override {nameof(GetHandlerType)}.");
-
-	protected internal virtual void RemapForControls()
-	{
-	}
 }

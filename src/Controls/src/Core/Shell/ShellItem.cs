@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls
 	[TypeConverter(typeof(ShellItemConverter))]
 	[DebuggerTypeProxy(typeof(ShellItemDebugView))]
 #if WINDOWS || TIZEN
-	[VisualElementRemappingHandler(typeof(Handlers.ShellItemHandler))]
+	[ElementHandler(typeof(Handlers.ShellItemHandler))]
 #endif
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
 	{

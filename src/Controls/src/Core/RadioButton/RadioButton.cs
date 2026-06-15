@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[RadioButtonHandler]
 #else
-	[RadioButtonRemappingHandler(typeof(RadioButtonHandler))]
+	[ElementHandler(typeof(RadioButtonHandler))]
 #endif
 	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement, IRadioButton
 	{
@@ -38,11 +38,6 @@ namespace Microsoft.Maui.Controls
 					return typeof(RadioButtonHandler2);
 
 				return typeof(RadioButtonHandler);
-			}
-
-			protected internal override void RemapForControls()
-			{
-				RadioButton.RemapForControls();
 			}
 		}
 #endif

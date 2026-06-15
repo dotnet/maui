@@ -1,20 +1,18 @@
 using System;
-using System.Threading;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls;
 
 public partial class Stepper
 {
-	static int s_remappedForControls;
-
-	internal new static void RemapForControls()
+	internal override void RemapForControls(HashSet<Type> remapped)
 	{
-		if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-			return;
+		if (remapped.Add(typeof(Stepper)))
+		{
+			base.RemapForControls(remapped);
 
-		VisualElement.RemapForControls();
-
-		StepperHandler.Mapper.AppendToMapping(nameof(Stepper.Increment), MapInterval);
+			StepperHandler.Mapper.AppendToMapping(nameof(Stepper.Increment), MapInterval);
+		}
 	}
 
 	internal static void MapInterval(IStepperHandler handler, IStepper stepper)

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 	[ProgressBarHandler]
 #else
-	[VisualElementRemappingHandler(typeof(ProgressBarHandler))]
+	[ElementHandler(typeof(ProgressBarHandler))]
 #endif
 	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>, IProgress
 	{
@@ -35,11 +35,6 @@ namespace Microsoft.Maui.Controls
 					return typeof(ProgressBarHandler2);
 
 				return typeof(ProgressBarHandler);
-			}
-
-			protected internal override void RemapForControls()
-			{
-				VisualElement.RemapForControls();
 			}
 		}
 #endif

@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Controls
 	/// and position tracking.
 	/// </remarks>
 #if IOS || MACCATALYST
-	[VisualElementRemappingHandler(typeof(Handlers.Items2.CarouselViewHandler2))]
+	[ElementHandler(typeof(Handlers.Items2.CarouselViewHandler2))]
 #else
-	[VisualElementRemappingHandler(typeof(Handlers.Items.CarouselViewHandler))]
+	[ElementHandler(typeof(Handlers.Items.CarouselViewHandler))]
 #endif
 	public class CarouselView : ItemsView
 	{

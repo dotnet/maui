@@ -1,6 +1,6 @@
 ﻿#nullable disable
 using System;
-using System.Threading;
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
@@ -9,16 +9,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class CheckBox
 	{
-		static int s_remappedForControls;
-
-		internal new static void RemapForControls()
+		internal override void RemapForControls(HashSet<Type> remapped)
 		{
-			if (Interlocked.CompareExchange(ref s_remappedForControls, 1, 0) != 0)
-				return;
+			if (remapped.Add(typeof(CheckBox)))
+			{
+				base.RemapForControls(remapped);
 
-			VisualElement.RemapForControls();
-
-			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
+				CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
+			}
 		}
 
 		internal static void MapColor(ICheckBoxHandler handler, ICheckBox view)
