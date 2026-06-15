@@ -70,9 +70,10 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(jsonSerializerContext));
 			}
 
-			// The source generator interceptor replaces this method call at compile time
-			// and registers a generated implementation with fully typed delegates.
-			// If the interceptor didn't fire (e.g. indirect call), throw at runtime.
+			// The source generator interceptor must replace this method call at compile time
+			// and register a generated implementation with fully typed delegates. Reaching
+			// this body means interception failed (for example, the analyzer was not
+			// referenced), which is a non-recoverable build/configuration bug.
 			throw new InvalidOperationException(
 				"SetInvokeJavaScriptTarget<T>(T, JsonSerializerContext) must be intercepted by the source generator. " +
 				"Ensure the Microsoft.Maui.Core.HybridWebViewSourceGen analyzer is referenced.");
