@@ -9,6 +9,13 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class CheckBox
 	{
+		static CheckBox()
+		{
+			// Register dependency: Command depends on CommandParameter for CanExecute evaluation
+			// See https://github.com/dotnet/maui/issues/31939
+			CommandProperty.DependsOn(CommandParameterProperty);
+		}
+
 		static int s_remappedForControls;
 		internal override void RemapForControls()
 		{
