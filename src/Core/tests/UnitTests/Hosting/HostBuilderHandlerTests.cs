@@ -425,6 +425,29 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Equal(new[] { "base", "derived" }, RemappableViewStub.RemapOrder);
 		}
 
+		[Fact]
+		public void DiRegisteredHandlerOverrideStillRunsControlsMapperRemapOnAttach()
+		{
+			RemappableViewStub.Reset();
+
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<AttributedRemappableViewStub, AlternateAttributedViewHandlerStub>();
+				})
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			var handler = Assert.IsType<AlternateAttributedViewHandlerStub>(mauiHandlersFactory.GetHandler(typeof(AttributedRemappableViewStub)));
+
+			Assert.Equal(0, RemappableViewStub.RemapCount);
+
+			handler.SetVirtualView(new AttributedRemappableViewStub());
+
+			Assert.Equal(1, RemappableViewStub.RemapCount);
+			Assert.Equal(new[] { "base" }, RemappableViewStub.RemapOrder);
+		}
+
 		[ElementHandler(typeof(AttributedViewHandlerStub))]
 		class AttributedViewStub : ViewStub { }
 		class DerivedAttributedViewStub : AttributedViewStub { }
@@ -454,6 +477,9 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		[MissingHandlerTypeElementHandler]
 		class MissingHandlerTypeAttributedViewStub : ViewStub { }
 		class MissingHandlerTypeElementHandlerAttribute : ElementHandlerAttribute { }
+
+		[ElementHandler(typeof(AttributedViewHandlerStub))]
+		class AttributedRemappableViewStub : RemappableViewStub { }
 
 		[CountingElementHandler]
 		class CountingAttributedViewStub : ViewStub { }
