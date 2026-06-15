@@ -2282,6 +2282,45 @@ public class IntegrationTests
 	}
 
 	[Fact]
+	public void GenerateTwoWayBindingReferencingPrivatePropertyOfNonInpcType()
+	{
+		var source = """
+
+            using Microsoft.Maui.Controls;
+            using MyNamespace;
+
+            var mySourceClass = new MySourceClass();
+            mySourceClass.SetBinding();
+
+            namespace MyNamespace
+            {
+                public class MySourceClass
+                {
+                    private Child Child { get; } = new Child();
+
+                    public void SetBinding()
+                    {
+                        var entry = new Entry();
+                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Child.Value, mode: BindingMode.TwoWay);
+                    }
+                }
+
+                public sealed class Child
+                {
+                    public string Value { get; set; } = "Hello";
+                }
+            }
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		AssertExtensions.AssertNoDiagnostics(result);
+
+		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
+		Assert.Contains("GetUnsafeProperty_Child(source).Value = value;", generatedCode, StringComparison.Ordinal);
+		Assert.Contains("[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = \"get_Child\")]", generatedCode, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void GenerateBindingWithNullableObjectAndNullableReferenceTypeProperty_SetBinding()
 	{
 		var source = """

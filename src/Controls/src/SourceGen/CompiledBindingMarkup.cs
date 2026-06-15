@@ -692,7 +692,7 @@ internal struct CompiledBindingMarkup
 								yield return ({nextVarLocal}, "{indexAccess.PropertyName}");
 							""");
 					}
-					handlersCount++;
+					handlersCount += CountIndexAccessHandlers(indexAccess);
 				}
 			}
 			else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
@@ -726,7 +726,7 @@ internal struct CompiledBindingMarkup
 								yield return ({nextVarLocal}, "{innerIndexAccess.PropertyName}");
 							""");
 					}
-					handlersCount++;
+					handlersCount += CountIndexAccessHandlers(innerIndexAccess);
 				}
 			}
 
@@ -814,6 +814,12 @@ internal struct CompiledBindingMarkup
 				IndexAccess indexAccess => new ConditionalAccess(indexAccess),
 				_ => part,
 			};
+		}
+
+		static int CountIndexAccessHandlers(IndexAccess indexAccess)
+		{
+			// Indexers always listen for the specific index name, and also for the default member name when one exists.
+			return string.IsNullOrEmpty(indexAccess.DefaultMemberName) ? 1 : 2;
 		}
 
 		static bool HasSubsequentHandlerPart(List<IPathPart> pathList, int startIndex)

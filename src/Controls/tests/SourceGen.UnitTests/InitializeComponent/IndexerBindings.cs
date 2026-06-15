@@ -139,6 +139,7 @@ public class IndexedModel
 		// Verify the generated code uses "Item" (default indexer name)
 		Assert.Contains("\"Item\"", generated, StringComparison.Ordinal);
 		Assert.Contains("\"Item[2]\"", generated, StringComparison.Ordinal);
+		Assert.Contains("var handlersCount = 3;", generated, StringComparison.Ordinal);
 
 		// Verify the getter and setter use the indexer correctly
 		Assert.Contains("source.Model[2]", generated, StringComparison.Ordinal);
@@ -486,6 +487,7 @@ public class TestViewModel
 
 		// Verify the getter uses conditional access for nullable Model
 		Assert.Contains("source.Model?[0]", generated, StringComparison.Ordinal);
+		Assert.Contains("var handlersCount = 3;", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]

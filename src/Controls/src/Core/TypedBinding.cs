@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Dispatching;
@@ -627,15 +628,23 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		private class PropertyChangeHandler(
-			TypedBinding<TSource, TProperty> binding,
-			int handlersCount,
-			Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers) : IPropertyChangeHandler
+		private class PropertyChangeHandler : IPropertyChangeHandler
 		{
-			private readonly TypedBinding<TSource, TProperty> _binding = binding;
-			private readonly BindingExpression.WeakPropertyChangedProxy?[] _listeners = new BindingExpression.WeakPropertyChangedProxy?[handlersCount];
-			private readonly string?[] _propertyNames = new string?[handlersCount];
-			private readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? _handlers = handlers;
+			private readonly TypedBinding<TSource, TProperty> _binding;
+			private readonly PropertyChangeListener?[] _listeners;
+			private readonly string?[] _propertyNames;
+			private readonly Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? _handlers;
+
+			public PropertyChangeHandler(
+				TypedBinding<TSource, TProperty> binding,
+				int handlersCount,
+				Func<TSource, IEnumerable<ValueTuple<INotifyPropertyChanged?, string>>>? handlers)
+			{
+				_binding = binding;
+				_listeners = new PropertyChangeListener?[handlersCount];
+				_propertyNames = new string?[handlersCount];
+				_handlers = handlers;
+			}
 
 			public void Subscribe(object sourceObject)
 			{
@@ -652,7 +661,7 @@ namespace Microsoft.Maui.Controls.Internals
 						break;
 
 					_propertyNames[index] = propertyName;
-					var listener = _listeners[index] ??= new();
+					var listener = _listeners[index] ??= new(this);
 					index++;
 
 					// Check if we're already subscribed to the same object
@@ -664,7 +673,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 					// Different object or first subscription, unsubscribe from old and subscribe to new
 					listener.Unsubscribe();
-					listener.Subscribe(part, OnPropertyChanged);
+					listener.Subscribe(part);
 				}
 
 				Unsubscribe(startIndex: index);
@@ -704,6 +713,64 @@ namespace Microsoft.Maui.Controls.Internals
 			{
 				return string.IsNullOrEmpty(eventPropertyName)
 					|| string.Equals(expectedPropertyName, eventPropertyName, StringComparison.Ordinal);
+			}
+
+			private sealed class PropertyChangeListener(PropertyChangeHandler handler)
+			{
+				private readonly WeakReference<PropertyChangeHandler> _handler = new(handler);
+				private WeakReference<INotifyPropertyChanged>? _source;
+
+				public bool TryGetSource([NotNullWhen(true)] out INotifyPropertyChanged? source)
+				{
+					if (_source is not null && _source.TryGetTarget(out source))
+					{
+						return source is not null;
+					}
+
+					source = null;
+					return false;
+				}
+
+				public void Subscribe(INotifyPropertyChanged source)
+				{
+					_source = new(source);
+					source.PropertyChanged += OnPropertyChanged;
+
+					if (source is BindableObject bindableObject)
+					{
+						bindableObject.BindingContextChanged += OnBindingContextChanged;
+					}
+				}
+
+				public void Unsubscribe()
+				{
+					if (TryGetSource(out var source))
+					{
+						source.PropertyChanged -= OnPropertyChanged;
+
+						if (source is BindableObject bindableObject)
+						{
+							bindableObject.BindingContextChanged -= OnBindingContextChanged;
+						}
+					}
+
+					_source = null;
+				}
+
+				private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+				{
+					if (_handler.TryGetTarget(out var handler))
+					{
+						handler.OnPropertyChanged(sender, e);
+					}
+					else
+					{
+						Unsubscribe();
+					}
+				}
+
+				private void OnBindingContextChanged(object? sender, EventArgs e)
+					=> OnPropertyChanged(sender, new PropertyChangedEventArgs(nameof(BindableObject.BindingContext)));
 			}
 
 			public void Unsubscribe()

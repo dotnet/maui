@@ -691,12 +691,11 @@ public static class BindingCodeWriter
 					int memberIndex = pathList.IndexOf(member);
 					bool isLastPart = member.Equals(binding.Path.Last());
 					bool needsGetterForLastPart = binding.RequiresAllUnsafeGetters;
+					bool needsGetterForSetter = binding.SetterOptions.IsWritable && !isLastPart;
 					bool hasSubsequentHandler = memberIndex >= 0 && HasSubsequentHandlerPart(pathList, memberIndex + 1);
 
-					if (!member.IsGetterAccessible && (!isLastPart || needsGetterForLastPart) && hasSubsequentHandler)
+					if (!member.IsGetterAccessible && (needsGetterForSetter || ((!isLastPart || needsGetterForLastPart) && hasSubsequentHandler)))
 					{
-						// we don't need the unsafe getter if no subsequent part yields a handler
-						// because the variable assignment is eliminated as dead code
 						AppendUnsafePropertyGetAccessors(member.MemberName, member.MemberType.GlobalName, member.ContainingType.GlobalName);
 					}
 
