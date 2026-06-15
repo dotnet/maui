@@ -14,7 +14,7 @@
          added → 🔴 REVERT. Same file but no line match → 🟡 OVERLAP. Otherwise → 🟢 CLEAN.
 
     Outputs (when -OutputDir is provided):
-      - content.md       Markdown summary suitable for the wall-of-text PR comment.
+      - content.md       Markdown summary suitable for the wall-of-text PR review.
       - risks.json       Structured findings for downstream agents.
       - result.txt       One token: CLEAN | OVERLAP | REVERT (used by Review-PR.ps1
                          for branching).
@@ -726,7 +726,7 @@ if ($OutputDir) {
     } | ConvertTo-Json -Depth 6
     $payload | Set-Content (Join-Path $OutputDir 'risks.json') -Encoding UTF8
 
-    # content.md — markdown summary for the wall-of-text PR comment
+    # content.md — markdown summary for the wall-of-text PR review
     $md = New-Object System.Text.StringBuilder
     [void]$md.AppendLine("## 🔍 Regression Cross-Reference")
     [void]$md.AppendLine()
