@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 	/// Implemented by the reflection-based fallback and by the source generator.
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public abstract class IHybridWebViewInvoker
+	public abstract class HybridWebViewInvoker
 	{
 		static readonly ConditionalWeakTable<IHybridWebView, InvokerHolder> s_invokers = new();
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="invokeJavaScriptTarget">The object containing methods callable from JavaScript.</param>
 		/// <param name="invokeJavaScriptType">The type containing methods callable from JavaScript.</param>
-		protected IHybridWebViewInvoker(object? invokeJavaScriptTarget, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? invokeJavaScriptType)
+		protected HybridWebViewInvoker(object? invokeJavaScriptTarget, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? invokeJavaScriptType)
 		{
 			InvokeJavaScriptTarget = invokeJavaScriptTarget;
 			InvokeJavaScriptType = invokeJavaScriptType;
@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		internal Type? InvokeJavaScriptType { get; set; }
 
-		internal static void SetInvoker(IHybridWebView hybridWebView, IHybridWebViewInvoker invoker)
+		internal static void SetInvoker(IHybridWebView hybridWebView, HybridWebViewInvoker invoker)
 		{
 			if (hybridWebView is null)
 			{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			s_invokers.GetOrCreateValue(hybridWebView).Invoker = invoker;
 		}
 
-		internal static IHybridWebViewInvoker? GetInvoker(IHybridWebView hybridWebView)
+		internal static HybridWebViewInvoker? GetInvoker(IHybridWebView hybridWebView)
 		{
 			if (hybridWebView is null)
 			{
@@ -68,7 +68,7 @@ namespace Microsoft.Maui
 
 		sealed class InvokerHolder
 		{
-			public IHybridWebViewInvoker? Invoker { get; set; }
+			public HybridWebViewInvoker? Invoker { get; set; }
 		}
 	}
 }

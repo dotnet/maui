@@ -14,7 +14,7 @@ namespace Microsoft.Maui
 #if !NETSTANDARD
 	[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
 #endif
-	internal sealed class ReflectionHybridWebViewInvoker : IHybridWebViewInvoker
+	internal sealed class ReflectionHybridWebViewInvoker : HybridWebViewInvoker
 	{
 		public ReflectionHybridWebViewInvoker(object target, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType)
 			: base(target, targetType)

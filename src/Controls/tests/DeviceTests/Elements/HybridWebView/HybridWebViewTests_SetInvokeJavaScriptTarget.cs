@@ -42,7 +42,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget, InvokeDotNetJsonContext.Default);
 
 			// Verify the invoker was set (AOT-safe path)
-			var invoker = IHybridWebViewInvoker.GetInvoker(hybridWebView);
+			var invoker = HybridWebViewInvoker.GetInvoker(hybridWebView);
 			Assert.NotNull(invoker);
 
 			// Verify the invoker actually works end-to-end
@@ -61,7 +61,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 #pragma warning restore IL2026, IL3050
 
 			// Verify the invoker was set (legacy reflection path)
-			var invoker = IHybridWebViewInvoker.GetInvoker(hybridWebView);
+			var invoker = HybridWebViewInvoker.GetInvoker(hybridWebView);
 			Assert.NotNull(invoker);
 			Assert.IsType<ReflectionHybridWebViewInvoker>(invoker);
 

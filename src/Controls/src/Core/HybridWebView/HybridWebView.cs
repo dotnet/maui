@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="invoker">The invoker used to dispatch JavaScript calls.</param>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetInvoker(IHybridWebViewInvoker invoker)
+		public void SetInvoker(HybridWebViewInvoker invoker)
 		{
-			IHybridWebViewInvoker.SetInvoker(this, invoker);
+			HybridWebViewInvoker.SetInvoker(this, invoker);
 		}
 
 		/// <inheritdoc/>
@@ -64,9 +64,9 @@ namespace Microsoft.Maui.Controls
 			set => GetInvoker().InvokeJavaScriptType = value;
 		}
 
-		IHybridWebViewInvoker GetInvoker()
+		HybridWebViewInvoker GetInvoker()
 		{
-			return IHybridWebViewInvoker.GetInvoker(this)
+			return HybridWebViewInvoker.GetInvoker(this)
 				?? throw new InvalidOperationException(
 					$"No invoker is configured. Call {nameof(SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
 		}

@@ -191,8 +191,8 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			sb.AppendLine("        }");
 			sb.AppendLine();
 
-			// Generate the IHybridWebViewInvoker implementation
-			sb.AppendLine($"        private sealed class Invoker_{index} : global::Microsoft.Maui.IHybridWebViewInvoker");
+			// Generate the HybridWebViewInvoker implementation
+			sb.AppendLine($"        private sealed class Invoker_{index} : global::Microsoft.Maui.HybridWebViewInvoker");
 			sb.AppendLine("        {");
 			sb.AppendLine($"            private readonly {info.TargetTypeName} _target;");
 			sb.AppendLine("            private readonly global::System.Text.Json.Serialization.JsonSerializerContext _ctx;");
