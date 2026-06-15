@@ -640,8 +640,10 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PushModalAsync(tabbedPage);
 				await OnLoadedAsync(tabbedPage.Children[0]);
 
+#if !WINDOWS // On Windows, InvalidateGradientBrushRequested is not wired to the TabbedPage renderer/manager, so it is never subscribed.
 				// Confirm the brush has exactly one subscriber while the page is live.
 				Assert.Single(GetGradientBrushInvocationList(sharedBrush));
+#endif
 
 				await navPage.Navigation.PopModalAsync();
 
