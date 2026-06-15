@@ -34,28 +34,27 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HybridRootProperty, value); }
 		}
 
-		IHybridWebViewInvoker? _invoker;
+		/// <inheritdoc/>
+		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
 
 		/// <inheritdoc/>
-		IHybridWebViewInvoker? IHybridWebView.Invoker
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		Type? IHybridWebView.InvokeJavaScriptType
 		{
-			get => _invoker;
-			set => _invoker = value;
+			get => HybridWebViewInvoker.GetInvokeJavaScriptType(this);
+			set => HybridWebViewInvoker.SetInvokeJavaScriptType(this, value);
 		}
 
-		/// <inheritdoc/>
-		[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
-#if !NETSTANDARD
-		[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
-#endif
-		void IHybridWebView.SetInvokeJavaScriptTarget<T>(T target)
+		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
 		{
 			if (target is null)
 			{
 				throw new ArgumentNullException(nameof(target));
 			}
 
-			_invoker = new ReflectionHybridWebViewInvoker(target, typeof(T));
+			HybridWebViewInvoker.SetInvoker(this, new ReflectionHybridWebViewInvoker(target, typeof(T)));
+			((IHybridWebView)this).InvokeJavaScriptTarget = target;
+			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
 		}
 
 		/// <inheritdoc/>
@@ -72,7 +71,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// The source generator interceptor replaces this method call at compile time
-			// and sets _invoker to a generated implementation with fully typed delegates.
+			// and registers a generated implementation with fully typed delegates.
 			// If the interceptor didn't fire (e.g. indirect call), throw at runtime.
 			throw new InvalidOperationException(
 				"SetInvokeJavaScriptTarget<T>(T, JsonSerializerContext) must be intercepted by the source generator. " +

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui
@@ -6,6 +7,7 @@ namespace Microsoft.Maui
 	/// Abstraction for JS-to-.NET method invocation in HybridWebView.
 	/// Implemented by the reflection-based fallback and by the source generator.
 	/// </summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IHybridWebViewInvoker
 	{
 		/// <summary>

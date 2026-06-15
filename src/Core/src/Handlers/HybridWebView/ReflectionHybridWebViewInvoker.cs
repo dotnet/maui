@@ -8,23 +8,23 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Reflection-based invoker for the legacy SetInvokeJavaScriptTarget overload.
+	/// Reflection-based invoker for the legacy SetInvokeJavaScriptTarget overload. Use the JsonSerializerContext overload for NativeAOT-safe dispatch.
 	/// </summary>
-	[RequiresUnreferencedCode("Uses reflection and dynamic JSON serialization.")]
-#if !NETSTANDARD
-	[RequiresDynamicCode("Uses reflection and dynamic JSON serialization.")]
-#endif
 	internal sealed class ReflectionHybridWebViewInvoker : IHybridWebViewInvoker
 	{
 		private readonly object _target;
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		private readonly Type _targetType;
 
-		public ReflectionHybridWebViewInvoker(object target, Type targetType)
+		public ReflectionHybridWebViewInvoker(object target, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType)
 		{
 			_target = target;
 			_targetType = targetType;
 		}
 
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "Legacy reflection dispatch preserves the target type with DAM; use the JsonSerializerContext overload for the NativeAOT-safe path.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Legacy reflection dispatch may use runtime JSON metadata; use the JsonSerializerContext overload for the NativeAOT-safe path.")]
+		[UnconditionalSuppressMessage("Trimming", "IL2075:DynamicallyAccessedMembers", Justification = "The legacy overload preserves the target type and its public members with DynamicallyAccessedMembers.")]
 		public async Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues)
 		{
 			var method = _targetType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
@@ -36,7 +36,6 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException($"Method '{methodName}' expects {parameters.Length} parameter(s) but {paramJsonValues.Length} were provided.");
 			}
 
-			// Deserialize parameters
 			object?[]? args = null;
 			if (paramJsonValues is not null)
 			{
@@ -47,7 +46,6 @@ namespace Microsoft.Maui
 				}
 			}
 
-			// Invoke
 			object? returnValue;
 			try
 			{
@@ -56,7 +54,7 @@ namespace Microsoft.Maui
 			catch (TargetInvocationException tie) when (tie.InnerException is not null)
 			{
 				ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
-				throw; // unreachable
+				throw;
 			}
 
 			if (returnValue is null)
@@ -64,7 +62,6 @@ namespace Microsoft.Maui
 				return null;
 			}
 
-			// Handle Task / Task<T>
 			if (returnValue is Task task)
 			{
 				await task;
@@ -80,7 +77,6 @@ namespace Microsoft.Maui
 				return null;
 			}
 
-			// Synchronous return
 			return JsonSerializer.Serialize(returnValue);
 		}
 	}

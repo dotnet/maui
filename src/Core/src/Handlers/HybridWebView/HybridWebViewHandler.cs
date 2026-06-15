@@ -179,10 +179,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			try
 			{
-				var invoker = VirtualView.Invoker
-					?? throw new InvalidOperationException(
-						$"No invoker is configured. Call {nameof(IHybridWebView.SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
-
 				JSInvokeMethodData? invokeData = null;
 				if (streamBody is not null)
 				{
@@ -198,6 +194,9 @@ namespace Microsoft.Maui.Handlers
 					throw new InvalidOperationException("The invoke data did not provide a method name.");
 				}
 
+				var invoker = HybridWebViewInvoker.GetInvoker(VirtualView)
+					?? throw new InvalidOperationException(
+						$"No invoker is configured. Call {nameof(IHybridWebView.SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
 				var jsonResult = await invoker.InvokeMethodAsync(invokeData.MethodName, invokeData.ParamValues);
 				var invokeResult = jsonResult is null
 					? new DotNetInvokeResult()

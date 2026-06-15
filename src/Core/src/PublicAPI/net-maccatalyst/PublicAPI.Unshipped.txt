@@ -1,10 +1,6 @@
 ﻿#nullable enable
-*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.get -> object?
-*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptTarget.set -> void
-*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.get -> System.Type?
-*REMOVED*Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
-Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.IHybridWebViewInvoker?
-Microsoft.Maui.IHybridWebView.Invoker.set -> void
+Microsoft.Maui.HybridWebViewInvoker
+static Microsoft.Maui.HybridWebViewInvoker.SetInvoker(Microsoft.Maui.IHybridWebView! hybridWebView, Microsoft.Maui.IHybridWebViewInvoker! invoker) -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.IHybridWebViewInvoker
 Microsoft.Maui.IHybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!

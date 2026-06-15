@@ -187,7 +187,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			sb.AppendLine($"            if (target is not {info.TargetTypeName} typedTarget)");
 			sb.AppendLine($"                throw new InvalidOperationException($\"Type mismatch: expected {info.TargetTypeName.Split('.').Last()} but got {{target.GetType().FullName}}\");");
 			sb.AppendLine();
-			sb.AppendLine($"            ((global::Microsoft.Maui.IHybridWebView)hybridWebView).Invoker = new Invoker_{index}(typedTarget, jsonSerializerContext);");
+			sb.AppendLine($"            global::Microsoft.Maui.HybridWebViewInvoker.SetInvoker(hybridWebView, new Invoker_{index}(typedTarget, jsonSerializerContext));");
 			sb.AppendLine("        }");
 			sb.AppendLine();
 
