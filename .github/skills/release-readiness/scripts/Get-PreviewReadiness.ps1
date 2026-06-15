@@ -150,6 +150,7 @@ if ([string]::IsNullOrWhiteSpace($TrackerKey)) {
 # ===================================================================
 $StatusRank = @{
     "READY"             = 0
+    "CLEANUP"           = 1
     "WATCH"             = 1
     "UNKNOWN"           = 2
     "INSUFFICIENT_DATA" = 2
@@ -435,7 +436,13 @@ function Get-OpenPullRequests {
 }
 
 function Get-IssuesByLabel {
-    param([string]$Label)
+    param(
+        [string]$Label,
+        [switch]$IncludeBody
+    )
+
+    $fields = "number,title,url,labels,milestone,createdAt,updatedAt"
+    if ($IncludeBody) { $fields += ",body" }
 
     $json = Invoke-GitHubWithRetry -Arguments @(
         "issue",
@@ -449,10 +456,32 @@ function Get-IssuesByLabel {
         "--label",
         $Label,
         "--json",
-        "number,title,url,labels,milestone,createdAt,updatedAt"
+        $fields
     ) -Description "list issues with label '$Label'"
 
     return ConvertFrom-JsonOrEmptyArray $json
+}
+
+function Get-CiScanIssueBranch {
+    <#
+    .SYNOPSIS
+        Extracts the `**Branch**: <name>` line from a ci-scan issue body.
+        Returns $null if the line is missing or unparseable.
+    .NOTES
+        The CI Failure Scanner workflow (.github/workflows/ci-status-*.md)
+        emits a Markdown bullet "- **Branch**: <branch>" in every issue body
+        so downstream tooling can localize a signal to its source branch
+        without parsing the AzDO build details. This helper reads that line.
+    #>
+    param($Issue)
+
+    if (-not $Issue.PSObject.Properties['body'] -or -not $Issue.body) { return $null }
+    # Match "**Branch**: <name>" allowing optional leading dash/space.
+    # <name> stops at whitespace, comma, or newline so we get just the ref.
+    if ($Issue.body -match '\*\*Branch\*\*:\s*([^\s,\n<]+)') {
+        return $Matches[1]
+    }
+    return $null
 }
 
 function Test-IssueReleaseRelevant {
@@ -510,19 +539,51 @@ function Get-CiScanIssues {
     <#
     .SYNOPSIS
         Returns open `ci-scan` issues (auto-filed by the CI Failure Scanner
-        workflow every 12h). These are NOT filtered by major/preview because
-        the scanner targets `main` regardless of which release we're shipping
-        — every fresh ci-scan signal is a candidate noise source for the
-        current release.
+        workflow every 12h) filtered to those whose `**Branch**: <name>` body
+        marker matches $Branch. Returns @{ Matched=[array]; FilteredOut=int; Total=int }.
+    .DESCRIPTION
+        The CI Failure Scanner has per-branch workflow variants (e.g.
+        ci-status-main, ci-status-net11) that each file issues with a
+        `**Branch**: <branch>` bullet in the body. Filtering by branch
+        localizes the signal — Preview6 surveying net11.0 should NOT show
+        main-branch failures, because they may or may not affect net11.0.
+        Issues lacking a parseable Branch line are kept (treated as
+        repo-wide / unknown) so we don't silently drop pre-format issues.
     #>
-    [OutputType([object[]])]
-    param()
+    param([string]$Branch)
 
-    $issues = Get-IssuesByLabel -Label 'ci-scan'
-    return @($issues | Sort-Object {
+    $issues = Get-IssuesByLabel -Label 'ci-scan' -IncludeBody
+    $sorted = @($issues | Sort-Object {
         $u = ConvertTo-UtcDateTime -Value $_.createdAt
         if ($u) { $u } else { [DateTime]::MinValue }
     } -Descending)
+
+    if ([string]::IsNullOrWhiteSpace($Branch)) {
+        $result = @{ Matched = $sorted; FilteredOut = 0; Total = $sorted.Count }
+        return $result
+    }
+
+    $matched = New-Object System.Collections.Generic.List[object]
+    $filteredOut = 0
+    foreach ($issue in $sorted) {
+        $issueBranch = Get-CiScanIssueBranch -Issue $issue
+        if ($null -eq $issueBranch) {
+            [void]$matched.Add($issue)
+            continue
+        }
+        if ($issueBranch -eq $Branch) {
+            [void]$matched.Add($issue)
+        } else {
+            $filteredOut++
+        }
+    }
+
+    $result = @{
+        Matched     = $matched.ToArray()
+        FilteredOut = $filteredOut
+        Total       = $sorted.Count
+    }
+    return $result
 }
 
 function Test-IssueIsFresh {
@@ -833,7 +894,7 @@ if ($surveyExists) {
             $checks += New-Check -Area "Bug template versions" -Status "READY" -Details "``$expectedVersion`` listed in bug-report.yml on ``$templateBranch``." -NextAction "No action needed."
         } else {
             $sample = ($templateVersions | Select-Object -First 3) -join ', '
-            $checks += New-Check -Area "Bug template versions" -Status "BLOCKED" -Details "``$expectedVersion`` NOT in .github/ISSUE_TEMPLATE/bug-report.yml version-with-bug dropdown on ``$templateBranch``. Top entries: $sample." -NextAction "Add ``$expectedVersion`` to the dropdown (PR against ``$templateBranch``) before shipping."
+            $checks += New-Check -Area "Bug template versions" -Status "CLEANUP" -Details "``$expectedVersion`` NOT in .github/ISSUE_TEMPLATE/bug-report.yml version-with-bug dropdown on ``$templateBranch``. Top entries: $sample." -NextAction "Add ``$expectedVersion`` to the dropdown (PR against ``$templateBranch``). Not release-blocking — this is post-release cleanup so users can file bugs against the right version."
         }
     } catch {
         $checks += New-Check -Area "Bug template versions" -Status "UNKNOWN" -Details "Failed to evaluate bug template: $($_.Exception.Message)" -NextAction "Inspect .github/ISSUE_TEMPLATE/bug-report.yml manually."
@@ -907,10 +968,14 @@ if ($maestroPRs.Count -eq 0) {
 
 if ($targetHumanPRs.Count -eq 0) {
     $checks += New-Check -Area "Release branch PRs" -Status "READY" -Details "No non-Maestro open PRs target ``$SurveyRef``." -NextAction "No direct release-branch PR action from this check."
-} elseif (@($targetHumanPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
-    $checks += New-Check -Area "Release branch PRs" -Status "BLOCKED" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``, including blocked PRs." -NextAction "Resolve blocked release-branch PRs before release."
 } else {
-    $checks += New-Check -Area "Release branch PRs" -Status "WATCH" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``." -NextAction "Confirm which PRs must merge for the release."
+    # Generic open PRs are NOT release blockers — only P/0 issues block the
+    # release (and those have a dedicated check above + hoisted section).
+    # PRs with merge conflicts or do-not-merge labels are normal queue
+    # noise: the captain decides per-PR if any specific one MUST merge.
+    $blockedCount = @($targetHumanPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count
+    $blockedNote = if ($blockedCount -gt 0) { " ($blockedCount with merge conflicts / do-not-merge label)" } else { "" }
+    $checks += New-Check -Area "Release branch PRs" -Status "WATCH" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``$blockedNote. Not auto-blocking — only P/0 issues block shipment." -NextAction "Confirm which PRs (if any) must merge for the release; the rest can ride normal queue cadence."
 }
 
 # Inflight watch only matters when survey != inflight (otherwise it
@@ -965,17 +1030,28 @@ if ($kbeIssues.Count -gt 0) {
 }
 
 # --- ci-scan signals (auto-filed by CI Failure Scanner every 12h) ---
+# Filtered to issues whose body marker `**Branch**: <name>` matches the
+# survey ref — repo-wide scanner signals from other branches (e.g. main
+# failures when we're surveying net11.0) are excluded as not relevant.
 # Fresh issues (created in last 24h) escalate to WATCH so release captains
-# notice that the scanner just found something — likely affects this release.
-$ciScanIssues = @(Get-CiScanIssues)
+# notice that the scanner just found something on this branch.
+$ciScanResult = Get-CiScanIssues -Branch $SurveyRef
+$ciScanIssues = @($ciScanResult.Matched)
+$ciScanFilteredOut = $ciScanResult.FilteredOut
 $freshCiScan = @($ciScanIssues | Where-Object { Test-IssueIsFresh -Issue $_ -HoursThreshold 24 })
+$filteredNote = if ($ciScanFilteredOut -gt 0) { " ($ciScanFilteredOut other-branch issue(s) filtered out)" } else { "" }
 if ($freshCiScan.Count -gt 0) {
-    $detail = "$($freshCiScan.Count) ci-scan issue(s) filed in the last 24h ($($ciScanIssues.Count) total open). Likely affects this release."
+    $detail = "$($freshCiScan.Count) ci-scan issue(s) targeting ``$SurveyRef`` filed in the last 24h ($($ciScanIssues.Count) total open on this branch$filteredNote). Likely affects this release."
     $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details $detail -NextAction "Review the freshest ci-scan issues; decide whether any affect ship-readiness."
 } elseif ($ciScanIssues.Count -gt 0) {
-    $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details "$($ciScanIssues.Count) open ci-scan issue(s) (none filed in the last 24h)." -NextAction "Review recent ci-scan issues for ship-impact patterns."
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "WATCH" -Details "$($ciScanIssues.Count) open ci-scan issue(s) targeting ``$SurveyRef`` (none filed in the last 24h$filteredNote)." -NextAction "Review recent ci-scan issues for ship-impact patterns."
 } else {
-    $checks += New-Check -Area "CI Failure Scanner signals" -Status "READY" -Details "No open ci-scan issues — scanner has not flagged recurring CI failures." -NextAction "Continue monitoring."
+    $readyDetail = if ($ciScanFilteredOut -gt 0) {
+        "No ci-scan issues targeting ``$SurveyRef`` ($ciScanFilteredOut open issue(s) target other branches and were filtered out)."
+    } else {
+        "No open ci-scan issues — scanner has not flagged recurring CI failures."
+    }
+    $checks += New-Check -Area "CI Failure Scanner signals" -Status "READY" -Details $readyDetail -NextAction "Continue monitoring."
 }
 
 # --- CI truth (placeholder; #35052 wiring not yet done) ---
@@ -1167,6 +1243,24 @@ if ($blockingChecks.Count -gt 0) {
     [void]$md.AppendLine("")
 }
 
+# === CLEANUP FOLLOW-UPS (post-release housekeeping) ===
+# Items that are NOT release-blocking but are real follow-ups the release
+# captain should track (e.g. bug template version dropdown not yet updated
+# — that's a post-release cleanup, not a ship blocker).
+$cleanupChecks = @($checks | Where-Object { $_.Status -eq 'CLEANUP' })
+if ($cleanupChecks.Count -gt 0) {
+    [void]$md.AppendLine("## 🧹 Cleanup follow-ups — $($cleanupChecks.Count) item(s)")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("_Not release-blocking — these are post-ship housekeeping items to track separately._")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("| Area | Details | Next action |")
+    [void]$md.AppendLine("|------|---------|-------------|")
+    foreach ($cc in $cleanupChecks) {
+        [void]$md.AppendLine("| $(Format-MarkdownCell $cc.Area) | $(Format-MarkdownCell $cc.Details) | $(Format-MarkdownCell $cc.NextAction) |")
+    }
+    [void]$md.AppendLine("")
+}
+
 [void]$md.AppendLine("Generated at $generatedAt for ``$Repository``.")
 [void]$md.AppendLine("")
 [void]$md.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$Mode`` · branch=``$Branch`` · survey=``$SurveyRef``")
@@ -1220,9 +1314,18 @@ Add-IssueTable -Builder $md -Issues $kbeIssues
 
 [void]$md.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
 [void]$md.AppendLine("")
-[void]$md.AppendLine("_Auto-filed by the CI Failure Scanner workflow (runs every 12h on ``main``). Fresh issues (<24h) are flagged 🆕._")
+$ciScanBlurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$SurveyRef`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
+if ($ciScanFilteredOut -gt 0) {
+    $ciScanBlurb += " _$ciScanFilteredOut other-branch issue(s) were excluded as not relevant to this release._"
+}
+[void]$md.AppendLine($ciScanBlurb)
 [void]$md.AppendLine("")
-Add-CiScanTable -Builder $md -Issues $ciScanIssues
+if ($ciScanIssues.Count -eq 0) {
+    [void]$md.AppendLine("_No ci-scan issues target ``$SurveyRef``._")
+    [void]$md.AppendLine("")
+} else {
+    Add-CiScanTable -Builder $md -Issues $ciScanIssues
+}
 
 [void]$md.AppendLine("## Maintainer next actions")
 [void]$md.AppendLine("")

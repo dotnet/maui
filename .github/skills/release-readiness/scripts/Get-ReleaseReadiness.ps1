@@ -2103,34 +2103,94 @@ function Get-OpenIssuesByLabel {
     .SYNOPSIS
         Returns open issues labeled $Label. Includes createdAt so callers can
         compute freshness for ci-scan-style escalation. Returns an array.
+    .PARAMETER IncludeBody
+        Include the issue body in the result (needed for ci-scan branch filtering).
     #>
     [OutputType([object[]])]
-    param([string]$Label)
+    param(
+        [string]$Label,
+        [switch]$IncludeBody
+    )
+
+    $fields = 'number,title,url,labels,createdAt,updatedAt'
+    if ($IncludeBody) { $fields += ',body' }
 
     $raw = Invoke-Gh @('issue', 'list', '--repo', $script:Repo, '--state', 'open',
                        '--limit', '100', '--label', $Label,
-                       '--json', 'number,title,url,labels,createdAt,updatedAt')
+                       '--json', $fields)
     if (-not $raw) { return @() }
     $issues = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
     if (-not $issues) { return @() }
     return @($issues)
 }
 
+function Get-CiScanIssueBranch {
+    <#
+    .SYNOPSIS
+        Extracts the `**Branch**: <name>` line from a ci-scan issue body.
+        Returns $null if the marker is absent.
+    .NOTES
+        The CI Failure Scanner workflow (.github/workflows/ci-status-*.md) emits
+        a Markdown bullet "- **Branch**: <branch>" in every issue body so
+        downstream tooling can localize a signal to its source branch without
+        parsing AzDO build payloads. See Get-PreviewReadiness.ps1 for the
+        parallel implementation used by Preview readiness.
+    #>
+    param($Issue)
+
+    if (-not $Issue.PSObject.Properties['body'] -or -not $Issue.body) { return $null }
+    if ($Issue.body -match '\*\*Branch\*\*:\s*([^\s,\n<]+)') {
+        return $Matches[1]
+    }
+    return $null
+}
+
 function Get-CiScanIssuesForSr {
     <#
     .SYNOPSIS
-        Returns open `ci-scan` issues sorted newest-first. Not filtered by
-        SR version — the scanner targets `main`, so every signal is a
-        potential noise/blocker source for any in-flight SR.
+        Returns open `ci-scan` issues sorted newest-first, filtered to those
+        whose `**Branch**: <name>` body marker matches $Branch. Returns
+        @{ Matched=[array]; FilteredOut=int; Total=int }.
+    .DESCRIPTION
+        The CI Failure Scanner has per-branch workflow variants (e.g.
+        ci-status-main, ci-status-net11). Each files issues with a
+        `**Branch**: <name>` bullet so we can scope a SR's CI signals to
+        only the branch being shipped. Issues lacking the marker are kept
+        (treated as repo-wide / unknown) so we don't silently drop
+        pre-format issues.
     #>
-    [OutputType([object[]])]
-    param()
+    param([string]$Branch)
 
-    $issues = Get-OpenIssuesByLabel -Label 'ci-scan'
-    return @($issues | Sort-Object {
+    $issues = Get-OpenIssuesByLabel -Label 'ci-scan' -IncludeBody
+    $sorted = @($issues | Sort-Object {
         $u = ConvertTo-Utc -Value $_.createdAt
         if ($u) { $u } else { [DateTime]::MinValue }
     } -Descending)
+
+    if ([string]::IsNullOrWhiteSpace($Branch)) {
+        return @{ Matched = $sorted; FilteredOut = 0; Total = $sorted.Count }
+    }
+
+    $matched = New-Object System.Collections.Generic.List[object]
+    $filteredOut = 0
+    foreach ($issue in $sorted) {
+        $issueBranch = Get-CiScanIssueBranch -Issue $issue
+        if ($null -eq $issueBranch) {
+            [void]$matched.Add($issue)
+            continue
+        }
+        if ($issueBranch -eq $Branch) {
+            [void]$matched.Add($issue)
+        } else {
+            $filteredOut++
+        }
+    }
+
+    return @{
+        Matched     = $matched.ToArray()
+        FilteredOut = $filteredOut
+        Total       = $sorted.Count
+    }
 }
 
 function Test-CiScanIsFresh {
@@ -2150,36 +2210,48 @@ function Get-CiSignalChecks {
     <#
     .SYNOPSIS
         Builds two readiness-check records:
-          1. CI Failure Scanner signals (ci-scan label, escalates if any <24h)
+          1. CI Failure Scanner signals (ci-scan label, filtered to $Branch, escalates if any <24h)
           2. Known Build Errors (KBE label, WATCH if any open, READY otherwise)
-        Returns @{ Checks = [array]; CiScanIssues = [array]; KbeIssues = [array] }.
+        Returns @{ Checks = [array]; CiScanIssues = [array]; CiScanFilteredOut = [int]; KbeIssues = [array] }.
+    .PARAMETER Branch
+        The SR branch whose ci-scan signals to surface (e.g. release/10.0.1xx-sr8).
+        Issues whose body `**Branch**: <name>` marker doesn't match are excluded
+        as not relevant to this SR.
     #>
-    param()
+    param([string]$Branch)
 
     Write-Host "Querying ci-scan and Known Build Error issue lists..." -ForegroundColor Cyan
-    $ciScan = @(Get-CiScanIssuesForSr)
+    $ciScanResult = Get-CiScanIssuesForSr -Branch $Branch
+    $ciScan = @($ciScanResult.Matched)
+    $ciScanFilteredOut = $ciScanResult.FilteredOut
     $kbe    = @(Get-OpenIssuesByLabel -Label 'Known Build Error')
 
     $checks = @()
 
     $fresh = @($ciScan | Where-Object { Test-CiScanIsFresh -Issue $_ -HoursThreshold 24 })
+    $filteredNote = if ($ciScanFilteredOut -gt 0) { " ($ciScanFilteredOut other-branch issue(s) filtered out)" } else { "" }
     if ($fresh.Count -gt 0) {
         $checks += New-ReadinessCheck `
             -Area 'CI Failure Scanner signals' `
             -Status 'WATCH' `
-            -Details "$($fresh.Count) ci-scan issue(s) filed in the last 24h ($($ciScan.Count) total open). Likely affects this SR." `
+            -Details "$($fresh.Count) ci-scan issue(s) targeting ``$Branch`` filed in the last 24h ($($ciScan.Count) total open on this branch$filteredNote). Likely affects this SR." `
             -NextAction 'Review the freshest ci-scan issues to confirm none block ship.'
     } elseif ($ciScan.Count -gt 0) {
         $checks += New-ReadinessCheck `
             -Area 'CI Failure Scanner signals' `
             -Status 'WATCH' `
-            -Details "$($ciScan.Count) open ci-scan issue(s) (none filed in the last 24h)." `
+            -Details "$($ciScan.Count) open ci-scan issue(s) targeting ``$Branch`` (none filed in the last 24h$filteredNote)." `
             -NextAction 'Skim recent ci-scan issues for impact patterns; mark accepted-known if appropriate.'
     } else {
+        $readyDetail = if ($ciScanFilteredOut -gt 0) {
+            "No ci-scan issues targeting ``$Branch`` ($ciScanFilteredOut open issue(s) target other branches and were filtered out)."
+        } else {
+            'No open ci-scan issues — scanner has not flagged recurring CI failures.'
+        }
         $checks += New-ReadinessCheck `
             -Area 'CI Failure Scanner signals' `
             -Status 'READY' `
-            -Details 'No open ci-scan issues — scanner has not flagged recurring CI failures.' `
+            -Details $readyDetail `
             -NextAction 'Continue monitoring.'
     }
 
@@ -2198,9 +2270,10 @@ function Get-CiSignalChecks {
     }
 
     return @{
-        Checks       = $checks
-        CiScanIssues = $ciScan
-        KbeIssues    = $kbe
+        Checks            = $checks
+        CiScanIssues      = $ciScan
+        CiScanFilteredOut = $ciScanFilteredOut
+        KbeIssues         = $kbe
     }
 }
 
@@ -2843,16 +2916,27 @@ function Format-MarkdownReport {
     }
 
     # === Recent CI Failure Scanner signals (ci-scan label) ===
-    if ($Data.ContainsKey('ciScanIssues') -and $Data['ciScanIssues']) {
+    if ($Data.ContainsKey('ciScanIssues')) {
+        $ciScanBranch = $ctx.srBranch
+        $ciScanFilteredOut = if ($Data.ContainsKey('ciScanFilteredOut')) { [int]$Data['ciScanFilteredOut'] } else { 0 }
+        $ciScanIssuesData = @($Data['ciScanIssues'])
         [void]$sb.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
         [void]$sb.AppendLine()
-        [void]$sb.AppendLine("_Auto-filed by the CI Failure Scanner workflow (runs every 12h on ``main``). Fresh issues (<24h) are flagged 🆕._")
+        $blurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$ciScanBranch`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
+        if ($ciScanFilteredOut -gt 0) {
+            $blurb += " _$ciScanFilteredOut other-branch issue(s) were excluded as not relevant to this SR._"
+        }
+        [void]$sb.AppendLine($blurb)
         [void]$sb.AppendLine()
-        $rows = Format-CiScanIssueRows -Issues $Data['ciScanIssues'] -RepoUrl $RepoUrl
-        if ($rows) {
-            [void]$sb.Append($rows)
+        if ($ciScanIssuesData.Count -gt 0) {
+            $rows = Format-CiScanIssueRows -Issues $ciScanIssuesData -RepoUrl $RepoUrl
+            if ($rows) {
+                [void]$sb.Append($rows)
+            } else {
+                [void]$sb.AppendLine("_No ci-scan issues target ``$ciScanBranch``._")
+            }
         } else {
-            [void]$sb.AppendLine('_No open ci-scan issues._')
+            [void]$sb.AppendLine("_No ci-scan issues target ``$ciScanBranch``._")
         }
         [void]$sb.AppendLine()
     }
@@ -3096,12 +3180,17 @@ function Invoke-Main {
     # ship-readiness table AND can escalate the verdict (fresh ci-scan → WATCH; never
     # BLOCKED automatically because the scanner can be noisy).
     if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
-        $signalResult = Get-CiSignalChecks
+        # Scope ci-scan to the branch we're surveying so other-branch noise
+        # (e.g. main CI signals on an in-flight SR report) doesn't bleed in.
+        # ctx.srBranch is automatically: main/$MainBranch in candidate mode
+        # (when no SR has been cut yet) or the actual SR branch in in-flight mode.
+        $signalResult = Get-CiSignalChecks -Branch $ctx.srBranch
         if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
             $data['shipChecks'] = @()
         }
         $data['shipChecks'] = @($data['shipChecks']) + @($signalResult.Checks)
         $data['ciScanIssues'] = @($signalResult.CiScanIssues)
+        $data['ciScanFilteredOut'] = $signalResult.CiScanFilteredOut
         $data['kbeIssues']    = @($signalResult.KbeIssues)
     }
 

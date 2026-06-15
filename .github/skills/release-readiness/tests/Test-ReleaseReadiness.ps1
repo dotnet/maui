@@ -1853,15 +1853,67 @@ $mdWithCiScan = Format-MarkdownReport -Data $mdDataWithCiScan -RepoUrl 'https://
 Assert-Eq -Label "ci-scan section header rendered when issues present" -Expected $true `
     -Actual ($mdWithCiScan -match 'Recent CI Failure Scanner signals')
 Assert-Eq -Label "ci-scan section explanatory note rendered" -Expected $true `
-    -Actual ($mdWithCiScan -match 'runs every 12h')
+    -Actual ($mdWithCiScan -match 'auto-filed by the CI Failure Scanner workflow')
 Assert-Eq -Label "ci-scan section links to a fresh issue" -Expected $true `
     -Actual ($mdWithCiScan -match '🆕\s*\[#35864\]')
+
+# Branch-filter: when filtered, blurb mentions the survey branch
+Assert-Eq -Label "ci-scan blurb mentions survey branch" -Expected $true `
+    -Actual ($mdWithCiScan -match 'matches `release/10\.0\.1xx-sr7`')
+
+# Branch-filter: when ciScanFilteredOut > 0, blurb surfaces excluded count
+$mdDataWithFiltered = @{} + $mdDataWithCiScan
+$mdDataWithFiltered['ciScanFilteredOut'] = 7
+$mdWithFiltered = Format-MarkdownReport -Data $mdDataWithFiltered -RepoUrl 'https://github.com/dotnet/maui' `
+                                        -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "ci-scan blurb surfaces excluded-count" -Expected $true `
+    -Actual ($mdWithFiltered -match '7 other-branch issue\(s\) were excluded')
+
+# Branch-filter: empty matched list still renders section header (with no-issues note)
+$mdDataEmptyCiScan = @{} + $mdData
+$mdDataEmptyCiScan['ciScanIssues'] = @()
+$mdDataEmptyCiScan['ciScanFilteredOut'] = 5
+$mdEmptyCiScan = Format-MarkdownReport -Data $mdDataEmptyCiScan -RepoUrl 'https://github.com/dotnet/maui' `
+                                       -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "ci-scan empty list: section still renders" -Expected $true `
+    -Actual ($mdEmptyCiScan -match 'Recent CI Failure Scanner signals')
+Assert-Eq -Label "ci-scan empty list: shows no-issues note for branch" -Expected $true `
+    -Actual ($mdEmptyCiScan -match 'No ci-scan issues target')
 
 # Without ciScanIssues key → no ci-scan section
 $mdNoCiScan = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
                                     -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
 Assert-Eq -Label "No ciScanIssues key: section NOT rendered" -Expected $false `
     -Actual ($mdNoCiScan -match 'Recent CI Failure Scanner signals')
+
+# Get-CiScanIssueBranch: extracts branch from body marker
+Write-Host "`n[Unit] Get-CiScanIssueBranch parses Branch marker" -ForegroundColor Cyan
+$issueWithBranch = [PSCustomObject]@{
+    body = "## Summary`nstuff`n## Build Information`n- **Pipeline**: maui-pr`n- **Branch**: net11.0`n- **First seen**: 2026-06-11"
+}
+Assert-Eq -Label "extracts 'net11.0' from body marker" -Expected 'net11.0' `
+    -Actual (Get-CiScanIssueBranch -Issue $issueWithBranch)
+
+$issueMainBranch = [PSCustomObject]@{
+    body = "Random text`n- **Branch**: main`nmore stuff"
+}
+Assert-Eq -Label "extracts 'main' from body marker" -Expected 'main' `
+    -Actual (Get-CiScanIssueBranch -Issue $issueMainBranch)
+
+$issueSrBranch = [PSCustomObject]@{
+    body = "- **Branch**: release/10.0.1xx-sr8`n"
+}
+Assert-Eq -Label "extracts SR branch with slashes/dots" -Expected 'release/10.0.1xx-sr8' `
+    -Actual (Get-CiScanIssueBranch -Issue $issueSrBranch)
+
+$issueNoMarker = [PSCustomObject]@{ body = "## Just summary, no branch marker" }
+Assert-Eq -Label "returns null when no Branch marker" -Expected $null `
+    -Actual (Get-CiScanIssueBranch -Issue $issueNoMarker)
+
+$issueEmptyBody = [PSCustomObject]@{ body = '' }
+Assert-Eq -Label "returns null for empty body" -Expected $null `
+    -Actual (Get-CiScanIssueBranch -Issue $issueEmptyBody)
+
 
 # ───── Regression test: ConvertTo-Utc handles both string + DateTime inputs ─────
 # ConvertFrom-Json already returns DateTime (Kind=Utc) for ISO-8601 'Z' strings.
