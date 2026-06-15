@@ -50,7 +50,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// For internal use only.
 		/// </summary>
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? InvokeJavaScriptType { get; set; }
 
 		void RawMessageReceived(string rawMessage);

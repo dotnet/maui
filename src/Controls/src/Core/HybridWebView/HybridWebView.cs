@@ -57,7 +57,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		Type? IHybridWebView.InvokeJavaScriptType
 		{
 			get => GetInvoker().InvokeJavaScriptType;

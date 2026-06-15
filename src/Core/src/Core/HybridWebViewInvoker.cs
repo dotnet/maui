@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="invokeJavaScriptTarget">The object containing methods callable from JavaScript.</param>
 		/// <param name="invokeJavaScriptType">The type containing methods callable from JavaScript.</param>
-		protected HybridWebViewInvoker(object? invokeJavaScriptTarget, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? invokeJavaScriptType)
+		protected HybridWebViewInvoker(object? invokeJavaScriptTarget, Type? invokeJavaScriptType)
 		{
 			InvokeJavaScriptTarget = invokeJavaScriptTarget;
 			InvokeJavaScriptType = invokeJavaScriptType;
@@ -28,7 +28,6 @@ namespace Microsoft.Maui
 
 		internal object? InvokeJavaScriptTarget { get; set; }
 
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 		internal Type? InvokeJavaScriptType { get; set; }
 
 		internal static void SetInvoker(IHybridWebView hybridWebView, HybridWebViewInvoker invoker)
