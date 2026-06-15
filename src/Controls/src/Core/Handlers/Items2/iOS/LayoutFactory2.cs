@@ -164,11 +164,11 @@ internal static class LayoutFactory2
 			var halfHorizontalSpacing = new NFloat(horizontalItemSpacing / 2d);
 			var halfVerticalSpacing = new NFloat(verticalItemSpacing / 2d);
 
-			if (scrollDirection == UICollectionViewScrollDirection.Vertical && horizontalItemSpacing > 0)
+			if (scrollDirection == UICollectionViewScrollDirection.Vertical && horizontalItemSpacing > 0 && columns > 1)
 			{
 				item.ContentInsets = new NSDirectionalEdgeInsets(0, halfHorizontalSpacing, 0, halfHorizontalSpacing);
 			}
-			else if (scrollDirection == UICollectionViewScrollDirection.Horizontal && verticalItemSpacing > 0)
+			else if (scrollDirection == UICollectionViewScrollDirection.Horizontal && verticalItemSpacing > 0 && columns > 1)
 			{
 				item.ContentInsets = new NSDirectionalEdgeInsets(halfVerticalSpacing, 0, halfVerticalSpacing, 0);
 			}
@@ -192,18 +192,10 @@ internal static class LayoutFactory2
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
 			{
 				section.InterGroupSpacing = new NFloat(verticalItemSpacing);
-				if (verticalItemSpacing > 0)
-				{
-					section.ContentInsets = new NSDirectionalEdgeInsets(halfVerticalSpacing, 0, halfVerticalSpacing, 0);
-				}
 			}
 			else
 			{
 				section.InterGroupSpacing = new NFloat(horizontalItemSpacing);
-				if (horizontalItemSpacing > 0)
-				{
-					section.ContentInsets = new NSDirectionalEdgeInsets(0, halfHorizontalSpacing, 0, halfHorizontalSpacing);
-				}
 			}
 
 
