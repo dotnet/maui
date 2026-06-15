@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Benchmarks
 			}
 		};
 
-		protected  readonly MyObject Target = new() { Name = "B" };
+		protected readonly MyObject Target = new() { Name = "B" };
 	}
 
 	[MemoryDiagnoser]
