@@ -10,6 +10,10 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Reflection-based invoker for the legacy SetInvokeJavaScriptTarget overload. Use the JsonSerializerContext overload for NativeAOT-safe dispatch.
 	/// </summary>
+	[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
+#if !NETSTANDARD
+	[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
+#endif
 	internal sealed class ReflectionHybridWebViewInvoker : IHybridWebViewInvoker
 	{
 		private readonly object _target;
@@ -22,8 +26,6 @@ namespace Microsoft.Maui
 			_targetType = targetType;
 		}
 
-		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "Legacy reflection dispatch preserves the target type with DAM; use the JsonSerializerContext overload for the NativeAOT-safe path.")]
-		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Legacy reflection dispatch may use runtime JSON metadata; use the JsonSerializerContext overload for the NativeAOT-safe path.")]
 		[UnconditionalSuppressMessage("Trimming", "IL2075:DynamicallyAccessedMembers", Justification = "The legacy overload preserves the target type and its public members with DynamicallyAccessedMembers.")]
 		public async Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues)
 		{

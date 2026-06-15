@@ -14,9 +14,13 @@ namespace Microsoft.Maui.Controls
 	public class HybridWebView : View, IHybridWebView
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
 		public static readonly BindableProperty DefaultFileProperty =
 			BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
 		/// <summary>Bindable property for <see cref="HybridRoot"/>.</summary>
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
 		public static readonly BindableProperty HybridRootProperty =
 			BindableProperty.Create(nameof(HybridRoot), typeof(string), typeof(HybridWebView), defaultValue: "wwwroot");
 
@@ -45,6 +49,10 @@ namespace Microsoft.Maui.Controls
 			set => HybridWebViewInvoker.SetInvokeJavaScriptType(this, value);
 		}
 
+		[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
+#endif
 		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
 		{
 			if (target is null)

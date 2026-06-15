@@ -32,6 +32,10 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
 		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
+		[RequiresUnreferencedCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Use SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext jsonSerializerContext) for trimming and NativeAOT compatibility.")]
+#endif
 		void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class;
 
 		/// <summary>
