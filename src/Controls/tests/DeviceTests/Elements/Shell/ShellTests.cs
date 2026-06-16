@@ -1033,15 +1033,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		// HideSoftInputOnTapped is only functional on Android and iOS.
 #if ANDROID || IOS
-		[Fact(DisplayName = "HideSoftInputOnTapped Page Is Cleaned Up Via Unloaded When ShellContent Is Hidden Without NavigatedFrom Firing (Issue 35890)")]
-		public async Task HideSoftInputOnTappedPageCleanedUpViaUnloadedWhenShellContentHiddenWithoutNavigatedFrom()
+		[Fact(DisplayName = "HideSoftInputOnTapped FeatureEnabled Reflects Live Page State After ShellContent Hidden Without NavigatedFrom (Issue 35890)")]
+		public async Task HideSoftInputOnTappedFeatureEnabledReflectsLivePageAfterShellContentHidden()
 		{
 			SetupBuilder();
 
+			var loginEntry = new Entry();
 			var loginPage = new ContentPage
 			{
 				HideSoftInputOnTapped = true,
-				Content = new Entry()
+				Content = loginEntry
 			};
 
 			var homePage = new ContentPage
@@ -1056,45 +1057,47 @@ namespace Microsoft.Maui.DeviceTests
 				loginShellContent = new ShellContent
 				{
 					Title = "Login",
-					Content = loginPage,
+					ContentTemplate = new DataTemplate(() => loginPage),
 					Route = "LoginPage"
 				};
 				shell.Items.Add(loginShellContent);
 				shell.Items.Add(new ShellContent
 				{
 					Title = "Home",
-					Content = homePage,
+					ContentTemplate = new DataTemplate(() => homePage),
 					Route = "HomePage"
 				});
 			});
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
 			{
-				// Wait for login page to be fully loaded and NavigatedTo to have fired.
 				await OnLoadedAsync(loginPage);
 
-				// Retrieve the manager from the login page's handler.
+				// Retrieve the manager and FeatureEnabled property via reflection.
 				var manager = loginPage.Handler?.GetService<HideSoftInputOnTappedChangedManager>();
 				Assert.NotNull(manager);
 
-				// Verify the login page is tracked: HideSoftInputOnTapped=true + HasNavigatedTo=true
-				// causes it to be added to _contentPages via the NavigatedTo event handler.
-				var contentPagesField = typeof(HideSoftInputOnTappedChangedManager)
-					.GetField("_contentPages", BindingFlags.NonPublic | BindingFlags.Instance);
-				var contentPages = contentPagesField?.GetValue(manager) as List<ContentPage>;
-				Assert.NotNull(contentPages);
-				Assert.Contains(loginPage, contentPages);
+				var featureEnabledProp = typeof(HideSoftInputOnTappedChangedManager)
+					.GetProperty("FeatureEnabled", BindingFlags.NonPublic | BindingFlags.Instance);
+				Assert.NotNull(featureEnabledProp);
 
-				// Reproduce the bug scenario from issue #35890:
-				// Hiding the ShellContent via IsVisible=false and navigating via absolute GoToAsync
-				// does NOT fire NavigatedFrom on the outgoing page, leaving it in _contentPages.
+				// Focus the entry so FocusedView is set; FeatureEnabled should be true
+				// because the enclosing page has HideSoftInputOnTapped=true + HasNavigatedTo=true.
+				loginEntry.Focus();
+				Assert.True((bool?)featureEnabledProp.GetValue(manager));
+
+				// Reproduce issue #35890: IsVisible=false + absolute GoToAsync does NOT fire
+				// NavigatedFrom, so the old list-based fix left the page registered permanently.
+				// With the parent-chain walk, FeatureEnabled is computed from the live focused
+				// view's enclosing page, so it automatically reflects the new state.
 				loginShellContent.IsVisible = false;
 				await shell.GoToAsync("///HomePage");
 				await OnLoadedAsync(homePage);
 
-				// Verify the fix: the Unloaded event must have cleaned up the login page
-				// from _contentPages, even though NavigatedFrom never fired.
-				Assert.Empty(contentPages);
+				// After navigation the focused entry is gone from the visual tree.
+				// FeatureEnabled must now be false — either FocusedView is null, or its
+				// enclosing page (homePage) has HideSoftInputOnTapped=false.
+				Assert.False((bool?)featureEnabledProp.GetValue(manager));
 			});
 		}
 #endif

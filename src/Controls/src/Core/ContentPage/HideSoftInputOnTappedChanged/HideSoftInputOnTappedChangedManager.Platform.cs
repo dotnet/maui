@@ -3,7 +3,6 @@
 // Ideally users would use behavior that's more accessible forward and consistent with platform expectations.
 #if ANDROID || IOS
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,48 +11,34 @@ namespace Microsoft.Maui.Controls
 		IDisposable? _watchingForTaps;
 		WeakReference<IView>? _focusedView;
 
+		static ContentPage? GetEnclosingPage(IView? view)
+		{
+			Element? element = view as Element;
+			while (element is not null)
+			{
+				if (element is ContentPage contentPage)
+					return contentPage;
+				element = element.Parent;
+			}
+			return null;
+		}
+
+		bool FeatureEnabled
+		{
+			get
+			{
+				var page = GetEnclosingPage(FocusedView);
+				return page is not null && page.HideSoftInputOnTapped && page.HasNavigatedTo;
+			}
+		}
+
 		internal void UpdatePage(ContentPage page)
 		{
-			if (page.HideSoftInputOnTapped && page.HasNavigatedTo)
-			{
-				if (!_contentPages.Contains(page))
-				{
-					_contentPages.Add(page);
-					page.NavigatedFrom += OnPageNavigatedFrom;
-					page.Unloaded += OnPageUnloaded;
-					SetupHideSoftInputOnTapped();
-				}
-			}
-			else
-			{
-				RemovePage(page);
-			}
-
-			void RemovePage(ContentPage pageToRemove)
-			{
-				page.NavigatedFrom -= OnPageNavigatedFrom;
-				page.Unloaded -= OnPageUnloaded;
-				if (_contentPages.Contains(pageToRemove))
-					_contentPages.Remove(pageToRemove);
-
-				SetupHideSoftInputOnTapped();
-			}
-
-			void OnPageNavigatedFrom(object? sender, NavigatedFromEventArgs e)
-			{
-				if (sender is ContentPage pageNavigatedFrom)
-				{
-					RemovePage(pageNavigatedFrom);
-				}
-			}
-
-			void OnPageUnloaded(object? sender, EventArgs e)
-			{
-				if (sender is ContentPage unloadedPage)
-				{
-					RemovePage(unloadedPage);
-				}
-			}
+			// HideSoftInputOnTapped (or HasNavigatedTo) changed on this page.
+			// FeatureEnabled is computed on-demand from the currently focused view's
+			// enclosing page, so we just need to re-evaluate the tap watcher in case
+			// the change flips FeatureEnabled for the focused view.
+			SetupHideSoftInputOnTapped();
 		}
 
 		internal IDisposable? UpdateFocusForView(IView _view)

@@ -13,32 +13,33 @@ namespace Microsoft.Maui.Controls
 
 		void OnWindowDispatchedTouch(object? sender, MotionEvent? e)
 		{
-			if (!FeatureEnabled || e is null)
+			if (e is null)
 			{
 				return;
 			}
 
-			foreach (var page in _contentPages)
+			var page = GetEnclosingPage(FocusedView);
+			if (page is null ||
+				!page.HasNavigatedTo ||
+				!page.HideSoftInputOnTapped ||
+				page.Handler is not IPlatformViewHandler pvh ||
+				pvh.MauiContext?.Context is null)
 			{
-				if (page.HasNavigatedTo &&
-					page.HideSoftInputOnTapped &&
-					page.Handler is IPlatformViewHandler pvh &&
-					pvh.MauiContext?.Context is not null)
-				{
-					var location = pvh.PlatformView.GetBoundingBox();
-					var androidContext = pvh.MauiContext.Context;
-
-					var point =
-						new Point
-						(
-							androidContext.FromPixels(e.RawX),
-							androidContext.FromPixels(e.RawY)
-						);
-
-					if (location.Contains(point))
-						DispatchTouchEvent?.Invoke(this, e);
-				}
+				return;
 			}
+
+			var location = pvh.PlatformView.GetBoundingBox();
+			var androidContext = pvh.MauiContext.Context;
+
+			var point =
+				new Point
+				(
+					androidContext.FromPixels(e.RawX),
+					androidContext.FromPixels(e.RawY)
+				);
+
+			if (location.Contains(point))
+				DispatchTouchEvent?.Invoke(this, e);
 		}
 
 		// This is called from InputViews as they are added to the visual tree
