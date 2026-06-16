@@ -1031,6 +1031,74 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+		// HideSoftInputOnTapped is only functional on Android and iOS.
+#if ANDROID || IOS
+		[Fact(DisplayName = "HideSoftInputOnTapped Page Is Cleaned Up Via Unloaded When ShellContent Is Hidden Without NavigatedFrom Firing (Issue 35890)")]
+		public async Task HideSoftInputOnTappedPageCleanedUpViaUnloadedWhenShellContentHiddenWithoutNavigatedFrom()
+		{
+			SetupBuilder();
+
+			var loginPage = new ContentPage
+			{
+				HideSoftInputOnTapped = true,
+				Content = new Entry()
+			};
+
+			var homePage = new ContentPage
+			{
+				HideSoftInputOnTapped = false,
+				Content = new Entry()
+			};
+
+			ShellContent loginShellContent = null!;
+			var shell = await CreateShellAsync(shell =>
+			{
+				loginShellContent = new ShellContent
+				{
+					Title = "Login",
+					Content = loginPage,
+					Route = "LoginPage"
+				};
+				shell.Items.Add(loginShellContent);
+				shell.Items.Add(new ShellContent
+				{
+					Title = "Home",
+					Content = homePage,
+					Route = "HomePage"
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				// Wait for login page to be fully loaded and NavigatedTo to have fired.
+				await OnLoadedAsync(loginPage);
+
+				// Retrieve the manager from the login page's handler.
+				var manager = loginPage.Handler?.GetService<HideSoftInputOnTappedChangedManager>();
+				Assert.NotNull(manager);
+
+				// Verify the login page is tracked: HideSoftInputOnTapped=true + HasNavigatedTo=true
+				// causes it to be added to _contentPages via the NavigatedTo event handler.
+				var contentPagesField = typeof(HideSoftInputOnTappedChangedManager)
+					.GetField("_contentPages", BindingFlags.NonPublic | BindingFlags.Instance);
+				var contentPages = contentPagesField?.GetValue(manager) as List<ContentPage>;
+				Assert.NotNull(contentPages);
+				Assert.Contains(loginPage, contentPages);
+
+				// Reproduce the bug scenario from issue #35890:
+				// Hiding the ShellContent via IsVisible=false and navigating via absolute GoToAsync
+				// does NOT fire NavigatedFrom on the outgoing page, leaving it in _contentPages.
+				loginShellContent.IsVisible = false;
+				await shell.GoToAsync("///HomePage");
+				await OnLoadedAsync(homePage);
+
+				// Verify the fix: the Unloaded event must have cleaned up the login page
+				// from _contentPages, even though NavigatedFrom never fired.
+				Assert.Empty(contentPages);
+			});
+		}
+#endif
+
 		[Fact(DisplayName = "Can Reuse Pages")]
 		public async Task CanReusePages()
 		{

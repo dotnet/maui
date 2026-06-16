@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 				{
 					_contentPages.Add(page);
 					page.NavigatedFrom += OnPageNavigatedFrom;
+					page.Unloaded += OnPageUnloaded;
 					SetupHideSoftInputOnTapped();
 				}
 			}
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.Controls
 			void RemovePage(ContentPage pageToRemove)
 			{
 				page.NavigatedFrom -= OnPageNavigatedFrom;
+				page.Unloaded -= OnPageUnloaded;
 				if (_contentPages.Contains(pageToRemove))
 					_contentPages.Remove(pageToRemove);
 
@@ -42,6 +44,14 @@ namespace Microsoft.Maui.Controls
 				if (sender is ContentPage pageNavigatedFrom)
 				{
 					RemovePage(pageNavigatedFrom);
+				}
+			}
+
+			void OnPageUnloaded(object? sender, EventArgs e)
+			{
+				if (sender is ContentPage unloadedPage)
+				{
+					RemovePage(unloadedPage);
 				}
 			}
 		}
