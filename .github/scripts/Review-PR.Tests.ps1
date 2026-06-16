@@ -43,6 +43,7 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TrxResults')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-DotNetTestResults')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-IsNumericValue')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'ConvertTo-AzdoSafeConsole')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-ObjectMemberValue')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotUsageTokenFields')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TokenFieldSum')
@@ -433,5 +434,20 @@ Describe 'Get-DotNetTestResults (console-scrape fallback)' {
 
     It 'returns an empty array for empty input' {
         (Get-DotNetTestResults -Lines @()).Count | Should -Be 0
+    }
+}
+
+Describe 'ConvertTo-AzdoSafeConsole' {
+    It 'defangs ##vso[ and ##[ logging-command prefixes' {
+        ConvertTo-AzdoSafeConsole '##vso[task.setvariable variable=x]y' | Should -Be '## vso[task.setvariable variable=x]y'
+        ConvertTo-AzdoSafeConsole '##[command]z' | Should -Be '## [command]z'
+    }
+
+    It 'strips carriage returns that could reset the log line' {
+        ConvertTo-AzdoSafeConsole "safe`r##vso[task.complete]" | Should -Be 'safe## vso[task.complete]'
+    }
+
+    It 'leaves ordinary text untouched' {
+        ConvertTo-AzdoSafeConsole 'Reading file src/Foo.cs (## of total)' | Should -Be 'Reading file src/Foo.cs (## of total)'
     }
 }

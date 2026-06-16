@@ -595,6 +595,14 @@ function Get-TrxResults {
 }
 
 # ─── Helper: Copilot token usage telemetry ────────────────────────────────────
+function ConvertTo-AzdoSafeConsole {
+    param([string]$Text)
+    # Strip CR and defang AzDO logging-command prefixes (##vso[ / ##[) so PR-influenceable
+    # streamed agent output (messages, intents, tool args) can't inject a pipeline command
+    # when echoed via Write-Host.
+    return ($Text -replace "`r", '') -replace '##(?=\[|vso\[)', '## '
+}
+
 function Test-IsNumericValue {
     param([object]$Value)
 
@@ -1153,7 +1161,7 @@ function Invoke-CopilotStep {
                         if ($toolName -eq 'report_intent') {
                             $currentIntent = $args_.intent ?? $currentIntent
                             Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
-                            Write-Host $currentIntent -ForegroundColor Yellow
+                            Write-Host (ConvertTo-AzdoSafeConsole $currentIntent) -ForegroundColor Yellow
                             break
                         }
 
@@ -1186,7 +1194,7 @@ function Invoke-CopilotStep {
                         Write-Host "  │  $icon " -ForegroundColor DarkGray -NoNewline
                         Write-Host $displayName -ForegroundColor Cyan -NoNewline
                         if ($detail) {
-                            Write-Host "  $detail" -ForegroundColor DarkGray
+                            Write-Host "  $(ConvertTo-AzdoSafeConsole $detail)" -ForegroundColor DarkGray
                         } else {
                             Write-Host ""
                         }
@@ -1206,10 +1214,9 @@ function Invoke-CopilotStep {
                             if ($preview.Length -gt 400) {
                                 $preview = $preview.Substring(0, 400) + "…"
                             }
-                            # Agent message content is PR-influenceable; strip CR and defang any
-                            # AzDO logging-command prefix (##vso[ / ##[) before echoing so it can't
-                            # inject a pipeline command (mirrors the non-JSON passthrough path).
-                            $preview = ($preview -replace "`r", '') -replace '##(?=\[|vso\[)', '## '
+                            # Agent message content is PR-influenceable; defang AzDO logging-command
+                            # prefixes + strip CR before echoing so it can't inject a pipeline command.
+                            $preview = ConvertTo-AzdoSafeConsole $preview
                             Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
                             Write-Host $preview -ForegroundColor White
                         }
@@ -1858,6 +1865,10 @@ $gateVerdictDir = if ($TrustedScriptsDir) {
     $d
 }
 $gateResult | Set-Content (Join-Path $gateVerdictDir "gate-result.txt") -Encoding UTF8
+# Also persist into PRAgent/gate (always overwritten = trusted), which ships in the CopilotLogs
+# artifact — the UpdateAISummaryComment APPROVE-veto reads the result from there in CI (the
+# $gateVerdictDir copy above can land at the staging root, which the artifact does not include).
+$gateResult | Set-Content (Join-Path $gateOutputDir "gate-result.txt") -Encoding UTF8
 Write-Host "  📄 Gate result persisted: $gateResult" -ForegroundColor Gray
 
 # Persist regression data for CopilotReview phase (try-fix instructions)
