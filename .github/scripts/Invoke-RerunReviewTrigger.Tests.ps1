@@ -14,7 +14,7 @@ BeforeAll {
     $script:ReviewTriggerWindowHours = 24
     $script:MaxReviewTriggersPerWindow = 3
 
-    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus', 'ConvertTo-SafeLogValue', 'ConvertTo-TrimmedString', 'Test-GhApiPrNotFound', 'Get-MatchingCandidate', 'Normalize-PipelineRef', 'Get-PlatformFromLabels')) {
+    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus', 'ConvertTo-SafeLogValue', 'ConvertTo-TrimmedString', 'Test-GhApiPrNotFound', 'Get-MatchingCandidate', 'Normalize-PipelineRef', 'Get-PlatformFromLabels', 'Expand-RerunDecisionItems')) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -84,6 +84,61 @@ Describe 'Test-GhApiPrNotFound' {
         Test-GhApiPrNotFound 'gh: API rate limit exceeded (HTTP 403)' | Should -BeFalse
         Test-GhApiPrNotFound 'gh: Internal Server Error (HTTP 500)' | Should -BeFalse
         Test-GhApiPrNotFound '' | Should -BeFalse
+    }
+
+    It 'does not misclassify bare "Not Found"/"Gone" text without an HTTP 404/410 status' {
+        # Proxy/firewall/auth error bodies can contain these words without the
+        # resource actually being deleted. Treating them as 404 previously caused
+        # open PRs to be falsely skipped, silently cancelling every rerun.
+        Test-GhApiPrNotFound 'proxy error: Not Found' | Should -BeFalse
+        Test-GhApiPrNotFound 'The page you requested is Gone' | Should -BeFalse
+    }
+}
+
+Describe 'Expand-RerunDecisionItems' {
+    It 'expands a single item carrying a JSON-string decisions array' {
+        $json = '[{"pr_number":"1","decision":"trigger"},{"pr_number":"2","decision":"skip"}]'
+        $item = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = $json }
+        $result = Expand-RerunDecisionItems -Items @($item)
+        $result.Count | Should -Be 2
+        $result[0].pr_number | Should -Be '1'
+        $result[0].decision | Should -Be 'trigger'
+        $result[1].pr_number | Should -Be '2'
+        $result[1].decision | Should -Be 'skip'
+    }
+
+    It 'expands a decisions array that is already an object array' {
+        $item = [pscustomobject]@{
+            type      = 'trigger_rerun_review'
+            decisions = @(
+                [pscustomobject]@{ pr_number = '7'; decision = 'trigger' }
+            )
+        }
+        $result = Expand-RerunDecisionItems -Items @($item)
+        $result.Count | Should -Be 1
+        $result[0].pr_number | Should -Be '7'
+    }
+
+    It 'aggregates decisions across multiple items' {
+        $a = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = '[{"pr_number":"1","decision":"trigger"}]' }
+        $b = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = '[{"pr_number":"2","decision":"skip"}]' }
+        $result = Expand-RerunDecisionItems -Items @($a, $b)
+        $result.Count | Should -Be 2
+        ($result | ForEach-Object { $_.pr_number }) | Should -Be @('1', '2')
+    }
+
+    It 'passes through a legacy scalar item without a decisions field' {
+        $item = [pscustomobject]@{ type = 'trigger_rerun_review'; pr_number = '9'; decision = 'trigger' }
+        $result = Expand-RerunDecisionItems -Items @($item)
+        $result.Count | Should -Be 1
+        $result[0].pr_number | Should -Be '9'
+    }
+
+    It 'ignores empty or null decisions payloads' {
+        $empty = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = '' }
+        $nullItem = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = $null }
+        $result = Expand-RerunDecisionItems -Items @($empty, $nullItem)
+        $result.Count | Should -Be 0
     }
 }
 
