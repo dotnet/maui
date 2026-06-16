@@ -91,7 +91,6 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 					wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
 					wrapper.VerticalContentAlignment = VerticalAlignment.Stretch;
 					wrapper.SetContent(viewContent);
-					wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
 
 					if (wrapper.VirtualView is View virtualView)
 					{
@@ -140,6 +139,12 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 			// Must be set every time to handle recycled containers correctly.
 			if (wrapper is not null)
 			{
+				// Refresh the flag from the current context for both new and recycled wrappers.
+				// The pool is keyed by DataTemplate, so a recycled container can be reused for
+				// different purposes (header vs. item) if they share the same template. Without
+				// refreshing, the wrapper keeps its original role, causing incorrect template or
+				// selectability behavior.
+				wrapper.IsHeaderOrFooter = templateContext.IsHeader || templateContext.IsFooter;
 				bool isHeaderOrFooter = wrapper.IsHeaderOrFooter;
 				if (isHeaderOrFooter)
 				{
@@ -200,6 +205,9 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		if (wrapper is not null)
 		{
 			wrapper.DataContext = null;
+			// Unsubscribe the first-item SizeChanged observer so a recycled wrapper
+			// cannot update the global size cache when rebound to a different item.
+			wrapper.UnwireContentSizeObserver();
 		}
 
 		DataTemplate? template = wrapperView?.GetValue(OriginTemplateProperty) as DataTemplate;
@@ -260,6 +268,24 @@ internal partial class ElementWrapper : ContentControl
 
 	/// <summary>Whether this wrapper hosts a group header or footer (excluded from size caching).</summary>
 	public bool IsHeaderOrFooter { get; set; }
+
+	// Stored so RecycleElement can unsubscribe without a flag — mirrors iOS prepareForReuse.
+	EventHandler<Microsoft.UI.Xaml.SizeChangedEventArgs>? _contentSizeChangedHandler;
+	FrameworkElement? _observedContent;
+
+	/// <summary>
+	/// Unsubscribes the first-item SizeChanged observer wired during MeasureOverride.
+	/// Must be called from RecycleElement so a recycled wrapper cannot poison the global size cache.
+	/// </summary>
+	internal void UnwireContentSizeObserver()
+	{
+		if (_observedContent != null && _contentSizeChangedHandler != null)
+		{
+			_observedContent.SizeChanged -= _contentSizeChangedHandler;
+			_contentSizeChangedHandler = null;
+			_observedContent = null;
+		}
+	}
 
 	public ElementWrapper(IMauiContext context)
 	{
@@ -364,25 +390,26 @@ internal partial class ElementWrapper : ContentControl
 				{
 					void OnContentSizeChanged(object? sender, Microsoft.UI.Xaml.SizeChangedEventArgs e)
 					{
-						// Update cached size with actual loaded size
 						var currentCache = handler.GetCachedFirstItemSize();
 						if (!currentCache.IsEmpty && (e.NewSize.Width > currentCache.Width || e.NewSize.Height > currentCache.Height))
 						{
 							handler.SetCachedFirstItemSize(e.NewSize);
-							// Force layout update
 							InvalidateMeasure();
 						}
 					}
 					void OnContentUnloaded(object? sender, RoutedEventArgs e)
 					{
-						// Unwire both events to prevent memory leaks
 						if (sender is FrameworkElement element)
 						{
 							element.SizeChanged -= OnContentSizeChanged;
 							element.Unloaded -= OnContentUnloaded;
 						}
+						_contentSizeChangedHandler = null;
+						_observedContent = null;
 					}
-					// Subscribe once
+					// Store delegate and content so RecycleElement can unsubscribe directly.
+					_contentSizeChangedHandler = OnContentSizeChanged;
+					_observedContent = content;
 					content.SizeChanged += OnContentSizeChanged;
 					content.Unloaded += OnContentUnloaded;
 				}
