@@ -209,44 +209,81 @@ steps:
     - script: |
         echo installing simulator runtimes...
         # XCODE variable is in major.minor format (e.g., 26.1)
-        XCODE_MAJOR_MINOR=$(XCODE)
+        XCODE_MAJOR_MINOR="$(XCODE)"
         MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
         MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
 
-        # Try to install a variety of simulators:
-        # * The exact version we need, universal variant.
-        # * The default universal variant.
-        # * The default variant.
+        if [[ -z "$MAJOR" || -z "$MINOR" ]]; then
+          echo "##vso[task.logissue type=error]XCODE variable is malformed: '$XCODE_MAJOR_MINOR'"
+          exit 1
+        fi
 
-        # The exact version we need, universal variant
+        # Install the simulator runtime that matches the selected Xcode.
+        # Prefer the EXACT pinned version (universal variant, for x64 support on
+        # Apple Silicon agents). Only fall back to the unpinned "latest" runtime if
+        # the pinned install fails -- otherwise on an Xcode that is not the newest
+        # (e.g. 26.4) an unpinned install would co-install a NEWER runtime (e.g.
+        # iOS 26.5) than the Xcode SDK, which causes actool/ibtool failures.
+
+        # Attempt 1: the exact version we need, universal variant
         echo "Installing the exact universal simulator runtime..."
         echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR}"
         RC=0
-        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion ${MAJOR}.${MINOR} || RC=$?
+        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal -buildVersion "${MAJOR}.${MINOR}" || RC=$?
         echo "Installation result: $RC"
 
-        # * The default universal variant.
-        echo "Installing the default universal simulator runtime..."
-        echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal"
-        RC=0
-        sudo xcodebuild -downloadPlatform iOS -architectureVariant universal || RC=$?
-        echo "Installation result: $RC"
+        # Attempt 2 (fallback): the default universal variant (latest) - only if attempt 1 failed
+        if [[ "$RC" != "0" ]]; then
+          echo "Pinned install failed; falling back to the default universal simulator runtime..."
+          echo "\$ sudo xcodebuild -downloadPlatform iOS -architectureVariant universal"
+          RC=0
+          sudo xcodebuild -downloadPlatform iOS -architectureVariant universal || RC=$?
+          echo "Installation result: $RC"
+        fi
 
-        echo "Installing the default simulator runtime..."
-        echo "\$ sudo xcodebuild -downloadPlatform iOS"
-        RC=0
-        sudo xcodebuild -downloadPlatform iOS || RC=$?
-        echo "Installation result: $RC"
+        # Attempt 3 (fallback): the default variant (latest) - only if attempt 2 failed
+        if [[ "$RC" != "0" ]]; then
+          echo "Universal install failed; falling back to the default simulator runtime..."
+          echo "\$ sudo xcodebuild -downloadPlatform iOS"
+          RC=0
+          sudo xcodebuild -downloadPlatform iOS || RC=$?
+          echo "Installation result: $RC"
+        fi
 
-        # Verify the simulator runtimes are/were actually installed
+        # List everything that is installed (human-readable, for the logs)
         echo "Verifying simulator runtimes..."
         xcrun simctl runtime list
-        RUNTIME_COUNT=$(xcrun simctl runtime list -j | jq '. | length')
-        if [[ "$RUNTIME_COUNT" == "0" ]]; then
-          echo "##vso[task.logissue type=error]No simulator runtimes installed after download attempt"
+
+        # Assert the SPECIFIC iOS runtime matching the selected Xcode is actually
+        # installed and usable. A bare count is not enough: a newer-than-SDK runtime,
+        # the unrelated iOS 18.5 integration-test runtime, or a half-installed/Unusable
+        # runtime would all make a simple count non-zero while the required, usable
+        # iOS ${MAJOR}.${MINOR} runtime is missing -- which leads to confusing
+        # actool/ibtool failures later. Match on Apple's stable runtimeIdentifier
+        # (covers 26.4 and any 26.4.x patch), with a version major.minor fallback, and
+        # require the runtime to be Ready (a missing state field is treated as Ready so
+        # we never fail on schema drift).
+        REQUIRED_RUNTIME_ID="com.apple.CoreSimulator.SimRuntime.iOS-${MAJOR}-${MINOR}"
+        echo "Verifying a usable iOS ${MAJOR}.${MINOR} simulator runtime is installed (${REQUIRED_RUNTIME_ID})..."
+        IOS_MATCH_COUNT=$(xcrun simctl runtime list -j | jq --arg id "$REQUIRED_RUNTIME_ID" --arg req "${MAJOR}.${MINOR}" '
+          [ .[]?
+            | select(type == "object")
+            | select(
+                ((.runtimeIdentifier // "") == $id)
+                or
+                (((.platformIdentifier // "") | contains("iphonesimulator"))
+                  and (((.version // "") | split(".")[0:2] | join(".")) == $req))
+              )
+            | select(((.state // "Ready") == "Ready"))
+          ] | length')
+
+        if [[ -z "$IOS_MATCH_COUNT" || "$IOS_MATCH_COUNT" == "0" ]]; then
+          echo "Full simulator runtime list (JSON) for diagnostics:"
+          xcrun simctl runtime list -j || true
+          echo "##vso[task.logissue type=error]Required iOS ${MAJOR}.${MINOR} simulator runtime (matching the selected Xcode SDK) is not installed or not Ready. See the runtime list above."
           exit 1
         fi
-        echo "Found $RUNTIME_COUNT simulator runtime(s)"
+        echo "Found $IOS_MATCH_COUNT usable iOS ${MAJOR}.${MINOR} simulator runtime(s)"
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
