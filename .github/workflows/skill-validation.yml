@@ -1031,6 +1031,8 @@ jobs:
             let evalStatus;
             if (!evalRan && !isContributor) {
               evalStatus = 'Skipped';
+            } else if (discoverResult !== 'success') {
+              evalStatus = 'Needs attention';  // discovery job failed → can't tell if eval was needed; don't mask as Skipped/Passed
             } else if (!hasEntries) {
               evalStatus = 'Skipped';
             } else if (hasResults) {
