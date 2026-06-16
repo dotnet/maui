@@ -389,6 +389,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (navigationBarFrame.HasValue)
 			{
 				titleViewContainer.Frame = new CGRect(0, 0, navigationBarFrame.Value.Width, navigationBarFrame.Value.Height);
+				titleViewContainer.Height = navigationBarFrame.Value.Height;
 				titleViewContainer.LayoutIfNeeded();
 			}
 		}
