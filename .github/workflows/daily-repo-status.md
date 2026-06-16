@@ -5,6 +5,8 @@ description: |
   engaging GitHub issues with productivity insights, community highlights,
   and project recommendations.
 
+environment: gh-aw-status
+
 on:
   schedule: daily
   workflow_dispatch:

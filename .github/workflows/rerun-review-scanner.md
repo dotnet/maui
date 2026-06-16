@@ -1,4 +1,6 @@
 ---
+environment: gh-aw-rerun-scanner
+
 on:
   schedule:
     - cron: "0 * * * *"
