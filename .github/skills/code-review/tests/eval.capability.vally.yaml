@@ -238,9 +238,11 @@ stimuli:
     graders:
       # Verdict-mapping floor: if the agent confirms an Error finding,
       # LGTM is forbidden by SKILL.md verdict rules.
+      # Use 'Verdict: LGTM' (not bare 'LGTM') to avoid false-failing on
+      # prose like "this is not LGTM material" in the summary text.
       - type: output-not-contains
         config:
-          substring: 'LGTM'
+          substring: 'Verdict: LGTM'
       - type: output-matches
         config:
           pattern: '(NEEDS_CHANGES|NEEDS_DISCUSSION)'

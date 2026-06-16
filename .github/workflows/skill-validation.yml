@@ -604,13 +604,18 @@ jobs:
           JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f | head -1)
           if [ -n "$JUNIT" ]; then
             ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
-            FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
-            ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
-            echo "JUnit aggregate: failures=$FAILS errors=$ERRS"
-            if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
-              echo "eval_passed=true" >> "$GITHUB_OUTPUT"
-            else
+            if [ -z "$ROOT" ]; then
+              echo "::warning::JUnit file exists but contains no <testsuites> element — treating as failure"
               echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+            else
+              FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
+              ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
+              echo "JUnit aggregate: failures=$FAILS errors=$ERRS"
+              if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
+                echo "eval_passed=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+              fi
             fi
           else
             echo "::warning::No JUnit report under $RESULTS_PATH"
@@ -721,6 +726,11 @@ jobs:
           fi
 
           ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
+          if [ -z "$ROOT" ]; then
+            echo "::warning::Hermeticity JUnit contains no <testsuites> element"
+            echo "inconclusive" > hermeticity-results/verdict.txt
+            exit 0
+          fi
           FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
           ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
           echo "negative-control: failures=$FAILS errors=$ERRS"
