@@ -721,10 +721,12 @@ stimuli:
 
 scoring:
   # @microsoft/vally@0.6.0 ignores scoring.weights; only scoring.threshold is
-  # active. Trial score = unweighted mean of grader [0,1] scores; skill passes
-  # when the mean across runs >= threshold. Floors are kept minimal (required-
-  # label contains + at most one diagnostic not-contains) so the LLM judge —
-  # whose rubric asserts the SAME correct labels — stays decisive: a wrong or
-  # missing label fails both its floor and the judge, dropping the mean below
-  # 0.6.
-  threshold: 0.6
+  # active. Trial score = unweighted mean of grader [0,1] scores; stimulus
+  # passes when the mean across runs >= threshold. Threshold set to 0.85 so
+  # the LLM judge is decisive even for multi-floor stimuli: with N floors,
+  # the minimum trial score (judge=0) is N/(N+1). At threshold 0.85 the
+  # judge retains veto power for all floor counts in this suite (max 4 floors
+  # → min 0.80 < 0.85). A wrong/missing label fails both its floor AND the
+  # judge; an extra out-of-scope label only fails the judge — the threshold
+  # ensures that failure matters.
+  threshold: 0.85

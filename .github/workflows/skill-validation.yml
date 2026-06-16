@@ -22,7 +22,7 @@
 #   - LLM evaluation is HERMETIC: the agent-under-test gets model-auth only
 #     (COPILOT_GITHUB_TOKEN, a name `gh` does not read) and NO GITHUB_TOKEN /
 #     GH_TOKEN, so it cannot recite documented fixes via the live GitHub API.
-#     A dedicated hermeticity-gate job asserts this with a negative control.
+#     A dedicated hermeticity-gate job asserts this with a positive control.
 #   - LLM evaluation: only runs for PRs from contributors with write+ access,
 #     or when explicitly triggered via /evaluate-skills by a contributor
 
@@ -405,7 +405,7 @@ jobs:
             $specs = @()
             if (Test-Path $testsDir) {
               # Capability suites only: eval*.vally.yaml. This deliberately
-              # EXCLUDES hermeticity.vally.yaml (the negative-control gate),
+              # EXCLUDES hermeticity.vally.yaml (the hermeticity gate),
               # which is run by the dedicated hermeticity-gate job.
               $specs = @(Get-ChildItem -Path $testsDir -Filter "eval*.vally.yaml" -File -ErrorAction SilentlyContinue)
             }
@@ -564,11 +564,17 @@ jobs:
 
           echo "Evaluating specs: ${SPECS[*]}"
 
-          # Trials per stimulus: 3 by default; workflow_dispatch may override
-          # with a sanitized integer (digits only — RUNS arrives via env and is
-          # never interpolated into the command raw).
-          RUNS_N=$(printf '%s' "${RUNS:-}" | tr -cd '0-9'); RUNS_N=${RUNS_N:-3}
-          echo "runs per stimulus: $RUNS_N"
+          # Trials per stimulus: use each spec's defaults.runs unless the
+          # workflow_dispatch caller provided an explicit override.
+          RUNS_ARGS=()
+          if [ -n "${RUNS:-}" ]; then
+            RUNS_N=$(printf '%s' "$RUNS" | tr -cd '0-9')
+            if [ -n "$RUNS_N" ]; then
+              RUNS_ARGS=(--runs "$RUNS_N")
+              echo "runs per stimulus: $RUNS_N (workflow override)"
+            fi
+          fi
+          [ ${#RUNS_ARGS[@]} -eq 0 ] && echo "runs per stimulus: (spec default)"
 
           # Advisory exit: vally sets exit 1 on threshold miss / execution
           # error. We capture it but DON'T propagate, deriving the real verdict
@@ -579,10 +585,9 @@ jobs:
             --skill-dir .github/skills \
             --output-dir "$RESULTS_PATH" \
             --junit \
-            --output jsonl \
             --model claude-opus-4.6 \
             --judge-model claude-opus-4.6 \
-            --runs "$RUNS_N" \
+            "${RUNS_ARGS[@]}" \
             --workers 4 \
             --verbose
           EVAL_RC=$?
@@ -631,15 +636,16 @@ jobs:
           retention-days: 14
 
   # ==========================================================================
-  # HERMETICITY GATE (negative control)
-  # Runs hermeticity.vally.yaml — a single stimulus that can only "pass" by
-  # reaching the live GitHub API. The verdict is INVERTED: a passing eval here
-  # means hermeticity is BROKEN (a GitHub token leaked into the agent env).
+  # HERMETICITY GATE (positive assertion)
+  # Runs hermeticity.vally.yaml — a single stimulus that passes only when
+  # the agent reports the anonymous rate limit (CORE_LIMIT:60). A pass
+  # means hermetic; a fail means a token may have leaked or the probe
+  # errored (both warrant investigation).
   # NON-BLOCKING for now (never fails the job); surfaced in the PR comment so
   # the env + exit-code wiring can be promoted to blocking after first green.
   # ==========================================================================
   hermeticity-gate:
-    name: Harness hermeticity (negative control)
+    name: Harness hermeticity gate
     needs: [pr-gate, slash-gate, discover-eval]
     if: >-
       always() && !cancelled() &&
@@ -686,13 +692,13 @@ jobs:
           echo "::add-mask::${TOKENS[$IDX]}"
           echo "token=${TOKENS[$IDX]}" >> $GITHUB_OUTPUT
 
-      - name: Run hermeticity negative control
+      - name: Run hermeticity control
         id: herm
         env:
           # Same model-auth-only env the evaluate job uses. If correct, the
-          # negative control FAILS (agent's request is anonymous — the core
-          # rate limit comes back at 60). If a GitHub-shaped token leaks in,
-          # the limit is elevated and it PASSES → hermeticity broken.
+          # positive assertion PASSES (agent reports CORE_LIMIT:60 — anonymous).
+          # If a GitHub-shaped token leaks in, the rate limit is elevated and
+          # the assertion FAILS → hermeticity not verified.
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
         run: |
           SPEC=.github/skills/code-review/tests/hermeticity.vally.yaml
@@ -732,22 +738,22 @@ jobs:
           fi
           FAILS=$(printf '%s' "$ROOT" | sed -nE 's/.*failures="([0-9]+)".*/\1/p'); FAILS=${FAILS:-0}
           ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
-          echo "negative-control: failures=$FAILS errors=$ERRS"
+          echo "hermeticity-control: failures=$FAILS errors=$ERRS"
 
-          # Negative control passes ONLY when the agent's tooling is
-          # authenticated (elevated rate limit):
-          #   failures>=1 → request was anonymous  → HERMETIC (good)
-          #   errors>=1   → run errored             → INCONCLUSIVE
-          #   both 0      → request was authed      → BROKEN (token leaked)
-          if [ "$FAILS" -ge 1 ]; then
+          # Positive assertion: the stimulus passes ONLY when the agent
+          # reports the anonymous rate limit (CORE_LIMIT:60).
+          #   both 0      → stimulus passed → agent is anonymous  → HERMETIC (good)
+          #   errors>=1   → run errored                            → INCONCLUSIVE
+          #   failures>=1 → agent NOT anonymous, or probe errored  → BROKEN
+          if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
             echo "hermetic" > hermeticity-results/verdict.txt
-            echo "✅ Hermetic: negative control was unauthenticated (anonymous rate limit); no GitHub token leaked."
+            echo "✅ Hermetic: agent reported anonymous rate limit (CORE_LIMIT:60); no GitHub token leaked."
           elif [ "$ERRS" -ge 1 ]; then
             echo "inconclusive" > hermeticity-results/verdict.txt
-            echo "::warning::Hermeticity inconclusive (execution error in negative control)."
+            echo "::warning::Hermeticity inconclusive (execution error in hermeticity control)."
           else
             echo "broken" > hermeticity-results/verdict.txt
-            echo "::warning::Hermeticity BROKEN: negative control was authenticated against the GitHub API (a GitHub token leaked into the eval env). Non-blocking for now."
+            echo "::warning::Hermeticity BROKEN: agent did not report anonymous rate limit. A GitHub token may have leaked into the eval env. Non-blocking for now."
           fi
           # Non-blocking: never fail this job.
           exit 0
@@ -1075,7 +1081,7 @@ jobs:
                 `> _For PR #${prNumber} in ${repo}, download eval artifacts with ` +
                 `\`gh run download ${runId} --repo ${repo} --pattern "skill-eval-results-*" --dir ./eval-results\`. ` +
                 `Each suite has \`eval-results.md\` (human summary), \`eval-results.junit.xml\` (per-stimulus pass/fail with judge evidence), ` +
-                `and \`results.jsonl\` (raw trials). Read the failing \`<testcase>\` entries and their \`<failure>\` evidence, diagnose each, ` +
+                `and per-trial session logs under \`executor-session-logs/\`. Read the failing \`<testcase>\` entries and their \`<failure>\` evidence, diagnose each, ` +
                 `and propose fixes to the skill content or the eval*.vally.yaml rubric. Tell me what to fix first._`,
               ].join('\n');
             }
