@@ -78,12 +78,16 @@ function Get-PlatformFromLabels {
     return 'android'
 }
 
-$searchResult = gh pr list `
+$searchJson = gh pr list `
     --repo "$Owner/$Repo" `
     --state open `
     --label $ReadyForRerunLabel `
     --limit $MaxPRs `
-    --json number,title,url,headRefOid,isDraft,labels | ConvertFrom-Json
+    --json number,title,url,headRefOid,isDraft,labels,author
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to list open PRs labeled '$ReadyForRerunLabel' (gh pr list exited with code $LASTEXITCODE)."
+}
+$searchResult = $searchJson | ConvertFrom-Json
 
 $candidates = @()
 foreach ($pr in @($searchResult)) {
@@ -101,7 +105,9 @@ foreach ($pr in @($searchResult)) {
     $latestRerun = Get-LatestRerunComment -Comments $activity
     $reviewOptionAuthors = @(Get-ReviewOptionAuthorLogins -Comments $activity)
     $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity -AllowedAuthorLogins $reviewOptionAuthors
-    $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -CurrentLabels $labels
+    $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
+    $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
+    $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -PRAuthorLogin $authorLogin -CurrentLabels $labels
     $platform = if ($reviewOptions.Platform) { $reviewOptions.Platform } else { Get-PlatformFromLabels -Labels $labels }
     $pipelineRef = if ($reviewOptions.PipelineRef) { $reviewOptions.PipelineRef } else { 'main' }
 
@@ -109,6 +115,7 @@ foreach ($pr in @($searchResult)) {
         prNumber        = $number
         title           = [string]$pr.title
         url             = [string]$pr.url
+        authorLogin     = $authorLogin
         isDraft         = [bool]$pr.isDraft
         headSha         = [string]$pr.headRefOid
         platform        = $platform
