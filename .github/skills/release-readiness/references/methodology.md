@@ -129,7 +129,7 @@ isRevert = subject.startsWith("Revert ")
 
 For each revert commit, extract:
 - The `revertsCommit` SHA from `This reverts commit <sha>.`
-- The `revertsPr` number from the subject's `(#NNNN)` suffix or the reverted commit's subject
+- The `revertsPr` number from an explicit `Revert PR #NNNN`, or the `(#NNNN)` **inside the quoted original title** (`Revert "Original title (#1234)" (#5678)` → `1234`, never the revert's own trailing `(#5678)`); the reverted commit's SHA subject is the authoritative override when available
 
 Then build a `reverts` map: `{sourcePr → revertCommit}`. A PR classified as `in-sr` becomes `in-sr-reverted` if its source PR appears as a key in `reverts`.
 

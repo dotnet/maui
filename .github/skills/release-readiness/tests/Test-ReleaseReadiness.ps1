@@ -748,6 +748,13 @@ Assert-Eq -Label "Revert subject with no inner (#N) yields null (no false revert
     -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Revert "Fix some thing" (#35744)')
 Assert-Eq -Label "Non-revert subject yields null" `
     -Expected $null -Actual (Get-RevertedPrFromSubject -Subject '[Android] Fix layout pass (#35900)')
+# Internal quotes in the original title must not truncate the match. The old
+# [^"]* pattern stopped at the first inner quote and returned null.
+Assert-Eq -Label "Reverted-PR from quoted title containing internal quotes" `
+    -Expected 1234 -Actual (Get-RevertedPrFromSubject -Subject 'Revert "Fix "weird" bug (#1234)" (#5678)')
+# Case-insensitive: a hand-typed lowercase 'revert "..."' subject must resolve.
+Assert-Eq -Label "Reverted-PR from lowercase 'revert' subject" `
+    -Expected 4321 -Actual (Get-RevertedPrFromSubject -Subject 'revert "fix thing (#4321)" (#8765)')
 
 # ───── Test-PrIsToolingOnly (false-positive guard #1) ─────
 Write-Host "`n[Unit] Test-PrIsToolingOnly (FP guard)" -ForegroundColor Cyan
@@ -1160,6 +1167,45 @@ $dataReorder = $dataA.Clone()
 $dataReorder['srContents'] = @{ sourcePrs = @(35003, 35001, 35002) }   # reordered
 $hashReorder = Get-ReportSemanticHash -Data $dataReorder -Verdict $verdictA
 Assert-Eq -Label "Hash invariant to source-PR order" -Expected $hashA -Actual $hashReorder
+
+# Cross-process stability (regression guard for the unordered-hashtable shuffle).
+# .NET Core randomizes String.GetHashCode() per process, so a plain [hashtable]
+# would serialize its keys in a DIFFERENT order each process -> a DIFFERENT hash,
+# silently defeating the workflow's idempotent no-op (it compares a hash written
+# by an earlier process against one computed now). The function must use an
+# [ordered] dictionary so JSON key order — and the hash — is stable across
+# processes. Same-process re-computation (above) can't catch this because the
+# hash seed is fixed within one process; we must compute in fresh child processes.
+Write-Host "`n[Unit] Get-ReportSemanticHash cross-process stability" -ForegroundColor Cyan
+$childHashScript = @'
+$env:GET_RELEASE_READINESS_TEST_MODE = "1"
+. (Join-Path $args[0] "Get-ReleaseReadiness.ps1") -SrBranch "release/10.0.1xx-sr1" | Out-Null
+$data = @{
+    metadata    = @{ srHeadSha = "aaaaaaaa1111"; fetchedAt = "2025-01-01T00:00:00Z" }
+    ci          = @{ overall = "green" }
+    srContents  = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = "in-sr-active" }
+        @{ issue = 35002; classification = "backport-in-progress" }
+    )
+    openSrPrs   = @( @{ number = 35100 } )
+    shipChecks  = @( @{ Area = "CI"; Status = "GREEN" }, @{ Area = "Milestones"; Status = "WATCH" } )
+}
+Write-Output (Get-ReportSemanticHash -Data $data -Verdict @{ symbol = "YELLOW" })
+'@
+$childScriptPath = Join-Path ([System.IO.Path]::GetTempPath()) "rr-hash-child-$([guid]::NewGuid().ToString('N')).ps1"
+Set-Content -LiteralPath $childScriptPath -Value $childHashScript -Encoding UTF8
+$rrScriptsDir = Join-Path $PSScriptRoot '..' 'scripts'
+try {
+    $childHash1 = (& pwsh -NoProfile -File $childScriptPath $rrScriptsDir 2>$null | Select-Object -Last 1)
+    $childHash2 = (& pwsh -NoProfile -File $childScriptPath $rrScriptsDir 2>$null | Select-Object -Last 1)
+    Assert-Eq -Label "Hash is a 64-char SHA-256 hex (child process)" `
+        -Expected $true -Actual ($childHash1 -match '^[0-9a-f]{64}$')
+    Assert-Eq -Label "Hash is stable across separate processes (ordered keys)" `
+        -Expected $childHash1 -Actual $childHash2
+} finally {
+    Remove-Item -LiteralPath $childScriptPath -ErrorAction SilentlyContinue
+}
 
 # ───── Format-MarkdownReport: tracker markers + linkification + body cap ─────
 Write-Host "`n[Unit] Format-MarkdownReport (markers, linkification, cap)" -ForegroundColor Cyan

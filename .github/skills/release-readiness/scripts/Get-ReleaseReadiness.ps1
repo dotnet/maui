@@ -1335,9 +1335,13 @@ function Get-RevertedPrFromSubject {
     # Explicit "Revert PR #NNNN" form.
     $m = [regex]::Match($Subject, '(?i)Revert\s+PR\s+#(\d+)')
     if ($m.Success) { return [int]$m.Groups[1].Value }
-    # Standard GitHub revert: the (#N) INSIDE the quoted original title. The
-    # [^"]* stays inside the quotes, so this never reaches the trailing revert PR.
-    $m = [regex]::Match($Subject, 'Revert\s+"[^"]*\(#(\d+)\)')
+    # Standard GitHub revert: the (#N) INSIDE the quoted original title, e.g.
+    # Revert "Original title (#1234)" (#5678). Greedy .* anchored to the closing
+    # quote captures the original PR (1234): it tolerates internal quotes in the
+    # title (the old [^"]* halted at the first inner quote and returned null) and,
+    # because the trailing revert PR is NOT followed by a quote, never reaches it.
+    # Case-insensitive to also match hand-typed lowercase 'revert "..."' subjects.
+    $m = [regex]::Match($Subject, '(?i)Revert\s+".*\(#(\d+)\)"')
     if ($m.Success) { return [int]$m.Groups[1].Value }
     return $null
 }
@@ -2793,7 +2797,13 @@ function Get-ReportSemanticHash {
     #>
     param($Data, $Verdict)
 
-    $semantic = @{
+    # MUST be [ordered]: a plain [hashtable] enumerates keys in an order derived
+    # from per-process String.GetHashCode(), which .NET Core randomizes on every
+    # process start. ConvertTo-Json would then emit keys in a different order each
+    # run, producing a DIFFERENT hash for identical content — silently defeating
+    # the workflow's idempotent no-op (which compares a hash written by an earlier
+    # process against one computed now). Insertion order keeps the hash stable.
+    $semantic = [ordered]@{
         verdict = $Verdict.symbol
         srHead = $Data.metadata.srHeadSha
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
