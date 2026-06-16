@@ -730,6 +730,25 @@ try {
     Remove-Item -Path Env:GET_RELEASE_READINESS_TEST_MODE -ErrorAction SilentlyContinue
 }
 
+# ───── Get-RevertedPrFromSubject (revert false-green guard) ─────
+Write-Host "`n[Unit] Get-RevertedPrFromSubject (revert classification)" -ForegroundColor Cyan
+
+# The reverted-PR must be the ORIGINAL fix, NOT the revert's own trailing (#N).
+# GitHub's revert subject is  Revert "Title (#1234)" (#5678)  — 1234 is the
+# reverted fix, 5678 is the revert PR. A greedy pattern previously captured 5678,
+# which skipped the SHA-lookup fallback and flipped a reverted regression fix to
+# in-sr-active ("ready to ship") instead of in-sr-reverted.
+Assert-Eq -Label "Reverted-PR from quoted title returns inner #, not trailing revert #" `
+    -Expected 1234 -Actual (Get-RevertedPrFromSubject -Subject 'Revert "Some fix (#1234)" (#5678)')
+Assert-Eq -Label "Reverted-PR from branch-prefixed quoted revert" `
+    -Expected 35313 -Actual (Get-RevertedPrFromSubject -Subject '[release/10.0.1xx-sr8] Revert "Fix CollectionView (#35313)" (#35804)')
+Assert-Eq -Label "Reverted-PR from explicit 'Revert PR #NNNN'" `
+    -Expected 35428 -Actual (Get-RevertedPrFromSubject -Subject 'Revert PR #35428 - broke iOS')
+Assert-Eq -Label "Revert subject with no inner (#N) yields null (no false reverted-PR)" `
+    -Expected $null -Actual (Get-RevertedPrFromSubject -Subject 'Revert "Fix some thing" (#35744)')
+Assert-Eq -Label "Non-revert subject yields null" `
+    -Expected $null -Actual (Get-RevertedPrFromSubject -Subject '[Android] Fix layout pass (#35900)')
+
 # ───── Test-PrIsToolingOnly (false-positive guard #1) ─────
 Write-Host "`n[Unit] Test-PrIsToolingOnly (FP guard)" -ForegroundColor Cyan
 

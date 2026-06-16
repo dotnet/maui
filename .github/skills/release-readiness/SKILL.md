@@ -203,19 +203,19 @@ Each candidate fix PR is classified with confidence + evidence:
 
 ## Ship-readiness checks (`Get-ReleaseReadiness.ps1`)
 
-The SR readiness report rolls operational checks into a single **Blocking** summary at the top, so a release captain sees what must clear before ship without scrolling. Each check emits `READY`, `WATCH`, `BLOCKED`, or `UNKNOWN`:
+The SR readiness report rolls operational checks into a single **Blocking** summary at the top, so a release captain sees what must clear before ship without scrolling. Each check emits `READY`, `WATCH`, `BLOCKED`, `CLEANUP`, or `UNKNOWN` (`CLEANUP` = post-release housekeeping that does not block the current ship):
 
 | Check | When | Status meanings |
 |-------|------|-----------------|
 | **`Versions.props bump`** | All SR runs | `BLOCKED` if `eng/Versions.props` on `main` hasn't been bumped past the current SR cycle (next SR has nowhere to flow). |
 | **`Versions.props servicing flip`** | Live-SR mode only | `BLOCKED` if the SR branch's `eng/Versions.props` is not flipped to servicing-release mode (`PreReleaseVersionLabel=servicing` + `StabilizePackageVersion=true`). Without it the branch builds prerelease packages and never ships as stable — CI stays green so nothing else catches it. |
-| **`Bug template lists SR version`** | All SR runs | `BLOCKED` if `.github/ISSUE_TEMPLATE/bug-report.yml` on `main` is missing an entry for the SR being shipped (users can't file bugs against the version). |
+| **`Bug template lists SR version`** | All SR runs | `CLEANUP` if `.github/ISSUE_TEMPLATE/bug-report.yml` on `main` is missing an entry for the SR being shipped (users can't file bugs against the version) — post-release housekeeping, not a ship blocker. |
 | **`Main bumped to next SR cycle`** | All SR runs | `BLOCKED` if the next SR cycle's version hasn't been promoted on `main`. |
 | **`BAR default-channel mapping`** | SR branches matching `release/X.Y.Zxx-srN` | `BLOCKED` if the SR branch is not wired to the `.NET <band> SDK` channel in BAR. `UNKNOWN` if `darc` isn't on PATH (report includes the exact verification command). |
 | **`BAR build for SR HEAD`** | When darc is available + SR HEAD SHA known | `READY` if BAR has a published build for the SR HEAD commit. `WATCH` (not blocking — transient) if CI hasn't published one yet. |
 | **`Milestone for current cycle`** | SR + preview branches | `BLOCKED` if the current cycle's milestone (e.g. `.NET 10 SR8` or `.NET 11.0-preview6`) doesn't exist in the GitHub milestone list — fixed issues have nowhere to land. |
-| **`Milestone for next cycle`** | SR + preview branches | `BLOCKED` if the next cycle's milestone isn't pre-created — open issues can't roll forward when current ships. |
-| **`Stale open milestones`** | SR + preview branches | `BLOCKED` if any milestones in the same major + same cycle type (SR or preview) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). |
+| **`Milestone for next cycle`** | SR + preview branches | `CLEANUP` if the next cycle's milestone isn't pre-created — open issues can't roll forward when current ships, but it doesn't block the current release. |
+| **`Stale open milestones`** | SR + preview branches | `CLEANUP` if any milestones in the same major + same cycle type (SR or preview) are past their `due_on` by >7 days and still open (already-shipped releases accumulating untriaged issues). |
 | **`CI Failure Scanner signals`** | All SR runs | `WATCH` if fresh ci-scan issues are filed in the last 24h. |
 | **`Known Build Errors`** | All SR runs | `WATCH` if open Known Build Error issues exist that may explain background CI noise. |
 
@@ -277,4 +277,4 @@ The harness covers:
 - **Tracker emission** for SR2/SR3 (inactive), SR8 (active in-flight), SR9 (active candidate), and net11 preview6 (active candidate)
 - **`-AllActiveMajors`** end-to-end across net10 + net11 with the expected tracker counts
 - **`Get-ReleaseReadiness`** verdict classification using known-answer data from the SR7 readiness analysis (e.g. #35313 → `in-sr-active`, #35344 → `in-sr-active` via the SafeArea follow-on fix, #35771 → `no-fix-yet`)
-- **Idempotent body hash** stability across re-runs (the daily workflow relies on this to no-op when nothing material changed)
+- **Idempotent body hash** stability across re-runs (the daily workflow compares the embedded `<!-- release-readiness-hash: sha=... -->` marker against the live issue and skips the edit when the semantic content is unchanged, so re-runs don't churn the tracker)

@@ -959,7 +959,11 @@ function Get-AllMilestones {
     param([string]$Repo)
     try {
         $raw = Invoke-Gh @('api', "repos/$Repo/milestones?state=all&per_page=100", '--paginate')
-        if (-not $raw) { return [PSCustomObject]@{ Success = $true; Data = @() } }
+        # A successful milestones query always returns at least `[]`. Empty/null
+        # output means Invoke-Gh swallowed a non-zero gh exit (auth/network), so
+        # surface it as a failure rather than masking it as "zero milestones"
+        # (which would let milestone-hygiene checks silently pass).
+        if (-not $raw) { return [PSCustomObject]@{ Success = $false; Data = @() } }
         $parsed = $raw | ConvertFrom-Json
         return [PSCustomObject]@{ Success = $true; Data = @($parsed) }
     } catch {
@@ -1310,6 +1314,34 @@ function Resolve-Context {
 
 # region ────────────────────── 2. SR COMMITS + SOURCE PR EXTRACTION ───────
 
+function Get-RevertedPrFromSubject {
+    <#
+    .SYNOPSIS
+        Extracts the ORIGINAL (reverted) PR number from a revert commit subject.
+        Returns $null when the subject carries no reverted-PR reference.
+    .NOTES
+        GitHub's revert button produces: Revert "Original title (#1234)" (#5678)
+        The reverted PR is 1234 (inside the quoted original title). The trailing
+        (#5678) is the revert PR's OWN number and must NOT be returned.
+
+        A previous greedy pattern — Revert.*\(#(\d+)\) — captured the LAST (#N),
+        i.e. 5678, into $revertsPr. Because that value was truthy, the authoritative
+        SHA-lookup fallback was skipped and the real reverted PR (1234) never landed
+        in the reverted set, flipping a reverted regression fix to 'in-sr-active'
+        (a false-green "ready to ship" verdict for a release whose fix was backed out).
+    #>
+    param([string]$Subject)
+    if (-not $Subject) { return $null }
+    # Explicit "Revert PR #NNNN" form.
+    $m = [regex]::Match($Subject, '(?i)Revert\s+PR\s+#(\d+)')
+    if ($m.Success) { return [int]$m.Groups[1].Value }
+    # Standard GitHub revert: the (#N) INSIDE the quoted original title. The
+    # [^"]* stays inside the quotes, so this never reaches the trailing revert PR.
+    $m = [regex]::Match($Subject, 'Revert\s+"[^"]*\(#(\d+)\)')
+    if ($m.Success) { return [int]$m.Groups[1].Value }
+    return $null
+}
+
 # Internal scanner — extracts source PRs / backports / reverts from commits
 # selected by an arbitrary `git log` rev-spec. Used by Get-SrCommits both for
 # the primary scan and (optionally) for the inherited-from-prior-SR scan.
@@ -1386,18 +1418,15 @@ function Get-CommitsForRevSpec {
             $revM = [regex]::Match($body, '(?im)This reverts commit\s+([0-9a-f]{7,40})')
             if ($revM.Success) { $revertsCommit = $revM.Groups[1].Value }
 
-            # Try to recover the original PR number from the reverted subject (it'll be at end as (#NNNN))
-            # OR from explicit "Revert PR #NNNN" mentions
-            $revPrM = [regex]::Match($subject, 'Revert\s+PR\s+#(\d+)|Revert.*\(#(\d+)\)')
-            if ($revPrM.Success) {
-                $revertsPr = if ($revPrM.Groups[1].Success) {
-                    [int]$revPrM.Groups[1].Value
-                } else {
-                    [int]$revPrM.Groups[2].Value
-                }
-            }
-            # If we have the reverted commit SHA, look up its subject and extract (#NNNN)
-            if (-not $revertsPr -and $revertsCommit) {
+            # Recover the ORIGINAL (reverted) PR number from the subject. See
+            # Get-RevertedPrFromSubject for why the trailing (#N) on a revert
+            # subject is the revert's OWN PR and must not be used here.
+            $revertsPr = Get-RevertedPrFromSubject -Subject $subject
+
+            # Authoritative override: when we know the reverted commit SHA, read its
+            # real subject — its trailing (#NNNN) IS the reverted PR's own number.
+            # This is ground truth and overrides any subject-based guess above.
+            if ($revertsCommit) {
                 $revSubj = Invoke-Git "log -1 --format=%s $revertsCommit"
                 if ($revSubj) {
                     $rsM = [regex]::Matches($revSubj, '\(#(\d+)\)')

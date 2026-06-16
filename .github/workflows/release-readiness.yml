@@ -39,7 +39,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-readiness-${{ github.event_name }}-${{ inputs.branch || 'all' }}
+  group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || 'all' }}
   cancel-in-progress: true
 
 jobs:
@@ -280,10 +280,51 @@ jobs:
             done
 
             echo "Refreshing tracker issue #${CANONICAL} for ${TRACKER_KEY}"
-            gh issue edit "$CANONICAL" \
+
+            # Preserve the human-editable "Release Captain Notes" block and avoid
+            # churning the issue when nothing material changed. Both engines emit
+            # <!-- release-readiness:human-notes:begin/end --> markers; the SR engine
+            # additionally embeds <!-- release-readiness-hash: sha=... -->.
+            CUR_BODY_FILE="$(mktemp)"
+            gh issue view "$CANONICAL" \
               --repo "${{ github.repository }}" \
-              --title "$ISSUE_TITLE" \
-              --body-file "$BODY_FILE"
+              --json body --jq '.body // ""' > "$CUR_BODY_FILE" || true
+
+            # 1) Splice any human-authored notes from the live issue into the fresh
+            #    body, replacing the freshly generated placeholder block.
+            if grep -q 'release-readiness:human-notes:begin' "$CUR_BODY_FILE" \
+               && grep -q 'release-readiness:human-notes:begin' "$BODY_FILE"; then
+              MERGED_BODY_FILE="$(mktemp)"
+              awk '
+                NR==FNR {
+                  if ($0 ~ /release-readiness:human-notes:begin/) { cap=1; next }
+                  if ($0 ~ /release-readiness:human-notes:end/)   { cap=0; next }
+                  if (cap) { notes = notes $0 "\n" }
+                  next
+                }
+                {
+                  if ($0 ~ /release-readiness:human-notes:begin/) { print; printf "%s", notes; skip=1; next }
+                  if ($0 ~ /release-readiness:human-notes:end/)   { print; skip=0; next }
+                  if (!skip) print
+                }
+              ' "$CUR_BODY_FILE" "$BODY_FILE" > "$MERGED_BODY_FILE"
+              mv "$MERGED_BODY_FILE" "$BODY_FILE"
+              echo "Preserved existing Release Captain Notes block."
+            fi
+
+            # 2) Idempotent no-op: if the semantic hash is unchanged, skip the edit
+            #    so scheduled re-runs don't spam watchers. Preview reports carry no
+            #    hash marker, so NEW_HASH is empty there and we always fall through.
+            OLD_HASH=$(grep -oE 'release-readiness-hash: sha=[0-9a-f]+' "$CUR_BODY_FILE" | head -n1 | sed 's/.*sha=//') || true
+            NEW_HASH=$(grep -oE 'release-readiness-hash: sha=[0-9a-f]+' "$BODY_FILE"     | head -n1 | sed 's/.*sha=//') || true
+            if [ -n "$NEW_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ]; then
+              echo "Semantic hash unchanged (${NEW_HASH}) — skipping issue edit (no-op)."
+            else
+              gh issue edit "$CANONICAL" \
+                --repo "${{ github.repository }}" \
+                --title "$ISSUE_TITLE" \
+                --body-file "$BODY_FILE"
+            fi
           else
             echo "Creating new tracker issue for ${TRACKER_KEY}"
             CREATE_ARGS=(
