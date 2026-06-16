@@ -1,0 +1,30 @@
+kubaflo @ .github/workflows/skill-validation.yml:584
+⚠️ **`--runs` here silently overrides the spec's `defaults.runs`.** On `pull_request`/`push`, `RUNS` (from `inputs.runs`) is empty, so `RUNS_N` defaults to `3` and line 593 always passes `--runs 3`. Per vally 0.6.0 the CLI `--runs` *overrides* `defaults.runs`, so `code-review/tests/eval.vally.yaml`'s deliberate `defaults.runs: 5` (with its "high-variance regression scenarios" comment) is forced down to 3 — and vally itself warns `<5` is statistically insignificant. Suggest: only pass `--runs` when `inputs.runs` is non-empty (let each spec's `defaults.runs` win otherwise). (skill-validation.yml:578 → 593)
+
+<!-- mmr:auto -->
+---
+kubaflo @ .github/skills/agentic-labeler/tests/eval.vally.yaml:730
+⚠️ **At `threshold: 0.6`, the LLM judge is inert for multi-floor stimuli.** vally 0.6.0 scores a trial as the *unweighted mean* of all grader [0,1] scores (verified in `pipeline/grading.js`: `sum(score)/len`; `scoring.weights` is ignored), and the suite passes when that mean ≥ threshold. Stimulus #1 here has 3 always-satisfiable floors (`output-contains`×2 + `output-not-contains`×1) + 1 judge → min score `(1+1+1+0)/4 = 0.75 > 0.6` regardless of the judge. The scoring-block comment's claim holds only for a *wrong/missing required* label (its floor fails too); it does NOT hold for the failure modes only the judge catches — an **extra out-of-scope label**, or a **negated mention** that still satisfies `output-contains` (e.g. "would NOT apply platform/android"). Net: the suite is blind to exactly the scope errors the rubric is meant to enforce. Fix: drop to ≤1 floor per stimulus, or raise `threshold` above `n_floors/(n_floors+1)` (e.g. ≥0.8 for 3 floors) so the judge is decisive. (Worst on agentic-labeler; the code-review regression specs use 1 floor + judge and are fine.) (agentic-labeler/tests/eval.vally.yaml:730)
+
+<!-- mmr:auto -->
+---
+kubaflo @ .github/workflows/skill-validation.yml:739
+⚠️ **The inverted negative control can't tell "hermetic" from "the probe just failed".** Any `<failure>` (FAILS≥1) is read as `hermetic`, but the probe asserts a strict pattern; a network block, judge hallucination, model flake, or rubric miss all produce a `<failure>` and read ✅ Hermetic. So it gives false confidence and, if ever promoted to blocking, would essentially never fail. Make it a *positive* assertion of the anonymous limit (e.g. require the output to match the unauthenticated `CORE_LIMIT: 60`), so only a genuinely-unauthenticated probe passes the gate. (skill-validation.yml:733)
+
+<!-- mmr:auto -->
+---
+kubaflo @ .github/workflows/skill-validation.yml:595
+💡 **`--output jsonl` means `results.jsonl` is never written to the artifact.** Verified in vally-cli 0.6.0 (`commands/eval.js`): with `--output jsonl` the JSONL reporter streams to **stdout**; `results.jsonl` is only written to the run dir in the *else* branch. So the uploaded `skill-eval-results-*` artifacts contain `eval-results.md` + `eval-results.junit.xml` but **not** `results.jsonl` — yet the investigate prompt (line ~1069) tells users to read `results.jsonl`. Either drop `--output jsonl` (so vally writes the file) or update the prompt. (skill-validation.yml:590, 1069)
+
+<!-- mmr:auto -->
+---
+kubaflo @ .github/workflows/skill-validation.yml:570
+⚠️ **Still open from round 1:** `--runs` here silently overrides each spec's `defaults.runs`. On `pull_request`/`push`, `RUNS` is empty → `RUNS_N=3` → line 585 always passes `--runs 3`, and vally's `--runs` overrides `defaults.runs`, so `code-review/tests/eval.vally.yaml`'s deliberate `defaults.runs: 5` (its high-variance regression scenarios, below vally's own significance floor at 3) is forced to 3. Fix: only pass `--runs` when `inputs.runs` is non-empty. (skill-validation.yml:570 → 585)
+
+<!-- mmr:auto -->
+---
+kubaflo @ .github/skills/agentic-labeler/tests/eval.vally.yaml:730
+⚠️ **Still open from round 1** (the round-2 floor-precision fixes help individual floors but not the structural math): with vally's unweighted-mean scoring + `threshold: 0.6`, any stimulus carrying ≥2 always-satisfiable floors pins the trial ≥0.67–0.75 regardless of the judge. agentic-labeler stimulus #1 has 3 floors (`output-contains`×2 + `output-not-contains`) + judge → ≥0.75, so the judge can't fail it — the suite stays blind to extra/out-of-scope labels and negated `output-contains` matches. Fix: ≤1 floor per stimulus, or raise `threshold` above `n_floors/(n_floors+1)`. (agentic-labeler/tests/eval.vally.yaml:730)
+
+<!-- mmr:auto -->
+---

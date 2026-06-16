@@ -1,0 +1,73 @@
+github-actions[bot] @ 2026-06-16T11:28:20Z
+<!-- dogfood-pr -->
+🚀 **Dogfood this PR with:**
+
+> **⚠️ WARNING: Do not do this without first carefully reviewing the code of this PR to satisfy yourself it is safe.**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dotnet/maui/main/eng/scripts/get-maui-pr.sh | bash -s -- 35942
+```
+
+Or
+
+- Run remotely in PowerShell:
+
+```powershell
+iex "& { $(irm https://raw.githubusercontent.com/dotnet/maui/main/eng/scripts/get-maui-pr.ps1) } 35942"
+```
+---
+github-actions[bot] @ 2026-06-16T11:28:33Z
+<!-- skill-validation-results -->
+
+## Skill Validation Results
+
+> @PureWeen — new skill validation results are available based on this last commit: <a href="https://github.com/dotnet/maui/commit/b2bb2bf0bf8b0b95e260e48cb056737dc09b854e"><code>b2bb2bf</code></a>.
+> To request a fresh validation after new comments or commits, comment `/evaluate-skills`.
+
+<p align="left">
+  <img alt="Overall Passed" src="https://img.shields.io/badge/Overall-Passed-1a7f37?labelColor=30363d&style=flat-square">
+  <img alt="Static Passed" src="https://img.shields.io/badge/Static-Passed-1a7f37?labelColor=30363d&style=flat-square">
+  <img alt="LLM Skipped" src="https://img.shields.io/badge/LLM-Skipped-6e7781?labelColor=30363d&style=flat-square">
+  <img alt="Skills 19" src="https://img.shields.io/badge/Skills-19-8250df?labelColor=30363d&style=flat-square">
+  <img alt="Agents 4" src="https://img.shields.io/badge/Agents-4-0969da?labelColor=30363d&style=flat-square">
+</p>
+
+<!-- SESSION:b2bb2bf START -->
+<details>
+<summary>✅ <strong>Skill Validation Results</strong> — <a href="https://github.com/dotnet/maui/commit/b2bb2bf0bf8b0b95e260e48cb056737dc09b854e"><code>b2bb2bf</code></a> · <strong>ci(skills): migrate skill-eval suite from skill-validator to Vally</strong> · <em>2026-06-16T20:29:10Z</em></summary>
+<br/>
+
+### ✅ Static Checks Passed
+Skills checked: 19 | Agents checked: 4
+
+<details>
+<summary>Full validator output</summary>
+
+```text
+Found 5 skill(s)
+[agentic-labeler] 📊 agentic-labeler: 2,839 BPE tokens [chars/4: 2,788] (standard ~), 8 sections, 0 code blocks
+[agentic-labeler]    ⚠  Skill is 2,839 BPE tokens (chars/4 estimate: 2,788) — approaching "comprehensive" range where gains diminish.
+[agentic-labeler]    ⚠  No code blocks — agents perform better with concrete snippets and commands.
+[code-review] 📊 code-review: 5,074 BPE tokens [chars/4: 5,262] (comprehensive ✗), 38 sections, 9 code blocks
+[code-review]    ⚠  Skill is 5,074 BPE tokens (chars/4 estimate: 5,262) — "comprehensive" skills hurt performance by 2.9pp on average. Consider splitting into 2–3 focused skills.
+[evaluate-pr-tests] 📊 evaluate-pr-tests: 2,955 BPE tokens [chars/4: 2,949] (standard ~), 35 sections, 6 code blocks
+[evaluate-pr-tests]    ⚠  Skill is 2,955 BPE tokens (chars/4 estimate: 2,949) — approaching "comprehensive" range where gains diminish.
+[try-fix] 📊 try-fix: 6,916 BPE tokens [chars/4: 7,049] (comprehensive ✗), 45 sections, 17 code blocks
+[try-fix]    ⚠  Skill is 6,916 BPE tokens (chars/4 estimate: 7,049) — "comprehensive" skills hurt performance by 2.9pp on average. Consider splitting into 2–3 focused skills.
+[verify-tests-fail-without-fix] 📊 verify-tests-fail-without-fix: 2,271 BPE tokens [chars/4: 2,189] (detailed ✓), 26 sections, 7 code blocks
+✅ All checks passed (5 skill(s))
+Found 4 agent(s)
+Validated 4 agent(s)
+✅ All checks passed (4 agent(s))
+```
+
+</details>
+
+### ⏭️ LLM Evaluation: Skipped
+_No changed skills with eval tests found._
+
+[🔍 Full results and investigation steps](https://github.com/dotnet/maui/actions/runs/27646027060)
+
+</details>
+<!-- SESSION:b2bb2bf END -->
+---

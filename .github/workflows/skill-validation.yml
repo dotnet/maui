@@ -598,7 +598,7 @@ jobs:
           # Verdict from JUnit (source of truth). The root <testsuites> element
           # carries aggregate failures/errors across every suite produced for
           # this matrix entry.
-          JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f | head -1)
+          JUNIT=$(find "$RESULTS_PATH" -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
           if [ -n "$JUNIT" ]; then
             ROOT=$(grep -m1 '<testsuites' "$JUNIT" || true)
             if [ -z "$ROOT" ]; then
@@ -714,16 +714,16 @@ jobs:
             --skill-dir .github/skills \
             --output-dir hermeticity-results/out \
             --junit \
-            --output jsonl \
             --model claude-opus-4.6 \
             --judge-model claude-opus-4.6 \
             --runs 1 \
             --workers 1 \
             --verbose
-          echo "vally exit: $?"
+          EVAL_RC=$?
           set -e
+          echo "vally exit code: $EVAL_RC (advisory)"
 
-          JUNIT=$(find hermeticity-results/out -name 'eval-results.junit.xml' -type f | head -1)
+          JUNIT=$(find hermeticity-results/out -name 'eval-results.junit.xml' -type f 2>/dev/null | head -1 || true)
           if [ -z "$JUNIT" ]; then
             echo "::warning::no JUnit produced by hermeticity run"
             echo "inconclusive" > hermeticity-results/verdict.txt
@@ -746,8 +746,15 @@ jobs:
           #   errors>=1   → run errored                            → INCONCLUSIVE
           #   failures>=1 → agent NOT anonymous, or probe errored  → BROKEN
           if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
-            echo "hermetic" > hermeticity-results/verdict.txt
-            echo "✅ Hermetic: agent reported anonymous rate limit (CORE_LIMIT:60); no GitHub token leaked."
+            # Guard: if Vally exited non-zero but JUnit shows no failures,
+            # an execution error may have been swallowed (partial output).
+            if [ "$EVAL_RC" -ne 0 ]; then
+              echo "inconclusive" > hermeticity-results/verdict.txt
+              echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as inconclusive (possible partial output)"
+            else
+              echo "hermetic" > hermeticity-results/verdict.txt
+              echo "✅ Hermetic: agent reported anonymous rate limit (CORE_LIMIT:60); no GitHub token leaked."
+            fi
           elif [ "$ERRS" -ge 1 ]; then
             echo "inconclusive" > hermeticity-results/verdict.txt
             echo "::warning::Hermeticity inconclusive (execution error in hermeticity control)."
