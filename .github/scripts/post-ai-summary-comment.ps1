@@ -390,6 +390,28 @@ function Test-HasNonPRWinner {
     }
 }
 
+function Test-RunValidationFailed {
+    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+
+    # Gate is the authoritative, structured validation signal for the current run.
+    $gateFile = Join-Path $PRAgentDir 'gate/content.md'
+    if (Test-Path -LiteralPath $gateFile) {
+        $gateContent = Get-Content -Raw -LiteralPath $gateFile -Encoding UTF8
+        if ((Get-GateStatus -GateContent $gateContent) -eq 'Failed') { return $true }
+    }
+
+    # Device-test phases: veto on an explicit failure (skip the "no tests needed" no-op).
+    foreach ($key in @('uitests', 'deeptests', 'deep-tests')) {
+        $file = Join-Path $PRAgentDir "$key/content.md"
+        if (-not (Test-Path -LiteralPath $file)) { continue }
+        $content = Get-Content -Raw -LiteralPath $file -Encoding UTF8
+        if (Test-PhaseContentIsNoOp -PhaseKey $key -Content $content) { continue }
+        if ($content -match '(?im)^\s*(?:#+\s*)?(?:Result|Status)\s*:\s*(?:\S+\s*)?FAILED\b') { return $true }
+    }
+
+    return $false
+}
+
 function Get-AIReviewEventForRun {
     param(
         [string]$ReportContent,
@@ -399,6 +421,13 @@ function Get-AIReviewEventForRun {
     )
 
     $reviewEvent = Get-AIReviewEvent -ReportContent $ReportContent
+
+    # Validation veto: never post an APPROVE review over a failed gate / device-test validation,
+    # even when the report body recommends APPROVE (the report can be stale vs. current-run results).
+    if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir)) {
+        return 'REQUEST_CHANGES'
+    }
+
     if ((Test-HasNonPRWinner -PRAgentDir $PRAgentDir) -and $reviewEvent -eq 'COMMENT') {
         return 'REQUEST_CHANGES'
     }

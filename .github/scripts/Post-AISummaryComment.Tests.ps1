@@ -20,6 +20,9 @@ BeforeAll {
     foreach ($functionName in @(
         'Test-PhaseContentIsNoOp',
         'Get-AIReviewEvent',
+        'Get-GateStatus',
+        'ConvertTo-TitleCase',
+        'Test-RunValidationFailed',
         'Test-HasNonPRWinner',
         'Get-AIReviewEventForRun',
         'New-FutureActionSection'
@@ -130,6 +133,33 @@ Describe 'Get-AIReviewEventForRun' {
 
         Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
             Should -Be 'APPROVE'
+    }
+
+    It 'vetoes APPROVE to REQUEST_CHANGES when the gate failed' {
+        $gateDir = Join-Path $script:testDir 'gate'
+        New-Item -ItemType Directory -Path $gateDir -Force | Out-Null
+        'Gate Result: ❌ FAILED' | Set-Content (Join-Path $gateDir 'content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'keeps APPROVE when the gate passed' {
+        $gateDir = Join-Path $script:testDir 'gate'
+        New-Item -ItemType Directory -Path $gateDir -Force | Out-Null
+        'Gate Result: ✅ PASSED' | Set-Content (Join-Path $gateDir 'content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+            Should -Be 'APPROVE'
+    }
+
+    It 'vetoes APPROVE when UI tests report FAILED' {
+        $uiDir = Join-Path $script:testDir 'uitests'
+        New-Item -ItemType Directory -Path $uiDir -Force | Out-Null
+        "## UI Tests`n`nResult: ❌ FAILED" | Set-Content (Join-Path $uiDir 'content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+            Should -Be 'REQUEST_CHANGES'
     }
 
     It 'does not force changes for missing, malformed, or PR-fix winner files' {
