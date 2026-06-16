@@ -2349,13 +2349,10 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				SetInheritedBindingContext(shadow, BindingContext);
+				shadow.Parent = this;
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
 				_shadowProxy.Subscribe(shadow, _shadowChanged);
-
-				OnParentResourcesChanged(this.GetMergedResources());
-				((IElementDefinition)this).AddResourcesChangedListener(shadow.OnParentResourcesChanged);
 			}
 		}
 
@@ -2365,10 +2362,13 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				((IElementDefinition)this).RemoveResourcesChangedListener(shadow.OnParentResourcesChanged);
-
 				SetInheritedBindingContext(shadow, null);
 				_shadowProxy?.Unsubscribe();
+
+				if (shadow.Parent == this)
+				{
+					shadow.Parent = null;
+				}
 			}
 		}
 

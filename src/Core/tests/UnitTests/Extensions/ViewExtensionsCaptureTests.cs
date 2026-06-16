@@ -130,6 +130,39 @@ namespace Microsoft.Maui.UnitTests.Extensions
 		}
 
 		[Fact]
+		public async Task CaptureAsync_View_PrefersContainerView_OverPlatformView()
+		{
+			var expectedResult = Substitute.For<IScreenshotResult>();
+			var platformView = new object();
+			var containerView = new object();
+
+			var screenshot = Substitute.For<IScreenshot, IViewScreenshot>();
+			screenshot.IsCaptureSupported.Returns(true);
+			((IViewScreenshot)screenshot).CaptureViewAsync(containerView)
+				.Returns(Task.FromResult<IScreenshotResult>(expectedResult));
+
+			var services = new ServiceCollection()
+				.AddSingleton(screenshot)
+				.BuildServiceProvider();
+			var mauiContext = new MauiContext(services);
+
+			var handler = Substitute.For<IViewHandler>();
+			handler.PlatformView.Returns(platformView);
+			handler.ContainerView.Returns(containerView);
+			handler.MauiContext.Returns(mauiContext);
+
+			var view = Substitute.For<IView>();
+			view.Handler.Returns(handler);
+
+			var result = await view.CaptureAsync();
+
+			Assert.Same(expectedResult, result);
+			// The container view (clip/shadow/border) is captured, matching view.ToPlatform().
+			await ((IViewScreenshot)screenshot).Received(1).CaptureViewAsync(containerView);
+			await ((IViewScreenshot)screenshot).DidNotReceive().CaptureViewAsync(platformView);
+		}
+
+		[Fact]
 		public async Task CaptureAsync_Window_ReturnsNull_WhenHandlerIsNull()
 		{
 			var window = Substitute.For<IWindow>();
