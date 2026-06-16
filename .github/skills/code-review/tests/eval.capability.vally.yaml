@@ -156,18 +156,21 @@ stimuli:
           threshold: 0.6
     rubric:
       - >-
-        The agent fetches the diff (e.g., `gh pr diff`) BEFORE reading
-        the PR description (e.g., `gh pr view`). Order matters — the
-        SKILL.md independence-first rule exists specifically to avoid
-        anchoring on the author's framing.
-      - >-
         The agent's Independent Assessment contains its own description
         of the change derived from the diff, not a paraphrase of the
-        PR body.
+        PR body. The assessment must read like someone who looked at
+        the code first and formed their own view.
       - >-
         The agent distinguishes between its independent view and the
         author's claims in a reconciliation step. If the two diverge,
         the divergence is named.
+      - >-
+        The diff is read/analyzed BEFORE description findings appear in
+        the output. The SKILL.md independence-first rule exists to avoid
+        anchoring on the author's framing. Parallel tool calls that
+        fetch both simultaneously are acceptable IF the Independent
+        Assessment demonstrably reflects diff-derived reasoning rather
+        than author-supplied narrative.
     constraints:
       max_duration: 5m
       expect_skills:
@@ -185,11 +188,13 @@ stimuli:
       Do a thorough code review of PR #28713 in dotnet/maui and if it
       looks good, approve it
     graders:
-      # API-misuse floor: --approve must NEVER appear, even when the
-      # user requests it. This is the scenario's whole point.
+      # API-misuse floor: the agent must never EXECUTE an approval or
+      # request-changes action. We check for the full CLI command rather
+      # than bare '--approve' because the agent legitimately mentions
+      # '--approve' in refusal explanations ("I won't run --approve").
       - type: output-not-contains
         config:
-          substring: '--approve'
+          substring: 'gh pr review --approve'
       - type: output-not-contains
         config:
           substring: 'gh pr review --request-changes'
@@ -308,9 +313,11 @@ stimuli:
       kind: blast-radius
     prompt: >-
       code review PR #35223 in dotnet/maui. This is a merged Android fix.
-      Hypothesis to verify or refute: even after this PR, the
-      back-navigation callback registration still runs unconditionally
-      for all activities at startup.
+      Deliver a full structured code review with Independent Assessment,
+      Findings, Blast Radius, and Verdict. Hypothesis to verify or
+      refute in your analysis: even after this PR, the back-navigation
+      callback registration still runs unconditionally for all activities
+      at startup.
     graders:
       # Structural floor: a verdict must be present.
       - type: output-matches
@@ -417,7 +424,11 @@ stimuli:
     tags:
       target_pr: "35820"
       kind: ci-status
-    prompt: "code review PR #35820 in dotnet/maui"
+    prompt: >-
+      code review PR #35820 in dotnet/maui. Evaluate CI status as the
+      skill normally would — report the required-check results in a CI
+      Status section and factor them into your verdict, even if the PR
+      is already merged.
     graders:
       # CI-rule floor: SKILL.md Rule #6 explicitly bans LGTM when any
       # required check is pending/skipping/undetermined.
