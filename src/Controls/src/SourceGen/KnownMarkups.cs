@@ -451,7 +451,7 @@ internal class KnownMarkups
 				{
 					if (converterCultureNode is ValueNode { Value: string converterCulture })
 					{
-						expression += $"ConverterCulture = (global::System.Globalization.CultureInfo)new global::System.ComponentModel.CultureInfoConverter().ConvertFromInvariantString({SymbolDisplay.FormatLiteral(converterCulture, true)})!, ";
+						expression += $"ConverterCulture = global::System.Globalization.CultureInfo.GetCultureInfo({SymbolDisplay.FormatLiteral(converterCulture, true)}), ";
 					}
 					else
 					{
