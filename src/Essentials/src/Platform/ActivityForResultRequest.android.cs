@@ -65,13 +65,18 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		var contract = new TContract();
 
-		var activity = componentActivity;
+		// Note: Do NOT capture componentActivity in the closure. Instead, resolve it dynamically at callback time.
+		// This allows the callback to survive activity recreation due to rotation or config changes.
+		// When rotation occurs, the old activity is destroyed but the callback may fire on the new activity's
+		// launcher context. We need to look up the current activity to find the pending request.
 		var callback = new ActivityResultCallback<TResult>(result =>
 		{
-			// Only complete if this activity has a pending request
-			if (_pendingRequests.TryGetValue(activity, out var tcs))
+			// Resolve the current activity at callback delivery time, not capture time.
+			// If rotation happened, GetCurrentActivity returns the new activity instance.
+			var currentActivity = ActivityStateManager.Default.GetCurrentActivity() as ComponentActivity;
+			if (currentActivity != null && _pendingRequests.TryGetValue(currentActivity, out var tcs))
 			{
-				_pendingRequests.Remove(activity);
+				_pendingRequests.Remove(currentActivity);
 				tcs?.TrySetResult(result);
 			}
 		});
@@ -123,10 +128,12 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		if (_pendingRequests.TryGetValue(launchingActivity, out var existingTcs))
 		{
-			Trace.WriteLine("ActivityForResultRequest already has a pending request for this activity; rejecting overlapping launch.");
-			var overlappingRequestTcs = new TaskCompletionSource<TResult>();
-			overlappingRequestTcs.SetException(new InvalidOperationException("An activity result request is already in progress for this activity."));
-			return overlappingRequestTcs.Task;
+			// Instead of rejecting the new launch, cancel the orphaned previous request and replace it.
+			// This prevents permanent deadlock if a picker result never arrives due to process death or OEM edge cases.
+			// Rejection semantics would block all future launches from this activity forever.
+			Trace.WriteLine("ActivityForResultRequest: canceling overlapping pending request and launching new request.");
+			_pendingRequests.Remove(launchingActivity);
+			existingTcs?.TrySetCanceled();
 		}
 
 		var tcs = new TaskCompletionSource<TResult>();
