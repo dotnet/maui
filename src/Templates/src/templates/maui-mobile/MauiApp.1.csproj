@@ -4,6 +4,10 @@
 		<TargetFrameworks>DOTNET_TFM-android</TargetFrameworks>
 		<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);DOTNET_TFM-ios;DOTNET_TFM-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);DOTNET_TFM-windows10.0.19041.0</TargetFrameworks>
+<!--#if (UseAvaloniaHandlers) -->
+		<!-- Avalonia desktop head (Windows, macOS, and Linux) -->
+		<TargetFrameworks>DOTNET_TFM;$(TargetFrameworks)</TargetFrameworks>
+<!--#endif -->
 
 		<!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
@@ -77,6 +81,14 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
 	</ItemGroup>
+
+<!--#if (UseAvaloniaHandlers) -->
+	<ItemGroup>
+		<PackageReference Include="Avalonia.Controls.Maui" Version="AVALONIA_CONTROLS_MAUI_VERSION" />
+		<PackageReference Include="Avalonia.Controls.Maui.Desktop" Version="AVALONIA_CONTROLS_MAUI_VERSION" Condition="'$(TargetFramework)' == 'DOTNET_TFM'" />
+	</ItemGroup>
+
+<!--#endif -->
 
 <!--#if (IncludeSampleContent) -->
 	<ItemGroup>
