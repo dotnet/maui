@@ -185,7 +185,9 @@ function Read-CopilotTokenUsageRecords {
     $files = Get-ChildItem -Path $Root -Recurse -File -Filter 'copilot-token-usage-*.json' -ErrorAction SilentlyContinue |
         Where-Object {
             $normalized = $_.FullName -replace '\\', '/'
-            $normalized -match '/copilot-token-usage/raw/' -and $normalized -notmatch '/CustomAgentLogsTmp/'
+            $normalized -match '/copilot-token-usage/raw/' -and
+            $normalized -notmatch '/CustomAgentLogsTmp/' -and
+            $normalized -notmatch '/agent-pr-session/'
         } |
         Sort-Object FullName
 
@@ -410,7 +412,7 @@ $csvPath = Join-Path $OutputDir 'token-usage-by-step.csv'
 if (@($summary.steps).Count -gt 0) {
     @($summary.steps) | Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8
 } else {
-    'stageName,scriptPhase,copilotStep,model,invocationCount,inputTokens,outputTokens,cachedInputTokens,reasoningOutputTokens,totalTokens,aicUsed,durationMs,apiDurationMs,turnCount,toolCount' |
+    'stageName,scriptPhase,copilotStep,model,invocationCount,inputTokens,outputTokens,cachedInputTokens,reasoningOutputTokens,totalTokens,aicUsed,copilotCost,premiumRequests,durationMs,apiDurationMs,turnCount,toolCount' |
         Set-Content -Path $csvPath -Encoding UTF8
 }
 

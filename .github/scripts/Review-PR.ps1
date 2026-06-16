@@ -1206,6 +1206,10 @@ function Invoke-CopilotStep {
                             if ($preview.Length -gt 400) {
                                 $preview = $preview.Substring(0, 400) + "…"
                             }
+                            # Agent message content is PR-influenceable; strip CR and defang any
+                            # AzDO logging-command prefix (##vso[ / ##[) before echoing so it can't
+                            # inject a pipeline command (mirrors the non-JSON passthrough path).
+                            $preview = ($preview -replace "`r", '') -replace '##(?=\[|vso\[)', '## '
                             Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
                             Write-Host $preview -ForegroundColor White
                         }

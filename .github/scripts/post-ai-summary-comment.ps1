@@ -393,20 +393,26 @@ function Test-HasNonPRWinner {
 function Test-RunValidationFailed {
     param([Parameter(Mandatory = $true)][string]$PRAgentDir)
 
-    # Gate is the authoritative, structured validation signal for the current run.
-    $gateFile = Join-Path $PRAgentDir 'gate/content.md'
-    if (Test-Path -LiteralPath $gateFile) {
-        $gateContent = Get-Content -Raw -LiteralPath $gateFile -Encoding UTF8
-        if ((Get-GateStatus -GateContent $gateContent) -eq 'Failed') { return $true }
+    # Gate: key off the trusted gate-result.txt, which Review-PR.ps1 always overwrites with the
+    # real $gateResult. Do NOT parse gate/content.md — it is not always cleaned before the gate
+    # runs, so a PR could commit a forged "Gate Result: PASSED" content.md to bypass the veto.
+    $gateResultFile = Join-Path $PRAgentDir 'gate/gate-result.txt'
+    if (Test-Path -LiteralPath $gateResultFile) {
+        $gateResult = (Get-Content -Raw -LiteralPath $gateResultFile -Encoding UTF8).Trim()
+        if ($gateResult -match '(?im)^FAILED$') { return $true }
     }
 
-    # Device-test phases: veto on an explicit failure (skip the "no tests needed" no-op).
-    foreach ($key in @('uitests', 'deeptests', 'deep-tests')) {
-        $file = Join-Path $PRAgentDir "$key/content.md"
-        if (-not (Test-Path -LiteralPath $file)) { continue }
-        $content = Get-Content -Raw -LiteralPath $file -Encoding UTF8
-        if (Test-PhaseContentIsNoOp -PhaseKey $key -Content $content) { continue }
-        if ($content -match '(?im)^\s*(?:#+\s*)?(?:Result|Status)\s*:\s*(?:\S+\s*)?FAILED\b') { return $true }
+    # UI tests: the pipeline render writes "❌ **Deep UI tests** — N passed, M failed …" with no
+    # "Result:" line, so detect the failure icon on a bold test header or a non-zero "N failed"
+    # count ("marked failed by TRX" on the passing branch has no digit immediately before
+    # "failed", so it does not match). Skip the "no UI tests needed" no-op placeholder.
+    $uiFile = Join-Path $PRAgentDir 'uitests/content.md'
+    if (Test-Path -LiteralPath $uiFile) {
+        $uiContent = Get-Content -Raw -LiteralPath $uiFile -Encoding UTF8
+        if (-not (Test-PhaseContentIsNoOp -PhaseKey 'uitests' -Content $uiContent) -and
+            ($uiContent -match '(?im)❌\s*\*\*[^*\n]*tests\*\*' -or $uiContent -match '(?im)\b[1-9]\d*\s+failed\b')) {
+            return $true
+        }
     }
 
     return $false
