@@ -2,12 +2,6 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <Target Name="_ErrorOnMonoMobileRuntime"
-          BeforeTargets="Build;Publish"
-          Condition="'$(UseMonoRuntime)' == 'true' and ('$(_MauiTargetPlatformIsAndroid)' == 'True' or '$(_MauiTargetPlatformIsiOS)' == 'True' or '$(_MauiTargetPlatformIstvOS)' == 'True' or '$(_MauiTargetPlatformIsMacCatalyst)' == 'True')">
-    <Error Code="NETSDK1242" Text="Building Mono mobile projects is not supported in .NET 11.0 and later. Use the .NET 10.0 SDK to build this project." />
-  </Target>
-
   <ItemGroup>
     <!-- Upgrade xunit's transitive NETStandard.Library dependency to avoid .NET Standard 1.x dependencies. -->
     <!-- <PackageReference Include="NETStandard.Library"
