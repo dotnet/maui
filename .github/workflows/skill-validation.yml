@@ -487,7 +487,9 @@ jobs:
               echo "fixture ${sha} present"
             else
               echo "Fetching fixture commit ${sha} from upstream..."
-              git fetch --no-tags --depth=1 upstream "$sha" 2>/dev/null \
+              # depth=2: fetch the commit AND its first parent so that
+              # `git diff HEAD^ HEAD` works inside worktrees pinned to it.
+              git fetch --no-tags --depth=2 upstream "$sha" 2>/dev/null \
                 || echo "::warning::Could not fetch fixture commit ${sha}; worktree stimuli pinned to it may error."
             fi
           done
