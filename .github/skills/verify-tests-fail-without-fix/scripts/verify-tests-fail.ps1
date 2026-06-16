@@ -104,6 +104,28 @@ if ($Platform -eq "maccatalyst") {
     $Platform = "catalyst"
 }
 
+# ============================================================
+# Strip GH/Copilot tokens from environment for the duration of a
+# scriptblock that invokes PR-controlled code (dotnet test, MSBuild,
+# host-app, device tests). Trusted metadata fetches via `gh` CLI
+# (Detect-TestsInDiff, gh pr view) keep the token because they run
+# OUTSIDE this wrapper. See .github/instructions/ci-copilot-pipeline-security.instructions.md.
+# ============================================================
+function Invoke-WithoutGhTokens {
+    param([Parameter(Mandatory)][scriptblock]$ScriptBlock)
+    $saved = @{}
+    foreach ($n in @('GH_TOKEN','GITHUB_TOKEN','COPILOT_GITHUB_TOKEN')) {
+        $saved[$n] = [Environment]::GetEnvironmentVariable($n)
+        [Environment]::SetEnvironmentVariable($n, $null)
+    }
+    try { & $ScriptBlock }
+    finally {
+        foreach ($n in $saved.Keys) {
+            [Environment]::SetEnvironmentVariable($n, $saved[$n])
+        }
+    }
+}
+
 # Platform is required for UI and device tests, optional for unit/XAML tests
 if ($TestType -in @("UITest", "DeviceTest") -and -not $Platform) {
     throw "$TestType requires -Platform parameter (android, ios, catalyst, windows)."
@@ -354,7 +376,7 @@ function Invoke-TestRun {
                 $uiParams.DeviceUdid = $script:BootedDeviceUdid
             }
             # Capture all output — includes build, deploy, and test results
-            $scriptOutput = & $buildScript @uiParams 2>&1
+            $scriptOutput = Invoke-WithoutGhTokens { & $buildScript @uiParams 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -379,7 +401,7 @@ function Invoke-TestRun {
                 $testArgs += @("--filter", $Filter)
             }
 
-            $scriptOutput = & dotnet @testArgs 2>&1
+            $scriptOutput = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -417,7 +439,7 @@ function Invoke-TestRun {
                 $testArgs += @("--filter", $Filter)
             }
 
-            $scriptOutput = & dotnet @testArgs 2>&1
+            $scriptOutput = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -459,7 +481,7 @@ function Invoke-TestRun {
                 $deviceParams.DeviceUdid = $script:BootedDeviceUdid
             }
 
-            $scriptOutput = & $deviceTestScript @deviceParams 2>&1
+            $scriptOutput = Invoke-WithoutGhTokens { & $deviceTestScript @deviceParams 2>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
