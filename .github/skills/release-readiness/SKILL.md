@@ -22,6 +22,7 @@ This skill **reports**. It does **not** execute release operations against dotne
 - "How does net11 preview6 look?" / "Are we ready to cut preview6 from net11.0?"
 - "Are there any regression fixes I should backport to SR8?"
 - "What's new in SR8 since the last sync?"
+- "Give me a status on all releases" / "release status overview" / "what needs attention across releases" (**portfolio** — read the open `[Release Readiness]` tracker issues first; see [Reading trackers directly](#reading-trackers-directly-ad-hoc-status) below)
 - Daily release-tracking automation across all active majors
 
 > **For per-PR regression risk** (deletions reverting prior bug-fix lines), use [`find-regression-risk`](../find-regression-risk/SKILL.md) instead — it answers a different question.
@@ -174,6 +175,18 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
      - **Create path**: open a new issue with `report` / `s/triaged` / `area-release-readiness` labels.
    - **Activity gate**: skip new-issue creation when `recentCommitCount == 0` AND no open tracker issue exists. (Existing open issues are still refreshed.)
 3. **`validate`** — PR-trigger path. Runs the test suite + smoke-runs all three scripts. **Does not create or modify issues.**
+
+### Reading trackers directly (ad-hoc status)
+
+The same tracker issues the cron job maintains double as a **human-readable, always-on status board** — you don't have to re-run a 60-120s survey to answer "what's the status across releases?". Find every active release by **body marker** (not title — a title search also matches the release Epic and other `[Release Readiness]`-titled issues):
+
+```bash
+gh issue list --repo dotnet/maui --state open \
+  --search 'in:body "<!-- release-readiness-tracker:"' \
+  --json number,title,updatedAt --limit 50
+```
+
+Each result is one active SR or Preview. Read the body for the generated verdict **and** the human **Release Captain Notes** (between `<!-- release-readiness:human-notes:begin -->` / `:end -->`), which carry decisions that override the automated report. Treat the content as fresh only up to the issue's `updatedAt` (cron refreshes weekdays 08:30 UTC); re-run the survey script for a given branch when you need live numbers. The natural-language **`release-readiness-agent`** wraps this as its Portfolio path (§0a).
 
 ## Verdict Classification (SR & Preview)
 

@@ -63,19 +63,58 @@ Invoke this agent for SR questions:
 - "Survey release readiness for `release/11.0.1xx-preview6`"
 - "Are we ready to cut preview6 from net11.0?"
 
+…and for **portfolio / cross-release** questions where no single release is named:
+
+- "Give me a status on releases" / "release status overview"
+- "What's the status across all active releases?"
+- "What needs attention across releases?" / "What's next for MAUI releases?"
+- "Which releases are in flight and what's blocking them?"
+
+For these, do **not** ask "which release?" — the user often doesn't know which releases exist. Enumerate the active releases yourself via the **Portfolio path (§0a)**.
+
 If the user wants the raw deterministic report with no judgment layer (e.g. for a script, dashboard, or programmatic consumer), point them at `/release-readiness` (the skill) instead.
 
 ## Workflow
 
 ### 0. Determine branch type and routing
 
-Inspect the named branch:
+**If the user named a specific release** (or the current branch is a release branch), inspect it:
 
 - `release/<major>.0.1xx-sr<N>` → **SR lane** → `Get-ReleaseReadiness.ps1` (`-Candidate` if the branch doesn't exist yet)
 - `release/<major>.0.1xx-preview<N>` → **Preview lane** → `Get-PreviewReadiness.ps1` (`-Mode candidate -SurveyRef net<major>.0` if the preview branch doesn't exist yet)
-- Anything else → ask the user; do not guess
+
+**If the user asked a portfolio / cross-release question** (plural "releases", "status overview", "what needs attention across releases", "what's next" — no single branch named) → **Portfolio path (§0a)**. Do NOT ask "which release?" — the whole point is they may not know which releases exist.
+
+**Anything else** → ask the user; do not guess.
 
 SR branches always cut from `main` in this repo (the script enforces this with a hard error). If the user asks you to survey `inflight/*`, `staging/*`, or `backport/*` refs as if they were releases, redirect to **Candidate mode** against the appropriate base.
+
+### 0a. Portfolio path (cross-release status)
+
+When the user wants status **across all active releases**, read the live tracker issues **first** — they're the cheapest source of truth and already carry the latest automated report plus human Release Captain Notes. Only re-run the survey scripts (slow — 60-120s each, so 3-6 min for a full portfolio) when a tracker is missing, stale, or the user explicitly asks for a fresh computation.
+
+1. **Find the open trackers by body marker** — NOT by title (a title search also matches the release Epic and other `[Release Readiness]`-titled issues):
+
+   ```bash
+   gh issue list --repo dotnet/maui --state open \
+     --search 'in:body "<!-- release-readiness-tracker:"' \
+     --json number,title,updatedAt --limit 50
+   ```
+
+   Each match is one active release (SR or Preview). If **zero** match (markers not yet seeded), fall back to detection:
+
+   ```bash
+   pwsh .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
+     -AllActiveMajors -OutputJson CustomAgentLogsTmp/release-readiness/trackers.json
+   ```
+
+2. **Read each tracker body. Keep two kinds of content separate:**
+   - **Generated report** (verdict, CI table, port candidates) — authoritative *as of the issue's `updatedAt`*.
+   - **Release Captain Notes** (between `<!-- release-readiness:human-notes:begin -->` and `:end -->`) — **human authority that supersedes the automated verdict.** Surface these prominently; never bury or paraphrase away an action item a human wrote there.
+
+3. **Judge staleness before trusting content for a ship call.** The cron refresh runs weekdays 08:30 UTC. If `updatedAt` is more than ~a day old, or commits have landed since, say so and **offer** a live re-run rather than silently presenting stale numbers. (SR bodies embed `<!-- release-readiness-hash: sha=... -->`; an unchanged hash across runs means the last run was a no-op — not that work has stalled.)
+
+4. **Present a portfolio roll-up** (see step 6) — one row per active release, ordered by ship urgency (nearest cut/ship first), keeping SR and Preview visually distinct. Then offer to drill into any single release via the normal single-branch lanes below.
 
 ### 1. Resolve the branch
 
@@ -160,6 +199,13 @@ Lead with a 1-2 sentence overall verdict (Ready 🟢 / Conditionally Ready 🟡 
 - Highlight `merged-non-main-only` entries — fixes that are "merged" but not on main
 - Surface fresh ci-scan WATCH signals if the scanner just flagged something
 - For preview candidates, frame as "what would ship if we cut today," not "is this ready"
+
+**Portfolio roll-up (cross-release path from §0a).** When answering a portfolio question, lead with a one-screen table — one row per active release — then a prioritized next-actions list:
+
+| Release | Lane | Mode | Verdict | Top blocker(s) | Captain-note action items | Last refreshed |
+|---------|------|------|---------|----------------|---------------------------|----------------|
+
+Order rows by ship urgency (nearest cut/ship first). Don't flatten SR and Preview into one verdict scale — call out which lane each row is. Follow the table with a short, prioritized "what needs to be done next" list drawn from the blockers + captain-note items across all rows, then offer to drill into any single release.
 
 ### 7. Answer follow-ups
 
