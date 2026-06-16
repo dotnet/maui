@@ -210,7 +210,6 @@ $script:UnitTestProjectMap = @{
     "SourceGen.UnitTests"              = "src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj"
     "Core.UnitTests"                   = "src/Core/tests/UnitTests/Core.UnitTests.csproj"
     "Essentials.UnitTests"             = "src/Essentials/test/UnitTests/Essentials.UnitTests.csproj"
-    "MauiBlazorWebView.UnitTests"      = "src/BlazorWebView/tests/MauiBlazorWebView.UnitTests/MauiBlazorWebView.UnitTests.csproj"
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
     "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
@@ -540,12 +539,23 @@ function Invoke-TestRunWithRetry {
                 Write-Host "  🔄 Rebooting device ($($script:BootedDeviceUdid)) to recover from environment error: $($result.Error)" -ForegroundColor Yellow
                 if ($Platform -in @("ios", "catalyst", "maccatalyst")) {
                     xcrun simctl shutdown $script:BootedDeviceUdid 2>$null
-                    Start-Sleep -Seconds 5
-                    xcrun simctl boot $script:BootedDeviceUdid 2>$null
+                    # Boot and block until the simulator has finished booting (services ready),
+                    # not just powered on, before the next attempt.
+                    xcrun simctl bootstatus $script:BootedDeviceUdid -b 2>$null
                 } elseif ($Platform -eq "android") {
                     adb -s $script:BootedDeviceUdid reboot 2>$null
-                    Start-Sleep -Seconds 10
                     adb -s $script:BootedDeviceUdid wait-for-device 2>$null
+                    # wait-for-device only waits for adbd to respond; the package manager,
+                    # installer and launcher aren't ready until boot actually completes, so
+                    # poll sys.boot_completed + bootanim (up to 180s) before retrying —
+                    # otherwise the next attempt hits the same install/launch failure.
+                    $bootDeadline = (Get-Date).AddSeconds(180)
+                    while ((Get-Date) -lt $bootDeadline) {
+                        $bootCompleted = (adb -s $script:BootedDeviceUdid shell getprop sys.boot_completed 2>$null | Out-String).Trim()
+                        $bootAnim = (adb -s $script:BootedDeviceUdid shell getprop init.svc.bootanim 2>$null | Out-String).Trim()
+                        if ($bootCompleted -eq '1' -and $bootAnim -eq 'stopped') { break }
+                        Start-Sleep -Seconds 3
+                    }
                 }
             }
 

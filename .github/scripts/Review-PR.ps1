@@ -695,7 +695,7 @@ function Get-CopilotUsageTokenFields {
 function Get-TokenFieldSum {
     param([object[]]$Fields)
 
-    $items = @($Fields)
+    $items = @($Fields | Where-Object { $null -ne $_ })
     if ($items.Count -eq 0) { return $null }
 
     $sum = 0.0
@@ -704,6 +704,25 @@ function Get-TokenFieldSum {
     }
 
     return [long][Math]::Round($sum)
+}
+
+function Get-TokenFieldPathDepth {
+    param([string]$Path)
+    # Nesting depth = number of '.'/'[' segment separators in the dotted/indexed path.
+    return ([regex]::Matches([string]$Path, '[.\[]')).Count
+}
+
+function Select-CanonicalTokenFields {
+    param([object[]]$Fields)
+
+    # Prevent double-counting when a payload carries BOTH a root aggregate and a nested
+    # per-model breakdown for the same unit (e.g. inputTokens=1000 plus perModel[*].inputTokens
+    # = 600+400). Prefer the shallowest matches; only fall through to the deeper breakdown when
+    # no shallower aggregate exists. Flat payloads (a single depth) are unaffected.
+    $items = @($Fields)
+    if ($items.Count -le 1) { return $items }
+    $minDepth = ($items | ForEach-Object { Get-TokenFieldPathDepth $_.Path } | Measure-Object -Minimum).Minimum
+    return @($items | Where-Object { (Get-TokenFieldPathDepth $_.Path) -eq $minDepth })
 }
 
 function Get-CopilotTokenMetrics {
@@ -729,10 +748,10 @@ function Get-CopilotTokenMetrics {
         $_.Path -match '(?i)token'
     })
 
-    $inputTokens = Get-TokenFieldSum -Fields $inputFields
-    $outputTokens = Get-TokenFieldSum -Fields $outputFields
-    $cachedInputTokens = Get-TokenFieldSum -Fields $cachedInputFields
-    $totalTokens = Get-TokenFieldSum -Fields $explicitTotalFields
+    $inputTokens = Get-TokenFieldSum -Fields (Select-CanonicalTokenFields $inputFields)
+    $outputTokens = Get-TokenFieldSum -Fields (Select-CanonicalTokenFields $outputFields)
+    $cachedInputTokens = Get-TokenFieldSum -Fields (Select-CanonicalTokenFields $cachedInputFields)
+    $totalTokens = Get-TokenFieldSum -Fields (Select-CanonicalTokenFields $explicitTotalFields)
     if ($null -eq $totalTokens -and ($null -ne $inputTokens -or $null -ne $outputTokens)) {
         $totalTokens = [long](($inputTokens ?? 0) + ($outputTokens ?? 0))
     }
@@ -942,15 +961,15 @@ function New-CopilotTokenUsageRecord {
         $otelFile = $OtelMetrics.file
     }
 
-    $billingUnits = $AicUsed
-    if ($null -eq $billingUnits -and $null -ne $copilotCost) {
-        $billingUnits = $copilotCost
-    }
-    if ($null -eq $billingUnits) {
-        $premiumRequests = Get-ObjectMemberValue -InputObject $Usage -Names @('premiumRequests')
-        if (Test-IsNumericValue $premiumRequests) {
-            $billingUnits = [double]$premiumRequests
-        }
+    # Keep billing units separate — never fall back across unit types (AIC credits vs dollar
+    # cost vs request count). Collapsing them into one field produces meaningless aggregate
+    # sums (credits + dollars + counts) for the downstream consumer.
+    $aicUsed = $AicUsed
+    $premiumRequests = Get-ObjectMemberValue -InputObject $Usage -Names @('premiumRequests')
+    if (Test-IsNumericValue $premiumRequests) {
+        $premiumRequests = [double]$premiumRequests
+    } else {
+        $premiumRequests = $null
     }
 
     return [ordered]@{
@@ -980,7 +999,9 @@ function New-CopilotTokenUsageRecord {
         toolCount             = $ToolCount
         failedToolCount       = $FailedToolCount
         cliUsage              = [ordered]@{
-            aicUsed          = $billingUnits
+            aicUsed          = $aicUsed
+            copilotCost      = $copilotCost
+            premiumRequests  = $premiumRequests
             contextWindow    = $ContextWindow
             contextWindowRaw = $ContextWindowRaw
         }
@@ -1230,9 +1251,12 @@ function Invoke-CopilotStep {
                     $modelName = [string]$cliLineData.model
                 }
 
-                # Non-JSON line (e.g. stats) — pass through as-is
+                # Non-JSON line (e.g. stats) — strip CR and defang any AzDO logging-command
+                # prefix (##vso[ / ##[) so PR-influenced Copilot output can't inject a
+                # pipeline command (e.g. "\r##vso[task.setvariable...]"), then echo as-is.
                 if ($line.Trim()) {
-                    Write-Host "  $line" -ForegroundColor DarkGray
+                    $safeLine = ($line -replace "`r", '') -replace '##(?=\[|vso\[)', '## '
+                    Write-Host "  $safeLine" -ForegroundColor DarkGray
                 }
             }
         }

@@ -88,7 +88,10 @@ function Get-NumericOrNull {
     }
 
     $parsed = 0.0
-    if ([double]::TryParse([string]$Value, [ref]$parsed)) {
+    if ([double]::TryParse([string]$Value,
+            [System.Globalization.NumberStyles]::Float -bor [System.Globalization.NumberStyles]::AllowThousands,
+            [System.Globalization.CultureInfo]::InvariantCulture,
+            [ref]$parsed)) {
         return $parsed
     }
 
@@ -155,6 +158,18 @@ function Get-RecordAicUsed {
     return Get-NestedValue -InputObject $Record -Path @('cliUsage', 'aicUsed')
 }
 
+function Get-RecordCopilotCost {
+    param([object]$Record)
+
+    return Get-NestedValue -InputObject $Record -Path @('cliUsage', 'copilotCost')
+}
+
+function Get-RecordPremiumRequests {
+    param([object]$Record)
+
+    return Get-NestedValue -InputObject $Record -Path @('cliUsage', 'premiumRequests')
+}
+
 function Read-CopilotTokenUsageRecords {
     param([string]$Root)
 
@@ -163,7 +178,15 @@ function Read-CopilotTokenUsageRecords {
         return @()
     }
 
+    # Security: the CopilotLogs artifact also bundles PR-worktree content (CustomAgentLogsTmp)
+    # where PR-controlled steps can drop forged copilot-token-usage-*.json. Only trust records
+    # under the pipeline-written 'copilot-token-usage/raw' subtree, and never those under
+    # CustomAgentLogsTmp, so a forged file can't be aggregated and dispatched as official usage.
     $files = Get-ChildItem -Path $Root -Recurse -File -Filter 'copilot-token-usage-*.json' -ErrorAction SilentlyContinue |
+        Where-Object {
+            $normalized = $_.FullName -replace '\\', '/'
+            $normalized -match '/copilot-token-usage/raw/' -and $normalized -notmatch '/CustomAgentLogsTmp/'
+        } |
         Sort-Object FullName
 
     foreach ($file in @($files)) {
@@ -212,6 +235,8 @@ function New-StageSummaryRows {
             reasoningOutputTokens = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'reasoningOutputTokens' }) } else { 0 }
             totalTokens       = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'totalTokens' }) } else { 0 }
             aicUsed           = if ($hasRecords) { Get-NullableDecimalSum -Values @($stageRecords | ForEach-Object { Get-RecordAicUsed -Record $_ }) } else { 0 }
+            copilotCost       = if ($hasRecords) { Get-NullableDecimalSum -Values @($stageRecords | ForEach-Object { Get-RecordCopilotCost -Record $_ }) } else { 0 }
+            premiumRequests   = if ($hasRecords) { Get-NullableDecimalSum -Values @($stageRecords | ForEach-Object { Get-RecordPremiumRequests -Record $_ }) } else { 0 }
             durationMs        = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { $_.durationMs }) } else { 0 }
             apiDurationMs     = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { $_.apiDurationMs }) } else { 0 }
             turnCount         = if ($hasRecords) { Get-NullableSum -Values @($stageRecords | ForEach-Object { $_.turnCount }) } else { 0 }
@@ -254,6 +279,8 @@ function New-StepSummaryRows {
             reasoningOutputTokens = Get-NullableSum -Values @($items | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'reasoningOutputTokens' })
             totalTokens     = Get-NullableSum -Values @($items | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'totalTokens' })
             aicUsed         = Get-NullableDecimalSum -Values @($items | ForEach-Object { Get-RecordAicUsed -Record $_ })
+            copilotCost     = Get-NullableDecimalSum -Values @($items | ForEach-Object { Get-RecordCopilotCost -Record $_ })
+            premiumRequests = Get-NullableDecimalSum -Values @($items | ForEach-Object { Get-RecordPremiumRequests -Record $_ })
             durationMs      = Get-NullableSum -Values @($items | ForEach-Object { $_.durationMs })
             apiDurationMs   = Get-NullableSum -Values @($items | ForEach-Object { $_.apiDurationMs })
             turnCount       = Get-NullableSum -Values @($items | ForEach-Object { $_.turnCount })
@@ -290,6 +317,8 @@ function New-CopilotTokenUsageSummary {
             reasoningOutputTokens = Get-NullableSum -Values @($Records | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'reasoningOutputTokens' })
             totalTokens       = Get-NullableSum -Values @($Records | ForEach-Object { Get-RecordTokenValue -Record $_ -Name 'totalTokens' })
             aicUsed           = Get-NullableDecimalSum -Values @($Records | ForEach-Object { Get-RecordAicUsed -Record $_ })
+            copilotCost       = Get-NullableDecimalSum -Values @($Records | ForEach-Object { Get-RecordCopilotCost -Record $_ })
+            premiumRequests   = Get-NullableDecimalSum -Values @($Records | ForEach-Object { Get-RecordPremiumRequests -Record $_ })
             durationMs        = Get-NullableSum -Values @($Records | ForEach-Object { $_.durationMs })
             apiDurationMs     = Get-NullableSum -Values @($Records | ForEach-Object { $_.apiDurationMs })
             turnCount         = Get-NullableSum -Values @($Records | ForEach-Object { $_.turnCount })
@@ -331,6 +360,8 @@ function New-CopilotTokenUsageMarkdown {
     [void]$lines.Add("| Reasoning output tokens | $(Format-UsageValue $Summary.totals.reasoningOutputTokens) |")
     [void]$lines.Add("| Total tokens | $(Format-UsageValue $Summary.totals.totalTokens) |")
     [void]$lines.Add("| AIC used | $(Format-UsageValue $Summary.totals.aicUsed) |")
+    [void]$lines.Add("| Copilot cost (USD) | $(Format-UsageValue $Summary.totals.copilotCost) |")
+    [void]$lines.Add("| Premium requests | $(Format-UsageValue $Summary.totals.premiumRequests) |")
     [void]$lines.Add("| Elapsed ms | $(Format-UsageValue $Summary.totals.durationMs) |")
     [void]$lines.Add("| API duration ms | $(Format-UsageValue $Summary.totals.apiDurationMs) |")
     [void]$lines.Add("| Turns | $(Format-UsageValue $Summary.totals.turnCount) |")

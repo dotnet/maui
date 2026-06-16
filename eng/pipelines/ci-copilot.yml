@@ -1810,7 +1810,7 @@ stages:
                 exit 0
               }
 
-              $summaryPath = Join-Path "$(Build.ArtifactStagingDirectory)/copilot-token-usage" "token-usage-summary.json"
+              $summaryPath = Join-Path "${env:BUILD_ARTIFACTSTAGINGDIRECTORY}/copilot-token-usage" "token-usage-summary.json"
               if (-not (Test-Path $summaryPath)) {
                 Write-Host "##[warning]Copilot token usage summary was not produced at $summaryPath; skipping agent statistics dispatch."
                 exit 0
@@ -1818,10 +1818,10 @@ stages:
 
               $summary = Get-Content -Path $summaryPath -Raw -Encoding UTF8 | ConvertFrom-Json
               $stageResults = [ordered]@{
-                ReviewPR               = "$(reviewPrResult)"
-                RunDeepUITests         = "$(runDeepUITestsResult)"
-                UpdateAISummaryComment = "$(updateAISummaryCommentResult)"
-                AnalyzeCopilotTokenUsage = "$(Agent.JobStatus)"
+                ReviewPR               = "${env:REVIEW_PR_RESULT}"
+                RunDeepUITests         = "${env:RUN_DEEP_UI_TESTS_RESULT}"
+                UpdateAISummaryComment = "${env:UPDATE_AI_SUMMARY_COMMENT_RESULT}"
+                AnalyzeCopilotTokenUsage = "${env:AGENT_JOB_STATUS}"
               }
 
               $pipelineResult = 'succeeded'
@@ -1836,12 +1836,12 @@ stages:
                 client_payload = [ordered]@{
                   schemaVersion = 1
                   build = [ordered]@{
-                    id            = "$(Build.BuildId)"
-                    number        = "$(Build.BuildNumber)"
-                    url           = "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
-                    sourceBranch  = "$(Build.SourceBranch)"
-                    sourceVersion = "$(Build.SourceVersion)"
-                    requestedFor  = "$(Build.RequestedFor)"
+                    id            = "${env:BUILD_BUILD_ID}"
+                    number        = "${env:BUILD_BUILD_NUMBER}"
+                    url           = "${env:SYSTEM_COLLECTION_URI}${env:SYSTEM_TEAM_PROJECT}/_build/results?buildId=${env:BUILD_BUILD_ID}"
+                    sourceBranch  = "${env:BUILD_SOURCE_BRANCH}"
+                    sourceVersion = "${env:BUILD_SOURCE_VERSION}"
+                    requestedFor  = "${env:BUILD_REQUESTED_FOR}"
                     prNumber      = "${{ parameters.PRNumber }}"
                     platform      = "${{ parameters.Platform }}"
                     result        = $pipelineResult
@@ -1864,9 +1864,24 @@ stages:
                 -ContentType 'application/json' `
                 -Body $body | Out-Null
 
-              Write-Host "Dispatched Copilot token usage summary to dotnet/maui-vigilant-guide for build $(Build.BuildId)."
+              Write-Host "Dispatched Copilot token usage summary to dotnet/maui-vigilant-guide for build ${env:BUILD_BUILD_ID}."
             displayName: 'Dispatch agent statistics update'
             condition: always()
             continueOnError: true
             env:
               VIGILANT_GUIDE_DISPATCH_TOKEN: $(VIGILANT_GUIDE_DISPATCH_TOKEN)
+              # Pass AzDO macros via env (runtime data) rather than inlining $(...) into the
+              # pwsh script, where a value containing a quote, $(...) or backtick could break
+              # out of the string literal and execute in a step holding the dispatch token.
+              BUILD_ARTIFACTSTAGINGDIRECTORY: $(Build.ArtifactStagingDirectory)
+              REVIEW_PR_RESULT: $(reviewPrResult)
+              RUN_DEEP_UI_TESTS_RESULT: $(runDeepUITestsResult)
+              UPDATE_AI_SUMMARY_COMMENT_RESULT: $(updateAISummaryCommentResult)
+              AGENT_JOB_STATUS: $(Agent.JobStatus)
+              BUILD_BUILD_ID: $(Build.BuildId)
+              BUILD_BUILD_NUMBER: $(Build.BuildNumber)
+              SYSTEM_COLLECTION_URI: $(System.CollectionUri)
+              SYSTEM_TEAM_PROJECT: $(System.TeamProject)
+              BUILD_SOURCE_BRANCH: $(Build.SourceBranch)
+              BUILD_SOURCE_VERSION: $(Build.SourceVersion)
+              BUILD_REQUESTED_FOR: $(Build.RequestedFor)

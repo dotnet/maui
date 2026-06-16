@@ -46,6 +46,8 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-ObjectMemberValue')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotUsageTokenFields')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TokenFieldSum')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-TokenFieldPathDepth')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Select-CanonicalTokenFields')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotTokenMetrics')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Convert-CopilotCompactNumber')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotCliUsageLineData')
@@ -72,6 +74,38 @@ Describe 'Copilot token usage helpers' {
         $metrics.totalTokens | Should -Be 140
         @($metrics.rawTokenFields).Count | Should -Be 3
         @($metrics.rawTokenFields | Where-Object { $_.Path -eq 'nested.cachedInputTokens' }).Count | Should -Be 1
+    }
+
+    It 'prefers the root token aggregate over a nested per-model breakdown (no double-count)' {
+        # Regression guard: a payload carrying BOTH a root aggregate and a per-model
+        # breakdown must not sum both (1000 + 600 + 400 = 2000); the root wins.
+        $usage = [pscustomobject]@{
+            inputTokens  = 1000
+            outputTokens = 200
+            perModel     = @(
+                [pscustomobject]@{ inputTokens = 600; outputTokens = 120 },
+                [pscustomobject]@{ inputTokens = 400; outputTokens = 80 }
+            )
+        }
+
+        $metrics = Get-CopilotTokenMetrics -Usage $usage
+
+        $metrics.inputTokens | Should -Be 1000
+        $metrics.outputTokens | Should -Be 200
+    }
+
+    It 'sums a nested-only token breakdown when no root aggregate exists' {
+        # When only the per-model breakdown is present, it should be summed.
+        $usage = [pscustomobject]@{
+            perModel = @(
+                [pscustomobject]@{ inputTokens = 600 },
+                [pscustomobject]@{ inputTokens = 400 }
+            )
+        }
+
+        $metrics = Get-CopilotTokenMetrics -Usage $usage
+
+        $metrics.inputTokens | Should -Be 1000
     }
 
     It 'parses Copilot CLI AIC and context footer lines' {
@@ -202,7 +236,10 @@ Describe 'Copilot token usage helpers' {
         $record.normalizedTokens.reasoningOutputTokens | Should -Be 25
         $record.normalizedTokens.totalTokens | Should -Be 575
         $record.normalizedTokens.otelFile | Should -Be '/tmp/copilot-otel.jsonl'
-        $record.cliUsage.aicUsed | Should -Be 7.5
+        # aicUsed stays AIC-only (null here); the dollar cost is reported in its own field,
+        # never conflated into aicUsed.
+        $record.cliUsage.aicUsed | Should -BeNullOrEmpty
+        $record.cliUsage.copilotCost | Should -Be 7.5
     }
 }
 
