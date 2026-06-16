@@ -3372,11 +3372,31 @@ function Format-MarkdownReport {
         if ($targetLen -gt $bodyBytes.Length) { $targetLen = $bodyBytes.Length }
         $truncatedBytes = New-Object byte[] $targetLen
         [Array]::Copy($bodyBytes, 0, $truncatedBytes, 0, $targetLen)
-        # UTF-8 boundary repair: trim incomplete continuation bytes from the tail
-        while ($truncatedBytes.Length -gt 0 -and ($truncatedBytes[$truncatedBytes.Length - 1] -band 0xC0) -eq 0x80) {
-            $newArr = New-Object byte[] ($truncatedBytes.Length - 1)
-            [Array]::Copy($truncatedBytes, 0, $newArr, 0, $newArr.Length)
-            $truncatedBytes = $newArr
+        # UTF-8 boundary repair: if the cut landed inside a multi-byte sequence,
+        # drop the trailing INCOMPLETE sequence. Walk back over continuation
+        # bytes (10xxxxxx) to the lead byte, infer the sequence length from the
+        # lead, and cut at the lead only when the full sequence doesn't fit. A
+        # naive "trim continuation bytes" loop is wrong twice over: it leaves an
+        # orphan lead byte (e.g. a lone 0xF0) AND it strips a COMPLETE trailing
+        # multibyte char down to its lead. Either case makes GetString() emit a
+        # U+FFFD replacement char, which re-encodes to 3 bytes and can push the
+        # body back over $MaxBodyBytes.
+        if ($truncatedBytes.Length -gt 0) {
+            $i = $truncatedBytes.Length - 1
+            while ($i -ge 0 -and ($truncatedBytes[$i] -band 0xC0) -eq 0x80) { $i-- }
+            if ($i -ge 0) {
+                $lead = $truncatedBytes[$i]
+                $seqLen = if (($lead -band 0x80) -eq 0x00) { 1 }
+                          elseif (($lead -band 0xE0) -eq 0xC0) { 2 }
+                          elseif (($lead -band 0xF0) -eq 0xE0) { 3 }
+                          elseif (($lead -band 0xF8) -eq 0xF0) { 4 }
+                          else { 1 }
+                if (($i + $seqLen) -gt $truncatedBytes.Length) {
+                    $newArr = New-Object byte[] $i
+                    [Array]::Copy($truncatedBytes, 0, $newArr, 0, $i)
+                    $truncatedBytes = $newArr
+                }
+            }
         }
         $body = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) + $notesTail + $truncateMsg
     }

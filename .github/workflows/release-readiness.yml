@@ -376,15 +376,21 @@ jobs:
               fi
 
               # 2) Idempotent no-op: if the semantic hash is unchanged, skip the edit
-              #    so scheduled re-runs don't spam watchers. Anchor the match to the
-              #    engine's full HTML-comment emission form — a bare substring would
-              #    also match a `release-readiness-hash: sha=...` line a human pastes
-              #    into the notes block, which the splice copies into the fresh body.
-              #    On Preview trackers (which emit NO hash, so must refresh every run)
-              #    that pasted line would make OLD_HASH==NEW_HASH and FREEZE the issue.
+              #    so scheduled re-runs don't spam watchers. The engine emits its hash
+              #    at the very TOP of the body, ABOVE the human-notes block, so scope
+              #    extraction to the pre-notes region with `sed '/begin/q'`. Anchoring
+              #    the grep to the full HTML-comment form is not enough on its own: the
+              #    `<!-- release-readiness-hash: sha=... -->` line is exactly what a
+              #    captain copies from a prior raw-markdown run and may paste INTO their
+              #    notes; the splice then carries it into the fresh body. On Preview
+              #    trackers (which emit NO hash and must refresh every run) that pasted
+              #    line would make OLD_HASH==NEW_HASH and FREEZE the issue. Scoping to
+              #    above the notes block makes any hash inside the notes invisible to the
+              #    compare, regardless of paste form. The anchored grep keeps the match
+              #    precise and drops a trailing CRLF \r from the captured hash.
               if [ "$SKIP_EDIT" -ne 1 ]; then
-                OLD_HASH=$(grep -oE '<!-- release-readiness-hash: sha=[0-9a-f]+ -->' "$CUR_BODY_FILE" | head -n1 | sed 's/.*sha=//; s/ -->//') || true
-                NEW_HASH=$(grep -oE '<!-- release-readiness-hash: sha=[0-9a-f]+ -->' "$BODY_FILE"     | head -n1 | sed 's/.*sha=//; s/ -->//') || true
+                OLD_HASH=$(sed '/<!-- release-readiness:human-notes:begin -->/q' "$CUR_BODY_FILE" | grep -oE '<!-- release-readiness-hash: sha=[0-9a-f]+ -->' | head -n1 | sed 's/.*sha=//; s/ -->//') || true
+                NEW_HASH=$(sed '/<!-- release-readiness:human-notes:begin -->/q' "$BODY_FILE"     | grep -oE '<!-- release-readiness-hash: sha=[0-9a-f]+ -->' | head -n1 | sed 's/.*sha=//; s/ -->//') || true
                 if [ -n "$NEW_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ]; then
                   echo "Semantic hash unchanged (${NEW_HASH}) — skipping issue edit (no-op)."
                 else

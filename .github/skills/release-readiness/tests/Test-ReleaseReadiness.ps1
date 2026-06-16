@@ -1313,6 +1313,30 @@ Assert-Eq -Label "Truncated body retains exactly one notes:end marker"   -Expect
 Assert-Eq -Label "Truncated body retains the semantic-hash marker" -Expected $true `
     -Actual ($mdCapped -match '<!-- release-readiness-hash: sha=[0-9a-f]{64} -->')
 
+# ───── UTF-8 boundary repair: truncation must never split a multibyte char ─────
+# Regression for the boundary-repair fix. A naive "trim trailing continuation
+# bytes" cut leaves an orphan multibyte LEAD byte (and even strips a COMPLETE
+# trailing char down to its lead), which GetString() renders as U+FFFD. That
+# replacement char then re-encodes to 3 bytes, pushing the body back over the
+# cap. Stuff the HEAD subject (rendered near the top of the body) with 4-byte
+# chars, sweep caps so the cut lands inside that run at every byte phase, and
+# assert no replacement char ever appears and the cap is never exceeded.
+Write-Host "`n[Unit] UTF-8 boundary repair on truncation" -ForegroundColor Cyan
+$origSubject = $mdData.metadata.srHeadSubject
+$mdData.metadata.srHeadSubject = ([string][char]::ConvertFromUtf32(0x1F30D)) * 250  # globe x250
+$replacementChar = [char]0xFFFD
+$boundaryBad = 0
+$capBusted = 0
+foreach ($cap in 700..790) {
+    $swept = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr7' -MaxBodyBytes $cap
+    if ($swept.Contains($replacementChar)) { $boundaryBad++ }
+    if ([System.Text.Encoding]::UTF8.GetByteCount($swept) -gt $cap) { $capBusted++ }
+}
+$mdData.metadata.srHeadSubject = $origSubject
+Assert-Eq -Label "No U+FFFD across cap sweep (multibyte boundary)" -Expected 0 -Actual $boundaryBad
+Assert-Eq -Label "Cap never exceeded across multibyte sweep" -Expected 0 -Actual $capBusted
+
 # ───── Verdict idempotency: same input → same hash → tracker survives re-runs ─────
 Write-Host "`n[Unit] Verdict + hash idempotency (workflow re-run)" -ForegroundColor Cyan
 

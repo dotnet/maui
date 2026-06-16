@@ -115,7 +115,10 @@ param(
     [string]$InternalBuildId,
 
     [Parameter(Mandatory = $false)]
-    [bool]$PublicSafe = $true
+    [bool]$PublicSafe = $true,
+
+    [Parameter(Mandatory = $false)]
+    [int]$MaxBodyBytes = 60000
 )
 
 $ErrorActionPreference = "Stop"
@@ -1400,6 +1403,56 @@ $markdownBody = [regex]::Replace(
     '(^|[^a-zA-Z0-9/`])@([a-zA-Z0-9][a-zA-Z0-9_-]*(?:/[a-zA-Z0-9][a-zA-Z0-9_-]*)?)',
     '$1`$2`'
 )
+
+# ===================================================================
+# BODY-SIZE SAFETY CAP
+# ===================================================================
+# GitHub rejects an issue body over 65,536 bytes; the daily refresh would then
+# fail `gh issue edit` and the tracker would silently stop updating. The
+# unbounded sections — the Maestro and release/inflight PR tables (rendered with
+# Add-PRTable's default 100-row cap) — all sit BELOW the human-notes block, which
+# the template places near the TOP of the body. Every section ABOVE the notes
+# (the ci-scan table, Target table) is row-capped, so the notes markers stay
+# within the first few KB. A plain byte-prefix cut therefore preserves the
+# tracker marker, the notes begin/end pair, and the Target table while trimming
+# only the overflowing PR tables. INVARIANT: the human-notes block must remain
+# above the large PR/issue tables, and any section above it must stay row-capped.
+# (The workflow's BODY_HAS_CLEAN_NOTES guard is a second safety net: if a fresh
+# body ever lost its markers, the refresh skips the edit instead of wiping notes.)
+$bodyBytes = [System.Text.Encoding]::UTF8.GetByteCount($markdownBody)
+if ($bodyBytes -gt $MaxBodyBytes) {
+    $truncateMsg = "`n`n> ⚠️ **Report truncated** ($bodyBytes bytes exceeded cap of $MaxBodyBytes). See full data in workflow artifacts.`n"
+    $tail = [System.Text.Encoding]::UTF8.GetByteCount($truncateMsg)
+    $targetLen = $MaxBodyBytes - $tail
+    if ($targetLen -lt 0) { $targetLen = 0 }
+    $allBytes = [System.Text.Encoding]::UTF8.GetBytes($markdownBody)
+    if ($targetLen -gt $allBytes.Length) { $targetLen = $allBytes.Length }
+    $truncatedBytes = New-Object byte[] $targetLen
+    [Array]::Copy($allBytes, 0, $truncatedBytes, 0, $targetLen)
+    # UTF-8 boundary repair: drop a trailing INCOMPLETE multibyte sequence so
+    # GetString() doesn't emit a U+FFFD (which re-encodes to 3 bytes and could
+    # push the body back over the cap). Walk back over continuation bytes
+    # (10xxxxxx) to the lead byte, infer the sequence length, and cut at the
+    # lead only when the full sequence doesn't fit.
+    if ($truncatedBytes.Length -gt 0) {
+        $i = $truncatedBytes.Length - 1
+        while ($i -ge 0 -and ($truncatedBytes[$i] -band 0xC0) -eq 0x80) { $i-- }
+        if ($i -ge 0) {
+            $lead = $truncatedBytes[$i]
+            $seqLen = if (($lead -band 0x80) -eq 0x00) { 1 }
+                      elseif (($lead -band 0xE0) -eq 0xC0) { 2 }
+                      elseif (($lead -band 0xF0) -eq 0xE0) { 3 }
+                      elseif (($lead -band 0xF8) -eq 0xF0) { 4 }
+                      else { 1 }
+            if (($i + $seqLen) -gt $truncatedBytes.Length) {
+                $newArr = New-Object byte[] $i
+                [Array]::Copy($truncatedBytes, 0, $newArr, 0, $i)
+                $truncatedBytes = $newArr
+            }
+        }
+    }
+    $markdownBody = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) + $truncateMsg
+}
 
 # ===================================================================
 # OUTPUT
