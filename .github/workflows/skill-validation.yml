@@ -1,7 +1,7 @@
-# Skill & agent validation for PRs touching .github/skills/ or .github/agents/.
+# Skill validation for PRs touching .github/skills/.
 #
 # Two modes:
-#   1. Static checks  — run automatically on every PR that touches skills/agents.
+#   1. Static checks  — run automatically on every PR that touches skills.
 #   2. LLM evaluation — runs automatically for contributor PRs, or can be
 #      triggered by a repo contributor posting "/evaluate-skills" on any PR.
 #      Requires COPILOT_GITHUB_TOKEN secret (Copilot API access).
@@ -33,7 +33,6 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - '.github/skills/**'
-      - '.github/agents/**'
       - '.github/plugin.json'
       - '.github/workflows/skill-validation.yml'
 
@@ -98,8 +97,6 @@ jobs:
       is_contributor: ${{ steps.perms.outputs.is_contributor }}
       is_fork: ${{ steps.info.outputs.is_fork }}
       changed_skills: ${{ steps.discover.outputs.changed_skills }}
-      has_skill_changes: ${{ steps.discover.outputs.has_skill_changes }}
-      has_agent_changes: ${{ steps.discover.outputs.has_agent_changes }}
     steps:
       - name: Determine fork status
         id: info
@@ -138,10 +135,6 @@ jobs:
 
           SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
             sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
-          AGENT_FILES=$(echo "$CHANGED" | grep '^\.github/agents/' || true)
-
-          echo "has_skill_changes=$( [ -n "$SKILL_DIRS" ] && echo true || echo false )" >> $GITHUB_OUTPUT
-          echo "has_agent_changes=$( [ -n "$AGENT_FILES" ] && echo true || echo false )" >> $GITHUB_OUTPUT
 
           DELIM="EOF_$(openssl rand -hex 8)"
           echo "changed_skills<<$DELIM" >> $GITHUB_OUTPUT
@@ -149,7 +142,6 @@ jobs:
           echo "$DELIM" >> $GITHUB_OUTPUT
 
           echo "Changed skills: $SKILL_DIRS"
-          echo "Changed agents: $AGENT_FILES"
 
   # ==========================================================================
   # SLASH COMMAND GATE (/evaluate-skills)
@@ -612,7 +604,14 @@ jobs:
               ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
               echo "JUnit aggregate: failures=$FAILS errors=$ERRS"
               if [ "$FAILS" -eq 0 ] && [ "$ERRS" -eq 0 ]; then
-                echo "eval_passed=true" >> "$GITHUB_OUTPUT"
+                # Guard: if Vally exited non-zero but JUnit shows no failures,
+                # an execution error may have been swallowed (partial output).
+                if [ "$EVAL_RC" -ne 0 ]; then
+                  echo "::warning::Vally exited $EVAL_RC but JUnit reports 0 failures/errors — treating as failure (possible partial output)"
+                  echo "eval_passed=false" >> "$GITHUB_OUTPUT"
+                else
+                  echo "eval_passed=true" >> "$GITHUB_OUTPUT"
+                fi
               else
                 echo "eval_passed=false" >> "$GITHUB_OUTPUT"
               fi
