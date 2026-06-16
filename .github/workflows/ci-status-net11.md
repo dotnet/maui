@@ -5,7 +5,7 @@ description: |
   maui-pr-uitests). Files tracking issues for recurring failures so the team
   can triage.
 
-environment: gh-aw-status
+environment: gh-aw-agents
 
 permissions:
   contents: read

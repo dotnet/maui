@@ -1,5 +1,5 @@
 ---
-environment: gh-aw-rerun-scanner
+environment: gh-aw-agents
 
 on:
   schedule:
