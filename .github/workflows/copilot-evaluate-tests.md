@@ -14,7 +14,7 @@ on:
     inputs:
       pr_number:
         description: 'PR number to evaluate'
-        required: true
+        required: false
         type: number
       suppress_output:
         description: 'Dry-run — evaluate but do not post output on the PR'
