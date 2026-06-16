@@ -23,6 +23,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
+<!--#if (UseAvaloniaHandlers) -->
+		<AvaloniaControlsMauiGenerateBootstrap>true</AvaloniaControlsMauiGenerateBootstrap>
+<!--#endif -->
+
 <!--#if (IncludeSampleContent) -->
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 <!--#endif -->
