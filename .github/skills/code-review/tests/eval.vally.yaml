@@ -105,7 +105,9 @@ stimuli:
       changed. Read full source files for changed paths, not just diff
       hunks. Then deliver a code review using the skill's standard
       output format (Independent Assessment → Findings → Blast Radius →
-      Verdict + Confidence).
+      Verdict + Confidence). Mark each finding with a severity emoji
+      (❌ Error, ⚠️ Warning, or 💡 Info). End with a Verdict line:
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
     environment:
       git:
         type: worktree
@@ -118,7 +120,7 @@ stimuli:
       # decides whether the finding was the right one.
       - type: output-matches
         config:
-          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION|[Vv]erdict|[Ff]inding)'
+          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
       # ── LLM judge for everything semantic ─────────────────────────────
       # Grades against the stimulus rubric below — symbol-level evidence,
       # mechanism description, blast-radius reasoning, confidence
@@ -205,7 +207,9 @@ stimuli:
       changed. Read full source files for changed paths, not just diff
       hunks. Then deliver a code review using the skill's standard
       output format (Independent Assessment → Findings → Failure-Mode
-      Probing → Verdict + Confidence).
+      Probing → Verdict + Confidence). Mark each finding with a severity
+      emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a Verdict line:
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
     environment:
       git:
         type: worktree
@@ -215,7 +219,7 @@ stimuli:
       # ── Structural floor (only one hard regex per scenario) ──────────
       - type: output-matches
         config:
-          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION|[Vv]erdict|[Ff]inding)'
+          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
       - type: prompt
         name: regression-judge
         config:
