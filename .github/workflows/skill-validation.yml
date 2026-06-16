@@ -41,6 +41,15 @@ on:
     types: [created]
 
   workflow_dispatch:
+    inputs:
+      skills:
+        description: "Comma-separated skill names to evaluate (blank = all skills that have eval*.vally.yaml)"
+        required: false
+        default: ""
+      runs:
+        description: "Trials per stimulus (blank = 3)"
+        required: false
+        default: ""
 
 concurrency:
   group: >-
@@ -226,7 +235,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || '' }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
           sparse-checkout: |
             .github/skills
             .github/plugin.json
@@ -322,7 +331,8 @@ jobs:
     if: >-
       always() && !cancelled() && (
         (needs.pr-gate.result == 'success' && needs.pr-gate.outputs.is_contributor == 'true') ||
-        needs.slash-gate.result == 'success'
+        needs.slash-gate.result == 'success' ||
+        github.event_name == 'workflow_dispatch'
       )
     runs-on: ubuntu-latest
     permissions:
@@ -334,8 +344,8 @@ jobs:
       - name: Checkout PR content
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
           sparse-checkout: |
             .github/skills
             .github/plugin.json
@@ -346,26 +356,36 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.pr-gate.outputs.pr_number || needs.slash-gate.outputs.pr_number }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_SKILLS: ${{ github.event.inputs.skills }}
         run: |
-          CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
-            --paginate --jq '.[].filename')
-
-          SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
-            sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
-
-          # Check for workflow changes (evaluate all skills with tests)
-          WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # Manual run: evaluate the requested skills, or every skill that
+            # ships an eval*.vally.yaml when none are named. No PR diff exists.
+            # INPUT_SKILLS comes via env (never interpolated into the script).
+            if [ -n "$INPUT_SKILLS" ]; then
+              SKILL_DIRS=$(printf '%s' "$INPUT_SKILLS" | tr ',' '\n' \
+                | sed 's/[[:space:]]//g' | grep -v '^$' | sort -u)
+              EVAL_ALL=false
+            else
+              SKILL_DIRS=""
+              EVAL_ALL=true
+            fi
+          else
+            CHANGED=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/files" \
+              --paginate --jq '.[].filename')
+            SKILL_DIRS=$(echo "$CHANGED" | grep '^\.github/skills/' | \
+              sed 's|^\.github/skills/\([^/]*\)/.*|\1|' | sort -u || true)
+            # Workflow change ⇒ evaluate all skills with specs.
+            WORKFLOW_CHANGES=$(echo "$CHANGED" | grep '^\.github/workflows/skill-validation' || true)
+            if [ -n "$WORKFLOW_CHANGES" ]; then EVAL_ALL=true; else EVAL_ALL=false; fi
+          fi
 
           DELIM="EOF_$(openssl rand -hex 8)"
           echo "skill_dirs<<$DELIM" >> $GITHUB_OUTPUT
           echo "$SKILL_DIRS" >> $GITHUB_OUTPUT
           echo "$DELIM" >> $GITHUB_OUTPUT
-
-          if [ -n "$WORKFLOW_CHANGES" ]; then
-            echo "eval_all=true" >> $GITHUB_OUTPUT
-          else
-            echo "eval_all=false" >> $GITHUB_OUTPUT
-          fi
+          echo "eval_all=$EVAL_ALL" >> $GITHUB_OUTPUT
 
       - name: Find skills with eval tests
         id: find
@@ -442,8 +462,8 @@ jobs:
       - name: Checkout PR content
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
           # Full history (NOT sparse): capability suites pin frozen worktrees
           # at historical merge commits via `environment.git.ref`, and
           # `git worktree add <SHA>` must be able to resolve them.
@@ -532,6 +552,7 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
           RESULTS_PATH: eval-results/${{ matrix.entry.name }}
           TESTS_PATH: ${{ matrix.entry.tests_path }}
+          RUNS: ${{ github.event.inputs.runs }}
         run: |
           # Collect this skill's capability specs. The eval*.vally.yaml glob
           # EXCLUDES hermeticity.vally.yaml (run by its own gate job).
@@ -549,6 +570,12 @@ jobs:
 
           echo "Evaluating specs: ${SPECS[*]}"
 
+          # Trials per stimulus: 3 by default; workflow_dispatch may override
+          # with a sanitized integer (digits only — RUNS arrives via env and is
+          # never interpolated into the command raw).
+          RUNS_N=$(printf '%s' "${RUNS:-}" | tr -cd '0-9'); RUNS_N=${RUNS_N:-3}
+          echo "runs per stimulus: $RUNS_N"
+
           # Advisory exit: vally sets exit 1 on threshold miss / execution
           # error. We capture it but DON'T propagate, deriving the real verdict
           # from the JUnit report (preserves the legacy warn-only behavior).
@@ -561,7 +588,7 @@ jobs:
             --output jsonl \
             --model claude-opus-4.6 \
             --judge-model claude-opus-4.6 \
-            --runs 3 \
+            --runs "$RUNS_N" \
             --workers 4 \
             --verbose
           EVAL_RC=$?
@@ -620,8 +647,8 @@ jobs:
       - name: Checkout PR content
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo }}
-          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha }}
+          repository: ${{ needs.pr-gate.outputs.head_repo || needs.slash-gate.outputs.head_repo || github.repository }}
+          ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
           sparse-checkout: |
             .github/skills
             .github/plugin.json
