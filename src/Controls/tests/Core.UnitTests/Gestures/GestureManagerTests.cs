@@ -205,5 +205,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			gesturePlatformManagerProvider.Received(1).CreateGesturePlatformManager();
 			gesturePlatformManagerProvider2.Received(1).CreateGesturePlatformManager();
 		}
+
+		[Fact]
+		public void UsesFactoryRegisteredInServicesToCreateManager()
+		{
+			var customManager = Substitute.For<IGesturePlatformManager>();
+			var factory = Substitute.For<IGesturePlatformManagerFactory>();
+
+			var handler = Substitute.For<IViewHandler>();
+			var mauiContext = Substitute.For<IMauiContext>();
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IGesturePlatformManagerFactory)).Returns(factory);
+			mauiContext.Services.Returns(services);
+			handler.MauiContext.Returns(mauiContext);
+			factory.CreateGesturePlatformManager(handler).Returns(customManager);
+
+			var view = Substitute.For<IControlsView>();
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			Assert.Equal(customManager, gestureManager.GesturePlatformManager);
+			factory.Received(1).CreateGesturePlatformManager(handler);
+
+			view.Handler.Returns((IViewHandler)null);
+			view.HandlerChanging += Raise.Event<EventHandler<HandlerChangingEventArgs>>(view, new HandlerChangingEventArgs(handler, null));
+			customManager.Received(1).Dispose();
+		}
+
+		[Fact]
+		public void ServicesFactoryTakesPrecedenceOverHandlerProvider()
+		{
+			var factoryManager = Substitute.For<IGesturePlatformManager>();
+			var factory = Substitute.For<IGesturePlatformManagerFactory>();
+
+			var handler = Substitute.For<IViewHandler, IGesturePlatformManagerProvider>();
+			var provider = (IGesturePlatformManagerProvider)handler;
+			var providerManager = Substitute.For<IGesturePlatformManager>();
+			provider.CreateGesturePlatformManager().Returns(providerManager);
+
+			var mauiContext = Substitute.For<IMauiContext>();
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IGesturePlatformManagerFactory)).Returns(factory);
+			mauiContext.Services.Returns(services);
+			((IViewHandler)handler).MauiContext.Returns(mauiContext);
+			factory.CreateGesturePlatformManager((IViewHandler)handler).Returns(factoryManager);
+
+			var view = Substitute.For<IControlsView>();
+			view.Handler.Returns((IViewHandler)handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+
+			Assert.Equal(factoryManager, gestureManager.GesturePlatformManager);
+			provider.DidNotReceive().CreateGesturePlatformManager();
+		}
 	}
 }

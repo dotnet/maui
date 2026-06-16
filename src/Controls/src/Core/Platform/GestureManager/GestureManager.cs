@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -76,16 +77,32 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
-			var gesturePlatformManagerProvider = handler as IGesturePlatformManagerProvider;
-			GesturePlatformManager = gesturePlatformManagerProvider is null
-				? new GesturePlatformManager(handler)
-				: gesturePlatformManagerProvider.CreateGesturePlatformManager()
-					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerProvider)}.{nameof(IGesturePlatformManagerProvider.CreateGesturePlatformManager)} cannot return null.");
+			GesturePlatformManager = CreateGesturePlatformManager(handler);
 
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
 			_didHaveWindow = _view.Window != null;
+		}
+
+		IGesturePlatformManager CreateGesturePlatformManager(IViewHandler handler)
+		{
+			// Prefer an application-registered factory (issue #33364: resolve via Services),
+			// then a handler-scoped provider, then the default platform manager.
+			var factory = handler.MauiContext?.Services?.GetService<IGesturePlatformManagerFactory>();
+			if (factory is not null)
+			{
+				return factory.CreateGesturePlatformManager(handler)
+					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerFactory)}.{nameof(IGesturePlatformManagerFactory.CreateGesturePlatformManager)} cannot return null.");
+			}
+
+			if (handler is IGesturePlatformManagerProvider provider)
+			{
+				return provider.CreateGesturePlatformManager()
+					?? throw new InvalidOperationException($"{nameof(IGesturePlatformManagerProvider)}.{nameof(IGesturePlatformManagerProvider.CreateGesturePlatformManager)} cannot return null.");
+			}
+
+			return new GesturePlatformManager(handler);
 		}
 	}
 }
