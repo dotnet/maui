@@ -42,6 +42,13 @@ on:
           // commenter is an authorized collaborator (write/maintain/admin). This mirrors
           // the workflow's own role gate but is self-contained, so an unauthorized user's
           // comment is always left visible. A failed delete must not block activation.
+          // Only act on newly-created comments. The gh-aw slash_command trigger also fires
+          // on `edited`, so without this guard, editing any existing comment to say
+          // `/review tests` would delete that comment (and its entire history).
+          if (context.payload.action !== 'created') {
+            core.info('Skipping delete: comment was edited, not created.');
+            return;
+          }
           const { owner, repo } = context.repo;
           const actor = context.actor;
           let permission = 'none';
@@ -51,6 +58,7 @@ on:
           } catch (e) {
             core.info(`Permission lookup for ${actor} failed: ${e.message}`);
           }
+          // Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.
           if (!['admin', 'maintain', 'write'].includes(permission)) {
             core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);
             return;

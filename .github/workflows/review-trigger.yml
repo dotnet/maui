@@ -140,16 +140,17 @@ jobs:
           "Label: ${{ steps.rerun.outputs.label }}" >> $env:GITHUB_STEP_SUMMARY
 
       - name: Delete the /review rerun command comment
-        if: github.event_name == 'issue_comment'
+        if: github.event_name == 'issue_comment' && steps.rerun.outputs.eligible == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           COMMENT_ID: ${{ github.event.comment.id }}
         run: |
-          # Runs after eligibility resolution, which reads this comment by id, so the
-          # comment must still exist while Resolve-RerunEligibility.ps1 runs. The actor
-          # was authorized by the permission check at the start of this job. A failed
-          # delete must never fail the job.
+          # Only delete once a rerun was actually triggered (eligible == 'true'). Ineligible
+          # reruns (no-ai-summary / review-in-progress / no-new-activity) keep the comment as
+          # the implicit "seen, nothing changed" signal and preserve the previous-rerun
+          # checkpoint Get-LatestRerunCommentBefore relies on. Eligibility resolution already
+          # read this comment by id. A failed delete must never fail the job.
           if gh api -X DELETE "repos/${REPO}/issues/comments/${COMMENT_ID}" --silent; then
             echo "Deleted /review rerun command comment ${COMMENT_ID}"
           else
@@ -298,22 +299,6 @@ jobs:
           echo "PR #${PR_NUMBER}: ${PR_TITLE}"
           echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Delete the /review command comment
-        if: github.event_name == 'issue_comment'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          COMMENT_ID: ${{ github.event.comment.id }}
-        run: |
-          # The command is recognized, the actor is authorized, and the PR is open, so
-          # remove the command comment to keep the PR conversation clean. A failed delete
-          # must never fail the review trigger.
-          if gh api -X DELETE "repos/${REPO}/issues/comments/${COMMENT_ID}" --silent; then
-            echo "Deleted /review command comment ${COMMENT_ID}"
-          else
-            echo "::warning::Could not delete /review command comment ${COMMENT_ID}"
-          fi
 
       - name: Checkout repository scripts
         uses: actions/checkout@v4
@@ -486,3 +471,19 @@ jobs:
         run: |
           . .github/scripts/shared/Update-AgentLabels.ps1
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
+
+      - name: Delete the /review command comment
+        if: github.event_name == 'issue_comment' && steps.trigger_azdo.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          # Delete only after the pipeline was actually triggered, so a lock-skip
+          # (locked == 'true') or a failed AzDO trigger leaves the /review comment visible
+          # for the user to retry. A failed delete must never fail the review trigger.
+          if gh api -X DELETE "repos/${REPO}/issues/comments/${COMMENT_ID}" --silent; then
+            echo "Deleted /review command comment ${COMMENT_ID}"
+          else
+            echo "::warning::Could not delete /review command comment ${COMMENT_ID}"
+          fi
