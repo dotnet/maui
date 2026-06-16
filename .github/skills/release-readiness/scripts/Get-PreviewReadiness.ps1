@@ -723,7 +723,16 @@ function Format-MarkdownCell {
     if ($null -eq $Value) {
         return ""
     }
-    return ($Value -replace "\|", "\|").Trim()
+    # Escape `<`/`>` so user-controlled cell content (issue/PR titles) cannot
+    # inject an HTML comment. A title like `<!-- release-readiness-hash: sha=... -->`
+    # would otherwise render verbatim ABOVE the human-notes block, where the
+    # workflow's hash-extraction (`sed '/begin/q' | grep ...`) would capture it as
+    # the semantic hash — freezing the Preview tracker (which emits no hash of its
+    # own) via OLD_HASH==NEW_HASH. Escaping also fixes legitimate titles such as
+    # `List<T>` that GitHub markdown would otherwise swallow as an HTML tag. The
+    # engine's own markers are emitted via AppendLine, not through this formatter,
+    # so escaping cells never disturbs them.
+    return (($Value -replace "\|", "\|") -replace "<", "&lt;" -replace ">", "&gt;").Trim()
 }
 
 function Format-GitHubHandle {
@@ -1341,11 +1350,19 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("")
 
 # Human-editable section, preserved across re-runs by workflow body merge.
-[void]$md.AppendLine("<!-- release-readiness:human-notes:begin -->")
-[void]$md.AppendLine("## Release Captain Notes")
-[void]$md.AppendLine("")
-[void]$md.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
-[void]$md.AppendLine("<!-- release-readiness:human-notes:end -->")
+# Built as a reusable block (like the SR engine) so the body-size cap below can
+# strip it, truncate the remaining content, then re-append it — guaranteeing the
+# begin/end markers always survive truncation regardless of section order. The
+# "🔴 High-priority items" table above this block is itemized and uncapped, so a
+# naive byte-prefix cut could otherwise drop these markers.
+$notesSb = [System.Text.StringBuilder]::new()
+[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:begin -->")
+[void]$notesSb.AppendLine("## Release Captain Notes")
+[void]$notesSb.AppendLine("")
+[void]$notesSb.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
+[void]$notesSb.AppendLine("<!-- release-readiness:human-notes:end -->")
+$notesBlockText = $notesSb.ToString()
+[void]$md.Append($notesBlockText)
 [void]$md.AppendLine("")
 
 [void]$md.AppendLine("## Readiness checklist")
@@ -1408,24 +1425,30 @@ $markdownBody = [regex]::Replace(
 # BODY-SIZE SAFETY CAP
 # ===================================================================
 # GitHub rejects an issue body over 65,536 bytes; the daily refresh would then
-# fail `gh issue edit` and the tracker would silently stop updating. The
-# unbounded sections — the Maestro and release/inflight PR tables (rendered with
-# Add-PRTable's default 100-row cap) — all sit BELOW the human-notes block, which
-# the template places near the TOP of the body. Every section ABOVE the notes
-# (the ci-scan table, Target table) is row-capped, so the notes markers stay
-# within the first few KB. A plain byte-prefix cut therefore preserves the
-# tracker marker, the notes begin/end pair, and the Target table while trimming
-# only the overflowing PR tables. INVARIANT: the human-notes block must remain
-# above the large PR/issue tables, and any section above it must stay row-capped.
-# (The workflow's BODY_HAS_CLEAN_NOTES guard is a second safety net: if a fresh
-# body ever lost its markers, the refresh skips the edit instead of wiping notes.)
+# fail `gh issue edit` and the tracker would silently stop updating. The body
+# has unbounded sections BOTH above the human-notes block (the itemized,
+# uncapped "🔴 High-priority items" table) AND below it (the Maestro / release /
+# inflight PR tables, rendered with Add-PRTable's default 100-row cap). A plain
+# byte-prefix cut could therefore drop the notes begin/end markers — and a
+# markerless fresh body makes the workflow skip the edit (freezing the tracker)
+# or, worse, overwrite live Release Captain Notes. So we mirror the SR engine:
+# strip the notes placeholder, truncate only the remaining content (reserving
+# room for the notes block + message), boundary-repair, then RE-APPEND the notes
+# block. This guarantees exactly one clean begin/end pair always survives for the
+# workflow splice, independent of section order. The placeholder carries no human
+# data (real notes live on the issue and are spliced in by the workflow), so
+# removing and re-adding it is lossless. The tracker markers sit at the very top,
+# well inside the reserved prefix, so they survive too.
 $bodyBytes = [System.Text.Encoding]::UTF8.GetByteCount($markdownBody)
 if ($bodyBytes -gt $MaxBodyBytes) {
     $truncateMsg = "`n`n> ⚠️ **Report truncated** ($bodyBytes bytes exceeded cap of $MaxBodyBytes). See full data in workflow artifacts.`n"
     $tail = [System.Text.Encoding]::UTF8.GetByteCount($truncateMsg)
-    $targetLen = $MaxBodyBytes - $tail
+    $notesTail = "`n" + $notesBlockText
+    $notesReserve = [System.Text.Encoding]::UTF8.GetByteCount($notesTail)
+    $bodyNoNotes = $markdownBody.Replace($notesBlockText, '')
+    $targetLen = $MaxBodyBytes - $tail - $notesReserve
     if ($targetLen -lt 0) { $targetLen = 0 }
-    $allBytes = [System.Text.Encoding]::UTF8.GetBytes($markdownBody)
+    $allBytes = [System.Text.Encoding]::UTF8.GetBytes($bodyNoNotes)
     if ($targetLen -gt $allBytes.Length) { $targetLen = $allBytes.Length }
     $truncatedBytes = New-Object byte[] $targetLen
     [Array]::Copy($allBytes, 0, $truncatedBytes, 0, $targetLen)
@@ -1451,7 +1474,7 @@ if ($bodyBytes -gt $MaxBodyBytes) {
             }
         }
     }
-    $markdownBody = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) + $truncateMsg
+    $markdownBody = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) + $notesTail + $truncateMsg
 }
 
 # ===================================================================

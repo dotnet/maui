@@ -375,6 +375,25 @@ jobs:
                 SKIP_EDIT=1
               fi
 
+              # 1b) Final body-size guard. The awk splice above injects the LIVE
+              #     notes block (which a captain may have grown to many KB) into the
+              #     freshly capped body. The engines cap the FRESH body, reserving
+              #     room only for the small notes PLACEHOLDER — they never see the
+              #     live-notes size — so a busy report plus large notes can push the
+              #     merged body past GitHub's 65,536-byte issue-body limit, which
+              #     makes `gh issue edit` 422 and fail the run under set -e. Skip the
+              #     edit instead (notes stay safe; the report just stays stale this
+              #     run) and self-heal once the report or the notes shrink. `wc -c`
+              #     counts bytes — matching the engines' byte-based cap — and is
+              #     conservative against GitHub's character limit.
+              if [ "$SKIP_EDIT" -ne 1 ]; then
+                MERGED_SIZE=$(wc -c < "$BODY_FILE")
+                if [ "$MERGED_SIZE" -gt 65536 ]; then
+                  echo "::warning::Body for #${CANONICAL} is ${MERGED_SIZE} bytes (> GitHub's 65536-byte limit) after splicing live notes; skipping edit to avoid a failed gh issue edit. Self-heals once the report or notes shrink."
+                  SKIP_EDIT=1
+                fi
+              fi
+
               # 2) Idempotent no-op: if the semantic hash is unchanged, skip the edit
               #    so scheduled re-runs don't spam watchers. The engine emits its hash
               #    at the very TOP of the body, ABOVE the human-notes block, so scope
