@@ -316,8 +316,9 @@ stimuli:
     prompt: >-
       code review PR #35223 in dotnet/maui. This is a merged Android fix.
       Deliver a full structured code review with Independent Assessment,
-      Findings, Blast Radius, and a verdict line (LGTM, NEEDS_CHANGES,
-      or NEEDS_DISCUSSION). Hypothesis to verify or refute in your
+      Findings, Blast Radius, a **Confidence:** rating (per SKILL.md
+      Step 6), and a verdict line (LGTM, NEEDS_CHANGES, or
+      NEEDS_DISCUSSION). Hypothesis to verify or refute in your
       analysis: even after this PR, the back-navigation callback
       registration still runs unconditionally for all activities at
       startup.
@@ -378,7 +379,11 @@ stimuli:
     tags:
       target_pr: "35685"
       kind: prior-review
-    prompt: "code review PR #35685 in dotnet/maui"
+    prompt: >-
+      code review PR #35685 in dotnet/maui. In the Prior Review
+      Reconciliation section, enumerate each prior reviewer's findings
+      individually and verify whether each was addressed — do not
+      dismiss them in bulk.
     graders:
       # Structural floor: the section heading must be present — its
       # absence is the failure mode under test.
@@ -433,7 +438,9 @@ stimuli:
       report every check's status in a CI Status section, and apply
       SKILL.md Rule #6 to determine the verdict. The PR's merge status
       is irrelevant to this review — apply the full workflow regardless.
-      End with a verdict: LGTM, NEEDS_CHANGES, or NEEDS_DISCUSSION.
+      End with a verdict of either NEEDS_CHANGES or NEEDS_DISCUSSION.
+      Never use the word LGTM anywhere in your response — not even to
+      explain what the verdict should not be.
     graders:
       # CI-rule floor: SKILL.md Rule #6 explicitly bans LGTM when any
       # required check is pending/skipping/undetermined.
