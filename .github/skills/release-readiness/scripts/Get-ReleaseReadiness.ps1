@@ -3156,12 +3156,18 @@ function Format-MarkdownReport {
 
     # === HUMAN-EDITABLE SECTION ===
     # Wrapped in begin/end markers so a workflow can preserve manual edits
-    # across re-runs (idempotency).
-    [void]$sb.AppendLine("<!-- release-readiness:human-notes:begin -->")
-    [void]$sb.AppendLine("## Release Captain Notes")
-    [void]$sb.AppendLine()
-    [void]$sb.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
-    [void]$sb.AppendLine("<!-- release-readiness:human-notes:end -->")
+    # across re-runs (idempotency). Built as a reusable block so the body-size
+    # cap below can guarantee the markers survive truncation — a truncated body
+    # that lost them would let the daily refresh overwrite live Release Captain
+    # Notes (the markers sit mid-body, below potentially unbounded sections).
+    $notesSb = [System.Text.StringBuilder]::new()
+    [void]$notesSb.AppendLine("<!-- release-readiness:human-notes:begin -->")
+    [void]$notesSb.AppendLine("## Release Captain Notes")
+    [void]$notesSb.AppendLine()
+    [void]$notesSb.AppendLine("_Add manual notes here. Anything between these begin/end markers is preserved across automated re-runs._")
+    [void]$notesSb.AppendLine("<!-- release-readiness:human-notes:end -->")
+    $notesBlockText = $notesSb.ToString()
+    [void]$sb.Append($notesBlockText)
     [void]$sb.AppendLine()
 
     # === CI section ===
@@ -3340,14 +3346,29 @@ function Format-MarkdownReport {
     # === BODY-SIZE CAP ===
     # GitHub issue body limit is 65,536 bytes. Cap below that and append a
     # truncation message. We measure UTF-8 bytes, not character count.
+    #
+    # The human-notes block must SURVIVE truncation: it sits mid-body, below
+    # sections (ci-scan signals, inbound fix PRs, ship-readiness table) that can
+    # grow unbounded on a busy SR. A blind byte-prefix cut could drop the
+    # begin/end markers, and the daily refresh would then use a markerless body
+    # to OVERWRITE the live issue — wiping any Release Captain Notes the team
+    # added. So we strip the placeholder, truncate only the remaining content
+    # (reserving room for the notes block + message), then re-append the block.
+    # This guarantees exactly one clean begin/end pair always survives for the
+    # workflow splice. The placeholder carries no human data (real notes live on
+    # the issue), so removing/re-adding it is lossless. The top-of-body hash and
+    # tracker markers are well within the reserved prefix, so they survive too.
     $bytes = [System.Text.Encoding]::UTF8.GetByteCount($body)
     if ($bytes -gt $MaxBodyBytes) {
         $truncateMsg = "`n`n> ⚠️ **Report truncated** ($bytes bytes exceeded cap of $MaxBodyBytes). See full data in workflow artifacts.`n"
         $tail = [System.Text.Encoding]::UTF8.GetByteCount($truncateMsg)
-        $targetLen = $MaxBodyBytes - $tail
-        if ($targetLen -lt 0) { $targetLen = $MaxBodyBytes }
+        $notesTail = "`n" + $notesBlockText
+        $notesReserve = [System.Text.Encoding]::UTF8.GetByteCount($notesTail)
+        $bodyNoNotes = $body.Replace($notesBlockText, '')
+        $targetLen = $MaxBodyBytes - $tail - $notesReserve
+        if ($targetLen -lt 0) { $targetLen = 0 }
         # Walk back to a safe character boundary
-        $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+        $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($bodyNoNotes)
         if ($targetLen -gt $bodyBytes.Length) { $targetLen = $bodyBytes.Length }
         $truncatedBytes = New-Object byte[] $targetLen
         [Array]::Copy($bodyBytes, 0, $truncatedBytes, 0, $targetLen)
@@ -3357,7 +3378,7 @@ function Format-MarkdownReport {
             [Array]::Copy($truncatedBytes, 0, $newArr, 0, $newArr.Length)
             $truncatedBytes = $newArr
         }
-        $body = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) + $truncateMsg
+        $body = [System.Text.Encoding]::UTF8.GetString($truncatedBytes) + $notesTail + $truncateMsg
     }
 
     return $body

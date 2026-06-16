@@ -1302,6 +1302,16 @@ Assert-Eq -Label "Cap respected (within ±200 bytes for truncation msg)" -Expect
     -Actual ($cappedBytes -le 700 -and $cappedBytes -ge 200)
 Assert-Eq -Label "Truncation message appears in capped body" -Expected $true `
     -Actual ($mdCapped -match 'Report truncated')
+# Notes markers MUST survive truncation — the workflow splices live Release
+# Captain Notes into them; a truncated body that lost them would let the daily
+# refresh overwrite real notes. Assert exactly one clean begin+end pair remains.
+$cappedBegin = ([regex]::Matches($mdCapped, '(?m)^<!-- release-readiness:human-notes:begin -->$')).Count
+$cappedEnd   = ([regex]::Matches($mdCapped, '(?m)^<!-- release-readiness:human-notes:end -->$')).Count
+Assert-Eq -Label "Truncated body retains exactly one notes:begin marker" -Expected 1 -Actual $cappedBegin
+Assert-Eq -Label "Truncated body retains exactly one notes:end marker"   -Expected 1 -Actual $cappedEnd
+# Hash marker (top of body) also survives truncation, so the SR no-op still works.
+Assert-Eq -Label "Truncated body retains the semantic-hash marker" -Expected $true `
+    -Actual ($mdCapped -match '<!-- release-readiness-hash: sha=[0-9a-f]{64} -->')
 
 # ───── Verdict idempotency: same input → same hash → tracker survives re-runs ─────
 Write-Host "`n[Unit] Verdict + hash idempotency (workflow re-run)" -ForegroundColor Cyan

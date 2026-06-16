@@ -308,14 +308,29 @@ jobs:
               #     the notes; and
               #   * a marker line carrying trailing text passes a substring guard but
               #     the anchored awk matches nothing, splicing in an EMPTY block.
-              # GNU/mawk/BSD awk and grep all treat [[:space:]] as including \r, so
-              # the anchors also tolerate the CRLF bodies GitHub returns.
+              # The anchors tolerate the CRLF bodies GitHub returns (\r is ASCII
+              # whitespace in every locale). LC_ALL=C is MANDATORY on every grep and
+              # awk here: GNU grep in the runner's UTF-8 locale treats Unicode spaces
+              # (e.g. U+00A0 NO-BREAK SPACE, easily pasted from a web editor) as
+              # [[:space:]], but mawk (the runner default) does not — so a UTF-8
+              # grep guard could PASS while the awk extracts nothing, splicing an
+              # EMPTY block over real notes. Forcing C locale makes grep and awk
+              # agree on ASCII-only [[:space:]], so a weird space fails the guard and
+              # freezes the issue (safe) instead of destroying the notes.
               NOTES_BEGIN_RE='^[[:space:]]*<!-- release-readiness:human-notes:begin -->[[:space:]]*$'
               NOTES_END_RE='^[[:space:]]*<!-- release-readiness:human-notes:end -->[[:space:]]*$'
               CUR_HAS_CLEAN_NOTES=0
-              if [ "$(grep -cE "$NOTES_BEGIN_RE" "$CUR_BODY_FILE")" -eq 1 ] \
-                 && [ "$(grep -cE "$NOTES_END_RE" "$CUR_BODY_FILE")" -eq 1 ]; then
+              if [ "$(LC_ALL=C grep -cE "$NOTES_BEGIN_RE" "$CUR_BODY_FILE")" -eq 1 ] \
+                 && [ "$(LC_ALL=C grep -cE "$NOTES_END_RE" "$CUR_BODY_FILE")" -eq 1 ]; then
                 CUR_HAS_CLEAN_NOTES=1
+              fi
+              # Does the FRESH body carry exactly one clean begin+end pair? If a
+              # truncated/markerless fresh body would be used to overwrite an issue
+              # that HAS real notes, those notes are lost — so we require this too.
+              BODY_HAS_CLEAN_NOTES=0
+              if [ "$(LC_ALL=C grep -cE "$NOTES_BEGIN_RE" "$BODY_FILE")" -eq 1 ] \
+                 && [ "$(LC_ALL=C grep -cE "$NOTES_END_RE" "$BODY_FILE")" -eq 1 ]; then
+                BODY_HAS_CLEAN_NOTES=1
               fi
 
               SKIP_EDIT=0
@@ -324,13 +339,12 @@ jobs:
               #    COMPLETE, single begin+end marker pair in BOTH bodies — an
               #    unterminated or duplicated block would otherwise capture the entire
               #    stale report to EOF and re-inject it, growing the body every run.
-              if [ "$CUR_HAS_CLEAN_NOTES" -eq 1 ] \
-                 && [ "$(grep -cE "$NOTES_BEGIN_RE" "$BODY_FILE")" -eq 1 ] \
-                 && [ "$(grep -cE "$NOTES_END_RE" "$BODY_FILE")" -eq 1 ]; then
+              if [ "$CUR_HAS_CLEAN_NOTES" -eq 1 ] && [ "$BODY_HAS_CLEAN_NOTES" -eq 1 ]; then
                 MERGED_BODY_FILE="$(mktemp)"
                 # Markers are matched as ANCHORED FULL LINES so a note that merely
                 # mentions the marker text cannot prematurely terminate capture.
-                awk '
+                # LC_ALL=C keeps awk's [[:space:]] ASCII-only, matching the grep guard.
+                LC_ALL=C awk '
                   /^[[:space:]]*<!-- release-readiness:human-notes:begin -->[[:space:]]*$/ {
                     if (FNR==NR) { cap=1; next } else { print; printf "%s", notes; skip=1; next }
                   }
@@ -342,8 +356,16 @@ jobs:
                 ' "$CUR_BODY_FILE" "$BODY_FILE" > "$MERGED_BODY_FILE"
                 mv "$MERGED_BODY_FILE" "$BODY_FILE"
                 echo "Preserved existing Release Captain Notes block."
+              elif [ "$CUR_HAS_CLEAN_NOTES" -eq 1 ] && [ "$BODY_HAS_CLEAN_NOTES" -ne 1 ]; then
+                # The live issue HAS clean notes but the freshly generated body does
+                # NOT carry a clean begin+end pair (e.g. truncated below the cap, or
+                # markers otherwise missing). Splicing is impossible and overwriting
+                # would wipe the live notes, so skip the edit entirely. Self-heals on
+                # the next run once the fresh body regains its markers.
+                echo "::warning::Fresh report for #${CANONICAL} lacks clean notes markers (truncated?); skipping edit to protect existing Release Captain Notes."
+                SKIP_EDIT=1
               elif [ "$CUR_HAS_CLEAN_NOTES" -ne 1 ] \
-                   && grep -q 'release-readiness:human-notes:' "$CUR_BODY_FILE"; then
+                   && LC_ALL=C grep -q 'release-readiness:human-notes:' "$CUR_BODY_FILE"; then
                 # The live body carries notes markers that don't resolve to a single
                 # clean begin+end pair (corrupted, duplicated, or text on the marker
                 # line). We can't splice safely and overwriting would wipe the notes,
@@ -354,11 +376,15 @@ jobs:
               fi
 
               # 2) Idempotent no-op: if the semantic hash is unchanged, skip the edit
-              #    so scheduled re-runs don't spam watchers. Preview reports carry no
-              #    hash marker, so NEW_HASH is empty there and we always fall through.
+              #    so scheduled re-runs don't spam watchers. Anchor the match to the
+              #    engine's full HTML-comment emission form — a bare substring would
+              #    also match a `release-readiness-hash: sha=...` line a human pastes
+              #    into the notes block, which the splice copies into the fresh body.
+              #    On Preview trackers (which emit NO hash, so must refresh every run)
+              #    that pasted line would make OLD_HASH==NEW_HASH and FREEZE the issue.
               if [ "$SKIP_EDIT" -ne 1 ]; then
-                OLD_HASH=$(grep -oE 'release-readiness-hash: sha=[0-9a-f]+' "$CUR_BODY_FILE" | head -n1 | sed 's/.*sha=//') || true
-                NEW_HASH=$(grep -oE 'release-readiness-hash: sha=[0-9a-f]+' "$BODY_FILE"     | head -n1 | sed 's/.*sha=//') || true
+                OLD_HASH=$(grep -oE '<!-- release-readiness-hash: sha=[0-9a-f]+ -->' "$CUR_BODY_FILE" | head -n1 | sed 's/.*sha=//; s/ -->//') || true
+                NEW_HASH=$(grep -oE '<!-- release-readiness-hash: sha=[0-9a-f]+ -->' "$BODY_FILE"     | head -n1 | sed 's/.*sha=//; s/ -->//') || true
                 if [ -n "$NEW_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ]; then
                   echo "Semantic hash unchanged (${NEW_HASH}) — skipping issue edit (no-op)."
                 else
