@@ -169,44 +169,16 @@ internal static class SafeAreaExtensions
 
 					if (top > 0 && viewTop < top && viewTop >= 0)
 					{
-						// If the AppBar is confirmed visible it handles the status-bar inset.
-						// Zero top so the content view does not double-pad itself alongside the
-						// AppBar. This also covers the stale-position case on NavBar SHOW:
-						// the immediate dispatch fires before layout, so viewTop is still 0
-						// (the old hide-state position), but AppBarHasContent already reflects
-						// the new visible state. Zeroing here ensures a correct first frame.
-						if (globalWindowInsetsListener?.AppBarHasContent == true)
-						{
-							top = 0;
-						}
-						else
-						{
-							// Calculate the actual overlap amount
-							top = Math.Min(top - viewTop, top);
-						}
+						// Calculate the actual overlap amount
+						top = Math.Min(top - viewTop, top);
 					}
 					else if (top > 0 && viewIsAnimatingVertically)
 					{
 						// View is animating - positioned beyond status bar but extends off-screen
 						// Apply full top inset since view will settle at Y=0
 					}
-					else if (top > 0 && viewTop >= top && viewTop >= 0)
-					{
-						// viewTop >= top: view is at or below the safe area.
-						// Don't zero top when the AppBar is confirmed hidden — the content view
-						// must own the full top inset because the AppBar is no longer claiming it.
-						// AppBarHasContent is set at the start of every inset dispatch (before this
-						// runs), so it accurately reflects the current AppBar state even when
-						// view positions are stale (pre-layout).
-						if (globalWindowInsetsListener?.AppBarHasContent != false && (viewHeight > 0 || hasTrackedViews))
-						{
-							top = 0;
-						}
-					}
 					else
 					{
-						// viewTop < 0: view is panned off the top of the screen (or top == 0).
-						// Per the comment above, don't apply the top inset in this case.
 						if (viewHeight > 0 || hasTrackedViews)
 						{
 							top = 0;

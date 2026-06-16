@@ -280,16 +280,20 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// Check if AppBarLayout has meaningful content.
-			// When the Shell toolbar is hidden we set its height to 0, but the AppBarLayout can still
-			// retain previously applied top padding. If we key off MeasuredHeight alone, that stale
-			// padding makes the app bar look "non-empty" and we keep consuming the top inset,
-			// leaving a blank gap on cutout devices.
-			bool appBarHasContent = HasVisibleAppBarContent(appBarLayout);
-
-			// Cache the AppBar state on the listener so SafeAreaExtensions can read it
-			// without walking the view tree. Must be set before ApplySafeAreaInsets runs.
-			FindRegisteredListener(v)?.SetAppBarContentState(appBarHasContent);
+			// Check if AppBarLayout has meaningful content
+			bool appBarHasContent = appBarLayout?.MeasuredHeight > 0;
+			if (!appBarHasContent && appBarLayout is not null)
+			{
+				for (int i = 0; i < appBarLayout.ChildCount; i++)
+				{
+					var child = appBarLayout.GetChildAt(i);
+					if (child?.MeasuredHeight > 0)
+					{
+						appBarHasContent = true;
+						break;
+					}
+				}
+			}
 
 			// Apply padding to AppBarLayout based on content and system insets
 			if (appBarLayout is not null)
@@ -347,38 +351,6 @@ namespace Microsoft.Maui.Platform
 				?.Build() ?? insets;
 		}
 
-		static bool HasVisibleAppBarContent(AppBarLayout? appBarLayout)
-		{
-			if (appBarLayout is null || appBarLayout.Visibility == ViewStates.Gone)
-			{
-				return false;
-			}
-
-			for (int i = 0; i < appBarLayout.ChildCount; i++)
-			{
-				var child = appBarLayout.GetChildAt(i);
-				if (child is null || child.Visibility == ViewStates.Gone)
-				{
-					continue;
-				}
-
-				var childLayoutHeight = child.LayoutParameters?.Height ?? 0;
-				if (child is MaterialToolbar && childLayoutHeight == 0)
-				{
-					continue;
-				}
-
-				var childContentHeight = Math.Max(0, child.MeasuredHeight - child.PaddingTop - child.PaddingBottom);
-				if (childContentHeight > 0 || child.Height > 0 || childLayoutHeight > 0)
-				{
-					return true;
-				}
-
-			}
-
-			return false;
-		}
-
 		public void TrackView(AView view)
 		{
 			_trackedViews.Add(view);
@@ -386,28 +358,10 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-		/// <summary>
-		/// Whether the AppBarLayout sibling currently has visible content (toolbar shown).
-		/// Set at the start of every <see cref="ApplyDefaultWindowInsets"/> call so that
-		/// <see cref="SafeAreaExtensions"/> can read it without walking the view tree.
-		/// <para>
-		/// <c>null</c> = state unknown (e.g. after navigation, before the next root inset dispatch);
-		/// falls back to position-based logic in <see cref="SafeAreaExtensions"/>.
-		/// <c>true</c> = AppBar confirmed visible. <c>false</c> = AppBar confirmed hidden.
-		/// </para>
-		/// </summary>
-		internal bool? AppBarHasContent { get; private set; }
-
-		internal void SetAppBarContentState(bool hasContent)
-		{
-			AppBarHasContent = hasContent;
-		}
-
-		public bool IsViewTracked(AView view)
+        public bool IsViewTracked(AView view)
         {
             return _trackedViews.Contains(view);
         }
-
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)
@@ -426,11 +380,6 @@ namespace Microsoft.Maui.Platform
 			{
 				ResetView(view);
 			}
-
-			// Reset AppBar state so that child-view inset dispatches triggered during navigation
-			// (before the next root ApplyDefaultWindowInsets runs) fall back to position-based
-			// logic rather than reading a stale cached value from the previous page.
-			AppBarHasContent = null;
 		}
 
 		/// <summary>
