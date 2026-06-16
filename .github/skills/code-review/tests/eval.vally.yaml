@@ -107,8 +107,6 @@ stimuli:
       output format (Independent Assessment → Findings → Blast Radius →
       Verdict + Confidence).
     environment:
-      skills:
-        - code-review
       git:
         type: worktree
         ref: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd
@@ -209,8 +207,6 @@ stimuli:
       output format (Independent Assessment → Findings → Failure-Mode
       Probing → Verdict + Confidence).
     environment:
-      skills:
-        - code-review
       git:
         type: worktree
         ref: dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9

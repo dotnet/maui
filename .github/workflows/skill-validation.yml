@@ -684,8 +684,9 @@ jobs:
         id: herm
         env:
           # Same model-auth-only env the evaluate job uses. If correct, the
-          # negative control FAILS (agent can't reach the GitHub API). If a
-          # GitHub-shaped token leaks in, it PASSES → hermeticity broken.
+          # negative control FAILS (agent's request is anonymous — the core
+          # rate limit comes back at 60). If a GitHub-shaped token leaks in,
+          # the limit is elevated and it PASSES → hermeticity broken.
           COPILOT_GITHUB_TOKEN: ${{ steps.select-token.outputs.token }}
         run: |
           SPEC=.github/skills/code-review/tests/hermeticity.vally.yaml
@@ -722,19 +723,20 @@ jobs:
           ERRS=$(printf '%s' "$ROOT" | sed -nE 's/.*errors="([0-9]+)".*/\1/p'); ERRS=${ERRS:-0}
           echo "negative-control: failures=$FAILS errors=$ERRS"
 
-          # Negative control passes ONLY by reaching the live API:
-          #   failures>=1 → agent was blocked     → HERMETIC (good)
-          #   errors>=1   → run errored            → INCONCLUSIVE
-          #   both 0      → agent reached the API  → BROKEN (token leaked)
+          # Negative control passes ONLY when the agent's tooling is
+          # authenticated (elevated rate limit):
+          #   failures>=1 → request was anonymous  → HERMETIC (good)
+          #   errors>=1   → run errored             → INCONCLUSIVE
+          #   both 0      → request was authed      → BROKEN (token leaked)
           if [ "$FAILS" -ge 1 ]; then
             echo "hermetic" > hermeticity-results/verdict.txt
-            echo "✅ Hermetic: negative control correctly failed to reach the GitHub API."
+            echo "✅ Hermetic: negative control was unauthenticated (anonymous rate limit); no GitHub token leaked."
           elif [ "$ERRS" -ge 1 ]; then
             echo "inconclusive" > hermeticity-results/verdict.txt
             echo "::warning::Hermeticity inconclusive (execution error in negative control)."
           else
             echo "broken" > hermeticity-results/verdict.txt
-            echo "::warning::Hermeticity BROKEN: negative control reached the live GitHub API (a GitHub token leaked into the eval env). Non-blocking for now."
+            echo "::warning::Hermeticity BROKEN: negative control was authenticated against the GitHub API (a GitHub token leaked into the eval env). Non-blocking for now."
           fi
           # Non-blocking: never fail this job.
           exit 0
@@ -1021,9 +1023,9 @@ jobs:
             if (hermVerdict) {
               lines.push('### Harness hermeticity (negative control)');
               if (hermVerdict === 'hermetic') {
-                lines.push('✅ Hermetic — the negative-control stimulus correctly **failed** to reach the live GitHub API (no GitHub-shaped token in the agent env).');
+                lines.push('✅ Hermetic — the negative-control stimulus correctly came back **unauthenticated** (anonymous core rate limit; no GitHub token leaked into the agent env).');
               } else if (hermVerdict === 'broken') {
-                lines.push('❌ **NOT hermetic** — the negative-control stimulus **passed**, so the agent reached the live GitHub API. A GitHub token leaked into the eval env and regression suites may be open-book. _(non-blocking for now)_');
+                lines.push('❌ **NOT hermetic** — the negative-control stimulus was **authenticated** against the GitHub API (elevated rate limit). A GitHub token leaked into the eval env and regression suites may be open-book. _(non-blocking for now)_');
               } else {
                 lines.push('⚠️ Inconclusive — the negative-control run errored before it could prove hermeticity. _(non-blocking)_');
               }

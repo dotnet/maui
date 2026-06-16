@@ -77,7 +77,6 @@ stimuli:
       local worktree and `git diff HEAD^ HEAD` to see the added test + fix
       files, then produce the skill's structured evaluation report.
     environment:
-      skills: [evaluate-pr-tests]
       git:
         type: worktree
         ref: 747d375e6d57ee55cfc6edf9a7c431589b4ff479
@@ -114,8 +113,6 @@ stimuli:
       +        return result;
       +    }
       ```
-    environment:
-      skills: [evaluate-pr-tests]
     graders:
       - type: output-not-contains
         config: { substring: "PR Test Evaluation Report" }
@@ -150,8 +147,6 @@ stimuli:
 
       The HostApp page uses `Application.MainPage` to navigate and the test class doesn't
       call `WaitForElement` before every `App.Tap`. Evaluate whether these tests are adequate.
-    environment:
-      skills: [evaluate-pr-tests]
     graders:
       - type: output-contains
         config: { substring: "Thread.Sleep" }
@@ -194,8 +189,6 @@ stimuli:
       ```
 
       Is this the right test type?
-    environment:
-      skills: [evaluate-pr-tests]
     graders:
       - type: output-contains
         config: { substring: "Test Type Appropriateness" }
@@ -240,8 +233,6 @@ stimuli:
           Assert.That(elem, Is.Not.Null);
       }
       ```
-    environment:
-      skills: [evaluate-pr-tests]
     graders:
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
@@ -270,8 +261,6 @@ stimuli:
 
       The only test added verifies that after tapping an item and then clearing selection,
       the label shows "Count: 0". Evaluate whether this test covers the fix adequately.
-    environment:
-      skills: [evaluate-pr-tests]
     graders:
       - type: prompt
         config: { scoring: scale_1_5, threshold: 0.6 }
@@ -293,7 +282,6 @@ stimuli:
       files added in this commit (use `git diff HEAD^ HEAD`) and tell me if
       they seem reasonable. Do not fetch anything from the network.
     environment:
-      skills: [evaluate-pr-tests]
       git:
         type: worktree
         ref: 747d375e6d57ee55cfc6edf9a7c431589b4ff479
@@ -320,8 +308,6 @@ stimuli:
         - src/Controls/src/Core/CollectionView.cs
         - src/Controls/src/Core/Handlers/CollectionViewHandler.cs
       No test files were added.
-    environment:
-      skills: [evaluate-pr-tests]
     graders:
       - type: output-contains
         config: { substring: "Fix Coverage" }
@@ -373,8 +359,6 @@ stimuli:
       ```
 
       Evaluate the test quality.
-    environment:
-      skills: [evaluate-pr-tests]
     graders:
       - type: output-contains
         config: { substring: "Fix-Test Alignment" }
@@ -406,8 +390,6 @@ stimuli:
           Assert.That(text, Is.EqualTo("Clicked"));
       }
       ```
-    environment:
-      skills: [evaluate-pr-tests]
     graders:
       - type: output-not-contains
         config: { substring: "missing WaitForElement" }
