@@ -358,8 +358,17 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		}
 		_suppressNotifications = false;
 
+		// Fire Remove + Add instead of Move.
+		// CsWinRT translates CollectionChanged(Move) -> VectorChanged(Reset), which causes
+		// ItemsRepeater to discard all realized containers and reset the scroll position.
+		// Remove + Add translates to VectorChanged(ItemRemoved) + VectorChanged(ItemInserted),
+		// which ItemsRepeater handles by repositioning only the affected containers while
+		// preserving the ScrollViewer offset. This matches the flat-list fix in
+		// ObservableItemTemplateCollection2.MoveItem.
 		OnCollectionChanged(new NotifyCollectionChangedEventArgs(
-			NotifyCollectionChangedAction.Move, movedItems, newIndex, oldIndex));
+			NotifyCollectionChangedAction.Remove, movedItems, oldIndex));
+		OnCollectionChanged(new NotifyCollectionChangedEventArgs(
+			NotifyCollectionChangedAction.Add, movedItems, newIndex));
 	}
 
 	void ResetWithoutResubscribe()
