@@ -32,11 +32,11 @@ namespace Microsoft.Maui.Controls
 
         public static void MapBorderThickness(IPickerHandler handler, Picker picker)
 		{
-			if (handler.PlatformView is null)
-				return;
-
 			if (!picker.IsSet(BorderThicknessProperty))
-				return;
+            {
+                handler.PlatformView.ClearValue(Control.BorderThicknessProperty);
+                return;
+            }
 
 			if (picker.BorderThickness == default)
 			{
