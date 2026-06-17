@@ -448,9 +448,6 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		Items.Clear();
 		foreach (var item in _itemsSource)
 		{
-			if (item is null)
-				continue;
-
 			Items.Add(new ItemTemplateContext2(_itemTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing,
 				false, false, _mauiContext));
 		}
