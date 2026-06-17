@@ -13,6 +13,15 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 	private const string HybridWebViewTypeName = "Microsoft.Maui.Controls.HybridWebView";
 	private const string IHybridWebViewTypeName = "Microsoft.Maui.IHybridWebView";
 	private const string JsonSerializerContextTypeName = "System.Text.Json.Serialization.JsonSerializerContext";
+	private const string HybridWebViewFullyQualifiedTypeName = "global::Microsoft.Maui.Controls.HybridWebView";
+	private const string IHybridWebViewFullyQualifiedTypeName = "global::Microsoft.Maui.IHybridWebView";
+	private static readonly DiagnosticDescriptor UnsupportedOverloadedMethods = new(
+		"MAUIHWVSG001",
+		"HybridWebView invoke targets cannot contain overloaded methods",
+		"HybridWebView invoke target type '{0}' contains overloaded public method name(s): {1}. JavaScript-to-.NET invocation is dispatched by method name, so overloaded target methods are not supported.",
+		"HybridWebView",
+		DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -52,6 +61,10 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		var containingType = method.ContainingType?.ToDisplayString();
 		if (containingType != HybridWebViewTypeName && containingType != IHybridWebViewTypeName)
 			return null;
+
+		var receiverTypeName = containingType == IHybridWebViewTypeName
+			? IHybridWebViewFullyQualifiedTypeName
+			: HybridWebViewFullyQualifiedTypeName;
 
 		var secondParamType = method.Parameters[1].Type?.ToDisplayString();
 		if (secondParamType != JsonSerializerContextTypeName)
@@ -132,10 +145,20 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			methods.Add(new MethodInfo(m.Name, returnKind, resultTypeName, paramInfos.ToArray()));
 		}
 
+		var overloadedMethodNames = methods
+			.GroupBy(static method => method.Name)
+			.Where(static group => group.Count() > 1)
+			.Select(static group => group.Key)
+			.OrderBy(static name => name)
+			.ToArray();
+
 		return new InvocationInfo(
 			interceptableLocation,
+			invocation.GetLocation(),
+			receiverTypeName,
 			targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-			methods.ToArray());
+			methods.ToArray(),
+			overloadedMethodNames);
 	}
 
 	private static void GenerateSource(SourceProductionContext spc, ImmutableArray<InvocationInfo?> invocations)
@@ -177,9 +200,19 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 
 			var loc = info.Location;
 
+			if (info.OverloadedMethodNames.Length > 0)
+			{
+				spc.ReportDiagnostic(Diagnostic.Create(
+					UnsupportedOverloadedMethods,
+					info.DiagnosticLocation,
+					info.TargetTypeName,
+					string.Join(", ", info.OverloadedMethodNames)));
+				continue;
+			}
+
 			// Generate the interceptor method
 			sb.AppendLine($"        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({loc.Version}, @\"{loc.Data}\")]");
-			sb.AppendLine($"        public static void SetInvokeJavaScriptTarget_{index}<T>(this global::Microsoft.Maui.Controls.HybridWebView hybridWebView, T target, global::System.Text.Json.Serialization.JsonSerializerContext jsonSerializerContext) where T : class");
+			sb.AppendLine($"        public static void SetInvokeJavaScriptTarget_{index}<T>(this {info.ReceiverTypeName} hybridWebView, T target, global::System.Text.Json.Serialization.JsonSerializerContext jsonSerializerContext) where T : class");
 			sb.AppendLine("        {");
 			sb.AppendLine("            if (target is null) throw new ArgumentNullException(nameof(target));");
 			sb.AppendLine("            if (jsonSerializerContext is null) throw new ArgumentNullException(nameof(jsonSerializerContext));");
@@ -187,7 +220,17 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			sb.AppendLine($"            if (target is not {info.TargetTypeName} typedTarget)");
 			sb.AppendLine($"                throw new InvalidOperationException($\"Type mismatch: expected {info.TargetTypeName.Split('.').Last()} but got {{target.GetType().FullName}}\");");
 			sb.AppendLine();
-			sb.AppendLine($"            hybridWebView.SetInvoker(new Invoker_{index}(typedTarget, jsonSerializerContext));");
+			if (info.ReceiverTypeName == IHybridWebViewFullyQualifiedTypeName)
+			{
+				sb.AppendLine("            if (hybridWebView is not global::Microsoft.Maui.Controls.HybridWebView concreteHybridWebView)");
+				sb.AppendLine("                throw new InvalidOperationException(\"The AOT-safe HybridWebView source-generated invoker can only be registered on Microsoft.Maui.Controls.HybridWebView instances.\");");
+				sb.AppendLine();
+				sb.AppendLine($"            concreteHybridWebView.Invoker = new Invoker_{index}(typedTarget, jsonSerializerContext);");
+			}
+			else
+			{
+				sb.AppendLine($"            hybridWebView.Invoker = new Invoker_{index}(typedTarget, jsonSerializerContext);");
+			}
 			sb.AppendLine("        }");
 			sb.AppendLine();
 
@@ -204,7 +247,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			sb.AppendLine("                _ctx = ctx;");
 			sb.AppendLine("            }");
 			sb.AppendLine();
-			sb.AppendLine("            public async global::System.Threading.Tasks.Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues)");
+			sb.AppendLine("            public override async global::System.Threading.Tasks.Task<string?> InvokeMethodAsync(string methodName, string[]? paramJsonValues)");
 			sb.AppendLine("            {");
 			sb.AppendLine("                switch (methodName)");
 			sb.AppendLine("                {");
@@ -279,15 +322,21 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 
 	private sealed class InvocationInfo
 	{
-		public InvocationInfo(InterceptableLocation location, string targetTypeName, MethodInfo[] methods)
+		public InvocationInfo(InterceptableLocation location, Location diagnosticLocation, string receiverTypeName, string targetTypeName, MethodInfo[] methods, string[] overloadedMethodNames)
 		{
 			Location = location;
+			DiagnosticLocation = diagnosticLocation;
+			ReceiverTypeName = receiverTypeName;
 			TargetTypeName = targetTypeName;
 			Methods = methods;
+			OverloadedMethodNames = overloadedMethodNames;
 		}
 		public InterceptableLocation Location { get; }
+		public Location DiagnosticLocation { get; }
+		public string ReceiverTypeName { get; }
 		public string TargetTypeName { get; }
 		public MethodInfo[] Methods { get; }
+		public string[] OverloadedMethodNames { get; }
 	}
 
 	private sealed class MethodInfo

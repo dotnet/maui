@@ -48,6 +48,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
+		public override nint NumberOfSections(UICollectionView collectionView)
+		{
+			var count = base.NumberOfSections(collectionView);
+
+			// UICollectionViewCompositionalLayout does not render global boundary supplementary items
+			// (header/footer set on NSCollectionLayoutConfiguration) when there are 0 sections.
+			// Return at least 1 section so the header/footer remains visible when ItemsSource is empty.
+			// Only applies to non-grouped collections: grouped collections put group headers in
+			// per-section supplementary items, which would crash when accessing the empty group source.
+			if (count == 0
+				&& ItemsSource is not null && !(ItemsView is GroupableItemsView { IsGrouped: true })
+				&& (ItemsView?.Header is not null || ItemsView?.HeaderTemplate is not null
+					|| ItemsView?.Footer is not null || ItemsView?.FooterTemplate is not null))
+			{
+				return 1;
+			}
+
+			return count;
+		}
+
 		internal void UpdateHeaderView()
 		{
 			// Clean up header view if no header content
