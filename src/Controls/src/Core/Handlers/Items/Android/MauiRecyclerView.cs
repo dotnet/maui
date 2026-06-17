@@ -1060,8 +1060,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (RecyclerViewScrollListener == null)
 				return;
 
+			RemoveOnScrollListener(RecyclerViewScrollListener);
 			RecyclerViewScrollListener.Dispose();
-			ClearOnScrollListeners();
 			RecyclerViewScrollListener = null;
 		}
 	}
