@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using UIKit;
 using Xunit;
 
@@ -22,6 +23,27 @@ public partial class FontManagerTests : TestBase
 			manager.GetFont(Font.OfSize(fontName, manager.DefaultFontSize)));
 
 		Assert.Equal(expectedFamilyName, font.FamilyName);
+	}
+
+	[Theory]
+	[InlineData("OpenSansRegular")]
+	[InlineData("Segoe UI")]
+	public async System.Threading.Tasks.Task UnregisteredFontFamilyDoesNotLogMissingFontWarnings(string fontName)
+	{
+		var registrar = new FontRegistrar(fontLoader: null);
+		var (services, loggerProvider) = CreateFontManagerLoggerServices();
+
+		using (services)
+		{
+			var manager = new FontManager(registrar, services);
+
+			var font = await InvokeOnMainThreadAsync(() =>
+				manager.GetFont(Font.OfSize(fontName, manager.DefaultFontSize)));
+
+			Assert.NotNull(font);
+		}
+
+		Assert.DoesNotContain(loggerProvider.Logs, log => log.LogLevel >= LogLevel.Warning);
 	}
 
 }

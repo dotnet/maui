@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Storage;
 using Microsoft.UI.Xaml.Controls;
 using Xunit;
@@ -65,5 +66,26 @@ public partial class FontManagerTests : TestBase
 #endif
 
 			Assert.Equal(expected, actual.Source);
+		});
+
+	[Theory]
+	[InlineData("Segoe UI", "Segoe UI, Assets/Fonts/Segoe UI.ttf#Segoe UI, Assets/Fonts/Segoe UI.otf#Segoe UI")]
+	[InlineData("OpenSansRegular", "OpenSansRegular, Assets/Fonts/OpenSansRegular.ttf#Open Sans Regular, Assets/Fonts/OpenSansRegular.otf#Open Sans Regular")]
+	public Task UnregisteredFontFamilyDoesNotLogMissingAssetErrors(string fontName, string expected) =>
+		InvokeOnMainThreadAsync(() =>
+		{
+			var registrar = new FontRegistrar(fontLoader: null);
+			var (services, loggerProvider) = CreateFontManagerLoggerServices();
+
+			using (services)
+			{
+				var manager = new FontManager(registrar, services);
+
+				var actual = manager.GetFontFamily(Font.OfSize(fontName, 12, FontWeight.Regular));
+
+				Assert.Equal(expected, actual.Source);
+			}
+
+			Assert.DoesNotContain(loggerProvider.Logs, log => log.LogLevel >= LogLevel.Warning);
 		});
 }
