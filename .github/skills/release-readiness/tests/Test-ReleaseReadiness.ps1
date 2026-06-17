@@ -398,6 +398,37 @@ if (-not (Test-Path $detectScriptPath)) {
     Assert-Eq -Label "no shipped tags yet: patch 0 (GA) in-flight"  -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 0  -ShippedPatches $emptySet)
     Assert-Eq -Label "no shipped tags yet: patch 11 in-flight"      -Expected $true -Actual (Test-IsBranchInFlight -BranchPatch 11 -ShippedPatches $emptySet)
 
+    # ─────────── Test-IsStaleSrBranch (Lane 1 staleness guard) ───────────
+    # Secondary disambiguator that runs AFTER Test-IsBranchInFlight returns true.
+    # Drops tag-absent SR branches that sit below the shipped watermark AND are
+    # idle — e.g. SR2 (patch 21) / SR3 (patch 33) lingering long after SR7
+    # (patch 71) shipped — so they don't spin up no-op workflow matrix jobs.
+    Write-Host "`n[Unit] Test-IsStaleSrBranch (Lane 1 staleness guard)" -ForegroundColor Cyan
+
+    # The reported case: stale below-watermark branches with no recent commits.
+    Assert-Eq -Label "SR2 patch 21 < 71, idle -> stale (skip)" `
+              -Expected $true  -Actual (Test-IsStaleSrBranch -BranchPatch 21 -HighestShippedPatch 71 -RecentActivityCount 0)
+    Assert-Eq -Label "SR3 patch 33 < 71, idle -> stale (skip)" `
+              -Expected $true  -Actual (Test-IsStaleSrBranch -BranchPatch 33 -HighestShippedPatch 71 -RecentActivityCount 0)
+
+    # A freshly-cut live SR sits at/above the watermark — never stale, even idle.
+    Assert-Eq -Label "SR8 patch 80 > 71, idle -> NOT stale (above watermark)" `
+              -Expected $false -Actual (Test-IsStaleSrBranch -BranchPatch 80 -HighestShippedPatch 71 -RecentActivityCount 0)
+    Assert-Eq -Label "patch 71 == 71, idle -> NOT stale (equal, not strictly below)" `
+              -Expected $false -Actual (Test-IsStaleSrBranch -BranchPatch 71 -HighestShippedPatch 71 -RecentActivityCount 0)
+
+    # The hotfix scenario tag-existence protects: a reset branch BELOW the
+    # watermark but with recent commits is genuinely in-flight, NOT stale.
+    Assert-Eq -Label "security-hotfix patch 22 < 71 but active -> NOT stale" `
+              -Expected $false -Actual (Test-IsStaleSrBranch -BranchPatch 22 -HighestShippedPatch 71 -RecentActivityCount 3)
+    Assert-Eq -Label "below-watermark patch 21 with 1 recent commit -> NOT stale" `
+              -Expected $false -Actual (Test-IsStaleSrBranch -BranchPatch 21 -HighestShippedPatch 71 -RecentActivityCount 1)
+
+    # No shipped tags yet (highest = 0): nothing is below the watermark, so the
+    # guard never fires — every in-flight branch is preserved.
+    Assert-Eq -Label "no shipped tags (highest 0): patch 11 idle -> NOT stale" `
+              -Expected $false -Actual (Test-IsStaleSrBranch -BranchPatch 11 -HighestShippedPatch 0 -RecentActivityCount 0)
+
     # ─────────── Preview-tag regex contract ───────────
     Write-Host "`n[Unit] Preview tag regex (<major>.0.0-preview.<N>.<date>[.<build>])" -ForegroundColor Cyan
     $previewTagCases = @(
@@ -506,11 +537,12 @@ if (-not (Test-Path $detectScriptPath)) {
 
 if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
-    Write-Host "  Under the tag-existence rule we expect FOUR trackers:" -ForegroundColor DarkGray
-    Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - in-flight but inactive (workflow will skip — no recent commits)" -ForegroundColor DarkGray
-    Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - in-flight but inactive (workflow will skip — no recent commits)" -ForegroundColor DarkGray
+    Write-Host "  Under the tag-existence rule + Lane 1 staleness guard we expect TWO trackers:" -ForegroundColor DarkGray
     Write-Host "    - SR8 (patch=80, no tag 10.0.80)        - in-flight, active" -ForegroundColor DarkGray
     Write-Host "    - SR9 (candidate off main)              - active" -ForegroundColor DarkGray
+    Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark 71):" -ForegroundColor DarkGray
+    Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
+    Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
     Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); no longer produces a tracker." -ForegroundColor DarkGray
 
     $detectOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-$(Get-Date -Format 'HHmmss').json"
@@ -527,8 +559,8 @@ if (-not $SkipE2E) {
             Assert-Eq -Label "highestShippedTag is '10.0.71'"  -Expected '10.0.71' -Actual $detected.highestShippedTag
             Assert-Eq -Label "highestShippedPreviewTag carries net10's last preview" `
                       -Expected '10.0.0-preview.7.25406.3' -Actual $detected.highestShippedPreviewTag
-            Assert-Eq -Label "tracker count is 4 (SR2+SR3+SR8+SR9 — SR7 shipped)" `
-                      -Expected 4 -Actual $detected.trackers.Count
+            Assert-Eq -Label "tracker count is 2 (SR8+SR9 — SR7 shipped; SR2/SR3 dropped as stale)" `
+                      -Expected 2 -Actual $detected.trackers.Count
             # All trackers in single-major net10 mode must be SR-flavored. (Net10's
             # previews 1–7 all shipped + no in-flight preview branch -> no preview tracker.)
             foreach ($t in $detected.trackers) {
@@ -539,27 +571,19 @@ if (-not $SkipE2E) {
             $bySr = @{}
             foreach ($t in $detected.trackers) { $bySr[[int]$t.srNumber] = $t }
 
-            # SR2 (in-flight, INACTIVE — workflow's activity gate prevents new issue)
+            # SR2 (tag-absent but STALE — Lane 1 staleness guard drops it so the
+            # workflow matrix never spins up a no-op job for it).
             if ($bySr.ContainsKey(2)) {
-                $sr2 = $bySr[2]
-                Assert-Eq -Label "SR2 mode = in-flight (tag 10.0.21 absent)" `
-                          -Expected 'in-flight' -Actual $sr2.mode
-                Assert-Eq -Label "SR2 expectedTag = 10.0.21"     -Expected '10.0.21' -Actual $sr2.expectedTag
-                Assert-Eq -Label "SR2 hasRecentActivity = false (workflow will skip new issue)" `
-                          -Expected $false -Actual $sr2.hasRecentActivity
+                Write-Host "  ❌ SR2 tracker should be dropped (patch=21 < watermark 71, idle — stale)" -ForegroundColor Red; $script:failed++
             } else {
-                Write-Host "  ❌ SR2 tracker missing (tag rule should pick it up — patch=21, no tag)" -ForegroundColor Red; $script:failed++
+                Assert-Eq -Label "SR2 tracker absent (stale: patch 21 < 71, no recent activity)" -Expected $true -Actual $true
             }
 
-            # SR3 (in-flight, INACTIVE)
+            # SR3 (tag-absent but STALE — dropped by the staleness guard)
             if ($bySr.ContainsKey(3)) {
-                $sr3 = $bySr[3]
-                Assert-Eq -Label "SR3 mode = in-flight (tag 10.0.33 absent)" `
-                          -Expected 'in-flight' -Actual $sr3.mode
-                Assert-Eq -Label "SR3 expectedTag = 10.0.33"     -Expected '10.0.33' -Actual $sr3.expectedTag
-                Assert-Eq -Label "SR3 hasRecentActivity = false" -Expected $false -Actual $sr3.hasRecentActivity
+                Write-Host "  ❌ SR3 tracker should be dropped (patch=33 < watermark 71, idle — stale)" -ForegroundColor Red; $script:failed++
             } else {
-                Write-Host "  ❌ SR3 tracker missing (tag rule should pick it up — patch=33, no tag)" -ForegroundColor Red; $script:failed++
+                Assert-Eq -Label "SR3 tracker absent (stale: patch 33 < 71, no recent activity)" -Expected $true -Actual $true
             }
 
             # SR7 (shipped 2026-06-05 as 10.0.71 — Lane 1 should NOT emit a tracker)
@@ -622,14 +646,15 @@ if (-not $SkipE2E) {
     # ──────────── E2E: -AllActiveMajors multi-major envelope ────────────
     # In the unified post-consolidation shape, one invocation must surface every
     # active major (main's + any net<N>.0 ≥ main). Expected current state:
-    #   - net10 -> 4 SR trackers (SR2, SR3, SR8, SR9), no preview tracker
-    #     (SR7 shipped 2026-06-05; every net10 preview branch already shipped + net10.0 isn't in preview cycle)
+    #   - net10 -> 2 SR trackers (SR8, SR9), no preview tracker
+    #     (SR7 shipped 2026-06-05; SR2/SR3 dropped by the Lane 1 staleness guard;
+    #      every net10 preview branch already shipped + net10.0 isn't in preview cycle)
     #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 1 preview tracker
     #     (preview6 candidate from net11.0)
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
-    Write-Host "    - net10 trackers: 4 SR (sr2/sr3/sr8/sr9), 0 preview (SR7 shipped 2026-06-05)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: 2 SR (sr8/sr9), 0 preview (SR7 shipped 2026-06-05; SR2/SR3 stale-dropped)" -ForegroundColor DarkGray
     Write-Host "    - net11 trackers: 0 SR (pre-GA), 1 preview (preview6 candidate from net11.0)" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
@@ -654,10 +679,10 @@ if (-not $SkipE2E) {
                 $net10 = $byMajor[10]
                 Assert-Eq -Label "net10 mainBranch is 'main'"               -Expected 'main' -Actual $net10.mainBranch
                 Assert-Eq -Label "net10 highestShippedTag is '10.0.71'"      -Expected '10.0.71' -Actual $net10.highestShippedTag
-                Assert-Eq -Label "net10 tracker count is 4 (no preview lane, SR7 shipped)" -Expected 4 -Actual $net10.trackers.Count
+                Assert-Eq -Label "net10 tracker count is 2 (no preview lane, SR7 shipped, SR2/SR3 stale-dropped)" -Expected 2 -Actual $net10.trackers.Count
                 $srCount = @($net10.trackers | Where-Object branchType -eq 'sr').Count
                 $previewCount = @($net10.trackers | Where-Object branchType -eq 'preview').Count
-                Assert-Eq -Label "net10 has 4 SR trackers"      -Expected 4 -Actual $srCount
+                Assert-Eq -Label "net10 has 2 SR trackers"      -Expected 2 -Actual $srCount
                 Assert-Eq -Label "net10 has 0 preview trackers" -Expected 0 -Actual $previewCount
             } else {
                 Write-Host "  ❌ majors[] missing net10 entry" -ForegroundColor Red; $script:failed++
