@@ -448,7 +448,7 @@ checkout failed` and stop.
 If the issue maps to a SKIP / OUT-of-bounds row, record the matching reason
 and stop. Do NOT open a help-wanted PR for these.
 
-#### Step 5.4 — Stage the diff
+#### Step 5.4 — Stage and commit the diff
 
 Read every file you will change at `HEAD`. Stage with explicit paths only
 (never `git add -A`). Verify:
@@ -472,6 +472,29 @@ file list + intent is substantively the same as a prior closed PR's →
 `skipped: no novel approach producible this run` and stop. Defer to next tick;
 the human cycle may produce more close-comment context to learn from.
 
+Once the staged diff passes every check above, **commit it** on the
+`ci-fix/...` branch. This step is load-bearing: gh-aw's `create-pull-request`
+packages the agent's **commits** (`origin/<branch>..HEAD`) into a git bundle —
+a staged-but-uncommitted diff produces an *empty* bundle, the downstream
+`detection` job rejects the output with `ERR_VALIDATION`, and the PR is
+silently dropped. You MUST create at least one commit:
+
+```bash
+git commit -m "ci-fix: <short fix description> (refs #${N}, attempt ${next_attempt}/5)"
+git rev-list --count "origin/${branch}..HEAD" | tee /tmp/gh-aw/agent/commitcount_${N}.txt
+```
+
+Confirm the commit carries exactly the intended files and that at least one
+commit now exists on top of the base:
+
+```bash
+git --no-pager diff --stat "origin/${branch}..HEAD"
+test "$(cat /tmp/gh-aw/agent/commitcount_${N}.txt)" -ge 1
+```
+
+If the commit count is `0` (nothing was committed), do NOT proceed to emission
+— record `skipped: no commit produced (empty patch)` and stop.
+
 #### Step 5.5 — Validate when possible; classify confidence
 
 | Validation feasible? | Result | Artifact kind |
@@ -486,6 +509,11 @@ the human cycle may produce more close-comment context to learn from.
 `maui-pr-uitests` failures should generally be `help`.
 
 #### Step 5.6 — Emit the PR (branch-aware)
+
+**Precondition:** Step 5.4 produced ≥ 1 commit on `origin/<branch>..HEAD`
+(`commitcount_${N}.txt` ≥ 1). If it did not, do NOT emit — record
+`skipped: no commit produced (empty patch)` and stop. A `create_pull_request`
+without a backing commit is dropped by `detection` and never becomes a PR.
 
 Use the Step 7 fix/help template. Critical:
 
@@ -502,8 +530,8 @@ equals the `base` field. If they disagree, drop the attempt and record
 
 > **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit the
 > `create_pull_request`. Instead print a `DRY RUN — would open PR` block (base,
-> source branch, title, full body, `git --no-pager diff --stat`) to the run log
-> and tally `dry-run: would-<fix|help>`.
+> source branch, title, full body, `git --no-pager diff --stat "origin/${branch}..HEAD"`)
+> to the run log and tally `dry-run: would-<fix|help>`.
 
 ### Step 6 — Emit the needs-human PR (attempt cap exhausted)
 
@@ -658,6 +686,7 @@ can aggregate them stably):
 - `validation failed locally — fix is incorrect`
 - `per-run cap reached`
 - `branch checkout failed`
+- `no commit produced (empty patch)`
 - `branch-awareness self-check failed`
 - `dispatch issue_number not an in-scope ci-scan issue`
 
