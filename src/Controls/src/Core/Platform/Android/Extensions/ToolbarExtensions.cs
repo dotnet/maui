@@ -185,24 +185,14 @@ namespace Microsoft.Maui.Controls.Platform
 			var navIconColor = toolbar.IconColor;
 			if (navIconColor is null)
 			{
+				nativeToolbar.UpdateNavigationIconColor(toolbar);
+				nativeToolbar.UpdateOverflowIconColor(toolbar);
 				nativeToolbar.UpdateSystemChrome(toolbar);
 				return;
 			}
 
-			var platformColor = navIconColor.ToPlatform();
-			if (nativeToolbar.NavigationIcon is Drawable navigationIcon)
-			{
-				if (navigationIcon is DrawerArrowDrawable dad)
-					dad.Color = AGraphics.Color.White;
-
-				navigationIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
-			}
-
-			if (nativeToolbar.OverflowIcon is Drawable overflowIcon)
-			{
-				overflowIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
-			}
-
+			nativeToolbar.UpdateNavigationIconColor(toolbar);
+			nativeToolbar.UpdateOverflowIconColor(toolbar);
 			nativeToolbar.UpdateSystemChrome(toolbar);
 		}
 
@@ -228,11 +218,36 @@ namespace Microsoft.Maui.Controls.Platform
 				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
 			}
 
-			if (nativeToolbar.NavigationIcon is DrawerArrowDrawable icon)
+			nativeToolbar.UpdateNavigationIconColor(toolbar);
+			nativeToolbar.UpdateOverflowIconColor(toolbar);
+
+			nativeToolbar.UpdateSystemChrome(toolbar);
+		}
+
+		static void UpdateNavigationIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			if (nativeToolbar.NavigationIcon is not Drawable navigationIcon)
 			{
+				return;
+			}
+
+			if (toolbar.IconColor is not null)
+			{
+				if (navigationIcon is DrawerArrowDrawable dad)
+					dad.Color = AGraphics.Color.White;
+
+				navigationIcon.SetColorFilter(toolbar.IconColor.ToPlatform(), FilterMode.SrcAtop);
+				return;
+			}
+
+			navigationIcon.ClearColorFilter();
+
+			if (navigationIcon is DrawerArrowDrawable icon)
+			{
+				var textColor = toolbar.BarTextColor;
 				if (textColor != null)
 				{
-					_defaultNavigationIconColor = icon.Color;
+					_defaultNavigationIconColor ??= icon.Color;
 					icon.Color = textColor.ToPlatform().ToArgb();
 				}
 				else if (_defaultNavigationIconColor != null)
@@ -240,8 +255,24 @@ namespace Microsoft.Maui.Controls.Platform
 					icon.Color = _defaultNavigationIconColor.Value;
 				}
 			}
+		}
 
-			nativeToolbar.UpdateSystemChrome(toolbar);
+		static void UpdateOverflowIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			if (nativeToolbar.OverflowIcon is not Drawable overflowIcon)
+			{
+				return;
+			}
+
+			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor;
+			if (iconColor is null)
+			{
+				overflowIcon.ClearColorFilter();
+			}
+			else
+			{
+				overflowIcon.SetColorFilter(iconColor.ToPlatform(), FilterMode.SrcAtop);
+			}
 		}
 
 		static void UpdateSystemChrome(this AToolbar nativeToolbar, Toolbar toolbar)
