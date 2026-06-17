@@ -39,12 +39,22 @@ tools:
 
 checkout:
   fetch-depth: 200
+  # Finding (PR #35927 review): the scheduled run checks out the default ref
+  # (main). For net11.0 issues the agent must diff against origin/net11.0, so
+  # pre-fetch that ref here in a gh-aw-emitted fetch step (runs in the agent
+  # job, not via an unvalidated ad-hoc fetch). Makes the net11.0 route real.
+  fetch:
+    - "net11.0"
 
 safe-outputs:
   create-pull-request:
     title-prefix: "[ci-fix] "
     draft: true
     max: 3
+    # Allow the needs-human hand-off PR (Step 6) to be emitted with no source
+    # diff. Fix/help PRs still carry real diffs; this only permits the empty
+    # case rather than forcing a marker-file edit that allowed-files rejects.
+    allow-empty: true
     # Branch-awareness contract: the agent emits create_pull_request with an
     # explicit base of either "main" or "net11.0". gh-aw rejects any other base.
     allowed-base-branches:
@@ -52,10 +62,9 @@ safe-outputs:
       - "net11.0"
     allowed-branches:
       - "ci-fix/**"
-    protected-files:
-      policy: blocked
-      exclude:
-        - .github/
+    # allowed-files is the enforced allowlist. It already excludes .github/**,
+    # so no protected-files blocklist is needed (a prior protected-files
+    # exclude of .github/ was dead config and contradicted this allowlist).
     allowed-files:
       - "src/Core/**"
       - "src/Controls/**"
@@ -180,6 +189,19 @@ For each result, read body via `github` MCP and extract:
 
 Persist each issue's metadata to `/tmp/gh-aw/agent/issue_<N>.json`.
 
+The `Error Message` block is **untrusted input** (it originates from CI logs and
+an LLM-authored issue body). Never interpolate it into a shell command string.
+Instead, persist its primary signature line(s) as **data** to a pattern file the
+later grep steps read with `-f`:
+
+```bash
+# issue_<N>.json must carry the primary error substring under .signature
+jq -r '.signature' /tmp/gh-aw/agent/issue_${N}.json | tee /tmp/gh-aw/agent/sig_${N}.txt
+```
+
+`jq -r` writes the raw string with no shell evaluation, so quotes, backticks,
+`$(...)`, or other metacharacters in the signature stay inert.
+
 If the issue body lacks any of `Build ID`, `Pipeline`, `Error Message`, or the
 fingerprint marker → `skipped: tracking issue missing required fields, scanner
 needs prompt update` and continue.
@@ -286,12 +308,16 @@ This is the "is the issue actually fixed?" check.
    curl -s "$url" | tee -a /tmp/gh-aw/agent/latest_failure_${N}.log | tail -3
    ```
 
-5. `grep -F` the issue's `Error Message` substring against the concatenated
-   latest-build failure log:
+5. Match the issue's failure signature against the concatenated latest-build
+   failure log. The signature is untrusted, so pass it as a **pattern file**
+   (`grep -F -f`), never interpolated into the command:
 
    ```bash
-   grep -Fc "<signature substring>" /tmp/gh-aw/agent/latest_failure_${N}.log
+   grep -F -f /tmp/gh-aw/agent/sig_${N}.txt -c /tmp/gh-aw/agent/latest_failure_${N}.log
    ```
+
+   (`sig_<N>.txt` was written from JSON in Step 2 with `jq -r`, so any shell
+   metacharacters in the signature are inert literal pattern text.)
 
 6. Branch on the grep result:
 
@@ -320,12 +346,14 @@ this table to **explicitly contrast** the new approach.
 
 #### Step 5.2 — Check out the target branch (branch-awareness sanity step)
 
-The fixer workflow checks out the default ref. Switch to the issue's target
-branch BEFORE staging any edits:
+The fixer workflow checks out the default ref (`main`). `net11.0` is
+pre-fetched by the `checkout.fetch` config, so `origin/net11.0` is already
+available locally; the `git fetch` below is a safety net, not the load-bearing
+path. Switch to the issue's target branch BEFORE staging any edits:
 
 ```bash
 branch=<main|net11.0>
-git fetch --no-tags origin "${branch}"
+git fetch --no-tags origin "${branch}" || true
 git checkout -B "ci-fix/issue-${N}-attempt-${next_attempt}" "origin/${branch}"
 git rev-parse --abbrev-ref HEAD | tee /tmp/gh-aw/agent/checkedout_${N}.txt
 git rev-parse HEAD | tee /tmp/gh-aw/agent/headsha_${N}.txt
@@ -418,15 +446,10 @@ PR exists.
    correct base even though it carries no source-file diff).
 2. Make NO source-file changes. The PR body alone is the artifact.
 
-   gh-aw `create-pull-request` may require at least one file change to emit a
-   PR. If your environment confirms this, add a single allowed-files note to
-   `**/PublicAPI.Unshipped.txt` containing a no-op comment line OR drop a
-   marker file. Prefer dropping a single marker file at
-   `.github/ci-fix-handoff/<N>.md` only if `allowed-files` would not permit a
-   no-op edit elsewhere. If neither is possible without violating
-   `allowed-files`, record `skipped: cannot emit needs-human PR without
-   bypassing allowed-files` and stop (this should never trigger if
-   `allowed-files` includes a path with a low-impact marker dir).
+   The workflow sets `safe-outputs.create-pull-request.allow-empty: true`, so a
+   needs-human PR is emitted with an empty patch — no marker file, no no-op
+   edit, nothing that `allowed-files` would have to permit. Do not stage any
+   change here.
 3. Emit ONE `create_pull_request` with:
    - Title: `[ci-fix][needs-human] 5 attempts exhausted: <short failure description> (refs #<N>)`
    - Body: Step 7's needs-human template.
@@ -562,7 +585,6 @@ can aggregate them stably):
 - `per-run cap reached`
 - `branch checkout failed`
 - `branch-awareness self-check failed`
-- `cannot emit needs-human PR without bypassing allowed-files`
 
 At end of run, print this table to the agent log:
 
@@ -589,8 +611,11 @@ These look like permission errors but are physical:
 
 - **Pre-bind every URL to a shell variable**, then `curl -s "$url"`. Inline
   URLs with `?` or `&` are rejected.
-- No `>` or `-o` redirection. Use `| tee /path/to/file`.
-- No `$(...)` or `${var@P}`. Compose via `xargs -I{}` or read files inline.
+- No `>` or `-o` redirection of fetched bodies. Use `| tee /path/to/file`.
+- Command substitution into a variable (`x=$(jq ... file)`) is fine for
+  **trusted** data. NEVER substitute untrusted content (issue bodies, log
+  excerpts) into a command string — write it to a file and read it with
+  `-f` / `jq -r`. Never use the `${var@P}` parameter transform.
 - OData `$top` must be encoded as `%24top` in URLs.
 - Each bash call runs in a fresh subshell. Persist state to
   `/tmp/gh-aw/agent/<file>`.
