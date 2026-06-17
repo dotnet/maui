@@ -97,7 +97,7 @@ internal static partial class HybridWebViewHelper
 		if (OperatingSystem.IsAndroid())
 		{
 			// Deserialize once to unwrap the JSON string
-			result = JsonSerializer.Deserialize<string>(result);
+			result = JsonSerializer.Deserialize<string>(result, HybridWebViewHelperJsonContext.Default.String);
 			if (result == null)
 				return null;
 		}
@@ -124,7 +124,7 @@ internal static partial class HybridWebViewHelper
 			if (returnValue.Length >= 2 && returnValue[0] == '"' && returnValue[^1] == '"')
 			{
 				// Properly deserialize the JSON string to handle escaped characters
-				returnValue = JsonSerializer.Deserialize<string>(returnValue);
+				returnValue = JsonSerializer.Deserialize<string>(returnValue, HybridWebViewHelperJsonContext.Default.String);
 			}
 			// Otherwise it's a primitive value (number, boolean, etc.) that's already in string form
 			// No need to deserialize - just return as-is
@@ -183,6 +183,7 @@ internal static partial class HybridWebViewHelper
 	/// <summary>
 	/// Invokes a .NET method from JavaScript.
 	/// </summary>
+	[RequiresUnreferencedCode ("This method serializes arbitrary objects to JSON using unconstrained reflection.")]
 	public static async Task<byte[]?> ProcessInvokeDotNetAsync(
 		object? invokeTarget,
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type? invokeTargetType,
@@ -219,7 +220,7 @@ internal static partial class HybridWebViewHelper
 
 			var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
 			var invokeResult = CreateInvokeResult(invokeResultRaw);
-			var json = JsonSerializer.Serialize(invokeResult);
+			var json = JsonSerializer.Serialize(invokeResult, HybridWebViewHelperJsonContext.Default.DotNetInvokeResult);
 			var contentBytes = Encoding.UTF8.GetBytes(json);
 
 			return contentBytes;
@@ -236,6 +237,7 @@ internal static partial class HybridWebViewHelper
 		}
 	}
 
+	[RequiresUnreferencedCode ("This method serializes arbitrary objects to JSON using unconstrained reflection.")]
 	private static DotNetInvokeResult CreateInvokeResult(object? result)
 	{
 		// null invoke result means an empty result
