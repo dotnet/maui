@@ -54,6 +54,7 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotCliUsageLineData')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotOtelTokenMetrics')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Restore-GateResultOrFailClosed')
 }
 
 Describe 'Copilot token usage helpers' {
@@ -450,5 +451,582 @@ Describe 'ConvertTo-AzdoSafeConsole' {
 
     It 'leaves ordinary text untouched' {
         ConvertTo-AzdoSafeConsole 'Reading file src/Foo.cs (## of total)' | Should -Be 'Reading file src/Foo.cs (## of total)'
+    }
+}
+
+Describe 'Restore-GateResultOrFailClosed' {
+    BeforeEach {
+        $script:stateDir = Join-Path ([System.IO.Path]::GetTempPath()) "gate-restore-$(New-Guid)"
+        New-Item -ItemType Directory -Force -Path $script:stateDir | Out-Null
+    }
+    AfterEach {
+        Remove-Item -Recurse -Force $script:stateDir -ErrorAction SilentlyContinue
+    }
+
+    It 'returns the gate verdict when the file exists with a valid value' {
+        'PASSED' | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
+    }
+
+    It 'accepts each whitelisted value' {
+        foreach ($v in @('PASSED','FAILED','SKIPPED','SKIP_NO_TESTS')) {
+            $v | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8
+            Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be $v
+        }
+    }
+
+    It 'fails closed (throws) when the file is missing' {
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+            Should -Throw -ExpectedMessage '*failing closed*'
+    }
+
+    It 'fails closed on an unrecognised verdict value (attacker tries arbitrary string)' {
+        'GREEN' | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+            Should -Throw -ExpectedMessage "*Invalid Gate result 'GREEN'*"
+    }
+
+    It 'fails closed on an empty file' {
+        '' | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8 -NoNewline
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+            Should -Throw -ExpectedMessage '*Invalid Gate result*'
+    }
+
+    It 'trims surrounding whitespace before validating (real Set-Content adds trailing newline)' {
+        "PASSED`n" | Set-Content (Join-Path $script:stateDir 'gate-result.txt') -Encoding UTF8 -NoNewline
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
+    }
+}
+
+Describe 'Restore-GateResultOrFailClosed — F1.A HMAC verification' {
+    BeforeEach {
+        $script:stateDir = Join-Path ([System.IO.Path]::GetTempPath()) "gate-hmac-$(New-Guid)"
+        New-Item -ItemType Directory -Force -Path $script:stateDir | Out-Null
+        $script:resultFile = Join-Path $script:stateDir 'gate-result.txt'
+        $script:hmacFile = "$script:resultFile.hmac"
+        # 32-byte / 64-hex-char test key (matches `openssl rand -hex 32`).
+        $script:testKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+    }
+    AfterEach {
+        Remove-Item -Recurse -Force $script:stateDir -ErrorAction SilentlyContinue
+        Remove-Item Env:GATE_HMAC_KEY -ErrorAction SilentlyContinue
+    }
+
+    function script:Compute-TestHmac([string]$Path, [string]$KeyHex) {
+        $h = [System.Security.Cryptography.HMACSHA256]::HashData(
+            [System.Convert]::FromHexString($KeyHex),
+            [System.IO.File]::ReadAllBytes($Path))
+        [System.Convert]::ToHexString($h).ToLowerInvariant()
+    }
+
+    It 'returns verdict when HMAC is correct (param form)' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        (Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey) | Set-Content $script:hmacFile -Encoding UTF8
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey |
+            Should -Be 'PASSED'
+    }
+
+    It 'returns verdict when HMAC is correct (env form)' {
+        'FAILED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        (Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey) | Set-Content $script:hmacFile -Encoding UTF8
+        $env:GATE_HMAC_KEY = $script:testKey
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'FAILED'
+    }
+
+    It 'skips HMAC verification when key is not supplied (local dev)' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        # No .hmac file, no env var — should still succeed
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
+    }
+
+    It 'fails closed when HMAC key is supplied but .hmac file is missing' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
+            Should -Throw -ExpectedMessage '*HMAC key supplied but*missing*'
+    }
+
+    It 'fails closed when the verdict file is tampered after HMAC was sealed (forgery attack)' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        (Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey) | Set-Content $script:hmacFile -Encoding UTF8
+        # Simulate attacker overwriting verdict but unable to recompute HMAC
+        # without the key — old HMAC no longer matches the new file content.
+        'FAILED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
+            Should -Throw -ExpectedMessage '*HMAC verification failed*'
+    }
+
+    It 'fails closed when the .hmac file is forged with wrong key' {
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        $wrongKey = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+        (Compute-TestHmac -Path $script:resultFile -KeyHex $wrongKey) | Set-Content $script:hmacFile -Encoding UTF8
+        { Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey } |
+            Should -Throw -ExpectedMessage '*HMAC verification failed*'
+    }
+
+    It 'accepts openssl-format HMAC output (lowercase hex, no newline normalisation)' {
+        # `openssl dgst -sha256 -hmac KEY file | awk '{print $NF}'` produces
+        # exactly 64 lowercase hex chars. Verify our verifier accepts that
+        # without leading whitespace, prefix, or trailing newline issues.
+        'SKIPPED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        $h = Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey
+        # Set-Content -Encoding UTF8 normally appends newline → simulate that
+        # path too (the bash `echo ... > file` does the same).
+        Set-Content -Path $script:hmacFile -Value $h -Encoding UTF8
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey |
+            Should -Be 'SKIPPED'
+    }
+
+    Context 'CI_REQUIRE_GATE_HMAC contract — Attack 2 (suppress-signing downgrade)' {
+
+        AfterEach {
+            Remove-Item Env:CI_REQUIRE_GATE_HMAC -ErrorAction SilentlyContinue
+            Remove-Item Env:GATE_HMAC_KEY -ErrorAction SilentlyContinue
+        }
+
+        It 'fails closed when CI_REQUIRE_GATE_HMAC=1 and GATE_HMAC_KEY is empty (suppress-signing downgrade)' {
+            'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+            # Simulate the attack: daemon deleted gate-result.txt during the
+            # bash gating window so the `if [ -f ... ]` skipped signing and
+            # GATE_HMAC_KEY was never set. CI signals that signing is REQUIRED
+            # via CI_REQUIRE_GATE_HMAC=1 — the function must refuse to
+            # downgrade to no-verification.
+            $env:CI_REQUIRE_GATE_HMAC = '1'
+            $env:GATE_HMAC_KEY = ''
+            { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+                Should -Throw -ExpectedMessage '*Gate HMAC key missing in CI*sealing was suppressed*'
+        }
+
+        It 'fails closed when CI_REQUIRE_GATE_HMAC=1 and GATE_HMAC_KEY is whitespace' {
+            'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+            $env:CI_REQUIRE_GATE_HMAC = '1'
+            $env:GATE_HMAC_KEY = "   `t  "
+            { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+                Should -Throw -ExpectedMessage '*Gate HMAC key missing in CI*'
+        }
+
+        It 'fails closed when CI_REQUIRE_GATE_HMAC=true (string form) and key is empty' {
+            'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+            $env:CI_REQUIRE_GATE_HMAC = 'true'
+            $env:GATE_HMAC_KEY = ''
+            { Restore-GateResultOrFailClosed -StateDir $script:stateDir } |
+                Should -Throw -ExpectedMessage '*Gate HMAC key missing in CI*'
+        }
+
+        It 'still allows local dev (CI_REQUIRE_GATE_HMAC unset) with no key' {
+            'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+            # No env vars set (AfterEach cleans them up)
+            Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
+        }
+
+        It 'passes verification in CI when key + .hmac are valid' {
+            'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+            (Compute-TestHmac -Path $script:resultFile -KeyHex $script:testKey) | Set-Content $script:hmacFile -Encoding UTF8
+            $env:CI_REQUIRE_GATE_HMAC = '1'
+            $env:GATE_HMAC_KEY = $script:testKey
+            Restore-GateResultOrFailClosed -StateDir $script:stateDir | Should -Be 'PASSED'
+        }
+    }
+}
+
+Describe 'Restore-GateResultOrFailClosed — python3 ↔ .NET HMAC cross-check' {
+    BeforeAll {
+        # Locate a WORKING python interpreter the Gate task uses to seal
+        # the verdict. CI agents (ubuntu-latest, where this Pester
+        # workflow runs) always ship python3; Windows dev boxes expose it
+        # as `python` (and may have a non-functional `python3` Microsoft
+        # Store app-execution stub that must be rejected). This test
+        # deliberately does NOT skip when no interpreter is found — the
+        # security-scripts-pester gate rejects ANY skipped/inconclusive
+        # test, so a silent skip here would be a contradiction. If no
+        # working interpreter is found the test fails loudly.
+        $script:python = $null
+        $candidates = @(
+            (Get-Command python3 -ErrorAction SilentlyContinue)?.Source,
+            (Get-Command python  -ErrorAction SilentlyContinue)?.Source,
+            '/usr/bin/python3', '/usr/local/bin/python3', '/opt/homebrew/bin/python3'
+        ) | Where-Object { $_ }
+        foreach ($c in $candidates) {
+            try {
+                $v = & $c --version 2>&1
+                if ($LASTEXITCODE -eq 0 -and "$v" -match 'Python 3') { $script:python = $c; break }
+            } catch { }
+        }
+    }
+
+    BeforeEach {
+        $script:stateDir = Join-Path ([System.IO.Path]::GetTempPath()) "gate-hmac-x-$(New-Guid)"
+        New-Item -ItemType Directory -Force -Path $script:stateDir | Out-Null
+        $script:resultFile = Join-Path $script:stateDir 'gate-result.txt'
+        $script:hmacFile = "$script:resultFile.hmac"
+        $script:testKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+    }
+    AfterEach {
+        Remove-Item -Recurse -Force $script:stateDir -ErrorAction SilentlyContinue
+    }
+
+    It 'a verdict file sealed via python3 stdlib hmac verifies under the .NET verifier' {
+        $script:python | Should -Not -BeNullOrEmpty `
+            -Because 'python3 is required by the Gate HMAC seal and is present on all CI agents; a missing interpreter must fail (not skip), since the security-scripts-pester gate forbids skipped tests'
+
+        # Reproduce the Gate task byte-for-byte: write verdict, compute
+        # HMAC-SHA256 via python stdlib with the key fed on stdin (NOT
+        # argv — matches the /proc/cmdline-safe production path), write
+        # the .hmac sibling, then verify with the .NET-side verifier.
+        'PASSED' | Set-Content $script:resultFile -Encoding UTF8 -NoNewline
+        $pyScript = @'
+import sys, hmac, hashlib
+key = bytes.fromhex(sys.stdin.readline().strip())
+with open(sys.argv[1], 'rb') as f:
+    print(hmac.new(key, f.read(), hashlib.sha256).hexdigest())
+'@
+        $pyFile = Join-Path $script:stateDir 'sign.py'
+        Set-Content -Path $pyFile -Value $pyScript -Encoding UTF8
+        $hmac = ($script:testKey | & $script:python $pyFile $script:resultFile).Trim()
+        $hmac | Should -Match '^[0-9a-f]{64}$' -Because 'python stdlib hmac should produce 64 lowercase hex chars'
+        $hmac | Set-Content $script:hmacFile -Encoding UTF8
+
+        Restore-GateResultOrFailClosed -StateDir $script:stateDir -HmacKeyHex $script:testKey |
+            Should -Be 'PASSED'
+    }
+}
+
+Describe 'Review-PR.ps1 CopilotReview phase — undefined variable scan under StrictMode' {
+    # End-to-end safety: even if a future change brings back Set-StrictMode
+    # (or Pester invokes the script with strict mode), the CopilotReview
+    # phase restore must not throw "variable cannot be retrieved because
+    # it has not been set". This test simulates the exact devdiv 14313972
+    # scenario: phase-state contains gate-result.txt but NO regression-*.json
+    # files (the common case when Gate runs but finds no regression risks).
+
+    BeforeAll {
+        $script:reviewPRPath = Join-Path $PSScriptRoot 'Review-PR.ps1'
+    }
+
+    It 'compiles cleanly under Set-StrictMode Latest' {
+        # The script itself must parse without strict-mode-violations at
+        # parse time. This catches typos / clearly-undefined references.
+        $tokens = $null; $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:reviewPRPath, [ref]$tokens, [ref]$errors)
+        if ($errors -and $errors.Count -gt 0) {
+            throw "Parse errors: $($errors[0].Message)"
+        }
+        $ast | Should -Not -BeNullOrEmpty
+    }
+
+    It 'CopilotReview phased restore initializes $risksData, $regressionTests, $regrPlatform, $uitestCategories, $detectScript before any conditional restore' {
+        # Static AST check: in the nested `if ($Phase -eq 'CopilotReview')`
+        # block (inside `if ($runCopilotReview)`), all variables that the
+        # restore reads / writes conditionally must have unconditional
+        # initialization BEFORE the conditional file-presence check.
+        # Regression guard: the previous "init at top of $runCopilotReview"
+        # form clobbered Gate's in-process data in non-phased / -DryRun
+        # runs. Init lives in the phased branch only — in non-phased mode Gate has already
+        # populated these in-process.
+        $tokens = $null; $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:reviewPRPath, [ref]$tokens, [ref]$errors)
+
+        # Find the `if ($runCopilotReview)` block
+        $copilotReviewIf = $ast.FindAll(
+            { param($n)
+              $n -is [System.Management.Automation.Language.IfStatementAst] -and
+              $n.Clauses.Count -ge 1 -and
+              $n.Clauses[0].Item1.Extent.Text -match '\$runCopilotReview\b'
+            },
+            $true) | Sort-Object { $_.Extent.Text.Length } -Descending | Select-Object -First 1
+
+        $copilotReviewIf | Should -Not -BeNullOrEmpty -Because 'must find the if ($runCopilotReview) block'
+
+        # Inside it, find the nested `if ($Phase -eq 'CopilotReview')` block
+        $body = $copilotReviewIf.Clauses[0].Item2
+        $phasedIf = $body.FindAll(
+            { param($n)
+              $n -is [System.Management.Automation.Language.IfStatementAst] -and
+              $n.Clauses.Count -ge 1 -and
+              $n.Clauses[0].Item1.Extent.Text -match "\`$Phase\s*-eq\s*'CopilotReview'"
+            },
+            $false) | Select-Object -First 1
+
+        $phasedIf | Should -Not -BeNullOrEmpty -Because 'must find nested if ($Phase -eq ''CopilotReview'') block'
+
+        $phasedBody = $phasedIf.Clauses[0].Item2
+        # Walk statements up to (but not including) the first nested IfStatement
+        # (the file-presence restore branch) — assignments before that are
+        # unconditional within the phased branch.
+        $unconditionalAssigns = @()
+        foreach ($stmt in $phasedBody.Statements) {
+            if ($stmt -is [System.Management.Automation.Language.IfStatementAst]) { break }
+            $assigns = $stmt.FindAll(
+                { param($n) $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                            $n.Left -is [System.Management.Automation.Language.VariableExpressionAst] },
+                $true)
+            foreach ($a in $assigns) {
+                $unconditionalAssigns += $a.Left.VariablePath.UserPath
+            }
+        }
+
+        $required = @('risksData', 'regressionTests', 'regrPlatform', 'uitestCategories', 'detectScript')
+        foreach ($v in $required) {
+            $unconditionalAssigns | Should -Contain $v `
+                -Because "CopilotReview phased restore must initialize `$$v before the file-presence check so the script is safe under Set-StrictMode (devdiv 14313972 regression guard)"
+        }
+    }
+
+    It 'Gate phase initializes $risksData and $regressionTests before any conditional assignment' {
+        # Defense-in-depth twin of the CopilotReview phased-restore test:
+        # the Gate phase has its own `if (Test-Path $regressionRisksJson)`
+        # block that conditionally sets $risksData, then reads it later via
+        # `if ($risksData -and ...)`. Without an unconditional pre-init at
+        # the top of `if ($runGate)`, a future Set-StrictMode change (or a
+        # leak from a dot-sourced helper) would make the read throw
+        # VariablePathNotFound when risks.json is absent.
+        $tokens = $null; $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:reviewPRPath, [ref]$tokens, [ref]$errors)
+
+        $gateIf = $ast.FindAll(
+            { param($n)
+              $n -is [System.Management.Automation.Language.IfStatementAst] -and
+              $n.Clauses.Count -ge 1 -and
+              $n.Clauses[0].Item1.Extent.Text -match '\$runGate\b'
+            },
+            $true) | Sort-Object { $_.Extent.Text.Length } -Descending | Select-Object -First 1
+
+        $gateIf | Should -Not -BeNullOrEmpty -Because 'must find the if ($runGate) block'
+
+        $gateBody = $gateIf.Clauses[0].Item2
+        # Collect assignments BEFORE the first nested IfStatement — these
+        # are the unconditional top-of-block initializations.
+        $preIfAssigns = @()
+        foreach ($stmt in $gateBody.Statements) {
+            if ($stmt -is [System.Management.Automation.Language.IfStatementAst]) { break }
+            $assigns = $stmt.FindAll(
+                { param($n) $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                            $n.Left -is [System.Management.Automation.Language.VariableExpressionAst] },
+                $true)
+            foreach ($a in $assigns) {
+                $preIfAssigns += $a.Left.VariablePath.UserPath
+            }
+        }
+
+        $required = @('risksData', 'regressionTests')
+        foreach ($v in $required) {
+            $preIfAssigns | Should -Contain $v `
+                -Because "Gate must initialize `$$v unconditionally at the top of if (`$runGate) so the script is safe under Set-StrictMode when Find-RegressionRisks.ps1 fails / risks.json is absent (devdiv 14313972 bug class)"
+        }
+    }
+
+    It 'CopilotReview restore does NOT clobber Gate in-process data in non-phased runs' {
+        # Static AST check: the init of $risksData, $regressionTests, etc.
+        # must live INSIDE the `if ($Phase -eq 'CopilotReview')` branch, NOT
+        # in the outer `if ($runCopilotReview)` body. In non-phased / -DryRun
+        # runs both $runGate and $runCopilotReview are true; Gate populates
+        # these in-process and the CopilotReview block must not reset them.
+        $tokens = $null; $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:reviewPRPath, [ref]$tokens, [ref]$errors)
+
+        $copilotReviewIf = $ast.FindAll(
+            { param($n)
+              $n -is [System.Management.Automation.Language.IfStatementAst] -and
+              $n.Clauses.Count -ge 1 -and
+              $n.Clauses[0].Item1.Extent.Text -match '\$runCopilotReview\b'
+            },
+            $true) | Sort-Object { $_.Extent.Text.Length } -Descending | Select-Object -First 1
+
+        $body = $copilotReviewIf.Clauses[0].Item2
+        # Scan the ENTIRE outer body — both before AND after the nested
+        # `if ($Phase -eq 'CopilotReview')` branch — for assignments to
+        # the 5 phase-restored vars. Excludes the phased-if's own subtree
+        # (where the assignments ARE allowed).
+        $forbidden = @('risksData', 'regressionTests', 'regrPlatform', 'uitestCategories', 'detectScript')
+        # Locate the nested `if ($Phase -eq 'CopilotReview')` to exclude its
+        # subtree. There may legitimately be other IfStatements in the
+        # outer body — we only exclude the phased one.
+        $phasedIf = $body.FindAll(
+            { param($n)
+              $n -is [System.Management.Automation.Language.IfStatementAst] -and
+              $n.Clauses.Count -ge 1 -and
+              $n.Clauses[0].Item1.Extent.Text -match "\`$Phase\s*-eq\s*'CopilotReview'"
+            },
+            $false) | Select-Object -First 1
+        $phasedIfStartOffset = if ($phasedIf) { $phasedIf.Extent.StartOffset } else { -1 }
+        $phasedIfEndOffset   = if ($phasedIf) { $phasedIf.Extent.EndOffset }   else { -1 }
+
+        # Walk the whole outer body. For each AssignmentStatement to a
+        # forbidden name, check whether its source location is inside the
+        # phased-if's extent — if so, allowed; otherwise, leaked.
+        $leakedAssigns = @()
+        $allAssigns = $body.FindAll(
+            { param($n) $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                        $n.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                        ($forbidden -contains $n.Left.VariablePath.UserPath) },
+            $true)
+        foreach ($a in $allAssigns) {
+            $insidePhased = ($phasedIfStartOffset -ge 0) -and
+                            ($a.Extent.StartOffset -ge $phasedIfStartOffset) -and
+                            ($a.Extent.EndOffset   -le $phasedIfEndOffset)
+            if (-not $insidePhased) {
+                $leakedAssigns += "$($a.Left.VariablePath.UserPath) at offset $($a.Extent.StartOffset)"
+            }
+        }
+        $leakedAssigns | Should -BeNullOrEmpty `
+            -Because 'these 5 vars are Gate''s in-process outputs; any assignment in if ($runCopilotReview) outer scope (NOT inside the nested `$Phase -eq ''CopilotReview''` branch) clobbers non-phased / -DryRun runs (devdiv 14313972 class)'
+    }
+
+    It 'no script DOT-SOURCED into Review-PR.ps1 sets script-scope StrictMode / preference vars at top level' {
+        # Scan only the helpers Review-PR.ps1 actually dot-sources (via `. $var`
+        # at script scope). These leak state into Review-PR.ps1; other shared
+        # scripts that are only ever launched as `pwsh -File` subprocesses do
+        # not.
+        $tokens = $null; $errors = $null
+        $reviewAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $script:reviewPRPath, [ref]$tokens, [ref]$errors)
+
+        # Find all dot-source CommandAst at script scope:
+        #   `. $varHoldingPath`  or  `. "string-path"`
+        # Then resolve each path. The right-hand expression is typically a
+        # variable like $sanitizerScript that was assigned `Join-Path ...`
+        # to a file under $ScriptsDir/shared.
+        $dotSources = $reviewAst.FindAll(
+            { param($n)
+              $n -is [System.Management.Automation.Language.CommandAst] -and
+              $n.InvocationOperator -eq [System.Management.Automation.Language.TokenKind]::Dot
+            },
+            $true)
+
+        $sharedDir = Join-Path (Split-Path $script:reviewPRPath -Parent) 'shared'
+        $sourced = New-Object System.Collections.Generic.HashSet[string]
+        foreach ($ds in $dotSources) {
+            $arg = $ds.CommandElements | Select-Object -First 1
+            if (-not $arg) { continue }
+            # Resolve `$xxxScript` to its assigned value by string-grep on the script text
+            if ($arg -is [System.Management.Automation.Language.VariableExpressionAst]) {
+                $varName = $arg.VariablePath.UserPath
+                # Find an assignment $varName = Join-Path ... "shared/XYZ.ps1"
+                $assigns = $reviewAst.FindAll(
+                    { param($n) $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                                $n.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                                $n.Left.VariablePath.UserPath -eq $varName },
+                    $true)
+                foreach ($a in $assigns) {
+                    $rhsText = $a.Right.Extent.Text
+                    if ($rhsText -match '"shared[/\\]([^"]+\.ps1)"') {
+                        $leaf = $Matches[1]
+                        $fp = Join-Path $sharedDir $leaf
+                        if (Test-Path $fp) { $null = $sourced.Add($fp) }
+                    }
+                }
+            }
+        }
+
+        $sourced.Count | Should -BeGreaterThan 0 -Because 'must find at least one dot-sourced helper'
+
+        $leakingPattern = 'Set-StrictMode|Set-PSDebug|\$(?:Error|Warning|Verbose|Debug|Information|Progress|Confirm|WhatIf)ActionPreference\s*=|\[Environment\]::SetEnvironmentVariable|^\s*New-Alias|^\s*Set-Alias'
+
+        $violations = @()
+        foreach ($f in $sourced) {
+            $ftokens = $null; $ferrs = $null
+            $fileAst = [System.Management.Automation.Language.Parser]::ParseFile(
+                $f, [ref]$ftokens, [ref]$ferrs)
+            if (-not $fileAst) { continue }
+            $scriptBlock = $fileAst.EndBlock
+            if (-not $scriptBlock) { continue }
+            foreach ($stmt in $scriptBlock.Statements) {
+                if ($stmt -is [System.Management.Automation.Language.FunctionDefinitionAst]) { continue }
+                if ($stmt.Extent.Text -match $leakingPattern) {
+                    $violations += "$(Split-Path $f -Leaf):$($stmt.Extent.StartLineNumber): $($stmt.Extent.Text.Substring(0, [Math]::Min(80, $stmt.Extent.Text.Length)).Trim())"
+                }
+            }
+        }
+
+        $violations | Should -BeNullOrEmpty `
+            -Because 'no dot-sourced helper may modify parent-script state at top level (devdiv 14313972 root cause class). Move the setting into a function, or guard by `$MyInvocation.InvocationName -ne "."`'
+    }
+}
+
+Describe 'winner.json reporting — StrictMode property-presence guard' {
+    # AST assertion against the PRODUCTION source — not a copied guard.
+    # A previous form ran tests against a duplicate inline $guardBlock;
+    # if production code reverted to broken `if ($winnerJson)`, those
+    # tests still passed because they exercised the COPY. This version
+    # walks the AST of the actual Review-PR.ps1, so a regression flips
+    # the test red.
+
+    BeforeAll {
+        $reviewPRPath = Join-Path $PSScriptRoot 'Review-PR.ps1'
+        $tokens = $null; $errors = $null
+        $script:reviewAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            $reviewPRPath, [ref]$tokens, [ref]$errors)
+    }
+
+    It 'production code guards winner.json access with property-presence check (not just object truthiness)' {
+        # Find the if-block that wraps the "🏆 winner.json:" Write-Host —
+        # that's the diagnostic whose guard must be StrictMode-safe. We
+        # search by BODY (not by condition referencing $winnerJson) so
+        # the test handles both inline guards and helper-variable forms
+        # like `if ($hasWinner) { ... 🏆 winner.json: ... }`.
+        $allIfs = $script:reviewAst.FindAll(
+            { param($n) $n -is [System.Management.Automation.Language.IfStatementAst] },
+            $true)
+        $diagnosticIf = $allIfs | Where-Object {
+            $_.Clauses[0].Item2.Extent.Text -match 'winner\.json:\s*winner='
+        } | Sort-Object { $_.Extent.Text.Length } | Select-Object -First 1
+
+        $diagnosticIf | Should -Not -BeNullOrEmpty `
+            -Because 'expected to find the if-block writing "🏆 winner.json: winner=" in Review-PR.ps1'
+
+        # Acceptable: condition is the property-presence check inline, OR
+        # condition references a helper variable defined in an enclosing
+        # scope using the property-presence check.
+        $conditionText = $diagnosticIf.Clauses[0].Item1.Extent.Text
+        $hasInlineGuard = $conditionText -match 'PSObject\.Properties\.Name\s+-contains\s+''winner'''
+
+        $hasHelperGuard = $false
+        if (-not $hasInlineGuard) {
+            $varMatch = [regex]::Match($conditionText, '\$(\w+)')
+            if ($varMatch.Success) {
+                $varName = $varMatch.Groups[1].Value
+                $parent = $diagnosticIf.Parent
+                while ($parent -and -not ($parent -is [System.Management.Automation.Language.ScriptBlockAst])) {
+                    $parent = $parent.Parent
+                }
+                if ($parent) {
+                    $assigns = $parent.FindAll(
+                        { param($n) $n -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                                    $n.Left -is [System.Management.Automation.Language.VariableExpressionAst] -and
+                                    $n.Left.VariablePath.UserPath -eq $varName },
+                        $true)
+                    foreach ($a in $assigns) {
+                        if ($a.Extent.StartOffset -lt $diagnosticIf.Extent.StartOffset -and
+                            $a.Extent.Text -match 'PSObject\.Properties\.Name\s+-contains\s+''winner''') {
+                            $hasHelperGuard = $true
+                            break
+                        }
+                    }
+                }
+            }
+        }
+
+        ($hasInlineGuard -or $hasHelperGuard) | Should -BeTrue `
+            -Because 'the winner.json diagnostic must guard property access with `PSObject.Properties.Name -contains ''winner''`. Bare `if ($winnerJson)` throws PropertyNotFoundException under StrictMode on partial-object input.'
+    }
+
+    It 'the property-presence guard pattern itself works under StrictMode (interaction sanity check)' {
+        # Validates only that .NET / PowerShell semantics of
+        # `.PSObject.Properties.Name -contains 'winner'` behave as expected
+        # under StrictMode — not the production code itself. Catches a
+        # future PS regression where the pattern stops short-circuiting.
+        $partial = '{"score":0.8}' | ConvertFrom-Json
+        $full    = '{"winner":"with-fix","isPRFix":true}' | ConvertFrom-Json
+        $check = {
+            param($j)
+            Set-StrictMode -Version Latest
+            $j -and ($j.PSObject.Properties.Name -contains 'winner')
+        }
+        (& $check $partial) | Should -BeFalse
+        (& $check $full)    | Should -BeTrue
+        (& $check $null)    | Should -BeFalse
     }
 }

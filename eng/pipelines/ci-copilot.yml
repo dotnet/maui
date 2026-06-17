@@ -58,6 +58,18 @@ variables:
     value: $(System.DefaultWorkingDirectory)/.appium/
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)/logs
+  # Pre-declared as empty so that the `$(GATE_HMAC_KEY)` /
+  # `$(CI_REQUIRE_GATE_HMAC)` macros in CopilotReview / Post `env:` blocks
+  # resolve to '' on platforms where the Gate task does NOT call
+  # `##vso[task.setvariable]` for them (Windows / macOS). AzDO macro syntax
+  # leaves UNDEFINED variables as the literal text `$(name)` — a non-empty
+  # string that would force Restore-GateResultOrFailClosed into the HMAC-
+  # verify branch and throw on the missing `.hmac` file. The Linux Gate
+  # path overrides these via setvariable with isReadOnly=true.
+  - name: GATE_HMAC_KEY
+    value: ''
+  - name: CI_REQUIRE_GATE_HMAC
+    value: ''
 
 stages:
   - stage: ReviewPR
@@ -658,7 +670,47 @@ stages:
           - bash: |
               echo "═══ TASK 2: GATE ═══"
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              # Review-PR.ps1 writes gate-result.txt to the parent of
+              # $TrustedScriptsDir (Split-Path -Parent), i.e. the staging
+              # root — so seal the HMAC into that SAME directory.
+              STATE="$(Build.ArtifactStagingDirectory)"
 
+              set -o pipefail
+
+              # The HMAC-seal + orphan-reap is Linux-specific (POSIX process
+              # groups, /proc, pgrep). Skip on Windows/macOS agents where
+              # those tools aren't reliably installed; downstream Restore
+              # picks up the empty CI_REQUIRE_GATE_HMAC via propagation
+              # and skips HMAC verification on those platforms (pre-#35804
+              # behavior, no regression).
+              if [[ "$(uname)" == "Linux" ]]; then
+                # Set the contract FIRST — even if the preflights below
+                # fail, downstream Post (which runs unconditionally) must
+                # fail closed instead of silently downgrading to local-dev.
+                # `isReadOnly=true` blocks override via PR-controlled
+                # `##vso[setvariable]` echoes captured from bash logs.
+                echo "##vso[task.setvariable variable=CI_REQUIRE_GATE_HMAC;isReadOnly=true]1"
+
+                command -v pgrep >/dev/null 2>&1 || {
+                  echo "##vso[task.logissue type=error]Gate: pgrep missing on Linux agent — refusing to run without orphan-reap verification."
+                  echo "##vso[task.setvariable variable=GateFailed]true"
+                  exit 1
+                }
+                command -v python3 >/dev/null 2>&1 || {
+                  echo "##vso[task.logissue type=error]Gate: python3 missing on Linux agent — required for in-memory HMAC."
+                  echo "##vso[task.setvariable variable=GateFailed]true"
+                  exit 1
+                }
+              fi
+
+              # Bash job control (`set -m`) puts the backgrounded pwsh in its
+              # own process group so we can reap descendants by PGID after
+              # `wait`. Linux-only; on other OSes pwsh backgrounds in the
+              # same PGID (no orphan-reap capability, but `wait` still
+              # captures the exit code correctly).
+              if [[ "$(uname)" == "Linux" ]]; then
+                set -m
+              fi
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
                 -PRNumber "${PARAM_PR_NUMBER}" \
@@ -666,9 +718,89 @@ stages:
                 -Phase Gate \
                 -TrustedScriptsDir "$TRUSTED" \
                 -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
-                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md" &
+              PWSH_PID=$!
+              wait "$PWSH_PID"
               GATE_EXIT=$?
               set -e
+              if [[ "$(uname)" == "Linux" ]]; then
+                set +m
+              fi
+
+              # Linux-only orphan-reap + HMAC sealing. The kill is PROCESS
+              # HYGIENE — same-UID setsid'd daemons in their own PGID escape
+              # and can still forge gate-result.txt between Review-PR's
+              # trusted write and the HMAC sign below. Full Attack-1
+              # closure needs container/cgroup isolation (out of scope).
+              # The HMAC contract closes Attack 2 (suppress signing) only.
+              #
+              # RESIDUAL RISK (un-mitigated by this surface): a setsid'd
+              # PR-spawned daemon that escapes the PGID kill can read
+              # /proc/*/environ during Tasks 3 / 4 (same agent, same UID)
+              # and exfiltrate any tokens passed via env:. True closure
+              # requires Tasks 2 / 3 / 4 to run as separate AzDO jobs with
+              # clean agent state — out of scope for this fix.
+              if [[ "$(uname)" == "Linux" ]]; then
+                # PID-reuse note: by the time we reach here `wait` has
+                # already reaped the pwsh leader, so its PID *could* in
+                # principle be recycled. The kernel does NOT recycle a
+                # PGID while any process remains in the group, so in the
+                # case we actually care about — an orphan still alive —
+                # `-${PWSH_PID}` unambiguously targets our group. The
+                # only window is the benign case (group already empty, so
+                # nothing to kill); to avoid signalling an unrelated
+                # freshly-recycled group leader in that window, only
+                # signal when pgrep still sees live members of the group.
+                if [[ "${PWSH_PID}" =~ ^[0-9]+$ ]] && pgrep -g "${PWSH_PID}" >/dev/null 2>&1; then
+                  kill -KILL -- "-${PWSH_PID}" 2>/dev/null || true
+                fi
+                # Poll up to 5s for SIGKILL delivery (zombies under load
+                # take time to reap by PID 1).
+                for _ in 1 2 3 4 5; do
+                  pgrep -g "${PWSH_PID}" >/dev/null 2>&1 || break
+                  sleep 1
+                done
+                if pgrep -g "${PWSH_PID}" >/dev/null 2>&1; then
+                  echo "##vso[task.logissue type=error]Gate: orphaned PR-spawned processes survived SIGKILL — refusing to seal state."
+                  echo "##vso[task.setvariable variable=GateFailed]true"
+                  exit 1
+                fi
+
+                # NOTE (adaptation): the reference seal chmod -R a-w'd a
+                # dedicated phase-state subdir before/after writing the
+                # .hmac. Here $STATE is the staging ROOT (where Review-PR
+                # writes gate-result.txt), so recursively locking it would
+                # break Tasks 3 / 4. The HMAC itself authenticates the
+                # verdict, so we skip the best-effort chmod lock.
+
+                # Generate key and HMAC in python3. Key transits via stdin
+                # only — never via argv (would leak via /proc/<pid>/cmdline)
+                # or env (would leak via /proc/<pid>/environ).
+                if [ ! -f "$STATE/gate-result.txt" ]; then
+                  echo "##vso[task.logissue type=error]Gate: gate-result.txt missing after Gate phase — failing closed."
+                  echo "##vso[task.setvariable variable=GateFailed]true"
+                  exit 1
+                fi
+                GATE_HMAC_KEY=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+                if [ "${#GATE_HMAC_KEY}" -ne 64 ]; then
+                  echo "##vso[task.logissue type=error]Gate: key generator produced ${#GATE_HMAC_KEY} chars (expected 64)."
+                  echo "##vso[task.setvariable variable=GateFailed]true"
+                  exit 1
+                fi
+                HMAC_VAL=$(python3 -c "
+              import sys, hmac, hashlib
+              key = bytes.fromhex(sys.stdin.readline().strip())
+              with open(sys.argv[1], 'rb') as f:
+                  print(hmac.new(key, f.read(), hashlib.sha256).hexdigest())
+              " "$STATE/gate-result.txt" <<< "$GATE_HMAC_KEY")
+                if [ "${#HMAC_VAL}" -ne 64 ]; then
+                  echo "##vso[task.logissue type=error]Gate: HMAC produced ${#HMAC_VAL} chars (expected 64) — refusing to seal."
+                  echo "##vso[task.setvariable variable=GateFailed]true"
+                  exit 1
+                fi
+                echo "$HMAC_VAL" > "$STATE/gate-result.txt.hmac"
+                echo "##vso[task.setvariable variable=GATE_HMAC_KEY;issecret=true;isReadOnly=true]$GATE_HMAC_KEY"
+              fi
 
               if [ $GATE_EXIT -ne 0 ]; then
                 echo "##vso[task.logissue type=warning]Gate phase exited with code $GATE_EXIT"
@@ -713,6 +845,12 @@ stages:
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
+              GATE_HMAC_KEY: $(GATE_HMAC_KEY)
+              # Job-level variable default is '' (see top of file). On Linux,
+              # Gate's setvariable overrides with '1'. On Windows/macOS the
+              # default holds → Restore skips HMAC verification (pre-#35804
+              # behavior on those platforms, no regression).
+              CI_REQUIRE_GATE_HMAC: $(CI_REQUIRE_GATE_HMAC)
 
           # ─────────────────────────────────────────────────────────
           #  Task 4 — POST: gate comment, AI summary, labels.
@@ -745,6 +883,8 @@ stages:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               DEFER_COMMENT_TO_STAGE3: "true"
+              GATE_HMAC_KEY: $(GATE_HMAC_KEY)
+              CI_REQUIRE_GATE_HMAC: $(CI_REQUIRE_GATE_HMAC)
 
           # Copy review artifacts into the CopilotLogs staging dir.
           # Uses pwsh (not bash) so paths resolve correctly on Windows.
