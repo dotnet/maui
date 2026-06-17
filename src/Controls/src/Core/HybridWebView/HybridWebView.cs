@@ -15,15 +15,15 @@ namespace Microsoft.Maui.Controls
 	public class HybridWebView : View, IHybridWebView
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
-		public static readonly BindableProperty DefaultFileProperty =
-			BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
+		public static readonly BindableProperty DefaultFileProperty;
 		/// <summary>Bindable property for <see cref="HybridRoot"/>.</summary>
-		public static readonly BindableProperty HybridRootProperty =
-			BindableProperty.Create(nameof(HybridRoot), typeof(string), typeof(HybridWebView), defaultValue: "wwwroot");
+		public static readonly BindableProperty HybridRootProperty;
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
 		static HybridWebView()
 		{
+			DefaultFileProperty = BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
+			HybridRootProperty = BindableProperty.Create(nameof(HybridRoot), typeof(string), typeof(HybridWebView), defaultValue: "wwwroot");
 		}
 
 		/// <inheritdoc/>
