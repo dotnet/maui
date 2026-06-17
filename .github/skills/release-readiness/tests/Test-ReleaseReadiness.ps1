@@ -2674,6 +2674,9 @@ $missingLbls = [PSCustomObject]@{ number = 12345 }            # no labels proper
 $nullLbls    = [PSCustomObject]@{ number = 22222; labels = $null }
 $emptyLbls   = [PSCustomObject]@{ number = 33333; labels = @() }
 $hashLbls    = [PSCustomObject]@{ number = 44444; labels = @(@{ name = 'p/0' }) }   # hashtable-shaped labels
+$hashPrP0    = @{ number = 55555; labels = @(@{ name = 'p/0' }, @{ name = 'area-xaml' }) }  # whole PR is a hashtable (test-mock shape)
+$hashPrNonP0 = @{ number = 66666; labels = @(@{ name = 'p/1' }) }                            # hashtable PR, no p/0
+$hashPrNoLbl = @{ number = 77777 }                                                          # hashtable PR, no labels key
 
 Assert-Eq -Label "p/0-labelled PR → blocker"                  -Expected $true  -Actual (Test-IsP0Pr $p0Pr)
 Assert-Eq -Label "non-p/0 PR (has p/1) → not a blocker"       -Expected $false -Actual (Test-IsP0Pr $nonP0Pr)
@@ -2682,6 +2685,11 @@ Assert-Eq -Label "PR with null labels → false"                -Expected $false
 Assert-Eq -Label "PR with empty labels → false"               -Expected $false -Actual (Test-IsP0Pr $emptyLbls)
 Assert-Eq -Label "hashtable-shaped labels still matched"      -Expected $true  -Actual (Test-IsP0Pr $hashLbls)
 Assert-Eq -Label "null PR → false (no throw)"                 -Expected $false -Actual (Test-IsP0Pr $null)
+# Whole-PR-as-hashtable (IDictionary) shape: common in test mocks; must not
+# silently return $false (a hashtable's PSObject.Properties has no 'labels').
+Assert-Eq -Label "hashtable PR with p/0 → blocker (IDictionary path)"  -Expected $true  -Actual (Test-IsP0Pr $hashPrP0)
+Assert-Eq -Label "hashtable PR without p/0 → not a blocker"            -Expected $false -Actual (Test-IsP0Pr $hashPrNonP0)
+Assert-Eq -Label "hashtable PR missing labels key → false (no throw)"  -Expected $false -Actual (Test-IsP0Pr $hashPrNoLbl)
 
 # Carve-out semantics: the p/0 subset is selected, and the generic (WATCH)
 # bucket has them removed — exactly what the engine does before hoisting.

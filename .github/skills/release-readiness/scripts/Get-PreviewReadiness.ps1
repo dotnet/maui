@@ -698,12 +698,21 @@ function Test-IsP0Pr {
         Mirrors the issue-side p/0 detection so a p/0-labelled PR targeting the
         release branch is surfaced as a blocker (not buried in the generic PR
         WATCH count). StrictMode-safe: a PR with a missing or null `labels`
-        property yields an empty array (-> $false) instead of throwing.
+        property yields an empty array (-> $false) instead of throwing. Accepts
+        both PSCustomObject (the production `gh ... --json` shape) and
+        IDictionary/hashtable (the shape test mocks commonly use), mirroring the
+        dual-shape handling in Get-ReleaseReadiness.ps1.
     #>
     param($PR)
 
     if (-not $PR) { return $false }
-    $labels = if ($PR.PSObject.Properties['labels']) { $PR.labels } else { $null }
+    $labels = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('labels')) { $PR['labels'] } else { $null }
+    } elseif ($PR.PSObject.Properties['labels']) {
+        $PR.labels
+    } else {
+        $null
+    }
     if (-not $labels) { return $false }
     return (@($labels | ForEach-Object { $_.name }) -contains 'p/0')
 }
@@ -1237,6 +1246,7 @@ $report = [PSCustomObject]@{
     MaestroPullRequests   = $maestroPRs
     ReleasePullRequests   = $targetHumanPRs
     P0PullRequests        = $p0Prs
+    MergeUpPullRequests   = $mergeUpPRs
     InflightPullRequests  = $inflightHumanPRs
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
@@ -1328,9 +1338,12 @@ if ($highPriorityRows.Count -gt 0) {
 # Surface aggregate BLOCKED checks (e.g. CI red, versions.props not bumped).
 # The high-priority categories above already enumerate individual items,
 # so exclude them here to avoid duplicate rows under two separate headings.
+# Every Area whose items are hoisted into 🔴 High-priority items must be listed
+# here (Maestro PRs are hoisted as '📦 Maestro PR' rows, so they belong too).
 $highPriorityCheckAreas = @(
     'P/0 priority blockers',
     'P/0 release-branch PRs',
+    'Maestro PRs',
     "Merge-up PRs (main → $SurveyRef)"
 )
 $blockingChecks = @($checks | Where-Object {
