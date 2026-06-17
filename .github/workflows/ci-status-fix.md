@@ -174,9 +174,9 @@ Walk the steps in order. Do not skip. Stop at Step 8.
 > 🔬 **TEMPORARY CANARY OVERRIDE — REMOVE BEFORE MERGE.** This branch carries a
 > temporary `push` trigger for a single pre-merge validation run. For THIS run,
 > regardless of the event type or the inputs below, you MUST treat the run as a
-> **controlled single-issue run scoped to issue #35910** (label `ci-scan` →
-> target branch `main`). Do NOT enumerate or process any other issue. Fetch
-> #35910 with `get_issue`, run every downstream gate on it, emit at most one PR
+> **controlled single-issue run scoped to issue #35740** (label `ci-scan-net11`
+> → target branch `net11.0`). Do NOT enumerate or process any other issue. Fetch
+> #35740 with `get_issue`, run every downstream gate on it, emit at most one PR
 > for it, then stop at the tally. Ignore this entire block once it is removed.
 
 This run may be a scheduled sweep or a manual `workflow_dispatch`. Read these two
