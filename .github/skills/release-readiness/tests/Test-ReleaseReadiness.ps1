@@ -2636,6 +2636,49 @@ $t19 = Get-ExpectedShipDate -ReferenceDate ([DateTime]'2026-06-11') -PatchVersio
 Assert-Eq -Label "T19: patch=81 + MainBumpDate → asap-hotfix"     -Expected 'asap-hotfix'     -Actual $t19.Cadence
 Assert-Eq -Label "T19: missedWindow = false for hotfix"           -Expected $false            -Actual $t19.MissedWindow
 
+# =========================================================================
+# Test-IsP0Pr — preview engine p/0 PR blocker classification
+# =========================================================================
+# Regression guard for the gap where p/0-labelled PRs targeting a preview
+# release branch were NOT surfaced as blockers (only p/0 *issues* were).
+# gh issue list --label p/0 never returns PRs, so p/0 PRs (e.g. #34758,
+# #35626 against net11.0) rendered as generic "Needs review or triage"
+# WATCH rows. Test-IsP0Pr is the predicate that carves them out for hoisting.
+Write-Host "`n[Unit] Test-IsP0Pr — p/0 PR blocker classification" -ForegroundColor Cyan
+
+# Dot-source the preview engine to access its helpers without running the
+# main driver (the InvocationName guard returns on dot-source). A valid
+# -Branch is required to satisfy the mandatory parameter + branch parse.
+$prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
+. $prevScript -Branch 'release/11.0.1xx-preview6'
+
+$p0Pr        = [PSCustomObject]@{ number = 34758; labels = @([PSCustomObject]@{ name = 'p/0' }, [PSCustomObject]@{ name = 'area-xaml' }) }
+$nonP0Pr     = [PSCustomObject]@{ number = 99999; labels = @([PSCustomObject]@{ name = 'area-xaml' }, [PSCustomObject]@{ name = 'p/1' }) }
+$missingLbls = [PSCustomObject]@{ number = 12345 }            # no labels property at all
+$nullLbls    = [PSCustomObject]@{ number = 22222; labels = $null }
+$emptyLbls   = [PSCustomObject]@{ number = 33333; labels = @() }
+$hashLbls    = [PSCustomObject]@{ number = 44444; labels = @(@{ name = 'p/0' }) }   # hashtable-shaped labels
+
+Assert-Eq -Label "p/0-labelled PR → blocker"                  -Expected $true  -Actual (Test-IsP0Pr $p0Pr)
+Assert-Eq -Label "non-p/0 PR (has p/1) → not a blocker"       -Expected $false -Actual (Test-IsP0Pr $nonP0Pr)
+Assert-Eq -Label "PR missing labels property → false (StrictMode-safe)" -Expected $false -Actual (Test-IsP0Pr $missingLbls)
+Assert-Eq -Label "PR with null labels → false"                -Expected $false -Actual (Test-IsP0Pr $nullLbls)
+Assert-Eq -Label "PR with empty labels → false"               -Expected $false -Actual (Test-IsP0Pr $emptyLbls)
+Assert-Eq -Label "hashtable-shaped labels still matched"      -Expected $true  -Actual (Test-IsP0Pr $hashLbls)
+Assert-Eq -Label "null PR → false (no throw)"                 -Expected $false -Actual (Test-IsP0Pr $null)
+
+# Carve-out semantics: the p/0 subset is selected, and the generic (WATCH)
+# bucket has them removed — exactly what the engine does before hoisting.
+$mixedPrs = @($p0Pr, $nonP0Pr, $hashLbls, $emptyLbls)
+$p0Subset = @($mixedPrs | Where-Object { Test-IsP0Pr $_ })
+$p0Nums   = @($p0Subset | ForEach-Object { $_.number })
+$generic  = @($mixedPrs | Where-Object { $p0Nums -notcontains $_.number })
+Assert-Eq -Label "carve-out: 2 of 4 PRs are p/0"              -Expected 2     -Actual $p0Subset.Count
+Assert-Eq -Label "carve-out: p/0 subset contains #34758"      -Expected $true -Actual ($p0Nums -contains 34758)
+Assert-Eq -Label "carve-out: p/0 subset contains #44444"      -Expected $true -Actual ($p0Nums -contains 44444)
+Assert-Eq -Label "carve-out: generic bucket excludes p/0 PRs" -Expected 2     -Actual $generic.Count
+Assert-Eq -Label "carve-out: generic bucket keeps #99999"     -Expected $true -Actual (@($generic | ForEach-Object { $_.number }) -contains 99999)
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

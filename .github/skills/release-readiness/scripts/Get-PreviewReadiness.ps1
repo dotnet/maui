@@ -690,6 +690,24 @@ function Get-PRAction {
     return [PSCustomObject]@{ Status = "WATCH"; Action = "Needs review or triage."; Age = $ageDays }
 }
 
+function Test-IsP0Pr {
+    <#
+    .SYNOPSIS
+        True when a PR object carries the release-blocking 'p/0' label.
+    .DESCRIPTION
+        Mirrors the issue-side p/0 detection so a p/0-labelled PR targeting the
+        release branch is surfaced as a blocker (not buried in the generic PR
+        WATCH count). StrictMode-safe: a PR with a missing or null `labels`
+        property yields an empty array (-> $false) instead of throwing.
+    #>
+    param($PR)
+
+    if (-not $PR) { return $false }
+    $labels = if ($PR.PSObject.Properties['labels']) { $PR.labels } else { $null }
+    if (-not $labels) { return $false }
+    return (@($labels | ForEach-Object { $_.name }) -contains 'p/0')
+}
+
 function New-Check {
     param(
         [string]$Area,
@@ -872,6 +890,11 @@ function Add-CiScanTable {
 # MAIN — gather checks
 # ===================================================================
 
+# Guard: skip the main driver when dot-sourced so tests can load the helper
+# functions (e.g. Test-IsP0Pr) without invoking the full report flow, which
+# requires git + gh + network. Mirrors Find-ReleaseReadinessTrackers.ps1.
+if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
+
 $checks = @()
 
 # --- Target branch existence ---
@@ -999,6 +1022,16 @@ $mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
 $mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
 $targetHumanPRs = @($targetHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
 
+# Carve out P/0-labelled release-branch PRs so they are surfaced as blockers in
+# the hoisted "🔴 High-priority items" section (alongside P/0 issues) instead of
+# being buried in the generic "Release branch PRs" WATCH count. A PR whose base
+# IS the survey ref is release-relevant by definition, so — unlike issues — no
+# title/milestone relevance filter is needed. Labels are already fetched by
+# Get-OpenPullRequests, so this needs no extra API call.
+$p0Prs = @($targetHumanPRs | Where-Object { Test-IsP0Pr $_ })
+$p0PrNumbers = @($p0Prs | ForEach-Object { $_.number })
+$targetHumanPRs = @($targetHumanPRs | Where-Object { $p0PrNumbers -notcontains $_.number })
+
 if ($maestroPRs.Count -eq 0) {
     $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details "No open Maestro PRs target ``$SurveyRef`` or ``$mainBranch``." -NextAction "Continue monitoring for new dependency-flow PRs."
 } elseif (@($maestroPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count -gt 0) {
@@ -1016,7 +1049,15 @@ if ($targetHumanPRs.Count -eq 0) {
     # noise: the captain decides per-PR if any specific one MUST merge.
     $blockedCount = @($targetHumanPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count
     $blockedNote = if ($blockedCount -gt 0) { " ($blockedCount with merge conflicts / do-not-merge label)" } else { "" }
-    $checks += New-Check -Area "Release branch PRs" -Status "WATCH" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``$blockedNote. Not auto-blocking — only P/0 issues block shipment." -NextAction "Confirm which PRs (if any) must merge for the release; the rest can ride normal queue cadence."
+    $checks += New-Check -Area "Release branch PRs" -Status "WATCH" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``$blockedNote. Not auto-blocking — only P/0 issues and P/0-labelled PRs block shipment." -NextAction "Confirm which PRs (if any) must merge for the release; the rest can ride normal queue cadence."
+}
+
+# P/0-labelled PRs targeting the release branch are blockers (parallel to P/0
+# issues). They are itemized in the hoisted "🔴 High-priority items" section.
+if ($p0Prs.Count -gt 0) {
+    $checks += New-Check -Area "P/0 release-branch PRs" -Status "BLOCKED" -Details "$($p0Prs.Count) open P/0-labelled PR(s) target ``$SurveyRef``. See 🔴 High-priority items at top." -NextAction "Land or de-prioritize each P/0 PR before shipping."
+} else {
+    $checks += New-Check -Area "P/0 release-branch PRs" -Status "READY" -Details "No open P/0-labelled PRs target ``$SurveyRef``." -NextAction "No action required."
 }
 
 # Inflight watch only matters when survey != inflight (otherwise it
@@ -1215,11 +1256,14 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("")
 
 # === HIGH-PRIORITY ITEMS (hoisted to the very top) ===
-# Three categories the release captain must see BEFORE anything else:
+# Four categories the release captain must see BEFORE anything else:
 #   1. P/0 priority blockers — open issues labeled p/0 (release-blocking severity).
-#   2. Maestro dependency-flow PRs — open Maestro PRs against the survey ref.
+#   2. P/0 release-branch PRs — open PRs labeled p/0 targeting the survey ref.
+#      A p/0 PR is an explicitly release-blocking change that must land (or be
+#      de-prioritized) before shipping.
+#   3. Maestro dependency-flow PRs — open Maestro PRs against the survey ref.
 #      A stuck Maestro PR blocks all upstream dependency flow into this branch.
-#   3. Merge-up PRs (main → survey ref) — daily-flow sync PRs whose head ref
+#   4. Merge-up PRs (main → survey ref) — daily-flow sync PRs whose head ref
 #      matches `merge/...-to-...` or title starts with "[automated] Merge branch".
 #      A stuck merge-up PR accumulates conflicts and starves the release branch
 #      of new fixes from main.
@@ -1233,6 +1277,16 @@ foreach ($iss in $p0Issues) {
         title = $iss.title
         actor = if ($iss.milestone -and $iss.milestone.title) { $iss.milestone.title } else { '' }
         nextAction = 'Resolve or downgrade before shipping.'
+    })
+}
+foreach ($pr in $p0Prs) {
+    $action = Get-PRAction -PR $pr
+    [void]$highPriorityRows.Add(@{
+        kind = '🔥 P/0 PR'
+        link = "[#$($pr.number)]($($pr.url))"
+        title = $pr.title
+        actor = "base ``$($pr.baseRefName)``, $($action.Age)d old"
+        nextAction = $action.Action
     })
 }
 foreach ($pr in $maestroPRs) {
@@ -1259,7 +1313,7 @@ foreach ($pr in $mergeUpPRs) {
 if ($highPriorityRows.Count -gt 0) {
     [void]$md.AppendLine("## 🔴 High-priority items — $($highPriorityRows.Count) item(s)")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_P/0 issues, Maestro PRs, and ``main`` → ``$SurveyRef`` merge-up PRs. Resolve these before treating the release as ready._")
+    [void]$md.AppendLine("_P/0 issues, P/0 PRs, Maestro PRs, and ``main`` → ``$SurveyRef`` merge-up PRs. Resolve these before treating the release as ready._")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("| Kind | Item | Title | Context | Next action |")
     [void]$md.AppendLine("|------|------|-------|---------|-------------|")
@@ -1271,10 +1325,11 @@ if ($highPriorityRows.Count -gt 0) {
 
 # === BLOCKING SUMMARY (hoisted to top) ===
 # Surface aggregate BLOCKED checks (e.g. CI red, versions.props not bumped).
-# The three high-priority categories above already enumerate individual items,
+# The high-priority categories above already enumerate individual items,
 # so exclude them here to avoid duplicate rows under two separate headings.
 $highPriorityCheckAreas = @(
     'P/0 priority blockers',
+    'P/0 release-branch PRs',
     "Merge-up PRs (main → $SurveyRef)"
 )
 $blockingChecks = @($checks | Where-Object {
