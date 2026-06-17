@@ -1,5 +1,8 @@
 ---
 description: Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
+
+environment: gh-aw-agents
+
 on:
   # pull_request_target is intentionally disabled — we don't want auto-runs on PR create/update.
   # pull_request_target:
