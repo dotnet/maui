@@ -1,0 +1,147 @@
+#!/usr/bin/env pwsh
+#Requires -Modules Pester
+
+# Unit tests for the pure helpers in Find-RegressionFixPRs.ps1. The script has a
+# Main body that calls `gh`; to test the helpers in isolation we parse the file
+# and Invoke-Expression only the named functions (the Main body never runs).
+
+BeforeAll {
+    $scriptPath = Join-Path $PSScriptRoot 'Find-RegressionFixPRs.ps1'
+    $tokens = $null
+    $parseErrors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
+    if ($parseErrors -and $parseErrors.Count -gt 0) {
+        throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
+    }
+
+    foreach ($functionName in @(
+            'Test-IsRegressionLabel',
+            'Get-LinkedIssueNumbers',
+            'Get-IntroducingPrReferences',
+            'Get-RegressionPrTagsFromText',
+            'Test-CandidateIsNew')) {
+        $function = $ast.Find({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Name -eq $functionName
+            }, $true)
+        if (-not $function) { throw "Function '$functionName' not found" }
+        Invoke-Expression $function.Extent.Text
+    }
+}
+
+Describe 'Test-IsRegressionLabel' {
+    It 'matches the definitive fix-PR label' {
+        Test-IsRegressionLabel 'i/regression' | Should -BeTrue
+    }
+    It 'matches versioned regressed-in labels' {
+        Test-IsRegressionLabel 'regressed-in-10.0.60' | Should -BeTrue
+        Test-IsRegressionLabel 'regressed-in-9.0.0-rc.1' | Should -BeTrue
+    }
+    It 'does not match unrelated or near-miss labels' {
+        Test-IsRegressionLabel 't/bug' | Should -BeFalse
+        Test-IsRegressionLabel 'i/regression-candidate' | Should -BeFalse
+        Test-IsRegressionLabel 'area-regression' | Should -BeFalse
+        Test-IsRegressionLabel '' | Should -BeFalse
+    }
+}
+
+Describe 'Get-LinkedIssueNumbers' {
+    It 'extracts Fixes/Closes/Resolves references' {
+        $body = "Fixes #35280`nAlso Closes #100 and resolves #200"
+        $result = Get-LinkedIssueNumbers $body
+        $result | Should -Contain 35280
+        $result | Should -Contain 100
+        $result | Should -Contain 200
+    }
+    It 'extracts full-URL closing references' {
+        $body = 'Fixes https://github.com/dotnet/maui/issues/34910'
+        Get-LinkedIssueNumbers $body | Should -Contain 34910
+    }
+    It 'deduplicates repeated references' {
+        (Get-LinkedIssueNumbers "Fixes #5`nfixes #5").Count | Should -Be 1
+    }
+    It 'returns empty for null/empty body' {
+        @(Get-LinkedIssueNumbers $null).Count | Should -Be 0
+        @(Get-LinkedIssueNumbers '').Count | Should -Be 0
+    }
+    It 'does not treat a bare mention as a closing reference' {
+        @(Get-LinkedIssueNumbers 'see #999 for context') | Should -Not -Contain 999
+    }
+}
+
+Describe 'Get-IntroducingPrReferences' {
+    It 'extracts "regression from #N"' {
+        Get-IntroducingPrReferences 'This is a regression from #31567.' | Should -Contain 31567
+    }
+    It 'extracts "introduced by #N" and "introduced in PR #N"' {
+        Get-IntroducingPrReferences 'Introduced by #29101' | Should -Contain 29101
+        Get-IntroducingPrReferences 'introduced in PR #40000' | Should -Contain 40000
+    }
+    It 'extracts "caused by #N" and "broke in #N"' {
+        Get-IntroducingPrReferences 'caused by #123' | Should -Contain 123
+        Get-IntroducingPrReferences 'this broke in #456' | Should -Contain 456
+    }
+    It 'extracts "regressed in #N"' {
+        Get-IntroducingPrReferences 'regressed in #789' | Should -Contain 789
+    }
+    It 'is case-insensitive' {
+        Get-IntroducingPrReferences 'REGRESSION FROM #321' | Should -Contain 321
+    }
+    It 'returns distinct values in first-seen order' {
+        $r = Get-IntroducingPrReferences 'regression from #10. Also introduced by #20. regression from #10 again.'
+        @($r) | Should -Be @(10, 20)
+    }
+    It 'does not match a plain "fixes #N" issue reference' {
+        @(Get-IntroducingPrReferences 'Fixes #35280') | Should -Not -Contain 35280
+        @(Get-IntroducingPrReferences 'Fixes #35280').Count | Should -Be 0
+    }
+    It 'returns empty for null/empty text' {
+        @(Get-IntroducingPrReferences $null).Count | Should -Be 0
+        @(Get-IntroducingPrReferences '').Count | Should -Be 0
+    }
+}
+
+Describe 'Get-RegressionPrTagsFromText' {
+    It 'extracts quoted regression_pr tag values' {
+        $yaml = @"
+  - name: gradient-alpha-forced-opaque
+    tags:
+      regression_pr: "31567"
+      regression_issue: "35280"
+"@
+        Get-RegressionPrTagsFromText $yaml | Should -Contain 31567
+    }
+    It 'extracts unquoted values too' {
+        Get-RegressionPrTagsFromText "      regression_pr: 29101" | Should -Contain 29101
+    }
+    It 'collects multiple tags across a file' {
+        $yaml = "regression_pr: `"31567`"`nregression_pr: `"29101`""
+        $r = Get-RegressionPrTagsFromText $yaml
+        $r | Should -Contain 31567
+        $r | Should -Contain 29101
+    }
+    It 'does not match regression_issue or other keys' {
+        @(Get-RegressionPrTagsFromText '      regression_issue: "35280"').Count | Should -Be 0
+    }
+    It 'returns empty for null/empty text' {
+        @(Get-RegressionPrTagsFromText $null).Count | Should -Be 0
+    }
+}
+
+Describe 'Test-CandidateIsNew' {
+    It 'is new when the introducing PR is not in the corpus' {
+        Test-CandidateIsNew -IntroducingPr 40000 -FixPr 41000 -ExistingNumbers @(31567, 29101) | Should -BeTrue
+    }
+    It 'is NOT new when the introducing PR is already covered' {
+        Test-CandidateIsNew -IntroducingPr 31567 -FixPr 35299 -ExistingNumbers @(31567, 29101) | Should -BeFalse
+    }
+    It 'is NOT new when the fix PR itself is already covered' {
+        Test-CandidateIsNew -IntroducingPr 40000 -FixPr 31567 -ExistingNumbers @(31567) | Should -BeFalse
+    }
+    It 'is new (for human attribution) when the introducing PR is unresolved' {
+        Test-CandidateIsNew -IntroducingPr $null -FixPr 41000 -ExistingNumbers @(31567) | Should -BeTrue
+    }
+    It 'handles an empty corpus' {
+        Test-CandidateIsNew -IntroducingPr 1 -FixPr 2 -ExistingNumbers @() | Should -BeTrue
+    }
+}
