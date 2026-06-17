@@ -437,6 +437,22 @@ namespace Microsoft.Maui.Controls.Platform
 		// This is only applicable when the Border has TapGestureRecognizers attached
 		void ContentPanelOnKeyDown(object sender, KeyRoutedEventArgs e)
 		{
+			// Only handle events originating directly from the ContentPanel (i.e. the Border itself is focused).
+			// KeyDown is a bubbling routed event; without this guard a child element's unhandled Enter/Space
+			// would bubble up and spuriously fire the Border's TapGestureRecognizer.
+			if (!ReferenceEquals(e.OriginalSource, sender))
+			{
+				return;
+			}
+
+			// Ignore auto-repeat events fired while the key is held down.
+			// KeyDown fires repeatedly for a single held key press; we only want to act once per press,
+			// consistent with Android's OnKeyPress which acts on KeyEventActions.Up.
+			if (e.KeyStatus.WasKeyDown)
+			{
+				return;
+			}
+
 			if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Space)
 			{
 				if (Element is View view)
