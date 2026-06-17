@@ -101,7 +101,14 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 
 			if (wrapper?.VirtualView is View view)
 			{
-				view.BindingContext = templateContext.Item ?? _view.BindingContext;
+				// For header/footer contexts the item can legitimately be null (standalone
+				// header with no group), so fall back to the parent ItemsView.BindingContext.
+				// For regular data items a null entry must stay null so the cell renders
+				// blank — matching CV1 behaviour and avoiding the parent viewmodel leaking
+				// into the cell when the source contains null elements.
+				view.BindingContext = (templateContext.IsHeader || templateContext.IsFooter)
+					? (templateContext.Item ?? _view.BindingContext)
+					: templateContext.Item;
 				_view.AddLogicalChild(view);
 
 				// Sync the CommonStates VSM group to match actual selection state on every
