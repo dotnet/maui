@@ -86,27 +86,17 @@ namespace Microsoft.Maui.Controls.Handlers
             get => _shellSection.CurrentItem is not null ? new ShellContentTab(_shellSection.CurrentItem) : null;
             set
             {
-                if (value is ShellContentTab tab && tab.Content != _shellSection.CurrentItem)
-                {
-                    // Use ProposeNavigation to fire Shell.Navigating event and support cancellation,
-                    // matching ShellSectionRenderer behavior for ShellContent changes.
-                    var shell = _shellSection.FindParentOfType<Shell>();
-                    if (shell is not null)
-                    {
-                        var shellItem = _shellSection.Parent as ShellItem;
-                        var stack = _shellSection.Stack.ToList();
-                        bool accepted = ((IShellController)shell).ProposeNavigation(
-                            ShellNavigationSource.ShellContentChanged,
-                            shellItem, _shellSection, tab.Content, stack, true);
-
-                        if (!accepted)
-                        {
-                            return;
-                        }
-                    }
-
-                    _shellSection.CurrentItem = tab.Content;
-                }
+                // Intentionally a no-op. For Shell top tabs, the navigation proposal
+                // (ProposeNavigation) and CurrentItem update are handled exclusively by
+                // ViewPagerPageChangeCallback.OnPageSelected on ShellSectionHandler.
+                //
+                // TabbedViewManager.TabSelected calls this setter on tab tap, but
+                // TabLayoutMediator also drives VP2 to the new position in the same
+                // tap, which fires OnPageSelected. If we called ProposeNavigation here
+                // AND in OnPageSelected, Shell.Navigating would fire twice per tap.
+                //
+                // By keeping this setter empty, OnPageSelected is the single authority
+                // for ShellContent navigation proposals — one Navigating event per tap.
             }
         }
 

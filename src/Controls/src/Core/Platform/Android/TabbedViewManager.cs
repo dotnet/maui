@@ -295,6 +295,11 @@ internal class TabbedViewManager
 
             if (_managesViewPager)
             {
+                // Re-register page change callback. It was unregistered in the cleanup branch
+                // above (SetElement(null) path). TabbedPage retains its TabbedPageManager across
+                // a same-MauiContext handler reconnect, so without re-registration, swiping
+                // between tabs stops updating CurrentTab and the bottom-nav selection.
+                _viewPager.RegisterOnPageChangeCallback(_listeners);
                 SetTabLayout();
             }
         }
@@ -1385,7 +1390,17 @@ internal class TabbedViewManager
             {
                 if (_manager._bottomNavigationView.SelectedItemId != item.ItemId && _manager.Element.Tabs.Count > item.ItemId)
                 {
+                    var previousIndex = _manager.Element.CurrentTabIndex;
                     _manager.Element.CurrentTab = _manager.Element.Tabs[item.ItemId];
+
+                    // If the navigation was cancelled (e.g. Shell.Navigating → e.Cancel()),
+                    // CurrentTabIndex stays at the previous value. Return false so Android
+                    // reverts the BottomNavigationView highlight to the original tab.
+                    if (_manager.Element.CurrentTabIndex == previousIndex)
+                    {
+                        return false;
+                    }
+
                     _manager.OnTabSelected?.Invoke(item.ItemId);
                 }
             }

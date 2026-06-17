@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers
         Page? _rootPage;
         int _navigationContainerId;
         ShellContentStackNavigationView? _navigationViewAdapter;
+        ShellSection? _subscribedShellSection; // Cached at subscribe time for reliable unsubscribe
 
         // Default constructor required by Android's FragmentManager for fragment restoration.
         // When FragmentStateAdapter (ViewPager2) saves and restores fragment state during tab switches,
@@ -63,6 +64,20 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_navigationContainer is not null)
             {
+                // Re-subscribe to NavigationRequested if it was unsubscribed in OnDestroyView.
+                // This handles the case where the fragment's view is destroyed and recreated
+                // (e.g., ViewPager2 offscreen recycling) — without this, navigation silently stops.
+                if (!_subscribedToNavigationRequested)
+                {
+                    var parentSection = _shellContent?.Parent as ShellSection;
+                    if (parentSection is not null)
+                    {
+                        _subscribedShellSection = parentSection;
+                        ((IShellSectionController)parentSection).NavigationRequested += OnNavigationRequested;
+                        _subscribedToNavigationRequested = true;
+                    }
+                }
+
                 // Check if NavHostFragment needs recreation
                 var existingNavHost = ChildFragmentManager.FindFragmentById(_navigationContainerId);
                 if (existingNavHost is null && _stackNavigationManager is not null)
@@ -440,10 +455,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_subscribedToNavigationRequested)
             {
-                var shellSection = _shellContent?.Parent as ShellSection;
-                if (shellSection is not null)
+                if (_subscribedShellSection is not null)
                 {
-                    ((IShellSectionController)shellSection).NavigationRequested -= OnNavigationRequested;
+                    ((IShellSectionController)_subscribedShellSection).NavigationRequested -= OnNavigationRequested;
                 }
                 _subscribedToNavigationRequested = false;
             }
@@ -459,10 +473,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 if (_subscribedToNavigationRequested)
                 {
-                    var shellSection = _shellContent?.Parent as ShellSection;
-                    if (shellSection is not null)
+                    if (_subscribedShellSection is not null)
                     {
-                        ((IShellSectionController)shellSection).NavigationRequested -= OnNavigationRequested;
+                        ((IShellSectionController)_subscribedShellSection).NavigationRequested -= OnNavigationRequested;
                     }
                     _subscribedToNavigationRequested = false;
                 }
@@ -472,6 +485,7 @@ namespace Microsoft.Maui.Controls.Handlers
                 _stackNavigationManager?.Disconnect();
                 _stackNavigationManager = null;
                 _navigationContainer = null;
+                _subscribedShellSection = null;
                 _rootPage = null;
             }
             base.Dispose(disposing);

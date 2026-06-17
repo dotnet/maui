@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers
         IShellContext? _shellContext;
         IShellSectionController SectionController => (IShellSectionController)VirtualView;
         IShellTabLayoutAppearanceTracker? _tabLayoutAppearanceTracker;
+        Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable removal
         LinearLayout? _rootLayout;
         ViewPager2? _viewPager;
         TabLayout? _contentTabLayout;
@@ -40,6 +41,13 @@ namespace Microsoft.Maui.Controls.Handlers
         TabbedViewManager? _tabbedViewManager;
         ShellSectionTabbedViewAdapter? _shellSectionAdapter;
         ViewPagerPageChangeCallback? _pageChangedCallback;
+
+        /// <summary>
+        /// Internal accessor for the ViewPager2 instance. Used by ViewPagerPageChangeCallback
+        /// to revert the pager position when navigation is cancelled (PlatformView is the
+        /// LinearLayout root, not the ViewPager2).
+        /// </summary>
+        internal ViewPager2? ViewPager => _viewPager;
 
         /// <summary>
         /// Gets the toolbar tracker from the parent ShellItemHandler.
@@ -271,6 +279,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var shell = VirtualView.FindParentOfType<Shell>();
             if (shell is not null)
             {
+                _registeredShell = shell;
                 ((IShellController)shell).AddAppearanceObserver(this, VirtualView);
             }
 
@@ -446,11 +455,12 @@ namespace Microsoft.Maui.Controls.Handlers
             // Cleanup TabLayout
             _contentTabLayout = null;
 
-            // Unregister appearance observer
-            var shell = VirtualView?.FindParentOfType<Shell>();
-            if (shell is not null)
+            // Unregister appearance observer (use cached Shell reference for reliable removal
+            // even when VirtualView has already been detached from Shell.Items)
+            if (_registeredShell is not null)
             {
-                ((IShellController)shell).RemoveAppearanceObserver(this);
+                ((IShellController)_registeredShell).RemoveAppearanceObserver(this);
+                _registeredShell = null;
             }
 
             // Dispose TabLayout appearance tracker
@@ -813,14 +823,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
             var newCurrentItem = visibleItems[position];
 
+            // Skip if already on this content (e.g. programmatic GoToAsync set CurrentItem
+            // before VP2 moved, or MapCurrentItem drove VP2 to the correct position).
             if (newCurrentItem == virtualView.CurrentItem)
             {
                 return;
             }
 
-            // Call ProposeNavigation before changing CurrentItem, matching ShellSectionRenderer behavior.
-            // This fires the Navigating event BEFORE the content switch so Shell.CurrentPage
-            // still reflects the old page. Without this, Navigating never fires for ShellContent changes.
+            // This is the single authority for ShellContent navigation proposals.
+            // The ShellSectionTabbedViewAdapter.CurrentTab setter is intentionally a no-op
+            // to avoid double Shell.Navigating events on tab tap (TabSelected + OnPageSelected
+            // both fire for the same user action via TabLayoutMediator).
             var shell = virtualView.FindParentOfType<Shell>();
             if (shell is not null)
             {
@@ -841,7 +854,7 @@ namespace Microsoft.Maui.Controls.Handlers
                         {
                             _handler.PlatformView?.Post(() =>
                             {
-                                (_handler.PlatformView as ViewPager2)?.SetCurrentItem(currentPosition, false);
+                                _handler.ViewPager?.SetCurrentItem(currentPosition, false);
                             });
                         }
                     }

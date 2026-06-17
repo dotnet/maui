@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers
         IShellContext? _shellContext;
         Fragment? _parentFragment; // The wrapper fragment that hosts this handler
         IShellBottomNavViewAppearanceTracker? _appearanceTracker;
+        Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
         ShellSection? _shellSection;
         Page? _displayedPage;
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
@@ -826,12 +827,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _displayedPage = null;
 
-            // Unregister appearance observer
-            var shell = VirtualView?.FindParentOfType<Shell>();
-
-            if (shell is not null)
+            // Unregister appearance observer (use cached Shell reference for reliable removal
+            // even when VirtualView has already been detached from Shell.Items)
+            if (_registeredShell is not null)
             {
-                ((IShellController)shell).RemoveAppearanceObserver(this);
+                ((IShellController)_registeredShell).RemoveAppearanceObserver(this);
+                _registeredShell = null;
             }
 
             // Dispose per-item appearance tracker (ConnectHandler recreates for new item)
@@ -951,6 +952,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var shell = VirtualView?.FindParentOfType<Shell>();
             if (shell is not null)
             {
+                _registeredShell = shell;
                 ((IShellController)shell).AddAppearanceObserver(this, VirtualView);
             }
         }
@@ -1222,7 +1224,7 @@ namespace Microsoft.Maui.Controls.Handlers
     {
         IList<ShellSection> _sections;
         readonly IShellContext _shellContext;
-        readonly Dictionary<int, IShellSectionRenderer> _renderers = new Dictionary<int, IShellSectionRenderer>();
+        readonly Dictionary<ShellSection, IShellSectionRenderer> _renderers = new Dictionary<ShellSection, IShellSectionRenderer>();
         long _itemIdCounter;
         readonly Dictionary<ShellSection, long> _sectionIds = new Dictionary<ShellSection, long>();
 
@@ -1283,24 +1285,15 @@ namespace Microsoft.Maui.Controls.Handlers
                 _sectionIds.Remove(section);
 
             // Only dispose renderers for sections that are being removed.
-            // Renderers for surviving sections must NOT be disposed — their fragments
-            // are still active in ViewPager2. Position mappings are invalidated anyway
-            // since indices shift, so we clear the dict and let CreateFragment re-cache.
-            var removedRenderers = new List<IShellSectionRenderer>();
-
-            foreach (var kvp in _renderers)
+            // Surviving sections keep their renderers tracked — FragmentStateAdapter
+            // reuses their fragments (stable IDs) and never re-invokes CreateFragment.
+            foreach (var section in toRemove)
             {
-                if (!newSections.Contains(kvp.Value.ShellSection))
+                if (_renderers.TryGetValue(section, out var renderer))
                 {
-                    removedRenderers.Add(kvp.Value);
+                    renderer.Dispose();
+                    _renderers.Remove(section);
                 }
-            }
-
-            _renderers.Clear();
-
-            foreach (var renderer in removedRenderers)
-            {
-                renderer.Dispose();
             }
 
             _sections = newSections;
@@ -1311,12 +1304,12 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             var section = _sections[position];
 
-            // Create or reuse section renderer
-            if (!_renderers.TryGetValue(position, out var renderer))
+            // Create or reuse section renderer (keyed by ShellSection for stable tracking)
+            if (!_renderers.TryGetValue(section, out var renderer))
             {
                 renderer = _shellContext.CreateShellSectionRenderer(section);
                 renderer.ShellSection = section;
-                _renderers[position] = renderer;
+                _renderers[section] = renderer;
             }
 
             // Get the fragment from the renderer
@@ -1330,7 +1323,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public IShellSectionRenderer? GetRenderer(int position)
         {
-            _renderers.TryGetValue(position, out var renderer);
+            if (position < 0 || position >= _sections.Count)
+            {
+                return null;
+            }
+
+            _renderers.TryGetValue(_sections[position], out var renderer);
             return renderer;
         }
     }
