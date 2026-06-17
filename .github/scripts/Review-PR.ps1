@@ -1175,7 +1175,7 @@ function Invoke-CopilotStep {
                         }
 
                         # Build a short display name for long tool names
-                        $displayName = $toolName -replace '^github-mcp-server-', 'gh/'
+                        $displayName = ConvertTo-AzdoSafeConsole ($toolName -replace '^github-mcp-server-', 'gh/')
 
                         # Pick the most useful detail from arguments
                         $detail = $args_.description ?? $args_.intent ?? ''
