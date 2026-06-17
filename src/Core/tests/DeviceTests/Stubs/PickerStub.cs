@@ -11,9 +11,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color TitleColor { get; set; }
 
-		public Color BorderColor { get; set; }
-		public Thickness BorderThickness { get; set; }
-
 		public IList<string> Items { get; set; } = new List<string>();
 
 		IList _itemsSource;
