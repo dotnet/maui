@@ -26,9 +26,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ToolbarExtensions
 	{
-		static ColorStateList? _defaultTitleTextColor;
-		static int? _defaultNavigationIconColor;
-
 		// Track which ToolbarItem should currently be associated with each MenuItem ID to prevent race conditions
 		// This prevents stale async icon loading callbacks from updating the wrong toolbar items during navigation
 		static readonly ConcurrentDictionary<int, WeakReference<ToolbarItem>> _menuItemToolbarItemMap = new();
@@ -188,8 +185,7 @@ namespace Microsoft.Maui.Controls.Platform
 				nativeToolbar.BackgroundTintList = null;
 				nativeToolbar.UpdateBackground(barBackground);
 			}
-
-			nativeToolbar.UpdateSystemChrome(toolbar);
+			nativeToolbar.UpdateBarTextColor(toolbar);
 		}
 
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -205,20 +201,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// Because we use the same toolbar across multiple navigation pages (think tabbed page with nested NavigationPage)
 			// We need to reset the toolbar text color to the default color when it's unset
-			if (_defaultTitleTextColor == null)
-			{
-				var context = nativeToolbar.Context?.GetThemedContext();
-				_defaultTitleTextColor = PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
-					Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
-			}
-
 			if (textColor != null)
 			{
 				nativeToolbar.SetTitleTextColor(textColor.ToPlatform().ToArgb());
 			}
-			else if (_defaultTitleTextColor != null)
+			else if (GetDefaultForegroundColor() is { } defaultForegroundColor)
 			{
-				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
+				nativeToolbar.SetTitleTextColor(defaultForegroundColor.ToPlatform().ToArgb());
+			}
+			else if (GetDefaultTitleTextColor(nativeToolbar) is { } defaultTitleTextColor)
+			{
+				nativeToolbar.SetTitleTextColor(defaultTitleTextColor);
 			}
 
 			nativeToolbar.UpdateNavigationIconColor(toolbar);
@@ -250,14 +243,46 @@ namespace Microsoft.Maui.Controls.Platform
 				var textColor = toolbar.BarTextColor;
 				if (textColor != null)
 				{
-					_defaultNavigationIconColor ??= icon.Color;
 					icon.Color = textColor.ToPlatform().ToArgb();
 				}
-				else if (_defaultNavigationIconColor != null)
+				else if (GetDefaultForegroundColor() is { } defaultForegroundColor)
 				{
-					icon.Color = _defaultNavigationIconColor.Value;
+					icon.Color = defaultForegroundColor.ToPlatform().ToArgb();
+				}
+				else if (GetDefaultNavigationIconColor(nativeToolbar) is int defaultNavigationIconColor)
+				{
+					icon.Color = defaultNavigationIconColor;
 				}
 			}
+		}
+
+		static Color? GetDefaultForegroundColor()
+		{
+			return Application.Current?.RequestedTheme switch
+			{
+				ApplicationModel.AppTheme.Light => Colors.Black,
+				ApplicationModel.AppTheme.Dark => Colors.White,
+				_ => null
+			};
+		}
+
+		static ColorStateList? GetDefaultTitleTextColor(AToolbar nativeToolbar)
+		{
+			var context = nativeToolbar.Context?.GetThemedContext();
+			return PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
+				Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
+		}
+
+		static int? GetDefaultNavigationIconColor(AToolbar nativeToolbar)
+		{
+			var context = nativeToolbar.Context?.GetThemedContext() ?? nativeToolbar.Context;
+			if (context is null)
+			{
+				return null;
+			}
+
+			using var icon = new DrawerArrowDrawable(context);
+			return icon.Color;
 		}
 
 		static void UpdateOverflowIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -267,7 +292,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor;
+			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor ?? GetDefaultForegroundColor();
 			if (iconColor is null)
 			{
 				overflowIcon.ClearColorFilter();
