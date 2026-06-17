@@ -20,10 +20,6 @@ namespace Microsoft.Maui;
 /// Helper class containing all business logic for HybridWebView operations.
 /// Keeps both Controls and Handler layers thin by centralizing processing logic.
 /// </summary>
-[RequiresUnreferencedCode("HybridWebView uses dynamic System.Text.Json serialization features.")]
-#if !NETSTANDARD
-[RequiresDynamicCode("HybridWebView uses dynamic System.Text.Json serialization features.")]
-#endif
 internal static partial class HybridWebViewHelper
 {
 	/// <summary>
