@@ -3,8 +3,11 @@
 <#
 .SYNOPSIS
     Pester tests for Fix-MilestoneDrift.ps1.
-    Tests the pure functions (milestone mapping, matching, linked-issue extraction)
-    without hitting GitHub or Git.
+    Most tests cover the pure functions (milestone mapping, matching, linked-issue
+    extraction) and never touch GitHub or Git. One block — 'Get-RefinedReleaseMilestone
+    — git integration (unmocked)' — builds a disposable LOCAL git repo in a temp dir to
+    exercise the real `git tag -l` / `git merge-base --is-ancestor` plumbing end-to-end;
+    it still never touches GitHub (no `gh`, no network) and is skipped if git is absent.
 
 .EXAMPLE
     Invoke-Pester ./Fix-MilestoneDrift.Tests.ps1
@@ -1383,5 +1386,95 @@ Describe 'Get-OnBranchShaFromLog — grep fallback subject precision' {
 
     It 'returns null for empty input' {
         Get-OnBranchShaFromLog @() 42 | Should -BeNullOrEmpty
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Git-backed integration block (no mocks, no GitHub).
+#
+# Everything above mocks Get-AllTags / Test-CommitInTag so the resolution logic
+# can be tested in isolation. This block instead builds a throwaway LOCAL git
+# repo in a temp dir and calls the REAL, unmocked helpers, so the actual
+# `git tag -l` and `git merge-base --is-ancestor` plumbing is exercised
+# end-to-end. It never touches GitHub (no `gh`, no network) and never mutates
+# the checkout it runs from — every git command is scoped with `git -C $tmp`.
+# Skipped cleanly when git is not on PATH.
+# ---------------------------------------------------------------------------
+Describe 'Get-RefinedReleaseMilestone — git integration (unmocked)' -Skip:(-not (Get-Command git -ErrorAction SilentlyContinue)) {
+
+    BeforeAll {
+        $script:tmp = Join-Path ([IO.Path]::GetTempPath()) "miletest-$(New-Guid)"
+        New-Item -ItemType Directory -Path $script:tmp -Force | Out-Null
+
+        # Disposable repo with a deterministic identity; nothing global is touched.
+        git -C $script:tmp init -q
+        git -C $script:tmp config user.email 'milestone-test@example.invalid'
+        git -C $script:tmp config user.name  'Milestone Test'
+        git -C $script:tmp config commit.gpgsign false
+
+        # Build a linear history of empty commits and tag the SR-family drops:
+        #   c0 -> 10.0.70 (SR7 base)
+        #   c1 -> 10.0.71 (SR7.1)   <-- the commit under test
+        #   c2 -> 10.0.72 (SR7.2)
+        #   c3 -> (untagged, ships in the NEXT drop)
+        git -C $script:tmp commit -q --allow-empty -m 'SR7 base drop'
+        $script:shaBase = (git -C $script:tmp rev-parse HEAD).Trim()
+        git -C $script:tmp tag '10.0.70'
+
+        git -C $script:tmp commit -q --allow-empty -m 'fix shipped in SR7.1 (#35694)'
+        $script:shaFix = (git -C $script:tmp rev-parse HEAD).Trim()
+        git -C $script:tmp tag '10.0.71'
+
+        git -C $script:tmp commit -q --allow-empty -m 'SR7.2 drop'
+        git -C $script:tmp tag '10.0.72'
+
+        git -C $script:tmp commit -q --allow-empty -m 'not yet tagged'
+        $script:shaUntagged = (git -C $script:tmp rev-parse HEAD).Trim()
+    }
+
+    AfterAll {
+        if ($script:tmp -and (Test-Path $script:tmp)) {
+            Remove-Item -Recurse -Force $script:tmp -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'resolves a commit to the EARLIEST family tag that contains it (SR7.1, not SR7.2)' {
+        # shaFix is contained in 10.0.71 AND 10.0.72, but the earliest wins.
+        Get-RefinedReleaseMilestone '.NET 10 SR7' $script:shaFix $script:tmp |
+            Should -Be '.NET 10 SR7.1'
+    }
+
+    It 'resolves a commit that only shipped in the base drop to the base SR (SR7)' {
+        # shaBase is the commit tagged 10.0.70 — earliest containing family tag.
+        Get-RefinedReleaseMilestone '.NET 10 SR7' $script:shaBase $script:tmp |
+            Should -Be '.NET 10 SR7'
+    }
+
+    It 'predicts the next sub-patch for a commit not yet in any family tag (SR7.3)' {
+        # shaUntagged sits after 10.0.72; base SR already shipped, so it lands in
+        # the next drop: latest family tag .72 -> predict .73 -> SR7.3.
+        Get-RefinedReleaseMilestone '.NET 10 SR7' $script:shaUntagged $script:tmp |
+            Should -Be '.NET 10 SR7.3'
+    }
+
+    It 'leaves a non-SR milestone untouched even when family tags exist' {
+        Get-RefinedReleaseMilestone '.NET 10 Preview 3' $script:shaFix $script:tmp |
+            Should -Be '.NET 10 Preview 3'
+    }
+
+    It 'Test-CommitInTag returns $true when the commit IS contained in the tag' {
+        Test-CommitInTag $script:shaFix '10.0.71' $script:tmp | Should -BeTrue
+    }
+
+    It 'Test-CommitInTag returns $false when the commit is NOT contained (exit 1)' {
+        # shaFix shipped in .71 — it is not an ancestor of the earlier .70 tag.
+        Test-CommitInTag $script:shaFix '10.0.70' $script:tmp | Should -BeFalse
+    }
+
+    It 'Test-CommitInTag THROWS on a git error (bad object, exit > 1)' {
+        # A well-formed but non-existent 40-hex SHA makes git fatal (exit 128),
+        # which must surface as an exception rather than a silent "not contained".
+        $bogus = 'deadbeef' * 5   # 40 hex chars, resolves to nothing
+        { Test-CommitInTag $bogus '10.0.70' $script:tmp } | Should -Throw
     }
 }
