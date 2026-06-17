@@ -49,6 +49,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var span = Math.Max(1, MaximumRowsOrColumns);
 			var isVerticalOrientation = Orientation == Orientation.Horizontal;
 
+			// Compute the per-cell cross-axis size so items are measured at their actual
+			// arranged width (not the full viewport width), giving correct wrapping heights.
+			Size regularMeasureSize;
+			if (isVerticalOrientation)
+			{
+				double totalSpacing = MinColumnSpacing * (span - 1);
+				double cellWidth = Math.Max(0, (availableSize.Width - totalSpacing) / span);
+				regularMeasureSize = new Size(cellWidth, availableSize.Height);
+			}
+			else
+			{
+				double totalSpacing = MinRowSpacing * (span - 1);
+				double cellHeight = Math.Max(0, (availableSize.Height - totalSpacing) / span);
+				regularMeasureSize = new Size(availableSize.Width, cellHeight);
+			}
+
 			EnsureBandCache(context, span, isVerticalOrientation);
 			var realizationRange = GetRealizationIndexRange(context, span, isVerticalOrientation);
 
@@ -58,9 +74,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			for (int i = realizationRange.start; i <= realizationRange.end; i++)
 			{
 				var element = context.GetOrCreateElementAt(i);
-				element.Measure(availableSize);
-
 				bool isHeaderOrFooter = IsHeaderOrFooter(element);
+
+				// Headers span full cross-axis; regular items use their cell size.
+				element.Measure(isHeaderOrFooter ? availableSize : regularMeasureSize);
 				double primaryExtent = isVerticalOrientation ? element.DesiredSize.Height : element.DesiredSize.Width;
 
 				if (isHeaderOrFooter)
@@ -73,10 +90,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
+			// Invalidate the band cache without resetting estimates, so the grown values
+			// are used in the rebuild rather than the default 48/36 px constants.
 			bool changed = UpdateEstimates(isVerticalOrientation, maxMeasuredRegular, maxMeasuredHeader);
 			if (changed)
 			{
-				InvalidateBandCache();
+				_bandCacheValid = false;
 				EnsureBandCache(context, span, isVerticalOrientation);
 			}
 
@@ -169,7 +188,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (UpdateEstimates(isVerticalOrientation, maxMeasuredRegular, maxMeasuredHeader))
 			{
-				InvalidateBandCache();
+				// Invalidate without resetting estimates so the grown values survive into
+				// the next rebuild rather than reverting to the 48/36 px defaults.
+				_bandCacheValid = false;
 			}
 
 			if (isVerticalOrientation)
@@ -440,7 +461,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_bandCacheValid = false;
 			_bandCacheItemCount = -1;
 			_cachedTotalPrimaryExtent = 0;
-			//Reset estimates so shrinking items recalculate correctly
+			// Reset estimates on a genuine structural change (items added/removed/cleared).
+			// Do NOT call this from measure/arrange grow-paths — use _bandCacheValid = false
+			// directly there so grown estimates survive into the next rebuild.
 			_estimatedVerticalRegularExtent = DefaultEstimatedRegularExtent;
 			_estimatedHorizontalRegularExtent = DefaultEstimatedRegularExtent;
 			_estimatedHeaderVerticalExtent = DefaultEstimatedHeaderExtent;

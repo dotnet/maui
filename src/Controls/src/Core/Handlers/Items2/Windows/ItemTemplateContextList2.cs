@@ -29,10 +29,7 @@ internal class ItemTemplateContextList2 : IReadOnlyList<ItemTemplateContext2>
 			if (!_itemTemplateContexts.TryGetValue(index, out var context))
 			{
 				var item = _itemsSource[index];
-				if (item is null)
-					throw new InvalidOperationException($"Item at index {index} is null. ItemTemplateContext2 requires a non-null item.");
-
-				_itemTemplateContexts[index] = context = new ItemTemplateContext2(_itemTemplate, item,
+				_itemTemplateContexts[index] = context = new ItemTemplateContext2(_itemTemplate, item!,
 					_container, _itemHeight, _itemWidth, _itemSpacing, false, false, _mauiContext);
 			}
 
