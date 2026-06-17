@@ -14,6 +14,7 @@ using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -21,6 +22,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using Xunit.Sdk;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
@@ -317,7 +319,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		static int GetAppBarBackgroundColor(AppBarLayout appBar)
 		{
-			return Assert.IsType<ColorDrawable>(appBar.Background).Color.ToArgb();
+			return appBar.Background switch
+			{
+				ColorDrawable colorDrawable => colorDrawable.Color.ToArgb(),
+				MaterialShapeDrawable materialShapeDrawable when materialShapeDrawable.FillColor is not null =>
+					materialShapeDrawable.FillColor.GetColorForState(
+						appBar.GetDrawableState(),
+						new global::Android.Graphics.Color(materialShapeDrawable.FillColor.DefaultColor)),
+				_ => throw new XunitException($"Expected AppBar background to be {nameof(ColorDrawable)} or {nameof(MaterialShapeDrawable)}, but was {appBar.Background?.GetType().FullName ?? "null"}.")
+			};
 		}
 
 		async Task ValidateTabBarIconColor(
