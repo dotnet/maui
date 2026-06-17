@@ -168,6 +168,16 @@ namespace Microsoft.Maui.Platform
 			base.SafeAreaInsetsDidChange();
 			_parentHandlesSafeArea = null;
 			_safeAreaInvalidated = true;
+
+			// When CIAB = Never, UIKit does NOT automatically trigger a layout pass on rotation.
+			// We must explicitly invalidate the measure so the new safe-area insets are consumed
+			// by MAUI's layout engine (fix for rotation re-layout freeze).
+			if (ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never
+				&& View is IScrollView { Orientation: ScrollOrientation.Vertical })
+			{
+				((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
+				this.InvalidateAncestorsMeasures();
+			}
 		}
 
 		/// <summary>
@@ -202,6 +212,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		SafeAreaEdges? _previousEdges;
+		ScrollOrientation? _previousScrollOrientation;
 
 		UIEdgeInsets GetInset()
 		{
@@ -231,11 +242,15 @@ namespace Microsoft.Maui.Platform
 			var bottomRegion = GetSafeAreaRegionForEdge(3);
 
 			SafeAreaEdges safeAreaEdges = new SafeAreaEdges(leftRegion, topRegion, rightRegion, bottomRegion);
+			var scrollOrientation = View is IScrollView scrollView ? scrollView.Orientation : (ScrollOrientation?)null;
 
-			if (_previousEdges is not null && _previousEdges.Equals(safeAreaEdges))
+			// Also check orientation: changing from Vertical↔Horizontal changes which CIAB is needed
+			// even if SafeAreaEdges are unchanged (stale-cache fix).
+			if (_previousEdges is not null && _previousEdges.Equals(safeAreaEdges) && _previousScrollOrientation == scrollOrientation)
 				return false;
 
 			_previousEdges = safeAreaEdges;
+			_previousScrollOrientation = scrollOrientation;
 
 			// Check if all edges have the same SafeAreaRegions value
 			if (leftRegion == topRegion && topRegion == rightRegion && rightRegion == bottomRegion)
@@ -246,6 +261,9 @@ namespace Microsoft.Maui.Platform
 
 				ContentInsetAdjustmentBehavior = region switch
 				{
+					// Vertical scroll under Default: MAUI owns all edges (Never) so we can apply
+					// device insets directly and force re-layout on rotation via SafeAreaInsetsDidChange.
+					SafeAreaRegions.Default when scrollOrientation == ScrollOrientation.Vertical => UIScrollViewContentInsetAdjustmentBehavior.Never,
 					SafeAreaRegions.Default => UIScrollViewContentInsetAdjustmentBehavior.Automatic, // Default behavior
 					SafeAreaRegions.None => UIScrollViewContentInsetAdjustmentBehavior.Never, // Edge-to-edge content
 					SafeAreaRegions.All => UIScrollViewContentInsetAdjustmentBehavior.Never, // We calculate insets ourselves and include keyboard
