@@ -1,3 +1,6 @@
+using System.IO.Compression;
+using System.Text.RegularExpressions;
+
 namespace Microsoft.Maui.IntegrationTests;
 
 [Trait("Category", "Build")]
@@ -98,5 +101,84 @@ public class ResizetizerTests : BaseBuildTest
 		if (TestEnvironment.IsWindows)
 			Assert.True(File.Exists(Path.Combine(appDir, $"obj\\Debug\\{DotNetCurrent}-windows10.0.19041.0\\win-x64\\resizetizer\\r\\the_image.scale-100.png")),
 				"Windows was missing the image file.");
+	}
+
+	[Fact]
+	public void AndroidPackageRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing()
+	{
+		SetTestIdentifier("AndroidMissingResizetizerOutputs");
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		var framework = $"{DotNetCurrent}-android";
+		const string config = "Debug";
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui. Check test output for errors.");
+
+		StripNonAndroidTfms(projectFile, framework);
+
+		var buildProps = BuildProps;
+		buildProps.Add("AndroidPackageFormat=apk");
+
+		Assert.True(DotnetInternal.Build(projectFile, config, target: "SignAndroidPackage", framework: framework, properties: buildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+		AssertAndroidPackageContainsFontsAndSplash(projectDir, config, framework);
+
+		var intermediateOutputPath = Path.Combine(projectDir, "obj", config, framework);
+		DeleteDirectory(Path.Combine(intermediateOutputPath, "resizetizer", "f"));
+		DeleteDirectory(Path.Combine(intermediateOutputPath, "resizetizer", "sp"));
+		DeleteDirectory(Path.Combine(intermediateOutputPath, "android"));
+		DeleteDirectory(Path.Combine(intermediateOutputPath, "lp"));
+		DeleteDirectory(Path.Combine(intermediateOutputPath, "stamp"));
+
+		foreach (var package in Directory.GetFiles(projectDir, "*.apk", SearchOption.AllDirectories))
+			File.Delete(package);
+
+		Assert.True(DotnetInternal.Build(projectFile, config, target: "SignAndroidPackage", framework: framework, properties: buildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to rebuild. Check test output/attachments for errors.");
+
+		AssertAndroidPackageContainsFontsAndSplash(projectDir, config, framework);
+	}
+
+	static void AssertAndroidPackageContainsFontsAndSplash(string projectDir, string config, string framework)
+	{
+		var apkSearchDir = Path.Combine(projectDir, "bin", config, framework);
+		var apkPath = Directory.GetFiles(apkSearchDir, "*-Signed.apk", SearchOption.AllDirectories)
+			.OrderByDescending(File.GetLastWriteTimeUtc)
+			.FirstOrDefault();
+
+		Assert.True(apkPath is not null, $"No signed APK found in {apkSearchDir}");
+
+		using var apk = ZipFile.OpenRead(apkPath!);
+		var entries = apk.Entries
+			.Select(entry => entry.FullName)
+			.ToHashSet(StringComparer.Ordinal);
+
+		Assert.Contains("assets/OpenSans-Regular.ttf", entries);
+		Assert.Contains("assets/OpenSans-Semibold.ttf", entries);
+		Assert.True(
+			entries.Any(entry => entry.StartsWith("res/drawable-", StringComparison.Ordinal) &&
+				entry.EndsWith("/splash.png", StringComparison.Ordinal)),
+			$"APK {apkPath} does not contain generated splash screen raster assets.");
+	}
+
+	static void DeleteDirectory(string path)
+	{
+		if (Directory.Exists(path))
+			Directory.Delete(path, recursive: true);
+	}
+
+	static void StripNonAndroidTfms(string projectFile, string androidTfm)
+	{
+		var content = File.ReadAllText(projectFile);
+		content = Regex.Replace(content,
+			@"\s*<TargetFrameworks\s+Condition=""[^""]*"">[^<]*</TargetFrameworks>",
+			"");
+		content = Regex.Replace(content,
+			@"<TargetFrameworks>[^<]*</TargetFrameworks>",
+			$"<TargetFrameworks>{androidTfm}</TargetFrameworks>");
+		File.WriteAllText(projectFile, content);
 	}
 }
