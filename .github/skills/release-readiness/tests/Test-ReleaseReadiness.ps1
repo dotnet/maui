@@ -2703,6 +2703,45 @@ Assert-Eq -Label "carve-out: p/0 subset contains #44444"      -Expected $true -A
 Assert-Eq -Label "carve-out: generic bucket excludes p/0 PRs" -Expected 2     -Actual $generic.Count
 Assert-Eq -Label "carve-out: generic bucket keeps #99999"     -Expected $true -Actual (@($generic | ForEach-Object { $_.number }) -contains 99999)
 
+# Precedence: P/0 takes priority over author-type (Maestro) AND merge-up
+# categorization. A p/0-labelled Maestro or merge-up PR must be carved into the
+# P/0 blocker set FIRST (so it trips the dedicated BLOCKED check + 🔥 P/0 PR row)
+# and excluded from the Maestro / merge-up / generic buckets — never silently
+# downgraded to a 📦 Maestro / merge-up row. Mirrors the engine's exact carve-out
+# sequence in Get-PreviewReadiness.ps1 (p/0 first, then maestro/human, then merge-up).
+$maestroLogin = [PSCustomObject]@{ login = 'dotnet-maestro[bot]' }
+$humanLogin   = [PSCustomObject]@{ login = 'someDev' }
+$p0Lbl        = @([PSCustomObject]@{ name = 'p/0' })
+$plainLbl     = @([PSCustomObject]@{ name = 'area-xaml' })
+
+$prHumanP0   = [PSCustomObject]@{ number = 1; author = $humanLogin;   labels = $p0Lbl;    headRefName = 'fix/x';                  title = 'Fix X' }
+$prMaestroP0 = [PSCustomObject]@{ number = 2; author = $maestroLogin; labels = $p0Lbl;    headRefName = 'darc-net11.0-abc';       title = 'Update dependencies' }
+$prMergeP0   = [PSCustomObject]@{ number = 3; author = $humanLogin;   labels = $p0Lbl;    headRefName = 'merge/main-to-net11.0';  title = "[automated] Merge branch 'main' => 'net11.0'" }
+$prMaestro   = [PSCustomObject]@{ number = 4; author = $maestroLogin; labels = $plainLbl; headRefName = 'darc-net11.0-def';       title = 'Update dependencies' }
+$prHuman     = [PSCustomObject]@{ number = 5; author = $humanLogin;   labels = $plainLbl; headRefName = 'fix/y';                  title = 'Fix Y' }
+$prMergeUp   = [PSCustomObject]@{ number = 6; author = $humanLogin;   labels = $plainLbl; headRefName = 'merge/main-to-net11.0';  title = "[automated] Merge branch 'main' => 'net11.0'" }
+
+$targetSet = @($prHumanP0, $prMaestroP0, $prMergeP0, $prMaestro, $prHuman, $prMergeUp)
+
+# Replicates the engine ordering exactly.
+$pre_p0       = @($targetSet | Where-Object { Test-IsP0Pr $_ })
+$pre_p0N      = @($pre_p0 | ForEach-Object { $_.number })
+$pre_maestro  = @($targetSet | Where-Object { $_.author -and $_.author.login -match 'dotnet-maestro' -and ($pre_p0N -notcontains $_.number) })
+$pre_humanRaw = @($targetSet | Where-Object { -not ($_.author -and $_.author.login -match 'dotnet-maestro') -and ($pre_p0N -notcontains $_.number) })
+$pre_mergeUp  = @($pre_humanRaw | Where-Object { ($_.headRefName -match '^merge/.+-to-') -or ($_.title -match '^\[automated\] Merge branch') })
+$pre_mergeUpN = @($pre_mergeUp | ForEach-Object { $_.number })
+$pre_generic  = @($pre_humanRaw | Where-Object { $pre_mergeUpN -notcontains $_.number })
+
+Assert-Eq -Label "precedence: 3 p/0 PRs carved (human+maestro+merge-up)"   -Expected 3     -Actual $pre_p0.Count
+Assert-Eq -Label "precedence: p/0 set includes the Maestro p/0 (#2)"       -Expected $true -Actual ($pre_p0N -contains 2)
+Assert-Eq -Label "precedence: p/0 set includes the merge-up p/0 (#3)"      -Expected $true -Actual ($pre_p0N -contains 3)
+Assert-Eq -Label "precedence: Maestro bucket excludes the p/0 Maestro (#2)" -Expected $false -Actual (@($pre_maestro | ForEach-Object { $_.number }) -contains 2)
+Assert-Eq -Label "precedence: Maestro bucket = only the plain Maestro (#4)" -Expected 1     -Actual $pre_maestro.Count
+Assert-Eq -Label "precedence: merge-up bucket excludes the p/0 merge-up (#3)" -Expected $false -Actual (@($pre_mergeUp | ForEach-Object { $_.number }) -contains 3)
+Assert-Eq -Label "precedence: merge-up bucket = only the plain merge-up (#6)" -Expected 1   -Actual $pre_mergeUp.Count
+Assert-Eq -Label "precedence: generic human = only the plain human (#5)"   -Expected 1     -Actual $pre_generic.Count
+Assert-Eq -Label "precedence: generic human keeps #5"                      -Expected $true -Actual (@($pre_generic | ForEach-Object { $_.number }) -contains 5)
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

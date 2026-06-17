@@ -1015,8 +1015,25 @@ if ($SurveyRef -ne $mainBranch -and $inflightExists) {
 }
 
 $allReleasePRs = @($targetPRs) + @($inflightPRs)
-$maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" })
-$targetHumanPRsRaw = @($targetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
+
+# Carve out P/0-labelled release-branch PRs FIRST, from the full set of PRs whose
+# base IS the survey ref (release-relevant by definition). P/0 is the strongest
+# release signal and takes precedence over author-type (Maestro) / merge-up
+# categorization: a p/0-labelled Maestro or merge-up PR must still trip the
+# dedicated "P/0 release-branch PRs" BLOCKED check and be itemized once as a
+# 🔥 P/0 PR row — never silently downgraded to a 📦 Maestro / merge-up row just
+# because it also happens to be automated. Unlike issues, no title/milestone
+# relevance filter is needed (base == survey ref ⇒ release-relevant). Inflight
+# (net<major>.0) PRs are intentionally excluded — only survey-ref PRs block.
+# Labels are already fetched by Get-OpenPullRequests, so this needs no extra API call.
+$p0Prs = @($targetPRs | Where-Object { Test-IsP0Pr $_ })
+$p0PrNumbers = @($p0Prs | ForEach-Object { $_.number })
+
+# Split the remaining (non-P/0) PRs into Maestro (dependency-flow) vs human.
+# P/0 PRs are excluded from BOTH buckets so an escalated p/0 PR is surfaced once
+# under the P/0 category, never double-counted in the Maestro or generic buckets.
+$maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" -and ($p0PrNumbers -notcontains $_.number) })
+$targetHumanPRsRaw = @($targetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") -and ($p0PrNumbers -notcontains $_.number) })
 $inflightHumanPRs = @($inflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
 
 # Carve out main → $SurveyRef merge-up PRs from the human-PR set so they're
@@ -1024,22 +1041,14 @@ $inflightHumanPRs = @($inflightPRs | Where-Object { -not ($_.author -and $_.auth
 # instead of double-counted as generic "Release branch PRs". MAUI convention:
 #   - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
 #   - title like "[automated] Merge branch 'main' => 'net11.0'"
+# (P/0 PRs were already removed above, so a p/0-labelled merge-up PR escalates
+# to the P/0 category rather than being bucketed here.)
 $mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
     ($_.headRefName -and $_.headRefName -match '^merge/.+-to-') -or
     ($_.title -and $_.title -match '^\[automated\] Merge branch')
 })
 $mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
 $targetHumanPRs = @($targetHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
-
-# Carve out P/0-labelled release-branch PRs so they are surfaced as blockers in
-# the hoisted "🔴 High-priority items" section (alongside P/0 issues) instead of
-# being buried in the generic "Release branch PRs" WATCH count. A PR whose base
-# IS the survey ref is release-relevant by definition, so — unlike issues — no
-# title/milestone relevance filter is needed. Labels are already fetched by
-# Get-OpenPullRequests, so this needs no extra API call.
-$p0Prs = @($targetHumanPRs | Where-Object { Test-IsP0Pr $_ })
-$p0PrNumbers = @($p0Prs | ForEach-Object { $_.number })
-$targetHumanPRs = @($targetHumanPRs | Where-Object { $p0PrNumbers -notcontains $_.number })
 
 if ($maestroPRs.Count -eq 0) {
     $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details "No open Maestro PRs target ``$SurveyRef`` or ``$mainBranch``." -NextAction "Continue monitoring for new dependency-flow PRs."
