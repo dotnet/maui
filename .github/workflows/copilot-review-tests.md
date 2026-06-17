@@ -1,5 +1,8 @@
 ---
 description: Reviews PR CI/test failures and classifies whether they are likely caused by the PR or unrelated.
+
+environment: gh-aw-agents
+
 on:
   slash_command:
     name: review

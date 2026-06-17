@@ -68,6 +68,26 @@ function ConvertTo-SafeLogValue {
     return $safe
 }
 
+function Test-GhApiPrNotFound {
+    param([string]$Output)
+
+    if ([string]::IsNullOrWhiteSpace($Output)) {
+        return $false
+    }
+
+    return $Output -match '(?i)\bHTTP\s+(404|410)\b' -or $Output -match '(?i)\b(Not Found|Gone)\b'
+}
+
+function ConvertTo-TrimmedString {
+    param([AllowNull()][object]$Value)
+
+    if ($null -eq $Value) {
+        return ''
+    }
+
+    return ([string]$Value).Trim()
+}
+
 function Add-CommentReaction {
     param(
         [Parameter(Mandatory = $true)][Int64]$CommentId,
@@ -270,6 +290,7 @@ if ($items.Count -eq 0) {
     exit 0
 }
 $candidates = @(Get-CandidateItems -Path $env:RERUN_CANDIDATES_PATH)
+$hadProcessingFailure = $false
 
 foreach ($item in $items) {
     $prNumber = 0
@@ -311,7 +332,33 @@ foreach ($item in $items) {
         }
 
         Write-Host "Processing PR #$prNumber decision=$decision reason=$(ConvertTo-SafeLogValue $reason)"
-        $pr = gh api "repos/$Owner/$Repo/pulls/$prNumber" | ConvertFrom-Json
+        $prStdErrFile = New-TemporaryFile
+        try {
+            $prOutput = @(& gh api "repos/$Owner/$Repo/pulls/$prNumber" 2> $prStdErrFile)
+            $prExitCode = $LASTEXITCODE
+            $prJson = ConvertTo-TrimmedString ($prOutput | Out-String)
+            $prStdErr = ConvertTo-TrimmedString (Get-Content -Raw -LiteralPath $prStdErrFile -ErrorAction SilentlyContinue)
+        } finally {
+            Remove-Item -LiteralPath $prStdErrFile -Force -ErrorAction SilentlyContinue
+        }
+        if ($prExitCode -ne 0) {
+            $prError = if ([string]::IsNullOrWhiteSpace($prStdErr)) { $prJson } else { $prStdErr }
+            if (Test-GhApiPrNotFound -Output $prError) {
+                $global:LASTEXITCODE = 0
+                Write-Host "  ⏭️ PR #$prNumber no longer exists; skipping stale decision"
+                continue
+            }
+
+            throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prError)"
+        }
+        if ([string]::IsNullOrWhiteSpace($prJson)) {
+            throw "Failed to load PR #$prNumber via gh api: empty response."
+        }
+        try {
+            $pr = $prJson | ConvertFrom-Json
+        } catch {
+            throw "Failed to parse PR #$prNumber response from gh api: $(ConvertTo-SafeLogValue ([string]$_))"
+        }
         if ($pr.state -ne 'open') {
             Write-Host "  ⏭️ PR #$prNumber is not open ($($pr.state)); skipping"
             continue
@@ -399,6 +446,13 @@ foreach ($item in $items) {
     } catch {
         $target = if ($prNumber -gt 0) { "PR #$prNumber" } else { "agent decision" }
         Write-Host "::error::Failed to process $target`: $(ConvertTo-SafeLogValue ([string]$_))"
+        $hadProcessingFailure = $true
         continue
     }
 }
+
+if ($hadProcessingFailure) {
+    exit 1
+}
+
+exit 0
