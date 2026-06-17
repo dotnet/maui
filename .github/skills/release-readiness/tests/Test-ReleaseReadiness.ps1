@@ -2759,6 +2759,43 @@ Assert-Eq -Label "precedence: empty input → 0 merge-up" -Expected 0 -Actual $e
 Assert-Eq -Label "precedence: empty input → 0 human"    -Expected 0 -Actual $emptyBuckets.TargetHumanPRs.Count
 Assert-Eq -Label "precedence: empty input → 0 inflight" -Expected 0 -Actual $emptyBuckets.InflightHumanPRs.Count
 
+# AutomationNull-input safety (regression for the zero-PR-branch crash).
+# The driver assigns $targetPRs/$inflightPRs from Get-OpenPullRequests, which
+# returns AutomationNull (NOT a literal @()) for a branch with no open PRs — an
+# empty `gh pr list` result collapses through `return @()`. AutomationNull bound
+# to an [array] param becomes $null, and @($null) seeds a single null element
+# whose `$_.author` dereference throws under StrictMode. Reproduce that EXACT
+# value via ConvertFrom-JsonOrEmptyArray '[]' (the real collapse path), not a
+# literal @() — the literal does not reproduce the bug.
+$nullFromGh    = ConvertFrom-JsonOrEmptyArray '[]'   # AutomationNull, exactly like Get-OpenPullRequests on a 0-PR branch
+$maestroPrMock = [PSCustomObject]@{ number = 9001; title = 'Bump deps'; author = [PSCustomObject]@{ login = 'dotnet-maestro' }; headRefName = 'darc-x'; labels = @(); url = 'u'; isDraft = $false }
+
+# (a) The reachable in-flight shape: AutomationNull target (existing branch, 0 PRs)
+#     + non-empty inflight Maestro list. Must not throw; Maestro PR still counted.
+$nullTargetThrew = $false
+$nullTargetBuckets = $null
+try { $nullTargetBuckets = Get-CategorizedPullRequests -TargetPRs $nullFromGh -InflightPRs @($maestroPrMock) }
+catch { $nullTargetThrew = $true }
+Assert-Eq -Label "AutomationNull target + inflight Maestro → no throw" -Expected $false -Actual $nullTargetThrew
+Assert-Eq -Label "AutomationNull target → 0 target-human"             -Expected 0     -Actual $nullTargetBuckets.TargetHumanPRs.Count
+Assert-Eq -Label "AutomationNull target → inflight Maestro counted"   -Expected 1     -Actual $nullTargetBuckets.MaestroPRs.Count
+
+# (b) Both inputs AutomationNull → five empty buckets, no throw.
+$bothNullThrew = $false
+$bothNullBuckets = $null
+try { $bothNullBuckets = Get-CategorizedPullRequests -TargetPRs (ConvertFrom-JsonOrEmptyArray '[]') -InflightPRs (ConvertFrom-JsonOrEmptyArray '[]') }
+catch { $bothNullThrew = $true }
+Assert-Eq -Label "AutomationNull both → no throw"      -Expected $false -Actual $bothNullThrew
+Assert-Eq -Label "AutomationNull both → 0 p/0"         -Expected 0      -Actual $bothNullBuckets.P0Prs.Count
+Assert-Eq -Label "AutomationNull both → 0 Maestro"     -Expected 0      -Actual $bothNullBuckets.MaestroPRs.Count
+Assert-Eq -Label "AutomationNull both → 0 inflight"    -Expected 0      -Actual $bothNullBuckets.InflightHumanPRs.Count
+
+# (c) Explicit $null and an array carrying a $null element are both normalized.
+$explicitNullThrew = $false
+try { $null = Get-CategorizedPullRequests -TargetPRs $null -InflightPRs @($null, $maestroPrMock) }
+catch { $explicitNullThrew = $true }
+Assert-Eq -Label "explicit null target + @(null, maestro) inflight → no throw" -Expected $false -Actual $explicitNullThrew
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

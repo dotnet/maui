@@ -745,9 +745,13 @@ function Get-CategorizedPullRequests {
         to P/0 (only survey-ref PRs block), matching the engine's release scope:
         $p0PrNumbers is computed from $TargetPRs only, and PR numbers are globally
         unique, so excluding them from the target+inflight Maestro set cannot drop
-        an inflight PR. StrictMode-safe: every property accessed is guaranteed
-        present by Get-OpenPullRequests' --json projection, and the `-and`
-        short-circuits keep a null author from dereferencing `.login`.
+        an inflight PR. StrictMode-safe on two fronts: (1) inputs are normalized to
+        drop $null elements up front, so an AutomationNull list (what
+        Get-OpenPullRequests returns for a zero-PR branch) can't seed a `@($null)`
+        whose null element would throw "property 'author' cannot be found"; and
+        (2) for genuine PR objects every property accessed is guaranteed present by
+        Get-OpenPullRequests' --json projection, with `-and` short-circuits keeping
+        a null author from dereferencing `.login`.
     .OUTPUTS
         PSCustomObject with arrays: P0Prs, MaestroPRs, MergeUpPRs, TargetHumanPRs,
         InflightHumanPRs.
@@ -756,6 +760,20 @@ function Get-CategorizedPullRequests {
         [array]$TargetPRs = @(),
         [array]$InflightPRs = @()
     )
+
+    # Normalize inputs: the driver assigns these from Get-OpenPullRequests, which
+    # returns AutomationNull for a branch with zero open PRs (an empty `gh pr list`
+    # result collapses through `return @()`). When AutomationNull is bound to an
+    # [array] parameter the parameter becomes $null (NOT the `= @()` default — the
+    # default only applies when the argument is omitted), and `@($null)` then yields
+    # a single-element array whose lone element is $null. Iterating that under
+    # `Set-StrictMode -Version Latest` and dereferencing `$_.author` throws
+    # "The property 'author' cannot be found on this object". Stripping nulls here
+    # makes the function robust to null / AutomationNull / @($null) inputs — the
+    # realistic trigger is an in-flight run against a freshly-cut release branch
+    # that exists but has no PRs yet while the inflight (net<major>.0) branch does.
+    $TargetPRs   = @($TargetPRs   | Where-Object { $null -ne $_ })
+    $InflightPRs = @($InflightPRs | Where-Object { $null -ne $_ })
 
     $allReleasePRs = @($TargetPRs) + @($InflightPRs)
 
