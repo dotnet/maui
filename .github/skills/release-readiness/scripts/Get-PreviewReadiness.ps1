@@ -1236,6 +1236,7 @@ $report = [PSCustomObject]@{
     XcodeRequirements     = $xcodeRequirements
     MaestroPullRequests   = $maestroPRs
     ReleasePullRequests   = $targetHumanPRs
+    P0PullRequests        = $p0Prs
     InflightPullRequests  = $inflightHumanPRs
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues

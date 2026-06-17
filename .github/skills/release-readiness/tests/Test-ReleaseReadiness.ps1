@@ -573,25 +573,16 @@ if (-not $SkipE2E) {
 
             # SR2 (tag-absent but STALE — Lane 1 staleness guard drops it so the
             # workflow matrix never spins up a no-op job for it).
-            if ($bySr.ContainsKey(2)) {
-                Write-Host "  ❌ SR2 tracker should be dropped (patch=21 < watermark 71, idle — stale)" -ForegroundColor Red; $script:failed++
-            } else {
-                Assert-Eq -Label "SR2 tracker absent (stale: patch 21 < 71, no recent activity)" -Expected $true -Actual $true
-            }
+            Assert-Eq -Label "SR2 tracker absent (stale: patch 21 < 71, no recent activity)" `
+                      -Expected $false -Actual ($bySr.ContainsKey(2))
 
             # SR3 (tag-absent but STALE — dropped by the staleness guard)
-            if ($bySr.ContainsKey(3)) {
-                Write-Host "  ❌ SR3 tracker should be dropped (patch=33 < watermark 71, idle — stale)" -ForegroundColor Red; $script:failed++
-            } else {
-                Assert-Eq -Label "SR3 tracker absent (stale: patch 33 < 71, no recent activity)" -Expected $true -Actual $true
-            }
+            Assert-Eq -Label "SR3 tracker absent (stale: patch 33 < 71, no recent activity)" `
+                      -Expected $false -Actual ($bySr.ContainsKey(3))
 
             # SR7 (shipped 2026-06-05 as 10.0.71 — Lane 1 should NOT emit a tracker)
-            if ($bySr.ContainsKey(7)) {
-                Write-Host "  ❌ SR7 tracker should NOT be present (tag 10.0.71 shipped 2026-06-05)" -ForegroundColor Red; $script:failed++
-            } else {
-                Assert-Eq -Label "SR7 tracker absent (shipped)" -Expected $true -Actual $true
-            }
+            Assert-Eq -Label "SR7 tracker absent (shipped)" `
+                      -Expected $false -Actual ($bySr.ContainsKey(7))
 
             # SR8 (in-flight, ACTIVE)
             if ($bySr.ContainsKey(8)) {
