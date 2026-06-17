@@ -516,10 +516,8 @@
             File="$(_MauiSplashOutputsFile)"
             Lines="@(_MauiSplashAssets->'%(FullPath)')"
             Overwrite="true"
-            WriteOnlyWhenDifferent="true"
         />
         <Touch Files="@(_MauiSplashAssets)" Condition="'@(_MauiSplashAssets)' != ''" />
-        <Touch Files="$(_MauiSplashOutputsFile)" AlwaysCreate="True" />
 
         <ItemGroup>
             <FileWrites Include="@(_MauiSplashAssets)" />
@@ -622,9 +620,7 @@
             File="$(_MauiFontOutputsFile)"
             Lines="@(_MauiFontCopied->'%(FullPath)');@(_MauiFontPListFiles->'%(FullPath)')"
             Overwrite="true"
-            WriteOnlyWhenDifferent="true"
         />
-        <Touch Files="$(_MauiFontOutputsFile)" AlwaysCreate="True" />
 
         <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
         <ItemGroup>
