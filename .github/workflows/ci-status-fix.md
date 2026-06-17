@@ -10,6 +10,8 @@ description: |
   then opens one [ci-fix][needs-human] PR as a permanent hand-off. Never mutes
   tests. Always skips visual-regression / screenshot issues.
 
+environment: gh-aw-agents
+
 permissions:
   contents: read
   issues: read
