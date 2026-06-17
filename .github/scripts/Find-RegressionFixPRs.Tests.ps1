@@ -19,7 +19,8 @@ BeforeAll {
             'Get-LinkedIssueNumbers',
             'Get-IntroducingPrReferences',
             'Get-RegressionPrTagsFromText',
-            'Test-CandidateIsNew')) {
+            'Test-CandidateIsNew',
+            'New-RegressionCandidate')) {
         $function = $ast.Find({
                 $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
                 $args[0].Name -eq $functionName
@@ -143,5 +144,68 @@ Describe 'Test-CandidateIsNew' {
     }
     It 'handles an empty corpus' {
         Test-CandidateIsNew -IntroducingPr 1 -FixPr 2 -ExistingNumbers @() | Should -BeTrue
+    }
+}
+
+Describe 'New-RegressionCandidate' {
+    # Regression guard: the original main-loop form wrapped the regressionIssues
+    # List[object] with @(...) inside a [PSCustomObject] literal, which throws
+    # "Argument types do not match" on real (populated) data. These tests exercise
+    # the candidate-building path the mocked helper tests never reached.
+    BeforeAll {
+        $script:issues = New-Object System.Collections.Generic.List[object]
+        $script:issues.Add([PSCustomObject]@{ number = 35756; regressedInLabels = @('regressed-in-10.0.70') }) | Out-Null
+        $script:issues.Add([PSCustomObject]@{ number = 35800; regressedInLabels = @() }) | Out-Null
+        $script:intro = [PSCustomObject]@{ Number = 31931; Title = 'introducing PR'; MergeCommit = 'af540589'; Files = @('src/Controls/src/Core/Page/Page.cs', 'b.cs') }
+    }
+
+    It 'builds a candidate from a populated List[object] without throwing' {
+        {
+            New-RegressionCandidate -FixPr 35803 -FixPrTitle 'fix title' -FixPrMergeCommit 'def456' `
+                -RegressionIssues $script:issues -IntroducingPr 31931 -IntroDetails $script:intro `
+                -AttributionSource 'pr-body' -NeedsHumanAttribution $false
+        } | Should -Not -Throw
+    }
+
+    It 'materializes regressionIssues as an array preserving order and content' {
+        $c = New-RegressionCandidate -FixPr 35803 -FixPrTitle 'fix title' -FixPrMergeCommit 'def456' `
+            -RegressionIssues $script:issues -IntroducingPr 31931 -IntroDetails $script:intro `
+            -AttributionSource 'pr-body' -NeedsHumanAttribution $false
+        @($c.regressionIssues).Count | Should -Be 2
+        $c.regressionIssues[0].number | Should -Be 35756
+        $c.regressionIssues[0].regressedInLabels | Should -Contain 'regressed-in-10.0.70'
+    }
+
+    It 'flattens introducing PR details onto the candidate' {
+        $c = New-RegressionCandidate -FixPr 35803 -FixPrTitle 'fix title' -FixPrMergeCommit 'def456' `
+            -RegressionIssues $script:issues -IntroducingPr 31931 -IntroDetails $script:intro `
+            -AttributionSource 'pr-body' -NeedsHumanAttribution $false
+        $c.introducingPr | Should -Be 31931
+        $c.introducingPrTitle | Should -Be 'introducing PR'
+        $c.introducingPrMergeCommit | Should -Be 'af540589'
+        @($c.introducingPrFiles).Count | Should -Be 2
+    }
+
+    It 'emits regressionIssues as [] (not null) when there are no linked issues' {
+        $c = New-RegressionCandidate -FixPr 1 -FixPrTitle 't' -FixPrMergeCommit 'sha' `
+            -RegressionIssues (New-Object System.Collections.Generic.List[object]) `
+            -IntroducingPr $null -IntroDetails $null -AttributionSource $null -NeedsHumanAttribution $true
+        ($c | ConvertTo-Json -Depth 8 -Compress) | Should -Match '"regressionIssues":\[\]'
+    }
+
+    It 'leaves introducing fields null when attribution is unresolved' {
+        $c = New-RegressionCandidate -FixPr 1 -FixPrTitle 't' -FixPrMergeCommit 'sha' `
+            -RegressionIssues (New-Object System.Collections.Generic.List[object]) `
+            -IntroducingPr $null -IntroDetails $null -AttributionSource $null -NeedsHumanAttribution $true
+        $c.introducingPr | Should -BeNullOrEmpty
+        $c.introducingPrMergeCommit | Should -BeNullOrEmpty
+        $c.needsHumanAttribution | Should -BeTrue
+    }
+
+    It 'serializes the full candidate to JSON without throwing' {
+        $c = New-RegressionCandidate -FixPr 35803 -FixPrTitle 'fix title' -FixPrMergeCommit 'def456' `
+            -RegressionIssues $script:issues -IntroducingPr 31931 -IntroDetails $script:intro `
+            -AttributionSource 'pr-body' -NeedsHumanAttribution $false
+        { $c | ConvertTo-Json -Depth 8 } | Should -Not -Throw
     }
 }

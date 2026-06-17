@@ -210,6 +210,37 @@ function Get-IntroducingPrDetails {
     }
 }
 
+function New-RegressionCandidate {
+    # Assembles one candidate record for candidates.json. Extracted from the main
+    # loop so the exact emitted shape is unit-testable.
+    # IMPORTANT: regressionIssues is materialized with .ToArray(). Wrapping a generic
+    # List[object] with @(...) inside a [PSCustomObject] literal throws "Argument
+    # types do not match", so the naive @($regressionIssues) form is a trap — keep
+    # .ToArray() here (see Find-RegressionFixPRs.Tests.ps1 for the regression test).
+    param(
+        [int]$FixPr,
+        [string]$FixPrTitle,
+        $FixPrMergeCommit,
+        [System.Collections.Generic.List[object]]$RegressionIssues = (New-Object 'System.Collections.Generic.List[object]'),
+        $IntroducingPr,
+        $IntroDetails,
+        $AttributionSource,
+        [bool]$NeedsHumanAttribution
+    )
+    return [PSCustomObject]@{
+        fixPr                    = $FixPr
+        fixPrTitle               = $FixPrTitle
+        fixPrMergeCommit         = $FixPrMergeCommit
+        regressionIssues         = $RegressionIssues.ToArray()
+        introducingPr            = $IntroducingPr
+        introducingPrTitle       = if ($IntroDetails) { $IntroDetails.Title } else { $null }
+        introducingPrMergeCommit = if ($IntroDetails) { $IntroDetails.MergeCommit } else { $null }
+        introducingPrFiles       = if ($IntroDetails) { @($IntroDetails.Files) } else { @() }
+        attributionSource        = $AttributionSource
+        needsHumanAttribution    = $NeedsHumanAttribution
+    }
+}
+
 # ─── Main ──────────────────────────────────────────────────────────────────────
 
 $authCheck = gh auth status 2>&1
@@ -282,18 +313,17 @@ foreach ($pr in $fixPRs) {
 
     $needsHuman = (-not $introDetails) -or (-not $introDetails.MergeCommit)
 
-    $candidates.Add([PSCustomObject]@{
-        fixPr                    = $fixNumber
-        fixPrTitle               = [string]$pr.title
-        fixPrMergeCommit         = if ($pr.mergeCommit) { $pr.mergeCommit.oid } else { $null }
-        regressionIssues         = @($regressionIssues)
-        introducingPr            = $introducingPr
-        introducingPrTitle       = if ($introDetails) { $introDetails.Title } else { $null }
-        introducingPrMergeCommit = if ($introDetails) { $introDetails.MergeCommit } else { $null }
-        introducingPrFiles       = if ($introDetails) { @($introDetails.Files) } else { @() }
-        attributionSource        = $attributionSource
-        needsHumanAttribution    = [bool]$needsHuman
-    }) | Out-Null
+    $fixMergeOid = if ($pr.mergeCommit) { $pr.mergeCommit.oid } else { $null }
+    $candidate = New-RegressionCandidate `
+        -FixPr $fixNumber `
+        -FixPrTitle ([string]$pr.title) `
+        -FixPrMergeCommit $fixMergeOid `
+        -RegressionIssues $regressionIssues `
+        -IntroducingPr $introducingPr `
+        -IntroDetails $introDetails `
+        -AttributionSource $attributionSource `
+        -NeedsHumanAttribution $needsHuman
+    $candidates.Add($candidate) | Out-Null
 
     Write-Host "  ✅ Candidate: fix #$fixNumber → introducing #$introducingPr (ref $($introDetails.MergeCommit)) needsHuman=$needsHuman"
 }
@@ -304,7 +334,7 @@ $payload = [PSCustomObject]@{
     repo         = $Repo
     lookbackDays = $LookbackDays
     count        = $candidates.Count
-    candidates   = @($candidates)
+    candidates   = $candidates.ToArray()
 }
 
 $dir = Split-Path -Parent $OutputPath
