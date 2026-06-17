@@ -52,11 +52,14 @@ public class Issue35401 : _IssuesUITest
 		// Dismiss the keyboard — this fires UIKeyboardWillHideNotification, which
 		// previously triggered an incorrect frame adjustment on the underlying Shell page.
 		App.DismissKeyboard();
-#if IOS
-		// In iOS the modal page remains visible after keyboard dismissal, so close it to reveal the underlying page and verify its layout is intact. On Android, the modal is dismissed immediately when the keyboard is dismissed, so no extra tap is needed.
-		App.WaitForElement("CloseModalButton");
-		App.Tap("CloseModalButton");
-#endif
+
+		// In iOS and Android the modal page remains visible after keyboard dismissal, so close it to reveal the underlying page and verify its layout is intact. On Android, the modal is dismissed immediately when the keyboard is dismissed, so no extra tap is needed.
+        var closeButton = App.WaitForElement("CloseModalButton");
+        if(closeButton != null)
+        {
+            App.Tap("CloseModalButton");
+        }
+		
 		// Level2 page should be visible again with its layout intact
 		App.WaitForElement("Level2Title");
 		var titleRectAfter = App.WaitForElement("Level2Title").GetRect();
