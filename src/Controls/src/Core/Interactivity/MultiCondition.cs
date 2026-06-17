@@ -1,5 +1,6 @@
 #nullable disable
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls
 
 		public MultiCondition()
 		{
-			_aggregatedStateProperty = BindableProperty.CreateAttached("AggregatedState", typeof(bool), typeof(MultiCondition), false, propertyChanged: OnAggregatedStatePropertyChanged);
+			_aggregatedStateProperty = BindableProperty.CreateAttached("AggregatedState", typeof(bool), typeof(MultiCondition), BooleanBoxes.FalseBox, propertyChanged: OnAggregatedStatePropertyChanged);
 			Conditions = new TriggerBase.SealedList<Condition>();
 		}
 

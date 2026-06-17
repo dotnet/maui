@@ -151,7 +151,7 @@ jobs:
       id-token: write
       contents: read
       issues: write
-      pull-requests: read
+      pull-requests: write
     steps:
       - name: Check actor permission
         if: github.event_name == 'issue_comment'

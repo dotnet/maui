@@ -235,14 +235,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (content is not View formsView)
 				{
 					// No template, EmptyView is not a Forms View, so just display EmptyView.ToString
-					return SimpleViewHolder.FromText(content?.ToString(), context, () => GetWidth(parent), () => GetHeight(parent), ItemsView);
+					return SimpleViewHolder.FromText(content?.ToString(), context, () => GetWidth(parent), () => GetHeight(parent), ItemsView, isEmptyView: true);
 				}
 
 				// EmptyView is a Forms View; display that
-				return SimpleViewHolder.FromFormsView(formsView, context, () => GetWidth(parent), () => GetHeight(parent), ItemsView);
+				return SimpleViewHolder.FromFormsView(formsView, context, () => GetWidth(parent), () => GetHeight(parent), ItemsView, isEmptyView: true);
 			}
 
-			var itemContentView = new SizedItemContentView(parent.Context, () => GetWidth(parent), () => GetHeight(parent));
+			var itemContentView = new EmptyViewContentView(parent.Context, () => GetWidth(parent), () => GetHeight(parent));
 			return new TemplatedItemViewHolder(itemContentView, template, isSelectionEnabled: false);
 		}
 

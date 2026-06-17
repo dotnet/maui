@@ -73,7 +73,7 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 		if (sender is VisualElement ve)
 		{
 			var bc = ve.BindingContext;
-			var isSelected = IsItemSelected(bc);
+			var isSelected = IsItemCurrentlySelected(bc);
 			VisualStateManager.GoToState(ve, isSelected ? "Selected" : "Normal");
 			CVState.Text = GetSelectedCount() > 0 ? $"State: Selected ({GetSelectedCount()})" : "State: Normal";
 		}
@@ -86,7 +86,7 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 		return MyCollectionView.SelectedItem != null ? 1 : 0;
 	}
 
-	bool IsItemSelected(object item)
+	bool IsItemCurrentlySelected(object item)
 	{
 		if (item is null)
 			return false;
@@ -123,7 +123,7 @@ public partial class VisualStateManagerCollectionViewPage : ContentPage
 
 	void OnSetNormal(object sender, EventArgs e)
 	{
-		if(!MyCollectionView.IsEnabled)
+		if (!MyCollectionView.IsEnabled)
 		{
 			CVState.Text = "State: Disabled";
 			return;

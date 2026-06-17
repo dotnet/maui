@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
@@ -6,9 +7,11 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ProgressBarHandler : ViewHandler<IProgress, UIProgressView>
 	{
+		public override bool NeedsContainer => true;
+
 		protected override UIProgressView CreatePlatformView()
 		{
-			return new UIProgressView(UIProgressViewStyle.Default);
+			return new MauiProgressView(UIProgressViewStyle.Default);
 		}
 
 		public static void MapProgress(IProgressBarHandler handler, IProgress progress)

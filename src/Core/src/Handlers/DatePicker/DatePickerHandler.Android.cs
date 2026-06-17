@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
-			ResetDialog();
+			DestroyDialog();
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Handlers
 				// making it unreliable to update them after the dialog is created.
 				if (datePicker.MinimumDate is not null)
 				{
-					platformHandler.ResetDialog();
+					platformHandler.DestroyDialog();
 				}
 				else
 				{
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Handlers
 				// making it unreliable to update them after the dialog is created.
 				if (datePicker.MaximumDate is not null)
 				{
-					platformHandler.ResetDialog();
+					platformHandler.DestroyDialog();
 				}
 				else
 				{
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void ResetDialog()
+		void DestroyDialog()
 		{
 			if (_dialog is not null)
 			{
@@ -212,7 +212,6 @@ namespace Microsoft.Maui.Handlers
 				EventHandler? setDateLater = null;
 				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
 				_dialog.ShowEvent += setDateLater;
-				_dialog.DismissEvent += OnDialogDismiss;
 			}
 
 			_dialog.Show();
@@ -222,7 +221,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
-				_dialog.DismissEvent -= OnDialogDismiss;
 				_dialog.Hide();
 			}
 
@@ -236,13 +234,11 @@ namespace Microsoft.Maui.Handlers
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
 		{
-			DatePickerDialog? currentDialog = _dialog;
-
-			if (currentDialog is not null && currentDialog.IsShowing)
+			if (_dialog is not null && _dialog.IsShowing)
 			{
-				currentDialog.Dismiss();
-
-				ShowPickerDialog(currentDialog.DatePicker.DateTime);
+				var currentDate = _dialog.DatePicker.DateTime;
+				DestroyDialog();
+				ShowPickerDialog(currentDate);
 			}
 		}
 	}

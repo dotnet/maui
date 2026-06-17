@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
@@ -200,12 +201,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitle()
 		{
-			if (!ToolbarReady() || NavigationItem is null || _context?.Shell?.Toolbar is null)
+
+			if (NavigationItem is null)
 			{
 				return;
 			}
 
-			NavigationItem.Title = _context.Shell.Toolbar.Title;
+			if (ToolbarReady() && _context?.Shell?.Toolbar is not null)
+			{
+				NavigationItem.Title = _context.Shell.Toolbar.Title;
+				return;
+			}
+
+			// Update back-stack pages so iOS back button/history menu reflects title changes
+			NavigationItem.Title = Page?.Title;
 		}
 
 
@@ -602,8 +611,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						}
 					}
 				}
-				// Show hamburger icon if it's the root page, or if the back button is not visible.
-				else if (String.IsNullOrWhiteSpace(text) && (IsRootPage || !backButtonVisible) && _flyoutBehavior == FlyoutBehavior.Flyout)
+				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
 					icon = DrawHamburger();
 				}
@@ -611,7 +619,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (icon != null)
 				{
 					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, (IsRootPage || !backButtonVisible))) { Enabled = enabled };
+						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
 						
 					// For iOS 26+, explicitly set the tint color on the bar button item
 					// because the navigation bar's tint color is not automatically inherited
@@ -633,7 +641,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
-						if (IsRootPage || !backButtonVisible)
+						if (IsRootPage)
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
 							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
@@ -720,7 +728,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout)
 			{
-				_context?.Shell?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, true);
+				_context?.Shell?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.TrueBox);
 			}
 		}
 
@@ -1261,14 +1269,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			var navController = ViewController.NavigationController;
+
+			// The keyboard observer is global — every live tracker receives every UIKeyboard hide
+			// event. If a modal view controller is currently presented over this nav controller,
+			// the keyboard belongs to that modal (e.g. a transparent Shell page with an Entry
+			// presented via Shell.GoToAsync). Return WITHOUT consuming _pendingKeyboardNavigation:
+			// this modal is transient, and the flag must remain armed for a genuine keyboard hide
+			// on this tracker after the modal is dismissed. The correction gate below
+			// (currentFrame.Y == 0 and related checks) is what prevents false positives.
+			if (navController.PresentedViewController is not null)
+				return;
+
 			var navBar = navController.NavigationBar;
 
 			if (navBar.Hidden || navBar.Frame.Height <= 0)
+			{
+				// No nav bar means the misposition scenario cannot occur; consume the flag so a
+				// later unrelated keyboard hide does not re-trigger this correction.
+				_pendingKeyboardNavigation = false;
 				return;
+			}
 
-			// Don't interfere with SearchHandler's keyboard management when it's active
+			// Don't interfere with SearchHandler's keyboard management when it's active.
+			// Consume the flag here too — leaving it armed risks running the fix on a later,
+			// unrelated keyboard dismissal.
 			if (_searchController?.Active == true)
+			{
+				_pendingKeyboardNavigation = false;
 				return;
+			}
 
 			var currentFrame = ViewController.View.Frame;
 			var navBarBottom = navBar.Frame.Bottom;
