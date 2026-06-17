@@ -18,6 +18,16 @@ permissions:
 on:
   schedule: every 12h
   workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Scope to ONE ci-scan / ci-scan-net11 issue number (blank = all open). Used for controlled single-issue canary runs."
+        required: false
+        type: string
+      dry_run:
+        description: "Preview only: run the full analysis but emit NO PR. The would-be PR (base, branch, title, body, changed files) is printed to the run log instead."
+        required: false
+        type: boolean
+        default: false
 
 if: |
   github.repository == 'dotnet/maui'
@@ -150,6 +160,38 @@ For every open tracking issue in scope, converge on exactly one outcome:
 
 Walk the steps in order. Do not skip. Stop at Step 8.
 
+### Step 0 — Run mode (manual dispatch inputs)
+
+This run may be a scheduled sweep or a manual `workflow_dispatch`. Read these two
+inputs once at the start and let them shape the whole run:
+
+- **Scope input** — `issue_number` = `"${{ github.event.inputs.issue_number }}"`.
+  - If non-empty: this is a **controlled single-issue run**. SKIP the Step 2
+    enumeration searches entirely and process ONLY that one issue. Fetch it with
+    `github` MCP `get_issue` (number = the input value), derive its target branch
+    from its labels exactly as Step 2 describes, then run every downstream gate
+    (Step 2.3 visual-regression filter, Step 3 dedup gates, Step 4 reproduce
+    check, Step 5/6 emit) for that single issue. If the issue is not open, not
+    labelled `ci-scan` / `ci-scan-net11`, or does not exist → record
+    `skipped: dispatch issue_number not an in-scope ci-scan issue` and stop.
+  - If empty (scheduled run, or manual run with no number): process ALL open
+    in-scope issues via the Step 2 searches as normal.
+- **Preview input** — `dry_run` = `"${{ github.event.inputs.dry_run }}"`.
+  - If exactly `"true"`: **preview mode**. Do the full analysis and build the
+    candidate diff in the workspace, but DO NOT emit any `create_pull_request`
+    safe-output. Instead, for each issue that would have produced a PR, print a
+    `DRY RUN — would open PR` block to the run log containing: target `base`
+    branch, source `branch`, title, the full PR body, and `git --no-pager diff
+    --stat` of the staged candidate change (or "empty patch (needs-human)"). Tally
+    the outcome as `dry-run: would-<fix|help|needs-human>`. Emit nothing.
+  - Otherwise (`"false"` / empty): normal mode — emit PRs via `safe-outputs` as
+    the steps describe.
+
+Note for operators: a fully write-free preview that also blocks GitHub API calls
+at the framework level is available without this input via `gh aw trial` (it
+forces gh-aw staged mode). The `dry_run` input is the in-prompt equivalent for a
+real scheduled/dispatch run, useful for a live-but-write-free canary.
+
 ### Step 1 — Orient
 
 Read once at start:
@@ -163,6 +205,10 @@ Read once at start:
 - The PR-body templates in Step 7 below.
 
 ### Step 2 — Enumerate open tracking issues
+
+> If Step 0's `issue_number` input is non-empty, SKIP the two searches below and
+> process only that one issue (fetched via `get_issue`); still apply every
+> extraction and gate that follows.
 
 Use `github` MCP `search_issues` (integrity-gated; record `[Filtered]` count
 and move on):
@@ -437,6 +483,11 @@ Before emission, re-read your own body and confirm `Target branch:` line value
 equals the `base` field. If they disagree, drop the attempt and record
 `skipped: branch-awareness self-check failed`.
 
+> **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit the
+> `create_pull_request`. Instead print a `DRY RUN — would open PR` block (base,
+> source branch, title, full body, `git --no-pager diff --stat`) to the run log
+> and tally `dry-run: would-<fix|help>`.
+
 ### Step 6 — Emit the needs-human PR (attempt cap exhausted)
 
 Reached only from Step 3.4 when `attempt_count >= 5` and no prior needs-human
@@ -459,6 +510,11 @@ PR exists.
 This PR is the permanent hand-off. Step 3.4 blocks all future attempts because
 its title matches `[ci-fix][needs-human]` and its body carries
 `Refs: dotnet/maui#<N>`.
+
+> **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit the
+> `create_pull_request`. Instead print a `DRY RUN — would open PR` block (base,
+> source branch, title, full body, `empty patch (needs-human)`) to the run log
+> and tally `dry-run: would-needs-human`.
 
 ### Step 7 — Templates
 
@@ -564,7 +620,8 @@ Per issue, append one outcome line to `/tmp/gh-aw/agent/coverage.txt`:
 ```
 
 `<outcome>` is one of: `fix-PR #aw_<id>`, `help-PR #aw_<id>`,
-`needs-human-PR #aw_<id>`, `skipped: <reason>`.
+`needs-human-PR #aw_<id>`, `dry-run: would-<fix|help|needs-human>`,
+`skipped: <reason>`.
 
 Recognized skip reasons (reuse these phrasings so a future feedback workflow
 can aggregate them stably):
@@ -585,6 +642,7 @@ can aggregate them stably):
 - `per-run cap reached`
 - `branch checkout failed`
 - `branch-awareness self-check failed`
+- `dispatch issue_number not an in-scope ci-scan issue`
 
 At end of run, print this table to the agent log:
 
