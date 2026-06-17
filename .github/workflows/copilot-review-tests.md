@@ -9,8 +9,9 @@ on:
     pull_request_review_comment: [contributor, first_time_contributor, first_timer, mannequin, none]
   reaction: none
   status-comment: false
-  # Grant the pre-activation job (the on.steps below) issues:write so it can delete the
-  # triggering `/review tests` comment once the command is recognized and authorized.
+  # Grant the pre-activation job (the on.steps below) issues:write so it can hide (minimize
+  # as resolved) the triggering `/review tests` comment once the command is recognized and
+  # authorized. Minimizing requires the same issues:write scope that deletion did.
   permissions:
     issues: write
   steps:
@@ -32,21 +33,21 @@ on:
         else
           echo "should_run=false" >> "$GITHUB_OUTPUT"
         fi
-    - name: Delete the /review tests command comment when authorized
+    - name: Hide the /review tests command comment as resolved when authorized
       if: github.event_name == 'issue_comment' && steps.exact_command.outputs.should_run == 'true'
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         github-token: ${{ github.token }}
         script: |
-          // Only delete when the command is exactly `/review tests` (should_run) AND the
+          // Only hide when the command is exactly `/review tests` (should_run) AND the
           // commenter is an authorized collaborator (write/maintain/admin). This mirrors
           // the workflow's own role gate but is self-contained, so an unauthorized user's
-          // comment is always left visible. A failed delete must not block activation.
+          // comment is always left visible. A failed hide must not block activation.
           // Only act on newly-created comments. The gh-aw slash_command trigger also fires
           // on `edited`, so without this guard, editing any existing comment to say
-          // `/review tests` would delete that comment (and its entire history).
+          // `/review tests` would minimize that comment (and collapse its entire history).
           if (context.payload.action !== 'created') {
-            core.info('Skipping delete: comment was edited, not created.');
+            core.info('Skipping hide: comment was edited, not created.');
             return;
           }
           const { owner, repo } = context.repo;
@@ -63,12 +64,22 @@ on:
             core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);
             return;
           }
-          const commentId = context.payload.comment.id;
+          // Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's
+          // REST comment history, and minimized comments are still returned by the REST list
+          // endpoint — only collapsed in the web UI. node_id is the comment's GraphQL global id.
+          const subjectId = context.payload.comment.node_id;
           try {
-            await github.rest.issues.deleteComment({ owner, repo, comment_id: commentId });
-            core.info(`Deleted /review tests command comment ${commentId}.`);
+            await github.graphql(
+              `mutation($id: ID!) {
+                 minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {
+                   minimizedComment { isMinimized }
+                 }
+               }`,
+              { id: subjectId }
+            );
+            core.info(`Hid /review tests command comment ${subjectId} as resolved.`);
           } catch (e) {
-            core.warning(`Could not delete /review tests command comment ${commentId}: ${e.message}`);
+            core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);
           }
   workflow_dispatch:
     inputs:
