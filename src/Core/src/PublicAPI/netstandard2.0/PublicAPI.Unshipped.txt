@@ -1,2 +1,2 @@
-﻿#nullable enable
+#nullable enable
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
