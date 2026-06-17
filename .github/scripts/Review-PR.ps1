@@ -597,10 +597,10 @@ function Get-TrxResults {
 # ─── Helper: Copilot token usage telemetry ────────────────────────────────────
 function ConvertTo-AzdoSafeConsole {
     param([string]$Text)
-    # Strip CR and defang AzDO logging-command prefixes (##vso[ / ##[) so PR-influenceable
-    # streamed agent output (messages, intents, tool args) can't inject a pipeline command
-    # when echoed via Write-Host.
-    return ($Text -replace "`r", '') -replace '##(?=\[|vso\[)', '## '
+    # Collapse ALL line-break/control chars (CR/LF/FF/VT) to a space so PR-influenceable streamed
+    # agent output can't fabricate a fresh column-0 line, then defang AzDO logging-command prefixes
+    # (##vso[ / ##[). Applied to every Write-Host of streamed content (messages, intents, tool args).
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
 }
 
 function Test-IsNumericValue {
@@ -1159,9 +1159,11 @@ function Invoke-CopilotStep {
 
                         # Capture intent changes silently
                         if ($toolName -eq 'report_intent') {
-                            $currentIntent = $args_.intent ?? $currentIntent
+                            # Sanitize once at the store so every later echo (incl. the
+                            # assistant.turn_start " · $currentIntent" line) inherits the safe value.
+                            $currentIntent = ConvertTo-AzdoSafeConsole ($args_.intent ?? $currentIntent)
                             Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
-                            Write-Host (ConvertTo-AzdoSafeConsole $currentIntent) -ForegroundColor Yellow
+                            Write-Host $currentIntent -ForegroundColor Yellow
                             break
                         }
 

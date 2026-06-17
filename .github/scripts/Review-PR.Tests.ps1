@@ -443,8 +443,9 @@ Describe 'ConvertTo-AzdoSafeConsole' {
         ConvertTo-AzdoSafeConsole '##[command]z' | Should -Be '## [command]z'
     }
 
-    It 'strips carriage returns that could reset the log line' {
-        ConvertTo-AzdoSafeConsole "safe`r##vso[task.complete]" | Should -Be 'safe## vso[task.complete]'
+    It 'collapses CR/LF that could fabricate a fresh column-0 log line' {
+        ConvertTo-AzdoSafeConsole "safe`r##vso[task.complete]" | Should -Be 'safe ## vso[task.complete]'
+        ConvertTo-AzdoSafeConsole "Reviewing`n##vso[task.complete result=Succeeded;]done" | Should -Be 'Reviewing ## vso[task.complete result=Succeeded;]done'
     }
 
     It 'leaves ordinary text untouched' {
