@@ -3,161 +3,178 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
-using Color = Android.Graphics.Color;
-using Paint = Android.Graphics.Paint;
+using AColor = Android.Graphics.Color;
+using APaint = Android.Graphics.Paint;
+using ARect = Android.Graphics.Rect;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public static class PickerExtensions
-	{
-		public static void CreateBorder(this AView platformView, Picker picker)
-		{
-			var thickness = picker.BorderThickness;
-			var (nativeBackground, nativeBackgroundTintList) = GetNativeBackgroundState(platformView);
+    public static class PickerExtensions
+    {
+        public static void CreateBorder(this AView platformView, Picker picker)
+        {
+            var thickness = picker.BorderThickness;
+            var (nativeBackground, nativeBackgroundTintList) = GetNativeBackgroundState(platformView);
 
-			// If thickness is zero, just tint underline (native Spinner background)
-			if (thickness.IsEmpty)
-			{
-				platformView.Background = nativeBackground;
-				platformView.BackgroundTintList = picker.BorderColor?.ToDefaultColorStateList() ?? nativeBackgroundTintList;
-				return;
-			}
+            // Scale Thickness (DIPs) to pixels
+            var density = platformView.Context?.Resources?.DisplayMetrics?.Density ?? 1f;
+            var pxThickness = new Thickness(
+                thickness.Left * density,
+                thickness.Top * density,
+                thickness.Right * density,
+                thickness.Bottom * density
+            );
 
-			var backgroundTintList = picker.BorderColor?.ToDefaultColorStateList() ?? nativeBackgroundTintList;
-			var color =
-				picker.BorderColor?.ToPlatform()
-				?? (backgroundTintList is not null ? new Color(backgroundTintList.DefaultColor) : (Color?)null)
-				?? Colors.Black.ToPlatform();
+            // No thickness → restore native background + tint
+            if (pxThickness.IsEmpty)
+            {
+                platformView.Background = nativeBackground;
+                platformView.BackgroundTintList = picker.BorderColor?.ToDefaultColorStateList() ?? nativeBackgroundTintList;
+                return;
+            }
 
-			// Otherwise, draw a full border with per-side thickness
-			platformView.BackgroundTintList = null;
-			platformView.Background = new ThicknessDrawable(nativeBackground, nativeBackgroundTintList, backgroundTintList, thickness, color);
-		}
+            // Thickness set, but no color → use visible default (Black) to match Windows
+            var color = picker.BorderColor?.ToPlatform() ?? Colors.Black.ToPlatform();
+            var backgroundTintList = picker.BorderColor?.ToDefaultColorStateList() ?? nativeBackgroundTintList;
 
-		static (Drawable? Background, ColorStateList? TintList) GetNativeBackgroundState(AView platformView)
-		{
-			if (platformView.Background is ThicknessDrawable thicknessDrawable)
-				return (thicknessDrawable.OriginalBackground, thicknessDrawable.OriginalBackgroundTintList);
+            // Draw custom border on top of preserved native background
+            platformView.BackgroundTintList = null;
+            platformView.Background = new ThicknessDrawable(
+                nativeBackground,
+                nativeBackgroundTintList,
+                backgroundTintList,
+                pxThickness,
+                color
+            );
+        }
 
-			return (platformView.Background, platformView.BackgroundTintList);
-		}
+        static (Drawable? Background, ColorStateList? TintList) GetNativeBackgroundState(AView platformView)
+        {
+            if (platformView.Background is ThicknessDrawable thicknessDrawable)
+                return (thicknessDrawable.OriginalBackground, thicknessDrawable.OriginalBackgroundTintList);
 
-		private class ThicknessDrawable : Drawable
-		{
-			readonly Drawable? _backgroundDrawable;
-			private readonly Thickness _thickness;
-			private readonly Paint _paint;
-			private readonly global::Android.Graphics.Rect _paddingRect;
+            return (platformView.Background, platformView.BackgroundTintList);
+        }
 
-			public ThicknessDrawable(Drawable? originalBackground, ColorStateList? originalBackgroundTintList, ColorStateList? backgroundTintList, Thickness thickness, Color color)
-			{
-				OriginalBackground = originalBackground;
-				OriginalBackgroundTintList = originalBackgroundTintList;
-				if (thickness.IsEmpty)
-				{
-					_backgroundDrawable = CloneDrawable(originalBackground);
-					_backgroundDrawable?.SetTintList(backgroundTintList);
-				}
-				else
-				{
-					_backgroundDrawable = null;
-				}
-				_thickness = thickness;
-				_paint = new Paint
-				{
-					Color = color,
-					AntiAlias = true,
-					StrokeWidth = 0,
-				};
-				_paint.SetStyle(Paint.Style.Fill);
-				_paddingRect = new global::Android.Graphics.Rect(
-					(int)thickness.Left,
-					(int)thickness.Top,
-					(int)thickness.Right,
-					(int)thickness.Bottom
-				);
-			}
+        private class ThicknessDrawable : Drawable
+        {
+            readonly Drawable? _backgroundDrawable;
+            readonly Thickness _thickness;
+            readonly APaint _paint;
+            readonly ARect _paddingRect;
 
-			public Drawable? OriginalBackground { get; }
-			public ColorStateList? OriginalBackgroundTintList { get; }
+            public ThicknessDrawable(
+                Drawable? originalBackground,
+                ColorStateList? originalBackgroundTintList,
+                ColorStateList? backgroundTintList,
+                Thickness thickness,
+                AColor color)
+            {
+                OriginalBackground = originalBackground;
+                OriginalBackgroundTintList = originalBackgroundTintList;
 
-			static Drawable? CloneDrawable(Drawable? drawable)
-			{
-				if (drawable is null)
-					return null;
+                // Preserve native background (caret, ripple, etc.)
+                _backgroundDrawable = CloneDrawable(originalBackground);
+                _backgroundDrawable?.SetTintList(originalBackgroundTintList ?? backgroundTintList);
 
-				return drawable.GetConstantState()?.NewDrawable()?.Mutate() ?? drawable.Mutate();
-			}
+                _thickness = thickness;
 
-			public override void Draw(Canvas canvas)
-			{
-				var w = Bounds.Width();
-				var h = Bounds.Height();
+                _paint = new APaint
+                {
+                    Color = color,
+                    AntiAlias = true,
+                    StrokeWidth = 0,
+                };
+                _paint.SetStyle(APaint.Style.Fill);
 
-				if (_backgroundDrawable is not null)
-				{
-					_backgroundDrawable.SetBounds(
-						Bounds.Left,
-						Bounds.Top,
-						Bounds.Right,
-						Bounds.Bottom
-					);
-					_backgroundDrawable.Draw(canvas);
-				}
+                _paddingRect = new ARect(
+                    (int)_thickness.Left,
+                    (int)_thickness.Top,
+                    (int)_thickness.Right,
+                    (int)_thickness.Bottom
+                );
+            }
 
-				// Top
-				if (_thickness.Top > 0)
-				{
-					canvas.DrawRect(0, 0, w, (float)_thickness.Top, _paint);
-				}
+            public Drawable? OriginalBackground { get; }
+            public ColorStateList? OriginalBackgroundTintList { get; }
 
-				// Bottom
-				if (_thickness.Bottom > 0)
-				{
-					canvas.DrawRect(0, h - (float)_thickness.Bottom, w, h, _paint);
-				}
+            static Drawable? CloneDrawable(Drawable? drawable)
+            {
+                if (drawable is null)
+                    return null;
 
-				// Left
-				if (_thickness.Left > 0)
-				{
-					canvas.DrawRect(0, 0, (float)_thickness.Left, h, _paint);
-				}
+                return drawable.GetConstantState()?.NewDrawable()?.Mutate() ?? drawable.Mutate();
+            }
 
-				// Right
-				if (_thickness.Right > 0)
-				{
-					canvas.DrawRect(w - (float)_thickness.Right, 0, w, h, _paint);
-				}
-			}
+            public override void Draw(Canvas canvas)
+            {
+                var w = Bounds.Width();
+                var h = Bounds.Height();
 
-			public override bool GetPadding(global::Android.Graphics.Rect padding)
-			{
-				var hasBackgroundPadding = _backgroundDrawable?.GetPadding(padding) ?? false;
+                if (_backgroundDrawable is not null)
+                {
+                    _backgroundDrawable.SetBounds(
+                        Bounds.Left,
+                        Bounds.Top,
+                        Bounds.Right,
+                        Bounds.Bottom
+                    );
+                    _backgroundDrawable.Draw(canvas);
+                }
 
-				if (!hasBackgroundPadding)
-					padding.SetEmpty();
+                // Top
+                if (_thickness.Top > 0)
+                {
+                    canvas.DrawRect(0, 0, w, (float)_thickness.Top, _paint);
+                }
 
-				padding.Left += _paddingRect.Left;
-				padding.Top += _paddingRect.Top;
-				padding.Right += _paddingRect.Right;
-				padding.Bottom += _paddingRect.Bottom;
+                // Bottom
+                if (_thickness.Bottom > 0)
+                {
+                    canvas.DrawRect(0, h - (float)_thickness.Bottom, w, h, _paint);
+                }
 
-				return hasBackgroundPadding || !_thickness.IsEmpty;
-			}
+                // Left
+                if (_thickness.Left > 0)
+                {
+                    canvas.DrawRect(0, 0, (float)_thickness.Left, h, _paint);
+                }
 
-			public override void SetAlpha(int alpha)
-			{
-				_paint.Alpha = alpha;
-				_backgroundDrawable?.SetAlpha(alpha);
-			}
+                // Right
+                if (_thickness.Right > 0)
+                {
+                    canvas.DrawRect(w - (float)_thickness.Right, 0, w, h, _paint);
+                }
+            }
 
-			public override void SetColorFilter(ColorFilter? colorFilter)
-			{
-				_paint.SetColorFilter(colorFilter);
-				_backgroundDrawable?.SetColorFilter(colorFilter);
-			}
-			public override int Opacity => (int)Format.Translucent;
-		}
+            public override bool GetPadding(ARect padding)
+            {
+                var hasBackgroundPadding = _backgroundDrawable?.GetPadding(padding) ?? false;
 
-	}
+                if (!hasBackgroundPadding)
+                    padding.SetEmpty();
+
+                padding.Left += _paddingRect.Left;
+                padding.Top += _paddingRect.Top;
+                padding.Right += _paddingRect.Right;
+                padding.Bottom += _paddingRect.Bottom;
+
+                return hasBackgroundPadding || !_thickness.IsEmpty;
+            }
+
+            public override void SetAlpha(int alpha)
+            {
+                _paint.Alpha = alpha;
+                _backgroundDrawable?.SetAlpha(alpha);
+            }
+
+            public override void SetColorFilter(ColorFilter? colorFilter)
+            {
+                _paint.SetColorFilter(colorFilter);
+                _backgroundDrawable?.SetColorFilter(colorFilter);
+            }
+
+            public override int Opacity => (int)Format.Translucent;
+        }
+    }
 }
