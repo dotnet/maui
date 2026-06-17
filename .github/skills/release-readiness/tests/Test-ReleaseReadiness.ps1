@@ -145,7 +145,10 @@ if (-not $SkipE2E) {
     } catch {
         Write-Host "  ❌ E2E script invocation failed: $_" -ForegroundColor Red
         $script:failed++
-        return
+        # Hard-fail immediately: a bare `return` here exits at script scope and
+        # bypasses the terminal `exit $(... $script:failed ...)`, so a crashed
+        # script-under-test could still exit 0 (CI green). exit 1 is unambiguous.
+        exit 1
     }
 
     $srcPrsFile = Join-Path $outDir 'sr-source-prs.txt'
