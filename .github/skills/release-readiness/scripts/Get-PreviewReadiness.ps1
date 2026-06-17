@@ -717,6 +717,80 @@ function Test-IsP0Pr {
     return (@($labels | ForEach-Object { $_.name }) -contains 'p/0')
 }
 
+function Get-CategorizedPullRequests {
+    <#
+    .SYNOPSIS
+        Splits the open release/inflight PRs into mutually-exclusive buckets:
+        P/0, Maestro (dependency-flow), merge-up, generic-human (target), and
+        inflight-human.
+    .DESCRIPTION
+        Single source of truth for PR categorization precedence, shared by the
+        engine driver and its unit tests so the tests exercise the REAL filter
+        expressions (not a re-implementation). Precedence, highest first:
+
+          1. P/0  — any survey-ref PR carrying the 'p/0' label, REGARDLESS of
+                    author or merge-up status. P/0 is the strongest release
+                    signal: a p/0-labelled Maestro or merge-up PR escalates to
+                    the P/0 blocker category (trips its dedicated BLOCKED check +
+                    renders once as a 🔥 P/0 PR row) and is never silently
+                    downgraded to a 📦 Maestro / merge-up row.
+          2. Maestro  — non-P/0 PRs authored by dotnet-maestro (target OR inflight).
+          3. Merge-up — non-P/0, non-Maestro target PRs that are automated
+                    main → survey-ref merges (head `merge/<x>-to-<y>` or title
+                    "[automated] Merge branch ...").
+          4. Generic-human (target) — the remaining survey-ref PRs.
+          5. Inflight-human — non-Maestro PRs on the inflight (net<major>.0) branch.
+
+        Buckets are mutually exclusive by PR number. Inflight PRs never escalate
+        to P/0 (only survey-ref PRs block), matching the engine's release scope:
+        $p0PrNumbers is computed from $TargetPRs only, and PR numbers are globally
+        unique, so excluding them from the target+inflight Maestro set cannot drop
+        an inflight PR. StrictMode-safe: every property accessed is guaranteed
+        present by Get-OpenPullRequests' --json projection, and the `-and`
+        short-circuits keep a null author from dereferencing `.login`.
+    .OUTPUTS
+        PSCustomObject with arrays: P0Prs, MaestroPRs, MergeUpPRs, TargetHumanPRs,
+        InflightHumanPRs.
+    #>
+    param(
+        [array]$TargetPRs = @(),
+        [array]$InflightPRs = @()
+    )
+
+    $allReleasePRs = @($TargetPRs) + @($InflightPRs)
+
+    # 1. P/0 first (highest precedence), from survey-ref PRs only.
+    $p0Prs = @($TargetPRs | Where-Object { Test-IsP0Pr $_ })
+    $p0PrNumbers = @($p0Prs | ForEach-Object { $_.number })
+
+    # 2. Maestro (non-P/0), across target + inflight.
+    $maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" -and ($p0PrNumbers -notcontains $_.number) })
+
+    # Non-P/0, non-Maestro humans, split by scope.
+    $targetHumanPRsRaw = @($TargetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") -and ($p0PrNumbers -notcontains $_.number) })
+    $inflightHumanPRs = @($InflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
+
+    # 3. Merge-up: non-P/0, non-Maestro target PRs. MAUI convention:
+    #   - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
+    #   - title like "[automated] Merge branch 'main' => 'net11.0'"
+    $mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
+        ($_.headRefName -and $_.headRefName -match '^merge/.+-to-') -or
+        ($_.title -and $_.title -match '^\[automated\] Merge branch')
+    })
+    $mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
+
+    # 4. Generic-human (target) = the remainder, counted/listed once.
+    $targetHumanPRs = @($targetHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
+
+    return [PSCustomObject]@{
+        P0Prs            = $p0Prs
+        MaestroPRs       = $maestroPRs
+        MergeUpPRs       = $mergeUpPRs
+        TargetHumanPRs   = $targetHumanPRs
+        InflightHumanPRs = $inflightHumanPRs
+    }
+}
+
 function New-Check {
     param(
         [string]$Area,
@@ -1014,41 +1088,17 @@ if ($SurveyRef -ne $mainBranch -and $inflightExists) {
     $inflightPRs = Get-OpenPullRequests -BaseBranch $mainBranch
 }
 
-$allReleasePRs = @($targetPRs) + @($inflightPRs)
-
-# Carve out P/0-labelled release-branch PRs FIRST, from the full set of PRs whose
-# base IS the survey ref (release-relevant by definition). P/0 is the strongest
-# release signal and takes precedence over author-type (Maestro) / merge-up
-# categorization: a p/0-labelled Maestro or merge-up PR must still trip the
-# dedicated "P/0 release-branch PRs" BLOCKED check and be itemized once as a
-# 🔥 P/0 PR row — never silently downgraded to a 📦 Maestro / merge-up row just
-# because it also happens to be automated. Unlike issues, no title/milestone
-# relevance filter is needed (base == survey ref ⇒ release-relevant). Inflight
-# (net<major>.0) PRs are intentionally excluded — only survey-ref PRs block.
-# Labels are already fetched by Get-OpenPullRequests, so this needs no extra API call.
-$p0Prs = @($targetPRs | Where-Object { Test-IsP0Pr $_ })
-$p0PrNumbers = @($p0Prs | ForEach-Object { $_.number })
-
-# Split the remaining (non-P/0) PRs into Maestro (dependency-flow) vs human.
-# P/0 PRs are excluded from BOTH buckets so an escalated p/0 PR is surfaced once
-# under the P/0 category, never double-counted in the Maestro or generic buckets.
-$maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" -and ($p0PrNumbers -notcontains $_.number) })
-$targetHumanPRsRaw = @($targetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") -and ($p0PrNumbers -notcontains $_.number) })
-$inflightHumanPRs = @($inflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
-
-# Carve out main → $SurveyRef merge-up PRs from the human-PR set so they're
-# only counted/listed once (in the hoisted "🔴 High-priority items" section)
-# instead of double-counted as generic "Release branch PRs". MAUI convention:
-#   - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
-#   - title like "[automated] Merge branch 'main' => 'net11.0'"
-# (P/0 PRs were already removed above, so a p/0-labelled merge-up PR escalates
-# to the P/0 category rather than being bucketed here.)
-$mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
-    ($_.headRefName -and $_.headRefName -match '^merge/.+-to-') -or
-    ($_.title -and $_.title -match '^\[automated\] Merge branch')
-})
-$mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
-$targetHumanPRs = @($targetHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
+# Categorize PRs into mutually-exclusive blocker buckets with P/0 as the highest
+# precedence (a p/0-labelled Maestro or merge-up PR escalates to the P/0 category
+# rather than being downgraded to a 📦 Maestro / merge-up row). The carve-out
+# precedence logic lives in Get-CategorizedPullRequests so the unit tests drive
+# the same code the engine runs (see Test-ReleaseReadiness.ps1 precedence block).
+$prBuckets        = Get-CategorizedPullRequests -TargetPRs $targetPRs -InflightPRs $inflightPRs
+$p0Prs            = $prBuckets.P0Prs
+$maestroPRs       = $prBuckets.MaestroPRs
+$mergeUpPRs       = $prBuckets.MergeUpPRs
+$targetHumanPRs   = $prBuckets.TargetHumanPRs
+$inflightHumanPRs = $prBuckets.InflightHumanPRs
 
 if ($maestroPRs.Count -eq 0) {
     $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details "No open Maestro PRs target ``$SurveyRef`` or ``$mainBranch``." -NextAction "Continue monitoring for new dependency-flow PRs."

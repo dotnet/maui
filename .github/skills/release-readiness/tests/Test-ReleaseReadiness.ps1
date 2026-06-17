@@ -2707,8 +2707,9 @@ Assert-Eq -Label "carve-out: generic bucket keeps #99999"     -Expected $true -A
 # categorization. A p/0-labelled Maestro or merge-up PR must be carved into the
 # P/0 blocker set FIRST (so it trips the dedicated BLOCKED check + 🔥 P/0 PR row)
 # and excluded from the Maestro / merge-up / generic buckets — never silently
-# downgraded to a 📦 Maestro / merge-up row. Mirrors the engine's exact carve-out
-# sequence in Get-PreviewReadiness.ps1 (p/0 first, then maestro/human, then merge-up).
+# downgraded to a 📦 Maestro / merge-up row. This drives the REAL engine carve-out
+# (Get-CategorizedPullRequests) rather than a re-implementation, so a regression
+# in the engine's own filter expressions is caught here.
 $maestroLogin = [PSCustomObject]@{ login = 'dotnet-maestro[bot]' }
 $humanLogin   = [PSCustomObject]@{ login = 'someDev' }
 $p0Lbl        = @([PSCustomObject]@{ name = 'p/0' })
@@ -2720,27 +2721,43 @@ $prMergeP0   = [PSCustomObject]@{ number = 3; author = $humanLogin;   labels = $
 $prMaestro   = [PSCustomObject]@{ number = 4; author = $maestroLogin; labels = $plainLbl; headRefName = 'darc-net11.0-def';       title = 'Update dependencies' }
 $prHuman     = [PSCustomObject]@{ number = 5; author = $humanLogin;   labels = $plainLbl; headRefName = 'fix/y';                  title = 'Fix Y' }
 $prMergeUp   = [PSCustomObject]@{ number = 6; author = $humanLogin;   labels = $plainLbl; headRefName = 'merge/main-to-net11.0';  title = "[automated] Merge branch 'main' => 'net11.0'" }
+# Inflight (net<major>.0) PRs: a Maestro one (must still bucket as Maestro) and a
+# p/0-labelled one (must NOT escalate — only survey-ref PRs block).
+$prInflightMaestro = [PSCustomObject]@{ number = 7; author = $maestroLogin; labels = $plainLbl; headRefName = 'darc-main-xyz'; title = 'Update dependencies' }
+$prInflightP0      = [PSCustomObject]@{ number = 8; author = $humanLogin;   labels = $p0Lbl;    headRefName = 'fix/z';          title = 'Fix Z' }
 
-$targetSet = @($prHumanP0, $prMaestroP0, $prMergeP0, $prMaestro, $prHuman, $prMergeUp)
+$targetSet   = @($prHumanP0, $prMaestroP0, $prMergeP0, $prMaestro, $prHuman, $prMergeUp)
+$inflightSet = @($prInflightMaestro, $prInflightP0)
 
-# Replicates the engine ordering exactly.
-$pre_p0       = @($targetSet | Where-Object { Test-IsP0Pr $_ })
-$pre_p0N      = @($pre_p0 | ForEach-Object { $_.number })
-$pre_maestro  = @($targetSet | Where-Object { $_.author -and $_.author.login -match 'dotnet-maestro' -and ($pre_p0N -notcontains $_.number) })
-$pre_humanRaw = @($targetSet | Where-Object { -not ($_.author -and $_.author.login -match 'dotnet-maestro') -and ($pre_p0N -notcontains $_.number) })
-$pre_mergeUp  = @($pre_humanRaw | Where-Object { ($_.headRefName -match '^merge/.+-to-') -or ($_.title -match '^\[automated\] Merge branch') })
-$pre_mergeUpN = @($pre_mergeUp | ForEach-Object { $_.number })
-$pre_generic  = @($pre_humanRaw | Where-Object { $pre_mergeUpN -notcontains $_.number })
+$buckets = Get-CategorizedPullRequests -TargetPRs $targetSet -InflightPRs $inflightSet
+$bP0      = @($buckets.P0Prs            | ForEach-Object { $_.number })
+$bMaestro = @($buckets.MaestroPRs       | ForEach-Object { $_.number })
+$bMergeUp = @($buckets.MergeUpPRs       | ForEach-Object { $_.number })
+$bHuman   = @($buckets.TargetHumanPRs   | ForEach-Object { $_.number })
+$bInflight = @($buckets.InflightHumanPRs | ForEach-Object { $_.number })
 
-Assert-Eq -Label "precedence: 3 p/0 PRs carved (human+maestro+merge-up)"   -Expected 3     -Actual $pre_p0.Count
-Assert-Eq -Label "precedence: p/0 set includes the Maestro p/0 (#2)"       -Expected $true -Actual ($pre_p0N -contains 2)
-Assert-Eq -Label "precedence: p/0 set includes the merge-up p/0 (#3)"      -Expected $true -Actual ($pre_p0N -contains 3)
-Assert-Eq -Label "precedence: Maestro bucket excludes the p/0 Maestro (#2)" -Expected $false -Actual (@($pre_maestro | ForEach-Object { $_.number }) -contains 2)
-Assert-Eq -Label "precedence: Maestro bucket = only the plain Maestro (#4)" -Expected 1     -Actual $pre_maestro.Count
-Assert-Eq -Label "precedence: merge-up bucket excludes the p/0 merge-up (#3)" -Expected $false -Actual (@($pre_mergeUp | ForEach-Object { $_.number }) -contains 3)
-Assert-Eq -Label "precedence: merge-up bucket = only the plain merge-up (#6)" -Expected 1   -Actual $pre_mergeUp.Count
-Assert-Eq -Label "precedence: generic human = only the plain human (#5)"   -Expected 1     -Actual $pre_generic.Count
-Assert-Eq -Label "precedence: generic human keeps #5"                      -Expected $true -Actual (@($pre_generic | ForEach-Object { $_.number }) -contains 5)
+Assert-Eq -Label "precedence: 3 p/0 PRs carved (human+maestro+merge-up)"   -Expected 3     -Actual $buckets.P0Prs.Count
+Assert-Eq -Label "precedence: p/0 set includes the Maestro p/0 (#2)"       -Expected $true -Actual ($bP0 -contains 2)
+Assert-Eq -Label "precedence: p/0 set includes the merge-up p/0 (#3)"      -Expected $true -Actual ($bP0 -contains 3)
+Assert-Eq -Label "precedence: p/0 set EXCLUDES inflight p/0 (#8 never blocks)" -Expected $false -Actual ($bP0 -contains 8)
+Assert-Eq -Label "precedence: Maestro bucket excludes the p/0 Maestro (#2)" -Expected $false -Actual ($bMaestro -contains 2)
+Assert-Eq -Label "precedence: Maestro bucket = plain target + inflight Maestro" -Expected 2  -Actual $buckets.MaestroPRs.Count
+Assert-Eq -Label "precedence: Maestro bucket keeps the plain target Maestro (#4)" -Expected $true -Actual ($bMaestro -contains 4)
+Assert-Eq -Label "precedence: Maestro bucket keeps the inflight Maestro (#7)" -Expected $true -Actual ($bMaestro -contains 7)
+Assert-Eq -Label "precedence: merge-up bucket excludes the p/0 merge-up (#3)" -Expected $false -Actual ($bMergeUp -contains 3)
+Assert-Eq -Label "precedence: merge-up bucket = only the plain merge-up (#6)" -Expected 1   -Actual $buckets.MergeUpPRs.Count
+Assert-Eq -Label "precedence: generic human = only the plain human (#5)"   -Expected 1     -Actual $buckets.TargetHumanPRs.Count
+Assert-Eq -Label "precedence: generic human keeps #5"                      -Expected $true -Actual ($bHuman -contains 5)
+Assert-Eq -Label "precedence: inflight-human = the inflight p/0 human (#8)" -Expected $true -Actual ($bInflight -contains 8)
+Assert-Eq -Label "precedence: inflight-human excludes inflight Maestro (#7)" -Expected $false -Actual ($bInflight -contains 7)
+
+# Empty-input safety: no PRs at all yields five empty buckets, no throw.
+$emptyBuckets = Get-CategorizedPullRequests -TargetPRs @() -InflightPRs @()
+Assert-Eq -Label "precedence: empty input → 0 p/0"      -Expected 0 -Actual $emptyBuckets.P0Prs.Count
+Assert-Eq -Label "precedence: empty input → 0 Maestro"  -Expected 0 -Actual $emptyBuckets.MaestroPRs.Count
+Assert-Eq -Label "precedence: empty input → 0 merge-up" -Expected 0 -Actual $emptyBuckets.MergeUpPRs.Count
+Assert-Eq -Label "precedence: empty input → 0 human"    -Expected 0 -Actual $emptyBuckets.TargetHumanPRs.Count
+Assert-Eq -Label "precedence: empty input → 0 inflight" -Expected 0 -Actual $emptyBuckets.InflightHumanPRs.Count
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
