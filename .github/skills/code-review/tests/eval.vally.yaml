@@ -261,6 +261,124 @@ stimuli:
       expect_skills:
         - code-review
 
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 3 — page lifecycle latch suppresses repeat OnNavigatedTo
+  # (PR #31931 → issue #35756)
+  #
+  # Regression PR:  dotnet/maui#31931
+  #   "[Android] Page: Fix OnNavigatedTo called twice when NavigationPage is
+  #    FlyoutPage Detail"
+  #   merge commit: af540589fc5a3b053cd8c08334d0ca5a0125451b
+  #   parent:       31257d81913000c0979d7075b492c2bc42311451
+  # Regression issue: dotnet/maui#35756
+  #   "Changing TabbedPage.CurrentPage from modal page no longer fires
+  #    OnNavigatedTo on PopModalAsync"
+  #   labels: i/regression · s/verified · regressed-in-10.0.70 ·
+  #           area-controls-tabbedpage · partner/syncfusion
+  #
+  # Smoking gun (verified in the live diff at
+  # src/Controls/src/Core/Page/Page.cs):
+  #   The PR prepended an early-return guard to SendNavigatedTo:
+  #       if (HasNavigatedTo) { return; }
+  #   to stop OnNavigatedTo firing twice. But that return short-circuits the
+  #   WHOLE method, including the trailing child propagation:
+  #       (this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+  #   HasNavigatedTo is cleared only in SendNavigatedFrom. A container page
+  #   (TabbedPage) whose CurrentPage changes while it stays navigated-to — a
+  #   modal is shown over it, the tab is switched, then the modal is popped —
+  #   keeps its latch set, so the guard suppresses re-dispatch to the now-
+  #   current tab. The asymmetry between "this page already fired its own
+  #   event" and "this page's subtree is fully navigated" IS the regression.
+  # User-visible failure: changing TabbedPage.CurrentPage from a modal and
+  #   then calling PopModalAsync no longer fires OnNavigatedTo on the newly
+  #   selected tab (Android + iOS, 10.0.70).
+  # ───────────────────────────────────────────────────────────────────────
+  - name: navigatedto-latch-suppresses-reentry
+    tags:
+      regression_pr: "31931"
+      regression_issue: "35756"
+      regression_file: src/Controls/src/Core/Page/Page.cs
+    prompt: >-
+      You are reviewing a single commit pre-merge. The repository is
+      already checked out as a worktree pinned to the commit under review.
+
+      Hypothesis to verify or refute: after this commit, a page still
+      receives its OnNavigatedTo lifecycle callback when it is navigated to
+      again without having first been fully navigated away from — for
+      example a container page (such as a tabbed or flyout page) whose
+      visible child changes while another page is displayed on top of it,
+      then becomes the foreground page again. The newly-current child should
+      still receive OnNavigatedTo.
+
+      Do not fetch any pull request, issue, or external page — use ONLY
+      the local worktree and `git diff HEAD^ HEAD` to inspect what
+      changed. Read full source files for changed paths, not just diff
+      hunks. Then deliver a code review using the skill's standard
+      output format (Independent Assessment → Findings → Failure-Mode
+      Probing → Verdict + Confidence). Mark each finding with a severity
+      emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a Verdict line:
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+    environment:
+      git:
+        type: worktree
+        ref: af540589fc5a3b053cd8c08334d0ca5a0125451b
+        source: .
+    graders:
+      # ── Structural floor (only one hard regex per scenario) ──────────
+      - type: output-matches
+        config:
+          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: prompt
+        name: regression-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent inspects src/Controls/src/Core/Page/Page.cs in the
+        worktree's HEAD commit and identifies the new early-return guard
+        added at the top of SendNavigatedTo — `if (HasNavigatedTo) { return; }`
+        — by name, line reference, or near-equivalent quote of the code.
+      - >-
+        The agent recognizes that this guard short-circuits the ENTIRE
+        SendNavigatedTo body — not only the duplicate NavigatedTo /
+        OnNavigatedTo invocation but also the trailing propagation to the
+        current child, `(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args)`
+        — and that HasNavigatedTo is cleared only in SendNavigatedFrom.
+        Equivalent phrasings — "the latch is one-way until the page
+        navigates away", "the early return also skips forwarding NavigatedTo
+        to the current child", "a container that never navigates away stops
+        re-dispatching to its CurrentPage" — all count as correct
+        identification of the mechanism.
+      - >-
+        The agent connects this to a concrete failure: a container page
+        (TabbedPage / FlyoutPage) whose CurrentPage changes while it remains
+        navigated-to — e.g. a modal is dismissed over it — will not deliver
+        OnNavigatedTo to the newly-current child because the container's
+        latch is still set; more generally, any legitimate re-navigation to
+        an already-navigated page is suppressed. The agent flags this as a
+        regression risk (❌ Error or ⚠️ Warning). The verdict is
+        NEEDS_CHANGES or NEEDS_DISCUSSION, not LGTM.
+      - >-
+        The Failure-Mode Probing section actually traces what the second
+        SendNavigatedTo call does once HasNavigatedTo is already true,
+        per SKILL.md Step 6 ("What happens during handler disconnect/
+        reconnect (navigation, Shell tab switch)?"). The reviewer does NOT
+        softball with a rhetorical question — they follow the early return
+        through to the skipped child-propagation side effect.
+      - >-
+        The Blast Radius Assessment recognizes this as shared, cross-platform
+        navigation-lifecycle dispatch that runs for ALL pages — not opt-in
+        feature code. Confidence is calibrated to medium or lower; because
+        the change modifies shared lifecycle infrastructure affecting every
+        page, low is the most defensible cap per the Step 6 "shared
+        infrastructure" row. The structured `**Confidence:**` field is
+        present and consistent with that calibration.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
 scoring:
   # Vally 0.10 supports scoring.weights, but this suite deliberately omits
   # them so a trial's score is the unweighted mean of its graders' [0,1]
