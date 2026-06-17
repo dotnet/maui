@@ -115,6 +115,115 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
+	[Fact]
+	public void ApplicationArtifactsAreEnrichedWithMauiMetadata()
+	{
+		SetTestIdentifier(nameof(ApplicationArtifactsAreEnrichedWithMauiMetadata));
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		var getArtifactsFile = Path.Combine(projectDir, "get-application-artifacts.txt");
+		var publishArtifactsFile = Path.Combine(projectDir, "publish-application-artifacts.txt");
+		var dependsOnFile = Path.Combine(projectDir, "get-application-artifacts-depends-on.txt");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui. Check test output for errors.");
+
+		FileUtilities.ReplaceInFile(projectFile,
+			"</Project>",
+			"""
+			  <PropertyGroup>
+			    <ApplicationTitle>My Artifact App</ApplicationTitle>
+			    <ApplicationId>com.example.artifacts</ApplicationId>
+			    <ApplicationIdGuid>11111111-2222-3333-4444-555555555555</ApplicationIdGuid>
+			    <ApplicationDisplayVersion>2.3</ApplicationDisplayVersion>
+			    <ApplicationVersion>42</ApplicationVersion>
+			  </PropertyGroup>
+			  <Import Project="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\src\Workload\Microsoft.Maui.Sdk\Sdk\Microsoft.Maui.Sdk.After.targets'))" />
+			  <Target Name="SeedApplicationArtifacts">
+			    <ItemGroup>
+			      <ApplicationArtifact Include="$(MSBuildProjectDirectory)/artifacts/platform/android/MyArtifactApp-Signed.apk">
+			        <PackageFormat>apk</PackageFormat>
+			        <Signed>true</Signed>
+			        <PackageId>com.example.platform</PackageId>
+			      </ApplicationArtifact>
+			      <ApplicationArtifact Include="$(MSBuildProjectDirectory)/artifacts/platform/apple/MyArtifactApp.app">
+			        <PackageFormat>app</PackageFormat>
+			        <IsDirectory>true</IsDirectory>
+			        <PlatformName>iOS</PlatformName>
+			        <BundleIdentifier>com.example.platform</BundleIdentifier>
+			      </ApplicationArtifact>
+			    </ItemGroup>
+			  </Target>
+			  <Target Name="WriteGetApplicationArtifactsMetadata" DependsOnTargets="SeedApplicationArtifacts;_AddMauiApplicationArtifactMetadata">
+			    <WriteLinesToFile
+			        File="$(MSBuildProjectDirectory)/get-application-artifacts-depends-on.txt"
+			        Lines="$(GetApplicationArtifactsDependsOn)"
+			        Overwrite="true" />
+			    <WriteLinesToFile
+			        File="$(MSBuildProjectDirectory)/get-application-artifacts.txt"
+			        Lines="@(ApplicationArtifact->'%(Filename)%(Extension)|%(PackageFormat)|%(ApplicationTitle)|%(ApplicationName)|%(ApplicationId)|%(ApplicationIdGuid)|%(ApplicationDisplayVersion)|%(ApplicationVersion)|%(Signed)|%(PackageId)|%(PlatformName)|%(BundleIdentifier)')"
+			        Overwrite="true" />
+			  </Target>
+			  <Target Name="WritePublishApplicationArtifactsMetadata" DependsOnTargets="SeedApplicationArtifacts;_AddMauiApplicationArtifactMetadata">
+			    <WriteLinesToFile
+			        File="$(MSBuildProjectDirectory)/publish-application-artifacts.txt"
+			        Lines="@(ApplicationArtifact->'%(Filename)%(Extension)|%(PackageFormat)|%(ApplicationTitle)|%(ApplicationName)|%(ApplicationId)|%(ApplicationIdGuid)|%(ApplicationDisplayVersion)|%(ApplicationVersion)|%(Signed)|%(PackageId)|%(PlatformName)|%(BundleIdentifier)')"
+			        Overwrite="true" />
+			  </Target>
+			</Project>
+			""");
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "WriteGetApplicationArtifactsMetadata", framework: $"{DotNetCurrent}-android", properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to write GetApplicationArtifacts metadata. Check test output/attachments for errors.");
+		Assert.Contains("_AddMauiApplicationArtifactMetadata", File.ReadAllText(dependsOnFile), StringComparison.Ordinal);
+		AssertApplicationArtifactMetadata(File.ReadAllLines(getArtifactsFile));
+
+		Assert.True(DotnetInternal.Build(projectFile, "Debug", target: "WritePublishApplicationArtifactsMetadata", framework: $"{DotNetCurrent}-android", properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to write Publish metadata. Check test output/attachments for errors.");
+		AssertApplicationArtifactMetadata(File.ReadAllLines(publishArtifactsFile));
+
+		static void AssertApplicationArtifactMetadata(string[] artifactLines)
+		{
+			Assert.Equal(2, artifactLines.Length);
+
+			AssertArtifact(
+				artifactLines.Single(line => line.StartsWith("MyArtifactApp-Signed.apk|apk|", StringComparison.Ordinal)),
+				"MyArtifactApp-Signed.apk",
+				"apk",
+				signed: "true",
+				packageId: "com.example.platform",
+				platformName: "",
+				bundleIdentifier: "");
+
+			AssertArtifact(
+				artifactLines.Single(line => line.StartsWith("MyArtifactApp.app|app|", StringComparison.Ordinal)),
+				"MyArtifactApp.app",
+				"app",
+				signed: "",
+				packageId: "",
+				platformName: "iOS",
+				bundleIdentifier: "com.example.platform");
+		}
+
+		static void AssertArtifact(string artifactLine, string fileName, string packageFormat, string signed, string packageId, string platformName, string bundleIdentifier)
+		{
+			var metadata = artifactLine.Split('|');
+
+			Assert.Equal(fileName, metadata[0]);
+			Assert.Equal(packageFormat, metadata[1]);
+			Assert.Equal("My Artifact App", metadata[2]);
+			Assert.Equal("My Artifact App", metadata[3]);
+			Assert.Equal("com.example.artifacts", metadata[4]);
+			Assert.Equal("11111111-2222-3333-4444-555555555555", metadata[5]);
+			Assert.Equal("2.3", metadata[6]);
+			Assert.Equal("42", metadata[7]);
+			Assert.Equal(signed, metadata[8]);
+			Assert.Equal(packageId, metadata[9]);
+			Assert.Equal(platformName, metadata[10]);
+			Assert.Equal(bundleIdentifier, metadata[11]);
+		}
+	}
+
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
 	[InlineData("maui", DotNetPrevious, "Debug", false, "")]
