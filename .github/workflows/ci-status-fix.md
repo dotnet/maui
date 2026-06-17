@@ -18,6 +18,11 @@ permissions:
   pull-requests: read
 
 on:
+  # ⚠️ TEMP CANARY TRIGGER — REMOVE BEFORE MERGE. Branch-scoped push trigger so a
+  # single pre-merge validation run can execute from this feature branch.
+  # workflow_dispatch requires the workflow on the default branch; push does not.
+  push:
+    branches: [pureween/bookish-garbanzo]
   schedule: every 12h
   workflow_dispatch:
     inputs:
@@ -62,7 +67,9 @@ safe-outputs:
   create-pull-request:
     title-prefix: "[ci-fix] "
     draft: true
-    max: 3
+    # ⚠️ TEMP CANARY CAP — REMOVE BEFORE MERGE (restore to 3). Hard backstop so the
+    # pre-merge validation run can emit at most ONE PR no matter what.
+    max: 1
     # Allow the needs-human hand-off PR (Step 6) to be emitted with no source
     # diff. Fix/help PRs still carry real diffs; this only permits the empty
     # case rather than forcing a marker-file edit that allowed-files rejects.
@@ -163,6 +170,14 @@ For every open tracking issue in scope, converge on exactly one outcome:
 Walk the steps in order. Do not skip. Stop at Step 8.
 
 ### Step 0 — Run mode (manual dispatch inputs)
+
+> 🔬 **TEMPORARY CANARY OVERRIDE — REMOVE BEFORE MERGE.** This branch carries a
+> temporary `push` trigger for a single pre-merge validation run. For THIS run,
+> regardless of the event type or the inputs below, you MUST treat the run as a
+> **controlled single-issue run scoped to issue #35910** (label `ci-scan` →
+> target branch `main`). Do NOT enumerate or process any other issue. Fetch
+> #35910 with `get_issue`, run every downstream gate on it, emit at most one PR
+> for it, then stop at the tally. Ignore this entire block once it is removed.
 
 This run may be a scheduled sweep or a manual `workflow_dispatch`. Read these two
 inputs once at the start and let them shape the whole run:
