@@ -1,4 +1,4 @@
-﻿using Android.Content.Res;
+﻿﻿using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Microsoft.Maui.Graphics;
@@ -11,6 +11,10 @@ namespace Microsoft.Maui.Controls.Platform
 {
     public static class PickerExtensions
     {
+        // Unique keys for storing original background/tint on the view
+        static readonly int OriginalBackgroundKey = 0x7F0F00B1;
+        static readonly int OriginalTintKey = 0x7F0F00B2;
+
         public static void CreateBorder(this AView platformView, Picker picker)
         {
             var thickness = picker.BorderThickness;
@@ -50,10 +54,33 @@ namespace Microsoft.Maui.Controls.Platform
 
         static (Drawable? Background, ColorStateList? TintList) GetNativeBackgroundState(AView platformView)
         {
-            if (platformView.Background is ThicknessDrawable thicknessDrawable)
-                return (thicknessDrawable.OriginalBackground, thicknessDrawable.OriginalBackgroundTintList);
+            // Prefer stored originals if present
+            var storedBackground = platformView.GetTag(OriginalBackgroundKey) as Drawable;
+            var storedTint = platformView.GetTag(OriginalTintKey) as ColorStateList;
 
-            return (platformView.Background, platformView.BackgroundTintList);
+            if (storedBackground != null || storedTint != null)
+                return (storedBackground, storedTint);
+
+            // If current background is a ThicknessDrawable, unwrap its originals
+            if (platformView.Background is ThicknessDrawable thicknessDrawable)
+            {
+                var bg = thicknessDrawable.OriginalBackground;
+                var tint = thicknessDrawable.OriginalBackgroundTintList;
+
+                platformView.SetTag(OriginalBackgroundKey, bg);
+                platformView.SetTag(OriginalTintKey, tint);
+
+                return (bg, tint);
+            }
+
+            // First-time capture of true native background/tint
+            var currentBackground = platformView.Background;
+            var currentTint = platformView.BackgroundTintList;
+
+            platformView.SetTag(OriginalBackgroundKey, currentBackground);
+            platformView.SetTag(OriginalTintKey, currentTint);
+
+            return (currentBackground, currentTint);
         }
 
         private class ThicknessDrawable : Drawable
@@ -74,7 +101,7 @@ namespace Microsoft.Maui.Controls.Platform
                 OriginalBackgroundTintList = originalBackgroundTintList;
 
                 // Preserve native background (caret, ripple, etc.)
-                _backgroundDrawable = CloneDrawable(originalBackground);
+                _backgroundDrawable = null;
                 _backgroundDrawable?.SetTintList(originalBackgroundTintList ?? backgroundTintList);
 
                 _thickness = thickness;
