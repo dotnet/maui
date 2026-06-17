@@ -168,9 +168,42 @@ function Get-AllTags([string]$Repo) {
 
 function Test-CommitInTag([string]$CommitSha, [string]$Tag, [string]$Repo) {
     <# Returns $true if $CommitSha is an ancestor of (i.e. contained in) $Tag.
+       git merge-base --is-ancestor exits 0 (ancestor), 1 (NOT ancestor), or >1
+       for a real failure (bad/unknown object, shallow clone missing the object,
+       tag not fetched). Only 0 and 1 are valid answers; a higher exit code is a
+       git error, NOT proof of non-containment, so we throw rather than silently
+       reporting $false — otherwise a transient failure on the earliest containing
+       tag would skip it and mislabel the milestone. Callers that prefer precision
+       over hard-failing catch this and fall back to the coarser branch milestone.
        Extracted into its own function so it can be mocked in unit tests. #>
-    $null = git -C $Repo merge-base --is-ancestor $CommitSha $Tag 2>&1
+    $output = git -C $Repo merge-base --is-ancestor $CommitSha $Tag 2>&1
+    if ($LASTEXITCODE -gt 1) {
+        throw "git merge-base --is-ancestor failed (exit $LASTEXITCODE) for '$CommitSha' in '$Tag': $output"
+    }
     return ($LASTEXITCODE -eq 0)
+}
+
+function Get-OnBranchShaFromLog([string[]]$LogLines, [int]$PrNum) {
+    <# Selects the on-branch commit SHA for a squash-merged/cherry-picked PR from
+       `git log --format='%H%x1f%s'` output (full SHA, US 0x1f separator, subject).
+
+       Only a commit whose SUBJECT ENDS with the squash-merge token "(#$PrNum)" is
+       accepted. This is the crux of the fallback's correctness: GitHub squash and
+       cherry-pick subjects place the PR token at the END ("Some title (#$PrNum)"),
+       so matching the trailing token rejects two whole classes of false positives
+       that a raw --grep over the full message would let through:
+         * body-only mentions  — "Workaround until (#$PrNum) lands" (token in body,
+           not the subject)  → subject doesn't end with the token → ignored.
+         * quoted reverts      — 'Revert "Fix X (#$PrNum)" (#OTHER)' when searching
+           for #$PrNum         → trailing token is (#OTHER), not (#$PrNum) → ignored.
+       Input is expected oldest-first (git --reverse), so the FIRST genuine match is
+       the original introduction, not a later re-mention. #>
+    foreach ($line in $LogLines) {
+        if ($line -match "^([0-9a-f]{40})\x1f.*\(#$PrNum\)\s*$") {
+            return $Matches[1]
+        }
+    }
+    return $null
 }
 
 function Get-PrNumbersBetweenTags([string]$TagFrom, [string]$TagTo, [string]$Repo) {
@@ -251,32 +284,41 @@ function Get-RefinedReleaseMilestone([string]$BranchMilestone, [string]$CommitSh
     $sr = [int]$Matches[2]
 
     # SR-family tags: X.0.{sr*10 .. sr*10+9} (e.g. SR7 → 10.0.70..10.0.79), ascending.
-    $low = $sr * 10
-    $high = $low + 9
-    $familyTags = @(Get-AllTags $Repo | Where-Object {
-        ($_ -match "^$msMajor\.0\.(\d+)$") -and ([int]$Matches[1] -ge $low) -and ([int]$Matches[1] -le $high)
-    } | Sort-Object { Get-TagSortKey $_ })
+    # The whole tag scan is guarded: Test-CommitInTag throws on a real git error
+    # (vs a clean "not an ancestor"), and rather than risk an incorrect sub-patch we
+    # fall back to the coarser base SR milestone — never wrong, just less precise.
+    try {
+        $low = $sr * 10
+        $high = $low + 9
+        $familyTags = @(Get-AllTags $Repo | Where-Object {
+            ($_ -match "^$msMajor\.0\.(\d+)$") -and ([int]$Matches[1] -ge $low) -and ([int]$Matches[1] -le $high)
+        } | Sort-Object { Get-TagSortKey $_ })
 
-    # Earliest family tag that contains the commit = the drop it shipped in.
-    foreach ($tag in $familyTags) {
-        if (Test-CommitInTag $CommitSha $tag $Repo) {
-            $refined = ConvertTo-Milestone $tag
-            if ($refined) { return $refined }
+        # Earliest family tag that contains the commit = the drop it shipped in.
+        foreach ($tag in $familyTags) {
+            if (Test-CommitInTag $CommitSha $tag $Repo) {
+                $refined = ConvertTo-Milestone $tag
+                if ($refined) { return $refined }
+            }
+        }
+
+        # Not in any shipped family tag yet. If earlier drops already shipped, this
+        # commit goes out in the next sub-patch after the latest one — but only while
+        # that next sub-patch still belongs to THIS SR family (patch <= $high). Once the
+        # family is exhausted (latest is X.0.{sr}9) the next patch would roll into the
+        # NEXT SR, which this branch never ships, so fall back to the base SR rather than
+        # silently crossing the family boundary (e.g. SR7 → SR8).
+        if ($familyTags.Count -gt 0 -and $familyTags[-1] -match "^$msMajor\.0\.(\d+)$") {
+            $nextPatch = [int]$Matches[1] + 1
+            if ($nextPatch -le $high) {
+                $refined = ConvertTo-Milestone "$msMajor.0.$nextPatch"
+                if ($refined) { return $refined }
+            }
         }
     }
-
-    # Not in any shipped family tag yet. If earlier drops already shipped, this
-    # commit goes out in the next sub-patch after the latest one — but only while
-    # that next sub-patch still belongs to THIS SR family (patch <= $high). Once the
-    # family is exhausted (latest is X.0.{sr}9) the next patch would roll into the
-    # NEXT SR, which this branch never ships, so fall back to the base SR rather than
-    # silently crossing the family boundary (e.g. SR7 → SR8).
-    if ($familyTags.Count -gt 0 -and $familyTags[-1] -match "^$msMajor\.0\.(\d+)$") {
-        $nextPatch = [int]$Matches[1] + 1
-        if ($nextPatch -le $high) {
-            $refined = ConvertTo-Milestone "$msMajor.0.$nextPatch"
-            if ($refined) { return $refined }
-        }
+    catch {
+        Write-Warning "Get-RefinedReleaseMilestone: git error refining '$BranchMilestone' for '$CommitSha' — falling back to base milestone. $_"
+        return $BranchMilestone
     }
 
     # No (further) family tags apply — still the base SR.
@@ -328,15 +370,17 @@ function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Ma
         }
 
         # Fall back to commit message search (handles rebase/cherry-pick).
-        # Capture the on-branch SHA (%H) so the milestone can still be refined to
-        # the correct sub-patch even though the squash SHA differs from $CommitSha.
-        # --reverse puts the OLDEST matching commit first (the original introduction),
-        # so a later revert/re-mention that quotes "(#$PrNum)" in its subject can't
-        # hijack the refinement to a later sub-patch. stderr is discarded and only a
-        # full 40-hex SHA is accepted, so a git warning can never be read as the SHA.
+        # Emit "%H<US>%s" (SHA, 0x1f separator, subject) and accept ONLY commits whose
+        # SUBJECT ends with the squash token "(#$PrNum)" — see Get-OnBranchShaFromLog.
+        # --grep is a coarse pre-filter over the whole message; the trailing-subject
+        # check is what makes this precise, rejecting body-only mentions and quoted
+        # reverts that would otherwise refine to the wrong sub-patch. --reverse yields
+        # oldest-first so the original introduction wins, not a later re-mention.
+        # stderr is discarded and only a 40-hex SHA is returned, so a git warning can
+        # never be misread as the SHA.
         if ($PrNum -gt 0) {
-            $grepResult = git -C $Repo --no-pager log "origin/$branch" --format='%H' --grep="(#$PrNum)" --reverse 2>$null
-            $branchSha = @($grepResult | Where-Object { $_ -match '^[0-9a-f]{40}$' }) | Select-Object -First 1
+            $grepResult = git -C $Repo --no-pager log "origin/$branch" --format='%H%x1f%s' --grep="(#$PrNum)" --reverse 2>$null
+            $branchSha = Get-OnBranchShaFromLog @($grepResult) $PrNum
             if ($branchSha) {
                 $milestone = ConvertBranchToMilestone $branch
                 if ($milestone) {

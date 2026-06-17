@@ -1314,4 +1314,74 @@ Describe 'Get-RefinedReleaseMilestone — SR sub-patch precision' {
         Get-RefinedReleaseMilestone '' 'abc123' '.' | Should -Be ''
         Get-RefinedReleaseMilestone '.NET 10 SR7' '' '.' | Should -Be '.NET 10 SR7'
     }
+
+    It 'falls back to the base SR when the ancestry check hits a real git error' {
+        # Test-CommitInTag throws on a git failure (exit >1), distinct from a clean
+        # "not an ancestor". The refiner must NOT turn that into a speculative
+        # sub-patch (e.g. SR7.2) — it catches the error and returns the base SR so a
+        # transient failure can only ever lose precision, never assign a wrong drop.
+        Mock Get-AllTags { return @('10.0.70', '10.0.71') }
+        Mock Test-CommitInTag { throw 'git merge-base --is-ancestor failed (exit 128)' }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7'
+    }
+}
+
+Describe 'Get-OnBranchShaFromLog — grep fallback subject precision' {
+    # The grep fallback feeds this `git log --format='%H%x1f%s'` output (full SHA,
+    # 0x1f Unit Separator, subject). Only a subject that ENDS with the squash token
+    # "(#PrNum)" is a genuine squash-merge / cherry-pick of that PR; body-only
+    # mentions and quoted reverts must be rejected so the milestone is refined from
+    # the right commit. Input is oldest-first (git --reverse).
+    BeforeAll {
+        $script:US   = [char]0x1f
+        $script:Sha1 = '1111111111111111111111111111111111111111'
+        $script:Sha2 = '2222222222222222222222222222222222222222'
+    }
+
+    It 'returns the SHA of a genuine squash-merge subject (trailing token)' {
+        $lines = @("$Sha1$US" + 'Fix crash on startup (#35694)')
+        Get-OnBranchShaFromLog $lines 35694 | Should -Be $Sha1
+    }
+
+    It 'ignores a PR number that appears only in the commit body, not the subject' {
+        # --grep matched on the body, but the emitted subject has no trailing token.
+        $lines = @("$Sha1$US" + 'Unrelated change with no PR token in the subject')
+        Get-OnBranchShaFromLog $lines 35694 | Should -BeNullOrEmpty
+    }
+
+    It 'ignores a revert that merely quotes the original PR number mid-subject' {
+        # Searching for #100: the revert subject ends with (#200), not (#100).
+        $lines = @("$Sha1$US" + 'Revert "Fix X (#100)" (#200)')
+        Get-OnBranchShaFromLog $lines 100 | Should -BeNullOrEmpty
+    }
+
+    It 'matches the revert itself when searching for the revert PR number' {
+        $lines = @("$Sha1$US" + 'Revert "Fix X (#100)" (#200)')
+        Get-OnBranchShaFromLog $lines 200 | Should -Be $Sha1
+    }
+
+    It 'returns the FIRST genuine match (oldest-first input wins)' {
+        # Two real squash subjects for the same PR (introduce, then re-apply). The
+        # --reverse ordering means the original introduction is selected.
+        $lines = @(
+            "$Sha1$US" + 'Original fix (#42)',
+            "$Sha2$US" + 'Re-apply fix (#42)'
+        )
+        Get-OnBranchShaFromLog $lines 42 | Should -Be $Sha1
+    }
+
+    It 'tolerates trailing whitespace after the token' {
+        $lines = @("$Sha1$US" + 'Fix thing (#42)   ')
+        Get-OnBranchShaFromLog $lines 42 | Should -Be $Sha1
+    }
+
+    It 'does not partial-match a longer PR number that shares the prefix' {
+        # Searching #42 must not match (#420).
+        $lines = @("$Sha1$US" + 'Some fix (#420)')
+        Get-OnBranchShaFromLog $lines 42 | Should -BeNullOrEmpty
+    }
+
+    It 'returns null for empty input' {
+        Get-OnBranchShaFromLog @() 42 | Should -BeNullOrEmpty
+    }
 }
