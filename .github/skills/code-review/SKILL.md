@@ -182,6 +182,7 @@ Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **
 - What happens with null `Parent`, `Handler`, `BindingContext`, or `PlatformView`?
 - Can multiple subscriptions accumulate across handler lifecycle (missing unsubscribe)?
 - Does static state survive page disposal and get stale?
+- When a change adds an **early-return guard, idempotency flag, or one-way latch** *above* code that still propagates or has side effects (e.g. `CurrentPage?.SendX(args)`, event raises, cleanup), the early return skips **everything** below it — not just the duplicate call it targets. List every path that **sets** the latch and every path that **clears** it, then actively search for a sequence where the latch is set but a *legitimate* re-dispatch is still owed — e.g. a **container** whose visible child changes while the container itself never navigates away. Don't accept "all the scenarios are handled" without tracing that exact state transition.
 
 #### Confidence Calibration
 
@@ -198,6 +199,8 @@ Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **
 | CI red or pending | Max **low** | Invoke `azdo-build-investigator` skill to classify failures. Per Rule #6, do not post `LGTM` unless failures are confirmed PR-unrelated. |
 | No relevant tests run (UITests skip PR builds) | Max **low** | Note the coverage gap in the CI Status section. |
 | Prior ❌ Error findings unresolved | n/a — overrides cap | Per Rule #5, verdict is **NEEDS_CHANGES** regardless of own assessment. |
+
+**Do not rationalize away a failure mode you surfaced.** If Failure-Mode Probing produces a concrete scenario where the change misbehaves and you cannot *disprove* it by tracing exact state transitions, you may not downgrade it to 💡 Info or post `LGTM`. An un-disproven failure mode caps confidence at **low** and the verdict at **NEEDS_DISCUSSION** (or **NEEDS_CHANGES** when the scenario is plausible). High confidence requires the *absence* of un-disproven failure modes — not a narrative explaining why the one you found is probably fine.
 
 #### Deliver Verdict
 
