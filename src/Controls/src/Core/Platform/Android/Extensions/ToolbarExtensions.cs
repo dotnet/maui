@@ -194,36 +194,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			var navIconColor = toolbar.IconColor;
-			if (navIconColor is null)
-			{
-				nativeToolbar.UpdateSystemChrome(toolbar);
-				return;
-			}
-
-			var platformColor = navIconColor.ToPlatform();
-			if (nativeToolbar.NavigationIcon is Drawable navigationIcon)
-			{
-				if (navigationIcon is DrawerArrowDrawable dad)
-				{
-					dad.Color = global::Android.Graphics.Color.White;
-				}
-
-				navigationIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
-			}
-
-			if (nativeToolbar.OverflowIcon is Drawable overflowIcon)
-			{
-				overflowIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
-			}
-
+			nativeToolbar.UpdateNavigationIconColor(toolbar);
+			nativeToolbar.UpdateOverflowIconColor(toolbar);
 			nativeToolbar.UpdateSystemChrome(toolbar);
 		}
 
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var textColor = toolbar.BarTextColor;
-			var iconColor = toolbar.IconColor;
 
 			// Because we use the same toolbar across multiple navigation pages (think tabbed page with nested NavigationPage)
 			// We need to reset the toolbar text color to the default color when it's unset
@@ -243,22 +221,61 @@ namespace Microsoft.Maui.Controls.Platform
 				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
 			}
 
-			if (nativeToolbar.NavigationIcon is DrawerArrowDrawable icon)
+			nativeToolbar.UpdateNavigationIconColor(toolbar);
+			nativeToolbar.UpdateOverflowIconColor(toolbar);
+
+			nativeToolbar.UpdateSystemChrome(toolbar);
+		}
+
+		static void UpdateNavigationIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			if (nativeToolbar.NavigationIcon is not Drawable navigationIcon)
 			{
-				// IconColor is the explicit source of truth for nav icon tint when set.
-				// Only fall back to BarTextColor for icon tint when IconColor is unset.
-				if (iconColor is null && textColor != null)
+				return;
+			}
+
+			if (toolbar.IconColor is not null)
+			{
+				if (navigationIcon is DrawerArrowDrawable dad)
+					dad.Color = global::Android.Graphics.Color.White;
+
+				navigationIcon.SetColorFilter(toolbar.IconColor.ToPlatform(), FilterMode.SrcAtop);
+				return;
+			}
+
+			navigationIcon.ClearColorFilter();
+
+			if (navigationIcon is DrawerArrowDrawable icon)
+			{
+				var textColor = toolbar.BarTextColor;
+				if (textColor != null)
 				{
-					_defaultNavigationIconColor = icon.Color;
+					_defaultNavigationIconColor ??= icon.Color;
 					icon.Color = textColor.ToPlatform().ToArgb();
 				}
-				else if (iconColor is null && _defaultNavigationIconColor != null)
+				else if (_defaultNavigationIconColor != null)
 				{
 					icon.Color = _defaultNavigationIconColor.Value;
 				}
 			}
+		}
 
-			nativeToolbar.UpdateSystemChrome(toolbar);
+		static void UpdateOverflowIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			if (nativeToolbar.OverflowIcon is not Drawable overflowIcon)
+			{
+				return;
+			}
+
+			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor;
+			if (iconColor is null)
+			{
+				overflowIcon.ClearColorFilter();
+			}
+			else
+			{
+				overflowIcon.SetColorFilter(iconColor.ToPlatform(), FilterMode.SrcAtop);
+			}
 		}
 
 		static void UpdateSystemChrome(this AToolbar nativeToolbar, Toolbar toolbar)
