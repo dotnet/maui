@@ -277,7 +277,7 @@ internal partial class ElementWrapper : ContentControl
 	public bool IsHeaderOrFooter { get; set; }
 
 	// Stored so RecycleElement can unsubscribe without a flag — mirrors iOS prepareForReuse.
-	EventHandler<Microsoft.UI.Xaml.SizeChangedEventArgs>? _contentSizeChangedHandler;
+	SizeChangedEventHandler? _contentSizeChangedHandler;
 	FrameworkElement? _observedContent;
 
 	/// <summary>
