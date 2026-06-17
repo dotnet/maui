@@ -166,6 +166,13 @@ function Get-AllTags([string]$Repo) {
     return ($output -split "`n" | Where-Object { $_ })
 }
 
+function Test-CommitInTag([string]$CommitSha, [string]$Tag, [string]$Repo) {
+    <# Returns $true if $CommitSha is an ancestor of (i.e. contained in) $Tag.
+       Extracted into its own function so it can be mocked in unit tests. #>
+    $null = git -C $Repo merge-base --is-ancestor $CommitSha $Tag 2>&1
+    return ($LASTEXITCODE -eq 0)
+}
+
 function Get-PrNumbersBetweenTags([string]$TagFrom, [string]$TagTo, [string]$Repo) {
     $output = git -C $Repo --no-pager log --oneline "$TagFrom..$TagTo" 2>&1
     if ($LASTEXITCODE -ne 0) { throw "git log failed: $output" }
@@ -217,11 +224,72 @@ function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {
     return $null
 }
 
+function Get-RefinedReleaseMilestone([string]$BranchMilestone, [string]$CommitSha, [string]$Repo) {
+    <# Refines an SR branch milestone (e.g. ".NET 10 SR7") to the sub-patch the
+       commit actually shipped in (e.g. ".NET 10 SR7.1").
+
+       Why: an SR release branch (release/X.0.Yxx-srN) produces MULTIPLE servicing
+       drops over its lifetime — 10.0.70 (SR7), 10.0.71 (SR7.1), 10.0.72 (SR7.2), …
+       ConvertBranchToMilestone only knows the branch name, so it always returns the
+       BASE SR. A revert/hotfix that lands after the base SR shipped actually goes
+       out in a later sub-patch, and milestoning it as the base SR is wrong (it can
+       even DOWNGRADE an already-correct SR7.1 issue back to SR7).
+
+       Rule (earliest release wins): a commit on the SR branch ships in the EARLIEST
+       SR-family tag (X.0.{sr}{sub}) that contains it. If no family tag contains it
+       yet (the drop hasn't been tagged), the base SR (and any earlier sub-patches)
+       are already shipped, so the commit goes out in the NEXT sub-patch after the
+       latest shipped family tag — provided that next sub-patch is still within THIS
+       SR family (the SR7 branch only ever ships 10.0.70..10.0.79).
+
+       Non-SR milestones (preview/rc/GA) have no sub-patches and are returned as-is.
+       The major version is taken from the milestone string itself (authoritative). #>
+    if ([string]::IsNullOrWhiteSpace($BranchMilestone)) { return $BranchMilestone }
+    if ([string]::IsNullOrWhiteSpace($CommitSha)) { return $BranchMilestone }
+    if ($BranchMilestone -notmatch '^\.NET (\d+) SR(\d+)$') { return $BranchMilestone }
+    $msMajor = [int]$Matches[1]
+    $sr = [int]$Matches[2]
+
+    # SR-family tags: X.0.{sr*10 .. sr*10+9} (e.g. SR7 → 10.0.70..10.0.79), ascending.
+    $low = $sr * 10
+    $high = $low + 9
+    $familyTags = @(Get-AllTags $Repo | Where-Object {
+        ($_ -match "^$msMajor\.0\.(\d+)$") -and ([int]$Matches[1] -ge $low) -and ([int]$Matches[1] -le $high)
+    } | Sort-Object { Get-TagSortKey $_ })
+
+    # Earliest family tag that contains the commit = the drop it shipped in.
+    foreach ($tag in $familyTags) {
+        if (Test-CommitInTag $CommitSha $tag $Repo) {
+            $refined = ConvertTo-Milestone $tag
+            if ($refined) { return $refined }
+        }
+    }
+
+    # Not in any shipped family tag yet. If earlier drops already shipped, this
+    # commit goes out in the next sub-patch after the latest one — but only while
+    # that next sub-patch still belongs to THIS SR family (patch <= $high). Once the
+    # family is exhausted (latest is X.0.{sr}9) the next patch would roll into the
+    # NEXT SR, which this branch never ships, so fall back to the base SR rather than
+    # silently crossing the family boundary (e.g. SR7 → SR8).
+    if ($familyTags.Count -gt 0 -and $familyTags[-1] -match "^$msMajor\.0\.(\d+)$") {
+        $nextPatch = [int]$Matches[1] + 1
+        if ($nextPatch -le $high) {
+            $refined = ConvertTo-Milestone "$msMajor.0.$nextPatch"
+            if ($refined) { return $refined }
+        }
+    }
+
+    # No (further) family tags apply — still the base SR.
+    return $BranchMilestone
+}
+
 function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Major, [int]$PrNum = 0) {
     <# Finds the earliest release branch containing a PR.
        First checks git ancestry (commit SHA). If that fails (rebase/cherry-pick
        changed the SHA), falls back to searching commit messages for the PR number.
        Checks in chronological order: previews → RCs → GA → SRs.
+       The matched branch's milestone is refined to the sub-patch the commit shipped
+       in (see Get-RefinedReleaseMilestone).
        Returns @{ Branch; Milestone } or $null. #>
 
     # Fetch all release branches for this major version
@@ -254,16 +322,25 @@ function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Ma
         if ($LASTEXITCODE -eq 0) {
             $milestone = ConvertBranchToMilestone $branch
             if ($milestone) {
+                $milestone = Get-RefinedReleaseMilestone $milestone $CommitSha $Repo
                 return @{ Branch = $branch; Milestone = $milestone }
             }
         }
 
-        # Fall back to commit message search (handles rebase/cherry-pick)
+        # Fall back to commit message search (handles rebase/cherry-pick).
+        # Capture the on-branch SHA (%H) so the milestone can still be refined to
+        # the correct sub-patch even though the squash SHA differs from $CommitSha.
+        # --reverse puts the OLDEST matching commit first (the original introduction),
+        # so a later revert/re-mention that quotes "(#$PrNum)" in its subject can't
+        # hijack the refinement to a later sub-patch. stderr is discarded and only a
+        # full 40-hex SHA is accepted, so a git warning can never be read as the SHA.
         if ($PrNum -gt 0) {
-            $grepResult = git -C $Repo --no-pager log "origin/$branch" --oneline --grep="(#$PrNum)" -1 2>&1
-            if ($LASTEXITCODE -eq 0 -and $grepResult) {
+            $grepResult = git -C $Repo --no-pager log "origin/$branch" --format='%H' --grep="(#$PrNum)" --reverse 2>$null
+            $branchSha = @($grepResult | Where-Object { $_ -match '^[0-9a-f]{40}$' }) | Select-Object -First 1
+            if ($branchSha) {
                 $milestone = ConvertBranchToMilestone $branch
                 if ($milestone) {
+                    $milestone = Get-RefinedReleaseMilestone $milestone $branchSha $Repo
                     Write-Verbose "  PR #$PrNum found via commit message on $branch (rebased/cherry-picked)"
                     return @{ Branch = $branch; Milestone = $milestone }
                 }

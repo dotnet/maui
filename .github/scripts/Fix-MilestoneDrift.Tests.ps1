@@ -1244,3 +1244,74 @@ Describe 'Get-PrsInTag — unary-comma preserves HashSet on cache hit' {
         Assert-MockCalled Get-PrNumbersReachableFromTag -Times 1 -Exactly
     }
 }
+
+Describe 'Get-RefinedReleaseMilestone — SR sub-patch precision' {
+    # The bug: a commit that lands on an SR release branch AFTER the base SR
+    # shipped actually goes out in a later sub-patch (10.0.71 = SR7.1), but the
+    # branch name alone (release/10.0.1xx-sr7) only yields the base SR (SR7).
+    # Get-RefinedReleaseMilestone fixes this by resolving the EARLIEST SR-family
+    # tag that contains the commit. These tests mock the tag list and the
+    # commit-in-tag ancestry check so no real git repo / tags are required.
+
+    It 'refines to the earliest sub-patch tag that contains the commit (SR7 → SR7.1)' {
+        # Family tags 10.0.70/71/72 all exist; commit shipped in .71 (and is
+        # therefore also in .72), but NOT in the base .70. Earliest containing = .71.
+        Mock Get-AllTags { return @('10.0.60', '10.0.70', '10.0.71', '10.0.72', '11.0.0') }
+        Mock Test-CommitInTag { return ($Tag -in @('10.0.71', '10.0.72')) }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7.1'
+    }
+
+    It 'keeps the base SR when the commit shipped in the base drop (SR7 stays SR7)' {
+        # Commit is contained in the base .70 tag → earliest containing is .70 → SR7.
+        Mock Get-AllTags { return @('10.0.70', '10.0.71') }
+        Mock Test-CommitInTag { return $true }  # contained in everything, incl. base
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7'
+    }
+
+    It 'uses the next sub-patch after the latest shipped tag when not yet tagged (SR7 → SR7.2)' {
+        # .70 and .71 already shipped but none contains this (untagged) commit, so
+        # it goes out in the next drop after the latest shipped family tag → .72.
+        Mock Get-AllTags { return @('10.0.70', '10.0.71') }
+        Mock Test-CommitInTag { return $false }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7.2'
+    }
+
+    It 'never crosses the family boundary: SR7 exhausted at .79 falls back to base SR (not SR8)' {
+        # Degenerate state — all 10 SR7 drops (.70..79) shipped and none contains the
+        # commit. The next patch (.80) belongs to SR8, which the SR7 branch never
+        # ships, so the refiner must NOT predict SR8; it falls back to the base SR7.
+        Mock Get-AllTags { return @('10.0.70', '10.0.71', '10.0.72', '10.0.73', '10.0.74', '10.0.75', '10.0.76', '10.0.77', '10.0.78', '10.0.79') }
+        Mock Test-CommitInTag { return $false }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7'
+    }
+
+    It 'returns the base SR unchanged when no family tags have shipped yet' {
+        # Branch exists but no 10.0.7x tag yet → base SR is the best we can say.
+        Mock Get-AllTags { return @('10.0.60', '10.0.61') }
+        Mock Test-CommitInTag { return $false }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7'
+    }
+
+    It 'does not let an adjacent SR family leak in (SR1 vs SR10 boundary)' {
+        # SR10 family is 10.0.100..10.0.109; the SR1-era 10.0.10 tag must be ignored.
+        Mock Get-AllTags { return @('10.0.10', '10.0.100', '10.0.101') }
+        Mock Test-CommitInTag { return ($Tag -in @('10.0.101')) }
+        Get-RefinedReleaseMilestone '.NET 10 SR10' 'abc123' '.' | Should -Be '.NET 10 SR10.1'
+    }
+
+    It 'returns non-SR milestones unchanged without touching tags' -ForEach @(
+        @{ Milestone = '.NET 11.0-preview3' }
+        @{ Milestone = '.NET 11.0-rc1' }
+        @{ Milestone = '.NET 11.0 GA' }
+    ) {
+        Mock Get-AllTags { throw 'should not be called for non-SR milestones' }
+        Mock Test-CommitInTag { throw 'should not be called for non-SR milestones' }
+        Get-RefinedReleaseMilestone $Milestone 'abc123' '.' | Should -Be $Milestone
+    }
+
+    It 'returns the input unchanged for empty milestone or empty commit' {
+        Mock Get-AllTags { throw 'should not be called' }
+        Get-RefinedReleaseMilestone '' 'abc123' '.' | Should -Be ''
+        Get-RefinedReleaseMilestone '.NET 10 SR7' '' '.' | Should -Be '.NET 10 SR7'
+    }
+}
