@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Layouts
                 return new int[portions.Length]; // All zeros
 
             var result = new int[portions.Length];
-            var targetTotal = (int)Math.Ceiling(totalPixels - 0.0000000001);
+            var targetTotal = (int)Math.Floor(totalPixels + Epsilon);
             var assignedTotal = 0;
 
             // Calculate ideal pixels per portion
