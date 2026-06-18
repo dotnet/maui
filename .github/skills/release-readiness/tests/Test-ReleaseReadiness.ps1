@@ -548,6 +548,10 @@ if (-not (Test-Path $detectScriptPath)) {
         git -C $fixtureRepo init -q             2>&1 | Out-Null
         git -C $fixtureRepo config user.email 'rr-test@example.com' 2>&1 | Out-Null
         git -C $fixtureRepo config user.name  'RR Test'            2>&1 | Out-Null
+        # Keep the fixture hermetic: a developer with `commit.gpgsign=true` set
+        # globally (but no signing key for this throwaway repo) would otherwise hit
+        # "gpg failed to sign the data" and produce zero commits. Force it off locally.
+        git -C $fixtureRepo config commit.gpgsign false           2>&1 | Out-Null
 
         # Three commits at known ages relative to "now". The 1-day margins on either
         # side of the 7-day window keep every assertion robust (no boundary fuzz).
@@ -574,6 +578,15 @@ if (-not (Test-Path $detectScriptPath)) {
         # defaults the initial branch to 'main' or 'master').
         git -C $fixtureRepo update-ref refs/remotes/origin/main HEAD 2>&1 | Out-Null
 
+        # Fail LOUDLY (and early) if the fixture didn't end up with the 3 commits the
+        # assertions below depend on — e.g. a machine-level git misconfig swallowed
+        # by `2>&1 | Out-Null`. Without this guard a broken setup surfaces only as a
+        # cryptic "unknown revision origin/main" from Get-RecentCommitCount later.
+        $fixtureCommitCount = (& git -C $fixtureRepo rev-list --count origin/main 2>$null)
+        if ($LASTEXITCODE -ne 0 -or "$fixtureCommitCount".Trim() -ne '3') {
+            throw "Recency fixture setup failed: expected 3 commits on 'origin/main', got '$fixtureCommitCount' (git exit $LASTEXITCODE). Check this machine's git config (e.g. commit.gpgsign / hooks)."
+        }
+
         # Point the dot-sourced detector helper at the fixture for these assertions,
         # then restore $Repo in `finally` so later tests are untouched.
         $Repo = $fixtureRepo
@@ -585,7 +598,9 @@ if (-not (Test-Path $detectScriptPath)) {
         Assert-Eq -Label "recency window: explicit origin/ ref resolves the same"     -Expected 1 -Actual (Get-RecentCommitCount -Ref 'origin/main' -Days 7)
     } finally {
         $Repo = $savedRepo
-        if (Test-Path $fixtureRepo) { Remove-Item -Recurse -Force $fixtureRepo }
+        # SilentlyContinue so a cleanup hiccup (e.g. a transient file lock on .git)
+        # can't throw from `finally` and mask a real failure from the `try` body.
+        if (Test-Path $fixtureRepo) { Remove-Item -Recurse -Force $fixtureRepo -ErrorAction SilentlyContinue }
     }
 }
 
