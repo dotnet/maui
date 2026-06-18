@@ -314,15 +314,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 									UpdateItemDecoration();
 								}
 
-								// Ensure proper centering after collection changes for loop mode
 								if (Carousel.Loop)
 								{
 									UpdateLoopCentering(count);
 								}
+								else
+								{
+									ScrollToPosition(carouselPosition);
+								}
 
 								UpdateVisualStates();
-
-								ScrollToPosition(carouselPosition);
 							}
 						}
 						finally
