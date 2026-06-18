@@ -2,6 +2,7 @@
 using System;
 using Android.Content;
 using Android.Views;
+using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.Carousel;
 using Google.Android.Material.Shape;
@@ -49,11 +50,25 @@ public class CarouselViewAdapter2
     public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
     {
         var context = parent.Context;
+        bool horizontal = _isHorizontal?.Invoke() ?? true;
 
         if (viewType == Items.ItemViewType.TextItem)
         {
-            // Text items don't need MaskableFrameLayout; delegate to base.
-            return base.OnCreateViewHolder(parent, viewType);
+            // CarouselLayoutManager rejects any direct RecyclerView child that is not a
+            // MaskableFrameLayout — it throws IllegalStateException from
+            // measureChildWithMargins on the very first measure pass. The base adapter's
+            // text path returns a plain TextView, so wrap it in a MaskableFrameLayout here
+            // too; otherwise a CarouselView bound to raw string items (no ItemTemplate)
+            // would crash.
+            var maskableText = CreateMaskableFrameLayout(context, horizontal);
+            var textView = new TextView(context)
+            {
+                LayoutParameters = new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MatchParent,
+                    ViewGroup.LayoutParams.MatchParent),
+            };
+            maskableText.AddView(textView);
+            return new MaskableTextItemViewHolder(maskableText, textView);
         }
 
         var itemContentView = _createItemContentView(context);
@@ -61,15 +76,30 @@ public class CarouselViewAdapter2
             ViewGroup.LayoutParams.MatchParent,
             ViewGroup.LayoutParams.MatchParent);
 
-        // CarouselLayoutManager's strategy reads the *measured* width (horizontal) or
-        // height (vertical) of the first child to build its KeylineState. Use
-        // WRAP_CONTENT on the carousel axis so SizedItemContentView can push the
-        // desired pixel size up through measurement. A fixed pixel value sampled
-        // here from GetItemWidth/Height would be 0 before the RecyclerView is laid
-        // out — Math.Max(1, 0) then yields 1px items, which combined with looping
-        // (LoopScale ≈ 16384 items) causes an infinite measure / GC loop and a
-        // stuck UI.
-        bool horizontal = _isHorizontal?.Invoke() ?? true;
+        var maskable = CreateMaskableFrameLayout(context, horizontal);
+        maskable.AddView(itemContentView);
+
+        // MaskableCarouselItemViewHolder.Bind resolves the correct DataTemplate per item
+        // via SelectDataTemplate, which handles both plain templates and DataTemplateSelector,
+        // so we pass the root ItemTemplate directly.
+        return new MaskableCarouselItemViewHolder(maskable, itemContentView, ItemsView.ItemTemplate);
+    }
+
+    /// <summary>
+    /// Builds the <see cref="MaskableFrameLayout"/> root required by Material's
+    /// <see cref="CarouselLayoutManager"/> and applies the Material 3 "Corner Extra Large"
+    /// shape appearance so carousel items get the expected rounded-corner mask.
+    /// </summary>
+    /// <remarks>
+    /// WRAP_CONTENT is used on the carousel axis so SizedItemContentView can push the desired
+    /// pixel size up through measurement: the strategy reads the measured width (horizontal) or
+    /// height (vertical) of the first child to build its KeylineState. A fixed pixel value
+    /// sampled before the RecyclerView is laid out would be 0 — Math.Max(1, 0) then yields
+    /// 1px items, which combined with looping (LoopScale ≈ 16384 items) causes an infinite
+    /// measure / GC loop and a stuck UI.
+    /// </remarks>
+    static MaskableFrameLayout CreateMaskableFrameLayout(Context context, bool horizontal)
+    {
         var maskable = new MaskableFrameLayout(context)
         {
             LayoutParameters = new RecyclerView.LayoutParams(
@@ -77,8 +107,6 @@ public class CarouselViewAdapter2
                 horizontal ? ViewGroup.LayoutParams.MatchParent : ViewGroup.LayoutParams.WrapContent),
         };
 
-        // Resolve the Material 3 "Corner Extra Large" shape appearance from the current theme
-        // and apply it so the carousel item gets the expected rounded-corner mask.
         using (var value = new global::Android.Util.TypedValue())
         {
             if (context.Theme.ResolveAttribute(Resource.Attribute.shapeAppearanceCornerExtraLarge, value, true)
@@ -90,12 +118,7 @@ public class CarouselViewAdapter2
             }
         }
 
-        maskable.AddView(itemContentView);
-
-        // MaskableCarouselItemViewHolder.Bind resolves the correct DataTemplate per item
-        // via SelectDataTemplate, which handles both plain templates and DataTemplateSelector,
-        // so we pass the root ItemTemplate directly.
-        return new MaskableCarouselItemViewHolder(maskable, itemContentView, ItemsView.ItemTemplate);
+        return maskable;
     }
 
     public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
@@ -109,6 +132,17 @@ public class CarouselViewAdapter2
 
             var item = ItemsSource.GetItem(position);
             maskableHolder.Bind(item, CarouselView);
+            return;
+        }
+
+        if (holder is MaskableTextItemViewHolder textHolder)
+        {
+            if (ItemsSource is null || position < 0 || position >= ItemsSource.Count)
+            {
+                return;
+            }
+
+            textHolder.TextView.Text = ItemsSource.GetItem(position)?.ToString();
             return;
         }
 

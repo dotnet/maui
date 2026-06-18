@@ -78,6 +78,19 @@ public partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselView>
 
     public static void MapPeekAreaInsets(CarouselViewHandler2 handler, CarouselView carouselView)
     {
+        // PeekAreaInsets is intentionally a no-op for this handler.
+        //
+        // PeekAreaInsets is meant to shrink each item below the viewport so a sliver of the
+        // adjacent item(s) "peeks" in at the edges. That requires a CarouselStrategy that lays
+        // out partially-visible neighbours (MultiBrowse, Hero, Uncontained). This handler is
+        // locked to FullScreenCarouselStrategy (see MauiCarouselRecyclerView2.CreateCarouselStrategy),
+        // which builds its KeylineState from the full container size and masks every child to fill
+        // the viewport — one full-screen item per page with no peeking neighbours. The child's
+        // measured size does not influence the keyline, so re-measuring items here would only
+        // rebuild the adapter (and reset the carousel position) without producing any peek effect.
+        //
+        // TODO: Wire this up once a peek-capable, strategy-aware sizing path exists for the
+        // Material3 handler.
     }
 
     public static void MapPosition(CarouselViewHandler2 handler, CarouselView carouselView)

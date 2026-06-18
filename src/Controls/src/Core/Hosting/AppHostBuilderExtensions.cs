@@ -80,7 +80,7 @@ public static partial class AppHostBuilderExtensions
 #pragma warning restore CS0618
 		}
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
-#else
+#elif TIZEN
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
