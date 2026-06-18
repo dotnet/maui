@@ -39,6 +39,14 @@ on:
 if: |
   github.repository == 'dotnet/maui'
 
+# ⚠️ TEMP CANARY OVERRIDE — REMOVE BEFORE MERGE. The gh-aw daily AI-credits
+# guardrail caps a workflow's total AIC over a rolling 24h window (org default
+# GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS, falling back to 5000). The pre-merge
+# debugging runs on this branch already consumed ~5.4k AIC today, so the default
+# blocks further validation runs before the agent can start. Raise it only for
+# the canary; deleting this field restores the org default for production.
+max-daily-ai-credits: 20000
+
 engine:
   id: copilot
   model: claude-opus-4.8
