@@ -295,6 +295,8 @@ jobs:
           mkdir -p sv-results
           skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
           echo "$skill_count" > sv-results/skill-count.txt
+          agent_count=$(find .github/agents -mindepth 1 -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
+          echo "$agent_count" > sv-results/agent-count.txt
           echo "${{ steps.check.outputs.spec_count }}" > sv-results/spec-count.txt
           echo "${{ steps.check.outputs.exit_code }}" > sv-results/exit-code.txt
           if [ -f sv-output.txt ]; then
@@ -893,6 +895,10 @@ jobs:
               try { return fs.readFileSync('static-results/skill-count.txt', 'utf8').trim(); }
               catch { return '?'; }
             })();
+            const agentCount = (() => {
+              try { return fs.readFileSync('static-results/agent-count.txt', 'utf8').trim(); }
+              catch { return '?'; }
+            })();
             const specCount = (() => {
               try { return fs.readFileSync('static-results/spec-count.txt', 'utf8').trim(); }
               catch { return '?'; }
@@ -1159,39 +1165,64 @@ jobs:
                 ? 'Passed'
                 : 'Needs attention';
             const overallIcon = overallStatus === 'Passed' ? '✅' : overallStatus === 'Failed' ? '❌' : '⚠️';
-            const badges = [
-              badge('Overall', overallStatus, colorFor(overallStatus)),
-              badge('Static', staticStatus, colorFor(staticStatus)),
-              badge('LLM', evalStatus, colorFor(evalStatus)),
-              badge('Skills', String(skillCount), '8250df'),
-              badge('Agents', String(agentCount), '0969da'),
-            ].join('\n');
-            const authorLine = prAuthor
-              ? `> @${prAuthor} — new skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`
-              : `> New skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`;
-            const content = lines.join('\n');
-            let body = [
-              marker,
-              '',
-              '## Skill Validation Results',
-              '',
-              authorLine,
-              '> To request a fresh validation after new comments or commits, comment `/evaluate-skills`.',
-              '',
-              '<p align="left">',
-              badges,
-              '</p>',
-              '',
-              `<!-- SESSION:${headSha7} START -->`,
-              '<details>',
-              `<summary>${overallIcon} <strong>Skill Validation Results</strong> — <a href="${commitUrl}"><code>${headSha7}</code></a> · <strong>${prTitle}</strong> · <em>${timestamp}</em></summary>`,
-              '<br/>',
-              '',
-              content,
-              '',
-              '</details>',
-              `<!-- SESSION:${headSha7} END -->`,
-            ].join('\n').replace(/<details\s+open>/g, '<details>');
+            // Wrap badge + body construction so a future undefined variable or formatting
+            // error can never sink the whole job: on failure we log loudly and fall back to a
+            // minimal plain-text body so the results comment ALWAYS posts.
+            let body;
+            try {
+              const badges = [
+                badge('Overall', overallStatus, colorFor(overallStatus)),
+                badge('Static', staticStatus, colorFor(staticStatus)),
+                badge('LLM', evalStatus, colorFor(evalStatus)),
+                badge('Skills', String(skillCount), '8250df'),
+                badge('Agents', String(agentCount), '0969da'),
+              ].join('\n');
+              const authorLine = prAuthor
+                ? `> @${prAuthor} — new skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`
+                : `> New skill validation results are available based on this last commit: <a href="${commitUrl}"><code>${headSha7}</code></a>.`;
+              const content = lines.join('\n');
+              body = [
+                marker,
+                '',
+                '## Skill Validation Results',
+                '',
+                authorLine,
+                '> To request a fresh validation after new comments or commits, comment `/evaluate-skills`.',
+                '',
+                '<p align="left">',
+                badges,
+                '</p>',
+                '',
+                `<!-- SESSION:${headSha7} START -->`,
+                '<details>',
+                `<summary>${overallIcon} <strong>Skill Validation Results</strong> — <a href="${commitUrl}"><code>${headSha7}</code></a> · <strong>${prTitle}</strong> · <em>${timestamp}</em></summary>`,
+                '<br/>',
+                '',
+                content,
+                '',
+                '</details>',
+                `<!-- SESSION:${headSha7} END -->`,
+              ].join('\n').replace(/<details\s+open>/g, '<details>');
+            } catch (err) {
+              const detail = err && err.stack ? err.stack : String(err);
+              console.error(`Failed to build formatted Skill Validation comment body: ${detail}`);
+              core.warning(`Skill Validation comment formatting failed; posting plain-text fallback instead: ${err && err.message ? err.message : detail}`);
+              // Keep the marker so the upsert logic still finds/updates this comment, and use
+              // only the already-computed status values (no badge formatting that could rethrow).
+              body = [
+                marker,
+                '',
+                '## Skill Validation Results',
+                '',
+                `Overall: ${overallStatus} · Static: ${staticStatus} · LLM: ${evalStatus}`,
+                '',
+                `Commit: \`${headSha7}\``,
+                '',
+                `[🔍 Full results and investigation steps](${runUrl})`,
+                '',
+                '> _Result badges could not be rendered due to an internal formatting error; see the workflow run logs for details._',
+              ].join('\n');
+            }
 
             // ── Write step summary with investigation prompt ──────
             const summaryPath = process.env.GITHUB_STEP_SUMMARY;
