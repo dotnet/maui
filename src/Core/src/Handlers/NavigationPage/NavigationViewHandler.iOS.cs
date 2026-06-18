@@ -14,41 +14,11 @@ namespace Microsoft.Maui.Handlers
 		NavigationControllerManager? _navManager;
 
 		/// <summary>
-		/// The UINavigationBar subclass to use when creating the UINavigationController.
-		/// Defaults to UINavigationBar. Controls layer can override to MauiNavigationBar.
+		/// Controls-layer configuration. Set by <c>NavigationPage.RemapForControls()</c> to wire
+		/// all callbacks and customization points in one place. When null, the handler uses
+		/// Core-only defaults (standard UINavigationBar, no lifecycle callbacks).
 		/// </summary>
-		internal static Type NavigationBarType { get; set; } = typeof(UINavigationBar);
-
-		/// <summary>
-		/// Optional factory set by the Controls layer to create a wrapper VC for each page.
-		/// When set, replaces the default handler-based VC creation with a ParentingViewController
-		/// that manages toolbar items, nav bar visibility, back button, etc.
-		/// </summary>
-		internal static Func<IView, IMauiContext, UIViewController>? CreateViewControllerForPage { get; set; }
-
-		/// <summary>
-		/// Optional callback invoked after a UIKit-initiated pop (back button, swipe, long-press
-		/// history menu) has completed and the MAUI stack is synced. The Controls layer sets this
-		/// to fire page lifecycle events (OnNavigatedTo/OnNavigatedFrom) via SendNavigatedFromHandler.
-		/// Parameters: (IStackNavigationView navigationView, IView poppedPage)
-		/// </summary>
-		internal static Action<IStackNavigationView, IView>? OnNativePopCompleted { get; set; }
-
-		/// <summary>
-		/// Optional callback invoked when the UINavigationController's ViewDidAppear fires.
-		/// The Controls layer sets this to re-evaluate the Loaded state on the NavigationPage
-		/// element, ensuring the Loaded event fires when hosted inside a parent container
-		/// (TabbedPage, FlyoutPage) where the initial KVO-based watcher may miss the window assignment.
-		/// Also fires SendAppearing on the NavigationPage element for tab switch scenarios.
-		/// </summary>
-		internal static Action<IStackNavigationView>? OnNavigationControllerDidAppear { get; set; }
-
-		/// <summary>
-		/// Optional callback invoked when the UINavigationController's ViewDidDisappear fires.
-		/// The Controls layer sets this to fire SendDisappearing on the NavigationPage element
-		/// when the user switches away from this tab or the NavigationPage is otherwise hidden.
-		/// </summary>
-		internal static Action<IStackNavigationView>? OnNavigationControllerDidDisappear { get; set; }
+		internal static NavigationViewHandlerControlsConfiguration? ControlsConfiguration { get; set; }
 
 		public IStackNavigationView NavigationView => ((IStackNavigationView)VirtualView);
 
@@ -72,7 +42,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIView CreatePlatformView()
 		{
-			_navManager = new NavigationControllerManager(NavigationBarType, new NavigationViewDelegate(this));
+			var navBarType = ControlsConfiguration?.NavigationBarType ?? typeof(UINavigationBar);
+			_navManager = new NavigationControllerManager(navBarType, new NavigationViewDelegate(this));
 			return _navManager.NavigationController.View!;
 		}
 
@@ -236,10 +207,10 @@ namespace Microsoft.Maui.Handlers
 
 			UIViewController vc;
 
-			if (CreateViewControllerForPage is not null)
+			if (ControlsConfiguration?.CreateViewControllerForPage is { } factory)
 			{
 				// Controls layer provides a ParentingViewController wrapper
-				vc = CreateViewControllerForPage(view, MauiContext!);
+				vc = factory(view, MauiContext!);
 			}
 			else
 			{
@@ -432,7 +403,7 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				NavigationViewHandler.OnNavigationControllerDidAppear?.Invoke(handler.NavigationView);
+				ControlsConfiguration?.OnControllerAppeared?.Invoke(handler.NavigationView);
 			}
 
 			public void OnNavigationControllerDidDisappear()
@@ -442,7 +413,7 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				NavigationViewHandler.OnNavigationControllerDidDisappear?.Invoke(handler.NavigationView);
+				ControlsConfiguration?.OnControllerDisappeared?.Invoke(handler.NavigationView);
 			}
 
 			public void OnViewDidLayoutSubviews(CoreGraphics.CGRect bounds)
@@ -498,12 +469,52 @@ namespace Microsoft.Maui.Handlers
 					// for the popped page. This is the iOS-specific equivalent of the renderer's
 					// ParentingViewController.DidMoveToParentViewController → UpdateFormsInnerNavigation
 					// → SendNavigatedFromHandler.
-					if (poppedPage is not null && OnNativePopCompleted is not null)
+					if (poppedPage is not null && ControlsConfiguration?.OnNativePopCompleted is { } onPopCompleted)
 					{
-						OnNativePopCompleted(handler.NavigationView, poppedPage);
+						onPopCompleted(handler.NavigationView, poppedPage);
 					}
 				}
 			}
 		}
+	}
+
+	/// <summary>
+	/// Configuration record for Controls-layer integration with NavigationViewHandler.
+	/// All callbacks and customization points that the Controls layer needs to wire are
+	/// consolidated here. Set via <see cref="NavigationViewHandler.ControlsConfiguration"/>
+	/// in <c>NavigationPage.RemapForControls()</c>.
+	/// </summary>
+	internal sealed class NavigationViewHandlerControlsConfiguration
+	{
+		/// <summary>
+		/// The UINavigationBar subclass to use when creating the UINavigationController.
+		/// Controls layer sets this to MauiNavigationBar for Mac Catalyst title bar support.
+		/// </summary>
+		public required Type NavigationBarType { get; init; }
+
+		/// <summary>
+		/// Factory to create a wrapper VC for each page (NavigationHandlerParentingViewController).
+		/// Manages toolbar items, nav bar visibility, back button, title, etc.
+		/// </summary>
+		public required Func<IView, IMauiContext, UIViewController> CreateViewControllerForPage { get; init; }
+
+		/// <summary>
+		/// Callback invoked after a UIKit-initiated pop (back button, swipe, long-press history menu)
+		/// has completed and the MAUI stack is synced. Fires page lifecycle events (NavigatedTo/From)
+		/// via SendNavigatedFromHandler.
+		/// </summary>
+		public required Action<IStackNavigationView, IView> OnNativePopCompleted { get; init; }
+
+		/// <summary>
+		/// Callback invoked when the UINavigationController's ViewDidAppear fires.
+		/// Re-evaluates Loaded state (H1 fix) and fires SendAppearing for tab switch scenarios (H3 fix).
+		/// </summary>
+		public required Action<IStackNavigationView> OnControllerAppeared { get; init; }
+
+		/// <summary>
+		/// Callback invoked when the UINavigationController's ViewDidDisappear fires.
+		/// Fires SendDisappearing for tab switch scenarios (H3 fix).
+		/// </summary>
+		public required Action<IStackNavigationView> OnControllerDisappeared { get; init; }
 	}
 }
