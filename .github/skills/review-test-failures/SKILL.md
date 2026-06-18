@@ -104,8 +104,7 @@ Use a compact PR conversation comment body. Start with a stable marker, put the 
 
 ## Tests Failure Analysis
 
-> @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]).
-> To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
+> @[PR author] — test-failure review results are available based on commit [`[sha7]`]([commit URL]). To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.
 
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">

@@ -390,6 +390,34 @@ function Test-HasNonPRWinner {
     }
 }
 
+function Test-RunValidationFailed {
+    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+
+    # Gate: key off the trusted gate-result.txt, which Review-PR.ps1 always overwrites with the
+    # real $gateResult. Do NOT parse gate/content.md — it is not always cleaned before the gate
+    # runs, so a PR could commit a forged "Gate Result: PASSED" content.md to bypass the veto.
+    $gateResultFile = Join-Path $PRAgentDir 'gate/gate-result.txt'
+    if (Test-Path -LiteralPath $gateResultFile) {
+        $gateResult = (Get-Content -Raw -LiteralPath $gateResultFile -Encoding UTF8).Trim()
+        if ($gateResult -match '(?im)^FAILED$') { return $true }
+    }
+
+    # UI tests: the pipeline render writes "❌ **Deep UI tests** — N passed, M failed …" with no
+    # "Result:" line, so detect the failure icon on a bold test header or a non-zero "N failed"
+    # count ("marked failed by TRX" on the passing branch has no digit immediately before
+    # "failed", so it does not match). Skip the "no UI tests needed" no-op placeholder.
+    $uiFile = Join-Path $PRAgentDir 'uitests/content.md'
+    if (Test-Path -LiteralPath $uiFile) {
+        $uiContent = Get-Content -Raw -LiteralPath $uiFile -Encoding UTF8
+        if (-not (Test-PhaseContentIsNoOp -PhaseKey 'uitests' -Content $uiContent) -and
+            ($uiContent -match '(?im)❌\s*\*\*[^*\n]*tests\*\*' -or $uiContent -match '(?im)\b[1-9]\d*\s+failed\b')) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Get-AIReviewEventForRun {
     param(
         [string]$ReportContent,
@@ -399,6 +427,13 @@ function Get-AIReviewEventForRun {
     )
 
     $reviewEvent = Get-AIReviewEvent -ReportContent $ReportContent
+
+    # Validation veto: never post an APPROVE review over a failed gate / device-test validation,
+    # even when the report body recommends APPROVE (the report can be stale vs. current-run results).
+    if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir)) {
+        return 'REQUEST_CHANGES'
+    }
+
     if ((Test-HasNonPRWinner -PRAgentDir $PRAgentDir) -and $reviewEvent -eq 'COMMENT') {
         return 'REQUEST_CHANGES'
     }
@@ -519,8 +554,6 @@ try {
     Write-Host "⚠️ Failed to fetch commit info: $_" -ForegroundColor Yellow
     $commitJson = $null
 }
-$commitTitle = if ($commitJson) { ($commitJson.message -split "`n")[0] } else { "Unknown" }
-$commitTitle = $commitTitle -replace '&','&amp;' -replace '<','&lt;' -replace '>','&gt;'
 $commitSha7 = if ($commitJson) { $commitJson.sha.Substring(0, 7) } else { "unknown" }
 $commitFull = if ($commitJson) { $commitJson.sha } else { "" }
 $commitUrl = if ($commitJson) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
@@ -592,7 +625,7 @@ if ($existingRaw) {
 
 $authorPing = ""
 if ($prAuthor) {
-    $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>.`n> **$commitTitle**"
+    $authorPing = "> @$prAuthor — new AI review results are available based on this last commit: <a href=`"$commitUrl`"><code>$commitSha7</code></a>."
     $authorPing += ' To request a fresh review after new comments or commits, comment `/review rerun`.'
 }
 

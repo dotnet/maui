@@ -255,6 +255,7 @@ function New-TestFailureReviewBody {
     else {
         "> Test-failure review results are available based on commit [``$commitSha7``]($commitUrl)."
     }
+    $authorPing += ' To request a fresh review after new comments, commits, or CI runs, comment `/review tests`.'
 
     $badges = $badgeLines -join "`n"
 
@@ -264,7 +265,6 @@ $marker
 ## Tests Failure Analysis
 
 $authorPing
-> To request a fresh review after new comments, commits, or CI runs, comment ``/review tests``.
 
 <p align="left">
 $badges
