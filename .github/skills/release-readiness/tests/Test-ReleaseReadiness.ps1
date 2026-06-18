@@ -548,30 +548,45 @@ if (-not (Test-Path $detectScriptPath)) {
         git -C $fixtureRepo init -q             2>&1 | Out-Null
         git -C $fixtureRepo config user.email 'rr-test@example.com' 2>&1 | Out-Null
         git -C $fixtureRepo config user.name  'RR Test'            2>&1 | Out-Null
-        # Keep the fixture hermetic: a developer with `commit.gpgsign=true` set
-        # globally (but no signing key for this throwaway repo) would otherwise hit
-        # "gpg failed to sign the data" and produce zero commits. Force it off locally.
-        git -C $fixtureRepo config commit.gpgsign false           2>&1 | Out-Null
+        # Keep the fixture hermetic against the host's git config — otherwise a
+        # developer/CI machine could break the synthetic commits in ways unrelated
+        # to the code under test:
+        #   - commit.gpgsign=true with no key for this throwaway repo -> "gpg failed
+        #     to sign the data" -> zero commits.
+        #   - a global core.hooksPath, or an init.templateDir that seeds .git/hooks,
+        #     installing a pre-commit/commit-msg hook (linters, ticket-number
+        #     enforcement, etc.) -> commits rejected.
+        # Force signing off and redirect hook lookup to an empty (nonexistent) path
+        # under .git so neither can interfere. A local core.hooksPath overrides any
+        # global one AND bypasses templated .git/hooks. The setup guard below still
+        # fails loud if anything else goes wrong.
+        git -C $fixtureRepo config commit.gpgsign false 2>&1 | Out-Null
+        git -C $fixtureRepo config core.hooksPath (Join-Path (Join-Path $fixtureRepo '.git') '_disabled-hooks') 2>&1 | Out-Null
 
         # Three commits at known ages relative to "now". The 1-day margins on either
         # side of the 7-day window keep every assertion robust (no boundary fuzz).
         $now = Get-Date
-        foreach ($c in @(
-            @{ Msg = 'c30'; Age = 30 }   # well outside any window under test
-            @{ Msg = 'c8';  Age = 8  }   # just OUTSIDE the 7-day window
-            @{ Msg = 'c6';  Age = 6  }   # just INSIDE the 7-day window
-        )) {
-            $iso = $now.AddDays(-$c.Age).ToString('yyyy-MM-ddTHH:mm:ss')
-            Set-Content -Path (Join-Path $fixtureRepo "$($c.Msg).txt") -Value $c.Msg
-            git -C $fixtureRepo add -A 2>&1 | Out-Null
-            $env:GIT_AUTHOR_DATE    = $iso
-            $env:GIT_COMMITTER_DATE = $iso   # --since filters on committer date
-            try {
+        # Preserve any ambient GIT_*_DATE the caller set: we override them per commit
+        # to control dates, then restore the originals so a later test in this process
+        # (or the parent environment) is never left mutated.
+        $priorAuthorDate    = $env:GIT_AUTHOR_DATE
+        $priorCommitterDate = $env:GIT_COMMITTER_DATE
+        try {
+            foreach ($c in @(
+                @{ Msg = 'c30'; Age = 30 }   # well outside any window under test
+                @{ Msg = 'c8';  Age = 8  }   # just OUTSIDE the 7-day window
+                @{ Msg = 'c6';  Age = 6  }   # just INSIDE the 7-day window
+            )) {
+                $iso = $now.AddDays(-$c.Age).ToString('yyyy-MM-ddTHH:mm:ss')
+                Set-Content -Path (Join-Path $fixtureRepo "$($c.Msg).txt") -Value $c.Msg
+                git -C $fixtureRepo add -A 2>&1 | Out-Null
+                $env:GIT_AUTHOR_DATE    = $iso
+                $env:GIT_COMMITTER_DATE = $iso   # --since filters on committer date
                 git -C $fixtureRepo commit -q -m $c.Msg 2>&1 | Out-Null
-            } finally {
-                Remove-Item Env:GIT_AUTHOR_DATE    -ErrorAction SilentlyContinue
-                Remove-Item Env:GIT_COMMITTER_DATE -ErrorAction SilentlyContinue
             }
+        } finally {
+            if ($null -eq $priorAuthorDate)    { Remove-Item Env:GIT_AUTHOR_DATE    -ErrorAction SilentlyContinue } else { $env:GIT_AUTHOR_DATE    = $priorAuthorDate }
+            if ($null -eq $priorCommitterDate) { Remove-Item Env:GIT_COMMITTER_DATE -ErrorAction SilentlyContinue } else { $env:GIT_COMMITTER_DATE = $priorCommitterDate }
         }
         # Get-RecentCommitCount resolves `origin/<ref>`, so publish a remote-tracking
         # ref. Targeting HEAD keeps this branch-name agnostic (works whether git
@@ -713,6 +728,12 @@ if (-not $SkipE2E) {
                 if ($bySr.ContainsKey($srNum)) {
                     Assert-Eq -Label "SR$srNum hasRecentActivity is a [bool] (active SR; value date-dependent)" `
                               -Expected $true -Actual ($bySr[$srNum].hasRecentActivity -is [bool])
+                    # Pin the detector's count->flag WIRING (hasRecentActivity = recentCommitCount > 0)
+                    # without pinning the date-dependent value: both fields come off the SAME tracker
+                    # computed at the SAME instant, so this invariant holds no matter how active the
+                    # branch is, yet still catches an inverted/hardcoded mapping.
+                    Assert-Eq -Label "SR$srNum hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
+                              -Expected $true -Actual ($bySr[$srNum].hasRecentActivity -eq ([int]$bySr[$srNum].recentCommitCount -gt 0))
                 }
             }
         }
@@ -797,6 +818,11 @@ if (-not $SkipE2E) {
                 # Assert the flag's TYPE, not its date-dependent value.
                 Assert-Eq -Label "preview6 hasRecentActivity is a [bool] (value date-dependent)" `
                           -Expected $true -Actual ($preview6.hasRecentActivity -is [bool])
+                # Pin the count->flag WIRING (hasRecentActivity = recentCommitCount > 0) for the
+                # preview construction path too — same-instant fields, so date-independent yet it
+                # still trips on an inverted/hardcoded mapping.
+                Assert-Eq -Label "preview6 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
+                          -Expected $true -Actual ($preview6.hasRecentActivity -eq ([int]$preview6.recentCommitCount -gt 0))
                 Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
                           -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
                           -Actual ($preview6.regressionLabels -join ',')
