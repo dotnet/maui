@@ -22,6 +22,13 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		"HybridWebView",
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
+	private static readonly DiagnosticDescriptor OpenGenericInvokeTarget = new(
+		"MAUIHWVSG002",
+		"HybridWebView invoke target type must be closed",
+		"HybridWebView invoke target type '{0}' is open generic. SetInvokeJavaScriptTarget<T> requires a closed target type so the source generator can generate AOT-safe dispatch.",
+		"HybridWebView",
+		DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -58,7 +65,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			return null;
 
 		string receiverTypeName;
-		INamedTypeSymbol? targetType;
+		ITypeSymbol? targetTypeSymbol;
 		var method = ctx.SemanticModel.GetSymbolInfo(invocation.Expression, ct).Symbol as IMethodSymbol;
 		if (method is not null)
 		{
@@ -80,7 +87,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			receiverTypeName = containingType == IHybridWebViewTypeName
 				? IHybridWebViewFullyQualifiedTypeName
 				: HybridWebViewFullyQualifiedTypeName;
-			targetType = method.TypeArguments[0] as INamedTypeSymbol;
+			targetTypeSymbol = method.TypeArguments[0];
 		}
 		else
 		{
@@ -109,10 +116,20 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 				return null;
 			}
 
-			targetType = GetTargetType(ctx, memberAccess, invocation, ct);
+			targetTypeSymbol = GetTargetType(ctx, memberAccess, invocation, ct);
 		}
 
-		if (targetType is null)
+		if (targetTypeSymbol is null)
+			return null;
+
+		if (ContainsTypeParameter(targetTypeSymbol))
+		{
+			return new InvocationInfo(
+				invocation.GetLocation(),
+				targetTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+		}
+
+		if (targetTypeSymbol is not INamedTypeSymbol targetType)
 			return null;
 
 		// Get interceptable location
@@ -198,16 +215,30 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			overloadedMethodNames);
 	}
 
-	private static INamedTypeSymbol? GetTargetType(GeneratorSyntaxContext ctx, MemberAccessExpressionSyntax memberAccess, InvocationExpressionSyntax invocation, System.Threading.CancellationToken ct)
+	private static ITypeSymbol? GetTargetType(GeneratorSyntaxContext ctx, MemberAccessExpressionSyntax memberAccess, InvocationExpressionSyntax invocation, System.Threading.CancellationToken ct)
 	{
 		if (memberAccess.Name is GenericNameSyntax genericName
 			&& genericName.TypeArgumentList.Arguments.Count == 1
-			&& ctx.SemanticModel.GetSymbolInfo(genericName.TypeArgumentList.Arguments[0], ct).Symbol is INamedTypeSymbol explicitType)
+			&& ctx.SemanticModel.GetSymbolInfo(genericName.TypeArgumentList.Arguments[0], ct).Symbol is ITypeSymbol explicitType)
 		{
 			return explicitType;
 		}
 
-		return ctx.SemanticModel.GetTypeInfo(invocation.ArgumentList.Arguments[0].Expression, ct).Type as INamedTypeSymbol;
+		return ctx.SemanticModel.GetTypeInfo(invocation.ArgumentList.Arguments[0].Expression, ct).Type;
+	}
+
+	private static bool ContainsTypeParameter(ITypeSymbol type)
+	{
+		if (type.TypeKind == TypeKind.TypeParameter)
+			return true;
+
+		return type switch
+		{
+			INamedTypeSymbol namedType => namedType.TypeArguments.Any(ContainsTypeParameter),
+			IArrayTypeSymbol arrayType => ContainsTypeParameter(arrayType.ElementType),
+			IPointerTypeSymbol pointerType => ContainsTypeParameter(pointerType.PointedAtType),
+			_ => false
+		};
 	}
 
 	private static bool IsSameOrDerivedFrom(ITypeSymbol type, string typeName)
@@ -263,7 +294,16 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			if (info is null)
 				continue;
 
-			var loc = info.Location;
+			if (info.OpenGenericTargetTypeName is not null)
+			{
+				spc.ReportDiagnostic(Diagnostic.Create(
+					OpenGenericInvokeTarget,
+					info.DiagnosticLocation,
+					info.OpenGenericTargetTypeName));
+				continue;
+			}
+
+			var loc = info.Location!;
 
 			if (info.OverloadedMethodNames.Length > 0)
 			{
@@ -387,6 +427,17 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 
 	private sealed class InvocationInfo
 	{
+		public InvocationInfo(Location diagnosticLocation, string openGenericTargetTypeName)
+		{
+			Location = null;
+			DiagnosticLocation = diagnosticLocation;
+			ReceiverTypeName = string.Empty;
+			TargetTypeName = string.Empty;
+			Methods = [];
+			OverloadedMethodNames = [];
+			OpenGenericTargetTypeName = openGenericTargetTypeName;
+		}
+
 		public InvocationInfo(InterceptableLocation location, Location diagnosticLocation, string receiverTypeName, string targetTypeName, MethodInfo[] methods, string[] overloadedMethodNames)
 		{
 			Location = location;
@@ -395,13 +446,15 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			TargetTypeName = targetTypeName;
 			Methods = methods;
 			OverloadedMethodNames = overloadedMethodNames;
+			OpenGenericTargetTypeName = null;
 		}
-		public InterceptableLocation Location { get; }
+		public InterceptableLocation? Location { get; }
 		public Location DiagnosticLocation { get; }
 		public string ReceiverTypeName { get; }
 		public string TargetTypeName { get; }
 		public MethodInfo[] Methods { get; }
 		public string[] OverloadedMethodNames { get; }
+		public string? OpenGenericTargetTypeName { get; }
 	}
 
 	private sealed class MethodInfo
