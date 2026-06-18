@@ -2261,6 +2261,67 @@ function Get-OpenSrPrs {
     return @($raw | ConvertFrom-Json -ErrorAction SilentlyContinue)
 }
 
+function Test-IsP0Pr {
+    <#
+    .SYNOPSIS
+        True when a PR object carries the release-blocking 'p/0' label.
+    .DESCRIPTION
+        Ported verbatim from Get-PreviewReadiness.ps1 so the SR lane honors
+        p/0-labelled PRs as blockers exactly like the Preview lane. A p/0 label
+        deliberately placed on a release-targeting PR is an explicit "must ship"
+        signal, so it must surface as a blocker instead of being buried in the
+        generic open-PR list. StrictMode-safe: a PR with a missing or null
+        `labels` property yields an empty array (-> $false) instead of throwing.
+        Accepts both PSCustomObject (the production `gh ... --json` shape) and
+        IDictionary/hashtable (the shape test mocks commonly use).
+    #>
+    param($PR)
+
+    if (-not $PR) { return $false }
+    $labels = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('labels')) { $PR['labels'] } else { $null }
+    } elseif ($PR.PSObject.Properties['labels']) {
+        $PR.labels
+    } else {
+        $null
+    }
+    if (-not $labels) { return $false }
+    return (@($labels | ForEach-Object { $_.name }) -contains 'p/0')
+}
+
+function Get-P0PrChecks {
+    <#
+    .SYNOPSIS
+        Builds a single readiness-check record reporting whether any open PR
+        targeting the SR branch carries the release-blocking 'p/0' label.
+    .DESCRIPTION
+        Mirrors the Preview lane's p/0 PR check. A BLOCKED result is auto-hoisted
+        into the top-of-issue "🔴 Blocking" table and escalates the verdict to
+        Tier 1 (Not Ready) via the shared ship-check machinery — no verdict or
+        renderer changes are needed. StrictMode-safe: guards null/empty input.
+    .OUTPUTS
+        Array with exactly one check record (see New-ReadinessCheck).
+    #>
+    param($OpenSrPrs, [string]$SrBranch)
+
+    $prs = @($OpenSrPrs)
+    $p0 = @($prs | Where-Object { Test-IsP0Pr $_ })
+
+    if ($p0.Count -gt 0) {
+        $nums = ($p0 | ForEach-Object { "#$($_.number)" }) -join ', '
+        return @(New-ReadinessCheck `
+            -Area 'P/0 release-branch PRs' `
+            -Status 'BLOCKED' `
+            -Details "$($p0.Count) open P/0-labelled PR(s) target ``$SrBranch``: $nums." `
+            -NextAction 'Land or de-prioritize each P/0 PR before shipping.')
+    }
+    return @(New-ReadinessCheck `
+        -Area 'P/0 release-branch PRs' `
+        -Status 'READY' `
+        -Details 'No open P/0-labelled PRs target this SR branch.' `
+        -NextAction 'Continue monitoring.')
+}
+
 function Get-OpenIssuesByLabel {
     <#
     .SYNOPSIS
@@ -3458,6 +3519,20 @@ function Invoke-Main {
     # questions as blocking items at the top of the report.
     if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
         $data['shipChecks'] = Get-ReleaseShipChecks -Ctx $ctx
+    }
+
+    # P/0-labelled open PRs targeting the SR branch are release blockers (SR-lane
+    # parity with the Preview lane). Reuse the already-fetched open-PR list — only
+    # the 'all'/'open-prs' phases populate it — so we avoid an extra `gh` call. A
+    # BLOCKED result is auto-hoisted into the "🔴 Blocking" summary and escalates
+    # the verdict to Not Ready via the shared ship-check machinery.
+    if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
+        if ($data.ContainsKey('openSrPrs')) {
+            if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
+                $data['shipChecks'] = @()
+            }
+            $data['shipChecks'] = @($data['shipChecks']) + @(Get-P0PrChecks -OpenSrPrs $data['openSrPrs'] -SrBranch $ctx.srBranch)
+        }
     }
 
     # CI scanner + KBE issue signals — merged into shipChecks so they appear in the

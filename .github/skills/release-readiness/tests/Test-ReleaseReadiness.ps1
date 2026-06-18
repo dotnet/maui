@@ -2768,6 +2768,65 @@ Assert-Eq -Label "T19: patch=81 + MainBumpDate → asap-hotfix"     -Expected 'a
 Assert-Eq -Label "T19: missedWindow = false for hotfix"           -Expected $false            -Actual $t19.MissedWindow
 
 # =========================================================================
+# SR lane — Test-IsP0Pr + Get-P0PrChecks (p/0 PR blocker parity)
+# =========================================================================
+# Regression guard for the gap where p/0-labelled PRs targeting an SR branch
+# were NOT surfaced as blockers (the SR lane derived blocking only from
+# ship-checks and Tier-1 regression ISSUES; open PRs were informational).
+# These deterministic, synthetic-fixture tests exercise the SR script's OWN
+# Test-IsP0Pr + Get-P0PrChecks. Re-dot-source the SR engine so the functions
+# under test are unambiguously the SR-lane copies regardless of any prior
+# preview dot-source.
+Write-Host "`n[Unit] SR lane — Test-IsP0Pr + Get-P0PrChecks (p/0 PR parity)" -ForegroundColor Cyan
+
+$env:GET_RELEASE_READINESS_TEST_MODE = '1'
+try {
+    $srScriptForP0 = Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1'
+    . $srScriptForP0 -SrBranch 'release/10.0.1xx-sr8'
+} finally {
+    Remove-Item -Path Env:GET_RELEASE_READINESS_TEST_MODE -ErrorAction SilentlyContinue
+}
+
+# --- Test-IsP0Pr: PSCustomObject (production gh --json) shape ---
+$srP0Pr        = [PSCustomObject]@{ number = 35970; labels = @([PSCustomObject]@{ name = 'p/0' }, [PSCustomObject]@{ name = 'area-controls' }) }
+$srNonP0Pr     = [PSCustomObject]@{ number = 99999; labels = @([PSCustomObject]@{ name = 'p/1' }) }
+$srMissingLbls = [PSCustomObject]@{ number = 12345 }                 # no labels property
+$srNullLbls    = [PSCustomObject]@{ number = 22222; labels = $null }
+Assert-Eq -Label "SR: p/0-labelled PR → true"                      -Expected $true  -Actual (Test-IsP0Pr $srP0Pr)
+Assert-Eq -Label "SR: non-p/0 PR → false"                          -Expected $false -Actual (Test-IsP0Pr $srNonP0Pr)
+Assert-Eq -Label "SR: PR missing labels → false (StrictMode-safe)" -Expected $false -Actual (Test-IsP0Pr $srMissingLbls)
+Assert-Eq -Label "SR: PR null labels → false"                      -Expected $false -Actual (Test-IsP0Pr $srNullLbls)
+Assert-Eq -Label "SR: null PR → false (no throw)"                  -Expected $false -Actual (Test-IsP0Pr $null)
+
+# --- Test-IsP0Pr: hashtable / IDictionary (test-mock) shape ---
+$srHashP0    = @{ number = 35970; labels = @(@{ name = 'p/0' }) }
+$srHashNonP0 = @{ number = 66666; labels = @(@{ name = 'p/1' }) }
+$srHashNoLbl = @{ number = 77777 }                                  # no labels key
+Assert-Eq -Label "SR: hashtable PR with p/0 → true (IDictionary path)"   -Expected $true  -Actual (Test-IsP0Pr $srHashP0)
+Assert-Eq -Label "SR: hashtable PR without p/0 → false"                  -Expected $false -Actual (Test-IsP0Pr $srHashNonP0)
+Assert-Eq -Label "SR: hashtable PR missing labels key → false (no throw)" -Expected $false -Actual (Test-IsP0Pr $srHashNoLbl)
+
+# --- Get-P0PrChecks: emits exactly one BLOCKED/READY ship-check ---
+$srP0Checks = @(Get-P0PrChecks -OpenSrPrs @($srP0Pr, $srNonP0Pr) -SrBranch 'release/10.0.1xx-sr8')
+Assert-Eq -Label "Get-P0PrChecks: one record when p/0 present" -Expected 1 -Actual $srP0Checks.Count
+Assert-Eq -Label "Get-P0PrChecks: Area is 'P/0 release-branch PRs'" -Expected 'P/0 release-branch PRs' -Actual $srP0Checks[0].Area
+Assert-Eq -Label "Get-P0PrChecks: Status BLOCKED when p/0 present" -Expected 'BLOCKED' -Actual $srP0Checks[0].Status
+Assert-Eq -Label "Get-P0PrChecks: Details names #35970" -Expected $true -Actual ($srP0Checks[0].Details -like '*35970*')
+
+$srNoP0Checks = @(Get-P0PrChecks -OpenSrPrs @($srNonP0Pr) -SrBranch 'release/10.0.1xx-sr8')
+Assert-Eq -Label "Get-P0PrChecks: one record when no p/0" -Expected 1 -Actual $srNoP0Checks.Count
+Assert-Eq -Label "Get-P0PrChecks: Status READY when no p/0" -Expected 'READY' -Actual $srNoP0Checks[0].Status
+
+$srNullThrew = $false
+$srNullChecks = $null
+try { $srNullChecks = @(Get-P0PrChecks -OpenSrPrs $null -SrBranch 'release/10.0.1xx-sr8') } catch { $srNullThrew = $true }
+Assert-Eq -Label "Get-P0PrChecks: null input → no throw" -Expected $false -Actual $srNullThrew
+Assert-Eq -Label "Get-P0PrChecks: null input → READY" -Expected 'READY' -Actual $srNullChecks[0].Status
+
+$srEmptyChecks = @(Get-P0PrChecks -OpenSrPrs @() -SrBranch 'release/10.0.1xx-sr8')
+Assert-Eq -Label "Get-P0PrChecks: empty input → READY" -Expected 'READY' -Actual $srEmptyChecks[0].Status
+
+# =========================================================================
 # Test-IsP0Pr — preview engine p/0 PR blocker classification
 # =========================================================================
 # Regression guard for the gap where p/0-labelled PRs targeting a preview
