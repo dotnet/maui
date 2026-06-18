@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty HybridRootProperty;
 
 		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
+		[UnconditionalSuppressMessage("Trimming", "IL3050:RequiresDynamicCode", Justification = "BindableProperty.Create preserves public methods on the declaring type; it does not call the annotated legacy SetInvokeJavaScriptTarget overload.")]
 		static HybridWebView()
 		{
 			DefaultFileProperty = BindableProperty.Create(nameof(DefaultFile), typeof(string), typeof(HybridWebView), defaultValue: "index.html");
