@@ -92,4 +92,53 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
+  <!-- These XAML files have XSG parsing issues, use Runtime inflator until fixed -->
+  <!-- Must be after Maui.InTree.props to properly override the globbed items -->
+  <ItemGroup>
+    <MauiXaml Remove="Pages/Controls/SwipeViewGalleries/*.xaml;Pages/Others/StyleSheetsPage.xaml;Pages/Others/TwoPaneViewPage.xaml;Pages/Controls/ButtonPage.xaml;Pages/Controls/RadioButtonGalleries/RadioButtonContentGallery.xaml" />
+    <MauiXaml Include="Pages/Controls/SwipeViewGalleries/*.xaml" Inflator="Runtime" />
+    <MauiXaml Include="Pages/Others/StyleSheetsPage.xaml" Inflator="Runtime" />
+    <MauiXaml Include="Pages/Others/TwoPaneViewPage.xaml" Inflator="Runtime" />
+    <MauiXaml Include="Pages/Controls/ButtonPage.xaml" Inflator="Runtime" />
+    <MauiXaml Include="Pages/Controls/RadioButtonGalleries/RadioButtonContentGallery.xaml" Inflator="Runtime" />
+  </ItemGroup>
+
+  <!-- These XAML files use obsolete APIs (Device, NamedSize) intentionally for demonstration -->
+  <ItemGroup>
+    <MauiXaml Update="AppResources.xaml" NoWarn="0612" />
+    <MauiXaml Update="Controls/CardView/CardView.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/AppShell.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Compatibility/ListViewPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/CompatibilityPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/CollectionViewGalleries/CarouselViewGalleries/CarouselViewPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/CollectionViewGalleries/SelectionGalleries/VisualStatesGallery.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/EditorPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/IndicatorPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/RadioButtonGalleries/ContentProperties.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/RadioButtonGalleries/RadioButtonGroupGalleryPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/ShapesGalleries/ClipCornerRadiusGallery.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/ShapesGalleries/ClipGallery.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/ShapesGalleries/InvalidateClipGallery.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/SliderPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Controls/StepperPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/ControlsPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Core/BorderGalleries/BorderLayout.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Core/DispatcherPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Core/GesturesPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Core/ShadowGalleries/ShadowPlaygroundPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/CorePage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Layouts/FlexLayoutPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Layouts/ScrollViewPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/Layouts/ScrollViewPages/ScrollToEndPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/LayoutsPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/MainPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/OthersPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/PlatformSpecifics/Windows/WindowsDragAndDropCustomization.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/PlatformSpecifics/iOS/iOSDragAndDropRequestFullSize.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/PlatformSpecificsPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/UserInterface/FontsPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/UserInterface/VisualStatesPage.xaml" NoWarn="0612" />
+    <MauiXaml Update="Pages/UserInterfacePage.xaml" NoWarn="0612" />
+  </ItemGroup>
+
 </Project>

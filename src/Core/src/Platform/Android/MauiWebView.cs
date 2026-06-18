@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics;
+using Android.Views;
 using Android.Webkit;
 
 namespace Microsoft.Maui.Platform
@@ -64,6 +65,27 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			if (e == null)
+				return false;
+
+			switch (e.Action)
+			{
+				case MotionEventActions.Down:
+				case MotionEventActions.Move:
+					Parent?.RequestDisallowInterceptTouchEvent(true);
+					break;
+
+				case MotionEventActions.Up:
+				case MotionEventActions.Cancel:
+					Parent?.RequestDisallowInterceptTouchEvent(false);
+					break;
+			}
+
+			return base.OnTouchEvent(e);
+		}
+
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
 		{
 			_handler?.CurrentNavigationEvent = WebNavigationEvent.NewPage;
@@ -77,7 +99,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_handler?.CurrentNavigationEvent = WebNavigationEvent.NewPage;
 
-				if (url is not null && !url.StartsWith('/') && !Uri.TryCreate(url, UriKind.Absolute, out _))
+				if (url is not null && !url.StartsWith("/", StringComparison.InvariantCultureIgnoreCase) && !Uri.TryCreate(url, UriKind.Absolute, out _))
 				{
 					// URLs like "index.html" can't possibly load, so try "file:///android_asset/index.html"
 					url = AssetBaseUrl + url;

@@ -24,7 +24,7 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 	public bool StopOnDataTemplate => true;
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => false;
-	public bool SkipChildren(INode node, INode parentNode) => false;
+	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)

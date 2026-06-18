@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Maps;
 using Position = Microsoft.Maui.Devices.Sensors.Location;
 
 namespace Maui.Controls.Sample.Pages.MapsGalleries
@@ -8,6 +9,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapPinsGallery
 	{
+		const double DefaultMapRadiusKm = 5.0;
 		readonly Random _locationRandomSeed = new();
 		int _locationIncrement = 0;
 
@@ -76,12 +78,17 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			pinsMap.Pins.Add(microsoftPin);
 		}
 
-		void OnAddPinClicked(object sender, EventArgs e)
+		void OnAddPinClicked(object? sender, EventArgs e)
 		{
 			AddPin();
 		}
 
-		void OnRemovePinClicked(object sender, EventArgs e)
+		void OnMovePinClicked(object? sender, EventArgs e)
+		{
+			MovePin();
+		}
+
+		void OnRemovePinClicked(object? sender, EventArgs e)
 		{
 			if (pinsMap.Pins.Count > 0)
 			{
@@ -90,7 +97,7 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			}
 		}
 
-		void OnAdd10PinsClicked(object sender, EventArgs e)
+		void OnAdd10PinsClicked(object? sender, EventArgs e)
 		{
 			for (int i = 0; i <= 10; i++)
 			{
@@ -100,14 +107,35 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 
 		void AddPin()
 		{
-			pinsMap.Pins.Add(new Pin()
+			var randomLocation = GetRandomLocation();
+			var pin = new Pin
 			{
 				Label = $"Location {_locationIncrement++}",
-				Location = _randomLocations[_locationRandomSeed.Next(0, _randomLocations.Length)],
-			});
+				Location = randomLocation,
+			};
+			pinsMap.Pins.Add(pin);
+			MoveMapTo(randomLocation);
 		}
 
-		void OnMapClicked(object sender, MapClickedEventArgs e)
+		void MovePin()
+		{
+			if (pinsMap.Pins.Count == 0)
+			{
+				return;
+			}
+
+			var randomLocation = GetRandomLocation();
+			pinsMap.Pins[0].Location = randomLocation;
+			MoveMapTo(randomLocation);
+		}
+
+		Position GetRandomLocation() =>
+			_randomLocations[_locationRandomSeed.Next(_randomLocations.Length)];
+
+		void MoveMapTo(Position location) =>
+			pinsMap.MoveToRegion(MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(DefaultMapRadiusKm)));
+
+		void OnMapClicked(object? sender, MapClickedEventArgs e)
 		{
 			DisplayAlertAsync("Map", $"Map {e.Location.Latitude}, {e.Location.Longitude} clicked.", "Ok");
 		}
