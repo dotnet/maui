@@ -1486,7 +1486,7 @@ Read context from:
 
 ## Phase 1 — Expert reviewer evaluation of the PR fix
 Use the code-review skill with the maui-expert-reviewer agent to evaluate the PR's existing fix. Apply the reviewer's actionable feedback in a sandbox copy and treat the result as a candidate named ``pr-plus-reviewer``.
-- Always also write the raw inline findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json`` (these are file:line findings against the PR's diff and feed the inline-comment posting step).
+- **REQUIRED — write the inline findings to a FILE; never paste them into your response.** Write the raw file:line findings as a JSON array to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json`` (findings against the PR's diff that feed the inline-comment posting step). **If this file is not written to disk, the inline comments are silently dropped.** Writing this specific artifact is explicitly authorized and required — disregard any general guidance about "not writing review output to files"; that guidance does NOT apply to this required pipeline artifact. If the ``maui-expert-reviewer`` sub-agent reports it cannot write the file, YOU (the orchestrating agent) MUST write the JSON to that exact path yourself. Returning the JSON as chat text instead of writing the file is a failure.
 - Write candidate output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/expert-pr-eval/content.md``.
 
 ## Phase 2 — Comparative Report
