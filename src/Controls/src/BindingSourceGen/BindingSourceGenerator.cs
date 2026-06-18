@@ -47,8 +47,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 				throw new InvalidOperationException("Location cannot be null");
 			}
 
-			var fileName = $"{location.FilePath}-GeneratedBindingInterceptors-{location.Line}-{location.Column}.g.cs";
-			var sanitizedFileName = fileName.Replace('/', '-').Replace('\\', '-').Replace(':', '-');
+			var hintName = CreateHintName(location);
 			var methodNamePrefix = binding.MethodType switch
 			{
 				InterceptedMethodType.SetBinding => "SetBinding",
@@ -58,8 +57,31 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			var uniqueId = (uint)Math.Abs(location.GetHashCode());
 
 			var code = BindingCodeWriter.GenerateBinding(binding, $"{methodNamePrefix}{uniqueId}");
-			spc.AddSource(sanitizedFileName, code);
+			spc.AddSource(hintName, code);
 		});
+	}
+
+	private static string CreateHintName(SimpleLocation location)
+	{
+		return $"BindingSourceGen-{ComputeStableHash(location.FilePath)}-{location.Line}-{location.Column}.g.cs";
+	}
+
+	private static string ComputeStableHash(string text)
+	{
+		const ulong offsetBasis = 14695981039346656037;
+		const ulong prime = 1099511628211;
+
+		unchecked
+		{
+			var hash = offsetBasis;
+			foreach (var character in text)
+			{
+				hash ^= character;
+				hash *= prime;
+			}
+
+			return hash.ToString("x16");
+		}
 	}
 
 	private static bool IsSetBindingMethod(SyntaxNode node)

@@ -16,6 +16,8 @@ internal record CodeGeneratorResult(
 
 internal static class SourceGenHelpers
 {
+	internal const string BindingGeneratedSourceHintNamePrefix = "BindingSourceGen-";
+
 	private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(
 				[new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Maui.Controls.Generated")]);
 
@@ -34,13 +36,32 @@ internal static class SourceGenHelpers
 		return Run(source, new[] { new BindingSourceGenerator() });
 	}
 
+	internal static CodeGeneratorResult Run(Dictionary<string, string> sources)
+	{
+		return Run(CreateCompilation(sources), new[] { new BindingSourceGenerator() });
+	}
+
+	internal static string GetGeneratedBindingSource(CodeGeneratorResult result)
+	{
+		return GetGeneratedBindingFile(result).Value;
+	}
+
+	internal static KeyValuePair<string, string> GetGeneratedBindingFile(CodeGeneratorResult result)
+	{
+		return result.GeneratedFiles.Single(source => source.Key.StartsWith(BindingGeneratedSourceHintNamePrefix, StringComparison.Ordinal));
+	}
+
 	internal static CodeGeneratorResult Run(string source, IEnumerable<IIncrementalGenerator> generators)
 	{
 		// Function assumes the first generator in a list is BindingSourceGenerator
 		Assert.NotEmpty(generators);
 		Assert.IsType<BindingSourceGenerator>(generators.First());
 
-		var inputCompilation = CreateCompilation(source);
+		return Run(CreateCompilation(source), generators);
+	}
+
+	private static CodeGeneratorResult Run(Compilation inputCompilation, IEnumerable<IIncrementalGenerator> generators)
+	{
 		var driver = CreateDriver(generators.Select(g => g.AsSourceGenerator()));
 
 		var result = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out Compilation compilation, out _).GetRunResult().Results.FirstOrDefault();
