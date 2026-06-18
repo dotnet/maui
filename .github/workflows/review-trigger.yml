@@ -139,6 +139,28 @@ jobs:
           "Reason: ${{ steps.rerun.outputs.reason }}" >> $env:GITHUB_STEP_SUMMARY
           "Label: ${{ steps.rerun.outputs.label }}" >> $env:GITHUB_STEP_SUMMARY
 
+      - name: Hide the /review rerun command comment as resolved
+        if: github.event_name == 'issue_comment' && steps.rerun.outputs.eligible == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+        run: |
+          # Only collapse once a rerun was actually triggered (eligible == 'true'). Ineligible
+          # reruns (no-ai-summary / review-in-progress / no-new-activity) keep the comment fully
+          # visible as the implicit "seen, nothing changed" signal.
+          #
+          # We MINIMIZE (hide as resolved) rather than delete: the rerun scanner replays the
+          # PR's REST comment history to reconstruct rerun state (Resolve-RerunEligibility.ps1 /
+          # Query-RerunReadyPRs.ps1 / Get-LatestRerunCommentBefore), and minimized comments are
+          # still returned by the REST list endpoint — only collapsed in the web UI. Deleting
+          # would erase that durable checkpoint and re-qualify unchanged commits. A failed hide
+          # must never fail the job.
+          if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
+            echo "Hid /review rerun command comment ${COMMENT_NODE_ID} as resolved"
+          else
+            echo "::warning::Could not hide /review rerun command comment ${COMMENT_NODE_ID}"
+          fi
+
   trigger-review:
     needs: match
     if: needs.match.outputs.matched == 'true' && needs.match.outputs.command == 'review'
@@ -454,3 +476,23 @@ jobs:
         run: |
           . .github/scripts/shared/Update-AgentLabels.ps1
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
+
+      - name: Hide the /review command comment as resolved
+        if: github.event_name == 'issue_comment' && steps.trigger_azdo.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+        run: |
+          # Collapse only after the pipeline was actually triggered, so a lock-skip
+          # (locked == 'true') or a failed AzDO trigger leaves the /review comment visible
+          # for the user to retry.
+          #
+          # We MINIMIZE (hide as resolved) rather than delete so the command — and its
+          # --branch/--platform options — survives in the REST comment history that the rerun
+          # scanner replays. Minimized comments are still returned by the REST list endpoint;
+          # only collapsed in the web UI. A failed hide must never fail the review trigger.
+          if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
+            echo "Hid /review command comment ${COMMENT_NODE_ID} as resolved"
+          else
+            echo "::warning::Could not hide /review command comment ${COMMENT_NODE_ID}"
+          fi

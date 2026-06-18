@@ -12,6 +12,11 @@ on:
     pull_request_review_comment: [contributor, first_time_contributor, first_timer, mannequin, none]
   reaction: none
   status-comment: false
+  # Grant the pre-activation job (the on.steps below) issues:write so it can hide (minimize
+  # as resolved) the triggering `/review tests` comment once the command is recognized and
+  # authorized. Minimizing requires the same issues:write scope that deletion did.
+  permissions:
+    issues: write
   steps:
     - name: Confirm exact /review tests command
       id: exact_command
@@ -31,6 +36,54 @@ on:
         else
           echo "should_run=false" >> "$GITHUB_OUTPUT"
         fi
+    - name: Hide the /review tests command comment as resolved when authorized
+      if: github.event_name == 'issue_comment' && steps.exact_command.outputs.should_run == 'true'
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        github-token: ${{ github.token }}
+        script: |
+          // Only hide when the command is exactly `/review tests` (should_run) AND the
+          // commenter is an authorized collaborator (write/maintain/admin). This mirrors
+          // the workflow's own role gate but is self-contained, so an unauthorized user's
+          // comment is always left visible. A failed hide must not block activation.
+          // Only act on newly-created comments. The gh-aw slash_command trigger also fires
+          // on `edited`, so without this guard, editing any existing comment to say
+          // `/review tests` would minimize that comment (and collapse its entire history).
+          if (context.payload.action !== 'created') {
+            core.info('Skipping hide: comment was edited, not created.');
+            return;
+          }
+          const { owner, repo } = context.repo;
+          const actor = context.actor;
+          let permission = 'none';
+          try {
+            const res = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username: actor });
+            permission = res.data.permission;
+          } catch (e) {
+            core.info(`Permission lookup for ${actor} failed: ${e.message}`);
+          }
+          // Must mirror the workflow `roles:` frontmatter (admin/maintain/write) — keep in sync.
+          if (!['admin', 'maintain', 'write'].includes(permission)) {
+            core.info(`Actor ${actor} is not an authorized collaborator (${permission}); leaving the /review tests comment.`);
+            return;
+          }
+          // Minimize (hide as resolved) rather than delete: the rerun scanner replays the PR's
+          // REST comment history, and minimized comments are still returned by the REST list
+          // endpoint — only collapsed in the web UI. node_id is the comment's GraphQL global id.
+          const subjectId = context.payload.comment.node_id;
+          try {
+            await github.graphql(
+              `mutation($id: ID!) {
+                 minimizeComment(input: { subjectId: $id, classifier: RESOLVED }) {
+                   minimizedComment { isMinimized }
+                 }
+               }`,
+              { id: subjectId }
+            );
+            core.info(`Hid /review tests command comment ${subjectId} as resolved.`);
+          } catch (e) {
+            core.warning(`Could not hide /review tests command comment ${subjectId}: ${e.message}`);
+          }
   workflow_dispatch:
     inputs:
       pr_number:
