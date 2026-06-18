@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.Shape;
 using Microsoft.Maui;
@@ -174,6 +175,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		static int GetAppBarBackgroundColor(AppBarLayout appBar)
 		{
+			if (ViewCompat.GetBackgroundTintList(appBar) is { } backgroundTint)
+			{
+				return backgroundTint.GetColorForState(
+					appBar.GetDrawableState(),
+					new global::Android.Graphics.Color(backgroundTint.DefaultColor));
+			}
+
 			return appBar.Background switch
 			{
 				ColorDrawable colorDrawable => colorDrawable.Color.ToArgb(),
