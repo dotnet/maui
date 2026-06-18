@@ -24,12 +24,18 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Threading;
+using Microsoft.Maui.Devices;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
+using System.Collections.Specialized;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -37,7 +43,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class HybridWebViewHandler : IHybridWebViewHandler
 	{
-
 		// Using an IP address means that the web view doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
@@ -100,10 +105,74 @@ namespace Microsoft.Maui.Handlers
 		private static bool IsInvokeJavaScriptThrowsExceptionsEnabled =>
 			!AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) || enabled;
 
-#if PLATFORM && !TIZEN
-		void MessageReceived(string rawMessage) =>
-			HybridWebViewHelper.ProcessRawMessage(this, VirtualView, rawMessage);
+		void MessageReceived(string rawMessage)
+		{
+			if (string.IsNullOrEmpty(rawMessage))
+			{
+				throw new ArgumentException($"The raw message cannot be null or empty.", nameof(rawMessage));
+			}
+#if !NETSTANDARD2_0
+			var indexOfPipe = rawMessage.IndexOf('|', StringComparison.Ordinal);
+#else
+			var indexOfPipe = rawMessage.IndexOf("|", StringComparison.Ordinal);
 #endif
+			if (indexOfPipe == -1)
+			{
+				throw new ArgumentException($"The raw message must contain a pipe character ('|').", nameof(rawMessage));
+			}
+
+			var messageType = rawMessage.Substring(0, indexOfPipe);
+			var messageContent = rawMessage.Substring(indexOfPipe + 1);
+
+			switch (messageType)
+			{
+				case "__InvokeJavaScriptFailed":
+				case "__InvokeJavaScriptCompleted":
+					{
+#if !NETSTANDARD2_0
+						var indexOfPipeInContent = messageContent.IndexOf('|', StringComparison.Ordinal);
+#else
+						var indexOfPipeInContent = messageContent.IndexOf("|", StringComparison.Ordinal);
+#endif
+						if (indexOfPipeInContent == -1)
+						{
+							throw new ArgumentException($"The '{messageType}' message content must contain a pipe character ('|').", nameof(rawMessage));
+						}
+
+						var taskId = messageContent.Substring(0, indexOfPipeInContent);
+						var result = messageContent.Substring(indexOfPipeInContent + 1);
+
+						var taskManager = this.GetRequiredService<IHybridWebViewTaskManager>();
+						if (messageType == "__InvokeJavaScriptFailed")
+						{
+							if (IsInvokeJavaScriptThrowsExceptionsEnabled)
+							{
+								if (string.IsNullOrWhiteSpace(result))
+								{
+									taskManager.SetTaskFailed(taskId, new HybridWebViewInvokeJavaScriptException());
+								}
+								else
+								{
+									var jsError = JsonSerializer.Deserialize(result, HybridWebViewHandlerJsonContext.Default.JSInvokeError);
+									var jsException = new HybridWebViewInvokeJavaScriptException(jsError?.Message, jsError?.Name, jsError?.StackTrace);
+									var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScript threw an exception: {jsException.Message}", jsException);
+									taskManager.SetTaskFailed(taskId, ex);
+								}
+							}
+						}
+						else
+						{
+							taskManager.SetTaskCompleted(taskId, result);
+						}
+					}
+					break;
+				case "__RawMessage":
+					VirtualView?.RawMessageReceived(messageContent);
+					break;
+				default:
+					throw new ArgumentException($"The message type '{messageType}' is not recognized.", nameof(rawMessage));
+			}
+		}
 
 		internal async Task<byte[]?> InvokeDotNetAsync(Stream? streamBody = null, string? stringBody = null)
 		{
@@ -136,16 +205,21 @@ namespace Microsoft.Maui.Handlers
 			{
 				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
 
-				var errorResult = new DotNetInvokeResult
-				{
-					IsError = true,
-					ErrorMessage = ex.Message,
-					ErrorType = ex.GetType().Name,
-					ErrorStackTrace = ex.StackTrace
-				};
-				return Encoding.UTF8.GetBytes(
-					JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult));
+				var errorResult = CreateErrorResult(ex);
+				var errorJson = JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
+				return Encoding.UTF8.GetBytes(errorJson);
 			}
+		}
+
+		private static DotNetInvokeResult CreateErrorResult(Exception ex)
+		{
+			return new DotNetInvokeResult
+			{
+				IsError = true,
+				ErrorMessage = ex.Message,
+				ErrorType = ex.GetType().Name,
+				ErrorStackTrace = ex.StackTrace
+			};
 		}
 
 		private sealed class JSInvokeMethodData
@@ -184,7 +258,8 @@ namespace Microsoft.Maui.Handlers
 #if PLATFORM && !TIZEN
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
-			if (arg is not EvaluateJavaScriptAsyncRequest request)
+			if (arg is not EvaluateJavaScriptAsyncRequest request ||
+				handler.PlatformView is not MauiHybridWebView hybridPlatformWebView)
 			{
 				return;
 			}
@@ -195,45 +270,118 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			try
+			var script = request.Script;
+			// Make all the platforms mimic Android's implementation, which is by far the most complete.
+			if (!OperatingSystem.IsAndroid())
 			{
-				// Delegate to helper for all processing logic
-				var result = await HybridWebViewHelper.ProcessEvaluateJavaScriptAsync(handler, hybridWebView, request);
+				script = WebViewHelper.EscapeJsString(script);
 
-				request.SetResult(result!);
+				if (!OperatingSystem.IsWindows())
+				{
+					// Use JSON.stringify() method to converts a JavaScript value to a JSON string
+					script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
+				}
+				else
+				{
+					script = "try{eval('" + script + "')}catch(e){'null'};";
+				}
 			}
-			catch (Exception ex)
+
+			// Use the handler command to evaluate the JS
+			var innerRequest = new EvaluateJavaScriptAsyncRequest(script);
+			EvaluateJavaScript(handler, hybridWebView, innerRequest);
+
+			var result = await innerRequest.Task;
+
+			//if the js function errored or returned null/undefined treat it as null
+			if (result == "null")
 			{
-				request.SetException(ex);
+				result = null;
 			}
+			//JSON.stringify wraps the result in literal quotes, we just want the actual returned result
+			//note that if the js function returns the string "null" we will get here and not above
+			else if (result != null)
+			{
+				result = result.Trim('"');
+			}
+
+			request.SetResult(result!);
+
 		}
+#endif
 
 		public static async void MapInvokeJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
-			if (arg is not HybridWebViewInvokeJavaScriptRequest request)
+#if PLATFORM && !TIZEN
+			if (arg is not HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
 			{
-				return;
-			}
-
-			if (handler.PlatformView is null)
-			{
-				request.SetCanceled();
 				return;
 			}
 
 			try
 			{
-				// Delegate to helper for all processing logic
-				var result = await HybridWebViewHelper.ProcessInvokeJavaScriptAsync(handler, hybridWebView, request);
+				var result = await MapInvokeJavaScriptAsyncImpl(handler, hybridWebView, invokeJavaScriptRequest);
 
-				request.SetResult(result);
+				invokeJavaScriptRequest.SetResult(result);
 			}
 			catch (Exception ex)
 			{
-				request.SetException(ex);
+				invokeJavaScriptRequest.SetException(ex);
+			}
+#else
+			await Task.CompletedTask;
+#endif
+		}
+
+		static async Task<object?> MapInvokeJavaScriptAsyncImpl(IHybridWebViewHandler handler, IHybridWebView hybridWebView, HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
+		{
+			// Create a callback for async JavaScript methods to invoke when they are done
+			var taskManager = handler.GetRequiredService<IHybridWebViewTaskManager>();
+			var (currentInvokeTaskId, callback) = taskManager.CreateTask();
+
+			var paramsValuesStringArray =
+				invokeJavaScriptRequest.ParamValues == null
+				? string.Empty
+				: string.Join(
+					", ",
+					invokeJavaScriptRequest.ParamValues.Select((v, i) => (v == null ? "null" : JsonSerializer.Serialize(v, invokeJavaScriptRequest.ParamJsonTypeInfos![i]!))));
+
+			await handler.InvokeAsync(nameof(IHybridWebView.EvaluateJavaScriptAsync),
+				new EvaluateJavaScriptAsyncRequest($"window.HybridWebView.__InvokeJavaScript({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])"));
+
+			var stringResult = await callback.Task;
+
+			// if there is no result or if the result was null/undefined, then treat it as null
+			if (stringResult is null || stringResult == "null" || stringResult == "undefined")
+			{
+				return null;
+			}
+			// if we are not looking for a return object, then return null
+			else if (invokeJavaScriptRequest.ReturnTypeJsonTypeInfo is null)
+			{
+				return null;
+			}
+			// if we are expecting a result, then deserialize what we have
+			else
+			{
+				var typedResult = JsonSerializer.Deserialize(stringResult, invokeJavaScriptRequest.ReturnTypeJsonTypeInfo);
+				return typedResult;
 			}
 		}
-#endif
+
+		internal static async Task<string?> GetAssetContentAsync(string assetPath)
+		{
+			using var stream = await GetAssetStreamAsync(assetPath);
+			if (stream == null)
+			{
+				return null;
+			}
+			using var reader = new StreamReader(stream);
+
+			var contents = reader.ReadToEnd();
+
+			return contents;
+		}
 
 		internal static async Task<Stream?> GetAssetStreamAsync(string assetPath)
 		{
