@@ -68,7 +68,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			return Task.CompletedTask;
 		});
 
-	private class TestDotNetMethods
+	internal class TestDotNetMethods
 	{
 		private static ComputationResult NewComplexResult =>
 			new ComputationResult { result = 123, operationName = "Test" };

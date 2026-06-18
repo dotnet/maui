@@ -29,6 +29,13 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		"HybridWebView",
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
+	private static readonly DiagnosticDescriptor InaccessibleInvokeTarget = new(
+		"MAUIHWVSG003",
+		"HybridWebView invoke target type must be accessible",
+		"HybridWebView invoke target type '{0}' is not accessible to generated code. Use an internal or public invoke target type.",
+		"HybridWebView",
+		DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
@@ -132,26 +139,31 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		if (targetTypeSymbol is not INamedTypeSymbol targetType)
 			return null;
 
+		if (!IsAccessibleFromGeneratedCode(targetType))
+		{
+			return InvocationInfo.CreateInaccessibleTarget(
+				invocation.GetLocation(),
+				targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+		}
+
 		// Get interceptable location
 		var interceptableLocation = ctx.SemanticModel.GetInterceptableLocation(invocation, ct);
 		if (interceptableLocation is null)
 			return null;
 
-		// Gather public instance methods on T (DeclaredOnly equivalent)
+		var overloadedMethodNames = GetPublicInstanceMethods(targetType)
+			.GroupBy(static method => method.Name)
+			.Where(static group => group.Count() > 1)
+			.Select(static group => group.Key)
+			.OrderBy(static name => name)
+			.ToArray();
+
+		// Gather public instance methods on T, including inherited public methods
+		// to match the legacy reflection invoker's dispatch behavior.
 		var methods = new List<MethodInfo>();
-		foreach (var member in targetType.GetMembers())
+		foreach (var m in GetPublicInstanceMethods(targetType))
 		{
-			if (member is not IMethodSymbol m)
-				continue;
-			if (m.DeclaredAccessibility != Accessibility.Public)
-				continue;
-			if (m.IsStatic || m.IsAbstract)
-				continue;
-			if (m.MethodKind != MethodKind.Ordinary)
-				continue;
 			if (m.IsGenericMethod)
-				continue;
-			if (!SymbolEqualityComparer.Default.Equals(m.ContainingType, targetType))
 				continue;
 
 			// Check for ref/out/pointer params
@@ -199,13 +211,6 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			methods.Add(new MethodInfo(m.Name, returnKind, resultTypeName, paramInfos.ToArray()));
 		}
 
-		var overloadedMethodNames = methods
-			.GroupBy(static method => method.Name)
-			.Where(static group => group.Count() > 1)
-			.Select(static group => group.Key)
-			.OrderBy(static name => name)
-			.ToArray();
-
 		return new InvocationInfo(
 			interceptableLocation,
 			invocation.GetLocation(),
@@ -213,6 +218,70 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
 			methods.ToArray(),
 			overloadedMethodNames);
+	}
+
+	private static IEnumerable<IMethodSymbol> GetPublicInstanceMethods(INamedTypeSymbol targetType)
+	{
+		var seenSignatures = new HashSet<string>();
+
+		if (targetType.TypeKind == TypeKind.Interface)
+		{
+			foreach (var method in GetPublicInstanceMethods(targetType, seenSignatures))
+				yield return method;
+
+			foreach (var interfaceType in targetType.AllInterfaces)
+			{
+				foreach (var method in GetPublicInstanceMethods(interfaceType, seenSignatures))
+					yield return method;
+			}
+
+			yield break;
+		}
+
+		for (var current = targetType; current is not null && current.SpecialType != SpecialType.System_Object; current = current.BaseType)
+		{
+			foreach (var method in GetPublicInstanceMethods(current, seenSignatures))
+				yield return method;
+		}
+	}
+
+	private static IEnumerable<IMethodSymbol> GetPublicInstanceMethods(INamedTypeSymbol type, HashSet<string> seenSignatures)
+	{
+		foreach (var member in type.GetMembers())
+		{
+			if (member is not IMethodSymbol method)
+				continue;
+			if (method.DeclaredAccessibility != Accessibility.Public)
+				continue;
+			if (method.IsStatic)
+				continue;
+			if (method.MethodKind != MethodKind.Ordinary)
+				continue;
+
+			if (seenSignatures.Add(GetMethodSignature(method)))
+				yield return method;
+		}
+	}
+
+	private static string GetMethodSignature(IMethodSymbol method)
+	{
+		var parameters = string.Join(
+			",",
+			method.Parameters.Select(static parameter =>
+				$"{parameter.RefKind}:{parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}"));
+
+		return $"{method.Name}`{method.TypeParameters.Length}({parameters})";
+	}
+
+	private static bool IsAccessibleFromGeneratedCode(INamedTypeSymbol targetType)
+	{
+		for (var current = targetType; current is not null; current = current.ContainingType)
+		{
+			if (current.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal or Accessibility.ProtectedOrInternal))
+				return false;
+		}
+
+		return true;
 	}
 
 	private static ITypeSymbol? GetTargetType(GeneratorSyntaxContext ctx, MemberAccessExpressionSyntax memberAccess, InvocationExpressionSyntax invocation, System.Threading.CancellationToken ct)
@@ -303,6 +372,15 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 				continue;
 			}
 
+			if (info.InaccessibleTargetTypeName is not null)
+			{
+				spc.ReportDiagnostic(Diagnostic.Create(
+					InaccessibleInvokeTarget,
+					info.DiagnosticLocation,
+					info.InaccessibleTargetTypeName));
+				continue;
+			}
+
 			var loc = info.Location!;
 
 			if (info.OverloadedMethodNames.Length > 0)
@@ -325,17 +403,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			sb.AppendLine($"            if (target is not {info.TargetTypeName} typedTarget)");
 			sb.AppendLine($"                throw new InvalidOperationException($\"Type mismatch: expected {info.TargetTypeName.Split('.').Last()} but got {{target.GetType().FullName}}\");");
 			sb.AppendLine();
-			if (info.ReceiverTypeName == IHybridWebViewFullyQualifiedTypeName)
-			{
-				sb.AppendLine("            if (hybridWebView is not global::Microsoft.Maui.Controls.HybridWebView concreteHybridWebView)");
-				sb.AppendLine("                throw new InvalidOperationException(\"The AOT-safe HybridWebView source-generated invoker can only be registered on Microsoft.Maui.Controls.HybridWebView instances.\");");
-				sb.AppendLine();
-				sb.AppendLine($"            concreteHybridWebView.Invoker = new Invoker_{index}(typedTarget, jsonSerializerContext);");
-			}
-			else
-			{
-				sb.AppendLine($"            hybridWebView.Invoker = new Invoker_{index}(typedTarget, jsonSerializerContext);");
-			}
+			sb.AppendLine($"            hybridWebView.Invoker = new Invoker_{index}(typedTarget, jsonSerializerContext);");
 			sb.AppendLine("        }");
 			sb.AppendLine();
 
@@ -388,14 +456,10 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 						sb.AppendLine("                        return null;");
 						break;
 					case "TaskOfT":
-						sb.AppendLine($"                        var __result = await _target.{method.Name}({argList});");
-						sb.AppendLine($"                        if (__result is null) return null;");
-						sb.AppendLine($"                        return global::System.Text.Json.JsonSerializer.Serialize<{method.ResultTypeName}>(__result, GetRequiredJsonTypeInfo<{method.ResultTypeName}>(_ctx, \"{method.Name}\", \"return\"));");
+						sb.AppendLine($"                        return SerializeResult<{method.ResultTypeName}>(await _target.{method.Name}({argList}), _ctx, \"{method.Name}\");");
 						break;
 					case "sync":
-						sb.AppendLine($"                        var __result = _target.{method.Name}({argList});");
-						sb.AppendLine($"                        if (__result is null) return null;");
-						sb.AppendLine($"                        return global::System.Text.Json.JsonSerializer.Serialize<{method.ResultTypeName}>(__result, GetRequiredJsonTypeInfo<{method.ResultTypeName}>(_ctx, \"{method.Name}\", \"return\"));");
+						sb.AppendLine($"                        return SerializeResult<{method.ResultTypeName}>(_target.{method.Name}({argList}), _ctx, \"{method.Name}\");");
 						break;
 				}
 
@@ -412,6 +476,12 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		}
 
 		// Shared helper method
+		sb.AppendLine("        private static string? SerializeResult<T>(T? result, global::System.Text.Json.Serialization.JsonSerializerContext ctx, string methodName)");
+		sb.AppendLine("        {");
+		sb.AppendLine("            if (result is null) return null;");
+		sb.AppendLine("            return global::System.Text.Json.JsonSerializer.Serialize<T>(result, GetRequiredJsonTypeInfo<T>(ctx, methodName, \"return\"));");
+		sb.AppendLine("        }");
+		sb.AppendLine();
 		sb.AppendLine("        private static global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> GetRequiredJsonTypeInfo<T>(global::System.Text.Json.Serialization.JsonSerializerContext ctx, string methodName, string paramName)");
 		sb.AppendLine("        {");
 		sb.AppendLine("            var typeInfo = ctx.GetTypeInfo(typeof(T));");
@@ -436,6 +506,19 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			Methods = [];
 			OverloadedMethodNames = [];
 			OpenGenericTargetTypeName = openGenericTargetTypeName;
+			InaccessibleTargetTypeName = null;
+		}
+
+		private InvocationInfo(Location diagnosticLocation, string inaccessibleTargetTypeName, bool _)
+		{
+			Location = null;
+			DiagnosticLocation = diagnosticLocation;
+			ReceiverTypeName = string.Empty;
+			TargetTypeName = string.Empty;
+			Methods = [];
+			OverloadedMethodNames = [];
+			OpenGenericTargetTypeName = null;
+			InaccessibleTargetTypeName = inaccessibleTargetTypeName;
 		}
 
 		public InvocationInfo(InterceptableLocation location, Location diagnosticLocation, string receiverTypeName, string targetTypeName, MethodInfo[] methods, string[] overloadedMethodNames)
@@ -447,7 +530,12 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			Methods = methods;
 			OverloadedMethodNames = overloadedMethodNames;
 			OpenGenericTargetTypeName = null;
+			InaccessibleTargetTypeName = null;
 		}
+
+		public static InvocationInfo CreateInaccessibleTarget(Location diagnosticLocation, string inaccessibleTargetTypeName) =>
+			new(diagnosticLocation, inaccessibleTargetTypeName, true);
+
 		public InterceptableLocation? Location { get; }
 		public Location DiagnosticLocation { get; }
 		public string ReceiverTypeName { get; }
@@ -455,6 +543,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		public MethodInfo[] Methods { get; }
 		public string[] OverloadedMethodNames { get; }
 		public string? OpenGenericTargetTypeName { get; }
+		public string? InaccessibleTargetTypeName { get; }
 	}
 
 	private sealed class MethodInfo

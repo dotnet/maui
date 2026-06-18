@@ -120,7 +120,7 @@ public partial class HybridWebViewTests_InvokeDotNet : HybridWebViewTestsBase
 			await validateResult(hybridWebView, target);
 		});
 
-	private class InvokeTarget
+	internal class InvokeTarget
 	{
 		public List<string> ParamValues { get; private set; } = new();
 

@@ -112,11 +112,11 @@ public partial class HybridWebViewTests_ExceptionHandling : HybridWebViewTestsBa
 			var errorMessage = await hybridWebView.EvaluateJavaScriptAsync("GetLastErrorMessage()");
 
 			Assert.Equal("InvalidOperationException", errorType);
-			Assert.Equal("The JSON serializer context did not provide metadata for type 'System.String'.", errorMessage);
+			Assert.Equal("The JSON serializer context does not contain metadata for type 'System.String' (used by return of method 'SuccessMethod'). Add [JsonSerializable(typeof(String))] to your JsonSerializerContext.", errorMessage);
 			Assert.Equal("SuccessMethod", invokeJavaScriptTarget.LastMethodCalled);
 		});
 
-	private class TestExceptionMethods
+	internal class TestExceptionMethods
 	{
 		public string? LastMethodCalled { get; private set; }
 
