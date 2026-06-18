@@ -119,8 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 			var rootPage = await InvokeOnMainThreadAsync(() =>
 #if IOS || MACCATALYST
 				// Use setForMaui:false to force old event-based NavigationImpl path.
-				// When UseiOSNavigationViewHandler is enabled globally, NavigationRenderer
-				// doesn't implement RequestNavigation, causing hangs.
+				// NavigationRenderer doesn't implement RequestNavigation, causing hangs.
 				new NavigationPage(false, page)
 #else
 				new NavigationPage(page)

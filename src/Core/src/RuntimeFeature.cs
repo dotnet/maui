@@ -175,13 +175,5 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}", out bool isEnabled)
 				? isEnabled
 				: IsCssEnabledByDefault;
-
-#if NET11_0_OR_GREATER
-		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(UseiOSNavigationViewHandler)}")]
-#endif
-		public static bool UseiOSNavigationViewHandler =>
-			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(UseiOSNavigationViewHandler)}", out bool isEnabled)
-				? isEnabled
-				: IsUseiOSNavigationViewHandlerEnabledByDefault;
 	}
 }
