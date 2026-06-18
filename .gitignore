@@ -391,5 +391,4 @@ temp
 
 # Gradle build reports
 src/Core/AndroidNative/build/reports/
-/docs
-/src/Controls/samples
+
