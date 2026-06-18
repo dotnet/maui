@@ -135,7 +135,16 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				ViewCompat.SetBackgroundTintMode(appBarLayout, null);
 				ViewCompat.SetBackgroundTintList(appBarLayout, null);
-				appBarLayout.Background = originalBackground.CreateDrawable();
+
+				// Restore the original drawable only if it can still be recreated. The cached
+				// constant state can become disposed across navigation/handler teardown; in that
+				// case keep the current background rather than clearing it (and crashing).
+				var restored = originalBackground.CreateDrawable();
+				if (restored is not null)
+				{
+					appBarLayout.Background = restored;
+				}
+
 				return;
 			}
 
@@ -143,7 +152,11 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (appBarLayout.Background is null)
 				{
-					appBarLayout.Background = originalBackground.CreateDrawable();
+					var restored = originalBackground.CreateDrawable();
+					if (restored is not null)
+					{
+						appBarLayout.Background = restored;
+					}
 				}
 
 				ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
@@ -337,7 +350,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public Drawable? CreateDrawable()
 			{
-				return _backgroundConstantState?.NewDrawable()?.Mutate();
+				try
+				{
+					return _backgroundConstantState?.NewDrawable()?.Mutate();
+				}
+				catch (ObjectDisposedException)
+				{
+					// The cached constant state's underlying Java peer was disposed (e.g. the
+					// original AppBar drawable was torn down across navigation). We can't recreate
+					// it, so return null and let the caller keep the current background.
+					return null;
+				}
 			}
 		}
 	}

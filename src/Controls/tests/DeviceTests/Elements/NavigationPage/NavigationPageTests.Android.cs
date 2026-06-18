@@ -172,7 +172,19 @@ namespace Microsoft.Maui.DeviceTests
 
 		static int GetAppBarBackgroundColor(AppBarLayout appBar)
 		{
-			return Assert.IsType<ColorDrawable>(appBar.Background).Color.ToArgb();
+			// The bar background is applied as a background tint over the AppBar's default
+			// MaterialShapeDrawable (preserving Material elevation/shape), so read the tint color
+			// rather than expecting the background to be replaced with a flat ColorDrawable.
+			var tintList = AndroidX.Core.View.ViewCompat.GetBackgroundTintList(appBar);
+			if (tintList is not null)
+			{
+				return tintList.DefaultColor;
+			}
+
+			// The bar color hasn't been applied yet (the AppBar still has its default
+			// MaterialShapeDrawable). Return transparent so polling callers (AssertEventually)
+			// keep waiting for the async chrome update to settle instead of throwing.
+			return Colors.Transparent.ToPlatform().ToArgb();
 		}
 
 		static void AssertAppBarBackgroundColor(AppBarLayout appBar, Color expectedColor)

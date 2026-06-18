@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task SystemBarAppearanceDoesNotOverwriteDeveloperAppearance()
+		public async Task SystemBarIconAppearanceFollowsBarColorButRespectsDeveloperOverride()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -82,17 +82,33 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.NotNull(windowInsetsController);
 
-				windowInsetsController.AppearanceLightStatusBars = false;
-				windowInsetsController.AppearanceLightNavigationBars = false;
+				// Start from a clean ownership state so the assertions are deterministic.
+				platformWindow.ResetSystemBarIconAppearanceTracking();
 
+				// 1) The developer hasn't touched the icon-appearance flags, so MAUI derives a readable
+				//    icon style from the bar background. A light bar background needs dark icons, which
+				//    maps to AppearanceLight*Bars == true.
 				platformWindow.UpdateSystemBarAppearance(
 					activity,
 					updateStatusBar: true,
 					updateNavigationBar: true,
 					statusBarBackgroundColor: Colors.LightGreen,
-					statusBarForegroundColor: Colors.Black,
-					navigationBarBackgroundColor: Colors.LightGreen,
-					navigationBarForegroundColor: Colors.Black);
+					navigationBarBackgroundColor: Colors.LightGreen);
+
+				Assert.True(windowInsetsController.AppearanceLightStatusBars);
+				Assert.True(windowInsetsController.AppearanceLightNavigationBars);
+
+				// 2) The developer now explicitly overrides the flags out-of-band...
+				windowInsetsController.AppearanceLightStatusBars = false;
+				windowInsetsController.AppearanceLightNavigationBars = false;
+
+				// ...a subsequent MAUI chrome update must preserve the developer's explicit choice.
+				platformWindow.UpdateSystemBarAppearance(
+					activity,
+					updateStatusBar: true,
+					updateNavigationBar: true,
+					statusBarBackgroundColor: Colors.LightGreen,
+					navigationBarBackgroundColor: Colors.LightGreen);
 
 				Assert.False(windowInsetsController.AppearanceLightStatusBars);
 				Assert.False(windowInsetsController.AppearanceLightNavigationBars);

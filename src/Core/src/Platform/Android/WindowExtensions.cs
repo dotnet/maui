@@ -16,6 +16,8 @@ namespace Microsoft.Maui
 	{
 		static readonly ConditionalWeakTable<Window, OriginalSystemBarColors> s_originalSystemBarColors = new();
 
+		static readonly ConditionalWeakTable<Window, SystemBarIconAppearanceState> s_systemBarIconAppearance = new();
+
 		internal static void UpdateTitle(this Activity platformWindow, IWindow window)
 		{
 			if (string.IsNullOrEmpty(window.Title))
@@ -86,16 +88,34 @@ namespace Microsoft.Maui
 				var isLightTheme = configuration is null ||
 					(configuration.UiMode & UiMode.NightMask) != UiMode.NightYes;
 
+				// MAUI only "owns" the icon-appearance flag while its current value still matches the
+				// value MAUI last wrote. If a developer changed it out-of-band (e.g. directly through
+				// WindowInsetsControllerCompat), the current value diverges from MAUI's last write and
+				// we preserve the developer's explicit choice instead of overwriting it.
+				var appearanceState = s_systemBarIconAppearance.GetValue(window, static _ => new SystemBarIconAppearanceState());
+
 				if (updateStatusBar)
 				{
-					windowInsetsController.AppearanceLightStatusBars =
-						GetLightSystemBarAppearance(statusBarBackgroundColor, statusBarForegroundColor) ?? isLightTheme;
+					var desired = GetLightSystemBarAppearance(statusBarBackgroundColor, statusBarForegroundColor) ?? isLightTheme;
+
+					if (appearanceState.LastStatusBarAppearance is not bool lastStatusBar
+						|| windowInsetsController.AppearanceLightStatusBars == lastStatusBar)
+					{
+						windowInsetsController.AppearanceLightStatusBars = desired;
+						appearanceState.LastStatusBarAppearance = desired;
+					}
 				}
 
 				if (updateNavigationBar)
 				{
-					windowInsetsController.AppearanceLightNavigationBars =
-						GetLightSystemBarAppearance(navigationBarBackgroundColor, navigationBarForegroundColor) ?? isLightTheme;
+					var desired = GetLightSystemBarAppearance(navigationBarBackgroundColor, navigationBarForegroundColor) ?? isLightTheme;
+
+					if (appearanceState.LastNavigationBarAppearance is not bool lastNavigationBar
+						|| windowInsetsController.AppearanceLightNavigationBars == lastNavigationBar)
+					{
+						windowInsetsController.AppearanceLightNavigationBars = desired;
+						appearanceState.LastNavigationBarAppearance = desired;
+					}
 				}
 			}
 		}
@@ -166,6 +186,20 @@ namespace Microsoft.Maui
 			float g = color.Green * color.Green;
 			float b = color.Blue * color.Blue;
 			return 0.299f * r + 0.587f * g + 0.114f * b > 0.25f;
+		}
+
+		// Forgets MAUI's tracked system bar icon-appearance ownership for a window so the next
+		// chrome update re-establishes ownership. Intended for tests.
+		internal static void ResetSystemBarIconAppearanceTracking(this Window window) =>
+			s_systemBarIconAppearance.Remove(window);
+
+		// Tracks the system bar icon-appearance values MAUI last wrote so it can detect (and respect)
+		// out-of-band developer overrides on subsequent chrome updates.
+		sealed class SystemBarIconAppearanceState
+		{
+			public bool? LastStatusBarAppearance { get; set; }
+
+			public bool? LastNavigationBarAppearance { get; set; }
 		}
 
 		sealed class OriginalSystemBarColors
