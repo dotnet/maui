@@ -1564,6 +1564,63 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(5, values[2]);
 		}
 
+		[Fact]
+		public void GetValuesReturnsSetStateAndValue()
+		{
+			var prop = BindableProperty.Create("Foo", typeof(int), typeof(MockBindable), 0);
+			var prop1 = BindableProperty.Create("Foo1", typeof(int), typeof(MockBindable), 1);
+			var prop2 = BindableProperty.Create("Foo2", typeof(int), typeof(MockBindable), 2);
+			var bindable = new MockBindable();
+
+			bindable.SetValue(prop, 3);
+			bindable.SetValue(prop2, 5);
+
+			var values = bindable.GetValues<int>(new[] { prop, prop1, prop2 });
+
+			Assert.Equal(3, values.Length);
+			Assert.True(values[0].IsSet);
+			Assert.Equal(3, values[0].Value);
+			Assert.False(values[1].IsSet);
+			Assert.Equal(0, values[1].Value);
+			Assert.True(values[2].IsSet);
+			Assert.Equal(5, values[2].Value);
+		}
+
+		[Fact]
+		public void LocalValueEnumeratorReturnsLocallySetValues()
+		{
+			var prop = BindableProperty.Create("Foo", typeof(int), typeof(MockBindable), 0);
+			var prop1 = BindableProperty.Create("Foo1", typeof(int), typeof(MockBindable), 1);
+			var prop2 = BindableProperty.Create("Foo2", typeof(int), typeof(MockBindable), 2);
+			var bindable = new MockBindable();
+
+			bindable.SetValue(prop, 3);
+			bindable.SetValue(prop2, 5);
+
+			var sawFirst = false;
+			var sawSecond = false;
+
+			using var enumerator = bindable.GetLocalValueEnumerator();
+			while (enumerator.MoveNext())
+			{
+				var current = enumerator.Current;
+
+				if (current.Property == prop)
+				{
+					sawFirst = true;
+					Assert.Equal(3, current.Value);
+				}
+				else if (current.Property == prop2)
+				{
+					sawSecond = true;
+					Assert.Equal(5, current.Value);
+				}
+			}
+
+			Assert.True(sawFirst);
+			Assert.True(sawSecond);
+		}
+
 		class BindingContextConverter
 			: IValueConverter
 		{
