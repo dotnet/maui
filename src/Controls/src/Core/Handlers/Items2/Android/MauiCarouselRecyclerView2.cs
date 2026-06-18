@@ -133,6 +133,24 @@ public class MauiCarouselRecyclerView2 :
         ScrollTo(args);
     }
 
+    // LinearItemsLayout.ItemSpacing is intentionally not honoured by this handler.
+    //
+    // The base class applies a CarouselSpacingItemDecoration, but that is incompatible with
+    // Material's CarouselLayoutManager for two reasons:
+    //   1. CarouselLayoutManager builds its entire KeylineState from the *decorated* measured
+    //      size of the first child (onFirstChildMeasuredWithMargins). RecyclerView folds item-
+    //      decoration offsets into that decorated size, so injecting spacing offsets would
+    //      distort the measurement the carousel uses to lay out every item.
+    //   2. FullScreenCarouselStrategy masks each item to fill the viewport and snaps one item
+    //      per page, so there is no inter-item gutter for ItemSpacing to occupy. Inter-item
+    //      spacing is a property of the partially-visible-neighbour strategies (MultiBrowse,
+    //      Hero, Uncontained) that this handler is deliberately locked out of (see
+    //      CreateCarouselStrategy) — the same class of limitation as Loop and PeekAreaInsets.
+    //
+    // A no-op decoration is used (rather than no decoration) so the base class's decoration
+    // wiring still has an instance to add/remove.
+    // TODO: Provide a Material3-compatible spacing implementation once a peek-capable,
+    // strategy-aware layout path exists for this handler.
     protected override RecyclerView.ItemDecoration CreateSpacingDecoration(IItemsLayout itemsLayout)
         => new NoOpItemDecoration();
 
