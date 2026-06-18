@@ -377,7 +377,9 @@ internal class TabbedViewManager
                 return;
             }
 
-            SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
+            SetContentBottomMargin(RuntimeFeature.IsMaterial3Enabled
+                ? _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.m3_bottom_nav_min_height)
+                : _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
         }
         else
         {
