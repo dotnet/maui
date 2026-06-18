@@ -27,42 +27,32 @@ namespace Microsoft.Maui.Controls
 			NavigationViewHandler.Mapper.ReplaceMapping<NavigationPage, NavigationViewHandler>(PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName, MapIsNavigationBarTranslucent);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-			// Wire handler callbacks for Controls-layer integration.
-			// These connect the Core-layer NavigationViewHandler to Controls-layer
+			// Wire all Controls-layer integration in one place.
+			// This connects the Core-layer NavigationViewHandler to Controls-layer
 			// NavigationPage features (toolbar, lifecycle, nav bar type).
-			NavigationViewHandler.NavigationBarType = typeof(Handlers.Compatibility.MauiNavigationBar);
-			NavigationViewHandler.CreateViewControllerForPage = NavigationViewHandlerToolbarHelper.CreateViewControllerForPage;
-
-			NavigationViewHandler.OnNativePopCompleted = (navigationView, poppedPage) =>
+			NavigationViewHandler.ControlsConfiguration = new NavigationViewHandlerControlsConfiguration
 			{
-				if (navigationView is NavigationPage navPage && poppedPage is Page page)
+				NavigationBarType = typeof(Handlers.Compatibility.MauiNavigationBar),
+				CreateViewControllerForPage = NavigationViewHandlerToolbarHelper.CreateViewControllerForPage,
+				OnNativePopCompleted = (navigationView, poppedPage) =>
 				{
-					navPage.SendNavigatedFromHandler(page, NavigationType.Pop);
-				}
-			};
-
-			NavigationViewHandler.OnNavigationControllerDidAppear = (navigationView) =>
-			{
-				if (navigationView is VisualElement ve)
+					if (navigationView is NavigationPage navPage && poppedPage is Page page)
+					{
+						navPage.SendNavigatedFromHandler(page, NavigationType.Pop);
+					}
+				},
+				OnControllerAppeared = (navigationView) =>
 				{
-					ve.RefreshPlatformLoadedStatus();
+					if (navigationView is VisualElement ve)
+					{
+						ve.RefreshPlatformLoadedStatus();
+					}
+					(navigationView as Page)?.SendAppearing();
+				},
+				OnControllerDisappeared = (navigationView) =>
+				{
+					(navigationView as Page)?.SendDisappearing();
 				}
-				// Fire SendAppearing on the NavigationPage element, matching
-				// NavigationRenderer.ViewDidAppear behavior. SendAppearing has
-				// a _hasAppeared guard so it won't double-fire during push animations.
-				// This is critical for tab switches: UITabBarController calls ViewDidAppear
-				// on the newly selected tab's UINavigationController, which must propagate
-				// Appearing to the NavigationPage and its CurrentPage.
-				(navigationView as Page)?.SendAppearing();
-			};
-
-			NavigationViewHandler.OnNavigationControllerDidDisappear = (navigationView) =>
-			{
-				// Fire SendDisappearing on the NavigationPage element, matching
-				// NavigationRenderer.ViewDidDisappear behavior. This is critical for
-				// tab switches: when the user switches away from this tab, the
-				// NavigationPage and its CurrentPage must fire Disappearing.
-				(navigationView as Page)?.SendDisappearing();
 			};
 #endif
 		}
