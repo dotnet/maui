@@ -179,15 +179,26 @@ $OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fai
 Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 
 # ============================================================
-# Import shared baseline script for merge-base and file detection
+# Import shared baseline + detection scripts. Resolve from $PSScriptRoot —
+# NOT $RepoRoot — so that when this script runs from the trusted copy
+# ($TRUSTED/skills/.../scripts/verify-tests-fail.ps1) the helpers come from
+# the trusted $TRUSTED/scripts/ tree. $RepoRoot resolves via
+# `git rev-parse --show-toplevel` to the PR-merged worktree (PR-controlled
+# bytes); dot-sourcing from there would load attacker-controlled code into
+# this trusted host's own session (which runs with GH_TOKEN live). Reserve
+# $RepoRoot for git ops and subprocess invocations that intentionally run
+# PR code (host-app build, device tests). Layout (CI trusted + local repo):
+#   <root>/.github/scripts/...                = trusted scripts
+#   <root>/.github/skills/<skill>/scripts/... = this script's $PSScriptRoot
+# so ../../../scripts/ reaches the trusted scripts in both.
 # ============================================================
-$BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.ps1"
+$BaselineScript = Join-Path $PSScriptRoot "../../../scripts/EstablishBrokenBaseline.ps1"
 
 # Import Test-IsTestFile and Find-MergeBase from shared script
 . $BaselineScript
 
 # Import the shared test detection script
-$DetectTestsScript = Join-Path $RepoRoot ".github/scripts/shared/Detect-TestsInDiff.ps1"
+$DetectTestsScript = Join-Path $PSScriptRoot "../../../scripts/shared/Detect-TestsInDiff.ps1"
 
 
 # ============================================================
