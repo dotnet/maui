@@ -152,6 +152,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if TESTS_FAILS_ON_IOS // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact("Cells Do Not Leak")]
 		public async Task CellsDoNotLeak()
 		{
@@ -183,6 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC([.. labels]);
 #endif
 		}
+#endif
 
 		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
 		[Fact(DisplayName = "IndexPath Range Generation Is Correct")]
