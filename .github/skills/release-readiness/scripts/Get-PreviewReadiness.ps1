@@ -690,6 +690,125 @@ function Get-PRAction {
     return [PSCustomObject]@{ Status = "WATCH"; Action = "Needs review or triage."; Age = $ageDays }
 }
 
+function Test-IsP0Pr {
+    <#
+    .SYNOPSIS
+        True when a PR object carries the release-blocking 'p/0' label.
+    .DESCRIPTION
+        Mirrors the issue-side p/0 detection so a p/0-labelled PR targeting the
+        release branch is surfaced as a blocker (not buried in the generic PR
+        WATCH count). StrictMode-safe: a PR with a missing or null `labels`
+        property yields an empty array (-> $false) instead of throwing. Accepts
+        both PSCustomObject (the production `gh ... --json` shape) and
+        IDictionary/hashtable (the shape test mocks commonly use), mirroring the
+        dual-shape handling in Get-ReleaseReadiness.ps1.
+    #>
+    param($PR)
+
+    if (-not $PR) { return $false }
+    $labels = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('labels')) { $PR['labels'] } else { $null }
+    } elseif ($PR.PSObject.Properties['labels']) {
+        $PR.labels
+    } else {
+        $null
+    }
+    if (-not $labels) { return $false }
+    return (@($labels | ForEach-Object { $_.name }) -contains 'p/0')
+}
+
+function Get-CategorizedPullRequests {
+    <#
+    .SYNOPSIS
+        Splits the open release/inflight PRs into mutually-exclusive buckets:
+        P/0, Maestro (dependency-flow), merge-up, generic-human (target), and
+        inflight-human.
+    .DESCRIPTION
+        Single source of truth for PR categorization precedence, shared by the
+        engine driver and its unit tests so the tests exercise the REAL filter
+        expressions (not a re-implementation). Precedence, highest first:
+
+          1. P/0  — any survey-ref PR carrying the 'p/0' label, REGARDLESS of
+                    author or merge-up status. P/0 is the strongest release
+                    signal: a p/0-labelled Maestro or merge-up PR escalates to
+                    the P/0 blocker category (trips its dedicated BLOCKED check +
+                    renders once as a 🔥 P/0 PR row) and is never silently
+                    downgraded to a 📦 Maestro / merge-up row.
+          2. Maestro  — non-P/0 PRs authored by dotnet-maestro (target OR inflight).
+          3. Merge-up — non-P/0, non-Maestro target PRs that are automated
+                    main → survey-ref merges (head `merge/<x>-to-<y>` or title
+                    "[automated] Merge branch ...").
+          4. Generic-human (target) — the remaining survey-ref PRs.
+          5. Inflight-human — non-Maestro PRs on the inflight (net<major>.0) branch.
+
+        Buckets are mutually exclusive by PR number. Inflight PRs never escalate
+        to P/0 (only survey-ref PRs block), matching the engine's release scope:
+        $p0PrNumbers is computed from $TargetPRs only, and PR numbers are globally
+        unique, so excluding them from the target+inflight Maestro set cannot drop
+        an inflight PR. StrictMode-safe on two fronts: (1) inputs are normalized to
+        drop $null elements up front, so an AutomationNull list (what
+        Get-OpenPullRequests returns for a zero-PR branch) can't seed a `@($null)`
+        whose null element would throw "property 'author' cannot be found"; and
+        (2) for genuine PR objects every property accessed is guaranteed present by
+        Get-OpenPullRequests' --json projection, with `-and` short-circuits keeping
+        a null author from dereferencing `.login`.
+    .OUTPUTS
+        PSCustomObject with arrays: P0Prs, MaestroPRs, MergeUpPRs, TargetHumanPRs,
+        InflightHumanPRs.
+    #>
+    param(
+        [array]$TargetPRs = @(),
+        [array]$InflightPRs = @()
+    )
+
+    # Normalize inputs: the driver assigns these from Get-OpenPullRequests, which
+    # returns AutomationNull for a branch with zero open PRs (an empty `gh pr list`
+    # result collapses through `return @()`). When AutomationNull is bound to an
+    # [array] parameter the parameter becomes $null (NOT the `= @()` default — the
+    # default only applies when the argument is omitted), and `@($null)` then yields
+    # a single-element array whose lone element is $null. Iterating that under
+    # `Set-StrictMode -Version Latest` and dereferencing `$_.author` throws
+    # "The property 'author' cannot be found on this object". Stripping nulls here
+    # makes the function robust to null / AutomationNull / @($null) inputs — the
+    # realistic trigger is an in-flight run against a freshly-cut release branch
+    # that exists but has no PRs yet while the inflight (net<major>.0) branch does.
+    $TargetPRs   = @($TargetPRs   | Where-Object { $null -ne $_ })
+    $InflightPRs = @($InflightPRs | Where-Object { $null -ne $_ })
+
+    $allReleasePRs = @($TargetPRs) + @($InflightPRs)
+
+    # 1. P/0 first (highest precedence), from survey-ref PRs only.
+    $p0Prs = @($TargetPRs | Where-Object { Test-IsP0Pr $_ })
+    $p0PrNumbers = @($p0Prs | ForEach-Object { $_.number })
+
+    # 2. Maestro (non-P/0), across target + inflight.
+    $maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" -and ($p0PrNumbers -notcontains $_.number) })
+
+    # Non-P/0, non-Maestro humans, split by scope.
+    $targetHumanPRsRaw = @($TargetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") -and ($p0PrNumbers -notcontains $_.number) })
+    $inflightHumanPRs = @($InflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
+
+    # 3. Merge-up: non-P/0, non-Maestro target PRs. MAUI convention:
+    #   - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
+    #   - title like "[automated] Merge branch 'main' => 'net11.0'"
+    $mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
+        ($_.headRefName -and $_.headRefName -match '^merge/.+-to-') -or
+        ($_.title -and $_.title -match '^\[automated\] Merge branch')
+    })
+    $mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
+
+    # 4. Generic-human (target) = the remainder, counted/listed once.
+    $targetHumanPRs = @($targetHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
+
+    return [PSCustomObject]@{
+        P0Prs            = $p0Prs
+        MaestroPRs       = $maestroPRs
+        MergeUpPRs       = $mergeUpPRs
+        TargetHumanPRs   = $targetHumanPRs
+        InflightHumanPRs = $inflightHumanPRs
+    }
+}
+
 function New-Check {
     param(
         [string]$Area,
@@ -872,6 +991,11 @@ function Add-CiScanTable {
 # MAIN — gather checks
 # ===================================================================
 
+# Guard: skip the main driver when dot-sourced so tests can load the helper
+# functions (e.g. Test-IsP0Pr) without invoking the full report flow, which
+# requires git + gh + network. Mirrors Find-ReleaseReadinessTrackers.ps1.
+if ($MyInvocation.InvocationName -eq '.' -or $MyInvocation.Line -match '^\.\s') { return }
+
 $checks = @()
 
 # --- Target branch existence ---
@@ -982,22 +1106,17 @@ if ($SurveyRef -ne $mainBranch -and $inflightExists) {
     $inflightPRs = Get-OpenPullRequests -BaseBranch $mainBranch
 }
 
-$allReleasePRs = @($targetPRs) + @($inflightPRs)
-$maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" })
-$targetHumanPRsRaw = @($targetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
-$inflightHumanPRs = @($inflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
-
-# Carve out main → $SurveyRef merge-up PRs from the human-PR set so they're
-# only counted/listed once (in the hoisted "🔴 High-priority items" section)
-# instead of double-counted as generic "Release branch PRs". MAUI convention:
-#   - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
-#   - title like "[automated] Merge branch 'main' => 'net11.0'"
-$mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
-    ($_.headRefName -and $_.headRefName -match '^merge/.+-to-') -or
-    ($_.title -and $_.title -match '^\[automated\] Merge branch')
-})
-$mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
-$targetHumanPRs = @($targetHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
+# Categorize PRs into mutually-exclusive blocker buckets with P/0 as the highest
+# precedence (a p/0-labelled Maestro or merge-up PR escalates to the P/0 category
+# rather than being downgraded to a 📦 Maestro / merge-up row). The carve-out
+# precedence logic lives in Get-CategorizedPullRequests so the unit tests drive
+# the same code the engine runs (see Test-ReleaseReadiness.ps1 precedence block).
+$prBuckets        = Get-CategorizedPullRequests -TargetPRs $targetPRs -InflightPRs $inflightPRs
+$p0Prs            = $prBuckets.P0Prs
+$maestroPRs       = $prBuckets.MaestroPRs
+$mergeUpPRs       = $prBuckets.MergeUpPRs
+$targetHumanPRs   = $prBuckets.TargetHumanPRs
+$inflightHumanPRs = $prBuckets.InflightHumanPRs
 
 if ($maestroPRs.Count -eq 0) {
     $checks += New-Check -Area "Maestro PRs" -Status "READY" -Details "No open Maestro PRs target ``$SurveyRef`` or ``$mainBranch``." -NextAction "Continue monitoring for new dependency-flow PRs."
@@ -1016,7 +1135,21 @@ if ($targetHumanPRs.Count -eq 0) {
     # noise: the captain decides per-PR if any specific one MUST merge.
     $blockedCount = @($targetHumanPRs | Where-Object { (Get-PRAction -PR $_).Status -eq "BLOCKED" }).Count
     $blockedNote = if ($blockedCount -gt 0) { " ($blockedCount with merge conflicts / do-not-merge label)" } else { "" }
-    $checks += New-Check -Area "Release branch PRs" -Status "WATCH" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``$blockedNote. Not auto-blocking — only P/0 issues block shipment." -NextAction "Confirm which PRs (if any) must merge for the release; the rest can ride normal queue cadence."
+    $checks += New-Check -Area "Release branch PRs" -Status "WATCH" -Details "$($targetHumanPRs.Count) non-Maestro PR(s) target ``$SurveyRef``$blockedNote. Not auto-blocking — only P/0 issues and P/0-labelled PRs block shipment." -NextAction "Confirm which PRs (if any) must merge for the release; the rest can ride normal queue cadence."
+}
+
+# P/0-labelled PRs targeting the release branch are blockers (parallel to P/0
+# issues). They are itemized in the hoisted "🔴 High-priority items" section.
+# By design this is label-only and does NOT filter drafts: a `p/0` label
+# deliberately placed on a release-targeting PR is an explicit "must ship"
+# signal regardless of draft state, so a draft p/0 PR intentionally trips
+# BLOCKED here. Surfacing "a release-critical change isn't ready yet" is the
+# useful behavior; the per-row 🔥 entry still shows "Draft PR; wait until
+# ready" via Get-PRAction, so the draft state is not lost.
+if ($p0Prs.Count -gt 0) {
+    $checks += New-Check -Area "P/0 release-branch PRs" -Status "BLOCKED" -Details "$($p0Prs.Count) open P/0-labelled PR(s) target ``$SurveyRef``. See 🔴 High-priority items at top." -NextAction "Land or de-prioritize each P/0 PR before shipping."
+} else {
+    $checks += New-Check -Area "P/0 release-branch PRs" -Status "READY" -Details "No open P/0-labelled PRs target ``$SurveyRef``." -NextAction "No action required."
 }
 
 # Inflight watch only matters when survey != inflight (otherwise it
@@ -1195,6 +1328,8 @@ $report = [PSCustomObject]@{
     XcodeRequirements     = $xcodeRequirements
     MaestroPullRequests   = $maestroPRs
     ReleasePullRequests   = $targetHumanPRs
+    P0PullRequests        = $p0Prs
+    MergeUpPullRequests   = $mergeUpPRs
     InflightPullRequests  = $inflightHumanPRs
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
@@ -1215,11 +1350,14 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("")
 
 # === HIGH-PRIORITY ITEMS (hoisted to the very top) ===
-# Three categories the release captain must see BEFORE anything else:
+# Four categories the release captain must see BEFORE anything else:
 #   1. P/0 priority blockers — open issues labeled p/0 (release-blocking severity).
-#   2. Maestro dependency-flow PRs — open Maestro PRs against the survey ref.
+#   2. P/0 release-branch PRs — open PRs labeled p/0 targeting the survey ref.
+#      A p/0 PR is an explicitly release-blocking change that must land (or be
+#      de-prioritized) before shipping.
+#   3. Maestro dependency-flow PRs — open Maestro PRs against the survey ref.
 #      A stuck Maestro PR blocks all upstream dependency flow into this branch.
-#   3. Merge-up PRs (main → survey ref) — daily-flow sync PRs whose head ref
+#   4. Merge-up PRs (main → survey ref) — daily-flow sync PRs whose head ref
 #      matches `merge/...-to-...` or title starts with "[automated] Merge branch".
 #      A stuck merge-up PR accumulates conflicts and starves the release branch
 #      of new fixes from main.
@@ -1233,6 +1371,16 @@ foreach ($iss in $p0Issues) {
         title = $iss.title
         actor = if ($iss.milestone -and $iss.milestone.title) { $iss.milestone.title } else { '' }
         nextAction = 'Resolve or downgrade before shipping.'
+    })
+}
+foreach ($pr in $p0Prs) {
+    $action = Get-PRAction -PR $pr
+    [void]$highPriorityRows.Add(@{
+        kind = '🔥 P/0 PR'
+        link = "[#$($pr.number)]($($pr.url))"
+        title = $pr.title
+        actor = "base ``$($pr.baseRefName)``, $($action.Age)d old"
+        nextAction = $action.Action
     })
 }
 foreach ($pr in $maestroPRs) {
@@ -1259,7 +1407,7 @@ foreach ($pr in $mergeUpPRs) {
 if ($highPriorityRows.Count -gt 0) {
     [void]$md.AppendLine("## 🔴 High-priority items — $($highPriorityRows.Count) item(s)")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_P/0 issues, Maestro PRs, and ``main`` → ``$SurveyRef`` merge-up PRs. Resolve these before treating the release as ready._")
+    [void]$md.AppendLine("_P/0 issues, P/0 PRs, Maestro PRs, and ``main`` → ``$SurveyRef`` merge-up PRs. Resolve these before treating the release as ready._")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("| Kind | Item | Title | Context | Next action |")
     [void]$md.AppendLine("|------|------|-------|---------|-------------|")
@@ -1271,10 +1419,14 @@ if ($highPriorityRows.Count -gt 0) {
 
 # === BLOCKING SUMMARY (hoisted to top) ===
 # Surface aggregate BLOCKED checks (e.g. CI red, versions.props not bumped).
-# The three high-priority categories above already enumerate individual items,
+# The high-priority categories above already enumerate individual items,
 # so exclude them here to avoid duplicate rows under two separate headings.
+# Every Area whose items are hoisted into 🔴 High-priority items must be listed
+# here (Maestro PRs are hoisted as '📦 Maestro PR' rows, so they belong too).
 $highPriorityCheckAreas = @(
     'P/0 priority blockers',
+    'P/0 release-branch PRs',
+    'Maestro PRs',
     "Merge-up PRs (main → $SurveyRef)"
 )
 $blockingChecks = @($checks | Where-Object {
