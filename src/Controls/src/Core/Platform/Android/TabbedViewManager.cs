@@ -1391,6 +1391,16 @@ internal class TabbedViewManager
                 if (_manager._bottomNavigationView.SelectedItemId != item.ItemId && _manager.Element.Tabs.Count > item.ItemId)
                 {
                     var previousIndex = _manager.Element.CurrentTabIndex;
+
+                    // If the tapped tab is already the current tab (e.g., during menu rebuild
+                    // after tab visibility changes), just allow the selection — it's not a
+                    // navigation attempt that can be cancelled.
+                    if (previousIndex == item.ItemId)
+                    {
+                        _manager.OnTabSelected?.Invoke(item.ItemId);
+                        return true;
+                    }
+
                     _manager.Element.CurrentTab = _manager.Element.Tabs[item.ItemId];
 
                     // If the navigation was cancelled (e.g. Shell.Navigating → e.Cancel()),

@@ -453,6 +453,16 @@ namespace Microsoft.Maui.Controls.Handlers
 
             _stackNavigationManager?.Disconnect();
 
+            // Disconnect the root page and all its child handlers when the ShellContent has been
+            // removed from the Shell hierarchy (e.g. Shell.Items.Clear()).
+            // The guard prevents premature disconnection during normal back-navigation where the
+            // page is still cached and will be reused — without it, handlers like WebView would
+            // be incorrectly released mid-navigation.
+            if (_shellContent?.FindParentOfType<Shell>() is null)
+            {
+                _rootPage?.DisconnectHandlers();
+            }
+
             if (_subscribedToNavigationRequested)
             {
                 if (_subscribedShellSection is not null)
