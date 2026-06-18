@@ -29,9 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			VisualStateManager.GoToState(View, IsSelected
-				? VisualStateManager.CommonStates.Selected
-				: VisualStateManager.CommonStates.Normal);
+			View.IsItemSelected = IsSelected;
 		}
 
 		public void Recycle(ItemsView itemsView)
@@ -42,6 +40,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			itemsView.RemoveLogicalChild(View);
+		}
+
+		internal void DisconnectAndRecycle(ItemsView itemsView)
+		{
+			if (View != null)
+			{
+				itemsView.RemoveLogicalChild(View);
+			}
 
 			// Disconnect and clear the handler via ItemContentView.Recycle(), which calls
 			// DisconnectHandlers() before releasing Content. Reset _selectedTemplate so the

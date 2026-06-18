@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
-			nameof(InputTransparent), typeof(bool), typeof(VisualElement), default(bool),
+			nameof(InputTransparent), typeof(bool), typeof(VisualElement), BooleanBoxes.FalseBox,
 			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
-			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
+			typeof(VisualElement), BooleanBoxes.TrueBox, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly(nameof(X), typeof(double), typeof(VisualElement), default(double));
 
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Controls
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
-		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), true,
+		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), BooleanBoxes.TrueBox,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
@@ -642,7 +642,7 @@ namespace Microsoft.Maui.Controls
 		public bool InputTransparent
 		{
 			get { return (bool)GetValue(InputTransparentProperty); }
-			set { SetValue(InputTransparentProperty, value); }
+			set { SetValue(InputTransparentProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -655,7 +655,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -728,7 +728,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, value); }
+			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -1653,6 +1653,29 @@ namespace Microsoft.Maui.Controls
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
 
 		bool _isPointerOver;
+		bool _isItemSelected;
+
+		/// <summary>
+		/// Gets or sets whether this element is in the Selected visual state.
+		/// Platform handlers (CollectionView, Shell flyout, IndicatorView) use this property
+		/// to select/deselect items. The setter includes an equality guard to avoid redundant
+		/// state recomputation and routes through <see cref="ChangeVisualState"/> so that
+		/// IsEnabled and other state priorities (Disabled, PointerOver, Normal) are respected.
+		/// </summary>
+		internal bool IsItemSelected
+		{
+			get => _isItemSelected;
+			set
+			{
+				if (_isItemSelected == value)
+				{
+					return;
+				}
+
+				_isItemSelected = value;
+				ChangeVisualState();
+			}
+		}
 
 		internal bool IsPointerOver
 		{
@@ -1674,26 +1697,37 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			if (!IsEnabled)
+			try
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
-			}
-			else
-			{
-				bool isSelected = this.IsElementInSelectedState();
-				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
-												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+				if (!IsEnabled)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+				}
+				else
+				{
+					bool isSelected = this.IsElementInSelectedState();
+					string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+													: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
 
-				VisualStateManager.GoToState(this, targetState);
-			}
+					VisualStateManager.GoToState(this, targetState);
+				}
 
-			if (IsEnabled)
+				if (IsEnabled)
+				{
+					// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+					// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+					// exits and the control still has focus.
+					VisualStateManager.GoToState(this,
+						IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				}
+			}
+			catch (InvalidOperationException)
 			{
-				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-				// exits and the control still has focus.
-				VisualStateManager.GoToState(this,
-					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				// Swallow "PlatformView cannot be null here" thrown when a visual state cascade fans out
+				// during handler disconnect (e.g. on Windows: navigating away from a focused control runs
+				// UpdateIsFocused(false) inside DisconnectHandler -> ChangeVisualState -> VSM Setter ->
+				// mapper -> strongly-typed PlatformView accessor). The handler/PlatformView has already
+				// been released, so there is nothing for the mapper to update. See dotnet/maui#27101.
 			}
 		}
 
@@ -1735,10 +1769,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._isEnabledExplicit = (bool)value;
-				return visualElement.IsEnabledCore;
+				return BooleanBoxes.Box(visualElement.IsEnabledCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1758,10 +1792,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._inputTransparentExplicit = (bool)value;
-				return visualElement.InputTransparentCore;
+				return BooleanBoxes.Box(visualElement.InputTransparentCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -2071,7 +2105,7 @@ namespace Microsoft.Maui.Controls
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
-			set => SetValue(IsFocusedPropertyKey, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsFocusedPropertyKey, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		/// <inheritdoc/>
@@ -2241,13 +2275,10 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				SetInheritedBindingContext(shadow, BindingContext);
+				shadow.Parent = this;
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
 				_shadowProxy.Subscribe(shadow, _shadowChanged);
-
-				OnParentResourcesChanged(this.GetMergedResources());
-				((IElementDefinition)this).AddResourcesChangedListener(shadow.OnParentResourcesChanged);
 			}
 		}
 
@@ -2257,10 +2288,13 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				((IElementDefinition)this).RemoveResourcesChangedListener(shadow.OnParentResourcesChanged);
-
 				SetInheritedBindingContext(shadow, null);
 				_shadowProxy?.Unsubscribe();
+
+				if (shadow.Parent == this)
+				{
+					shadow.Parent = null;
+				}
 			}
 		}
 

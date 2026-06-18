@@ -115,6 +115,40 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Contains(polygon2, map.MapElements);
 			Assert.NotNull(polygon2.MapElementId);
 		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/35479
+		[Fact]
+		public async Task DisconnectClearsNativeMapStateBeforePooling()
+		{
+			var map = new Map();
+			var handler = await CreateHandlerAsync<Microsoft.Maui.Maps.Handlers.MapHandler>(map);
+			var platformView = handler.PlatformView;
+
+			var polygon = CreatePolygon();
+			var pin = new Pin
+			{
+				Label = "Pin",
+				Location = new Location(47.6458, -122.1419)
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				map.Pins.Add(pin);
+				map.MapElements.Add(polygon);
+			});
+
+			Assert.NotNull(polygon.MapElementId);
+			Assert.True(platformView.Annotations?.Length > 0);
+			Assert.True(platformView.Overlays?.Length > 0);
+
+			await InvokeOnMainThreadAsync(() => ((IElementHandler)handler).DisconnectHandler());
+
+			Assert.Single(map.Pins);
+			Assert.Single(map.MapElements);
+			Assert.Null(polygon.MapElementId);
+			Assert.True(platformView.Annotations is null || platformView.Annotations.Length == 0);
+			Assert.True(platformView.Overlays is null || platformView.Overlays.Length == 0);
+		}
 	}
 #endif
 }
