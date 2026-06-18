@@ -230,6 +230,7 @@ jobs:
           ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
           sparse-checkout: |
             .github/skills
+            .github/agents
             .github/plugin.json
           persist-credentials: false
 
