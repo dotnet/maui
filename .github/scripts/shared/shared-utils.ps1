@@ -33,3 +33,37 @@ function Write-Error {
     param([string]$Message)
     Write-Host "❌ $Message" -ForegroundColor Red
 }
+
+function Get-MauiTfmVersion {
+    <#
+    .SYNOPSIS
+        Returns the repo's MAUI .NET TFM version (e.g. "10.0" or "11.0").
+    .DESCRIPTION
+        Reads <_MauiDotNetVersionMajor>/<_MauiDotNetVersionMinor> from Directory.Build.props so
+        app/test TargetFrameworks follow the checked-out branch instead of being hardcoded
+        (e.g. a net11.0 PR builds net11.0-android, not net10.0-android). Searches the supplied
+        RepoRoot, then $env:BUILD_SOURCESDIRECTORY (the AzDO working tree), then the current
+        directory — so it still resolves when the caller runs from a trusted-copy location
+        outside the working tree. Falls back to "10.0".
+    #>
+    param([string]$RepoRoot)
+
+    $candidates = @()
+    if ($RepoRoot) { $candidates += $RepoRoot }
+    if ($env:BUILD_SOURCESDIRECTORY) { $candidates += $env:BUILD_SOURCESDIRECTORY }
+    $candidates += (Get-Location).Path
+
+    foreach ($root in $candidates) {
+        if (-not $root) { continue }
+        $propsPath = Join-Path $root 'Directory.Build.props'
+        if (Test-Path $propsPath) {
+            $content = Get-Content $propsPath -Raw
+            if ($content -match '<_MauiDotNetVersionMajor[^>]*>\s*(\d+)\s*<') {
+                $major = $Matches[1]
+                $minor = if ($content -match '<_MauiDotNetVersionMinor[^>]*>\s*(\d+)\s*<') { $Matches[1] } else { '0' }
+                return "$major.$minor"
+            }
+        }
+    }
+    return '10.0'
+}

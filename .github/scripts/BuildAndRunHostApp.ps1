@@ -81,6 +81,12 @@ if ($Platform -eq "maccatalyst") {
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
 
+# Derive the .NET TFM version from the checked-out repo (Directory.Build.props) so the
+# HostApp + test assemblies build for the branch's framework (e.g. net11.0-android on the
+# net11.0 branch) instead of a hardcoded net10.0.
+$DotNetTfm = Get-MauiTfmVersion -RepoRoot $RepoRoot
+Write-Info "Using .NET TFM version: net$DotNetTfm (from Directory.Build.props)"
+
 # Banner
 Write-Host @"
 
@@ -126,17 +132,17 @@ Write-Success "Prerequisites validated"
 
 # Set target framework and app identifiers
 if ($Platform -eq "android") {
-    $TargetFramework = "net10.0-android"
+    $TargetFramework = "net$DotNetTfm-android"
     $AppPackage = "com.microsoft.maui.uitests"
     $AppActivity = "com.microsoft.maui.uitests.MainActivity"
 } elseif ($Platform -eq "ios") {
-    $TargetFramework = "net10.0-ios"
+    $TargetFramework = "net$DotNetTfm-ios"
     $AppBundleId = "com.microsoft.maui.uitests"
 } elseif ($Platform -eq "catalyst") {
-    $TargetFramework = "net10.0-maccatalyst"
+    $TargetFramework = "net$DotNetTfm-maccatalyst"
     $AppBundleId = "com.microsoft.maui.uitests"
 } elseif ($Platform -eq "windows") {
-    $TargetFramework = "net10.0-windows10.0.19041.0"
+    $TargetFramework = "net$DotNetTfm-windows10.0.19041.0"
     $AppPackage = "com.microsoft.maui.uitests"
 }
 
@@ -529,10 +535,10 @@ Write-Step "Collecting test artifacts (screenshots, page source)..."
 # Collect any screenshots/page source from the test assembly output directory
 # UITestBase saves these via TestContext.AddTestAttachment to the assembly dir
 $testAssemblyDirs = @(
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Android.Tests/Debug/net10.0"),
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.iOS.Tests/Debug/net10.0"),
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net10.0"),
-    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.WinUI.Tests/Debug/net10.0-windows10.0.19041.0")
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Android.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.iOS.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.Mac.Tests/Debug/net$DotNetTfm"),
+    (Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.WinUI.Tests/Debug/net$DotNetTfm-windows10.0.19041.0")
 )
 
 $copiedCount = 0

@@ -941,6 +941,20 @@ stages:
           # band + conflict-free squash-merge regardless of the pipeline branch).
           - bash: |
               set -e
+              # Capture trusted scripts from the pipeline ref (self) BEFORE switching to the
+              # base branch, so the deep-UI test runner can be restored to the reviewed
+              # pipeline-branch scripts (branch-aware TFM selection) rather than the base
+              # branch's copies after the checkout below (security rule 3 + correctness).
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              chmod -R u+w "$TRUSTED" 2>/dev/null || true
+              rm -rf "$TRUSTED" 2>/dev/null || true
+              mkdir -p "$TRUSTED"
+              cp -r .github/scripts "$TRUSTED/scripts"
+              cp -r .github/skills  "$TRUSTED/skills"
+              cp -r eng/scripts     "$TRUSTED/eng-scripts"
+              chmod -R a-w "$TRUSTED"
+              echo "Trusted scripts copied to $TRUSTED"
+
               if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
                 echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
                 exit 1
@@ -1217,6 +1231,26 @@ stages:
               }
               git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
             displayName: 'Merge PR for testing'
+
+          # Run the deep-UI orchestration from the reviewed pipeline-branch scripts, not the
+          # base+PR worktree copies. Restores self's .github/scripts, .github/skills and
+          # eng/scripts (captured in 'Resolve PR base branch') over the worktree so the
+          # per-category loop's BuildAndRunHostApp.ps1 is branch-aware (builds the net11 TFM)
+          # and trusted (security rule 3). The src/ tree stays base + PR.
+          - bash: |
+              set -e
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              if [ -d "$TRUSTED/scripts" ]; then
+                rm -rf .github/scripts .github/skills eng/scripts
+                cp -r "$TRUSTED/scripts"     .github/scripts
+                cp -r "$TRUSTED/skills"      .github/skills
+                cp -r "$TRUSTED/eng-scripts" eng/scripts
+                chmod -R u+w .github/scripts .github/skills eng/scripts
+                echo "Restored trusted .github/scripts, .github/skills, eng/scripts over the worktree"
+              else
+                echo "##vso[task.logissue type=warning]Trusted scripts not found at $TRUSTED — deep UI tests will use worktree scripts"
+              fi
+            displayName: 'Restore trusted scripts for deep UI tests'
 
           # Bypass the iOS/MacCatalyst SDK's strict Xcode-version check.
           # Same patch the CopilotReview job performs (see lines ~571-580
