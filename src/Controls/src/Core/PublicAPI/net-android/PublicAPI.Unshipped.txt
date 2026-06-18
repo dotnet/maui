@@ -52,6 +52,7 @@ override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.GetDesired
 override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.IsLoopEnabled.get -> bool
+override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.UpdateFlowDirection() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.UpdateLayoutManager() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.MauiCarouselRecyclerView2.UpdateSnapBehavior() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnHiddenChanged(bool hidden) -> void

@@ -105,6 +105,28 @@ public class MauiCarouselRecyclerView2 :
         _carouselSnapHelper.AttachToRecyclerView(this);
     }
 
+    public override void UpdateFlowDirection()
+    {
+        // CarouselLayoutManager has no anchor/saved-state mechanism, so it always
+        // re-lays out from item 0 when LayoutDirection changes (unlike LinearLayoutManager).
+        // Save the position first, then set a pending scroll on the layout manager
+        // synchronously — before the layout pass runs — so onLayoutChildren() starts at
+        // the correct item instead of 0, with no intermediate frame visible.
+        var positionToRestore = Carousel?.Position ?? -1;
+
+        base.UpdateFlowDirection();
+
+        if (positionToRestore > 0)
+        {
+            var itemCount = ItemsViewAdapter?.ItemsSource?.Count ?? 0;
+            if (positionToRestore < itemCount)
+            {
+                // Qualified call to avoid resolving to the Microsoft.Maui.Controls.ScrollToPosition enum.
+                ScrollHelper.JumpScrollToPosition(positionToRestore, Microsoft.Maui.Controls.ScrollToPosition.Center);
+            }
+        }
+    }
+
     public override void UpdateLayoutManager()
     {
         base.UpdateLayoutManager();
