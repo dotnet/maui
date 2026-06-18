@@ -1140,6 +1140,12 @@ if ($targetHumanPRs.Count -eq 0) {
 
 # P/0-labelled PRs targeting the release branch are blockers (parallel to P/0
 # issues). They are itemized in the hoisted "🔴 High-priority items" section.
+# By design this is label-only and does NOT filter drafts: a `p/0` label
+# deliberately placed on a release-targeting PR is an explicit "must ship"
+# signal regardless of draft state, so a draft p/0 PR intentionally trips
+# BLOCKED here. Surfacing "a release-critical change isn't ready yet" is the
+# useful behavior; the per-row 🔥 entry still shows "Draft PR; wait until
+# ready" via Get-PRAction, so the draft state is not lost.
 if ($p0Prs.Count -gt 0) {
     $checks += New-Check -Area "P/0 release-branch PRs" -Status "BLOCKED" -Details "$($p0Prs.Count) open P/0-labelled PR(s) target ``$SurveyRef``. See 🔴 High-priority items at top." -NextAction "Land or de-prioritize each P/0 PR before shipping."
 } else {
