@@ -30,7 +30,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			transform: static (ctx, ct) => GetInvocationInfo(ctx, ct))
 			.Where(static info => info is not null);
 
-		context.RegisterSourceOutput(invocations.Collect(), GenerateSource);
+		context.RegisterImplementationSourceOutput(invocations.Collect(), GenerateSource);
 	}
 
 	private static bool IsSetInvokeJavaScriptTargetCandidate(SyntaxNode node)
@@ -50,31 +50,68 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 	private static InvocationInfo? GetInvocationInfo(GeneratorSyntaxContext ctx, System.Threading.CancellationToken ct)
 	{
 		var invocation = (InvocationExpressionSyntax)ctx.Node;
-		var symbolInfo = ctx.SemanticModel.GetSymbolInfo(invocation, ct);
-		if (symbolInfo.Symbol is not IMethodSymbol method)
+		if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
 			return null;
 
 		// Must be the 2-arg overload: SetInvokeJavaScriptTarget<T>(T target, JsonSerializerContext ctx)
-		if (method.Parameters.Length != 2)
+		if (invocation.ArgumentList.Arguments.Count != 2)
 			return null;
 
-		var containingType = method.ContainingType?.ToDisplayString();
-		if (containingType != HybridWebViewTypeName && containingType != IHybridWebViewTypeName)
-			return null;
+		string receiverTypeName;
+		INamedTypeSymbol? targetType;
+		var method = ctx.SemanticModel.GetSymbolInfo(invocation.Expression, ct).Symbol as IMethodSymbol;
+		if (method is not null)
+		{
+			if (method.Parameters.Length != 2)
+				return null;
 
-		var receiverTypeName = containingType == IHybridWebViewTypeName
-			? IHybridWebViewFullyQualifiedTypeName
-			: HybridWebViewFullyQualifiedTypeName;
+			var containingType = method.ContainingType?.ToDisplayString();
+			if (containingType != HybridWebViewTypeName && containingType != IHybridWebViewTypeName)
+				return null;
 
-		var secondParamType = method.Parameters[1].Type?.ToDisplayString();
-		if (secondParamType != JsonSerializerContextTypeName)
-			return null;
+			var secondParamType = method.Parameters[1].Type?.ToDisplayString();
+			if (secondParamType != JsonSerializerContextTypeName)
+				return null;
 
-		// Get the type argument T
-		if (method.TypeArguments.Length != 1)
-			return null;
+			// Get the type argument T
+			if (method.TypeArguments.Length != 1)
+				return null;
 
-		var targetType = method.TypeArguments[0] as INamedTypeSymbol;
+			receiverTypeName = containingType == IHybridWebViewTypeName
+				? IHybridWebViewFullyQualifiedTypeName
+				: HybridWebViewFullyQualifiedTypeName;
+			targetType = method.TypeArguments[0] as INamedTypeSymbol;
+		}
+		else
+		{
+			var receiverType = ctx.SemanticModel.GetTypeInfo(memberAccess.Expression, ct).Type;
+			if (receiverType is null)
+				return null;
+
+			if (IsSameOrDerivedFrom(receiverType, HybridWebViewTypeName))
+			{
+				receiverTypeName = HybridWebViewFullyQualifiedTypeName;
+			}
+			else if (IsSameOrDerivedFrom(receiverType, IHybridWebViewTypeName) || ImplementsInterface(receiverType, IHybridWebViewTypeName))
+			{
+				receiverTypeName = IHybridWebViewFullyQualifiedTypeName;
+			}
+			else
+			{
+				return null;
+			}
+
+			var jsonSerializerContextType = ctx.SemanticModel.GetTypeInfo(invocation.ArgumentList.Arguments[1].Expression, ct).Type;
+			if (jsonSerializerContextType is not null
+				&& jsonSerializerContextType is not IErrorTypeSymbol
+				&& !IsSameOrDerivedFrom(jsonSerializerContextType, JsonSerializerContextTypeName))
+			{
+				return null;
+			}
+
+			targetType = GetTargetType(ctx, memberAccess, invocation, ct);
+		}
+
 		if (targetType is null)
 			return null;
 
@@ -159,6 +196,34 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
 			methods.ToArray(),
 			overloadedMethodNames);
+	}
+
+	private static INamedTypeSymbol? GetTargetType(GeneratorSyntaxContext ctx, MemberAccessExpressionSyntax memberAccess, InvocationExpressionSyntax invocation, System.Threading.CancellationToken ct)
+	{
+		if (memberAccess.Name is GenericNameSyntax genericName
+			&& genericName.TypeArgumentList.Arguments.Count == 1
+			&& ctx.SemanticModel.GetSymbolInfo(genericName.TypeArgumentList.Arguments[0], ct).Symbol is INamedTypeSymbol explicitType)
+		{
+			return explicitType;
+		}
+
+		return ctx.SemanticModel.GetTypeInfo(invocation.ArgumentList.Arguments[0].Expression, ct).Type as INamedTypeSymbol;
+	}
+
+	private static bool IsSameOrDerivedFrom(ITypeSymbol type, string typeName)
+	{
+		for (var current = type; current is not null; current = current.BaseType)
+		{
+			if (current.ToDisplayString() == typeName)
+				return true;
+		}
+
+		return false;
+	}
+
+	private static bool ImplementsInterface(ITypeSymbol type, string interfaceTypeName)
+	{
+		return type.AllInterfaces.Any(interfaceType => interfaceType.ToDisplayString() == interfaceTypeName);
 	}
 
 	private static void GenerateSource(SourceProductionContext spc, ImmutableArray<InvocationInfo?> invocations)
@@ -266,7 +331,7 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 					for (int i = 0; i < method.Parameters.Length; i++)
 					{
 						var p = method.Parameters[i];
-						sb.AppendLine($"                        var __{p.Name} = global::System.Text.Json.JsonSerializer.Deserialize<{p.TypeName}>(paramJsonValues[{i}], GetRequiredJsonTypeInfo<{p.TypeName}>(_ctx, \"{method.Name}\", \"{p.Name}\"));");
+						sb.AppendLine($"                        var __{p.Name} = global::System.Text.Json.JsonSerializer.Deserialize<{p.TypeName}>(paramJsonValues[{i}], GetRequiredJsonTypeInfo<{p.TypeName}>(_ctx, \"{method.Name}\", \"{p.Name}\"))!;");
 					}
 				}
 

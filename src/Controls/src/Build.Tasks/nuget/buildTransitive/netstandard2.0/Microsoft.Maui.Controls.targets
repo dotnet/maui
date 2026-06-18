@@ -32,16 +32,19 @@
 
 	<ItemGroup Condition=" '$(DisableMauiAnalyzers)' != 'true' ">
 		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.SourceGen.dll" IsImplicitlyDefined="true" />
-		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.HybridWebViewSourceGen.dll" IsImplicitlyDefined="true" />
 	</ItemGroup>
 
-	<!-- Enable BindingSourceGen -->
+	<!-- Enable interceptor source generators -->
 	<PropertyGroup>
 		<_MauiBindingInterceptorsSupport Condition=" '$(_MauiBindingInterceptorsSupport)' == '' and '$(DisableMauiAnalyzers)' != 'true' ">true</_MauiBindingInterceptorsSupport>
-		<InterceptorsPreviewNamespaces Condition=" '$(DisableMauiAnalyzers)' != 'true' or '$(_MauiBindingInterceptorsSupport)' == 'true' ">$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
+		<_MauiHybridWebViewInterceptorsSupport Condition=" '$(_MauiHybridWebViewInterceptorsSupport)' == '' and '$(DisableMauiAnalyzers)' != 'true' ">true</_MauiHybridWebViewInterceptorsSupport>
+		<InterceptorsPreviewNamespaces Condition=" '$(_MauiBindingInterceptorsSupport)' == 'true' or '$(_MauiHybridWebViewInterceptorsSupport)' == 'true' ">$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(_MauiBindingInterceptorsSupport)' == 'true' ">
 		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.BindingSourceGen.dll" IsImplicitlyDefined="true" />
+	</ItemGroup>
+	<ItemGroup Condition=" '$(_MauiHybridWebViewInterceptorsSupport)' == 'true' ">
+		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.HybridWebViewSourceGen.dll" IsImplicitlyDefined="true" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(MauiUseDefaultAotProfile)' != 'false'">
