@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (string.IsNullOrEmpty(rawMessage))
 			{
-				throw new ArgumentException($"The raw message cannot be null or empty.", nameof(rawMessage));
+				throw new ArgumentException("The raw message cannot be null or empty.", nameof(rawMessage));
 			}
 #if !NETSTANDARD2_0
 			var indexOfPipe = rawMessage.IndexOf('|', StringComparison.Ordinal);
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Handlers
 								{
 									var jsError = JsonSerializer.Deserialize(result, HybridWebViewHandlerJsonContext.Default.JSInvokeError);
 									var jsException = new HybridWebViewInvokeJavaScriptException(jsError?.Message, jsError?.Name, jsError?.StackTrace);
-									var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScript threw an exception: {jsException.Message}", jsException);
+									var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScriptAsync threw an exception: {jsException.Message}", jsException);
 									taskManager.SetTaskFailed(taskId, ex);
 								}
 							}
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Handlers
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
 			if (arg is not EvaluateJavaScriptAsyncRequest request ||
-				handler.PlatformView is not MauiHybridWebView hybridPlatformWebView)
+				handler.PlatformView is not MauiHybridWebView)
 			{
 				return;
 			}
@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Handlers
 				? string.Empty
 				: string.Join(
 					", ",
-					invokeJavaScriptRequest.ParamValues.Select((v, i) => (v == null ? "null" : JsonSerializer.Serialize(v, invokeJavaScriptRequest.ParamJsonTypeInfos![i]!))));
+					invokeJavaScriptRequest.ParamValues.Select((v, i) => v == null ? "null" : JsonSerializer.Serialize(v, invokeJavaScriptRequest.ParamJsonTypeInfos![i]!)));
 
 			await handler.InvokeAsync(nameof(IHybridWebView.EvaluateJavaScriptAsync),
 				new EvaluateJavaScriptAsyncRequest($"window.HybridWebView.__InvokeJavaScript({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])"));
