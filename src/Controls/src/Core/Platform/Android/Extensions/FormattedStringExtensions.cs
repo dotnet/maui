@@ -170,12 +170,12 @@ namespace Microsoft.Maui.Controls.Platform
 				var spanStartOffset = spannableString.GetSpanStart(startSpan);
 				var spanEndOffset = spannableString.GetSpanEnd(endSpan);
 
-				var spanStartLine = layout.GetLineForOffset(spanStartOffset);
-				var spanEndLine = layout.GetLineForOffset(spanEndOffset);
-
 				// Safe for TailTruncation only: both offsets share the same string prefix.
 				if (spanStartOffset >= layoutEndOffset)
 					continue;
+
+				var spanStartLine = layout.GetLineForOffset(spanStartOffset);
+				var spanEndLine = layout.GetLineForOffset(System.Math.Min(spanEndOffset, layoutEndOffset - 1));
 
 				// OEM guard: some Layout subclasses don't cap GetLineForOffset at lineCount-1.
 				// Not dead code — see https://github.com/dotnet/maui/issues/35755
