@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Resizetizer
 				Resizer darkResizer = null;
 				if (info.HasDarkMode)
 				{
-					var darkInfo = info.CreateDarkVariant(info.OutputName + info.OutputExtension);
+					var darkInfo = info.CreateDarkVariant(GetDarkOutputAlias(info));
 					if (darkInfo.BaseSize is null && !string.IsNullOrWhiteSpace(info.DarkFilename))
 						darkInfo.BaseSize = resizer.BaseSize ?? resizer.GetOriginalSize();
 					darkResizer = new Resizer(darkInfo, IntermediateOutputPath, this);
@@ -54,7 +54,10 @@ namespace Microsoft.Maui.Resizetizer
 
 				WriteImages(resizer);
 				if (darkResizer is not null)
+				{
+					CleanStaleNightImageResources(darkResizer.Info.Resize);
 					WriteImages(darkResizer, dark: true);
+				}
 				else
 					CleanNightResources();
 
@@ -218,6 +221,42 @@ namespace Microsoft.Maui.Resizetizer
 			var colorsFile = Path.Combine(IntermediateOutputPath, "values-night", "maui_colors.xml");
 			if (File.Exists(colorsFile))
 				File.Delete(colorsFile);
+		}
+
+		void CleanStaleNightImageResources(bool resize)
+		{
+			foreach (var directory in resize ? NightOriginalResourceDirectories : NightDensityResourceDirectories)
+			{
+				var path = Path.Combine(IntermediateOutputPath, directory);
+				if (Directory.Exists(path))
+					Directory.Delete(path, recursive: true);
+			}
+		}
+
+		static readonly string[] NightOriginalResourceDirectories =
+		{
+			"drawable-night",
+			"drawable-night-v31",
+		};
+
+		static readonly string[] NightDensityResourceDirectories =
+		{
+			"drawable-night-mdpi",
+			"drawable-night-hdpi",
+			"drawable-night-xhdpi",
+			"drawable-night-xxhdpi",
+			"drawable-night-xxxhdpi",
+		};
+
+		static string GetDarkOutputAlias(ResizeImageInfo info)
+		{
+			var extension = info.DarkIsVector || (string.IsNullOrWhiteSpace(info.DarkFilename) && info.IsVector)
+				? Resizer.RasterFileExtension
+				: !string.IsNullOrWhiteSpace(info.DarkFilename)
+					? Path.GetExtension(info.DarkFilename)
+					: info.OutputExtension;
+
+			return info.OutputName + extension;
 		}
 
 		static SKSize CalculateScaledSize(Resizer resizer)

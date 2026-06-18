@@ -96,6 +96,33 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
+		public void DarkColorOnlyGeneratesImageSetAndColorAssetWithWarning()
+		{
+			var splash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["DarkColor"] = "#000000",
+				["BaseSize"] = "44",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileExists("Assets.xcassets/MauiSplashImage.imageset/Contents.json");
+			AssertFileExists("Assets.xcassets/MauiSplashColor.colorset/Contents.json");
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImage.png", 44, 44);
+			AssertFileSize("Assets.xcassets/MauiSplashImage.imageset/MauiSplashImageDark.png", 44, 44);
+			Assert.Contains(LogWarningEvents, warning => warning.Message.Contains("DarkColor was specified without Color", StringComparison.Ordinal));
+
+			using var colorJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(DestinationDirectory, "Assets.xcassets", "MauiSplashColor.colorset", "Contents.json")));
+			var colors = colorJson.RootElement.GetProperty("colors").EnumerateArray().ToArray();
+			var anyColor = Assert.Single(colors.Where(color => !color.TryGetProperty("appearances", out _)));
+			var darkColor = Assert.Single(colors.Where(color => GetAppearanceValue(color) == "dark"));
+			Assert.Equal("1", anyColor.GetProperty("color").GetProperty("components").GetProperty("red").GetString());
+			Assert.Equal("0", darkColor.GetProperty("color").GetProperty("components").GetProperty("red").GetString());
+		}
+
+		[Fact]
 		public void LaunchScreenPlistUsesNamedAssets()
 		{
 			var task = new CreatePartialInfoPlistTask

@@ -107,6 +107,83 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		[Fact]
+		public void DarkRasterFileWithLightVectorUsesRasterOutputExtension()
+		{
+			var splash = new TaskItem("images/appiconfg.svg", new Dictionary<string, string>
+			{
+				["Resize"] = bool.TrueString,
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var task = GetNewTask(splash);
+			var success = task.Execute();
+			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileExists("drawable-night-mdpi/appiconfg.png");
+			AssertFileNotExists("drawable-night-mdpi/appiconfg.svg");
+			AssertImageFile("maui_splash_image.xml", _drawableNight, "@drawable/appiconfg");
+			AssertImageFile("maui_splash_image_v31.xml", _drawableNight_v31, "@drawable/appiconfg");
+		}
+
+		[Fact]
+		public void ChangingDarkImageFromResizedToOriginalCleansStaleNightDensityImages()
+		{
+			var resizedSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Resize"] = bool.TrueString,
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var firstTask = GetNewTask(resizedSplash);
+			var firstSuccess = firstTask.Execute();
+			Assert.True(firstSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertFileExists("drawable-night-mdpi/camera.png");
+
+			var originalSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Resize"] = bool.FalseString,
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var secondTask = GetNewTask(originalSplash);
+			var secondSuccess = secondTask.Execute();
+			Assert.True(secondSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileExists("drawable-night/camera.png");
+			AssertFileNotExists("drawable-night-mdpi/camera.png");
+			AssertFileNotExists("drawable-night-hdpi/camera.png");
+		}
+
+		[Fact]
+		public void ChangingDarkImageFromOriginalToResizedCleansStaleNightOriginalImage()
+		{
+			var originalSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Resize"] = bool.FalseString,
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var firstTask = GetNewTask(originalSplash);
+			var firstSuccess = firstTask.Execute();
+			Assert.True(firstSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+			AssertFileExists("drawable-night/camera.png");
+
+			var resizedSplash = new TaskItem("images/camera.png", new Dictionary<string, string>
+			{
+				["Resize"] = bool.TrueString,
+				["DarkFile"] = "images/camera_color.png",
+			});
+
+			var secondTask = GetNewTask(resizedSplash);
+			var secondSuccess = secondTask.Execute();
+			Assert.True(secondSuccess, LogErrorEvents.FirstOrDefault()?.Message);
+
+			AssertFileNotExists("drawable-night/camera.png");
+			AssertFileExists("drawable-night-mdpi/camera.png");
+			AssertImageFile("maui_splash_image.xml", _drawableNight, "@drawable/camera");
+		}
+
+		[Fact]
 		public void RemovingDarkColorUpdatesNightValuesToLightColor()
 		{
 			var splashWithDarkColor = new TaskItem("images/camera.png", new Dictionary<string, string>

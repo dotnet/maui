@@ -44,7 +44,12 @@ namespace Microsoft.Maui.Resizetizer
 				WriteImages(new Resizer(darkInfo, IntermediateOutputPath, this));
 				WriteImageSet();
 				if (info.Color is not null || info.DarkColor is not null)
+				{
+					if (info.Color is null && info.DarkColor is not null)
+						Log.LogWarning("MauiSplashScreen DarkColor was specified without Color; white will be used as the light-mode launch screen background.");
+
 					WriteColorSet(info.Color ?? SKColors.White, info.DarkColor ?? info.Color ?? SKColors.White);
+				}
 
 				return !Log.HasLoggedErrors;
 			}

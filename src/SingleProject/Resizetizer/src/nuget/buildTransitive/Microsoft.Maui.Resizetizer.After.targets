@@ -327,7 +327,8 @@
         </GetFileHash>
 
         <ItemGroup>
-            <_MauiSplashScreenDarkFile Include="%(MauiSplashScreen.DarkFile)" Condition="'%(MauiSplashScreen.DarkFile)' != ''" />
+            <_MauiSplashScreenWithHashes Update="@(_MauiSplashScreenWithHashes)" DarkFile="$([System.IO.Path]::GetFullPath('%(_MauiSplashScreenWithHashes.DarkFile)'))" Condition="'%(_MauiSplashScreenWithHashes.DarkFile)' != ''" />
+            <_MauiSplashScreenDarkFile Include="%(_MauiSplashScreenWithHashes.DarkFile)" Condition="'%(_MauiSplashScreenWithHashes.DarkFile)' != ''" />
         </ItemGroup>
 
         <GetFileHash Files="@(_MauiSplashScreenDarkFile)" Condition="'@(_MauiSplashScreenDarkFile)' != ''">
@@ -417,14 +418,16 @@
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
             <_MauiHasSplashScreens Condition="'@(MauiSplashScreen->Count())' != '0'">true</_MauiHasSplashScreens>
+            <_MauiFirstSplashScreenIdentity Condition="'$(_MauiHasSplashScreens)' == 'true'">@(MauiSplashScreen->'%(Identity)')[0]</_MauiFirstSplashScreenIdentity>
             <_MauiShouldGenerateSplashScreen Condition="'$(_MauiHasSplashScreens)' == 'true'">true</_MauiShouldGenerateSplashScreen>
             <_MauiShouldGenerateSplashScreen Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' != 'true' and '$(EnableBlankMauiSplashScreen)' == 'true'">true</_MauiShouldGenerateSplashScreen>
             <_MauiAppleThemedSplashSupported Condition="'$(SupportedOSPlatformVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(SupportedOSPlatformVersion)', '14.0'))">true</_MauiAppleThemedSplashSupported>
         </PropertyGroup>
 
         <ItemGroup>
-            <_MauiSplashScreenWithDarkMetadata Include="@(MauiSplashScreen)" Condition="'%(MauiSplashScreen.DarkFile)' != '' Or '%(MauiSplashScreen.DarkColor)' != '' Or '%(MauiSplashScreen.DarkTintColor)' != ''" />
-            <_MauiSplashScreenWithColorMetadata Include="@(MauiSplashScreen)" Condition="'%(MauiSplashScreen.Color)' != '' Or '%(MauiSplashScreen.DarkColor)' != ''" />
+            <_MauiFirstSplashScreen Include="@(MauiSplashScreen)" Condition="'%(MauiSplashScreen.Identity)' == '$(_MauiFirstSplashScreenIdentity)'" />
+            <_MauiSplashScreenWithDarkMetadata Include="@(_MauiFirstSplashScreen)" Condition="'%(_MauiFirstSplashScreen.DarkFile)' != '' Or '%(_MauiFirstSplashScreen.DarkColor)' != '' Or '%(_MauiFirstSplashScreen.DarkTintColor)' != ''" />
+            <_MauiSplashScreenWithColorMetadata Include="@(_MauiFirstSplashScreen)" Condition="'%(_MauiFirstSplashScreen.Color)' != '' Or '%(_MauiFirstSplashScreen.DarkColor)' != ''" />
         </ItemGroup>
 
         <PropertyGroup>
