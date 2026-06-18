@@ -1,5 +1,6 @@
 using System.IO.Compression;
-using System.Text.RegularExpressions;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging.StructuredLogger;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -140,6 +141,14 @@ public class ResizetizerTests : BaseBuildTest
 			$"Project {Path.GetFileName(projectFile)} failed to rebuild. Check test output/attachments for errors.");
 
 		AssertAndroidPackageContainsFontsAndSplash(projectDir, config, framework);
+
+		var noOpBinlogPath = Path.Combine(projectDir, "no-op.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, target: "SignAndroidPackage", framework: framework, properties: buildProps, binlogPath: noOpBinlogPath, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to no-op rebuild. Check test output/attachments for errors.");
+
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiFonts");
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiSplashScreens");
+		AssertAndroidPackageContainsFontsAndSplash(projectDir, config, framework);
 	}
 
 	static void AssertAndroidPackageContainsFontsAndSplash(string projectDir, string config, string framework)
@@ -172,13 +181,46 @@ public class ResizetizerTests : BaseBuildTest
 
 	static void StripNonAndroidTfms(string projectFile, string androidTfm)
 	{
-		var content = File.ReadAllText(projectFile);
-		content = Regex.Replace(content,
-			@"\s*<TargetFrameworks\s+Condition=""[^""]*"">[^<]*</TargetFrameworks>",
-			"");
-		content = Regex.Replace(content,
-			@"<TargetFrameworks>[^<]*</TargetFrameworks>",
-			$"<TargetFrameworks>{androidTfm}</TargetFrameworks>");
-		File.WriteAllText(projectFile, content);
+		var tempFile = Path.GetTempFileName();
+		try
+		{
+			using (var reader = File.OpenText(projectFile))
+			using (var writer = File.CreateText(tempFile))
+			{
+				string? line;
+				while ((line = reader.ReadLine()) is not null)
+				{
+					if (line.Contains("<TargetFrameworks ", StringComparison.Ordinal) &&
+						line.Contains(" Condition=", StringComparison.Ordinal))
+					{
+						continue;
+					}
+
+					if (line.Contains("<TargetFrameworks>", StringComparison.Ordinal))
+					{
+						var indentation = line[..line.IndexOf('<', StringComparison.Ordinal)];
+						line = $"{indentation}<TargetFrameworks>{androidTfm}</TargetFrameworks>";
+					}
+
+					writer.WriteLine(line);
+				}
+			}
+
+			File.Copy(tempFile, projectFile, overwrite: true);
+		}
+		finally
+		{
+			File.Delete(tempFile);
+		}
+	}
+
+	static void AssertTargetSkipped(string binlogPath, string targetName)
+	{
+		var skipped = new BinLogReader()
+			.ReadRecords(binlogPath)
+			.Any(record => record.Args is BuildMessageEventArgs { Message: string message } &&
+				message.Contains($"Skipping target \"{targetName}\"", StringComparison.Ordinal));
+
+		Assert.True(skipped, $"Expected target '{targetName}' to be skipped. See binlog: {binlogPath}");
 	}
 }

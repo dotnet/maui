@@ -76,10 +76,8 @@
         <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
         <_MauiFontOutputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.outputs</_MauiFontOutputsFile>
-        <_MauiFontStampFile>$(_ResizetizerIntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
         <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
         <_MauiSplashOutputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.outputs</_MauiSplashOutputsFile>
-        <_MauiSplashStampFile>$(_ResizetizerIntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
         <_MauiManifestStampFile>$(_ResizetizerIntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
 
         <_ResizetizerIntermediateOutputRoot>$(_ResizetizerIntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
@@ -122,6 +120,10 @@
             ProcessMauiSplashScreens;
             _ReadResizetizeImagesOutputs;
         </ResizetizeDependsOnTargets>
+        <ProcessMauiSplashScreensDependsOnTargets>
+            $(ProcessMauiSplashScreensDependsOnTargets);
+            _ReadMauiSplashOutputs;
+        </ProcessMauiSplashScreensDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
             ResizetizeCollectItems;
@@ -402,8 +404,8 @@
     <Target Name="ProcessMauiSplashScreens"
         Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
-        Outputs="$(_MauiSplashStampFile);$(_MauiSplashOutputsFile);@(_MauiSplashOutputs)"
-        DependsOnTargets="_ReadMauiSplashOutputs">
+        Outputs="$(_MauiSplashOutputsFile);@(_MauiSplashOutputs)"
+        DependsOnTargets="$(ProcessMauiSplashScreensDependsOnTargets)">
 
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
@@ -509,9 +511,7 @@
             <TizenTpkUserIncludeFiles Include="@(_MauiSplashScreens)" TizenTpkSubDir="shared\res\splash" />
         </ItemGroup>
 
-        <!-- Stamp file for Outputs -->
         <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
-        <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
         <WriteLinesToFile
             File="$(_MauiSplashOutputsFile)"
             Lines="@(_MauiSplashAssets->'%(FullPath)')"
@@ -522,7 +522,6 @@
         <ItemGroup>
             <FileWrites Include="@(_MauiSplashAssets)" />
             <FileWrites Include="$(_MauiSplashOutputsFile)" />
-            <FileWrites Include="$(_MauiSplashStampFile)" />
         </ItemGroup>
 
     </Target>
@@ -536,7 +535,7 @@
     <Target Name="ProcessMauiFonts"
         Condition="'$(EnableMauiFontProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
-        Outputs="$(_MauiFontStampFile);$(_MauiFontOutputsFile);@(_MauiFontOutputs)"
+        Outputs="$(_MauiFontOutputsFile);@(_MauiFontOutputs)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
         BeforeTargets="$(ProcessMauiFontsBeforeTargets)"
         DependsOnTargets="$(ProcessMauiFontsDependsOnTargets)">
@@ -614,17 +613,14 @@
 
         <Touch Files="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''" />
 
-        <!-- Touch/create our stamp file for outputs -->
-        <Touch Files="$(_MauiFontStampFile)" AlwaysCreate="True" />
         <WriteLinesToFile
             File="$(_MauiFontOutputsFile)"
             Lines="@(_MauiFontCopied->'%(FullPath)');@(_MauiFontPListFiles->'%(FullPath)')"
             Overwrite="true"
         />
 
-        <!-- Include our fonts and stamp file as filewrites so they don't get rm'd -->
+        <!-- Include our fonts and output manifest as filewrites so they don't get rm'd -->
         <ItemGroup>
-            <FileWrites Include="$(_MauiFontStampFile)" />
             <FileWrites Include="$(_MauiFontOutputsFile)" />
             <FileWrites Include="@(_MauiFontCopied)" />
         </ItemGroup>
