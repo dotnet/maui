@@ -152,9 +152,18 @@ stages:
                 exit 1
               fi
 
-              # Detect the PR's base branch (GitHub-provided metadata; repo
-              # inferred from the origin remote, same as Review-PR.ps1).
-              BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+              # Detect the PR's base branch (GitHub-provided metadata). Prefer gh; fall back
+              # to the GitHub REST API because gh is not pre-installed on macOS (catalyst/ios)
+              # agents this early in the job.
+              if command -v gh >/dev/null 2>&1; then
+                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+              else
+                REPO=$(git config --get remote.origin.url | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
+                [ -z "$REPO" ] && REPO="dotnet/maui"
+                BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
+                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
+              fi
 
               # Allowlist: only ever switch to a known protected base branch.
               # Validate BEFORE echoing/using to avoid any injection via the ref.
@@ -959,7 +968,16 @@ stages:
                 echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
                 exit 1
               fi
-              BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+              # Prefer gh; fall back to REST (gh isn't pre-installed on macOS agents this early).
+              if command -v gh >/dev/null 2>&1; then
+                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+              else
+                REPO=$(git config --get remote.origin.url | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
+                [ -z "$REPO" ] && REPO="dotnet/maui"
+                BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
+                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
+              fi
               if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
                 echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main or netN.0). Refusing to switch."
                 exit 1
