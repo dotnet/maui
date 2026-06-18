@@ -65,5 +65,6 @@ function Get-MauiTfmVersion {
             }
         }
     }
+    Write-Warn "Could not find <_MauiDotNetVersionMajor> in Directory.Build.props — falling back to '10.0'"
     return '10.0'
 }

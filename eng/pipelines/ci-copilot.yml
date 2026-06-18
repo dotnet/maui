@@ -1248,7 +1248,8 @@ stages:
                 chmod -R u+w .github/scripts .github/skills eng/scripts
                 echo "Restored trusted .github/scripts, .github/skills, eng/scripts over the worktree"
               else
-                echo "##vso[task.logissue type=warning]Trusted scripts not found at $TRUSTED — deep UI tests will use worktree scripts"
+                echo "##vso[task.logissue type=error]Trusted scripts not found at $TRUSTED/scripts — cannot run deep UI tests"
+                exit 1
               fi
             displayName: 'Restore trusted scripts for deep UI tests'
 
