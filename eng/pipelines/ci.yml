@@ -313,10 +313,7 @@ stages:
     # versions (net10/net11); the lane doesn't pin UseMonoRuntime, so it exercises whatever
     # the template default runtime is for each version rather than asserting a specific runtime.
     - name: mac_runandroid_tests
-      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
-        pool: ${{ parameters.AndroidPoolLinux }}
-      ${{ else }}:
-        pool: ${{ parameters.AndroidPoolLinux }}
+      pool: ${{ parameters.AndroidPoolLinux }}
       timeout: 240
       testCategory: RunOnAndroid
 
