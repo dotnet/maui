@@ -70,10 +70,12 @@ safe-outputs:
     # ⚠️ TEMP CANARY CAP — REMOVE BEFORE MERGE (restore to 3). Hard backstop so the
     # pre-merge validation run can emit at most ONE PR no matter what.
     max: 1
-    # Allow the needs-human hand-off PR (Step 6) to be emitted with no source
-    # diff. Fix/help PRs still carry real diffs; this only permits the empty
-    # case rather than forcing a marker-file edit that allowed-files rejects.
-    allow-empty: true
+    # NOTE: allow-empty is intentionally NOT set. gh-aw's create-pull-request
+    # handler skips bundle generation entirely when allow-empty is true (it
+    # returns "no patch generated" for EVERY call, not just empty ones), which
+    # silently drops fix/help PRs. The agent must commit a real diff (Step 5.4);
+    # gh-aw packages those commits into the bundle. The Step 6 needs-human
+    # hand-off (which previously relied on allow-empty) is deferred — see Step 6.
     # Branch-awareness contract: the agent emits create_pull_request with an
     # explicit base of either "main" or "net11.0". gh-aw rejects any other base.
     allowed-base-branches:
@@ -533,33 +535,22 @@ equals the `base` field. If they disagree, drop the attempt and record
 > source branch, title, full body, `git --no-pager diff --stat "origin/${branch}..HEAD"`)
 > to the run log and tally `dry-run: would-<fix|help>`.
 
-### Step 6 — Emit the needs-human PR (attempt cap exhausted)
+### Step 6 — Needs-human hand-off (attempt cap exhausted) — DEFERRED
 
 Reached only from Step 3.4 when `attempt_count >= 5` and no prior needs-human
-PR exists.
+hand-off exists.
 
-1. Check out the target branch as in Step 5.2 (so the PR opens against the
-   correct base even though it carries no source-file diff).
-2. Make NO source-file changes. The PR body alone is the artifact.
+> **⚠️ DEFERRED:** The previous design emitted an *empty* `create_pull_request`
+> as the permanent hand-off, which depended on `safe-outputs.create-pull-request.allow-empty: true`.
+> That option has been removed because it globally disabled bundle generation
+> for gh-aw (it caused EVERY `create_pull_request` to return "no patch
+> generated", silently dropping fix/help PRs). The needs-human hand-off will be
+> redesigned (most likely as a comment on the tracking issue). Until then:
 
-   The workflow sets `safe-outputs.create-pull-request.allow-empty: true`, so a
-   needs-human PR is emitted with an empty patch — no marker file, no no-op
-   edit, nothing that `allowed-files` would have to permit. Do not stage any
-   change here.
-3. Emit ONE `create_pull_request` with:
-   - Title: `[ci-fix][needs-human] 5 attempts exhausted: <short failure description> (refs #<N>)`
-   - Body: Step 7's needs-human template.
-   - `base = <branch>`.
-   - `branch = ci-fix/issue-<N>-needs-human`.
-
-This PR is the permanent hand-off. Step 3.4 blocks all future attempts because
-its title matches `[ci-fix][needs-human]` and its body carries
-`Refs: dotnet/maui#<N>`.
-
-> **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit the
-> `create_pull_request`. Instead print a `DRY RUN — would open PR` block (base,
-> source branch, title, full body, `empty patch (needs-human)`) to the run log
-> and tally `dry-run: would-needs-human`.
+Do NOT emit a `create_pull_request`. Record
+`skipped: needs-human hand-off pending redesign (attempt cap reached)` and stop.
+This is safe: the attempt cap still prevents further fix attempts (Step 3.4),
+and the open tracking issue remains the hand-off surface for humans.
 
 ### Step 7 — Templates
 
