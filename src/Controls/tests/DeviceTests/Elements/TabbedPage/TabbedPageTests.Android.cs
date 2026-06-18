@@ -8,6 +8,7 @@ using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
@@ -319,6 +320,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		static int GetAppBarBackgroundColor(AppBarLayout appBar)
 		{
+			if (ViewCompat.GetBackgroundTintList(appBar) is { } backgroundTint)
+			{
+				return backgroundTint.GetColorForState(
+					appBar.GetDrawableState(),
+					new global::Android.Graphics.Color(backgroundTint.DefaultColor));
+			}
+
 			return appBar.Background switch
 			{
 				ColorDrawable colorDrawable => colorDrawable.Color.ToArgb(),
