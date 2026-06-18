@@ -18,6 +18,19 @@ This is the primary mechanism for associating views with handlers. It is trimmer
 
 The attribute is declared with `Inherited = false`, so each view type must explicitly declare it. However, `MauiHandlersFactory` walks the type's base class hierarchy (`Type.BaseType`) when looking for the attribute, so a base class attribute acts as a fallback for derived types that don't declare their own.
 
+### Guidance for library authors
+
+Third-party libraries should prefer `[ElementHandler(typeof(THandler))]` for concrete controls when the handler type can be selected statically and the handler has a public parameterless constructor:
+
+```csharp
+[ElementHandler(typeof(MyControlHandler))]
+public class MyControl : View { ... }
+```
+
+Use a custom `ElementHandlerAttribute` subclass only when handler selection needs additional logic. The Android Material UI controls are the intended pattern: their nested attributes override `GetHandlerType()` and return either the Material 3 handler or the default handler based on `RuntimeFeature.IsMaterial3Enabled`, so the inactive handler implementation does not need to be rooted unconditionally.
+
+Continue to use `ConfigureMauiHandlers(... AddHandler ...)` when an application needs to override an existing handler, when registering handlers for interfaces, or when a handler must be constructed through DI because it requires constructor parameters.
+
 ## Registering a Handler in Code
 
 ```csharp
@@ -35,9 +48,11 @@ Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerT
 
 1. **Exact DI registration** — checks if a handler was registered for this exact type via `AddHandler`
 2. **Assignable DI registration** — uses `RegisteredHandlerServiceTypeSet` to find the best matching concrete or interface registration (e.g., a handler registered for `Button` matches a derived `FancyButton`, and a handler registered for `IScrollView` matches a `ScrollView` instance)
-3. **`[ElementHandler]` attribute** — walks the type's base class hierarchy looking for the attribute
+3. **`[ElementHandler]` attribute** — walks the type's base class hierarchy looking for the attribute; lookup results are cached per requested view type
 4. **`IContentView` fallback** — returns `ContentViewHandler` for any `IContentView` implementation
 5. **`GetHandlerType` returns `null`** / **`GetHandler` throws `HandlerNotFoundException`** — if none of the above matched
+
+`GetHandler(Type)` is the primary API for creating a handler instance. `GetHandlerType(Type)` returns the handler `Type` without instantiating it and is used by code paths that need to compare handler types or create handlers through DI fallback.
 
 ### Handler Instantiation
 
@@ -51,6 +66,12 @@ How a handler instance is created depends on how it was resolved:
 > They are instantiated with `Activator.CreateInstance()`, not through the DI container.
 > The `ActivatorUtilities.CreateInstance()` fallback only applies to DI-registered handlers
 > resolved through `ElementExtensions.ToHandler()`.
+
+### Controls mapper remapping
+
+Controls-specific mapper remaps are independent of handler resolution. `ElementHandler.SetVirtualView()` calls the internal Controls remap hook on the virtual view before mapper updates, so remaps run regardless of whether the handler came from exact DI registration, assignable DI registration, `[ElementHandler]`, or the `IContentView` fallback.
+
+Each remappable Controls type owns its own one-time gate and calls `base.RemapForControls()` before applying its mapper changes. Non-mapper command dependency setup, such as `CommandProperty.DependsOn(...)`, remains in the relevant control type initialization so binding behavior is available before a handler is attached.
 
 ## Types used in the resolution of Handlers to Views
 
@@ -91,6 +112,7 @@ public interface IMauiHandlersFactory : IMauiFactory
     Type? GetHandlerType(Type iview);
     IElementHandler? GetHandler(Type type);
     IElementHandler? GetHandler<T>() where T : IElement;
+    IMauiHandlersCollection GetCollection();
 }
 ```
 
