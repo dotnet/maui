@@ -6,6 +6,7 @@ parameters:
   windowsBuildPool: { }
   macosPool: { }
   androidApiLevels: [ 30 ]
+  androidApiLevelsExtended: [ 36 ] # API 36 for Material3 tests with Pixel 3 XL
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   defaultiOSVersion: '26.0'
@@ -16,7 +17,7 @@ parameters:
   categoryGroupsToTest:
     # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
     # we might want to improve this somehow depending on how much the categories change over time
-    # Note: Material3 is intentionally excluded from this list.
+    # Note: Material3 is intentionally excluded from this list and has its own dedicated build and test stages below with a separate test filter
     - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
     - 'Border,BoxView,Brush,Button'
     - 'CarouselView'
@@ -64,6 +65,26 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "CoreCLR"
+                skipProvisioning: ${{ parameters.skipProvisioning }}
+
+  # Material3 Build Stage - Separate CoreCLR build with UseMaterial3=true (Android-only)
+  - stage: build_ui_tests_material3
+    displayName: Build UITests Material3 Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_material3
+        displayName: Build Sample App (Material3)
+        workspace:
+          clean: all
+        pool: ${{ parameters.androidPool }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                runtimeVariant: "CoreCLR"
+                platform: android
+                useMaterial3: true
                 skipProvisioning: ${{ parameters.skipProvisioning }}
   
   # NativeAOT UI tests build stage - only run when BuildNativeAOT parameter is true
@@ -144,6 +165,46 @@ stages:
                     parameters:
                       platform: 'Android'
                       artifactName: 'uitest-snapshot-results-android-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+
+  - stage: android_ui_tests_material3
+    displayName: Android UITests Material3
+    dependsOn: build_ui_tests_material3
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevelsExtended }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: M3_android_ui_tests_${{ project.name }}_${{ api }}
+                timeoutInMinutes: 240
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} Material3 (API ${{ api }})
+                pool: ${{ parameters.androidLinuxPool }}
+                variables:
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.android }}
+                      app: ${{ project.app }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
+                      deviceType: "pixel_3_xl"
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      runtimeVariant: "CoreCLR"
+                      useMaterial3: true
+                      testFilter: "Material3"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+
+                  # Collect and publish Android Material3 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Android Material3'
+                      artifactName: 'uitest-snapshot-results-android-material3-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_coreclr
     displayName: iOS UITests CoreCLR
@@ -235,7 +296,7 @@ stages:
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
                       platform: 'iOS CV1'
-                      artifactName: 'uitest-snapshot-results-ios-cv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      artifactName: 'uitest-snapshot-results-ios-cv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - stage: ios_ui_tests_coreclr_carv1
     displayName: iOS UITests CoreCLR CarouselView1
@@ -278,8 +339,8 @@ stages:
                   # Collect and publish iOS CARV1 snapshot diffs
                   - template: ui-tests-collect-snapshot-diffs.yml
                     parameters:
-                      platform: 'iOS CARV2'
-                      artifactName: 'uitest-snapshot-results-ios-carv2-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
+                      platform: 'iOS CARV1'
+                      artifactName: 'uitest-snapshot-results-ios-carv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
   - ${{ if and(eq(parameters.BuildNativeAOT, true), eq(parameters.RunNativeAOT, true)) }}:
     - stage: ios_ui_tests_nativeaot

@@ -309,7 +309,9 @@ stages:
       testCategory: AOT
 
     # Android template integration tests (maui + maui-blazor build/install/run on emulator).
-    # Category-based lane exercises the default mobile runtime (CoreCLR on .NET 11).
+    # Runs the Android templates with their default BuildProps across the supported .NET
+    # versions (net10/net11); the lane doesn't pin UseMonoRuntime, so it exercises whatever
+    # the template default runtime is for each version rather than asserting a specific runtime.
     - name: mac_runandroid_tests
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.AndroidPoolLinux }}
