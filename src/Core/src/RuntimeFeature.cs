@@ -27,7 +27,6 @@ namespace Microsoft.Maui
 		const bool IsMeterSupportedByDefault = true;
 		const bool EnableAspireByDefault = true;
 		const bool IsMaterial3EnabledByDefault = false;
-		const bool UseAndroidShellHandlersByDefault = true;
 		const bool IsCssEnabledByDefault = true;
 		const bool IsWindowsCollectionView2HandlerEnabledByDefault = true;
 
@@ -157,14 +156,6 @@ namespace Microsoft.Maui
 				: IsWindowsCollectionView2HandlerEnabledByDefault;
 
 #pragma warning restore IL4000
-
-#if NET11_0_OR_GREATER
-		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(UseAndroidShellHandlers)}")]
-#endif
-		public static bool UseAndroidShellHandlers =>
-			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(UseAndroidShellHandlers)}", out bool isEnabled)
-				? isEnabled
-				: UseAndroidShellHandlersByDefault;
 
 #if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsCssEnabled)}")]
