@@ -8,7 +8,8 @@ description: |
   opens a draft [ci-fix] PR per actionable issue against the matching branch,
   retries up to 5 times across runs if the failure signature still reproduces,
   then opens one [ci-fix][needs-human] PR as a permanent hand-off. Never mutes
-  tests. Always skips visual-regression / screenshot issues.
+  tests, but de-flakes genuinely flaky ones (deterministic synchronization, no
+  retries / timeout bumps). Always skips visual-regression / screenshot issues.
 
 environment: gh-aw-agents
 
@@ -129,9 +130,14 @@ failure scanners. For each one you:
 4. After 5 closed-unmerged attempts, open ONE `[ci-fix][needs-human]` PR as
    the permanent hand-off and never retry again.
 
-You never mute, skip, or disable a test. Visual-regression / screenshot issues
-are always skipped silently. The agent runs read-only; all writes go through
-`safe-outputs`.
+You never mute, skip, or disable a test — but you DO de-flake genuinely flaky
+tests. *Muting* (disabling/ignoring a test, removing or weakening an assertion,
+or adding `[Retry]` to paper over intermittency) is forbidden. *De-flaking*
+(making a genuinely flaky test deterministic without weakening what it asserts —
+proper synchronization, condition waits instead of fixed sleeps, fixing state
+leakage or ordering) is encouraged: see Step 4.7. Visual-regression / screenshot
+issues are always skipped silently. The agent runs read-only; all writes go
+through `safe-outputs`.
 
 ## Hard rules — non-negotiable
 
@@ -146,9 +152,15 @@ are always skipped silently. The agent runs read-only; all writes go through
    screenshot filter. Silent skip (no comment, no label, just the run-log line).
 3. **5-attempt cap.** At most 5 closed-unmerged `[ci-fix]` PRs per tracking
    issue. The 6th tick opens ONE `[ci-fix][needs-human]` PR and never retries.
-4. **Never mute.** No `[ActiveIssue]`, `[SkipOnPlatform]`, category exclusions,
-   csproj `<*Incompatible>`, or test-disabling diffs. If the only available
-   "fix" is to disable a test, skip with reason and let a human decide.
+4. **Never mute; do de-flake.** No `[ActiveIssue]`, `[SkipOnPlatform]`, category
+   exclusions, csproj `<*Incompatible>`, test-disabling diffs, `[Retry]`/`[Repeat]`
+   added to mask intermittency, removed/weakened assertions, or timeout bumps that
+   hide a real slowdown. If the only available "fix" is to disable or mask a test,
+   skip with reason. BUT when a test is *genuinely flaky* because of a defect in
+   the TEST itself (race, missing wait, fixed sleep, state leakage, ordering),
+   open a de-flake PR that makes it deterministic without weakening its
+   assertions (Step 4.7). De-flaking is forbidden when the flake actually masks a
+   product bug — fix the product if in bounds, else hand off.
 5. **One issue = one outcome per run.** Exactly one of: fix PR, help PR,
    needs-human PR, or recorded skip. Always prefer a PR over a skip when a
    non-mute diff is producible.
@@ -172,8 +184,9 @@ For every open tracking issue in scope, converge on exactly one outcome:
 |---|---|
 | Confident draft `[ci-fix]` fix PR | A small validated fix removes the failure, attempt ≤ 5 |
 | Help-wanted draft `[ci-fix]` PR | A plausible candidate change exists but cannot be runner-validated (device/UI tests), attempt ≤ 5 |
+| De-flake draft `[ci-fix]` PR | The failure is intermittent (green-on-retry) due to a genuine test-quality defect; a deterministic-synchronization fix to the test is producible, attempt ≤ 5 (Step 4.7 bucket b) |
 | `[ci-fix][needs-human]` PR | Attempt cap reached (5 closed-unmerged), signature still reproduces, no prior needs-human PR exists |
-| Recorded skip | Visual-regression, already-handled, fixed-in-latest-build, out-of-bounds, only-mute-available, or no novel approach producible |
+| Recorded skip | Visual-regression, already-handled, fixed-in-latest-build, infra-flake, out-of-bounds, only-mute-available, or no novel approach producible |
 
 ## Steps
 
@@ -184,9 +197,9 @@ Walk the steps in order. Do not skip. Stop at Step 8.
 > 🔬 **TEMPORARY CANARY OVERRIDE — REMOVE BEFORE MERGE.** This branch carries a
 > temporary `push` trigger for a single pre-merge validation run. For THIS run,
 > regardless of the event type or the inputs below, you MUST treat the run as a
-> **controlled single-issue run scoped to issue #35864** (label `ci-scan`
-> → target branch `main`). Do NOT enumerate or process any other issue. Fetch
-> #35864 with `get_issue`, run every downstream gate on it, emit at most one PR
+> **controlled single-issue run scoped to issue #35981** (label `ci-scan-net11`
+> → target branch `net11.0`). Do NOT enumerate or process any other issue. Fetch
+> #35981 with `get_issue`, run every downstream gate on it, emit at most one PR
 > for it, then stop at the tally. Ignore this entire block once it is removed.
 
 This run may be a scheduled sweep or a manual `workflow_dispatch`. Read these two
@@ -198,7 +211,8 @@ inputs once at the start and let them shape the whole run:
     `github` MCP `get_issue` (number = the input value), derive its target branch
     from its labels exactly as Step 2 describes, then run every downstream gate
     (Step 2.3 visual-regression filter, Step 3 dedup gates, Step 4 reproduce
-    check, Step 5/6 emit) for that single issue. If the issue is not open, not
+    check incl. Step 4.7 flake classification, Step 5/6 emit) for that single
+    issue. If the issue is not open, not
     labelled `ci-scan` / `ci-scan-net11`, or does not exist → record
     `skipped: dispatch issue_number not an in-scope ci-scan issue` and stop.
   - If empty (scheduled run, or manual run with no number): process ALL open
@@ -210,7 +224,7 @@ inputs once at the start and let them shape the whole run:
     `DRY RUN — would open PR` block to the run log containing: target `base`
     branch, source `branch`, title, the full PR body, and `git --no-pager diff
     --stat` of the staged candidate change (or "empty patch (needs-human)"). Tally
-    the outcome as `dry-run: would-<fix|help|needs-human>`. Emit nothing.
+    the outcome as `dry-run: would-<fix|help|deflake|needs-human>`. Emit nothing.
   - Otherwise (`"false"` / empty): normal mode — emit PRs via `safe-outputs` as
     the steps describe.
 
@@ -394,13 +408,56 @@ This is the "is the issue actually fixed?" check.
 
 6. Branch on the grep result:
 
-   - **0 matches** → `skipped: issue appears fixed in latest build #<id>; no PR
-     opened` and stop. Do NOT close the tracking issue (the agent has no write
-     permission for that, and a stale-looking signature may reappear).
-   - **>= 1 match** → continue to Step 5.
+   - **≥ 1 match in a FINAL failed leaf** → the failure reproduces as a hard
+     (non-flaky) failure. Continue to Step 5.
+   - **0 matches in final failed leaves** → do NOT conclude "fixed" yet. The
+     signature may have failed on an *earlier attempt* of a leaf that then passed
+     on **retry** (Azure DevOps / Helix re-run failed tests), which reads as green
+     but is exactly the flaky signal we now want to fix. Run the flakiness probe:
 
-If the latest build's result is `succeeded` outright, also stop with the same
-"appears fixed" reason — there are no failed leaves to grep.
+     a. **Intra-build retry check.** Re-walk the latest build's timeline for leaf
+        records that carry `previousAttempts` (or `attempt > 1`, or a sibling
+        record for the same task at an earlier attempt whose `result == failed`).
+        Fetch those failed earlier-attempt log(s) and grep the signature with
+        `grep -F -f /tmp/gh-aw/agent/sig_${N}.txt`.
+     b. **Cross-build intermittency check.** Take the previous 3–4 completed
+        builds of the same pipeline+branch (the `$top=5` list from step 2) and
+        grep the signature across their failed-leaf logs; count how many recent
+        builds contain it.
+
+     Then branch:
+     - **Signature failed-then-passed-on-retry in the latest build, OR present in
+       some-but-not-all recent builds** → the failure is **FLAKY (intermittent)**.
+       Set `flaky=true` and go to **Step 4.7** (flake classification). Do NOT skip.
+     - **Signature absent from every attempt of the latest build AND from all
+       recent builds** → genuinely gone. `skipped: issue appears fixed in latest
+       build #<id>; no PR opened` and stop. Do NOT close the tracking issue (the
+       agent has no write permission, and a stale-looking signature may reappear).
+
+If the latest build's result is `succeeded` outright with no retried leaves and
+the signature is absent from recent builds too, stop with the same "appears
+fixed" reason — there are no failed attempts to grep.
+
+### Step 4.7 — Flakiness root-cause classification (only when `flaky=true`)
+
+Reached only from Step 4.6 when the failure is intermittent. Read the failed
+attempt's log AND the test's own source (grep the repo for the failing test
+method/class name) and classify the flake into exactly one bucket:
+
+| Bucket | Signals | Action |
+|---|---|---|
+| **(a) Infra flake** | Network/DNS errors, NuGet/maven feed 4xx/5xx, `device not found` / emulator-boot / simulator-launch failures, external-service outages (Beeceptor, echo servers), disk/port/resource exhaustion, agent-image issues. The defect is in the environment, not in any repo code. | `skipped: infra-related flake, not fixable in test or product code`. Stop. |
+| **(b) Test-quality flake** | A defect in the TEST itself: a fixed `Thread.Sleep`/`Task.Delay` used as a wait, an assertion that runs before an async UI update settles, a missing `WaitForElement`/poll, shared mutable state or teardown that leaks between tests, an ordering dependency, or non-deterministic time/data/culture. | Classification `deflake`. Proceed to Step 5 to produce a deterministic-synchronization fix in the **test project**. |
+| **(c) Product-masking flake** | The first-run failure reflects a real PRODUCT defect the retry hides: an NRE/crash under load, a first-run init/perf cliff (e.g. a leg that fails by hitting the full timeout on attempt 1 then passes in seconds), or a race in handler/threading code. | NOT a test problem. Apply Step 5.3 area bounds to the PRODUCT fix: if a small, safe, in-bounds product correction exists, proceed to Step 5 as a normal `fix`/`help`. If it lands in handler lifecycle / threading / safe-area / performance hot-paths → `skipped: out-of-bounds area (handler / threading / perf)` (or hand off via the 5-attempt path). **Never** de-flake the test to paper over a product bug — that is muting. |
+
+Record the chosen bucket in the run log: `flake-class: <infra|test-quality|product-masking>`. Only bucket **(b)** yields a de-flake PR; **(a)** skips; **(c)** falls back to the normal product-fix bounds.
+
+A de-flake fix must keep testing the same behavior. It is acceptable to: replace
+a fixed sleep with a polling `WaitForElement` / condition wait, add a proper
+synchronization point, fix setup/teardown so state does not leak, or remove an
+order dependency. It is NOT acceptable to: enlarge a timeout to outlast a slow
+path, add `[Retry]`/`[Repeat]`, weaken or delete an assertion, or `[Ignore]` the
+test — those are mutes and are rejected in Step 5.4.
 
 ### Step 5 — Build a candidate fix (different from prior attempts)
 
@@ -445,14 +502,15 @@ checkout failed` and stop.
 
 | Issue area / pipeline | Policy |
 |---|---|
+| Genuine test-quality flake (Step 4.7 bucket b): race / missing wait / fixed sleep / state leakage / ordering in the **test** code | DE-FLAKE in bounds. Fix synchronization in the test project only; keep every assertion. HELP-classified for UI/device tests (not runner-validatable). NEVER bump a timeout or add `[Retry]` to mask. |
 | `maui-pr` compile errors (CS####, XA####) | FIX in bounds. ≤ 20 lines, single file when possible. |
 | `maui-pr` XAML compile (XamlC) | FIX in bounds in `.xaml` / a single handler file. |
 | `maui-pr-devicetests` test failure | HELP only — cannot validate from runner. Open PR with `Validation: not run (no device rig)`. |
-| `maui-pr-devicetests` timeout / hang | SKIP. Never bump category timeouts as a "fix". |
+| `maui-pr-devicetests` timeout / hang | SKIP. Never bump category timeouts as a "fix". (A genuine test-sync de-flake per Step 4.7(b) — not a timeout bump — is the only exception.) |
 | `maui-pr-uitests` (non-screenshot, already past Step 2.3) | HELP only — cannot validate. Never modify baseline images. |
 | Gradle / Maven feed (XAGRDL0000, 401, 500) | SKIP. `./eng/ingest-maven-deps.sh` is the documented mitigation. |
 | External-service outage (Beeceptor, network-dependent test) | SKIP. No code change possible. |
-| Handler lifecycle, threading, safe-area, performance hot-paths | OUT of bounds. SKIP — too risky for autonomous fix. |
+| Handler lifecycle, threading, safe-area, performance hot-paths (PRODUCT code) | OUT of bounds. SKIP — too risky for autonomous fix. (De-flaking TEST code per Step 4.7(b) is separate and allowed.) |
 | `PublicAPI.Unshipped.txt` | Allowed ONLY to add an entry the fix legitimately introduces. NEVER to silence the analyzer. |
 
 If the issue maps to a SKIP / OUT-of-bounds row, record the matching reason
@@ -472,6 +530,11 @@ Reject the attempt if the diff stages any of:
 - `[ActiveIssue]`, `[SkipOnPlatform]`, `[ConditionalFact]` used to disable,
   `Skip = "..."` on a Fact / Theory, `Trait("Category", "ManualOnly")`-style
   exclusion → `skipped: only candidate fix was a mute (test-disable)`.
+- A `RetryAttribute` / `[Retry]` / `[Repeat]` added to a test, a removed or
+  weakened assertion, or an **increased** test/category timeout value as the
+  primary change → `skipped: only candidate fix was a mute (retry / timeout /
+  weakened assertion)`. (Replacing a fixed `Thread.Sleep`/`Task.Delay` WITH a
+  polling condition wait is the opposite of this and is allowed.)
 - csproj `<*Incompatible>` / `<ExcludeFromTestRun>` / equivalent → same reason.
 - Modifying screenshot baseline images (`*.png` under any `TestAssets`,
   `Snapshots`, or `Baselines` directory) → `skipped: only candidate fix
@@ -516,7 +579,9 @@ If the commit count is `0` (nothing was committed), do NOT proceed to emission
 | Build env limit reached (timeout, missing SDK component) | not run | `help` |
 
 `maui-pr` failures should generally be validatable. `maui-pr-devicetests` and
-`maui-pr-uitests` failures should generally be `help`.
+`maui-pr-uitests` failures should generally be `help`. A `deflake` fix to a
+UI/device test is `help` (not runner-validatable); a de-flake to a unit test
+that runs locally may be `fix` if the local run passes.
 
 #### Step 5.6 — Emit the PR (branch-aware)
 
@@ -541,7 +606,7 @@ equals the `base` field. If they disagree, drop the attempt and record
 > **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit the
 > `create_pull_request`. Instead print a `DRY RUN — would open PR` block (base,
 > source branch, title, full body, `git --no-pager diff --stat "origin/${branch}..HEAD"`)
-> to the run log and tally `dry-run: would-<fix|help>`.
+> to the run log and tally `dry-run: would-<fix|help|deflake>`.
 
 ### Step 6 — Needs-human hand-off (attempt cap exhausted) — DEFERRED
 
@@ -568,10 +633,11 @@ Title patterns:
 
 - `fix`: `[ci-fix] <short description> (refs #<N>)`
 - `help`: `[ci-fix] Needs review: <short description> (refs #<N>)`
+- `deflake`: `[ci-fix] De-flake <test name>: <what makes it deterministic> (refs #<N>)`
 
 ````markdown
 Workflow artifact: ci-fix
-Artifact kind: <fix|help>
+Artifact kind: <fix|help|deflake>
 Refs: dotnet/maui#<N>
 Target branch: <main|net11.0>
 Attempt: <K>/5
@@ -593,6 +659,14 @@ This attempt differs by: <explicit contrast — what's new vs prior attempts>
 ## Root cause
 <failing log line + source location + likely cause>
 
+<!-- when Artifact kind == "deflake" -->
+Flake class: test-quality
+## Why this was flaky
+<the specific race / missing wait / fixed sleep / state leak / ordering, with the test source location, and the retry/intermittency evidence from Step 4.6>
+## De-flake
+<the deterministic synchronization this introduces; confirm NO assertion was weakened, NO timeout was bumped, and NO retry attribute was added>
+
+<!-- when Artifact kind == "fix" or "help" -->
 ## Fix
 <what this change does and why it is the correct, minimal correction — not a mute>
 
@@ -664,8 +738,8 @@ Per issue, append one outcome line to `/tmp/gh-aw/agent/coverage.txt`:
 ```
 
 `<outcome>` is one of: `fix-PR #aw_<id>`, `help-PR #aw_<id>`,
-`needs-human-PR #aw_<id>`, `dry-run: would-<fix|help|needs-human>`,
-`skipped: <reason>`.
+`deflake-PR #aw_<id>`, `needs-human-PR #aw_<id>`,
+`dry-run: would-<fix|help|deflake|needs-human>`, `skipped: <reason>`.
 
 Recognized skip reasons (reuse these phrasings so a future feedback workflow
 can aggregate them stably):
@@ -677,7 +751,9 @@ can aggregate them stably):
 - `human PR #<P> already addressing`
 - `5 attempts exhausted (#<H>)`
 - `issue appears fixed in latest build #<id>; no PR opened`
+- `infra-related flake, not fixable in test or product code`
 - `only candidate fix was a mute (test-disable)`
+- `only candidate fix was a mute (retry / timeout / weakened assertion)`
 - `only candidate fix modified visual baselines, not auto-fixable`
 - `no novel approach producible this run`
 - `out-of-bounds area (handler / threading / perf)`
