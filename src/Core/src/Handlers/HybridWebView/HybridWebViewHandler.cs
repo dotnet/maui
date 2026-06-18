@@ -1,4 +1,4 @@
-﻿#if __IOS__ || MACCATALYST
+#if __IOS__ || MACCATALYST
 using PlatformView = WebKit.WKWebView;
 using HeaderPairType = Foundation.NSObject;
 #elif MONOANDROID
@@ -178,7 +178,6 @@ namespace Microsoft.Maui.Handlers
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}
-
 
 
 #if PLATFORM && !TIZEN
