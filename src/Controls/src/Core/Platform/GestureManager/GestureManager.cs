@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			// Prefer an application-registered factory (issue #33364: resolve via Services),
 			// then a handler-scoped provider, then the default platform manager.
-			var factory = handler.MauiContext?.Services?.GetService<IGesturePlatformManagerFactory>();
+			var factory = GetOptionalGesturePlatformManagerFactory(handler.MauiContext?.Services);
 			if (factory is not null)
 			{
 				return factory.CreateGesturePlatformManager(handler)
@@ -103,6 +103,25 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return new GesturePlatformManager(handler);
+		}
+
+		// Resolves the optional gesture factory without assuming the service provider honors the
+		// IServiceProvider contract for unregistered services. Real MAUI providers return null, but a
+		// strict third-party backend container (or test double) may throw instead; in that case the
+		// factory is simply treated as not registered.
+		static IGesturePlatformManagerFactory? GetOptionalGesturePlatformManagerFactory(IServiceProvider? services)
+		{
+			if (services is null)
+				return null;
+
+			try
+			{
+				return services.GetService<IGesturePlatformManagerFactory>();
+			}
+			catch (Exception)
+			{
+				return null;
+			}
 		}
 	}
 }
