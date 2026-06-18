@@ -110,6 +110,72 @@ stages:
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
+          # ─────────────────────────────────────────────────────────
+          #  Resolve the PR's target (base) branch and switch the
+          #  worktree to it BEFORE installing workloads or merging.
+          #
+          #  This pipeline branch (self) may be based on net11.0 while
+          #  a PR targets main (net10), or vice-versa. Two things derive
+          #  from the checked-out tree and must follow the PR's REAL base:
+          #    1. Workloads / SDK band — build.ps1 --target=dotnet reads
+          #       global.json + eng/Versions.props from the worktree.
+          #    2. Merge base — Review-PR.ps1 -Phase Setup squash-merges
+          #       the PR onto the current HEAD in CI.
+          #  Running on the wrong base ⇒ wrong workloads + cross-branch
+          #  squash-merge conflicts. Switching to the PR's base fixes both,
+          #  so ONE pipeline branch handles main- and net11-targeting PRs.
+          #
+          #  Trusted scripts are captured HERE (from the pipeline ref,
+          #  before the base-branch checkout) so later tasks keep running
+          #  the reviewed pipeline-branch .github/scripts even though the
+          #  worktree is swapped to the base branch (security rule 3).
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              set -e
+
+              # Capture trusted scripts from the pipeline ref (self) BEFORE
+              # switching branches — later tasks invoke from $TRUSTED only.
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              chmod -R u+w "$TRUSTED" 2>/dev/null || true
+              rm -rf "$TRUSTED" 2>/dev/null || true
+              mkdir -p "$TRUSTED"
+              cp -r .github/scripts "$TRUSTED/scripts"
+              cp -r .github/skills  "$TRUSTED/skills"
+              cp -r eng/scripts     "$TRUSTED/eng-scripts"
+              chmod -R a-w "$TRUSTED"
+              echo "Trusted scripts copied to $TRUSTED"
+
+              # PRNumber is validated upstream ('Validate Parameters'); re-guard
+              # before use in a gh call.
+              if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
+                exit 1
+              fi
+
+              # Detect the PR's base branch (GitHub-provided metadata; repo
+              # inferred from the origin remote, same as Review-PR.ps1).
+              BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+
+              # Allowlist: only ever switch to a known protected base branch.
+              # Validate BEFORE echoing/using to avoid any injection via the ref.
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
+                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main or netN.0). Refusing to switch."
+                exit 1
+              fi
+              echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
+
+              # Switch the worktree to the PR's base branch (detached, to avoid
+              # 'branch already checked out in another worktree' conflicts).
+              git fetch origin "${BASE_REF}" --no-tags
+              git checkout --detach "origin/${BASE_REF}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
+            name: ResolveBaseBranch
+            displayName: 'Resolve PR base branch (workloads + merge base)'
+            retryCountOnTaskFailure: 2
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
           - ${{ if eq(parameters.Platform, 'android') }}:
             - template: common/enable-kvm.yml
@@ -616,20 +682,15 @@ stages:
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-token-usage/raw
 
-              # Copy trusted scripts from the checked-out commit so later tasks
-              # (which may be on a merged/modified worktree) use the same .github/
-              # files that were reviewed and approved on main.
+              # Trusted scripts were already captured from the pipeline ref in the
+              # 'Resolve PR base branch' step (before the base-branch checkout), so
+              # later tasks keep running the reviewed pipeline-branch scripts even
+              # though the worktree is now on the PR's base branch (security rule 3).
               TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-              mkdir -p "$TRUSTED"
-              cp -r .github/scripts "$TRUSTED/scripts"
-              cp -r .github/skills  "$TRUSTED/skills"
-              cp -r eng/scripts     "$TRUSTED/eng-scripts"
-              chmod -R a-w "$TRUSTED"
-              echo "Trusted scripts copied to $TRUSTED"
 
-              # Run Setup phase (branch checkout + PR merge)
+              # Run Setup phase (branch checkout + PR merge) from the trusted copy.
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 \
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
                 -PRNumber "${PARAM_PR_NUMBER}" \
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Setup \
@@ -873,6 +934,31 @@ stages:
           - checkout: self
             fetchDepth: 0
             persistCredentials: false
+
+          # Switch the worktree to the PR's base branch before installing
+          # workloads and merging the PR for deep UI tests — same rationale as
+          # the CopilotReview stage's 'Resolve PR base branch' step (correct SDK
+          # band + conflict-free squash-merge regardless of the pipeline branch).
+          - bash: |
+              set -e
+              if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
+                exit 1
+              fi
+              BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
+                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main or netN.0). Refusing to switch."
+                exit 1
+              fi
+              echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
+              git fetch origin "${BASE_REF}" --no-tags
+              git checkout --detach "origin/${BASE_REF}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF})"
+            displayName: 'Resolve PR base branch (workloads + merge base)'
+            retryCountOnTaskFailure: 2
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           # Bring in .NET + workloads + tasks DLL — same prerequisites the
           # CopilotReview job used. Reusing the install-dotnet template
