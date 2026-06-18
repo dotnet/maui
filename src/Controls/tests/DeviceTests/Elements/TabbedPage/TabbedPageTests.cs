@@ -240,8 +240,7 @@ namespace Microsoft.Maui.DeviceTests
 
 #if IOS || MACCATALYST
 			// Use setForMaui:false to force old event-based NavigationImpl path.
-			// When UseiOSNavigationViewHandler is enabled globally, NavigationRenderer
-			// doesn't implement RequestNavigation, causing hangs.
+			// NavigationRenderer doesn't implement RequestNavigation, causing hangs.
 			var firstPage = new NavigationPage(false, new ContentPage()
 			{
 				Content = new VerticalStackLayout()
@@ -398,9 +397,8 @@ namespace Microsoft.Maui.DeviceTests
 
 #if IOS || MACCATALYST
 				// Use setForMaui:false to force old event-based NavigationImpl path.
-				// When UseiOSNavigationViewHandler is enabled globally, NavigationPage
-				// defaults to MauiNavigationImpl but NavigationRenderer doesn't implement
-				// RequestNavigation, causing PushAsync/PopAsync to hang.
+				// NavigationRenderer doesn't implement RequestNavigation,
+				// causing PushAsync/PopAsync to hang.
 				pages[i] = new NavigationPage(false, contentPage)
 				{
 					Title = title
