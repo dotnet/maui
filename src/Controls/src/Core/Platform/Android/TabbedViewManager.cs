@@ -295,10 +295,8 @@ internal class TabbedViewManager
 
             if (_managesViewPager)
             {
-                // Re-register page change callback. It was unregistered in the cleanup branch
-                // above (SetElement(null) path). TabbedPage retains its TabbedPageManager across
-                // a same-MauiContext handler reconnect, so without re-registration, swiping
-                // between tabs stops updating CurrentTab and the bottom-nav selection.
+                // Unregister first to ensure single registration.
+                _viewPager.UnregisterOnPageChangeCallback(_listeners);
                 _viewPager.RegisterOnPageChangeCallback(_listeners);
                 SetTabLayout();
             }

@@ -107,6 +107,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var shellSection = _shellContent?.Parent as ShellSection;
             if (shellSection is not null && !_subscribedToNavigationRequested)
             {
+                _subscribedShellSection = shellSection;
                 ((IShellSectionController)shellSection).NavigationRequested += OnNavigationRequested;
                 _subscribedToNavigationRequested = true;
             }
@@ -191,6 +192,7 @@ namespace Microsoft.Maui.Controls.Handlers
             var shellSection = _shellContent?.Parent as ShellSection;
             if (shellSection is not null && !_subscribedToNavigationRequested)
             {
+                _subscribedShellSection = shellSection;
                 ((IShellSectionController)shellSection).NavigationRequested += OnNavigationRequested;
                 _subscribedToNavigationRequested = true;
             }
