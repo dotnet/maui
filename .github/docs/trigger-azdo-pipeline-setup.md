@@ -80,11 +80,21 @@ az identity federated-credential create \
 ```
 
 > **Subject claim mapping:** The OIDC token's `sub` claim is what Azure AD matches
-> against the `--subject` parameter. For `issue_comment` events (like the `/review`
-> command), the workflow runs from the default branch, so the subject is
-> `repo:dotnet/maui:ref:refs/heads/main`. For `pull_request` events, the subject
-> would be `repo:dotnet/maui:pull_request`. This is why the case-sensitivity
-> warning above is critical — the `sub` claim value must match exactly.
+> against the `--subject` parameter. The claim depends on how the job is configured:
+>
+> - **Job gated behind a GitHub environment** (e.g. `environment: gh-aw-agents`) →
+>   `repo:dotnet/maui:environment:gh-aw-agents`. **The environment claim takes
+>   precedence over the branch/PR claim**, so this is the subject actually presented
+>   by `review-trigger.yml`'s `trigger-review` job today (see the dedicated credential
+>   below).
+> - `issue_comment` event with **no** environment → the workflow runs from the default
+>   branch, so the subject is `repo:dotnet/maui:ref:refs/heads/main`.
+> - `pull_request` event with **no** environment → `repo:dotnet/maui:pull_request`.
+>
+> This is why the case-sensitivity warning above is critical — the `sub` claim value
+> must match exactly. **Adding `environment:` to a job silently changes its `sub`
+> claim**; if no matching federated credential exists, the token exchange fails with
+> `AADSTS700213` (see Troubleshooting).
 
 Add more federated credentials for other branches or trigger types as needed:
 
@@ -107,13 +117,17 @@ az identity federated-credential create \
   --subject "repo:dotnet/maui:pull_request" \
   --audiences "api://AzureADTokenExchange"
 
-# GitHub environment (recommended for production — enables approval gates)
+# GitHub environment — REQUIRED for review-trigger.yml.
+# The `trigger-review` job is gated behind `environment: gh-aw-agents` because the
+# AZDO_TRIGGER_* secrets are scoped to that environment (see dotnet/maui #35951 and
+# #35974). That gating makes the OIDC subject `repo:dotnet/maui:environment:gh-aw-agents`,
+# so this credential is required — without it, `/review` fails with AADSTS700213.
 az identity federated-credential create \
-  --name github-actions-env-azdo \
+  --name github-actions-env-gh-aw-agents \
   --identity-name $IDENTITY_NAME \
   --resource-group $RG \
   --issuer "https://token.actions.githubusercontent.com" \
-  --subject "repo:dotnet/maui:environment:azdo-trigger" \
+  --subject "repo:dotnet/maui:environment:gh-aw-agents" \
   --audiences "api://AzureADTokenExchange"
 ```
 
@@ -199,6 +213,7 @@ See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) fo
 | `startup_failure` (no logs at all) | Third-party Action blocked by org policy | Don't use `azure/login`. Use manual `curl`-based OIDC exchange. |
 | `AADSTS70021: No matching federated identity record found` | Subject claim case mismatch | Federated credential subject is **case-sensitive**. Use exact GitHub username casing (e.g. `JanKrivanek` not `jankrivanek`). |
 | `AADSTS7002381: ... enterprise claim ... actual value is ''` | Personal fork outside GitHub Enterprise | Microsoft tenant requires `enterprise` claim. Only repos in `dotnet`, `microsoft`, etc. GitHub Enterprise orgs work. |
+| `AADSTS700213: No matching federated identity record found for ... subject 'repo:dotnet/maui:environment:gh-aw-agents'` | Job gated behind a GitHub environment, but no federated credential exists for that environment subject | Add a credential with `--subject "repo:dotnet/maui:environment:gh-aw-agents"` (see Step 2). Adding `environment:` to a job changes its OIDC `sub` claim — the secrets are environment-scoped, so the environment can't simply be removed. |
 | `TF215106: Access denied. <name> needs Queue builds permissions` | Stakeholder access level or missing permission | Upgrade identity to **Basic** access (not Stakeholder). Verify "Queue builds" is explicitly allowed on the pipeline. |
 | `TF401444: Sign-in required` | Identity not added to AzDO org | Add the MI as a user in the AzDO Organization Settings → Users. |
 | `403` from AzDO REST API | Missing permissions | Ensure the identity has "Queue builds" on the specific pipeline AND Basic access level. |
@@ -217,6 +232,11 @@ See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) fo
    permissions, Stakeholder-level identities get `TF215106`. Request Basic.
 5. **Add identity to EACH AzDO org separately** — permissions in `dnceng-public`
    don't carry over to `DevDiv` and vice versa.
+6. **GitHub `environment:` gating changes the OIDC subject** — gating a job behind
+   `environment: NAME` makes the `sub` claim `repo:OWNER/REPO:environment:NAME`,
+   overriding the branch/PR claim. Add a matching federated credential or the
+   exchange fails with `AADSTS700213`. The `AZDO_TRIGGER_*` secrets are scoped to
+   the `gh-aw-agents` environment, so removing the gating is **not** a valid fix.
 
 ## References
 
