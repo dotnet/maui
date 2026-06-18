@@ -114,6 +114,13 @@ parameters:
 #     os: macOS
 #     label: macOS
 
+- name: AndroidPoolLinux
+  type: object
+  default:
+    name: MAUI-DNCENG
+    demands:
+      - ImageOverride -equals 1ESPT-Ubuntu22.04
+
 # Condition for MacOSPool comparison lanes (non-ARM64)
 # Currently disabled - both pools use MAUI self-hosted since Xcode 26.2 isn't available on Azure Pipelines x64.
 # Re-enable once Azure Pipelines has Xcode 26.2 on x64 pools.
@@ -300,6 +307,16 @@ stages:
         pool: ${{ parameters.MacOSPool.internal }}
       timeout: 240
       testCategory: AOT
+
+    # Android template integration tests (maui + maui-blazor build/install/run on emulator).
+    # Category-based lane exercises the default mobile runtime (CoreCLR on .NET 11).
+    - name: mac_runandroid_tests
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.AndroidPoolLinux }}
+      ${{ else }}:
+        pool: ${{ parameters.AndroidPoolLinux }}
+      timeout: 240
+      testCategory: RunOnAndroid
 
     - name: mac_runios_nativeaot_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
