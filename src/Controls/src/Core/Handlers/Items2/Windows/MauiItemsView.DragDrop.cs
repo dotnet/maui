@@ -188,9 +188,43 @@ internal partial class MauiItemsView
 						ApplyDragAffordance(ic, index);
 				}
 			}
+
+			// When the page is off-screen (e.g. an Options page is on top via
+			// PushAsync), the repeater has no realized children because MAUI's
+			// StackNavigationManager clears the ContentPresenter on navigation.
+			// Subscribe a one-shot Loaded handler so affordance is applied once
+			// the page re-enters the visual tree and items are realized again.
+			if (childCount == 0)
+			{
+				Loaded -= OnLoadedForAffordanceReapply;
+				Loaded += OnLoadedForAffordanceReapply;
+			}
 		}
 
 		_dragDropWired = true;
+	}
+
+	void OnLoadedForAffordanceReapply(object sender, RoutedEventArgs e)
+	{
+		Loaded -= OnLoadedForAffordanceReapply;
+
+		if (!_canReorderItems)
+			return;
+
+		var repeater = ItemsRepeaterControl;
+		if (repeater is null)
+			return;
+
+		int childCount = VisualTreeHelper.GetChildrenCount(repeater);
+		for (int i = 0; i < childCount; i++)
+		{
+			if (VisualTreeHelper.GetChild(repeater, i) is ItemContainer ic)
+			{
+				int index = repeater.GetElementIndex(ic);
+				if (index >= 0)
+					ApplyDragAffordance(ic, index);
+			}
+		}
 	}
 
 	void UnwireDragDropEvents()
@@ -235,10 +269,12 @@ internal partial class MauiItemsView
 
 		StopAutoScroll();
 		_dragDropWired = false;
+		Loaded -= OnLoadedForAffordanceReapply;
 	}
 
 	internal void DisconnectDragDrop()
 	{
+		Loaded -= OnLoadedForAffordanceReapply;
 		UnwireDragDropEvents();
 		if (_deferredWireHandler is not null)
 		{
