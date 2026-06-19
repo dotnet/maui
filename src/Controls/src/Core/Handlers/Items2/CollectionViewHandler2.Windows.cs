@@ -209,11 +209,15 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	protected override void UpdateItemsSource()
 	{
 		_ignorePlatformSelectionChange = true;
-
-		base.UpdateItemsSource();
-		UpdatePlatformSelection();
-
-		_ignorePlatformSelectionChange = false;
+		try
+		{
+			base.UpdateItemsSource();
+			UpdatePlatformSelection();
+		}
+		finally
+		{
+			_ignorePlatformSelectionChange = false;
+		}
 	}
 
 	/// <summary>
