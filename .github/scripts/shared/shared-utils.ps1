@@ -68,6 +68,9 @@ function Get-MauiTfmVersion {
 
     # Secondary source: global.json's SDK band, so a Directory.Build.props parse-miss on a
     # net11+ branch doesn't silently build net10. Only major.minor is used.
+    # NOTE: global.json's `tools.dotnet` is the build-SDK *band* — a proxy for the MAUI TFM,
+    # which move in lockstep in this repo. The regex keys on that `tools.dotnet` convention
+    # (not `sdk.version`) and the trailing `.` after the minor; revisit if the pin format changes.
     foreach ($root in $candidates) {
         if (-not $root) { continue }
         $gjPath = Join-Path $root 'global.json'
