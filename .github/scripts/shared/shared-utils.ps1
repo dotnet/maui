@@ -65,6 +65,21 @@ function Get-MauiTfmVersion {
             }
         }
     }
-    Write-Warn "Could not find <_MauiDotNetVersionMajor> in Directory.Build.props — falling back to '10.0'"
+
+    # Secondary source: global.json's SDK band, so a Directory.Build.props parse-miss on a
+    # net11+ branch doesn't silently build net10. Only major.minor is used.
+    foreach ($root in $candidates) {
+        if (-not $root) { continue }
+        $gjPath = Join-Path $root 'global.json'
+        if (Test-Path $gjPath) {
+            $gj = Get-Content $gjPath -Raw
+            if ($gj -match '"dotnet"\s*:\s*"(\d+)\.(\d+)\.') {
+                Write-Warn "Get-MauiTfmVersion: Directory.Build.props parse failed; using global.json SDK band ($($Matches[1]).$($Matches[2]))"
+                return "$($Matches[1]).$($Matches[2])"
+            }
+        }
+    }
+
+    Write-Warn "Could not find <_MauiDotNetVersionMajor> in Directory.Build.props or global.json — falling back to '10.0'"
     return '10.0'
 }
