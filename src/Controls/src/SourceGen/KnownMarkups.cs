@@ -361,13 +361,20 @@ internal class KnownMarkups
 			// 3. x:Reference: resolve the referenced element's type and compile against it.
 			//
 			// 4. No explicit source: use x:DataType if available to produce a compiled TypedBinding.
+			bool isAncestorTypeSource = false;
 			ITypeSymbol? xRefSourceType = null;
-			if (TryGetRelativeSourceAncestorType(markupNode, context, out var ancestorTypeSymbol)
+			if (TryGetRelativeSourceAncestorType(markupNode, context, out var ancestorTypeSymbol, out bool hasAncestorType)
 				&& ancestorTypeSymbol is not null)
 			{
 				dataTypeSymbol = ancestorTypeSymbol;
 			}
-			else if (!HasRelativeSourceBinding(markupNode))
+
+			// isAncestorTypeSource is true whenever AncestorType was present, regardless of whether
+			// the type resolved successfully. This prevents a BindingPropertyNotFound diagnostic from
+			// firing on a path that was never compiled before — even when resolution fails.
+			isAncestorTypeSource = hasAncestorType;
+
+			if (!isAncestorTypeSource && !HasRelativeSourceBinding(markupNode))
 			{
 				xRefSourceType = TryResolveXReferenceSourceType(markupNode, context);
 				dataTypeSymbol = xRefSourceType;
@@ -384,10 +391,10 @@ internal class KnownMarkups
 					return true;
 				}
 
-				// Emit property-not-found diagnostic only for x:DataType-sourced bindings.
-				// For x:Reference bindings, silently fall back to runtime — these bindings
-				// were never compiled before, so emitting a new warning would be a regression.
-				if (propertyNotFoundDiagnostic is not null && xRefSourceType is null)
+				// Emit property-not-found diagnostic only for x:DataType bindings.
+				// AncestorType and x:Reference bindings silently fall back to runtime —
+				// they were never compiled before, so a new warning would be a regression.
+				if (propertyNotFoundDiagnostic is not null && xRefSourceType is null && !isAncestorTypeSource)
 				{
 					context.ReportDiagnostic(propertyNotFoundDiagnostic);
 				}
@@ -730,9 +737,10 @@ internal class KnownMarkups
 		// with a resolvable AncestorType. If so, returns the already-resolved AncestorType
 		// symbol from context.Types (populated earlier by ProvideValueForRelativeSourceExtension).
 		// This allows AncestorType bindings to use the compiled (trim-safe) TypedBinding path.
-		static bool TryGetRelativeSourceAncestorType(ElementNode bindingNode, SourceGenContext context, out ITypeSymbol? ancestorType)
+		static bool TryGetRelativeSourceAncestorType(ElementNode bindingNode, SourceGenContext context, out ITypeSymbol? ancestorType, out bool hasAncestorType)
 		{
 			ancestorType = null;
+			hasAncestorType = false;
 
 			// Check if Source property exists
 			if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode)
@@ -759,12 +767,39 @@ internal class KnownMarkups
 				return false;
 			}
 
+			// AncestorType node is present — mark the attempt regardless of resolution outcome.
+			hasAncestorType = true;
+
 			// The AncestorType is typically an x:Type extension (ElementNode).
 			// ProvideValueForRelativeSourceExtension already resolved this type
 			// and registered it in context.Types — just look it up.
 			if (ancestorTypeNode is ElementNode typeExtNode)
 			{
 				return context.Types.TryGetValue(typeExtNode, out ancestorType) && ancestorType is not null;
+			}
+
+			// AncestorType may also be a bare string (ValueNode), e.g. AncestorType="local:MyViewModel".
+			// ProvideValueForRelativeSourceExtension resolves this inline but doesn't store it in
+			// context.Types, so resolve it here using the RelativeSource node's NamespaceResolver.
+			if (ancestorTypeNode is ValueNode vnType)
+			{
+				var typeName = vnType.Value as string;
+				if (IsNullOrEmpty(typeName))
+					return false;
+
+				try
+				{
+					XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName!, relativeSourceNode.NamespaceResolver, relativeSourceNode as IXmlLineInfo);
+					xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? resolvedType);
+					ancestorType = resolvedType;
+				}
+				catch (XamlParseException)
+				{
+					// Malformed type expression or unknown prefix — silently fall back to runtime Binding.
+					return false;
+				}
+
+				return ancestorType is not null;
 			}
 
 			return false;

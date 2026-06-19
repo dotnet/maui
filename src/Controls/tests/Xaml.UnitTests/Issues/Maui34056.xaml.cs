@@ -52,9 +52,13 @@ public partial class Maui34056 : ContentPage
             }
             else
             {
-                // Both XamlC and SourceGen produce a trim-safe TypedBinding when x:DataType is present
-                // on the binding node alongside RelativeSource AncestorType.
-                Assert.IsType<TypedBinding<Maui34056PageViewModel, ICommand>>(binding);
+                // XamlC and SourceGen produce a trim-safe TypedBinding for AncestorType bindings.
+                var typedBinding = Assert.IsType<TypedBinding<Maui34056PageViewModel, ICommand>>(binding);
+
+                // Verify the RelativeSource is correctly configured (mode + ancestor type).
+                var relativeSource = Assert.IsType<RelativeBindingSource>(typedBinding.Source);
+                Assert.Equal(RelativeBindingSourceMode.FindAncestorBindingContext, relativeSource.Mode);
+                Assert.Equal(typeof(Maui34056PageViewModel), relativeSource.AncestorType);
             }
         }
 
