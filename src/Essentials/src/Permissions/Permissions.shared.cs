@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.ApplicationModel
 {
+#nullable enable
 	/// <summary>
 	/// Provides an abstraction for checking and requesting runtime permissions.
 	/// </summary>
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.ApplicationModel
 		bool ShouldShowRationale<TPermission>()
 			where TPermission : Permissions.BasePermission, new();
 	}
+#nullable restore
 
 	/// <summary>
 	/// The Permissions API provides the ability to check and request runtime permissions.
@@ -108,7 +110,8 @@ namespace Microsoft.Maui.ApplicationModel
 				throw new PermissionException($"{typeof(TPermission).Name} permission was not granted or restricted: {status}");
 		}
 
-		static IPermissions currentImplementation;
+#nullable enable
+		static IPermissions? currentImplementation;
 
 		/// <summary>
 		/// Provides the default implementation for static usage of this API.
@@ -116,8 +119,9 @@ namespace Microsoft.Maui.ApplicationModel
 		public static IPermissions Current =>
 			currentImplementation ??= new PermissionsImplementation();
 
-		internal static void SetCurrent(IPermissions implementation) =>
+		internal static void SetCurrent(IPermissions? implementation) =>
 			currentImplementation = implementation;
+#nullable restore
 
 		/// <summary>
 		/// Represents the abstract base class for all permissions. 

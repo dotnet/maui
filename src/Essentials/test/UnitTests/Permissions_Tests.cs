@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
@@ -50,8 +52,8 @@ namespace Tests
 
 		class TestPermissions : IPermissions
 		{
-			string lastCall;
-			Type lastPermissionType;
+			string? lastCall;
+			Type? lastPermissionType;
 
 			public Task<PermissionStatus> CheckStatusAsync<TPermission>()
 				where TPermission : Permissions.BasePermission, new()
