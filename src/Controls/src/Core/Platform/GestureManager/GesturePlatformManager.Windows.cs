@@ -421,12 +421,14 @@ namespace Microsoft.Maui.Controls.Platform
 				if (canAllowTabStop && !isSubscribed)
 				{
 					contentPanel.IsTabStop = true;
+					contentPanel.UseSystemFocusVisuals = true;
 					contentPanel.KeyDown += ContentPanelOnKeyDown;
 					_subscriptionFlags |= SubscriptionFlags.ContentPanelKeyDownSubscribed;
 				}
 				else if (!canAllowTabStop && isSubscribed)
 				{
 					contentPanel.IsTabStop = false;
+					contentPanel.UseSystemFocusVisuals = false;
 					contentPanel.KeyDown -= ContentPanelOnKeyDown;
 					_subscriptionFlags &= ~SubscriptionFlags.ContentPanelKeyDownSubscribed;
 				}
