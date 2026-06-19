@@ -22,12 +22,6 @@ permissions:
   pull-requests: read
 
 on:
-  # ⚠️ TEMP CANARY TRIGGER — REMOVE BEFORE MERGE. Branch-scoped push trigger so a
-  # single pre-merge validation run of the NET11.0 path can execute from this
-  # feature branch. workflow_dispatch requires the workflow on the default
-  # branch; push does not.
-  push:
-    branches: [pureween/bookish-garbanzo]
   schedule: every 12h
   workflow_dispatch:
     inputs:
@@ -43,14 +37,6 @@ on:
 
 if: |
   github.repository == 'dotnet/maui'
-
-# ⚠️ TEMP CANARY OVERRIDE — REMOVE BEFORE MERGE. The gh-aw daily AI-credits
-# guardrail caps a workflow's total AIC over a rolling 24h window (org default
-# GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS, falling back to 5000). The pre-merge
-# debugging runs on this branch already consumed AIC today, so the default may
-# block a validation run before the agent can start. Raise it only for the
-# canary; deleting this field restores the org default for production.
-max-daily-ai-credits: 20000
 
 engine:
   id: copilot
@@ -80,9 +66,7 @@ safe-outputs:
   create-pull-request:
     title-prefix: "[ci-fix] "
     draft: true
-    # ⚠️ TEMP CANARY CAP — REMOVE BEFORE MERGE (restore to 3). Hard backstop so the
-    # pre-merge validation run can emit at most ONE PR no matter what.
-    max: 1
+    max: 3
     # This workflow ALWAYS targets net11.0. Pinning base-branch here makes gh-aw
     # resolve the transport-patch base to net11.0 (no per-issue base override is
     # needed or allowed), so the transport patch is just the fix's own delta —
@@ -206,15 +190,6 @@ For every open tracking issue in scope, converge on exactly one outcome:
 Walk the steps in order. Do not skip. Stop at Step 8.
 
 ### Step 0 — Run mode (manual dispatch inputs)
-
-> 🔬 **TEMPORARY CANARY OVERRIDE — REMOVE BEFORE MERGE.** This branch carries a
-> temporary `push` trigger for a single pre-merge validation run of the net11.0
-> path. For THIS run, regardless of the event type or the inputs below, you MUST
-> treat the run as a **controlled single-issue run scoped to issue #35981**
-> (label `ci-scan-net11` → target branch `net11.0`). Do NOT enumerate or process
-> any other issue. Fetch #35981 with `get_issue`, run every downstream gate on
-> it, emit at most one PR for it, then stop at the tally. Ignore this entire
-> block once it is removed.
 
 This run may be a scheduled sweep or a manual `workflow_dispatch`. Read these two
 inputs once at the start and let them shape the whole run:
