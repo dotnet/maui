@@ -870,7 +870,7 @@ try {
 # offline, then restore the real function so the E2E section is unaffected.
 $script:GhStub = $null
 $script:OrigInvokeGh = ${function:Invoke-Gh}
-function Invoke-Gh { param([string[]]$GhArgs) & $script:GhStub $GhArgs }
+function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) & $script:GhStub $GhArgs }
 try {
     # ── Get-IssueTimelinePrs: only same-repo cross-references are fix candidates ──
     # Regression: timeline `cross-referenced` events can point at PRs in OTHER
@@ -972,6 +972,34 @@ try {
     Assert-Eq -Label "spoof-only gate still returns one (WATCH) check" -Expected 'WATCH' -Actual $spoofChecks[0].Status
     Assert-Eq -Label "spoof-only gate reports the excluded non-maintainer PR" -Expected $true `
         -Actual ([bool]($spoofChecks[0].Details -match 'non-maintainer'))
+    Assert-Eq -Label "confirmed spoofer is NOT reported as could-not-verify" -Expected $true `
+        -Actual ([bool]($spoofChecks[0].Details -notmatch 'could not have their author association verified'))
+
+    # (c) a maintainer-titled Candidate PR whose author-association REST lookup
+    # fails transiently (Invoke-Gh returns $null on non-zero gh exit). It must be
+    # excluded fail-closed, but reported as UNVERIFIABLE — NOT mislabeled as a
+    # confirmed non-maintainer spoofer. A transient blip during a real cut must
+    # not tell the release captain their own legitimate PR isn't from a
+    # maintainer, and (because the lookup uses -Quiet) must not embed a raw `gh`
+    # warning in the tracker body.
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
+            return @'
+[ {"number":777,"title":"June 8th, Candidate","author":{"login":"rmarinho"},"updatedAt":"2026-06-18T00:00:00Z","url":"u"} ]
+'@
+        }
+        # author_association lookup fails → mirror Invoke-Gh's $null-on-failure.
+        return $null
+    }
+    $unverChecks = @(Get-CandidatePrChecks -Ctx $candCtx)
+    Assert-Eq -Label "unverifiable author-assoc gate still returns one (WATCH) check" -Expected 'WATCH' -Actual $unverChecks[0].Status
+    Assert-Eq -Label "unverifiable Candidate PR reported as could-not-verify" -Expected $true `
+        -Actual ([bool]($unverChecks[0].Details -match 'could not have their author association verified'))
+    Assert-Eq -Label "unverifiable Candidate PR NOT mislabeled as non-maintainer spoofer" -Expected $true `
+        -Actual ([bool]($unverChecks[0].Details -notmatch 'non-maintainer'))
+    Assert-Eq -Label "unverifiable gate NextAction tells captain to rerun" -Expected $true `
+        -Actual ([bool]($unverChecks[0].NextAction -match 'rerun'))
 } finally {
     ${function:Invoke-Gh} = $script:OrigInvokeGh
     $script:GhStub = $null

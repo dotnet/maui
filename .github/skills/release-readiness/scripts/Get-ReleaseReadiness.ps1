@@ -194,14 +194,19 @@ function Invoke-Git([string]$Cmd) {
     return $out
 }
 
-function Invoke-Gh([string[]]$GhArgs) {
+function Invoke-Gh([string[]]$GhArgs, [switch]$Quiet) {
+    # -Quiet suppresses the non-zero-exit warning for callers that handle a
+    # $null return themselves and don't want a raw `gh ... exited` line leaking
+    # into $Script:Warnings (which is rendered into the tracker issue body).
     $errFile = [System.IO.Path]::GetTempFileName()
     try {
         $out = & gh @GhArgs 2>$errFile
         $exitCode = $LASTEXITCODE
         if ($exitCode -ne 0) {
-            $err = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
-            Write-Warn "gh $($GhArgs -join ' ') exited $exitCode : $err"
+            if (-not $Quiet) {
+                $err = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
+                Write-Warn "gh $($GhArgs -join ' ') exited $exitCode : $err"
+            }
             return $null
         }
         return $out
@@ -1187,23 +1192,46 @@ function Get-CandidatePrChecks {
     # The REST field is 'author_association' (snake_case) — enum
     # OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR|... Fail closed: an unreadable
     # association excludes the PR, so a missing signal can't let a
-    # 'Candidate'-titled PR slip through the spoof gate.
+    # 'Candidate'-titled PR slip through the spoof gate. Distinguish a
+    # *confirmed* non-maintainer (a real spoofer) from an *unverifiable* one
+    # (transient gh/REST failure) so a legitimate maintainer Candidate PR isn't
+    # mislabeled as a spoofer during an actual cut. Use -Quiet so a transient
+    # lookup miss doesn't embed a raw `gh ... exited` warning in the tracker
+    # body — the structured WATCH note below carries that signal instead.
     $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
-    $candidates = @($titleMatches | Where-Object {
-        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($_.number)",
-                                '--jq', '.author_association')
+    $candidates = @()
+    $spoofers = 0
+    $unverifiable = 0
+    foreach ($pr in $titleMatches) {
+        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)",
+                                '--jq', '.author_association') -Quiet
         $assoc = if ($assocRaw) { "$assocRaw".Trim() } else { $null }
-        $assoc -and ($maintainerAssociations -contains $assoc)
-    })
-    $rejectedBySpoofGate = $titleMatches.Count - $candidates.Count
+        if (-not $assoc) {
+            $unverifiable++
+        } elseif ($maintainerAssociations -contains $assoc) {
+            $candidates += $pr
+        } else {
+            $spoofers++
+        }
+    }
 
     if ($candidates.Count -eq 0) {
-        $rejectNote = if ($rejectedBySpoofGate -gt 0) {
-            " ($rejectedBySpoofGate non-maintainer PR(s) titled 'Candidate' were excluded as not real cut PRs)"
-        } else { '' }
+        $excludeNotes = @()
+        if ($spoofers -gt 0) {
+            $excludeNotes += "$spoofers non-maintainer PR(s) titled 'Candidate' were excluded as not real cut PRs"
+        }
+        if ($unverifiable -gt 0) {
+            $excludeNotes += "$unverifiable 'Candidate'-titled PR(s) could not have their author association verified (``gh`` REST lookup failed) and were excluded fail-closed — rerun to re-check"
+        }
+        $rejectNote = if ($excludeNotes.Count -gt 0) { " ($($excludeNotes -join '; '))" } else { '' }
+        $nextAction = if ($unverifiable -gt 0) {
+            "Verify ``gh auth status`` and rerun to re-check author association. When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR."
+        } else {
+            "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR."
+        }
         return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
             -Details "No open PR matching ``*Candidate*`` from a maintainer (OWNER/MEMBER/COLLABORATOR) found on ``$($Ctx.mainBranch)``$rejectNote. The Candidate PR is the mechanism that promotes a specific main commit as the SR cut point." `
-            -NextAction "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR.")
+            -NextAction $nextAction)
     }
 
     # Build a compact detail string listing all open candidate PRs (almost
