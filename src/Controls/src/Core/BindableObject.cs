@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
@@ -721,20 +720,19 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetOrCreateContext(BindableProperty property)
 		{
-#if NETSTANDARD
 			var context = GetContext(property);
 			if (context is null)
 			{
+				// Create the context before adding it to _properties. CreateContext can invoke a
+				// DefaultValueCreator that re-entrantly sets other properties, which may resize
+				// _properties and reallocate its backing storage. Holding a ref into the dictionary
+				// across that call (e.g. via CollectionsMarshal.GetValueRefOrAddDefault) would leave
+				// the ref pointing at the discarded array, so the created context would never be
+				// stored. See https://github.com/dotnet/maui/pull/35970.
 				context = CreateContext(property);
 				_properties.Add(property.InternalId, context);
 			}
-#else
-			ref var context = ref CollectionsMarshal.GetValueRefOrAddDefault(_properties, property.InternalId, out var exists);
-			if (!exists)
-			{
-				context = CreateContext(property);
-			}
-#endif
+
 			return context;
 		}
 

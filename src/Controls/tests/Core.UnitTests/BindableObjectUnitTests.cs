@@ -1564,6 +1564,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(5, values[2]);
 		}
 
+		[Fact]
+		public void GetValuesReturnsSetStateAndValue()
+		{
+			var prop = BindableProperty.Create("Foo", typeof(int), typeof(MockBindable), 0);
+			var prop1 = BindableProperty.Create("Foo1", typeof(int), typeof(MockBindable), 1);
+			var prop2 = BindableProperty.Create("Foo2", typeof(int), typeof(MockBindable), 2);
+			var bindable = new MockBindable();
+
+			bindable.SetValue(prop, 3);
+			bindable.SetValue(prop2, 5);
+
+			var values = bindable.GetValues<int>(new[] { prop, prop1, prop2 });
+
+			Assert.Equal(3, values.Length);
+			Assert.True(values[0].IsSet);
+			Assert.Equal(3, values[0].Value);
+			Assert.False(values[1].IsSet);
+			Assert.Equal(0, values[1].Value);
+			Assert.True(values[2].IsSet);
+			Assert.Equal(5, values[2].Value);
+		}
+
+		[Fact]
+		public void DefaultValueCreatorCachesValueWhenReentrantPropertyAddsResizeStore()
+		{
+			var reentrantProperties = new BindableProperty[8];
+			for (var i = 0; i < reentrantProperties.Length; i++)
+			{
+				reentrantProperties[i] = BindableProperty.Create($"Reentrant{i}", typeof(int), typeof(MockBindable), 0);
+			}
+
+			var defaultValueCreatorInvocations = 0;
+			var propertyWithCreator = BindableProperty.Create(
+				"ReentrantDefault",
+				typeof(int),
+				typeof(MockBindable),
+				0,
+				defaultValueCreator: b =>
+				{
+					defaultValueCreatorInvocations++;
+					for (var i = 0; i < reentrantProperties.Length; i++)
+					{
+						b.SetValue(reentrantProperties[i], i + 1);
+					}
+
+					return 42;
+				});
+
+			var bindable = new MockBindable();
+
+			var first = (int)bindable.GetValue(propertyWithCreator);
+			var second = (int)bindable.GetValue(propertyWithCreator);
+
+			Assert.Equal(42, first);
+			Assert.Equal(42, second);
+			Assert.Equal(1, defaultValueCreatorInvocations);
+			Assert.True(bindable.IsSet(propertyWithCreator));
+		}
+
 		class BindingContextConverter
 			: IValueConverter
 		{
