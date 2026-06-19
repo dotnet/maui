@@ -531,6 +531,92 @@ if (-not (Test-Path $detectScriptPath)) {
     # Empty shipped set: every preview is in-flight.
     Assert-Eq -Label "no shipped previews: preview1 in-flight"  -Expected $true -Actual (Test-IsPreviewBranchInFlight -PreviewNumber 1 -ShippedPreviews $emptyPreviewSet)
     Assert-Eq -Label "no shipped previews: preview20 in-flight" -Expected $true -Actual (Test-IsPreviewBranchInFlight -PreviewNumber 20 -ShippedPreviews $emptyPreviewSet)
+
+    # ─────────── Get-RecentCommitCount: deterministic recency-window coverage ───────────
+    # The detector derives every tracker's `hasRecentActivity` from
+    # Get-RecentCommitCount (git log <ref> --since=<Days>.days). The live E2E
+    # assertions deliberately DON'T pin that flag's value — it's wall-clock
+    # dependent: a servicing branch idle for >Days flips it to $false, which is a
+    # NORMAL end-of-cycle state, not a bug. Prove the window math itself is correct
+    # HERE instead, against a throwaway repo whose commits have controlled dates.
+    # This is fully deterministic: zero network, zero dependence on "today".
+    Write-Host "`n[Unit] Get-RecentCommitCount recency window (synthetic fixture)" -ForegroundColor Cyan
+    $savedRepo   = $Repo
+    $fixtureRepo = Join-Path ([System.IO.Path]::GetTempPath()) "rr-recency-fixture-$([guid]::NewGuid().ToString('N'))"
+    try {
+        New-Item -ItemType Directory -Path $fixtureRepo -Force | Out-Null
+        git -C $fixtureRepo init -q             2>&1 | Out-Null
+        git -C $fixtureRepo config user.email 'rr-test@example.com' 2>&1 | Out-Null
+        git -C $fixtureRepo config user.name  'RR Test'            2>&1 | Out-Null
+        # Keep the fixture hermetic against the host's git config — otherwise a
+        # developer/CI machine could break the synthetic commits in ways unrelated
+        # to the code under test:
+        #   - commit.gpgsign=true with no key for this throwaway repo -> "gpg failed
+        #     to sign the data" -> zero commits.
+        #   - a global core.hooksPath, or an init.templateDir that seeds .git/hooks,
+        #     installing a pre-commit/commit-msg hook (linters, ticket-number
+        #     enforcement, etc.) -> commits rejected.
+        # Force signing off and redirect hook lookup to an empty (nonexistent) path
+        # under .git so neither can interfere. A local core.hooksPath overrides any
+        # global one AND bypasses templated .git/hooks. The setup guard below still
+        # fails loud if anything else goes wrong.
+        git -C $fixtureRepo config commit.gpgsign false 2>&1 | Out-Null
+        git -C $fixtureRepo config core.hooksPath (Join-Path (Join-Path $fixtureRepo '.git') '_disabled-hooks') 2>&1 | Out-Null
+
+        # Three commits at known ages relative to "now". The 1-day margins on either
+        # side of the 7-day window keep every assertion robust (no boundary fuzz).
+        $now = Get-Date
+        # Preserve any ambient GIT_*_DATE the caller set: we override them per commit
+        # to control dates, then restore the originals so a later test in this process
+        # (or the parent environment) is never left mutated.
+        $priorAuthorDate    = $env:GIT_AUTHOR_DATE
+        $priorCommitterDate = $env:GIT_COMMITTER_DATE
+        try {
+            foreach ($c in @(
+                @{ Msg = 'c30'; Age = 30 }   # well outside any window under test
+                @{ Msg = 'c8';  Age = 8  }   # just OUTSIDE the 7-day window
+                @{ Msg = 'c6';  Age = 6  }   # just INSIDE the 7-day window
+            )) {
+                $iso = $now.AddDays(-$c.Age).ToString('yyyy-MM-ddTHH:mm:ss')
+                Set-Content -Path (Join-Path $fixtureRepo "$($c.Msg).txt") -Value $c.Msg
+                git -C $fixtureRepo add -A 2>&1 | Out-Null
+                $env:GIT_AUTHOR_DATE    = $iso
+                $env:GIT_COMMITTER_DATE = $iso   # --since filters on committer date
+                git -C $fixtureRepo commit -q -m $c.Msg 2>&1 | Out-Null
+            }
+        } finally {
+            if ($null -eq $priorAuthorDate)    { Remove-Item Env:GIT_AUTHOR_DATE    -ErrorAction SilentlyContinue } else { $env:GIT_AUTHOR_DATE    = $priorAuthorDate }
+            if ($null -eq $priorCommitterDate) { Remove-Item Env:GIT_COMMITTER_DATE -ErrorAction SilentlyContinue } else { $env:GIT_COMMITTER_DATE = $priorCommitterDate }
+        }
+        # Get-RecentCommitCount resolves `origin/<ref>`, so publish a remote-tracking
+        # ref. Targeting HEAD keeps this branch-name agnostic (works whether git
+        # defaults the initial branch to 'main' or 'master').
+        git -C $fixtureRepo update-ref refs/remotes/origin/main HEAD 2>&1 | Out-Null
+
+        # Fail LOUDLY (and early) if the fixture didn't end up with the 3 commits the
+        # assertions below depend on — e.g. a machine-level git misconfig swallowed
+        # by `2>&1 | Out-Null`. Without this guard a broken setup surfaces only as a
+        # cryptic "unknown revision origin/main" from Get-RecentCommitCount later.
+        $fixtureCommitCount = (& git -C $fixtureRepo rev-list --count origin/main 2>$null)
+        if ($LASTEXITCODE -ne 0 -or "$fixtureCommitCount".Trim() -ne '3') {
+            throw "Recency fixture setup failed: expected 3 commits on 'origin/main', got '$fixtureCommitCount' (git exit $LASTEXITCODE). Check this machine's git config (e.g. commit.gpgsign / hooks)."
+        }
+
+        # Point the dot-sourced detector helper at the fixture for these assertions,
+        # then restore $Repo in `finally` so later tests are untouched.
+        $Repo = $fixtureRepo
+        Assert-Eq -Label "recency window: 7d counts only the 6-day-old commit"        -Expected 1 -Actual (Get-RecentCommitCount -Ref 'main' -Days 7)
+        Assert-Eq -Label "recency window: 10d also includes the 8-day-old commit"     -Expected 2 -Actual (Get-RecentCommitCount -Ref 'main' -Days 10)
+        Assert-Eq -Label "recency window: 60d includes all three commits"             -Expected 3 -Actual (Get-RecentCommitCount -Ref 'main' -Days 60)
+        Assert-Eq -Label "recency window: 1d window -> 0 (the idle / no-activity case)" -Expected 0 -Actual (Get-RecentCommitCount -Ref 'main' -Days 1)
+        # The `origin/`-prefixed ref form must resolve identically (no double prefix).
+        Assert-Eq -Label "recency window: explicit origin/ ref resolves the same"     -Expected 1 -Actual (Get-RecentCommitCount -Ref 'origin/main' -Days 7)
+    } finally {
+        $Repo = $savedRepo
+        # SilentlyContinue so a cleanup hiccup (e.g. a transient file lock on .git)
+        # can't throw from `finally` and mask a real failure from the `try` body.
+        if (Test-Path $fixtureRepo) { Remove-Item -Recurse -Force $fixtureRepo -ErrorAction SilentlyContinue }
+    }
 }
 
 # ─────────── E2E: Run detection against this repo and validate trackers ───────────
@@ -592,7 +678,15 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "SR8 branchName"               -Expected 'release/10.0.1xx-sr8' -Actual $sr8.branchName
                 Assert-Eq -Label "SR8 branchExists = true"      -Expected $true -Actual $sr8.branchExists
                 Assert-Eq -Label "SR8 expectedTag = 10.0.80"    -Expected '10.0.80' -Actual $sr8.expectedTag
-                Assert-Eq -Label "SR8 hasRecentActivity = true" -Expected $true -Actual $sr8.hasRecentActivity
+                # hasRecentActivity is a 7-day-window signal (git log --since=7.days
+                # against the live branch), so its VALUE is wall-clock dependent and
+                # MUST NOT be pinned here — SR8 idling >7 days at the tail of a cycle
+                # is a NORMAL state that would (correctly) report $false. Assert only
+                # that the detector emits it as a real [bool]. The window math itself
+                # is covered deterministically by the synthetic-fixture unit test
+                # ([Unit] Get-RecentCommitCount recency window).
+                Assert-Eq -Label "SR8 hasRecentActivity is a [bool] (value is date-dependent)" `
+                          -Expected $true -Actual ($sr8.hasRecentActivity -is [bool])
                 Assert-Eq -Label "SR8 regression labels"        `
                           -Expected 'regressed-in-10.0.70,regressed-in-10.0.80' `
                           -Actual ($sr8.regressionLabels -join ',')
@@ -613,7 +707,9 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "SR9 priorSrBranch = SR8 branch" `
                           -Expected 'release/10.0.1xx-sr8' -Actual $sr9.priorSrBranch
                 Assert-Eq -Label "SR9 expectedPatch = 90"       -Expected 90 -Actual $sr9.expectedPatch
-                Assert-Eq -Label "SR9 hasRecentActivity = true" -Expected $true -Actual $sr9.hasRecentActivity
+                # Same 7-day-window caveat as SR8: don't pin the value, assert the type.
+                Assert-Eq -Label "SR9 hasRecentActivity is a [bool] (value is date-dependent)" `
+                          -Expected $true -Actual ($sr9.hasRecentActivity -is [bool])
                 Assert-Eq -Label "SR9 regression labels"        `
                           -Expected 'regressed-in-10.0.80,regressed-in-10.0.90' `
                           -Actual ($sr9.regressionLabels -join ',')
@@ -621,12 +717,23 @@ if (-not $SkipE2E) {
                 Write-Host "  ❌ SR9 tracker missing" -ForegroundColor Red; $script:failed++
             }
 
-            # Active SRs (the ones the workflow will actually post) all have activity.
-            # SR7 shipped 2026-06-05 (no longer in the tracker set); only SR8 + SR9 are active.
+            # Every active SR tracker must EXPOSE a hasRecentActivity flag, but that
+            # flag is a 7-day-window signal (git log --since=7.days), NOT a synonym
+            # for "active": an active SR can legitimately sit idle for >7 days near
+            # the tail of a cycle and report hasRecentActivity=$false. So assert the
+            # flag is a real [bool] — never a hardcoded, date-dependent $true. SR7
+            # shipped 2026-06-05 and is no longer in the tracker set; only SR8 + SR9
+            # are active.
             foreach ($srNum in @(8, 9)) {
                 if ($bySr.ContainsKey($srNum)) {
-                    Assert-Eq -Label "SR$srNum hasRecentActivity == true (active SR)" `
-                              -Expected $true -Actual $bySr[$srNum].hasRecentActivity
+                    Assert-Eq -Label "SR$srNum hasRecentActivity is a [bool] (active SR; value date-dependent)" `
+                              -Expected $true -Actual ($bySr[$srNum].hasRecentActivity -is [bool])
+                    # Pin the detector's count->flag WIRING (hasRecentActivity = recentCommitCount > 0)
+                    # without pinning the date-dependent value: both fields come off the SAME tracker
+                    # computed at the SAME instant, so this invariant holds no matter how active the
+                    # branch is, yet still catches an inverted/hardcoded mapping.
+                    Assert-Eq -Label "SR$srNum hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
+                              -Expected $true -Actual ($bySr[$srNum].hasRecentActivity -eq ([int]$bySr[$srNum].recentCommitCount -gt 0))
                 }
             }
         }
@@ -706,8 +813,16 @@ if (-not $SkipE2E) {
                           -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
                 Assert-Eq -Label "preview6 branchExists = false (no branch yet)" `
                           -Expected $false -Actual $preview6.branchExists
-                Assert-Eq -Label "preview6 hasRecentActivity = true (active preview cycle)" `
-                          -Expected $true -Actual $preview6.hasRecentActivity
+                # hasRecentActivity is a 7-day-window signal, not a marker of an
+                # "active preview cycle" — net11.0 can idle >7 days and report $false.
+                # Assert the flag's TYPE, not its date-dependent value.
+                Assert-Eq -Label "preview6 hasRecentActivity is a [bool] (value date-dependent)" `
+                          -Expected $true -Actual ($preview6.hasRecentActivity -is [bool])
+                # Pin the count->flag WIRING (hasRecentActivity = recentCommitCount > 0) for the
+                # preview construction path too — same-instant fields, so date-independent yet it
+                # still trips on an inverted/hardcoded mapping.
+                Assert-Eq -Label "preview6 hasRecentActivity == (recentCommitCount > 0) [mapping invariant]" `
+                          -Expected $true -Actual ($preview6.hasRecentActivity -eq ([int]$preview6.recentCommitCount -gt 0))
                 Assert-Eq -Label "preview6 regressionLabels carries previewN-1 + previewN" `
                           -Expected 'regressed-in-11.0.0-preview5,regressed-in-11.0.0-preview6' `
                           -Actual ($preview6.regressionLabels -join ',')
