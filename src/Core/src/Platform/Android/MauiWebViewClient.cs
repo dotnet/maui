@@ -56,20 +56,42 @@ namespace Microsoft.Maui.Platform
 		public override void OnPageFinished(WebView? view, string? url)
 		{
 			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null || string.IsNullOrWhiteSpace(url))
+			{
 				return;
+			}
 
 			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
 			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
 
+			var mauiWebView = view as MauiWebView;
+			bool isLayoutLoad = mauiWebView?.IsLoadingForLayout == true;
+
 			// Skip Navigated event for about:blank to prevent unwanted events when Source is null
 			if (navigate && !IsBlankNavigation(url))
 			{
-				handler.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
+				// Clear the synthetic about:blank entry (loaded for layout, see #32030) now that
+				// the real URL is current. ClearHistory() removes all entries except the current
+				// page, ensuring CanGoBack() is already false when Navigated fires (#35788).
+				if (isLayoutLoad)
+				{
+					mauiWebView!.ClearHistory();
+					mauiWebView!.IsLoadingForLayout = false;
+					// Called BEFORE Navigated fires so user handlers observe CanGoBack=false immediately.
+					handler?.PlatformView?.UpdateCanGoBackForward(handler.VirtualView);
+				}
+
+				handler!.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
+			}
+			else if (isLayoutLoad && (_navigationResult == WebNavigationResult.Failure || _navigationResult == WebNavigationResult.Cancel))
+			{
+				// Navigation failed or canceled — reset the layout flag so a subsequent successful load
+				// does not incorrectly trigger ClearHistory() (#35788).
+				mauiWebView!.IsLoadingForLayout = false;
 			}
 
 			handler.SyncPlatformCookiesToVirtualView(url);
 
-			handler?.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
+			handler?.PlatformView?.UpdateCanGoBackForward(handler.VirtualView);
 
 			// Only inject the scroll-capture observer when the WebView is hosted inside
 			// a RefreshView – avoids unnecessary JS overhead for standalone WebViews.
