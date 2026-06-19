@@ -51,6 +51,15 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				template = _view.EmptyViewTemplate;
 			}
 
+			// If neither the DataTemplateSelector nor EmptyViewTemplate resolved a
+			// template (e.g. selector returns null for null items and EmptyViewTemplate
+			// is not set), there is nothing to render. Return null so ItemsRepeater
+			// skips this slot — prevents ArgumentNullException in TryGetValue below.
+			if (template is null)
+			{
+				return null;
+			}
+
 			ItemContainer? container = null;
 			ElementWrapper? wrapper = null;
 

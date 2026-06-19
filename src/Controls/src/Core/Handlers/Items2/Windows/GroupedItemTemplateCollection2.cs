@@ -48,15 +48,15 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		}
 	}
 
-	ItemTemplateContext2 CreateItemContext(object item) =>
+	ItemTemplateContext2 CreateItemContext(object? item) =>
 		new(_itemTemplate, item, _container, mauiContext: _mauiContext);
 
-	ItemTemplateContext2? CreateHeaderContext(object group) =>
+	ItemTemplateContext2? CreateHeaderContext(object? group) =>
 		_groupHeaderTemplate is not null
 			? new(_groupHeaderTemplate, group, _container, null, null, null, isHeader: true, isFooter: false, mauiContext: _mauiContext)
 			: null;
 
-	ItemTemplateContext2? CreateFooterContext(object group) =>
+	ItemTemplateContext2? CreateFooterContext(object? group) =>
 		_groupFooterTemplate is not null
 			? new(_groupFooterTemplate, group, _container, null, null, null, isHeader: false, isFooter: true, mauiContext: _mauiContext)
 			: null;
@@ -324,7 +324,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 			if (item is null)
 				continue;
 
-			var newItem = CreateItemContext(e.NewItems[i]!);
+			var newItem = CreateItemContext(e.NewItems[i]);
 			newItems.Add(newItem);
 			Items[replaceIndex + i] = newItem;
 		}

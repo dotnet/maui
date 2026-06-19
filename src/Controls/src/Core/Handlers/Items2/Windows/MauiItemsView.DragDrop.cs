@@ -188,19 +188,15 @@ internal partial class MauiItemsView
 						ApplyDragAffordance(ic, index);
 				}
 			}
-
-			// When the page is off-screen (e.g. an Options page is on top via
-			// PushAsync), the repeater has no realized children because MAUI's
-			// StackNavigationManager clears the ContentPresenter on navigation.
-			// Subscribe a persistent Loaded handler so affordance is re-applied
-			// every time the page re-enters the visual tree. This must be
-			// unconditional (not gated on childCount == 0) because Phase 3's
-			// deferred SetContent means containers may exist as lightweight
-			// shells at wiring time but only become fully realized after the
-			// next MeasureOverride — which only runs after Loaded.
-			Loaded -= OnLoadedForAffordanceReapply;
-			Loaded += OnLoadedForAffordanceReapply;
 		}
+
+		// Subscribe the Loaded handler unconditionally, outside the repeater null-guard.
+		// If the repeater was null at wiring time (e.g. deferred template application),
+		// the handler's internal guards (_canReorderItems, _dragDropWired, null-repeater)
+		// make it safe to fire. This ensures affordance is re-applied on every navigation
+		// back regardless of whether the repeater was available at WireUpDragDropEvents time.
+		Loaded -= OnLoadedForAffordanceReapply;
+		Loaded += OnLoadedForAffordanceReapply;
 
 		_dragDropWired = true;
 	}
