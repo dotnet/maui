@@ -516,7 +516,9 @@
             File="$(_MauiSplashOutputsFile)"
             Lines="@(_MauiSplashAssets->'%(FullPath)')"
             Overwrite="true"
+            WriteOnlyWhenDifferent="true"
         />
+        <Touch Files="$(_MauiSplashOutputsFile)" AlwaysCreate="True" />
         <Touch Files="@(_MauiSplashAssets)" Condition="'@(_MauiSplashAssets)' != ''" />
 
         <ItemGroup>
@@ -613,11 +615,14 @@
 
         <Touch Files="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''" />
 
+        <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
         <WriteLinesToFile
             File="$(_MauiFontOutputsFile)"
             Lines="@(_MauiFontCopied->'%(FullPath)');@(_MauiFontPListFiles->'%(FullPath)')"
             Overwrite="true"
+            WriteOnlyWhenDifferent="true"
         />
+        <Touch Files="$(_MauiFontOutputsFile)" AlwaysCreate="True" />
 
         <!-- Include our fonts and output manifest as filewrites so they don't get rm'd -->
         <ItemGroup>

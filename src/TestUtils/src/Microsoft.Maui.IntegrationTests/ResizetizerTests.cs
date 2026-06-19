@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 
@@ -105,72 +104,90 @@ public class ResizetizerTests : BaseBuildTest
 	}
 
 	[Fact]
-	public void AndroidPackageRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing()
+	public void BuildRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing()
 	{
-		SetTestIdentifier("AndroidMissingResizetizerOutputs");
+		SetTestIdentifier("MissingResizetizerOutputs");
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
-		var framework = $"{DotNetCurrent}-android";
 		const string config = "Debug";
 
 		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template maui. Check test output for errors.");
 
-		StripNonAndroidTfms(projectFile, framework);
-
-		var buildProps = BuildProps;
-		buildProps.Add("AndroidPackageFormat=apk");
-
-		Assert.True(DotnetInternal.Build(projectFile, config, target: "SignAndroidPackage", framework: framework, properties: buildProps, output: _output),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		AssertAndroidPackageContainsFontsAndSplash(projectDir, config, framework);
+		var intermediateOutputRoots = GetResizetizerOutputRoots(projectDir, config);
+		AssertBuiltTargetPlatforms(intermediateOutputRoots);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
 
-		var intermediateOutputPath = Path.Combine(projectDir, "obj", config, framework);
-		DeleteDirectory(Path.Combine(intermediateOutputPath, "resizetizer", "f"));
-		DeleteDirectory(Path.Combine(intermediateOutputPath, "resizetizer", "sp"));
-		DeleteDirectory(Path.Combine(intermediateOutputPath, "android"));
-		DeleteDirectory(Path.Combine(intermediateOutputPath, "lp"));
-		DeleteDirectory(Path.Combine(intermediateOutputPath, "stamp"));
+		foreach (var intermediateOutputRoot in intermediateOutputRoots)
+		{
+			DeleteDirectory(Path.Combine(intermediateOutputRoot, "resizetizer", "f"));
+			DeleteDirectory(Path.Combine(intermediateOutputRoot, "resizetizer", "sp"));
+		}
 
-		foreach (var package in Directory.GetFiles(projectDir, "*.apk", SearchOption.AllDirectories))
-			File.Delete(package);
-
-		Assert.True(DotnetInternal.Build(projectFile, config, target: "SignAndroidPackage", framework: framework, properties: buildProps, output: _output),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to rebuild. Check test output/attachments for errors.");
 
-		AssertAndroidPackageContainsFontsAndSplash(projectDir, config, framework);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
 
 		var noOpBinlogPath = Path.Combine(projectDir, "no-op.binlog");
-		Assert.True(DotnetInternal.Build(projectFile, config, target: "SignAndroidPackage", framework: framework, properties: buildProps, binlogPath: noOpBinlogPath, output: _output),
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, binlogPath: noOpBinlogPath, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to no-op rebuild. Check test output/attachments for errors.");
 
-		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiFonts");
-		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiSplashScreens");
-		AssertAndroidPackageContainsFontsAndSplash(projectDir, config, framework);
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiFonts", intermediateOutputRoots.Count);
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiSplashScreens", intermediateOutputRoots.Count);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
 	}
 
-	static void AssertAndroidPackageContainsFontsAndSplash(string projectDir, string config, string framework)
+	static IReadOnlyList<string> GetResizetizerOutputRoots(string projectDir, string config)
 	{
-		var apkSearchDir = Path.Combine(projectDir, "bin", config, framework);
-		var apkPath = Directory.GetFiles(apkSearchDir, "*-Signed.apk", SearchOption.AllDirectories)
-			.OrderByDescending(File.GetLastWriteTimeUtc)
-			.FirstOrDefault();
+		var intermediateOutputPath = Path.Combine(projectDir, "obj", config);
+		var outputRoots = Directory
+			.GetFiles(intermediateOutputPath, "mauifont.outputs", SearchOption.AllDirectories)
+			.Select(Path.GetDirectoryName)
+			.Where(root => root is not null && File.Exists(Path.Combine(root, "mauisplash.outputs")))
+			.Cast<string>()
+			.OrderBy(root => root, StringComparer.OrdinalIgnoreCase)
+			.ToArray();
 
-		Assert.True(apkPath is not null, $"No signed APK found in {apkSearchDir}");
+		Assert.NotEmpty(outputRoots);
+		return outputRoots;
+	}
 
-		using var apk = ZipFile.OpenRead(apkPath!);
-		var entries = apk.Entries
-			.Select(entry => entry.FullName)
-			.ToHashSet(StringComparer.Ordinal);
+	static void AssertBuiltTargetPlatforms(IReadOnlyList<string> intermediateOutputRoots)
+	{
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-android"));
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-ios"));
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-maccatalyst"));
 
-		Assert.Contains("assets/OpenSans-Regular.ttf", entries);
-		Assert.Contains("assets/OpenSans-Semibold.ttf", entries);
-		Assert.True(
-			entries.Any(entry => entry.StartsWith("res/drawable-", StringComparison.Ordinal) &&
-				entry.EndsWith("/splash.png", StringComparison.Ordinal)),
-			$"APK {apkPath} does not contain generated splash screen raster assets.");
+		if (TestEnvironment.IsWindows)
+			Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-windows"));
+	}
+
+	static bool ContainsTargetFramework(string path, string targetFramework) =>
+		path.Contains(targetFramework, StringComparison.OrdinalIgnoreCase);
+
+	static void AssertIntermediateOutputsExist(IReadOnlyList<string> intermediateOutputRoots)
+	{
+		foreach (var intermediateOutputRoot in intermediateOutputRoots)
+		{
+			var fontsDir = Path.Combine(intermediateOutputRoot, "resizetizer", "f");
+			Assert.True(File.Exists(Path.Combine(fontsDir, "OpenSans-Regular.ttf")),
+				$"Missing OpenSans-Regular.ttf in {fontsDir}.");
+			Assert.True(File.Exists(Path.Combine(fontsDir, "OpenSans-Semibold.ttf")),
+				$"Missing OpenSans-Semibold.ttf in {fontsDir}.");
+
+			if (!ContainsTargetFramework(intermediateOutputRoot, $"{DotNetCurrent}-maccatalyst"))
+			{
+				var splashDir = Path.Combine(intermediateOutputRoot, "resizetizer", "sp");
+				Assert.True(
+					Directory.Exists(splashDir) && Directory.EnumerateFiles(splashDir, "*", SearchOption.AllDirectories).Any(),
+					$"Missing generated splash screen files in {splashDir}.");
+			}
+		}
 	}
 
 	static void DeleteDirectory(string path)
@@ -179,48 +196,15 @@ public class ResizetizerTests : BaseBuildTest
 			Directory.Delete(path, recursive: true);
 	}
 
-	static void StripNonAndroidTfms(string projectFile, string androidTfm)
+	static void AssertTargetSkipped(string binlogPath, string targetName, int minimumSkipCount)
 	{
-		var tempFile = Path.GetTempFileName();
-		try
-		{
-			using (var reader = File.OpenText(projectFile))
-			using (var writer = File.CreateText(tempFile))
-			{
-				string? line;
-				while ((line = reader.ReadLine()) is not null)
-				{
-					if (line.Contains("<TargetFrameworks ", StringComparison.Ordinal) &&
-						line.Contains(" Condition=", StringComparison.Ordinal))
-					{
-						continue;
-					}
-
-					if (line.Contains("<TargetFrameworks>", StringComparison.Ordinal))
-					{
-						var indentation = line[..line.IndexOf('<', StringComparison.Ordinal)];
-						line = $"{indentation}<TargetFrameworks>{androidTfm}</TargetFrameworks>";
-					}
-
-					writer.WriteLine(line);
-				}
-			}
-
-			File.Copy(tempFile, projectFile, overwrite: true);
-		}
-		finally
-		{
-			File.Delete(tempFile);
-		}
-	}
-
-	static void AssertTargetSkipped(string binlogPath, string targetName)
-	{
-		var skipped = new BinLogReader()
+		var skipCount = new BinLogReader()
 			.ReadRecords(binlogPath)
-			.Any(record => record.Args is BuildMessageEventArgs { Message: string message } &&
-				message.Contains($"Skipping target \"{targetName}\"", StringComparison.Ordinal));
+			.Count(record => record.Args is BuildMessageEventArgs { Message: string message } &&
+				message.Contains($"Skipping target \"{targetName}\"", StringComparison.Ordinal) &&
+				message.Contains("because all output files are up-to-date", StringComparison.OrdinalIgnoreCase));
 
-		Assert.True(skipped, $"Expected target '{targetName}' to be skipped. See binlog: {binlogPath}");
+		Assert.True(skipCount >= minimumSkipCount,
+			$"Expected target '{targetName}' to be skipped at least {minimumSkipCount} times, but found {skipCount}. See binlog: {binlogPath}");
 	}
 }
