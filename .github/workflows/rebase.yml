@@ -1,37 +1,50 @@
-name: Automatic Rebase
+name: Rebase
 
 on:
   issue_comment:
     types: [created]
 
 permissions:
-  pull-requests: write
   contents: write
+  pull-requests: write
 
 jobs:
   rebase:
-    name: Rebase
+    name: Rebase PR branch onto its base
     runs-on: ubuntu-latest
     if: >-
       github.repository_owner == 'dotnet' &&
-      github.event.issue.pull_request != '' && 
-      (
-        startsWith(github.event.comment.body, '/rebase') || 
-        startsWith(github.event.comment.body, '/autosquash')
-      )
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/rebase')
     steps:
-      - name: Checkout the latest code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
-      - name: Automatic Rebase
-        uses: cirrus-actions/rebase@1.7
-        with:
-          autosquash: >-
-            ${{ 
-              startsWith(github.event.comment.body, '/autosquash') ||
-              startsWith(github.event.comment.body, '/rebase-autosquash')
-            }}
+      - name: Verify commenter has write access
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          level=$(gh api "repos/${{ github.repository }}/collaborators/${{ github.event.comment.user.login }}/permission" --jq .permission)
+          echo "Permission level: $level"
+          if [[ ! "$level" =~ ^(admin|write|maintain)$ ]]; then
+            echo "::error::User ${{ github.event.comment.user.login }} does not have write access."
+            exit 1
+          fi
+
+      - name: Acknowledge request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api -X POST "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" -f content=eyes
+
+      - name: Rebase pull request branch
+        id: rebase
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr update-branch "${{ github.event.issue.number }}" --rebase --repo "${{ github.repository }}"
+
+      - name: Report failure
+        if: failure() && steps.rebase.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "${{ github.event.issue.number }}" --repo "${{ github.repository }}" \
+            --body "Unable to rebase this branch automatically. It likely has conflicts with its base branch and needs to be rebased manually."
