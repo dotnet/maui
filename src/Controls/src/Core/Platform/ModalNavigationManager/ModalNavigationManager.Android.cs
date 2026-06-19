@@ -277,9 +277,28 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning restore CA1422
 				}
 
+				if (mainActivityWindow is not null)
+				{
+					CopySystemBarForegroundAppearance(mainActivityWindow, dialog.Window);
+				}
+
 				UpdateModalWindowChrome(dialog.Window, Context);
 
 				return dialog;
+			}
+
+			static void CopySystemBarForegroundAppearance(AWindow sourceWindow, AWindow targetWindow)
+			{
+				var sourceWindowInsetsController = WindowCompat.GetInsetsController(sourceWindow, sourceWindow.DecorView);
+				var targetWindowInsetsController = WindowCompat.GetInsetsController(targetWindow, targetWindow.DecorView);
+
+				if (sourceWindowInsetsController is null || targetWindowInsetsController is null)
+				{
+					return;
+				}
+
+				targetWindowInsetsController.AppearanceLightStatusBars = sourceWindowInsetsController.AppearanceLightStatusBars;
+				targetWindowInsetsController.AppearanceLightNavigationBars = sourceWindowInsetsController.AppearanceLightNavigationBars;
 			}
 
 			void OnPageHandlerChanged(object? sender, EventArgs e)
