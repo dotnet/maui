@@ -12,11 +12,14 @@ on:
     pull_request_review_comment: [contributor, first_time_contributor, first_timer, mannequin, none]
   reaction: none
   status-comment: false
-  # Grant the pre-activation job (the on.steps below) issues:write so it can hide (minimize
-  # as resolved) the triggering `/review tests` comment once the command is recognized and
-  # authorized. Minimizing requires the same issues:write scope that deletion did.
+  # Grant the pre-activation job (the on.steps below) the scope to hide (minimize as
+  # resolved) the triggering `/review tests` comment once the command is recognized and
+  # authorized. The comment lives on a pull request, so minimizing it requires
+  # pull-requests:write — issues:write alone yields "Resource not accessible by
+  # integration" on PR conversation comments.
   permissions:
     issues: write
+    pull-requests: write
   steps:
     - name: Confirm exact /review tests command
       id: exact_command
