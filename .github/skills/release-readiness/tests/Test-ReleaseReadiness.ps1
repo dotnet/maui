@@ -2813,6 +2813,14 @@ Assert-Eq -Label "Get-P0PrChecks: Area is 'P/0 release-branch PRs'" -Expected 'P
 Assert-Eq -Label "Get-P0PrChecks: Status BLOCKED when p/0 present" -Expected 'BLOCKED' -Actual $srP0Checks[0].Status
 Assert-Eq -Label "Get-P0PrChecks: Details names #35970" -Expected $true -Actual ($srP0Checks[0].Details -like '*35970*')
 
+# Multiple p/0 PRs: the count and the comma-joined "#a, #b" naming the release
+# captain sees must both be exercised (single-PR fixture above never hits the join).
+$srP0Pr2       = [PSCustomObject]@{ number = 35971; labels = @([PSCustomObject]@{ name = 'p/0' }) }
+$srMultiChecks = @(Get-P0PrChecks -OpenSrPrs @($srP0Pr, $srP0Pr2, $srNonP0Pr) -SrBranch 'release/10.0.1xx-sr8')
+Assert-Eq -Label "Get-P0PrChecks: BLOCKED with 2 p/0 PRs" -Expected 'BLOCKED' -Actual $srMultiChecks[0].Status
+Assert-Eq -Label "Get-P0PrChecks: Details counts 2 p/0 PRs" -Expected $true -Actual ($srMultiChecks[0].Details -like '*2 open P/0-labelled PR(s)*')
+Assert-Eq -Label "Get-P0PrChecks: Details comma-joins #35970, #35971" -Expected $true -Actual ($srMultiChecks[0].Details -like '*#35970, #35971*')
+
 $srNoP0Checks = @(Get-P0PrChecks -OpenSrPrs @($srNonP0Pr) -SrBranch 'release/10.0.1xx-sr8')
 Assert-Eq -Label "Get-P0PrChecks: one record when no p/0" -Expected 1 -Actual $srNoP0Checks.Count
 Assert-Eq -Label "Get-P0PrChecks: Status READY when no p/0" -Expected 'READY' -Actual $srNoP0Checks[0].Status
