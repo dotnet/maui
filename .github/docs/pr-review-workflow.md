@@ -67,9 +67,12 @@ The trigger is implemented by `.github/workflows/review-trigger.yml`. It:
 2. verifies the actor has `write`, `maintain`, or `admin` repository permission;
 3. parses the platform and optional pipeline branch;
 4. infers the platform from `platform/*` labels when no platform was supplied;
-5. queues the DevDiv `maui-copilot` Azure DevOps pipeline.
+5. queues the DevDiv `maui-copilot` Azure DevOps pipeline;
+6. minimizes (collapses) the command comment as resolved once authorized.
 
 The workflow intentionally does not handle `/review tests`; that subcommand is reserved for the test-failure review workflow.
+
+**Note**: Command comments are minimized (collapsed as "Resolved") after authorization to reduce conversation clutter while preserving the comment history for the automated rerun scanner. Unauthorized or malformed command comments remain fully visible.
 
 ### Platform inference
 
@@ -109,6 +112,30 @@ Comment `/review rerun` when you want a new full review session after the PR cha
 
 Operationally, this goes through the same `/review` trigger and review pipeline. The `rerun` token is used as an intent signal for humans and the AI summary UX: it tells readers that the command was meant to refresh the review after new information became available.
 
+### Eligibility requirements
+
+The `/review rerun` workflow checks for **PR author activity** since the latest AI Summary or rerun checkpoint:
+
+- New commits (head SHA changed)
+- New non-command comments from the PR author
+
+**Important**: Reviewer or maintainer reminder comments do NOT satisfy the rerun eligibility check. Only author activity triggers a rerun.
+
+When eligible, the workflow applies the `s/agent-ready-for-rerun` label. An automated hourly scanner processes queued reruns and triggers them when appropriate.
+
+### Automated rerun scanner
+
+The repository includes an hourly gh-aw workflow (`.github/workflows/rerun-review-scanner.md`) that:
+
+1. Queries PRs labeled `s/agent-ready-for-rerun`
+2. Uses AI to decide `trigger` or `skip` for each PR
+3. Triggers approved reruns via Azure DevOps
+4. Cleans up queue labels and posts reactions
+
+This ensures reruns are processed automatically without manual intervention.
+
+### When to use `/review rerun`
+
 Use it when:
 
 - a previous AI summary is stale;
@@ -116,7 +143,7 @@ Use it when:
 - the previous run analyzed the wrong commit or incomplete context;
 - a maintainer wants to replace an older session with a fresh one for the current PR head.
 
-Avoid using it repeatedly without new commits, comments, or CI results. It consumes CI and agent capacity, and repeated identical runs are unlikely to add useful information.
+Avoid using it repeatedly without new commits or author comments. It consumes CI and agent capacity, and repeated identical runs are unlikely to add useful information.
 
 ## `/review tests`: test-failure review
 
@@ -127,6 +154,8 @@ Comment `/review tests` on a pull request.
 The trigger is implemented by `.github/workflows/copilot-review-tests.md`, compiled to `.github/workflows/copilot-review-tests.lock.yml`.
 
 Because gh-aw slash commands match only the first command token, the workflow listens for `/review` and then neutrally skips unless the comment uses the canonical `/review tests` subcommand. The regular `/review` trigger excludes `/review tests` so the two workflows do not both run.
+
+**Note**: Like `/review`, the command comment is minimized (collapsed as "Resolved") after authorization to reduce conversation clutter.
 
 ### What it does
 
@@ -266,6 +295,8 @@ Important safeguards:
 | `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
 | The AI Summary looks stale | New commits or comments landed after the last review. | Run `/review rerun`. |
 | There are multiple old sessions | The comment preserves prior review sessions for traceability. | Read the expanded latest session first. |
+| `/review rerun` didn't trigger | Only PR author activity (commits or non-command comments) satisfies eligibility. Reviewer comments don't trigger reruns. | Wait for author activity or use `/review` to force a new review. |
+| Command comment is still visible | The commenter may lack authorization, or the command was malformed. | Check actor permissions and command syntax. Authorized commands are minimized after processing. |
 
 ## Related files
 
@@ -274,6 +305,9 @@ Important safeguards:
 - `.github/scripts/Review-PR.ps1` — local script orchestrating full PR review phases.
 - `.github/scripts/post-ai-summary-comment.ps1` — AI Summary comment formatter.
 - `.github/workflows/copilot-review-tests.md` — gh-aw source for `/review tests`.
+- `.github/workflows/rerun-review-scanner.md` — gh-aw hourly scanner for queued `/review rerun` requests.
+- `.github/scripts/Resolve-RerunEligibility.ps1` — determines if a PR is eligible for rerun based on author activity.
+- `.github/scripts/Query-RerunReadyPRs.ps1` — queries PRs labeled `s/agent-ready-for-rerun`.
 - `.github/skills/review-test-failures/SKILL.md` — classification rubric for test-failure reviews.
 - `.github/scripts/Review-Tests.ps1` — local runner for `/review tests`.
 - `.github/docs/trigger-azdo-pipeline-setup.md` — OIDC setup for triggering AzDO pipelines from GitHub Actions.
