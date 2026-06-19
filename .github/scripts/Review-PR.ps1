@@ -2055,9 +2055,14 @@ if ($tryFixDirs) {
 }
 
 # ── STEP 5b: Expert Review of PR fix + final comparison (Copilot call 2) ──
-# Current PR metadata for the pr-finalize (Phase 4) evaluate-first / preserve-quality step
-$prCurrentTitle = if ($prInfo.title) { [string]$prInfo.title } else { '(unknown)' }
-$prCurrentBody = if ($prInfo.body) { [string]$prInfo.body } else { '(no description provided)' }
+# Current PR metadata for the pr-finalize (Phase 4) evaluate-first / preserve-quality step.
+# NOTE: $prInfo is only populated in the Setup phase (inside `if ($runSetup)`), so in the
+# CopilotReview phase we must fetch the PR title/body fresh here or the evaluate-first
+# prompt would receive empty fallbacks and degrade good descriptions.
+$prMeta = gh pr view $PRNumber --json title,body 2>$null | ConvertFrom-Json
+if (-not $prMeta) { $prMeta = $prInfo }
+$prCurrentTitle = if ($prMeta -and $prMeta.title) { [string]$prMeta.title } else { '(unknown — could not fetch; do not assume it is missing)' }
+$prCurrentBody = if ($prMeta -and $prMeta.body) { [string]$prMeta.body } else { '(could not fetch description — evaluate against the diff; do not assume the PR has no description)' }
 if ($prCurrentBody.Length -gt 4000) { $prCurrentBody = $prCurrentBody.Substring(0, 4000) + "`n...(description truncated for prompt)..." }
 $step5bPrompt = @"
 Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 5a.
