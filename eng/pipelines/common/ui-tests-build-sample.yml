@@ -10,7 +10,7 @@ parameters:
   configuration: "Release"
   testFilter: ''
   headless: true
-  runtimeVariant: 'Mono' #Mono, CoreCLR, NativeAOT
+  runtimeVariant: 'CoreCLR' #Mono, CoreCLR, NativeAOT
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
 
 steps:

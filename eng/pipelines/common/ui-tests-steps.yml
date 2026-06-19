@@ -8,7 +8,7 @@ parameters:
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
   configuration: "Release"
-  runtimeVariant: "Mono"
+  runtimeVariant: "CoreCLR"
   useMaterial3: false # NEW PARAMETER - Enable Material3 build
   testFilter: ''
   headless: true
@@ -36,6 +36,11 @@ steps:
   condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'))
   inputs:
     artifact: ui-tests-samples-coreclr
+
+- task: DownloadPipelineArtifact@2
+  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'))
+  inputs:
+    artifact: ui-tests-samples-material3-coreclr
 
 - task: DownloadPipelineArtifact@2
   condition: eq('${{ parameters.platform }}' , 'windows')
