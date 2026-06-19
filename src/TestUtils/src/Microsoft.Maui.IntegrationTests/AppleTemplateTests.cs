@@ -62,11 +62,14 @@ namespace Microsoft.Maui.IntegrationTests
 				if (true) return; // Skip: "Running Apple templates is only supported on macOS."
 		}
 
-		// [InlineData("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		
+		// DotNetPrevious test methods
+		[Theory]
+		[InlineData("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
+		[InlineData("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
+		[InlineData("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null)]
+		[InlineData("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null)]
+		public void RunOniOS_Previous(string id, string config, string framework, RuntimeVariant runtimeVariant, string? trimMode)
+			=> RunOniOS(id, config, framework, runtimeVariant, trimMode);
 
 		// Individual test methods for each configuration to enable parallel CI runs
 		// CI uses --filter "Name=TestMethodName" to run each test in a separate job
