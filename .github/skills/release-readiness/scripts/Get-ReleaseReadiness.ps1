@@ -1241,9 +1241,24 @@ function Get-CandidatePrChecks {
         "[#$($_.number)]($repoUrl/pull/$($_.number)) — $titleShort"
     }) -join '; '
 
+    # Even on the accepted path, surface any title-matches that were excluded
+    # (a confirmed spoofer or an unverifiable lookup) so a transient REST blip on
+    # a *second* Candidate-titled PR isn't silently dropped from the captain's view.
+    $excludedSuffix = ''
+    if ($spoofers -gt 0 -or $unverifiable -gt 0) {
+        $parts = @()
+        if ($spoofers -gt 0) { $parts += "$spoofers non-maintainer" }
+        if ($unverifiable -gt 0) { $parts += "$unverifiable unverifiable (``gh`` REST lookup failed — rerun to re-check)" }
+        $excludedSuffix = " Also excluded $($parts -join ' and ') ``*Candidate*``-titled PR(s)."
+    }
+    $acceptNextAction = if ($unverifiable -gt 0) {
+        "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit. Also verify ``gh auth status`` and rerun to re-check the unverifiable Candidate-titled PR(s)."
+    } else {
+        "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit."
+    }
     return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
-        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR promotes a specific main commit as the SR cut point — it must be merged (and the SR branch cut from it) before the SR cycle starts." `
-        -NextAction "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit.")
+        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR promotes a specific main commit as the SR cut point — it must be merged (and the SR branch cut from it) before the SR cycle starts.$excludedSuffix" `
+        -NextAction $acceptNextAction)
 }
 
 # endregion

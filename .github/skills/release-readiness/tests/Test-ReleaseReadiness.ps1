@@ -980,8 +980,9 @@ try {
     # excluded fail-closed, but reported as UNVERIFIABLE — NOT mislabeled as a
     # confirmed non-maintainer spoofer. A transient blip during a real cut must
     # not tell the release captain their own legitimate PR isn't from a
-    # maintainer, and (because the lookup uses -Quiet) must not embed a raw `gh`
-    # warning in the tracker body.
+    # maintainer. (The dedicated Invoke-Gh -Quiet test further below proves the
+    # transient lookup failure stays out of the tracker body; this case shadows
+    # Invoke-Gh and so asserts the *classification*, not the suppression.)
     $script:GhStub = {
         param([string[]]$GhArgs)
         if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
@@ -1000,10 +1001,68 @@ try {
         -Actual ([bool]($unverChecks[0].Details -notmatch 'non-maintainer'))
     Assert-Eq -Label "unverifiable gate NextAction tells captain to rerun" -Expected $true `
         -Actual ([bool]($unverChecks[0].NextAction -match 'rerun'))
+
+    # (d) a maintainer Candidate PR (#777, MEMBER) co-exists with a SECOND
+    # title-matched PR (#888) whose author-association lookup fails transiently.
+    # The valid candidate is accepted, but the accepted check must still SURFACE
+    # the co-existing unverifiable sibling instead of silently dropping it.
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
+            return @'
+[
+  {"number":777,"title":"June 8th, Candidate","author":{"login":"rmarinho"},"updatedAt":"2026-06-18T00:00:00Z","url":"u"},
+  {"number":888,"title":"Candidate build for testing","author":{"login":"rando"},"updatedAt":"2026-06-18T00:00:00Z","url":"u"}
+]
+'@
+        }
+        if ($GhArgs[0] -eq 'api' -and ($GhArgs -contains '.author_association')) {
+            if ($GhArgs[1] -match '/pulls/777$') { return 'MEMBER' }
+            return $null  # #888 lookup fails → unverifiable
+        }
+        return $null
+    }
+    $mixedChecks = @(Get-CandidatePrChecks -Ctx $candCtx)
+    Assert-Eq -Label "mixed accept+unverifiable still returns one (WATCH) check" -Expected 'WATCH' -Actual $mixedChecks[0].Status
+    Assert-Eq -Label "mixed: accepted check names the member PR #777" -Expected $true `
+        -Actual ([bool]($mixedChecks[0].Details -match '#777'))
+    Assert-Eq -Label "mixed: accepted check surfaces the co-existing unverifiable sibling" -Expected $true `
+        -Actual ([bool]($mixedChecks[0].Details -match 'unverifiable'))
+    Assert-Eq -Label "mixed: NextAction tells captain to rerun for the unverifiable sibling" -Expected $true `
+        -Actual ([bool]($mixedChecks[0].NextAction -match 'rerun'))
 } finally {
     ${function:Invoke-Gh} = $script:OrigInvokeGh
     $script:GhStub = $null
 }
+
+# ───── Invoke-Gh -Quiet (warning-suppression contract) ─────
+# Get-CandidatePrChecks fetches author_association with `Invoke-Gh ... -Quiet`
+# specifically so a transient REST failure does NOT leak a raw `gh ... exited`
+# line into $Script:Warnings (which is rendered into the tracker issue body).
+# The classification tests above shadow Invoke-Gh, so they cannot observe this.
+# Here we exercise the REAL Invoke-Gh against a simulated failing `gh` (a stub
+# function that just sets a non-zero $LASTEXITCODE — no Write-Error, which would
+# throw under $ErrorActionPreference='Stop') to prove the contract directly.
+Write-Host "`n[Unit] Invoke-Gh -Quiet (warning suppression)" -ForegroundColor Cyan
+$loudResult = $null; $loudWarnings = -1
+$quietResult = 'sentinel'; $quietWarnings = -1
+function gh { $global:LASTEXITCODE = 7 }
+try {
+    $Script:Warnings.Clear()
+    $loudResult = Invoke-Gh @('api', 'repos/dotnet/maui/pulls/1')
+    $loudWarnings = $Script:Warnings.Count
+
+    $Script:Warnings.Clear()
+    $quietResult = Invoke-Gh @('api', 'repos/dotnet/maui/pulls/1') -Quiet
+    $quietWarnings = $Script:Warnings.Count
+} finally {
+    Remove-Item Function:gh -ErrorAction SilentlyContinue
+    $Script:Warnings.Clear()
+}
+Assert-Eq -Label 'Invoke-Gh returns $null on non-zero gh exit (no -Quiet)' -Expected $true -Actual ($null -eq $loudResult)
+Assert-Eq -Label 'Invoke-Gh without -Quiet records a warning on failure' -Expected $true -Actual ($loudWarnings -ge 1)
+Assert-Eq -Label 'Invoke-Gh -Quiet returns $null on non-zero gh exit' -Expected $true -Actual ($null -eq $quietResult)
+Assert-Eq -Label 'Invoke-Gh -Quiet records NO warning on failure' -Expected 0 -Actual $quietWarnings
 
 # ───── Get-RevertedPrFromSubject (revert false-green guard) ─────
 Write-Host "`n[Unit] Get-RevertedPrFromSubject (revert classification)" -ForegroundColor Cyan
