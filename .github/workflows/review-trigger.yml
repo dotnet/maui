@@ -88,6 +88,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Check actor permission
+        id: auth
         env:
           GH_TOKEN: ${{ github.token }}
           ACTOR: ${{ github.actor }}
@@ -140,19 +141,21 @@ jobs:
           "Label: ${{ steps.rerun.outputs.label }}" >> $env:GITHUB_STEP_SUMMARY
 
       - name: Hide the /review rerun command comment as resolved
-        if: github.event_name == 'issue_comment' && steps.rerun.outputs.eligible == 'true'
+        if: ${{ !cancelled() && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ github.token }}
           COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
         run: |
-          # Only collapse once a rerun was actually triggered (eligible == 'true'). Ineligible
-          # reruns (no-ai-summary / review-in-progress / no-new-activity) keep the comment fully
-          # visible as the implicit "seen, nothing changed" signal.
+          # Always collapse the /review rerun command comment once we reach this step: the
+          # actor is authorized (the permission gate above already passed) and the command was
+          # recognized, so the comment is hidden regardless of the eligibility outcome
+          # (eligible OR ineligible) to keep the conversation decluttered no matter the result.
           #
           # We MINIMIZE (hide as resolved) rather than delete: the rerun scanner replays the
           # PR's REST comment history to reconstruct rerun state (Resolve-RerunEligibility.ps1 /
-          # Query-RerunReadyPRs.ps1 / Get-LatestRerunCommentBefore), and minimized comments are
-          # still returned by the REST list endpoint — only collapsed in the web UI. Deleting
+          # Query-RerunReadyPRs.ps1 / Get-LatestRerunCommentBefore). It keys on comment id, body
+          # and created_at — never on isMinimized — and minimized comments are still returned by
+          # the REST list endpoint, so collapsing them is transparent to the scanner. Deleting
           # would erase that durable checkpoint and re-qualify unchanged commits. A failed hide
           # must never fail the job.
           if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
@@ -176,6 +179,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Check actor permission
+        id: auth
         if: github.event_name == 'issue_comment'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -477,14 +481,16 @@ jobs:
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
 
       - name: Hide the /review command comment as resolved
-        if: github.event_name == 'issue_comment' && steps.trigger_azdo.outcome == 'success'
+        if: ${{ !cancelled() && github.event_name == 'issue_comment' && steps.auth.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ github.token }}
           COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
         run: |
-          # Collapse only after the pipeline was actually triggered, so a lock-skip
-          # (locked == 'true') or a failed AzDO trigger leaves the /review comment visible
-          # for the user to retry.
+          # Always collapse the /review command comment once the actor is authorized
+          # (steps.auth succeeded) and the command was recognized — no matter the trigger
+          # outcome, including a lock-skip (locked == 'true') or a failed AzDO trigger.
+          # !cancelled() lets this run even when an upstream step failed; the steps.auth gate
+          # still keeps an unauthorized commenter's comment fully visible.
           #
           # We MINIMIZE (hide as resolved) rather than delete so the command — and its
           # --branch/--platform options — survives in the REST comment history that the rerun
