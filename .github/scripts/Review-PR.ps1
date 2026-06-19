@@ -198,7 +198,7 @@ $copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
 if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
 Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
 
-$prInfo = gh pr view $PRNumber --json title,state 2>$null | ConvertFrom-Json
+$prInfo = gh pr view $PRNumber --json title,state,body 2>$null | ConvertFrom-Json
 if (-not $prInfo) { Write-Error "PR #$PRNumber not found"; exit 1 }
 Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
 
@@ -2055,6 +2055,10 @@ if ($tryFixDirs) {
 }
 
 # ── STEP 5b: Expert Review of PR fix + final comparison (Copilot call 2) ──
+# Current PR metadata for the pr-finalize (Phase 4) evaluate-first / preserve-quality step
+$prCurrentTitle = if ($prInfo.title) { [string]$prInfo.title } else { '(unknown)' }
+$prCurrentBody = if ($prInfo.body) { [string]$prInfo.body } else { '(no description provided)' }
+if ($prCurrentBody.Length -gt 4000) { $prCurrentBody = $prCurrentBody.Substring(0, 4000) + "`n...(description truncated for prompt)..." }
 $step5bPrompt = @"
 Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 5a.
 
@@ -2091,20 +2095,33 @@ Rules:
 - ``isPRFix`` MUST be ``false`` when ``winner`` is any ``try-fix-*``.
 - When ``isPRFix`` is ``false``, ``candidateDiff`` MUST be a non-empty unified diff.
 
-## Phase 4 — Recommended PR title & description (REQUIRED)
-Based strictly on PR #$PRNumber's actual diff (and the winning fix), write a concise, accurate PR title and description the author can copy-paste, to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md``. Wrap the title and the description each in their own fenced code block so they copy cleanly:
+## Phase 4 — Recommended PR title & description (REQUIRED — apply the pr-finalize skill)
+Apply the **pr-finalize** skill at ``.github/skills/pr-finalize/SKILL.md``. Its core principle is **Preserve Quality**: evaluate the PR's EXISTING title and description FIRST and only recommend a rewrite when the current ones are stale, inaccurate, vague, or missing key information. Many authors write excellent, detailed descriptions — NEVER replace a good description with a shorter generic template. A degraded restatement that drops dependency links, specific type/term names, platform sections, or issue refs is worse than suggesting no change at all.
+
+PR #$PRNumber's CURRENT title:
+$prCurrentTitle
+
+PR #$PRNumber's CURRENT description:
+$prCurrentBody
+
+Steps:
+1. Compare the CURRENT title and description above against the actual diff and the winning fix.
+2. Judge quality: is the title specific (platform prefix + component + what changed) and is the description accurate and complete (what changed and why, key files, platform notes, dependency/issue links)?
+3. Write your result to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md``:
+   - **If the current title AND description already accurately and completely describe the change**, do NOT invent a replacement. Write exactly: ``**Assessment:** ✅ Current title and description accurately reflect the change — recommend keeping as-is.`` You may add a short bullet list of minor optional enhancements, or nothing. Do NOT emit recommended title/description code blocks in this case.
+   - **Otherwise**, write ``**Assessment:** ✏️ Recommend updating — <one-line reason>.`` then provide a copy-paste-ready title and description that is a STRICT IMPROVEMENT over the current one: preserve every still-valid detail (dependency links, platform sections, specific type/term names, issue refs), correct inaccuracies, and add missing context. Follow the skill's title formula ``[Platform] Component: What changed`` and keep precise terminology (do not generalize specific names away). Wrap each in its own fenced block so they copy cleanly:
 
 **Recommended title**
-``````
-<one-line conventional title, under ~72 chars>
+``````text
+<improved one-line title>
 ``````
 
 **Recommended description**
-``````
-<1-2 sentence summary of what changed and why, then short bullet points of the key implementation details>
+``````text
+<improved description — preserve good existing content, fix/extend as needed; omit the repo testing-note boilerplate>
 ``````
 
-Base it only on the real changes (do not invent features) and omit the repo testing-note boilerplate. If the PR's current title/description are already accurate, restate them cleaned-up so the author can still copy-paste. Keep this file focused on the title + description only.
+Base everything strictly on the real changes (do not invent features). Keep this file focused on the title + description assessment only.
 
 $platformInstruction
 $autonomousRules
