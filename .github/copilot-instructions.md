@@ -262,6 +262,13 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Output**: Applied changes to instruction files, skills, architecture docs, code comments
    - **Do NOT use for**: Analysis only without applying changes → Use `/learn-from-pr` skill instead
 
+5. **release-readiness-agent** - Assesses ship-readiness for a .NET MAUI release branch — both **SR** (`release/*-srN`) and **Preview** (`release/*-previewN`)
+   - **Use when**: A release (SR or Preview) is approaching ship date and you need a synthesized verdict with WorkIQ/MCP enrichment on top of the deterministic report — **or** for a portfolio question across all active releases ("status on releases", "what needs attention across releases") where the user may not know which releases exist
+   - **Capabilities**: Resolves the branch (SR or Preview) from natural language, picks the right script (`Get-ReleaseReadiness.ps1` for SR, `Get-PreviewReadiness.ps1` for Preview), enriches `rejected-from-sr` candidates with WorkIQ context (SR lane), patches `UNKNOWN` ship-check rows via MCP (`maestro_default_channels`, `maestro_builds`), presents an overall verdict
+   - **Trigger phrases**: "is SR7 ready to ship", "release readiness for release/10.0.1xx-sr7", "survey the SR8 branch", "how does net11 preview6 look", "is preview6 ready to cut", "release readiness for release/11.0.1xx-preview6" — **plus portfolio / cross-release questions with no specific release named**: "give me a status on releases", "release status overview", "what's the status across all releases", "what needs attention across releases", "what's next for MAUI releases"
+   - **Output**: Verdict (Ready / Conditionally Ready / Not Ready) + per-candidate classification (SR) or per-section table (Preview) + actionable next steps
+   - **Do NOT use for**: Programmatic / scripted consumers that just need the raw JSON — use the `release-readiness` skill directly. Reviewing a single PR (use **pr**). Running tests manually (use **sandbox-agent**).
+
 ### Reusable Skills
 
 Skills are modular capabilities that can be invoked directly or used by agents. Located in `.github/skills/`:
@@ -337,9 +344,16 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
     - **Wraps**: `maestro-cli` skill (from `dotnet-dnceng@dotnet-arcade-skills` plugin) and maestro MCP tools
     - **Note**: Provides MAUI-specific guardrails on top of core Maestro/darc operations — channel naming, safety deny-list, input validation, and prompt injection defense
 
+12. **release-readiness** (`.github/skills/release-readiness/SKILL.md`)
+    - **Purpose**: Deterministic ship-readiness engine for .NET MAUI release branches — both **SR** (`release/*-srN`) and **Preview** (`release/*-previewN`). Surveys CI, computes what's actually shipping, classifies open regressions, identifies port candidates and rejected backports
+    - **Trigger phrases**: "release readiness for SRN", "is SR7 ready to ship", "survey the SR branch", "release readiness for preview6", "how does preview6 look (deterministic)", "status across all releases" (reads the live `[Release Readiness]` tracker issues by body marker — no survey re-run needed)
+    - **Scripts**: `Get-ReleaseReadiness.ps1` (SR lane), `Get-PreviewReadiness.ps1` (Preview lane), `Find-ReleaseReadinessTrackers.ps1` (tracker discovery)
+    - **Output**: JSON + Markdown report, list of source PRs, classification of regression issues (in-sr-active, rejected-from-sr, no-fix-yet, etc.)
+    - **Note**: Deterministic and reproducible — no MCP, no LLM judgment. Use **this skill directly** when you need raw output for a script, dashboard, cron job, or programmatic consumer. For natural-language verdict synthesis with WorkIQ enrichment, use the **`release-readiness-agent`** instead.
+
 #### Internal Skills (Used by Agents)
 
-12. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+13. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.
@@ -354,6 +368,10 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
 - User: "Test this PR" → Immediately invoke **sandbox-agent**
 - User: "Fix issue #67890" (no PR exists) → Suggest using `/delegate` command
 - User: "Write tests for issue #12345" → Immediately invoke **write-tests-agent**
+- User: "Is SR7 ready to ship?" → Immediately invoke **release-readiness-agent**
+- User: "How does net11 preview6 look?" → Immediately invoke **release-readiness-agent**
+- User: "Give me a status on releases / what needs attention across releases?" → Immediately invoke **release-readiness-agent** (portfolio mode — it enumerates active releases by reading the `[Release Readiness]` tracker issues; don't ask "which release?")
+- User: "Give me the raw release-readiness JSON for SR8" → Use the **release-readiness** skill directly (no enrichment needed)
 
 **When NOT to delegate**:
 - User asks "What does PR #12345 do?" → Informational query, handle yourself

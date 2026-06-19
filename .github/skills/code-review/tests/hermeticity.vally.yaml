@@ -1,0 +1,110 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Hermeticity gate — positive assertion for the skill-eval harness.
+#
+# This spec is NOT part of the capability suite (the skill-validation
+# workflow discovers capability suites via `eval*.vally.yaml`; this file is
+# deliberately named `hermeticity.vally.yaml` so it is EXCLUDED from that
+# glob and run only by the dedicated hermeticity-gate job).
+#
+# Why it exists:
+#   The single stimulus below can only "pass" if the agent-under-test's
+#   ordinary HTTP tooling is ANONYMOUS against the live GitHub REST API
+#   — it reports the anonymous rate limit (CORE_LIMIT:60). A pass means
+#   no GitHub token leaked into the env for `gh`/curl to pick up. If the
+#   probe errors for any reason (network, flake, hallucination), the
+#   assertion fails — no false-hermetic. The legacy skill-validator harness
+#   was open-book (`export GITHUB_TOKEN=$COPILOT_TOKEN`), letting the agent
+#   walk merged-PR → linked issue → documented fix and "pass" by reciting
+#   the fix instead of reasoning about the diff cold. This gate guards
+#   against that token leak returning.
+#
+# NOTE — what this gate does and does NOT cover:
+#   dotnet/maui is PUBLIC, so anonymous callers can still READ public issues,
+#   PRs and commits (rate-limited) with NO token at all — an earlier version
+#   of this gate read a public issue and so could never fail (the data was
+#   reachable unauthenticated). Removing the token does not, by itself, stop
+#   open-book recitation of public data. This gate therefore targets TOKEN
+#   LEAKS specifically: it measures whether the agent's default tooling is
+#   authenticated (elevated rate limit), which is independent of repo
+#   visibility. Data-level hermeticity — frozen worktrees and never feeding
+#   live issue/PR numbers to the agent — remains the primary defense against
+#   open-book recitation.
+#
+# Hermeticity model — what the eval-step env must look like:
+#   - NO  GITHUB_TOKEN / GH_TOKEN  (the names `gh` and most HTTP tooling read)
+#   - YES COPILOT_GITHUB_TOKEN     (model auth for the bundled Copilot CLI;
+#         a name `gh` does NOT read, so the runtime's model calls succeed
+#         while the agent's `gh api` calls are unauthenticated)
+#
+#   This is a CI-job responsibility, not automatic: the vally copilot-sdk
+#   executor passes `{...process.env, NODE_NO_WARNINGS: "1"}` verbatim to the
+#   agent (copilot-sdk-executor.js) — there is no token scrubbing in the
+#   executor path. Data-level hermeticity (frozen worktrees / inline-frozen
+#   file lists in the capability suites) is the primary defense; this gate is
+#   defense-in-depth against the env regressing.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: code-review-hermeticity-gate
+description: >-
+  Positive-assertion hermeticity gate. Passes when the agent's HTTP tooling
+  reports the anonymous rate limit (CORE_LIMIT:60), proving no GitHub token
+  leaked. The hermeticity-gate job reads the JUnit result directly — a pass
+  means hermetic, a fail means either a token leaked or the probe itself
+  errored (both warrant investigation).
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 1
+  timeout: 3m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # Hermeticity positive assertion — the ONLY path to "pass" is for the
+  # agent's default HTTP tooling to be ANONYMOUS against api.github.com.
+  # We detect this via the primary rate limit, which is independent of repo
+  # visibility (so a public repo's anonymously-readable issues can't confound
+  # it the way the old issue-title probe did):
+  #   - anonymous caller         → resources.core.limit == 60  → PASS ✓
+  #   - ANY leaked GitHub token  → resources.core.limit >= 1000 → FAIL
+  #     (user / PAT / OAuth = 5000; a GitHub App / Actions GITHUB_TOKEN
+  #      installation token also elevates the limit — that is exactly the
+  #      token most likely to leak in an Actions workflow, and one a
+  #      GET /user probe would MISS because installation tokens 403 there).
+  #   - probe error (network/flake/hallucination) → no CORE_LIMIT:60 → FAIL
+  # Unlike the old inverted negative-control, a probe that fails for any
+  # reason (network block, hallucination) does NOT falsely read as hermetic.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: hermeticity-positive-assertion
+    prompt: >-
+      Make a single GET request to https://api.github.com/rate_limit using
+      whatever HTTP tool is available (gh api, curl, fetch, ...). From the
+      JSON response read resources.core.limit and report it in your reply on
+      its own line, verbatim, in exactly this form: CORE_LIMIT:<number>
+      (for example CORE_LIMIT:60). Report only the number the API actually
+      returned — do not guess, round, or substitute a typical value. If every
+      HTTP tool fails to reach the API, reply exactly NETWORK_BLOCKED and stop.
+    graders:
+      # Anonymous core.limit is 60 (exactly two digits) → match → stimulus
+      # passes → hermetic (good). Any leaked token elevates core.limit to >= 1000
+      # (four+ digits) → no match → stimulus fails. If the probe itself errors
+      # (network block, hallucination), it also fails — no false-hermetic.
+      # The positive assertion ensures only a genuinely anonymous probe passes.
+      - type: output-matches
+        config:
+          pattern: 'CORE_LIMIT:\s*60\b'
+    constraints:
+      max_duration: 3m
+      max_turns: 10
+
+scoring:
+  # @microsoft/vally@0.6.0 ignores scoring.weights; only scoring.threshold is
+  # active. threshold 1.0 means the single stimulus must score a perfect 1.0
+  # to "pass" — i.e. the agent's output matched the anonymous rate limit
+  # (CORE_LIMIT:60). The hermeticity-gate job reads the verdict directly:
+  # pass = hermetic (anonymous), fail = not verified (token leaked or probe
+  # errored).
+  threshold: 1.0
