@@ -351,6 +351,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS || ANDROID
 			, Skip = "Failing https://github.com/dotnet/maui/issues/27411"
@@ -379,6 +380,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
+#endif
 
 		[Fact(DisplayName = "Child Pages Do Not Leak"
 #if WINDOWS
