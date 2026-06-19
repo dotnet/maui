@@ -42,7 +42,12 @@ function Expand-RerunDecisionItems {
         $parsed = $null
         if ($value -is [string]) {
             if ([string]::IsNullOrWhiteSpace($value)) { continue }
-            $parsed = $value | ConvertFrom-Json
+            try {
+                $parsed = $value | ConvertFrom-Json
+            } catch {
+                Write-Host "::warning::Skipping unparseable decisions payload: $($_.Exception.Message)"
+                continue
+            }
         } else {
             $parsed = $value
         }
@@ -417,8 +422,15 @@ foreach ($item in $items) {
                     Write-Host "  ⏭️ PR #$prNumber no longer exists (confirmed HTTP 404/410); skipping stale decision"
                     continue
                 }
-                throw "PR #$prNumber returned a not-found error that did not reproduce on re-check; refusing to silently skip. First: $(ConvertTo-SafeLogValue $prError); Recheck: $(ConvertTo-SafeLogValue $confirmError)"
-            }
+                if ($confirm.ExitCode -eq 0) {
+                    # First 404 was transient; recheck recovered. Reuse the successful result.
+                    $global:LASTEXITCODE = 0
+                    $prFetch = $confirm
+                    Write-Host "  ✓ PR #$prNumber recheck succeeded (transient 404 recovered)"
+                } else {
+                    throw "PR #$prNumber returned a not-found error that did not reproduce on re-check; refusing to silently skip. First: $(ConvertTo-SafeLogValue $prError); Recheck: $(ConvertTo-SafeLogValue $confirmError)"
+                }
+            } else {
 
             throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prError)"
         }
