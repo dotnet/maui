@@ -12,7 +12,7 @@ public class Issue34663 : _IssuesUITest
 
 	public override string Issue => "CV2 MakeVisible grouped ScrollTo produces inconsistent positions";
 
-#if !TEST_FAILS_ON_WINDOWS // App.ScrollUp does not reliably reset the CollectionView to the top on WinUI,
+#if TEST_FAILS_ON_WINDOWS // App.ScrollUp does not reliably reset the CollectionView to the top on WinUI,
                           // causing the subsequent ScrollTo to land at a different screen Y — flaky on Windows CI.
 	[Test]
 	[Category(UITestCategories.CollectionView)]
