@@ -817,8 +817,9 @@ internal class TabbedViewManager
                 SetupBottomNavigationViewIconColor(tabIndex, menuItem);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"LoadBottomNavIconAsync failed: {ex.Message}");
         }
     }
 

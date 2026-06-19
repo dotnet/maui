@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Handlers
             // Sync the Shell's FlyoutIsPresented property with actual drawer state
             if (_currentBehavior == FlyoutBehavior.Flyout)
             {
-                VirtualView.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, isPresented);
+                VirtualView?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, isPresented);
             }
         }
 

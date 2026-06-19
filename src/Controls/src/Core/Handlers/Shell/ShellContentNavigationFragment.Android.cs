@@ -64,6 +64,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
             if (_navigationContainer is not null)
             {
+                if (_navigationContainer.Parent is ViewGroup containerParent)
+                {
+                    containerParent.RemoveView(_navigationContainer);
+                }
+
                 // Re-subscribe to NavigationRequested if it was unsubscribed in OnDestroyView.
                 // This handles the case where the fragment's view is destroyed and recreated
                 // (e.g., ViewPager2 offscreen recycling) — without this, navigation silently stops.
@@ -448,6 +453,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
         public override void OnDestroyView()
         {
+
+            if (_shellContent is null)
+            {
+                base.OnDestroyView();
+                return;
+            }
+
             // Disconnect StackNavigationManager IMMEDIATELY when the fragment view is destroyed.
             // This removes the ViewAttachedToWindow listener before ViewPager2 can recycle/re-attach
             // the view, preventing IllegalStateException from accessing Fragment on a destroyed view.
@@ -479,6 +491,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
         protected override void Dispose(bool disposing)
         {
+            if (disposing && _shellContent is null)
+            {
+                base.Dispose(disposing);
+                return;
+            }
+
             if (disposing)
             {
                 _navigationContainer?.ViewAttachedToWindow -= OnNavigationContainerAttached;
