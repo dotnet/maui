@@ -27,8 +27,16 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				// Load about:blank when source is null to ensure proper layout bounds
-				platformWebView.LoadUrl("about:blank");
+				// Load about:blank to constrain the WebView within its layout bounds when source
+				// is null, preventing overflow in grid cells (#32030). Flag IsLoadingForLayout so
+				// MauiWebViewClient can remove this synthetic entry from the native back stack
+				// once the real URL loads, fixing CanGoBack() returning true unexpectedly (#35788).
+				// Guard: skip when real history exists so ClearHistory() does not destroy back entries.
+				if (platformWebView is MauiWebView mauiWebView && !platformWebView.CanGoBack() && !platformWebView.CanGoForward())
+				{
+					mauiWebView.IsLoadingForLayout = true;
+					platformWebView.LoadUrl("about:blank");
+				}
 			}
 		}
 
