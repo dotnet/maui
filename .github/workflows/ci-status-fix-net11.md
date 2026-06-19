@@ -1,18 +1,18 @@
 ---
-name: "CI Failure Fixer (main)"
+name: "CI Failure Fixer (net11.0)"
 description: |
-  Periodic pass over open ci-scan tracking issues filed by the main-branch CI
-  failure scanner (.github/workflows/ci-status-main.md). This workflow targets
-  the `main` branch EXCLUSIVELY: it processes only issues labelled ci-scan and
-  opens every PR against main. (The net11.0 branch is handled by the parallel
-  .github/workflows/ci-status-fix-net11.md — the two are split because gh-aw can
-  only transport a fix relative to ONE static base branch per workflow, and the
-  main↔net11.0 divergence exceeds gh-aw's 10 MB transport-patch cap.) The fixer
-  opens a draft [ci-fix] PR per actionable issue against main, retries up to 5
-  times across runs if the failure signature still reproduces, then opens one
-  [ci-fix][needs-human] PR as a permanent hand-off. Never mutes tests, but
-  de-flakes genuinely flaky ones (deterministic synchronization, no retries /
-  timeout bumps). Always skips visual-regression / screenshot issues.
+  Periodic pass over open ci-scan-net11 tracking issues filed by the net11.0
+  CI failure scanner (.github/workflows/ci-status-net11.md). This workflow
+  targets the `net11.0` branch EXCLUSIVELY: it processes only issues labelled
+  ci-scan-net11 and opens every PR against net11.0. (The main branch is handled
+  by the parallel .github/workflows/ci-status-fix.md — the two are split because
+  gh-aw can only transport a fix relative to ONE static base branch per workflow,
+  and the main↔net11.0 divergence exceeds gh-aw's 10 MB transport-patch cap.)
+  The fixer opens a draft [ci-fix] PR per actionable issue against net11.0,
+  retries up to 5 times across runs if the failure signature still reproduces,
+  then opens one [ci-fix][needs-human] PR as a permanent hand-off. Never mutes
+  tests, but de-flakes genuinely flaky ones (deterministic synchronization, no
+  retries / timeout bumps). Always skips visual-regression / screenshot issues.
 
 environment: gh-aw-agents
 
@@ -22,11 +22,17 @@ permissions:
   pull-requests: read
 
 on:
+  # ⚠️ TEMP CANARY TRIGGER — REMOVE BEFORE MERGE. Branch-scoped push trigger so a
+  # single pre-merge validation run of the NET11.0 path can execute from this
+  # feature branch. workflow_dispatch requires the workflow on the default
+  # branch; push does not.
+  push:
+    branches: [pureween/bookish-garbanzo]
   schedule: every 12h
   workflow_dispatch:
     inputs:
       issue_number:
-        description: "Scope to ONE ci-scan issue number (blank = all open). Used for controlled single-issue runs."
+        description: "Scope to ONE ci-scan-net11 issue number (blank = all open). Used for controlled single-issue runs."
         required: false
         type: string
       dry_run:
@@ -38,12 +44,20 @@ on:
 if: |
   github.repository == 'dotnet/maui'
 
+# ⚠️ TEMP CANARY OVERRIDE — REMOVE BEFORE MERGE. The gh-aw daily AI-credits
+# guardrail caps a workflow's total AIC over a rolling 24h window (org default
+# GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS, falling back to 5000). The pre-merge
+# debugging runs on this branch already consumed AIC today, so the default may
+# block a validation run before the agent can start. Raise it only for the
+# canary; deleting this field restores the org default for production.
+max-daily-ai-credits: 20000
+
 engine:
   id: copilot
   model: claude-opus-4.8
 
 concurrency:
-  group: "ci-status-fix"
+  group: "ci-status-fix-net11"
   cancel-in-progress: false
 
 tools:
@@ -55,26 +69,38 @@ tools:
 
 checkout:
   fetch-depth: 200
+  # The scheduled run checks out the default ref (main). This workflow operates
+  # on net11.0, so pre-fetch that ref in a gh-aw-emitted fetch step (runs in the
+  # agent job, not via an unvalidated ad-hoc fetch). Step 5.2 then checks out
+  # origin/net11.0 to base the fix on.
+  fetch:
+    - "net11.0"
 
 safe-outputs:
   create-pull-request:
     title-prefix: "[ci-fix] "
     draft: true
-    max: 3
-    # This workflow ALWAYS targets main. Pinning base-branch here makes gh-aw
-    # resolve the transport-patch base to main (no per-issue base override is
-    # needed or allowed), so the transport patch is just the fix's own delta.
-    base-branch: "main"
+    # ⚠️ TEMP CANARY CAP — REMOVE BEFORE MERGE (restore to 3). Hard backstop so the
+    # pre-merge validation run can emit at most ONE PR no matter what.
+    max: 1
+    # This workflow ALWAYS targets net11.0. Pinning base-branch here makes gh-aw
+    # resolve the transport-patch base to net11.0 (no per-issue base override is
+    # needed or allowed), so the transport patch is just the fix's own delta —
+    # NOT the entire main↔net11.0 divergence. This is the whole reason the
+    # net11.0 path is a separate workflow: gh-aw generates the transport patch
+    # relative to base-branch, and a main-based patch for a net11.0 fix would be
+    # ~22 MB (over the 10 MB cap).
+    base-branch: "net11.0"
     # NOTE: allow-empty is intentionally NOT set. gh-aw's create-pull-request
     # handler skips bundle generation entirely when allow-empty is true (it
     # returns "no patch generated" for EVERY call, not just empty ones), which
     # silently drops fix/help PRs. The agent must commit a real diff (Step 5.4);
     # gh-aw packages those commits into the bundle. The Step 6 needs-human
     # hand-off (which previously relied on allow-empty) is deferred — see Step 6.
-    # Defense-in-depth: even though base-branch pins the base to main, reject any
-    # PR the agent might emit with a non-main base.
+    # Defense-in-depth: even though base-branch pins the base to net11.0, reject
+    # any PR the agent might emit with a non-net11.0 base.
     allowed-base-branches:
-      - "main"
+      - "net11.0"
     allowed-branches:
       - "ci-fix/**"
     # allowed-files is the enforced allowlist. It already excludes .github/**,
@@ -102,18 +128,18 @@ network:
     - "*.blob.core.windows.net"
 ---
 
-# CI Failure Fixer — dotnet/maui (main branch)
+# CI Failure Fixer — dotnet/maui (net11.0 branch)
 
-You walk open `[ci-scan]` tracking issues filed by the main-branch CI failure
-scanner. **This workflow targets the `main` branch exclusively** — every issue
-you process is labelled `ci-scan`, and every PR you open targets `main`. (The
-`net11.0` branch is handled by a separate, parallel workflow.) For each issue
+You walk open `[ci-scan-net11]` tracking issues filed by the net11.0 CI failure
+scanner. **This workflow targets the `net11.0` branch exclusively** — every issue
+you process is labelled `ci-scan-net11`, and every PR you open targets `net11.0`.
+(The `main` branch is handled by a separate, parallel workflow.) For each issue
 you:
 
 1. Verify the failure signature still reproduces against the latest completed
-   `main` build of the cited pipeline.
+   `net11.0` build of the cited pipeline.
 2. If yes and the per-issue attempt budget is not exhausted, open a draft
-   `[ci-fix]` PR **against main** carrying a candidate fix.
+   `[ci-fix]` PR **against net11.0** carrying a candidate fix.
 3. After 5 closed-unmerged attempts, open ONE `[ci-fix][needs-human]` PR as
    the permanent hand-off and never retry again.
 
@@ -128,12 +154,13 @@ through `safe-outputs`.
 
 ## Hard rules — non-negotiable
 
-1. **This workflow is main-only.** Process ONLY issues labelled `ci-scan`. Every
-   PR targets `main`. If an issue is somehow not a `main`-branch issue (e.g. it
-   carries `ci-scan-net11`), record `skipped: not an in-scope ci-scan (main)
-   issue` and stop — it belongs to the net11.0 workflow. The base of every PR is
-   pinned to `main` by the workflow's `base-branch` config; do NOT emit a `base`
-   field. Every PR body MUST still carry `Target branch: main`.
+1. **This workflow is net11.0-only.** Process ONLY issues labelled
+   `ci-scan-net11`. Every PR targets `net11.0`. If an issue is somehow not a
+   `net11.0`-branch issue (e.g. it carries `ci-scan` but not `ci-scan-net11`),
+   record `skipped: not an in-scope ci-scan-net11 issue` and stop — it belongs
+   to the main workflow. The base of every PR is pinned to `net11.0` by the
+   workflow's `base-branch` config; do NOT emit a `base` field. Every PR body
+   MUST still carry `Target branch: net11.0`.
 2. **Visual-regression skip.** Skip every issue matching the Step 2.3
    screenshot filter. Silent skip (no comment, no label, just the run-log line).
 3. **5-attempt cap.** At most 5 closed-unmerged `[ci-fix]` PRs per tracking
@@ -180,6 +207,15 @@ Walk the steps in order. Do not skip. Stop at Step 8.
 
 ### Step 0 — Run mode (manual dispatch inputs)
 
+> 🔬 **TEMPORARY CANARY OVERRIDE — REMOVE BEFORE MERGE.** This branch carries a
+> temporary `push` trigger for a single pre-merge validation run of the net11.0
+> path. For THIS run, regardless of the event type or the inputs below, you MUST
+> treat the run as a **controlled single-issue run scoped to issue #35981**
+> (label `ci-scan-net11` → target branch `net11.0`). Do NOT enumerate or process
+> any other issue. Fetch #35981 with `get_issue`, run every downstream gate on
+> it, emit at most one PR for it, then stop at the tally. Ignore this entire
+> block once it is removed.
+
 This run may be a scheduled sweep or a manual `workflow_dispatch`. Read these two
 inputs once at the start and let them shape the whole run:
 
@@ -187,14 +223,14 @@ inputs once at the start and let them shape the whole run:
   - If non-empty: this is a **controlled single-issue run**. SKIP the Step 2
     enumeration search entirely and process ONLY that one issue. Fetch it with
     `github` MCP `get_issue` (number = the input value), confirm it is labelled
-    `ci-scan`, then run every downstream gate
+    `ci-scan-net11`, then run every downstream gate
     (Step 2.3 visual-regression filter, Step 3 dedup gates, Step 4 reproduce
     check incl. Step 4.7 flake classification, Step 5/6 emit) for that single
     issue. If the issue is not open, not
-    labelled `ci-scan`, or does not exist → record
-    `skipped: dispatch issue_number not an in-scope ci-scan issue` and stop.
+    labelled `ci-scan-net11`, or does not exist → record
+    `skipped: dispatch issue_number not an in-scope ci-scan-net11 issue` and stop.
   - If empty (scheduled run, or manual run with no number): process ALL open
-    `ci-scan` issues via the Step 2 search as normal.
+    `ci-scan-net11` issues via the Step 2 search as normal.
 - **Preview input** — `dry_run` = `"${{ github.event.inputs.dry_run }}"`.
   - If exactly `"true"`: **preview mode**. Do the full analysis and build the
     candidate diff in the workspace, but DO NOT emit any `create_pull_request`
@@ -232,14 +268,14 @@ Read once at start:
 Use `github` MCP `search_issues` (integrity-gated; record `[Filtered]` count
 and move on):
 
-- `repo:dotnet/maui is:issue is:open label:ci-scan sort:created-asc`
+- `repo:dotnet/maui is:issue is:open label:ci-scan-net11 sort:created-asc`
 
 Do NOT bound by `updated:` recency — older-still-open issues are exactly the
 ones at risk of being stranded.
 
-This workflow is main-only, so the target branch is always `main`. If a result
-also carries `ci-scan-net11` (mislabelled), record `skipped: not an in-scope
-ci-scan (main) issue` and skip it — the net11.0 workflow owns those.
+This workflow is net11.0-only, so the target branch is always `net11.0`. If a
+result carries `ci-scan` but NOT `ci-scan-net11`, record `skipped: not an
+in-scope ci-scan-net11 issue` and skip it — the main workflow owns those.
 
 For each result, read body via `github` MCP and extract:
 
@@ -341,16 +377,16 @@ Branch on `attempt_count`:
   - If > 0 → `skipped: 5 attempts exhausted (#<H>)` and stop.
   - If 0 → **jump to Step 6** (emit needs-human PR). Do NOT attempt a 6th fix.
 
-### Step 4 — Verify the failure still reproduces on main
+### Step 4 — Verify the failure still reproduces on net11.0
 
 This is the "is the issue actually fixed?" check.
 
 1. Map the issue's `Pipeline` to its definition ID (302 / 314 / 313).
-2. Fetch the most recent completed builds of that pipeline on `main`:
+2. Fetch the most recent completed builds of that pipeline on `net11.0`:
 
    ```bash
    def=<pipeline-def-id>
-   branch=main
+   branch=net11.0
    url="https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=${def}&branchName=refs/heads/${branch}&statusFilter=completed&resultFilter=succeeded,failed,partiallySucceeded&%24top=5&api-version=7.1"
    curl -s "$url" | tee /tmp/gh-aw/agent/latest_${N}.json | jq -r '.value[0] | "\(.id) \(.result) \(.finishTime)"'
    ```
@@ -450,14 +486,15 @@ For each closed-unmerged `[ci-fix]` PR for this issue (oldest first):
 Build a "previous approaches" table to embed in this attempt's PR body. Use
 this table to **explicitly contrast** the new approach.
 
-#### Step 5.2 — Check out main (fix-branch sanity step)
+#### Step 5.2 — Check out net11.0 (fix-branch sanity step)
 
-The fixer workflow checks out the default ref (`main`). Create the fix branch
-directly on top of `origin/main` BEFORE staging any edits, so the downstream
-push carries exactly `origin/main..HEAD` (the fix delta only):
+The fixer workflow checks out the default ref (`main`); `net11.0` is pre-fetched
+by the `checkout.fetch` config, so `origin/net11.0` is available locally. Create
+the fix branch directly on top of `origin/net11.0` BEFORE staging any edits, so
+the downstream push carries exactly `origin/net11.0..HEAD` (the fix delta only):
 
 ```bash
-branch=main
+branch=net11.0
 git fetch --no-tags origin "${branch}" || true
 git checkout -B "ci-fix/issue-${N}-attempt-${next_attempt}" "origin/${branch}"
 git rev-parse --abbrev-ref HEAD | tee /tmp/gh-aw/agent/checkedout_${N}.txt
@@ -522,21 +559,21 @@ the human cycle may produce more close-comment context to learn from.
 
 Once the staged diff passes every check above, **commit it** on the
 `ci-fix/...` branch. This step is load-bearing: gh-aw's `create-pull-request`
-packages the agent's **commits** (`origin/main..HEAD`) into a git bundle —
+packages the agent's **commits** (`origin/net11.0..HEAD`) into a git bundle —
 a staged-but-uncommitted diff produces an *empty* bundle, the downstream
 `detection` job rejects the output with `ERR_VALIDATION`, and the PR is
 silently dropped. You MUST create at least one commit:
 
 ```bash
 git commit -m "ci-fix: <short fix description> (refs #${N}, attempt ${next_attempt}/5)"
-git rev-list --count "origin/main..HEAD" | tee /tmp/gh-aw/agent/commitcount_${N}.txt
+git rev-list --count "origin/net11.0..HEAD" | tee /tmp/gh-aw/agent/commitcount_${N}.txt
 ```
 
 Confirm the commit carries exactly the intended files and that at least one
 commit now exists on top of the base:
 
 ```bash
-git --no-pager diff --stat "origin/main..HEAD"
+git --no-pager diff --stat "origin/net11.0..HEAD"
 test "$(cat /tmp/gh-aw/agent/commitcount_${N}.txt)" -ge 1
 ```
 
@@ -560,29 +597,29 @@ that runs locally may be `fix` if the local run passes.
 
 #### Step 5.6 — Emit the PR
 
-**Precondition:** Step 5.4 produced ≥ 1 commit on `origin/main..HEAD`
+**Precondition:** Step 5.4 produced ≥ 1 commit on `origin/net11.0..HEAD`
 (`commitcount_${N}.txt` ≥ 1). If it did not, do NOT emit — record
 `skipped: no commit produced (empty patch)` and stop. A `create_pull_request`
 without a backing commit is dropped by `detection` and never becomes a PR.
 
 Use the Step 7 fix/help template. Critical:
 
-- Do NOT set a `base` field — the workflow's `base-branch: main` config pins
-  the PR base to `main`. (Emitting any other base is rejected by
-  `allowed-base-branches: [main]`.)
+- Do NOT set a `base` field — the workflow's `base-branch: net11.0` config pins
+  the PR base to `net11.0`. (Emitting any other base is rejected by
+  `allowed-base-branches: [net11.0]`.)
 - `branch` (source) MUST be `ci-fix/issue-<N>-attempt-<next_attempt>`.
-- Body MUST contain `Target branch: main` on its own line.
+- Body MUST contain `Target branch: net11.0` on its own line.
 - Body MUST contain `Refs: dotnet/maui#<N>` on its own line (this is the
   cross-run dedup join key — Steps 3.1–3.4 grep for it).
 - Body MUST contain `Attempt: <next_attempt>/5`.
 
 Before emission, re-read your own body and confirm the `Target branch:` line
-says `main`. If it does not, drop the attempt and record
+says `net11.0`. If it does not, drop the attempt and record
 `skipped: branch-awareness self-check failed`.
 
 > **Dry-run gate (Step 0):** if `dry_run == "true"`, do NOT emit the
 > `create_pull_request`. Instead print a `DRY RUN — would open PR` block (base
-> `main`, source branch, title, full body, `git --no-pager diff --stat "origin/main..HEAD"`)
+> `net11.0`, source branch, title, full body, `git --no-pager diff --stat "origin/net11.0..HEAD"`)
 > to the run log and tally `dry-run: would-<fix|help|deflake>`.
 
 ### Step 6 — Needs-human hand-off (attempt cap exhausted) — DEFERRED
@@ -616,7 +653,7 @@ Title patterns:
 Workflow artifact: ci-fix
 Artifact kind: <fix|help|deflake>
 Refs: dotnet/maui#<N>
-Target branch: main
+Target branch: net11.0
 Attempt: <K>/5
 
 ## Attempt <K> of 5
@@ -661,7 +698,7 @@ Flake class: test-quality
 - Latest verified-failing build: https://dev.azure.com/dnceng-public/public/_build/results?buildId=<latest-from-step-4>
 
 ---
-Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/workflows/ci-status-fix.md). Up to 5 attempts will be made per tracking issue; on attempt 5+1 a single `[ci-fix][needs-human]` PR is opened as the permanent hand-off. The agent does NOT read review comments on this PR — humans own the PR after creation.
+Filed by [`ci-status-fix-net11`](https://github.com/dotnet/maui/blob/main/.github/workflows/ci-status-fix-net11.md). Up to 5 attempts will be made per tracking issue; on attempt 5+1 a single `[ci-fix][needs-human]` PR is opened as the permanent hand-off. The agent does NOT read review comments on this PR — humans own the PR after creation.
 ````
 
 `Fixes #<N>` is intentionally NOT in the body. The tracking issue is locked
@@ -676,11 +713,11 @@ Title: `[ci-fix][needs-human] 5 attempts exhausted: <short failure description> 
 Workflow artifact: ci-fix
 Artifact kind: needs-human
 Refs: dotnet/maui#<N>
-Target branch: main
+Target branch: net11.0
 Attempts: 5/5
 
 > [!NOTE]
-> The agent attempted 5 fixes for dotnet/maui#<N> and none merged. The failure signature still reproduces in the latest completed build of the target pipeline on `main`. Looping in maintainers for human triage; the agent will not retry.
+> The agent attempted 5 fixes for dotnet/maui#<N> and none merged. The failure signature still reproduces in the latest completed build of the target pipeline on `net11.0`. Looping in maintainers for human triage; the agent will not retry.
 
 ## Tracking issue
 dotnet/maui#<N>
@@ -703,7 +740,7 @@ https://dev.azure.com/dnceng-public/public/_build/results?buildId=<id> (verified
 <short paragraph: common reason attempts failed review (e.g. all touched handler lifecycle, all required threading-model knowledge the agent must not change autonomously, all needed device-rig validation, etc.). Cite any specific feedback patterns from close comments.>
 
 ---
-Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/workflows/ci-status-fix.md). This is a one-shot hand-off; the workflow will not open further PRs for this tracking issue.
+Filed by [`ci-status-fix-net11`](https://github.com/dotnet/maui/blob/main/.github/workflows/ci-status-fix-net11.md). This is a one-shot hand-off; the workflow will not open further PRs for this tracking issue.
 ````
 
 ### Step 8 — Per-issue tally + end-of-run summary
@@ -711,7 +748,7 @@ Filed by [`ci-status-fix`](https://github.com/dotnet/maui/blob/main/.github/work
 Per issue, append one outcome line to `/tmp/gh-aw/agent/coverage.txt`:
 
 ```
-#<N>  main  attempt-<K>  <outcome>  <reason>
+#<N>  net11.0  attempt-<K>  <outcome>  <reason>
 ```
 
 `<outcome>` is one of: `fix-PR #aw_<id>`, `help-PR #aw_<id>`,
@@ -740,8 +777,8 @@ can aggregate them stably):
 - `branch checkout failed`
 - `no commit produced (empty patch)`
 - `branch-awareness self-check failed`
-- `dispatch issue_number not an in-scope ci-scan issue`
-- `not an in-scope ci-scan (main) issue`
+- `dispatch issue_number not an in-scope ci-scan-net11 issue`
+- `not an in-scope ci-scan-net11 issue`
 
 At end of run, print this table to the agent log:
 
@@ -751,16 +788,18 @@ At end of run, print this table to the agent log:
 
 ## Branch-awareness contract (summary)
 
-This workflow targets `main` exclusively. The base-branch invariant is enforced
-at three layers:
+This workflow targets `net11.0` exclusively. The base-branch invariant is
+enforced at three layers:
 
-1. **Config pin (gh-aw):** `safe-outputs.create-pull-request.base-branch: main`
-   makes gh-aw generate the transport patch relative to `main` and open every PR
-   against `main`. `allowed-base-branches: [main]` rejects any base override.
-2. **Scope rule (Step 2):** only `ci-scan`-labelled issues are processed; a
-   mislabelled `ci-scan-net11` issue is skipped (the net11.0 workflow owns it).
+1. **Config pin (gh-aw):** `safe-outputs.create-pull-request.base-branch: net11.0`
+   makes gh-aw generate the transport patch relative to `net11.0` and open every
+   PR against `net11.0`. `allowed-base-branches: [net11.0]` rejects any base
+   override. This is also what keeps the transport patch small — a main-based
+   patch for a net11.0 fix would carry the whole main↔net11.0 divergence.
+2. **Scope rule (Step 2):** only `ci-scan-net11`-labelled issues are processed;
+   a `ci-scan` (main-only) issue is skipped (the main workflow owns it).
 3. **Self-check before emission (Step 5.6):** the agent confirms its own PR body
-   carries `Target branch: main` before calling `create_pull_request`.
+   carries `Target branch: net11.0` before calling `create_pull_request`.
 
 If any layer rejects, the run records `skipped: branch-awareness self-check
 failed` rather than emitting a wrong-branch PR.
