@@ -1621,6 +1621,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(sawSecond);
 		}
 
+		[Fact]
+		public void DefaultValueCreatorCachesValueWhenReentrantPropertyAddsResizeStore()
+		{
+			var reentrantProperties = new BindableProperty[8];
+			for (var i = 0; i < reentrantProperties.Length; i++)
+			{
+				reentrantProperties[i] = BindableProperty.Create($"Reentrant{i}", typeof(int), typeof(MockBindable), 0);
+			}
+
+			var defaultValueCreatorInvocations = 0;
+			var propertyWithCreator = BindableProperty.Create(
+				"ReentrantDefault",
+				typeof(int),
+				typeof(MockBindable),
+				0,
+				defaultValueCreator: b =>
+				{
+					defaultValueCreatorInvocations++;
+					for (var i = 0; i < reentrantProperties.Length; i++)
+					{
+						b.SetValue(reentrantProperties[i], i + 1);
+					}
+
+					return 42;
+				});
+
+			var bindable = new MockBindable();
+
+			var first = (int)bindable.GetValue(propertyWithCreator);
+			var second = (int)bindable.GetValue(propertyWithCreator);
+
+			Assert.Equal(42, first);
+			Assert.Equal(42, second);
+			Assert.Equal(1, defaultValueCreatorInvocations);
+			Assert.True(bindable.IsSet(propertyWithCreator));
+		}
+
 		class BindingContextConverter
 			: IValueConverter
 		{
