@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var originalBackground = s_originalAppBarBackgrounds.GetValue(
 				appBarLayout,
-				static appBar => new OriginalAppBarBackground(appBar.Background?.GetConstantState()));
+				static appBar => new OriginalAppBarBackground(appBar.Background));
 
 			if (Brush.IsNullOrEmpty(background))
 			{
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (appBarLayout.Background is null)
 				{
-					appBarLayout.Background = originalBackground.CreateDrawable();
+					appBarLayout.Background = originalBackground.CreateDrawable() ?? new ColorDrawable(AGraphics.Color.Transparent);
 				}
 
 				ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
@@ -328,16 +328,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 		sealed class OriginalAppBarBackground
 		{
-			readonly Drawable.ConstantState? _backgroundConstantState;
+			readonly Drawable? _backgroundTemplate;
 
-			public OriginalAppBarBackground(Drawable.ConstantState? backgroundConstantState)
+			public OriginalAppBarBackground(Drawable? background)
 			{
-				_backgroundConstantState = backgroundConstantState;
+				_backgroundTemplate = CreateDrawable(background);
 			}
 
 			public Drawable? CreateDrawable()
 			{
-				return _backgroundConstantState?.NewDrawable()?.Mutate();
+				return CreateDrawable(_backgroundTemplate);
+			}
+
+			static Drawable? CreateDrawable(Drawable? background)
+			{
+				if (!background.IsAlive())
+				{
+					return null;
+				}
+
+				var constantState = background.GetConstantState();
+				if (!constantState.IsAlive())
+				{
+					return null;
+				}
+
+				return constantState.NewDrawable()?.Mutate();
 			}
 		}
 	}

@@ -261,6 +261,37 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Description("Top TabbedPage BarBackgroundColor should still update after the active AppBar background drawable state is disposed")]
+		public async Task TopTabbedPageBarBackgroundColorUpdatesAfterAppBarBackgroundStateDisposed()
+		{
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = firstColor;
+			tabbedPage.BarTextColor = Colors.Black;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == firstColor.ToPlatform().ToArgb());
+
+				var activeBackground = appBar.Background;
+				var activeBackgroundState = activeBackground?.GetConstantState();
+				appBar.Background = null;
+				activeBackgroundState?.Dispose();
+				activeBackground?.Dispose();
+
+				tabbedPage.BarBackgroundColor = secondColor;
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact]
 		[Description("BottomNavigationView should extend to screen bottom in Edge-to-Edge mode (Issue 33344)")]
 		public async Task BottomNavigationViewExtendsToScreenBottom()
 		{
