@@ -1,4 +1,6 @@
 ---
+environment: gh-aw-agents
+
 on:
   schedule:
     - cron: "0 * * * *"
