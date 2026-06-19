@@ -341,6 +341,13 @@ namespace Microsoft.Maui.Platform
 					// in case the ScrollView is configured to grow/shrink with its content.
 					this.InvalidateAncestorsMeasures();
 				}
+
+				// Now that layout is complete and ContentSize is set, process any pending scroll request
+				// that was deferred because ContentSize was empty when the request arrived.
+				if (ContentSize != CGSize.Empty && CrossPlatformLayout is ScrollViewHandler scrollViewHandler)
+				{
+					scrollViewHandler.ProcessPendingScrollRequest();
+				}
 			}
 
 			base.LayoutSubviews();
@@ -611,6 +618,19 @@ namespace Microsoft.Maui.Platform
 			InvalidateConstraintsCache();
 
 			return !isPropagating;
+		}
+
+		/// <summary>
+	    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+	    /// </summary>
+
+		internal void OnOrientationChanged()
+		{
+			// Reset the previous layout direction to force re-evaluation of RTL layout
+			if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				_previousEffectiveUserInterfaceLayoutDirection = null;
+			}
 		}
 
 		/// <summary>
