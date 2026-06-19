@@ -75,9 +75,6 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		for (int index = 0; index < itemsSource.Count; index++)
 		{
 			var item = itemsSource[index];
-			if (item is null)
-				continue;
-
 			Add(new ItemTemplateContext2(itemTemplate, item, container, _itemHeight, _itemWidth, _itemSpacing,
 				false, false, _mauiContext));
 		}
@@ -222,9 +219,6 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 		for (int index = 0; index < count; index++)
 		{
 			var item = args.NewItems[index];
-			if (item is null)
-				continue;
-
 			Insert(startIndex + index, new ItemTemplateContext2(_itemTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing,
 				false, false, _mauiContext));
 		}
@@ -423,9 +417,6 @@ internal class ObservableItemTemplateCollection2 : ObservableCollection<ItemTemp
 			for (int index = 0; index < newItemCount; index++)
 			{
 				var item = args.NewItems[index];
-				if (item is null)
-					continue;
-
 				var itemIndex = args.OldStartingIndex + index;
 				var oldItem = this[itemIndex];
 				var newItem = new ItemTemplateContext2(_itemTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing,
