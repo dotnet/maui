@@ -2263,6 +2263,21 @@ Assert-Eq -Label "Age column shows 'Nd ago' for older issues" -Expected $true `
 Assert-Eq -Label "Format-CiScanIssueRows returns null for empty input" -Expected $true `
     -Actual ($null -eq (Format-CiScanIssueRows -Issues @() -RepoUrl 'https://github.com/dotnet/maui'))
 
+# Regression: a malformed upstream ci-scan title containing a literal newline
+# (observed live: #35957) must NOT split the markdown table row across physical
+# lines. The title cell is collapsed to a single line so the rendered table stays
+# intact. On the pre-fix code the embedded LF pushed the title tail + age cell onto
+# a second line that no longer contained the issue link.
+$nlIssue = @([PSCustomObject]@{ number = 35957; url = 'https://github.com/dotnet/maui/issues/35957';
+    title = "Recurring long title (maui-pr-uitest`n[Content truncated due to length]";
+    createdAt = $nowUtc.AddDays(-3).ToString('o') })
+$nlRows = Format-CiScanIssueRows -Issues $nlIssue -RepoUrl 'https://github.com/dotnet/maui'
+$nlRowLines = @($nlRows -split "`r?`n" | Where-Object { $_ -match '#35957' })
+Assert-Eq -Label "Newline ci-scan title: issue row is a single physical line" -Expected 1 `
+    -Actual $nlRowLines.Count
+Assert-Eq -Label "Newline ci-scan title: title tail + age stay on that row" -Expected $true `
+    -Actual ($nlRowLines.Count -eq 1 -and $nlRowLines[0] -match 'truncated due to length.*ago \|')
+
 # Truncation behavior: > MaxRows
 $manyIssues = 1..20 | ForEach-Object {
     [PSCustomObject]@{ number = 40000 + $_; url = "https://github.com/dotnet/maui/issues/$(40000+$_)";
@@ -3177,6 +3192,17 @@ $explicitNullThrew = $false
 try { $null = Get-CategorizedPullRequests -TargetPRs $null -InflightPRs @($null, $maestroPrMock) }
 catch { $explicitNullThrew = $true }
 Assert-Eq -Label "explicit null target + @(null, maestro) inflight → no throw" -Expected $false -Actual $explicitNullThrew
+
+Write-Host "`n[Unit] Format-MarkdownCell collapses embedded newlines (table-row safety)" -ForegroundColor Cyan
+# A malformed upstream title with a literal CR/LF (observed live: ci-scan issue
+# #35957) must be collapsed to a single line so it cannot split the markdown table
+# row in the rendered Preview tracker body. The existing pipe / angle-bracket
+# escaping contract must remain intact.
+Assert-Eq -Label "Format-MarkdownCell: LF collapsed to single space"        -Expected 'a b'           -Actual (Format-MarkdownCell "a`nb")
+Assert-Eq -Label "Format-MarkdownCell: CRLF run collapsed to single space"  -Expected 'a b'           -Actual (Format-MarkdownCell "a`r`n`r`nb")
+Assert-Eq -Label "Format-MarkdownCell: no CR/LF survives in the cell"       -Expected $false          -Actual ((Format-MarkdownCell "x`ny") -match "`r|`n")
+Assert-Eq -Label "Format-MarkdownCell: pipe still escaped"                  -Expected 'a \| b'        -Actual (Format-MarkdownCell 'a | b')
+Assert-Eq -Label "Format-MarkdownCell: angle brackets still escaped"        -Expected 'List&lt;T&gt;' -Actual (Format-MarkdownCell 'List<T>')
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })

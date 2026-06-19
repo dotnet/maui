@@ -2842,7 +2842,10 @@ function Format-CiScanIssueRows {
             }
         }
         $issLink = "[#$($iss.number)]($RepoUrl/issues/$($iss.number))"
-        $title = ($iss.title -replace '\|', '\|').Trim()
+        # Collapse embedded newlines first: a malformed upstream ci-scan title can
+        # contain a literal CR/LF (observed: #35957), which would otherwise split this
+        # markdown table row across physical lines and break the rendered table.
+        $title = ($iss.title -replace '[\r\n]+', ' ' -replace '\|', '\|').Trim()
         [void]$sb.AppendLine("| $marker$issLink | $title | $ageDisplay |")
     }
     if ($Issues.Count -gt $MaxRows) {

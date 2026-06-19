@@ -851,7 +851,10 @@ function Format-MarkdownCell {
     # `List<T>` that GitHub markdown would otherwise swallow as an HTML tag. The
     # engine's own markers are emitted via AppendLine, not through this formatter,
     # so escaping cells never disturbs them.
-    return (($Value -replace "\|", "\|") -replace "<", "&lt;" -replace ">", "&gt;").Trim()
+    # Collapse embedded newlines first: a malformed upstream title can contain a
+    # literal CR/LF (observed: ci-scan issue #35957), which would otherwise split
+    # the markdown table row across physical lines and break the rendered table.
+    return ((($Value -replace "[\r\n]+", " ") -replace "\|", "\|") -replace "<", "&lt;" -replace ">", "&gt;").Trim()
 }
 
 function Format-GitHubHandle {
