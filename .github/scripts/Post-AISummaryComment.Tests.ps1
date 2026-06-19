@@ -39,22 +39,22 @@ BeforeAll {
 }
 
 Describe 'Test-PhaseContentIsNoOp' {
-    It 'suppresses the no-UI-tests placeholder' {
+    It 'suppresses the no-UI-tests placeholder and the full-matrix note' {
         Test-PhaseContentIsNoOp `
             -PhaseKey 'uitests' `
             -Content 'No UI test categories needed for this PR (no UI-relevant changes).' |
             Should -BeTrue
-    }
-
-    It 'keeps UI test content when categories or full matrix are present' {
-        Test-PhaseContentIsNoOp `
-            -PhaseKey 'uitests' `
-            -Content '**Detected UI test categories:** `Button,Entry`' |
-            Should -BeFalse
 
         Test-PhaseContentIsNoOp `
             -PhaseKey 'uitests' `
             -Content 'Full UI test matrix will run (no specific categories detected from PR changes).' |
+            Should -BeTrue
+    }
+
+    It 'keeps UI test content when specific categories are present' {
+        Test-PhaseContentIsNoOp `
+            -PhaseKey 'uitests' `
+            -Content '**Detected UI test categories:** `Button,Entry`' |
             Should -BeFalse
     }
 
