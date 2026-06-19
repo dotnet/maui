@@ -19,7 +19,8 @@ jobs:
     if: >-
       github.repository_owner == 'dotnet' &&
       github.event.issue.pull_request &&
-      (github.event.comment.body == '/rebase' || startsWith(github.event.comment.body, '/rebase '))
+      github.event.issue.state == 'open' &&
+      github.event.comment.body == '/rebase'
     steps:
       - name: Verify commenter has write access
         env:
@@ -35,6 +36,7 @@ jobs:
           fi
 
       - name: Acknowledge request
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
