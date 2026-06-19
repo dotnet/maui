@@ -1159,12 +1159,13 @@ function Get-CandidatePrChecks {
     # Scan open PRs targeting main (the Candidate PR is opened on main, not
     # on the SR branch, since the SR branch may not exist yet in candidate
     # mode). Cheap: one gh call returning up to 100 open PRs on main.
-    # Include authorAssociation in the json projection so we can gate on
-    # OWNER/MEMBER/COLLABORATOR — without this, ANY open PR with
-    # "Candidate" in its title would spoof the cut PR.
+    # `gh pr list --json` does NOT expose authorAssociation (it's not a valid
+    # list projection field). The maintainer spoof-gate below fetches
+    # author_association per title-matched candidate via the REST API instead.
+    # Keep this projection limited to valid `gh pr list` fields.
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
                        '--base', $Ctx.mainBranch, '--limit', '100',
-                       '--json', 'number,title,author,authorAssociation,updatedAt,url')
+                       '--json', 'number,title,author,updatedAt,url')
     if ($null -eq $raw) {
         # gh failed — distinguish from "no Candidate PR found" so the
         # verdict doesn't silently READY on tool failure.
@@ -1180,11 +1181,18 @@ function Get-CandidatePrChecks {
     $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
 
     # Author gating: only PRs from a maintainer count. Outside contributors
-    # never open SR-cut PRs by convention. GraphQL returns authorAssociation
-    # as the enum 'OWNER' | 'MEMBER' | 'COLLABORATOR' | 'CONTRIBUTOR' | etc.
+    # never open SR-cut PRs by convention. `gh pr list` can't return the
+    # association, so fetch it per title-matched candidate from the REST API
+    # (cheap: titleMatches is almost always 0-1, usually 0 in candidate mode).
+    # The REST field is 'author_association' (snake_case) — enum
+    # OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR|... Fail closed: an unreadable
+    # association excludes the PR, so a missing signal can't let a
+    # 'Candidate'-titled PR slip through the spoof gate.
     $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
     $candidates = @($titleMatches | Where-Object {
-        $assoc = if ($_.PSObject.Properties['authorAssociation']) { $_.authorAssociation } else { $null }
+        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($_.number)",
+                                '--jq', '.author_association')
+        $assoc = if ($assocRaw) { "$assocRaw".Trim() } else { $null }
         $assoc -and ($maintainerAssociations -contains $assoc)
     })
     $rejectedBySpoofGate = $titleMatches.Count - $candidates.Count
@@ -1713,6 +1721,18 @@ function Get-IssueTimelinePrs {
         # `pull_request` member only exists on issues that are actually PRs
         if (-not $iss.PSObject.Properties['pull_request']) { continue }
         if (-not $iss.pull_request) { continue }
+        # Cross-referenced PRs can live in OTHER repositories (forks, or wholly
+        # unrelated projects whose own PRs happened to reference this issue).
+        # Only same-repo PRs are real fix candidates. A foreign PR number looked
+        # up against $Repo either 404s (low numbers below the repo's PR range —
+        # surfacing a `gh pr view` warning in the tracker) or, worse, silently
+        # matches an unrelated $Repo PR that happens to share the number. Filter
+        # to $Repo. The timeline API populates `repository.full_name` for both
+        # same-repo and cross-repo references, so this is reliable.
+        if (-not $iss.PSObject.Properties['repository']) { continue }
+        $issRepo = $iss.repository
+        if (-not $issRepo -or -not $issRepo.PSObject.Properties['full_name']) { continue }
+        if ($issRepo.full_name -ne $Repo) { continue }
         if (-not $iss.PSObject.Properties['number']) { continue }
         $prs += [int]$iss.number
     }

@@ -864,6 +864,119 @@ try {
     Remove-Item -Path Env:GET_RELEASE_READINESS_TEST_MODE -ErrorAction SilentlyContinue
 }
 
+# ───── gh-stubbed regression tests (cross-repo filter + author gate) ─────
+# These exercise functions that call `Invoke-Gh`. We shadow Invoke-Gh with a
+# per-test dispatcher ($script:GhStub) so the assertions are deterministic and
+# offline, then restore the real function so the E2E section is unaffected.
+$script:GhStub = $null
+$script:OrigInvokeGh = ${function:Invoke-Gh}
+function Invoke-Gh { param([string[]]$GhArgs) & $script:GhStub $GhArgs }
+try {
+    # ── Get-IssueTimelinePrs: only same-repo cross-references are fix candidates ──
+    # Regression: timeline `cross-referenced` events can point at PRs in OTHER
+    # repos (forks like praveenkumarkarunanithi/maui#24, unrelated projects like
+    # zhollis21/AniSprinkles#102). Those numbers, looked up against dotnet/maui,
+    # either 404 (low numbers → warning embedded in the tracker issue) or silently
+    # match an unrelated same-numbered PR. The repo filter must drop them.
+    Write-Host "`n[Unit] Get-IssueTimelinePrs (cross-repo cross-reference filter)" -ForegroundColor Cyan
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        @'
+[
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 35625, "pull_request": {"url":"x"}, "repository": { "full_name": "dotnet/maui" } } } },
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 102, "pull_request": {"url":"x"}, "repository": { "full_name": "zhollis21/AniSprinkles" } } } },
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 24, "pull_request": {"url":"x"}, "repository": { "full_name": "praveenkumarkarunanithi/maui" } } } },
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 35962, "pull_request": {"url":"x"}, "repository": { "full_name": "dotnet/maui" } } } },
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 999, "repository": { "full_name": "dotnet/maui" } } } },
+  { "event": "labeled" }
+]
+'@
+    }
+    $timelinePrs = Get-IssueTimelinePrs -Repo 'dotnet/maui' -IssueNumber 12345
+    Assert-Eq -Label "timeline keeps only same-repo PRs; drops foreign #24/#102 and non-PR #999" `
+        -Expected '35625,35962' -Actual (($timelinePrs | Sort-Object) -join ',')
+
+    # A timeline with ONLY foreign cross-refs must yield zero candidates (no
+    # `gh pr view <foreign#>` against dotnet/maui → no 404 warning in the tracker).
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        @'
+[
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 24, "pull_request": {"url":"x"}, "repository": { "full_name": "praveenkumarkarunanithi/maui" } } } },
+  { "event": "cross-referenced", "source": { "type": "issue", "issue": {
+      "number": 877, "pull_request": {"url":"x"}, "repository": { "full_name": "DIPSAS/DIPS.Mobile.UI" } } } }
+]
+'@
+    }
+    $foreignOnly = @(Get-IssueTimelinePrs -Repo 'dotnet/maui' -IssueNumber 12345)
+    Assert-Eq -Label "timeline with only foreign cross-refs yields 0 candidates" `
+        -Expected 0 -Actual $foreignOnly.Count
+
+    # ── Get-CandidatePrChecks: maintainer author-gate via REST author_association ──
+    # Regression: `gh pr list --json` does not support authorAssociation, so the
+    # spoof-gate now fetches author_association per title-matched candidate from
+    # the REST API. Verify (a) a MEMBER-authored "Candidate" PR is accepted and a
+    # CONTRIBUTOR-authored one is excluded, and (b) when ALL title matches are
+    # non-maintainers the gate reports them as excluded spoofers.
+    Write-Host "`n[Unit] Get-CandidatePrChecks (REST author-association spoof gate)" -ForegroundColor Cyan
+    $candCtx = @{ mode = 'candidate'; repo = 'dotnet/maui'; mainBranch = 'main'; priorSrBranch = 'release/10.0.1xx-sr8' }
+
+    # (a) member candidate present alongside a contributor spoof + a non-match.
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
+            return @'
+[
+  {"number":777,"title":"June 8th, Candidate","author":{"login":"rmarinho"},"updatedAt":"2026-06-18T00:00:00Z","url":"u"},
+  {"number":888,"title":"Candidate build for testing","author":{"login":"rando"},"updatedAt":"2026-06-18T00:00:00Z","url":"u"},
+  {"number":999,"title":"Fix button layout","author":{"login":"x"},"updatedAt":"2026-06-18T00:00:00Z","url":"u"}
+]
+'@
+        }
+        if ($GhArgs[0] -eq 'api' -and ($GhArgs -contains '.author_association')) {
+            if ($GhArgs[1] -match '/pulls/777$') { return 'MEMBER' }
+            if ($GhArgs[1] -match '/pulls/888$') { return 'CONTRIBUTOR' }
+            return 'NONE'
+        }
+        return $null
+    }
+    $candChecks = @(Get-CandidatePrChecks -Ctx $candCtx)
+    Assert-Eq -Label "candidate gate returns exactly one check" -Expected 1 -Actual $candChecks.Count
+    Assert-Eq -Label "member-authored Candidate PR accepted (WATCH)" -Expected 'WATCH' -Actual $candChecks[0].Status
+    Assert-Eq -Label "accepted check names the member PR #777" -Expected $true `
+        -Actual ([bool]($candChecks[0].Details -match '#777'))
+    Assert-Eq -Label "contributor spoof #888 excluded from accepted check" -Expected $true `
+        -Actual ([bool]($candChecks[0].Details -notmatch '#888'))
+
+    # (b) only a contributor-authored "Candidate" PR exists → gate rejects it and
+    # reports the exclusion count (no candidate accepted).
+    $script:GhStub = {
+        param([string[]]$GhArgs)
+        if ($GhArgs[0] -eq 'pr' -and $GhArgs[1] -eq 'list') {
+            return @'
+[ {"number":888,"title":"Candidate build for testing","author":{"login":"rando"},"updatedAt":"2026-06-18T00:00:00Z","url":"u"} ]
+'@
+        }
+        if ($GhArgs[0] -eq 'api' -and ($GhArgs -contains '.author_association')) {
+            return 'CONTRIBUTOR'
+        }
+        return $null
+    }
+    $spoofChecks = @(Get-CandidatePrChecks -Ctx $candCtx)
+    Assert-Eq -Label "spoof-only gate still returns one (WATCH) check" -Expected 'WATCH' -Actual $spoofChecks[0].Status
+    Assert-Eq -Label "spoof-only gate reports the excluded non-maintainer PR" -Expected $true `
+        -Actual ([bool]($spoofChecks[0].Details -match 'non-maintainer'))
+} finally {
+    ${function:Invoke-Gh} = $script:OrigInvokeGh
+    $script:GhStub = $null
+}
+
 # ───── Get-RevertedPrFromSubject (revert false-green guard) ─────
 Write-Host "`n[Unit] Get-RevertedPrFromSubject (revert classification)" -ForegroundColor Cyan
 
