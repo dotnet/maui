@@ -76,6 +76,7 @@ $phases = [ordered]@{
     "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "Pre-Flight — Context & Validation" }
     "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "Code Review — Deep Analysis" }
     "try-fix"          = @{ File = "try-fix/content.md";            Title = "Fix — Analysis & Comparison" }
+    "pr-finalize"      = @{ File = "pr-finalize/content.md";        Title = "Recommended PR Title & Description" }
     "report"           = @{ File = "report/content.md";             Title = "Report — Final Recommendation" }
 }
 
@@ -92,7 +93,10 @@ function Test-PhaseContentIsNoOp {
 
     switch ($PhaseKey) {
         "uitests" {
-            return $normalized -match '^No UI test categories needed for this PR \(no UI-relevant changes\)\.?$'
+            return (
+                $normalized -match '^No UI test categories needed for this PR \(no UI-relevant changes\)\.?$' -or
+                $normalized -match '^Full UI test matrix will run \(no specific categories detected from PR changes\)\.?$'
+            )
         }
         "regression-check" {
             $withoutHeading = ($normalized -replace '(?m)^##\s+.*Regression Cross-Reference\s*\n+', '').Trim()

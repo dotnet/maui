@@ -2091,6 +2091,21 @@ Rules:
 - ``isPRFix`` MUST be ``false`` when ``winner`` is any ``try-fix-*``.
 - When ``isPRFix`` is ``false``, ``candidateDiff`` MUST be a non-empty unified diff.
 
+## Phase 4 — Recommended PR title & description (REQUIRED)
+Based strictly on PR #$PRNumber's actual diff (and the winning fix), write a concise, accurate PR title and description the author can copy-paste, to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md``. Wrap the title and the description each in their own fenced code block so they copy cleanly:
+
+**Recommended title**
+``````
+<one-line conventional title, under ~72 chars>
+``````
+
+**Recommended description**
+``````
+<1-2 sentence summary of what changed and why, then short bullet points of the key implementation details>
+``````
+
+Base it only on the real changes (do not invent features) and omit the repo testing-note boilerplate. If the PR's current title/description are already accurate, restate them cleaned-up so the author can still copy-paste. Keep this file focused on the title + description only.
+
 $platformInstruction
 $autonomousRules
 
