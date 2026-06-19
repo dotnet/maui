@@ -194,14 +194,19 @@ function Invoke-Git([string]$Cmd) {
     return $out
 }
 
-function Invoke-Gh([string[]]$GhArgs) {
+function Invoke-Gh([string[]]$GhArgs, [switch]$Quiet) {
+    # -Quiet suppresses the non-zero-exit warning for callers that handle a
+    # $null return themselves and don't want a raw `gh ... exited` line leaking
+    # into $Script:Warnings (which is rendered into the tracker issue body).
     $errFile = [System.IO.Path]::GetTempFileName()
     try {
         $out = & gh @GhArgs 2>$errFile
         $exitCode = $LASTEXITCODE
         if ($exitCode -ne 0) {
-            $err = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
-            Write-Warn "gh $($GhArgs -join ' ') exited $exitCode : $err"
+            if (-not $Quiet) {
+                $err = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
+                Write-Warn "gh $($GhArgs -join ' ') exited $exitCode : $err"
+            }
             return $null
         }
         return $out
@@ -1159,12 +1164,13 @@ function Get-CandidatePrChecks {
     # Scan open PRs targeting main (the Candidate PR is opened on main, not
     # on the SR branch, since the SR branch may not exist yet in candidate
     # mode). Cheap: one gh call returning up to 100 open PRs on main.
-    # Include authorAssociation in the json projection so we can gate on
-    # OWNER/MEMBER/COLLABORATOR — without this, ANY open PR with
-    # "Candidate" in its title would spoof the cut PR.
+    # `gh pr list --json` does NOT expose authorAssociation (it's not a valid
+    # list projection field). The maintainer spoof-gate below fetches
+    # author_association per title-matched candidate via the REST API instead.
+    # Keep this projection limited to valid `gh pr list` fields.
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
                        '--base', $Ctx.mainBranch, '--limit', '100',
-                       '--json', 'number,title,author,authorAssociation,updatedAt,url')
+                       '--json', 'number,title,author,updatedAt,url')
     if ($null -eq $raw) {
         # gh failed — distinguish from "no Candidate PR found" so the
         # verdict doesn't silently READY on tool failure.
@@ -1180,22 +1186,52 @@ function Get-CandidatePrChecks {
     $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
 
     # Author gating: only PRs from a maintainer count. Outside contributors
-    # never open SR-cut PRs by convention. GraphQL returns authorAssociation
-    # as the enum 'OWNER' | 'MEMBER' | 'COLLABORATOR' | 'CONTRIBUTOR' | etc.
+    # never open SR-cut PRs by convention. `gh pr list` can't return the
+    # association, so fetch it per title-matched candidate from the REST API
+    # (cheap: titleMatches is almost always 0-1, usually 0 in candidate mode).
+    # The REST field is 'author_association' (snake_case) — enum
+    # OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR|... Fail closed: an unreadable
+    # association excludes the PR, so a missing signal can't let a
+    # 'Candidate'-titled PR slip through the spoof gate. Distinguish a
+    # *confirmed* non-maintainer (a real spoofer) from an *unverifiable* one
+    # (transient gh/REST failure) so a legitimate maintainer Candidate PR isn't
+    # mislabeled as a spoofer during an actual cut. Use -Quiet so a transient
+    # lookup miss doesn't embed a raw `gh ... exited` warning in the tracker
+    # body — the structured WATCH note below carries that signal instead.
     $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
-    $candidates = @($titleMatches | Where-Object {
-        $assoc = if ($_.PSObject.Properties['authorAssociation']) { $_.authorAssociation } else { $null }
-        $assoc -and ($maintainerAssociations -contains $assoc)
-    })
-    $rejectedBySpoofGate = $titleMatches.Count - $candidates.Count
+    $candidates = @()
+    $spoofers = 0
+    $unverifiable = 0
+    foreach ($pr in $titleMatches) {
+        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)",
+                                '--jq', '.author_association') -Quiet
+        $assoc = if ($assocRaw) { "$assocRaw".Trim() } else { $null }
+        if (-not $assoc) {
+            $unverifiable++
+        } elseif ($maintainerAssociations -contains $assoc) {
+            $candidates += $pr
+        } else {
+            $spoofers++
+        }
+    }
 
     if ($candidates.Count -eq 0) {
-        $rejectNote = if ($rejectedBySpoofGate -gt 0) {
-            " ($rejectedBySpoofGate non-maintainer PR(s) titled 'Candidate' were excluded as not real cut PRs)"
-        } else { '' }
+        $excludeNotes = @()
+        if ($spoofers -gt 0) {
+            $excludeNotes += "$spoofers non-maintainer PR(s) titled 'Candidate' were excluded as not real cut PRs"
+        }
+        if ($unverifiable -gt 0) {
+            $excludeNotes += "$unverifiable 'Candidate'-titled PR(s) could not have their author association verified (``gh`` REST lookup failed) and were excluded fail-closed — rerun to re-check"
+        }
+        $rejectNote = if ($excludeNotes.Count -gt 0) { " ($($excludeNotes -join '; '))" } else { '' }
+        $nextAction = if ($unverifiable -gt 0) {
+            "Verify ``gh auth status`` and rerun to re-check author association. When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR."
+        } else {
+            "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR."
+        }
         return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
             -Details "No open PR matching ``*Candidate*`` from a maintainer (OWNER/MEMBER/COLLABORATOR) found on ``$($Ctx.mainBranch)``$rejectNote. The Candidate PR is the mechanism that promotes a specific main commit as the SR cut point." `
-            -NextAction "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR.")
+            -NextAction $nextAction)
     }
 
     # Build a compact detail string listing all open candidate PRs (almost
@@ -1205,9 +1241,24 @@ function Get-CandidatePrChecks {
         "[#$($_.number)]($repoUrl/pull/$($_.number)) — $titleShort"
     }) -join '; '
 
+    # Even on the accepted path, surface any title-matches that were excluded
+    # (a confirmed spoofer or an unverifiable lookup) so a transient REST blip on
+    # a *second* Candidate-titled PR isn't silently dropped from the captain's view.
+    $excludedSuffix = ''
+    if ($spoofers -gt 0 -or $unverifiable -gt 0) {
+        $parts = @()
+        if ($spoofers -gt 0) { $parts += "$spoofers non-maintainer" }
+        if ($unverifiable -gt 0) { $parts += "$unverifiable unverifiable (``gh`` REST lookup failed — rerun to re-check)" }
+        $excludedSuffix = " Also excluded $($parts -join ' and ') ``*Candidate*``-titled PR(s)."
+    }
+    $acceptNextAction = if ($unverifiable -gt 0) {
+        "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit. Also verify ``gh auth status`` and rerun to re-check the unverifiable Candidate-titled PR(s)."
+    } else {
+        "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit."
+    }
     return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
-        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR promotes a specific main commit as the SR cut point — it must be merged (and the SR branch cut from it) before the SR cycle starts." `
-        -NextAction "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit.")
+        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR promotes a specific main commit as the SR cut point — it must be merged (and the SR branch cut from it) before the SR cycle starts.$excludedSuffix" `
+        -NextAction $acceptNextAction)
 }
 
 # endregion
@@ -1713,6 +1764,18 @@ function Get-IssueTimelinePrs {
         # `pull_request` member only exists on issues that are actually PRs
         if (-not $iss.PSObject.Properties['pull_request']) { continue }
         if (-not $iss.pull_request) { continue }
+        # Cross-referenced PRs can live in OTHER repositories (forks, or wholly
+        # unrelated projects whose own PRs happened to reference this issue).
+        # Only same-repo PRs are real fix candidates. A foreign PR number looked
+        # up against $Repo either 404s (low numbers below the repo's PR range —
+        # surfacing a `gh pr view` warning in the tracker) or, worse, silently
+        # matches an unrelated $Repo PR that happens to share the number. Filter
+        # to $Repo. The timeline API populates `repository.full_name` for both
+        # same-repo and cross-repo references, so this is reliable.
+        if (-not $iss.PSObject.Properties['repository']) { continue }
+        $issRepo = $iss.repository
+        if (-not $issRepo -or -not $issRepo.PSObject.Properties['full_name']) { continue }
+        if ($issRepo.full_name -ne $Repo) { continue }
         if (-not $iss.PSObject.Properties['number']) { continue }
         $prs += [int]$iss.number
     }
