@@ -2821,22 +2821,25 @@ function Format-MarkdownTableCell {
         single Markdown table cell. Also used for the candidate-PR bulleted list, where
         the newline collapse matters and `\|` renders as `|`.
     .DESCRIPTION
-        Four hazards are neutralized so a hostile/malformed issue or PR title cannot
+        Three hazards are neutralized so a hostile/malformed issue or PR title cannot
         corrupt the rendered body:
           1. Embedded CR/LF runs are collapsed to a single space, so the value cannot
              split the row across physical lines (observed live: ci-scan issue #35957,
              whose title contained a literal newline).
-          2. Pre-existing backslashes are doubled (`\` -> `\\`) BEFORE the pipe escape.
-             This ordering is load-bearing: GitHub-issue/PR titles may legally contain a
-             literal `\|` (backslash immediately followed by a pipe). Escaping only the
-             pipe would turn that into `\\|`, which GFM renders as a literal `\` followed
-             by an ACTIVE column delimiter `|` (the classic "escape-the-escaper" table
-             breakout). Doubling backslashes first makes `\|` -> `\\\|`, which renders as a
-             literal `\|` and cannot open a new column. Titles with no backslash (the
-             common case) are unaffected: `a | b` still yields `a \| b`.
-          3. Literal `|` is escaped to `\|`, so a pipe in a title cannot open a new
-             column (common in PR/issue titles such as `[Android] A | B`).
-          4. `<` / `>` are escaped to `&lt;` / `&gt;`, so a title cannot inject raw HTML
+          2. Each pipe is escaped to `\|`, AND any run of backslashes immediately
+             preceding that pipe is doubled FIRST. This ordering is load-bearing:
+             GitHub-issue/PR titles may legally contain a literal `\|` (backslash
+             immediately followed by a pipe). Escaping only the pipe would turn that
+             into `\\|`, which GFM renders as a literal `\` followed by an ACTIVE
+             column delimiter `|` (the classic "escape-the-escaper" table breakout).
+             Doubling the preceding backslash run first makes `\|` -> `\\\|`, which
+             renders as a literal `\|` and cannot open a new column. The doubling is
+             SCOPED to pipe-adjacent backslash runs (via the `(\\*)\|` match) rather
+             than every backslash in the string, so a title's OTHER backslash escapes
+             are preserved verbatim — e.g. an author-escaped `\[link\](url)` or `\*not
+             emphasis\*` is NOT de-escaped into active Markdown. Titles with no pipe-
+             adjacent backslash (the common case) are unaffected: `a | b` -> `a \| b`.
+          3. `<` / `>` are escaped to `&lt;` / `&gt;`, so a title cannot inject raw HTML
              (e.g. an `<!-- ... -->` comment) into the body. This matches the Preview
              engine's Format-MarkdownCell, has zero visual cost (`&lt;T&gt;` renders as
              `<T>`, preserving titles like `List<T>`), and is defense-in-depth: even
@@ -2852,7 +2855,12 @@ function Format-MarkdownTableCell {
     #>
     param([string]$Value)
     if ([string]::IsNullOrEmpty($Value)) { return '' }
-    return (((($Value -replace '[\r\n]+', ' ') -replace '\\', '\\') -replace '\|', '\|') -replace '<', '&lt;' -replace '>', '&gt;').Trim()
+    $v = $Value -replace '[\r\n]+', ' '
+    # Escape each pipe AND double only the backslash run immediately before it, so a
+    # pre-existing `\|` cannot survive as `\\|` (literal `\` + active delimiter). Non-
+    # pipe backslash escapes elsewhere in the title are left intact.
+    $v = [regex]::Replace($v, '(\\*)\|', { param($m) ($m.Groups[1].Value * 2) + '\|' })
+    return ($v -replace '<', '&lt;' -replace '>', '&gt;').Trim()
 }
 
 function Format-CiScanIssueRows {

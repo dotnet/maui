@@ -854,12 +854,16 @@ function Format-MarkdownCell {
     # Collapse embedded newlines first: a malformed upstream title can contain a
     # literal CR/LF (observed: ci-scan issue #35957), which would otherwise split
     # the markdown table row across physical lines and break the rendered table.
-    # Double pre-existing backslashes BEFORE escaping pipes: a title may legally
-    # contain a literal `\|`, and escaping only the pipe would yield `\\|` — which
-    # GFM renders as a literal `\` plus an ACTIVE column delimiter (table breakout).
-    # Doubling backslashes first makes `\|` -> `\\\|`, a literal `\|`. No-backslash
-    # titles are unaffected (`a | b` -> `a \| b`).
-    return (((($Value -replace "[\r\n]+", " ") -replace "\\", "\\") -replace "\|", "\|") -replace "<", "&lt;" -replace ">", "&gt;").Trim()
+    # Escape each pipe AND double only the backslash run immediately preceding it:
+    # a title may legally contain a literal `\|`, and escaping only the pipe would
+    # yield `\\|` — which GFM renders as a literal `\` plus an ACTIVE column delimiter
+    # (table breakout). Doubling the pipe-adjacent run makes `\|` -> `\\\|`, a literal
+    # `\|`. Scoping the doubling to `(\\*)\|` (rather than every backslash) preserves a
+    # title's other backslash escapes (e.g. `\[link\](url)` is not de-escaped into an
+    # active link). No-pipe-adjacent-backslash titles are unaffected (`a | b` -> `a \| b`).
+    $v = $Value -replace "[\r\n]+", " "
+    $v = [regex]::Replace($v, '(\\*)\|', { param($m) ($m.Groups[1].Value * 2) + '\|' })
+    return ($v -replace "<", "&lt;" -replace ">", "&gt;").Trim()
 }
 
 function Format-GitHubHandle {

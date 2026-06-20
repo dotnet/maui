@@ -2451,7 +2451,8 @@ Assert-Eq -Label "Format-MarkdownTableCell: angle brackets escaped to entities (
 # already contains a literal `\|` must NOT collapse to `\\|` (literal `\` + ACTIVE pipe).
 # Pre-fix (pipe-only escape) returns 'A \\| B' and these go red.
 Assert-Eq -Label "Format-MarkdownTableCell: literal backslash-pipe does NOT break out (doubled backslash)" -Expected 'A \\\| B' -Actual (Format-MarkdownTableCell 'A \| B')
-Assert-Eq -Label "Format-MarkdownTableCell: pre-existing backslash doubled"   -Expected 'C:\\dir' -Actual (Format-MarkdownTableCell 'C:\dir')
+Assert-Eq -Label "Format-MarkdownTableCell: pre-existing NON-pipe backslash preserved (doubling is scoped to pipe-adjacent runs)" -Expected 'C:\dir' -Actual (Format-MarkdownTableCell 'C:\dir')
+Assert-Eq -Label "Format-MarkdownTableCell: author-escaped non-pipe Markdown NOT de-escaped" -Expected '\[link\](url)' -Actual (Format-MarkdownTableCell '\[link\](url)')
 # Injected HTML comment opener is rendered inert (cannot start an `<!-- ... -->` region).
 Assert-Eq -Label "Format-MarkdownTableCell: HTML-comment opener neutralized"  -Expected 'Crash &lt;!--' -Actual (Format-MarkdownTableCell 'Crash <!--')
 
@@ -3383,7 +3384,8 @@ Assert-Eq -Label "Format-MarkdownCell: angle brackets still escaped"        -Exp
 # Backslash-first ordering: a literal `\|` in a title must not collapse to `\\|`
 # (literal `\` + ACTIVE pipe = table breakout). Pre-fix returns 'A \\| B' → red.
 Assert-Eq -Label "Format-MarkdownCell: literal backslash-pipe does NOT break out (doubled backslash)" -Expected 'A \\\| B' -Actual (Format-MarkdownCell 'A \| B')
-Assert-Eq -Label "Format-MarkdownCell: pre-existing backslash doubled"      -Expected 'C:\\dir'       -Actual (Format-MarkdownCell 'C:\dir')
+Assert-Eq -Label "Format-MarkdownCell: pre-existing NON-pipe backslash preserved (doubling is scoped to pipe-adjacent runs)" -Expected 'C:\dir'       -Actual (Format-MarkdownCell 'C:\dir')
+Assert-Eq -Label "Format-MarkdownCell: author-escaped non-pipe Markdown NOT de-escaped" -Expected '\[link\](url)' -Actual (Format-MarkdownCell '\[link\](url)')
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
