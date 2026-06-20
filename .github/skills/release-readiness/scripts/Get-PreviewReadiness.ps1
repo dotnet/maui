@@ -854,7 +854,12 @@ function Format-MarkdownCell {
     # Collapse embedded newlines first: a malformed upstream title can contain a
     # literal CR/LF (observed: ci-scan issue #35957), which would otherwise split
     # the markdown table row across physical lines and break the rendered table.
-    return ((($Value -replace "[\r\n]+", " ") -replace "\|", "\|") -replace "<", "&lt;" -replace ">", "&gt;").Trim()
+    # Double pre-existing backslashes BEFORE escaping pipes: a title may legally
+    # contain a literal `\|`, and escaping only the pipe would yield `\\|` — which
+    # GFM renders as a literal `\` plus an ACTIVE column delimiter (table breakout).
+    # Doubling backslashes first makes `\|` -> `\\\|`, a literal `\|`. No-backslash
+    # titles are unaffected (`a | b` -> `a \| b`).
+    return (((($Value -replace "[\r\n]+", " ") -replace "\\", "\\") -replace "\|", "\|") -replace "<", "&lt;" -replace ">", "&gt;").Trim()
 }
 
 function Format-GitHubHandle {

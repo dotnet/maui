@@ -1793,9 +1793,11 @@ Assert-Eq -Label "Regression table: pipe escaped AND trailing action column inta
 # (^\s*<!-- release-readiness:human-notes:begin -->\s*$). A hostile title containing
 # `...\n<!-- ...:begin -->\n...` would, pre-fix, isolate that marker on its own physical
 # line and forge a second notes region — letting an attacker's PR/issue title corrupt the
-# notes-preservation step. Collapsing newlines defeats this WITHOUT escaping `<>` (so
-# legitimate `List<T>` titles stay intact). We assert exactly ONE anchored begin-marker
-# survives (the real one the renderer emits) even when an upstream title embeds the marker.
+# notes-preservation step. Collapsing newlines defeats this (the marker can no longer land
+# alone on a line), and escaping `<>` to entities is belt-and-suspenders (the injected
+# `<!--` renders as `&lt;!--`, so it never matches the anchored marker regex at all). We
+# assert exactly ONE anchored begin-marker survives (the real one the renderer emits) even
+# when an upstream title embeds the marker.
 Write-Host "`n[Unit] Blocking/Open-Fix cells sanitized + human-notes marker-forgery defense" -ForegroundColor Cyan
 
 # (3) Blocking summary table (Tier-1 regression: no-fix-yet + OPEN renders here AND in the tier table).
@@ -1960,8 +1962,8 @@ Assert-Eq -Label "BLOCKED ship check: blocking summary header reflects count" -E
     -Actual ($mdBlocked -match '🔴 Blocking — \d+ item')
 Assert-Eq -Label "BLOCKED ship check: blocking summary mentions versions.props area" -Expected $true `
     -Actual ($mdBlocked -match '🛠️ versions.props PatchVersion')
-Assert-Eq -Label "BLOCKED ship check: blocking summary contains the next-action text" -Expected $true `
-    -Actual ($mdBlocked -match 'Bump <PatchVersion>')
+Assert-Eq -Label "BLOCKED ship check: blocking summary contains the next-action text (angle brackets entity-escaped so GitHub actually displays them)" -Expected $true `
+    -Actual ($mdBlocked -match 'Bump &lt;PatchVersion&gt;')
 Assert-Eq -Label "BLOCKED ship check: full Ship-readiness checks table emitted" -Expected $true `
     -Actual ($mdBlocked -match 'Ship-readiness checks')
 Assert-Eq -Label "BLOCKED ship check: table shows READY entry for bug template (transparency)" -Expected $true `
@@ -2444,7 +2446,14 @@ Assert-Eq -Label "Format-MarkdownTableCell: no CR/LF survives"        -Expected 
 Assert-Eq -Label "Format-MarkdownTableCell: null → empty string"      -Expected ''        -Actual (Format-MarkdownTableCell $null)
 Assert-Eq -Label "Format-MarkdownTableCell: empty → empty string"     -Expected ''        -Actual (Format-MarkdownTableCell '')
 Assert-Eq -Label "Format-MarkdownTableCell: surrounding whitespace trimmed" -Expected 'a b' -Actual (Format-MarkdownTableCell "  a`nb  ")
-Assert-Eq -Label "Format-MarkdownTableCell: angle brackets deliberately NOT escaped (SR parity)" -Expected 'List<T>' -Actual (Format-MarkdownTableCell 'List<T>')
+Assert-Eq -Label "Format-MarkdownTableCell: angle brackets escaped to entities (SR↔Preview parity)" -Expected 'List&lt;T&gt;' -Actual (Format-MarkdownTableCell 'List<T>')
+# Backslash-first ordering closes the "escape-the-escaper" table breakout: a title that
+# already contains a literal `\|` must NOT collapse to `\\|` (literal `\` + ACTIVE pipe).
+# Pre-fix (pipe-only escape) returns 'A \\| B' and these go red.
+Assert-Eq -Label "Format-MarkdownTableCell: literal backslash-pipe does NOT break out (doubled backslash)" -Expected 'A \\\| B' -Actual (Format-MarkdownTableCell 'A \| B')
+Assert-Eq -Label "Format-MarkdownTableCell: pre-existing backslash doubled"   -Expected 'C:\\dir' -Actual (Format-MarkdownTableCell 'C:\dir')
+# Injected HTML comment opener is rendered inert (cannot start an `<!-- ... -->` region).
+Assert-Eq -Label "Format-MarkdownTableCell: HTML-comment opener neutralized"  -Expected 'Crash &lt;!--' -Actual (Format-MarkdownTableCell 'Crash <!--')
 
 # Truncation behavior: > MaxRows
 $manyIssues = 1..20 | ForEach-Object {
@@ -3371,6 +3380,10 @@ Assert-Eq -Label "Format-MarkdownCell: CRLF run collapsed to single space"  -Exp
 Assert-Eq -Label "Format-MarkdownCell: no CR/LF survives in the cell"       -Expected $false          -Actual ((Format-MarkdownCell "x`ny") -match "`r|`n")
 Assert-Eq -Label "Format-MarkdownCell: pipe still escaped"                  -Expected 'a \| b'        -Actual (Format-MarkdownCell 'a | b')
 Assert-Eq -Label "Format-MarkdownCell: angle brackets still escaped"        -Expected 'List&lt;T&gt;' -Actual (Format-MarkdownCell 'List<T>')
+# Backslash-first ordering: a literal `\|` in a title must not collapse to `\\|`
+# (literal `\` + ACTIVE pipe = table breakout). Pre-fix returns 'A \\| B' → red.
+Assert-Eq -Label "Format-MarkdownCell: literal backslash-pipe does NOT break out (doubled backslash)" -Expected 'A \\\| B' -Actual (Format-MarkdownCell 'A \| B')
+Assert-Eq -Label "Format-MarkdownCell: pre-existing backslash doubled"      -Expected 'C:\\dir'       -Actual (Format-MarkdownCell 'C:\dir')
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })

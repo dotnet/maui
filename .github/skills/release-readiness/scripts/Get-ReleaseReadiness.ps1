@@ -2821,34 +2821,38 @@ function Format-MarkdownTableCell {
         single Markdown table cell. Also used for the candidate-PR bulleted list, where
         the newline collapse matters and `\|` renders as `|`.
     .DESCRIPTION
-        Two hazards are neutralized so a hostile/malformed issue or PR title cannot
+        Four hazards are neutralized so a hostile/malformed issue or PR title cannot
         corrupt the rendered body:
           1. Embedded CR/LF runs are collapsed to a single space, so the value cannot
              split the row across physical lines (observed live: ci-scan issue #35957,
              whose title contained a literal newline).
-          2. Literal `|` is escaped to `\|`, so a pipe in a title cannot open a new
+          2. Pre-existing backslashes are doubled (`\` -> `\\`) BEFORE the pipe escape.
+             This ordering is load-bearing: GitHub-issue/PR titles may legally contain a
+             literal `\|` (backslash immediately followed by a pipe). Escaping only the
+             pipe would turn that into `\\|`, which GFM renders as a literal `\` followed
+             by an ACTIVE column delimiter `|` (the classic "escape-the-escaper" table
+             breakout). Doubling backslashes first makes `\|` -> `\\\|`, which renders as a
+             literal `\|` and cannot open a new column. Titles with no backslash (the
+             common case) are unaffected: `a | b` still yields `a \| b`.
+          3. Literal `|` is escaped to `\|`, so a pipe in a title cannot open a new
              column (common in PR/issue titles such as `[Android] A | B`).
+          4. `<` / `>` are escaped to `&lt;` / `&gt;`, so a title cannot inject raw HTML
+             (e.g. an `<!-- ... -->` comment) into the body. This matches the Preview
+             engine's Format-MarkdownCell, has zero visual cost (`&lt;T&gt;` renders as
+             `<T>`, preserving titles like `List<T>`), and is defense-in-depth: even
+             though SR is structurally hash-freeze-immune (it emits its own semantic hash
+             at the TOP of the body, so an injected lower `<!-- ...hash... -->` can never
+             win the workflow's `head -n1` extraction) and its human-notes markers are
+             matched FULL-LINE-ANCHORED (a forged marker only fires if it lands alone on a
+             physical line, which hazard 1 already prevents), escaping `<>` keeps SR and
+             Preview consistent and removes any reliance on those backend invariants.
         Every SR markdown cell that embeds upstream-controlled text routes through this
         single helper: the ci-scan rows, the Open-PRs / regression / Blocking / Cleanup /
         ship-readiness-checks / Open-Fix-PRs tables, and the candidate-PR list.
-
-        The SR engine deliberately omits `<`/`>` escaping (unlike Get-PreviewReadiness.ps1's
-        Format-MarkdownCell, whose newline+pipe contract this otherwise mirrors), preserving
-        title fidelity like `List<T>`. That omission is safe because:
-          * Hash-freeze: SR emits its own semantic hash at the TOP of the body, so an
-            injected `<!-- ...hash... -->` lower in the body can never win the workflow's
-            `head -n1` extraction — it is structurally immune (the Preview engine, being
-            hash-less, is not, which is why `<>` escaping is load-bearing there).
-          * Human-notes forgery: the workflow matches the `<!-- release-readiness:human-notes:
-            begin/end -->` preservation markers with FULL-LINE-ANCHORED regex (`^\s*<!-- ... -->\s*$`).
-            An injected marker can therefore only fire if it lands ALONE on a physical line,
-            which requires an embedded newline to break out of its surrounding row/list text.
-            The newline collapse in (1) removes that capability, so a raw `<>` in a title
-            cannot forge an anchored marker and wipe Release Captain Notes.
     #>
     param([string]$Value)
     if ([string]::IsNullOrEmpty($Value)) { return '' }
-    return (($Value -replace '[\r\n]+', ' ') -replace '\|', '\|').Trim()
+    return (((($Value -replace '[\r\n]+', ' ') -replace '\\', '\\') -replace '\|', '\|') -replace '<', '&lt;' -replace '>', '&gt;').Trim()
 }
 
 function Format-CiScanIssueRows {
