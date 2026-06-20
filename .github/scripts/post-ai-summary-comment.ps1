@@ -71,13 +71,13 @@ if (-not (Test-Path $PRAgentDir)) {
 }
 
 $phases = [ordered]@{
-    "uitests"          = @{ File = "uitests/content.md";            Title = "UI Tests" }
-    "regression-check" = @{ File = "regression-check/content.md";   Title = "Regression Cross-Reference" }
-    "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "Pre-Flight — Context & Validation" }
-    "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "Code Review — Deep Analysis" }
-    "try-fix"          = @{ File = "try-fix/content.md";            Title = "Fix — Analysis & Comparison" }
-    "pr-finalize"      = @{ File = "pr-finalize/content.md";        Title = "Recommended PR Title & Description" }
-    "report"           = @{ File = "report/content.md";             Title = "Report — Final Recommendation" }
+    "uitests"          = @{ File = "uitests/content.md";            Title = "📱 UI Tests" }
+    "regression-check" = @{ File = "regression-check/content.md";   Title = "🔁 Regression Cross-Reference" }
+    "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "🛫 Pre-Flight — Context & Validation" }
+    "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "🔬 Code Review — Deep Analysis" }
+    "try-fix"          = @{ File = "try-fix/content.md";            Title = "🛠️ Fix — Analysis & Comparison" }
+    "pr-finalize"      = @{ File = "pr-finalize/content.md";        Title = "📝 Recommended PR Title & Description" }
+    "report"           = @{ File = "report/content.md";             Title = "🏁 Report — Final Recommendation" }
 }
 
 function Test-PhaseContentIsNoOp {
@@ -103,6 +103,15 @@ function Test-PhaseContentIsNoOp {
             return (
                 $withoutHeading -match '^🟢\s+No implementation files modified\s+[—-]\s+skipping regression cross-reference\.\s*$' -or
                 $withoutHeading -match '^🟢\s+No regression risks detected\.\s+No labeled bug-fix PRs in the last \d+ months touched the modified files\.\s*$'
+            )
+        }
+        "pr-finalize" {
+            # Keep-as-is verdict: the PR's existing title/description are already good, so
+            # omit the "Recommended PR Title & Description" section entirely (no copy-paste
+            # artifact is needed). Tolerant of an optional "**Assessment:**" prefix and any
+            # trailing optional notes the agent may add.
+            return (
+                $normalized -match '✅\s*Current title and description accurately reflect the change\s*[—-]\s*recommend keeping as-is'
             )
         }
         default {
@@ -176,13 +185,26 @@ function Get-GateStatus {
         return 'Unknown'
     }
 
+    # A FAILED gate may actually be a mixed / inconclusive (partial) outcome: the gate's
+    # verification report flags these via its failure classifications ("regression in
+    # another test" = one test FAIL→PASS but another fails both; "test does not reproduce
+    # the bug" = passes with and without the fix). Surface those as 'Partial' rather than a
+    # flat 'Failed'. A SKIPPED gate means no runnable tests were detected → 'No Tests'.
+    $isPartial = ($GateContent -match '(?i)Regression in another test' -or
+                  $GateContent -match '(?i)Test does not reproduce the bug')
+
     if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED)') {
-        return ConvertTo-TitleCase $Matches[1]
+        switch ($Matches[1].ToUpperInvariant()) {
+            'PASSED'  { return 'Passed' }
+            'SKIPPED' { return 'No Tests' }
+            'FAILED'  { if ($isPartial) { return 'Partial' } else { return 'Failed' } }
+        }
     }
 
+    if ($isPartial) { return 'Partial' }
     if ($GateContent -match '(?i)\bfailed\b') { return 'Failed' }
     if ($GateContent -match '(?i)\bpassed\b') { return 'Passed' }
-    if ($GateContent -match '(?i)\bskipped\b') { return 'Skipped' }
+    if ($GateContent -match '(?i)no tests were detected|\bskipped\b') { return 'No Tests' }
     return 'Unknown'
 }
 
@@ -227,21 +249,16 @@ function Get-PlatformStatus {
 function New-StatusChipRow {
     param(
         [string]$GateStatus,
-        [string]$ReviewStatus,
         [string]$Confidence,
         [string]$Platform
     )
 
     $gateColor = switch ($GateStatus) {
-        'Passed' { '1a7f37' }
-        'Skipped' { 'bf8700' }
-        default { 'd1242f' }
-    }
-    $reviewColor = switch ($ReviewStatus) {
-        'LGTM' { '1a7f37' }
-        'Approved' { '1a7f37' }
-        'Needs Changes' { 'd1242f' }
-        default { '0969da' }
+        'Passed'   { '1a7f37' }   # green
+        'Partial'  { 'bf8700' }   # amber — mixed/inconclusive
+        'No Tests' { '57606a' }   # neutral gray — nothing to verify
+        'Failed'   { 'd1242f' }   # red
+        default    { 'd1242f' }
     }
     $confidenceColor = switch ($Confidence) {
         'High' { '0969da' }
@@ -253,7 +270,6 @@ function New-StatusChipRow {
 
     $chips = @(
         (New-StatusChip -Label 'Gate' -Value $GateStatus -Color $gateColor),
-        (New-StatusChip -Label 'Code Review' -Value $ReviewStatus -Color $reviewColor),
         (New-StatusChip -Label 'Confidence' -Value $Confidence -Color $confidenceColor),
         (New-StatusChip -Label 'Platform' -Value $Platform -Color $platformColor)
     )
@@ -276,7 +292,7 @@ function New-FutureActionSection {
 ---
 
 <details>
-<summary><strong>Future Action</strong> — review latest findings</summary>
+<summary><strong>🚀 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 No alternative fix was selected for this run. Review the session findings and CI results before merging.
@@ -292,7 +308,7 @@ No alternative fix was selected for this run. Review the session findings and CI
 ---
 
 <details>
-<summary><strong>Future Action</strong> — review latest findings</summary>
+<summary><strong>🚀 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 The workflow could not parse the fix-selection result. Review the session findings and CI results before merging.
@@ -306,7 +322,7 @@ The workflow could not parse the fix-selection result. Review the session findin
 ---
 
 <details>
-<summary><strong>Future Action</strong> — review latest findings</summary>
+<summary><strong>🚀 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 No alternative fix was selected for this run. Review the session findings and CI results before merging.
@@ -352,7 +368,7 @@ No alternative fix was selected for this run. Review the session findings and CI
 ---
 
 <details>
-<summary><strong>Future Action</strong> — alternative fix proposed (<code>$selected</code>)</summary>
+<summary><strong>🚀 Next Steps</strong> — alternative fix proposed (<code>$selected</code>)</summary>
 <br/>
 
 **Automated review — alternative fix proposed**
@@ -485,7 +501,7 @@ if (Test-Path $gateFilePath) {
         Write-Host "  ✅ gate ($((Get-Item $gateFilePath).Length) bytes)" -ForegroundColor Green
         $gateSection = @"
 <details>
-<summary><strong>Gate — Test Before & After Fix</strong></summary>
+<summary><strong>🧪 Gate — Test Before & After Fix</strong></summary>
 <br/>
 
 $gateContent
@@ -585,7 +601,7 @@ $sessionMarkerEnd = "<!-- SESSION:$commitSha7 END -->"
 $newSessionBlock = @"
 $sessionMarkerStart
 <details>
-<summary><strong>Review Sessions</strong> — click to expand</summary>
+<summary><strong>🗂️ Review Sessions</strong> — click to expand</summary>
 <br/>
 
 $phaseContent
@@ -633,15 +649,9 @@ if ($prAuthor) {
     $authorPing += ' To request a fresh review after new comments or commits, comment `/review rerun`.'
 }
 
-$reviewStatus = switch ($reviewEvent) {
-    'APPROVE' { 'LGTM' }
-    'REQUEST_CHANGES' { 'Needs Changes' }
-    default { 'In Review' }
-}
 $summaryContent = @($gateContent) + @($phaseContentByKey.Values)
 $statusChipRow = New-StatusChipRow `
     -GateStatus (Get-GateStatus -GateContent $gateContent) `
-    -ReviewStatus $reviewStatus `
     -Confidence (Get-ConfidenceStatus -Contents $summaryContent) `
     -Platform (Get-PlatformStatus -Contents $summaryContent)
 $futureActionSection = New-FutureActionSection -PRAgentDir $PRAgentDir
@@ -655,9 +665,9 @@ $authorPing
 
 $statusChipRow
 
-$newSessionBlock
-
 $futureActionSection
+
+$newSessionBlock
 "@
 
 # Clean up excessive blank lines

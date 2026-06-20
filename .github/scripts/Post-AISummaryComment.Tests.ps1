@@ -19,6 +19,7 @@ BeforeAll {
 
     foreach ($functionName in @(
         'Test-PhaseContentIsNoOp',
+        'Get-GateStatus',
         'Get-AIReviewEvent',
         'Test-RunValidationFailed',
         'Test-HasNonPRWinner',
@@ -80,6 +81,59 @@ Describe 'Test-PhaseContentIsNoOp' {
             -PhaseKey 'regression-check' `
             -Content '⚠️ Regression cross-reference failed: gh api failed' |
             Should -BeFalse
+    }
+
+    It 'suppresses the pr-finalize section when the title/description are keep-as-is' {
+        Test-PhaseContentIsNoOp `
+            -PhaseKey 'pr-finalize' `
+            -Content '✅ Current title and description accurately reflect the change — recommend keeping as-is.' |
+            Should -BeTrue
+
+        # tolerant of an optional Assessment prefix and trailing optional notes
+        Test-PhaseContentIsNoOp `
+            -PhaseKey 'pr-finalize' `
+            -Content "**Assessment:** ✅ Current title and description accurately reflect the change - recommend keeping as-is.`n`n- Optional: mention the synthetic producer." |
+            Should -BeTrue
+    }
+
+    It 'keeps the pr-finalize section when an update is recommended' {
+        Test-PhaseContentIsNoOp `
+            -PhaseKey 'pr-finalize' `
+            -Content "**Assessment:** ✏️ Recommend updating — the description is strong but the winning fix adds behavior.`n`n**Recommended title**" |
+            Should -BeFalse
+
+        # an "updating" verdict that merely says the description is accurate must NOT be suppressed
+        Test-PhaseContentIsNoOp `
+            -PhaseKey 'pr-finalize' `
+            -Content '**Assessment:** ✏️ Recommend updating — the current title and description accurately describe the PR shape, but the winning fix differs.' |
+            Should -BeFalse
+    }
+}
+
+Describe 'Get-GateStatus' {
+    It 'maps a passed gate to Passed' {
+        Get-GateStatus -GateContent '### Gate Result: ✅ PASSED' | Should -Be 'Passed'
+    }
+
+    It 'maps a skipped gate to No Tests' {
+        Get-GateStatus -GateContent "### Gate Result: ⚠️ SKIPPED`n`nNo tests were detected in this PR." |
+            Should -Be 'No Tests'
+    }
+
+    It 'maps a clean failed gate to Failed' {
+        Get-GateStatus -GateContent '### Gate Result: ❌ FAILED' | Should -Be 'Failed'
+    }
+
+    It 'maps a mixed/inconclusive failed gate to Partial' {
+        Get-GateStatus -GateContent "### Gate Result: ❌ FAILED`n`n🩺 **Regression in another test** — at least one test goes FAIL→PASS, but another fails both." |
+            Should -Be 'Partial'
+
+        Get-GateStatus -GateContent "### Gate Result: ❌ FAILED`n`n🩺 **Test does not reproduce the bug** — ran the same in both states (PASS without fix, PASS with fix)." |
+            Should -Be 'Partial'
+    }
+
+    It 'returns Unknown for empty gate content' {
+        Get-GateStatus -GateContent '' | Should -Be 'Unknown'
     }
 }
 
@@ -200,7 +254,7 @@ Describe 'New-FutureActionSection' {
         Remove-Item -LiteralPath $script:testDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    It 'renders selected try-fix candidate guidance in the AI Summary Future Action section' {
+    It 'renders selected try-fix candidate guidance in the AI Summary Next Steps section' {
         @{
             winner = 'try-fix-2'
             isPRFix = $false
@@ -210,7 +264,7 @@ Describe 'New-FutureActionSection' {
 
         $section = New-FutureActionSection -PRAgentDir $script:testDir
 
-        $section | Should -Match '<strong>Future Action</strong>'
+        $section | Should -Match '<strong>🚀 Next Steps</strong>'
         $section | Should -Match 'alternative fix proposed'
         $section | Should -Match 'try-fix-2'
         $section | Should -Match 'Candidate avoids the regression'

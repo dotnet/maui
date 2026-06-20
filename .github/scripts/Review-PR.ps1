@@ -2139,7 +2139,7 @@ Steps:
 1. Compare the CURRENT title and description above against the actual diff and the winning fix.
 2. Judge quality: is the title specific (platform prefix + component + what changed) and is the description accurate and complete (what changed and why, key files, platform notes, dependency/issue links)?
 3. Write your result to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md``:
-   - **If the current title AND description already accurately and completely describe the change**, do NOT invent a replacement. Write exactly: ``**Assessment:** ✅ Current title and description accurately reflect the change — recommend keeping as-is.`` You may add a short bullet list of minor optional enhancements, or nothing. Do NOT emit recommended title/description code blocks in this case.
+   - **If the current title AND description already accurately and completely describe the change**, do NOT invent a replacement and do NOT add optional notes — this whole section is omitted when the metadata is already good. Write EXACTLY this single line and nothing else: ``✅ Current title and description accurately reflect the change — recommend keeping as-is.``
    - **Otherwise**, write ``**Assessment:** ✏️ Recommend updating — <one-line reason>.`` then provide a copy-paste-ready title and description that is a STRICT IMPROVEMENT over the current one: preserve every still-valid detail (dependency links, platform sections, specific type/term names, issue refs), correct inaccuracies, and add missing context. Follow the skill's title formula ``[Platform] Component: What changed`` and keep precise terminology (do not generalize specific names away). Wrap each in its own fenced block so they copy cleanly:
 
 **Recommended title**
