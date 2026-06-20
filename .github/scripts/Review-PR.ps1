@@ -420,6 +420,36 @@ if ($Phase -eq 'Setup') {
     exit 0
 }
 
+# Overlay the trusted, branch-aware infra scripts over the worktree. The gate's
+# verify-tests-fail.ps1 (and try-fix candidate validation) invoke the WORKTREE's
+# Run-DeviceTests.ps1 / BuildAndRunHostApp.ps1 — they resolve their own RepoRoot from .git, so
+# they must physically live in the worktree. Without this overlay they would be the PR branch's
+# possibly-stale copies: e.g. a net11 PR whose branch still hardcodes net10.0-android would build
+# the wrong TFM and fail NETSDK1005. Mirrors the deep-UI-test stage's "Restore trusted scripts"
+# step and enforces security rule 3 (no PR-controlled infra .ps1 runs with tokens in scope).
+# MUST be re-applied after every `git reset --hard`, which would otherwise revert it. The src/
+# tree stays base + PR. No-op outside CI (when -TrustedScriptsDir is not supplied).
+function Restore-TrustedScripts {
+    param([string]$TrustedScriptsDir, [string]$RepoRoot)
+    if (-not $TrustedScriptsDir) { return }
+    $overlayMap = @(
+        @{ Src = (Join-Path $TrustedScriptsDir 'scripts');     Dest = (Join-Path $RepoRoot '.github/scripts') },
+        @{ Src = (Join-Path $TrustedScriptsDir 'skills');      Dest = (Join-Path $RepoRoot '.github/skills') },
+        @{ Src = (Join-Path $TrustedScriptsDir 'eng-scripts'); Dest = (Join-Path $RepoRoot 'eng/scripts') }
+    )
+    $restored = $false
+    foreach ($o in $overlayMap) {
+        if (Test-Path $o.Src) {
+            Remove-Item -Recurse -Force $o.Dest -ErrorAction SilentlyContinue
+            Copy-Item -Recurse -Force $o.Src $o.Dest
+            $restored = $true
+        }
+    }
+    if ($restored) {
+        Write-Host "  🔒 Restored trusted .github/scripts, .github/skills, eng/scripts over the worktree (branch-aware + trusted infra)" -ForegroundColor Cyan
+    }
+}
+
 # ─── Sentinel check: verify Setup completed before running later phases ───
 if ($Phase -and $Phase -ne 'Setup') {
     $sentinelDir = if ($TrustedScriptsDir) {
@@ -444,6 +474,9 @@ if ($Phase -and $Phase -ne 'Setup') {
             Write-Error "Failed to reset review branch '$reviewBranch' before -Phase $Phase."
             exit 1
         }
+
+        # Re-apply trusted infra scripts over the just-reset worktree (see Restore-TrustedScripts).
+        Restore-TrustedScripts -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot
     }
 }
 
@@ -1672,6 +1705,10 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
             Write-Error "Failed to reset review branch '$reviewBranch' before gate attempt $gateAttempt."
             exit 1
         }
+        # `git reset --hard` above reverts the worktree's .github to the (possibly stale) PR
+        # branch copies, so re-apply the trusted, branch-aware infra scripts before the verify
+        # script invokes the worktree's Run-DeviceTests.ps1 / BuildAndRunHostApp.ps1.
+        Restore-TrustedScripts -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot
     }
     # Clear previous attempt's report so a crash mid-run doesn't leak its classification into this one.
     Remove-Item $gateContentFile -Force -ErrorAction SilentlyContinue
