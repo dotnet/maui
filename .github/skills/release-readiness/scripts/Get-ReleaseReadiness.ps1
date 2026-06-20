@@ -2818,20 +2818,33 @@ function Format-MarkdownTableCell {
     <#
     .SYNOPSIS
         Sanitize an arbitrary (often upstream-controlled) string for safe use inside a
-        single Markdown table cell.
+        single Markdown table cell. Also used for the candidate-PR bulleted list, where
+        the newline collapse matters and `\|` renders as `|`.
     .DESCRIPTION
         Two hazards are neutralized so a hostile/malformed issue or PR title cannot
-        corrupt the rendered table:
+        corrupt the rendered body:
           1. Embedded CR/LF runs are collapsed to a single space, so the value cannot
              split the row across physical lines (observed live: ci-scan issue #35957,
              whose title contained a literal newline).
           2. Literal `|` is escaped to `\|`, so a pipe in a title cannot open a new
              column (common in PR/issue titles such as `[Android] A | B`).
-        Mirrors the newline+pipe contract of Get-PreviewReadiness.ps1's
-        Format-MarkdownCell. The SR engine deliberately omits `<`/`>` escaping: it emits
-        its own semantic hash at the TOP of the body, so — unlike the hash-less Preview
-        engine — it is not exposed to the HTML-comment hash-freeze vector that makes
-        angle-bracket escaping load-bearing there.
+        Every SR markdown cell that embeds upstream-controlled text routes through this
+        single helper: the ci-scan rows, the Open-PRs / regression / Blocking / Cleanup /
+        ship-readiness-checks / Open-Fix-PRs tables, and the candidate-PR list.
+
+        The SR engine deliberately omits `<`/`>` escaping (unlike Get-PreviewReadiness.ps1's
+        Format-MarkdownCell, whose newline+pipe contract this otherwise mirrors), preserving
+        title fidelity like `List<T>`. That omission is safe because:
+          * Hash-freeze: SR emits its own semantic hash at the TOP of the body, so an
+            injected `<!-- ...hash... -->` lower in the body can never win the workflow's
+            `head -n1` extraction — it is structurally immune (the Preview engine, being
+            hash-less, is not, which is why `<>` escaping is load-bearing there).
+          * Human-notes forgery: the workflow matches the `<!-- release-readiness:human-notes:
+            begin/end -->` preservation markers with FULL-LINE-ANCHORED regex (`^\s*<!-- ... -->\s*$`).
+            An injected marker can therefore only fire if it lands ALONE on a physical line,
+            which requires an embedded newline to break out of its surrounding row/list text.
+            The newline collapse in (1) removes that capability, so a raw `<>` in a title
+            cannot forge an anchored marker and wipe Release Captain Notes.
     #>
     param([string]$Value)
     if ([string]::IsNullOrEmpty($Value)) { return '' }
@@ -3132,9 +3145,9 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
         foreach ($b in $blockingItems) {
-            $area = ($b.area -replace '\|', '\|').Trim()
-            $details = ($b.details -replace '\|', '\|').Trim()
-            $action = ($b.action -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $b.area
+            $details = Format-MarkdownTableCell $b.details
+            $action = Format-MarkdownTableCell $b.action
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3169,9 +3182,9 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
         foreach ($c in $cleanupItems) {
-            $area = ($c.area -replace '\|', '\|').Trim()
-            $details = ($c.details -replace '\|', '\|').Trim()
-            $action = ($c.action -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $c.area
+            $details = Format-MarkdownTableCell $c.details
+            $action = Format-MarkdownTableCell $c.action
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3272,11 +3285,11 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine('| Fix PR | Base | Regression issue | Status | Next action |')
             [void]$sb.AppendLine('|---|---|---|---|---|')
             foreach ($row in $openFixRows) {
-                $prCell    = ($row.prCell     -replace '\|', '\|').Trim()
-                $baseCell  = ($row.baseCell   -replace '\|', '\|').Trim()
-                $issCell   = ($row.issCell    -replace '\|', '\|').Trim()
-                $statCell  = ($row.statusCell -replace '\|', '\|').Trim()
-                $actCell   = ($row.actionCell -replace '\|', '\|').Trim()
+                $prCell    = Format-MarkdownTableCell $row.prCell
+                $baseCell  = Format-MarkdownTableCell $row.baseCell
+                $issCell   = Format-MarkdownTableCell $row.issCell
+                $statCell  = Format-MarkdownTableCell $row.statusCell
+                $actCell   = Format-MarkdownTableCell $row.actionCell
                 [void]$sb.AppendLine("| $prCell | $baseCell | $issCell | $statCell | $actCell |")
             }
             [void]$sb.AppendLine()
@@ -3297,9 +3310,9 @@ function Format-MarkdownReport {
                 'CLEANUP' { '🧹 CLEANUP' }
                 default   { "⚪ $($sc.Status)" }
             }
-            $area = ($sc.Area -replace '\|', '\|').Trim()
-            $details = ($sc.Details -replace '\|', '\|').Trim()
-            $action = ($sc.NextAction -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $sc.Area
+            $details = Format-MarkdownTableCell $sc.Details
+            $action = Format-MarkdownTableCell $sc.NextAction
             [void]$sb.AppendLine("| $area | $statusEmoji | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3395,6 +3408,12 @@ function Format-MarkdownReport {
                 foreach ($cp in $candidatePrs) {
                     $cpLink = ConvertTo-LinkedPr -PrNumber $cp.number -RepoUrl $RepoUrl
                     $cpTitle = if ($cp.title.Length -gt 80) { $cp.title.Substring(0, 80) + '...' } else { $cp.title }
+                    # Collapse newlines (and escape pipes) even though this is a list, not a
+                    # table: an upstream title with an embedded newline could otherwise push
+                    # injected content (e.g. a forged `<!-- release-readiness:human-notes -->`
+                    # marker) onto its own physical line. Markdown renders `\|` as `|` in a
+                    # list, so escaping is harmless here.
+                    $cpTitle = Format-MarkdownTableCell $cpTitle
                     [void]$sb.AppendLine("- $cpLink — $cpTitle (by $(Format-GitHubHandle $cp.author.login), updated $($cp.updatedAt))")
                 }
                 [void]$sb.AppendLine()

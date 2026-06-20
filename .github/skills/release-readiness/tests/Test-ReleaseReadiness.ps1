@@ -1780,6 +1780,88 @@ Assert-Eq -Label "Regression table: piped/newline issue title stays on one physi
 Assert-Eq -Label "Regression table: pipe escaped AND trailing action column intact on the row" -Expected $true `
     -Actual ($issRowLines.Count -eq 1 -and $issRowLines[0] -match 'Crash \\\| NRE' -and $issRowLines[0] -match 'Investigate')
 
+# ───── Blocking summary + Open-Fix-PRs cells sanitized; human-notes marker-forgery defense ─────
+# The remaining SR tables that embed upstream titles — the 🔴 Blocking summary
+# (Tier-1 regressions + BLOCKED ship-checks) and the 📥 Open Fix PRs Inbound table —
+# plus the candidate-PR bulleted list now route every upstream cell through
+# Format-MarkdownTableCell. Each assertion below is DISCRIMINATING on pre-fix code:
+# an embedded newline splits the row (orphaning the title tail onto its own line),
+# and the escaped-pipe match fails when the pipe is left raw.
+#
+# The marker-forgery assertions are the security centerpiece: the production workflow
+# preserves Release-Captain notes by splicing on FULL-LINE-ANCHORED markers
+# (^\s*<!-- release-readiness:human-notes:begin -->\s*$). A hostile title containing
+# `...\n<!-- ...:begin -->\n...` would, pre-fix, isolate that marker on its own physical
+# line and forge a second notes region — letting an attacker's PR/issue title corrupt the
+# notes-preservation step. Collapsing newlines defeats this WITHOUT escaping `<>` (so
+# legitimate `List<T>` titles stay intact). We assert exactly ONE anchored begin-marker
+# survives (the real one the renderer emits) even when an upstream title embeds the marker.
+Write-Host "`n[Unit] Blocking/Open-Fix cells sanitized + human-notes marker-forgery defense" -ForegroundColor Cyan
+
+# (3) Blocking summary table (Tier-1 regression: no-fix-yet + OPEN renders here AND in the tier table).
+$mdDataBlock = @{} + $mdData
+$mdDataBlock['regressions'] = @(
+    @{ issue = 96003; title = "Hang | freeze`nat startup"; state = 'OPEN'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Fix before ship' }
+)
+$mdDataBlock['summary'] = @{ 'no-fix-yet' = 1 }
+$mdBlock = Format-MarkdownReport -Data $mdDataBlock -RepoUrl 'https://github.com/dotnet/maui' `
+                                 -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$blockOrphans = @($mdBlock -split "`r?`n" | Where-Object { $_ -match '^\s*at startup' })
+Assert-Eq -Label "Blocking table: embedded newline does NOT orphan the title tail onto its own line" -Expected 0 `
+    -Actual $blockOrphans.Count
+Assert-Eq -Label "Blocking table: title rendered glued + pipe-escaped on one row" -Expected $true `
+    -Actual ($mdBlock -match 'Hang \\\| freeze at startup')
+
+# (4) Open Fix PRs Inbound table (open-on-main regression with an OPEN candidate fix PR).
+$mdDataOpenFix = @{} + $mdData
+$mdDataOpenFix['regressions'] = @(
+    @{ issue = 96004; title = "Glitch | bug`nhere"; state = 'OPEN'; classification = 'open-on-main';
+       candidateFixPrs = @( @{ number = 96104; state = 'OPEN'; baseRef = 'main' } ); recommendedAction = 'Watch' }
+)
+$mdDataOpenFix['summary'] = @{ 'open-on-main' = 1 }
+$mdOpenFix = Format-MarkdownReport -Data $mdDataOpenFix -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$ofOrphans = @($mdOpenFix -split "`r?`n" | Where-Object { $_ -match '^\s*here' })
+Assert-Eq -Label "Open-Fix-PRs table: embedded newline does NOT orphan the title tail onto its own line" -Expected 0 `
+    -Actual $ofOrphans.Count
+$ofRow = @($mdOpenFix -split "`r?`n" | Where-Object { $_ -match '🔵 OPEN — awaiting main merge' })
+Assert-Eq -Label "Open-Fix-PRs table: regression-issue cell glued + pipe-escaped, status column intact" -Expected $true `
+    -Actual ($ofRow.Count -eq 1 -and $ofRow[0] -match 'Glitch \\\| bug here')
+
+# (5) Marker-forgery via a TABLE cell: a Tier-1 title embedding the begin-marker between
+#     newlines must NOT forge a second anchored marker line.
+$mdDataForgeTbl = @{} + $mdData
+$mdDataForgeTbl['regressions'] = @(
+    @{ issue = 96006; title = "Spoof`n<!-- release-readiness:human-notes:begin -->`ntail"; state = 'OPEN';
+       classification = 'no-fix-yet'; candidateFixPrs = @(); recommendedAction = 'Investigate' }
+)
+$mdDataForgeTbl['summary'] = @{ 'no-fix-yet' = 1 }
+$mdForgeTbl = Format-MarkdownReport -Data $mdDataForgeTbl -RepoUrl 'https://github.com/dotnet/maui' `
+                                    -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$forgeTblMarkers = @($mdForgeTbl -split "`r?`n" | Where-Object { $_ -match '^\s*<!-- release-readiness:human-notes:begin -->\s*$' })
+Assert-Eq -Label "Marker-forgery (table cell): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
+    -Actual $forgeTblMarkers.Count
+
+# (6) Marker-forgery via the candidate-PR LIST (the bulleted site, not a table). The title
+#     must match \bcandidate\b to be selected, and embeds the marker between newlines.
+$mdDataForgeList = @{} + $mdData
+$mdDataForgeList['metadata'] = @{} + $mdData.metadata
+$mdDataForgeList['metadata']['mode'] = 'candidate'
+$mdDataForgeList['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr7'
+$mdDataForgeList['metadata']['srBranch'] = 'main'
+$mdDataForgeList['openSrPrs'] = @(
+    @{ number = 96005; title = "Candidate`n<!-- release-readiness:human-notes:begin -->`ntail";
+       author = @{ login = 'mallory' }; isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-01T00:00:00Z' }
+)
+$mdForgeList = Format-MarkdownReport -Data $mdDataForgeList -RepoUrl 'https://github.com/dotnet/maui' `
+                                     -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+$forgeListMarkers = @($mdForgeList -split "`r?`n" | Where-Object { $_ -match '^\s*<!-- release-readiness:human-notes:begin -->\s*$' })
+Assert-Eq -Label "Marker-forgery (candidate list): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
+    -Actual $forgeListMarkers.Count
+Assert-Eq -Label "Candidate list: hostile title collapsed onto the bullet line (no isolated tail)" -Expected 0 `
+    -Actual (@($mdForgeList -split "`r?`n" | Where-Object { $_ -match '^\s*tail\b' }).Count)
+
 # ───── Candidate-mode open-PR collapse: avoid noisy main-PR dump ─────
 Write-Host "`n[Unit] Candidate-mode open-PR collapse (link to candidate PR only)" -ForegroundColor Cyan
 
@@ -1903,6 +1985,27 @@ $mdReady = Format-MarkdownReport -Data $mdDataReady -RepoUrl 'https://github.com
                                  -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
 Assert-Eq -Label "All ship checks READY (no Tier 1 regressions): '🟢 No blocking items'" -Expected $true `
     -Actual ($mdReady -match '🟢 No blocking items')
+
+# Ship-readiness checks TABLE: a WATCH check (renders only in the table, not the blocking
+# summary) whose Details carry a literal pipe + embedded newline must stay on one row,
+# pipe-escaped — proving the table's Details/NextAction cells route through the sanitizer.
+$mdDataWatchCell = @{} + $mdData
+$mdDataWatchCell['shipChecks'] = @(
+    [PSCustomObject]@{
+        Area       = 'Maestro channel'
+        Status     = 'WATCH'
+        Details    = "Default channel A | B`nnot yet mapped"
+        NextAction = 'Verify mapping'
+    }
+)
+$mdWatchCell = Format-MarkdownReport -Data $mdDataWatchCell -RepoUrl 'https://github.com/dotnet/maui' `
+                                     -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$watchOrphans = @($mdWatchCell -split "`r?`n" | Where-Object { $_ -match '^\s*not yet mapped' })
+Assert-Eq -Label "Ship-checks table: embedded newline in Details does NOT orphan a line" -Expected 0 `
+    -Actual $watchOrphans.Count
+$watchRow = @($mdWatchCell -split "`r?`n" | Where-Object { $_ -match '🟡 WATCH' })
+Assert-Eq -Label "Ship-checks table: Details glued + pipe-escaped, NextAction column intact" -Expected $true `
+    -Actual ($watchRow.Count -eq 1 -and $watchRow[0] -match 'Default channel A \\\| B not yet mapped' -and $watchRow[0] -match 'Verify mapping')
 
 # Hash includes shipChecks state (changing a ship check status flips the hash)
 $h1 = if ($mdReady -match '<!-- release-readiness-hash: sha=([0-9a-f]{64}) -->') { $Matches[1] } else { $null }
