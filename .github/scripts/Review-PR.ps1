@@ -404,6 +404,17 @@ if ($Phase -eq 'Setup') {
         $d
     }
     "OK" | Set-Content (Join-Path $sentinelDir "setup-complete") -Encoding UTF8
+    # Persist PR metadata so the CopilotReview phase can evaluate the existing title/
+    # description for the pr-finalize (Phase 4) step. `gh pr view` is unreliable in the
+    # CopilotReview phase after the squash-merge checkout, and $prInfo is only populated
+    # here in Setup, so we hand the values across phases via this file (same shared-dir
+    # mechanism as the setup-complete sentinel).
+    if ($prInfo) {
+        try {
+            ([ordered]@{ title = [string]$prInfo.title; body = [string]$prInfo.body } | ConvertTo-Json -Depth 4) |
+                Set-Content (Join-Path $sentinelDir "pr-metadata.json") -Encoding UTF8
+        } catch { Write-Host "  ⚠️ Could not persist pr-metadata.json: $($_.Exception.Message)" -ForegroundColor Yellow }
+    }
     Write-Host "✅ Setup phase complete" -ForegroundColor Green
     if ($LogFile) { Stop-Transcript -ErrorAction SilentlyContinue | Out-Null }
     exit 0
@@ -2056,13 +2067,28 @@ if ($tryFixDirs) {
 
 # ── STEP 5b: Expert Review of PR fix + final comparison (Copilot call 2) ──
 # Current PR metadata for the pr-finalize (Phase 4) evaluate-first / preserve-quality step.
-# NOTE: $prInfo is only populated in the Setup phase (inside `if ($runSetup)`), so in the
-# CopilotReview phase we must fetch the PR title/body fresh here or the evaluate-first
-# prompt would receive empty fallbacks and degrade good descriptions.
-$prMeta = gh pr view $PRNumber --json title,body 2>$null | ConvertFrom-Json
-if (-not $prMeta) { $prMeta = $prInfo }
-$prCurrentTitle = if ($prMeta -and $prMeta.title) { [string]$prMeta.title } else { '(unknown — could not fetch; do not assume it is missing)' }
-$prCurrentBody = if ($prMeta -and $prMeta.body) { [string]$prMeta.body } else { '(could not fetch description — evaluate against the diff; do not assume the PR has no description)' }
+# Prefer the pr-metadata.json the Setup phase persisted (gh works there and $prInfo is
+# populated); `gh pr view` is unreliable in this CopilotReview phase after the squash-merge
+# checkout. Fall back to a fresh gh fetch, then $prInfo, then non-degrading guidance text.
+$prCurrentTitle = $null
+$prCurrentBody = $null
+$prMetaDir = if ($TrustedScriptsDir) { Split-Path $TrustedScriptsDir -Parent } else { Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate" }
+$prMetaPath = Join-Path $prMetaDir "pr-metadata.json"
+if (Test-Path $prMetaPath) {
+    try {
+        $prMetaFromFile = Get-Content -Raw $prMetaPath | ConvertFrom-Json
+        if ($prMetaFromFile.title) { $prCurrentTitle = [string]$prMetaFromFile.title }
+        if ($prMetaFromFile.body)  { $prCurrentBody = [string]$prMetaFromFile.body }
+    } catch { Write-Host "  ⚠️ Could not read pr-metadata.json: $($_.Exception.Message)" -ForegroundColor Yellow }
+}
+if (-not $prCurrentTitle -or -not $prCurrentBody) {
+    $prMeta = gh pr view $PRNumber --json title,body 2>$null | ConvertFrom-Json
+    if (-not $prMeta) { $prMeta = $prInfo }
+    if (-not $prCurrentTitle -and $prMeta -and $prMeta.title) { $prCurrentTitle = [string]$prMeta.title }
+    if (-not $prCurrentBody -and $prMeta -and $prMeta.body) { $prCurrentBody = [string]$prMeta.body }
+}
+if (-not $prCurrentTitle) { $prCurrentTitle = '(unknown — could not fetch; do not assume it is missing)' }
+if (-not $prCurrentBody) { $prCurrentBody = '(could not fetch description — evaluate against the diff; do not assume the PR has no description)' }
 if ($prCurrentBody.Length -gt 4000) { $prCurrentBody = $prCurrentBody.Substring(0, 4000) + "`n...(description truncated for prompt)..." }
 $step5bPrompt = @"
 Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 5a.
