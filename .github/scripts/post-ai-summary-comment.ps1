@@ -190,17 +190,20 @@ function Get-GateStatus {
     # another test" = one test FAIL→PASS but another fails both; "test does not reproduce
     # the bug" = passes with and without the fix). Surface those as 'Partial' rather than a
     # flat 'Failed'. A SKIPPED gate means no runnable tests were detected → 'No Tests'.
+    # INCONCLUSIVE means the tests could not be built/run (build or env error) → 'Inconclusive'.
     $isPartial = ($GateContent -match '(?i)Regression in another test' -or
                   $GateContent -match '(?i)Test does not reproduce the bug')
 
-    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED)') {
+    if ($GateContent -match '(?im)Gate Result:\s*(?:\S+\s*)?(FAILED|PASSED|SKIPPED|INCONCLUSIVE)') {
         switch ($Matches[1].ToUpperInvariant()) {
-            'PASSED'  { return 'Passed' }
-            'SKIPPED' { return 'No Tests' }
-            'FAILED'  { if ($isPartial) { return 'Partial' } else { return 'Failed' } }
+            'PASSED'       { return 'Passed' }
+            'SKIPPED'      { return 'No Tests' }
+            'INCONCLUSIVE' { return 'Inconclusive' }
+            'FAILED'       { if ($isPartial) { return 'Partial' } else { return 'Failed' } }
         }
     }
 
+    if ($GateContent -match '(?i)\binconclusive\b') { return 'Inconclusive' }
     if ($isPartial) { return 'Partial' }
     if ($GateContent -match '(?i)\bfailed\b') { return 'Failed' }
     if ($GateContent -match '(?i)\bpassed\b') { return 'Passed' }
@@ -254,11 +257,12 @@ function New-StatusChipRow {
     )
 
     $gateColor = switch ($GateStatus) {
-        'Passed'   { '1a7f37' }   # green
-        'Partial'  { 'bf8700' }   # amber — mixed/inconclusive
-        'No Tests' { '57606a' }   # neutral gray — nothing to verify
-        'Failed'   { 'd1242f' }   # red
-        default    { 'd1242f' }
+        'Passed'       { '1a7f37' }   # green
+        'Partial'      { 'bf8700' }   # amber — mixed/inconclusive
+        'Inconclusive' { '8957e5' }   # purple — could not build/run (infra), not a real fail
+        'No Tests'     { '57606a' }   # neutral gray — nothing to verify
+        'Failed'       { 'd1242f' }   # red
+        default        { 'd1242f' }
     }
     $confidenceColor = switch ($Confidence) {
         'High' { '0969da' }

@@ -132,6 +132,11 @@ Describe 'Get-GateStatus' {
             Should -Be 'Partial'
     }
 
+    It 'maps an INCONCLUSIVE gate (build/env error) to Inconclusive' {
+        Get-GateStatus -GateContent "### Gate Result: ⚠️ INCONCLUSIVE`n`nTests could not be built/run (build or env error)." |
+            Should -Be 'Inconclusive'
+    }
+
     It 'returns Unknown for empty gate content' {
         Get-GateStatus -GateContent '' | Should -Be 'Unknown'
     }
@@ -202,6 +207,15 @@ Describe 'Get-AIReviewEventForRun' {
         'PASSED' | Set-Content (Join-Path $gateDir 'gate-result.txt') -Encoding UTF8
         # A forged content.md claiming PASSED must be irrelevant — the veto keys off gate-result.txt.
         'Gate Result: ✅ PASSED' | Set-Content (Join-Path $gateDir 'content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+            Should -Be 'APPROVE'
+    }
+
+    It 'keeps APPROVE when the gate is INCONCLUSIVE (build/env error must not block)' {
+        $gateDir = Join-Path $script:testDir 'gate'
+        New-Item -ItemType Directory -Path $gateDir -Force | Out-Null
+        'INCONCLUSIVE' | Set-Content (Join-Path $gateDir 'gate-result.txt') -Encoding UTF8
 
         Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
             Should -Be 'APPROVE'

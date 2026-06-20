@@ -106,6 +106,12 @@ Describe 'Parse-PhaseOutcomes — Gate result from gate-result.txt' {
         Remove-Item -Recurse -Force $root
     }
 
+    It 'maps INCONCLUSIVE (build/env error) to NO gate label (not failed)' {
+        $root = New-FixtureRoot -GateResultTxt 'INCONCLUSIVE'
+        (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).GateResult | Should -BeNullOrEmpty
+        Remove-Item -Recurse -Force $root
+    }
+
     It 'falls back to the "### Gate Result:" header when gate-result.txt is missing' {
         $root = New-FixtureRoot -GateContentMd "### Gate Result: ❌ FAILED`n`nThe fix did not pass."
         (Parse-PhaseOutcomes -PRNumber '1' -RepoRoot $root).GateResult | Should -Be 'failed'

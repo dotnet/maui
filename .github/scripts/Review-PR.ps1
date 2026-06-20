@@ -1721,17 +1721,22 @@ if ($isEnvError) {
     # at the top of the next iteration but we'd never get here). $isEnvError
     # here means "all $maxGateAttempts attempts hit env errors" — not "any".
     Write-Host "  ⚠️ All $maxGateAttempts gate attempts hit environment errors" -ForegroundColor Yellow
+    # Persistent env error = the gate could not verify anything. Report INCONCLUSIVE
+    # (exit 3) rather than letting it fall through to FAILED, so infra flakes don't
+    # masquerade as a broken fix.
+    $gateExitCode = 3
 }
 
 } # end else (verify script exists)
 
-# Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
+# Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected, 3 = inconclusive (build/env error)
 $gateResult = switch ($gateExitCode) {
     0 { "PASSED" }
     2 { "SKIPPED" }
+    3 { "INCONCLUSIVE" }
     default { "FAILED" }
 }
-$gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } default { "Red" } }
+$gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } "INCONCLUSIVE" { "Yellow" } default { "Red" } }
 Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
 
 # Copy the verification report to gate/content.md (always overwrite — the report is the source of truth)
@@ -1815,7 +1820,7 @@ if (Test-Path $verificationReport) {
     } else {
         # Report exists but has bad format — generate fallback with logs
         Write-Host "  ⚠️ Verification report has invalid format — using fallback" -ForegroundColor Yellow
-        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } default { "❌" } }
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } "INCONCLUSIVE" { "⚠️" } default { "❌" } }
         $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
         @"
 ### Gate Result: $resultIcon $gateResult
@@ -1846,7 +1851,7 @@ No tests were detected in this PR.
 **Recommendation:** Add tests to verify the fix using the ``write-tests-agent``.
 "@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     } else {
-        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } default { "❌" } }
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "INCONCLUSIVE" { "⚠️" } default { "❌" } }
         $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
         @"
 ### Gate Result: $resultIcon $gateResult
@@ -1910,6 +1915,21 @@ $uitestCategories | Set-Content (Join-Path $gateVerdictDir "uitest-categories.tx
 
 } # end if ($runGate)
 
+# In phased CI mode the Gate step's process exit code drives the GateFailed pipeline
+# variable (eng/pipelines/ci-copilot.yml "Check Review Result"). Make that explicit and
+# verdict-driven: only a genuine FAILED gate blocks the PR. PASSED / SKIPPED (no tests) /
+# INCONCLUSIVE (build or environment error — the gate could not verify anything) must NOT
+# block, so they exit 0. This stops infra/build flakes from masquerading as a failing fix.
+if ($runGate -and $Phase -eq 'Gate') {
+    if ($LogFile) { Stop-Transcript -ErrorAction SilentlyContinue | Out-Null }
+    if ($gateResult -eq 'FAILED') {
+        Write-Host "  ⛔ Gate verdict FAILED — signaling blocking exit (1)" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "  ✅ Gate verdict '$gateResult' is non-blocking — exit 0" -ForegroundColor Green
+    exit 0
+}
+
 # ─── Phase: CopilotReview ──────────────────────────────────────────────────
 if ($runCopilotReview) {
 
@@ -1971,6 +1991,7 @@ git checkout $reviewBranch 2>$null | Out-Null
 $gateStatusForPrompt = switch ($gateResult) {
     "PASSED" { "Gate ✅ PASSED — tests FAIL without fix, PASS with fix." }
     "SKIPPED" { "Gate ⚠️ SKIPPED — no tests detected in this PR. Consider suggesting the author add tests." }
+    "INCONCLUSIVE" { "Gate ⚠️ INCONCLUSIVE — the tests could not be built/run (build or environment error), so the fix is UNVERIFIED. Do NOT treat this as a failing fix and do NOT request changes solely because of the gate; review the code on its merits." }
     default { "Gate ❌ FAILED — tests did NOT behave as expected." }
 }
 
@@ -2291,6 +2312,7 @@ $allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
 $addLabel = switch ($gateResult) {
     "PASSED"  { $gatePassLabel }
     "SKIPPED" { $gateSkipLabel }
+    "INCONCLUSIVE" { $gateSkipLabel }  # build/env error — gate could not verify; do NOT apply gate-failed
     default   { $gateFaillabel }
 }
 $removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }

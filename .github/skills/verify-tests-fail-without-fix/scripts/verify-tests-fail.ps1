@@ -1220,10 +1220,12 @@ function Write-MarkdownReport {
         [array]$ReportNewFiles
     )
     
-    # Check for environment errors in results
+    # Check for environment / build errors in results — a test that could not be built or
+    # run never verified anything, so the gate is INCONCLUSIVE (not a genuine FAILED).
     $hasEnvError = ($WithoutFixResultsList | Where-Object { $_.EnvError }) -or ($WithFixResultsList | Where-Object { $_.EnvError })
-    
-    $status = if ($hasEnvError) { "⚠️ ENV ERROR" } elseif ($VerificationPassed) { "✅ PASSED" } else { "❌ FAILED" }
+    $hasBuildError = ($WithoutFixResultsList | Where-Object { $_.BuildError }) -or ($WithFixResultsList | Where-Object { $_.BuildError })
+
+    $status = if ($VerificationPassed) { "✅ PASSED" } elseif ($hasEnvError -or $hasBuildError) { "⚠️ INCONCLUSIVE" } else { "❌ FAILED" }
     $mergeBaseShort = if ($ReportMergeBase -and $ReportMergeBase.Length -ge 8) { $ReportMergeBase.Substring(0, 8) } else { "$ReportMergeBase" }
 
     # ─── Improvement #2: classify the failure mode so the headline matches the cause ───
@@ -1795,6 +1797,13 @@ Write-Host ""
 
 $verificationPassed = $failedWithoutFix -and $passedWithFix
 
+# A test that hit a BUILD or ENVIRONMENT error never actually ran, so the gate could not
+# verify anything. Treat that as INCONCLUSIVE (exit 3) rather than a real FAILED — build/
+# infra flakes must not masquerade as a broken fix (which would wrongly veto approval,
+# apply s/agent-gate-failed, and cap confidence). Only a clean ran-and-failed result is a
+# true gate FAILED.
+$gateInfraError = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError -or $_.BuildError }).Count -gt 0
+
 Write-Log ""
 Write-Log "Summary:"
 Write-Log "  - Tests WITHOUT fix: $(if ($failedWithoutFix) { 'ALL FAIL ✅ (expected)' } else { 'SOME PASS ❌ (should all fail!)' })"
@@ -1825,6 +1834,18 @@ if ($verificationPassed) {
     Write-Host "║  - FAIL without fix (as expected)                         ║" -ForegroundColor Green
     Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
     exit 0
+} elseif ($gateInfraError) {
+    # The deciding tests could not be built/run (build or environment error), so the gate
+    # has NOT verified the fix. Report INCONCLUSIVE (exit 3) — not a real FAILED.
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+    Write-Host "║              VERIFICATION INCONCLUSIVE ⚠️                  ║" -ForegroundColor Yellow
+    Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Yellow
+    Write-Host "║  Tests could not be built/run (build or env error).       ║" -ForegroundColor Yellow
+    Write-Host "║  The gate could not verify the fix — this is NOT a         ║" -ForegroundColor Yellow
+    Write-Host "║  genuine test failure and must not block the PR.          ║" -ForegroundColor Yellow
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+    exit 3
 } else {
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
