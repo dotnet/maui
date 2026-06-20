@@ -2268,14 +2268,22 @@ Assert-Eq -Label "Format-CiScanIssueRows returns null for empty input" -Expected
 # lines. The title cell is collapsed to a single line so the rendered table stays
 # intact. On the pre-fix code the embedded LF pushed the title tail + age cell onto
 # a second line that no longer contained the issue link.
+#
+# Discrimination note: the FIRST assertion below ("issue row is a single physical
+# line") is a coarse sanity check and is NON-discriminating — it also passes on the
+# pre-fix code, because the split row still leaves '#35957' on exactly one physical
+# line (the title tail + age spill onto a SEPARATE line with no issue link). The
+# SECOND assertion ("title tail + age stay on that row") is the real regression
+# guard: it fails pre-fix and passes post-fix. Do not weaken or remove it assuming
+# the first assertion already covers row integrity.
 $nlIssue = @([PSCustomObject]@{ number = 35957; url = 'https://github.com/dotnet/maui/issues/35957';
     title = "Recurring long title (maui-pr-uitest`n[Content truncated due to length]";
     createdAt = $nowUtc.AddDays(-3).ToString('o') })
 $nlRows = Format-CiScanIssueRows -Issues $nlIssue -RepoUrl 'https://github.com/dotnet/maui'
 $nlRowLines = @($nlRows -split "`r?`n" | Where-Object { $_ -match '#35957' })
-Assert-Eq -Label "Newline ci-scan title: issue row is a single physical line" -Expected 1 `
+Assert-Eq -Label "Newline ci-scan title: issue row is a single physical line (coarse sanity; non-discriminating)" -Expected 1 `
     -Actual $nlRowLines.Count
-Assert-Eq -Label "Newline ci-scan title: title tail + age stay on that row" -Expected $true `
+Assert-Eq -Label "Newline ci-scan title: title tail + age stay on that row (discriminating regression guard)" -Expected $true `
     -Actual ($nlRowLines.Count -eq 1 -and $nlRowLines[0] -match 'truncated due to length.*ago \|')
 
 # Truncation behavior: > MaxRows
