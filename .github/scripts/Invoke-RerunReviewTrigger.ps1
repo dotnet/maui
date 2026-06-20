@@ -431,8 +431,8 @@ foreach ($item in $items) {
                     throw "PR #$prNumber returned a not-found error that did not reproduce on re-check; refusing to silently skip. First: $(ConvertTo-SafeLogValue $prError); Recheck: $(ConvertTo-SafeLogValue $confirmError)"
                 }
             } else {
-
-            throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prError)"
+                throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prError)"
+            }
         }
         $prJson = $prFetch.Json
         if ([string]::IsNullOrWhiteSpace($prJson)) {
