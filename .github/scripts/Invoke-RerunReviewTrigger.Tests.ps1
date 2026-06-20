@@ -14,7 +14,7 @@ BeforeAll {
     $script:ReviewTriggerWindowHours = 24
     $script:MaxReviewTriggersPerWindow = 3
 
-    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus', 'ConvertTo-SafeLogValue', 'Get-MatchingCandidate', 'Normalize-PipelineRef', 'Get-PlatformFromLabels')) {
+    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus', 'ConvertTo-SafeLogValue', 'ConvertTo-TrimmedString', 'Test-GhApiPrNotFound', 'Get-MatchingCandidate', 'Normalize-PipelineRef', 'Get-PlatformFromLabels')) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -70,6 +70,30 @@ Describe 'ConvertTo-SafeLogValue' {
         $safe | Should -Not -Match '[\r\n]'
         $safe | Should -Not -Match '::'
         $safe | Should -Match 'stop-commands'
+    }
+}
+
+Describe 'Test-GhApiPrNotFound' {
+    It 'recognizes stale PR responses' {
+        Test-GhApiPrNotFound 'gh: Not Found (HTTP 404)' | Should -BeTrue
+        Test-GhApiPrNotFound 'gh: Gone (HTTP 410)' | Should -BeTrue
+    }
+
+    It 'does not hide credential, rate-limit, or transient failures' {
+        Test-GhApiPrNotFound 'gh: Bad credentials (HTTP 401)' | Should -BeFalse
+        Test-GhApiPrNotFound 'gh: API rate limit exceeded (HTTP 403)' | Should -BeFalse
+        Test-GhApiPrNotFound 'gh: Internal Server Error (HTTP 500)' | Should -BeFalse
+        Test-GhApiPrNotFound '' | Should -BeFalse
+    }
+}
+
+Describe 'ConvertTo-TrimmedString' {
+    It 'returns empty string for null values' {
+        ConvertTo-TrimmedString $null | Should -Be ''
+    }
+
+    It 'trims non-null values' {
+        ConvertTo-TrimmedString "  ok`n" | Should -Be 'ok'
     }
 }
 
