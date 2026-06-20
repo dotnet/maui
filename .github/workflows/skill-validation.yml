@@ -230,7 +230,6 @@ jobs:
           ref: ${{ needs.pr-gate.outputs.head_sha || needs.slash-gate.outputs.head_sha || github.sha }}
           sparse-checkout: |
             .github/skills
-            .github/agents
             .github/plugin.json
           persist-credentials: false
 
@@ -896,8 +895,8 @@ jobs:
               try { return fs.readFileSync('static-results/skill-count.txt', 'utf8').trim(); }
               catch { return '?'; }
             })();
-            const agentCount = (() => {
-              try { return fs.readFileSync('static-results/agent-count.txt', 'utf8').trim(); }
+            const specCount = (() => {
+              try { return fs.readFileSync('static-results/spec-count.txt', 'utf8').trim(); }
               catch { return '?'; }
             })();
             const specCount = (() => {
