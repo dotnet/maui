@@ -2814,6 +2814,30 @@ function ConvertTo-LinkedPr {
     return "[#$PrNumber]($RepoUrl/pull/$PrNumber)"
 }
 
+function Format-MarkdownTableCell {
+    <#
+    .SYNOPSIS
+        Sanitize an arbitrary (often upstream-controlled) string for safe use inside a
+        single Markdown table cell.
+    .DESCRIPTION
+        Two hazards are neutralized so a hostile/malformed issue or PR title cannot
+        corrupt the rendered table:
+          1. Embedded CR/LF runs are collapsed to a single space, so the value cannot
+             split the row across physical lines (observed live: ci-scan issue #35957,
+             whose title contained a literal newline).
+          2. Literal `|` is escaped to `\|`, so a pipe in a title cannot open a new
+             column (common in PR/issue titles such as `[Android] A | B`).
+        Mirrors the newline+pipe contract of Get-PreviewReadiness.ps1's
+        Format-MarkdownCell. The SR engine deliberately omits `<`/`>` escaping: it emits
+        its own semantic hash at the TOP of the body, so — unlike the hash-less Preview
+        engine — it is not exposed to the HTML-comment hash-freeze vector that makes
+        angle-bracket escaping load-bearing there.
+    #>
+    param([string]$Value)
+    if ([string]::IsNullOrEmpty($Value)) { return '' }
+    return (($Value -replace '[\r\n]+', ' ') -replace '\|', '\|').Trim()
+}
+
 function Format-CiScanIssueRows {
     <#
     .SYNOPSIS
@@ -2842,10 +2866,10 @@ function Format-CiScanIssueRows {
             }
         }
         $issLink = "[#$($iss.number)]($RepoUrl/issues/$($iss.number))"
-        # Collapse embedded newlines first: a malformed upstream ci-scan title can
-        # contain a literal CR/LF (observed: #35957), which would otherwise split this
-        # markdown table row across physical lines and break the rendered table.
-        $title = ($iss.title -replace '[\r\n]+', ' ' -replace '\|', '\|').Trim()
+        # Sanitize the upstream ci-scan title for a single Markdown table cell:
+        # collapse embedded CR/LF (observed: #35957) and escape pipes. See
+        # Format-MarkdownTableCell for the full rationale (and why SR omits `<>`).
+        $title = Format-MarkdownTableCell $iss.title
         [void]$sb.AppendLine("| $marker$issLink | $title | $ageDisplay |")
     }
     if ($Issues.Count -gt $MaxRows) {
@@ -3384,6 +3408,7 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine('|---|---|---|---|---|---|')
             foreach ($pr in $Data['openSrPrs']) {
                 $title = if ($pr.title.Length -gt 60) { $pr.title.Substring(0, 60) + '...' } else { $pr.title }
+                $title = Format-MarkdownTableCell $title
                 $draft = if ($pr.isDraft) { '✏️' } else { '' }
                 $rev = if ($pr.reviewDecision) { $pr.reviewDecision } else { '—' }
                 $prLink = ConvertTo-LinkedPr -PrNumber $pr.number -RepoUrl $RepoUrl
@@ -3437,6 +3462,7 @@ function Format-MarkdownReport {
                 # Stable sort: by issue number ascending
                 foreach ($it in ($items | Sort-Object issue)) {
                     $title = if ($it.title.Length -gt 50) { $it.title.Substring(0, 50) + '...' } else { $it.title }
+                    $title = Format-MarkdownTableCell $title
                     $prList = @($it.candidateFixPrs | ForEach-Object { ConvertTo-LinkedPr -PrNumber $_.number -RepoUrl $RepoUrl }) -join ', '
                     if (-not $prList) { $prList = '—' }
                     $issueLink = if ($RepoUrl) { "[#$($it.issue)]($RepoUrl/issues/$($it.issue))" } else { "#$($it.issue)" }

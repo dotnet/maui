@@ -1740,6 +1740,46 @@ Assert-Eq -Label "Hostile PR title: @another/user defanged to `another/user`" -E
 Assert-Eq -Label "Author column also defanged (no bare @jfversluis)" -Expected $true `
     -Actual ($mdWithAt -match '`jfversluis`')
 
+# ───── Sibling SR title cells must be sanitized too (Format-MarkdownTableCell) ─────
+# Beyond the ci-scan rows, two other SR tables embed upstream titles into pipe-delimited
+# rows: the "Open PRs Targeting <srBranch>" table and the regression classification
+# table. A literal '|' (common in titles) or an embedded newline in those titles must NOT
+# corrupt the row. Each integration test below is DISCRIMINATING on the pre-fix code:
+# the trailing-column match fails when an embedded newline splits the row, and the
+# escaped-pipe match fails when the pipe is left raw.
+Write-Host "`n[Unit] Sibling SR table cells sanitized (Open-PRs + regression tables)" -ForegroundColor Cyan
+
+# (1) Open PRs Targeting <srBranch> table (shipped mode renders the full table).
+$mdDataPipePr = @{} + $mdData
+$mdDataPipePr['metadata'] = @{} + $mdData.metadata
+$mdDataPipePr['metadata']['mode'] = 'shipped'
+$mdDataPipePr['openSrPrs'] = @(
+    @{ number = 96001; title = "Fix A | B`nand C"; author = @{ login = 'alice' };
+       isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-01T00:00:00Z' }
+)
+$mdPipePr = Format-MarkdownReport -Data $mdDataPipePr -RepoUrl 'https://github.com/dotnet/maui' `
+                                  -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$prRowLines = @($mdPipePr -split "`r?`n" | Where-Object { $_ -match '#96001' })
+Assert-Eq -Label "Open-PRs table: piped/newline PR title stays on one physical row" -Expected 1 `
+    -Actual $prRowLines.Count
+Assert-Eq -Label "Open-PRs table: pipe escaped AND trailing columns intact on the row" -Expected $true `
+    -Actual ($prRowLines.Count -eq 1 -and $prRowLines[0] -match 'Fix A \\\| B' -and $prRowLines[0] -match 'APPROVED')
+
+# (2) Regression classification table (needs-human-review is a Tier-2 class that renders).
+$mdDataPipeIss = @{} + $mdData
+$mdDataPipeIss['regressions'] = @(
+    @{ issue = 96002; title = "Crash | NRE`nin layout"; state = 'OPEN'; classification = 'needs-human-review';
+       candidateFixPrs = @(); recommendedAction = 'Investigate' }
+)
+$mdDataPipeIss['summary'] = @{ 'needs-human-review' = 1 }
+$mdPipeIss = Format-MarkdownReport -Data $mdDataPipeIss -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$issRowLines = @($mdPipeIss -split "`r?`n" | Where-Object { $_ -match '#96002' })
+Assert-Eq -Label "Regression table: piped/newline issue title stays on one physical row" -Expected 1 `
+    -Actual $issRowLines.Count
+Assert-Eq -Label "Regression table: pipe escaped AND trailing action column intact on the row" -Expected $true `
+    -Actual ($issRowLines.Count -eq 1 -and $issRowLines[0] -match 'Crash \\\| NRE' -and $issRowLines[0] -match 'Investigate')
+
 # ───── Candidate-mode open-PR collapse: avoid noisy main-PR dump ─────
 Write-Host "`n[Unit] Candidate-mode open-PR collapse (link to candidate PR only)" -ForegroundColor Cyan
 
@@ -2285,6 +2325,23 @@ Assert-Eq -Label "Newline ci-scan title: issue row is a single physical line (co
     -Actual $nlRowLines.Count
 Assert-Eq -Label "Newline ci-scan title: title tail + age stay on that row (discriminating regression guard)" -Expected $true `
     -Actual ($nlRowLines.Count -eq 1 -and $nlRowLines[0] -match 'truncated due to length.*ago \|')
+
+# ───── Format-MarkdownTableCell: shared SR table-cell sanitizer ─────
+# This helper backs every SR title cell (ci-scan rows, Open-PRs table, regression
+# classification table). It must collapse CR/LF (row-split safety) AND escape pipes
+# (column-injection safety), null-safely, while deliberately NOT escaping `<`/`>`
+# (the SR engine emits its own hash at the top of the body, so it has no Preview-style
+# HTML-comment hash-freeze vector — escaping `<>` here would only reduce fidelity).
+Write-Host "`n[Unit] Format-MarkdownTableCell (shared SR table-cell sanitizer)" -ForegroundColor Cyan
+Assert-Eq -Label "Format-MarkdownTableCell: pipe escaped"             -Expected 'a \| b'  -Actual (Format-MarkdownTableCell 'a | b')
+Assert-Eq -Label "Format-MarkdownTableCell: LF collapsed to space"    -Expected 'a b'     -Actual (Format-MarkdownTableCell "a`nb")
+Assert-Eq -Label "Format-MarkdownTableCell: CRLF run collapsed"       -Expected 'a b'     -Actual (Format-MarkdownTableCell "a`r`n`r`nb")
+Assert-Eq -Label "Format-MarkdownTableCell: newline + pipe together"  -Expected 'a \| b'  -Actual (Format-MarkdownTableCell "a`n| b")
+Assert-Eq -Label "Format-MarkdownTableCell: no CR/LF survives"        -Expected $false    -Actual ((Format-MarkdownTableCell "x`ny") -match "`r|`n")
+Assert-Eq -Label "Format-MarkdownTableCell: null → empty string"      -Expected ''        -Actual (Format-MarkdownTableCell $null)
+Assert-Eq -Label "Format-MarkdownTableCell: empty → empty string"     -Expected ''        -Actual (Format-MarkdownTableCell '')
+Assert-Eq -Label "Format-MarkdownTableCell: surrounding whitespace trimmed" -Expected 'a b' -Actual (Format-MarkdownTableCell "  a`nb  ")
+Assert-Eq -Label "Format-MarkdownTableCell: angle brackets deliberately NOT escaped (SR parity)" -Expected 'List<T>' -Actual (Format-MarkdownTableCell 'List<T>')
 
 # Truncation behavior: > MaxRows
 $manyIssues = 1..20 | ForEach-Object {
