@@ -72,8 +72,8 @@ if (-not (Test-Path $PRAgentDir)) {
 
 $phases = [ordered]@{
     "uitests"          = @{ File = "uitests/content.md";            Title = "📱 UI Tests" }
-    "regression-check" = @{ File = "regression-check/content.md";   Title = "🔁 Regression Cross-Reference" }
-    "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "🛫 Pre-Flight — Context & Validation" }
+    "regression-check" = @{ File = "regression-check/content.md";   Title = "🔗 Regression Cross-Reference" }
+    "pre-flight"       = @{ File = "pre-flight/content.md";         Title = "📋 Pre-Flight — Context & Validation" }
     "code-review"      = @{ File = "pre-flight/code-review.md";     Title = "🔬 Code Review — Deep Analysis" }
     "try-fix"          = @{ File = "try-fix/content.md";            Title = "🛠️ Fix — Analysis & Comparison" }
     "pr-finalize"      = @{ File = "pr-finalize/content.md";        Title = "📝 Recommended PR Title & Description" }
@@ -296,7 +296,7 @@ function New-FutureActionSection {
 ---
 
 <details>
-<summary><strong>🚀 Next Steps</strong> — review latest findings</summary>
+<summary><strong>🧭 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 No alternative fix was selected for this run. Review the session findings and CI results before merging.
@@ -312,7 +312,7 @@ No alternative fix was selected for this run. Review the session findings and CI
 ---
 
 <details>
-<summary><strong>🚀 Next Steps</strong> — review latest findings</summary>
+<summary><strong>🧭 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 The workflow could not parse the fix-selection result. Review the session findings and CI results before merging.
@@ -326,7 +326,7 @@ The workflow could not parse the fix-selection result. Review the session findin
 ---
 
 <details>
-<summary><strong>🚀 Next Steps</strong> — review latest findings</summary>
+<summary><strong>🧭 Next Steps</strong> — review latest findings</summary>
 <br/>
 
 No alternative fix was selected for this run. Review the session findings and CI results before merging.
@@ -372,7 +372,7 @@ No alternative fix was selected for this run. Review the session findings and CI
 ---
 
 <details>
-<summary><strong>🚀 Next Steps</strong> — alternative fix proposed (<code>$selected</code>)</summary>
+<summary><strong>🧭 Next Steps</strong> — alternative fix proposed (<code>$selected</code>)</summary>
 <br/>
 
 **Automated review — alternative fix proposed**
@@ -505,7 +505,7 @@ if (Test-Path $gateFilePath) {
         Write-Host "  ✅ gate ($((Get-Item $gateFilePath).Length) bytes)" -ForegroundColor Green
         $gateSection = @"
 <details>
-<summary><strong>🧪 Gate — Test Before & After Fix</strong></summary>
+<summary><strong>🚦 Gate — Test Before & After Fix</strong></summary>
 <br/>
 
 $gateContent
@@ -669,9 +669,11 @@ $authorPing
 
 $statusChipRow
 
-$futureActionSection
+---
 
 $newSessionBlock
+
+$futureActionSection
 "@
 
 # Clean up excessive blank lines

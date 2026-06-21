@@ -278,7 +278,7 @@ Describe 'New-FutureActionSection' {
 
         $section = New-FutureActionSection -PRAgentDir $script:testDir
 
-        $section | Should -Match '<strong>🚀 Next Steps</strong>'
+        $section | Should -Match '<strong>🧭 Next Steps</strong>'
         $section | Should -Match 'alternative fix proposed'
         $section | Should -Match 'try-fix-2'
         $section | Should -Match 'Candidate avoids the regression'
