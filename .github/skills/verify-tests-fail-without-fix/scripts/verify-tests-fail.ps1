@@ -663,10 +663,20 @@ function Get-TestResultFromOutput {
     # Check for build failures (before any test results)
     # Mark these explicitly with BuildError = $true so Write-MarkdownReport can
     # surface them as "Fix does not compile" instead of "Fix does not pass the tests".
-    if ($content -match "Build FAILED" -or $content -match "Build failed with exit code" -or $content -match "error MSB\d+" -or $content -match "error CS\d+") {
+    # Match coded build errors generally — `error <ABBR><NNNN>` — so the MAUI XAML
+    # compiler (MAUIX####, e.g. MAUIX2017 "set multiple times"), MSBuild (MSB####),
+    # C# (CS####), .NET SDK (NETSDK####), NuGet (NU####) and Android (XA####) diagnostics
+    # are all caught. This matters on branches where an unrelated test fixture fails to
+    # compile (e.g. the net11 Controls.Xaml.UnitTests MAUIX2017 baseline break): the whole
+    # test assembly won't build, so the PR's own test can't run — that is INCONCLUSIVE, not
+    # "the fix does not pass". The negative lookahead on `0 error(s)` avoids false positives
+    # on MSBuild summary lines like "Build succeeded. 0 Error(s)".
+    if ($content -match "Build FAILED" -or
+        $content -match "Build failed with exit code" -or
+        $content -match '(?im)\berror\s+[A-Z]{2,}\d+\b') {
         # Capture the first compile error so the diagnosis is concrete.
         $buildErrorExcerpt = $null
-        $errMatch = [regex]::Match($content, '(?m)^.*\b(error CS\d+|error MSB\d+)\b.*$')
+        $errMatch = [regex]::Match($content, '(?m)^.*\berror\s+[A-Z]{2,}\d+\b.*$')
         if ($errMatch.Success) {
             $excerpt = $errMatch.Value.Trim()
             if ($excerpt.Length -gt 200) { $excerpt = $excerpt.Substring(0, 200) + "..." }
