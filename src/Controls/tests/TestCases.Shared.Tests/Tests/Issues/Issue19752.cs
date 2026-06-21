@@ -11,6 +11,19 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 
 	protected override bool ResetAfterEachTest => true;
 
+	// Hover (MoveCursor) and the pointer-over / focus visual states exercised by some of these
+	// tests rely on a mouse pointer, which is only available on the desktop test devices.
+	// Following the same convention as VisualStateManager_ButtonFeatureTests, these pointer/hover
+	// states are validated on Mac Catalyst and Windows only; hover/pointer interactions are not
+	// supported in Android and iOS CI runs.
+	void IgnoreIfNotDesktop()
+	{
+		if (Device == TestDevice.Android || Device == TestDevice.iOS)
+		{
+			Assert.Ignore("Hover/pointer-over and focus visual states are validated on desktop (Mac Catalyst, Windows) only; pointer/hover interactions are not supported in Android/iOS CI runs.");
+		}
+	}
+
 	[Test]
 	public void InitialStateAreAllCorrect()
 	{
@@ -22,6 +35,8 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	[Test]
 	public void HoveringOverButtonMovesToPointerOverState()
 	{
+		IgnoreIfNotDesktop();
+
 		App.MoveCursor("button1");
 
 		// when the mouse moves over a button, it gets a state
@@ -49,6 +64,8 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	[Test]
 	public void PressingAndReleasingButtonMovesToPointerOverState()
 	{
+		IgnoreIfNotDesktop();
+
 		var rectBefore = App.FindElement("button1").GetRect();
 
 		App.Tap("button1");
@@ -64,6 +81,8 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	[Test]
 	public void HoveringOverButtonAndThenMovingOffMovesToNormalState()
 	{
+		IgnoreIfNotDesktop();
+
 		var rectBefore = App.FindElement("button1").GetRect();
 
 		App.MoveCursor("button1");
@@ -90,6 +109,8 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	[Test]
 	public void DisablingUnfocusedButtonMovesToDisabledState()
 	{
+		IgnoreIfNotDesktop();
+
 		var rectBefore = App.FindElement("button2").GetRect();
 
 		App.Tap("button1"); // focus button 1
@@ -109,6 +130,8 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	[Test]
 	public void DisablingFocusedButtonMovesToDisabledState()
 	{
+		IgnoreIfNotDesktop();
+
 		var rectBefore = App.FindElement("button3").GetRect();
 
 		App.Tap("button1"); // focus button 1

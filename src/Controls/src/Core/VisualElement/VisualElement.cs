@@ -1684,8 +1684,11 @@ namespace Microsoft.Maui.Controls
 			var isSelected = this.IsElementInSelectedState();
 
 			// If the control cannot have focus, make sure it appears unfocused by moving to
-			// the Unfocused state.
-			if (!shouldFocus)
+			// the Unfocused state. We only do this when the control is actually showing a
+			// Focused visual state, so that we don't churn the Unfocused state (and any of its
+			// transitions) on controls that were never focused, or whose Unfocused state shares
+			// a group with Normal/PointerOver.
+			if (!shouldFocus && IsInFocusedVisualState())
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
@@ -1721,6 +1724,28 @@ namespace Microsoft.Maui.Controls
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
 			}
+		}
+
+		// Returns true when any of this element's visual state groups is currently in the
+		// Focused state. Used by ChangeVisualState to only transition to Unfocused when the
+		// element is actually leaving a focused visual state.
+		bool IsInFocusedVisualState()
+		{
+			var groups = VisualStateManager.GetVisualStateGroups(this);
+			if (groups is null)
+			{
+				return false;
+			}
+
+			for (var i = 0; i < groups.Count; i++)
+			{
+				if (groups[i].CurrentState?.Name == VisualStateManager.FocusStates.Focused)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		static void OnVisualChanged(BindableObject bindable, object oldValue, object newValue)
