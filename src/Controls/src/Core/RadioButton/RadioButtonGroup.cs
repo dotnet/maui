@@ -79,7 +79,15 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!string.IsNullOrEmpty(radioButton.GroupName))
 			{
-				var root = GetVisualRoot(radioButton) ?? radioButton.Parent;
+				var root = GetVisualRoot(radioButton);
+
+				// If no Page ancestor exists (e.g., during initial layout construction before the
+				// layout is attached to a Page), fall back to the controller's layout element.
+				// This ensures RadioButtons inside ContentView ControlTemplates are correctly found
+				// and unchecked even before the visual tree has a Page root (fixes issue #34759).
+				root ??= RadioButtonGroupController.GetGroupController(radioButton)?.Layout;
+				root ??= (Element)radioButton.Parent;
+
 				if (root is not IElementController rootController)
 				{
 					return;

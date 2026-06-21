@@ -3,12 +3,13 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:viewModels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:f="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Views.Itinerary.ItineraryPlanningView"
     x:DataType="viewModels:TripPlanningViewModel">
 
     <VerticalStackLayout Padding="20" Spacing="20">
         <VerticalStackLayout Spacing="10">
-            <Label Text="✨" FontSize="32" />
+            <Label Text="{x:Static f:FluentUI.sparkle_32_regular}" FontFamily="FluentUI" FontSize="32" />
             <Label Text="{Binding Landmark.Name, StringFormat='Planning itinerary for {0}...'}" 
                    FontSize="28" FontAttributes="Bold" />
         </VerticalStackLayout>

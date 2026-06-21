@@ -604,13 +604,6 @@ namespace Microsoft.Maui.Layouts.Flex
 
 					flex_layout.flex_layout_line line = layout.lines![i];
 
-					if (layout.reverse2)
-					{
-						pos -= line.size;
-						pos -= spacing;
-						old_pos -= line.size;
-					}
-
 					// Re-position the children of this line, honoring any child
 					// alignment previously set within the line.
 					for (int j = line.child_begin; j < line.child_end; j++)
@@ -632,7 +625,13 @@ namespace Microsoft.Maui.Layouts.Flex
 						child.Frame[layout.frame_pos2_i] = pos + (child.Frame[layout.frame_pos2_i] - old_pos);
 					}
 
-					if (!layout.reverse2)
+					if (layout.reverse2)
+					{
+						pos -= line.size;
+						pos -= spacing;
+						old_pos -= line.size;
+					}
+					else
 					{
 						pos += line.size;
 						pos += spacing;
@@ -783,10 +782,15 @@ namespace Microsoft.Maui.Layouts.Flex
 				float flex_size = 0;
 				if (layout.flex_dim > 0)
 				{
+					// Only the free space is distributed proportionally,
+					// not the total container space. layout.flex_dim was inflated by extra_flex_dim
+					// (the sum of measured sizes of growing items), so we recover the actual free
+					// space by subtracting it back. The item's measured size is preserved and the
+					// proportional share of free space is added on top.
+					float freeSpace = Math.Max(0, layout.flex_dim - layout.extra_flex_dim);
 					if (child.Grow != 0)
 					{
-						child.Frame[layout.frame_size_i] = 0; // Ignore previous size when growing.
-						flex_size = (layout.flex_dim / layout.flex_grows) * child.Grow;
+						flex_size = (freeSpace / layout.flex_grows) * child.Grow;
 					}
 				}
 				else if (layout.flex_dim < 0)

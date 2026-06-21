@@ -22,6 +22,16 @@ namespace Microsoft.Maui.Platform
 
 			_queryEditor = this.GetFirstChildOfType<EditText>();
 
+			// Disable Android's built-in instance state saving on the internal EditText
+			// to prevent query text from being incorrectly restored across multiple
+			// SearchView instances during navigation. The EditText shares a fixed
+			// resource ID (search_src_text) across all SearchViews, causing state
+			// to bleed between instances.
+			if (_queryEditor is not null)
+			{
+				_queryEditor.SaveEnabled = false;
+			}
+
 			if (_queryEditor?.LayoutParameters is LinearLayout.LayoutParams layoutParams)
 			{
 				layoutParams.Height = LinearLayout.LayoutParams.MatchParent;
