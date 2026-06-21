@@ -6,9 +6,9 @@
     <title>MauiApp.1</title>
     <base href="/" />
 <!--#if (SampleContent) -->
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
 <!--#endif -->
-    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="MauiApp.1.styles.css" />
     <link rel="icon" href="data:,">
 </head>
@@ -19,10 +19,10 @@
 
     <div id="app">Loading...</div>
 
-    <div id="blazor-error-ui">
+    <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
     </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>

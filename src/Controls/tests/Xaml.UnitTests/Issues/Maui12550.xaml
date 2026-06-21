@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui12550">
+    <ContentPage.Resources>
+        <StyleSheet Source="Maui12550.css"/>
+    </ContentPage.Resources>
+    <VerticalStackLayout>
+        <!-- Button with IsEnabled=false on initialization -->
+        <Button x:Name="DisabledButton" Text="Initially Disabled" IsEnabled="False" />
+        <!-- Button with IsEnabled=true (default) for comparison -->
+        <Button x:Name="EnabledButton" Text="Initially Enabled" />
+    </VerticalStackLayout>
+</ContentPage>

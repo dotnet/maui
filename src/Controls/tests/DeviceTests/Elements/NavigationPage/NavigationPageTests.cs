@@ -352,8 +352,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Does Not Leak"
-#if WINDOWS
-			, Skip = "Failing"
+#if WINDOWS || ANDROID
+			, Skip = "Failing https://github.com/dotnet/maui/issues/27411"
 #endif
 		)]
 		public async Task DoesNotLeak()

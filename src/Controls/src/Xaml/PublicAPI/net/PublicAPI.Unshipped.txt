@@ -1,10 +1,1 @@
 #nullable enable
-~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
-~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.set -> void
-~static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.UseMauiEmbeddedApp<TApp>(this Microsoft.Maui.Hosting.MauiAppBuilder builder, System.Func<System.IServiceProvider, TApp> implementationFactory) -> Microsoft.Maui.Hosting.MauiAppBuilder
-~static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.UseMauiEmbeddedApp<TApp>(this Microsoft.Maui.Hosting.MauiAppBuilder builder) -> Microsoft.Maui.Hosting.MauiAppBuilder
-~static Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers.LoadFromSource(Microsoft.Maui.Controls.ResourceDictionary rd, System.Uri source, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo) -> void
-Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
-Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider
-Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider.ValueTargetProvider(object! targetObject, object! targetProperty) -> void
-Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers

@@ -9,7 +9,11 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 #if ANDROID
-	[SupportedOSPlatform("android23.0")]
+	[SupportedOSPlatform(BlazorWebView.AndroidSupportedOSPlatformVersion)]
+#elif IOS
+	[SupportedOSPlatform(BlazorWebView.iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+	[SupportedOSPlatform(BlazorWebView.MacCatalystSupportedOSPlatformVersion)]
 #endif
 	public partial class BlazorWebViewHandler
 	{
@@ -25,6 +29,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			[nameof(IBlazorWebView.HostPage)] = MapHostPage,
 			[nameof(IBlazorWebView.RootComponents)] = MapRootComponents,
+#if WINDOWS
+            [nameof(IView.FlowDirection)] = MapFlowDirection,
+#endif
+
 		};
 
 		/// <summary>

@@ -3,16 +3,17 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/CheckedChangedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.CheckedChangedEventArgs']/Docs/*" />
+	/// <summary>Event Args for <see cref="Microsoft.Maui.Controls.CheckBox"/>'s <see cref="Microsoft.Maui.Controls.CheckBox.CheckedChanged"/> event.</summary>
 	public class CheckedChangedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckedChangedEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.CheckedChangedEventArgs"/> specifying whether the <see cref="Microsoft.Maui.Controls.CheckBox"/> is checked.</summary>
+		/// <param name="value">Boolean value indicating whether the <see cref="Microsoft.Maui.Controls.CheckBox"/> is checked.</param>
 		public CheckedChangedEventArgs(bool value)
 		{
 			Value = value;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckedChangedEventArgs.xml" path="//Member[@MemberName='Value']/Docs/*" />
+		/// <summary>Boolean value indicating whether the <see cref="Microsoft.Maui.Controls.CheckBox"/> is checked.</summary>
 		public bool Value { get; private set; }
 	}
 }

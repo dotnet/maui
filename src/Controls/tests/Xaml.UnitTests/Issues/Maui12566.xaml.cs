@@ -1,42 +1,37 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Devices;
-using NUnit.Framework;
+using Xunit;
 
-#pragma warning disable CS0067 // The event 'event' is never used
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+public class Maui12566View : ContentView
 {
-	public class Maui12566View : ContentView
+#pragma warning disable 67
+	internal event EventHandler MyEvent;
+#pragma warning restore 67
+}
+
+public partial class Maui12566 : ContentPage
+{
+	public Maui12566() => InitializeComponent();
+
+	void Maui12566View_MyEvent(System.Object sender, System.EventArgs e)
 	{
-		internal event EventHandler MyEvent;
 	}
 
-	public partial class Maui12566 : ContentPage
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Maui12566() => InitializeComponent();
-		public Maui12566(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		public Tests() => AppInfo.SetCurrent(new MockAppInfo());
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		void Maui12566View_MyEvent(System.Object sender, System.EventArgs e)
+		[Theory]
+		[XamlInflatorData]
+		internal void AccessInternalEvent(XamlInflator inflator)
 		{
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
-			[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-			[Test]
-			public void AccessInternalEvent([Values(false, true)] bool useCompiledXaml)
-			{
-				//shouldn't throw
-				new Maui12566(useCompiledXaml);
-			}
+			//shouldn't throw
+			new Maui12566(inflator);
 		}
 	}
 }

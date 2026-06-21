@@ -5,13 +5,14 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Util;
+using Android.Widget;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
 	public partial class FontImageSourceService
 	{
-		public override Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			var fontImageSource = (IFontImageSource)imageSource;
 			if (!fontImageSource.IsEmpty)

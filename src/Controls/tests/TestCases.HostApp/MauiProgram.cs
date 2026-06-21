@@ -1,12 +1,22 @@
 ﻿using System.Diagnostics;
 using Maui.Controls.Sample.Issues;
+using Microsoft.Extensions.Logging;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 namespace Maui.Controls.Sample
 {
-	public static class MauiProgram
+	public static partial class MauiProgram
 	{
+		/// <summary>
+		/// Gets the file logging path from MAUI_LOG_FILE environment variable.
+		/// Returns null if not set (file logging disabled).
+		/// </summary>
+		static string GetFileLogPath()
+		{
+			return Environment.GetEnvironmentVariable("MAUI_LOG_FILE");
+		}
+
 		public static MauiApp CreateMauiApp()
 		{
 			var appBuilder = MauiApp.CreateBuilder();
@@ -14,6 +24,7 @@ namespace Maui.Controls.Sample
 #if IOS || ANDROID || MACCATALYST
 			appBuilder.UseMauiMaps();
 #endif
+
 			appBuilder.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
@@ -29,13 +40,13 @@ namespace Maui.Controls.Sample
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
 				.Issue18720TimePickerAddMappers()
+				.Issue28945AddMappers()
 				.Issue25436RegisterNavigationService();
 
 #if IOS || MACCATALYST
-
 			appBuilder.ConfigureCollectionViewHandlers();
-
 #endif
+
 			// Register the custom handler
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
@@ -51,11 +62,59 @@ namespace Maui.Controls.Sample
 				handlers.AddHandler(typeof(UITestEntry), typeof(UITestEntryHandler));
 				handlers.AddHandler(typeof(UITestSearchBar), typeof(UITestSearchBarHandler));
 #endif
+#if IOS
+				handlers.AddHandler(typeof(Issue30147CustomScrollView), typeof(Issue30147CustomScrollViewHandler));
+#endif
+#if IOS || MACCATALYST || ANDROID || WINDOWS
+				handlers.AddHandler(typeof(Issue34310NativeHostView), typeof(Issue34310NativeHostViewHandler));
+#endif
 			});
 
 			appBuilder.Services.AddTransient<TransientPage>();
 			appBuilder.Services.AddScoped<ScopedPage>();
+
+			// Add file logging if MAUI_LOG_FILE environment variable is set
+			var logFilePath = GetFileLogPath();
+			if (!string.IsNullOrEmpty(logFilePath))
+			{
+				appBuilder.Logging.AddProvider(new FileLoggingProvider(logFilePath, LogLevel.Debug));
+			}
+
 			return appBuilder.Build();
+		}
+
+		static partial void OverrideMainPage(ref Page mainPage);
+
+		public static Page CreateDefaultMainPage()
+		{
+			Page mainPage = null;
+			OverrideMainPage(ref mainPage);
+#if MACCATALYST
+			// Check for startup test argument from environment variables (passed by test runner)
+			var testName = System.Environment.GetEnvironmentVariable("test");
+
+			if (!string.IsNullOrEmpty(testName))
+			{
+				// Try to get the test page directly from issues/test cases
+				var testCaseScreen = new TestCases.TestCaseScreen();
+				var testPage = testCaseScreen.TryToGetTestPage(testName);
+				if (testPage is not null)
+				{
+					// Return the actual test page
+					return testPage;
+				}
+
+				// If not found in test cases, try to get gallery page
+				var corePageView = new CorePageView(null);
+				var galleryPage = corePageView.TryToGetGalleryPage(testName);
+				if (galleryPage is not null)
+				{
+					// Return the gallery page
+					return galleryPage;
+				}
+			}
+#endif
+			return mainPage ?? new CoreNavigationPage();
 		}
 	}
 
@@ -70,11 +129,6 @@ namespace Maui.Controls.Sample
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;
 
-		public Page CreateDefaultMainPage()
-		{
-			return new CoreNavigationPage();
-		}
-
 		protected override void OnAppLinkRequestReceived(Uri uri)
 		{
 			base.OnAppLinkRequestReceived(uri);
@@ -82,7 +136,7 @@ namespace Maui.Controls.Sample
 
 		protected override Window CreateWindow(IActivationState activationState)
 		{
-			var window = new Window(CreateDefaultMainPage());
+			var window = new Window(MauiProgram.CreateDefaultMainPage());
 #if WINDOWS || MACCATALYST
 
 			// For desktop use a fixed window size, so that screenshots are deterministic,

@@ -5,12 +5,14 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls.Internals
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ResourceLoader.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.ResourceLoader']/Docs/*" />
+	/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class ResourceLoader
 	{
 		static Func<ResourceLoadingQuery, ResourceLoadingResponse> _resourceProvider2;
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/ResourceLoader.xml" path="//Member[@MemberName='ResourceProvider2']/Docs/*" />
+		/// <summary>Internal API for Microsoft.Maui.Controls platform use.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public static Func<ResourceLoadingQuery, ResourceLoadingResponse> ResourceProvider2
 		{
 			get => _resourceProvider2;

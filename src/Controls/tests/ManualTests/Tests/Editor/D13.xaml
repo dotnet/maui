@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D13"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D13">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="1. The test fails if the text in the editor below is not in the top-left of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="Start"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="Start" />
+
+            <Label Text="2. The test fails if the text in the editor below is not in the top-center of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="Center"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="Start" />
+
+            <Label Text="3. The test fails if the text in the editor below is not in the top-right of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="End"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="Start" />
+
+            <Label Text="4. The test fails if the text in the editor below is not in the center-left of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="Start"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="Center" />
+
+            <Label Text="5. The test fails if the text in the editor below is not in the center-center of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="Center"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="Center" />
+
+            <Label Text="6. The test fails if the text in the editor below is not in the center-right of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="End"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="Center" />
+
+            <Label Text="7. The test fails if the text in the editor below is not in the bottom-left of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="Start"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="End" />
+
+            <Label Text="8. The test fails if the text in the editor below is not in the bottom-center of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="Center"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="End" />
+
+            <Label Text="9. The test fails if the text in the editor below is not in the bottom-right of the editor." />
+            <Editor BackgroundColor="LightBlue"
+                    HeightRequest="100"
+                    HorizontalTextAlignment="End"
+                    IsReadOnly="True"
+                    Text="testing"
+                    TextColor="Black"
+                    VerticalTextAlignment="End" />
+
+            <Label Text="10. The test fails if the text in the editor below is not in the center-center of the editor." />
+            <Grid HeightRequest="100">
+                <Editor BackgroundColor="LightBlue"
+                        HorizontalTextAlignment="Center"
+                        IsReadOnly="True"
+                        Text="testing"
+                        TextColor="Black"
+                        VerticalTextAlignment="Center" />
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

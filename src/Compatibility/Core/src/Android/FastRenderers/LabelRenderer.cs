@@ -192,17 +192,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 				}
 
 				BackgroundManager.Dispose(this);
-				if (_visualElementTracker != null)
-				{
-					_visualElementTracker.Dispose();
-					_visualElementTracker = null;
-				}
+				_visualElementTracker?.Dispose();
+				_visualElementTracker = null;
 
-				if (_visualElementRenderer != null)
-				{
-					_visualElementRenderer.Dispose();
-					_visualElementRenderer = null;
-				}
+				_visualElementRenderer?.Dispose();
+				_visualElementRenderer = null;
 
 				_spannableString?.Dispose();
 

@@ -4,8 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+#if ANDROID
+using Android.App;
+#endif
 
 namespace Microsoft.Maui.Hosting
 {
@@ -26,8 +30,8 @@ namespace Microsoft.Maui.Hosting
 		{
 			builder.ConfigureLifecycleEvents(life =>
 			{
-#if __ANDROID__
-				ApplicationModel.Platform.Init((Android.App.Application)Android.App.Application.Context);
+#if ANDROID
+				ApplicationModel.Platform.Init((Application)Application.Context);
 
 				life.AddAndroid(android => android
 					.OnCreate((activity, savedInstanceState) =>
@@ -79,6 +83,10 @@ namespace Microsoft.Maui.Hosting
 #endif
 			});
 
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MainThreadBridgeInitializer>());
+#endif
+
 			return builder;
 		}
 
@@ -88,6 +96,7 @@ namespace Microsoft.Maui.Hosting
 			{
 				builder.Services.AddSingleton<EssentialsRegistration>(new EssentialsRegistration(configureDelegate));
 			}
+
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, EssentialsInitializer>());
 
 			return builder;
@@ -110,6 +119,28 @@ namespace Microsoft.Maui.Hosting
 				_registerEssentials(essentials);
 			}
 		}
+
+		/// <summary>
+		/// Lightweight initializer that bridges the MAUI application dispatcher to MainThread
+		/// so that MainThread.BeginInvokeOnMainThread and MainThread.IsMainThread work
+		/// on custom platform backends / external TFMs where no native
+		/// MainThread implementation exists.
+		/// </summary>
+#if !(ANDROID || __IOS__ || __MACCATALYST__ || WINDOWS || TIZEN)
+		class MainThreadBridgeInitializer : IMauiInitializeService
+		{
+			public void Initialize(IServiceProvider services)
+			{
+				var dispatcher = services.GetOptionalApplicationDispatcher();
+				if (dispatcher is null)
+					return;
+
+				MainThread.SetCustomImplementation(
+					isMainThread: () => !dispatcher.IsDispatchRequired,
+					beginInvokeOnMainThread: action => dispatcher.Dispatch(action));
+			}
+		}
+#endif
 
 		class EssentialsInitializer : IMauiInitializeService
 		{

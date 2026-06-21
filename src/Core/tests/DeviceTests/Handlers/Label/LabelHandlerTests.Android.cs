@@ -1,14 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Android.Graphics;
-using Android.Text;
 using Android.Views;
 using Android.Widget;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Handlers;
 using Xunit;
-using ATextAlignemnt = Android.Views.TextAlignment;
+using ATextAlignemnt = global::Android.Views.TextAlignment;
 using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
@@ -111,7 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 			return (textView.Gravity, textView.TextAlignment);
 		}
 
-		(double left, double top, double right, double bottom) GetNativePadding(Android.Views.View view)
+		(double left, double top, double right, double bottom) GetNativePadding(global::Android.Views.View view)
 		{
 			return (view.PaddingLeft, view.PaddingTop, view.PaddingRight, view.PaddingBottom);
 		}

@@ -26,6 +26,7 @@ namespace Microsoft.Maui
 		CancellationTokenSource? _sourceCancellation;
 		IDisposable? _sourceResult;
 
+		public bool IsLoading => _sourceCancellation is not null;
 		public CancellationToken Token =>
 			_sourceCancellation?.Token ?? default;
 

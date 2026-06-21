@@ -372,6 +372,9 @@ namespace Microsoft.Maui.Graphics.Tests
 			yield return new object[] { "#a222", Color.FromRgba(0x22, 0x22, 0x22, 0xaa) };
 			yield return new object[] { "#F2E2D2", Color.FromRgb(0xF2, 0xE2, 0xD2) };
 			yield return new object[] { "#C2F2E2D2", Color.FromRgba(0xF2, 0xE2, 0xD2, 0xC2) };
+			yield return new object[] { "#000000", Color.FromRgba(0x00, 0x00, 0x00, 0xFF) };
+			yield return new object[] { "#000", Color.FromRgba(0x00, 0x00, 0x00, 0xFF) };
+			yield return new object[] { "#00FFff 40%", Color.FromRgba(0f, 0f, 0f, 1f) }; // unsupported syntax, but should not throw and fall back to the default black
 		}
 
 		public static IEnumerable<object[]> TestFromArgbValuesNoHash()

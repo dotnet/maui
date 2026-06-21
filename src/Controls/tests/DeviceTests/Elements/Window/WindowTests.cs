@@ -16,10 +16,12 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+
 #endif
 
 #if IOS || MACCATALYST
@@ -66,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 #if !IOS
 		[Theory]
 		[ClassData(typeof(ChangingToNewMauiContextDoesntCrashTestCases))]
-		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage, Type rootPageType)
+		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage, [DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type rootPageType)
 		{
 			SetupBuilder();
 			IWindow window;
@@ -88,7 +90,7 @@ namespace Microsoft.Maui.DeviceTests
 			var mauiContextStub1 = new ContextStub(ApplicationServices);
 #if ANDROID
 			var activity = mauiContextStub1.GetActivity();
-			mauiContextStub1.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			mauiContextStub1.Context = new global::Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
 #endif
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -105,7 +107,7 @@ namespace Microsoft.Maui.DeviceTests
 			var mauiContextStub2 = new ContextStub(ApplicationServices);
 
 #if ANDROID
-			mauiContextStub2.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			mauiContextStub2.Context = new global::Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
 #endif
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -229,6 +231,58 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.True(passed);
+		}
+
+		[Fact]
+		public async Task WindowIsActivedRespondToMethodsCall()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var window = new Window(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, (h) =>
+			{
+				var w = h.VirtualView;
+
+				Assert.True(window.IsActivated);
+
+				w.Deactivated();
+
+				Assert.False(window.IsActivated);
+			});
+		}
+
+		[Fact]
+		public async Task SwitchBetweenWindowShouldTriggerIsActivated()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var app = ApplicationServices.GetService<IApplication>() as ApplicationStub;
+
+			var window1 = new Window(page);
+			var window2 = new Window(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window1, (h) =>
+			{
+				app.OpenWindow(window1);	
+				Assert.True(window1.IsActivated);
+				Assert.False(window2.IsActivated);
+			});
+
+			
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window2, (h) =>
+			{
+				app.OpenWindow(window2);
+
+				Assert.False(window1.IsActivated);
+				Assert.True(window2.IsActivated);
+			});
+
+			app.CloseWindow(window2);
+			app.CloseWindow(window1);
+			
+			Assert.False(window1.IsActivated);
+			Assert.False(window2.IsActivated);
 		}
 	}
 }

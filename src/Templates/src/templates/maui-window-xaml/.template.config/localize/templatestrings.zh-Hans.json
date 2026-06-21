@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Window (XAML)",
-  "description": "用于使用 XAML 显示页面的窗口。",
+  "description": "使用 XAML 显示页面的窗口。",
   "postActions/openInEditor/description": "在编辑器中打开 NewWindow1.xaml。",
   "symbols/namespace/description": "生成的代码的命名空间"
 }

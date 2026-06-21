@@ -23,5 +23,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			platformView.Settings.DisplayZoomControls = webView.OnThisPlatform().ZoomControlsDisplayed();
 		}
+
+		public static void UpdateJavaScriptEnabled(this AWebView platformView, WebView webView)
+		{
+			platformView.Settings.JavaScriptEnabled = webView.OnThisPlatform().IsJavaScriptEnabled();
+		}
 	}
 }

@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapTextColor(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
+		internal static void MapSearchIconColor(IViewHandler handler, ISearchBar searchBar) { }
 
 		/// <summary>
 		/// Maps the abstract <see cref="ITextInput.IsTextPredictionEnabled"/> property to the platform-specific implementations.
@@ -36,5 +37,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapKeyboard(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapReturnType(IViewHandler handler, ISearchBar searchBar) { }
+		internal static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar) { }
+		internal static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar) { }
 	}
 }

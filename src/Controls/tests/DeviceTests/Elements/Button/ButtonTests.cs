@@ -70,5 +70,21 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateHasColor(button, expected, typeof(ButtonHandler));
 		}
+
+		[Fact]
+		[Description("The IsVisible property of a Button should match with native IsVisible")]
+		public async Task VerifyButtonIsVisibleProperty()
+		{
+			var button = new Button();
+			button.IsVisible = false;
+			var expectedValue = button.IsVisible;
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
+			});
+		}
 	}
 }

@@ -6,6 +6,9 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
+#if NET11_0_OR_GREATER
+	public
+#endif
 	class AppThemeBinding : BindingBase
 	{
 		public const string AppThemeResource = "__MAUI_ApplicationTheme__";
@@ -114,7 +117,8 @@ namespace Microsoft.Maui.Controls
 					}
 					target.SetValueCore(_targetProperty, value, Internals.SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
 				}
-			};
+			}
+			;
 		}
 
 		object _light;

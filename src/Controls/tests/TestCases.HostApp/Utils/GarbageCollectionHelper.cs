@@ -86,13 +86,13 @@
 
 					await navigationPage.PushAsync(page);
 					if (element is Image image)
-                    {
-                        await image.WaitUntilLoaded();
-                    }
-                    else
-                    {
-                        await Task.Delay(500); // give the View time to load
-                    }
+					{
+						await image.WaitUntilLoaded();
+					}
+					else
+					{
+						await Task.Delay(500); // give the View time to load
+					}
 
 					references.Add(new(element));
 					references.Add(new(element.Handler));

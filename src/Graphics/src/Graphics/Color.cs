@@ -7,15 +7,36 @@ using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents an RGBA color with floating-point components in the range of 0.0 to 1.0.
+	/// </summary>
 	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
 	[TypeConverter(typeof(Converters.ColorTypeConverter))]
 	public class Color
 	{
+		/// <summary>
+		/// The red component of the color, ranging from 0.0 to 1.0.
+		/// </summary>
 		public readonly float Red;
+
+		/// <summary>
+		/// The green component of the color, ranging from 0.0 to 1.0.
+		/// </summary>
 		public readonly float Green;
+
+		/// <summary>
+		/// The blue component of the color, ranging from 0.0 to 1.0.
+		/// </summary>
 		public readonly float Blue;
+
+		/// <summary>
+		/// The alpha (opacity) component of the color, ranging from 0.0 (transparent) to 1.0 (opaque).
+		/// </summary>
 		public readonly float Alpha = 1;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Color"/> class with default values (black).
+		/// </summary>
 		public Color()
 		{
 			// Default Black
@@ -260,29 +281,8 @@ namespace Microsoft.Maui.Graphics
 
 		public static Color FromHsva(float h, float s, float v, float a)
 		{
-			h = h.Clamp(0, 1);
-			s = s.Clamp(0, 1);
-			v = v.Clamp(0, 1);
-			var range = (int)(Math.Floor(h * 6)) % 6;
-			var f = h * 6 - Math.Floor(h * 6);
-			var p = v * (1 - s);
-			var q = v * (1 - f * s);
-			var t = v * (1 - (1 - f) * s);
-
-			switch (range)
-			{
-				case 0:
-					return FromRgba(v, t, p, a);
-				case 1:
-					return FromRgba(q, v, p, a);
-				case 2:
-					return FromRgba(p, v, t, a);
-				case 3:
-					return FromRgba(p, q, v, a);
-				case 4:
-					return FromRgba(t, p, v, a);
-			}
-			return FromRgba(v, p, q, a);
+			(float r, float g, float b) = ColorUtils.ConvertHsvToRgb(h, s, v);
+			return new Color(r, g, b, a);
 		}
 
 		public static Color FromUint(uint argb)
@@ -339,128 +339,28 @@ namespace Microsoft.Maui.Graphics
 
 		static Color FromRgba(ReadOnlySpan<char> colorAsHex)
 		{
-			int red = 0;
-			int green = 0;
-			int blue = 0;
-			int alpha = 255;
-
-			if (!colorAsHex.IsEmpty)
-			{
-				//Skip # if present
-				if (colorAsHex[0] == '#')
-					colorAsHex = colorAsHex.Slice(1);
-
-				if (colorAsHex.Length == 6 || colorAsHex.Length == 3)
-				{
-					//#RRGGBB or #RGB - since there is no A, use FromArgb
-
-					return FromArgb(colorAsHex);
-				}
-				else if (colorAsHex.Length == 4)
-				{
-					//#RGBA
-					Span<char> temp = stackalloc char[2];
-					temp[0] = temp[1] = colorAsHex[0];
-					red = ParseInt(temp);
-
-					temp[0] = temp[1] = colorAsHex[1];
-					green = ParseInt(temp);
-
-					temp[0] = temp[1] = colorAsHex[2];
-					blue = ParseInt(temp);
-
-					temp[0] = temp[1] = colorAsHex[3];
-					alpha = ParseInt(temp);
-				}
-				else if (colorAsHex.Length == 8)
-				{
-					//#RRGGBBAA
-					red = ParseInt(colorAsHex.Slice(0, 2));
-					green = ParseInt(colorAsHex.Slice(2, 2));
-					blue = ParseInt(colorAsHex.Slice(4, 2));
-					alpha = ParseInt(colorAsHex.Slice(6, 2));
-				}
-			}
-
-			return FromRgba(red / 255f, green / 255f, blue / 255f, alpha / 255f);
+			var (r, g, b, a) = ColorUtils.FromRgba(colorAsHex);
+			return new Color(r, g, b, a);
 		}
 
 		public static Color FromArgb(string colorAsHex) => FromArgb(colorAsHex != null ? colorAsHex.AsSpan() : default);
 
 		static Color FromArgb(ReadOnlySpan<char> colorAsHex)
 		{
-			int red = 0;
-			int green = 0;
-			int blue = 0;
-			int alpha = 255;
-
-			if (!colorAsHex.IsEmpty)
-			{
-				//Skip # if present
-				if (colorAsHex[0] == '#')
-					colorAsHex = colorAsHex.Slice(1);
-
-				if (colorAsHex.Length == 6)
-				{
-					//#RRGGBB
-					red = ParseInt(colorAsHex.Slice(0, 2));
-					green = ParseInt(colorAsHex.Slice(2, 2));
-					blue = ParseInt(colorAsHex.Slice(4, 2));
-				}
-				else if (colorAsHex.Length == 3)
-				{
-					//#RGB
-					Span<char> temp = stackalloc char[2];
-					temp[0] = temp[1] = colorAsHex[0];
-					red = ParseInt(temp);
-
-					temp[0] = temp[1] = colorAsHex[1];
-					green = ParseInt(temp);
-
-					temp[0] = temp[1] = colorAsHex[2];
-					blue = ParseInt(temp);
-				}
-				else if (colorAsHex.Length == 4)
-				{
-					//#ARGB
-					Span<char> temp = stackalloc char[2];
-					temp[0] = temp[1] = colorAsHex[0];
-					alpha = ParseInt(temp);
-
-					temp[0] = temp[1] = colorAsHex[1];
-					red = ParseInt(temp);
-
-					temp[0] = temp[1] = colorAsHex[2];
-					green = ParseInt(temp);
-
-					temp[0] = temp[1] = colorAsHex[3];
-					blue = ParseInt(temp);
-				}
-				else if (colorAsHex.Length == 8)
-				{
-					//#AARRGGBB
-					alpha = ParseInt(colorAsHex.Slice(0, 2));
-					red = ParseInt(colorAsHex.Slice(2, 2));
-					green = ParseInt(colorAsHex.Slice(4, 2));
-					blue = ParseInt(colorAsHex.Slice(6, 2));
-				}
-			}
-
-			return FromRgba(red / 255f, green / 255f, blue / 255f, alpha / 255f);
+			var (r, g, b, a) = ColorUtils.FromArgb(colorAsHex);
+			return new Color(r, g, b, a);
 		}
 
 		public static Color FromHsla(float h, float s, float l, float a = 1)
 		{
-			float red, green, blue;
-			ConvertToRgb(h, s, l, out red, out green, out blue);
-			return new Color(red, green, blue, a);
+			var (r, g, b) = ColorUtils.ConvertHslToRgb(h, s, l);
+			return new Color(r, g, b, a);
 		}
 
 		public static Color FromHsla(double h, double s, double l, double a = 1)
 		{
-			float red, green, blue;
-			ConvertToRgb((float)h, (float)s, (float)l, out red, out green, out blue);
-			return new Color(red, green, blue, (float)a);
+			var (r, g, b) = ColorUtils.ConvertHslToRgb((float)h, (float)s, (float)l);
+			return new Color(r, g, b, (float)a);
 		}
 
 		public static Color FromHsv(float h, float s, float v)
@@ -476,45 +376,6 @@ namespace Microsoft.Maui.Graphics
 		public static Color FromHsv(int h, int s, int v)
 		{
 			return FromHsva(h / 360f, s / 100f, v / 100f, 1f);
-		}
-
-		private static void ConvertToRgb(float hue, float saturation, float luminosity, out float r, out float g, out float b)
-		{
-			if (luminosity == 0)
-			{
-				r = g = b = 0;
-				return;
-			}
-
-			if (saturation == 0)
-			{
-				r = g = b = luminosity;
-				return;
-			}
-			float temp2 = luminosity <= 0.5f ? luminosity * (1.0f + saturation) : luminosity + saturation - luminosity * saturation;
-			float temp1 = 2.0f * luminosity - temp2;
-
-			var t3 = new[] { hue + 1.0f / 3.0f, hue, hue - 1.0f / 3.0f };
-			var clr = new float[] { 0, 0, 0 };
-			for (var i = 0; i < 3; i++)
-			{
-				if (t3[i] < 0)
-					t3[i] += 1.0f;
-				if (t3[i] > 1)
-					t3[i] -= 1.0f;
-				if (6.0 * t3[i] < 1.0)
-					clr[i] = temp1 + (temp2 - temp1) * t3[i] * 6.0f;
-				else if (2.0 * t3[i] < 1.0)
-					clr[i] = temp2;
-				else if (3.0 * t3[i] < 2.0)
-					clr[i] = temp1 + (temp2 - temp1) * (2.0f / 3.0f - t3[i]) * 6.0f;
-				else
-					clr[i] = temp1;
-			}
-
-			r = clr[0];
-			g = clr[1];
-			b = clr[2];
 		}
 
 		public void ToHsl(out float h, out float s, out float l)
@@ -568,7 +429,6 @@ namespace Microsoft.Maui.Graphics
 			h /= 6.0f;
 		}
 
-
 		// Supported inputs
 		// HEX		#rgb, #argb, #rrggbb, #aarrggbb
 		// RGB		rgb(255,0,0), rgb(100%,0%,0%)					values in range 0-255 or 0%-100%
@@ -591,165 +451,14 @@ namespace Microsoft.Maui.Graphics
 
 		static bool TryParse(ReadOnlySpan<char> value, out Color color)
 		{
-			value = value.Trim();
-			if (!value.IsEmpty)
+			if (ColorUtils.TryParse(value, out float red, out float green, out float blue, out float alpha))
 			{
-				if (value[0] == '#')
-				{
-					try
-					{
-						color = Color.FromArgb(value);
-						return true;
-					}
-					catch
-					{
-						goto ReturnFalse;
-					}
-				}
-
-				if (value.StartsWith("rgba".AsSpan(), StringComparison.OrdinalIgnoreCase))
-				{
-					if (!TryParseFourColorRanges(value,
-						out ReadOnlySpan<char> quad0,
-						out ReadOnlySpan<char> quad1,
-						out ReadOnlySpan<char> quad2,
-						out ReadOnlySpan<char> quad3))
-					{
-						goto ReturnFalse;
-					}
-
-					bool valid = TryParseColorValue(quad0, 255, acceptPercent: true, out double r);
-					valid &= TryParseColorValue(quad1, 255, acceptPercent: true, out double g);
-					valid &= TryParseColorValue(quad2, 255, acceptPercent: true, out double b);
-					valid &= TryParseOpacity(quad3, out double a);
-
-					if (!valid)
-						goto ReturnFalse;
-
-					color = new Color((float)r, (float)g, (float)b, (float)a);
-					return true;
-				}
-
-				if (value.StartsWith("rgb".AsSpan(), StringComparison.OrdinalIgnoreCase))
-				{
-					if (!TryParseThreeColorRanges(value,
-						out ReadOnlySpan<char> triplet0,
-						out ReadOnlySpan<char> triplet1,
-						out ReadOnlySpan<char> triplet2))
-					{
-						goto ReturnFalse;
-					}
-
-					bool valid = TryParseColorValue(triplet0, 255, acceptPercent: true, out double r);
-					valid &= TryParseColorValue(triplet1, 255, acceptPercent: true, out double g);
-					valid &= TryParseColorValue(triplet2, 255, acceptPercent: true, out double b);
-
-					if (!valid)
-						goto ReturnFalse;
-
-					color = new Color((float)r, (float)g, (float)b);
-					return true;
-				}
-
-				if (value.StartsWith("hsla".AsSpan(), StringComparison.OrdinalIgnoreCase))
-				{
-					if (!TryParseFourColorRanges(value,
-						out ReadOnlySpan<char> quad0,
-						out ReadOnlySpan<char> quad1,
-						out ReadOnlySpan<char> quad2,
-						out ReadOnlySpan<char> quad3))
-					{
-						goto ReturnFalse;
-					}
-
-					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
-					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
-					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double l);
-					valid &= TryParseOpacity(quad3, out double a);
-
-					if (!valid)
-						goto ReturnFalse;
-
-					color = Color.FromHsla(h, s, l, a);
-					return true;
-				}
-
-				if (value.StartsWith("hsl".AsSpan(), StringComparison.OrdinalIgnoreCase))
-				{
-					if (!TryParseThreeColorRanges(value,
-						out ReadOnlySpan<char> triplet0,
-						out ReadOnlySpan<char> triplet1,
-						out ReadOnlySpan<char> triplet2))
-					{
-						goto ReturnFalse;
-					}
-
-					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
-					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
-					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double l);
-
-					if (!valid)
-						goto ReturnFalse;
-
-					color = Color.FromHsla(h, s, l);
-					return true;
-				}
-
-				if (value.StartsWith("hsva".AsSpan(), StringComparison.OrdinalIgnoreCase))
-				{
-					if (!TryParseFourColorRanges(value,
-						out ReadOnlySpan<char> quad0,
-						out ReadOnlySpan<char> quad1,
-						out ReadOnlySpan<char> quad2,
-						out ReadOnlySpan<char> quad3))
-					{
-						goto ReturnFalse;
-					}
-
-					bool valid = TryParseColorValue(quad0, 360, acceptPercent: false, out double h);
-					valid &= TryParseColorValue(quad1, 100, acceptPercent: true, out double s);
-					valid &= TryParseColorValue(quad2, 100, acceptPercent: true, out double v);
-					valid &= TryParseOpacity(quad3, out double a);
-
-					if (!valid)
-						goto ReturnFalse;
-
-					color = Color.FromHsva((float)h, (float)s, (float)v, (float)a);
-					return true;
-				}
-
-				if (value.StartsWith("hsv".AsSpan(), StringComparison.OrdinalIgnoreCase))
-				{
-					if (!TryParseThreeColorRanges(value,
-						out ReadOnlySpan<char> triplet0,
-						out ReadOnlySpan<char> triplet1,
-						out ReadOnlySpan<char> triplet2))
-					{
-						goto ReturnFalse;
-					}
-
-					bool valid = TryParseColorValue(triplet0, 360, acceptPercent: false, out double h);
-					valid &= TryParseColorValue(triplet1, 100, acceptPercent: true, out double s);
-					valid &= TryParseColorValue(triplet2, 100, acceptPercent: true, out double v);
-
-					if (!valid)
-						goto ReturnFalse;
-
-					color = Color.FromHsv((float)h, (float)s, (float)v);
-					return true;
-				}
-
-				var namedColor = GetNamedColor(value);
-				if (namedColor != null)
-				{
-					color = namedColor;
-					return true;
-				}
+				color = new Color(red, green, blue, alpha);
+				return true;
 			}
 
-		ReturnFalse:
-			color = default;
-			return false;
+			color = GetNamedColor(value);
+			return color is not null;
 		}
 
 		static Color GetNamedColor(ReadOnlySpan<char> value)
@@ -914,130 +623,6 @@ namespace Microsoft.Maui.Graphics
 				_ => null
 			};
 		}
-
-		static bool TryParseFourColorRanges(
-			ReadOnlySpan<char> value,
-			out ReadOnlySpan<char> quad0,
-			out ReadOnlySpan<char> quad1,
-			out ReadOnlySpan<char> quad2,
-			out ReadOnlySpan<char> quad3)
-		{
-			var op = value.IndexOf('(');
-			var cp = value.LastIndexOf(')');
-			if (op < 0 || cp < 0 || cp < op)
-				goto ReturnFalse;
-
-			value = value.Slice(op + 1, cp - op - 1);
-
-			int index = value.IndexOf(',');
-			if (index == -1)
-				goto ReturnFalse;
-			quad0 = value.Slice(0, index);
-			value = value.Slice(index + 1);
-
-			index = value.IndexOf(',');
-			if (index == -1)
-				goto ReturnFalse;
-			quad1 = value.Slice(0, index);
-			value = value.Slice(index + 1);
-
-			index = value.IndexOf(',');
-			if (index == -1)
-				goto ReturnFalse;
-			quad2 = value.Slice(0, index);
-			quad3 = value.Slice(index + 1);
-
-			// if there are more commas, fail
-			if (quad3.IndexOf(',') != -1)
-				goto ReturnFalse;
-
-			return true;
-
-		ReturnFalse:
-			quad0 = quad1 = quad2 = quad3 = default;
-			return false;
-		}
-
-		static bool TryParseThreeColorRanges(
-			ReadOnlySpan<char> value,
-			out ReadOnlySpan<char> triplet0,
-			out ReadOnlySpan<char> triplet1,
-			out ReadOnlySpan<char> triplet2)
-		{
-			var op = value.IndexOf('(');
-			var cp = value.LastIndexOf(')');
-			if (op < 0 || cp < 0 || cp < op)
-				goto ReturnFalse;
-
-			value = value.Slice(op + 1, cp - op - 1);
-
-			int index = value.IndexOf(',');
-			if (index == -1)
-				goto ReturnFalse;
-			triplet0 = value.Slice(0, index);
-			value = value.Slice(index + 1);
-
-			index = value.IndexOf(',');
-			if (index == -1)
-				goto ReturnFalse;
-			triplet1 = value.Slice(0, index);
-			triplet2 = value.Slice(index + 1);
-
-			// if there are more commas, fail
-			if (triplet2.IndexOf(',') != -1)
-				goto ReturnFalse;
-
-			return true;
-
-		ReturnFalse:
-			triplet0 = triplet1 = triplet2 = default;
-			return false;
-		}
-
-		static bool TryParseColorValue(ReadOnlySpan<char> elem, int maxValue, bool acceptPercent, out double value)
-		{
-			elem = elem.Trim();
-			if (!elem.IsEmpty && elem[elem.Length - 1] == '%' && acceptPercent)
-			{
-				maxValue = 100;
-				elem = elem.Slice(0, elem.Length - 1);
-			}
-
-			if (TryParseDouble(elem, out value))
-			{
-				value = value.Clamp(0, maxValue) / maxValue;
-				return true;
-			}
-			return false;
-		}
-
-		static bool TryParseOpacity(ReadOnlySpan<char> elem, out double value)
-		{
-			if (TryParseDouble(elem, out value))
-			{
-				value = value.Clamp(0, 1);
-				return true;
-			}
-			return false;
-		}
-
-		static bool TryParseDouble(ReadOnlySpan<char> s, out double value) =>
-			double.TryParse(
-#if NETSTANDARD2_0 || TIZEN
-				s.ToString(),
-#else
-				s,
-#endif
-				NumberStyles.Number, CultureInfo.InvariantCulture, out value);
-
-		static int ParseInt(ReadOnlySpan<char> s) =>
-			int.Parse(
-#if NETSTANDARD2_0 || TIZEN
-				s.ToString(),
-#else
-				s,
-#endif
-				 NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture);
 
 		public static implicit operator Color(Vector4 color) => new Color(color);
 	}

@@ -10,10 +10,10 @@ namespace Maui.Controls.Sample.Issues
 		public Issue8845()
 		{
 			InitializeComponent();
-			var items = new List<object>
+			var items = new List<Issue8845Item>
 				{
-					new { DisplayName = (string)null!},
-					new { DisplayName = "Not null"},
+					new Issue8845Item { DisplayName = (string)null!},
+					new Issue8845Item { DisplayName = "Not null"},
 				};
 			picker1.ItemsSource = items;
 			picker2.ItemsSource = items;
@@ -25,5 +25,10 @@ namespace Maui.Controls.Sample.Issues
 			picker2.SelectedIndex = 1;
 		}
 
+	}
+
+	public class Issue8845Item
+	{
+		public string DisplayName { get; set; } = string.Empty;
 	}
 }

@@ -3,29 +3,29 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="Type[@FullName='Microsoft.Maui.Controls.NamedSize']/Docs/*" />
+	/// <summary>Represents pre-defined font sizes.</summary>
 	[Obsolete]
 	public enum NamedSize
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>The default font size.</summary>
 		Default = 0,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Micro']/Docs/*" />
+		/// <summary>The smallest readable font size for the device. Think about this like legal footnotes.</summary>
 		Micro = 1,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Small']/Docs/*" />
+		/// <summary>A small but readable font size. Use this for block of text.</summary>
 		Small = 2,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Medium']/Docs/*" />
+		/// <summary>A default font size, to be used in stand alone labels or buttons.</summary>
 		Medium = 3,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Large']/Docs/*" />
+		/// <summary>A Large font size, for titles or other important text elements.</summary>
 		Large = 4,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Body']/Docs/*" />
+		/// <summary>Body.</summary>
 		Body = 5,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Header']/Docs/*" />
+		/// <summary>Header.</summary>
 		Header = 6,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Title']/Docs/*" />
+		/// <summary>Title.</summary>
 		Title = 7,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Subtitle']/Docs/*" />
+		/// <summary>Subtitle.</summary>
 		Subtitle = 8,
-		/// <include file="../../docs/Microsoft.Maui.Controls/NamedSize.xml" path="//Member[@MemberName='Caption']/Docs/*" />
+		/// <summary>Caption.</summary>
 		Caption = 9
 	}
 }

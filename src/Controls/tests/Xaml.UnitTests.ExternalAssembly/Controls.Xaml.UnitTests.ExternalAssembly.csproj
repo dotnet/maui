@@ -6,6 +6,9 @@
     <IsPackable>false</IsPackable>
     <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998</NoWarn>
     <RootNamespace>Controls.Xaml.UnitTests.ExternalAssembly</RootNamespace>
+
+    <!-- <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath> -->
   </PropertyGroup>
 
 
@@ -21,6 +24,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\Core\tests\UnitTests\TestClasses\DispatcherStub.cs" Link="TestClasses\DispatcherStub.cs" />
+    <!-- <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" /> -->
   </ItemGroup>
 
 

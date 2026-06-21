@@ -44,7 +44,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Opens Class1.cs in the editor.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[エディターで Class1.cs を開きます]]></Val>
+            <Val><![CDATA[エディターで Class1.cs を開きます。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -62,7 +62,7 @@
         <Str Cat="Text">
           <Val><![CDATA[The target framework for the project.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[プロジェクトのターゲット フレームワークです。]]></Val>
+            <Val><![CDATA[プロジェクトのターゲット フレームワーク。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

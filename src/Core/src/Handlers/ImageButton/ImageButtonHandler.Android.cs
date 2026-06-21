@@ -9,7 +9,11 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ShapeableImageView CreatePlatformView()
 		{
-			var platformView = new ShapeableImageView(Context);
+			// TODO: net11 - Remove MaterialShapeableImageView and always use MauiShapeableImageView
+			// once MauiShapeableImageView has public API changes that support Material3.
+			ShapeableImageView platformView = RuntimeFeature.IsMaterial3Enabled
+				? new MaterialShapeableImageView(Context)
+				: new MauiShapeableImageView(Context);
 
 			// These set the defaults so visually it matches up with other platforms
 			platformView.SetPadding(0, 0, 0, 0);
@@ -24,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Click -= OnClick;
 			platformView.Touch -= OnTouch;
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+			platformView.LayoutChange -= OnPlatformViewLayoutChange;
 
 			base.DisconnectHandler(platformView);
 
@@ -37,6 +42,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch += OnTouch;
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 
+			platformView.LayoutChange += OnPlatformViewLayoutChange;
 			base.ConnectHandler(platformView);
 		}
 
@@ -60,6 +66,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
 			handler.UpdateValue(nameof(IImageButton.Padding));
+
+			if (handler.VirtualView.Shadow is not null)
+			{
+				handler.UpdateValue(nameof(IImageButton.Shadow));
+			}
 		}
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
@@ -71,6 +82,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (VirtualView != null)
 				VirtualView.IsFocused = e.HasFocus;
+		}
+
+		void OnPlatformViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)
+		{
+			if (sender is ShapeableImageView platformView && VirtualView is not null)
+				platformView.UpdateBackground(VirtualView);
 		}
 
 		void OnTouch(object? sender, View.TouchEventArgs e)

@@ -3,10 +3,10 @@ using System;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BackButtonPressedEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.BackButtonPressedEventArgs']/Docs/*" />
+	/// <summary>Internal API that may change or be removed without notice.</summary>
 	public class BackButtonPressedEventArgs : EventArgs
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/BackButtonPressedEventArgs.xml" path="//Member[@MemberName='Handled']/Docs/*" />
+		/// <summary>Internal API that may change or be removed without notice.</summary>
 		public bool Handled { get; set; }
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Platform;
@@ -32,7 +33,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnWindowPropertyChanging(object sender, PropertyChangingEventArgs e)
 		{
 			if (e.PropertyName != Window.PageProperty.PropertyName)
+			{
 				return;
+			}
 
 			if (_currentPage is not null &&
 				_currentPage.Handler is IPlatformViewHandler pvh &&
@@ -92,12 +95,14 @@ namespace Microsoft.Maui.Controls.Platform
 				modalWrapper.PresentingViewController is not null)
 			{
 				await modalWrapper.PresentingViewController.DismissViewControllerAsync(animated);
+				DisposeHelpers.DisposeModalAndChildHandlers(modal);
 				return modal;
 			}
 
 			// if the presenting VC is null that means the modal window was already dismissed
 			// this will usually happen as a result of swapping out the content on the window
 			// which is what was acting as the PresentingViewController
+			DisposeHelpers.DisposeModalAndChildHandlers(modal);
 			return modal;
 		}
 
@@ -108,7 +113,9 @@ namespace Microsoft.Maui.Controls.Platform
 			_platformModalPages.Add(modal);
 
 			if (_window?.Page?.Handler is not null)
+			{
 				return PresentModal(modal, animated && _window.IsActivated);
+			}
 
 			return Task.CompletedTask;
 		}
@@ -142,8 +149,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (WindowViewController is not null)
 				{
-					await WindowViewController.PresentViewControllerAsync(wrapper, animated);
-					await Task.Delay(5);
+					// This is branched, because if the modal is a popover and can't display correctly for some reason, we want it to fail
+					if (wrapper.ModalPresentationStyle == UIKit.UIModalPresentationStyle.Popover)
+					{
+						if (wrapper.PopoverPresentationController is not null && WindowViewController.View is not null)
+						{
+							await WindowViewController.PresentViewControllerAsync(wrapper, animated);
+							await Task.Delay(5);
+						}
+						else
+						{
+							failed = true;
+						}
+					}
+					else
+					{
+						await WindowViewController.PresentViewControllerAsync(wrapper, animated);
+						await Task.Delay(5);
+					}
 				}
 			}
 			catch
@@ -157,7 +180,9 @@ namespace Microsoft.Maui.Controls.Platform
 				presentFinished.SetResult();
 
 				if (!failed)
+				{
 					SyncModalStackWhenPlatformIsReady();
+				}
 			}
 
 		}

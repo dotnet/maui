@@ -43,5 +43,63 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await Assert.ThrowsAsync<FileNotFoundException>(() => FileSystem.OpenAppPackageFileAsync("MissingFile.txt")).ConfigureAwait(false);
 		}
+
+#if MACCATALYST
+		[Fact]
+		public async Task ValidateMIMEFormat()
+		{
+			string filePath = Path.Combine(FileSystem.CacheDirectory, "sample.txt");
+			await File.WriteAllTextAsync(filePath, "File Content type is text/plain");
+
+			FileResult fileResult = new FileResult(filePath);
+			Assert.Equal("text/plain", fileResult.ContentType);
+
+			File.Delete(filePath);
+		}
+#endif
+		[Fact]
+		public async Task CheckFileResultWithFilePath()
+		{
+			string filePath = Path.Combine(FileSystem.CacheDirectory, "sample.txt");
+			await File.WriteAllTextAsync(filePath, "Sample content for testing");
+
+			var fileResult = new FileResult(filePath);
+
+			using var stream = await fileResult.OpenReadAsync();
+
+			Assert.NotNull(stream);
+
+			File.Delete(filePath);
+		}
+
+		[Fact]
+		public async Task CheckFileResultOpenReadAsyncMultipleTimes()
+		{
+			string filePath = Path.Combine(FileSystem.CacheDirectory, "sample_multiple.txt");
+			string expectedContent = "Sample content for multiple stream testing";
+			await File.WriteAllTextAsync(filePath, expectedContent);
+
+			var fileResult = new FileResult(filePath);
+
+			// First call to OpenReadAsync
+			using (var firstStream = await fileResult.OpenReadAsync())
+			{
+				Assert.NotNull(firstStream);
+				using var firstReader = new StreamReader(firstStream);
+				var firstContent = await firstReader.ReadToEndAsync();
+				Assert.Equal(expectedContent, firstContent);
+			}
+
+			// Second call to OpenReadAsync - should still work
+			using (var secondStream = await fileResult.OpenReadAsync())
+			{
+				Assert.NotNull(secondStream);
+				using var secondReader = new StreamReader(secondStream);
+				var secondContent = await secondReader.ReadToEndAsync();
+				Assert.Equal(expectedContent, secondContent);
+			}
+
+			File.Delete(filePath);
+		}
 	}
 }

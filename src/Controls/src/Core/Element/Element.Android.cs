@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Platform;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,13 +8,13 @@ namespace Microsoft.Maui.Controls
 		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, Element element)
 		{
 			Platform.AutomationPropertiesProvider.SetImportantForAccessibility(
-				handler.PlatformView as Android.Views.View, element);
+				handler.PlatformView as AView, element);
 		}
 
 		public static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, Element element)
 		{
 			Platform.AutomationPropertiesProvider.SetImportantForAccessibility(
-				handler.PlatformView as Android.Views.View, element);
+				handler.PlatformView as AView, element);
 		}
 
 		static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, IElement element)

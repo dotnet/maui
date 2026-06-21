@@ -113,5 +113,40 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+		[Theory(DisplayName = "WebView loads non-Western character encoded URLs correctly"
+#if WINDOWS
+			, Skip = "Skipping this test on Windows due to WebView's OnNavigated event returning WebNavigationResult.Failure for URLs with non-Western characters. More information: https://github.com/dotnet/maui/issues/27425"
+#endif
+		)]
+		[InlineData("https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf")] // Non-ASCII character + space (%20) (Outside IRI range)
+		[InlineData("https://google.com/[]")] // Reserved set (`;/?:@&=+$,#[]!'()*%`)
+		[InlineData("https://example.com/test/%3Cvalue%3E")] // Escaped character from " <>`^{|} set (e.g., < >)
+		[InlineData("https://example.com/path/%09text")] // Escaped character from [0, 1F] range (e.g., tab %09)
+		[InlineData("https://example.com/test?query=%26value")] // Another escaped character from reserved set (e.g., & as %26)
+		public async Task WebViewShouldLoadEncodedUrl(string encodedUrl)
+		{
+			if (await AssertionExtensions.SkipTestIfNoInternetConnection())
+			{
+				return;
+			}
+			var webView = new WebView();
+			var tcs = new TaskCompletionSource<WebNavigationResult>();
+
+			webView.Navigated += (sender, args) =>
+			{
+				tcs.TrySetResult(args.Result);
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<WebViewHandler>(webView);
+				(handler.PlatformView as IWebViewDelegate)?.LoadUrl(encodedUrl);
+			});
+
+			var navigationResult = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			Assert.Equal(WebNavigationResult.Success, navigationResult);
+		}
 	}
 }

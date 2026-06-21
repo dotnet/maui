@@ -9,5 +9,6 @@
         <Label x:Name="label1" Text="{local:SPMarkup1}"/>
         <Label x:Name="label2" Text="{local:SPMarkup2}"/>
         <Label x:Name="label3" Text="{local:SPMarkup3}"/>
+        <Label x:Name="label4" Text="{local:SPMarkup4}"/>
     </StackLayout>
 </ContentPage>

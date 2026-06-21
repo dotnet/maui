@@ -17,7 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void Issue10300Test()
 		{
+			App.WaitForElement("AddMe");
 			App.Click("AddMe");
+			App.WaitForElement("DeleteMe");
 			App.Click("DeleteMe");
 			App.WaitForElement("CloseMe");
 			App.Click("CloseMe");

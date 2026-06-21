@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ScrollViewOptionsPage"
+             Title="ScrollViewOptionsPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Apply"
+                     Clicked="ApplyButton_Clicked"
+                     AutomationId="Apply"/>
+    </ContentPage.ToolbarItems>
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+          ColumnDefinitions="Auto,Auto"
+          ColumnSpacing="10"
+          RowSpacing="15"
+          Margin="10,10,0,0">
+
+        <VerticalStackLayout Grid.Row="0"
+                             Grid.ColumnSpan="2"
+                             Spacing="10">
+            <Label Text="Content"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Label"
+                        Clicked="OnContentTypeButtonClicked"
+                        WidthRequest="100"
+                        AutomationId="ContentLabel"/>
+                <Button Text="Image"
+                        Clicked="OnContentTypeButtonClicked"
+                        WidthRequest="100"
+                        AutomationId="ContentImage"/>
+                <Button Text="Grid"
+                        Clicked="OnContentTypeButtonClicked"
+                        WidthRequest="100"
+                        AutomationId="ContentGrid"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="VerticalStackLayout"
+                        Clicked="OnContentTypeButtonClicked"
+                        AutomationId="ContentVerticalStackLayout"/>
+                <Button Text="HorizontalStackLayout"
+                        Clicked="OnContentTypeButtonClicked"
+                        AutomationId="ContentHorizontalStackLayout"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Editor"
+                        Clicked="OnContentTypeButtonClicked"
+                        WidthRequest="150"
+                        AutomationId="ContentEditor"/>
+                <Button Text="AbsoluteLayout"
+                        Clicked="OnContentTypeButtonClicked"
+                        WidthRequest="150"
+                        AutomationId="ContentAbsoluteLayout"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="1"
+                             Grid.ColumnSpan="2"
+                             Spacing="10">
+            <Label Text="Orientation"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout>
+                <RadioButton x:Name="OrientationVertical"
+                             Content="Vertical"
+                             IsChecked="True"
+                             GroupName="OrientationGroup"
+                             CheckedChanged="OrientationRadio_CheckedChanged"
+                             AutomationId="OrientationVertical"/>
+                <RadioButton x:Name="OrientationHorizontal"
+                             Content="Horizontal"
+                             GroupName="OrientationGroup"
+                             CheckedChanged="OrientationRadio_CheckedChanged"
+                             AutomationId="OrientationHorizontal"/>
+                <RadioButton x:Name="OrientationBoth"
+                             Content="Both"
+                             GroupName="OrientationGroup"
+                             CheckedChanged="OrientationRadio_CheckedChanged"
+                             AutomationId="OrientationBoth"/>
+                <RadioButton x:Name="OrientationNeither"
+                             Content="Neither"
+                             GroupName="OrientationGroup"
+                             CheckedChanged="OrientationRadio_CheckedChanged"
+                             AutomationId="OrientationNeither"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="2"
+                             Grid.ColumnSpan="2"
+                             Spacing="10">
+            <Label Text="HorizontalScrollBarVisibility"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout>
+                <RadioButton x:Name="HorizontalSBNever"
+                             Content="Never"
+                             IsChecked="True"
+                             GroupName="HorizontalSBGroup"
+                             CheckedChanged="HorizontalSBRadio_CheckedChanged"
+                             AutomationId="HorizontalSBNever"/>
+                <RadioButton x:Name="HorizontalSBDefault"
+                             Content="Default"
+                             GroupName="HorizontalSBGroup"
+                             CheckedChanged="HorizontalSBRadio_CheckedChanged"
+                             AutomationId="HorizontalSBDefault"/>
+                <RadioButton x:Name="HorizontalSBAlways"
+                             Content="Always"
+                             GroupName="HorizontalSBGroup"
+                             CheckedChanged="HorizontalSBRadio_CheckedChanged"
+                             AutomationId="HorizontalSBAlways"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="3"
+                             Grid.ColumnSpan="2"
+                             Spacing="10">
+            <Label Text="VerticalScrollBarVisibility"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout>
+                <RadioButton x:Name="VerticalSBNever"
+                             Content="Never"
+                             IsChecked="True"
+                             GroupName="VerticalSBGroup"
+                             CheckedChanged="VerticalSBRadio_CheckedChanged"
+                             AutomationId="VerticalSBNever"/>
+                <RadioButton x:Name="VerticalSBDefault"
+                             Content="Default"
+                             GroupName="VerticalSBGroup"
+                             CheckedChanged="VerticalSBRadio_CheckedChanged"
+                             AutomationId="VerticalSBDefault"/>
+                <RadioButton x:Name="VerticalSBAlways"
+                             Content="Always"
+                             GroupName="VerticalSBGroup"
+                             CheckedChanged="VerticalSBRadio_CheckedChanged"
+                             AutomationId="VerticalSBAlways"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="4"
+                             Grid.Column="0"
+                             Spacing="10">
+            <Label Text="FlowDirection"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+
+            <HorizontalStackLayout>
+                <RadioButton x:Name="FlowDirectionLTR"
+                             AutomationId="FlowDirectionLTR"
+                             GroupName="FlowDirection"
+                             Content="LTR"
+                             IsChecked="True"
+                             FontSize="14"
+                             CheckedChanged="OnFlowDirectionChanged"/>
+                <RadioButton x:Name="FlowDirectionRTL"
+                             AutomationId="FlowDirectionRTL"
+                             GroupName="FlowDirection"
+                             Content="RTL"
+                             FontSize="14"
+                             CheckedChanged="OnFlowDirectionChanged"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="4"
+                             Grid.Column="1"
+                             Spacing="10">
+            <Label Text="IsVisible"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout>
+                <RadioButton Content="True"
+                             IsChecked="True"
+                             GroupName="IsVisibleGroup"
+                             CheckedChanged="IsVisibleRadio_CheckedChanged"
+                             AutomationId="IsVisibleTrue"/>
+                <RadioButton Content="False"
+                             GroupName="IsVisibleGroup"
+                             CheckedChanged="IsVisibleRadio_CheckedChanged"
+                             AutomationId="IsVisibleFalse"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="5"
+                             Grid.Column="0"
+                             Spacing="10">
+            <Label Text="IsEnabled"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            <HorizontalStackLayout>
+                <RadioButton Content="True"
+                             IsChecked="True"
+                             GroupName="IsEnabledGroup"
+                             CheckedChanged="IsEnabledRadio_CheckedChanged"
+                             AutomationId="IsEnabledTrue"/>
+                <RadioButton Content="False"
+                             GroupName="IsEnabledGroup"
+                             CheckedChanged="IsEnabledRadio_CheckedChanged"
+                             AutomationId="IsEnabledFalse"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

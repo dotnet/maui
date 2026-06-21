@@ -15,23 +15,23 @@ namespace Maui.Controls.Sample.Pages
 		{
 			SetIsEnabledButtonState(false, true);
 
-			bool isCancelled = await DotNetBotImage.TranslateTo(-100, 0, 1000);
+			bool isCancelled = await DotNetBotImage.TranslateToAsync(-100, 0, 1000);
 
 			if (!isCancelled)
 			{
-				isCancelled = await DotNetBotImage.TranslateTo(-100, -100, 1000);
+				isCancelled = await DotNetBotImage.TranslateToAsync(-100, -100, 1000);
 			}
 			if (!isCancelled)
 			{
-				isCancelled = await DotNetBotImage.TranslateTo(100, 100, 2000);
+				isCancelled = await DotNetBotImage.TranslateToAsync(100, 100, 2000);
 			}
 			if (!isCancelled)
 			{
-				isCancelled = await DotNetBotImage.TranslateTo(0, 100, 1000);
+				isCancelled = await DotNetBotImage.TranslateToAsync(0, 100, 1000);
 			}
 			if (!isCancelled)
 			{
-				await DotNetBotImage.TranslateTo(0, 0, 1000);
+				await DotNetBotImage.TranslateToAsync(0, 0, 1000);
 			}
 
 			SetIsEnabledButtonState(true, false);

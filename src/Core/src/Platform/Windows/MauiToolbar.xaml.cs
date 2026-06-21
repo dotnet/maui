@@ -86,6 +86,10 @@ namespace Microsoft.Maui.Platform
 			{
 				title.Foreground = brush;
 			}
+			else
+			{
+				title.ClearValue(CommandBar.ForegroundProperty);
+			}
 
 			_menuBarForeground = brush;
 			UpdateMenuBarForeground();
@@ -186,6 +190,8 @@ namespace Microsoft.Maui.Platform
 				TogglePaneButton?.ClearValue(Button.ForegroundProperty);
 			}
 		}
+
+		internal bool HasMenuBarContent => _menuBar is not null && _menuBar.Items.Count > 0;
 
 		internal void SetMenuBar(MenuBar? menuBar)
 		{

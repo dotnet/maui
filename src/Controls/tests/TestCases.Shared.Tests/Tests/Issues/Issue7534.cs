@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID // Getting Java.Lang.IndexOutOfBoundsException on Android (https://github.com/dotnet/maui/issues/25836)
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		[Category(UITestCategories.Compatibility)]
 		public void ExpectingPageNotToBreak()
 		{
 			App.WaitForElement("Success");
@@ -25,4 +23,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 	}
 }
-#endif

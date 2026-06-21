@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
+  x:Class="Maui.Controls.Sample.Issues.Issue25201">
+
+  <VerticalStackLayout>
+    <!-- https://github.com/dotnet/maui/issues/18001 -->
+    <!-- https://github.com/dotnet/maui/issues/25201 -->
+    <Switch x:Name="Switch1" AutomationId="Switch1" IsToggled="False" />
+    <ImageButton BackgroundColor="Red"
+                 WidthRequest="100"
+                 HeightRequest="100"
+                 Padding="20"
+                 Source="dotnet_bot"
+                 IsVisible="{Binding IsToggled, Source={x:Reference Switch1}, x:DataType=Switch}"
+                 />
+
+    <!-- https://github.com/dotnet/maui/issues/16713 -->
+    <Switch x:Name="Switch2" AutomationId="Switch2" IsToggled="True" />
+    <AbsoluteLayout>
+      <ImageButton
+        AbsoluteLayout.LayoutFlags="PositionProportional"
+        AbsoluteLayout.LayoutBounds="0.5,0.5,120,120"
+        WidthRequest="100"
+        HeightRequest="100"
+        Padding="20"
+        Source="dotnet_bot.png"
+        CornerRadius="60"
+        BackgroundColor="Beige"
+        />
+
+      <ContentView
+            AbsoluteLayout.LayoutFlags="SizeProportional"
+            AbsoluteLayout.LayoutBounds="0,0,1.0,1.0"
+            BackgroundColor="#80FFFFFF"
+            IsVisible="{Binding IsToggled, Source={x:Reference Switch2}, x:DataType=Switch}"
+            />
+    </AbsoluteLayout>
+  </VerticalStackLayout>
+</ContentPage>

@@ -6,7 +6,7 @@
     <title></title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles/app.css">
-    <script src="scripts/HybridWebView.js"></script>
+    <script src="_framework/hybridwebview.js"></script>
     <script>
         function LogMessage(msg) {
             var messageLog = document.getElementById("messageLog");
@@ -93,6 +93,44 @@
             LogMessage("Invoked DoAsyncWorkParamsReturn, return value: message=" + retValue.Message + ", value=" + retValue.Value);
         }
 
+        // Demo functions to test exception handling
+        async function InvokeThrowException() {
+            LogMessage("Invoking ThrowException");
+            try {
+                await window.HybridWebView.InvokeDotNet('ThrowException');
+                LogMessage("ThrowException unexpectedly succeeded!");
+            } catch (ex) {
+                LogMessage("Caught exception from ThrowException: " + ex.message);
+                LogMessage("Exception type: " + (ex.dotNetErrorType || "Unknown"));
+                if (ex.dotNetStackTrace) {
+                    LogMessage("Stack trace: " + ex.dotNetStackTrace.substring(0, 200) + "...");
+                }
+            }
+        }
+
+        async function InvokeThrowExceptionAsync() {
+            LogMessage("Invoking ThrowExceptionAsync");
+            try {
+                const result = await window.HybridWebView.InvokeDotNet('ThrowExceptionAsync');
+                LogMessage("ThrowExceptionAsync unexpectedly succeeded with result: " + result);
+            } catch (ex) {
+                LogMessage("Caught async exception from ThrowExceptionAsync: " + ex.message);
+                LogMessage("Exception type: " + (ex.dotNetErrorType || "Unknown"));
+            }
+        }
+
+        // JavaScript functions that throw exceptions (for testing C# exception handling of JS calls)
+        function ThrowJavaScriptError() {
+            LogMessage("ThrowJavaScriptError called - about to throw");
+            throw new Error("This is a test error thrown from JavaScript code!");
+        }
+
+        async function ThrowJavaScriptErrorAsync() {
+            LogMessage("ThrowJavaScriptErrorAsync called - about to throw");
+            await new Promise(resolve => setTimeout(resolve, 100));
+            throw new Error("This is an async test error thrown from JavaScript code!");
+        }
+
     </script>
 </head>
 <body>
@@ -113,6 +151,16 @@
         <button onclick="InvokeDoAsyncWorkParams()">Call C# async method (params)</button>
         <button onclick="InvokeDoAsyncWorkReturn()">Call C# async method (no params) and get simple return value</button>
         <button onclick="InvokeDoAsyncWorkParamsReturn()">Call C# async method (params) and get complex return value</button>
+    </div>
+    <div>
+        <strong>Exception Handling Tests:</strong>
+        <button onclick="InvokeThrowException()">Test C# Exception Handling</button>
+        <button onclick="InvokeThrowExceptionAsync()">Test C# Async Exception Handling</button>
+    </div>
+    <div>
+        <strong>JavaScript Exception Tests (called from C#):</strong>
+        <button onclick="ThrowJavaScriptError()">Test JS Exception</button>
+        <button onclick="ThrowJavaScriptErrorAsync()">Test JS Async Exception</button>
     </div>
     <div>
         Log: <textarea readonly id="messageLog" style="width: 80%; height: 10em;"></textarea>

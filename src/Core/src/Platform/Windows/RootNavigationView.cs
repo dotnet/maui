@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 			PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
 			IsTitleBarAutoPaddingEnabled = false;
 			IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+			AlwaysShowHeader = false;
 
 			RegisterPropertyChangedCallback(IsBackButtonVisibleProperty, BackButtonVisibleChanged);
 			RegisterPropertyChangedCallback(OpenPaneLengthProperty, PaneLengthPropertyChanged);
@@ -55,6 +56,7 @@ namespace Microsoft.Maui.Platform
 
 				UpdateToolbarPlacement();
 				UpdateHeaderPropertyBinding();
+				UpdateHeaderVisibility();
 			}
 		}
 
@@ -66,8 +68,20 @@ namespace Microsoft.Maui.Platform
 
 		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp)
 		{
+			// AlwaysShowHeader must be false only in LeftMinimal mode (Shell flyout) so that
+			// CollapseEmptyHeader() can remove the header space when title/items are empty.
+			// All other modes (e.g. Left / FlyoutBehavior.Locked) keep AlwaysShowHeader=true
+			// so the header area remains visible regardless of content — restoring the
+			// original NavigationView behaviour and preventing the Issue2740 regression.
+			// Note: Top mode (TabbedPage) is safe with AlwaysShowHeader=true because
+			// UpdateToolbarPlacement() sets Header=null there, and WinUI's HeaderContent
+			// (a ContentControl) auto-collapses to zero height when its content is null.
+			// Additionally, UpdateHeaderPropertyBinding() binds HeaderContent.Visibility
+			// directly to Toolbar.Visibility, bypassing AlwaysShowHeader entirely.
+			AlwaysShowHeader = PaneDisplayMode != NavigationViewPaneDisplayMode.LeftMinimal;
 			UpdateToolbarPlacement();
 			UpdatePaneContentGridMargin();
+			UpdateHeaderVisibility();
 		}
 
 
@@ -252,6 +266,54 @@ namespace Microsoft.Maui.Platform
 			UpdateNavigationAndPaneButtonHolderGridStyles();
 		}
 
+		internal void UpdateHeaderVisibility()
+		{
+			if (Toolbar is null || PaneDisplayMode != NavigationViewPaneDisplayMode.LeftMinimal)
+			{
+				return;
+			}
+
+			if (IsHeaderContentEmpty())
+			{
+				CollapseEmptyHeader();
+			}
+			else if (TopNavArea is not null &&
+					(PaneFooter == Toolbar || Header is null))
+			{
+				Header = Toolbar;
+			}
+		}
+
+		bool IsHeaderContentEmpty()
+		{
+			return string.IsNullOrEmpty(Toolbar?.Title) &&
+				   Toolbar?.TitleView is null &&
+				   !HasMenuBarItems() &&
+				   !HasToolbarItems() &&
+				   !HasTitleIcon();
+		}
+
+		bool HasMenuBarItems() => Toolbar?.HasMenuBarContent ?? false;
+
+		bool HasToolbarItems()
+		{
+			if (Toolbar?.CommandBar == null)
+				return false;
+
+			return Toolbar?.CommandBar.PrimaryCommands.Count > 0 ||
+				   Toolbar?.CommandBar.SecondaryCommands.Count > 0;
+		}
+
+		bool HasTitleIcon() => Toolbar?.TitleIconImage?.Visibility == UI.Xaml.Visibility.Visible;
+
+		void CollapseEmptyHeader()
+		{
+			if (Header is not null)
+			{
+				Header = null;
+			}
+		}
+
 		void UpdateNavigationAndPaneButtonHolderGridStyles()
 		{
 			var buttonHeight = Math.Max(_appBarTitleHeight, DefaultNavigationBackButtonHeight);
@@ -367,7 +429,7 @@ namespace Microsoft.Maui.Platform
 		// We use a container because if we just assign our Flyout to the PaneFooter on the NavigationView 
 		// The measure call passes in PositiveInfinity for the measurements which causes the layout system
 		// to crash. So we use this Panel to facilitate more constrained measuring values
-		class FlyoutPanel : Panel
+		partial class FlyoutPanel : Panel
 		{
 			public Maui.IView? FlyoutView { get; set; }
 

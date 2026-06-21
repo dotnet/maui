@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		object ProvideValue(IServiceProvider serviceProvider);
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/AcceptEmptyServiceProviderAttribute.xml" path="Type[@FullName='Microsoft.Maui.Controls.Xaml.AcceptEmptyServiceProviderAttribute']/Docs/*" />
+	/// <summary>Tells the XAML parser and compiler that they may ignore supplied service providers in methods and constructors in the attributed class.</summary>
 	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 	public sealed class AcceptEmptyServiceProviderAttribute : Attribute
 	{

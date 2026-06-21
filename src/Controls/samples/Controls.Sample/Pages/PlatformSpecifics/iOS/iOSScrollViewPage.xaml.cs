@@ -7,12 +7,9 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class iOSScrollViewPage : Microsoft.Maui.Controls.FlyoutPage
 	{
-		ICommand _returnToPlatformSpecificsPage;
-
-		public iOSScrollViewPage(ICommand restore)
+		public iOSScrollViewPage()
 		{
 			InitializeComponent();
-			_returnToPlatformSpecificsPage = restore;
 		}
 
 		void OnButtonClicked(object sender, EventArgs e)
@@ -22,7 +19,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnReturnButtonClicked(object sender, EventArgs e)
 		{
-			_returnToPlatformSpecificsPage.Execute(null);
+			Navigation.PopAsync();
 		}
 	}
 }

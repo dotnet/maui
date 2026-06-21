@@ -176,8 +176,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateDateFromModel(bool animate)
 		{
-			if (_picker.Date.ToDateTime().Date != Element.Date.Date)
-				_picker.SetDate(Element.Date.ToNSDate(), animate);
+			if (_picker.Date.ToDateTime().Date != Element.Date?.Date)
+				_picker.SetDate(Element.Date?.ToNSDate(), animate);
 
 			// Can't use Element.Format because it won't display the correct format if the region and language are set differently
 			if (string.IsNullOrWhiteSpace(Element.Format) || Element.Format.Equals("d", StringComparison.OrdinalIgnoreCase))
@@ -200,11 +200,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else if (Element.Format.Contains('/', StringComparison.Ordinal))
 			{
-				Control.Text = Element.Date.ToString(Element.Format, CultureInfo.InvariantCulture);
+				Control.Text = Element.Date?.ToString(Element.Format, CultureInfo.InvariantCulture);
 			}
 			else
 			{
-				Control.Text = Element.Date.ToString(Element.Format);
+				Control.Text = Element.Date?.ToString(Element.Format);
 			}
 		}
 
@@ -237,13 +237,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		[PortHandler]
 		void UpdateMaximumDate()
 		{
-			_picker.MaximumDate = Element.MaximumDate.ToNSDate();
+			_picker.MaximumDate = Element.MaximumDate?.ToNSDate();
 		}
 
 		[PortHandler]
 		void UpdateMinimumDate()
 		{
-			_picker.MinimumDate = Element.MinimumDate.ToNSDate();
+			_picker.MinimumDate = Element.MinimumDate?.ToNSDate();
 		}
 
 		[PortHandler]

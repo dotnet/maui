@@ -35,7 +35,20 @@ namespace Microsoft.Maui.Platform
 
 		public override void DrawText(RectangleF rect)
 		{
-			rect = TextInsets.InsetRect(rect);
+			var insets = TextInsets;
+
+			// Respect RTL (flip left/right insets)
+			if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			{
+				insets = new UIEdgeInsets(
+					insets.Top,
+					insets.Right,
+					insets.Bottom,
+					insets.Left);
+			}
+
+			rect = insets.InsetRect(rect);
+
 
 			if (_verticalAlignment != UIControlContentVerticalAlignment.Center
 				&& _verticalAlignment != UIControlContentVerticalAlignment.Fill)
@@ -48,18 +61,18 @@ namespace Microsoft.Maui.Platform
 
 		RectangleF AlignVertical(RectangleF rect)
 		{
-			var frameSize = Frame.Size;
-			var height = Lines == 1 ? Font.LineHeight : SizeThatFits(frameSize).Height;
+			var availableSize = rect.Size;
+			var requiredHeight = Lines == 1 ? Font.LineHeight : base.SizeThatFits(rect.Size).Height;
 
-			if (height < frameSize.Height)
+			if (requiredHeight < availableSize.Height)
 			{
 				if (_verticalAlignment == UIControlContentVerticalAlignment.Top)
 				{
-					rect.Height = height;
+					rect.Height = requiredHeight;
 				}
 				else if (_verticalAlignment == UIControlContentVerticalAlignment.Bottom)
 				{
-					rect = new RectangleF(rect.X, rect.Bottom - height, rect.Width, height);
+					rect = new RectangleF(rect.X, rect.Bottom - requiredHeight, rect.Width, requiredHeight);
 				}
 			}
 
@@ -68,10 +81,13 @@ namespace Microsoft.Maui.Platform
 
 		public override SizeF SizeThatFits(SizeF size)
 		{
-			var requestedSize = base.SizeThatFits(size);
+			// Prior to calculating the text size, reduce the padding, and then add the padding back in the AddInsets method.
+			var adjustedWidth = size.Width - TextInsets.Left - TextInsets.Right;
+			var adjustedHeight = size.Height - TextInsets.Top - TextInsets.Bottom;
+			var requestedSize = base.SizeThatFits(new SizeF(adjustedWidth, adjustedHeight));
 
 			// Let's be sure the label is not larger than the container
-			return AddInsets(new Size()
+			return AddInsets(new Size
 			{
 				Width = nfloat.Min(requestedSize.Width, size.Width),
 				Height = nfloat.Min(requestedSize.Height, size.Height),

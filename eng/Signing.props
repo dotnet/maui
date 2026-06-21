@@ -19,17 +19,10 @@
     <FileSignInfo Include="ExCSS.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
 
-    <FileSignInfo Include="OpenSans-Regular.ttf" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="OpenSans-Semibold.ttf" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="FluentSystemIcons-Regular.ttf" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="SegoeUI-Semibold.ttf" CertificateName="3PartySHA2" />
-
-  </ItemGroup>
-  
-  <ItemGroup>
-    <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
-    <FileExtensionSignInfo Update=".zip" CertificateName="None" />
-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
+    <FileSignInfo Include="OpenSans-Regular.ttf" CertificateName="3PartyScriptsSHA2" />
+    <FileSignInfo Include="OpenSans-Semibold.ttf" CertificateName="3PartyScriptsSHA2" />
+    <FileSignInfo Include="FluentSystemIcons-Regular.ttf" CertificateName="3PartyScriptsSHA2" />
+    <FileSignInfo Include="SegoeUI-Semibold.ttf" CertificateName="3PartyScriptsSHA2" />
   </ItemGroup>
 
   <ItemGroup>

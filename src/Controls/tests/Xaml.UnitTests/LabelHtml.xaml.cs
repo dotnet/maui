@@ -1,30 +1,25 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class LabelHtml : ContentPage
 {
-	public partial class LabelHtml : ContentPage
-	{
-		public LabelHtml() => InitializeComponent();
-		public LabelHtml(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public LabelHtml() => InitializeComponent();
 
-		[TestFixture]
-		class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void HtmlInCDATA(XamlInflator inflator)
 		{
-			[Test]
-			public void HtmlInCDATA([Values(true, false)] bool useCompiledXaml)
-			{
-				var html = "<h1>Hello World!</h1><br/>SecondLine";
-				var layout = new LabelHtml(useCompiledXaml);
-				Assert.That(layout.label0.Text, Is.EqualTo(html));
-				Assert.That(layout.label1.Text, Is.EqualTo(html));
-				Assert.That(layout.label2.Text, Is.EqualTo(html));
-				Assert.That(layout.label3.Text, Is.EqualTo(html));
-				Assert.That(layout.label4.Text, Is.EqualTo(html));
-			}
+			var html = "<h1>Hello World!</h1><br/>SecondLine";
+			var layout = new LabelHtml(inflator);
+			Assert.Equal(html, layout.label0.Text);
+			Assert.Equal(html, layout.label1.Text);
+			Assert.Equal(html, layout.label2.Text);
+			Assert.Equal(html, layout.label3.Text);
+			Assert.Equal(html, layout.label4.Text);
 		}
 	}
 }

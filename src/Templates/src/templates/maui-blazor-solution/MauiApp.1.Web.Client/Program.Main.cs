@@ -1,7 +1,3 @@
-#if (IndividualLocalAuth)
-using MauiApp._1.Web.Client;
-using Microsoft.AspNetCore.Components.Authorization;
-#endif
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 #if (SampleContent)
 using MauiApp._1.Shared.Services;

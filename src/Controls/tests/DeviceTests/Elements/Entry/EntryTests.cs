@@ -222,8 +222,82 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		[Description("The IsVisible property of a Entry should match with native IsVisible")]
+		public async Task VerifyEntryIsVisibleProperty()
+		{
+			var entry = new Entry();
+			entry.IsVisible = false;
+			var expectedValue = entry.IsVisible;
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
+			});
+		}
+
+		[Fact(DisplayName = "Android crash when Entry has more than 5000 characters")]
 		[Category(TestCategory.Entry)]
-		[Category(TestCategory.TextInput)]
+		public async Task EntryWithLongTextDoesNotCrash()
+		{
+			string longText = new string('A', 5001);
+			var entry = new Entry
+			{
+				Text = longText,
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+			Assert.NotNull(platformEntry);
+			Assert.Equal(longText, await GetPlatformText(handler));
+
+		}
+
+		[Fact(DisplayName = "Entry with longer text and short text updates correctly")]
+		[Category(TestCategory.Entry)]
+		public async Task EntryWithLongTextAndShortText_UpdatesTextCorrectly()
+		{
+			string longText = new string('A', 5001);
+			var entry = new Entry
+			{
+				Text = longText
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+#if !ANDROID
+		    	await InvokeOnMainThreadAsync(() =>
+			{
+				SetPlatformText(handler, "short");
+			});
+#else
+			SetPlatformText(handler, "short");
+#endif
+			Assert.Equal("short", await GetPlatformText(handler));
+		}
+
+		[Fact(
+#if WINDOWS
+		Skip = "Fails on Windows"
+#endif
+		)]
+		[Description("Entry MaxLength and Text property order is respected")]
+		[Category(TestCategory.Entry)]
+		public async Task EntryMaxLengthAndTextOrder_RespectsMaxLength()
+		{
+			string longText = new string('C', 50);
+			var entry = new Entry
+			{
+				MaxLength = 10,
+				Text = longText
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			Assert.Equal(longText.Substring(0, 10), await GetPlatformText(handler));
+		}
+
+		[Category(TestCategory.Entry)]
 		[Collection(RunInNewWindowCollection)]
 		public class EntryTextInputTests : TextInputTests<EntryHandler, Entry>
 		{

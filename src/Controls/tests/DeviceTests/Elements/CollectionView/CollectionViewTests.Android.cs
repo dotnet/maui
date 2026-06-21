@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
@@ -84,6 +86,217 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(header.Height > 0, "Header should be arranged");
 					Assert.True(footer.Height > 0, "Footer should be arranged");
 				});
+		}
+
+		//src/Compatibility/Core/tests/Android/RendererTests.cs
+		[Fact(DisplayName = "EmptySource should have a count of zero")]
+		[Trait("Category", "CollectionView")]
+		public void EmptySourceCountIsZero()
+		{
+			var emptySource = new EmptySource();
+			var count = emptySource.Count;
+			Assert.Equal(0, count);
+		}
+
+		//src/Compatibility/Core/tests/Android/ObservableItemsSourceTests.cs#L52
+		[Fact(DisplayName = "CollectionView with SnapPointsType set should not crash")]
+		public async Task SnapPointsDoNotCrashOnOlderAPIs()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView();
+
+			var itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+			{
+				SnapPointsType = SnapPointsType.Mandatory
+			};
+			collectionView.ItemsLayout = itemsLayout;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+
+				var platformView = handler.PlatformView;
+
+				collectionView.Handler = null;
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/ObservableItemsSourceTests.cs#L52
+		[Fact(DisplayName = "ObservableCollection modifications are reflected after UI thread processes them")]
+		public async Task ObservableSourceItemsCountConsistent()
+		{
+			SetupBuilder();
+
+			var source = new ObservableCollection<string>();
+			source.Add("Item 1");
+			source.Add("Item 2");
+			var ois = ItemsSourceFactory.Create(source, Application.Current, new MockCollectionChangedNotifier());
+
+			Assert.Equal(2, ois.Count);
+
+			source.Add("Item 3");
+			var count = 0;
+			await InvokeOnMainThreadAsync(() =>
+			{
+				count = ois.Count;
+				Assert.Equal(3, ois.Count);
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView with SelectionMode None should not have click listeners")]
+		public async Task SelectionModeNoneDoesNotSetClickListeners()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.None
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
+
+				Assert.False(viewHolder.ItemView.HasOnClickListeners,
+					"Items should not have click listeners when SelectionMode is None");
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView SelectionMode Single → None removes click listeners")]
+		public async Task SelectionModeSingleToNoneRemovesClickListeners()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.Single
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
+
+				Assert.True(viewHolder.ItemView.HasOnClickListeners,
+					"Items should have click listeners when SelectionMode is Single");
+
+				collectionView.SelectionMode = SelectionMode.None;
+
+				Assert.False(viewHolder.ItemView.HasOnClickListeners,
+					"Items should not have click listeners after changing SelectionMode to None");
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView SelectionMode None → Single attaches click listeners")]
+		public async Task SelectionModeNoneToSingleAttachesClickListeners()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.None
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
+
+				Assert.False(viewHolder.ItemView.HasOnClickListeners,
+					"Items should not have click listeners when SelectionMode is None");
+
+				collectionView.SelectionMode = SelectionMode.Single;
+
+				Assert.True(viewHolder.ItemView.HasOnClickListeners,
+					"Items should have click listeners after changing SelectionMode from None to Single");
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView SelectionMode Single → Multiple keeps click listeners")]
+		public async Task SelectionModeSingleToMultipleKeepsClickListeners()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Item 1", "Item 2", "Item 3" },
+				SelectionMode = SelectionMode.Single
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<CollectionViewHandler>(collectionView);
+				var viewHolder = LayoutAndGetViewHolder(handler.PlatformView);
+
+				Assert.True(viewHolder.ItemView.HasOnClickListeners,
+					"Items should have click listeners when SelectionMode is Single");
+
+				collectionView.SelectionMode = SelectionMode.Multiple;
+
+				Assert.True(viewHolder.ItemView.HasOnClickListeners,
+					"Items should still have click listeners after changing SelectionMode from Single to Multiple");
+			});
+		}
+
+		class MockCollectionChangedNotifier : ICollectionChangedNotifier
+		{
+			public int InsertCount;
+			public int RemoveCount;
+
+			public void NotifyDataSetChanged()
+			{
+			}
+
+			public void NotifyItemChanged(IItemsViewSource source, int startIndex)
+			{
+			}
+
+			public void NotifyItemInserted(IItemsViewSource source, int startIndex)
+			{
+				InsertCount += 1;
+			}
+
+			public void NotifyItemMoved(IItemsViewSource source, int fromPosition, int toPosition)
+			{
+			}
+
+			public void NotifyItemRangeChanged(IItemsViewSource source, int start, int end)
+			{
+			}
+
+			public void NotifyItemRangeInserted(IItemsViewSource source, int startIndex, int count)
+			{
+			}
+
+			public void NotifyItemRangeRemoved(IItemsViewSource source, int startIndex, int count)
+			{
+			}
+
+			public void NotifyItemRemoved(IItemsViewSource source, int startIndex)
+			{
+				RemoveCount += 1;
+			}
+		}
+
+		// Forces the RecyclerView to measure and lay itself out at 500×500 dp, then
+		// returns the ViewHolder at position 0. Centralises boilerplate shared by all
+		// click-listener tests so each test stays focused on its assertion.
+		static global::AndroidX.RecyclerView.Widget.RecyclerView.ViewHolder LayoutAndGetViewHolder(
+			global::AndroidX.RecyclerView.Widget.RecyclerView recyclerView)
+		{
+			recyclerView.Measure(
+				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost),
+				global::Android.Views.View.MeasureSpec.MakeMeasureSpec(500, global::Android.Views.MeasureSpecMode.AtMost));
+			recyclerView.Layout(0, 0, 500, 500);
+
+			var viewHolder = recyclerView.FindViewHolderForAdapterPosition(0);
+			Assert.NotNull(viewHolder);
+			return viewHolder!;
 		}
 
 		Rect GetCollectionViewCellBounds(IView cellContent)

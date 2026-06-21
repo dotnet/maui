@@ -82,7 +82,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.BorderThickness = radioButton.StrokeThickness <= 0 ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(radioButton.StrokeThickness);
+			// Ensure stroke thickness is non-negative; a negative value causes an exception, so it defaults to zero if unset or invalid.
+			nativeRadioButton.BorderThickness = radioButton.StrokeThickness < 0 ? WinUIHelpers.CreateThickness(0) : WinUIHelpers.CreateThickness(radioButton.StrokeThickness);
 		}
 
 		public static void UpdateCornerRadius(this RadioButton nativeRadioButton, IRadioButton radioButton)

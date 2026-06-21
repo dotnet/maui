@@ -65,6 +65,7 @@ public class Issue7678_2 : TestContentPage
 			};
 
 			info.SetBinding(Label.TextProperty, new Binding("Name"));
+			info.SetBinding(Label.AutomationIdProperty, new Binding("Name"));
 
 			grid.Children.Add(info);
 
@@ -116,7 +117,7 @@ public class Issue7678ViewModel_1 : BindableObject
 			});
 		}
 
-		await Task.Delay(500);
+		await Task.Delay(50);
 
 		_items = new ObservableCollection<Issue7678Model_1>(items);
 		OnPropertyChanged(nameof(Items));

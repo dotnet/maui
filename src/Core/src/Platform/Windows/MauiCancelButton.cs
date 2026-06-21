@@ -5,7 +5,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiCancelButton : Button
+	public partial class MauiCancelButton : Button
 	{
 		TextBlock _cancelButtonGlyph;
 		Border _cancelButtonBackground;

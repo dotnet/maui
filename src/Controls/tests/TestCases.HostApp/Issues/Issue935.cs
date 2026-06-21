@@ -58,7 +58,7 @@
 				ItemTemplate = cellTemplate,
 				ItemsSource = items
 			};
-
+			SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 			Content = list;
 		}
 	}

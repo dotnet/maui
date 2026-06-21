@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:TimelineBaseView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:PoolMathApp.Xaml"
+	xmlns:pmdata="clr-namespace:PoolMath.Data"
+	x:DataType="pmdata:TestLog"
+	x:Class="PoolMathApp.Xaml.TimelineViews.TestLogTimelineView">
+    <local:TimelineBaseView.MainContent>
+        <local:FlowingLayout Spacing="6">
+            <local:TestResultBoxView Title="FC" Value="{Binding FreeChlorine, Mode=OneTime}" ValueFormat="0.0" IsVisible="{Binding FreeChlorine, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}}" ChemicalType="FreeChlorine" />
+            <local:TestResultBoxView Title="CC" Value="{Binding CombinedChlorine, Mode=OneTime}" ValueFormat="0.0" IsVisible="{Binding CombinedChlorine, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}}" ChemicalType="CombinedChlorine" />
+            <local:TestResultBoxView Title="pH" Value="{Binding Ph, Mode=OneTime}" ValueFormat="0.0" IsVisible="{Binding Ph, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}}" ChemicalType="Ph" />
+            <local:TestResultBoxView Title="TA" Value="{Binding TotalAlkalinity, Mode=OneTime}" ValueFormat="0" IsVisible="{Binding TotalAlkalinity, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}}" ChemicalType="TotalAlkalinity" />
+            <local:TestResultBoxView Title="CH" Value="{Binding CalciumHardness, Mode=OneTime}" ValueFormat="0" IsVisible="{Binding CalciumHardness, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}}" ChemicalType="CalciumHardness" />
+            <local:TestResultBoxView Title="CYA" Value="{Binding Cya, Mode=OneTime}" ValueFormat="0" IsVisible="{Binding Cya, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}}" ChemicalType="Cya" />
+            <local:TestResultBoxView Title="SALT" Value="{Binding Salt, Mode=OneTime}" ValueFormat="0" IsVisible="{Binding Salt, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}, ConverterParameter={Binding Mode=OneTime, Source={x:Static local:TimelineBindingHelper.TrackSalt}}}" ChemicalType="Salt" />
+            <local:TestResultBoxView Title="BOR" Value="{Binding Borates, Mode=OneTime}" ValueFormat="0" IsVisible="{Binding Borates, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}, ConverterParameter={Binding Mode=OneTime, Source={x:Static local:TimelineBindingHelper.TrackBorates}}}" ChemicalType="Borates" />
+            <local:TestResultBoxView Title="TEMP" Value="{Binding WaterTemp, Mode=OneTime}" ValueFormat="0" IsVisible="{Binding WaterTemp, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}, ConverterParameter={Binding Mode=OneTime, Source={x:Static local:TimelineBindingHelper.TrackWaterTemp}}}" ChemicalType="WaterTemp" />
+            <local:TestResultBoxView Title="CSI" Value="{Binding CSI}" ValueFormat="0.00" IsVisible="{Binding CSI, Mode=OneTime, Converter={StaticResource NullableDoubleToBoolConverter}, ConverterParameter={x:Static local:TimelineBindingHelper.TrackCSI}}" ChemicalType="Csi" />
+        </local:FlowingLayout>
+    </local:TimelineBaseView.MainContent>
+</local:TimelineBaseView>

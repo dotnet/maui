@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Controls
 
 		internal DefinitionCollection(params T[] items) => _internalList = new List<T>(items);
 
+		internal DefinitionCollection(List<T> items, bool copy) => _internalList = copy ? new List<T>(items) : items;
+
 		public void Add(T item)
 		{
 			_internalList.Add(item);

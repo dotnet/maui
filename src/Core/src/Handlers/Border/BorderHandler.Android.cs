@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Views;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Handlers
 
 			// We only want to use a hardware layer for the entering view because its quite likely
 			// the view will invalidate several times the Drawable (Draw).
-			viewGroup.SetLayerType(Android.Views.LayerType.Hardware, null);
+			viewGroup.SetLayerType(LayerType.Hardware, null);
 
 			return viewGroup;
 		}
@@ -42,7 +43,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.RemoveAllViews();
 
 			if (handler.VirtualView.PresentedContent is IView view)
-				handler.PlatformView.AddView(view.ToPlatform(handler.MauiContext));
+			{
+				var platformView = view.ToPlatform(handler.MauiContext);
+				// Ensure the view is detached from any existing parent before adding it
+				platformView.RemoveFromParent();
+				handler.PlatformView.AddView(platformView);
+			}
 		}
 
 		public static partial void MapHeight(IBorderHandler handler, IBorderView border)

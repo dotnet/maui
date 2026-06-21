@@ -224,7 +224,7 @@
     <value>Los recursos de ResourceDictionary requieren un atributo x:Key.</value>
   </data>
   <data name="ResourceMissing" xml:space="preserve">
-    <value>No se encontró el recurso "{0}".</value>
+    <value>No se encuentra el recurso "{0}".</value>
     <comment>0 is a resourceId</comment>
   </data>
   <data name="SByteEnums" xml:space="preserve">

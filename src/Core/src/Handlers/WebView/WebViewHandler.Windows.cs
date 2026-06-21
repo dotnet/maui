@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, WebView2>
 	{
+		WebNavigationResult _navigationResult;
 		WebNavigationEvent _eventState;
 		readonly WebView2Proxy _proxy = new();
 		readonly HashSet<string> _loadedCookies = new();
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_proxy.Connect(this, platformView);
 			base.ConnectHandler(platformView);
+			_navigationResult = WebNavigationResult.Success;
 
 			if (platformView.IsLoaded)
 				OnLoaded();
@@ -71,7 +73,14 @@ namespace Microsoft.Maui.Handlers
 
 				// Reset in this case because this is the last event we will get
 				if (cancel)
+				{
 					_eventState = WebNavigationEvent.NewPage;
+					_navigationResult = WebNavigationResult.Cancel;
+				}
+				else
+				{
+					_navigationResult = WebNavigationResult.Success;
+				}
 			}
 		}
 
@@ -85,6 +94,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
 		{
 			handler.PlatformView?.UpdateUserAgent(webView);
+		}
+
+		//TODO: Make it public in .NET 11.
+		internal static void MapBackground(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView?.UpdateBackground(webView);
 		}
 
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
@@ -311,6 +326,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal static void MapFlowDirection(IWebViewHandler handler, IWebView webView)
+		{
+			// Explicitly do nothing here to override the base ViewHandler.MapFlowDirection behavior
+			// This prevents the WebView2.FlowDirection from being set, avoiding content mirroring
+		}
+
 		class WebView2Proxy
 		{
 			WeakReference<Window>? _window;
@@ -371,6 +392,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler)
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
+					sender.UpdateBackground(handler.VirtualView);
 					if (sender.Source is not null)
 					{
 						handler.SyncPlatformCookies(sender.Source.ToString()).FireAndForget();
@@ -388,7 +410,7 @@ namespace Microsoft.Maui.Handlers
 
 			void OnNavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
 			{
-				if (Handler is WebViewHandler handler)
+				if (Handler is WebViewHandler handler && handler._navigationResult is not WebNavigationResult.Cancel)
 				{
 					if (args.IsSuccess)
 						handler.NavigationSucceeded(sender, args);

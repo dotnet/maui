@@ -24,10 +24,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("TestImageButton");
 
-			await Task.Yield(); // Wait for Ripple Effect animation to complete.
+			await Task.Yield(); // Ensure UI thread completes pending work
 
-			Thread.Sleep(1000);
-			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
+			// Use retryTimeout to wait for ripple animation to complete
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }

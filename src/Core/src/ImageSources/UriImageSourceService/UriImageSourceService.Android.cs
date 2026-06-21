@@ -4,13 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Widget;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
 	public partial class UriImageSourceService
 	{
-		public override Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			var uriImageSource = (IUriImageSource)imageSource;
 			if (!uriImageSource.IsEmpty)

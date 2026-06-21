@@ -95,6 +95,18 @@ namespace UITest.Appium
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, appId);
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
+			
+			var headless = config.GetProperty<bool>("Headless");
+			if (headless)
+			{
+				// Appium has the ability to start Android emulators in a "headless" mode.
+				// This means that the devices won't have any graphical user interface; but they will still be running silently, testing the app.
+				options.AddAdditionalAppiumOption("isHeadless", true);
+			}
+
+			// The UiAutomator2 driver continuously checks for toast messages, consuming valuable CPU cycles.
+			// Because our tests don’t require this feature, disable it to improve performance and consistency, especially in scrolling actions.
+			options.AddAdditionalAppiumOption("disableAndroidWatchers", "true");
 
 			// Maximum amount of milliseconds to wait until the application under test is installed.
 			// 90000 ms by default
@@ -109,6 +121,12 @@ namespace UITest.Appium
 			// Whether to disable window animations when starting the instrumentation process.
 			// The animation scale will be restored automatically after the instrumentation process ends.
 			options.AddAdditionalAppiumOption("appium:disableWindowAnimation", true);
+
+			// On some emulator images (e.g. API 30 on hosted CI agents), the
+			// settings service may not fully support hidden_api_policy commands.
+			// This causes UiAutomator2 to throw "Can't find service: settings".
+			// Ignoring this non-critical error allows tests to proceed normally.
+			options.AddAdditionalAppiumOption("appium:ignoreHiddenApiPolicyError", true);
 
 			return options;
 		}

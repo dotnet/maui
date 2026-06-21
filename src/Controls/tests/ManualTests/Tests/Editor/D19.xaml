@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Microsoft.Maui.ManualTests.Tests.RefreshView.D19"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="D19">
+    <VerticalStackLayout Padding="20">
+        <Label Text="1. Resize the window to be smaller and larger." />
+        <Label Text="2. The test fails if there are any issues with the UI after resizing the window." />
+        <Editor x:Name="Editor"
+                Loaded="Editor_Loaded"
+                VerticalOptions="Fill"
+                VerticalTextAlignment="Center" />
+    </VerticalStackLayout>
+</ContentPage>

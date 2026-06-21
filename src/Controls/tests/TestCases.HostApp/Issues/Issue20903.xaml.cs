@@ -18,7 +18,7 @@ public partial class Issue20903 : ContentPage
 		eventCountLabel.Text = _callbackCalledCount.ToString();
 	}
 
-	private void addDoubleTapHandlerButton_Clicked(object sender, EventArgs e)
+	private void addDoubleTapHandlerButton_Clicked(object? sender, EventArgs e)
 	{
 		TapGestureRecognizer doubleTapGestureRecognizer = new();
 		doubleTapGestureRecognizer.Tapped += OnLabelBeingDoubleTapped;

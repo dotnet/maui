@@ -25,14 +25,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			double targetWidth = _width();
-			double targetHeight = _height();
+			double targetWidth = NormalizeDimension(_width());
+			double targetHeight = NormalizeDimension(_height());
 
 			if (!double.IsInfinity(targetWidth))
-				targetWidth = (int)Context.FromPixels(targetWidth);
+				targetWidth = Context.FromPixels(targetWidth);
 
 			if (!double.IsInfinity(targetHeight))
-				targetHeight = (int)Context.FromPixels(targetHeight);
+				targetHeight = Context.FromPixels(targetHeight);
 
 			if (Content.VirtualView.Handler is IPlatformViewHandler pvh)
 			{
@@ -48,5 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SetMeasuredDimension((int)size.Width, (int)size.Height);
 			}
 		}
+
+		static double NormalizeDimension(double value) => value == int.MaxValue ? double.PositiveInfinity : value;
 	}
 }

@@ -1,0 +1,127 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             SafeAreaEdges="Container"
+             x:Class="Maui.Controls.Sample.CarouselViewControlPage"
+             Title="CarouselViewControlPage">
+
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"
+                           AutomationId="Options"/>
+       </ContentPage.ToolbarItems>
+
+       <VerticalStackLayout Padding="10"
+                            Spacing="20">
+
+              <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
+                    ColumnDefinitions="Auto,*"
+                    RowSpacing="8"
+                    ColumnSpacing="10">
+
+                     <!-- Add Button -->
+                     <Button Grid.Row="0"
+                             Grid.ColumnSpan="2"
+                             Text="Add"
+                             Command="{Binding AddItemCommand}"
+                             WidthRequest="150"
+                             HorizontalOptions="Center"
+                             AutomationId="AddButton"/>
+
+                     <!-- CarouselView -->
+                     <local:CarouselView2 Grid.Row="1"
+                                          Grid.ColumnSpan="2"
+                                          x:Name="carouselView"
+                                          HeightRequest="300"
+                                          WidthRequest="300"
+                                          ItemsSource="{Binding ItemsSource}"
+                                          EmptyView="{Binding EmptyView}"
+                                          EmptyViewTemplate="{Binding EmptyViewTemplate}"
+                                          ItemTemplate="{Binding ItemTemplate}"
+                                          Loop="{Binding Loop}"
+                                          IsSwipeEnabled="{Binding IsSwipeEnabled}"
+                                          PeekAreaInsets="{Binding PeekAreaInsets}"
+                                          Position="{Binding Position}"
+                                          CurrentItem="{Binding CurrentItem}"
+                                          CurrentItemChanged="OnCarouselView_CurrentItemChanged"
+                                          PositionChanged="OnCarouselView_PositionChanged"
+                                          ItemsUpdatingScrollMode="{Binding ItemsUpdatingScrollMode}"
+                                          IndicatorView="{x:Reference indicatorView}"
+                                          ItemsLayout="{Binding ItemsLayout}"
+                                          FlowDirection="{Binding FlowDirection}"
+                                          AutomationId="CarouselViewControl"/>
+
+                     <!-- IndicatorView -->
+                     <IndicatorView Grid.Row="2"
+                                    Grid.ColumnSpan="2"
+                                    x:Name="indicatorView"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="End"
+                                    Margin="0,0,0,20"
+                                    IndicatorColor="LightGray"
+                                    FlowDirection="{Binding FlowDirection}"
+                                    SelectedIndicatorColor="DarkGray"
+                                    IndicatorSize="12"/>
+
+                     <Label Grid.Row="3"
+                            Grid.Column="0"
+                            FontAttributes="Bold"
+                            Text="Current Item:"/>
+                     <Label Grid.Row="3"
+                            Grid.Column="1"
+                            Text="{Binding CurrentItemText}"
+                            TextColor="Blue"
+                            AutomationId="CurrentItemLabel"/>
+
+                     <Label Grid.Row="4"
+                            Grid.Column="0"
+                            FontAttributes="Bold"
+                            Text="Previous Item:"/>
+                     <Label Grid.Row="4"
+                            Grid.Column="1"
+                            Text="{Binding PreviousItemText}"
+                            TextColor="Blue"
+                            AutomationId="PreviousItemLabel"/>
+
+                     <Label Grid.Row="5"
+                            Grid.Column="0"
+                            FontAttributes="Bold"
+                            Text="Current Position:"/>
+                     <Label Grid.Row="5"
+                            Grid.Column="1"
+                            Text="{Binding CurrentPosition}"
+                            TextColor="Blue"
+                            AutomationId="CurrentPositionLabel"/>
+
+                     <Label Grid.Row="6"
+                            Grid.Column="0"
+                            FontAttributes="Bold"
+                            Text="Previous Position:"/>
+                     <Label Grid.Row="6"
+                            Grid.Column="1"
+                            Text="{Binding PreviousItemPosition}"
+                            TextColor="Blue"
+                            AutomationId="PreviousPositionLabel"/>
+              </Grid>
+
+              <!-- ScrollTo Controls (Outside Grid) -->
+              <HorizontalStackLayout Spacing="10"
+                                     HorizontalOptions="Start">
+                     <Label FontAttributes="Bold"
+                            VerticalOptions="Center"
+                            Text="Scroll To Index:"/>
+                     <local:UITestEntry Grid.Column="1"
+                                        x:Name="scrollToIndexEntry"
+                                        Placeholder="Enter index"
+                                        IsCursorVisible="False"
+                                        MaxLength="3"
+                                        WidthRequest="100"
+                                        AutomationId="ScrollToIndexEntry"/>
+                     <Button Text="Scroll To"
+                             Clicked="OnScrollToButtonClicked"
+                             HorizontalOptions="Center"
+                             WidthRequest="150"
+                             AutomationId="ScrollToButton"/>
+              </HorizontalStackLayout>
+       </VerticalStackLayout>
+</ContentPage>

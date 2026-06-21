@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Shell.FlyoutBehavior="Flyout"
+    FlyoutIcon="groceries.png"
+    Shell.ForegroundColor="red"
+    x:Class="Maui.Controls.Sample.Issues.Issue25920">
+    <ShellContent Title="Home">
+        <ContentPage>
+            <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                <Label AutomationId="Label" Text="This is Label"/>
+            </StackLayout>  
+        </ContentPage>
+    </ShellContent>
+   
+</Shell>

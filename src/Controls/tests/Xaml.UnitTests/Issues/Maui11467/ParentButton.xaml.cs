@@ -6,11 +6,6 @@ public partial class ParentButton : Button
 {
 	public ParentButton() => InitializeComponent();
 
-	public ParentButton(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
 	EventHandler _myEvent;
 
 	public event EventHandler MyEvent

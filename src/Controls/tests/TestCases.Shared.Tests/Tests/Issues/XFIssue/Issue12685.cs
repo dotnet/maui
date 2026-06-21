@@ -21,12 +21,8 @@ public class Issue12685 : _IssuesUITest
 	{
 		var testLabel = App.WaitForFirstElement(StatusLabelId);
 		Assert.That(testLabel.ReadText(), Is.EqualTo(ResetStatus));
-		var labelRect = App.WaitForFirstElement(StatusLabelId).GetRect(); // Path element not able get via automationid so getting the rect of the label calculated points to tap on the path
-#if MACCATALYST // TapCoordinates is not working on MacCatalyst Issue: https://github.com/dotnet/maui/issues/19754
-        App.ClickCoordinates(labelRect.X + 3, labelRect.Y - 10);
-#else
+		var labelRect = App.WaitForFirstElement(StatusLabelId).GetRect(); // Path element not able get via AutomationId so getting the rect of the label calculated points to tap on the path
 		App.TapCoordinates(labelRect.X + 3, labelRect.Y - 10);
-#endif
 		App.WaitForElement(StatusLabelId);
 		Assert.That(testLabel.ReadText(), Is.EqualTo(ClickedStatus));
 	}

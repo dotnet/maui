@@ -49,8 +49,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if MACCATALYST
-		//TODO: make this public on NET8
-		internal static void MapBackground(IButtonHandler handler, IButton button)
+		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			//If this is a Mac optimized interface
 			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
@@ -74,8 +73,14 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				handler.PlatformView?.UpdateBackground(button);
+				handler.PlatformView?.UpdateBackground(button.Background);
 			}
+		}
+#else
+		// TODO: Make this public in .NET 11
+		internal static void MapBackground(IButtonHandler handler, IButton button)
+		{
+			handler.PlatformView?.UpdateBackground(button.Background);
 		}
 #endif
 

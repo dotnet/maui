@@ -16,7 +16,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			Label.Font = UIFont.PreferredHeadline;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Constraint = Label.HeightAnchor.ConstraintEqualTo(Frame.Height);
+#pragma warning restore CS0618 // Type or member is obsolete
 			Constraint.Priority = (float)UILayoutPriority.DefaultHigh;
 			Constraint.Active = true;
 		}

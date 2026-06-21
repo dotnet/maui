@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer
 	{
+		CGSize _previousBounds;
 		UIVisualEffectView _blurView;
 		UIImageView _bgImage;
 		readonly IShellContext _shellContext;
@@ -79,6 +80,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_tableViewController.View.UpdateFlowDirection(_shellContext.Shell);
 			_headerView?.UpdateFlowDirection(_shellContext.Shell);
+			_footerView?.UpdateFlowDirection(_shellContext.Shell);
 		}
 
 		void UpdateFlyoutHeader()
@@ -97,7 +99,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (header is not null)
+			{
 				_headerView = new ShellFlyoutHeaderContainer(((IShellController)_shellContext.Shell).FlyoutHeader);
+
+				// Resolve MatchParent to the Shell's concrete FlowDirection before calling UpdateFlowDirection.
+				// Shell sub-elements have a disconnected MAUI visual tree, so MatchParent cannot traverse up
+				// to the Shell automatically. This is a one-way mutation consistent with existing codebase
+				// patterns; if Shell.FlowDirection changes at runtime, UpdateFlowDirection() will still
+				// update the native UIView correctly because it uses the Shell as context.
+				if (header.FlowDirection == FlowDirection.MatchParent)
+				{
+					header.FlowDirection = _shellContext.Shell.FlowDirection;
+				}
+
+				_headerView.UpdateFlowDirection(_shellContext.Shell);
+			}
 			else
 				_headerView = null;
 
@@ -141,6 +157,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				_footerView.ClipsToBounds = true;
 				_footer.MeasureInvalidated += OnFooterMeasureInvalidated;
+
+				// Same approach as header — use Shell as context without mutating _footer.FlowDirection,
+				// so runtime Shell.FlowDirection changes continue to resolve correctly.
+				_footerView.UpdateFlowDirection(_shellContext.Shell);
 			}
 
 			_tableViewController.FooterView = _footerView;
@@ -216,7 +236,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var footerWidth = View.Frame.Width;
 
-			_footerView.Frame = new CoreGraphics.CGRect(0, View.Frame.Height - footerHeight, footerWidth, footerHeight);
+			_footerView.Frame = new CGRect(0, View.Frame.Height - footerHeight - View.SafeAreaInsets.Bottom, footerWidth, footerHeight);
 
 			_tableViewController.LayoutParallax();
 		}
@@ -226,6 +246,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewWillLayoutSubviews();
 			UpdateFooterPosition();
 			UpdateFlyoutContent();
+			var currentSize = View.Bounds.Size;
+			if (_previousBounds != currentSize)
+			{
+				// Whenever the layout changes, the background needs to be redrawn to match the new view dimensions. This is especially important for gradients.
+				UpdateBackground();
+				_previousBounds = currentSize;
+			}
 		}
 
 		protected virtual void UpdateBackground()
@@ -337,7 +364,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uIViews[BlurIndex] = _blurView;
 			_uIViews[BackgroundImageIndex] = _bgImage;
 
-			UpdateBackground();
 			UpdateFlowDirection();
 		}
 

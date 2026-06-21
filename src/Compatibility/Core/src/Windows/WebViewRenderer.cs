@@ -360,8 +360,7 @@ if(bases.length == 0){
 
 		void Load()
 		{
-			if (Element.Source != null)
-				Element.Source.Load(this);
+			Element.Source?.Load(this);
 
 			UpdateCanGoBackForward();
 		}

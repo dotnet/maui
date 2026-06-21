@@ -42,8 +42,8 @@ namespace Microsoft.Maui.Resizetizer
 				return new ResizedImageInfo { Dpi = dpi, Filename = destination };
 			}
 
-			MemoryStream memoryStream = new MemoryStream();
-			tools.Resize(dpi, destination, () => memoryStream);
+			using MemoryStream memoryStream = new MemoryStream();
+			tools.Resize(dpi, destination, memoryStream);
 			memoryStream.Position = 0;
 
 			int numberOfImages = 1;

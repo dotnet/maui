@@ -13,7 +13,7 @@
                             <Label Text="Current Shell Title : " FontAttributes="Bold"/>
                             <Label Text="{Binding Source={x:Reference tab}, Path=Title}" AutomationId="LabelId" />
                         </HorizontalStackLayout>
-                        <Button Text="Change Title" AutomationId="ChangeShellContentTitle" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="100" HeightRequest="40" Clicked="OnButtonClicked"/>
+                        <Button Text="Change Title" AutomationId="ChangeShellContentTitle" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="{OnPlatform MacCatalyst=150, Default=100}" HeightRequest="40" Clicked="OnButtonClicked"/>
                     </StackLayout>
                 </ContentPage>
             </ShellContent>

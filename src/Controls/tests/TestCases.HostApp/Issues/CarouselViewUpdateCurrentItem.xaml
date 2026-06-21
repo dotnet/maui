@@ -2,6 +2,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Issues.CarouselViewUpdateCurrentItem"
     BackgroundColor="Blue">
     <ContentPage.Resources>
@@ -59,7 +60,9 @@
             AutomationId="searchBar" Grid.Row="2" x:Name="matchSearch" 
             BindingContext="{Binding CarouselCurrentItem}" Text="{Binding Title, Mode=OneWay}" 
             Placeholder="Title" WidthRequest="300" />
-        <CarouselView 
+        <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/29312 -->  
+        <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->      
+        <local:CarouselView1
             Grid.Row="3" x:Name="cv"
             ItemsSource="{Binding Items}" 
             CurrentItem="{Binding CarouselCurrentItem}" 

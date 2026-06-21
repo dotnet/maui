@@ -13,10 +13,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CarouselViewLoopManager _carouselViewLoopManager;
 		int _oldPosition;
 		int _gotoPosition = -1;
+		int _scrollToCounter = 0;
 		bool _noNeedForScroll;
 		bool _initialized;
 		bool _isVisible;
 		bool _disposed;
+		bool _isInternalPositionUpdate;
 
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
@@ -34,7 +36,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
 			if (!IsSwipeEnabled)
+			{
 				return false;
+			}
 
 			return base.OnInterceptTouchEvent(ev);
 		}
@@ -74,11 +78,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_carouselViewLoopManager?.SetItemsSource(null);
 				_carouselViewLoopManager = null;
 
-				if (_itemDecoration != null)
-				{
-					_itemDecoration.Dispose();
-					_itemDecoration = null;
-				}
+				_itemDecoration?.Dispose();
+				_itemDecoration = null;
 
 				ClearLayoutListener();
 			}
@@ -168,10 +169,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var adapter = GetAdapter();
 
-			if (adapter != null)
-			{
-				adapter.NotifyItemChanged(_oldPosition);
-			}
+			adapter?.NotifyItemChanged(_oldPosition);
 
 			base.UpdateItemSpacing();
 		}
@@ -183,11 +181,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_carouselViewLoopManager == null)
 				return;
 
+			_scrollToCounter++;
+
 			// Special case here
 			// We could have a race condition where we are scrolling our collection to center the first item
 			// And at the same time the user is requesting we go to a particular item
 			if (position == -1)
 			{
+				_gotoPosition = -1;
 				if (Carousel.Loop)
 					_carouselViewLoopManager.AddPendingScrollTo(args);
 
@@ -196,6 +197,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (args.IsAnimated)
 			{
+				if (_gotoPosition == -1 && _initialized)
+					_gotoPosition = args.Index;
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
 			}
 			else
@@ -221,9 +224,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!(ItemsViewAdapter.ItemsSource is IItemsViewSource observableItemsSource))
 				return;
 
+			// Set flag to disable animation during collection changes
+			_isInternalPositionUpdate = true;
+
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
 			var count = observableItemsSource.Count;
+			var savedScrollToCounter = _scrollToCounter;
 
 			bool removingCurrentElement = currentItemPosition == -1;
 			bool removingLastElement = e.OldStartingIndex == count;
@@ -264,7 +271,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (removingAnyPrevious)
 			{
+				_isInternalPositionUpdate = false;
 				return;
+			}
+
+			// While Modifying the collection we should consider the ItemsUpdatingScrollMode to update the position
+			if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				if (count == 0)
+				{
+					carouselPosition = 0;
+				}
+				else
+				{
+					carouselPosition = count - 1;
+				}
+
+			}
+			else if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				carouselPosition = 0;
 			}
 
 			Carousel.
@@ -273,18 +299,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				GetDispatcher()
 					.Dispatch(() =>
 					{
-
-						SetCurrentItem(carouselPosition);
-						UpdatePosition(carouselPosition);
-
-						//If we are adding or removing the last item we need to update
-						//the inset that we give to items so they are centered
-						if (e.NewStartingIndex == count - 1 || removingLastElement)
+						try
 						{
-							UpdateItemDecoration();
-						}
+							// If someone called explicit ScrollTo before the dispatched
+							// callback was delivered then don't override it.
+							if (_scrollToCounter == savedScrollToCounter)
+							{
+								SetCurrentItem(carouselPosition);
+								UpdatePosition(carouselPosition);
+								//If we are adding or removing the last item we need to update
+								//the inset that we give to items so they are centered
+								if (e.NewStartingIndex == count - 1 || removingLastElement)
+								{
+									UpdateItemDecoration();
+								}
 
-						UpdateVisualStates();
+								UpdateVisualStates();
+
+								ScrollToPosition(carouselPosition);
+							}
+						}
+						finally
+						{
+							// Reset flag after collection operations complete,
+							// always reset even if ScrollTo was called or an exception occurred
+							_isInternalPositionUpdate = false;
+						}
 					});
 		}
 
@@ -424,6 +464,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!_initialized || !_isVisible)
 				return;
 
+			// Do not process scroll events triggered by internal collection changes
+			// (e.g. item inserted at index 0 shifts RecyclerView scroll offset)
+			if (_isInternalPositionUpdate)
+				return;
+
 			_noNeedForScroll = false;
 			var index = e.CenterItemIndex;
 			if (Carousel?.Loop == true)
@@ -469,7 +514,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void SetCurrentItem(int carouselPosition)
 		{
-			if (ItemsViewAdapter?.ItemsSource?.Count == 0)
+			if (ItemsViewAdapter?.ItemsSource?.Count == 0 || carouselPosition < 0)
 				return;
 
 			var item = ItemsViewAdapter.ItemsSource.GetItem(carouselPosition);
@@ -484,10 +529,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && currentItemPosition != carouselPosition)
 			{
 				_gotoPosition = currentItemPosition;
-				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
+				ScrollToItemPosition(currentItemPosition, Carousel.AnimateCurrentItemChanges);
 			}
-
-			_gotoPosition = -1;
 		}
 
 		void IMauiCarouselRecyclerView.UpdateFromPosition()
@@ -507,7 +550,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-
 			if (carouselPosition >= itemCount || carouselPosition < 0)
 				throw new IndexOutOfRangeException($"Can't set CarouselView to position {carouselPosition}. ItemsSource has {itemCount} items.");
 
@@ -523,11 +565,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var centerPosition = GetCarouselViewCurrentIndex(carouselPosition);
 			if (_gotoPosition == -1 && !Carousel.IsDragging && !Carousel.IsScrolling && centerPosition != carouselPosition)
 			{
-				_gotoPosition = carouselPosition;
+				if (_initialized)
+				{
+					_gotoPosition = carouselPosition;
+				}
 
-				ItemsView.ScrollTo(carouselPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
+				ScrollToItemPosition(carouselPosition, Carousel.AnimatePositionChanges);
 			}
 			SetCurrentItem(carouselPosition);
+		}
+
+		void ScrollToItemPosition(int position, bool shouldAnimate)
+		{
+			if (position < 0 || position >= (ItemsViewAdapter?.ItemsSource?.Count ?? 0))
+				return;
+
+			// Disable animation during collection changes to prevent cascading scroll events
+			var animate = shouldAnimate && !_isInternalPositionUpdate;
+			ItemsView.ScrollTo(position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
 		}
 
 		void AddLayoutListener()

@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	public class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
+	public class PlatformCanvas : AbstractCanvas<PlatformCanvasState>, IBlurrableCanvas
 	{
 		private Canvas _canvas;
 		private Shader _shader;
@@ -547,7 +547,20 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void PlatformDrawPath(PathF aPath)
 		{
 			var platformPath = aPath.AsAndroidPath();
-			_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
+
+			if (_shader != null)
+			{
+				// Mirror iOS ReplacePathWithStrokedPath: convert stroke geometry into a fill path
+				using var strokedOutline = new Path();
+				CurrentState.StrokePaintWithAlpha.GetFillPath(platformPath, strokedOutline);
+				// FillPaintWithAlpha already has the gradient shader from SetFillPaint
+				_canvas.DrawPath(strokedOutline, CurrentState.FillPaintWithAlpha);
+			}
+			else
+			{
+				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
+			}
+
 			platformPath.Dispose();
 		}
 
@@ -602,18 +615,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			_canvas.Save();
 			_canvas.Translate(x, y - CurrentState.ScaledFontSize);
-#pragma warning disable CA1416 // Validate platform compatibility
-#pragma warning disable CA1422 // Validate platform compatibility
-			var layout = new StaticLayout(
-				value,
-				CurrentState.FontPaint,
-				512,
-				Layout.Alignment.AlignNormal,
-				1f,
-				0f,
-				false);
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
+			StaticLayout layout = TextLayoutUtils.CreateLayout(value, CurrentState.FontPaint, 512, Layout.Alignment.AlignNormal);
 			layout.Draw(_canvas);
 			_canvas.Restore();
 		}
@@ -668,22 +670,16 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			base.ResetState();
 
-			if (_shader != null)
-			{
-				_shader.Dispose();
-				_shader = null;
-			}
+			_shader?.Dispose();
+			_shader = null;
 
 			_stateService.Reset(CurrentState);
 		}
 
 		public override bool RestoreState()
 		{
-			if (_shader != null)
-			{
-				_shader.Dispose();
-				_shader = null;
-			}
+			_shader?.Dispose();
+			_shader = null;
 
 			return base.RestoreState();
 		}

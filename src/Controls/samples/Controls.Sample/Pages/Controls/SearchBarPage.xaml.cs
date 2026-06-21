@@ -13,13 +13,13 @@ namespace Maui.Controls.Sample.Pages
 		void OnSearchBarFocused(object sender, FocusEventArgs e)
 		{
 			var text = ((SearchBar)sender).Text;
-			DisplayAlert("Focused", text, "Ok");
+			DisplayAlertAsync("Focused", text, "Ok");
 		}
 
 		void OnSearchBarUnfocused(object sender, FocusEventArgs e)
 		{
 			var text = ((SearchBar)sender).Text;
-			DisplayAlert("Unfocused", text, "Ok");
+			DisplayAlertAsync("Unfocused", text, "Ok");
 		}
 
 		void OnSearchBarTextChanged(object sender, TextChangedEventArgs args)

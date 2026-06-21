@@ -1,54 +1,44 @@
-using Microsoft.Maui.Controls;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Issue3076Button : Button
 {
-	public class Issue3076Button : Button
-	{
-		public static readonly BindableProperty VerticalContentAlignmentProperty =
-			BindableProperty.Create("VerticalContentAlignemnt", typeof(TextAlignment), typeof(Issue3076Button), TextAlignment.Center);
+	public static readonly BindableProperty VerticalContentAlignmentProperty =
+		BindableProperty.Create(nameof(VerticalContentAlignment), typeof(TextAlignment), typeof(Issue3076Button), TextAlignment.Center);
 
-		public TextAlignment VerticalContentAlignment
-		{
-			get { return (TextAlignment)GetValue(VerticalContentAlignmentProperty); }
-			set { SetValue(VerticalContentAlignmentProperty, value); }
-		}
+	public TextAlignment VerticalContentAlignment
+	{
+		get { return (TextAlignment)GetValue(VerticalContentAlignmentProperty); }
+		set { SetValue(VerticalContentAlignmentProperty, value); }
 	}
+}
 
-	public partial class Issue3076 : ContentPage
+public partial class Issue3076 : ContentPage
+{
+	public Issue3076() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests
 	{
-		public Issue3076()
+		[Theory]
+		[XamlInflatorData]
+		internal void CanUseBindableObjectDefinedInThisAssembly(XamlInflator inflator)
 		{
-			InitializeComponent();
+			var layout = new Issue3076(inflator);
+
+			Assert.IsType<Issue3076Button>(layout.local);
+			Assert.Equal(TextAlignment.Start, layout.local.VerticalContentAlignment);
 		}
 
-		public Issue3076(bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void CanUseBindableObjectDefinedInOtherAssembly(XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
+			var layout = new Issue3076(inflator);
 
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void CanUseBindableObjectDefinedInThisAssembly(bool useCompiledXaml)
-			{
-				var layout = new Issue3076(useCompiledXaml);
-
-				Assert.That(layout.local, Is.TypeOf<Issue3076Button>());
-				Assert.AreEqual(TextAlignment.Start, layout.local.VerticalContentAlignment);
-			}
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void CanUseBindableObjectDefinedInOtherAssembly(bool useCompiledXaml)
-			{
-				var layout = new Issue3076(useCompiledXaml);
-
-				Assert.That(layout.controls, Is.TypeOf<Microsoft.Maui.Controls.ControlGallery.Issue3076Button>());
-				Assert.AreEqual(TextAlignment.Start, layout.controls.HorizontalContentAlignment);
-			}
+			Assert.IsType<Microsoft.Maui.Controls.ControlGallery.Issue3076Button>(layout.controls);
+			Assert.Equal(TextAlignment.Start, layout.controls.HorizontalContentAlignment);
 		}
 	}
 }

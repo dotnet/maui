@@ -1,6 +1,6 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
-	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ToolbarPlacement.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ToolbarPlacement']/Docs/*" />
+	/// <summary>Enumerates toolbar positions for pages on the Windows platform.</summary>
 	public enum ToolbarPlacement
 	{
 		/// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +23,6 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "Using SelectedTab Color doesnt crash")]
@@ -105,8 +105,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
-				menuItem1.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
-				menuItem2.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
+				menuItem1.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
+				menuItem2.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
 
 				Assert.NotEqual(icon1, menuItem1.Icon);
 				Assert.NotEqual(icon2, menuItem2.Icon);
@@ -139,6 +139,116 @@ namespace Microsoft.Maui.DeviceTests
 
 				// make sure changes have time to propagate
 				await Task.Delay(50);
+			});
+		}
+
+		[Fact]
+		[Description("The ScaleX property of a TabbedPage should match with native ScaleX")]
+		public async Task ScaleXConsistent()
+		{
+			var tabbedPage = new TabbedPage() { ScaleX = 0.45f };
+			var expected = tabbedPage.ScaleX;
+			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+			Assert.Equal(expected, platformScaleX);
+		}
+
+		[Fact]
+		[Description("The ScaleY property of a TabbedPage should match with native ScaleY")]
+		public async Task ScaleYConsistent()
+		{
+			var tabbedPage = new TabbedPage() { ScaleY = 1.23f };
+			var expected = tabbedPage.ScaleY;
+			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The Scale property of a TabbedPage should match with native Scale")]
+		public async Task ScaleConsistent()
+		{
+			var tabbedPage = new TabbedPage() { Scale = 2.0f };
+			var expected = tabbedPage.Scale;
+			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+			Assert.Equal(expected, platformScaleX);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The RotationX property of a TabbedPage should match with native RotationX")]
+		public async Task RotationXConsistent()
+		{
+			var tabbedPage = new TabbedPage() { RotationX = 33.0 };
+			var expected = tabbedPage.RotationX;
+			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationX);
+			Assert.Equal(expected, platformRotationX);
+		}
+
+		[Fact]
+		[Description("The RotationY property of a TabbedPage should match with native RotationY")]
+		public async Task RotationYConsistent()
+		{
+			var tabbedPage = new TabbedPage() { RotationY = 87.0 };
+			var expected = tabbedPage.RotationY;
+			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
+			Assert.Equal(expected, platformRotationY);
+		}
+
+		[Fact]
+		[Description("The Rotation property of a TabbedPage should match with native Rotation")]
+		public async Task RotationConsistent()
+		{
+			var tabbedPage = new TabbedPage() { Rotation = 23.0 };
+			var expected = tabbedPage.Rotation;
+			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
+			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
+			Assert.Equal(expected, platformRotation);
+		}
+
+		[Fact]
+		[Description("BottomNavigationView should extend to screen bottom in Edge-to-Edge mode (Issue 33344)")]
+		public async Task BottomNavigationViewExtendsToScreenBottom()
+		{
+			SetupBuilder();
+
+			var tabbedPage = new TabbedPage
+			{
+				Children =
+				{
+					new ContentPage() { Title = "Page1" },
+					new ContentPage() { Title = "Page2" }
+				},
+				BarBackgroundColor = Colors.Orange
+			};
+
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage
+				.SetToolbarPlacement(tabbedPage, Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNavView = GetBottomNavigationView(handler);
+				Assert.NotNull(bottomNavView);
+
+				// Wait for layout to complete
+				await AssertEventually(() => bottomNavView.Height > 0);
+
+				var location = new int[2];
+				bottomNavView.GetLocationOnScreen(location);
+				var bottomNavBottom = location[1] + bottomNavView.Height;
+
+				var decorView = MauiContext.Context.GetActivity()?.Window?.DecorView;
+				Assert.NotNull(decorView);
+
+				decorView.GetLocationOnScreen(location);
+				var screenHeight = location[1] + decorView.Height;
+
+				Assert.True(Math.Abs(screenHeight - bottomNavBottom) < 2,
+					$"BottomNavigationView should extend to screen bottom. Expected bottom at {screenHeight}px, but was at {bottomNavBottom}px (gap of {screenHeight - bottomNavBottom}px)");
 			});
 		}
 

@@ -4,7 +4,6 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.TextInput)]
 	public abstract partial class TextInputTests<THandler, TView> : ControlsHandlerTestBase
 		where THandler : class, IViewHandler, IPlatformViewHandler, new()
 		where TView : InputView, IView, ITextInput, new()

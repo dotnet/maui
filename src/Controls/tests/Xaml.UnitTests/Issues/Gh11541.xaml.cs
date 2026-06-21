@@ -1,27 +1,20 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Gh11541 : ContentPage
 {
-	public partial class Gh11541 : ContentPage
-	{
-		public Gh11541() => InitializeComponent();
-		public Gh11541(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+	public Gh11541() => InitializeComponent();
 
-		[TestFixture]
-		class Tests
+	[Collection("Issue")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void RectangleGeometryDoesntThrow(XamlInflator inflator)
 		{
-			[Test]
-			public void RectangleGeometryDoesntThrow([Values(false, true)] bool useCompiledXaml)
-			{
-				Assert.DoesNotThrow(() => new Gh11541(useCompiledXaml));
-			}
+			var ex = Record.Exception(() => new Gh11541(inflator));
+			Assert.Null(ex);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
+
 using Microsoft.Maui.Controls;
 
 [Issue(IssueTracker.Github, 22288, "Top Button Content Causes Infinite Layout", PlatformAffected.iOS)]

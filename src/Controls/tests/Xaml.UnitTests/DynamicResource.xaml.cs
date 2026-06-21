@@ -1,39 +1,30 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class DynamicResource : ContentPage
 {
-	public partial class DynamicResource : ContentPage
+	public DynamicResource()
 	{
-		public DynamicResource()
+		InitializeComponent();
+	}
+
+	[Collection("Xaml Inflation")]
+	public class Tests
+	{
+		[Theory]
+		[XamlInflatorData]
+		internal void TestDynamicResources(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
+			var layout = new DynamicResource(inflator);
+			var label = layout.label0;
 
-		public DynamicResource(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+			Assert.Null(label.Text);
 
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false), TestCase(true)]
-			public void TestDynamicResources(bool useCompiledXaml)
-			{
-				var layout = new DynamicResource(useCompiledXaml);
-				var label = layout.label0;
-
-				Assert.Null(label.Text);
-
-				layout.Resources = new ResourceDictionary {
-					{"FooBar", "FOOBAR"},
-				};
-				Assert.AreEqual("FOOBAR", label.Text);
-			}
+			layout.Resources = new ResourceDictionary {
+				{"FooBar", "FOOBAR"},
+			};
+			Assert.Equal("FOOBAR", label.Text);
 		}
 	}
 }

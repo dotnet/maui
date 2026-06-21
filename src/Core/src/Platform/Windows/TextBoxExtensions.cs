@@ -75,7 +75,27 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this TextBox textBox, ITextStyle textStyle)
 		{
-			textBox.CharacterSpacing = textStyle.CharacterSpacing.ToEm();
+			var characterSpacing = textStyle.CharacterSpacing.ToEm();
+			textBox.CharacterSpacing = characterSpacing;
+
+			if (textBox.IsLoaded)
+			{
+				ApplyCharacterSpacingToPlaceholder(textBox, characterSpacing);
+			}
+			else
+			{
+				textBox.OnLoaded(() => ApplyCharacterSpacingToPlaceholder(textBox, characterSpacing));
+			}
+		}
+
+		static void ApplyCharacterSpacingToPlaceholder(this TextBox textBox, int characterSpacing)
+		{
+			var placeholderTextBlock = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
+			if (placeholderTextBlock is not null)
+			{
+				placeholderTextBlock.CharacterSpacing = characterSpacing;
+				placeholderTextBlock.RefreshThemeResources();
+			}
 		}
 
 		public static void UpdateReturnType(this TextBox textBox, ITextInput textInput)
@@ -219,8 +239,7 @@ namespace Microsoft.Maui.Platform
 				textBox.SelectionLength = entry.SelectionLength;
 		}
 
-		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
-		internal static int GetCursorPosition(this TextBox textBox, int cursorOffset = 0)
+		public static int GetCursorPosition(this TextBox textBox, int cursorOffset = 0)
 		{
 			var newCursorPosition = textBox.SelectionStart + cursorOffset;
 			return Math.Max(0, newCursorPosition);

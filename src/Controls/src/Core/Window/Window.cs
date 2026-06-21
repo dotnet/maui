@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Xml.Schema;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -14,6 +15,12 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
+		static readonly BindablePropertyKey IsActivatedPropertyKey =
+			BindableProperty.CreateReadOnly(nameof(IsActivated), typeof(bool), typeof(Window), false, propertyChanged: OnIsActivatedPropertyChanged);
+
+		/// <summary>Bindable property for <see cref="IsActivated"/>.</summary>
+		public static readonly BindableProperty IsActivatedProperty = IsActivatedPropertyKey.BindableProperty;
+
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
@@ -38,11 +45,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
-			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset,
+			propertyChanged: OnSizePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
-			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset);
+			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset,
+			propertyChanged: OnSizePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="MaximumWidth"/>.</summary>
 		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
@@ -64,11 +73,18 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleBarProperty = BindableProperty.Create(
 			nameof(TitleBar), typeof(TitleBar), typeof(Window), null, propertyChanged: TitleBarChanged);
 
+		/// <summary>Bindable property for <see cref="IsMinimizable"/>.</summary>
+		public static readonly BindableProperty IsMinimizableProperty = BindableProperty.Create(nameof(IsMinimizable),
+			typeof(bool), typeof(Window), defaultValue: true);
+
+		/// <summary>Bindable property for <see cref="IsMaximizable"/>.</summary>
+		public static readonly BindableProperty IsMaximizableProperty = BindableProperty.Create(nameof(IsMaximizable),
+			typeof(bool), typeof(Window), defaultValue: true);
+
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
-		bool _isActivated;
 
 		IToolbar? IToolbarElement.Toolbar => Toolbar;
 		internal Toolbar? Toolbar
@@ -107,6 +123,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (string?)GetValue(TitleProperty);
 			set => SetValue(TitleProperty, value);
+		}
+
+		public bool IsActivated
+		{
+			get => (bool)GetValue(IsActivatedProperty);
+			private set => SetValue(IsActivatedPropertyKey, value);
 		}
 
 		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
@@ -209,6 +231,16 @@ namespace Microsoft.Maui.Controls
 
 		int _batchFrameUpdate = 0;
 
+		static void OnSizePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var window = (Window)bindable;
+			// Only trigger SizeChanged if not being updated from platform (FrameChanged)
+			if (window._batchFrameUpdate == 0)
+			{
+				window.SizeChanged?.Invoke(window, EventArgs.Empty);
+			}
+		}
+
 		void IWindow.FrameChanged(Rect frame)
 		{
 			if (new Rect(X, Y, Width, Height) == frame)
@@ -309,30 +341,14 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		internal AlertManager AlertManager { get; }
+		internal IAlertManager AlertManager { get; private set; }
+
+		bool _alertManagerResolved;
 
 		internal ModalNavigationManager ModalNavigationManager { get; }
 
 		internal IMauiContext MauiContext =>
 			Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext is null.");
-
-		internal bool IsActivated
-		{
-			get
-			{
-				return _isActivated;
-			}
-			private set
-			{
-				if (_isActivated == value)
-					return;
-
-				_isActivated = value;
-
-				if (value)
-					SendWindowAppearing();
-			}
-		}
 
 		internal bool IsDestroyed { get; private set; }
 		internal bool IsCreated { get; private set; }
@@ -431,7 +447,13 @@ namespace Microsoft.Maui.Controls
 		void SendWindowDisppearing()
 		{
 			if (Navigation.ModalStack.Count == 0)
+			{
 				Page?.SendDisappearing();
+			}
+			else if (Navigation.ModalStack.Count > 0)
+			{
+				Navigation.ModalStack[Navigation.ModalStack.Count - 1]?.SendDisappearing();
+			}
 
 			IsActivated = false;
 		}
@@ -538,7 +560,14 @@ namespace Microsoft.Maui.Controls
 
 			AlertManager.Unsubscribe();
 			Application?.RemoveWindow(this);
+
+			var mauiContext = Handler?.MauiContext as MauiContext;
 			Handler?.DisconnectHandler();
+
+			// On Android, preserve window scope to enable reuse when Activity is recreated
+#if !ANDROID
+			mauiContext?.DisposeWindowScope();
+#endif
 		}
 
 		void IWindow.Resumed()
@@ -588,6 +617,20 @@ namespace Microsoft.Maui.Controls
 
 		public float DisplayDensity => ((IWindow)this).RequestDisplayDensity();
 
+		/// <summary>Gets or sets whether the window can be minimized.</summary>
+		public bool IsMinimizable
+		{
+			get { return (bool)GetValue(IsMinimizableProperty); }
+			set { SetValue(IsMinimizableProperty, value); }
+		}
+
+		/// <summary>Gets or sets whether the window can be maximized.</summary>
+		public bool IsMaximizable
+		{
+			get { return (bool)GetValue(IsMaximizableProperty); }
+			set { SetValue(IsMaximizableProperty, value); }
+		}
+
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
 			base.OnHandlerChangingCore(args);
@@ -606,6 +649,15 @@ namespace Microsoft.Maui.Controls
 				oldPage.SendDisappearing();
 		}
 
+		static void OnIsActivatedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var window = (Window)bindable;
+			if ((bool)newValue)
+			{
+				window.SendWindowAppearing();
+			}
+		}
+
 		void OnPageChanged(Page? oldPage, Page? newPage)
 		{
 			if (oldPage != null)
@@ -615,6 +667,7 @@ namespace Microsoft.Maui.Controls
 				RemoveLogicalChild(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
+				AlertManager.Unsubscribe();
 			}
 
 			if (oldPage is Shell shell)
@@ -627,16 +680,18 @@ namespace Microsoft.Maui.Controls
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 
-				if (Parent != null)
-				{
-					SendWindowAppearing();
-				}
-
 				newPage.HandlerChanged += OnPageHandlerChanged;
 				newPage.HandlerChanging += OnPageHandlerChanging;
 
 				if (newPage.Handler != null)
+				{
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
+				}
+
+				if (Parent != null)
+				{
+					SendWindowAppearing();
+				}
 			}
 
 			if (newPage is Shell newShell)
@@ -659,12 +714,33 @@ namespace Microsoft.Maui.Controls
 		void OnPageHandlerChanged(object? sender, EventArgs e)
 		{
 			ModalNavigationManager.PageAttachedHandler();
+			TryResolveAlertManager();
 			AlertManager.Subscribe();
 		}
 
 		void OnPageHandlerChanging(object? sender, HandlerChangingEventArgs e)
 		{
 			AlertManager.Unsubscribe();
+		}
+
+		void TryResolveAlertManager()
+		{
+			if (_alertManagerResolved)
+				return;
+
+			if (AlertManager is not Platform.AlertManager)
+			{
+				_alertManagerResolved = true;
+				return;
+			}
+
+			var customManager = Handler?.MauiContext?.Services?.GetService<IAlertManager>();
+			if (customManager is not null)
+			{
+				AlertManager.Unsubscribe(); // defensive: no-op if not yet subscribed
+				AlertManager = customManager;
+			}
+			_alertManagerResolved = true;
 		}
 
 		void ShellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

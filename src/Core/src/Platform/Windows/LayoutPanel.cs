@@ -7,7 +7,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutPanel : MauiPanel
+	public partial class LayoutPanel : MauiPanel
 	{
 		Canvas? _backgroundLayer;
 		public bool ClipsToBounds { get; set; }

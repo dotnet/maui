@@ -10,12 +10,13 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using Windows.UI.Core;
+using Microsoft.UI.Xaml.Automation.Peers;
 
 namespace Microsoft.Maui.Platform
 {
 	// TODO: Replace this all with a real PasswordBox and not do this
 	//       as we lose many default password box features.
-	public class MauiPasswordTextBox : TextBox
+	public partial class MauiPasswordTextBox : TextBox
 	{
 		const char ObfuscationCharacter = '●';
 
@@ -149,6 +150,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			base.OnKeyDown(e);
+		}
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return new MauiPasswordTextBoxAutomationPeer(this);
 		}
 
 		private void OnNativeTextChanging(TextBox sender, TextBoxTextChangingEventArgs args)
@@ -298,7 +304,15 @@ namespace Microsoft.Maui.Platform
 			var updatedPassword = DetermineTextFromPassword(Password, SelectionStart, Text);
 
 			if (Password != updatedPassword)
+			{
 				Password = updatedPassword;
+			}
+			else
+			{
+				// Ensure the UI properly refreshes when text is pasted with the same value
+				// Without this, pasting identical text via Ctrl+V doesn't trigger obfuscation
+				UpdateVisibleText();
+			}
 		}
 
 		static string Obfuscate(string text, bool leaveLastVisible = false)
@@ -320,7 +334,7 @@ namespace Microsoft.Maui.Platform
 
 			var lengthDifference = passwordText.Length - realText.Length;
 			if (lengthDifference > 0)
-				realText = realText.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
+				realText = realText.Insert(Math.Max(0, start - lengthDifference), new string(ObfuscationCharacter, lengthDifference));
 			else if (lengthDifference < 0)
 				realText = realText.Remove(start, -lengthDifference);
 
@@ -339,5 +353,18 @@ namespace Microsoft.Maui.Platform
 					new InputScopeName { NameValue = value }
 				}
 			};
+	}
+
+	//TODO: Make it public in NET 11
+	internal partial class MauiPasswordTextBoxAutomationPeer : TextBoxAutomationPeer
+	{
+		public MauiPasswordTextBoxAutomationPeer(MauiPasswordTextBox owner) : base(owner)
+		{
+		}
+
+		protected override bool IsPasswordCore()
+		{
+			return ((MauiPasswordTextBox)Owner).IsPassword;
+		}
 	}
 }

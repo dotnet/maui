@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18961"
+             xmlns:local="clr-namespace:Maui.Controls.Sample">
+  <ContentPage.Resources>
+    <ResourceDictionary>
+
+      <Style TargetType="local:UITestEntry">
+        <Setter Property="IsCursorVisible" Value="False" />
+        <Setter Property="BackgroundColor" Value="LightGray" />
+        <Setter Property="Margin" Value="0, 12" />
+      </Style>
+
+    </ResourceDictionary>
+  </ContentPage.Resources>
+  <ScrollView
+        x:Name="TestScrollView"
+        AutomationId="TestScrollView">
+    <StackLayout
+            Padding="12">
+      <Label 
+            AutomationId="WaitForStubControl"
+            Text="Modal Page margin correct after Keyboard opens"/>
+      <!--
+            Add enough entries into the stack layout so that we can						
+            guarantee we'll have entries that would be covered by the keyboard
+      -->
+      <Button AutomationId="ScrollButton" Text="Scroll To End" Clicked="OnButtonClicked" />
+      <local:UITestEntry AutomationId="TestEntry1" Placeholder="First Entry" />
+      <local:UITestEntry AutomationId="TestEntry2" Placeholder="2" />
+      <local:UITestEntry AutomationId="TestEntry3" Placeholder="3" />
+      <local:UITestEntry AutomationId="TestEntry4" Placeholder="4" />
+      <local:UITestEntry AutomationId="TestEntry5" Placeholder="5" />
+      <local:UITestEntry AutomationId="TestEntry6" Placeholder="6" />
+      <local:UITestEntry AutomationId="TestEntry7" Placeholder="7" />
+      <local:UITestEntry AutomationId="TestEntry8" Placeholder="8" />
+      <local:UITestEntry AutomationId="TestEntry9" Placeholder="9" />
+      <local:UITestEntry AutomationId="TestEntry10" Placeholder="10" />
+      <local:UITestEntry AutomationId="TestEntry11" Placeholder="11" />
+      <local:UITestEntry AutomationId="TestEntry12" Placeholder="12" />
+      <local:UITestEntry AutomationId="TestEntry13" Placeholder="13" />
+      <local:UITestEntry AutomationId="TestEntry14" Placeholder="14" />
+      <local:UITestEntry AutomationId="TestEntry15" Placeholder="15" />
+      <local:UITestEntry AutomationId="TestEntry16" Placeholder="16" />
+      <local:UITestEntry AutomationId="TestEntry17" Placeholder="17" />
+      <local:UITestEntry AutomationId="TestEntry18" Placeholder="18" />
+      <local:UITestEntry AutomationId="TestEntry19" Placeholder="19" />
+      <local:UITestEntry AutomationId="TestEntry20" Placeholder="Last Entry" />
+    </StackLayout>
+  </ScrollView>
+</ContentPage>

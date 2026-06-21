@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.XamlC;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Microsoft.Maui.Controls.Build.Tasks;
 
@@ -29,7 +30,7 @@ class XamlCache
 		return value;
 	}
 
-	public IList<XmlnsDefinitionAttribute> GetXmlsDefinitions(ModuleDefinition module, Func<ModuleDefinition, IList<XmlnsDefinitionAttribute>> valueFactory) =>
+	public IList<XmlnsDefinitionAttribute> GetXmlnsDefinitions(ModuleDefinition module, Func<ModuleDefinition, IList<XmlnsDefinitionAttribute>> valueFactory) =>
 		GetOrAdd(_xmlnsDefinitions, module, valueFactory);
 
 	public TypeDefinition Resolve(TypeReference typeReference) =>
@@ -38,8 +39,13 @@ class XamlCache
 	public FieldReference GetOrAddFieldReference((ModuleDefinition module, string fieldRefKey) key, Func<(ModuleDefinition module, string fieldRefKey), FieldReference> valueFactory) =>
 		GetOrAdd(_fieldReferenceCache, key, valueFactory);
 
-	public TypeReference GetOrAddTypeReference(ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type) =>
-		GetOrAdd(_typeReferenceCache, (module, type.ToString()), x => x.module.ImportReference(x.module.GetTypeDefinition(this, type)));
+	public TypeReference GetOrAddTypeReference(ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type) => GetOrAdd(_typeReferenceCache, (module, type.ToString()), x =>
+	{
+		if (type.typeName.EndsWith("[]", StringComparison.InvariantCultureIgnoreCase))
+			return x.module.GetTypeDefinition(this, (type.assemblyName, type.clrNamespace, type.typeName.Substring(0, type.typeName.Length - 2))).MakeArrayType();
+		else
+			return x.module.ImportReference(x.module.GetTypeDefinition(this, type));
+	});
 
 	public TypeReference GetOrAddTypeReference(ModuleDefinition module, string typeKey, Func<(ModuleDefinition module, string typeKey), TypeReference> valueFactory) =>
 		GetOrAdd(_typeReferenceCache, (module, typeKey), valueFactory);
@@ -68,6 +74,8 @@ class XamlCache
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexAlignSelfTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexAlignSelf>) },
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexWrapTypeConverter")), typeof(EnumTypeConverter<Layouts.FlexWrap>) },
 		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "FlexBasisTypeConverter")), typeof(FlexBasisTypeConverter) },
+		{ module.ImportReference(this, ("Microsoft.Maui", "Microsoft.Maui.Converters", "GridLengthTypeConverter")), typeof(Microsoft.Maui.Controls.XamlC.GridLengthTypeConverter) },
+
 	};
 
 	// State used by SetPropertiesVisitor

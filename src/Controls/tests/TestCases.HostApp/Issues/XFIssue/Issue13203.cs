@@ -11,9 +11,10 @@ public class Issue13203 : TestContentPage
 		{
 			IsVisible = false,
 
+			BackgroundColor = Colors.PaleGreen,
 			ItemTemplate = new DataTemplate(() =>
 			{
-				var label = new Label();
+				var label = new Label { FontSize = 40, BackgroundColor = Colors.SeaGreen };
 				label.SetBinding(Label.TextProperty, new Binding(nameof(Item.Text)));
 				label.SetBinding(Label.AutomationIdProperty, new Binding(nameof(Item.Text)));
 				return label;
@@ -22,7 +23,7 @@ public class Issue13203 : TestContentPage
 
 		var source = new List<Item> { new Item { Text = Success } };
 		cv.ItemsSource = source;
-
+		SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
 		Content = cv;
 
 		Appearing += (sender, args) => { cv.IsVisible = true; };

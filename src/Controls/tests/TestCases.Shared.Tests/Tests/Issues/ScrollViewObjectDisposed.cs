@@ -1,5 +1,4 @@
-﻿#if !ANDROID && !WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,10 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// ScrollViewObjectDisposedTest (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewObjectDisposed.cs)
 		[Test]
 		[Description("Tapping a button inside the ScrollView does not cause an exception.")]
-		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollViewObjectDisposedTest()
 		{
+			App.WaitForElement("TestButtonId");
 			// 1. Tap the button.
 			App.Tap("TestButtonId");
 
@@ -29,4 +27,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

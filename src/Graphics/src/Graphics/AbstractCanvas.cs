@@ -6,6 +6,14 @@ using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Provides an abstract base implementation of the <see cref="ICanvas"/> interface.
+	/// </summary>
+	/// <typeparam name="TState">The type of state managed by this canvas, which must derive from <see cref="CanvasState"/>.</typeparam>
+	/// <remarks>
+	/// This class handles state management, coordinate transformation, and common drawing operations,
+	/// while delegating platform-specific rendering to derived classes.
+	/// </remarks>
 	public abstract class AbstractCanvas<TState> : ICanvas, IDisposable where TState : CanvasState
 	{
 		private readonly ICanvasStateService<TState> _stateService;
@@ -44,11 +52,8 @@ namespace Microsoft.Maui.Graphics
 
 		public virtual void Dispose()
 		{
-			if (_currentState != null)
-			{
-				_currentState.Dispose();
-				_currentState = null;
-			}
+			_currentState?.Dispose();
+			_currentState = null;
 		}
 
 		public bool LimitStrokeScaling
@@ -207,21 +212,15 @@ namespace Microsoft.Maui.Graphics
 		{
 			while (_stateStack.Count > 0)
 			{
-				if (_currentState != null)
-				{
-					_currentState.Dispose();
-					_currentState = null;
-				}
+				_currentState?.Dispose();
+				_currentState = null;
 
 				_currentState = _stateStack.Pop();
 				StateRestored(_currentState);
 			}
 
-			if (_currentState != null)
-			{
-				_currentState.Dispose();
-				_currentState = null;
-			}
+			_currentState?.Dispose();
+			_currentState = null;
 
 			_currentState = _stateService.CreateNew(this);
 		}
@@ -235,11 +234,8 @@ namespace Microsoft.Maui.Graphics
 		{
 			_strokeDashPatternDirty = true;
 
-			if (_currentState != null)
-			{
-				_currentState.Dispose();
-				_currentState = null;
-			}
+			_currentState?.Dispose();
+			_currentState = null;
 
 			if (_stateStack.Count > 0)
 			{

@@ -18,13 +18,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		public const double DefaultMinHeight = 55;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		readonly Cell _cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 		readonly AppCompatTextView _label;
 
 		Color _labelTextColor;
 		string _labelTextText;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public EntryCellView(Context context, Cell cell) : base(context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			_cell = cell;
 			SetMinimumWidth((int)context.ToPixels(50));
@@ -118,7 +122,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			Action<string> changed = TextChanged;
 			if (changed != null)
-				changed(s != null ? s.ToString() : null);
+				changed(s?.ToString());
 		}
 
 		public void SetLabelTextColor(Color color, int defaultColorResourceId)

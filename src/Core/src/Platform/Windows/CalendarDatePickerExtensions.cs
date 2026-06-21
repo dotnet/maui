@@ -3,8 +3,7 @@ using System.Linq;
 
 namespace Microsoft.Maui.Platform
 {
-	//TODO make this public on NET8
-	internal static class CalendarDatePickerExtensions
+	public static class CalendarDatePickerExtensions
 	{
 		public static string ToDateFormat(this string dateFormat)
 		{
@@ -43,6 +42,8 @@ namespace Microsoft.Maui.Platform
 				separator = "-";
 			else if (format.Contains(' ', StringComparison.CurrentCultureIgnoreCase))
 				separator = " ";
+			else if (format.Contains('.', StringComparison.CurrentCultureIgnoreCase))
+				separator = ".";
 			else
 				separator = string.Empty;
 

@@ -41,10 +41,8 @@
       <_VersionsToReplace Include="MicrosoftMacCatalystSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosoftmacOSSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosofttvOSSdkPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftNETWorkloadEmscriptenPackageVersion" />
+      <_VersionsToReplace Include="DotNetVersionBand" />
       <_VersionsToReplace Include="DotNetMauiManifestVersionBand" />
-      <_VersionsToReplace Include="DotNetMonoManifestVersionBand" />
-      <_VersionsToReplace Include="DotNetEmscriptenManifestVersionBand" />
       <_VersionsToReplace Include="DotNetAndroidManifestVersionBand" />
       <_VersionsToReplace Include="DotNetMaciOSManifestVersionBand" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreAuthorizationPackageVersion" />
@@ -118,22 +116,14 @@
   </Target>
 
   <Target Name="_CopyAdditionalFIles" AfterTargets="Build">
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(SourceRevisionId).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageVersion).$(BUILDVERSION).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageVersion).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(SourceRevisionId).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageVersion).json" />
-    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(BUILD_SOURCEBRANCHNAME).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(SourceRevisionId).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageVersion).$(BUILDVERSION).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageVersion).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(SourceRevisionId).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageVersion).json" />
-    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(BUILD_SOURCEBRANCHNAME).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageReferenceVersion).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(SourceRevisionId)_rollback.json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageVersion)_rollback.json" />
+    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(BUILD_SOURCEBRANCHNAME)_rollback.json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageReferenceVersion)_rollback.json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(SourceRevisionId)_sdk.json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageVersion)_sdk.json" />
+    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(BUILD_SOURCEBRANCHNAME)_sdk.json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageReferenceVersion)_sdk.json" />
   </Target>
 
   <Target Name="_CopyManifest" AfterTargets="Build">

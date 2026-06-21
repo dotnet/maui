@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    SelectedTabColor="Green"
+    UnselectedTabColor="gray"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+    x:Class="Maui.Controls.Sample.Issues.Issue26662">
+
+    <local:Issue26662Tab1/>
+    <local:Issue26662Tab2/>
+    <local:Issue26662Tab3/>
+
+</TabbedPage>

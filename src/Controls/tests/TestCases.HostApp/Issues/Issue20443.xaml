@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Controls.TestCases.HostApp.Issues.Issue20443"
-              xmlns:local="clr-namespace:Controls.TestCases.HostApp.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue20443"
+              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
               x:DataType="local:Issue20443ViewModel"
              Title="Issue20443">
   <ContentPage.BindingContext>

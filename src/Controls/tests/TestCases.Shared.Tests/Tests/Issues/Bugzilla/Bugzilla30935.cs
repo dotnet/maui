@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Page)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla30935DoesntThrowException()
 		{
 			App.WaitForNoElement("IssuePageLabel");

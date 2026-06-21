@@ -18,6 +18,7 @@ public class Bugzilla42832 : _IssuesUITest
 	[Category(UITestCategories.ListView)]
 	public void ContextActionsScrollNRE()
 	{
+		App.WaitForElement("Item #0");
 		App.ActivateContextMenu("Item #0");
 		App.WaitForElement("Test Item");
 

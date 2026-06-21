@@ -10,7 +10,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ListView)]
 	public partial class ListViewTests
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		void ValidatePlatformCells(ListView listView)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 
 		}

@@ -12,11 +12,16 @@ namespace UITest.Appium
 
 		protected override CommandResponse DismissKeyboard(IDictionary<string, object> parameters)
 		{
-			if (_app.Driver.IsKeyboardShown())
+			try
 			{
 				_app.Driver.HideKeyboard();
+
+				return CommandResponse.SuccessEmptyResponse;
 			}
-			return CommandResponse.SuccessEmptyResponse;
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
 		}
 
 		protected override CommandResponse PressEnter(IDictionary<string, object> parameters)

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.ScrollViewControlMainPage"
+             x:DataType="local:ScrollViewViewModel"
+             Title="ScrollViewControlPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+    <Grid RowDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+          Padding="0,10">
+        <ScrollView
+            x:Name="MyScrollView"
+            Grid.Row="0"
+            FlowDirection="{Binding FlowDirection}"
+            IsVisible="{Binding IsVisible}"
+            IsEnabled="{Binding IsEnabled}"
+            Orientation="{Binding Orientation}"
+            HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility}"
+            VerticalScrollBarVisibility="{Binding VerticalScrollBarVisibility}"
+            Scrolled="OnScrollViewScrolled"
+            AutomationId="ScrollViewControl"
+            ScrollToRequested="OnScrollViewScrollToRequested">
+            <ContentView x:Name="ScrollViewContent"
+                         Content="{Binding Content}"
+                         SizeChanged="ScrollViewContent_SizeChanged"
+                         AutomationId="ScrollViewContent"/>
+        </ScrollView>
+        <HorizontalStackLayout Grid.Row="1"
+                               HorizontalOptions="Center">
+            <Label Text="ContentSize: "
+                   FontSize="14"/>
+            <Label Text="{Binding ContentSizeString}"
+                   FontSize="14"
+                   AutomationId="ContentSizeLabel"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Grid.Row="2"
+                               HorizontalOptions="Center">
+            <Label Text="Scroll X: "
+                   FontSize="14"/>
+            <Label
+                Text="{Binding ScrollXInt ,Mode=TwoWay}"
+                FontSize="14"
+                AutomationId="ScrollXLabel"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Grid.Row="3"
+                               HorizontalOptions="Center">
+            <Label
+                Text="Scroll Y: "
+                FontSize="14"/>
+            <Label
+                Text="{Binding ScrollYInt, Mode=TwoWay}"
+                FontSize="14"
+                AutomationId="ScrollYLabel"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Grid.Row="4"
+                               HorizontalOptions="Center"
+                               Spacing="2">
+            <Label Text="Scroll To:"
+                   FontSize="14"
+                   VerticalOptions="Center"/>
+            <Button Text="Visible"
+                    Clicked="OnScrollToPositionButtonClicked"
+                    AutomationId="ScrollToMakeVisiblePosition"
+                    WidthRequest="80"/>
+            <Button Text="Start"
+                    Clicked="OnScrollToPositionButtonClicked"
+                    AutomationId="ScrollToStartPosition"
+                    WidthRequest="80"/>
+            <Button Text="Center"
+                    Clicked="OnScrollToPositionButtonClicked"
+                    AutomationId="ScrollToCenterPosition"
+                    WidthRequest="80"/>
+            <Button Text="End"
+                    Clicked="OnScrollToPositionButtonClicked"
+                    AutomationId="ScrollToEndPosition"
+                    WidthRequest="80"/>
+        </HorizontalStackLayout>
+
+        <VerticalStackLayout
+            Grid.Row="5"
+            HorizontalOptions="Center"
+            Spacing="6">
+
+            <!-- ScrollToRequested Event -->
+            <HorizontalStackLayout Spacing="6">
+                <Label
+                    Text="ScrollToRequested Event :"
+                    FontSize="14"/>
+                <Label
+                    AutomationId="ScrollToRequestedLabel"
+                    Text="{Binding ScrollToRequestedText}"/>
+            </HorizontalStackLayout>
+
+            <!-- Requested X -->
+            <HorizontalStackLayout Spacing="6">
+                <Label
+                    Text="Requested X :"
+                    FontSize="14"/>
+                <Label
+                    AutomationId="RequestedScrollXLabel"
+                    Text="{Binding RequestedScrollX}"/>
+            </HorizontalStackLayout>
+
+            <!-- Requested Y -->
+            <HorizontalStackLayout Spacing="6">
+                <Label
+                    Text="Requested Y :"
+                    FontSize="14"/>
+                <Label
+                    AutomationId="RequestedScrollYLabel"
+                    Text="{Binding RequestedScrollY}"/>
+            </HorizontalStackLayout>
+
+            <!-- Requested Position -->
+            <HorizontalStackLayout Spacing="6">
+                <Label
+                    Text="Requested Position :"
+                    FontSize="14"/>
+                <Label
+                    AutomationId="RequestedPositionLabel"
+                    Text="{Binding RequestedPosition}"/>
+            </HorizontalStackLayout>
+
+            <!-- Animated -->
+            <HorizontalStackLayout Spacing="6">
+                <Label
+                    Text="Animated :"
+                    FontSize="14"/>
+                <Label
+                    AutomationId="RequestedAnimateLabel"
+                    Text="{Binding RequestedAnimate}"/>
+            </HorizontalStackLayout>
+
+            <!-- Mode -->
+            <HorizontalStackLayout Spacing="6">
+                <Label Text="Mode :"
+                       FontSize="14"/>
+                <Label
+                    AutomationId="ScrollModeLabel"
+                    Text="{Binding Mode}"/>
+            </HorizontalStackLayout>
+
+            <!-- Element -->
+            <HorizontalStackLayout Spacing="6">
+                <Label Text="Element :"
+                       FontSize="14"/>
+                <Label
+                    AutomationId="ScrollElementLabel"
+                    Text="{Binding RequestedElementTypeName}"/>
+            </HorizontalStackLayout>
+
+            <Button Text="Scroll To Requested"
+                    Clicked="OnScrollToPixelClicked"
+                    AutomationId="ScrollToPixelButton"/>
+
+        </VerticalStackLayout>
+
+    </Grid>
+</ContentPage>

@@ -99,10 +99,11 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			if (_borderView is not null)
+			{
 				BringSubviewToFront(_borderView);
+			}
 
 			var child = subviews[0];
-
 			child.Frame = Bounds;
 
 			if (MaskLayer is not null)
@@ -319,10 +320,11 @@ namespace Microsoft.Maui.Platform
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
 			InvalidateConstraintsCache();
 			SetNeedsLayout();
+			return true;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]

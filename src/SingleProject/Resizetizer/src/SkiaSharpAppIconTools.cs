@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string AppIconName { get; }
 
-		public ResizedImageInfo Resize(DpiPath dpi, string destination, Func<Stream>? getStream = null)
+		public ResizedImageInfo Resize(DpiPath dpi, string destination, Stream? stream = null)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Resizetizer
 			using (var tempBitmap = new SKBitmap(canvasSize.Width, canvasSize.Height))
 			{
 				Draw(tempBitmap, dpi, unscaledCanvasSize);
-				Save(tempBitmap, destination, getStream);
+				Save(tempBitmap, destination, stream);
 			}
 
 			sw.Stop();
@@ -60,11 +60,10 @@ namespace Microsoft.Maui.Resizetizer
 			return new ResizedImageInfo { Dpi = dpi, Filename = destination };
 		}
 
-		void Save(SKBitmap tempBitmap, string destination, Func<Stream>? getStream)
+		void Save(SKBitmap tempBitmap, string destination, Stream? stream)
 		{
-			if (getStream is not null)
+			if (stream is not null)
 			{
-				var stream = getStream();
 				tempBitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
 			}
 			else

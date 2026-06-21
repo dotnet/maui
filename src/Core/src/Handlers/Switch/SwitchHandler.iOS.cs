@@ -1,5 +1,9 @@
 using System;
+using System.Threading.Tasks;
+using CoreFoundation;
+using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -60,21 +64,129 @@ namespace Microsoft.Maui.Handlers
 
 			ISwitch? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
+			WeakReference<UISwitch>? _platformView;
+
+			UISwitch? PlatformView => _platformView is not null && _platformView.TryGetTarget(out var p) ? p : null;
+
+			NSObject? _willEnterForegroundObserver;
+			NSObject? _windowDidBecomeKeyObserver;
+			IUITraitChangeRegistration? _traitChangeRegistration;
+
 			public void Connect(ISwitch virtualView, UISwitch platformView)
 			{
 				_virtualView = new(virtualView);
+				_platformView = new(platformView);
 				platformView.ValueChanged += OnControlValueChanged;
+
+#if MACCATALYST
+				_windowDidBecomeKeyObserver = NSNotificationCenter.DefaultCenter.AddObserver(
+					new NSString("NSWindowDidBecomeKeyNotification"), _ =>
+					{
+						if (PlatformView is not null)
+						{
+							UpdateTrackOffColor(PlatformView);
+							if (OperatingSystem.IsMacCatalystVersionAtLeast(26))
+							{
+								UpdateThumbColor(PlatformView);
+							}
+						}
+					});
+#elif IOS
+				_willEnterForegroundObserver = NSNotificationCenter.DefaultCenter.AddObserver(
+					UIApplication.WillEnterForegroundNotification, _ =>
+					{
+						if (PlatformView is not null)
+						{
+							UpdateTrackOffColor(PlatformView);
+						}
+					});
+#endif
+
+				// iOS/MacCatalyst 26+ resets ThumbTintColor when theme changes (light/dark mode).
+				// Register for trait changes to re-apply ThumbColor after UIKit completes its styling.
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					if (_traitChangeRegistration is not null)
+					{
+						platformView.UnregisterForTraitChanges(_traitChangeRegistration);
+					}
+
+					_traitChangeRegistration = platformView.RegisterForTraitChanges<UITraitUserInterfaceStyle>(
+						(IUITraitEnvironment view, UITraitCollection _) =>
+						{
+							if (view is UISwitch uiSwitch)
+							{
+								UpdateThumbColor(uiSwitch);
+							}
+						});
+
+					// iOS 26+ resets ThumbTintColor after initial layout, so re-apply the custom ThumbColor here.
+					UpdateThumbColor(platformView);
+				}
+			}
+
+			// Ensures the Switch track "OFF" color is updated correctly after system-level UI resets.
+			// This is necessary because UIKit may re-apply default styles to internal views during certain lifecycle events,
+			// especially when the app enters the background and returns to the foreground.
+			void UpdateTrackOffColor(UISwitch platformView)
+			{
+				DispatchQueue.MainQueue.DispatchAsync(async () =>
+				{
+					if (!platformView.On)
+					{
+						await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
+
+						if (VirtualView is ISwitch view && view.TrackColor is not null)
+						{
+							platformView.UpdateTrackColor(view);
+						}
+					}
+				});
+			}
+
+			void UpdateThumbColor(UISwitch platformView)
+			{
+				DispatchQueue.MainQueue.DispatchAsync(async () =>
+				{
+					if (VirtualView is null || PlatformView is null)
+						return;
+
+					await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
+
+					if (VirtualView is ISwitch view && view.ThumbColor is not null)
+					{
+						platformView.UpdateThumbColor(view);
+					}
+				});
 			}
 
 			public void Disconnect(UISwitch platformView)
 			{
 				platformView.ValueChanged -= OnControlValueChanged;
+
+				if (_willEnterForegroundObserver is not null)
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_willEnterForegroundObserver);
+					_willEnterForegroundObserver = null;
+				}
+				if (_windowDidBecomeKeyObserver is not null)
+				{
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_windowDidBecomeKeyObserver);
+					_windowDidBecomeKeyObserver = null;
+				}
+				if (_traitChangeRegistration is not null)
+				{
+					platformView.UnregisterForTraitChanges(_traitChangeRegistration);
+					_traitChangeRegistration = null;
+				}
 			}
 
 			void OnControlValueChanged(object? sender, EventArgs e)
 			{
 				if (VirtualView is ISwitch virtualView && sender is UISwitch platformView && virtualView.IsOn != platformView.On)
+				{
 					virtualView.IsOn = platformView.On;
+				}
 			}
 		}
 	}

@@ -32,13 +32,12 @@ namespace Microsoft.Maui.ApplicationModel
 
 			// read the values
 			launched = extras?.GetBoolean(launchedExtra, false) ?? false;
-#pragma warning disable 618 // TODO: one day use the API 33+ version: https://developer.android.com/reference/android/os/Bundle#getParcelable(java.lang.String,%20java.lang.Class%3CT%3E)
-#pragma warning disable CA1422 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-			actualIntent = extras?.GetParcelable(actualIntentExtra) as Intent;
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore 618
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(33))
+				actualIntent = extras?.GetParcelable(actualIntentExtra, Java.Lang.Class.FromType(typeof(Intent))) as Intent;
+			else
+				actualIntent = extras?.GetParcelable(actualIntentExtra) as Intent;
+
 			guid = extras?.GetString(guidExtra);
 			requestCode = extras?.GetInt(requestCodeExtra, -1) ?? -1;
 
@@ -97,13 +96,31 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+
+			// Cancel the task if it still exists
+			// (it won't exist if OnActivityResult already processed it)
+			if (GetIntermediateTask(guid, true) is IntermediateTask task)
+			{
+				if (task.RequestCode == PlatformUtils.requestCodeFilePicker ||
+					task.RequestCode == PlatformUtils.requestCodeMediaPicker ||
+					task.RequestCode == PlatformUtils.requestCodeMediaCapture ||
+					task.RequestCode == PlatformUtils.requestCodePickContact)
+				{
+					task.TaskCompletionSource.TrySetCanceled();
+				}
+			}
+		}
+
 		public static Task<Intent> StartAsync(Intent intent, int requestCode, Action<Intent>? onCreate = null, Action<Intent>? onResult = null)
 		{
 			// make sure we have the activity
 			var activity = ActivityStateManager.Default.GetCurrentActivity(true)!;
 
 			// create a new task
-			var data = new IntermediateTask(onCreate, onResult);
+			var data = new IntermediateTask(requestCode, onCreate, onResult);
 			pendingTasks[data.Id] = data;
 
 			// create the intermediate intent, and add the real intent to it
@@ -135,9 +152,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 		class IntermediateTask
 		{
-			public IntermediateTask(Action<Intent>? onCreate, Action<Intent>? onResult)
+			public IntermediateTask(int requestCode, Action<Intent>? onCreate, Action<Intent>? onResult)
 			{
 				Id = Guid.NewGuid().ToString();
+				RequestCode = requestCode;
 				TaskCompletionSource = new TaskCompletionSource<Intent>();
 
 				OnCreate = onCreate;
@@ -145,6 +163,8 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 
 			public string Id { get; }
+			
+			public int RequestCode { get; }
 
 			public TaskCompletionSource<Intent> TaskCompletionSource { get; }
 

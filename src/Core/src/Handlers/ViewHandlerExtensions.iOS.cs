@@ -89,6 +89,13 @@ namespace Microsoft.Maui
 
 				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
+			else if (platformView is LayoutView || platformView is MauiLabel)
+			{
+				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
+			   	heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
+				
+				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
+			}
 			else if (platformView is WrapperView wrapper)
 			{
 				sizeThatFits = wrapper.SizeThatFitsWrapper(new CGSize((float)widthConstraint, (float)heightConstraint), virtualView.Width, virtualView.Height, virtualView);
@@ -131,7 +138,8 @@ namespace Microsoft.Maui
 			var centerX = rect.Center.X;
 
 			var parent = platformView.Superview;
-			if (parent?.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+			if (parent?.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft &&
+				parent is not MauiScrollView)
 			{
 				// We'll need to adjust the center point to reflect the RTL layout
 				// Find the center of the parent

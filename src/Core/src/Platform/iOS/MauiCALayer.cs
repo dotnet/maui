@@ -11,9 +11,12 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiCALayer : CALayer, IAutoSizableCALayer
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in MauiCALayerAutosizeToSuperLayerBehavior_DoesNotLeak test.")]
+		readonly MauiCALayerAutosizeToSuperLayerBehavior _autosizeToSuperLayerBehavior = new();
+
 		CGRect _bounds;
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IShape is a non-NSObject in MAUI.")]
-		IShape? _shape;
+		WeakReference<IShape?> _shape;
+		
 
 		UIColor? _backgroundColor;
 		Paint? _background;
@@ -30,33 +33,31 @@ namespace Microsoft.Maui.Platform
 
 		nfloat _strokeMiterLimit;
 
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeObserver_DoesNotLeak test.")]
-		CALayerAutosizeObserver? _boundsObserver;
-
 		public MauiCALayer()
 		{
 			_bounds = new CGRect();
+			_shape = new WeakReference<IShape?>(null);
 			ContentsScale = UIScreen.MainScreen.Scale;
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = null;
+			if (disposing)
+			{
+				_autosizeToSuperLayerBehavior.Detach();
+			}
 			base.Dispose(disposing);
 		}
 
 		public override void RemoveFromSuperLayer()
 		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = null;
+			_autosizeToSuperLayerBehavior.Detach();
 			base.RemoveFromSuperLayer();
 		}
 
 		void IAutoSizableCALayer.AutoSizeToSuperLayer()
 		{
-			_boundsObserver?.Dispose();
-			_boundsObserver = CALayerAutosizeObserver.Attach(this);
+			_autosizeToSuperLayerBehavior.AttachOrThrow(this);
 		}
 
 		public override void AddAnimation(CAAnimation animation, string? key)
@@ -98,7 +99,7 @@ namespace Microsoft.Maui.Platform
 
 		public void SetBorderShape(IShape? shape)
 		{
-			_shape = shape;
+			_shape = new WeakReference<IShape?>(shape);
 
 			SetNeedsDisplay();
 		}
@@ -306,10 +307,10 @@ namespace Microsoft.Maui.Platform
 
 		CGPath? GetClipPath()
 		{
-			if (_shape != null)
+			if (_shape.TryGetTarget(out var shape))
 			{
 				var bounds = _bounds.ToRectangle();
-				var path = _shape.PathForBounds(bounds);
+				var path = shape.PathForBounds(bounds);
 				return path?.AsCGPath();
 			}
 
@@ -386,7 +387,8 @@ namespace Microsoft.Maui.Platform
 					for (int index = 0; index < gradientPaint.GradientStops.Length; index++)
 					{
 						Graphics.Color color = gradientPaint.GradientStops[index].Color;
-						colors[index] = new CGColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
+						var uiColor = new UIColor(new nfloat(color.Red), new nfloat(color.Green), new nfloat(color.Blue), new nfloat(color.Alpha));
+						colors[index] = uiColor.CGColor;
 						locations[index] = new nfloat(gradientPaint.GradientStops[index].Offset);
 					}
 
@@ -417,7 +419,7 @@ namespace Microsoft.Maui.Platform
 
 		bool IsBorderDashed()
 		{
-			return _strokeDash != null && _strokeDashOffset > 0;
+			return _strokeDash != null;
 		}
 	}
 }

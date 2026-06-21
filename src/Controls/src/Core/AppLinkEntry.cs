@@ -4,12 +4,12 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="Type[@FullName='Microsoft.Maui.Controls.AppLinkEntry']/Docs/*" />
+	/// <summary>A deep application link in an app link search index.</summary>
 	public class AppLinkEntry : Element, IAppLinkEntry
 	{
 		readonly Dictionary<string, string> keyValues;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>Creates a new <see cref="Microsoft.Maui.Controls.AppLinkEntry"/> with default values.</summary>
 		public AppLinkEntry()
 		{
 			keyValues = new(StringComparer.Ordinal);
@@ -30,48 +30,51 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IsLinkActive"/>.</summary>
 		public static readonly BindableProperty IsLinkActiveProperty = BindableProperty.Create(nameof(IsLinkActive), typeof(bool), typeof(AppLinkEntry), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='AppLinkUri']/Docs/*" />
+		/// <summary>Gets or sets an application-specific URI that uniquely describes content within an app. This is a bindable property.</summary>
 		public Uri AppLinkUri
 		{
 			get { return (Uri)GetValue(AppLinkUriProperty); }
 			set { SetValue(AppLinkUriProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='Description']/Docs/*" />
+		/// <summary>Gets or sets a description that appears with the item in search results. This is a bindable property.</summary>
 		public string Description
 		{
 			get { return (string)GetValue(DescriptionProperty); }
 			set { SetValue(DescriptionProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='IsLinkActive']/Docs/*" />
+		/// <summary>Gets or sets a value that tells whether the item that is identified by the link entry is currently open.</summary>
+		/// <remarks>Application developers can set this value in <see cref="Microsoft.Maui.Controls.Application.PageAppearing"/> and <see cref="Microsoft.Maui.Controls.Application.PageDisappearing"/> methods to control whether the app link is shown for indexing or Handoff.</remarks>
 		public bool IsLinkActive
 		{
 			get { return (bool)GetValue(IsLinkActiveProperty); }
 			set { SetValue(IsLinkActiveProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='KeyValues']/Docs/*" />
+		/// <summary>Gets a dictionary of application-specific key-value pairs.</summary>
+		/// <remarks>The standard keys are <c>contentType</c>, <c>associatedWebPage</c>, and <c>shouldAddToPublicIndex</c>.</remarks>
 		public IDictionary<string, string> KeyValues
 		{
 			get { return keyValues; }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='Thumbnail']/Docs/*" />
+		/// <summary>Gets or sets a small image that appears with the item in search results. This is a bindable property.</summary>
 		public ImageSource Thumbnail
 		{
 			get { return (ImageSource)GetValue(ThumbnailProperty); }
 			set { SetValue(ThumbnailProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='Title']/Docs/*" />
+		/// <summary>Gets or sets the title of the item. This is a bindable property.</summary>
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='FromUri']/Docs/*" />
+		/// <summary>Creates and returns a new <see cref="Microsoft.Maui.Controls.AppLinkEntry"/> for the specified <paramref name="uri"/>.</summary>
+		/// <param name="uri">A URI that can be parsed by the target appliction to recreate a specific state.</param>
 		public static AppLinkEntry FromUri(Uri uri)
 		{
 			var appEntry = new AppLinkEntry();
@@ -79,7 +82,8 @@ namespace Microsoft.Maui.Controls
 			return appEntry;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+		/// <summary>Returns a string representation of this <see cref="Microsoft.Maui.Controls.AppLinkEntry"/>.</summary>
+		/// <returns>A  string representation of this <see cref="Microsoft.Maui.Controls.AppLinkEntry"/>.</returns>
 		public override string ToString()
 		{
 			return AppLinkUri.ToString();

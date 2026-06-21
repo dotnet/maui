@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.ManualTests.Views.VerticalListwithMultipleRowsPage"
+             Title="VerticalListwithMultipleRowsPage"
+             BackgroundColor="{DynamicResource SecondaryColor}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Grey8">#3B3A39</Color>
+            <Color x:Key="Grey4">#D2D0CE</Color>
+            <Color x:Key="Dark">#1F1F1F</Color>
+            <Color x:Key="Grey7">#605E5C</Color>
+            <Style TargetType="Label"
+                   x:Key="LinkLLabelStyle">
+                <Setter Property="FontSize"
+                        Value="20" />
+                <Setter Property="TextColor"
+                        Value="{StaticResource Grey8}" />
+            </Style>
+            <Style TargetType="Label"
+                   x:Key="H4LabelStyle">
+                <Setter Property="FontSize"
+                        Value="36" />
+                <Setter Property="TextColor"
+                        Value="{StaticResource Grey8}" />
+            </Style>
+            <Style TargetType="Label"
+                   x:Key="H6LabelStyle">
+                <Setter Property="FontSize"
+                        Value="24" />
+                <Setter Property="TextColor"
+                        Value="{StaticResource Grey8}" />
+            </Style>
+            <Style TargetType="Label"
+                   x:Key="BodySLabelStyle">
+                <Setter Property="FontSize"
+                        Value="14" />
+                <Setter Property="TextColor"
+                        Value="{StaticResource Dark}" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid Margin="20" RowDefinitions="Auto, *">
+        <StackLayout Grid.Row="0">
+            <Label Text="1. The test passes if resizing or rotating without clipping or elements disappearing in multiple rows." />
+        </StackLayout>
+        <CollectionView Grid.Row="1"
+                        x:Name="myCollection" >
+            <CollectionView.Header>
+                <Label Text="Header"
+                       FontSize="32"
+                       TextColor="#3B3A39" />
+            </CollectionView.Header>
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical"
+                                 Span="1"
+                                 VerticalItemSpacing="5" />
+                </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="auto,*,auto"
+                          RowDefinitions="auto, auto"
+                          RowSpacing="5">
+                        <StackLayout HorizontalOptions="Start">
+                            <Image Aspect="AspectFit"
+                                   Background="transparent"
+                                   HeightRequest="38"
+                                   Source="dotnet_bot.png"
+                                   HorizontalOptions="Center"
+                                   WidthRequest="38">
+                            </Image>
+                            <Label HorizontalOptions="Center"
+                                   FontSize="14"
+                                   Text="Duration"
+                                   TextColor="#605E5C" />
+                        </StackLayout>
+                        <StackLayout Grid.Column="1" BackgroundColor="AliceBlue">
+                            <StackLayout Orientation="Horizontal"
+                                         BackgroundColor="LightBlue"
+                                         HorizontalOptions="Start"
+                                         Spacing="5">
+                                <Image Aspect="AspectFit"
+                                       Background="transparent"
+                                       HeightRequest="76"
+                                       Source="dotnet_bot.png"
+                                       WidthRequest="76" />
+                                <Grid HorizontalOptions="Start"
+                                      RowDefinitions="auto,auto,auto">
+                                    <Label Text="Title1"
+                                           Grid.Row="0"
+                                           HorizontalOptions="FillAndExpand"
+                                           Style="{StaticResource LinkLLabelStyle}" />
+                                    <Label Text="Title2"
+                                           HorizontalOptions="FillAndExpand"
+                                           Style="{OnIdiom Desktop={StaticResource H4LabelStyle}, Phone={StaticResource H6LabelStyle}}"
+                                           Grid.Row="1" />
+                                    <Label Text="Title3"
+                                           HorizontalOptions="FillAndExpand"
+                                           Style="{StaticResource BodySLabelStyle}"
+                                           TextColor="{StaticResource Grey7}"
+                                           Grid.Row="2" />
+                                </Grid>
+                            </StackLayout>
+                            <Label Text="DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription
+                           DescriptionDescriptionDescriptionDescriptionDescriptionDescription DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription
+                           DescriptionDescriptionDescription
+                           DescriptionDescriptionDescription"
+                                   MaxLines="3"
+                                   LineBreakMode="TailTruncation"
+                                   Style="{StaticResource BodySLabelStyle}"
+                                   TextColor="{StaticResource Grey7}"
+                                   HorizontalOptions="Start" />
+                        </StackLayout>
+                        <Image Aspect="AspectFit"
+                               Grid.Column="2"
+                               Background="transparent"
+                               VerticalOptions="Center"
+                               HeightRequest="24"
+                               Source="dotnet_bot.png"
+                               HorizontalOptions="Center"
+                               WidthRequest="24"
+                               Margin="0,0,20,0">
+                        </Image>
+                        <StackLayout VerticalOptions="End"
+                                     Grid.Row="1"
+                                     Margin="0,5"
+                                     Grid.ColumnSpan="3"
+                                     BackgroundColor="{StaticResource Grey4}">
+                            <BoxView HeightRequest="1" />
+                        </StackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

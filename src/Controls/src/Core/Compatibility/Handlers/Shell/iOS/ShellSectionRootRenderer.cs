@@ -40,6 +40,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIViewPropertyAnimator _pageAnimation;
 		UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
 
+#if MACCATALYST
+		CGRect _previousFrameHeader;
+#endif
+
 		ShellSection ShellSection
 		{
 			get;
@@ -141,16 +145,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				LayoutHeader();
 		}
 
-		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
-		{
-#pragma warning disable CA1422 // Validate platform compatibility
-			base.TraitCollectionDidChange(previousTraitCollection);
-#pragma warning restore CA1422 // Validate platform compatibility
-
-			var application = _shellContext?.Shell?.FindMauiContext().Services.GetService<IApplication>();
-			application?.ThemeChanged();
-		}
-
 		void IDisconnectable.Disconnect()
 		{
 			_pageAnimation?.StopAnimation(true);
@@ -196,8 +190,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					oldRenderer.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
 					oldRenderer.ViewController?.RemoveFromParentViewController();
 
-					var element = oldRenderer.VirtualView;
-					oldRenderer?.DisconnectHandler();
+					if (oldRenderer.VirtualView is IView view)
+						view.DisconnectHandlers();
+					else
+						oldRenderer?.DisconnectHandler();
 				}
 
 				_renderers.Clear();
@@ -378,6 +374,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					RemoveNonVisibleRenderers();
 				}
+
+				// RemoveNonVisibleRenderers was called after animation completed,which delayed page title updates. 
+				// Updating page before animation ensures immediate title display.
+				if (newContent is IShellContentController scc)
+				{
+					_tracker.Page = scc.Page;
+				}
 			}
 		}
 
@@ -435,7 +438,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (oldRenderer.PlatformView is not null)
 						{
 							oldRenderer.ViewController.RemoveFromParentViewController();
-							oldRenderer.DisconnectHandler();
+							if (oldRenderer.VirtualView is IView view)
+								view.DisconnectHandlers();
+							else
+								oldRenderer.DisconnectHandler();
 						}
 					}
 				}
@@ -445,8 +451,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					foreach (var remove in removeMe)
 						_renderers.Remove(remove);
 				}
-
-				_tracker.Page = scc.Page;
 			}
 
 			_isAnimatingOut = null;
@@ -490,7 +494,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateFlowDirection()
 		{
 			if (_shellContext?.Shell?.CurrentItem?.CurrentItem == ShellSection)
+			{
 				this.View.UpdateFlowDirection(_shellContext.Shell);
+
+				if (_tracker?.Page is not null && _shellContext?.Shell is not null)
+				{
+					// Resolve MatchParent to the Shell's concrete FlowDirection. The tracked page has a
+					// disconnected MAUI visual tree so MatchParent cannot auto-resolve. This is a one-way
+					// mutation consistent with existing codebase patterns.
+					if (_tracker.Page.FlowDirection == FlowDirection.MatchParent)
+					{
+						_tracker.Page.FlowDirection = _shellContext.Shell.FlowDirection;
+					}
+				}
+			}
 		}
 
 		void OnShellSectionItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -521,7 +538,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_renderers.Remove(oldItem);
 					oldRenderer.ViewController.ViewIfLoaded?.RemoveFromSuperview();
 					oldRenderer.ViewController.RemoveFromParentViewController();
-					oldRenderer.DisconnectHandler();
+					if (oldRenderer.VirtualView is IView view)
+						view.DisconnectHandlers();
+					else
+						oldRenderer.DisconnectHandler();
 				}
 			}
 
@@ -568,6 +588,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
+#if MACCATALYST
+				if (frame.Width != _previousFrameHeader.Width || frame.Height != _previousFrameHeader.Height)
+				{
+					_previousFrameHeader = frame;
+					if (_header.ViewController is ShellSectionRootHeader rootHeader)
+					{
+    					rootHeader.CollectionView.CollectionViewLayout.InvalidateLayout();
+					}
+				}
+#endif
 			}
 
 			nfloat left;

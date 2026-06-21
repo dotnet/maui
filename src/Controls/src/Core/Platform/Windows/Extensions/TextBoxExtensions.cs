@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// So, let's retain the current cursor position and calculate a new cursor
 			// position if the text was modified by a Converter.
 			var oldText = platformControl.Text ?? string.Empty;
-			var newText = TextTransformUtilites.GetTransformedText(
+			var newText = TextTransformUtilities.GetTransformedText(
 				inputView?.Text,
 				isPassword ? TextTransform.None : textTransform
 				);

@@ -29,17 +29,32 @@ namespace Microsoft.Maui.Controls.Platform
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform);
+				label.TextTransform,
+				label.CharacterSpacing);
 
 		public static void UpdateInlines(
 			this TextBlock textBlock,
 			IFontManager fontManager,
 			FormattedString formattedString,
-			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for net6
+			double defaultLineHeight = -1,
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> UpdateInlines(textBlock, fontManager, formattedString, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
+
+		// Private overload that supports CharacterSpacing inheritance
+		// TODO: Make this method public in .NET 11
+		static void UpdateInlines(
+			this TextBlock textBlock,
+			IFontManager fontManager,
+			FormattedString formattedString,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			double defaultCharacterSpacing)
 		{
 			var textBlockInlines = textBlock.Inlines;
 			textBlockInlines.Clear();
@@ -53,7 +68,8 @@ namespace Microsoft.Maui.Controls.Platform
 				defaultHorizontalAlignment,
 				defaultFont,
 				defaultColor,
-				defaultTextTransform).ToArray();
+				defaultTextTransform,
+				defaultCharacterSpacing).ToArray();
 
 			var lineHeights = new List<double>(runs.Length);
 			foreach (var (run, _, _) in runs)
@@ -91,11 +107,24 @@ namespace Microsoft.Maui.Controls.Platform
 		public static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(
 			this FormattedString formattedString,
 			IFontManager fontManager,
-			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for net6
+			double defaultLineHeight = -1,
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> ToRunAndColorsTuples(formattedString, fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
+
+		// Private overload that supports CharacterSpacing inheritance
+		// TODO: Make this method public in .NET 11
+		static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			double defaultLineHeight,
+			TextAlignment defaultHorizontalAlignment,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			double defaultCharacterSpacing)
 		{
 			var runs = new List<Tuple<Run, Color, Color>>();
 
@@ -104,7 +133,7 @@ namespace Microsoft.Maui.Controls.Platform
 				for (var i = 0; i < formattedString.Spans.Count; i++)
 				{
 					var span = formattedString.Spans[i];
-					var run = span.ToRunAndColorsTuple(fontManager, defaultFont, defaultColor, defaultTextTransform);
+					var run = span.ToRunAndColorsTuple(fontManager, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing);
 					runs.Add(run);
 				}
 			}
@@ -118,18 +147,27 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+			=> ToRunAndColorsTuple(span, fontManager, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
+
+		// Private overload that supports CharacterSpacing inheritance
+		// TODO: Make this method public in .NET 11
+		static Tuple<Run, Color, Color> ToRunAndColorsTuple(
+			this Span span,
+			IFontManager fontManager,
+			Font? defaultFont,
+			Color? defaultColor,
+			TextTransform defaultTextTransform,
+			double defaultCharacterSpacing)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
 			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
-			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
+			var text = TextTransformUtilities.GetTransformedText(span.Text, transform);
 
 			var run = new Run { Text = text ?? string.Empty };
 
-			var font = span.ToFont(defaultFontSize);
-			if (font.IsDefault && defaultFont.HasValue)
-				font = defaultFont.Value;
+			var font = span.GetEffectiveFont(defaultFontSize, defaultFont);
 
 			if (!font.IsDefault)
 			{
@@ -139,7 +177,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (span.IsSet(Span.TextDecorationsProperty))
 				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;
 
-			run.CharacterSpacing = span.CharacterSpacing.ToEm();
+			// CharacterSpacing with inheritance and validation
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
+				? span.CharacterSpacing 
+				: defaultCharacterSpacing;
+			characterSpacing = Math.Max(0, characterSpacing);
+			run.CharacterSpacing = characterSpacing.ToEm();
 
 			return Tuple.Create(run, span.TextColor, span.BackgroundColor);
 		}

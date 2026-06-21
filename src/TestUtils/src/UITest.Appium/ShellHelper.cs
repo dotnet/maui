@@ -23,6 +23,30 @@ namespace UITest.Appium
 			process.WaitForExit();
 		}
 
+		public static string ExecuteShellCommandWithOutput(string command)
+		{
+			var shell = GetShell();
+			var shellArgument = GetShellArgument(shell, command);
+
+			var processInfo = new ProcessStartInfo(shell, shellArgument)
+			{
+				CreateNoWindow = true,
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true
+			};
+
+			using var process = new Process { StartInfo = processInfo };
+			process.Start();
+
+			string output = process.StandardOutput.ReadToEnd();
+			string error = process.StandardError.ReadToEnd();
+
+			process.WaitForExit();
+
+			return string.IsNullOrWhiteSpace(output) ? error : output;
+		}
+
 		internal static string GetShell()
 		{
 			if (Environment.OSVersion.Platform == PlatformID.Win32NT)

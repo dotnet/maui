@@ -76,6 +76,16 @@ namespace Microsoft.Maui.Platform
 				_viewPagerParent = Control.Parent.GetParentOfType<SwipeViewPager>();
 		}
 
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+
+			if (_contentView is null || _actionView is null || GetNativeSwipeItems() is not { Count: > 0 } swipeItems)
+				return;
+
+			LayoutSwipeItems(swipeItems);
+		}
+
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
 			base.OnTouchEvent(e);
@@ -97,6 +107,11 @@ namespace Microsoft.Maui.Platform
 
 			var diffX = interceptPoint.X - _initialPoint.X;
 			var diffY = interceptPoint.Y - _initialPoint.Y;
+
+			if (diffX == 0 && diffY == 0)
+			{
+				return _isOpen && TouchInsideContent(new APointF((float)interceptPoint.X, (float)interceptPoint.Y));
+			}
 
 			SwipeDirection swipeDirection;
 
@@ -200,7 +215,12 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 					ResetSwipe(e);
-					PropagateParentTouch();
+
+					// Prevent parent touch propagation during swipe gestures to avoid interference with swipe functionality.
+					if (!_isSwiping)
+					{
+						PropagateParentTouch();
+					}
 				}
 			}
 
@@ -546,6 +566,12 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				AView? swipeItem = item?.ToPlatform(MauiContext);
+				// Disconnect a shared SwipeItem's handler when its Android view is already parented, so ToPlatform() creates a fresh view for the new one.
+				if (swipeItem?.Parent != null && item is IElement element)
+				{
+					element.Handler?.DisconnectHandler();
+					swipeItem = item?.ToPlatform(MauiContext);
+				}
 
 				if (swipeItem is not null)
 				{
@@ -633,10 +659,12 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
+					// AtMost lets custom SwipeItemView content size itself; Exactly forces precise dimensions for default SwipeItems.
+					var measureMode = item is ISwipeItemView ? MeasureSpecMode.AtMost : MeasureSpecMode.Exactly;
+
 					child.Measure(
-						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.AtMost),
-						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost)
-					);
+						MeasureSpec.MakeMeasureSpec(swipeItemWidth, measureMode),
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, measureMode));
 
 					child.Layout(l, t, r, b);
 
@@ -707,7 +735,10 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in _swipeItems.Keys)
 			{
-				item.Handler?.DisconnectHandler();
+				if (item.Handler is not null && ReferenceEquals(item.Handler.PlatformView, _swipeItems[item]))
+				{
+					item.Handler.DisconnectHandler();
+				}
 			}
 
 			_swipeItems.Clear();
@@ -970,11 +1001,13 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItems.Mode == SwipeMode.Execute)
 				{
-					foreach (var swipeItem in swipeItems)
-					{
-						if (GetIsVisible(swipeItem))
-							ExecuteSwipeItem(swipeItem);
-					}
+					// Execute only the first visible item. In Execute mode, a swipe
+					// triggers a single action — matching WinUI behavior. Executing
+					// multiple items would cause side effects (e.g., visibility changes)
+					// that could trigger unintended additional executions. See #7580.
+					var itemToExecute = swipeItems.FirstOrDefault(GetIsVisible);
+					if (itemToExecute != null)
+						ExecuteSwipeItem(itemToExecute);
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 						ResetSwipe();
@@ -1310,8 +1343,7 @@ namespace Microsoft.Maui.Platform
 
 		void EnableParentGesture(bool isGestureEnabled)
 		{
-			if (_viewPagerParent != null)
-				_viewPagerParent.EnableGesture = isGestureEnabled;
+			_viewPagerParent?.EnableGesture = isGestureEnabled;
 		}
 
 		internal void OnOpenRequested(SwipeViewOpenRequest e)

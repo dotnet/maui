@@ -136,7 +136,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				caption.SetBinding(Button.AutomationIdProperty, new Binding("Caption"));
 				caption.Clicked += (sender, e) =>
 				{
-					//App.Current.MainPage.DisplayAlert("Button works", (sender as Button).Text, "Ok");
+					//App.Current.MainPage.DisplayAlertAsync("Button works", (sender as Button).Text, "Ok");
 				};
 
 				grid.Children.Add(image);

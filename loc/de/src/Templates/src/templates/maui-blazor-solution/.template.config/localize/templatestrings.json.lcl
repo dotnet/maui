@@ -230,7 +230,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Do not use _top-level statements]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Keine Anweisungen _der obersten Ebene verwenden]]></Val>
+            <Val><![CDATA[Keine Anweisungen_der obersten Ebene verwenden]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

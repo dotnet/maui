@@ -42,8 +42,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var arrangePasses = int.Parse(match.Groups[2].Value);
 
 #if IOS
-            const int maxMeasurePasses = 525;
-            const int maxArrangePasses = 308;
+			var maxMeasurePasses = 203;
+			var maxArrangePasses = 214;
+
+            if (App.FindElement("HeadingLabel").GetText() == "CollectionViewHandler2")
+            {
+	            maxMeasurePasses = 373;
+	            maxArrangePasses = 276;
+            }
 #elif ANDROID
 			const int maxMeasurePasses = 353;
 			const int maxArrangePasses = 337;

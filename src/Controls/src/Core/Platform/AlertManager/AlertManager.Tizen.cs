@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -12,36 +13,14 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class AlertManager
 	{
-		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
-
-		internal void Subscribe(Window window)
+		private partial IAlertManagerSubscription CreateSubscription(IMauiContext mauiContext)
 		{
-			var nativeWindow = window?.MauiContext.GetPlatformWindow();
-			var modalStack = window?.MauiContext.GetModalStack();
-			if (Subscriptions.Any(s => s.Window == nativeWindow))
-				return;
-
-			Subscriptions.Add(new AlertRequestHelper(nativeWindow, modalStack));
+			var nativeWindow = mauiContext.GetPlatformWindow();
+			var modalStack = mauiContext.GetModalStack();
+			return new AlertRequestHelper(nativeWindow, modalStack);
 		}
 
-		internal void Unsubscribe(Window window)
-		{
-			IMauiContext mauiContext = window?.Handler?.MauiContext;
-			var platformWindow = mauiContext?.GetPlatformWindow();
-			if (platformWindow == null)
-				return;
-
-			var toRemove = Subscriptions.Where(s => s.Window == platformWindow).ToList();
-
-			foreach (AlertRequestHelper alertRequestHelper in toRemove)
-			{
-				alertRequestHelper.Dispose();
-				Subscriptions.Remove(alertRequestHelper);
-			}
-		}
-	}
-
-	internal sealed class AlertRequestHelper : IDisposable
+	internal sealed partial class AlertRequestHelper
 	{
 		int _busyCount;
 		Popup _busyPopup;
@@ -51,29 +30,12 @@ namespace Microsoft.Maui.Controls.Platform
 		internal AlertRequestHelper(NWindow window, NavigationStack modalStack)
 		{
 			Window = window;
-
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-			MessagingCenter.Subscribe<Page, bool>(Window, Page.BusySetSignalName, OnBusySetRequest);
-			MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequest);
-			MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName, OnActionSheetRequest);
-			MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
-#pragma warning restore CS0618 // Type or member is obsolete
 			_modalStack = modalStack;
 		}
 
 		public NWindow Window { get; }
 
-		public void Dispose()
-		{
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-			MessagingCenter.Unsubscribe<Page, AlertArguments>(Window, Page.AlertSignalName);
-			MessagingCenter.Unsubscribe<Page, bool>(Window, Page.BusySetSignalName);
-			MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName);
-			MessagingCenter.Unsubscribe<Page, PromptArguments>(Window, Page.PromptSignalName);
-#pragma warning restore CS0618 // Type or member is obsolete
-		}
-
-		void OnBusySetRequest(Page sender, bool enabled)
+		public partial void OnPageBusy(Page sender, bool enabled)
 		{
 			// Verify that the page making the request is child of this platform
 			if (!PageIsInThisWindow(sender))
@@ -99,7 +61,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		async void OnAlertRequest(Page sender, AlertArguments arguments)
+		public async partial void OnAlertRequested(Page sender, AlertArguments arguments)
 		{
 			// Verify that the page making the request is child of this platform
 			if (!PageIsInThisWindow(sender))
@@ -130,7 +92,7 @@ namespace Microsoft.Maui.Controls.Platform
 			alert?.Dispose();
 		}
 
-		async void OnActionSheetRequest(Page sender, ActionSheetArguments arguments)
+		public async partial void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 		{
 			// Verify that the page making the request is child of this platform
 			if (!PageIsInThisWindow(sender))
@@ -150,12 +112,13 @@ namespace Microsoft.Maui.Controls.Platform
 			});
 		}
 
-		async void OnPromptRequested(Page sender, PromptArguments args)
+		public async partial void OnPromptRequested(Page sender, PromptArguments arguments)
 		{
 			// Verify that the page making the request is child of this platform
 			if (!PageIsInThisWindow(sender))
 				return;
 
+			var args = arguments;
 
 			await _modalStack.PushDummyPopupPage(async () =>
 			{
@@ -202,5 +165,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return true;
 			}
 		}
+	}
 	}
 }

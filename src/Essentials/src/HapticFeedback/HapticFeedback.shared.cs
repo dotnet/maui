@@ -34,6 +34,14 @@ namespace Microsoft.Maui.Devices
 		static IHapticFeedback? defaultImplementation;
 
 		/// <summary>
+		/// Gets a value indicating whether haptic feedback is supported on this device.
+		/// </summary>
+		public static bool IsSupported
+			=> Current.IsSupported;
+
+		static IHapticFeedback Current => Devices.HapticFeedback.Default;
+
+		/// <summary>
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IHapticFeedback Default =>

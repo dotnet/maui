@@ -1,13 +1,14 @@
 ﻿
-using System.Collections;
 using Newtonsoft.Json;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	[Category(Categories.Samples)]
+	[Trait("Category", "Samples")]
 	public class SampleTests : BaseBuildTest
 	{
-		public static IEnumerable SampleTestMatrix
+	public SampleTests(IntegrationTestFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
+
+		public static IEnumerable<object[]> SampleTestMatrix
 		{
 			get
 			{
@@ -18,16 +19,17 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					foreach (var config in new[] { "Debug", "Release" })
 					{
-						yield return new TestCaseData(projectFile, config);
+						yield return new object[] { projectFile, config };
 					}
 				}
 			}
 		}
 
-		[Test]
-		[TestCaseSource(nameof(SampleTestMatrix))]
+		[Theory]
+		[MemberData(nameof(SampleTestMatrix))]
 		public void Build(string relativeProj, string config)
 		{
+			SetTestIdentifier(relativeProj, config);
 			var projectFile = Path.GetFullPath(Path.Combine(TestEnvironment.GetMauiDirectory(), relativeProj));
 			var binlog = Path.Combine(LogDirectory, Path.Combine("sample.binlog"));
 			var sampleProps = new[]
@@ -36,9 +38,11 @@ namespace Microsoft.Maui.IntegrationTests
 				$"RestoreConfigFile={TestNuGetConfig}",
 				// Surface warnings as build errors
 				"TreatWarningsAsErrors=true",
+				// Detailed trimmer warnings, if present
+				"TrimmerSingleWarn=false",
 			};
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),
+			Assert.True(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog, output: _output),
 					$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 

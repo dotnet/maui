@@ -209,11 +209,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (ContentCell != nativeCell)
 			{
-				if (ContentCell != null)
-				{
-					ContentCell.RemoveFromSuperview();
-					ContentCell = null;
-				}
+				ContentCell?.RemoveFromSuperview();
+				ContentCell = null;
 
 				ContentCell = nativeCell;
 
@@ -275,11 +272,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				_tableView = null;
 
-				if (_moreButton != null)
-				{
-					_moreButton.Dispose();
-					_moreButton = null;
-				}
+				_moreButton?.Dispose();
+				_moreButton = null;
 
 				for (var i = 0; i < _buttons.Count; i++)
 					_buttons[i].Dispose();

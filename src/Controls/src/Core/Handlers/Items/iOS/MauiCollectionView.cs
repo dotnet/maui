@@ -5,11 +5,15 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
-internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
+public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 {
 	bool _invalidateParentWhenMovedToWindow;
+	bool? _isSwipeEnabled;
 
-	WeakReference<ICustomMauiCollectionViewDelegate>? _customDelegate;
+	readonly WeakEventManager _movedToWindowEventManager = new();
+
+	internal bool NeedsCellLayout { get; set; }
+
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
 	}
@@ -20,53 +24,68 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 			base.ScrollRectToVisible(rect, animated);
 	}
 
+	// UICollectionViewCompositionalLayout with OrthogonalScrollingBehavior creates a private
+	// embedded UIScrollView for horizontal/vertical paging. Setting ScrollEnabled on the outer
+	// UICollectionView does not affect this embedded scroller. We intercept AddSubview to apply
+	// the cached _isSwipeEnabled state to any embedded UIScrollView at creation time.
+	public override void AddSubview(UIView view)
+	{
+		base.AddSubview(view);
+
+		if (_isSwipeEnabled.HasValue && view is UIScrollView scrollView && view is not UICollectionView)
+		{
+			scrollView.ScrollEnabled = _isSwipeEnabled.Value;
+		}
+	}
+
+	// Controls ScrollEnabled on the embedded orthogonal UIScrollView(s) created by
+	// UICollectionViewCompositionalLayout for CarouselView2 paging. Caches the state
+	// so that scrollers added later (via AddSubview) also get the correct value.
+	internal void SetSwipeEnabled(bool enabled)
+	{
+		_isSwipeEnabled = enabled;
+
+		foreach (var subview in Subviews)
+		{
+			if (subview is UIScrollView scrollView && subview is not UICollectionView)
+			{
+				scrollView.ScrollEnabled = enabled;
+			}
+		}
+	}
+
 	void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 	{
 		_invalidateParentWhenMovedToWindow = true;
 	}
 
-	void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+	bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 	{
-		if (!isPropagating)
+		if (isPropagating)
 		{
-			SetNeedsLayout();
+			NeedsCellLayout = true;
 		}
+
+		SetNeedsLayout();
+		return !isPropagating;
 	}
 
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
-	EventHandler? _movedToWindow;
-
 	event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 	{
-		add => _movedToWindow += value;
-		remove => _movedToWindow -= value;
+		add => _movedToWindowEventManager.AddEventHandler(value);
+		remove => _movedToWindowEventManager.RemoveEventHandler(value);
 	}
 
 	public override void MovedToWindow()
 	{
 		base.MovedToWindow();
-		_movedToWindow?.Invoke(this, EventArgs.Empty);
-
-		if (_customDelegate?.TryGetTarget(out var target) == true)
-		{
-			target.MovedToWindow(this);
-		}
+		_movedToWindowEventManager.HandleEvent(this, EventArgs.Empty, nameof(IUIViewLifeCycleEvents.MovedToWindow));
 
 		if (_invalidateParentWhenMovedToWindow)
 		{
 			_invalidateParentWhenMovedToWindow = false;
 			this.InvalidateAncestorsMeasures();
 		}
-	}
-
-	internal void SetCustomDelegate(ICustomMauiCollectionViewDelegate customDelegate)
-	{
-		_customDelegate = new WeakReference<ICustomMauiCollectionViewDelegate>(customDelegate);
-	}
-
-
-	internal interface ICustomMauiCollectionViewDelegate
-	{
-		void MovedToWindow(UIView view);
 	}
 }

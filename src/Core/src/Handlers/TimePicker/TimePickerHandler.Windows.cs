@@ -1,5 +1,5 @@
-#nullable enable
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TimePicker platformView)
 		{
-			platformView.TimeChanged += OnControlTimeChanged;
+			platformView.SelectedTimeChanged += OnSelectedTimeChanged;
 		}
 
 		protected override void DisconnectHandler(TimePicker platformView)
 		{
-			platformView.TimeChanged -= OnControlTimeChanged;
+			platformView.SelectedTimeChanged -= OnSelectedTimeChanged;
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
@@ -45,15 +45,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateTextColor(timePicker);
 		}
 
-		// TODO NET8 make public
-		internal static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
+		public static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateBackground(timePicker);
 		}
 
-		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
+		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			if (VirtualView != null)
+			handler.PlatformView?.UpdateIsOpen(timePicker);
+		}
+
+		void OnSelectedTimeChanged(TimePicker sender, TimePickerSelectedValueChangedEventArgs e)
+		{
+			if (VirtualView is not null)
 			{
 				VirtualView.Time = e.NewTime;
 				VirtualView.InvalidateMeasure();

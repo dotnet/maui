@@ -10,10 +10,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TemplatedPage_should_have_the_InternalChildren_correctly_when_ControlTemplate_changed()
 		{
 			var sut = new TemplatedPage();
-			IList<Element> internalChildren = ((IControlTemplated)sut).InternalChildren;
-			internalChildren.Add(new VisualElement());
-			internalChildren.Add(new VisualElement());
-			internalChildren.Add(new VisualElement());
+			var controlTemplated = (IControlTemplated)sut;
+			var internalChildren = controlTemplated.InternalChildren;
+			controlTemplated.AddLogicalChild(new VisualElement());
+			controlTemplated.AddLogicalChild(new VisualElement());
+			controlTemplated.AddLogicalChild(new VisualElement());
 
 			sut.ControlTemplate = new ControlTemplate(typeof(ExpectedView));
 

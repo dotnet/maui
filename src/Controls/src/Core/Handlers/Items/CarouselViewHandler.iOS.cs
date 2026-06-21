@@ -35,6 +35,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		// TODO: Change the modifier to public in .NET 11.
+		internal static void MapIsEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			handler.Controller?.CollectionView?.UpdateIsEnabled(carouselView);
+		}
+
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			handler.Controller.CollectionView.ScrollEnabled = carouselView.IsSwipeEnabled;
@@ -71,7 +77,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.Controller as CarouselViewController)?.UpdateLoop();
 		}
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
-			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var size = this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
+
+			// Clamp size to constraints to prevent exceeding them on Mac Catalyst
+			if (!double.IsInfinity(widthConstraint) && size.Width > widthConstraint)
+			{
+				size.Width = widthConstraint;
+			}
+
+			if (!double.IsInfinity(heightConstraint) && size.Height > heightConstraint)
+			{
+				size.Height = heightConstraint;
+			}
+
+			return size;
+		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			(Controller.Layout as CarouselViewLayout)?.UpdateConstraints(rect.Size);
+			base.PlatformArrange(rect);
+		}
 	}
 }

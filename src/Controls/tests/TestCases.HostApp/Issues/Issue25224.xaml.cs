@@ -29,6 +29,11 @@ namespace Maui.Controls.Sample.Issues
 
 			protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
 			{
+				if (item is null)
+				{
+					return DefaultTemplate;
+				}
+
 				string query = (string)item;
 				return query.Equals("xamarin", StringComparison.OrdinalIgnoreCase) ? OtherTemplate : DefaultTemplate;
 			}

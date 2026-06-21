@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			MotionManager.StartDeviceMotionUpdates(CMAttitudeReferenceFrame.XTrueNorthZVertical, NSOperationQueue.CurrentQueue ?? new NSOperationQueue(), DataUpdated);
 		}
 
-		void DataUpdated(CMDeviceMotion data, NSError error)
+		void DataUpdated(CMDeviceMotion? data, NSError? error)
 		{
 			if (data == null)
 				return;

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category(TestCategory.NavigationView)]
+	[Category(TestCategory.NavigationPage)]
 	public partial class NavigationViewHandlerTests : CoreHandlerTestBase
 	{
 #if ANDROID || WINDOWS

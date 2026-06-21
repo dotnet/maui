@@ -16,14 +16,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Navigation)]
 		public void Bugzilla53179Test()
 		{
-			App.WaitForElement("Next Page");
-			App.Tap("Next Page");
+			App.WaitForElement("Next Page 1");
+			App.Tap("Next Page 1");
 
-			App.WaitForElementTillPageNavigationSettled("Next Page");
-			App.Tap("Next Page");
+			App.WaitForElementTillPageNavigationSettled("Next Page 2");
+			App.Tap("Next Page 2");
 
-			App.WaitForElementTillPageNavigationSettled("Next Page");
-			App.Tap("Next Page");
+			App.WaitForElementTillPageNavigationSettled("Next Page 3");
+			App.Tap("Next Page 3");
 
 			App.WaitForElementTillPageNavigationSettled("Remove previous pages");
 			App.Tap("Remove previous pages");

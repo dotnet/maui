@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.CollectionViewDynamicPage"
+              xmlns:local="clr-namespace:Maui.Controls.Sample"
+             Title="CollectionViewDynamicPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+    <Grid RowSpacing="3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />  
+            <RowDefinition Height="*" /> 
+        </Grid.RowDefinitions>
+
+        <!-- First Half: CollectionView -->
+        <local:CollectionView2 
+            x:Name="collectionView"
+            Grid.Row="0" 
+            ItemsSource="{Binding ItemsSource}"
+            EmptyView="{Binding EmptyView}"
+            Header="{Binding Header}"
+            Footer="{Binding Footer}"
+            HeaderTemplate="{Binding HeaderTemplate}"
+            FooterTemplate="{Binding FooterTemplate}"
+            EmptyViewTemplate="{Binding EmptyViewTemplate}"
+            GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
+            GroupFooterTemplate="{Binding GroupFooterTemplate}"
+            ItemTemplate="{Binding ItemTemplate}"
+            IsGrouped="{Binding IsGrouped}"
+            ItemsLayout="{Binding ItemsLayout}"
+            AutomationId="CollectionViewControl">
+        </local:CollectionView2>
+
+        <!-- Second Half: Buttons and Grids -->
+        <ScrollView Grid.Row="1">
+            <Grid RowSpacing="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header Buttons -->
+                <Grid Grid.Row="0" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Text="Header String"
+                            AutomationId="HeaderStringButton"
+                            Clicked="OnHeaderStringButtonClicked"
+                            Grid.Column="0" />
+                    <Button Text="Header Grid"
+                            AutomationId="HeaderGridButton"
+                            Clicked="OnHeaderGridButtonClicked"
+                            Grid.Column="1" />
+                </Grid>
+
+                <!-- Footer Buttons -->
+                <Grid Grid.Row="1" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Text="Footer String"
+                            AutomationId="FooterStringButton"
+                            Clicked="OnFooterStringButtonClicked"
+                            Grid.Column="0" />
+                    <Button Text="Footer Grid"
+                            AutomationId="FooterGridButton"
+                            Clicked="OnFooterGridButtonClicked"
+                            Grid.Column="1" />
+                </Grid>
+
+                <!-- HeaderTemplate Buttons -->
+                <Grid Grid.Row="2" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Text="HeaderTemplate"
+                            AutomationId="HeaderTemplateButton"
+                            Clicked="OnHeaderTemplateButtonClicked"
+                            Grid.Column="0" />
+                    <Button Text="FooterTemplate"
+                            AutomationId="FooterTemplateButton"
+                            Clicked="OnFooterTemplateButtonClicked"
+                            Grid.Column="1" />
+                </Grid>
+
+                <!-- Group Header/Footer Buttons -->
+                <Grid Grid.Row="3" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Text="GroupHeader"
+                            AutomationId="GroupHeaderTemplateButton"
+                            Clicked="OnGroupHeaderTemplateButtonClicked"
+                            Grid.Column="0" />
+                    <Button Text="GroupFooter"
+                            AutomationId="GroupFooterTemplateButton"
+                            Clicked="OnGroupFooterTemplateButtonClicked"
+                            Grid.Column="1" />
+                </Grid>
+
+                <!-- EmptyView Buttons -->
+                <Grid Grid.Row="4" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Text="EmptyView String"
+                            AutomationId="EmptyViewStringButton"
+                            Clicked="OnEmptyViewStringButtonClicked"
+                            Grid.Column="0" />
+                    <Button Text="EmptyView Grid"
+                            AutomationId="EmptyViewGridButton"
+                            Clicked="OnEmptyViewGridButtonClicked"
+                            Grid.Column="1" />
+                </Grid>
+
+                <!-- EmptyViewTemplate and ItemTemplate Buttons -->
+                <Grid Grid.Row="5" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Text="EmptyViewTemplate2"
+                            AutomationId="EmptyViewTemplateButton"
+                            Clicked="OnEmptyViewTemplateButtonClicked"
+                            Grid.Column="0" />
+                    <Button Text="ItemTemplate"
+                            AutomationId="ItemTemplateButton"
+                            Clicked="OnItemTemplateButtonClicked"
+                            Grid.Column="1" />
+                </Grid>
+            </Grid>
+        </ScrollView>
+    </Grid>
+</ContentPage>

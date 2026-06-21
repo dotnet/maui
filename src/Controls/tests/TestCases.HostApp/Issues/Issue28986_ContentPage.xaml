@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28986_ContentPage"
+             x:Name="TestContentPage"
+             Title="SafeArea ContentPage Test" 
+             SafeAreaEdges="All">
+    
+    <Grid BackgroundColor="Red" SafeAreaEdges="None" AutomationId="MainGrid">
+        <!-- Single content grid that spans the entire screen -->
+        <Grid x:Name="ContentGrid" SafeAreaEdges="None" AutomationId="ContentGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            
+            <!-- Top test area - should move in/out of notch area -->
+            <Border Grid.Row="0" BackgroundColor="Yellow" Stroke="Orange" StrokeThickness="3" Padding="10" SafeAreaEdges="None">
+                <Label Text="TOP TEST AREA: This should move in/out of notch/status bar area when safe area is toggled"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="DarkOrange" />
+            </Border>
+            
+            <!-- Middle content area with control panel -->
+            <ScrollView Grid.Row="1">
+                <StackLayout Spacing="20" Padding="20" VerticalOptions="Center">
+                    <Label Text="SafeArea Test Page" 
+                           FontSize="24" 
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           TextColor="White" />
+                    
+                    <Label Text="The red background shows areas outside safe area. Watch the yellow areas at top/bottom move when you toggle MainGrid safe area settings."
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           TextColor="White" />
+                    
+                    <Label x:Name="CurrentSettingsLabel"
+                           Text="Current MainGrid SafeAreaEdges: All"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           TextColor="White"
+                           AutomationId="CurrentSettings" />
+                    
+                    <!-- Simple button controls for MainGrid -->
+                    <Border BackgroundColor="White" Stroke="Gray" StrokeThickness="2" Padding="20" Margin="10">
+                        <VerticalStackLayout Spacing="15">
+                            <Label Text="MainGrid Safe Area Control:" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center" />
+                            
+                            <Button Text="Set MainGrid to None (Edge-to-edge)"
+                                    Clicked="OnGridSetNoneClicked"
+                                    BackgroundColor="LightBlue"
+                                    AutomationId="GridResetNoneButton" />
+                            
+                            <Button Text="Set MainGrid to Container (Respect notches/bars)"
+                                    Clicked="OnGridSetContainerClicked"
+                                    BackgroundColor="LightGreen"
+                                    AutomationId="GridSetContainerButton" />
+                            
+                            <Button Text="Set MainGrid to All (Full safe area)"
+                                    Clicked="OnGridSetAllClicked"
+                                    BackgroundColor="LightCoral"
+                                    AutomationId="GridResetAllButton" />
+                            
+                            <!-- Entry for testing SoftInput behavior -->
+                            
+                            <Entry Placeholder="Focus me to test SoftInput behavior"
+                                   BackgroundColor="White"
+                                   AutomationId="SoftInputTestEntry" />
+                            
+                            <!-- Per-edge controls for specific scenarios -->
+                            <Label Text="Per-Edge Controls:" 
+                                   FontSize="16" 
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   Margin="0,10,0,0" />
+                            
+                            <Button Text="Set Bottom Edge to SoftInput"
+                                    Clicked="OnGridSetBottomSoftInputClicked"
+                                    BackgroundColor="LightYellow"
+                                    AutomationId="GridSetBottomSoftInputButton" />
+                            
+                            <Button Text="Set Top Edge to Container"
+                                    Clicked="OnGridSetTopContainerClicked"
+                                    BackgroundColor="LightPink"
+                                    AutomationId="GridSetTopContainerButton" />
+                            
+                            <Button Text="Set Top Edge to None"
+                                    Clicked="OnGridSetTopNoneClicked"
+                                    BackgroundColor="LightGray"
+                                    AutomationId="GridSetTopNoneButton" />
+                            
+                            <!-- Legend -->
+                            <StackLayout Spacing="5" Margin="0,10,0,0">
+                                <Label Text="None = Edge-to-edge content (no safe area padding)" 
+                                       FontSize="10" 
+                                       TextColor="Blue"
+                                       HorizontalOptions="Center" />
+                                <Label Text="Container = Flow under keyboard, stay out of bars/notch" 
+                                       FontSize="10" 
+                                       TextColor="Green"
+                                       HorizontalOptions="Center" />
+                                <Label Text="All = Obey all safe area insets" 
+                                       FontSize="10" 
+                                       TextColor="Red"
+                                       HorizontalOptions="Center" />
+                            </StackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </StackLayout>
+            </ScrollView>
+            
+            <!-- Bottom test area - should move in/out of home indicator area -->
+            <Border Grid.Row="2" BackgroundColor="Yellow" Stroke="Orange" StrokeThickness="3" Padding="10">
+                <Label Text="BOTTOM TEST AREA: This should move in/out of home indicator/toolbar area when safe area is toggled"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       TextColor="DarkOrange" />
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

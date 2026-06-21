@@ -20,13 +20,13 @@ namespace Microsoft.Maui.DeviceTests
 				wrapper.Visibility = ViewStates.Gone;
 				wrapper.AddView(child);
 
-				Assert.Equal(Android.Views.ViewStates.Gone, wrapper.Visibility);
-				Assert.Equal(Android.Views.ViewStates.Gone, child.Visibility);
+				Assert.Equal(ViewStates.Gone, wrapper.Visibility);
+				Assert.Equal(ViewStates.Gone, child.Visibility);
 
 				wrapper.Visibility = ViewStates.Visible;
 
-				Assert.Equal(Android.Views.ViewStates.Visible, wrapper.Visibility);
-				Assert.Equal(Android.Views.ViewStates.Visible, child.Visibility);
+				Assert.Equal(ViewStates.Visible, wrapper.Visibility);
+				Assert.Equal(ViewStates.Visible, child.Visibility);
 			});
 		}
 	}

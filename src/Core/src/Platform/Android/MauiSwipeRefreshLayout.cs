@@ -16,15 +16,83 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiSwipeRefreshLayout : SwipeRefreshLayout
 	{
+		readonly Context _context;
 		AView? _contentView;
+		bool _refreshEnabled = true;
 
 		public MauiSwipeRefreshLayout(Context context) : base(context)
 		{
+			_context = context;
+
 			// This works around a bug in SwipeRefreshLayout
 			// https://github.com/dotnet/maui/pull/17647#discussion_r1433358418
 			// https://issuetracker.google.com/issues/110463864
 			// It looks like this issue is fixed on the main branch of Android but it hasn't made its way into the packages yet
 			SetProgressViewOffset(true, ProgressViewStartOffset, ProgressViewEndOffset - Math.Abs(ProgressViewStartOffset));
+		}
+
+		public ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get;
+			set;
+		}
+
+		public override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			// Always call base.OnMeasure — unlike ContentViewGroup/LayoutViewGroup,
+			// SwipeRefreshLayout.onMeasure internally measures its spinner indicator
+			// (mCircleView). Skipping this leaves the spinner at 0x0, making it invisible.
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+
+			if (CrossPlatformLayout is null)
+			{
+				return;
+			}
+
+			var deviceIndependentWidth = widthMeasureSpec.ToDouble(_context);
+			var deviceIndependentHeight = heightMeasureSpec.ToDouble(_context);
+
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
+
+			var measure = CrossPlatformLayout.CrossPlatformMeasure(deviceIndependentWidth, deviceIndependentHeight);
+
+			// Unlike ContentViewGroup/LayoutViewGroup, SwipeRefreshLayout internally positions
+			// its spinner at getMeasuredWidth()/2. We must use the full spec size for both
+			// Exactly and AtMost modes (matching View.getDefaultSize behavior) so the spinner
+			// is centered correctly. Only for Unspecified do we use the cross-platform measure.
+			var width = widthMode == MeasureSpecMode.Unspecified ? measure.Width : deviceIndependentWidth;
+			var height = heightMode == MeasureSpecMode.Unspecified ? measure.Height : deviceIndependentHeight;
+
+			var platformWidth = _context.ToPixels(width);
+			var platformHeight = _context.ToPixels(height);
+
+			// Minimum values win over everything
+			platformWidth = Math.Max(MinimumWidth, platformWidth);
+			platformHeight = Math.Max(MinimumHeight, platformHeight);
+
+			SetMeasuredDimension((int)platformWidth, (int)platformHeight);
+		}
+
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			// Always call base.OnLayout — SwipeRefreshLayout.onLayout positions the
+			// spinner indicator (mCircleView) centered horizontally. Without this,
+			// the spinner won't appear or will be mispositioned.
+			base.OnLayout(changed, left, top, right, bottom);
+			if (CrossPlatformLayout is null)
+			{
+				return;
+			}
+
+			var destination = _context.ToCrossPlatformRectInReferenceFrame(left, top, right, bottom);
+			CrossPlatformLayout?.CrossPlatformArrange(destination);
+		}
+
+		public bool RefreshEnabled
+		{
+			get => _refreshEnabled;
+			set => _refreshEnabled = value;
 		}
 
 		public void UpdateContent(IView? content, IMauiContext? mauiContext)
@@ -57,6 +125,10 @@ namespace Microsoft.Maui.Platform
 
 		public override bool CanChildScrollUp()
 		{
+			// When refresh is disabled, always return true to prevent pull-to-refresh
+			if (!_refreshEnabled)
+				return true;
+
 			if (ChildCount == 0)
 				return base.CanChildScrollUp();
 

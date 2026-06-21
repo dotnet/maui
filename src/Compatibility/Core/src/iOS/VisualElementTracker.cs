@@ -93,11 +93,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			{
 				SetElement(_element, null);
 
-				if (_layer != null)
-				{
-					_layer.Dispose();
-					_layer = null;
-				}
+				_layer?.Dispose();
+				_layer = null;
 
 				Renderer.ElementChanged -= OnRendererElementChanged;
 				Renderer = null;
@@ -379,8 +376,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		[PortHandler("Partially ported")]
 		void UpdateNativeControl()
 		{
-			Performance.Start(out string reference);
-
 			if (_disposed)
 				return;
 
@@ -402,7 +397,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			UpdateClip();
 
 			NativeControlUpdated?.Invoke(this, EventArgs.Empty);
-			Performance.Stop(reference);
 		}
 
 		void UpdateClip()

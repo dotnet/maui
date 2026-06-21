@@ -36,18 +36,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		IShellSectionController ShellSectionController => ShellSection;
 
+		UINavigationController MoreNavigationController => (ParentViewController as UITabBarController)?.MoreNavigationController;
+
 		public UIViewController ViewController => this;
 
 		#endregion IShellContentRenderer
 
 		#region IAppearanceObserver
 
+		ShellAppearance _shellAppearance;
+
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
+			_shellAppearance = appearance;
 			if (appearance == null)
+			{
 				_appearanceTracker.ResetAppearance(this);
+				if (MoreNavigationController is not null)
+				{
+					_appearanceTracker.ResetAppearance(MoreNavigationController);
+				}
+			}
 			else
+			{
 				_appearanceTracker.SetAppearance(this, appearance);
+				if (MoreNavigationController is not null)
+				{
+					_appearanceTracker.SetAppearance(MoreNavigationController, appearance);
+				}
+			}
 		}
 
 		#endregion IAppearanceObserver
@@ -70,7 +87,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellSection _shellSection;
 		bool _ignorePopCall;
 
-		bool _popRequested;
+		// Prevents multiple concurrent GoToAsync("..") dispatches from SendPop().
+		// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
+		// and combinations that may cause SendPop() to be called multiple times.
+		// Once a back-navigation dispatch is in flight, all subsequent calls are blocked
+		// until it completes (success or cancel).
+		bool _sendPopPending;
 
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
@@ -109,21 +131,53 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Export("navigationBar:didPopItem:")]
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
-			=> _popRequested || SendPop();
+		{
+			if (_shellSection?.Stack is null || NavigationBar?.Items is null)
+				return true;
 
-		internal bool SendPop()
+			// If stacks are in sync, nothing to do
+			if (_shellSection.Stack.Count == NavigationBar.Items.Length)
+				return true;
+
+			// Stacks out of sync: treat as user-initiated back (e.g., swipe-back).
+			// On iOS 26+, this can also fire during ShouldPopItem and programmatic PopViewController;
+			// SendPop() contains the _sendPopPending guard to prevent any double-dispatch in those cases.
+			return SendPop();
+		}
+
+		internal bool SendPop(UIViewController topViewController = null)
 		{
 			// this means the pop is already done, nothing we can do
 			if (ActiveViewControllers().Length < NavigationBar.Items.Length)
 				return true;
 
+			// On iOS 26+, delegate methods (ShouldPopItem, DidPopItem) can fire in any order
+			// and fire multiple times for a single user back action. Guard against multiple
+			// concurrent GoToAsync("..") dispatches to prevent navigating to the wrong page.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				if (_sendPopPending)
+				{
+					return false;
+				}
+				_sendPopPending = true;
+			}
+
+			topViewController ??= TopViewController;
 			foreach (var tracker in _trackers)
 			{
-				if (tracker.Value.ViewController == TopViewController)
+				if (tracker.Value.ViewController == topViewController)
 				{
-					var behavior = Shell.GetBackButtonBehavior(tracker.Value.Page);
+					var behavior = Shell.GetEffectiveBackButtonBehavior(tracker.Value.Page);
+					var enabled = behavior.GetPropertyIfSet(BackButtonBehavior.IsEnabledProperty, true);
 					var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 					var commandParameter = behavior.GetPropertyIfSet<object>(BackButtonBehavior.CommandParameterProperty, null);
+
+					if (!enabled)
+					{
+						_sendPopPending = false;  // reset before returning
+						return false;
+					}
 
 					if (command != null)
 					{
@@ -131,14 +185,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							command.Execute(commandParameter);
 						}
+						_sendPopPending = false;  // reset before returning
+						return false;
+					}
 
+					// Allow the page to intercept back navigation via OnBackButtonPressed
+					if (tracker.Value.Page?.SendBackButtonPressed() == true)
+					{
+						_sendPopPending = false;  // reset before returning
 						return false;
 					}
 
 					break;
 				}
 			}
-
 
 			// Do not remove, wonky behavior on some versions of iOS if you dont dispatch
 			// Shane: ^ not sure if this is true anymore because of how
@@ -147,7 +207,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var navItemsCount = NavigationBar.Items.Length;
 
-				await _context.Shell.GoToAsync("..", true);
+				try
+				{
+					await _context.Shell.GoToAsync("..", true);
+				}
+				finally
+				{
+					_sendPopPending = false;
+				}
 
 				// This means the navigation was cancelled
 				if (NavigationBar.Items.Length == navItemsCount)
@@ -183,6 +250,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_popCompletionTask?.TrySetResult(false);
 			_popCompletionTask = null;
 
+			_sendPopPending = false;
 
 			base.ViewDidDisappear(animated);
 		}
@@ -200,6 +268,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			View.UpdateFlowDirection(_context.Shell);
 			NavigationBar.UpdateFlowDirection(_context.Shell);
+
+			if (TabBarController?.TabBar is not null)
+			{
+				TabBarController.TabBar.UpdateFlowDirection(_context.Shell);
+			}
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -216,6 +289,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateShadowImages();
 				_firstLayoutCompleted = true;
 			}
+		}
+
+		public override void DidMoveToParentViewController(UIViewController parent)
+		{
+			if (_shellAppearance is not null && MoreNavigationController is not null)
+			{
+				_appearanceTracker?.SetAppearance(MoreNavigationController, _shellAppearance);
+			}
+			base.DidMoveToParentViewController(parent);
 		}
 
 		public override void ViewDidLoad()
@@ -296,6 +378,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.Dispose(disposing);
 		}
 
+		/// <summary>
+		/// Override this method to provide a custom image for the secondary toolbar menu button.
+		/// The default implementation uses the "ellipsis.circle" system image.
+		/// This image is used for the menu button that appears when there are secondary toolbar items
+		/// </summary>
+		/// <returns>The image to use for the secondary toolbar menu button.</returns>
+		public virtual UIImage GetSecondaryToolbarMenuButtonImage()
+		{
+			// Use the ellipsis.circle system image for the menu button by default
+			// as per the iOS design guidelines: https://developer.apple.com/design/human-interface-guidelines/pull-down-buttons
+			return UIImage.GetSystemImage("ellipsis.circle");
+		}
+
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
@@ -343,7 +438,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_displayedPage != null)
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
-				UpdateNavigationBarHidden();
 				UpdateNavigationBarHasShadow();
 			}
 		}
@@ -394,7 +488,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopRequested(NavigationRequestedEventArgs e)
 		{
-			_popRequested = true;
 			var page = e.Page;
 			var animated = e.Animated;
 
@@ -435,7 +528,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopToRootRequested(NavigationRequestedEventArgs e)
 		{
-			_popRequested = true;
 			var animated = e.Animated;
 			var task = new TaskCompletionSource<bool>();
 			var pages = _shellSection.Stack.ToList();
@@ -509,7 +601,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
-				TabBarItem = new UITabBarItem(ShellSection.Title, icon?.Value, null);
+				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
+				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
 			});
 		}
@@ -528,12 +621,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_trackers.Remove(page);
 			}
 
-
-			var renderer = page.Handler;
-			if (renderer != null)
-			{
-				renderer.DisconnectHandler();
-			}
+			page?.DisconnectHandlers();
 		}
 
 		Element ElementForViewController(UIViewController viewController)
@@ -543,10 +631,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			foreach (var child in ShellSection.Stack)
 			{
-				if (child == null)
-					continue;
-				var renderer = (IPlatformViewHandler)child.Handler;
-				if (viewController == renderer.ViewController)
+				if (child?.Handler is IPlatformViewHandler handler && viewController == handler.ViewController)
 					return child;
 			}
 
@@ -597,10 +682,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
-			_popRequested = false;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
+				viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+				HandleMoreNavigationCompletionTasks(viewController);
 			}
 			else
 			{
@@ -613,10 +699,28 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_pendingViewControllers = null;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
-				return tabBarController.MoreNavigationController.PopViewController(animated);
+				var viewController = tabBarController.MoreNavigationController.PopViewController(animated);
+				HandleMoreNavigationCompletionTasks(viewController);
+				return viewController;
 			}
 
 			return base.PopViewController(animated);
+		}
+
+		private void HandleMoreNavigationCompletionTasks(UIViewController viewController)
+		{
+			var tasks = _completionTasks;
+			var popTask = _popCompletionTask;
+
+			if (tasks.TryGetValue(viewController, out var source))
+			{
+				source.TrySetResult(true);
+				tasks.Remove(viewController);
+			}
+			else if (popTask != null)
+			{
+				popTask.TrySetResult(true);
+			}
 		}
 
 		UIViewController[] ActiveViewControllers() =>
@@ -691,7 +795,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateNavigationBarHidden()
 		{
-			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), true);
+			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), Shell.GetNavBarVisibilityAnimationEnabled(_displayedPage));
 		}
 
 		void UpdateNavigationBarHasShadow()
@@ -754,9 +858,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					source.TrySetResult(true);
 					tasks.Remove(viewController);
 				}
-				else if (popTask != null)
+				else
 				{
-					popTask.TrySetResult(true);
+					popTask?.TrySetResult(true);
 				}
 			}
 
@@ -772,9 +876,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						navBarVisible = _self._renderer.ShowNavBar;
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
-				}
 
-				navigationController.SetNavigationBarHidden(!navBarVisible, true);
+					// Update navigation bar visibility during the transition
+					// This ensures the correct nav bar state is applied as part of the navigation animation
+					bool animateVisibilityChange = animated && Shell.GetNavBarVisibilityAnimationEnabled(element);
+					navigationController.SetNavigationBarHidden(!navBarVisible, animateVisibilityChange);
+				}
 
 				var coordinator = viewController.GetTransitionCoordinator();
 				if (coordinator != null && coordinator.IsInteractive)
@@ -793,6 +900,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					tracker is ShellPageRendererTracker shellRendererTracker)
 				{
 					shellRendererTracker.UpdateToolbarItemsInternal(false);
+					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					{
+						// If we are on iOS 26+ and the ViewController is not in a NavigationController yet,
+						// we cannot set the TitleView yet as it would not layout correctly.
+						// So we update it later when the ViewController is added to the NavigationController
+						shellRendererTracker.UpdateTitleViewInternal();
+					}
 				}
 			}
 

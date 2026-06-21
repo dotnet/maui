@@ -1,47 +1,35 @@
 using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public partial class Issue2016 : ContentPage
 {
-	public partial class Issue2016 : ContentPage
+	public Issue2016() => InitializeComponent();
+
+	[Collection("Issue")]
+	public class Tests : IDisposable
 	{
-		public Issue2016()
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
+
+		[Theory]
+		[XamlInflatorData]
+		internal void TestSwitches(XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
+			var page = new Issue2016(inflator);
+			Assert.False(page.a0.IsToggled);
+			Assert.False(page.b0.IsToggled);
+			Assert.False(page.s0.IsToggled);
+			Assert.False(page.t0.IsToggled);
 
-		public Issue2016(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+			page.a0.IsToggled = true;
+			page.b0.IsToggled = true;
 
-		[TestFixture]
-		class Tests
-		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void TestSwitches(bool useCompiledXaml)
-			{
-				var page = new Issue2016(useCompiledXaml);
-				Assert.AreEqual(false, page.a0.IsToggled);
-				Assert.AreEqual(false, page.b0.IsToggled);
-				Assert.AreEqual(false, page.s0.IsToggled);
-				Assert.AreEqual(false, page.t0.IsToggled);
-
-				page.a0.IsToggled = true;
-				page.b0.IsToggled = true;
-
-				Assert.AreEqual(true, page.s0.IsToggled);
-				Assert.AreEqual(true, page.t0.IsToggled);
-			}
+			Assert.True(page.s0.IsToggled);
+			Assert.True(page.t0.IsToggled);
 		}
 	}
 }

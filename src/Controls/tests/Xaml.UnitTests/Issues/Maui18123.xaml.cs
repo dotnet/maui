@@ -1,17 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -26,40 +21,31 @@ public class Maui18123MultiValueConverter : IMultiValueConverter
 
 public partial class Maui18123 : ContentPage
 {
-
 	public Maui18123() => InitializeComponent();
 
-	public Maui18123(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public void MultiBindingShouldNotThrow([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal void MultiBindingShouldNotThrow(XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui18123)));
-
-			var page = new Maui18123(useCompiledXaml);
+			var page = new Maui18123(inflator);
 			page.BindingContext = new Maui18123VM();
 			page.editBtn.SendClicked();
-			Assert.That(page.editBtn.Text, Is.EqualTo("SUBMIT"));
-			Assert.That(page.deleteBtn.Text, Is.EqualTo("CANCEL"));
+			Assert.Equal("SUBMIT", page.editBtn.Text);
+			Assert.Equal("CANCEL", page.deleteBtn.Text);
 			page.deleteBtn.SendClicked();
-			Assert.That(page.editBtn.Text, Is.EqualTo("Edit"));
-			Assert.That(page.deleteBtn.Text, Is.EqualTo("Delete"));
+			Assert.Equal("Edit", page.editBtn.Text);
+			Assert.Equal("Delete", page.deleteBtn.Text);
 		}
 	}
 }

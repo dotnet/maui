@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		public AutoSuggestBox? QueryEditor => null;
 
+		TextBox? _queryTextBox;
+
 		protected override AutoSuggestBox CreatePlatformView() => new AutoSuggestBox
 		{
 			AutoMaximizeSuggestionArea = false,
@@ -18,6 +20,12 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded += OnLoaded;
 			platformView.QuerySubmitted += OnQuerySubmitted;
 			platformView.TextChanged += OnTextChanged;
+			//In ViewHandler.Windows, FocusManager.GotFocus and LostFocus are handled for other controls. 
+			// However, for AutoSuggestBox, when handling the GotFocus or LostFocus methods, tapping the AutoSuggestBox causes e.NewFocusedElement and e.OldFocusedElement to be a TextBox (which receives the focus). 
+			// As a result, when comparing the PlatformView with the appropriate handler in FocusManagerMapping, the condition is not satisfied, causing the focus and unfocus methods to not work correctly. 
+			// To address this, I have specifically handled the focus and unfocus events for AutoSuggestBox here. 
+			platformView.GotFocus += OnGotFocus;
+			platformView.LostFocus += OnLostFocus;
 		}
 
 		protected override void DisconnectHandler(AutoSuggestBox platformView)
@@ -25,6 +33,14 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded -= OnLoaded;
 			platformView.QuerySubmitted -= OnQuerySubmitted;
 			platformView.TextChanged -= OnTextChanged;
+			platformView.GotFocus -= OnGotFocus;
+			platformView.LostFocus -= OnLostFocus;
+
+			if (_queryTextBox is not null)
+			{
+				_queryTextBox.SelectionChanged -= OnPlatformSelectionChanged;
+				_queryTextBox = null;
+			}
 		}
 
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
@@ -99,14 +115,42 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsReadOnly(searchBar);
 		}
 
+		// make it public in .net 11
+		internal static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler is SearchBarHandler searchBarHandler && searchBarHandler._queryTextBox is TextBox textBox)
+			{
+				textBox.UpdateCursorPosition(searchBar);
+			}
+		}
+
+		// make it public in .net 11
+		internal static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			if (handler is SearchBarHandler searchBarHandler && searchBarHandler._queryTextBox is TextBox textBox)
+			{
+				textBox.UpdateSelectionLength(searchBar);
+			}
+		}
+
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateSearchIconColor(searchBar);
+		}
+
 		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateKeyboard(searchBar);
+		}
+
+		public static void MapReturnType(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateReturnType(searchBar);
 		}
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
@@ -121,7 +165,20 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
 				PlatformView?.UpdateIsSpellCheckEnabled(VirtualView);
 				PlatformView?.UpdateCancelButtonColor(VirtualView);
+				PlatformView?.UpdateSearchIconColor(VirtualView);
 				PlatformView?.UpdateKeyboard(VirtualView);
+				PlatformView?.UpdateReturnType(VirtualView);
+			}
+
+			if (PlatformView?.GetFirstDescendant<TextBox>() is TextBox queryTextBox)
+			{
+				if (_queryTextBox is not null)
+				{
+					_queryTextBox.SelectionChanged -= OnPlatformSelectionChanged;
+				}
+
+				_queryTextBox = queryTextBox;
+				_queryTextBox.SelectionChanged += OnPlatformSelectionChanged;
 			}
 		}
 
@@ -147,6 +204,37 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			VirtualView.Text = sender.Text;
+		}
+
+		void OnGotFocus(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			UpdateIsFocused(true);
+		}
+
+		void OnLostFocus(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			UpdateIsFocused(false);
+		}
+
+		void OnPlatformSelectionChanged(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			if (VirtualView is null || _queryTextBox is null)
+			{
+				return;
+			}
+
+			var cursorPosition = _queryTextBox.GetCursorPosition();
+			var selectedTextLength = _queryTextBox.SelectionLength;
+
+			if (VirtualView.CursorPosition != cursorPosition)
+			{
+				VirtualView.CursorPosition = cursorPosition;
+			}
+
+			if (VirtualView.SelectionLength != selectedTextLength)
+			{
+				VirtualView.SelectionLength = selectedTextLength;
+			}
 		}
 	}
 }

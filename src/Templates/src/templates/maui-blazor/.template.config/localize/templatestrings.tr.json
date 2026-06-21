@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Blazor Hybrid Uygulaması",
-  "description": "iOS, Android, Mac Catalyst, WinUI ve Tizen için Blazor Hybrid kullanarak bir .NET MAUI uygulaması oluşturmaya yönelik proje",
+  "description": "Blazor Hybrid kullanarak iOS, Android, Mac Catalyst ve WinUI için .NET MAUI uygulaması oluşturma projesi",
   "postActions/openInEditor/description": "Düzenleyicide Bileşenleri/Sayfaları/Home.razor'ı açar.",
   "symbols/applicationId/description": "Projedeki $(ApplicationId) uygulamasın geçersiz kılar",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",

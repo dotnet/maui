@@ -118,10 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			_layout = SelectLayout();
 
-			if (Controller != null)
-			{
-				Controller.UpdateLayout(_layout);
-			}
+			Controller?.UpdateLayout(_layout);
 		}
 
 		protected virtual void UpdateItemSizingStrategy()

@@ -1,4 +1,5 @@
-﻿using Microsoft.Graphics.Canvas.UI.Xaml;
+﻿using System.Numerics;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 #if NETFX_CORE
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -17,9 +18,9 @@ namespace Microsoft.Maui.Graphics.Platform
 	/// A Windows platform view that can be used to host drawings.
 	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	public sealed class W2DGraphicsView
+	public sealed partial class W2DGraphicsView
 #else
-	public class PlatformGraphicsView
+	public partial class PlatformGraphicsView
 #endif
 		: UserControl
 	{
@@ -85,10 +86,25 @@ namespace Microsoft.Maui.Graphics.Platform
 			_dirty.Height = (float)sender.ActualHeight;
 
 			PlatformGraphicsService.ThreadLocalCreator = sender;
-			_canvas.Session = args.DrawingSession;
-			_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
-			_drawable.Draw(_canvas, _dirty);
-			PlatformGraphicsService.ThreadLocalCreator = null;
+			try
+			{
+				_canvas.Session = args.DrawingSession;
+				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
+
+				if (FlowDirection == FlowDirection.RightToLeft)
+				{
+					_canvas.ConcatenateTransform(
+						Matrix3x2.CreateScale(-1, 1) *
+						Matrix3x2.CreateTranslation(_dirty.Width, 0));
+				}
+
+				_drawable.Draw(_canvas, _dirty);
+			}
+			finally
+			{
+				_canvas.ResetState();
+				PlatformGraphicsService.ThreadLocalCreator = null;
+			}
 		}
 	}
 }

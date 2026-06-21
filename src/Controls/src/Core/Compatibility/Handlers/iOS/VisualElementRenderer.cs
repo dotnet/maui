@@ -99,7 +99,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			SetNeedsLayout();
+			return true;
+		}
 
 		public override void MovedToWindow()
 		{

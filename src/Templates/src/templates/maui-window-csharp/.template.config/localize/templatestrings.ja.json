@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Window (C#)",
-  "description": "C# を使用してページを表示するためのウィンドウです。",
+  "description": "C# を使用してページを表示するためのウィンドウ。",
   "postActions/openInEditor/description": "エディターで NewWindow1.cs を開きます。",
   "symbols/namespace/description": "生成されたコードの名前空間。"
 }

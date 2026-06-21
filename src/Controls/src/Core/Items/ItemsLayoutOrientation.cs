@@ -1,11 +1,18 @@
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsLayoutOrientation.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsLayoutOrientation']/Docs/*" />
+	/// <summary>
+	/// Specifies the orientation of items in an <see cref="ItemsLayout"/>.
+	/// </summary>
 	public enum ItemsLayoutOrientation
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsLayoutOrientation.xml" path="//Member[@MemberName='Vertical']/Docs/*" />
+		/// <summary>
+		/// Items are arranged vertically, from top to bottom.
+		/// </summary>
 		Vertical,
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsLayoutOrientation.xml" path="//Member[@MemberName='Horizontal']/Docs/*" />
+		
+		/// <summary>
+		/// Items are arranged horizontally, from left to right.
+		/// </summary>
 		Horizontal
 	}
 }

@@ -26,8 +26,12 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Initialize(this AView platformView, IView view)
 		{
-			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
-			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
+			var wrapperView = platformView.Parent as WrapperView;
+			var transformView = wrapperView ?? platformView;
+
+			var pivotX = (float)(view.AnchorX * transformView.ToPixels(view.Frame.Width));
+			var pivotY = (float)(view.AnchorY * transformView.ToPixels(view.Frame.Height));
+
 			int visibility;
 
 			if (view is IActivityIndicator a)
@@ -39,21 +43,62 @@ namespace Microsoft.Maui.Platform
 				visibility = (int)view.Visibility.ToPlatformVisibility();
 			}
 
-			// NOTE: use named arguments for clarity
-			PlatformInterop.Set(platformView,
+			if (wrapperView is not null)
+			{
+				// Apply transform properties to the wrapper
+				wrapperView.TranslationX = wrapperView.ToPixels(view.TranslationX);
+				wrapperView.TranslationY = wrapperView.ToPixels(view.TranslationY);
+				wrapperView.ScaleX = (float)(view.Scale * view.ScaleX);
+				wrapperView.ScaleY = (float)(view.Scale * view.ScaleY);
+				wrapperView.Rotation = (float)view.Rotation;
+				wrapperView.RotationX = (float)view.RotationX;
+				wrapperView.RotationY = (float)view.RotationY;
+				wrapperView.PivotX = pivotX;
+				wrapperView.PivotY = pivotY;
+
+				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: 0,
+					translationY: 0,
+					scaleX: 1,
+					scaleY: 1,
+					rotation: 0,
+					rotationX: 0,
+					rotationY: 0,
+					pivotX: 0,
+					pivotY: 0);
+			}
+			else
+			{
+				// NOTE: use named arguments for clarity
+				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: platformView.ToPixels(view.TranslationX),
+					translationY: platformView.ToPixels(view.TranslationY),
+					scaleX: (float)(view.Scale * view.ScaleX),
+					scaleY: (float)(view.Scale * view.ScaleY),
+					rotation: (float)view.Rotation,
+					rotationX: (float)view.RotationX,
+					rotationY: (float)view.RotationY,
+					pivotX: pivotX,
+					pivotY: pivotY);
+			}
+		}
+
+		static void SetPlatformViewPropertiesWithTransform(View platformView, IView view, int visibility, float translationX,
+			float translationY, float scaleX, float scaleY, float rotation, float rotationX, float rotationY, float pivotX, float pivotY)
+		{
+			PlatformInterop.Set(
+				platformView,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
 				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
 				enabled: view.IsEnabled,
 				alpha: (float)view.Opacity,
-				translationX: platformView.ToPixels(view.TranslationX),
-				translationY: platformView.ToPixels(view.TranslationY),
-				scaleX: (float)(view.Scale * view.ScaleX),
-				scaleY: (float)(view.Scale * view.ScaleY),
-				rotation: (float)view.Rotation,
-				rotationX: (float)view.RotationX,
-				rotationY: (float)view.RotationY,
+				translationX: translationX,
+				translationY: translationY,
+				scaleX: scaleX,
+				scaleY: scaleY,
+				rotation: rotation,
+				rotationX: rotationX,
+				rotationY: rotationY,
 				pivotX: pivotX,
 				pivotY: pivotY
 			);
@@ -300,7 +345,7 @@ namespace Microsoft.Maui.Platform
 						platformView.Background = drawable;
 				}
 			}
-			else if (platformView is LayoutViewGroup)
+			else if (platformView is LayoutViewGroup or ContentViewGroup)
 			{
 				platformView.Background = null;
 			}
@@ -308,7 +353,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this AView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
 
-		internal static void UpdateOpacity(this AView platformView, double opacity) => platformView.Alpha = (float)opacity;
+		internal static void UpdateOpacity(this AView platformView, double opacity)
+		{
+			platformView.Alpha = (float)opacity;
+
+			if (platformView is WrapperView wrapperView && wrapperView.Shadow != null && wrapperView.IsLoaded())
+			{
+				// Post invalidation to ensure shadow redraws correctly after opacity changes.
+				wrapperView.ScheduleInvalidate();
+			}
+		}
 
 		public static void UpdateFlowDirection(this AView platformView, IView view)
 		{
@@ -461,9 +515,26 @@ namespace Microsoft.Maui.Platform
 			return new Rect(
 				location[0],
 				location[1],
-				(int)platformView.Context.ToPixels(platformView.Width),
-				(int)platformView.Context.ToPixels(platformView.Height));
+				platformView.MeasuredWidth,
+				platformView.MeasuredHeight);
 		}
+
+		internal static Rect GetViewBounds(this View platformView)
+		{
+			if (platformView?.Context is not Context context)
+				return new Rect();
+
+			var location = new int[2];
+			platformView.GetLocationOnScreen(location);
+
+			return new Rect(
+				platformView.FromPixels(location[0]),
+				platformView.FromPixels(location[1]),
+				platformView.FromPixels(platformView.MeasuredWidth),
+				platformView.FromPixels(platformView.MeasuredHeight));
+		}
+
+		internal static Rect GetViewBounds(this IView view) => view.ToPlatform().GetViewBounds();
 
 		internal static Matrix4x4 GetViewTransform(this IView view)
 		{
@@ -524,7 +595,7 @@ namespace Microsoft.Maui.Platform
 				return new Rect();
 
 			var context = platformView.Context;
-			var rect = new Android.Graphics.Rect();
+			var rect = new global::Android.Graphics.Rect();
 			platformView.GetGlobalVisibleRect(rect);
 
 			return new Rect(
@@ -556,8 +627,10 @@ namespace Microsoft.Maui.Platform
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
-				if (routedEventHandler != null)
+				if (routedEventHandler is not null && view.IsAlive())
+				{
 					view.ViewAttachedToWindow -= routedEventHandler;
+				}
 			});
 
 			routedEventHandler = (_, __) =>
@@ -576,9 +649,23 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				disposable?.Dispose();
+				// Store local reference to allow cancellation inside the Post callback
+				var localDisposable = disposable;
 				disposable = null;
-				action();
+				view.Post(() =>
+				{
+					if (view.IsAttachedToWindow && localDisposable is not null)
+					{
+						action();
+						localDisposable.Dispose();
+					}
+					else if (localDisposable is not null)
+					{
+						// View was detached before Post ran (e.g., ViewPager2 detach/re-attach cycle).
+						// Restore disposable so the next ViewAttachedToWindow can retry.
+						disposable = localDisposable;
+					}
+				});
 			};
 
 			view.ViewAttachedToWindow += routedEventHandler;
@@ -596,16 +683,29 @@ namespace Microsoft.Maui.Platform
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
 			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
-				if (routedEventHandler != null)
+				if (routedEventHandler is not null)
 					view.ViewDetachedFromWindow -= routedEventHandler;
 			});
 
-			routedEventHandler = (_, __) =>
+			routedEventHandler = (sender, args) =>
 			{
 				// This event seems to fire prior to the view actually being
 				// detached from the window
 				if (view.IsLoaded() && Looper.MyLooper() is Looper q)
 				{
+					// We unsubscribe here because if we wait for the looper
+					// to schedule the work the view might get disposed by the time
+					// the unsubscribe code runs
+					if (disposable is not null)
+					{
+						if (args.DetachedView.IsAlive())
+						{
+							args.DetachedView.ViewDetachedFromWindow -= routedEventHandler;
+						}
+
+						routedEventHandler = null;
+					}
+
 					new Handler(q).Post(() =>
 					{
 						if (disposable is not null)
@@ -786,9 +886,24 @@ namespace Microsoft.Maui.Platform
 				}
 
 				view.ShowSoftInput();
-			};
+			}
+			;
 
 			view.Post(ShowSoftInput);
+		}
+
+		internal static bool IsConfirmKey(this Keycode keyCode)
+		{
+			switch (keyCode)
+			{
+				case Keycode.DpadCenter:
+				case Keycode.Enter:
+				case Keycode.Space:
+				case Keycode.NumpadEnter:
+					return true;
+				default:
+					return false;
+			}
 		}
 	}
 }

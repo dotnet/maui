@@ -7,7 +7,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="Type[@FullName='Microsoft.Maui.Controls.InputView']/Docs/*" />
+	/// <summary>
+	/// A base class for views that obtain text input from the user.
+	/// </summary>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class InputView : View, IPlaceholderElement, ITextElement, ITextInput, IFontElement
 	{
@@ -60,7 +62,8 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='MaxLength']/Docs/*" />
+		/// <summary>Gets or sets the maximum number of characters the user can enter. This is a bindable property.</summary>
+		/// <value>The maximum number of characters. The default is <see cref="int.MaxValue"/>.</value>
 		public int MaxLength
 		{
 			get => (int)GetValue(MaxLengthProperty);
@@ -71,14 +74,40 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+
+			if (Application.Current is null)
+			{
+				return;
+			}
+
+			if (args.NewHandler is null || args.OldHandler is not null)
+				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+
+			if (args.NewHandler is not null && args.OldHandler is null)
+			{
+				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+			}
+		}
+
+		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(PlaceholderColor));
+			OnPropertyChanged(nameof(TextColor));
+		}
+
+		/// <summary>Gets or sets the text content of this input view. This is a bindable property.</summary>
+		/// <value>The text displayed in the input view.</value>
 		public string Text
 		{
 			get => (string)GetValue(TextProperty);
 			set => SetValue(TextProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='Keyboard']/Docs/*" />
+		/// <summary>Gets or sets the keyboard type for the input view. This is a bindable property.</summary>
+		/// <value>The <see cref="Keyboard"/> to use. The default is <see cref="Keyboard.Default"/>.</value>
 		[System.ComponentModel.TypeConverter(typeof(Converters.KeyboardTypeConverter))]
 		public Keyboard Keyboard
 		{
@@ -104,42 +133,48 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsTextPredictionEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />
+		/// <summary>Gets or sets a value indicating whether the user can edit text in this input view. This is a bindable property.</summary>
+		/// <value><see langword="true"/> if the text is read-only; otherwise, <see langword="false"/>.</value>
 		public bool IsReadOnly
 		{
 			get => (bool)GetValue(IsReadOnlyProperty);
 			set => SetValue(IsReadOnlyProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='Placeholder']/Docs/*" />
+		/// <summary>Gets or sets the placeholder text shown when the input view is empty. This is a bindable property.</summary>
+		/// <value>The placeholder text.</value>
 		public string Placeholder
 		{
 			get => (string)GetValue(PlaceholderProperty);
 			set => SetValue(PlaceholderProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='PlaceholderColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the placeholder text. This is a bindable property.</summary>
+		/// <value>The <see cref="Color"/> of the placeholder text.</value>
 		public Color PlaceholderColor
 		{
 			get => (Color)GetValue(PlaceholderColorProperty);
 			set => SetValue(PlaceholderColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
+		/// <summary>Gets or sets the color of the input text. This is a bindable property.</summary>
+		/// <value>The <see cref="Color"/> of the text.</value>
 		public Color TextColor
 		{
 			get => (Color)GetValue(TextColorProperty);
 			set => SetValue(TextColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
+		/// <summary>Gets or sets the spacing between characters in the input text. This is a bindable property.</summary>
+		/// <value>A <see cref="double"/> representing the character spacing.</value>
 		public double CharacterSpacing
 		{
 			get => (double)GetValue(CharacterSpacingProperty);
 			set => SetValue(CharacterSpacingProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='TextTransform']/Docs/*" />
+		/// <summary>Gets or sets the text transformation applied to the input text. This is a bindable property.</summary>
+		/// <value>A <see cref="TextTransform"/> value.</value>
 		public TextTransform TextTransform
 		{
 			get => (TextTransform)GetValue(TextTransformProperty);
@@ -162,16 +197,21 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasure();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='OnTextTransformChanged']/Docs/*" />
+		/// <summary>Called when the <see cref="TextTransform"/> property changes.</summary>
+		/// <param name="oldValue">The old value.</param>
+		/// <param name="newValue">The new value.</param>
 		public void OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 		{
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
+		/// <summary>Applies the specified text transformation to the input string.</summary>
+		/// <param name="original">The original text.</param>
+		/// <param name="transform">The text transformation to apply.</param>
+		/// <returns>The transformed text.</returns>
 		public string UpdateFormsText(string original, TextTransform transform)
 		{
-			return TextTransformUtilites.GetTransformedText(original, transform);
+			return TextTransformUtilities.GetTransformedText(original, transform);
 		}
 
 		/// <summary>

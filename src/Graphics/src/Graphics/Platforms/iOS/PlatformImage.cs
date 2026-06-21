@@ -84,6 +84,12 @@ namespace Microsoft.Maui.Graphics.Platform
 				}
 
 				context.Canvas.DrawImage(this, x, y, w, h);
+
+				if (disposeOriginal)
+				{
+					_image.Dispose();
+				}
+
 				return context.Image;
 			}
 		}
@@ -157,7 +163,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var data = NSData.FromStream(stream);
 			var image = UIImage.LoadFromData(data);
-			return new PlatformImage(image);
+			return new PlatformImage(image.NormalizeOrientation(disposeOriginal: true));
 		}
 	}
 }

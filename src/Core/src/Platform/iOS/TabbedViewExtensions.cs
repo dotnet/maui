@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -13,7 +15,7 @@ namespace Microsoft.Maui.Platform
 		internal static void DisableiOS18ToolbarTabs(this UITabBarController tabBarController)
 		{
 			// Should apply to iOS and Catalyst
-			if (OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18()) //https://github.com/xamarin/xamarin-macios/issues/21390		
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(18))
 			{
 				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
 				tabBarController.Mode = UITabBarControllerMode.TabSidebar;
@@ -117,6 +119,41 @@ namespace Microsoft.Maui.Platform
 
 			// Set the TabBarAppearance
 			tabBar.StandardAppearance = tabBar.ScrollEdgeAppearance = _tabBarAppearance;
+		}
+
+		internal static UIImage? AutoResizeTabBarImage(UITraitCollection traitCollection, UIImage image)
+		{
+			if (image == null || image.Size.Width <= 0 || image.Size.Height <= 0)
+			{
+				return null;
+			}
+
+			CGSize newSize = image.Size;
+
+			//Define size constants according to Apple's guidelines
+			//https://developer.apple.com/design/human-interface-guidelines/tab-bars#Target-dimensions
+			const int regularWideWidth = 31, compactWideWidth = 23;
+			const int regularTallHeight = 28, compactTallHeight = 20;
+			const int regularSquareSize = 25, compactSquareSize = 18;
+
+			bool isRegularTabBar = traitCollection.VerticalSizeClass == UIUserInterfaceSizeClass.Regular;
+			if (image.Size.Width > image.Size.Height) //Wide
+			{
+				newSize.Width = isRegularTabBar ? regularWideWidth : compactWideWidth;
+				newSize.Height = newSize.Width * image.Size.Height / image.Size.Width;
+			}
+			else if (image.Size.Width < image.Size.Height) //Tall
+			{
+				newSize.Height = isRegularTabBar ? regularTallHeight : compactTallHeight;
+				newSize.Width = newSize.Height * image.Size.Width / image.Size.Height;
+			}
+			else //Square
+			{
+				newSize.Width = isRegularTabBar ? regularSquareSize : compactSquareSize;
+				newSize.Height = newSize.Width;
+			}
+			
+			return image.ResizeImageSource(newSize.Width, newSize.Height, new CGSize(image.Size.Width, image.Size.Height));
 		}
 	}
 }

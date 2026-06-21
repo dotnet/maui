@@ -3,6 +3,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -14,27 +15,9 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiTextView CreatePlatformView()
 		{
 			var platformEditor = new MauiTextView();
-
-#if !MACCATALYST
-			var accessoryView = new MauiDoneAccessoryView();
-			accessoryView.SetDataContext(this);
-			accessoryView.SetDoneClicked(OnDoneClicked);
-			platformEditor.InputAccessoryView = accessoryView;
-#endif
-
+			platformEditor.AddMauiDoneAccessoryView(this);
 			return platformEditor;
 		}
-
-#if !MACCATALYST
-		static void OnDoneClicked(object sender)
-		{
-			if (sender is IEditorHandler handler)
-			{
-				handler.PlatformView.ResignFirstResponder();
-				handler.VirtualView.Completed();
-			}
-		}
-#endif
 
 		public override void SetVirtualView(IView view)
 		{
@@ -100,6 +83,28 @@ namespace Microsoft.Maui.Handlers
 
 			// Any text update requires that we update any attributed string formatting
 			MapFormatting(handler, editor);
+		}
+
+		public static void MapBackground(IEditorHandler handler, IEditor editor)
+		{
+			if (handler.PlatformView is not MauiTextView platformView)
+				return;
+
+			if (editor.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (editor.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = ColorExtensions.BackgroundColor;
+			}
+			else
+			{
+				platformView.UpdateBackground(editor);
+			}
 		}
 
 		public static void MapTextColor(IEditorHandler handler, IEditor editor) =>

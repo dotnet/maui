@@ -144,13 +144,13 @@
     <ItemGroup>
       <SwixWorkloadPackProjects Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-pack' "
           ManifestOutputPath="$(PackManifestOutputPath)"
-          ZipFile="Workload.VSDrop.$(TargetName).$(ManifestBuildVersion).packs.zip" />
+          ZipFile="Workload.VSDrop.$(TargetName).packs.zip" />
       <SwixComponentsAndManifests Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-manifest' or '%(PackageType)' == 'manifest-package-group' or ('%(PackageType)' == 'component' and '%(IsPreview)' != 'true') "
           ManifestOutputPath="$(ManifestOutputPath)"
-          ZipFile="Workload.VSDrop.$(TargetName).$(ManifestBuildVersion).components.zip"/>
+          ZipFile="Workload.VSDrop.$(TargetName).components.zip"/>
       <SwixPreviewComponentsAndManifests Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-manifest' or '%(PackageType)' == 'manifest-package-group' or ('%(PackageType)' == 'component' and '%(IsPreview)' == 'true') "
           ManifestOutputPath="$(PreviewManifestOutputPath)"
-          ZipFile="Workload.VSDrop.$(TargetName).$(ManifestBuildVersion)-pre.components.zip"/>
+          ZipFile="Workload.VSDrop.$(TargetName)-pre.components.zip"/>
       <PartitionedSwixProjects Include="@(SwixWorkloadPackProjects);@(SwixComponentsAndManifests);@(SwixPreviewComponentsAndManifests)" />
     </ItemGroup>
 

@@ -206,8 +206,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 						c.DisableLayout = false;
 
 					var viewAsLayout = cell.View as Layout;
-					if (viewAsLayout != null)
-						viewAsLayout.ForceLayout();
+					viewAsLayout?.ForceLayout();
 
 					Invalidate();
 

@@ -10,10 +10,17 @@ namespace Microsoft.Maui.Controls.Platform
 	class TapAndPanGestureDetector : GestureDetector
 	{
 		InnerGestureListener? _listener;
+		PointerGestureHandler? _pointerGestureHandler;
+
 		public TapAndPanGestureDetector(Context context, InnerGestureListener listener) : base(context, listener)
 		{
 			_listener = listener;
 			UpdateLongPressSettings();
+		}
+
+		public void SetPointerGestureHandler(PointerGestureHandler pointerGestureHandler)
+		{
+			_pointerGestureHandler = pointerGestureHandler;
 		}
 
 		public void UpdateLongPressSettings()
@@ -33,13 +40,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool OnTouchEvent(MotionEvent ev)
 		{
-			if (base.OnTouchEvent(ev))
-				return true;
+			bool baseHandled = base.OnTouchEvent(ev);
+
+			bool pointerHandled = false;
+			if (_pointerGestureHandler != null && ev?.Action is
+				MotionEventActions.Up or MotionEventActions.Down or MotionEventActions.Move or MotionEventActions.Cancel)
+			{
+				_pointerGestureHandler.OnTouch(ev);
+				pointerHandled = _pointerGestureHandler.HasAnyPointerGestures();
+			}
 
 			if (_listener != null && ev?.Action == MotionEventActions.Up)
 				_listener.EndScrolling();
 
-			return false;
+			return baseHandled || pointerHandled;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -53,6 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_listener.Dispose();
 					_listener = null;
 				}
+				_pointerGestureHandler = null;
 			}
 		}
 	}

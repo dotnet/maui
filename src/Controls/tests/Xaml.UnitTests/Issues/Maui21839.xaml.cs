@@ -1,47 +1,32 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui21839
 {
-	public Maui21839()
-	{
-		InitializeComponent();
-	}
+	public Maui21839() => InitializeComponent();
 
-	public Maui21839(bool useCompiledXaml)
+	[Collection("Issue")]
+	public class Test : IDisposable
 	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
-	class Test
-	{
-		[SetUp]
-		public void Setup()
+		public Test()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Test]
-		public async Task VSMLeak([Values(false, true)] bool useCompiledXaml)
+		[Theory]
+		[XamlInflatorData]
+		internal async Task VSMLeak(XamlInflator inflator)
 		{
 			Application.Current.Resources.Add("buttonStyle",
 				new Style(typeof(Button))
@@ -59,10 +44,10 @@ public partial class Maui21839
 						} }
 					}
 				});
-			var pagewr = new WeakReference(new Maui21839(useCompiledXaml));
+			var pagewr = new WeakReference(new Maui21839(inflator));
 			await Task.Delay(10);
 			GC.Collect();
-			Assert.IsNull(pagewr.Target, "Page leaked");
+			Assert.Null(pagewr.Target);
 		}
 	}
 }

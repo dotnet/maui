@@ -33,12 +33,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_fontManager = fontManager;
 			_searchHandler = searchHandler;
 			_searchHandler.PropertyChanged += SearchHandlerPropertyChanged;
+			_searchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
+			_searchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 			_searchHandler.FocusChangeRequested += SearchHandlerFocusChangeRequested;
 			_uiSearchBar = searchBar;
 			_uiSearchBar.OnEditingStarted += OnEditingStarted;
 			_uiSearchBar.OnEditingStopped += OnEditingEnded;
 			_uiSearchBar.TextChanged += OnTextChanged;
-			_uiSearchBar.ShowsCancelButton = false;
 			GetDefaultSearchBarColors(_uiSearchBar);
 			var uiTextField = searchBar.FindDescendantView<UITextField>();
 			UpdateSearchBarColors();
@@ -149,22 +150,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!_hasCustomBackground && backGroundColor == null)
 				return;
 
-			var backgroundView = textField.Subviews[0];
-
 			if (backGroundColor == null)
 			{
-				backgroundView.Layer.CornerRadius = 0;
-				backgroundView.ClipsToBounds = false;
-				backgroundView.BackgroundColor = _defaultBackgroundColor;
+				// Reset to defaults
+				textField.Layer.CornerRadius = 0;
+				textField.ClipsToBounds = false;
+				textField.BackgroundColor = _defaultBackgroundColor;
+				_hasCustomBackground = false;
 			}
-
-			_hasCustomBackground = true;
-
-			backgroundView.Layer.CornerRadius = 10;
-			backgroundView.ClipsToBounds = true;
-			if (_defaultBackgroundColor == null)
-				_defaultBackgroundColor = backgroundView.BackgroundColor;
-			backgroundView.BackgroundColor = backGroundColor.ToPlatform();
+			else
+			{
+				_hasCustomBackground = true;
+				textField.Layer.CornerRadius = 10;
+				textField.ClipsToBounds = true;
+				if (_defaultBackgroundColor is null)
+				{
+					_defaultBackgroundColor = backGroundColor.ToPlatform();
+				}
+				textField.BackgroundColor = backGroundColor.ToPlatform();
+			}
 		}
 
 		void UpdateCancelButtonColor(UIButton cancelButton)
@@ -338,6 +342,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uiSearchBar.ResignFirstResponder();
 		}
 
+		void OnShowSoftInputRequested(object sender, EventArgs e)
+		{
+			_uiSearchBar?.BecomeFirstResponder();
+		}
+
+		void OnHideSoftInputRequested(object sender, EventArgs e)
+		{
+			_uiSearchBar?.ResignFirstResponder();
+		}
+
+
 		UIToolbar CreateNumericKeyboardAccessoryView()
 		{
 			var keyboardWidth = UIScreen.MainScreen.Bounds.Width;
@@ -395,6 +410,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					_searchHandler.FocusChangeRequested -= SearchHandlerFocusChangeRequested;
 					_searchHandler.PropertyChanged -= SearchHandlerPropertyChanged;
+					_searchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
+					_searchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
 				}
 				_searchHandler = null;
 				_uiSearchBar = null;

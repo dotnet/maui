@@ -8,7 +8,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public partial class CountedImageSourceServiceStub
 	{
-		public async Task<IImageSourceServiceResult> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public async Task<IImageSourceServiceResult> LoadDrawableAsync(IImageSource imageSource, global::Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			if (imageSource is not ICountedImageSourceStub imageSourceStub)
 				return null;

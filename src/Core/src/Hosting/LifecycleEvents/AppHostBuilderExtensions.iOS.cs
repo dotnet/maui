@@ -49,11 +49,9 @@ namespace Microsoft.Maui.LifecycleEvents
 							app.GetWindow()?.Stopped();
 					});
 
-
 			// Pre iOS 13 doesn't support scenes
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				return;
-
 
 			iOS
 				.SceneWillEnterForeground(scene =>
