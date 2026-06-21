@@ -618,9 +618,9 @@ $authorPing
 
 $statusChipRow
 
-$newSessionBlock
-
 $futureActionSection
+
+$newSessionBlock
 "@
 
 # Clean up excessive blank lines
