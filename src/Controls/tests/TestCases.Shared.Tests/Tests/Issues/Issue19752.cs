@@ -53,7 +53,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 
 		App.Tap("button1");
 
-		// pressing a button sets it to be focused, but the pointer over state is appplied after
+		// Pressing a button sets it to be focused, but the pointer over state is applied after
 		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("PointerOver"));
 
 		// we are shrinking the focused button a bit
@@ -95,7 +95,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		App.Tap("button1"); // focus button 1
 		App.Tap("button2"); // move the focus to button 2, but then disable it
 
-		// the button is disabled without a focus chnage as it never had focus
+		// the button is disabled without a focus change as it never had focus
 		Assert.That(App.FindElement("button2").GetText(), Is.EqualTo("Disabled"));
 
 		// we are shrinking the focused button a bit, but the button never had focus

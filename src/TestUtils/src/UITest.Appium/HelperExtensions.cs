@@ -2722,7 +2722,7 @@ namespace UITest.Appium
 		/// Moves the mouse cursor to the matched element by 'query'.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <param name="query"></param>
+		/// <param name="query">The query used to locate the target element.</param>
 		public static void MoveCursor(this IApp app, IQuery query)
 		{
 			var element = app.FindElement(query);
