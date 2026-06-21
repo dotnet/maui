@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _isCarouselViewReady;
 		bool _isInternalPositionUpdate;
 		int _gotoPosition = -1;
+		bool _isCollectionChanged;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -549,6 +550,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var position = e.CenterItemIndex;
+			if (_isCollectionChanged && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				position = ItemsView.Position;
+				_isCollectionChanged = false;
+			}
 
 			if (position == -1)
 			{
@@ -588,7 +594,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// Set flag to disable animation during collection changes
 			_isInternalPositionUpdate = true;
-			
+
 			try
 			{
 				var carouselPosition = ItemsView.Position;
@@ -614,6 +620,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					&& currentItemPosition != -1)
 				{
 					carouselPosition = currentItemPosition;
+					_isCollectionChanged = true;
+				}
+
+				if (e.Action == NotifyCollectionChangedAction.Remove)
+				{
+					_isCollectionChanged = true;
 				}
 
 				if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
