@@ -3577,6 +3577,46 @@ try {
     Set-Item function:Get-NightlyFeedFreshness $nfOrigDef   # restore real helper
 }
 
+# (e) FALSE-GREEN GUARD: feed has NO inflight builds and the newest band build is a fresh
+# ci.main build. An SR lane's band prefix (^10\.0\.90-) matches ci.main too, so without the
+# exclusion the resolver would surface that fresh ci.main build and paint a stalled inflight
+# feed green. It must instead report matched=$false (muted "no matching build").
+$nfCiMainOnlyMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type'='RegistrationsBaseUrl/3.6.0'; '@id'='https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        $mk = { param($v,$p) [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version=$v; published=$p } } }
+        return [pscustomobject]@{ items = @([pscustomobject]@{ items = @(
+            (& $mk '10.0.90-ci.main.123' '2026-06-22T03:00:00Z')   # fresh, but ci.main — NOT a dogfood signal
+        ) }) }
+    }
+    throw "unexpected url $Url"
+}
+$rCiMain = Resolve-NightlyDogfoodFreshness -Feed 'dotnet10' -BandPrefixRegex '^10\.0\.90-' -Fetcher $nfCiMainOnlyMock
+Assert-Eq -Label "resolve: band fallback ci.main-only → matched false (no false-green)"   -Expected $false -Actual ([bool](Get-NightlyFeedProp $rCiMain 'matched'))
+Assert-Eq -Label "resolve: band fallback ci.main-only → no version surfaced"              -Expected $true  -Actual ([string]::IsNullOrEmpty([string](Get-NightlyFeedProp $rCiMain 'version')))
+
+# (f) The exclusion must NOT over-filter: a non-ci.main band build (rc/servicing/rtm) is a
+# legitimate fallback signal and must still surface.
+$nfRcMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type'='RegistrationsBaseUrl/3.6.0'; '@id'='https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        $mk = { param($v,$p) [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version=$v; published=$p } } }
+        return [pscustomobject]@{ items = @([pscustomobject]@{ items = @(
+            (& $mk '10.0.90-rc.1.456' '2026-06-22T03:00:00Z')
+        ) }) }
+    }
+    throw "unexpected url $Url"
+}
+$rRc = Resolve-NightlyDogfoodFreshness -Feed 'dotnet10' -BandPrefixRegex '^10\.0\.90-' -Fetcher $nfRcMock
+Assert-Eq -Label "resolve: band fallback non-ci.main build still surfaces"                -Expected '10.0.90-rc.1.456' -Actual $rRc.version
+Assert-Eq -Label "resolve: band fallback non-ci.main → buildType band"                    -Expected 'band'             -Actual $rRc.buildType
+
 # ───── Get-NightlyFeedTier (banner-state bucketing for the idempotency hash) ─────
 Write-Host "`n[Unit] Get-NightlyFeedTier (stable banner-state bucket)" -ForegroundColor Cyan
 $tierNow = [datetime]::new(2026, 6, 22, 0, 0, 0, [System.DateTimeKind]::Utc)
@@ -3631,6 +3671,25 @@ Assert-Eq -Label "hash: new build (version change), same ok tier → DIFFERENT" 
 Assert-Eq -Label "hash: feed present vs absent → DIFFERENT" -Expected $false -Actual ($hOk -eq $hNoFeed)
 Assert-Eq -Label "hash: unknown tier vs ok → DIFFERENT" -Expected $false -Actual ($hOk -eq $hUnk)
 Assert-Eq -Label "hash: nightly-feed fold is deterministic" -Expected $hStale -Actual (Get-ReportSemanticHash -Data $dStale -Verdict $nfV)
+
+# Split-clock guard: the hash must derive the tier from the render-time instant stored in
+# $Data['nightlyFeedNow'] (the same instant the banner used), NOT a fresh wall-clock sample.
+# Two records with IDENTICAL feed data but different stored "now" (one age→ok, one age→stale)
+# must therefore hash DIFFERENTLY. Pre-fix the hash sampled [datetime]::UtcNow and ignored the
+# stored now, so both collapsed to the same tier+hash and the banner could freeze across a
+# boundary. (Regression guard for the banner/hash boundary-straddle bug.)
+$nfSplitPub = [datetime]::new(2026, 6, 1, 0, 0, 0, [System.DateTimeKind]::Utc)
+$dNowOk = & $nfBase
+$dNowOk['nightlyFeed']    = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfSplitPub }
+$dNowOk['nightlyFeedNow'] = $nfSplitPub.AddDays(1)    # age 1 → ok
+$dNowStale = & $nfBase
+$dNowStale['nightlyFeed']    = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfSplitPub }
+$dNowStale['nightlyFeedNow'] = $nfSplitPub.AddDays(10)  # age 10 → stale (SAME data, different stored now)
+$hNowOk    = Get-ReportSemanticHash -Data $dNowOk -Verdict $nfV
+$hNowStale = Get-ReportSemanticHash -Data $dNowStale -Verdict $nfV
+Assert-Eq -Label "hash: honors stored nightlyFeedNow (ok@T1 vs stale@T2 → DIFFERENT)" -Expected $false -Actual ($hNowOk -eq $hNowStale)
+Assert-Eq -Label "hash: stored-now tier resolves to ok at T1" -Expected 'ok' -Actual (Get-NightlyFeedTier -Freshness $dNowOk['nightlyFeed'] -Now $dNowOk['nightlyFeedNow'])
+Assert-Eq -Label "hash: stored-now tier resolves to stale at T2" -Expected 'stale' -Actual (Get-NightlyFeedTier -Freshness $dNowStale['nightlyFeed'] -Now $dNowStale['nightlyFeedNow'])
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })

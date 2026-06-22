@@ -3021,7 +3021,14 @@ function Get-ReportSemanticHash {
         nightlyFeed = if ($Data.ContainsKey('nightlyFeed') -and $Data['nightlyFeed'] -and
                           (Get-Command Get-NightlyFeedTier -ErrorAction SilentlyContinue)) {
                           $nf = $Data['nightlyFeed']
-                          $tier = Get-NightlyFeedTier -Freshness $nf -Now ([datetime]::UtcNow)
+                          # Reuse the SAME instant the banner was rendered with (stored by
+                          # Add-SrNightlyFeedFreshness) so the hashed tier can never disagree with
+                          # the displayed banner tier and freeze a stale banner via the no-op gate.
+                          # Fall back to UtcNow when unset (e.g. unit tests that inject nightlyFeed directly).
+                          $nfNow = if ($Data.ContainsKey('nightlyFeedNow') -and $Data['nightlyFeedNow']) {
+                                       [datetime]$Data['nightlyFeedNow']
+                                   } else { [datetime]::UtcNow }
+                          $tier = Get-NightlyFeedTier -Freshness $nf -Now $nfNow
                           $ver = [string](Get-NightlyFeedProp $nf 'version')
                           if ($ver) { "$tier|$ver" } else { $tier }
                       } else { '' }
@@ -3668,14 +3675,24 @@ function Add-SrNightlyFeedFreshness {
         if ($null -eq $fresh) { $fresh = @{ unknown = $true } }
 
         $buildType = [string](Get-NightlyFeedProp $fresh 'buildType')
-        $typeNote = if ($buildType -eq 'inflight') { 'ci.inflight' } else { "``$band``" }
+        # Label honestly: 'inflight' → ci.inflight; a definitive band fallback → the band;
+        # anything else (unknown / transient inflight failure) → ci.inflight, the stream we
+        # were measuring — never imply the band carries the signal when freshness is unknown.
+        $typeNote = if ($buildType -eq 'inflight') { 'ci.inflight' }
+                    elseif ($buildType -eq 'band') { "``$band``" }
+                    else { 'ci.inflight' }
         $laneLabel = "[``$feed``]($feedUrl) · $typeNote"
         $fresh['laneLabel'] = $laneLabel
         $fresh['feedUrl'] = $feedUrl
         $fresh['versionPrefix'] = $bandPrefix
 
+        # Capture ONE timestamp and reuse it for both the banner render and the semantic-hash
+        # tier (Get-ReportSemanticHash reads $Data['nightlyFeedNow']) so the two can never
+        # sample different sides of a tier boundary within a single run.
+        $nfNow = [DateTime]::UtcNow
         $Data['nightlyFeed'] = $fresh
-        $banner = Format-NightlyFeedBanner -Freshness $fresh -Now ([DateTime]::UtcNow)
+        $Data['nightlyFeedNow'] = $nfNow
+        $banner = Format-NightlyFeedBanner -Freshness $fresh -Now $nfNow
         if ($banner) { $Data['nightlyFeedBanner'] = $banner }
     } catch {
         Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)"

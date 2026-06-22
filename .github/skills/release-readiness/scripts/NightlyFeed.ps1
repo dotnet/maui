@@ -161,6 +161,10 @@ function Get-NightlyFeedFreshness {
             matched   = $true
         }
     } catch {
+        # Fail-open: a network/parse error yields $null so the caller renders a muted
+        # "unknown" banner rather than crashing the unattended job. Surface the reason to
+        # the CI log so a real feed outage (401/503/DNS) isn't silently invisible.
+        Write-Warning "Nightly-feed query failed for feed '$Feed' (fail-open -> unknown): $($_.Exception.Message)"
         return $null
     }
 }
@@ -223,6 +227,16 @@ function Resolve-NightlyDogfoodFreshness {
     # (e.g. a preview feed whose newest bits are its preview.N builds).
     $band = Get-NightlyFeedFreshness @common -VersionPrefixRegex $BandPrefixRegex
     if ($null -eq $band) { return @{ unknown = $true } }
+    # Never surface a ci.main build as the dogfood signal. An SR lane's band prefix
+    # (e.g. ^10\.0\.90-) also matches the always-fresh ci.main stream, so a no-inflight
+    # window (start of an SR cycle, or inflight-label churn) would otherwise return a fresh
+    # ci.main build and paint a stalled inflight feed green — the exact false-positive this
+    # resolver exists to prevent. Report matched=$false (muted "no matching build") instead.
+    # Preview bands (preview.N) never match ci.main, so this is a no-op for the preview lane.
+    $bandVer = [string](Get-NightlyFeedProp $band 'version')
+    if ($bandVer -match 'ci\.main\.') {
+        return @{ feed = $Feed; package = $Package; matched = $false; buildType = 'band' }
+    }
     $band['buildType'] = 'band'
     return $band
 }
