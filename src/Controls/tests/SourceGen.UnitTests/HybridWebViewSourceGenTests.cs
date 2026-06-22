@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Immutable;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -101,6 +101,139 @@ internal sealed class InvokeTargetJsonContext : JsonSerializerContext
 		Assert.Contains("case \"InheritedEcho\":", generated, StringComparison.Ordinal);
 		Assert.Contains("_target.InheritedEcho(__value)", generated, StringComparison.Ordinal);
 		Assert.Contains("case \"OwnEcho\":", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void GeneratesArgumentCountCheckForParameterlessMethods()
+	{
+		const string source = """
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Maui.Controls;
+
+namespace TestApp;
+
+public static class Registration
+{
+	public static void Register(HybridWebView hybridWebView)
+	{
+		hybridWebView.SetInvokeJavaScriptTarget(new InvokeTarget(), InvokeTargetJsonContext.Default);
+	}
+}
+
+public sealed class InvokeTarget
+{
+	public string NoArgs() => "";
+}
+
+internal sealed class InvokeTargetJsonContext : JsonSerializerContext
+{
+	public static InvokeTargetJsonContext Default { get; } = new();
+	private InvokeTargetJsonContext() : base(null) { }
+	protected override JsonSerializerOptions? GeneratedSerializerOptions => null;
+	public override JsonTypeInfo? GetTypeInfo(Type type) => null;
+}
+""";
+
+		var (result, updatedCompilation, generatorDiagnostics) = RunGenerator(source);
+		AssertNoCompilationErrors(updatedCompilation, generatorDiagnostics);
+
+		var generated = Assert.Single(result.Results.Single().GeneratedSources).SourceText.ToString();
+		Assert.Contains("case \"NoArgs\":", generated, StringComparison.Ordinal);
+		Assert.Contains("if (paramJsonValues is not null && paramJsonValues.Length != 0)", generated, StringComparison.Ordinal);
+		Assert.Contains("Method 'NoArgs' expects 0 argument(s) but received ", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void EscapesKeywordMethodIdentifiers()
+	{
+		const string source = """
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Maui.Controls;
+
+namespace TestApp;
+
+public static class Registration
+{
+	public static void Register(HybridWebView hybridWebView)
+	{
+		hybridWebView.SetInvokeJavaScriptTarget(new InvokeTarget(), InvokeTargetJsonContext.Default);
+	}
+}
+
+public sealed class InvokeTarget
+{
+	public string @event() => "";
+}
+
+internal sealed class InvokeTargetJsonContext : JsonSerializerContext
+{
+	public static InvokeTargetJsonContext Default { get; } = new();
+	private InvokeTargetJsonContext() : base(null) { }
+	protected override JsonSerializerOptions? GeneratedSerializerOptions => null;
+	public override JsonTypeInfo? GetTypeInfo(Type type) => null;
+}
+""";
+
+		var (result, updatedCompilation, generatorDiagnostics) = RunGenerator(source);
+		AssertNoCompilationErrors(updatedCompilation, generatorDiagnostics);
+
+		var generated = Assert.Single(result.Results.Single().GeneratedSources).SourceText.ToString();
+		Assert.Contains("case \"event\":", generated, StringComparison.Ordinal);
+		Assert.Contains("_target.@event()", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("_target.event()", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void SkipsMethodsWithUnsafePointerParameters()
+	{
+		const string source = """
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Maui.Controls;
+
+namespace TestApp;
+
+public static class Registration
+{
+	public static void Register(HybridWebView hybridWebView)
+	{
+		hybridWebView.SetInvokeJavaScriptTarget(new InvokeTarget(), InvokeTargetJsonContext.Default);
+	}
+}
+
+public sealed class InvokeTarget
+{
+	public string Supported() => "";
+	public unsafe string Pointer(int* value) => "";
+	public unsafe string FunctionPointer(delegate*<int, void> callback) => "";
+}
+
+internal sealed class InvokeTargetJsonContext : JsonSerializerContext
+{
+	public static InvokeTargetJsonContext Default { get; } = new();
+	private InvokeTargetJsonContext() : base(null) { }
+	protected override JsonSerializerOptions? GeneratedSerializerOptions => null;
+	public override JsonTypeInfo? GetTypeInfo(Type type) => null;
+}
+""";
+
+		var (result, updatedCompilation, generatorDiagnostics) = RunGenerator(source, allowUnsafe: true);
+		AssertNoCompilationErrors(updatedCompilation, generatorDiagnostics);
+
+		var generated = Assert.Single(result.Results.Single().GeneratedSources).SourceText.ToString();
+		Assert.Contains("case \"Supported\":", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("case \"Pointer\":", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("case \"FunctionPointer\":", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("Deserialize<global::System.Int32*>", generated, StringComparison.Ordinal);
+		Assert.DoesNotContain("delegate*", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -347,16 +480,18 @@ public static class Registration
 		Assert.Contains("TTarget", diagnostic.GetMessage(), StringComparison.Ordinal);
 	}
 
-	static (GeneratorDriverRunResult Result, Compilation UpdatedCompilation, ImmutableArray<Diagnostic> GeneratorDiagnostics) RunGenerator(string source)
+	static (GeneratorDriverRunResult Result, Compilation UpdatedCompilation, ImmutableArray<Diagnostic> GeneratorDiagnostics) RunGenerator(string source, bool allowUnsafe = false)
 	{
 		var parseOptions = CSharpParseOptions.Default
 			.WithLanguageVersion(LanguageVersion.Preview)
 			.WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Maui.Controls.Generated")]);
+		var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+			.WithAllowUnsafe(allowUnsafe);
 		var compilation = CSharpCompilation.Create(
 			"HwvSourceGenTest",
 			[CSharpSyntaxTree.ParseText(source, parseOptions, path: "/tmp/TestApp/Registration.cs")],
 			GetReferences(),
-			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+			compilationOptions);
 
 		GeneratorDriver driver = CSharpGeneratorDriver.Create([new HybridWebViewInvokeTargetGenerator().AsSourceGenerator()], parseOptions: parseOptions);
 		driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var generatorDiagnostics);

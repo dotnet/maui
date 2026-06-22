@@ -166,12 +166,12 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 			if (m.IsGenericMethod)
 				continue;
 
-			// Check for ref/out/pointer params
+			// Check for ref/out/unsafe pointer params
 			bool hasUnsupportedParam = false;
 			var paramInfos = new List<ParamInfo>();
 			foreach (var p in m.Parameters)
 			{
-				if (p.RefKind != RefKind.None)
+				if (p.RefKind != RefKind.None || ContainsUnsupportedParameterType(p.Type))
 				{
 					hasUnsupportedParam = true;
 					break;
@@ -310,6 +310,18 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		};
 	}
 
+	private static bool ContainsUnsupportedParameterType(ITypeSymbol type)
+	{
+		return type switch
+		{
+			IPointerTypeSymbol => true,
+			IFunctionPointerTypeSymbol => true,
+			INamedTypeSymbol namedType => namedType.TypeArguments.Any(ContainsUnsupportedParameterType),
+			IArrayTypeSymbol arrayType => ContainsUnsupportedParameterType(arrayType.ElementType),
+			_ => false
+		};
+	}
+
 	private static bool IsSameOrDerivedFrom(ITypeSymbol type, string typeName)
 	{
 		for (var current = type; current is not null; current = current.BaseType)
@@ -442,24 +454,30 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 						sb.AppendLine($"                        var __{p.Name} = global::System.Text.Json.JsonSerializer.Deserialize<{p.TypeName}>(paramJsonValues[{i}], GetRequiredJsonTypeInfo<{p.TypeName}>(_ctx, \"{method.Name}\", \"{p.Name}\"))!;");
 					}
 				}
+				else
+				{
+					sb.AppendLine("                        if (paramJsonValues is not null && paramJsonValues.Length != 0)");
+					sb.AppendLine($"                            throw new global::System.InvalidOperationException(\"Method '{method.Name}' expects 0 argument(s) but received \" + paramJsonValues.Length + \".\");");
+				}
 
 				var argList = string.Join(", ", Array.ConvertAll(method.Parameters, p => $"__{p.Name}"));
+				var escapedMethodName = EscapeIdentifier(method.Name);
 
 				switch (method.ReturnKind)
 				{
 					case "void":
-						sb.AppendLine($"                        _target.{method.Name}({argList});");
+						sb.AppendLine($"                        _target.{escapedMethodName}({argList});");
 						sb.AppendLine("                        return null;");
 						break;
 					case "Task":
-						sb.AppendLine($"                        await _target.{method.Name}({argList});");
+						sb.AppendLine($"                        await _target.{escapedMethodName}({argList});");
 						sb.AppendLine("                        return null;");
 						break;
 					case "TaskOfT":
-						sb.AppendLine($"                        return SerializeResult<{method.ResultTypeName}>(await _target.{method.Name}({argList}), _ctx, \"{method.Name}\");");
+						sb.AppendLine($"                        return SerializeResult<{method.ResultTypeName}>(await _target.{escapedMethodName}({argList}), _ctx, \"{method.Name}\");");
 						break;
 					case "sync":
-						sb.AppendLine($"                        return SerializeResult<{method.ResultTypeName}>(_target.{method.Name}({argList}), _ctx, \"{method.Name}\");");
+						sb.AppendLine($"                        return SerializeResult<{method.ResultTypeName}>(_target.{escapedMethodName}({argList}), _ctx, \"{method.Name}\");");
 						break;
 				}
 
@@ -493,6 +511,14 @@ public sealed class HybridWebViewInvokeTargetGenerator : IIncrementalGenerator
 		sb.AppendLine("}");
 
 		spc.AddSource("HybridWebViewInterceptors.g.cs", sb.ToString());
+	}
+
+	private static string EscapeIdentifier(string identifier)
+	{
+		return SyntaxFacts.GetKeywordKind(identifier) == SyntaxKind.None
+			&& SyntaxFacts.GetContextualKeywordKind(identifier) == SyntaxKind.None
+			? identifier
+			: "@" + identifier;
 	}
 
 	private sealed class InvocationInfo
