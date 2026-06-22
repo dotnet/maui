@@ -146,13 +146,3 @@ public class Issue34931ThirdPage : ContentPage
 		};
 	}
 }
-
-static class Issue34931ViewExtensions
-{
-	public static T Assign<T>(this T view, out T assigned)
-		where T : BindableObject
-	{
-		assigned = view;
-		return view;
-	}
-}
