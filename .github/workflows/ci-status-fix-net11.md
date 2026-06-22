@@ -218,7 +218,7 @@ inputs once at the start and let them shape the whole run:
     safe-output. Instead, for each issue that would have produced a PR, print a
     `DRY RUN — would open PR` block to the run log containing: target `base`
     branch, source `branch`, title, the full PR body, and `git --no-pager diff
-    --stat` of the staged candidate change (or "empty patch (needs-human)"). Tally
+    --stat` of the staged candidate change. Tally
     the outcome as `dry-run: would-<fix|help|deflake>`. Emit nothing.
   - Otherwise (`"false"` / empty): normal mode — emit PRs via `safe-outputs` as
     the steps describe.
@@ -580,13 +580,18 @@ silently dropped. You MUST create at least one commit:
 # the untrusted issue body or CI logs. NEVER pass it as a double-quoted `-m`
 # argument: a crafted $(…), backtick, or stray quote would be evaluated by the
 # shell at commit time. Write the FULLY-RESOLVED message (substitute the real
-# integer issue number and attempt yourself) into a file via a FRESH PER-RUN
-# RANDOM single-quoted heredoc delimiter (>=16 random hex/alnum chars, e.g.
-# GHAW_MSG_<random>) so the body — including the description — stays inert, then
-# commit with `-F`. Keep the description to a single line.
-cat > /tmp/gh-aw/agent/commitmsg_${N}.txt <<'GHAW_MSG_REPLACE_WITH_RANDOM'
+# integer issue number and attempt yourself) into a file via a single-quoted
+# heredoc, then commit with `-F`. The `<GHAW_MSG_RANDOM_DELIMITER>` token below
+# is an ILLUSTRATIVE PLACEHOLDER — replace BOTH occurrences with one FRESH
+# PER-RUN RANDOM token you generate now (>=16 random hex/alnum chars, e.g.
+# GHAW_MSG_<16-random-hex>). NEVER emit the literal placeholder: a fixed,
+# source-visible delimiter could be reproduced in untrusted text to terminate
+# the heredoc early. Single-quoting keeps the body inert; the random delimiter
+# plus a strictly one-line body (strip any newline from the description) means
+# no untrusted-derived line can match your delimiter.
+cat > /tmp/gh-aw/agent/commitmsg_${N}.txt <<'<GHAW_MSG_RANDOM_DELIMITER>'
 ci-fix: <short fix description> (refs #<issue-number>, attempt <K>/5)
-GHAW_MSG_REPLACE_WITH_RANDOM
+<GHAW_MSG_RANDOM_DELIMITER>
 git commit -F /tmp/gh-aw/agent/commitmsg_${N}.txt
 git rev-list --count "origin/net11.0..HEAD" | tee /tmp/gh-aw/agent/commitcount_${N}.txt
 ```

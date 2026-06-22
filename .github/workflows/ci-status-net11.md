@@ -256,16 +256,20 @@ actually grep-matched in a log file you fetched this run. Concretely:
    **data** with a single-quoted heredoc, then match it with `grep -F -f`:
 
    ```bash
-   # Persist the substring as inert DATA, never as a shell argument. Use a FRESH
-   # RANDOM single-quoted delimiter generated for THIS run (>=16 random hex/alnum
-   # chars, e.g. GHAW_SIG_<random>) — single-quoting disables ALL shell expansion
-   # in the body (quotes, backticks, $(…), $VAR stay literal), and a random,
-   # unpredictable delimiter means a crafted multi-line log excerpt cannot
-   # terminate the heredoc early (collision is infeasible, not merely unlikely).
-   # Still keep the body to ONE representative line as defence-in-depth.
-   cat > /tmp/gh-aw/agent/sig.txt <<'GHAW_SIG_REPLACE_WITH_RANDOM'
+   # Persist the substring as inert DATA, never as a shell argument. The
+   # `<GHAW_SIG_RANDOM_DELIMITER>` token below is an ILLUSTRATIVE PLACEHOLDER —
+   # replace BOTH occurrences with one FRESH RANDOM token you generate for THIS
+   # run (>=16 random hex/alnum chars, e.g. GHAW_SIG_<16-random-hex>). NEVER emit
+   # the literal placeholder: a fixed, source-visible delimiter could be
+   # reproduced in a crafted log excerpt to terminate the heredoc early.
+   # Single-quoting disables ALL shell expansion in the body (quotes, backticks,
+   # $(…), $VAR stay literal); a random, unpredictable delimiter means a crafted
+   # multi-line log excerpt cannot terminate the heredoc early (collision is
+   # infeasible, not merely unlikely). Keep the body to ONE representative line
+   # as defence-in-depth.
+   cat > /tmp/gh-aw/agent/sig.txt <<'<GHAW_SIG_RANDOM_DELIMITER>'
    <primary error substring>
-   GHAW_SIG_REPLACE_WITH_RANDOM
+   <GHAW_SIG_RANDOM_DELIMITER>
    # -F = fixed string (no regex); -f = read pattern from file (no interpolation).
    # Quote the path; <SIGHASH> must be the hex/alnum fingerprint hash (no spaces
    # or shell metacharacters).
