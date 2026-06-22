@@ -1,3 +1,4 @@
+# if TEST_FAILS_ON_ANDROID	 //This issue will be fixed in Shell Handler Implementation PR - https://github.com/dotnet/maui/pull/34758
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -55,3 +56,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
