@@ -20,10 +20,20 @@ namespace Microsoft.Maui.ApplicationModel;
 /// <para>
 /// <see href="https://developer.android.com/training/basics/intents/result">Google docs</see>
 /// </para>
-/// This must be unconditionally registered every time our activity is created.
-/// Each <see cref="ComponentActivity"/> instance gets its own launcher so that
-/// multi-activity apps can call MediaPicker independently from any activity in
-/// the back stack without invalidating launchers registered by other activities.
+/// <para>
+/// Each <see cref="ComponentActivity"/> instance gets its own registered launcher and its
+/// own pending <see cref="TaskCompletionSource{TResult}"/> entry so that child activities
+/// can use MediaPicker independently of the main activity, and so that two activities with
+/// concurrent in-flight requests cannot clobber each other.
+/// </para>
+/// <para>
+/// The result callback closes over the specific <see cref="ComponentActivity"/> instance
+/// that was passed to <see cref="Register"/> and resolves the pending TCS using THAT
+/// instance as the lookup key. Result delivery therefore does NOT depend on whichever
+/// activity is "current" at delivery time — which is critical because the launching
+/// activity may have been destroyed and recreated (rotation/config change) before the
+/// picker returns.
+/// </para>
 /// </remarks>
 internal abstract class ActivityForResultRequest<TContract, TResult>
 	where TContract : ActivityResultContract, new()
@@ -39,44 +49,43 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	readonly ConditionalWeakTable<ComponentActivity, TaskCompletionSource<TResult>> _pendingRequests = new();
 
 	/// <summary>
-	/// Gets a value indicating whether the request has a launcher registered for the current activity.
+	/// Gets a value indicating whether the request has a launcher registered for the
+	/// currently focused activity.
 	/// </summary>
-	/// <remarks>
-	/// This property name was clarified from <c>IsRegistered</c> to better reflect that it checks
-	/// for a launcher for the currently-focused activity, not whether any registration has occurred.
-	/// </remarks>
 	protected bool HasLauncherForCurrentActivity => GetLauncherForCurrentActivity() is not null;
-
-	// Deprecated: Use HasLauncherForCurrentActivity instead
-	[Obsolete("Use HasLauncherForCurrentActivity instead. IsRegistered is misleading because it only checks the current activity.", false)]
-	protected bool IsRegistered => HasLauncherForCurrentActivity;
 
 	/// <summary>
 	/// Registers this request to start an activity for a result.
-	/// Each <see cref="ComponentActivity"/> instance receives its own launcher so that
-	/// child activities can use MediaPicker independently of the main activity.
+	/// Each <see cref="ComponentActivity"/> instance receives its own launcher so child
+	/// activities can use MediaPicker independently of the main activity.
 	/// </summary>
 	/// <param name="componentActivity">The component activity to register the request with.</param>
 	public void Register(ComponentActivity componentActivity)
 	{
-		// Skip if already registered for this specific activity instance (e.g. called again after config change).
+		if (componentActivity is null)
+			throw new ArgumentNullException(nameof(componentActivity));
+
+		// Skip if already registered for this specific activity instance (e.g. called again
+		// after a no-op restart). Calling RegisterForActivityResult twice on the same
+		// activity is not legal — must happen once during onCreate.
 		if (_activityLaunchers.TryGetValue(componentActivity, out _))
 			return;
 
 		var contract = new TContract();
 
-		// Note: Do NOT capture componentActivity in the closure. Instead, resolve it dynamically at callback time.
-		// This allows the callback to survive activity recreation due to rotation or config changes.
-		// When rotation occurs, the old activity is destroyed but the callback may fire on the new activity's
-		// launcher context. We need to look up the current activity to find the pending request.
+		// CRITICAL: capture the same `componentActivity` instance the launcher is being
+		// registered for. The callback resolves the pending TCS for THIS specific activity,
+		// NOT for whatever ActivityStateManager.Default.GetCurrentActivity() happens to be
+		// at delivery time. That makes delivery invariant under rotation / config changes —
+		// even if the activity is destroyed/recreated, the captured reference remains valid
+		// for the duration of the in-flight callback (Android keeps the registered activity
+		// alive long enough to deliver its own result).
+		var registeredActivity = componentActivity;
 		var callback = new ActivityResultCallback<TResult>(result =>
 		{
-			// Resolve the current activity at callback delivery time, not capture time.
-			// If rotation happened, GetCurrentActivity returns the new activity instance.
-			var currentActivity = ActivityStateManager.Default.GetCurrentActivity() as ComponentActivity;
-			if (currentActivity != null && _pendingRequests.TryGetValue(currentActivity, out var tcs))
+			if (_pendingRequests.TryGetValue(registeredActivity, out var tcs))
 			{
-				_pendingRequests.Remove(currentActivity);
+				_pendingRequests.Remove(registeredActivity);
 				tcs?.TrySetResult(result);
 			}
 		});
@@ -100,7 +109,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		if (launchingActivity is null)
 		{
 			Trace.WriteLine("""
-			                ActivityForResultRequest.Launch() called but current activity is null.
+			                ActivityForResultRequest.Launch() called but current activity is null or not a ComponentActivity.
 			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
 			                """);
 			var canceledTcs = new TaskCompletionSource<TResult>();

@@ -56,15 +56,17 @@ public class Issue35826 : _IssuesUITest
 		// Also accept "Error" as a valid outcome: what matters is that the call returns
 		// (doesn't hang), not the specific result — emulators may not have a photo picker.
 		var returned = App.WaitForTextToBePresentInElement(ChildActivityResultLabel, "Cancelled",
-			timeout: TimeSpan.FromSeconds(300)) ||
+			timeout: TimeSpan.FromSeconds(120)) ||
 			App.WaitForTextToBePresentInElement(ChildActivityResultLabel, "Error",
 			timeout: TimeSpan.FromSeconds(5));
 
-		Assert.That(returned, Is.True,
-			"PickPhotosAsync must return from a child activity (not hang indefinitely). " +
-			"If this fails the result label is still showing 'Picking...' after 300 seconds.");
-
 		var resultText = App.FindElement(ChildActivityResultLabel).GetText();
+
+		Assert.That(returned, Is.True,
+			$"PickPhotosAsync must return from a child activity (not hang indefinitely). " +
+			$"Actual result label: '{resultText}'. " +
+			$"If this fails the result label is still showing 'Picking...' after 120 seconds.");
+
 		Assert.That(resultText, Does.Not.Contain("Picking"),
 			"PickPhotosAsync must not hang in a child activity.");
 
