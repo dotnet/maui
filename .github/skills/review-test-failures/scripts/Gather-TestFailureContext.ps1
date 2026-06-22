@@ -45,6 +45,9 @@ param(
     [int]$LookbackBuilds = 5,
 
     [Parameter(Mandatory = $false)]
+    [int]$BaselineBuildsPerDefinition = 1,
+
+    [Parameter(Mandatory = $false)]
     [string]$OutputDirectory = "CustomAgentLogsTmp/TestFailureReview",
 
     [Parameter(Mandatory = $false)]
@@ -601,6 +604,71 @@ function Get-RecentBaseBuilds {
     })
 }
 
+function Get-BuildLogTestFailures {
+    # Extracts distinct test failures from a single AzDO build's failed timeline
+    # records, reusing the same log parsing as the PR-side extraction. Used to
+    # compute the base-branch baseline so pre-existing failures can be subtracted
+    # from PR-caused ones.
+    param(
+        [string]$Org,
+        [string]$Project,
+        [int]$BuildId,
+        [int]$MaxLogs = 8
+    )
+
+    $result = [ordered]@{
+        buildId = $BuildId
+        accessible = $false
+        definitionName = $null
+        result = $null
+        status = $null
+        failures = @()
+        error = $null
+    }
+
+    $buildResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId`?api-version=7.1"
+    if ($buildResult.error -or -not $buildResult.value) {
+        $result.error = $buildResult.error
+        return $result
+    }
+
+    $baseUrl = $buildResult.baseUrl
+    $build = $buildResult.value
+    $result.accessible = $true
+    $result.definitionName = $build.definition.name
+    $result.result = $build.result
+    $result.status = $build.status
+
+    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1"
+    if ($timelineResult.error -or -not $timelineResult.value) {
+        return $result
+    }
+
+    $records = @(ConvertTo-Array $timelineResult.value.records)
+    $failedRecords = @($records | Where-Object { $_.result -eq "failed" -and $_.log -and $_.log.id } | Select-Object -First $MaxLogs)
+
+    $failures = New-Object System.Collections.Generic.List[object]
+    foreach ($record in $failedRecords) {
+        $logId = [int]$record.log.id
+        try {
+            $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$BuildId/logs/$logId`?api-version=7.1"
+            $lines = @($logText -split "`r?`n")
+            foreach ($failure in (Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)) {
+                $failure.source = "azdo-baseline-log"
+                $failure.buildId = $BuildId
+                $failure.buildDefinition = $build.definition.name
+                $failures.Add($failure)
+            }
+        }
+        catch {
+            # Ignore unreadable baseline logs; baseline is best-effort enrichment.
+        }
+    }
+
+    $result.failures = $failures.ToArray()
+    return $result
+}
+
 Write-Host "Gathering test-failure context for PR #$PrNumber in $Repository"
 
 $pr = Invoke-GhJson -Arguments @(
@@ -910,6 +978,74 @@ $allExcerptsArray = $allLogExcerpts.ToArray()
 $buildArray = $builds.ToArray()
 $dedupedFailures = @(Get-DeduplicatedFailures -Failures $allFailuresArray)
 
+# --- Baseline (base-branch) per-test comparison ---
+# For each inspected PR build, look at the most recent completed base-branch builds
+# of the same pipeline definition. If a base build did not fully succeed, extract its
+# test failures so a PR failure that also fails on the base branch can be flagged as
+# pre-existing (likely unrelated). A green most-recent base build is recorded as strong
+# evidence that matching failures are NOT pre-existing.
+$baselineRaw = New-Object System.Collections.Generic.List[object]
+$baselineSummary = New-Object System.Collections.Generic.List[object]
+$baselineInspected = @{}
+
+if ($BaselineBuildsPerDefinition -gt 0) {
+    foreach ($build in $buildArray) {
+        if (-not $build.accessible -or -not $build.metadata) {
+            continue
+        }
+
+        $defName = [string]$build.metadata.definitionName
+        $completed = @(@($build.recentBaseBuilds) | Where-Object { $_.status -eq 'completed' })
+        if ($completed.Count -eq 0) {
+            continue
+        }
+
+        $notSucceeded = @($completed | Where-Object { $_.result -in @('failed', 'partiallySucceeded', 'canceled') })
+        if ($notSucceeded.Count -eq 0) {
+            $baselineSummary.Add([ordered]@{
+                definitionName = $defName
+                inspectedBuildId = $completed[0].id
+                baseBuildResult = $completed[0].result
+                baselineFailureCount = 0
+                note = "Most recent base-branch build for $defName succeeded; matching failures are unlikely to be pre-existing."
+            })
+            continue
+        }
+
+        foreach ($base in @($notSucceeded | Select-Object -First $BaselineBuildsPerDefinition)) {
+            $baseKey = "$($build.org)|$($build.project)|$($base.id)"
+            if ($baselineInspected.ContainsKey($baseKey)) {
+                continue
+            }
+            $baselineInspected[$baseKey] = $true
+
+            Write-Host "Inspecting baseline build $($base.id) for $defName..."
+            $extract = Get-BuildLogTestFailures -Org $build.org -Project $build.project -BuildId ([int]$base.id)
+            foreach ($failure in @($extract.failures)) {
+                $baselineRaw.Add($failure)
+            }
+            $baselineSummary.Add([ordered]@{
+                definitionName = $defName
+                inspectedBuildId = $base.id
+                baseBuildResult = $base.result
+                baselineFailureCount = @($extract.failures).Count
+                note = $extract.error
+            })
+        }
+    }
+}
+
+$baselineDeduped = @(Get-DeduplicatedFailures -Failures $baselineRaw.ToArray())
+$baselineKeys = @{}
+foreach ($baseFailure in $baselineDeduped) {
+    $baselineKeys[[string]$baseFailure.key] = $true
+}
+foreach ($failure in $dedupedFailures) {
+    $failure['alsoFailsOnBaseline'] = [bool]$baselineKeys.ContainsKey([string]$failure.key)
+}
+$baselineSummaryArray = $baselineSummary.ToArray()
+$baselineMatchCount = @($dedupedFailures | Where-Object { $_.alsoFailsOnBaseline }).Count
+
 $limitations = New-Object System.Collections.Generic.List[string]
 if ([string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
     $limitations.Add("No AZDO_TOKEN or Azure CLI AzDO token was available; authenticated AzDO test-run APIs were skipped. Build metadata, timelines, and logs were still queried when public.")
@@ -958,9 +1094,12 @@ $context = [ordered]@{
     builds = $buildArray
     failures = [ordered]@{
         unique = $dedupedFailures
+        baseline = $baselineDeduped
+        baselineMatchCount = $baselineMatchCount
         rawFromLogsAndResults = $allFailuresArray
         logExcerpts = $allExcerptsArray
     }
+    baselineSummary = $baselineSummaryArray
     limitations = $limitations.ToArray()
 }
 
@@ -1044,19 +1183,37 @@ else {
     }
 }
 
+$md.Add("## Baseline comparison")
+$md.Add("")
+if ($baselineSummaryArray.Count -eq 0) {
+    $md.Add("No base-branch builds were available to compare against.")
+}
+else {
+    $md.Add("| Definition | Base build | Result | Baseline failures | Note |")
+    $md.Add("| --- | --- | --- | ---: | --- |")
+    foreach ($row in $baselineSummaryArray) {
+        $note = ([string]$row.note) -replace "`r?`n", " "
+        $md.Add("| $($row.definitionName) | $($row.inspectedBuildId) | $($row.baseBuildResult) | $($row.baselineFailureCount) | $note |")
+    }
+    $md.Add("")
+    $md.Add("Distinct PR failures that also fail on the base branch: $baselineMatchCount of $($dedupedFailures.Count).")
+}
+$md.Add("")
+
 $md.Add("## Deduplicated failures")
 $md.Add("")
 if ($dedupedFailures.Count -eq 0) {
     $md.Add("No distinct test failures were extracted from accessible AzDO logs or test results.")
 }
 else {
-    $md.Add("| Test | Platform | Occurrences | Messages |")
-    $md.Add("| --- | --- | ---: | --- |")
+    $md.Add("| Test | Platform | Occurrences | Also on base | Messages |")
+    $md.Add("| --- | --- | ---: | :---: | --- |")
     foreach ($failure in $dedupedFailures) {
         $messages = @($failure.messages | Select-Object -First 2 | ForEach-Object {
             ([string]$_) -replace "`r?`n", "<br>" -replace '\|', '\|'
         }) -join "<br>"
-        $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $messages |")
+        $baseFlag = if ($failure.alsoFailsOnBaseline) { "yes" } else { "no" }
+        $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $messages |")
     }
 }
 

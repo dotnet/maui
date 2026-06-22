@@ -216,6 +216,8 @@ steps:
 
 Invoke the **review-test-failures** skill: read and follow `.github/skills/review-test-failures/SKILL.md`.
 
+That skill also references the canonical `.github/docs/maui-ci-facts.md`. The end goal is one **overall merge-readiness verdict** (Ready to merge / Not ready / Needs human investigation / Insufficient data / No failures found), informed by a **baseline comparison** against the most recent base-branch build. Use the gathered `failures.baseline`, `failures.baselineMatchCount`, `alsoFailsOnBaseline`, and `baselineSummary` fields — do not treat a failure as pre-existing without that evidence.
+
 ## Target
 
 - **Repository**: `${{ github.repository }}`
@@ -280,19 +282,20 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 <p align="left">
   <img alt="Overall [verdict]" src="https://img.shields.io/badge/Overall-[verdict]-[color]?labelColor=30363d&style=flat-square">
   <img alt="Failures [count]" src="https://img.shields.io/badge/Failures-[count]-8250df?labelColor=30363d&style=flat-square">
+  <img alt="Baseline [n on base]" src="https://img.shields.io/badge/Baseline-[n]_on_base-0969da?labelColor=30363d&style=flat-square">
   <img alt="Platform [platform]" src="https://img.shields.io/badge/Platform-[platform]-0969da?labelColor=30363d&style=flat-square">
 </p>
 
 <details>
 <summary><strong>Test Failure Review:</strong> [verdict] - click to expand</summary>
 
-**Overall verdict:** [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data | No failures found]
+**Overall verdict:** [Ready to merge | Not ready | Needs human investigation | Insufficient data | No failures found]
 
-[One or two sentences summarizing the strongest evidence.]
+[One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-| Failure | Verdict | Evidence |
-| --- | --- | --- |
-| [check/test/build] | [verdict] | [specific evidence with links when available] |
+| Failure | Verdict | On base? | Evidence |
+| --- | --- | --- | --- |
+| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no] | [specific evidence with links when available] |
 
 ### Recommended action
 
@@ -301,12 +304,14 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 <details>
 <summary>Evidence details</summary>
 
-[Relevant checks, build IDs, test run IDs, log excerpts, PR-scope details, and limitations.]
+[Relevant checks, build IDs, baseline build IDs, test run IDs, log excerpts, PR-scope details, and limitations (including when baseline data was unavailable).]
 
 </details>
 
 </details>
 ```
+
+The `Overall` badge and `**Overall verdict:**` line carry the merge-readiness verdict. The per-failure table carries the per-failure verdicts plus an `On base?` column (yes when `alsoFailsOnBaseline` is true). Overall badge colors: `1a7f37` for `Ready to merge` and `No failures found`, `d1242f` for `Not ready`, `bf8700` for `Needs human investigation`, `6e7781` for `Insufficient data`.
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
 
