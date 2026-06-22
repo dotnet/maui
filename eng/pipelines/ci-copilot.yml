@@ -255,7 +255,7 @@ stages:
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
             displayName: 'Install .NET and workloads'
-            retryCountOnTaskFailure: 2
+            retryCountOnTaskFailure: 3
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
@@ -413,7 +413,11 @@ stages:
 
                 timeout=120
                 waited=0
-                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                # timeout-wrap the PM query: 'adb shell' against a wedged/offline
+                # device can block indefinitely, which would otherwise hang this
+                # loop past the AzDO task timeout (the loop's own waited>=timeout
+                # check never runs while the command is blocked).
+                while ! timeout 30 adb shell pm list packages 2>/dev/null | grep -q "package:"; do
                   sleep 5
                   waited=$((waited + 5))
                   if [ $waited -ge $timeout ]; then
@@ -434,11 +438,22 @@ stages:
                 # Wait for device to stabilize after boot (transient offline state)
                 DEVICE_READY=false
                 for i in $(seq 1 20); do
-                  if adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
+                  if timeout 15 adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
                     DEVICE_READY=true
                     break
                   fi
                   echo "Device offline, retrying ($i/20)..."
+                  # Halfway through, restart the adb daemon and reconnect — a
+                  # transient "device offline" is usually an adb-server glitch
+                  # that self-heals on restart, avoiding a full step retry.
+                  if [ "$i" -eq 10 ]; then
+                    echo "Still offline at ~50s — restarting adb server and reconnecting..."
+                    adb kill-server 2>/dev/null || true
+                    sleep 2
+                    adb start-server 2>/dev/null || true
+                    timeout 15 adb reconnect offline 2>/dev/null || true
+                    timeout 60 adb wait-for-device 2>/dev/null || true
+                  fi
                   sleep 5
                 done
 
@@ -447,20 +462,22 @@ stages:
                   exit 1
                 fi
 
-                # Disable all animations (reduces CPU load and flakiness)
-                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                # Disable all animations (reduces CPU load and flakiness).
+                # timeout-wrap every 'adb shell': against a wedged device these
+                # can block with no per-command bound and hang the task.
+                timeout 20 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
                 # Prevent screen from turning off (emulator simulates AC charging)
-                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
-                adb -s $DEVICE_ID shell svc power stayon true || true
+                timeout 20 adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                timeout 20 adb -s $DEVICE_ID shell svc power stayon true || true
                 # Wake screen and dismiss any lock screen
-                adb -s $DEVICE_ID shell input keyevent 82 || true
+                timeout 20 adb -s $DEVICE_ID shell input keyevent 82 || true
                 sleep 1
                 # Dismiss any "System UI has stopped" or crash dialogs
-                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                timeout 20 adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
                 # Clear logcat buffer so agent sees only fresh logs
-                adb -s $DEVICE_ID logcat -c 2>/dev/null || true
+                timeout 20 adb -s $DEVICE_ID logcat -c 2>/dev/null || true
                 echo "Emulator preparation complete"
 
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
@@ -1132,7 +1149,9 @@ stages:
 
                 echo "Waiting for package manager..."
                 waited=0
-                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                # timeout-wrap: 'adb shell' on a wedged device can block past the
+                # task timeout (the waited>=120 check never runs while blocked).
+                while ! timeout 30 adb shell pm list packages 2>/dev/null | grep -q "package:"; do
                   sleep 5; waited=$((waited+5))
                   [ $waited -ge 120 ] && { echo "##[error]PM timeout"; exit 1; }
                 done
@@ -1143,13 +1162,15 @@ stages:
                   echo "##[warning]Could not detect device ID, defaulting to $DEVICE_ID"
                 fi
                 echo "✅ Emulator booted: $DEVICE_ID"
-                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
-                adb -s $DEVICE_ID shell svc power stayon true || true
-                adb -s $DEVICE_ID shell input keyevent 82 || true
-                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                # timeout-wrap every 'adb shell' (a wedged device can block with
+                # no per-command bound and hang the task).
+                timeout 20 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                timeout 20 adb -s $DEVICE_ID shell svc power stayon true || true
+                timeout 20 adb -s $DEVICE_ID shell input keyevent 82 || true
+                timeout 20 adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
@@ -1238,7 +1259,7 @@ stages:
           # are not present after provision.yml (which only installs the SDK).
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
             displayName: 'Install .NET and workloads'
-            retryCountOnTaskFailure: 2
+            retryCountOnTaskFailure: 3
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
