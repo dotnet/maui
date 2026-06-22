@@ -549,7 +549,7 @@
             SkipUnchangedFiles="true" />
 
         <ItemGroup>
-            <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" />
+            <_MauiFontCopied Include="$(_MauiIntermediateFonts)*" Exclude="$(_MauiIntermediateFonts)MauiInfo.plist" />
         </ItemGroup>
 
         <!-- iOS -->
