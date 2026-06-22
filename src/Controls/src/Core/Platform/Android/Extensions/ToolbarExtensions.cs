@@ -202,13 +202,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				nativeToolbar.SetTitleTextColor(textColor.ToPlatform().ToArgb());
 			}
-			else if (GetDefaultForegroundColor() is { } defaultForegroundColor)
-			{
-				nativeToolbar.SetTitleTextColor(defaultForegroundColor.ToPlatform().ToArgb());
-			}
 			else if (GetDefaultTitleTextColor(nativeToolbar) is { } defaultTitleTextColor)
 			{
 				nativeToolbar.SetTitleTextColor(defaultTitleTextColor);
+			}
+			else if (GetDefaultForegroundColor() is { } defaultForegroundColor)
+			{
+				nativeToolbar.SetTitleTextColor(defaultForegroundColor.ToPlatform().ToArgb());
 			}
 
 			nativeToolbar.UpdateNavigationIconColor(toolbar);
