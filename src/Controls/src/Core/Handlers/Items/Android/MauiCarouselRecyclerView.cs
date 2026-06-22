@@ -257,6 +257,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (Carousel.Loop)
 				{
 					UpdateAdapter();
+					// Sync the loop manager's source so GetGoToIndex uses the correct item count
+					// after the adapter is rebuilt. Without this, _itemsSource stays stale and
+					// GetNearestAdapterPosition produces wrong results
+					_carouselViewLoopManager.SetItemsSource(ItemsViewAdapter.ItemsSource);
 					ScrollToPosition(carouselPosition);
 				}
 			}
