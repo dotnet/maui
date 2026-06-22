@@ -104,6 +104,51 @@ stages:
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
+          # ─────────────────────────────────────────────────────────
+          #  Fast-fail (clear, actionable) when the PR targets a base
+          #  branch the reviewer cannot support (anything other than
+          #  'main' or 'netN.0'). Done HERE — before the trusted-scripts
+          #  copy, workload provisioning and emulator setup — so an
+          #  unsupported-base PR (e.g. base 'inflight/current') fails in
+          #  seconds with a clear message instead of the confusing
+          #  3x-retried "Refusing to switch" failure deep in setup that
+          #  burns an agent slot.
+          #
+          #  BEST-EFFORT: if base detection itself fails (transient gh/
+          #  network, or gh missing on macOS this early), this step does
+          #  NOT fail — it exits 0 and the retried 'Resolve PR base
+          #  branch' step remains the authoritative allowlist guard.
+          #  Security: validate the ref with the allowlist BEFORE echoing
+          #  it (mirrors 'Resolve PR base branch'); never echo the raw ref
+          #  on the unsupported path.
+          - bash: |
+              set -uo pipefail
+              BASE_REF=""
+              if command -v gh >/dev/null 2>&1; then
+                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName 2>/dev/null || true)
+              fi
+              if [ -z "${BASE_REF}" ]; then
+                REPO=$(git config --get remote.origin.url 2>/dev/null | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
+                [ -z "${REPO}" ] && REPO="dotnet/maui"
+                BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" 2>/dev/null \
+                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])" 2>/dev/null || true)
+              fi
+              if [ -z "${BASE_REF}" ]; then
+                echo "Could not determine the PR base branch here; it will be re-checked (with retries) in 'Resolve PR base branch'. Continuing."
+                exit 0
+              fi
+              # Validate BEFORE echoing/using to avoid any injection via the ref.
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
+                echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports PRs targeting 'main' or a 'netN.0' branch. This PR's base branch is not supported, so the review cannot run: no workloads/SDK band or safe merge-base can be derived for that base. (Trigger the reviewer only on PRs whose base is 'main' or 'netN.0'.)"
+                exit 1
+              fi
+              echo "PR #${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the reviewer."
+            displayName: 'Validate PR base branch (fast-fail unsupported)'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
           - bash: |
               echo "##vso[build.updatebuildnumber]PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
             displayName: 'Set Pipeline Run Title'
@@ -914,11 +959,20 @@ stages:
     # Prefer AI-refreshed categories from CopilotReview (RunReview) when available,
     # falling back to Gate-detected categories (RunGate). RunReview is only set when
     # the Tier 3 AI refresh actually changed the categories; otherwise it's empty.
+    # ALL-mode (detectedCategories == 'ALL') is intentionally excluded: running
+    # the entire UI suite with no category filter cannot complete within this
+    # stage's time budget and empirically always hits the 220-min task timeout,
+    # producing zero usable TRX, a red build, and a 3.5h-orphaned agent. The
+    # in-process Stage-1 per-category results already posted in the AI summary
+    # remain the deliverable, and UpdateAISummaryComment handles a Skipped deep
+    # stage (its download step is continueOnError + the renderer keeps the
+    # in-process results when no deep artifact exists).
     condition: >-
       and(
         in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), ''),
-        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'NONE')
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'NONE'),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'ALL')
       )
     jobs:
       - job: RunUITests
@@ -1310,16 +1364,20 @@ stages:
 
               $isRunAll = ($cats -eq 'ALL')
               if ($isRunAll) {
-                Write-Host "Run-all mode detected — running without category filter"
-                # Single-element list with empty string triggers one iteration
-                # of the loop below without passing -Category to the runner.
-                $catList = @('')
-              } else {
-                # Same per-category loop the in-process STEP 3 does, only
-                # this time on a proper platform-pool agent. Each TRX lands
-                # in its own subdir so the aggregator can split per category.
-                $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+                # Defense in depth: the RunDeepUITests stage condition already
+                # skips ALL-mode because the full no-filter suite cannot finish
+                # within this stage's budget and would hit the 220-min task
+                # timeout. If we somehow still reach here, do NOT run the
+                # unbounded full suite — keep the in-process Stage-1 results and
+                # exit cleanly so the build stays green.
+                Write-Host "##[warning]Run-all mode (detectedCategories=ALL) reached the deep stage; skipping the unbounded full-suite re-run to avoid the task timeout. In-process Stage-1 results are retained."
+                exit 0
               }
+
+              # Same per-category loop the in-process STEP 3 does, only this
+              # time on a proper platform-pool agent. Each TRX lands in its own
+              # subdir so the aggregator can split per category.
+              $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
               $outputRoot = "$(Build.ArtifactStagingDirectory)/deep-uitests"
               New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 
@@ -1328,8 +1386,27 @@ stages:
               $retryScript = ".github/scripts/shared/Invoke-UITestWithRetry.ps1"
               $hasRetryWrapper = Test-Path $retryScript
 
+              # Overall wall-clock budget for the per-category loop. A slow or
+              # hung category can otherwise push the task into the AzDO task
+              # timeout (220 min), which fails the build for an infra reason
+              # rather than a test reason. Stop STARTING new categories once the
+              # budget is exhausted (an already-running category finishes within
+              # the remaining 220-min headroom) and report the remainder as
+              # not-run. Tunable via DEEP_UITEST_BUDGET_MIN.
+              $budgetMin = 185
+              if ($env:DEEP_UITEST_BUDGET_MIN -and ($env:DEEP_UITEST_BUDGET_MIN -as [int])) { $budgetMin = [int]$env:DEEP_UITEST_BUDGET_MIN }
+              $loopDeadline = (Get-Date).AddMinutes($budgetMin)
+              Write-Host "Per-category loop budget: $budgetMin min (deadline: $($loopDeadline.ToUniversalTime().ToString('u')))"
+              $skippedCats = @()
+
               $hadFailure = $false
               foreach ($cat in $catList) {
+                if ((Get-Date) -gt $loopDeadline) {
+                  $skippedCats += $cat
+                  Write-Host "##[warning]Deep UI test time budget ($budgetMin min) exhausted — not starting category '$cat' (avoids the 220-min task timeout)."
+                  $hadFailure = $true
+                  continue
+                }
                 $safeCat = if ([string]::IsNullOrEmpty($cat)) { 'ALL' } else { $cat -replace '[^A-Za-z0-9_.-]', '_' }
                 $catDir = Join-Path $outputRoot "drop-${platform}_ui_tests-controls-$safeCat"
                 New-Item -ItemType Directory -Force -Path $catDir | Out-Null
@@ -1428,6 +1505,9 @@ stages:
                 }
               }
 
+              if ($skippedCats.Count -gt 0) {
+                Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started due to the $budgetMin-min time budget: $($skippedCats -join ', ')"
+              }
               if ($hadFailure) {
                 # Don't fail the stage — the AI summary review is the
                 # deliverable; failed tests get reported there. Stage-level
