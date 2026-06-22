@@ -5,7 +5,7 @@ public class Issue35902 : TestShell
 {
 	public Issue35902()
 	{
-		BackgroundColor = Colors.Transparent;
+		Shell.SetBackgroundColor(this, Colors.Transparent);
 		Routing.RegisterRoute(nameof(Issue35902SecondPage), typeof(Issue35902SecondPage));
 	}
 
