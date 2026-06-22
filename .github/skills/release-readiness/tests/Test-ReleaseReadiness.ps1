@@ -3516,6 +3516,67 @@ $nfPaged = {
 $rPaged = Get-NightlyFeedFreshness -Feed 'dotnet11' -VersionPrefixRegex '^11\.0\.0-preview\.6\.' -Fetcher $nfPaged
 Assert-Eq -Label "feed: paged @id leaf is followed"                 -Expected '11.0.0-preview.6.123' -Actual $rPaged.version
 
+Write-Host "`n[Unit] Nightly-feed dogfood resolution (Resolve-NightlyDogfoodFreshness — inflight-primary)" -ForegroundColor Cyan
+
+# (a) Feed WITH an inflight stream: resolver must pick the ci.inflight build even when a
+# *fresher* ci.main build exists in the lane band — ci.main is deliberately NOT the dogfood
+# signal (it publishes daily and would mask an inflight stall).
+$nfInflightMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type'='RegistrationsBaseUrl/3.6.0'; '@id'='https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        $mk = { param($v,$p) [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version=$v; published=$p } } }
+        return [pscustomobject]@{ items = @([pscustomobject]@{ items = @(
+            (& $mk '10.0.80-ci.inflight.5' '2026-06-07T03:00:00Z'),   # dogfood signal (older)
+            (& $mk '10.0.90-ci.main.99'    '2026-06-22T03:00:00Z')    # fresher, but NOT dogfood
+        ) }) }
+    }
+    throw "unexpected url $Url"
+}
+$rInf = Resolve-NightlyDogfoodFreshness -Feed 'dotnet10' -BandPrefixRegex '^10\.0\.90-' -Fetcher $nfInflightMock
+Assert-Eq -Label "resolve: inflight present → buildType inflight"        -Expected 'inflight'              -Actual $rInf.buildType
+Assert-Eq -Label "resolve: inflight preferred over fresher ci.main"      -Expected '10.0.80-ci.inflight.5' -Actual $rInf.version
+
+# (b) Feed with NO inflight builds (preview feed): fall back to the lane preview band.
+$nfPreviewMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type'='RegistrationsBaseUrl/3.6.0'; '@id'='https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        return [pscustomobject]@{ items = @([pscustomobject]@{ items = @(
+            [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version='11.0.0-preview.6.123'; published='2026-06-22T00:00:00Z' } }
+        ) }) }
+    }
+    throw "unexpected url $Url"
+}
+$rPrev = Resolve-NightlyDogfoodFreshness -Feed 'dotnet11' -BandPrefixRegex '^11\.0\.0-preview\.6\.' -Fetcher $nfPreviewMock
+Assert-Eq -Label "resolve: no inflight → falls back to band"             -Expected 'band'                  -Actual $rPrev.buildType
+Assert-Eq -Label "resolve: band fallback returns preview build"          -Expected '11.0.0-preview.6.123'  -Actual $rPrev.version
+
+# (c) No inflight AND band also absent → matched=$false (muted "no matching build" note).
+$rNone = Resolve-NightlyDogfoodFreshness -Feed 'dotnet11' -BandPrefixRegex '^11\.0\.0-preview\.9\.' -Fetcher $nfPreviewMock
+Assert-Eq -Label "resolve: no inflight + no band → matched false"        -Expected $false                 -Actual $rNone.matched
+Assert-Eq -Label "resolve: no inflight + no band → buildType band"       -Expected 'band'                 -Actual $rNone.buildType
+
+# (d) SAFETY: a *transient* inflight-query failure must NOT fall through to the fresh band
+# (that would paint a stalled inflight feed green). It must degrade to unknown instead.
+$nfOrigDef = (Get-Item function:Get-NightlyFeedFreshness).ScriptBlock
+function Get-NightlyFeedFreshness {
+    param([Parameter(Mandatory)][string]$Feed,[string]$Package='Microsoft.Maui.Controls',[string]$VersionPrefixRegex,[int]$TimeoutSec=20,[scriptblock]$Fetcher)
+    if ($VersionPrefixRegex -match 'inflight') { return $null }   # simulate transient inflight outage
+    return @{ feed=$Feed; package=$Package; version='10.0.90-ci.main.fresh'; published=[datetime]::new(2026,6,22,0,0,0,[System.DateTimeKind]::Utc); matched=$true }
+}
+try {
+    $rSafety = Resolve-NightlyDogfoodFreshness -Feed 'dotnet10' -BandPrefixRegex '^10\.0\.90-'
+    Assert-Eq -Label "resolve: transient inflight error → unknown (not false-green band)" -Expected $true -Actual ([bool](Get-NightlyFeedProp $rSafety 'unknown'))
+    Assert-Eq -Label "resolve: transient inflight error → does NOT surface ci.main band"  -Expected $true -Actual ([string]::IsNullOrEmpty([string](Get-NightlyFeedProp $rSafety 'version')))
+} finally {
+    Set-Item function:Get-NightlyFeedFreshness $nfOrigDef   # restore real helper
+}
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })

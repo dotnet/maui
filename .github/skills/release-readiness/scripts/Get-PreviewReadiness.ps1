@@ -1362,14 +1362,14 @@ $report = [PSCustomObject]@{
     NightlyFeed           = $null
 }
 
-# Nightly dogfood feed freshness (preview lane). Maps this preview to the dotnet<major>
-# Azure Artifacts feed + preview.N version band (from PreReleaseVersionIteration at the
-# survey ref, falling back to the branch's preview number) and records how fresh the newest
-# matching build is. Fail-open: any gap (helper unloaded, version unreadable, network error)
-# degrades to "no banner".
+# Nightly dogfood feed freshness (preview lane). Tracks the inflight/current dogfood stream
+# (ci.inflight builds) on the dotnet<major> feed; falls back to this preview's preview.N
+# version band when the feed has no inflight builds yet (the common case while a major is
+# still in preview — its newest bits ARE the preview.N builds). Fail-open: any gap (helper
+# unloaded, version unreadable, network error) degrades to "no banner".
 $nightlyFeedBanner = $null
 if ($Script:NightlyFeedHelperLoaded -and
-    (Get-Command Get-NightlyFeedFreshness -ErrorAction SilentlyContinue) -and
+    (Get-Command Resolve-NightlyDogfoodFreshness -ErrorAction SilentlyContinue) -and
     (Get-Command Format-NightlyFeedBanner -ErrorAction SilentlyContinue)) {
     try {
         $nfFeed = "dotnet$majorVersion"
@@ -1377,14 +1377,17 @@ if ($Script:NightlyFeedHelperLoaded -and
         $nfIteration = Get-PreReleaseVersionIteration -BranchName $SurveyRef
         if ([string]::IsNullOrWhiteSpace($nfIteration)) { $nfIteration = "$previewNumber" }
         $nfBand = "$majorVersion.0.0-preview.$nfIteration"
-        $nfPrefix = '^' + [regex]::Escape("$nfBand.")
-        $nfLaneLabel = "[``$nfFeed``]($nfFeedUrl) · ``$nfBand`` (preview.$nfIteration)"
+        $nfBandPrefix = '^' + [regex]::Escape("$nfBand.")
 
-        $nfFresh = Get-NightlyFeedFreshness -Feed $nfFeed -VersionPrefixRegex $nfPrefix
+        $nfFresh = Resolve-NightlyDogfoodFreshness -Feed $nfFeed -BandPrefixRegex $nfBandPrefix
         if ($null -eq $nfFresh) { $nfFresh = @{ unknown = $true } }
+
+        $nfBuildType = [string](Get-NightlyFeedProp $nfFresh 'buildType')
+        $nfTypeNote = if ($nfBuildType -eq 'inflight') { 'ci.inflight' } else { "``$nfBand`` (preview.$nfIteration)" }
+        $nfLaneLabel = "[``$nfFeed``]($nfFeedUrl) · $nfTypeNote"
         $nfFresh['laneLabel'] = $nfLaneLabel
         $nfFresh['feedUrl'] = $nfFeedUrl
-        $nfFresh['versionPrefix'] = $nfPrefix
+        $nfFresh['versionPrefix'] = $nfBandPrefix
 
         $report.NightlyFeed = $nfFresh
         $nightlyFeedBanner = Format-NightlyFeedBanner -Freshness $nfFresh -Now ([DateTime]::UtcNow)

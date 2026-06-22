@@ -27,9 +27,12 @@
     NOT by date, and mixes several build families (e.g. dotnet10 carries ci.main,
     ci.inflight and ci.net10). Freshness MUST therefore be derived from the catalog
     `published` timestamps, scoped to the family the caller cares about via a version
-    prefix (band-based, e.g. `^10\.0\.90-` for main vs `^10\.0\.80-` for the SR8 inflight
-    band). This is resilient to the recurring family-keyword churn (ci.net9 → ci.net10 →
-    ci.main; c1.net11 → ci.net11 → preview.6).
+    prefix. The signal that matters for release readiness is the *inflight* stream
+    (`ci.inflight` — builds of the `inflight/current` branch, the "shipping next" dogfood
+    bits); ordinary main CI (`ci.main`) publishes daily and would mask an inflight stall.
+    Resolve-NightlyDogfoodFreshness encodes that preference (inflight first, lane band only
+    as a fallback for feeds with no inflight builds), and is resilient to the recurring
+    family-keyword churn (ci.net9 → ci.net10 → ci.main; c1.net11 → ci.net11 → preview.6).
 #>
 
 Set-StrictMode -Version Latest
@@ -160,6 +163,68 @@ function Get-NightlyFeedFreshness {
     } catch {
         return $null
     }
+}
+
+function Resolve-NightlyDogfoodFreshness {
+    <#
+    .SYNOPSIS
+        Resolve the dogfood-feed freshness signal for a release lane, preferring the
+        inflight/current stream and only falling back to the lane's version band when the
+        feed genuinely has no inflight builds.
+    .DESCRIPTION
+        The dogfood feed (dotnet10, dotnet11, …) carries several build families. The one
+        that matters for release readiness is the *inflight* stream — builds of the
+        `inflight/current` branch, tagged `ci.inflight`, which carry the "shipping next"
+        bits dogfooders validate against. (eng/Versions.props on main switches the label to
+        `ci.inflight` when BUILD_SOURCEBRANCH is refs/heads/inflight/current.) Ordinary main
+        CI (`ci.main`) publishes daily and is almost always fresh, so matching it would mask
+        an inflight outage — which is exactly the failure this banner exists to surface.
+
+        Resolution order (per feed):
+          1. Newest `ci.inflight` build  → buildType = 'inflight'  (the real dogfood signal)
+          2. If the feed has NO inflight builds at all (definitive matched=$false — e.g. a
+             preview feed not yet in the inflight phase), fall back to the lane's band
+             prefix → buildType = 'band'.
+
+        Safety: a *transient* failure of the inflight query (Get-NightlyFeedFreshness
+        returns $null) does NOT fall through to the band match — that could surface the
+        always-fresh `ci.main` band and paint a stalled inflight feed green. Instead it
+        degrades to @{ unknown = $true } (muted "could not be determined" note). The
+        fall-back to band only happens on a *definitive* "no inflight builds" answer.
+    .OUTPUTS
+        A freshness hashtable as returned by Get-NightlyFeedFreshness, augmented with a
+        'buildType' key ('inflight' | 'band'); or @{ unknown = $true } when freshness
+        could not be determined.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Feed,
+        [Parameter(Mandatory)][string]$BandPrefixRegex,
+        [string]$InflightPrefixRegex = 'ci\.inflight\.',
+        [string]$Package = 'Microsoft.Maui.Controls',
+        [int]$TimeoutSec = 20,
+        [scriptblock]$Fetcher
+    )
+
+    $common = @{ Feed = $Feed; Package = $Package; TimeoutSec = $TimeoutSec }
+    if ($Fetcher) { $common['Fetcher'] = $Fetcher }
+
+    $inflight = Get-NightlyFeedFreshness @common -VersionPrefixRegex $InflightPrefixRegex
+    if ($null -eq $inflight) {
+        # Transient/hard failure querying the inflight stream. Do NOT fall back to the band
+        # (would risk reporting the always-fresh ci.main build and hiding an inflight stall).
+        return @{ unknown = $true }
+    }
+    if (Get-NightlyFeedProp $inflight 'matched') {
+        $inflight['buildType'] = 'inflight'
+        return $inflight
+    }
+
+    # Definitive "no inflight builds on this feed" → fall back to the lane's version band
+    # (e.g. a preview feed whose newest bits are its preview.N builds).
+    $band = Get-NightlyFeedFreshness @common -VersionPrefixRegex $BandPrefixRegex
+    if ($null -eq $band) { return @{ unknown = $true } }
+    $band['buildType'] = 'band'
+    return $band
 }
 
 function Format-NightlyFeedBanner {

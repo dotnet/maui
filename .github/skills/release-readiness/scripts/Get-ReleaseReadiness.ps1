@@ -3620,18 +3620,21 @@ function Add-SrNightlyFeedFreshness {
     .DESCRIPTION
         Lane → feed/band mapping (verified against the live feeds):
           - feed    = dotnet<Major>            (e.g. dotnet10, dotnet11)
+          - signal  = the inflight/current dogfood stream (ci.inflight builds) on that feed —
+                      the "shipping next" bits dogfooders validate against. Resolved feed-wide
+                      (not band-pinned) so it auto-follows when inflight/current advances bands
+                      (e.g. 10.0.80 → 10.0.90). Ordinary main CI (ci.main) is deliberately NOT
+                      tracked: it publishes daily and would paint an inflight stall green.
           - band    = <Major>.0.<Patch>        (PatchVersion from eng/Versions.props at srRef)
-                        in-flight SR  → srRef is the SR branch  → inflight band (e.g. 10.0.80)
-                        candidate SR  → srRef is origin/main     → main band     (e.g. 10.0.90)
-        The band is matched as a literal version *prefix* (`^<Major>.0.<Patch>-`), which is
-        resilient to family-keyword churn in the build metadata (ci.net10 → ci.main, etc.).
+                      used only as a FALLBACK when the feed has no inflight builds at all
+                      (e.g. a preview feed not yet in the inflight phase).
         Fail-open throughout: any gap (helper not loaded, version unreadable, network error)
-        degrades to "no banner" rather than disturbing the verdict.
+        degrades to "no banner"/"unknown" rather than disturbing the verdict.
     #>
     param([hashtable]$Data)
 
     if (-not $Script:NightlyFeedHelperLoaded) { return }
-    if (-not (Get-Command Get-NightlyFeedFreshness -ErrorAction SilentlyContinue)) { return }
+    if (-not (Get-Command Resolve-NightlyDogfoodFreshness -ErrorAction SilentlyContinue)) { return }
     if (-not (Get-Command Format-NightlyFeedBanner -ErrorAction SilentlyContinue)) { return }
 
     try {
@@ -3645,17 +3648,17 @@ function Add-SrNightlyFeedFreshness {
         $band = "$major.0.$patch"
         $feed = "dotnet$major"
         $feedUrl = "https://dev.azure.com/dnceng/public/_artifacts/feed/$feed"
-        $prefix = '^' + [regex]::Escape($band) + '-'
+        $bandPrefix = '^' + [regex]::Escape($band) + '-'
 
-        $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'in-flight' }
-        $familyWord = if ($mode -eq 'candidate') { 'main' } else { 'inflight' }
-        $laneLabel = "[``$feed``]($feedUrl) · ``$band`` ($familyWord)"
-
-        $fresh = Get-NightlyFeedFreshness -Feed $feed -VersionPrefixRegex $prefix
+        $fresh = Resolve-NightlyDogfoodFreshness -Feed $feed -BandPrefixRegex $bandPrefix
         if ($null -eq $fresh) { $fresh = @{ unknown = $true } }
+
+        $buildType = [string](Get-NightlyFeedProp $fresh 'buildType')
+        $typeNote = if ($buildType -eq 'inflight') { 'ci.inflight' } else { "``$band``" }
+        $laneLabel = "[``$feed``]($feedUrl) · $typeNote"
         $fresh['laneLabel'] = $laneLabel
         $fresh['feedUrl'] = $feedUrl
-        $fresh['versionPrefix'] = $prefix
+        $fresh['versionPrefix'] = $bandPrefix
 
         $Data['nightlyFeed'] = $fresh
         $banner = Format-NightlyFeedBanner -Freshness $fresh -Now ([DateTime]::UtcNow)
