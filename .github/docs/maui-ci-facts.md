@@ -5,9 +5,9 @@ deduplication, baseline comparison, and merge-readiness criteria.
 Consumed by (keep these as references, do NOT re-copy the tables):
 - .github/skills/azdo-build-investigator/SKILL.md
 - .github/skills/review-test-failures/SKILL.md
-- .github/skills/run-device-tests/SKILL.md
 - .github/workflows/ci-status-main.md
 - .github/workflows/ci-status-net11.md
+- .github/workflows/copilot-review-tests.md (via the review-test-failures skill)
 
 When a fact changes (e.g. a pipeline definition ID), change it HERE only.
 -->
