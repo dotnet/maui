@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isInternalCollectionUpdate = false;
 		int _section = 0;
 		bool _wasDetachedFromWindow = false;
+		int _gotoPosition = -1;
 		CarouselViewLoopManager _carouselViewLoopManager;
 		CancellationTokenSource _scrollDebounce;
 		NSObject _orientationObserver;
@@ -340,7 +341,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			//_gotoPosition = -1;
+			_gotoPosition = -1;
 
 			// We need to update the position while modifying the collection.
 			targetPosition = GetTargetPosition();
@@ -498,7 +499,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (goToPosition != carouselPosition || forceScroll)
+			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
 			{
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
@@ -508,6 +509,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
+				_gotoPosition = goToPosition;
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
 		}
@@ -533,6 +535,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (!InitialPositionSet || position == -1)
 			{
 				return;
+			}
+
+			if (_gotoPosition != -1)
+			{
+				if (position == _gotoPosition)
+				{
+					_gotoPosition = -1;
+				}
+				else
+				{
+					// Suppress intermediate positions while scrolling to target
+					return;
+				}
 			}
 
 			ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, position);
@@ -576,6 +591,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (currentItemIndex.Row < 0)
 			{
 				return;
+			}
+
+			if (currentItemIndex.Row == _gotoPosition)
+			{
+				_gotoPosition = -1;
 			}
 
 			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);
