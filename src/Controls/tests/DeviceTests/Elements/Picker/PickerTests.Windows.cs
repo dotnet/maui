@@ -58,6 +58,28 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() => Assert.Equal(UI.Xaml.VerticalAlignment.Bottom, GetPlatformVerticalOptions(handler.PlatformView)));
 		}
 
+		[Fact(DisplayName = "Title does not set ComboBox Header")]
+		public async Task TitleDoesNotSetHeader()
+		{
+			var picker = new Picker()
+			{
+				Title = "Select Option",
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				}
+			};
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Null(handler.PlatformView.Header);
+				Assert.Equal(DependencyProperty.UnsetValue, handler.PlatformView.ReadLocalValue(ComboBox.HeaderTemplateProperty));
+			});
+		}
+
 		[Fact(DisplayName = "Title maps to PlaceholderText")]
 		public async Task TitleMapsToPlaceholderText()
 		{
@@ -228,6 +250,42 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(placeholderTextBlock);
 				Assert.Equal(title, placeholderTextBlock.Text);
 				Assert.Equal(expectedEm, placeholderTextBlock.CharacterSpacing);
+			});
+		}
+
+		[Fact(DisplayName = "CharacterSpacing updates on placeholder TextBlock after handler creation")]
+		public async Task CharacterSpacingUpdatesAfterHandlerCreation()
+		{
+			const string title = "Select Option";
+			const double initialSpacingPt = 8d;
+			const double updatedSpacingPt = 16d;
+			var initialEm = initialSpacingPt.ToEm();
+			var updatedEm = updatedSpacingPt.ToEm();
+
+			var picker = new Picker()
+			{
+				Title = title,
+				CharacterSpacing = initialSpacingPt,
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2"
+				},
+				WidthRequest = 200,
+				HeightRequest = 48
+			};
+
+			await AttachAndRun<PickerHandler>(picker, handler =>
+			{
+				var platformView = handler.PlatformView;
+				var placeholderTextBlock = platformView.GetDescendantByName<TextBlock>("PlaceholderTextBlock");
+				Assert.NotNull(placeholderTextBlock);
+				Assert.Equal(initialEm, placeholderTextBlock.CharacterSpacing);
+
+				picker.CharacterSpacing = updatedSpacingPt;
+
+				Assert.Equal(updatedEm, platformView.CharacterSpacing);
+				Assert.Equal(updatedEm, placeholderTextBlock.CharacterSpacing);
 			});
 		}
 
