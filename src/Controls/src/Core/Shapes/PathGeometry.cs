@@ -241,7 +241,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			newCollection.CollectionChanged += OnPathFigureCollectionChanged;
 
 			foreach (var newPathFigure in newCollection)
+			{
 				SubscribeFigure(newPathFigure);
+			}
 		}
 
 		void OnPathFigureCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -251,7 +253,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var oldItem in e.OldItems)
 				{
 					if (oldItem is PathFigure oldPathFigure)
+					{
 						UnsubscribeFigure(oldPathFigure);
+					}
 				}
 			}
 			if (e.Action == NotifyCollectionChangedAction.Reset)
@@ -266,7 +270,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				foreach (var newItem in e.NewItems)
 				{
 					if (newItem is PathFigure newPathFigure)
+					{
 						SubscribeFigure(newPathFigure);
+					}
 				}
 			}
 
