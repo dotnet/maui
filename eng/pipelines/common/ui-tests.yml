@@ -121,6 +121,25 @@ stages:
                 runtimeVariant: "CoreCLR"
                 skipProvisioning: ${{ parameters.skipProvisioning }}
 
+  # Windows CV1 Build Stage - Separate build with UseWindowsCollectionView2Handler=false
+  - stage: build_ui_tests_windows_cv1
+    displayName: Build UITests Windows CV1 Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests_windows_cv1
+        displayName: Build Sample App (Windows CV1)
+        workspace:
+          clean: all
+        pool: ${{ parameters.windowsBuildPool }}
+        variables:
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                platform: windows
+                runtimeVariant: "CoreCLR"
+                useWindowsCV1: true
+                skipProvisioning: ${{ parameters.skipProvisioning }}
   - stage: android_ui_tests_coreclr
     displayName: Android UITests CoreClr
     dependsOn: build_ui_tests_coreclr
@@ -425,6 +444,41 @@ stages:
                       platform: 'Windows'
                       artifactName: 'uitest-snapshot-results-windows-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
 
+  # Windows CV1 UI Tests - Testing CollectionView with UseWindowsCollectionView2Handler=false
+  - stage: winui_ui_tests_cv1
+    displayName: WinUI UITests CV1
+    dependsOn: build_ui_tests_windows_cv1
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.winui, '') }}:
+              - job: CV1_winui_ui_tests_${{ project.name }}
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (CV1)
+                pool: ${{ parameters.windowsPool }}
+                variables:
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)\.appium\
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: windows
+                      version: "10.0.19041.0"
+                      device: windows10
+                      path: ${{ project.winui }}
+                      app: ${{ project.app }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      runtimeVariant: "CoreCLR"
+                      useWindowsCV1: true
+                      testFilter: "CollectionView"
+                      testConfigurationArgs: "UseWindowsCV1:true"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+                  
+                  # Collect and publish Windows CV1 snapshot diffs
+                  - template: ui-tests-collect-snapshot-diffs.yml
+                    parameters:
+                      platform: 'Windows CV1'
+                      artifactName: 'uitest-snapshot-results-windows-cv1-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)'
   - stage: maccatalyst_ui_tests_coreclr
     displayName: MacCatalyst UITests CoreCLR
     dependsOn: build_ui_tests_coreclr
