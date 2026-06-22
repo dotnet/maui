@@ -153,8 +153,9 @@ through `safe-outputs`.
    assertions (Step 4.7). De-flaking is forbidden when the flake actually masks a
    product bug — fix the product if in bounds, else hand off.
 5. **One issue = one outcome per run.** Exactly one of: fix PR, help PR,
-   needs-human PR, or recorded skip. Always prefer a PR over a skip when a
-   non-mute diff is producible.
+   de-flake PR, or recorded skip (the dedicated needs-human PR is deferred —
+   the attempt cap records a skip instead; see Step 6). Always prefer a PR over
+   a skip when a non-mute diff is producible.
 6. **All writes via `safe-outputs`.** Only output is `create_pull_request`. No
    comments on the tracking issue (issues are locked by
    `.github/workflows/ci-scan-lock-issues.yml`). No `gh pr create`.
@@ -207,7 +208,7 @@ inputs once at the start and let them shape the whole run:
     `DRY RUN — would open PR` block to the run log containing: target `base`
     branch, source `branch`, title, the full PR body, and `git --no-pager diff
     --stat` of the staged candidate change (or "empty patch (needs-human)"). Tally
-    the outcome as `dry-run: would-<fix|help|deflake|needs-human>`. Emit nothing.
+    the outcome as `dry-run: would-<fix|help|deflake>`. Emit nothing.
   - Otherwise (`"false"` / empty): normal mode — emit PRs via `safe-outputs` as
     the steps describe.
 
@@ -301,6 +302,16 @@ cannot judge visual diffs and must never modify baseline images.
 
 Run these gates in order. The first one that fires stops processing for this
 issue.
+
+**Validate every search response before branching on it (applies to Steps
+3.1–3.4 and any later `Refs:` search).** Each `curl` below can be rate-limited
+or return a 5xx, in which case `jq '.total_count'` yields `null` and a naive
+`> 0` test reads as "0 hits" — silently bypassing a dedup gate and opening a
+DUPLICATE PR (or re-fixing an already-merged issue). For every search, require:
+HTTP success, valid JSON, `incomplete_results == false`, and an integer
+`total_count`. If any of those fail, do NOT treat the gate as "0 hits" — record
+`skipped: dedup search inconclusive (API error/incomplete)` and stop processing
+this issue.
 
 #### Step 3.1 — Open `[ci-fix]` PR already exists for this issue
 
@@ -553,7 +564,18 @@ a staged-but-uncommitted diff produces an *empty* bundle, the downstream
 silently dropped. You MUST create at least one commit:
 
 ```bash
-git commit -m "ci-fix: <short fix description> (refs #${N}, attempt ${next_attempt}/5)"
+# The <short fix description> is agent-synthesized and may echo text derived from
+# the untrusted issue body or CI logs. NEVER pass it as a double-quoted `-m`
+# argument: a crafted $(…), backtick, or stray quote would be evaluated by the
+# shell at commit time. Write the FULLY-RESOLVED message (substitute the real
+# integer issue number and attempt yourself) into a file via a FRESH PER-RUN
+# RANDOM single-quoted heredoc delimiter (>=16 random hex/alnum chars, e.g.
+# GHAW_MSG_<random>) so the body — including the description — stays inert, then
+# commit with `-F`. Keep the description to a single line.
+cat > /tmp/gh-aw/agent/commitmsg_${N}.txt <<'GHAW_MSG_REPLACE_WITH_RANDOM'
+ci-fix: <short fix description> (refs #<issue-number>, attempt <K>/5)
+GHAW_MSG_REPLACE_WITH_RANDOM
+git commit -F /tmp/gh-aw/agent/commitmsg_${N}.txt
 git rev-list --count "origin/main..HEAD" | tee /tmp/gh-aw/agent/commitcount_${N}.txt
 ```
 
@@ -740,8 +762,9 @@ Per issue, append one outcome line to `/tmp/gh-aw/agent/coverage.txt`:
 ```
 
 `<outcome>` is one of: `fix-PR #aw_<id>`, `help-PR #aw_<id>`,
-`deflake-PR #aw_<id>`, `needs-human-PR #aw_<id>`,
-`dry-run: would-<fix|help|deflake|needs-human>`, `skipped: <reason>`.
+`deflake-PR #aw_<id>`, `dry-run: would-<fix|help|deflake>`,
+`skipped: <reason>`. (The `needs-human-PR` outcome is reserved for the deferred
+hand-off PR — Step 6 currently records a skip instead, so it is not emitted.)
 
 Recognized skip reasons (reuse these phrasings so a future feedback workflow
 can aggregate them stably):
@@ -752,6 +775,9 @@ can aggregate them stably):
 - `fix PR #<P> already merged (issue may be stale)`
 - `human PR #<P> already addressing`
 - `5 attempts exhausted (#<H>)`
+- `needs-human hand-off pending redesign (attempt cap reached)`
+- `dedup search inconclusive (API error/incomplete)`
+- `attempt-count search inconclusive`
 - `issue appears fixed in latest build #<id>; no PR opened`
 - `infra-related flake, not fixable in test or product code`
 - `only candidate fix was a mute (test-disable)`
