@@ -134,7 +134,7 @@ if (Test-Path $nightlyFeedHelperPath) {
     . $nightlyFeedHelperPath
     $Script:NightlyFeedHelperLoaded = $true
 } else {
-    Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled."
+    Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled." -WarningAction Continue
 }
 
 # ===================================================================
@@ -1397,7 +1397,10 @@ if ($Script:NightlyFeedHelperLoaded -and
         $report.NightlyFeed = $nfFresh
         $nightlyFeedBanner = Format-NightlyFeedBanner -Freshness $nfFresh -Now ([DateTime]::UtcNow)
     } catch {
-        Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)"
+        # -WarningAction Continue: keep this fail-open even under an ambient
+        # $WarningPreference='Stop', where a bare Write-Warning would be promoted to a
+        # terminating error inside the catch and escape, crashing the unattended job.
+        Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)" -WarningAction Continue
     }
 }
 

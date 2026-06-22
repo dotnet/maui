@@ -3707,6 +3707,35 @@ Assert-Eq -Label "hash: honors stored nightlyFeedNow (ok@T1 vs stale@T2 → DIFF
 Assert-Eq -Label "hash: stored-now tier resolves to ok at T1" -Expected 'ok' -Actual (Get-NightlyFeedTier -Freshness $dNowOk['nightlyFeed'] -Now $dNowOk['nightlyFeedNow'])
 Assert-Eq -Label "hash: stored-now tier resolves to stale at T2" -Expected 'stale' -Actual (Get-NightlyFeedTier -Freshness $dNowStale['nightlyFeed'] -Now $dNowStale['nightlyFeedNow'])
 
+# ───── Engine-level fail-open under WarningPreference=Stop ─────
+# The helper's inner catch is hardened, but the SR engine's OUTER catch in
+# Add-SrNightlyFeedFreshness wraps non-helper work (band resolution, formatting) that can
+# also throw. Under an ambient $WarningPreference='Stop', a bare Write-Warning in that catch
+# would be promoted to a terminating error that escapes and crashes the unattended job — the
+# same contract the helper fix protects, one frame up. Drive a throw from inside the try and
+# assert the engine swallows it. (Regression guard; fails on pre-fix bare Write-Warning.)
+Write-Host "`n[Unit] Engine-level nightly-feed fail-open (WarningPreference=Stop)" -ForegroundColor Cyan
+$nfEngThrew      = $false
+$nfEngPrevWarn   = $WarningPreference
+$nfEngOrigVps    = (Get-Item function:Get-VersionsPropsState).ScriptBlock
+$nfEngOrigResolve = (Get-Item function:Resolve-NightlyDogfoodFreshness).ScriptBlock
+$nfEngOrigLoaded = $Script:NightlyFeedHelperLoaded
+try {
+    $Script:NightlyFeedHelperLoaded = $true
+    function Get-VersionsPropsState { param($Ref) @{ Major = 10; Patch = 0 } }
+    function Resolve-NightlyDogfoodFreshness { throw 'simulated band-resolution failure' }
+    $WarningPreference = 'Stop'
+    Add-SrNightlyFeedFreshness -Data @{ metadata = @{ srRef = 'release/10.0.1xx-sr1' } }
+} catch {
+    $nfEngThrew = $true
+} finally {
+    $WarningPreference = $nfEngPrevWarn
+    Set-Item function:Get-VersionsPropsState $nfEngOrigVps
+    Set-Item function:Resolve-NightlyDogfoodFreshness $nfEngOrigResolve
+    $Script:NightlyFeedHelperLoaded = $nfEngOrigLoaded
+}
+Assert-Eq -Label "engine: Add-SrNightlyFeedFreshness catch survives WarningPreference=Stop (fail-open)" -Expected $true -Actual (-not $nfEngThrew)
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })
