@@ -20,7 +20,7 @@ public class IntegrationTests
 		var result = SourceGenHelpers.Run(source);
 		Assert.NotNull(result.Binding);
 
-		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -126,13 +126,31 @@ public class IntegrationTests
 
 		var result = SourceGenHelpers.Run(new Dictionary<string, string> { { filePath, source } });
 		var generatedFile = SourceGenHelpers.GetGeneratedBindingFile(result);
+		var stableLocationId = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		Assert.StartsWith(SourceGenHelpers.BindingGeneratedSourceHintNamePrefix, generatedFile.Key, StringComparison.Ordinal);
+		Assert.Contains(stableLocationId, generatedFile.Key, StringComparison.Ordinal);
 		Assert.EndsWith("-3-7.g.cs", generatedFile.Key, StringComparison.Ordinal);
 		Assert.DoesNotContain("OfflineMapAreasView", generatedFile.Key, StringComparison.Ordinal);
 		Assert.DoesNotContain("GitHub", generatedFile.Key, StringComparison.Ordinal);
 		Assert.True(generatedFile.Key.Length < 80);
+	}
+
+	[Fact]
+	public void GeneratedMethodNameUsesStableLocationId()
+	{
+		var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		var stableLocationId = SourceGenHelpers.GetStableBindingId(result.Binding);
+
+		AssertExtensions.AssertNoDiagnostics(result);
+		Assert.Contains($"public static void SetBinding{stableLocationId}(", SourceGenHelpers.GetGeneratedBindingSource(result), StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -147,7 +165,7 @@ public class IntegrationTests
 		AssertExtensions.AssertNoDiagnostics(result);
 		Assert.NotNull(result.Binding);
 
-		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -323,7 +341,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -448,7 +467,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -679,7 +699,8 @@ public class IntegrationTests
 	public void GenerateSimpleBindingWhenNullableDisabledAndPropertyNullable(string source)
 	{
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -818,7 +839,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -957,7 +979,8 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1102,7 +1125,8 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1234,7 +1258,8 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1365,7 +1390,8 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1500,7 +1526,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1626,7 +1653,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1751,7 +1779,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1875,7 +1904,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1997,7 +2027,8 @@ public class IntegrationTests
 		var actual = SourceGenHelpers.GetGeneratedBindingSource(result);
 		AssertExtensions.AssertNoDiagnostics(result);
 
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -2113,7 +2144,8 @@ public class IntegrationTests
 		""";
 
 		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorSlider()]);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result.SourceGeneratorDiagnostics, "Source generator");
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 
@@ -2230,7 +2262,8 @@ public class IntegrationTests
 		""";
 
 		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorSlider()]);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result.SourceGeneratorDiagnostics, "Source generator");
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 
@@ -2397,7 +2430,7 @@ public class IntegrationTests
 		var result = SourceGenHelpers.Run(source);
 		Assert.NotNull(result.Binding);
 
-		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		// The key assertion: no CS8603 errors should be present
 		AssertExtensions.AssertNoDiagnostics(result);

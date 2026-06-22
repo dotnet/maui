@@ -51,6 +51,32 @@ internal static class SourceGenHelpers
 		return result.GeneratedFiles.Single(source => source.Key.StartsWith(BindingGeneratedSourceHintNamePrefix, StringComparison.Ordinal));
 	}
 
+	internal static string GetStableBindingId(BindingInvocationDescription? binding)
+	{
+		Assert.NotNull(binding);
+		Assert.NotNull(binding.SimpleLocation);
+
+		return ComputeStableHash($"{binding.SimpleLocation.FilePath}|{binding.SimpleLocation.Line}|{binding.SimpleLocation.Column}");
+	}
+
+	private static string ComputeStableHash(string text)
+	{
+		const ulong offsetBasis = 14695981039346656037;
+		const ulong prime = 1099511628211;
+
+		unchecked
+		{
+			var hash = offsetBasis;
+			foreach (var character in text)
+			{
+				hash ^= character;
+				hash *= prime;
+			}
+
+			return hash.ToString("x16");
+		}
+	}
+
 	internal static CodeGeneratorResult Run(string source, IEnumerable<IIncrementalGenerator> generators)
 	{
 		// Function assumes the first generator in a list is BindingSourceGenerator

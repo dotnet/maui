@@ -47,23 +47,28 @@ public class BindingSourceGenerator : IIncrementalGenerator
 				throw new InvalidOperationException("Location cannot be null");
 			}
 
-			var hintName = CreateHintName(location);
+			var stableLocationId = CreateStableLocationId(location);
+			var hintName = CreateHintName(stableLocationId, location);
 			var methodNamePrefix = binding.MethodType switch
 			{
 				InterceptedMethodType.SetBinding => "SetBinding",
 				InterceptedMethodType.Create => "Create",
 				_ => throw new NotSupportedException()
 			};
-			var uniqueId = (uint)Math.Abs(location.GetHashCode());
 
-			var code = BindingCodeWriter.GenerateBinding(binding, $"{methodNamePrefix}{uniqueId}");
+			var code = BindingCodeWriter.GenerateBinding(binding, $"{methodNamePrefix}{stableLocationId}");
 			spc.AddSource(hintName, code);
 		});
 	}
 
-	private static string CreateHintName(SimpleLocation location)
+	private static string CreateHintName(string stableLocationId, SimpleLocation location)
 	{
-		return $"BindingSourceGen-{ComputeStableHash(location.FilePath)}-{location.Line}-{location.Column}.g.cs";
+		return $"BindingSourceGen-{stableLocationId}-{location.Line}-{location.Column}.g.cs";
+	}
+
+	private static string CreateStableLocationId(SimpleLocation location)
+	{
+		return ComputeStableHash($"{location.FilePath}|{location.Line}|{location.Column}");
 	}
 
 	private static string ComputeStableHash(string text)
