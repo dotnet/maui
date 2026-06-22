@@ -1383,7 +1383,12 @@ if ($Script:NightlyFeedHelperLoaded -and
         if ($null -eq $nfFresh) { $nfFresh = @{ unknown = $true } }
 
         $nfBuildType = [string](Get-NightlyFeedProp $nfFresh 'buildType')
-        $nfTypeNote = if ($nfBuildType -eq 'inflight') { 'ci.inflight' } else { "``$nfBand`` (preview.$nfIteration)" }
+        # Label honestly, mirroring the SR lane: 'inflight' -> ci.inflight; a definitive band
+        # fallback -> the band; anything else (unknown / transient inflight failure) -> ci.inflight,
+        # the stream we were measuring -- never imply the band carries the signal when unknown.
+        $nfTypeNote = if ($nfBuildType -eq 'inflight') { 'ci.inflight' }
+                      elseif ($nfBuildType -eq 'band') { "``$nfBand`` (preview.$nfIteration)" }
+                      else { 'ci.inflight' }
         $nfLaneLabel = "[``$nfFeed``]($nfFeedUrl) · $nfTypeNote"
         $nfFresh['laneLabel'] = $nfLaneLabel
         $nfFresh['feedUrl'] = $nfFeedUrl

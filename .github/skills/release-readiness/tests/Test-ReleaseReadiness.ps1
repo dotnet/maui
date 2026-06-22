@@ -3499,6 +3499,22 @@ Assert-Eq -Label "feed: band with no build → matched is false" -Expected $fals
 $rThrow = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.90-' -Fetcher { param($Url) throw 'boom' }
 Assert-Eq -Label "feed: fetcher throws → null (fail-open)" -Expected $true -Actual ($null -eq $rThrow)
 
+# Fail-open holds even under an ambient $WarningPreference='Stop': the diagnostic Write-Warning
+# in the catch must not turn into a terminating error that escapes the helper. The catch uses
+# -WarningAction Continue so the "never throws" contract survives a Stop preference.
+$rStopWarn = $null
+$nfStopThrew = $false
+$nfPrevWarnPref = $WarningPreference
+try {
+    $WarningPreference = 'Stop'
+    $rStopWarn = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.90-' -Fetcher { param($Url) throw 'boom' }
+} catch {
+    $nfStopThrew = $true
+} finally {
+    $WarningPreference = $nfPrevWarnPref
+}
+Assert-Eq -Label "feed: fetcher throws under WarningPreference=Stop → still null, no throw (fail-open)" -Expected $true -Actual (($null -eq $rStopWarn) -and (-not $nfStopThrew))
+
 # Paged registration: a page that carries only an @id (no inline items) is followed.
 $nfPaged = {
     param($Url)

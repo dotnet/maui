@@ -164,7 +164,10 @@ function Get-NightlyFeedFreshness {
         # Fail-open: a network/parse error yields $null so the caller renders a muted
         # "unknown" banner rather than crashing the unattended job. Surface the reason to
         # the CI log so a real feed outage (401/503/DNS) isn't silently invisible.
-        Write-Warning "Nightly-feed query failed for feed '$Feed' (fail-open -> unknown): $($_.Exception.Message)"
+        # -WarningAction Continue keeps fail-open intact even if an ambient
+        # $WarningPreference='Stop' (or -WarningAction Stop) would otherwise turn this
+        # diagnostic into a terminating error and break the "never throws" contract.
+        Write-Warning "Nightly-feed query failed for feed '$Feed' (fail-open -> unknown): $($_.Exception.Message)" -WarningAction Continue
         return $null
     }
 }
