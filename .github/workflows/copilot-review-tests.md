@@ -242,6 +242,7 @@ Before starting, verify the skill file and context files exist:
 
 ```bash
 test -f .github/skills/review-test-failures/SKILL.md
+test -f .github/docs/maui-ci-facts.md
 test -f CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.json
 test -f CustomAgentLogsTmp/TestFailureReview/${{ github.event.issue.number || inputs.pr_number }}/context.md
 ```

@@ -1000,18 +1000,26 @@ if ($BaselineBuildsPerDefinition -gt 0) {
             continue
         }
 
-        $notSucceeded = @($completed | Where-Object { $_.result -in @('failed', 'partiallySucceeded', 'canceled') })
-        if ($notSucceeded.Count -eq 0) {
+        # The most recent completed base build is the authoritative baseline (the doc
+        # compares against "the most recent base-branch build"). If its tip succeeded,
+        # base is currently healthy and matching failures are not pre-existing — even if
+        # an older build in the lookback window was red (it was since fixed).
+        $mostRecent = $completed[0]
+        if ($mostRecent.result -eq 'succeeded') {
             $baselineSummary.Add([ordered]@{
                 definitionName = $defName
-                inspectedBuildId = $completed[0].id
-                baseBuildResult = $completed[0].result
+                inspectedBuildId = $mostRecent.id
+                baseBuildResult = $mostRecent.result
                 baselineFailureCount = 0
                 note = "Most recent base-branch build for $defName succeeded; matching failures are unlikely to be pre-existing."
             })
             continue
         }
 
+        # Tip of base did not fully succeed: extract its failures (and a few more recent
+        # not-succeeded builds in the lookback window) so PR failures that also fail on
+        # the base branch can be flagged as pre-existing.
+        $notSucceeded = @($completed | Where-Object { $_.result -in @('failed', 'partiallySucceeded', 'canceled') })
         foreach ($base in @($notSucceeded | Select-Object -First $BaselineBuildsPerDefinition)) {
             $baseKey = "$($build.org)|$($build.project)|$($base.id)"
             if ($baselineInspected.ContainsKey($baseKey)) {

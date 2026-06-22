@@ -98,7 +98,7 @@ same test across:
 A single failing test can appear in 4–8+ runs. Summing inflates counts dramatically.
 
 **Deduplicate** by grouping on **normalized test name + OS platform** (`android`,
-`ios`, `mac`, `windows`, or `unknown`). "DatePicker_Format_D on iOS" and
+`ios`, `macos`, `windows`, or `unknown`). "DatePicker_Format_D on iOS" and
 "DatePicker_Format_D on Android" are distinct failures. Collapse retries and runtime
 variants (coreclr/mono) of the same test on the same OS into one. Report retry/run IDs
 as supporting evidence under the same distinct failure.
