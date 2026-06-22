@@ -680,6 +680,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_carouselViewLayoutListener = null;
 		}
 
+		// https://github.com/dotnet/maui/issues/13323
+		// CarouselView is a full-page pager; child-initiated rectangle scroll requests
+		// (e.g. EditText cursor positioning) must not scroll the carousel.
+		public override bool RequestChildRectangleOnScreen(
+			global::Android.Views.View child,
+			global::Android.Graphics.Rect rect,
+			bool immediate)
+		{
+			return false;
+		}
+
+		// https://github.com/dotnet/maui/issues/13323
+		// base.RequestChildFocus preserves normal focus propagation, but it may
+		// start a focus-driven scroll from an otherwise idle CarouselView.
+		public override void RequestChildFocus(
+			global::Android.Views.View child,
+			global::Android.Views.View focused)
+		{
+			var wasIdleBeforeFocus = ScrollState == RecyclerView.ScrollStateIdle;
+
+			base.RequestChildFocus(child, focused);
+
+			if (wasIdleBeforeFocus && ScrollState != RecyclerView.ScrollStateIdle)
+			{
+				StopScroll();
+			}
+		}
+
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			// If the height or width are unbounded and the user is set to
