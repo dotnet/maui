@@ -14,6 +14,11 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Figures")]
 	public sealed class PathGeometry : Geometry
 	{
+		// Tracks figures whose PropertyChanged and InvalidatePathSegmentRequested events are
+		// subscribed so we can unsubscribe them even when the collection is cleared (Reset
+		// action does not populate OldItems).
+		readonly List<PathFigure> _subscribedFigures = new List<PathFigure>();
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PathGeometry"/> class.
 		/// </summary>
@@ -198,17 +203,36 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
+		void SubscribeFigure(PathFigure figure)
+		{
+			figure.PropertyChanged += OnPathFigurePropertyChanged;
+			figure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+			_subscribedFigures.Add(figure);
+		}
+
+		void UnsubscribeFigure(PathFigure figure)
+		{
+			figure.PropertyChanged -= OnPathFigurePropertyChanged;
+			figure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+			_subscribedFigures.Remove(figure);
+		}
+
+		void UnsubscribeAllFigures()
+		{
+			foreach (var figure in _subscribedFigures)
+			{
+				figure.PropertyChanged -= OnPathFigurePropertyChanged;
+				figure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+			}
+			_subscribedFigures.Clear();
+		}
+
 		void UpdatePathFigureCollection(PathFigureCollection oldCollection, PathFigureCollection newCollection)
 		{
 			if (oldCollection != null)
 			{
 				oldCollection.CollectionChanged -= OnPathFigureCollectionChanged;
-
-				foreach (var oldPathFigure in oldCollection)
-				{
-					oldPathFigure.PropertyChanged -= OnPathFigurePropertyChanged;
-					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
-				}
+				UnsubscribeAllFigures();
 			}
 
 			if (newCollection == null)
@@ -217,35 +241,32 @@ namespace Microsoft.Maui.Controls.Shapes
 			newCollection.CollectionChanged += OnPathFigureCollectionChanged;
 
 			foreach (var newPathFigure in newCollection)
-			{
-				newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
-				newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
-			}
+				SubscribeFigure(newPathFigure);
 		}
 
 		void OnPathFigureCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.OldItems != null)
+			if (e.OldItems != null && e.Action != NotifyCollectionChangedAction.Move)
 			{
 				foreach (var oldItem in e.OldItems)
 				{
-					if (!(oldItem is PathFigure oldPathFigure))
-						continue;
-
-					oldPathFigure.PropertyChanged -= OnPathFigurePropertyChanged;
-					oldPathFigure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+					if (oldItem is PathFigure oldPathFigure)
+						UnsubscribeFigure(oldPathFigure);
 				}
 			}
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				// Clear() raises Reset with OldItems = null; unsubscribe all tracked figures
+				// to prevent the cleared figures from retaining this PathGeometry alive.
+				UnsubscribeAllFigures();
+			}
 
-			if (e.NewItems != null)
+			if (e.NewItems != null && e.Action != NotifyCollectionChangedAction.Move)
 			{
 				foreach (var newItem in e.NewItems)
 				{
-					if (!(newItem is PathFigure newPathFigure))
-						continue;
-
-					newPathFigure.PropertyChanged += OnPathFigurePropertyChanged;
-					newPathFigure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
+					if (newItem is PathFigure newPathFigure)
+						SubscribeFigure(newPathFigure);
 				}
 			}
 
