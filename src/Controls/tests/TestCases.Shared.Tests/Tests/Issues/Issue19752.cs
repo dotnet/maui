@@ -25,10 +25,19 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		}
 	}
 
+	// Move the cursor to a neutral position at the start of each test to ensure the initial state
+	// is predictable (not already PointerOver any button).
+	void ResetCursorPosition()
+	{
+		// Move cursor to top-left corner, away from buttons
+		App.MoveToCoordinates(10, 10);
+	}
+
 	[Test]
 	public void InitialStateAreAllCorrect()
 	{
 		IgnoreIfNotDesktop();
+		ResetCursorPosition();
 
 		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("Normal"));
 		Assert.That(App.FindElement("button2").GetText(), Is.EqualTo("Disabled"));
@@ -39,6 +48,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	public void HoveringOverButtonMovesToPointerOverState()
 	{
 		IgnoreIfNotDesktop();
+		ResetCursorPosition();
 
 		App.MoveCursor("button1");
 
@@ -68,6 +78,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	public void PressingAndReleasingButtonMovesToPointerOverState()
 	{
 		IgnoreIfNotDesktop();
+		ResetCursorPosition();
 
 		var rectBefore = App.FindElement("button1").GetRect();
 
@@ -85,6 +96,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	public void HoveringOverButtonAndThenMovingOffMovesToNormalState()
 	{
 		IgnoreIfNotDesktop();
+		ResetCursorPosition();
 
 		var rectBefore = App.FindElement("button1").GetRect();
 
@@ -104,6 +116,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	public void EnablingButtonMovesToNormalState()
 	{
 		IgnoreIfNotDesktop();
+		ResetCursorPosition();
 
 		App.Tap("button1");
 
@@ -115,6 +128,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	public void DisablingUnfocusedButtonMovesToDisabledState()
 	{
 		IgnoreIfNotDesktop();
+		ResetCursorPosition();
 
 		var rectBefore = App.FindElement("button2").GetRect();
 
@@ -136,6 +150,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	public void DisablingFocusedButtonMovesToDisabledState()
 	{
 		IgnoreIfNotDesktop();
+		ResetCursorPosition();
 
 		var rectBefore = App.FindElement("button3").GetRect();
 
