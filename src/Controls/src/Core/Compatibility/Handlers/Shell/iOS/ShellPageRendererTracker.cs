@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
@@ -79,6 +80,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		SearchHandlerAppearanceTracker? _searchHandlerAppearanceTracker;
 		IFontManager _fontManager;
 		bool _isVisiblePage;
+		NSObject? _keyboardWillHideObserver;
+		bool _pendingKeyboardNavigation;
 
 		BackButtonBehavior? BackButtonBehavior { get; set; }
 		UINavigationItem? NavigationItem { get; set; }
@@ -93,6 +96,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_context.Shell.PropertyChanged += HandleShellPropertyChanged;
 
 			_fontManager = context.Shell.RequireFontManager();
+
+			_keyboardWillHideObserver = UIKeyboard.Notifications.ObserveWillHide(OnKeyboardWillHide);
 		}
 
 		public void OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
@@ -108,7 +113,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
 			else if (e.Is(Shell.FlyoutIconProperty) || e.Is(Shell.ForegroundColorProperty))
+			{
 				UpdateLeftToolbarItems();
+				UpdateRightBarButtonItemTintColors();
+			}
 		}
 
 #nullable disable
@@ -155,6 +163,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
 			{
 				UpdateLeftToolbarItems();
+				UpdateRightBarButtonItemTintColors();
 			}
 		}
 
@@ -192,12 +201,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTitle()
 		{
-			if (!ToolbarReady() || NavigationItem is null || _context?.Shell?.Toolbar is null)
+
+			if (NavigationItem is null)
 			{
 				return;
 			}
 
-			NavigationItem.Title = _context.Shell.Toolbar.Title;
+			if (ToolbarReady() && _context?.Shell?.Toolbar is not null)
+			{
+				NavigationItem.Title = _context.Shell.Toolbar.Title;
+				return;
+			}
+
+			// Update back-stack pages so iOS back button/history menu reflects title changes
+			NavigationItem.Title = Page?.Title;
 		}
 
 
@@ -232,6 +249,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (oldPage is not null)
 			{
+				// The _tracker.Page assignment now occurs before the navigation animation,
+				// so oldPage.Disappearing is unsubscribed below before it fires — leaving
+				// _isVisiblePage stuck as true. Calling SetDisappeared() here resets it so
+				// SetAppeared() runs its full body for the incoming page. Skipped during
+				// Dispose (newPage is null) since _context is already cleared and cleanup
+				// is handled there. No-op in normal flows.
+				if (newPage is not null)
+					SetDisappeared();
+
 				oldPage.Appearing -= PageAppearing;
 				oldPage.Disappearing -= PageDisappearing;
 				oldPage.PropertyChanged -= OnPagePropertyChanged;
@@ -276,7 +302,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ViewController.AutomaticallyAdjustsScrollViewInsets = false;
 			}
 		}
-		
+
 		internal void UpdateTitleViewInternal()
 		{
 			UpdateTitleView();
@@ -352,6 +378,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			return new TitleViewContainer(titleView);
+		}
+
+		/// <summary>
+		/// Re-applies the navigation bar frame to the current TitleView container.
+		/// On iOS 26+ the TitleView container uses autoresizing masks with an explicitly set frame
+		/// (see <see cref="CreateTitleViewContainer"/>), so the frame is not automatically recomputed
+		/// when the navigation bar resizes during rotation or window size changes. This explicitly
+		/// resizes the container to match the navigation bar's new dimensions.
+		/// </summary>
+		internal void UpdateTitleViewFrameForOrientation()
+		{
+			if (NavigationItem?.TitleView is not TitleViewContainer titleViewContainer)
+			{
+				return;
+			}
+
+			var navigationBarFrame = ViewController?.NavigationController?.NavigationBar.Frame;
+			if (navigationBarFrame.HasValue)
+			{
+				titleViewContainer.Frame = new CGRect(0, 0, navigationBarFrame.Value.Width, navigationBarFrame.Value.Height);
+				titleViewContainer.Height = navigationBarFrame.Value.Height;
+				titleViewContainer.LayoutIfNeeded();
+			}
 		}
 
 		void OnTitleViewParentSet(object? sender, EventArgs e)
@@ -456,7 +505,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			NavigationItem.SetRightBarButtonItems(primaries is null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
+			UpdateRightBarButtonItemTintColors();
 			UpdateLeftToolbarItems();
+		}
+
+		/// iOS 26+: LiquidGlass no longer inherits the foreground color from the navigation bar's TintColor.
+		/// Explicitly set TintColor on each right bar button item to ensure the Shell.ForegroundColor is applied.
+		void UpdateRightBarButtonItemTintColors()
+		{
+			if (!(OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26)))
+			{
+				return;
+			}
+
+			if (NavigationItem?.RightBarButtonItems is not { Length: > 0 } rightItems)
+			{
+				return;
+			}
+
+			var foregroundColor = _context?.Shell?.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
+								_context?.Shell?.GetValue(Shell.ForegroundColorProperty);
+
+			var platformColor = foregroundColor is Graphics.Color shellForegroundColor
+				? shellForegroundColor.ToPlatform()
+				: null;
+
+			foreach (var item in rightItems)
+			{
+				item.TintColor = platformColor;
+			}
 		}
 
 		void UpdateLeftToolbarItems()
@@ -651,7 +728,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout)
 			{
-				_context?.Shell?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, true);
+				_context?.Shell?.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.TrueBox);
 			}
 		}
 
@@ -991,6 +1068,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchBar.OnEditingStopped += OnSearchBarEditingStopped;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
+			searchBar.Text = SearchHandler.Query;
 			UpdateSearchIsEnabled(_searchController);
 			searchBar.SearchButtonClicked += SearchButtonClicked;
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
@@ -1119,6 +1197,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			// Set flag when page is loaded during navigation - this is when the keyboard issue can occur
+			_pendingKeyboardNavigation = true;
+
 			UpdateToolbarItemsInternal();
 
 			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
@@ -1175,6 +1256,72 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_context.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 		}
 
+		void OnKeyboardWillHide(object? sender, UIKeyboardEventArgs e)
+		{
+			// Keyboard dismissal during page load can cause iOS to misposition the view behind the navigation bar.
+			// Detect and correct this by repositioning the view below the navigation bar when needed.
+
+			if (_disposed || ViewController?.View is null || ViewController.NavigationController is null)
+				return;
+
+			// Only apply fix during the problematic timing window (page load with navigation)
+			if (!_pendingKeyboardNavigation)
+				return;
+
+			var navController = ViewController.NavigationController;
+
+			// The keyboard observer is global — every live tracker receives every UIKeyboard hide
+			// event. If a modal view controller is currently presented over this nav controller,
+			// the keyboard belongs to that modal (e.g. a transparent Shell page with an Entry
+			// presented via Shell.GoToAsync). Return WITHOUT consuming _pendingKeyboardNavigation:
+			// this modal is transient, and the flag must remain armed for a genuine keyboard hide
+			// on this tracker after the modal is dismissed. The correction gate below
+			// (currentFrame.Y == 0 and related checks) is what prevents false positives.
+			if (navController.PresentedViewController is not null)
+				return;
+
+			var navBar = navController.NavigationBar;
+
+			if (navBar.Hidden || navBar.Frame.Height <= 0)
+			{
+				// No nav bar means the misposition scenario cannot occur; consume the flag so a
+				// later unrelated keyboard hide does not re-trigger this correction.
+				_pendingKeyboardNavigation = false;
+				return;
+			}
+
+			// Don't interfere with SearchHandler's keyboard management when it's active.
+			// Consume the flag here too — leaving it armed risks running the fix on a later,
+			// unrelated keyboard dismissal.
+			if (_searchController?.Active == true)
+			{
+				_pendingKeyboardNavigation = false;
+				return;
+			}
+
+			var currentFrame = ViewController.View.Frame;
+			var navBarBottom = navBar.Frame.Bottom;
+
+			if (currentFrame.Y == 0 && navBarBottom > 0 &&
+				navController.ViewControllers?.Length > 1 &&
+				ViewController == navController.TopViewController)
+			{
+				// Adjust height to fit available space after Y position change
+				var yOffset = navBarBottom - currentFrame.Y;
+				var correctFrame = new CGRect(
+					currentFrame.X,
+					navBarBottom,
+					currentFrame.Width,
+					currentFrame.Height - yOffset
+				);
+
+				ViewController.View.Frame = correctFrame;
+			}
+
+			// Clear flag after handling keyboard dismissal once
+			_pendingKeyboardNavigation = false;
+		}
+
 		#endregion SearchHandler
 
 		#region IDisposable Support
@@ -1220,7 +1367,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
+				{
+					// Explicitly null out the native TitleView to break the UIKit reference chain
+					// that prevents the page from being garbage collected when x:Name is used
+					// together with Shell.TitleView. The NameScope attached to the TitleView
+					// children holds a reference back to the page (via the registered x:Name),
+					// so clearing this native reference is necessary to allow GC.
+					NavigationItem.TitleView = null;
 					tvc.Disconnect();
+				}
+
+				_keyboardWillHideObserver?.Dispose();
+				_keyboardWillHideObserver = null;
 			}
 
 			_context = null;

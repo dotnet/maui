@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -415,6 +417,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SwipeItemViewCommandCanExecuteUpdatesIsEnabled()
+		{
+			var expectedParameter = new object();
+			var canExecute = false;
+			var command = new Command(
+				_ => { },
+				parameter => canExecute && ReferenceEquals(parameter, expectedParameter));
+			var swipeItemView = new SwipeItemView
+			{
+				CommandParameter = expectedParameter,
+				Command = command
+			};
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			canExecute = true;
+			command.ChangeCanExecute();
+
+			Assert.True(swipeItemView.IsEnabled);
+
+			swipeItemView.CommandParameter = new object();
+
+			Assert.False(swipeItemView.IsEnabled);
+
+			swipeItemView.CommandParameter = expectedParameter;
+
+			Assert.True(swipeItemView.IsEnabled);
+
+			swipeItemView.IsEnabled = false;
+			command.ChangeCanExecute();
+
+			Assert.False(swipeItemView.IsEnabled);
+		}
+
+		[Fact]
 		public void SwipeItemsRemainInLogicalTreeWhenContentIsSet()
 		{
 			var swipeView = new SwipeView();
@@ -485,6 +522,175 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		class TestViewModel
 		{
 			public Command TestCommand { get; set; }
+		}
+
+		static object GetPrivateField(object obj, string fieldName)
+		{
+			var field = obj.GetType().GetField(fieldName,
+				System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+			return field?.GetValue(obj);
+		}
+
+		[Fact]
+		public void SwipeViewFindsScrollParentDirectlyWhenTreeIsConnected()
+		{
+			// Non-DataTemplate scenario: SwipeView added to an already-connected ScrollView
+			var scrollView = new ScrollView();
+			var contentView = new ContentView();
+			scrollView.Content = contentView;
+
+			var swipeView = new SwipeView();
+			contentView.Content = swipeView;
+
+			// SwipeView should find the ScrollView via direct parent walk
+			Assert.Equal(scrollView, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewFindsScrollParentAfterTemplateParentConnected()
+		{
+			// DataTemplate scenario: SwipeView inside ContentView (template root with no parent)
+			var swipeView = new SwipeView();
+			var contentView = new ContentView { Content = swipeView };
+
+			// At this point contentView.Parent is null, simulating an unattached template root.
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Connect the template root to a ScrollView (simulating CollectionView adding the item)
+			var scrollView = new ScrollView { Content = contentView };
+
+			// SwipeView should now have discovered the ScrollView via deferred discovery
+			Assert.Equal(scrollView, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewResubscribesToScrollParentAfterRemovalAndReaddition()
+		{
+			var swipeView = new SwipeView();
+			var contentView1 = new ContentView { Content = swipeView };
+			var scrollView1 = new ScrollView { Content = contentView1 };
+
+			Assert.Equal(scrollView1, GetPrivateField(swipeView, "_scrollParent"));
+
+			// Remove SwipeView from the tree entirely
+			contentView1.Content = null;
+
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Re-add SwipeView to a different tree with a different ScrollView
+			var contentView2 = new ContentView { Content = swipeView };
+			var scrollView2 = new ScrollView { Content = contentView2 };
+
+			// SwipeView should discover the new ScrollView, not remain stuck on the old one
+			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		[Fact]
+		public void SwipeViewRediscoversScrollParentWhenTemplateRootIsReparented()
+		{
+			// Simulate virtualization: template root is detached then reattached
+			var swipeView = new SwipeView();
+			var contentView = new ContentView { Content = swipeView };
+
+			var scrollView1 = new ScrollView { Content = contentView };
+			Assert.Equal(scrollView1, GetPrivateField(swipeView, "_scrollParent"));
+
+			// Detach the template root (virtualization removal)
+			scrollView1.Content = null;
+			Assert.Null(GetPrivateField(swipeView, "_scrollParent"));
+
+			// Reattach to a different ScrollView (virtualization re-use)
+			var scrollView2 = new ScrollView { Content = contentView };
+			Assert.Equal(scrollView2, GetPrivateField(swipeView, "_scrollParent"));
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/35481
+		// A SwipeItems instance that is cached (e.g. in a static dictionary) and shared
+		// across multiple SwipeViews must not keep prior SwipeView instances alive.
+		[Fact]
+		public void CachedSwipeItemsDoesNotKeepSwipeViewAlive()
+		{
+			// Simulate the repro: one long-lived SwipeItems cache shared across many SwipeViews.
+			var cachedSwipeItems = new SwipeItems { new SwipeItem { Text = "Delete" } };
+
+			// Allocate the SwipeViews in a non-inlined helper so the locals do not remain
+			// rooted on the test method's stack frame in Debug builds.
+			var swipeViewRefs = CreateSwipeViewsSharingCachedItems(cachedSwipeItems, 20);
+
+			// Mutate the cached SwipeItems after the SwipeViews are no longer referenced.
+			// Before the fix, the CollectionChanged/PropertyChanged subscriptions on
+			// SwipeItems held a strong reference back to every SwipeView that had ever
+			// used this cache, so this mutation would keep them all alive.
+			cachedSwipeItems.Add(new SwipeItem { Text = "Archive" });
+
+			ForceFullGC();
+
+			GC.KeepAlive(cachedSwipeItems);
+
+			Assert.All(swipeViewRefs, r => Assert.False(r.IsAlive,
+				"SwipeView was kept alive by the cached SwipeItems — issue #35481 regression."));
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static List<WeakReference> CreateSwipeViewsSharingCachedItems(SwipeItems shared, int count)
+		{
+			var refs = new List<WeakReference>(count);
+			for (int i = 0; i < count; i++)
+			{
+				var sv = new SwipeView { RightItems = shared };
+				// Simulate a CollectionView recycling the row: the SwipeView reassigns its
+				// RightItems before going out of scope, releasing the Parent back-reference
+				// from the cached SwipeItems. Before the fix, the closure-based
+				// CollectionChanged/PropertyChanged subscriptions on the cached SwipeItems
+				// still held this SwipeView alive even after this reassignment.
+				sv.RightItems = new SwipeItems();
+				refs.Add(new WeakReference(sv));
+			}
+			return refs;
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/35481
+		// Replacing RightItems with a new SwipeItems instance must release any back-reference
+		// from the previous (cached) SwipeItems to the SwipeView. Without the fix, the cached
+		// SwipeItems' CollectionChanged/PropertyChanged delegates kept the SwipeView alive
+		// even after it was logically unhooked.
+		[Fact]
+		public void ReplacingCachedSwipeItemsReleasesPreviousOwnerReference()
+		{
+			// Cache: held by external code (the user's static dictionary in the repro).
+			var cachedRightItems = new SwipeItems { new SwipeItem { Text = "Done" } };
+
+			var swipeViewRef = CreateSwipeViewAssignThenReplace(cachedRightItems);
+
+			// Mutate the cached SwipeItems after the SwipeView is unhooked, just like the repro.
+			cachedRightItems.Add(new SwipeItem { Text = "Archive" });
+
+			ForceFullGC();
+
+			GC.KeepAlive(cachedRightItems);
+
+			Assert.False(swipeViewRef.IsAlive,
+				"Replaced SwipeView was kept alive by its previously-assigned cached SwipeItems — issue #35481 regression.");
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static WeakReference CreateSwipeViewAssignThenReplace(SwipeItems cachedRightItems)
+		{
+			var sv = new SwipeView { RightItems = cachedRightItems };
+			// Replace the assignment — the previous (cached) SwipeItems is now logically
+			// unhooked but kept alive by the caller. It must not retain the SwipeView.
+			sv.RightItems = new SwipeItems { new SwipeItem { Text = "Replaced" } };
+			return new WeakReference(sv);
+		}
+
+		static void ForceFullGC()
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+				GC.WaitForPendingFinalizers();
+				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+			}
 		}
 	}
 }

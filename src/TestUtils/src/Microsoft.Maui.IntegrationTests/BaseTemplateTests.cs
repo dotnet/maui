@@ -11,14 +11,6 @@ public abstract class BaseTemplateTests : BaseBuildTest
 			Path.Combine(TestDirectory, "Directory.Build.targets"), true);
 	}
 
-	protected void OnlyAndroid(string projectFile)
-	{
-		FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
-		{
-			{ "<TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>", "<TargetFrameworks>net10.0-android</TargetFrameworks>" },
-		});
-	}
-
 	protected void AssertContains(string expected, string actual)
 	{
 		Assert.True(
@@ -31,5 +23,17 @@ public abstract class BaseTemplateTests : BaseBuildTest
 		Assert.False(
 			actual.Contains(expected, StringComparison.Ordinal),
 			$"Expected string '{actual}' to not contain '{expected}'.");
+	}
+
+	protected void AssertIncludesRootGitIgnore(string projectDir)
+	{
+		var gitIgnorePath = Path.Combine(projectDir, ".gitignore");
+
+		Assert.True(File.Exists(gitIgnorePath),
+			$"Expected '{gitIgnorePath}' to exist.");
+
+		var gitIgnoreContents = File.ReadAllText(gitIgnorePath);
+		AssertContains("bin/", gitIgnoreContents);
+		AssertContains("obj/", gitIgnoreContents);
 	}
 }

@@ -1,5 +1,8 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.Maui.Platform
 {
@@ -17,6 +20,44 @@ namespace Microsoft.Maui.Platform
 				webView.Source?.Load(webViewDelegate);
 
 				platformWebView.UpdateCanGoBackForward(webView);
+			}
+		}
+
+		internal static void UpdateBackground(this WebView2 platformWebView, IWebView webView)
+		{
+			Color? backgroundColor = null;
+
+			if (webView.Background is SolidPaint solidPaint)
+			{
+				backgroundColor = solidPaint.Color;
+			}
+			else if (webView.Background is GradientPaint gradientPaint)
+			{
+				// WebView2 only supports a solid DefaultBackgroundColor; use the gradient's
+				// start color as a best-effort approximation.
+				backgroundColor = gradientPaint.StartColor;
+			}
+
+			if (backgroundColor is not null)
+			{
+				platformWebView.DefaultBackgroundColor = backgroundColor.ToWindowsColor();
+
+				if (platformWebView.CoreWebView2 is not null)
+				{
+					platformWebView.CoreWebView2.Profile.PreferredColorScheme = CoreWebView2PreferredColorScheme.Light;
+				}
+			}
+			else
+			{
+				if (platformWebView.CoreWebView2 is not null)
+				{
+					platformWebView.CoreWebView2.Profile.PreferredColorScheme = platformWebView.ActualTheme switch
+					{
+						ElementTheme.Dark => CoreWebView2PreferredColorScheme.Dark,
+						ElementTheme.Light => CoreWebView2PreferredColorScheme.Light,
+						_ => CoreWebView2PreferredColorScheme.Auto
+					};
+				}
 			}
 		}
 

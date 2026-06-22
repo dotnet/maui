@@ -64,6 +64,19 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateGoForward(webView);
 		}
 
+		internal static void MapFlowDirection(IWebViewHandler handler, IWebView webView)
+		{
+			// Update the WKWebView itself so SemanticContentAttribute is set correctly
+			handler.PlatformView?.UpdateFlowDirection(webView);
+
+			// Also update the internal ScrollView so the scrollbar aligns with the flow direction
+			var scrollView = handler.PlatformView?.ScrollView;
+			if (scrollView == null)
+				return;
+
+			scrollView.UpdateFlowDirectionForScrollView(webView);
+		}
+
 		public static async void MapReload(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			var platformHandler = handler as WebViewHandler;
@@ -506,28 +519,12 @@ namespace Microsoft.Maui.Handlers
 
 		bool LoadFile(string url)
 		{
-			try
+			if (PlatformView is null)
 			{
-				var file = Path.GetFileNameWithoutExtension(url);
-				var ext = Path.GetExtension(url);
-
-				var nsUrl = NSBundle.MainBundle.GetUrlForResource(file, ext);
-
-				if (nsUrl == null)
-				{
-					return false;
-				}
-
-				PlatformView?.LoadFileUrl(nsUrl, nsUrl);
-
-				return true;
-			}
-			catch (Exception)
-			{
-				MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning("Could not load {url} as local file", url);
+				return false;
 			}
 
-			return false;
+			return PlatformView.LoadFile(url, MauiContext?.CreateLogger<WebViewHandler>());
 		}
 
 		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)

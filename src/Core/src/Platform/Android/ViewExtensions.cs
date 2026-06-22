@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Platform
 						platformView.Background = drawable;
 				}
 			}
-			else if (platformView is LayoutViewGroup)
+			else if (platformView is LayoutViewGroup or ContentViewGroup)
 			{
 				platformView.Background = null;
 			}
@@ -353,7 +353,16 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this AView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
 
-		internal static void UpdateOpacity(this AView platformView, double opacity) => platformView.Alpha = (float)opacity;
+		internal static void UpdateOpacity(this AView platformView, double opacity)
+		{
+			platformView.Alpha = (float)opacity;
+
+			if (platformView is WrapperView wrapperView && wrapperView.Shadow != null && wrapperView.IsLoaded())
+			{
+				// Post invalidation to ensure shadow redraws correctly after opacity changes.
+				wrapperView.ScheduleInvalidate();
+			}
+		}
 
 		public static void UpdateFlowDirection(this AView platformView, IView view)
 		{
@@ -640,9 +649,23 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				disposable?.Dispose();
+				// Store local reference to allow cancellation inside the Post callback
+				var localDisposable = disposable;
 				disposable = null;
-				action();
+				view.Post(() =>
+				{
+					if (view.IsAttachedToWindow && localDisposable is not null)
+					{
+						action();
+						localDisposable.Dispose();
+					}
+					else if (localDisposable is not null)
+					{
+						// View was detached before Post ran (e.g., ViewPager2 detach/re-attach cycle).
+						// Restore disposable so the next ViewAttachedToWindow can retry.
+						disposable = localDisposable;
+					}
+				});
 			};
 
 			view.ViewAttachedToWindow += routedEventHandler;
@@ -881,6 +904,27 @@ namespace Microsoft.Maui.Platform
 				default:
 					return false;
 			}
+		}
+
+		/// <summary>
+		/// Resets the transform of a view's layer to identity.
+		/// This is used when a WrapperView is created to prevent transform compounding
+		/// between the WrapperView and its child.
+		/// </summary>
+		internal static void ResetTransform(this AView? platformView)
+		{
+			if (platformView is null)
+				return;
+
+			platformView.TranslationX = 0;
+			platformView.TranslationY = 0;
+			platformView.ScaleX = 1;
+			platformView.ScaleY = 1;
+			platformView.Rotation = 0;
+			platformView.RotationX = 0;
+			platformView.RotationY = 0;
+			platformView.PivotX = platformView.Width / 2f;
+			platformView.PivotY = platformView.Height / 2f;
 		}
 	}
 }

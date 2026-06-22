@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Backing store for the <see cref="IsPassword"/> property.
 		/// </summary>
-		public static readonly BindableProperty IsPasswordProperty = BindableProperty.Create(nameof(IsPassword), typeof(bool), typeof(Entry), default(bool));
+		public static readonly BindableProperty IsPasswordProperty = BindableProperty.Create(nameof(IsPassword), typeof(bool), typeof(Entry), BooleanBoxes.FalseBox);
 
 		/// <inheritdoc cref="InputView.TextProperty"/>
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsPassword
 		{
 			get { return (bool)GetValue(IsPasswordProperty); }
-			set { SetValue(IsPasswordProperty, value); }
+			set { SetValue(IsPasswordProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>

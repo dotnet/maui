@@ -88,9 +88,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 
-			swipeView?.UpdateIsVisibleSwipeItem(view);
-
+			// Update the native view's Hidden state BEFORE calling UpdateIsVisibleSwipeItem,
+			// so LayoutSwipeItems can use the correct Hidden state when repositioning items.
 			handler.PlatformView.UpdateVisibility(view.Visibility);
+
+			swipeView?.UpdateIsVisibleSwipeItem(view);
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter
@@ -117,11 +119,31 @@ namespace Microsoft.Maui.Handlers
 
 					try
 					{
-						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
-						var tintColor = item.GetTextColor();
+						// Font glyphs are single-color vectors so template rendering + tint makes sense.
+						// Regular raster images should use AlwaysOriginal to preserve their own colors.
+						var fontImageSource = item.Source as IFontImageSource;
+						var renderingMode = fontImageSource is not null ? UIImageRenderingMode.AlwaysTemplate : UIImageRenderingMode.AlwaysOriginal;
+						button.SetImage(resizedImage.ImageWithRenderingMode(renderingMode), UIControlState.Normal);
 
-						if (tintColor != null)
-							button.TintColor = tintColor.ToPlatform();
+						if (fontImageSource is not null)
+						{
+							if (fontImageSource.Color is not null)
+							{
+								button.TintColor = fontImageSource.Color.ToPlatform();
+							}
+							else
+							{
+								var tintColor = item.GetTextColor();
+								if (tintColor is not null)
+								{
+									button.TintColor = tintColor.ToPlatform();
+								}
+							}
+						}
+						else
+						{
+							button.TintColor = null;
+						}
 					}
 					catch (Exception)
 					{

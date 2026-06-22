@@ -94,34 +94,25 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The local listener if view is in a registered view hierarchy, null otherwise</returns>
 		internal static MauiWindowInsetListener? FindListenerForView(AView view)
 		{
+			if (!ShouldSetMauiWindowInsetListener(view))
+			{
+				return null;
+			}
+
+			return FindRegisteredListenerForView(view);
+		}
+
+		internal static MauiWindowInsetListener? FindRegisteredListenerForView(AView view)
+		{
 			// Walk up the view hierarchy looking for a registered view
 			var parent = view.Parent;
 			while (parent is not null)
 			{
-				// Skip setting listener on views inside nested scroll containers or AppBarLayout (except MaterialToolbar)
-				// We want the layout listener logic to get applied to the MaterialToolbar itself
-				// But we don't want any layout listeners to get applied to the children of MaterialToolbar (like the TitleView)
-				if (view is not MaterialToolbar &&
-					(parent is AppBarLayout || parent is MauiScrollView || parent is IMauiRecyclerView))
-				{
-					return null;
-				}
-
 				if (parent is AView parentView)
 				{
-					// Check if this parent view is registered
-					// Clean up dead references while searching
-					for (int i = _registeredViews.Count - 1; i >= 0; i--)
+					if (FindRegisteredListener(parentView) is MauiWindowInsetListener listener)
 					{
-						var entry = _registeredViews[i];
-						if (!entry.View.TryGetTarget(out var registeredView))
-						{
-							_registeredViews.RemoveAt(i);
-						}
-						else if (ReferenceEquals(registeredView, parentView))
-						{
-							return entry.Listener;
-						}
+						return listener;
 					}
 				}
 
@@ -129,6 +120,60 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		internal static bool ShouldSetMauiWindowInsetListener(AView view)
+		{
+			var parent = view.Parent;
+			var isInsideRecyclerEmptyView = false;
+
+			while (parent is not null)
+			{
+				if (parent is IMauiRecyclerViewEmptyView)
+				{
+					isInsideRecyclerEmptyView = true;
+				}
+
+				// MaterialToolbar needs its own inset handling, so it is exempt from all listener-suppression branches.
+				// Skip listeners for views inside AppBarLayout/MauiScrollView, and for recycler item views
+				// unless SafeAreaEdges was explicitly set.
+				if (view is not MaterialToolbar &&
+					(parent is AppBarLayout ||
+						parent is MauiScrollView ||
+						(parent is IMauiRecyclerView && !isInsideRecyclerEmptyView && !HasExplicitSafeAreaEdges(view))))
+				{
+					return false;
+				}
+
+				parent = parent.Parent;
+			}
+
+			return true;
+		}
+
+		static MauiWindowInsetListener? FindRegisteredListener(AView parentView)
+		{
+			// Check if this parent view is registered. Clean up dead references while searching.
+			for (int i = _registeredViews.Count - 1; i >= 0; i--)
+			{
+				var entry = _registeredViews[i];
+				if (!entry.View.TryGetTarget(out var registeredView))
+				{
+					_registeredViews.RemoveAt(i);
+				}
+				else if (ReferenceEquals(registeredView, parentView))
+				{
+					return entry.Listener;
+				}
+			}
+
+			return null;
+		}
+
+		static bool HasExplicitSafeAreaEdges(AView view)
+		{
+			return view is ICrossPlatformLayoutBacking { CrossPlatformLayout: ISafeAreaView2 safeAreaView } &&
+				safeAreaView.HasExplicitSafeAreaEdges;
 		}
 
 		/// <summary>
@@ -235,20 +280,12 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// Check if AppBarLayout has meaningful content
-			bool appBarHasContent = appBarLayout?.MeasuredHeight > 0;
-			if (!appBarHasContent && appBarLayout is not null)
-			{
-				for (int i = 0; i < appBarLayout.ChildCount; i++)
-				{
-					var child = appBarLayout.GetChildAt(i);
-					if (child?.MeasuredHeight > 0)
-					{
-						appBarHasContent = true;
-						break;
-					}
-				}
-			}
+			// Check if AppBarLayout has meaningful content.
+			// When the Shell toolbar is hidden we set its height to 0, but the AppBarLayout can still
+			// retain previously applied top padding. If we key off MeasuredHeight alone, that stale
+			// padding makes the app bar look "non-empty" and we keep consuming the top inset,
+			// leaving a blank gap on cutout devices.
+			bool appBarHasContent = HasVisibleAppBarContent(appBarLayout);
 
 			// Apply padding to AppBarLayout based on content and system insets
 			if (appBarLayout is not null)
@@ -264,37 +301,78 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			// Handle bottom navigation
-			var hasBottomNav = v.FindViewById(Resource.Id.navigationlayout_bottomtabs)?.MeasuredHeight > 0;
+			var bottomTabContainer = v.FindViewById<ViewGroup>(Resource.Id.navigationlayout_bottomtabs);
+			var hasBottomNav = bottomTabContainer?.MeasuredHeight > 0;
+			var contentView = v.FindViewById(Resource.Id.navigationlayout_content);
+
 			if (hasBottomNav)
 			{
 				var bottomInset = Math.Max(systemBars?.Bottom ?? 0, displayCutout?.Bottom ?? 0);
-				v.SetPadding(0, 0, 0, bottomInset);
+
+				// Only pad the bottom of contentView to prevent content from sliding under the
+				// BottomNavigationView + system navigation bar. Left/right are intentionally
+				// excluded: landscape cutout padding on the content area is handled by
+				// SafeAreaExtensions which applies per-view overlap logic.
+				contentView?.SetPadding(0, 0, 0, bottomInset);
 			}
 			else
 			{
-				v.SetPadding(0, 0, 0, 0);
+				// Reset contentView padding when bottom navigation is removed dynamically
+				contentView?.SetPadding(0, 0, 0, 0);
 			}
 
-			// Create new insets with consumed values
+			// Consume top inset when AppBar is visible — it already pads itself, so downstream
+			// views must not receive a top inset or SafeAreaExtensions will double-apply it.
+			// Bottom inset is passed through unconsumed so BottomNavigationView can extend its
+			// background into the system navigation bar area (issue #33344).
 			var newSystemBars = Insets.Of(
 				systemBars?.Left ?? 0,
 				appBarHasContent ? 0 : systemBars?.Top ?? 0,
 				systemBars?.Right ?? 0,
-				hasBottomNav ? 0 : systemBars?.Bottom ?? 0
-			) ?? Insets.None;
+				systemBars?.Bottom ?? 0) ?? Insets.None;
 
 			var newDisplayCutout = Insets.Of(
 				displayCutout?.Left ?? 0,
 				appBarHasContent ? 0 : displayCutout?.Top ?? 0,
 				displayCutout?.Right ?? 0,
-				hasBottomNav ? 0 : displayCutout?.Bottom ?? 0
-			) ?? Insets.None;
+				displayCutout?.Bottom ?? 0) ?? Insets.None;
 
 			return new WindowInsetsCompat.Builder(insets)
 				?.SetInsets(WindowInsetsCompat.Type.SystemBars(), newSystemBars)
 				?.SetInsets(WindowInsetsCompat.Type.DisplayCutout(), newDisplayCutout)
 				?.Build() ?? insets;
+		}
+
+		static bool HasVisibleAppBarContent(AppBarLayout? appBarLayout)
+		{
+			if (appBarLayout is null || appBarLayout.Visibility == ViewStates.Gone)
+			{
+				return false;
+			}
+
+			for (int i = 0; i < appBarLayout.ChildCount; i++)
+			{
+				var child = appBarLayout.GetChildAt(i);
+				if (child is null || child.Visibility == ViewStates.Gone)
+				{
+					continue;
+				}
+
+				var childLayoutHeight = child.LayoutParameters?.Height ?? 0;
+				if (child is MaterialToolbar && childLayoutHeight == 0)
+				{
+					continue;
+				}
+
+				var childContentHeight = Math.Max(0, child.MeasuredHeight - child.PaddingTop - child.PaddingBottom);
+				if (childContentHeight > 0 || child.Height > 0 || childLayoutHeight > 0)
+				{
+					return true;
+				}
+
+			}
+
+			return false;
 		}
 
 		public void TrackView(AView view)
@@ -463,7 +541,6 @@ internal static class MauiWindowInsetListenerExtensions
 	/// <param name="context">The Android context to get the listener from</param>
 	public static bool TrySetMauiWindowInsetListener(this View view, Context context)
 	{
-		// Check if this view is contained within a registered view first
 		if (MauiWindowInsetListener.FindListenerForView(view) is MauiWindowInsetListener localListener)
 		{
 			ViewCompat.SetOnApplyWindowInsetsListener(view, localListener);
@@ -472,6 +549,37 @@ internal static class MauiWindowInsetListenerExtensions
 		}
 
 		// If no listener available, this is likely a configuration issue but not critical
+		return false;
+	}
+
+	/// <summary>
+	/// Refreshes the MauiWindowInsetListener attached to the specified view after SafeAreaEdges eligibility changes.
+	/// Unlike TrySetMauiWindowInsetListener, this finds the registered parent listener before applying
+	/// eligibility checks so it can detach the listener and reset applied safe areas when the view is
+	/// no longer eligible.
+	/// </summary>
+	/// <param name="view">The Android view to refresh the listener on</param>
+	/// <param name="context">The Android context to get the listener from</param>
+	public static bool RefreshMauiWindowInsetListener(this View view, Context context)
+	{
+		var listener = MauiWindowInsetListener.FindRegisteredListenerForView(view);
+		if (listener is null)
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(view, null);
+			ViewCompat.SetWindowInsetsAnimationCallback(view, null);
+			return false;
+		}
+
+		if (MauiWindowInsetListener.ShouldSetMauiWindowInsetListener(view))
+		{
+			ViewCompat.SetOnApplyWindowInsetsListener(view, listener);
+			ViewCompat.SetWindowInsetsAnimationCallback(view, listener);
+			return true;
+		}
+
+		ViewCompat.SetOnApplyWindowInsetsListener(view, null);
+		ViewCompat.SetWindowInsetsAnimationCallback(view, null);
+		listener.ResetAppliedSafeAreas(view);
 		return false;
 	}
 
@@ -488,7 +596,7 @@ internal static class MauiWindowInsetListenerExtensions
 		ViewCompat.SetWindowInsetsAnimationCallback(view, null);
 
 		// Reset view state - prefer local listener if available, otherwise use global
-		var listener = MauiWindowInsetListener.FindListenerForView(view);
+		var listener = MauiWindowInsetListener.FindRegisteredListenerForView(view);
 		listener?.ResetView(view);
 	}
 }

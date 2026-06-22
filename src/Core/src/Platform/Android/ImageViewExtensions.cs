@@ -1,6 +1,5 @@
 ﻿using Android.Graphics.Drawables;
 using Android.Widget;
-using Google.Android.Material.ImageView;
 
 namespace Microsoft.Maui.Platform
 {

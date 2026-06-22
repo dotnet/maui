@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, WImage>
 	{
+		private Graphics.Size _cachedImageSize;
+
 		/// <inheritdoc/>
 		protected override WImage CreatePlatformView() => new WImage();
 
@@ -25,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(WImage platformView)
 		{
 			platformView.ImageOpened -= OnImageOpened;
+			platformView.Loaded -= OnImageLoaded;
 
 			base.DisconnectHandler(platformView);
 			SourceLoader.Reset();
@@ -68,7 +71,8 @@ namespace Microsoft.Maui.Handlers
 			// unconstrained here and rely on layout constraints.
 			if (VirtualView.Aspect == Aspect.AspectFit)
 			{
-				var imageSize = GetImageSize();
+				// Use cached size to avoid timing-dependent behavior from BitmapSource properties
+				var imageSize = _cachedImageSize;
 				double w = possibleSize.Width;
 				double h = possibleSize.Height;
 
@@ -139,11 +143,46 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static void MapAspect(IImageHandler handler, IImage image)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			handler.PlatformView?.UpdateAspect(image);
+			if (handler.PlatformView is null)
+			{
+				return;
+			}
+
+			if (handler is ImageHandler imghandler)
+			{
+				var platformView = imghandler.PlatformView;
+				if (platformView.IsLoaded)
+				{
+					handler.UpdateValue(nameof(IViewHandler.ContainerView));
+				}
+				else
+				{
+					// Prevent stacking multiple Loaded handlers if MapAspect is called before view loads
+					platformView.Loaded -= imghandler.OnImageLoaded;
+					platformView.Loaded += imghandler.OnImageLoaded;
+				}
+			}
+
+			handler.PlatformView.UpdateAspect(image);
 			// Aspect changes may affect whether we cap to intrinsic size
 			if (handler is ImageHandler ih)
 				ih.UpdatePlatformMaxConstraints();
+		}
+
+		void OnImageLoaded(object sender, RoutedEventArgs e)
+		{
+			if (sender is WImage platformView)
+			{
+				platformView.Loaded -= OnImageLoaded;
+
+				// Guard against calling after handler disconnect
+				if (!this.IsConnected())
+				{
+					return;
+				}
+
+				UpdateValue(nameof(IViewHandler.ContainerView));
+			}
 		}
 
 		/// <summary>
@@ -169,9 +208,12 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
-			// Reset platform caps so we don't keep stale values between sources
+			// Reset platform caps and the size cache so we don't keep stale values between sources.
+			// Clearing the cache here ensures a failed subsequent load (where OnImageOpened never fires)
+			// does not cap GetDesiredSize to the previous image's dimensions.
 			if (handler is ImageHandler ih && ih.PlatformView is not null)
 			{
+				ih._cachedImageSize = Graphics.Size.Zero;
 				ih.PlatformView.MaxWidth = double.PositiveInfinity;
 				ih.PlatformView.MaxHeight = double.PositiveInfinity;
 			}
@@ -185,6 +227,13 @@ namespace Microsoft.Maui.Handlers
 			// handler hasn't been disconnected
 			if (this.IsConnected())
 			{
+				// Only cache when decode produced positive dimensions.
+				// A blank BitmapImage (e.g. during source transitions) fires ImageOpened
+				// with PixelWidth=0; ignoring it preserves the last-known-good size.
+				var sz = GetImageSize();
+				if (sz.Width > 0 && sz.Height > 0)
+					_cachedImageSize = sz;
+
 				UpdateValue(nameof(IImage.IsAnimationPlaying));
 				// Apply platform constraints when the decoded size is available
 				UpdatePlatformMaxConstraints();
@@ -202,7 +251,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.Aspect == Aspect.AspectFit)
 			{
+				// Use live decoded size when available; fall back to cache during source
+				// transitions so MaxWidth/MaxHeight are not reset to ∞ while a new image
+				// is still decoding (blank BitmapImage reports PixelWidth=0).
 				var sz = GetImageSize();
+				if (sz.Width <= 0 || sz.Height <= 0)
+					sz = _cachedImageSize;
 
 				// Width: cap to intrinsic only if horizontal alignment isn't Fill
 				if (VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill && sz.Width > 0)

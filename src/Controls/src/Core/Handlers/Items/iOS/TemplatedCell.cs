@@ -136,6 +136,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// We now have to apply the new bounds size to the virtual view
 				// which will automatically set the frame on the platform view too.
 				var frame = new Rect(Point.Zero, boundsSize);
+
+				// Inject per-cell safe area insets into the MauiView for CrossPlatformArrange
+				// to apply as internal padding. UICollectionView bypasses MAUI's arrange chain,
+				// so cells cannot use the standard safe area flow (#33604, #34635).
+				MauiView.ApplyCellSafeAreaOverride(this, virtualView, PlatformHandler.ToPlatform());
+
 				virtualView.Arrange(frame);
 			}
 		}
@@ -336,9 +342,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (PlatformHandler?.VirtualView is VisualElement element)
 			{
-				VisualStateManager.GoToState(element, Selected
-					? VisualStateManager.CommonStates.Selected
-					: VisualStateManager.CommonStates.Normal);
+				element.IsItemSelected = Selected;
 			}
 		}
 

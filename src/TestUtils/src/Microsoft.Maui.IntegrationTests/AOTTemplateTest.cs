@@ -34,17 +34,11 @@ public class AOTTemplateTest : BaseTemplateTests
 		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// For Android-only builds on Linux, modify the csproj to only target Android
-		// This avoids restore failures due to missing iOS/macCatalyst workloads
-		if (isAndroidPlatform && !TestEnvironment.IsMacOS && !TestEnvironment.IsWindows)
-		{
-			OnlyAndroid(projectFile);
-		}
 
 		var extendedBuildProps = isWindowsFramework
 			? PrepareNativeAotBuildPropsWindows(runtimeIdentifier)
 			: isAndroidPlatform
-				? PrepareNativeAotBuildPropsAndroid()
+				? PrepareNativeAotBuildPropsAndroid(BuildProps)
 				: PrepareNativeAotBuildProps();
 
 		// Disable code signing for Apple platforms (no signing certificate available in CI)
@@ -95,17 +89,11 @@ public class AOTTemplateTest : BaseTemplateTests
 		Assert.True(DotnetInternal.New(id, projectDir, DotNetCurrent, output: _output),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// For Android-only builds on Linux, modify the csproj to only target Android
-		// This avoids restore failures due to missing iOS/macCatalyst workloads
-		if (isAndroidPlatform && !TestEnvironment.IsMacOS && !TestEnvironment.IsWindows)
-		{
-			OnlyAndroid(projectFile);
-		}
 
 		var extendedBuildProps = isWindowsFramework
 			? PrepareNativeAotBuildPropsWindows(runtimeIdentifier)
 			: isAndroidPlatform
-				? PrepareNativeAotBuildPropsAndroid()
+				? PrepareNativeAotBuildPropsAndroid(BuildProps)
 				: PrepareNativeAotBuildProps();
 
 		// Disable code signing for Apple platforms (no signing certificate available in CI)
@@ -180,9 +168,9 @@ public class AOTTemplateTest : BaseTemplateTests
 		return extendedBuildProps;
 	}
 
-	private List<string> PrepareNativeAotBuildPropsAndroid()
+	internal static List<string> PrepareNativeAotBuildPropsAndroid(List<string> buildProps)
 	{
-		var extendedBuildProps = new List<string>(BuildProps)
+		var extendedBuildProps = new List<string>(buildProps)
 		{
 			"PublishAot=true",
 			"PublishAotUsingRuntimePack=true",

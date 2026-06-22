@@ -61,10 +61,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var platformView = PlatformView;
 
-			if (platformView != null)
+			if (this.IsAlive() &&
+				platformView.IsAlive() &&
+				platformView.Parent == this)
 			{
 				RemoveView(platformView);
 			}
+
+			// Capture the current platform view before disconnecting handlers, because
+			// DisconnectHandlers() may null out the handler's PlatformView/ContainerView.
+			View?.DisconnectHandlers();
 
 			Content = null;
 			_pixelSize = null;
@@ -77,6 +83,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_reportMeasure = new WeakReference(reportMeasure);
 			_pixelSize = size;
+		}
+
+		/// <summary>
+		/// Invalidates the cached size so the next measure pass will re-measure the content.
+		/// Called when the parent RecyclerView's size changes (e.g., after orientation change).
+		/// </summary>
+		internal void InvalidateCachedSize()
+		{
+			_pixelSize = null;
+			_previousPixelWidth = -1;
+			_previousPixelHeight = -1;
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -151,8 +168,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						_pixelSize = null;
 					}
-
-					_pixelSize = null;
 				}
 			}
 

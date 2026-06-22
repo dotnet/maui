@@ -14,6 +14,14 @@ namespace Microsoft.Maui.Platform
 {
 	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IHandleWindowInsets
 	{
+		// When alpha < 1 and HasOverlappingRendering is true, Android renders into an
+		// offscreen buffer bounded by the view's own dimensions, clipping overflowing
+		// children. Return false only when semi-transparent so Android applies alpha
+		// per-child instead, avoiding the implicit clip.
+		// When fully opaque (Alpha >= 1), preserve the base class behavior so any
+		// future or subclass override is respected rather than hardcoding true.
+		public override bool HasOverlappingRendering => Alpha >= 1.0f && base.HasOverlappingRendering;
+
 		IBorderStroke? _clip;
 		readonly Context _context;
 		bool _didSafeAreaEdgeConfigurationChange = true;
@@ -165,6 +173,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal void MarkSafeAreaEdgeConfigurationChanged()
 		{
+			_isInsetListenerSet = MauiWindowInsetListenerExtensions.RefreshMauiWindowInsetListener(this, _context);
 			_didSafeAreaEdgeConfigurationChange = true;
 			// Ensure a layout pass so that OnLayout will trigger InvalidateWindowInsets
 			RequestLayout();

@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
-			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BaseShellItem), true, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty =
@@ -57,11 +57,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
-			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
+			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="FlyoutItemIsVisible"/>.</summary>
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
-			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
+			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox, propertyChanged: OnFlyoutItemIsVisibleChanged);
 
 		public BaseShellItem()
 		{
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get => (bool)GetValue(IsVisibleProperty);
-			set => SetValue(IsVisibleProperty, value);
+			set => SetValue(IsVisibleProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Controls
 		public bool FlyoutItemIsVisible
 		{
 			get => (bool)GetValue(FlyoutItemIsVisibleProperty);
-			set => SetValue(FlyoutItemIsVisibleProperty, value);
+			set => SetValue(FlyoutItemIsVisibleProperty, BooleanBoxes.Box(value));
 		}
 
 
@@ -271,6 +271,18 @@ namespace Microsoft.Maui.Controls
 		{
 			if (me == null || me.Parent == null)
 				return;
+
+			// For Shell.NavBarIsVisibleProperty, find the shell instance for more accurate propagation
+			if (property == Shell.NavBarIsVisibleProperty)
+			{
+				var shell = me.FindParentOfType<Shell>();
+				if (shell is not null && shell.IsSet(property))
+				{
+					// Get the value from the Shell directly
+					me.SetValue(property, shell.GetValue(property));
+					return;
+				}
+			}
 
 			Propagate(property, me.Parent, me, false);
 		}

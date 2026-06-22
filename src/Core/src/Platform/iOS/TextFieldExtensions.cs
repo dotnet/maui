@@ -32,13 +32,29 @@ namespace Microsoft.Maui.Platform
 		{
 			if (entry.IsPassword && textField.IsFirstResponder)
 			{
+				var currentText = textField.Text;
 				textField.Enabled = false;
 				textField.SecureTextEntry = true;
 				textField.Enabled = entry.IsEnabled;
 				textField.BecomeFirstResponder();
+				if (!string.IsNullOrEmpty(currentText) && textField is MauiTextField mauiTextField)
+				{
+					mauiTextField.SuppressTextPropertySet(true);
+					try
+					{
+						textField.Text = string.Empty;
+						textField.InsertText(currentText);
+					}
+					finally
+					{
+						mauiTextField.SuppressTextPropertySet(false);
+					}
+				}
 			}
 			else
+			{
 				textField.SecureTextEntry = entry.IsPassword;
+			}
 #if MACCATALYST
 			textField.TextContentType = UITextContentType.OneTimeCode;
 #endif
@@ -211,47 +227,31 @@ namespace Microsoft.Maui.Platform
 		{
 			if (textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
 			{
-				UIImage defaultClearImage = clearButton.ImageForState(UIControlState.Highlighted);
-
 				if (entry.TextColor is null)
 				{
-					// Setting TintColor to null allows the system to automatically apply the appropriate color based on the current theme (light or dark mode)
+					// Release any custom image so UIKit restores its own system clear button appearance.
+					// Setting TintColor to null alone is not enough — the template image persists.
+					clearButton.SetImage(null, UIControlState.Normal);
+					clearButton.SetImage(null, UIControlState.Highlighted);
 					clearButton.TintColor = null;
 				}
 				else
 				{
-					clearButton.TintColor = entry.TextColor.ToPlatform();
+					// Use AlwaysTemplate rendering so UIKit fills the icon at full opacity with TintColor,
+					// bypassing the semi-transparent pixels baked into the system clear button icon.
+					UIImage? sourceImage = clearButton.ImageForState(UIControlState.Normal)
+						?? clearButton.ImageForState(UIControlState.Highlighted);
 
-					var tintedClearImage = GetClearButtonTintImage(defaultClearImage, entry.TextColor.ToPlatform());
-					clearButton.SetImage(tintedClearImage, UIControlState.Normal);
-					clearButton.SetImage(tintedClearImage, UIControlState.Highlighted);
+					if (sourceImage is not null)
+					{
+						UIImage templateImage = sourceImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+						clearButton.SetImage(templateImage, UIControlState.Normal);
+						clearButton.SetImage(templateImage, UIControlState.Highlighted);
+					}
+
+					clearButton.TintColor = entry.TextColor.ToPlatform();
 				}
 			}
-		}
-
-		internal static UIImage? GetClearButtonTintImage(UIImage image, UIColor color)
-		{
-			var size = image.Size;
-
-			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()
-			{
-				Opaque = false,
-				Scale = UIScreen.MainScreen.Scale,
-			});
-
-			if (renderer is null)
-			{
-				return null;
-			}
-
-			return renderer.CreateImage((context) =>
-			{
-				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
-				color.ColorWithAlpha(1.0f).SetFill();
-
-				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
-				context?.FillRect(rect, CGBlendMode.SourceIn);
-			});
 		}
 
 		internal static void AddMauiDoneAccessoryView(this UITextField textField, IViewHandler handler)

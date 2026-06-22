@@ -108,6 +108,11 @@ namespace Microsoft.Maui.Platform
 			var diffX = interceptPoint.X - _initialPoint.X;
 			var diffY = interceptPoint.Y - _initialPoint.Y;
 
+			if (diffX == 0 && diffY == 0)
+			{
+				return _isOpen && TouchInsideContent(new APointF((float)interceptPoint.X, (float)interceptPoint.Y));
+			}
+
 			SwipeDirection swipeDirection;
 
 			if (Math.Abs(diffX) > Math.Abs(diffY))
@@ -561,6 +566,12 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				AView? swipeItem = item?.ToPlatform(MauiContext);
+				// Disconnect a shared SwipeItem's handler when its Android view is already parented, so ToPlatform() creates a fresh view for the new one.
+				if (swipeItem?.Parent != null && item is IElement element)
+				{
+					element.Handler?.DisconnectHandler();
+					swipeItem = item?.ToPlatform(MauiContext);
+				}
 
 				if (swipeItem is not null)
 				{
@@ -610,6 +621,11 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var child in childs)
 			{
+				if (i >= items.Count)
+				{
+					break;
+				}
+
 				if (child.Visibility == ViewStates.Visible)
 				{
 					var item = items[i];
@@ -648,16 +664,19 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
+					// AtMost lets custom SwipeItemView content size itself; Exactly forces precise dimensions for default SwipeItems.
+					var measureMode = item is ISwipeItemView ? MeasureSpecMode.AtMost : MeasureSpecMode.Exactly;
+
 					child.Measure(
-						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.AtMost),
-						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost)
-					);
+						MeasureSpec.MakeMeasureSpec(swipeItemWidth, measureMode),
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, measureMode));
 
 					child.Layout(l, t, r, b);
 
-					i++;
 					previousWidth += swipeItemWidth;
 				}
+
+				i++;
 			}
 		}
 
@@ -722,7 +741,10 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in _swipeItems.Keys)
 			{
-				item.Handler?.DisconnectHandler();
+				if (item.Handler is not null && ReferenceEquals(item.Handler.PlatformView, _swipeItems[item]))
+				{
+					item.Handler.DisconnectHandler();
+				}
 			}
 
 			_swipeItems.Clear();
@@ -985,11 +1007,13 @@ namespace Microsoft.Maui.Platform
 
 				if (swipeItems.Mode == SwipeMode.Execute)
 				{
-					foreach (var swipeItem in swipeItems)
-					{
-						if (GetIsVisible(swipeItem))
-							ExecuteSwipeItem(swipeItem);
-					}
+					// Execute only the first visible item. In Execute mode, a swipe
+					// triggers a single action — matching WinUI behavior. Executing
+					// multiple items would cause side effects (e.g., visibility changes)
+					// that could trigger unintended additional executions. See #7580.
+					var itemToExecute = swipeItems.FirstOrDefault(GetIsVisible);
+					if (itemToExecute != null)
+						ExecuteSwipeItem(itemToExecute);
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 						ResetSwipe();

@@ -83,12 +83,11 @@ namespace Microsoft.Maui.Platform
 
 			if (paint.IsNullOrEmpty())
 			{
-				if (platformView is LayoutView)
+				if (platformView is LayoutView or ContentView)
 					platformView.BackgroundColor = null;
 				else
 					return;
 			}
-
 
 			if (paint is SolidPaint solidPaint)
 			{
@@ -1060,6 +1059,20 @@ namespace Microsoft.Maui.Platform
 		internal static void MarkAsCrossPlatformLayoutBacking(this UIView view)
 		{
 			view.Tag = NativeViewControlledByCrossPlatformLayout;
+		}
+
+		/// <summary>
+		/// Resets the transform of a view's layer to identity.
+		/// This is used when a WrapperView is created to prevent transform compounding
+		/// between the WrapperView and its child.
+		/// </summary>
+		internal static void ResetLayerTransform(this UIView? view)
+		{
+			if (view?.Layer is CALayer layer)
+			{
+				layer.Transform = CATransform3D.Identity;
+				layer.AnchorPoint = new CGPoint(0.5, 0.5);
+			}
 		}
 	}
 }
