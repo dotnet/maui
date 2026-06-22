@@ -256,15 +256,20 @@ actually grep-matched in a log file you fetched this run. Concretely:
    **data** with a single-quoted heredoc, then match it with `grep -F -f`:
 
    ```bash
-   # The single-quoted delimiter ('CI_SCAN_SIG_EOF') disables ALL shell
-   # expansion, so quotes, backticks, $(…) and $VAR inside the substring stay
-   # literal. Use ONE representative line as the body (never the delimiter token
-   # itself), so the heredoc cannot terminate early.
-   cat > /tmp/gh-aw/agent/sig.txt <<'CI_SCAN_SIG_EOF'
+   # Persist the substring as inert DATA, never as a shell argument. Use a FRESH
+   # RANDOM single-quoted delimiter generated for THIS run (>=16 random hex/alnum
+   # chars, e.g. GHAW_SIG_<random>) — single-quoting disables ALL shell expansion
+   # in the body (quotes, backticks, $(…), $VAR stay literal), and a random,
+   # unpredictable delimiter means a crafted multi-line log excerpt cannot
+   # terminate the heredoc early (collision is infeasible, not merely unlikely).
+   # Still keep the body to ONE representative line as defence-in-depth.
+   cat > /tmp/gh-aw/agent/sig.txt <<'GHAW_SIG_REPLACE_WITH_RANDOM'
    <primary error substring>
-   CI_SCAN_SIG_EOF
-   # -F = fixed string (no regex); -f = read pattern from file (no interpolation)
-   match_count=$(grep -F -f /tmp/gh-aw/agent/sig.txt -c /tmp/gh-aw/agent/failure_<SIGHASH>.log)
+   GHAW_SIG_REPLACE_WITH_RANDOM
+   # -F = fixed string (no regex); -f = read pattern from file (no interpolation).
+   # Quote the path; <SIGHASH> must be the hex/alnum fingerprint hash (no spaces
+   # or shell metacharacters).
+   match_count=$(grep -F -f /tmp/gh-aw/agent/sig.txt -c "/tmp/gh-aw/agent/failure_<SIGHASH>.log")
    ```
 3. Require `match_count >= 1`. If 0, do NOT file — the signature is
    speculative and likely a misread of the timeline; record
