@@ -94,16 +94,11 @@ Use the gathered baseline data to subtract pre-existing failures:
 
 ## Overall merge-readiness verdict
 
-After classifying each failure, synthesize one overall verdict using the
-**merge-readiness criteria** in `.github/docs/maui-ci-facts.md`:
-
-| Overall verdict | Use when |
-| --- | --- |
-| `Ready to merge` | No failures, or every distinct failure is confidently `Likely unrelated` / baseline-matched. |
-| `Not ready` | At least one distinct failure is `Likely PR-caused`. |
-| `Needs human investigation` | Mixed evidence, or required checks are pending/absent. |
-| `Insufficient data` | Not enough accessible build/test/log data to decide. |
-| `No failures found` | No failing, pending, or inconclusive checks and no extracted failures. |
+After classifying each failure, synthesize exactly one overall verdict — one of
+`Ready to merge`, `Not ready`, `Needs human investigation`, `Insufficient data`, or
+`No failures found` — by applying the **merge-readiness criteria** in
+`.github/docs/maui-ci-facts.md`. Those criteria are canonical; do not restate them here
+(this duplication is exactly what this skill is designed to avoid).
 
 Do not declare `Ready to merge` while required checks are still pending.
 
