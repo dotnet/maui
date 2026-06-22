@@ -41,24 +41,26 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HybridRootProperty, value); }
 		}
 
+		HybridWebViewInvoker? _invoker;
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public HybridWebViewInvoker Invoker
 		{
-			get => field ?? throw new InvalidOperationException($"No invoker is configured. Call {nameof(SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
-			set;
+			get => _invoker ?? throw new InvalidOperationException($"No invoker is configured. Call {nameof(SetInvokeJavaScriptTarget)} to set up JS-to-.NET method invocation.");
+			set => _invoker = value;
 		}
 
 		/// <inheritdoc/>
 		object? IHybridWebView.InvokeJavaScriptTarget
 		{
-			get => Invoker.InvokeJavaScriptTarget;
+			get => _invoker?.InvokeJavaScriptTarget;
 			set => Invoker.InvokeJavaScriptTarget = value;
 		}
 
 		/// <inheritdoc/>
 		Type? IHybridWebView.InvokeJavaScriptType
 		{
-			get => Invoker.InvokeJavaScriptType;
+			get => _invoker?.InvokeJavaScriptType;
 			set => Invoker.InvokeJavaScriptType = value;
 		}
 
