@@ -13,7 +13,6 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI.Xaml.Media;
@@ -284,11 +283,12 @@ namespace Microsoft.Maui.Platform
 			var pathGeometry = compositor.CreatePathGeometry(path);
 			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
 
-			// The clip needs to consider the content's layout slot position, using GetLayoutSlot for
-			// a synchronous arrange-time value rather than the composition ActualOffset which can
-			// lag behind and produce an incorrect offset on the first layout pass.
-			var layoutSlot = LayoutInformation.GetLayoutSlot(Content);
-			geometricClip.Offset = new Vector2(strokeThickness - (float)layoutSlot.X, strokeThickness - (float)layoutSlot.Y);
+			// Use ActualOffset (not LayoutInformation.GetLayoutSlot) because it reflects the true
+			// visual position of Content after WinUI alignment adjustments (e.g. a Stretch=None
+			// image wider than its slot is centered, shifting ActualOffset well outside the slot).
+			// The formula converts the stroke-inset boundary from ContentPanel space into Content's
+			// local space so the clip aligns correctly regardless of alignment-driven offsets.
+			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);
 
 			visual.Clip = geometricClip;
 		}
