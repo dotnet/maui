@@ -3011,6 +3011,20 @@ function Get-ReportSemanticHash {
                              "$($_.Area):$($_.Status)"
                          }) -join '|'
                      } else { '' }
+        # Nightly dogfood feed banner state. Folded in so a feed going stale (or a
+        # fresh build landing) refreshes the tracker even on an otherwise-quiet branch
+        # — the banner is the whole point of the feature and must not be frozen out by
+        # the idempotent no-op. We hash the non-drifting tier + resolved version (NOT the
+        # "N days" count) so threshold crossings and new builds flip the hash but a daily
+        # day-count tick within the same tier does not (no watcher spam). Fail-open: if the
+        # NightlyFeed helper isn't loaded, contributes '' (hash behaves as before).
+        nightlyFeed = if ($Data.ContainsKey('nightlyFeed') -and $Data['nightlyFeed'] -and
+                          (Get-Command Get-NightlyFeedTier -ErrorAction SilentlyContinue)) {
+                          $nf = $Data['nightlyFeed']
+                          $tier = Get-NightlyFeedTier -Freshness $nf -Now ([datetime]::UtcNow)
+                          $ver = [string](Get-NightlyFeedProp $nf 'version')
+                          if ($ver) { "$tier|$ver" } else { $tier }
+                      } else { '' }
     }
 
     $json = $semantic | ConvertTo-Json -Depth 5 -Compress

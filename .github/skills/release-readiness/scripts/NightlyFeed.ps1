@@ -227,6 +227,51 @@ function Resolve-NightlyDogfoodFreshness {
     return $band
 }
 
+function Get-NightlyFeedTier {
+    <#
+    .SYNOPSIS
+        Classify a nightly-feed freshness record into a stable, non-drifting tier token.
+    .DESCRIPTION
+        PURE. Returns one of:
+          'none'     — no record / no usable build (caller renders nothing)
+          'unknown'  — freshness query failed this run
+          'no-match' — feed queried but no matching build (naming changed)
+          'ok'       — newest build < AgingDays old
+          'aging'    — AgingDays <= age < StaleDays
+          'stale'    — age >= StaleDays
+
+        This is the SAME bucketing the banner renderer (Format-NightlyFeedBanner) uses, factored
+        out so the idempotency hash (Get-ReportSemanticHash) can fold the banner's *state* into the
+        tracker's semantic signature WITHOUT pulling in the drifting "N days" count. Tier flips
+        (ok->aging->stale) and new builds (version change) flip the hash and refresh the tracker;
+        a day-count tick within the same tier does not (keeps the no-op idempotency intact).
+
+        Thresholds default to the same $Script:NightlyFeed*Days constants the renderer uses — keep
+        the two in lock-step if either changes.
+    #>
+    param(
+        $Freshness,
+        [datetime]$Now,
+        [int]$AgingDays = $Script:NightlyFeedAgingDays,
+        [int]$StaleDays = $Script:NightlyFeedStaleDays
+    )
+
+    if ($null -eq $Freshness) { return 'none' }
+    if (Get-NightlyFeedProp $Freshness 'unknown') { return 'unknown' }
+    $matched = Get-NightlyFeedProp $Freshness 'matched'
+    if ($null -ne $matched -and -not $matched) { return 'no-match' }
+
+    $version = [string](Get-NightlyFeedProp $Freshness 'version')
+    $published = Get-NightlyFeedProp $Freshness 'published'
+    if ([string]::IsNullOrWhiteSpace($version) -or $null -eq $published) { return 'none' }
+
+    $age = [int][Math]::Floor((($Now.ToUniversalTime()) - ([datetime]$published).ToUniversalTime()).TotalDays)
+    if ($age -lt 0) { $age = 0 }
+    if ($age -ge $StaleDays) { return 'stale' }
+    if ($age -ge $AgingDays) { return 'aging' }
+    return 'ok'
+}
+
 function Format-NightlyFeedBanner {
     <#
     .SYNOPSIS

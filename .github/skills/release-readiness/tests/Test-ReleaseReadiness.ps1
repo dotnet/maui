@@ -3577,6 +3577,61 @@ try {
     Set-Item function:Get-NightlyFeedFreshness $nfOrigDef   # restore real helper
 }
 
+# ───── Get-NightlyFeedTier (banner-state bucketing for the idempotency hash) ─────
+Write-Host "`n[Unit] Get-NightlyFeedTier (stable banner-state bucket)" -ForegroundColor Cyan
+$tierNow = [datetime]::new(2026, 6, 22, 0, 0, 0, [System.DateTimeKind]::Utc)
+function New-NfPub([int]$daysAgo) { return $tierNow.AddDays(-$daysAgo) }
+Assert-Eq -Label "tier: null record → none"             -Expected 'none'     -Actual (Get-NightlyFeedTier -Freshness $null -Now $tierNow)
+Assert-Eq -Label "tier: unknown record → unknown"       -Expected 'unknown'  -Actual (Get-NightlyFeedTier -Freshness @{ unknown = $true } -Now $tierNow)
+Assert-Eq -Label "tier: matched=false → no-match"       -Expected 'no-match' -Actual (Get-NightlyFeedTier -Freshness @{ matched = $false } -Now $tierNow)
+Assert-Eq -Label "tier: empty version → none"           -Expected 'none'     -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = ''; published = (New-NfPub 0) } -Now $tierNow)
+Assert-Eq -Label "tier: null published → none"          -Expected 'none'     -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = $null } -Now $tierNow)
+Assert-Eq -Label "tier: age 0 → ok"                     -Expected 'ok'       -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 0) } -Now $tierNow)
+Assert-Eq -Label "tier: age 2 (< aging 3) → ok"         -Expected 'ok'       -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 2) } -Now $tierNow)
+Assert-Eq -Label "tier: age 3 (= aging) → aging"        -Expected 'aging'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 3) } -Now $tierNow)
+Assert-Eq -Label "tier: age 6 (< stale 7) → aging"      -Expected 'aging'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 6) } -Now $tierNow)
+Assert-Eq -Label "tier: age 7 (= stale) → stale"        -Expected 'stale'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 7) } -Now $tierNow)
+Assert-Eq -Label "tier: age 15 → stale"                 -Expected 'stale'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 15) } -Now $tierNow)
+
+# ───── Get-ReportSemanticHash folds in nightly-feed banner state ─────
+# Regression guard for the idempotency bug: a quiet SR tracker whose ONLY change is the
+# nightly feed going stale must still refresh (the banner is the point of the feature),
+# while a daily day-count tick within the SAME tier must NOT churn the issue.
+Write-Host "`n[Unit] Get-ReportSemanticHash × nightly-feed banner state" -ForegroundColor Cyan
+$nfV = @{ symbol = '🟡' }
+$nfBase = {
+    @{
+        metadata   = @{ srHeadSha = 'cafe12345678' }
+        ci         = @{ overall = 'green' }
+        srContents = @{ sourcePrs = @(35001, 35002) }
+        regressions = @()
+        openSrPrs   = @()
+        shipChecks  = @()
+    }
+}
+# Published dates are real-now-relative because the hash computes the tier with [datetime]::UtcNow.
+$nfNow = [datetime]::UtcNow
+$dNoFeed = & $nfBase
+$dOk = & $nfBase;     $dOk['nightlyFeed']     = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfNow }
+$dStale = & $nfBase;  $dStale['nightlyFeed']  = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfNow.AddDays(-20) }
+$dStale2 = & $nfBase; $dStale2['nightlyFeed'] = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfNow.AddDays(-9) }   # still stale, different day count, SAME version
+$dNewBuild = & $nfBase; $dNewBuild['nightlyFeed'] = @{ matched = $true; version = '10.0.90-ci.inflight.2'; published = $nfNow }            # fresh build → ok tier, NEW version
+$dUnknown = & $nfBase; $dUnknown['nightlyFeed'] = @{ unknown = $true }
+
+$hNoFeed = Get-ReportSemanticHash -Data $dNoFeed -Verdict $nfV
+$hOk     = Get-ReportSemanticHash -Data $dOk -Verdict $nfV
+$hStale  = Get-ReportSemanticHash -Data $dStale -Verdict $nfV
+$hStale2 = Get-ReportSemanticHash -Data $dStale2 -Verdict $nfV
+$hNew    = Get-ReportSemanticHash -Data $dNewBuild -Verdict $nfV
+$hUnk    = Get-ReportSemanticHash -Data $dUnknown -Verdict $nfV
+
+Assert-Eq -Label "hash: feed ok vs stale → DIFFERENT (banner refreshes on stall)" -Expected $false -Actual ($hOk -eq $hStale)
+Assert-Eq -Label "hash: stale day-count drift, same tier+version → SAME (no daily spam)" -Expected $true -Actual ($hStale -eq $hStale2)
+Assert-Eq -Label "hash: new build (version change), same ok tier → DIFFERENT" -Expected $false -Actual ($hOk -eq $hNew)
+Assert-Eq -Label "hash: feed present vs absent → DIFFERENT" -Expected $false -Actual ($hOk -eq $hNoFeed)
+Assert-Eq -Label "hash: unknown tier vs ok → DIFFERENT" -Expected $false -Actual ($hOk -eq $hUnk)
+Assert-Eq -Label "hash: nightly-feed fold is deterministic" -Expected $hStale -Actual (Get-ReportSemanticHash -Data $dStale -Verdict $nfV)
+
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
 exit $(if ($script:failed -eq 0) { 0 } else { 1 })
