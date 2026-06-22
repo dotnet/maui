@@ -89,6 +89,11 @@ Use the gathered baseline data to subtract pre-existing failures:
   platform code it exercises (check `scope.changedTestFiles`, `scope.inferredPlatformsFromFiles`).
 - When `baselineSummary` shows the most recent base build **succeeded** (baseline
   failure count 0), a matching PR failure is more likely PR-caused — note that.
+  **Exception — device-test pipelines (`maui-pr-devicetests`):** a `succeeded` base
+  build does **not** prove the baseline is clean, because XHarness exits 0 even when
+  Helix device tests fail. For those rows, follow the row's `baselineSummary.note` and
+  treat the baseline as inconclusive (cross-check the Helix aggregated endpoint per
+  `.github/docs/maui-ci-facts.md`) instead of concluding PR-caused from the green result.
 - If `baselineSummary` is empty or the base build was inaccessible, say baseline
   comparison was unavailable; do not assume a failure is pre-existing without evidence.
 

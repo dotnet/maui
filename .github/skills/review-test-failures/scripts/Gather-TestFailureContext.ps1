@@ -1006,25 +1006,33 @@ if ($BaselineBuildsPerDefinition -gt 0) {
         # an older build in the lookback window was red (it was since fixed).
         $mostRecent = $completed[0]
         if ($mostRecent.result -eq 'succeeded') {
-            # Device-test pipelines are a special case: XHarness exits 0 even when Helix
-            # device tests fail (see maui-ci-facts.md "XHarness exit-0 blind spot"), so a
-            # 'succeeded' result does NOT prove the base branch is green. Do not assert the
-            # confident "unlikely to be pre-existing" note here — hand the uncertainty to
-            # the agent, which is instructed to cross-check the Helix aggregated endpoint.
-            $isDeviceTests = $defName -like '*devicetest*'
-            $succeededNote = if ($isDeviceTests) {
-                "Most recent base-branch build for $defName reported 'succeeded', but XHarness exits 0 even when Helix device tests fail, so baseline cannot be confirmed clean from the build result alone. Cross-check the Helix aggregated endpoint before treating matching failures as PR-caused."
+            # Dedup on the inspected base build (mirrors the not-succeeded branch below) so
+            # multiple PR builds of the same pipeline definition (e.g. retried runs) don't
+            # add duplicate summary rows for the same base build.
+            $baseKey = "$($build.org)|$($build.project)|$($mostRecent.id)"
+            if (-not $baselineInspected.ContainsKey($baseKey)) {
+                $baselineInspected[$baseKey] = $true
+
+                # Device-test pipelines are a special case: XHarness exits 0 even when Helix
+                # device tests fail (see maui-ci-facts.md "XHarness exit-0 blind spot"), so a
+                # 'succeeded' result does NOT prove the base branch is green. Do not assert the
+                # confident "unlikely to be pre-existing" note here — hand the uncertainty to
+                # the agent, which is instructed to cross-check the Helix aggregated endpoint.
+                $isDeviceTests = $defName -like '*devicetest*'
+                $succeededNote = if ($isDeviceTests) {
+                    "Most recent base-branch build for $defName reported 'succeeded', but XHarness exits 0 even when Helix device tests fail, so baseline cannot be confirmed clean from the build result alone. Cross-check the Helix aggregated endpoint if reachable; if base-branch Helix data is unavailable, treat the baseline as inconclusive rather than concluding matching failures are PR-caused."
+                }
+                else {
+                    "Most recent base-branch build for $defName succeeded; matching failures are unlikely to be pre-existing."
+                }
+                $baselineSummary.Add([ordered]@{
+                    definitionName = $defName
+                    inspectedBuildId = $mostRecent.id
+                    baseBuildResult = $mostRecent.result
+                    baselineFailureCount = 0
+                    note = $succeededNote
+                })
             }
-            else {
-                "Most recent base-branch build for $defName succeeded; matching failures are unlikely to be pre-existing."
-            }
-            $baselineSummary.Add([ordered]@{
-                definitionName = $defName
-                inspectedBuildId = $mostRecent.id
-                baseBuildResult = $mostRecent.result
-                baselineFailureCount = 0
-                note = $succeededNote
-            })
             continue
         }
 
