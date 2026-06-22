@@ -194,14 +194,19 @@ function Invoke-Git([string]$Cmd) {
     return $out
 }
 
-function Invoke-Gh([string[]]$GhArgs) {
+function Invoke-Gh([string[]]$GhArgs, [switch]$Quiet) {
+    # -Quiet suppresses the non-zero-exit warning for callers that handle a
+    # $null return themselves and don't want a raw `gh ... exited` line leaking
+    # into $Script:Warnings (which is rendered into the tracker issue body).
     $errFile = [System.IO.Path]::GetTempFileName()
     try {
         $out = & gh @GhArgs 2>$errFile
         $exitCode = $LASTEXITCODE
         if ($exitCode -ne 0) {
-            $err = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
-            Write-Warn "gh $($GhArgs -join ' ') exited $exitCode : $err"
+            if (-not $Quiet) {
+                $err = Get-Content $errFile -Raw -ErrorAction SilentlyContinue
+                Write-Warn "gh $($GhArgs -join ' ') exited $exitCode : $err"
+            }
             return $null
         }
         return $out
@@ -1159,12 +1164,13 @@ function Get-CandidatePrChecks {
     # Scan open PRs targeting main (the Candidate PR is opened on main, not
     # on the SR branch, since the SR branch may not exist yet in candidate
     # mode). Cheap: one gh call returning up to 100 open PRs on main.
-    # Include authorAssociation in the json projection so we can gate on
-    # OWNER/MEMBER/COLLABORATOR — without this, ANY open PR with
-    # "Candidate" in its title would spoof the cut PR.
+    # `gh pr list --json` does NOT expose authorAssociation (it's not a valid
+    # list projection field). The maintainer spoof-gate below fetches
+    # author_association per title-matched candidate via the REST API instead.
+    # Keep this projection limited to valid `gh pr list` fields.
     $raw = Invoke-Gh @('pr', 'list', '--repo', $Ctx.repo, '--state', 'open',
                        '--base', $Ctx.mainBranch, '--limit', '100',
-                       '--json', 'number,title,author,authorAssociation,updatedAt,url')
+                       '--json', 'number,title,author,updatedAt,url')
     if ($null -eq $raw) {
         # gh failed — distinguish from "no Candidate PR found" so the
         # verdict doesn't silently READY on tool failure.
@@ -1180,22 +1186,52 @@ function Get-CandidatePrChecks {
     $titleMatches = @($mainPrs | Where-Object { $_.title -match '(?i)\bcandidate\b' })
 
     # Author gating: only PRs from a maintainer count. Outside contributors
-    # never open SR-cut PRs by convention. GraphQL returns authorAssociation
-    # as the enum 'OWNER' | 'MEMBER' | 'COLLABORATOR' | 'CONTRIBUTOR' | etc.
+    # never open SR-cut PRs by convention. `gh pr list` can't return the
+    # association, so fetch it per title-matched candidate from the REST API
+    # (cheap: titleMatches is almost always 0-1, usually 0 in candidate mode).
+    # The REST field is 'author_association' (snake_case) — enum
+    # OWNER|MEMBER|COLLABORATOR|CONTRIBUTOR|... Fail closed: an unreadable
+    # association excludes the PR, so a missing signal can't let a
+    # 'Candidate'-titled PR slip through the spoof gate. Distinguish a
+    # *confirmed* non-maintainer (a real spoofer) from an *unverifiable* one
+    # (transient gh/REST failure) so a legitimate maintainer Candidate PR isn't
+    # mislabeled as a spoofer during an actual cut. Use -Quiet so a transient
+    # lookup miss doesn't embed a raw `gh ... exited` warning in the tracker
+    # body — the structured WATCH note below carries that signal instead.
     $maintainerAssociations = @('OWNER', 'MEMBER', 'COLLABORATOR')
-    $candidates = @($titleMatches | Where-Object {
-        $assoc = if ($_.PSObject.Properties['authorAssociation']) { $_.authorAssociation } else { $null }
-        $assoc -and ($maintainerAssociations -contains $assoc)
-    })
-    $rejectedBySpoofGate = $titleMatches.Count - $candidates.Count
+    $candidates = @()
+    $spoofers = 0
+    $unverifiable = 0
+    foreach ($pr in $titleMatches) {
+        $assocRaw = Invoke-Gh @('api', "repos/$($Ctx.repo)/pulls/$($pr.number)",
+                                '--jq', '.author_association') -Quiet
+        $assoc = if ($assocRaw) { "$assocRaw".Trim() } else { $null }
+        if (-not $assoc) {
+            $unverifiable++
+        } elseif ($maintainerAssociations -contains $assoc) {
+            $candidates += $pr
+        } else {
+            $spoofers++
+        }
+    }
 
     if ($candidates.Count -eq 0) {
-        $rejectNote = if ($rejectedBySpoofGate -gt 0) {
-            " ($rejectedBySpoofGate non-maintainer PR(s) titled 'Candidate' were excluded as not real cut PRs)"
-        } else { '' }
+        $excludeNotes = @()
+        if ($spoofers -gt 0) {
+            $excludeNotes += "$spoofers non-maintainer PR(s) titled 'Candidate' were excluded as not real cut PRs"
+        }
+        if ($unverifiable -gt 0) {
+            $excludeNotes += "$unverifiable 'Candidate'-titled PR(s) could not have their author association verified (``gh`` REST lookup failed) and were excluded fail-closed — rerun to re-check"
+        }
+        $rejectNote = if ($excludeNotes.Count -gt 0) { " ($($excludeNotes -join '; '))" } else { '' }
+        $nextAction = if ($unverifiable -gt 0) {
+            "Verify ``gh auth status`` and rerun to re-check author association. When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR."
+        } else {
+            "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR."
+        }
         return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
             -Details "No open PR matching ``*Candidate*`` from a maintainer (OWNER/MEMBER/COLLABORATOR) found on ``$($Ctx.mainBranch)``$rejectNote. The Candidate PR is the mechanism that promotes a specific main commit as the SR cut point." `
-            -NextAction "When ready to cut, open a Candidate PR against ``$($Ctx.mainBranch)`` selecting the target main commit for the next SR.")
+            -NextAction $nextAction)
     }
 
     # Build a compact detail string listing all open candidate PRs (almost
@@ -1205,9 +1241,24 @@ function Get-CandidatePrChecks {
         "[#$($_.number)]($repoUrl/pull/$($_.number)) — $titleShort"
     }) -join '; '
 
+    # Even on the accepted path, surface any title-matches that were excluded
+    # (a confirmed spoofer or an unverifiable lookup) so a transient REST blip on
+    # a *second* Candidate-titled PR isn't silently dropped from the captain's view.
+    $excludedSuffix = ''
+    if ($spoofers -gt 0 -or $unverifiable -gt 0) {
+        $parts = @()
+        if ($spoofers -gt 0) { $parts += "$spoofers non-maintainer" }
+        if ($unverifiable -gt 0) { $parts += "$unverifiable unverifiable (``gh`` REST lookup failed — rerun to re-check)" }
+        $excludedSuffix = " Also excluded $($parts -join ' and ') ``*Candidate*``-titled PR(s)."
+    }
+    $acceptNextAction = if ($unverifiable -gt 0) {
+        "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit. Also verify ``gh auth status`` and rerun to re-check the unverifiable Candidate-titled PR(s)."
+    } else {
+        "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit."
+    }
     return ,@(New-ReadinessCheck -Area $area -Status 'WATCH' `
-        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR promotes a specific main commit as the SR cut point — it must be merged (and the SR branch cut from it) before the SR cycle starts." `
-        -NextAction "Review and merge the Candidate PR when ready; the SR cut follows from its merge commit.")
+        -Details "$($candidates.Count) open Candidate PR(s) on ``$($Ctx.mainBranch)``: $links. This PR promotes a specific main commit as the SR cut point — it must be merged (and the SR branch cut from it) before the SR cycle starts.$excludedSuffix" `
+        -NextAction $acceptNextAction)
 }
 
 # endregion
@@ -1713,6 +1764,18 @@ function Get-IssueTimelinePrs {
         # `pull_request` member only exists on issues that are actually PRs
         if (-not $iss.PSObject.Properties['pull_request']) { continue }
         if (-not $iss.pull_request) { continue }
+        # Cross-referenced PRs can live in OTHER repositories (forks, or wholly
+        # unrelated projects whose own PRs happened to reference this issue).
+        # Only same-repo PRs are real fix candidates. A foreign PR number looked
+        # up against $Repo either 404s (low numbers below the repo's PR range —
+        # surfacing a `gh pr view` warning in the tracker) or, worse, silently
+        # matches an unrelated $Repo PR that happens to share the number. Filter
+        # to $Repo. The timeline API populates `repository.full_name` for both
+        # same-repo and cross-repo references, so this is reliable.
+        if (-not $iss.PSObject.Properties['repository']) { continue }
+        $issRepo = $iss.repository
+        if (-not $issRepo -or -not $issRepo.PSObject.Properties['full_name']) { continue }
+        if ($issRepo.full_name -ne $Repo) { continue }
         if (-not $iss.PSObject.Properties['number']) { continue }
         $prs += [int]$iss.number
     }
@@ -2261,6 +2324,67 @@ function Get-OpenSrPrs {
     return @($raw | ConvertFrom-Json -ErrorAction SilentlyContinue)
 }
 
+function Test-IsP0Pr {
+    <#
+    .SYNOPSIS
+        True when a PR object carries the release-blocking 'p/0' label.
+    .DESCRIPTION
+        Ported verbatim from Get-PreviewReadiness.ps1 so the SR lane honors
+        p/0-labelled PRs as blockers exactly like the Preview lane. A p/0 label
+        deliberately placed on a release-targeting PR is an explicit "must ship"
+        signal, so it must surface as a blocker instead of being buried in the
+        generic open-PR list. StrictMode-safe: a PR with a missing or null
+        `labels` property yields an empty array (-> $false) instead of throwing.
+        Accepts both PSCustomObject (the production `gh ... --json` shape) and
+        IDictionary/hashtable (the shape test mocks commonly use).
+    #>
+    param($PR)
+
+    if (-not $PR) { return $false }
+    $labels = if ($PR -is [System.Collections.IDictionary]) {
+        if ($PR.Contains('labels')) { $PR['labels'] } else { $null }
+    } elseif ($PR.PSObject.Properties['labels']) {
+        $PR.labels
+    } else {
+        $null
+    }
+    if (-not $labels) { return $false }
+    return (@($labels | ForEach-Object { $_.name }) -contains 'p/0')
+}
+
+function Get-P0PrChecks {
+    <#
+    .SYNOPSIS
+        Builds a single readiness-check record reporting whether any open PR
+        targeting the SR branch carries the release-blocking 'p/0' label.
+    .DESCRIPTION
+        Mirrors the Preview lane's p/0 PR check. A BLOCKED result is auto-hoisted
+        into the top-of-issue "🔴 Blocking" table and escalates the verdict to
+        Tier 1 (Not Ready) via the shared ship-check machinery — no verdict or
+        renderer changes are needed. StrictMode-safe: guards null/empty input.
+    .OUTPUTS
+        Array with exactly one check record (see New-ReadinessCheck).
+    #>
+    param($OpenSrPrs, [string]$SrBranch)
+
+    $prs = @($OpenSrPrs)
+    $p0 = @($prs | Where-Object { Test-IsP0Pr $_ })
+
+    if ($p0.Count -gt 0) {
+        $nums = ($p0 | ForEach-Object { "#$($_.number)" }) -join ', '
+        return @(New-ReadinessCheck `
+            -Area 'P/0 release-branch PRs' `
+            -Status 'BLOCKED' `
+            -Details "$($p0.Count) open P/0-labelled PR(s) target ``$SrBranch``: $nums." `
+            -NextAction 'Land or de-prioritize each P/0 PR before shipping.')
+    }
+    return @(New-ReadinessCheck `
+        -Area 'P/0 release-branch PRs' `
+        -Status 'READY' `
+        -Details 'No open P/0-labelled PRs target this SR branch.' `
+        -NextAction 'Continue monitoring.')
+}
+
 function Get-OpenIssuesByLabel {
     <#
     .SYNOPSIS
@@ -2690,6 +2814,55 @@ function ConvertTo-LinkedPr {
     return "[#$PrNumber]($RepoUrl/pull/$PrNumber)"
 }
 
+function Format-MarkdownTableCell {
+    <#
+    .SYNOPSIS
+        Sanitize an arbitrary (often upstream-controlled) string for safe use inside a
+        single Markdown table cell. Also used for the candidate-PR bulleted list, where
+        the newline collapse matters and `\|` renders as `|`.
+    .DESCRIPTION
+        Three hazards are neutralized so a hostile/malformed issue or PR title cannot
+        corrupt the rendered body:
+          1. Embedded CR/LF runs are collapsed to a single space, so the value cannot
+             split the row across physical lines (observed live: ci-scan issue #35957,
+             whose title contained a literal newline).
+          2. Each pipe is escaped to `\|`, AND any run of backslashes immediately
+             preceding that pipe is doubled FIRST. This ordering is load-bearing:
+             GitHub-issue/PR titles may legally contain a literal `\|` (backslash
+             immediately followed by a pipe). Escaping only the pipe would turn that
+             into `\\|`, which GFM renders as a literal `\` followed by an ACTIVE
+             column delimiter `|` (the classic "escape-the-escaper" table breakout).
+             Doubling the preceding backslash run first makes `\|` -> `\\\|`, which
+             renders as a literal `\|` and cannot open a new column. The doubling is
+             SCOPED to pipe-adjacent backslash runs (via the `(\\*)\|` match) rather
+             than every backslash in the string, so a title's OTHER backslash escapes
+             are preserved verbatim — e.g. an author-escaped `\[link\](url)` or `\*not
+             emphasis\*` is NOT de-escaped into active Markdown. Titles with no pipe-
+             adjacent backslash (the common case) are unaffected: `a | b` -> `a \| b`.
+          3. `<` / `>` are escaped to `&lt;` / `&gt;`, so a title cannot inject raw HTML
+             (e.g. an `<!-- ... -->` comment) into the body. This matches the Preview
+             engine's Format-MarkdownCell, has zero visual cost (`&lt;T&gt;` renders as
+             `<T>`, preserving titles like `List<T>`), and is defense-in-depth: even
+             though SR is structurally hash-freeze-immune (it emits its own semantic hash
+             at the TOP of the body, so an injected lower `<!-- ...hash... -->` can never
+             win the workflow's `head -n1` extraction) and its human-notes markers are
+             matched FULL-LINE-ANCHORED (a forged marker only fires if it lands alone on a
+             physical line, which hazard 1 already prevents), escaping `<>` keeps SR and
+             Preview consistent and removes any reliance on those backend invariants.
+        Every SR markdown cell that embeds upstream-controlled text routes through this
+        single helper: the ci-scan rows, the Open-PRs / regression / Blocking / Cleanup /
+        ship-readiness-checks / Open-Fix-PRs tables, and the candidate-PR list.
+    #>
+    param([string]$Value)
+    if ([string]::IsNullOrEmpty($Value)) { return '' }
+    $v = $Value -replace '[\r\n]+', ' '
+    # Escape each pipe AND double only the backslash run immediately before it, so a
+    # pre-existing `\|` cannot survive as `\\|` (literal `\` + active delimiter). Non-
+    # pipe backslash escapes elsewhere in the title are left intact.
+    $v = [regex]::Replace($v, '(\\*)\|', { param($m) ($m.Groups[1].Value * 2) + '\|' })
+    return ($v -replace '<', '&lt;' -replace '>', '&gt;').Trim()
+}
+
 function Format-CiScanIssueRows {
     <#
     .SYNOPSIS
@@ -2718,7 +2891,10 @@ function Format-CiScanIssueRows {
             }
         }
         $issLink = "[#$($iss.number)]($RepoUrl/issues/$($iss.number))"
-        $title = ($iss.title -replace '\|', '\|').Trim()
+        # Sanitize the upstream ci-scan title for a single Markdown table cell:
+        # collapse embedded CR/LF (observed: #35957) and escape pipes. See
+        # Format-MarkdownTableCell for the full rationale (and why SR omits `<>`).
+        $title = Format-MarkdownTableCell $iss.title
         [void]$sb.AppendLine("| $marker$issLink | $title | $ageDisplay |")
     }
     if ($Issues.Count -gt $MaxRows) {
@@ -2981,9 +3157,9 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
         foreach ($b in $blockingItems) {
-            $area = ($b.area -replace '\|', '\|').Trim()
-            $details = ($b.details -replace '\|', '\|').Trim()
-            $action = ($b.action -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $b.area
+            $details = Format-MarkdownTableCell $b.details
+            $action = Format-MarkdownTableCell $b.action
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3018,9 +3194,9 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
         foreach ($c in $cleanupItems) {
-            $area = ($c.area -replace '\|', '\|').Trim()
-            $details = ($c.details -replace '\|', '\|').Trim()
-            $action = ($c.action -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $c.area
+            $details = Format-MarkdownTableCell $c.details
+            $action = Format-MarkdownTableCell $c.action
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3121,11 +3297,11 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine('| Fix PR | Base | Regression issue | Status | Next action |')
             [void]$sb.AppendLine('|---|---|---|---|---|')
             foreach ($row in $openFixRows) {
-                $prCell    = ($row.prCell     -replace '\|', '\|').Trim()
-                $baseCell  = ($row.baseCell   -replace '\|', '\|').Trim()
-                $issCell   = ($row.issCell    -replace '\|', '\|').Trim()
-                $statCell  = ($row.statusCell -replace '\|', '\|').Trim()
-                $actCell   = ($row.actionCell -replace '\|', '\|').Trim()
+                $prCell    = Format-MarkdownTableCell $row.prCell
+                $baseCell  = Format-MarkdownTableCell $row.baseCell
+                $issCell   = Format-MarkdownTableCell $row.issCell
+                $statCell  = Format-MarkdownTableCell $row.statusCell
+                $actCell   = Format-MarkdownTableCell $row.actionCell
                 [void]$sb.AppendLine("| $prCell | $baseCell | $issCell | $statCell | $actCell |")
             }
             [void]$sb.AppendLine()
@@ -3146,9 +3322,9 @@ function Format-MarkdownReport {
                 'CLEANUP' { '🧹 CLEANUP' }
                 default   { "⚪ $($sc.Status)" }
             }
-            $area = ($sc.Area -replace '\|', '\|').Trim()
-            $details = ($sc.Details -replace '\|', '\|').Trim()
-            $action = ($sc.NextAction -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $sc.Area
+            $details = Format-MarkdownTableCell $sc.Details
+            $action = Format-MarkdownTableCell $sc.NextAction
             [void]$sb.AppendLine("| $area | $statusEmoji | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3244,6 +3420,12 @@ function Format-MarkdownReport {
                 foreach ($cp in $candidatePrs) {
                     $cpLink = ConvertTo-LinkedPr -PrNumber $cp.number -RepoUrl $RepoUrl
                     $cpTitle = if ($cp.title.Length -gt 80) { $cp.title.Substring(0, 80) + '...' } else { $cp.title }
+                    # Collapse newlines (and escape pipes) even though this is a list, not a
+                    # table: an upstream title with an embedded newline could otherwise push
+                    # injected content (e.g. a forged `<!-- release-readiness:human-notes -->`
+                    # marker) onto its own physical line. Markdown renders `\|` as `|` in a
+                    # list, so escaping is harmless here.
+                    $cpTitle = Format-MarkdownTableCell $cpTitle
                     [void]$sb.AppendLine("- $cpLink — $cpTitle (by $(Format-GitHubHandle $cp.author.login), updated $($cp.updatedAt))")
                 }
                 [void]$sb.AppendLine()
@@ -3257,6 +3439,7 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine('|---|---|---|---|---|---|')
             foreach ($pr in $Data['openSrPrs']) {
                 $title = if ($pr.title.Length -gt 60) { $pr.title.Substring(0, 60) + '...' } else { $pr.title }
+                $title = Format-MarkdownTableCell $title
                 $draft = if ($pr.isDraft) { '✏️' } else { '' }
                 $rev = if ($pr.reviewDecision) { $pr.reviewDecision } else { '—' }
                 $prLink = ConvertTo-LinkedPr -PrNumber $pr.number -RepoUrl $RepoUrl
@@ -3310,6 +3493,7 @@ function Format-MarkdownReport {
                 # Stable sort: by issue number ascending
                 foreach ($it in ($items | Sort-Object issue)) {
                     $title = if ($it.title.Length -gt 50) { $it.title.Substring(0, 50) + '...' } else { $it.title }
+                    $title = Format-MarkdownTableCell $title
                     $prList = @($it.candidateFixPrs | ForEach-Object { ConvertTo-LinkedPr -PrNumber $_.number -RepoUrl $RepoUrl }) -join ', '
                     if (-not $prList) { $prList = '—' }
                     $issueLink = if ($RepoUrl) { "[#$($it.issue)]($RepoUrl/issues/$($it.issue))" } else { "#$($it.issue)" }
@@ -3458,6 +3642,20 @@ function Invoke-Main {
     # questions as blocking items at the top of the report.
     if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
         $data['shipChecks'] = Get-ReleaseShipChecks -Ctx $ctx
+    }
+
+    # P/0-labelled open PRs targeting the SR branch are release blockers (SR-lane
+    # parity with the Preview lane). Reuse the already-fetched open-PR list — only
+    # the 'all'/'open-prs' phases populate it — so we avoid an extra `gh` call. A
+    # BLOCKED result is auto-hoisted into the "🔴 Blocking" summary and escalates
+    # the verdict to Not Ready via the shared ship-check machinery.
+    if ($Phase -in 'all', 'commits', 'regressions', 'open-prs') {
+        if ($data.ContainsKey('openSrPrs')) {
+            if (-not $data.ContainsKey('shipChecks') -or -not $data['shipChecks']) {
+                $data['shipChecks'] = @()
+            }
+            $data['shipChecks'] = @($data['shipChecks']) + @(Get-P0PrChecks -OpenSrPrs $data['openSrPrs'] -SrBranch $ctx.srBranch)
+        }
     }
 
     # CI scanner + KBE issue signals — merged into shipChecks so they appear in the
