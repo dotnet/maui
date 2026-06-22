@@ -14,10 +14,10 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | --- | --- | --- | --- |
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
-| `/review rerun` | Repository users with write, maintain, or admin access | Requests a fresh full review after comments, commits, or CI context changed. It uses the same review pipeline as `/review`. | Adds or replaces a review session in the `AI Summary` comment. |
+| `/review rerun` | Repository users with write, maintain, or admin access; or non-first-time PR authors on their own PR | Requests a fresh full review after comments, commits, or CI context changed. Applies the `s/agent-ready-for-rerun` label; the hourly scanner then triggers the review pipeline. | Adds or replaces a review session in the `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Adds or updates a `Test Failure Review` comment. |
 
-Community contributors cannot directly trigger these commands unless they have repository write access. If you are a community contributor, ask a maintainer to run the relevant command for your PR.
+Community contributors can trigger `/review rerun` on their own PR after their first contribution. For `/review` and `/review tests`, only repository users with write access can trigger these commands. If you are a first-time contributor, ask a maintainer to run the relevant command for your PR.
 
 ## Choosing the right command
 
@@ -97,20 +97,21 @@ The PR review script is `.github/scripts/Review-PR.ps1`. It orchestrates the cor
 
 1. branch setup and PR merge for review;
 2. UI category detection;
-3. local/in-process UI test discovery and initial results;
-4. regression cross-reference;
-5. gate verification;
-6. candidate review and fix exploration;
-7. AI summary posting;
-8. review labels.
+3. regression cross-reference;
+4. gate verification;
+5. candidate review and fix exploration;
+6. AI summary posting;
+7. review labels.
 
-The generated PR comment is a single session-based `AI Summary` comment. New runs add or replace a session keyed by the reviewed commit, so readers can compare the latest run with older review sessions.
+The generated PR comment is a single session-based `AI Summary` comment. New runs replace the review and hide older sessions, keyed by the reviewed commit.
 
 ## `/review rerun`: fresh full review
 
 Comment `/review rerun` when you want a new full review session after the PR changed.
 
-Operationally, this goes through the same `/review` trigger and review pipeline. The `rerun` token is used as an intent signal for humans and the AI summary UX: it tells readers that the command was meant to refresh the review after new information became available.
+Operationally, `/review rerun` applies the `s/agent-ready-for-rerun` label to your PR. The hourly `rerun-review-scanner` workflow checks for eligible PRs with this label and triggers the review pipeline. This means your review may be delayed up to ~1 hour, or may not run if the PR is ineligible.
+
+If you need an immediate review, use `/review` instead (write access required).
 
 ### Eligibility requirements
 
@@ -243,7 +244,7 @@ The full `/review` and `/review rerun` pipeline posts an `AI Summary` comment. I
 - fix/candidate analysis;
 - final recommendation.
 
-The latest session is expanded by default. Older sessions are retained for comparison.
+The latest session is expanded by default. Older sessions are minimized and hidden as outdated.
 
 ### Test Failure Review
 
@@ -252,10 +253,10 @@ The latest session is expanded by default. Older sessions are retained for compa
 The top-level title is always:
 
 ```markdown
-## Test Failure Review
+## Tests Failure Analysis
 ```
 
-The verdict details live in badges and in the expanded review session.
+The verdict details and "Test Failure Review" label live in badges and in the expanded review session.
 
 ## Recommended workflow for maintainers
 
