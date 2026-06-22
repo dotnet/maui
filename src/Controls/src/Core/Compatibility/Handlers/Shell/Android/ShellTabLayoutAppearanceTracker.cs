@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				ShellRenderer.DefaultBackgroundColor,
 				ShellRenderer.DefaultTitleColor,
 				ShellRenderer.DefaultUnselectedColor);
-			AndroidSystemChrome.UpdateTopChrome(tabLayout, null, ShellRenderer.DefaultTitleColor);
+			AndroidSystemChrome.UpdateTopChrome(tabLayout, null);
 		}
 
 		public virtual void SetAppearance(TabLayout tabLayout, ShellAppearance appearance)
@@ -45,8 +45,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			tabLayout.SetSelectedTabIndicatorColor(foreground.ToPlatform(ShellRenderer.DefaultForegroundColor));
 			AndroidSystemChrome.UpdateTopChrome(
 				tabLayout,
-				background is null ? null : new SolidColorBrush(background),
-				title ?? foreground);
+				background is null ? null : new SolidColorBrush(background));
 		}
 
 		#region IDisposable

@@ -59,9 +59,7 @@ namespace Microsoft.Maui
 			bool updateStatusBar,
 			bool updateNavigationBar,
 			Color? statusBarBackgroundColor = null,
-			Color? statusBarForegroundColor = null,
-			Color? navigationBarBackgroundColor = null,
-			Color? navigationBarForegroundColor = null)
+			Color? navigationBarBackgroundColor = null)
 		{
 			if (window is null)
 			{

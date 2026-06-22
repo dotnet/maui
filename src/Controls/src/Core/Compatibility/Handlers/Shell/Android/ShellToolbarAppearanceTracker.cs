@@ -57,8 +57,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
 			AndroidSystemChrome.UpdateTopChrome(
 				toolbar,
-				background is null ? null : shellToolbar.BarBackground,
-				title ?? foreground);
+				background is null ? null : shellToolbar.BarBackground);
 		}
 
 		[Obsolete("Use SetColors(AToolbar, IShellToolbarTracker, Color, Brush, Color) instead.")]

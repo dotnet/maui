@@ -363,7 +363,6 @@ namespace Microsoft.Maui.Controls.Platform
 						updateStatusBar: true,
 						updateNavigationBar: true,
 						statusBarBackground: GetNavigationPageBarBackground(navigationPage),
-						statusBarForeground: navigationPage.BarTextColor,
 						navigationBarBackground: modalBackground);
 					return;
 				}

@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static void UpdateSystemChrome(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			AndroidSystemChrome.UpdateTopChrome(nativeToolbar, toolbar.BarBackground, toolbar.BarTextColor ?? toolbar.IconColor);
+			AndroidSystemChrome.UpdateTopChrome(nativeToolbar, toolbar.BarBackground);
 		}
 
 		class ToolbarTitleIconImageView : AppCompatImageView
