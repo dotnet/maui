@@ -672,6 +672,30 @@ namespace Microsoft.Maui.DeviceTests
 			await ScrollHelper(async () => await ScrollToNext(entry, editor), entry, editor);
 		}
 
+		[Fact]
+		public async Task CursorPositionPreservedDuringInsertTextWithTextTransformUppercase()
+		{
+			var entry = new EntryStub();
+
+			await AttachAndRun(entry, (handler) =>
+			{
+				var textField = GetNativeEntry(handler);
+
+				textField.BecomeFirstResponder();
+
+				foreach (var c in "hello")
+				{
+					textField.InsertText(c.ToString());
+				}
+
+				UpdateCursorStartPosition(handler, 2);
+				Assert.Equal(2, GetCursorStartPosition(handler));
+
+				textField.InsertText("x");
+				Assert.Equal(3, GetCursorStartPosition(handler));
+			});
+		}
+
 		async Task ScrollHelper(Func<Task> func, params StubBase[] views)
 		{
 			EnsureHandlerCreated(builder =>
