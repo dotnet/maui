@@ -29,7 +29,7 @@ public partial class HybridWebViewTests_SetInvokeJavaScriptTarget : HybridWebVie
 			await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
 
 			// Run some JavaScript to see if it got the expected result
-			var result = await hybridWebView.EvaluateJavaScriptAsync("JSON.parse(GetLastScriptResult())");
+			var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
 			Assert.Equal(expectedReturnValue, result);
 			Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
 		});
