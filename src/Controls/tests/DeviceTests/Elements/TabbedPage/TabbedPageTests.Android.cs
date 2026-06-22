@@ -17,6 +17,7 @@ using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -257,6 +258,41 @@ namespace Microsoft.Maui.DeviceTests
 
 				tabbedPage.BarBackgroundColor = secondColor;
 				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact]
+		[Description("Top TabbedPage BarBackground should restore the native AppBar drawable when changing from gradient to solid color")]
+		public async Task TopTabbedPageBarBackgroundRestoresNativeDrawableWhenChangingFromGradientToSolid()
+		{
+			SetupBuilder();
+
+			var solidColor = Colors.Blue;
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = new LinearGradientBrush
+			{
+				StartPoint = new Point(0, 0),
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = Colors.Orange, Offset = 0 },
+					new GradientStop { Color = Colors.Purple, Offset = 1 },
+				}
+			};
+			tabbedPage.BarTextColor = Colors.Black;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => appBar.Background is GradientStrokeDrawable);
+
+				tabbedPage.BarBackground = new SolidColorBrush(solidColor);
+
+				await AssertEventually(() =>
+					appBar.Background is not GradientStrokeDrawable &&
+					GetAppBarBackgroundColor(appBar) == solidColor.ToPlatform().ToArgb());
 			});
 		}
 

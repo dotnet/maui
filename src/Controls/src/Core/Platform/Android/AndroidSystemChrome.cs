@@ -128,11 +128,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (background is SolidColorBrush { Color: not null } solidColorBrush)
 			{
-				if (appBarLayout.Background is null)
-				{
-					appBarLayout.Background = originalBackground.CreateDrawable() ?? new ColorDrawable(AGraphics.Color.Transparent);
-				}
-
+				appBarLayout.Background = originalBackground.CreateDrawable() ?? new ColorDrawable(AGraphics.Color.Transparent);
 				ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
 				ViewCompat.SetBackgroundTintList(appBarLayout, ColorStateList.ValueOf(solidColorBrush.Color.ToPlatform()));
 				return;
