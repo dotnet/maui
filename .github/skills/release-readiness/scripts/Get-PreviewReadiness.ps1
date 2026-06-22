@@ -124,6 +124,19 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+# Shared nightly-feed freshness helpers (Get-NightlyFeedFreshness / Format-NightlyFeedBanner).
+# Defensive load: the banner is auxiliary signal, not part of the verdict, so a missing
+# helper degrades to "no banner" rather than crashing the unattended preview tracker job.
+# Loaded above the dot-source guard so the pure renderer is reachable from the test harness.
+$Script:NightlyFeedHelperLoaded = $false
+$nightlyFeedHelperPath = Join-Path $PSScriptRoot 'NightlyFeed.ps1'
+if (Test-Path $nightlyFeedHelperPath) {
+    . $nightlyFeedHelperPath
+    $Script:NightlyFeedHelperLoaded = $true
+} else {
+    Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled."
+}
+
 # ===================================================================
 # BRANCH PARSING
 # ===================================================================
@@ -1346,6 +1359,38 @@ $report = [PSCustomObject]@{
     PriorityIssues        = $priorityIssues
     KnownBuildErrorIssues = $kbeIssues
     CiScanIssues          = $ciScanIssues
+    NightlyFeed           = $null
+}
+
+# Nightly dogfood feed freshness (preview lane). Maps this preview to the dotnet<major>
+# Azure Artifacts feed + preview.N version band (from PreReleaseVersionIteration at the
+# survey ref, falling back to the branch's preview number) and records how fresh the newest
+# matching build is. Fail-open: any gap (helper unloaded, version unreadable, network error)
+# degrades to "no banner".
+$nightlyFeedBanner = $null
+if ($Script:NightlyFeedHelperLoaded -and
+    (Get-Command Get-NightlyFeedFreshness -ErrorAction SilentlyContinue) -and
+    (Get-Command Format-NightlyFeedBanner -ErrorAction SilentlyContinue)) {
+    try {
+        $nfFeed = "dotnet$majorVersion"
+        $nfFeedUrl = "https://dev.azure.com/dnceng/public/_artifacts/feed/$nfFeed"
+        $nfIteration = Get-PreReleaseVersionIteration -BranchName $SurveyRef
+        if ([string]::IsNullOrWhiteSpace($nfIteration)) { $nfIteration = "$previewNumber" }
+        $nfBand = "$majorVersion.0.0-preview.$nfIteration"
+        $nfPrefix = '^' + [regex]::Escape("$nfBand.")
+        $nfLaneLabel = "[``$nfFeed``]($nfFeedUrl) · ``$nfBand`` (preview.$nfIteration)"
+
+        $nfFresh = Get-NightlyFeedFreshness -Feed $nfFeed -VersionPrefixRegex $nfPrefix
+        if ($null -eq $nfFresh) { $nfFresh = @{ unknown = $true } }
+        $nfFresh['laneLabel'] = $nfLaneLabel
+        $nfFresh['feedUrl'] = $nfFeedUrl
+        $nfFresh['versionPrefix'] = $nfPrefix
+
+        $report.NightlyFeed = $nfFresh
+        $nightlyFeedBanner = Format-NightlyFeedBanner -Freshness $nfFresh -Now ([DateTime]::UtcNow)
+    } catch {
+        Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)"
+    }
 }
 
 $md = [System.Text.StringBuilder]::new()
@@ -1360,6 +1405,10 @@ if ($Mode -eq 'candidate') {
 [void]$md.AppendLine("")
 [void]$md.AppendLine("**Overall status:** **$overallStatus**")
 [void]$md.AppendLine("")
+if ($nightlyFeedBanner) {
+    [void]$md.AppendLine($nightlyFeedBanner)
+    [void]$md.AppendLine("")
+}
 
 # === HIGH-PRIORITY ITEMS (hoisted to the very top) ===
 # Four categories the release captain must see BEFORE anything else:

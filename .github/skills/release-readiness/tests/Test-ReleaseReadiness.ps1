@@ -1617,6 +1617,22 @@ Assert-Eq -Label "Body has human-notes:begin marker" -Expected $true `
 Assert-Eq -Label "Body has human-notes:end marker" -Expected $true `
     -Actual ($md -match '<!-- release-readiness:human-notes:end -->')
 
+# Nightly-feed banner wiring: when Invoke-Main has populated $Data['nightlyFeedBanner'],
+# Format-MarkdownReport must render it just below the **Generated** line; when the key is
+# absent (phase-scoped runs / helper unloaded) nothing leaks into the body.
+Assert-Eq -Label "No nightly banner when key absent" -Expected $true `
+    -Actual ($md -notmatch 'Nightly dogfood feed')
+$mdDataBanner = $mdData.Clone()
+$mdDataBanner['nightlyFeedBanner'] = '> ❌ **Nightly dogfood feed is STALE — 9 days** (test lane).'
+$mdBan = Format-MarkdownReport -Data $mdDataBanner -RepoUrl 'https://github.com/dotnet/maui' `
+                               -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "Banner rendered when key present" -Expected $true `
+    -Actual ($mdBan -match 'Nightly dogfood feed is STALE — 9 days')
+$genIdx = $mdBan.IndexOf('**Generated**')
+$banIdx = $mdBan.IndexOf('Nightly dogfood feed is STALE')
+Assert-Eq -Label "Banner appears after the **Generated** line" -Expected $true `
+    -Actual ($genIdx -ge 0 -and $banIdx -gt $genIdx)
+
 # Without TrackerKey: no tracker marker, no visible Tracker line
 $mdNoTracker = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
                                      -MaxBodyBytes 60000
@@ -3386,6 +3402,119 @@ Assert-Eq -Label "Format-MarkdownCell: angle brackets still escaped"        -Exp
 Assert-Eq -Label "Format-MarkdownCell: literal backslash-pipe does NOT break out (doubled backslash)" -Expected 'A \\\| B' -Actual (Format-MarkdownCell 'A \| B')
 Assert-Eq -Label "Format-MarkdownCell: pre-existing NON-pipe backslash preserved (doubling is scoped to pipe-adjacent runs)" -Expected 'C:\dir'       -Actual (Format-MarkdownCell 'C:\dir')
 Assert-Eq -Label "Format-MarkdownCell: author-escaped non-pipe Markdown NOT de-escaped" -Expected '\[link\](url)' -Actual (Format-MarkdownCell '\[link\](url)')
+
+# ─────────── Nightly-feed freshness helpers (NightlyFeed.ps1 — offline) ───────────
+# The shared helper backs the "nightly dogfood feed is stale" banner at the top of every
+# tracker. Format-NightlyFeedBanner is PURE (caller passes -Now), so it is fully tested
+# offline with fixtures; Get-NightlyFeedFreshness is tested with an injected -Fetcher so no
+# network is touched. Both are dot-sourced directly here (independent of engine load order).
+Write-Host "`n[Unit] Nightly-feed banner (Format-NightlyFeedBanner — pure renderer)" -ForegroundColor Cyan
+$nfHelperPath = Join-Path $PSScriptRoot '..' 'scripts' 'NightlyFeed.ps1'
+. $nfHelperPath
+
+$nfLane = '[`dotnet10`](https://dev.azure.com/x) · `10.0.90` (main)'
+function New-NfFresh { param($Ver, [datetime]$Pub) @{ laneLabel = $nfLane; version = $Ver; published = $Pub; matched = $true } }
+$nfNow = [datetime]::new(2026, 6, 22, 12, 0, 0, [System.DateTimeKind]::Utc)
+
+# $null freshness → empty string (caller opted out of rendering).
+Assert-Eq -Label "banner: null freshness → empty string" -Expected '' -Actual (Format-NightlyFeedBanner -Freshness $null -Now $nfNow)
+
+# unknown (feed query failed) → muted note, NOT a blockquote alarm.
+$bUnknown = Format-NightlyFeedBanner -Freshness @{ laneLabel = $nfLane; unknown = $true } -Now $nfNow
+Assert-Eq -Label "banner: unknown → muted 'could not be determined' note" -Expected $true  -Actual ($bUnknown -match 'could not be determined')
+Assert-Eq -Label "banner: unknown → not a ❌/⚠️ alarm"                      -Expected $false -Actual ($bUnknown -match '❌|⚠️')
+
+# matched=$false (queried, no build in band) → muted note.
+$bNoMatch = Format-NightlyFeedBanner -Freshness @{ laneLabel = $nfLane; matched = $false } -Now $nfNow
+Assert-Eq -Label "banner: no-match → muted 'no recent matching build' note" -Expected $true -Actual ($bNoMatch -match 'no recent matching build')
+
+# ✅ fresh tier (age < AgingDays=3): today / yesterday / N-days-ago wording.
+$bToday = Format-NightlyFeedBanner -Freshness (New-NfFresh '10.0.90-ci.main.2' ([datetime]::new(2026,6,22,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: fresh today → ✅ + 'today'"          -Expected $true -Actual ($bToday -match '✅' -and $bToday -match 'today')
+Assert-Eq -Label "banner: fresh → renders the build version"  -Expected $true -Actual ($bToday -match '10\.0\.90-ci\.main\.2')
+Assert-Eq -Label "banner: fresh → renders the lane label"     -Expected $true -Actual ($bToday -match 'dotnet10')
+$bYday = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,21,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: 1 day → ✅ + 'yesterday'"            -Expected $true -Actual ($bYday -match '✅' -and $bYday -match 'yesterday')
+$b2d = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,20,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: 2 days (below aging) → ✅ + '2 days ago'" -Expected $true -Actual ($b2d -match '✅' -and $b2d -match '2 days ago')
+
+# ⚠️ aging tier (AgingDays=3 .. StaleDays-1) — includes the publish date (determinism check).
+$bAging = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,18,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: 4 days → ⚠️ aging"                  -Expected $true -Actual ($bAging -match '⚠️' -and $bAging -match '4 days old')
+Assert-Eq -Label "banner: aging → deterministic publish date" -Expected $true -Actual ($bAging -match '2026-06-18')
+
+# ❌ stale tier (>= StaleDays=7).
+$bStale = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,10,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: 12 days → ❌ STALE"                 -Expected $true -Actual ($bStale -match '❌' -and $bStale -match 'STALE — 12 days')
+
+# Future publish (clock skew) clamps to age 0 — must not throw or emit a negative age.
+$bFuture = $null; $nfFutureThrew = $false
+try { $bFuture = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,24,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow } catch { $nfFutureThrew = $true }
+Assert-Eq -Label "banner: future publish → no throw"          -Expected $false -Actual $nfFutureThrew
+Assert-Eq -Label "banner: future publish → clamped to 'today'" -Expected $true  -Actual ($bFuture -match '✅' -and $bFuture -match 'today')
+
+# Caller-tunable thresholds: a 4-day-old build is ⚠️ by default but ✅ under a wider window.
+$bWide = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,18,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow -AgingDays 10 -StaleDays 20
+Assert-Eq -Label "banner: custom AgingDays=10 → 4d build is ✅ fresh" -Expected $true -Actual ($bWide -match '✅')
+
+Write-Host "`n[Unit] Nightly-feed freshness query (Get-NightlyFeedFreshness — mocked fetcher)" -ForegroundColor Cyan
+# Self-contained fetcher: emulates the Azure Artifacts service index + a SemVer2
+# registration page with inline catalog leaves. Mixes bands + intentionally non-date-sorted
+# versions so the date-not-version selection and the prefix filter are both exercised.
+$nfMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @(
+            [pscustomobject]@{ '@type' = 'SearchQueryService';          '@id' = 'https://example/search' },
+            [pscustomobject]@{ '@type' = 'RegistrationsBaseUrl/3.6.0';  '@id' = 'https://reg.example/3.6.0/' }
+        ) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        $mk = { param($v, $p) [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version = $v; published = $p } } }
+        return [pscustomobject]@{ items = @(
+            [pscustomobject]@{ items = @(
+                (& $mk '10.0.90-ci.main.1'    '2026-06-20T03:00:00Z'),
+                (& $mk '10.0.90-ci.main.2'    '2026-06-22T03:00:00Z'),
+                (& $mk '10.0.90-ci.main.10'   '2026-06-01T03:00:00Z'),
+                (& $mk '10.0.80-ci.inflight.5' '2026-06-25T03:00:00Z')
+            ) }
+        ) }
+    }
+    throw "unexpected url $Url"
+}
+
+$r90 = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.90-' -Fetcher $nfMock
+Assert-Eq -Label "feed: band 90 → matched"                          -Expected $true              -Actual $r90.matched
+Assert-Eq -Label "feed: band 90 → newest by DATE not version (.2)"  -Expected '10.0.90-ci.main.2' -Actual $r90.version
+Assert-Eq -Label "feed: band 90 → published date surfaced"          -Expected '2026-06-22'        -Actual ($r90.published.ToString('yyyy-MM-dd'))
+Assert-Eq -Label "feed: prefix excludes the newer .80 inflight band" -Expected $false             -Actual ($r90.version -match '10\.0\.80')
+
+$r80 = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.80-' -Fetcher $nfMock
+Assert-Eq -Label "feed: band 80 → isolates the inflight build"      -Expected '10.0.80-ci.inflight.5' -Actual $r80.version
+
+$rNo = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.70-' -Fetcher $nfMock
+Assert-Eq -Label "feed: band with no build → matched is false" -Expected $false -Actual $rNo.matched
+
+# Fail-open: any fetcher error → $null (transient outage never breaks tracker generation).
+$rThrow = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.90-' -Fetcher { param($Url) throw 'boom' }
+Assert-Eq -Label "feed: fetcher throws → null (fail-open)" -Expected $true -Actual ($null -eq $rThrow)
+
+# Paged registration: a page that carries only an @id (no inline items) is followed.
+$nfPaged = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type' = 'RegistrationsBaseUrl/3.6.0'; '@id' = 'https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        return [pscustomobject]@{ items = @([pscustomobject]@{ '@id' = 'https://reg.example/page1.json' }) }
+    }
+    if ($Url -match '/page1\.json$') {
+        return [pscustomobject]@{ items = @([pscustomobject]@{ catalogEntry = [pscustomobject]@{ version = '11.0.0-preview.6.123'; published = '2026-06-21T00:00:00Z' } }) }
+    }
+    throw "unexpected url $Url"
+}
+$rPaged = Get-NightlyFeedFreshness -Feed 'dotnet11' -VersionPrefixRegex '^11\.0\.0-preview\.6\.' -Fetcher $nfPaged
+Assert-Eq -Label "feed: paged @id leaf is followed"                 -Expected '11.0.0-preview.6.123' -Actual $rPaged.version
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })

@@ -159,6 +159,18 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+# Shared nightly-feed freshness helpers (Get-NightlyFeedFreshness / Format-NightlyFeedBanner).
+# Defensive load: the banner is auxiliary signal, not part of the verdict, so a missing
+# helper must degrade to "no banner" rather than crash the unattended nightly tracker job.
+$Script:NightlyFeedHelperLoaded = $false
+$nightlyFeedHelperPath = Join-Path $PSScriptRoot 'NightlyFeed.ps1'
+if (Test-Path $nightlyFeedHelperPath) {
+    . $nightlyFeedHelperPath
+    $Script:NightlyFeedHelperLoaded = $true
+} else {
+    Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled."
+}
+
 # DETERMINISTIC RULE — SR branches in dotnet/maui ALWAYS cut from `main`.
 # Refuse to operate on any `inflight/*` or `staging/*` ref — those are
 # integration branches, not SR sources. This guard exists because conflating
@@ -3065,6 +3077,15 @@ function Format-MarkdownReport {
     $shaLinked = ConvertTo-LinkedSha -Sha $ctx.srHeadSha -RepoUrl $RepoUrl
     [void]$sb.AppendLine("**HEAD**: $shaLinked — $($ctx.srHeadSubject)")
     [void]$sb.AppendLine("**Generated**: $($ctx.fetchedAt)")
+    # Nightly dogfood feed freshness — surfaces when the feed testers point at has gone
+    # stale (no new build), so a captain sees at a glance whether dogfood feedback is being
+    # collected against current bits. The banner string is rendered upstream in Invoke-Main
+    # (where "now" is natural), keeping this renderer clock-free and deterministic. Absent in
+    # phase-scoped runs / when the helper isn't loaded → nothing is appended.
+    if ($Data.ContainsKey('nightlyFeedBanner') -and $Data['nightlyFeedBanner']) {
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine($Data['nightlyFeedBanner'])
+    }
     # Expected ship date — cadence depends on PatchVersion:
     #   - x0 patches (80, 90…) + previews → 2nd Tuesday of the month
     #   - hotfix patches (81, 82…)        → ASAP, no cadence
@@ -3590,6 +3611,60 @@ function Format-MarkdownReport {
 
 # region ────────────────────── 8. ORCHESTRATOR ────────────────────────────
 
+function Add-SrNightlyFeedFreshness {
+    <#
+    .SYNOPSIS
+        Maps this SR lane to its nightly Azure Artifacts dogfood feed + version band,
+        queries the freshest matching build, and stores both the structured result
+        ($Data['nightlyFeed']) and a pre-rendered banner string ($Data['nightlyFeedBanner']).
+    .DESCRIPTION
+        Lane → feed/band mapping (verified against the live feeds):
+          - feed    = dotnet<Major>            (e.g. dotnet10, dotnet11)
+          - band    = <Major>.0.<Patch>        (PatchVersion from eng/Versions.props at srRef)
+                        in-flight SR  → srRef is the SR branch  → inflight band (e.g. 10.0.80)
+                        candidate SR  → srRef is origin/main     → main band     (e.g. 10.0.90)
+        The band is matched as a literal version *prefix* (`^<Major>.0.<Patch>-`), which is
+        resilient to family-keyword churn in the build metadata (ci.net10 → ci.main, etc.).
+        Fail-open throughout: any gap (helper not loaded, version unreadable, network error)
+        degrades to "no banner" rather than disturbing the verdict.
+    #>
+    param([hashtable]$Data)
+
+    if (-not $Script:NightlyFeedHelperLoaded) { return }
+    if (-not (Get-Command Get-NightlyFeedFreshness -ErrorAction SilentlyContinue)) { return }
+    if (-not (Get-Command Format-NightlyFeedBanner -ErrorAction SilentlyContinue)) { return }
+
+    try {
+        $ctx = $Data.metadata
+        $surveyRef = $ctx.srRef
+        $vp = Get-VersionsPropsState -Ref $surveyRef
+        if (-not $vp) { return }   # can't map a band → skip silently (no banner)
+
+        $major = [int]$vp.Major
+        $patch = [int]$vp.Patch
+        $band = "$major.0.$patch"
+        $feed = "dotnet$major"
+        $feedUrl = "https://dev.azure.com/dnceng/public/_artifacts/feed/$feed"
+        $prefix = '^' + [regex]::Escape($band) + '-'
+
+        $mode = if ($ctx.ContainsKey('mode')) { $ctx['mode'] } else { 'in-flight' }
+        $familyWord = if ($mode -eq 'candidate') { 'main' } else { 'inflight' }
+        $laneLabel = "[``$feed``]($feedUrl) · ``$band`` ($familyWord)"
+
+        $fresh = Get-NightlyFeedFreshness -Feed $feed -VersionPrefixRegex $prefix
+        if ($null -eq $fresh) { $fresh = @{ unknown = $true } }
+        $fresh['laneLabel'] = $laneLabel
+        $fresh['feedUrl'] = $feedUrl
+        $fresh['versionPrefix'] = $prefix
+
+        $Data['nightlyFeed'] = $fresh
+        $banner = Format-NightlyFeedBanner -Freshness $fresh -Now ([DateTime]::UtcNow)
+        if ($banner) { $Data['nightlyFeedBanner'] = $banner }
+    } catch {
+        Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)"
+    }
+}
+
 function Invoke-Main {
     $excludes = $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     $ctx = Resolve-Context -SrBranch $SrBranch -Repo $Repo -MainBranch $MainBranch `
@@ -3622,6 +3697,13 @@ function Invoke-Main {
     $data = @{
         metadata = $ctx
         warnings = @()
+    }
+
+    # Nightly dogfood feed freshness (full runs only). Maps this SR lane to its Azure
+    # Artifacts feed + version band and records how fresh the newest matching build is, so
+    # the tracker can flag when dogfooders are testing stale bits. Fail-open inside.
+    if ($Phase -eq 'all') {
+        Add-SrNightlyFeedFreshness -Data $data
     }
 
     if ($Phase -in 'all', 'commits', 'regressions') {
