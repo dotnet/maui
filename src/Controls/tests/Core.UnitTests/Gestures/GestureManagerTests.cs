@@ -259,5 +259,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(factoryManager, gestureManager.GesturePlatformManager);
 			provider.DidNotReceive().CreateGesturePlatformManager();
 		}
+
+		[Fact]
+		public void ThrowsWhenFactoryProvidedManagerIsNull()
+		{
+			var factory = Substitute.For<IGesturePlatformManagerFactory>();
+
+			var handler = Substitute.For<IViewHandler>();
+			var mauiContext = Substitute.For<IMauiContext>();
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IGesturePlatformManagerFactory)).Returns(factory);
+			mauiContext.Services.Returns(services);
+			handler.MauiContext.Returns(mauiContext);
+			factory.CreateGesturePlatformManager(handler).Returns((IGesturePlatformManager)null);
+
+			var view = Substitute.For<IControlsView>();
+			view.Handler.Returns(handler);
+
+			Assert.Throws<InvalidOperationException>(() => new GestureManager(view));
+			factory.Received(1).CreateGesturePlatformManager(handler);
+		}
 	}
 }
