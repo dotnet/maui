@@ -132,6 +132,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
+		handlersCollection.AddHandler<CheckBox, CheckBoxHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();

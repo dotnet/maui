@@ -146,6 +146,7 @@ override Microsoft.Maui.Platform.MauiMaterialTextView.SetText(Java.Lang.ICharSeq
 override Microsoft.Maui.Platform.MauiMaterialTimePicker.DefaultMovementMethod.get -> Android.Text.Method.IMovementMethod?
 override Microsoft.Maui.Platform.MauiWebView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiWebView.OnSizeChanged(int width, int height, int oldWidth, int oldHeight) -> void
+override Microsoft.Maui.Platform.MauiWebView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.WrapperView.HasOverlappingRendering.get -> bool
 override Microsoft.Maui.PlatformDrawable.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.PlatformDrawable.ThresholdClass.get -> nint
