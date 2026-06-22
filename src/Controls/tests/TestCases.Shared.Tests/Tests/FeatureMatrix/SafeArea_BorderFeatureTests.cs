@@ -378,8 +378,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Keyboard Interaction (SoftInput)
 		// ──────────────────────────────────────────────
 
-#if TEST_FAILS_ON_IOS // Issue Link - https://github.com/dotnet/maui/issues/34846
-
 		[Test, Order(10)]
 		[Description("None → All → keyboard open → Container → dismiss → All: positions correct at each step")]
 		public void ValidateSafeArea_NoneThenAllKeyboardContainerDismissAll_Border()
@@ -461,7 +459,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(Math.Abs(bottomLabelRect.Bottom), Is.EqualTo(screenHeight - insets.Bottom - BorderStrokePx).Within(_positionTolerance),
 				$"All (after dismiss): bottom label Bottom ({bottomLabelRect.Bottom}) should be equal to (screenHeight - insets.Bottom) ({screenHeight - insets.Bottom})");
 		}
-#endif
 
 		// ──────────────────────────────────────────────
 		// Keyboard Position Validation
