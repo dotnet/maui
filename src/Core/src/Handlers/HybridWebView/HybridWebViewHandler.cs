@@ -194,32 +194,48 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				var jsonResult = await VirtualView.Invoker.InvokeMethodAsync(invokeData.MethodName, invokeData.ParamValues);
-				var invokeResult = jsonResult is null
-					? new DotNetInvokeResult()
-					: new DotNetInvokeResult { Result = jsonResult, IsJson = true };
-
-				return Encoding.UTF8.GetBytes(
-					JsonSerializer.Serialize(invokeResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult));
+				return CreateInvokeResultBytes(jsonResult);
 			}
 			catch (Exception ex)
 			{
 				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
-
-				var errorResult = CreateErrorResult(ex);
-				var errorJson = JsonSerializer.Serialize(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
-				return Encoding.UTF8.GetBytes(errorJson);
+				return CreateErrorResultBytes(ex);
 			}
 		}
 
-		private static DotNetInvokeResult CreateErrorResult(Exception ex)
+		private static byte[] CreateErrorResultBytes(Exception ex)
 		{
-			return new DotNetInvokeResult
+			var errorResult = new DotNetInvokeResult
 			{
 				IsError = true,
 				ErrorMessage = ex.Message,
 				ErrorType = ex.GetType().Name,
 				ErrorStackTrace = ex.StackTrace
 			};
+
+			return JsonSerializer.SerializeToUtf8Bytes(errorResult, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResult);
+		}
+
+		private static byte[] CreateInvokeResultBytes(string? jsonResult)
+		{
+			using var stream = new MemoryStream();
+			using (var writer = new Utf8JsonWriter(stream))
+			{
+				writer.WriteStartObject();
+				// The JavaScript bridge treats Result as a JSON string and calls
+				// JSON.parse(response.Result). Keep jsonResult as a string here;
+				// the result JSON is already escaped, so avoid escaping it twice
+				// or changing the wire contract by writing it as raw JSON.
+				writer.WriteString(nameof(DotNetInvokeResult.Result), jsonResult);
+				writer.WriteBoolean(nameof(DotNetInvokeResult.IsJson), jsonResult is not null);
+				writer.WriteBoolean(nameof(DotNetInvokeResult.IsError), false);
+				writer.WriteNull(nameof(DotNetInvokeResult.ErrorMessage));
+				writer.WriteNull(nameof(DotNetInvokeResult.ErrorType));
+				writer.WriteNull(nameof(DotNetInvokeResult.ErrorStackTrace));
+				writer.WriteEndObject();
+			}
+
+			return stream.ToArray();
 		}
 
 		private sealed class JSInvokeMethodData
