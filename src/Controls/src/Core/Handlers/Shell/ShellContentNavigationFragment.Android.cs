@@ -278,6 +278,8 @@ namespace Microsoft.Maui.Controls.Handlers
             var requestedStack = BuildNavigationStack(e);
             if (requestedStack is not null && requestedStack.Count > 0)
             {
+                // Update logical stack so subsequent rapid pushes build from the correct state
+                _logicalNavigationStack = requestedStack;
                 _stackNavigationManager.RequestNavigation(new NavigationRequest(requestedStack, e.Animated));
             }
             else
@@ -292,9 +294,16 @@ namespace Microsoft.Maui.Controls.Handlers
         System.Threading.Tasks.TaskCompletionSource<bool>? _navigationTaskCompletionSource;
         readonly Queue<NavigationRequestedEventArgs> _pendingNavigationRequests = new Queue<NavigationRequestedEventArgs>();
 
+        // Tracks the logical navigation stack including pending/queued pushes that haven't
+        // been applied yet. This prevents the 3+ rapid PushAsync bug where BuildNavigationStack
+        // reads stale NavigationStack and drops intermediate pages.
+        List<IView>? _logicalNavigationStack;
+
         List<IView> BuildNavigationStack(NavigationRequestedEventArgs e)
         {
-            var currentStack = _stackNavigationManager?.NavigationStack ?? new List<IView>();
+            var currentStack = _logicalNavigationStack
+                ?? _stackNavigationManager?.NavigationStack?.ToList()
+                ?? new List<IView>();
 
             switch (e.RequestType)
             {
@@ -357,6 +366,14 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         internal void OnNavigationFinished(IReadOnlyList<IView> newStack)
         {
+            // Sync logical stack with the actual completed state.
+            // If the manager is no longer navigating (queue drained), clear the override
+            // so BuildNavigationStack reads fresh NavigationStack next time.
+            if (_stackNavigationManager is null || !_stackNavigationManager.IsNavigating)
+            {
+                _logicalNavigationStack = null;
+            }
+
             // Complete the pending navigation task so ShellSection.OnPushAsync can proceed
             var tcs = _navigationTaskCompletionSource;
             _navigationTaskCompletionSource = null;
@@ -466,6 +483,14 @@ namespace Microsoft.Maui.Controls.Handlers
             _navigationContainer?.ViewAttachedToWindow -= OnNavigationContainerAttached;
 
             _stackNavigationManager?.Disconnect();
+
+            // Clear cached state so the next OnCreateView goes through the full creation path
+            // instead of the reuse path. This ensures ConnectAndInitialize runs properly with
+            // a fresh NavHostFragment and StackNavigationManager connection.
+            // Without this, the reuse path returns the old container with a disconnected manager,
+            // leaving HasNavHost == false and navigation requests queued forever.
+            _navigationContainer = null;
+            _stackNavigationManager = null;
 
             // Disconnect the root page and all its child handlers when the ShellContent has been
             // removed from the Shell hierarchy (e.g. Shell.Items.Clear()).

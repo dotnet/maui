@@ -308,6 +308,18 @@ internal class TabbedViewManager
         _pendingFragment?.Dispose();
         _pendingFragment = null;
 
+        // Detach TabLayoutMediator and remove tab listener to prevent callbacks
+        // from firing after the manager/handler is disconnected.
+        _tabLayoutMediator?.Detach();
+        _tabLayoutMediator = null;
+
+        if (_tabLayout is not null)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            _tabLayout.RemoveOnTabSelectedListener(_listeners);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
         if (_tabLayoutFragment is not null)
         {
             var fragment = _tabLayoutFragment;

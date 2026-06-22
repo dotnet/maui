@@ -292,11 +292,14 @@ namespace Microsoft.Maui.Controls.Handlers
             if (behavior == FlyoutBehavior.Locked && _navigationRoot is not null)
             {
                 var padding = MauiDrawerLayout?.GetLockedContentPadding() ?? 0;
-                _navigationRoot.SetPadding(padding, _navigationRoot.PaddingTop, _navigationRoot.PaddingRight, _navigationRoot.PaddingBottom);
+                // Use SetPaddingRelative so padding is applied to the Start side,
+                // matching MauiDrawerLayout's GravityFlags.Start drawer placement.
+                // In LTR: start = left. In RTL: start = right.
+                _navigationRoot.SetPaddingRelative(padding, _navigationRoot.PaddingTop, _navigationRoot.PaddingEnd, _navigationRoot.PaddingBottom);
             }
             else
             {
-                _navigationRoot?.SetPadding(0, _navigationRoot.PaddingTop, _navigationRoot.PaddingRight, _navigationRoot.PaddingBottom);
+                _navigationRoot?.SetPaddingRelative(0, _navigationRoot.PaddingTop, _navigationRoot.PaddingEnd, _navigationRoot.PaddingBottom);
             }
 
             // Sync Shell property
@@ -365,6 +368,13 @@ namespace Microsoft.Maui.Controls.Handlers
                 {
                     handler._flyoutContentView.LayoutParameters.Width = (int)width;
                     handler._flyoutContentView.RequestLayout();
+                }
+
+                // Recompute locked content padding if in locked mode
+                if (handler._currentBehavior == FlyoutBehavior.Locked && handler._navigationRoot is not null)
+                {
+                    var padding = handler.MauiDrawerLayout.GetLockedContentPadding();
+                    handler._navigationRoot.SetPaddingRelative(padding, handler._navigationRoot.PaddingTop, handler._navigationRoot.PaddingEnd, handler._navigationRoot.PaddingBottom);
                 }
             }
         }
