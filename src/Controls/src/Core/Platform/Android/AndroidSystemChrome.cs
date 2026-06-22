@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		static readonly ConditionalWeakTable<AppBarLayout, OriginalAppBarBackground> s_originalAppBarBackgrounds = new();
 
-		internal static void UpdateTopChrome(AView? chromeView, Brush? background, Color? foreground = null)
+		internal static void UpdateTopChrome(AView? chromeView, Brush? background)
 		{
 			if (chromeView is null)
 			{
@@ -34,11 +34,10 @@ namespace Microsoft.Maui.Controls.Platform
 				window: null,
 				updateStatusBar: true,
 				updateNavigationBar: false,
-				statusBarBackgroundColor: GetChromeColor(background, ChromeEdge.Top),
-				statusBarForegroundColor: foreground);
+				statusBarBackgroundColor: GetChromeColor(background, ChromeEdge.Top));
 		}
 
-		internal static void UpdateBottomChrome(AView? chromeView, Brush? background, Color? foreground = null)
+		internal static void UpdateBottomChrome(AView? chromeView, Brush? background)
 		{
 			if (chromeView is null)
 			{
@@ -50,8 +49,7 @@ namespace Microsoft.Maui.Controls.Platform
 				window: null,
 				updateStatusBar: false,
 				updateNavigationBar: true,
-				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom),
-				navigationBarForegroundColor: foreground);
+				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom));
 		}
 
 		internal static void UpdateWindowChrome(
@@ -59,8 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 			AWindow? window,
 			bool updateStatusBar,
 			bool updateNavigationBar,
-			Paint? background = null,
-			Color? foreground = null)
+			Paint? background = null)
 		{
 			UpdateSystemBarAppearance(
 				context,
@@ -68,9 +65,7 @@ namespace Microsoft.Maui.Controls.Platform
 				updateStatusBar,
 				updateNavigationBar,
 				statusBarBackgroundColor: GetChromeColor(background, ChromeEdge.Top),
-				statusBarForegroundColor: foreground,
-				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom),
-				navigationBarForegroundColor: foreground);
+				navigationBarBackgroundColor: GetChromeColor(background, ChromeEdge.Bottom));
 		}
 
 		internal static void UpdateWindowChrome(
@@ -79,9 +74,7 @@ namespace Microsoft.Maui.Controls.Platform
 			bool updateStatusBar,
 			bool updateNavigationBar,
 			Brush? statusBarBackground,
-			Color? statusBarForeground = null,
-			Paint? navigationBarBackground = null,
-			Color? navigationBarForeground = null)
+			Paint? navigationBarBackground = null)
 		{
 			UpdateSystemBarAppearance(
 				context,
@@ -89,9 +82,7 @@ namespace Microsoft.Maui.Controls.Platform
 				updateStatusBar,
 				updateNavigationBar,
 				statusBarBackgroundColor: GetChromeColor(statusBarBackground, ChromeEdge.Top),
-				statusBarForegroundColor: statusBarForeground,
-				navigationBarBackgroundColor: GetChromeColor(navigationBarBackground, ChromeEdge.Bottom),
-				navigationBarForegroundColor: navigationBarForeground);
+				navigationBarBackgroundColor: GetChromeColor(navigationBarBackground, ChromeEdge.Bottom));
 		}
 
 		static void UpdateSystemBarAppearance(
@@ -100,9 +91,7 @@ namespace Microsoft.Maui.Controls.Platform
 			bool updateStatusBar,
 			bool updateNavigationBar,
 			Color? statusBarBackgroundColor = null,
-			Color? statusBarForegroundColor = null,
-			Color? navigationBarBackgroundColor = null,
-			Color? navigationBarForegroundColor = null)
+			Color? navigationBarBackgroundColor = null)
 		{
 			var activity = context?.GetActivity();
 			if (window is null)
@@ -115,9 +104,7 @@ namespace Microsoft.Maui.Controls.Platform
 				updateStatusBar,
 				updateNavigationBar,
 				statusBarBackgroundColor,
-				statusBarForegroundColor,
-				navigationBarBackgroundColor,
-				navigationBarForegroundColor);
+				navigationBarBackgroundColor);
 		}
 
 		static void UpdateAppBarBackground(AppBarLayout? appBarLayout, Brush? background)

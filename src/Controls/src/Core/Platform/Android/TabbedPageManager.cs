@@ -653,15 +653,13 @@ public class TabbedPageManager
 		}
 
 		var background = GetEffectiveBarBackground();
-		var foreground = Element.BarTextColor ?? BarSelectedItemColor ?? BarItemColor;
-
 		if (IsBottomTabPlacement)
 		{
-			AndroidSystemChrome.UpdateBottomChrome(_bottomNavigationView, background, foreground);
+			AndroidSystemChrome.UpdateBottomChrome(_bottomNavigationView, background);
 		}
 		else
 		{
-			AndroidSystemChrome.UpdateTopChrome(_tabLayout, background, foreground);
+			AndroidSystemChrome.UpdateTopChrome(_tabLayout, background);
 		}
 	}
 

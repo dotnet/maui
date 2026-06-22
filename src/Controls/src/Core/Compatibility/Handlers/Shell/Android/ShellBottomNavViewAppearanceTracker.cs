@@ -71,8 +71,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SetBackgroundColor(bottomView, backgroundColor);
 			AndroidSystemChrome.UpdateBottomChrome(
 				bottomView,
-				backgroundColor is null ? null : new SolidColorBrush(backgroundColor),
-				titleColor ?? foregroundColor);
+				backgroundColor is null ? null : new SolidColorBrush(backgroundColor));
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
