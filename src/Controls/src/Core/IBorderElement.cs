@@ -14,10 +14,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc cref="VisualElement.BackgroundColor"/>
 #if NET5_0_OR_GREATER
-		[Obsolete("BackgroundColor is obsolete. Use Background instead.",
-			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete)]
+		[Obsolete("BackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.",
+			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
+			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
 #else
-		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
+		[Obsolete("BackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.")]
 #endif
 		Color BackgroundColor { get; }
 
@@ -30,10 +31,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Returns whether <see cref="BackgroundColor"/> has been explicitly set. Use <see cref="IsBackgroundSet"/> instead.</summary>
 #if NET5_0_OR_GREATER
-		[Obsolete("IsBackgroundColorSet is obsolete. Use IsBackgroundSet instead.",
-			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete)]
+		[Obsolete("IsBackgroundColorSet is obsolete and will be removed in .NET 12. Use IsBackgroundSet instead.",
+			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
+			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
 #else
-		[Obsolete("IsBackgroundColorSet is obsolete. Use IsBackgroundSet instead.")]
+		[Obsolete("IsBackgroundColorSet is obsolete and will be removed in .NET 12. Use IsBackgroundSet instead.")]
 #endif
 		bool IsBackgroundColorSet();
 
