@@ -386,10 +386,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(BorderElement.CornerRadiusProperty);
-		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundProperty);
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — IBorderElement interface implementation
+		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
+#pragma warning restore MAUI0001, CS0618
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
 		bool IBorderElement.IsBorderColorSet() => IsSet(BorderElement.BorderColorProperty);
 		bool IBorderElement.IsBorderWidthSet() => IsSet(BorderElement.BorderWidthProperty);
+
+		// Bridge property so the source-generated lambda binding interceptor accesses a non-obsolete member.
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — internal bridge for lambda binding interceptors
+		Color BackgroundColorBridge => BackgroundColor;
+#pragma warning restore MAUI0001, CS0618
 
 		protected internal override void ChangeVisualState()
 		{
@@ -526,6 +533,9 @@ namespace Microsoft.Maui.Controls
 			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, source: RelativeBindingSource.TemplatedParent, converter: new CornerRadiusToShape());
 			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — template binding kept for backward compatibility
+			border.SetBinding(Border.BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColorBridge, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
+#pragma warning restore MAUI0001, CS0618
 			border.SetBinding(Border.BackgroundProperty, static (RadioButton rb) => rb.Background, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			var grid = new Grid

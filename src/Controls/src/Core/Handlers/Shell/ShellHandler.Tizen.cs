@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyoutBackground(ShellHandler handler, Shell view)
 		{
-			handler.PlatformView.UpdateBackground(view.Background);
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — Tizen Shell backward compatibility
+			handler.PlatformView.UpdateBackgroundColor(view.BackgroundColor);
+#pragma warning restore MAUI0001, CS0618
 		}
 
 		public static void MapCurrentItem(ShellHandler handler, Shell view)

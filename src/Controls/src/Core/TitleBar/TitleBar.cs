@@ -398,6 +398,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		// Bridge property so the source-generated lambda binding interceptor accesses a non-obsolete member.
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — internal bridge for lambda binding interceptors
+		Color BackgroundColorBridge => BackgroundColor;
+#pragma warning restore MAUI0001, CS0618
+
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
@@ -459,6 +464,13 @@ namespace Microsoft.Maui.Controls
 				IgnoreSafeArea = true,
 #pragma warning restore CS0618 // Type or member is obsolete
 			};
+
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — TitleBar template binding kept for backward compatibility
+			contentGrid.SetBinding(
+				BackgroundColorProperty,
+				static (TitleBar tb) => tb.BackgroundColorBridge,
+				source: RelativeBindingSource.TemplatedParent);
+#pragma warning restore MAUI0001, CS0618
 
 			contentGrid.SetBinding(
 				BackgroundProperty,
