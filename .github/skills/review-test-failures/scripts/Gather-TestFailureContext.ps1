@@ -493,6 +493,56 @@ function Get-ErrorFingerprint {
     return $t
 }
 
+function Get-BuildErrorSignature {
+    # Returns the dedup signature for ONE build-log line if it denotes a build/toolchain break
+    # (MSBuild/SDK/linker/C# coded error, crossgen/R2R 'Failed to load assembly', NativeAOT/ILC),
+    # else $null. Shared by Get-BuildErrorsFromLog AND its call-site overflow guard so the "how many
+    # distinct breaks does this leg carry" count can never drift from what the extractor actually
+    # emits. The bare '##[error]' last-resort marker is intentionally NOT a signature here -- it is
+    # only a fallback inside the extractor and must not be counted as a distinct coded break.
+    param([string]$Line)
+
+    $coded = [regex]::Match($Line, 'error\s+(?<code>[A-Z]{2,}[0-9]{3,})\s*:')
+    if ($coded.Success) { return $coded.Groups['code'].Value }
+    if ($Line -match '(?i)Failed to load assembly') { return 'Failed to load assembly' }
+    if (($Line -match '(?i)crossgen|ReadyToRun|ILCompiler|\bILC\b') -and ($Line -match '(?i)\berror\b')) { return 'CrossGen/R2R' }
+    return $null
+}
+
+function Get-FailureReasonSignature {
+    # Extracts a STABLE, low-cardinality "why did it fail" token from a failure's message(s) so two
+    # failures of the SAME test that fail for DIFFERENT reasons (e.g. a PR-introduced
+    # NullReferenceException vs a base-branch TimeoutException) can be told apart at attribution time
+    # WITHOUT changing the dedup/baseline key (which stays name-based for test failures so grouping
+    # and the leg diff keep working). Returns '' when no stable signal can be extracted -- callers
+    # MUST treat '' as "unknown, do not downgrade", so a noisy/absent message never inflates false
+    # reds. Volatile values (counts, paths, coordinates) are deliberately collapsed away.
+    param($Messages)
+
+    $text = (@($Messages) -join "`n")
+    if ([string]::IsNullOrWhiteSpace($text)) { return '' }
+
+    # 1) Most stable discriminator: a CLR exception type name. Distinguishes NRE vs Timeout vs
+    #    InvalidOperation etc. regardless of the volatile message tail.
+    $ex = [regex]::Match($text, '(?<ex>(?:[A-Za-z_][A-Za-z0-9_]*\.)*[A-Za-z_][A-Za-z0-9_]*Exception)\b')
+    if ($ex.Success) { return "exception:$($ex.Groups['ex'].Value.ToLowerInvariant())" }
+
+    # 2) An MSBuild/compiler/toolchain coded error (error CS0246:, error MSB3073:, IL2026 ...).
+    $coded = [regex]::Match($text, 'error\s+(?<code>[A-Z]{2,}[0-9]{3,})\s*:')
+    if ($coded.Success) { return "code:$($coded.Groups['code'].Value.ToLowerInvariant())" }
+
+    # 3) An assertion mismatch -- collapse to one token; the concrete Expected/Actual values are
+    #    volatile so they are intentionally dropped.
+    if (($text -match '(?i)\bExpected\s*:') -and ($text -match '(?i)\bActual\s*:')) { return 'assert:expected-actual' }
+
+    # 4) A handful of well-known infra reasons that recur with stable wording.
+    if ($text -match '(?i)Baseline snapshot not yet created') { return 'snapshot:not-created' }
+    if ($text -match '(?i)No test result files found')        { return 'infra:no-results' }
+    if ($text -match '(?i)timed out')                          { return 'infra:timeout' }
+
+    return ''
+}
+
 function Get-FailCountsFromObject {
     # Shape-robust scan of an arbitrary parsed JSON object (the Helix aggregated endpoint has no
     # stable schema we can pin) for any NUMERIC property whose name contains 'fail' (Failed,
@@ -575,7 +625,14 @@ function Get-BuildErrorsFromLog {
         [string[]]$Lines,
         [int]$LogId,
         [string]$RecordName,
-        [int]$MaxErrors = 5
+        [int]$MaxErrors = 5,
+        # When set, the bare '##[error]' last-resort fallback is suppressed. The caller sets this when
+        # the leg ALREADY produced test failures: a coded build break alongside a test failure is a
+        # real, distinct break and must still surface, but the generic '##[error]' rollup line in a
+        # test-failure log is almost always just "tests failed" noise that would create a phantom
+        # second failure. So with test failures present we append ONLY coded build breaks, never the
+        # fallback.
+        [switch]$SuppressFallback
     )
 
     $seen = [ordered]@{}
@@ -583,31 +640,16 @@ function Get-BuildErrorsFromLog {
     $fallbackErrorLine = $null
 
     foreach ($line in $Lines) {
-        $signature = $null
-
-        # 1) MSBuild / SDK / linker / Android / C# coded error: 'error NETSDK1144:',
-        #    'error MSB3073:', 'error IL2026:', 'error XA4210:', 'error CS0246:', etc.
-        $coded = [regex]::Match($line, 'error\s+(?<code>[A-Z]{2,}[0-9]{3,})\s*:')
-        if ($coded.Success) {
-            $signature = $coded.Groups['code'].Value
-        }
-        # 2) crossgen2 / ReadyToRun / NativeAOT (ILC) toolchain break with no MSBuild code
-        #    (often surfaces as 'Microsoft.NET.CrossGen.targets(...): error : Failed to load
-        #    assembly ...'). SDK/runtime flow PRs introduce these as a failed BUILD job.
-        elseif ($line -match '(?i)Failed to load assembly') {
-            $signature = 'Failed to load assembly'
-        }
-        elseif (($line -match '(?i)crossgen|ReadyToRun|ILCompiler|\bILC\b') -and ($line -match '(?i)\berror\b')) {
-            $signature = 'CrossGen/R2R'
-        }
-        # 3) A bare '##[error]' marker is the last-resort signal: remember the first one but
-        #    only emit it if no specific error was found, so a leg always yields >=1 failure
-        #    without burying a specific cause under a generic rollup line.
-        elseif (($line -match '##\[error\]') -and (-not $fallbackErrorLine)) {
-            $fallbackErrorLine = ([string]$line).Trim()
-            continue
-        }
-        else {
+        # Signature detection lives in Get-BuildErrorSignature so the extractor and its call-site
+        # overflow guard can never diverge on what counts as a distinct build break.
+        $signature = Get-BuildErrorSignature -Line $line
+        if (-not $signature) {
+            # A bare '##[error]' marker is the last-resort signal: remember the first one but only
+            # emit it if no specific error was found, so a leg always yields >=1 failure without
+            # burying a specific cause under a generic rollup line.
+            if (($line -match '##\[error\]') -and (-not $fallbackErrorLine)) {
+                $fallbackErrorLine = ([string]$line).Trim()
+            }
             continue
         }
 
@@ -641,7 +683,7 @@ function Get-BuildErrorsFromLog {
         }
     }
 
-    if ($failures.Count -eq 0 -and $fallbackErrorLine) {
+    if (-not $SuppressFallback -and $failures.Count -eq 0 -and $fallbackErrorLine) {
         $platform = Get-PlatformFromText -Text "$RecordName $fallbackErrorLine"
         $failures.Add([ordered]@{
             testName = "$RecordName - build error"
@@ -649,6 +691,7 @@ function Get-BuildErrorsFromLog {
             source = "azdo-build-error"
             logId = $LogId
             recordName = $RecordName
+            errorFingerprint = Get-ErrorFingerprint -Text $fallbackErrorLine
             message = $fallbackErrorLine
             excerpt = @($fallbackErrorLine)
         })
@@ -978,7 +1021,13 @@ function Get-BuildLogTestFailures {
     }
 
     $records = @(ConvertTo-Array $timelineResult.value.records)
-    $allFailedRecords = @($records | Where-Object { $_.result -eq "failed" -and $_.log -and $_.log.id })
+    # Mirror the PR side (GPT F1): inspect 'partiallySucceeded' base records as well as 'failed' ones,
+    # matching the leg-result map's treatment (partiallySucceeded == hasFailed). This lets a genuinely
+    # pre-existing partiallySucceeded break on base be captured and EXACT-matched (so the PR-side
+    # equivalent is correctly dismissed as pre-existing) rather than falling to indeterminate. It can
+    # only ever dismiss MORE PR failures, and only on an exact test+platform match -- and the Gemini F1
+    # reason-conflict guard still blocks dismissal when the failure reasons differ, so no false green.
+    $allFailedRecords = @($records | Where-Object { ($_.result -eq "failed" -or $_.result -eq "partiallySucceeded") -and $_.log -and $_.log.id })
     $result.totalFailedRecords = $allFailedRecords.Count
     $failedRecords = @($allFailedRecords | Select-Object -First $MaxLogs)
     $result.inspectedLogCount = $failedRecords.Count
@@ -991,12 +1040,17 @@ function Get-BuildLogTestFailures {
             $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$BuildId/logs/$logId`?api-version=7.1"
             $lines = @($logText -split "`r?`n")
             $recordFailures = @(Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)
-            # Mirror the PR-side fallback: a base build break that is not an xUnit test line
-            # (crossgen/NativeAOT/linker/MSBuild error) must also be captured here, otherwise
-            # a pre-existing build break on the base branch cannot match the PR-side build
-            # error and would be misattributed to the PR.
-            if ($recordFailures.Count -eq 0 -and $record.type -eq 'Task') {
-                $recordFailures = @(Get-BuildErrorsFromLog -Lines $lines -LogId $logId -RecordName $record.name)
+            # Mirror the PR-side build-error extraction (GPT F2): always scan base Task logs for coded
+            # build breaks and append them, suppressing the bare '##[error]' fallback when test
+            # failures are already present. Symmetry is essential -- if the PR side captures a coded
+            # build break alongside a test failure but the base side does not, a genuinely pre-existing
+            # base build break would NOT match and would be misattributed to the PR.
+            if ($record.type -eq 'Task') {
+                $baseHadTests = ($recordFailures.Count -gt 0)
+                $baseBuildErrs = @(Get-BuildErrorsFromLog -Lines $lines -LogId $logId -RecordName $record.name -SuppressFallback:$baseHadTests)
+                if ($baseBuildErrs.Count -gt 0) {
+                    $recordFailures = @($recordFailures) + @($baseBuildErrs)
+                }
             }
             foreach ($failure in $recordFailures) {
                 $failure.source = "azdo-baseline-log"
@@ -1223,8 +1277,15 @@ foreach ($buildRef in $buildRefsById.Values) {
     if (-not $timelineResult.error -and $timelineResult.value) {
         $buildSummary.timelineReadable = $true
         $records = @(ConvertTo-Array $timelineResult.value.records)
+        # GPT F1: include 'partiallySucceeded' records, not just 'failed'. The base leg-result map
+        # (Get-BuildLegResultMap) already treats partiallySucceeded as hasFailed; if the PR side only
+        # inspected 'failed' records, a PR-caused partiallySucceeded Task with NO error-typed issue
+        # would never have its log read -- its break would escape dedup, the baseline diff, and the
+        # gate while a sibling pre-existing failure accounts for the build, allowing a false 'Ready to
+        # merge'. Including it keeps both sides symmetric (the controlling property for attribution).
         $failedRecords = @($records | Where-Object {
             $_.result -eq "failed" -or
+            $_.result -eq "partiallySucceeded" -or
             (@(ConvertTo-Array $_.issues | Where-Object { $_.type -eq "error" }).Count -gt 0)
         })
 
@@ -1298,14 +1359,41 @@ foreach ($buildRef in $buildRefsById.Values) {
                     note = 'loose xUnit Failed markers exceeded parsed failures'
                 })
             }
-            # A failed build leg whose break is not an xUnit '[FAIL]' line (crossgen/R2R,
-            # NativeAOT, MSBuild error, linker) yields no test-shaped failure. Extract the
-            # build error so the break still enters dedup, the baseline diff, and the gate
-            # instead of silently counting as zero failures (the crossgen 'Failed to load
-            # assembly' class of break). Only Task records carry the real error; parent
+            # A failed build leg can carry a build/toolchain break (crossgen/R2R, NativeAOT, MSBuild
+            # error, linker) that yields no xUnit '[FAIL]' line. GPT F2: this must be extracted even
+            # when the same leg ALSO has test failures -- a leg with a pre-existing flaky test AND a
+            # NEW 'error CS0246' build break would otherwise record only the test and let the new
+            # break escape dedup, the baseline diff, and the gate (a false green). So always scan Task
+            # logs for CODED build breaks and APPEND them; when test failures are already present we
+            # suppress the bare '##[error]' fallback (that rollup line is just "tests failed" noise and
+            # would phantom-double-count). Only Task records carry the real error; parent
             # Stage/Phase/Job records just roll up their children.
-            if ($failures.Count -eq 0 -and $record.type -eq 'Task') {
-                $failures = @(Get-BuildErrorsFromLog -Lines $lines -LogId $logId -RecordName $record.name)
+            if ($record.type -eq 'Task') {
+                $hadTestFailures = ($failures.Count -gt 0)
+                $buildErrs = @(Get-BuildErrorsFromLog -Lines $lines -LogId $logId -RecordName $record.name -SuppressFallback:$hadTestFailures)
+                if ($buildErrs.Count -gt 0) {
+                    $failures = @($failures) + @($buildErrs)
+                }
+                # F2 overflow net (symmetric to the xUnit F5 net above): Get-BuildErrorsFromLog caps at
+                # MaxErrors distinct coded breaks. If this leg actually carries MORE distinct
+                # build-error signatures than were emitted, the surplus break(s) were dropped by the
+                # cap -- surface the shortfall as an unexplained leg so a dropped break still caps the
+                # gate instead of silently vanishing. Count distinct breaks with the SAME signature +
+                # fingerprint key the extractor dedups on (Get-BuildErrorSignature keeps the two in lock-step).
+                $distinctBuildBreaks = New-Object System.Collections.Generic.HashSet[string]
+                foreach ($bl in $lines) {
+                    $bsig = Get-BuildErrorSignature -Line $bl
+                    if ($bsig) { [void]$distinctBuildBreaks.Add("$bsig|$(Get-ErrorFingerprint -Text $bl)") }
+                }
+                if ($distinctBuildBreaks.Count -gt $buildErrs.Count) {
+                    $allUnexplainedLegs.Add([ordered]@{
+                        buildId = $buildRef.buildId
+                        recordName = [string]$record.name
+                        logId = $logId
+                        unparsedFailures = ($distinctBuildBreaks.Count - $buildErrs.Count)
+                        note = 'distinct build-error signatures exceeded extracted build errors (MaxErrors cap)'
+                    })
+                }
             }
             # A failed Task whose log was read but produced no failure at all is an
             # "unexplained leg" -- record it so the gate caps the verdict (backstop).
@@ -1681,11 +1769,38 @@ if ($BaselineBuildsPerDefinition -gt 0) {
 
 $baselineDeduped = @(Get-DeduplicatedFailures -Failures $baselineRaw.ToArray())
 $baselineKeys = @{}
+# Gemini F1 support: alongside the name-based baseline key set, index each base failure's STABLE
+# reason signature so attribution can detect when a PR failure name-matches a base failure but fails
+# for a DIFFERENT reason (the message-blind test key would otherwise launder it as pre-existing).
+$baselineReasonByKey = @{}
 foreach ($baseFailure in $baselineDeduped) {
-    $baselineKeys[[string]$baseFailure.key] = $true
+    $bk = [string]$baseFailure.key
+    $baselineKeys[$bk] = $true
+    $bReason = Get-FailureReasonSignature -Messages $baseFailure.messages
+    if ($bReason) {
+        if (-not $baselineReasonByKey.ContainsKey($bk)) {
+            $baselineReasonByKey[$bk] = New-Object System.Collections.Generic.HashSet[string]
+        }
+        [void]$baselineReasonByKey[$bk].Add($bReason)
+    }
 }
 foreach ($failure in $dedupedFailures) {
     $failure['alsoFailsOnBaseline'] = [bool]$baselineKeys.ContainsKey([string]$failure.key)
+
+    # Gemini F1: the dedup/baseline key is name-based for TEST failures (errorFingerprint is empty by
+    # design so grouping + the leg diff keep working), so a PR-introduced failure in a test can
+    # name-match a base failure in the SAME test that failed for a DIFFERENT reason and be dismissed
+    # as pre-existing (a false green). Compare a STABLE reason signature on both sides; flag a
+    # conflict ONLY when BOTH are known and DIFFERENT. Unknown on either side never flags
+    # (conservative -- a noisy/absent message must never inflate false reds).
+    $failure['baselineReasonConflict'] = $false
+    if ($failure['alsoFailsOnBaseline']) {
+        $prReason = Get-FailureReasonSignature -Messages $failure.messages
+        $baseReasons = $baselineReasonByKey[[string]$failure.key]
+        if ($prReason -and $baseReasons -and $baseReasons.Count -gt 0 -and (-not $baseReasons.Contains($prReason))) {
+            $failure['baselineReasonConflict'] = $true
+        }
+    }
 
     # Persistent-failure signal: any occurrence was retried by CI and still failed.
     $retried = $false
@@ -1757,14 +1872,14 @@ foreach ($failure in $dedupedFailures) {
     $failure['legRegressedVsBase'] = [bool]$legRegressed
     $failure['legAlsoFailsOnBase'] = [bool]$legAlsoFails
 
-    # Deterministic attribution prior the classifier MUST start from. Conservative precedence
-    # built to never DISMISS a real PR break: only an EXACT test+platform match on base
-    # ('alsoFailsOnBaseline') is strong enough to call a red check pre-existing; a leg-level base
-    # failure ('legAlsoFailsOnBase') or a known-issue TEXT match alone is too weak to dismiss
-    # (the leg can fail on base at a DIFFERENT test, and a broad known-issue matcher can shadow a
-    # genuine break), so each falls to 'indeterminate' unless corroborated. A clean, unconflicted
-    # regression vs base outranks all (-> hard 'Not ready'). The classifier may override the two
-    # strong labels only with an explicitly cited reason.
+    # Deterministic attribution prior the classifier MUST start from. Conservative precedence built to
+    # never DISMISS a real PR break: only an EXACT test+platform match on base ('alsoFailsOnBaseline')
+    # is strong enough to call a red check pre-existing. A leg-level base failure ('legAlsoFailsOnBase')
+    # or a known-issue TEXT match alone is too weak to dismiss (the leg can fail on base at a DIFFERENT
+    # test, and a broad known-issue matcher can shadow a genuine break), so each falls to
+    # 'indeterminate' unless corroborated by that exact match. A clean, unconflicted regression vs base
+    # outranks all (-> hard 'Not ready'). The classifier may override the strong labels only with an
+    # explicitly cited reason.
     if ($failure['legRegressedVsBase'] -and -not $failure['alsoFailsOnBaseline'] -and -not $failure['legAlsoFailsOnBase']) {
         # Green on base, red on PR, with no conflicting base-failure signal -> PR-introduced.
         $failure['deterministicAttribution'] = 'regressed-vs-base'
@@ -1775,44 +1890,50 @@ foreach ($failure in $dedupedFailures) {
         $failure['deterministicAttribution'] = 'indeterminate'
     }
     elseif ($failure['alsoFailsOnBaseline']) {
-        # The exact same test+platform also fails on the base branch -> normally trustworthy
-        # pre-existing. F3 scope guard: if the PR actually EDITS the test file behind this failure,
-        # a base name-match is no longer safe grounds to dismiss it -- the PR may have changed the
-        # test so it now fails for a NEW reason that merely shares the name on base. Downgrade to
-        # indeterminate (NHI) in that case.
+        # The EXACT same test+platform also fails on the base branch -> the only signal strong enough to
+        # dismiss a red check as not-PR-caused. Two guards can still VETO the dismissal:
+        #   F3/F9 scope guard: the PR actually EDITS the failing test file. A base name-match is then no
+        #     longer safe -- the PR may have changed the test so it now fails for a NEW reason that
+        #     merely shares the name on base. Downgrade to indeterminate (NHI).
+        #   Gemini F1 reason guard: the PR failure name-matches a base failure in the same test but the
+        #     two fail for DIFFERENT, individually-known reasons (e.g. a PR-introduced
+        #     NullReferenceException vs a base-branch TimeoutException). The name-based dedup key is
+        #     message-blind for test failures, so without this it would launder the PR break as
+        #     pre-existing. 'baselineReasonConflict' fires only when BOTH reasons are known and differ,
+        #     so a noisy/absent message never inflates false reds. Downgrade to indeterminate (NHI).
         if (Test-FailureInChangedScope -Failure $failure -ChangedTestFiles $changedTestFiles) {
             $failure['deterministicAttribution'] = 'indeterminate'
             $failure['scopeGuardTripped'] = $true
         }
-        else {
-            $failure['deterministicAttribution'] = 'pre-existing-on-base'
-        }
-    }
-    elseif ($failure['matchesKnownIssue'] -and ([string]$failure['legBaselineResult'] -eq 'failed-on-base')) {
-        # Known-issue text match CORROBORATED by the leg actually being RED on base ('failed-on-base').
-        # A 'succeeded-on-base' read is the OPPOSITE of corroboration -- it means the leg PASSED on
-        # base. For non-device failures that path is already caught as 'regressed-vs-base' above; the
-        # ONLY way to reach here with 'succeeded-on-base' is a device-test TEST failure whose
-        # regression signal was suppressed (XHarness exit-0 blind spot, see the leg-diff above).
-        # Dismissing that as a known issue on a mere text match would launder a suppressed regression
-        # into a false green, so only 'failed-on-base' corroborates; everything else falls through.
-        # F9 scope guard: even a corroborated known-issue match is NOT dismissed when the PR edits the
-        # failing test file -- the PR may have introduced a new break that coincidentally matches the
-        # known-issue text. Downgrade to indeterminate (NHI) in that case.
-        if (Test-FailureInChangedScope -Failure $failure -ChangedTestFiles $changedTestFiles) {
+        elseif ($failure['baselineReasonConflict']) {
             $failure['deterministicAttribution'] = 'indeterminate'
-            $failure['scopeGuardTripped'] = $true
         }
         else {
-            $failure['deterministicAttribution'] = 'known-issue'
+            # Genuinely pre-existing (exact test+platform red on base, same reason, PR did not edit it).
+            # Gemini F2: a 'known-issue' dismissal is assigned ONLY here -- i.e. only when the EXACT
+            # test also failed on base. A known-issue TEXT match corroborated merely by the LEG being
+            # red on base (possibly at a DIFFERENT test) is too coarse and is NO LONGER a dismissal
+            # path (it falls through to indeterminate below), closing the laundering hole where a broad
+            # known-issue regex shadowed a PR-caused break in a different test sharing a red leg. When
+            # this exact-match pre-existing failure ALSO matches a known issue, surface the richer
+            # 'known-issue' label for the human; otherwise 'pre-existing-on-base'. Both are equally
+            # "not PR-caused" for the gate.
+            if ($failure['matchesKnownIssue']) {
+                $failure['deterministicAttribution'] = 'known-issue'
+            }
+            else {
+                $failure['deterministicAttribution'] = 'pre-existing-on-base'
+            }
         }
     }
     else {
         # Not safely dismissable: a leg that failed on base but whose THIS test failure did not
-        # exact-match base ('legAlsoFailsOnBase'-only), a known-issue text match NOT corroborated by
-        # the leg being red on base (no base read, or a 'succeeded-on-base' device-test leg whose
-        # regression was suppressed -- closes the over-broad-matcher false green), or a genuinely
-        # unknown failure -> indeterminate (caps the ceiling at 'Needs human investigation').
+        # exact-match base ('legAlsoFailsOnBase'-only), a known-issue TEXT match NOT corroborated by an
+        # EXACT base match (Gemini F2: leg-level corroboration is too coarse and is no longer a
+        # dismissal path -- a broad known-issue regex can no longer launder a PR-caused break in a
+        # DIFFERENT test that merely shares a red leg on base; this also closes the over-broad-matcher
+        # false green for 'succeeded-on-base' device-test legs whose regression was suppressed), or a
+        # genuinely unknown failure -> indeterminate (caps the ceiling at 'Needs human investigation').
         $failure['deterministicAttribution'] = 'indeterminate'
     }
 }

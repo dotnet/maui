@@ -241,7 +241,12 @@ A failure may be called **not PR-specific** only with one of these concrete proo
 on appearance alone:
 
 1. **Baseline match** — the same `test+platform` also fails on the most recent base-branch
-   build (`alsoFailsOnBaseline = true`). Pre-existing, not introduced by the PR.
+   build (`alsoFailsOnBaseline = true`). Pre-existing, not introduced by the PR. **One veto:**
+   if the PR failure exact-matches a base failure by name but the two fail for *different,
+   individually-known reasons* (`baselineReasonConflict = true` — e.g. a PR-introduced
+   `NullReferenceException` vs a base-branch `TimeoutException` in the same test), the
+   dismissal is **refused** and the failure is forced to `indeterminate`, because the
+   name-based dedup key is message-blind for test failures.
 2. **Job-level baseline match** — for a build break with no test name (crossgen/NativeAOT/
    linker/MSBuild), the same **leg** is also red on the most recent base build. Conversely,
    a leg that is **red on the PR but green on base is PROOF the break is PR-caused** — this
@@ -258,10 +263,12 @@ on appearance alone:
    (the dotnet Build Analysis registry). Cite the issue number/link — but treat it as a
    **hint, not a dismissal**: a text match alone can shadow a real PR break with a broad
    matcher. The automated lane only dismisses a known-issue match (`deterministicAttribution
-   = known-issue`) when the same leg was itself **red on base** (`legBaselineResult =
-   failed-on-base`); a `succeeded-on-base` read is the opposite of corroboration (for a
-   device-test leg it means a *suppressed* regression, not a known flake), and an
-   uncorroborated text match stays `indeterminate` (`Needs human investigation`).
+   = known-issue`) when the **exact same test+platform also failed on the base build**
+   (i.e. the same condition as `pre-existing-on-base`, item 1) — leg-level corroboration
+   (`legBaselineResult = failed-on-base` for the *leg*) is **too coarse** and no longer
+   dismisses, because a broad known-issue regex could otherwise launder a PR-caused break in
+   a *different* test that merely shares a red leg on base. An uncorroborated text match (no
+   exact base match) stays `indeterminate` (`Needs human investigation`).
 4. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
    attempt (the recovered leg does not surface as a failure at all). A leg that was retried
    and **still failed** (`retriedStillFailing = true`) is the opposite — **persistent**,
@@ -297,10 +304,11 @@ when a failure can be
 attributed **neither** way — not a clean regression vs base, not pre-existing on base, not a
 known issue (`gate.unattributedFailures > 0`; e.g. the base leg outcome was ambiguous, the
 base build was missing/unreadable, or a device-test result fell outside the deterministic
-build-error class). A `pre-existing-on-base` or corroborated `known-issue` dismissal is also
+build-error class). A `pre-existing-on-base` or exact-match `known-issue` dismissal is also
 **refused** (downgraded to `indeterminate`) when the PR actually edits the failing test file
 (`scopeGuardTripped` — the PR may have changed the test so it now fails for a new reason that
-merely coincides with the base/known text). It is likewise **capped at `Not ready`** whenever
+merely coincides with the base/known text) or when the PR and base failures of the same test
+have a known **reason conflict** (`baselineReasonConflict`). It is likewise **capped at `Not ready`** whenever
 a leg is red on the PR
 but green on the same leg of the most recent base build (`gate.legsRegressedVsBase > 0` — the
 computed job-level regression; a device-test BUILD break counts here, only device-test TEST
@@ -310,8 +318,13 @@ more actionable headline than "go investigate", and `Not ready` is still non-gre
 never enables a false green (the NHI reasons remain listed in `ceilingReasons`). The
 gatherer also extracts build-job errors (not just xUnit `[FAIL]` lines) via
 `Get-BuildErrorsFromLog`, so crossgen/R2R/linker breaks flow into dedup, the (computed)
-baseline diff, and the gate. The interactive investigator should apply the same discipline
-by hand.
+baseline diff, and the gate — and it does so **even on a leg that also has a test failure**
+(a pre-existing flaky test must not hide a *new* `error CS####` build break in the same leg),
+suppressing only the generic `##[error]` rollup line when a real test failure is already
+present. It also inspects **`partiallySucceeded`** timeline records on both the PR and base
+side (not just `failed`), symmetric with the leg-result map, so a PR-caused break in a
+partially-succeeded task cannot escape the gate while a dismissible sibling accounts for the
+build. The interactive investigator should apply the same discipline by hand.
 
 ## Escalation
 

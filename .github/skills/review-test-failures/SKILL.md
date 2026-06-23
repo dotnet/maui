@@ -119,22 +119,32 @@ Key fields to use:
     `regressed-vs-base` (treat as **Likely PR-caused** unless you can cite why the base
     comparison is invalid, e.g. a known-flaky base leg), `pre-existing-on-base` (treat as
     **Likely unrelated** — the **exact** test+platform is also red on base, the only
-    signal strong enough to dismiss), `known-issue` (a known-issue text match
-    **corroborated by the leg itself being RED on base**, i.e. `legBaselineResult =
-    failed-on-base` — dismissable), or `indeterminate`
+    signal strong enough to dismiss), `known-issue` (the **exact** test+platform is also
+    red on base **and** the failure message matches a known issue — a richer label for the
+    same dismissable, not-PR-caused case), or `indeterminate`
     (everything else: a leg-only base match, an **uncorroborated** known-issue text match
-    (no base read, or a `succeeded-on-base` device-test leg whose regression was suppressed),
-    an ambiguous/missing base, or a genuinely unknown failure — NOT dismissable, caps the
+    (a known-issue regex hit on a test that did **not** exact-match base — a leg being red
+    on base at a *different* test is no longer treated as corroboration), a base/PR
+    **reason conflict** (see `baselineReasonConflict`), an ambiguous/missing base, or a
+    genuinely unknown failure — NOT dismissable, caps the
     ceiling at `Needs human investigation`). You may override
     `regressed-vs-base`/`pre-existing-on-base` only with an explicit, cited reason,
   - `matchesKnownIssue` (`{number,title,url}` when the failure message matches an open
     `Known Build Error` issue; `null` otherwise) — a documented-flake **hint**. A text
     match alone is NOT enough to dismiss a red check (a broad matcher can shadow a real PR
     break): it only becomes the dismissable `deterministicAttribution = known-issue` when
-    the same leg was actually compared on base. Cite the issue number, but defer to the
+    the **exact same test+platform also failed on the base build** (leg-level corroboration
+    is too coarse and no longer dismisses). Cite the issue number, but defer to the
     computed attribution,
   - `retriedStillFailing` (`true` when CI retried the leg and it **still failed** — this
     is evidence the failure is **persistent**, NOT a one-off flake).
+  - `baselineReasonConflict` (`true` when this failure **exact-matches** a base failure by
+    name+platform but the two fail for **different, individually-known reasons** — e.g. a
+    PR-introduced `NullReferenceException` vs a base-branch `TimeoutException` in the same
+    test). The name-based dedup key is message-blind for test failures, so without this a
+    PR-caused break could be laundered as `pre-existing-on-base`. When set, the dismissal is
+    **refused** and the attribution is forced to `indeterminate`. It fires **only** when both
+    reasons are known and differ, so a noisy or absent message never inflates false reds.
   - `scopeGuardTripped` (`true` when a `pre-existing-on-base` or `known-issue` dismissal was
     **refused** because the PR actually **edits the test file** behind the failure). When the
     PR touches the very test that is failing, a base or known-issue text match is no longer
@@ -173,7 +183,7 @@ Classify each distinct failure as exactly one of:
 | Verdict | Use when |
 | --- | --- |
 | `Likely PR-caused` | The failure directly references changed files, changed tests, changed APIs, affected platform code, or a newly added/modified test; or it only appears in a path/platform this PR changes and does **not** match a baseline failure or a known issue. **A `deterministicAttribution = regressed-vs-base` failure** (its leg is red on the PR but GREEN on the same leg of the most recent base build) is **computed, decisive** PR-caused evidence — default to this verdict unless you can cite why the base comparison is invalid (e.g. a known-flaky base leg). A `retriedStillFailing = true` failure in the PR's area is **stronger** PR-caused evidence (CI retried it and it still failed — it is not a one-off flake). |
-| `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, or the **exact same test+platform also fails on the baseline** (`alsoFailsOnBaseline = true` / `deterministicAttribution = pre-existing-on-base` — the only base signal strong enough to dismiss on its own). A **corroborated** known issue (`deterministicAttribution = known-issue`) is also unrelated — cite the issue number/link. **Caution:** `legAlsoFailsOnBase = true` *alone* (the leg was red on base but this exact test was not matched), or a `matchesKnownIssue` hit whose `deterministicAttribution` is **`indeterminate`** (text match not corroborated by a base read), is **NOT** sufficient to dismiss — those are `Needs human investigation`, not `Likely unrelated`. |
+| `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, or the **exact same test+platform also fails on the baseline** (`alsoFailsOnBaseline = true` / `deterministicAttribution = pre-existing-on-base` — the only base signal strong enough to dismiss on its own). A known issue **corroborated by an exact base match** (`deterministicAttribution = known-issue`) is also unrelated — cite the issue number/link. **Caution:** `legAlsoFailsOnBase = true` *alone* (the leg was red on base but this exact test was not matched), a `matchesKnownIssue` hit whose `deterministicAttribution` is **`indeterminate`** (text match not corroborated by an **exact** base match), or a `baselineReasonConflict = true` failure (exact name match but a different known failure reason), is **NOT** sufficient to dismiss — those are `Needs human investigation`, not `Likely unrelated`. |
 | `Needs human investigation` | Evidence is mixed: the failure overlaps the PR area or platform but no direct causal link is clear, or the data suggests multiple plausible causes. |
 | `Insufficient data` | Build records, test results, or logs are missing/inaccessible/expired, or there is not enough evidence to make a responsible claim. |
 
