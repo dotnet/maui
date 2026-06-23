@@ -9,6 +9,14 @@ namespace Microsoft.Maui.Graphics.Tests
 {
 	public class ColorUnitTests
 	{
+		sealed class DerivedColor : Color
+		{
+			public DerivedColor(float red, float green, float blue, float alpha)
+				: base(red, green, blue, alpha)
+			{
+			}
+		}
+
 		[Fact]
 		public void TestHSLPostSetEquality()
 		{
@@ -136,6 +144,19 @@ namespace Microsoft.Maui.Graphics.Tests
 			var color2 = new Color(0.1f);
 
 			Assert.True(color1.GetHashCode() == color2.GetHashCode());
+		}
+
+		[Fact]
+		public void EqualsDerivedColorWithSameArgbValue()
+		{
+			Color baseColor = new Color(1f, 0f, 0f, 1f);
+			Color derivedColor = new DerivedColor(1f, 0f, 0f, 1f);
+
+			Assert.Equal(baseColor.ToInt(), derivedColor.ToInt());
+			Assert.True(baseColor.Equals(derivedColor));
+			Assert.True(derivedColor.Equals(baseColor));
+			Assert.True(EqualityComparer<Color>.Default.Equals(baseColor, derivedColor));
+			Assert.Equal(baseColor.GetHashCode(), derivedColor.GetHashCode());
 		}
 
 		[Fact]
