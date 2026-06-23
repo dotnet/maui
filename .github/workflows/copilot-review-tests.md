@@ -218,7 +218,7 @@ Invoke the **review-test-failures** skill: read and follow `.github/skills/revie
 
 That skill also references the canonical `.github/docs/maui-ci-facts.md`. The end goal is one **overall merge-readiness verdict** (Ready to merge / Not ready / Needs human investigation / Insufficient data / No failures found), informed by a **baseline comparison** against the most recent base-branch build. Use the gathered `failures.baseline`, `failures.baselineMatchCount`, `alsoFailsOnBaseline`, and `baselineSummary` fields — do not treat a failure as pre-existing without that evidence.
 
-The gathered `context.json`/`context.md` also carry a deterministic **merge-readiness gate** (`gate.verdictCeiling`, `gate.ceilingReasons`, coverage counts) plus per-failure `matchesKnownIssue` and `retriedStillFailing` evidence. Your overall verdict **MUST NOT be more favorable than `gate.verdictCeiling`** — a green verdict is impossible while a check is pending or a failing check could not be inspected. Surface the coverage ledger and ceiling in the report so the verdict is provably sound.
+The gathered `context.json`/`context.md` also carry a deterministic **merge-readiness gate** (`gate.verdictCeiling`, `gate.ceilingReasons`, coverage counts) plus per-failure `matchesKnownIssue` and `retriedStillFailing` evidence. Build-job breaks with no test name (crossgen/ReadyToRun, NativeAOT/ILC, linker, MSBuild `error`) are extracted as distinct failures too (`source = azdo-build-error`), and any failed build leg that yields **no** extractable failure is counted in `gate.unexplainedFailedLegs`. Your overall verdict **MUST NOT be more favorable than `gate.verdictCeiling`** — a green verdict is impossible while a check is pending, a failing check could not be inspected, or `gate.unexplainedFailedLegs > 0`. Surface the coverage ledger and ceiling in the report so the verdict is provably sound.
 
 ## Target
 
@@ -296,7 +296,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped. Deterministic ceiling: [gate.verdictCeiling][ — reason from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs. Deterministic ceiling: [gate.verdictCeiling][ — reason from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |

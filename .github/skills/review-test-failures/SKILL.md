@@ -47,11 +47,16 @@ Key fields to use:
     `Ready to merge`). Your overall verdict MUST NOT be more favorable than this.
   - `gate.ceilingReasons[]` — exact reasons (with check names) that set the ceiling.
   - Coverage counts: `totalChecks`, `passingOrNeutralChecks`, `failingChecks`,
-    `pendingChecks`, `inaccessibleFailingChecks`, `unmappedFailingChecks`.
+    `pendingChecks`, `inaccessibleFailingChecks`, `unmappedFailingChecks`,
+    `unexplainedFailedLegs` (failed build legs that produced no extractable failure —
+    a build break with no test name, or an unreadable log; **any value > 0 caps the
+    ceiling at `Needs human investigation`**).
   - Evidence counts: `failuresAlsoOnBaseline`, `failuresMatchingKnownIssue`,
     `failuresRetriedStillFailing`, `baselineInconclusiveRows`.
-- `failures.unique[]` — distinct PR failures (deduped by test name + OS platform). Each
-  carries:
+- `failures.unique[]` — distinct PR failures (deduped by test name + OS platform). This
+  includes **build-job breaks** (crossgen/R2R, NativeAOT/ILC, linker, MSBuild `error`),
+  which carry a synthetic name like `Build macOS (Debug) - Failed to load assembly` and a
+  `source` of `azdo-build-error` — they are real failures, not noise. Each carries:
   - `alsoFailsOnBaseline` (`true` when the same test+platform also fails on the most
     recent base-branch build),
   - `matchesKnownIssue` (`{number,title,url}` when the failure message matches an open
@@ -132,7 +137,8 @@ After classifying each failure, synthesize exactly one overall verdict — one o
 
 **Deterministic verdict ceiling (hard rule).** The gatherer computes `gate.verdictCeiling`
 from coverage facts the model cannot see around (pending checks, inaccessible/unmapped
-failing checks). Your overall verdict **MUST NOT be more favorable** than
+failing checks, and failed build legs with no extractable failure). Your overall verdict
+**MUST NOT be more favorable** than
 `gate.verdictCeiling`, using this favorability order (most → least favorable):
 
 `No failures found` ≥ `Ready to merge` ≥ `Not ready` ≥ `Needs human investigation` ≥ `Insufficient data`
@@ -142,7 +148,8 @@ per-failure analysis shows a real PR-caused break → report `Not ready`). You m
 more favorable. If `gate.ceilingReasons` is non-empty, surface those reasons in the report
 and reflect them in the recommended action. This is what makes a green verdict trustworthy:
 it is impossible to emit `Ready to merge` / `No failures found` while a check is still
-pending or a failing check could not be inspected.
+pending, a failing check could not be inspected, or a failed build leg produced no
+extractable failure (`gate.unexplainedFailedLegs > 0`).
 
 Do not declare `Ready to merge` while required checks are still pending (the ceiling
 already enforces this).
@@ -184,7 +191,7 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |

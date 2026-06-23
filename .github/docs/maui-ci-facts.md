@@ -53,6 +53,29 @@ and `maui-pr-uitests` may not run automatically depending on the changed files.
   inaccessible/expired/insufficient data — do not assume unrelated or PR-caused.
 - Helix work-item console output may live behind `helix.dot.net` and Azure Blob URLs.
 
+## Enumerate EVERY failed leg — Build Analysis is NOT exhaustive
+
+> 🚨 The single most common way to be **wrong** about "what's unique to this PR" is to
+> answer from an incomplete failure list. Build a complete inventory first, then classify.
+
+- **Build Analysis `unmatchedFailures` is not a complete failure list.** It curates
+  test-like failures and recognized error strings; it routinely **omits whole failed build
+  jobs** — crossgen2/ReadyToRun (R2R), NativeAOT/ILC, the linker, `pack`, and plain MSBuild
+  `error` legs. Never treat it as the exhaustive set of what failed.
+- **Enumerate every failed timeline record** (`result == failed`) and open the log of
+  **each** one — including records whose structured `issues[]` array is empty
+  (`issues == 0`). A failed record with zero structured issues is **not benign**: the real
+  error is in the **log**, not the `issues[]` array. `Build <platform> (Debug/Release)` and
+  `Build Microsoft.Maui.sln` legs are exactly where build breaks hide.
+- **Not every failure is an xUnit `[FAIL]` test.** A broken build job has **no test name** —
+  it shows up as `error <CODE>:` or `... : error : ...` lines (e.g. crossgen2
+  `Failed to load assembly 'Microsoft.Maui'`). A test-name-only search will miss it entirely.
+- Use `azdo_search_timeline` with `resultFilter=all` to get every record's result + logId,
+  then open each failed leg's specific `logId`. A bare `azdo_search_log` without a logId
+  only ranked-searches a subset of logs, so **0 matches there is inconclusive**, not "clean."
+- Do not answer "nothing is unique to the PR" until you have confirmed you inspected
+  **all** failed legs. Absence of evidence is not evidence — it is usually an unread log.
+
 ## MAUI-specific quirks
 
 ### XHarness exit-0 blind spot
@@ -116,6 +139,20 @@ pipeline is almost certainly **not** caused by the PR.
 - Base-build *result* alone is weaker evidence than a per-test match: a red base build
   tells you the branch is unhealthy; a matching red **test** tells you this specific
   failure is not yours.
+- **Also diff at the JOB/leg level, not just the test level.** Build-job breaks (crossgen,
+  NativeAOT, `pack`, MSBuild errors) have **no test name**, so a test-only baseline diff
+  structurally cannot see them. For each **failed leg** on the PR (by normalized job name,
+  e.g. `Build macOS (Debug)`), compare the **same leg's result** on the most recent
+  base-branch builds.
+- **"Failed on the PR, green on the base branch for the same leg" is the STRONGEST
+  PR-caused signal there is** — it outranks a test-name baseline match. If `Build macOS
+  (Debug)` is red on the PR but was green on the base build, the break is the PR's, full
+  stop, even if Build Analysis matched nothing.
+- For **flow / dependency-update PRs** (`dotnet-maestro[bot]`): when a leg fails only on the
+  PR, diff the **SDK/runtime version** between PR and base — compare the `.dotnet/sdk/<ver>`
+  path in the PR's failing log against the base build's log. A bumped SDK/runtime
+  (e.g. `preview.5` → `preview.6`) that introduces a crossgen/R2R or linker break is a
+  PR-caused regression carried in by the dependency, not a pre-existing flake.
 - If baseline data is missing or the base build is inaccessible, say so — do not assume
   a failure is pre-existing without evidence.
 
@@ -158,6 +195,9 @@ error XAGRDL0000: Could not GET '...pkgs.dev.azure.com/.../maven/v1/...'
 |---------|-------|-------|
 | `error CS####` | `maui-pr` | C# compiler error — check file/line |
 | `error XA####` | `maui-pr` | Android build error |
+| `error : ... Failed to load assembly` | `maui-pr` `Build <platform>` leg | **crossgen2 / ReadyToRun (R2R)** break — a failed **build job**, not a test, with no test name. Common after an SDK/runtime (`dotnet/dotnet`) bump on a flow PR. Job-level baseline diff: red on PR vs green on base ⇒ PR-caused. |
+| `error IL####` / `ILC####` / NativeAOT publish fail | `maui-pr` AOT legs, `Run Integration Tests – AOT` | **NativeAOT / ILC** trim-analysis break. May be pre-existing (e.g. HybridWebView `IL2026`) — confirm with a job- AND test-level baseline diff before attributing to the PR. |
+| `error NETSDK1144` | `maui-pr` TrimFull legs | Optimizing assemblies for size failed (often an ILLink warning promoted to error). Check whether the same leg is red on the base branch. |
 | `XamlC` | `maui-pr` | XAML compiler — usually missing type or bad binding |
 | `error XAGRDL0000` / `401` / `No local versions` | `maui-pr` or official build | Gradle/Maven feed issue — see above |
 | `XHarness timeout` | `maui-pr-devicetests` Helix logs | Test killed by infrastructure; may be transient |
@@ -189,20 +229,30 @@ on appearance alone:
 
 1. **Baseline match** — the same `test+platform` also fails on the most recent base-branch
    build (`alsoFailsOnBaseline = true`). Pre-existing, not introduced by the PR.
-2. **Known-issue match** — the failure message matches an open `Known Build Error` issue
+2. **Job-level baseline match** — for a build break with no test name (crossgen/NativeAOT/
+   linker/MSBuild), the same **leg** is also red on the most recent base build. Conversely,
+   a leg that is **red on the PR but green on base is PROOF the break is PR-caused** — this
+   is the strongest signal and a test-only diff cannot produce it.
+3. **Known-issue match** — the failure message matches an open `Known Build Error` issue
    (the dotnet Build Analysis registry). Cite the issue number/link.
-3. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
+4. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
    attempt (the recovered leg does not surface as a failure at all). A leg that was retried
    and **still failed** (`retriedStillFailing = true`) is the opposite — **persistent**,
    so do not call it flaky.
 
-If none of these hold, a failure on a path/platform the PR changes leans PR-caused.
+If none of these hold, a failure on a path/platform the PR changes leans PR-caused. Note
+that **not every failure is a test** — a red build leg with no extracted test name still
+counts as a failure and must be classified, never silently dropped.
 
 The automated `/review tests` lane additionally computes a **deterministic verdict
 ceiling** in `Gather-TestFailureContext.ps1` (`gate.verdictCeiling`): the overall verdict
 can never be more favorable than what coverage allows. A green verdict
-(`Ready to merge` / `No failures found`) is forbidden whenever a check is still pending or
-a failing check could not be inspected, so a green is always trustworthy. The interactive
+(`Ready to merge` / `No failures found`) is forbidden whenever a check is still pending, a
+failing check could not be inspected, **or a failed build leg produced no extractable
+failure** (`gate.unexplainedFailedLegs > 0` — the backstop that stops a crossgen/NativeAOT
+build break from being silently counted as zero failures). The gatherer also extracts
+build-job errors (not just xUnit `[FAIL]` lines) via `Get-BuildErrorsFromLog`, so crossgen/
+R2R/linker breaks flow into dedup, the baseline diff, and the gate. The interactive
 investigator should apply the same discipline by hand.
 
 ## Escalation

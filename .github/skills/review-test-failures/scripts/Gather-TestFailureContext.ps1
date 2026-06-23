@@ -468,6 +468,94 @@ function Get-TestFailuresFromLog {
     return $failures.ToArray()
 }
 
+function Get-BuildErrorsFromLog {
+    # Extracts build/toolchain errors from a FAILED build leg whose break is NOT an xUnit
+    # '[FAIL]' test line: crossgen2/ReadyToRun, NativeAOT/ILC, the linker, or any MSBuild
+    # coded error. These build-job breaks carry no test name, so without this they never
+    # become a structured failure and silently escape dedup, the baseline diff, and the
+    # merge-readiness gate -- a leg can be red while distinctFailures stays 0 (a false
+    # green). Build Analysis is likewise NOT exhaustive and routinely omits whole failed
+    # build jobs (see maui-ci-facts.md "Enumerate every failed leg"). Keyed by record name
+    # + error signature so the SAME break on the base branch still matches in the baseline
+    # diff, while a break that is green on base is correctly attributed to the PR.
+    param(
+        [string[]]$Lines,
+        [int]$LogId,
+        [string]$RecordName,
+        [int]$MaxErrors = 5
+    )
+
+    $seen = [ordered]@{}
+    $failures = New-Object System.Collections.Generic.List[object]
+    $fallbackErrorLine = $null
+
+    foreach ($line in $Lines) {
+        $signature = $null
+
+        # 1) MSBuild / SDK / linker / Android / C# coded error: 'error NETSDK1144:',
+        #    'error MSB3073:', 'error IL2026:', 'error XA4210:', 'error CS0246:', etc.
+        $coded = [regex]::Match($line, 'error\s+(?<code>[A-Z]{2,}[0-9]{3,})\s*:')
+        if ($coded.Success) {
+            $signature = $coded.Groups['code'].Value
+        }
+        # 2) crossgen2 / ReadyToRun / NativeAOT (ILC) toolchain break with no MSBuild code
+        #    (often surfaces as 'Microsoft.NET.CrossGen.targets(...): error : Failed to load
+        #    assembly ...'). SDK/runtime flow PRs introduce these as a failed BUILD job.
+        elseif ($line -match '(?i)Failed to load assembly') {
+            $signature = 'Failed to load assembly'
+        }
+        elseif (($line -match '(?i)crossgen|ReadyToRun|ILCompiler|\bILC\b') -and ($line -match '(?i)\berror\b')) {
+            $signature = 'CrossGen/R2R'
+        }
+        # 3) A bare '##[error]' marker is the last-resort signal: remember the first one but
+        #    only emit it if no specific error was found, so a leg always yields >=1 failure
+        #    without burying a specific cause under a generic rollup line.
+        elseif (($line -match '##\[error\]') -and (-not $fallbackErrorLine)) {
+            $fallbackErrorLine = ([string]$line).Trim()
+            continue
+        }
+        else {
+            continue
+        }
+
+        if ($seen.Contains($signature)) {
+            continue
+        }
+        $seen[$signature] = $true
+
+        $message = ([string]$line).Trim()
+        $platform = Get-PlatformFromText -Text "$RecordName $message"
+        $failures.Add([ordered]@{
+            testName = "$RecordName - $signature"
+            platform = $platform
+            source = "azdo-build-error"
+            logId = $LogId
+            recordName = $RecordName
+            message = $message
+            excerpt = @($message)
+        })
+
+        if ($failures.Count -ge $MaxErrors) {
+            break
+        }
+    }
+
+    if ($failures.Count -eq 0 -and $fallbackErrorLine) {
+        $platform = Get-PlatformFromText -Text "$RecordName $fallbackErrorLine"
+        $failures.Add([ordered]@{
+            testName = "$RecordName - build error"
+            platform = $platform
+            source = "azdo-build-error"
+            logId = $LogId
+            recordName = $RecordName
+            message = $fallbackErrorLine
+            excerpt = @($fallbackErrorLine)
+        })
+    }
+
+    return $failures.ToArray()
+}
+
 function Get-ObjectValue {
     param(
         [Parameter(Mandatory = $true)]
@@ -756,7 +844,15 @@ function Get-BuildLogTestFailures {
         try {
             $logText = Invoke-TextUrl -Url "$baseUrl/_apis/build/builds/$BuildId/logs/$logId`?api-version=7.1"
             $lines = @($logText -split "`r?`n")
-            foreach ($failure in (Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)) {
+            $recordFailures = @(Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)
+            # Mirror the PR-side fallback: a base build break that is not an xUnit test line
+            # (crossgen/NativeAOT/linker/MSBuild error) must also be captured here, otherwise
+            # a pre-existing build break on the base branch cannot match the PR-side build
+            # error and would be misattributed to the PR.
+            if ($recordFailures.Count -eq 0 -and $record.type -eq 'Task') {
+                $recordFailures = @(Get-BuildErrorsFromLog -Lines $lines -LogId $logId -RecordName $record.name)
+            }
+            foreach ($failure in $recordFailures) {
                 $failure.source = "azdo-baseline-log"
                 $failure.buildId = $BuildId
                 $failure.buildDefinition = $build.definition.name
@@ -889,6 +985,11 @@ foreach ($ref in $manualBuildRefs.ToArray()) {
 $builds = New-Object System.Collections.Generic.List[object]
 $allLogFailures = New-Object System.Collections.Generic.List[object]
 $allLogExcerpts = New-Object System.Collections.Generic.List[object]
+# Failed Task legs whose log was read but yielded NO extractable failure (test OR build
+# error). This is the backstop for the "never wrong again" guarantee: even if a novel
+# break shape escapes both extractors, a failed-but-unexplained leg forces the verdict
+# ceiling down so a build break can never be silently counted as zero failures.
+$allUnexplainedLegs = New-Object System.Collections.Generic.List[object]
 
 foreach ($buildRef in $buildRefsById.Values) {
     Write-Host "Inspecting AzDO build $($buildRef.buildId)..."
@@ -998,6 +1099,24 @@ foreach ($buildRef in $buildRefsById.Values) {
             }
 
             $failures = @(Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)
+            # A failed build leg whose break is not an xUnit '[FAIL]' line (crossgen/R2R,
+            # NativeAOT, MSBuild error, linker) yields no test-shaped failure. Extract the
+            # build error so the break still enters dedup, the baseline diff, and the gate
+            # instead of silently counting as zero failures (the crossgen 'Failed to load
+            # assembly' class of break). Only Task records carry the real error; parent
+            # Stage/Phase/Job records just roll up their children.
+            if ($failures.Count -eq 0 -and $record.type -eq 'Task') {
+                $failures = @(Get-BuildErrorsFromLog -Lines $lines -LogId $logId -RecordName $record.name)
+            }
+            # A failed Task whose log was read but produced no failure at all is an
+            # "unexplained leg" -- record it so the gate caps the verdict (backstop).
+            if ($failures.Count -eq 0 -and $record.type -eq 'Task') {
+                $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $buildRef.buildId
+                    recordName = [string]$record.name
+                    logId = $logId
+                })
+            }
             # A record that carries previous attempts was retried by CI and is STILL
             # failing on its latest attempt. That is evidence the failure is persistent
             # (PR-caused or a hard infra break), NOT a one-off flake — surface it so the
@@ -1271,19 +1390,24 @@ $failuresRetried = @($dedupedFailures | Where-Object { $_.retriedStillFailing })
 $baselineInconclusiveRows = @($baselineSummaryArray | Where-Object {
     $_.note -and ([string]$_.note -match "(?i)inconclusive|incomplete|could not be read|cannot be confirmed|not be confirmed")
 }).Count
+$unexplainedLegs = @($allUnexplainedLegs)
+$unexplainedLegNames = @($unexplainedLegs | ForEach-Object { [string]$_.recordName } | Select-Object -Unique)
 
 $ceilingReasons = New-Object System.Collections.Generic.List[string]
 if ($inaccessibleFailingChecks.Count -gt 0) {
     $verdictCeiling = "Insufficient data"
     $ceilingReasons.Add("$($inaccessibleFailingChecks.Count) failing check(s) could not be inspected (AzDO build/logs inaccessible): $((@($inaccessibleFailingChecks) | Select-Object -First 8) -join ', ').")
 }
-elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0) {
+elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0) {
     $verdictCeiling = "Needs human investigation"
     if ($pendingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($pendingChecks.Count) interesting check(s) are still pending/in-progress; the CI outcome is not final: $((@($pendingChecks | ForEach-Object { $_.name }) | Select-Object -First 8) -join ', ').")
     }
     if ($unmappedFailingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($unmappedFailingChecks.Count) failing check(s) have no inspectable AzDO build evidence; read their details URL before trusting any verdict: $((@($unmappedFailingChecks) | Select-Object -First 8) -join ', ').")
+    }
+    if ($unexplainedLegs.Count -gt 0) {
+        $ceilingReasons.Add("$($unexplainedLegs.Count) failed build leg(s) produced no extractable failure (a build break with no test name -- crossgen/NativeAOT/linker -- or an unreadable log); open each leg's log before trusting any verdict: $((@($unexplainedLegNames) | Select-Object -First 8) -join ', ').")
     }
 }
 elseif ($failingChecks.Count -eq 0 -and $dedupedFailures.Count -eq 0) {
@@ -1308,6 +1432,8 @@ $gate = [ordered]@{
     failuresMatchingKnownIssue = $failuresKnownIssue
     failuresRetriedStillFailing = $failuresRetried
     baselineInconclusiveRows = $baselineInconclusiveRows
+    unexplainedFailedLegs = $unexplainedLegs.Count
+    unexplainedFailedLegNames = $unexplainedLegNames
     verdictCeiling = $verdictCeiling
     ceilingReasons = $ceilingReasons.ToArray()
     pendingCheckNames = @($pendingChecks | ForEach-Object { [string]$_.name })
@@ -1395,6 +1521,7 @@ $md.Add("- **Verdict ceiling (hard cap): $($gate.verdictCeiling)** — the poste
 $md.Add("- Coverage ledger: $($gate.totalChecks) checks total · $($gate.passingOrNeutralChecks) passing/neutral/skipped · $($gate.failingChecks) failing · $($gate.pendingChecks) pending")
 $md.Add("- Failing checks without inspectable evidence: $($gate.inaccessibleFailingChecks) inaccessible · $($gate.unmappedFailingChecks) unmapped")
 $md.Add("- Distinct failures: $($gate.distinctFailures) ($($gate.failuresAlsoOnBaseline) also on base · $($gate.failuresMatchingKnownIssue) known-issue · $($gate.failuresRetriedStillFailing) retried-still-failing)")
+$md.Add("- Failed build legs with no extractable failure (unexplained): $($gate.unexplainedFailedLegs)")
 $md.Add("- Known-issue matchers loaded: $($gate.knownIssueMatchersLoaded)")
 if (@($gate.ceilingReasons).Count -gt 0) {
     $md.Add("- Ceiling reasons:")
