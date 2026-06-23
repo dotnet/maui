@@ -261,6 +261,21 @@ Three critical gotchas this skill encodes — see [references/methodology.md](re
 
 This skill depends on `.github/scripts/shared/MauiReleaseVersioning.psm1` for canonical milestone/version parsing (e.g. `Get-CurrentMajorVersion`, `ConvertBranchToMilestone`, `Get-MilestoneSortKey`, `Compare-MauiMilestone`). The module is also consumed by `Fix-MilestoneDrift.ps1` to keep milestone classification consistent across all release-related automation.
 
+### `scripts/NightlyFeed.ps1` (nightly dogfood feed staleness banner)
+
+Both engines dot-source [`scripts/NightlyFeed.ps1`](scripts/NightlyFeed.ps1) to surface a one-line **nightly dogfood feed freshness banner** at the top of each tracker (just under **Generated**). The point of the banner is to make it obvious when the dogfood bits people are told to test have stopped flowing — e.g. when the `ci.inflight` pipeline is red, the feed goes stale and the banner turns ❌ so consumers don't waste time validating against builds that never updated.
+
+Key functions (all PURE except the one network call, which is **fail-open** — any feed error returns `$null` / renders a muted "freshness unknown" note and never breaks tracker generation):
+
+| Function | Purpose |
+|----------|---------|
+| `Get-NightlyFeedFreshness` | Queries an Azure Artifacts NuGet feed (`dotnet10`, `dotnet11`, …) for the newest **published** build matching a version-prefix regex; returns version + publish date. Injectable `-Fetcher` for offline tests. |
+| `Resolve-NightlyDogfoodFreshness` | Picks the stream that matters: **`ci.inflight` first** (the "shipping next" dogfood bits), the lane band only as a fallback. Conservatively returns `matched=$false` when *only* `ci.main` exists, so a daily main build never paints a false green. |
+| `Format-NightlyFeedLaneLabel` | PURE builder for the `` [`feed`](url) · <typeNote> `` lane label. Centralizes the honest-labeling rule (`inflight`→`ci.inflight`; `band`→caller-formatted band note; unknown→`ci.inflight`) so the SR and Preview lanes can't drift. |
+| `Get-NightlyFeedTier` / `Format-NightlyFeedBanner` | Bucket age into ✅ ≤2d · ⚠️ 3–6d · ❌ ≥7d and render the markdown banner. Both take an explicit `-Now`, so they're deterministic and unit-testable offline. |
+
+Determinism / idempotency: the engine captures **one** `UtcNow` per run (`$Data['nightlyFeedNow']`) and reuses it for both the rendered banner and the semantic-hash tier, so a quiet SR tracker still refreshes when the feed crosses a tier boundary, but a same-tier day-count tick does **not** churn the issue. The freshness band is folded into `Get-ReportSemanticHash` (tier|version only — the raw timestamp is never hashed).
+
 ## Integration
 
 - **Custom agent**: `.github/agents/release-readiness-agent.agent.md` wraps this skill — handles regression-label confirmation, runs the script, then uses WorkIQ to add context for `rejected-from-sr` PRs.
@@ -291,3 +306,4 @@ The harness covers:
 - **`-AllActiveMajors`** end-to-end across net10 + net11 with the expected tracker counts
 - **`Get-ReleaseReadiness`** verdict classification using known-answer data from the SR7 readiness analysis (e.g. #35313 → `in-sr-active`, #35344 → `in-sr-active` via the SafeArea follow-on fix, #35771 → `no-fix-yet`)
 - **Idempotent body hash** stability across re-runs — **SR trackers only** (the daily workflow compares the embedded `<!-- release-readiness-hash: sha=... -->` marker against the live issue and skips the edit when the semantic content is unchanged, so re-runs don't churn the tracker). Preview trackers carry no hash marker and are refreshed on every scheduled run.
+- **Nightly dogfood feed banner** (`NightlyFeed.ps1`) — offline unit coverage for the lane-label honest-labeling rule (`Format-NightlyFeedLaneLabel`), the `ci.inflight`-first / `ci.main`-false-green resolver, age→tier bucketing, the fail-open feed query (mocked `-Fetcher`), and the banner's fold into `Get-ReportSemanticHash` (tier change refreshes, same-tier day tick does not). All network-free via injected fixtures and explicit `-Now`.
