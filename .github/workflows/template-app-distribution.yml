@@ -173,22 +173,74 @@ jobs:
         if: ${{ matrix.platform == 'ios' }}
         shell: bash
         run: |
-          SELECTED_XCODE=""
-          while IFS= read -r xcode; do
-            if compgen -G "$xcode/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk" > /dev/null &&
-               compgen -G "$xcode/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.sdk" > /dev/null; then
-              SELECTED_XCODE="$xcode"
-              break
-            fi
-          done < <(find /Applications -maxdepth 1 -name 'Xcode*.app' -type d | sort -r)
+          XCODE_INFO=$(python3 - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
 
-          if [ -z "$SELECTED_XCODE" ]; then
+          def version_tuple(path: Path, prefix: str) -> tuple[int, ...]:
+              match = re.search(rf"{prefix}([0-9.]+)?\.sdk$", path.name)
+              if not match or not match.group(1):
+                  return (0,)
+              return tuple(int(part) for part in match.group(1).split(".") if part)
+
+          best = None
+          for app in Path("/Applications").glob("Xcode*.app"):
+              developer = app / "Contents" / "Developer"
+              macos_sdks = list((developer / "Platforms" / "MacOSX.platform" / "Developer" / "SDKs").glob("MacOSX*.sdk"))
+              iphoneos_sdks = list((developer / "Platforms" / "iPhoneOS.platform" / "Developer" / "SDKs").glob("iPhoneOS*.sdk"))
+              if not macos_sdks or not iphoneos_sdks:
+                  continue
+
+              macos_sdk = max(macos_sdks, key=lambda sdk: version_tuple(sdk, "MacOSX"))
+              iphoneos_sdk = max(iphoneos_sdks, key=lambda sdk: version_tuple(sdk, "iPhoneOS"))
+              sort_key = (version_tuple(iphoneos_sdk, "iPhoneOS"), version_tuple(macos_sdk, "MacOSX"), app.name)
+              if best is None or sort_key > best[0]:
+                  best = (sort_key, app, macos_sdk, iphoneos_sdk)
+
+          if best is None:
+              sys.exit(1)
+
+          _, app, macos_sdk, iphoneos_sdk = best
+          print(app)
+          print(macos_sdk)
+          print(iphoneos_sdk)
+          PY
+          )
+
+          if [ -z "$XCODE_INFO" ]; then
             echo "::error::No installed Xcode with both macOS and iPhoneOS SDKs was found."
             exit 1
           fi
 
+          SELECTED_XCODE=$(printf '%s\n' "$XCODE_INFO" | sed -n '1p')
+          MACOS_SDK=$(printf '%s\n' "$XCODE_INFO" | sed -n '2p')
+          IPHONEOS_SDK=$(printf '%s\n' "$XCODE_INFO" | sed -n '3p')
+          DEVELOPER_DIR="$SELECTED_XCODE/Contents/Developer"
+
           echo "Selecting Xcode: $SELECTED_XCODE"
-          sudo xcode-select -s "$SELECTED_XCODE/Contents/Developer"
+          echo "Selected macOS SDK: $MACOS_SDK"
+          echo "Selected iPhoneOS SDK: $IPHONEOS_SDK"
+          sudo xcode-select -s "$DEVELOPER_DIR"
+
+          ensure_sdk_link() {
+            local link_path="$1"
+            local target_path="$2"
+
+            if [ -e "$link_path" ]; then
+              return
+            fi
+
+            if [ -L "$link_path" ]; then
+              sudo rm "$link_path"
+            fi
+
+            sudo ln -s "$(basename "$target_path")" "$link_path"
+          }
+
+          ensure_sdk_link "$DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" "$MACOS_SDK"
+          ensure_sdk_link "$DEVELOPER_DIR/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk" "$IPHONEOS_SDK"
+
           xcodebuild -version
           xcrun --sdk macosx --show-sdk-path
           xcrun --sdk iphoneos --show-sdk-path
@@ -341,22 +393,74 @@ jobs:
         if: ${{ matrix.platform == 'ios' }}
         shell: bash
         run: |
-          SELECTED_XCODE=""
-          while IFS= read -r xcode; do
-            if compgen -G "$xcode/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk" > /dev/null &&
-               compgen -G "$xcode/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.sdk" > /dev/null; then
-              SELECTED_XCODE="$xcode"
-              break
-            fi
-          done < <(find /Applications -maxdepth 1 -name 'Xcode*.app' -type d | sort -r)
+          XCODE_INFO=$(python3 - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
 
-          if [ -z "$SELECTED_XCODE" ]; then
+          def version_tuple(path: Path, prefix: str) -> tuple[int, ...]:
+              match = re.search(rf"{prefix}([0-9.]+)?\.sdk$", path.name)
+              if not match or not match.group(1):
+                  return (0,)
+              return tuple(int(part) for part in match.group(1).split(".") if part)
+
+          best = None
+          for app in Path("/Applications").glob("Xcode*.app"):
+              developer = app / "Contents" / "Developer"
+              macos_sdks = list((developer / "Platforms" / "MacOSX.platform" / "Developer" / "SDKs").glob("MacOSX*.sdk"))
+              iphoneos_sdks = list((developer / "Platforms" / "iPhoneOS.platform" / "Developer" / "SDKs").glob("iPhoneOS*.sdk"))
+              if not macos_sdks or not iphoneos_sdks:
+                  continue
+
+              macos_sdk = max(macos_sdks, key=lambda sdk: version_tuple(sdk, "MacOSX"))
+              iphoneos_sdk = max(iphoneos_sdks, key=lambda sdk: version_tuple(sdk, "iPhoneOS"))
+              sort_key = (version_tuple(iphoneos_sdk, "iPhoneOS"), version_tuple(macos_sdk, "MacOSX"), app.name)
+              if best is None or sort_key > best[0]:
+                  best = (sort_key, app, macos_sdk, iphoneos_sdk)
+
+          if best is None:
+              sys.exit(1)
+
+          _, app, macos_sdk, iphoneos_sdk = best
+          print(app)
+          print(macos_sdk)
+          print(iphoneos_sdk)
+          PY
+          )
+
+          if [ -z "$XCODE_INFO" ]; then
             echo "::error::No installed Xcode with both macOS and iPhoneOS SDKs was found."
             exit 1
           fi
 
+          SELECTED_XCODE=$(printf '%s\n' "$XCODE_INFO" | sed -n '1p')
+          MACOS_SDK=$(printf '%s\n' "$XCODE_INFO" | sed -n '2p')
+          IPHONEOS_SDK=$(printf '%s\n' "$XCODE_INFO" | sed -n '3p')
+          DEVELOPER_DIR="$SELECTED_XCODE/Contents/Developer"
+
           echo "Selecting Xcode: $SELECTED_XCODE"
-          sudo xcode-select -s "$SELECTED_XCODE/Contents/Developer"
+          echo "Selected macOS SDK: $MACOS_SDK"
+          echo "Selected iPhoneOS SDK: $IPHONEOS_SDK"
+          sudo xcode-select -s "$DEVELOPER_DIR"
+
+          ensure_sdk_link() {
+            local link_path="$1"
+            local target_path="$2"
+
+            if [ -e "$link_path" ]; then
+              return
+            fi
+
+            if [ -L "$link_path" ]; then
+              sudo rm "$link_path"
+            fi
+
+            sudo ln -s "$(basename "$target_path")" "$link_path"
+          }
+
+          ensure_sdk_link "$DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" "$MACOS_SDK"
+          ensure_sdk_link "$DEVELOPER_DIR/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk" "$IPHONEOS_SDK"
+
           xcodebuild -version
           xcrun --sdk macosx --show-sdk-path
           xcrun --sdk iphoneos --show-sdk-path
