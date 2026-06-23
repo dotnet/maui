@@ -142,43 +142,70 @@ function ConvertFrom-ReviewCommand {
     }
 }
 
-function Test-ReviewCommandOptionsAllowed {
+# Per-run cache so a PR with many comments from the same author triggers at most
+# one collaborator-permission API call per distinct login.
+$script:ReviewOptionPermissionCache = @{}
+
+function Clear-ReviewOptionPermissionCache {
+    $script:ReviewOptionPermissionCache = @{}
+}
+
+function Test-ReviewOptionLoginTrusted {
+    <#
+    .SYNOPSIS
+        Returns $true when the login currently has write/maintain/admin
+        collaborator permission — the SAME signal review-trigger.yml uses to
+        authorize a maintainer's /review command.
+
+    .DESCRIPTION
+        We deliberately do NOT use the comment's author_association. With the
+        Actions GITHUB_TOKEN that field reads as CONTRIBUTOR (not MEMBER) for
+        maintainers whose org membership is private, which caused /review
+        -b <branch> -p <platform> options to be silently dropped so reruns fell
+        back to the 'main' pipeline branch. The collaborators/<user>/permission
+        endpoint only needs metadata:read, is what /review itself calls, and
+        reflects the user's CURRENT access rather than a per-comment snapshot.
+    #>
     param(
-        $Comment,
-        [AllowNull()][string[]]$AllowedAuthorLogins = $null
+        [string]$Login,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
     )
 
-    # The comment's own author_association is always required to be in the trusted set,
-    # so that a login which was trusted on an earlier comment cannot carry that trust
-    # forward to a later comment posted after access changed.
-    $association = if ($Comment.author_association) { [string]$Comment.author_association } else { '' }
-    if ($association -notin @('OWNER', 'MEMBER', 'COLLABORATOR')) {
+    if ([string]::IsNullOrWhiteSpace($Login)) {
         return $false
     }
 
-    if ($null -ne $AllowedAuthorLogins) {
-        if (-not $Comment.user -or [string]::IsNullOrWhiteSpace($Comment.user.login)) {
-            return $false
-        }
-
-        $login = ([string]$Comment.user.login).ToLowerInvariant()
-        $allowed = @($AllowedAuthorLogins | ForEach-Object { ([string]$_).ToLowerInvariant() })
-        return $allowed -contains $login
+    $key = $Login.ToLowerInvariant()
+    if ($script:ReviewOptionPermissionCache.ContainsKey($key)) {
+        return $script:ReviewOptionPermissionCache[$key]
     }
 
-    return $true
+    $permission = ''
+    try {
+        $permission = [string](gh api "repos/$Owner/$Repo/collaborators/$Login/permission" --jq '.permission' 2>$null)
+    } catch {
+        $permission = ''
+    }
+    # A non-collaborator yields HTTP 404 (empty permission here); treat as untrusted.
+    $trusted = $permission.Trim() -in @('admin', 'maintain', 'write')
+    $script:ReviewOptionPermissionCache[$key] = $trusted
+    return $trusted
 }
 
 function Get-LatestReviewCommandOptions {
     param(
         [object[]]$Comments,
-        [AllowNull()][string[]]$AllowedAuthorLogins = $null
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
     )
 
     $reviewCommands = @($Comments | Where-Object {
         $_.kind -eq 'issue-comment' -and
-        (Test-ReviewCommandOptionsAllowed -Comment $_ -AllowedAuthorLogins $AllowedAuthorLogins) -and
-        (ConvertFrom-ReviewCommand $_.body)
+        $_.user -and
+        -not [string]::IsNullOrWhiteSpace($_.user.login) -and
+        (ConvertFrom-ReviewCommand $_.body) -and
+        (Test-ReviewOptionLoginTrusted -Login ([string]$_.user.login) -Owner $Owner -Repo $Repo)
     } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true })
 
     if ($reviewCommands.Count -eq 0) {

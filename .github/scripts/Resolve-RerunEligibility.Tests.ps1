@@ -101,84 +101,96 @@ Describe 'Resolve-RerunEligibility' {
         Normalize-GitHubActorLogin 'dev-user' | Should -Be 'dev-user'
     }
 
-    It 'finds latest normal review command while ignoring rerun and tests commands' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review -b old/ref -p android' -CreatedAt '2026-05-31T09:00:00Z'
-            New-TestComment -Id 2 -Body '/review tests' -CreatedAt '2026-05-31T09:05:00Z'
-            New-TestComment -Id 3 -Body '/review --platform ios --branch feature/regression-check' -CreatedAt '2026-05-31T09:10:00Z'
-            New-TestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-05-31T09:15:00Z'
-        )
+    Context 'review command option resolution (collaborator-permission trust)' {
+        BeforeEach {
+            # Trust is decided by CURRENT collaborator permission per login — the
+            # same signal /review uses — not the comment's author_association.
+            Mock Test-ReviewOptionLoginTrusted {
+                param([string]$Login, [string]$Owner, [string]$Repo)
+                return ($Login -in @('dev-user', 'trusted-user', 'maintainer'))
+            }
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments
+        It 'finds latest normal review command while ignoring rerun and tests commands' {
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review -b old/ref -p android' -CreatedAt '2026-05-31T09:00:00Z'
+                New-TestComment -Id 2 -Body '/review tests' -CreatedAt '2026-05-31T09:05:00Z'
+                New-TestComment -Id 3 -Body '/review --platform ios --branch feature/regression-check' -CreatedAt '2026-05-31T09:10:00Z'
+                New-TestComment -Id 4 -Body '/review rerun' -CreatedAt '2026-05-31T09:15:00Z'
+            )
 
-        $options.Found | Should -BeTrue
-        $options.Platform | Should -Be 'ios'
-        $options.PipelineRef | Should -Be 'feature/regression-check'
-        $options.CommentId | Should -Be 3
-    }
+            $options = Get-LatestReviewCommandOptions -Comments $comments
 
-    It 'ignores review command options from commenters without write access' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -AuthorAssociation 'NONE'
-            New-TestComment -Id 2 -Body '/review -b feature/trusted -p ios' -CreatedAt '2026-05-31T09:05:00Z' -AuthorAssociation 'MEMBER'
-        )
+            $options.Found | Should -BeTrue
+            $options.Platform | Should -Be 'ios'
+            $options.PipelineRef | Should -Be 'feature/regression-check'
+            $options.CommentId | Should -Be 3
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments
+        It 'ignores review command options from commenters without write access' {
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -Login 'untrusted-user'
+                New-TestComment -Id 2 -Body '/review -b feature/trusted -p ios' -CreatedAt '2026-05-31T09:05:00Z' -Login 'maintainer'
+            )
 
-        $options.Found | Should -BeTrue
-        $options.Platform | Should -Be 'ios'
-        $options.PipelineRef | Should -Be 'feature/trusted'
-        $options.CommentId | Should -Be 2
-    }
+            $options = Get-LatestReviewCommandOptions -Comments $comments
 
-    It 'does not use review command options when only untrusted comments exist' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -AuthorAssociation 'NONE'
-        )
+            $options.Found | Should -BeTrue
+            $options.Platform | Should -Be 'ios'
+            $options.PipelineRef | Should -Be 'feature/trusted'
+            $options.CommentId | Should -Be 2
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments
+        It 'does not use review command options when only untrusted comments exist' {
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review --branch=refs/pull/9999/merge --platform=windows' -CreatedAt '2026-05-31T09:00:00Z' -Login 'untrusted-user'
+            )
 
-        $options.Found | Should -BeFalse
-        $options.PipelineRef | Should -Be 'main'
-    }
+            $options = Get-LatestReviewCommandOptions -Comments $comments
 
-    It 'can restrict review command options to explicit write-permission authors' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review -b untrusted -p windows' -CreatedAt '2026-05-31T09:00:00Z' -Login 'untrusted-user' -AuthorAssociation 'COLLABORATOR'
-            New-TestComment -Id 2 -Body '/review -b trusted -p ios' -CreatedAt '2026-05-31T09:05:00Z' -Login 'trusted-user' -AuthorAssociation 'COLLABORATOR'
-        )
+            $options.Found | Should -BeFalse
+            $options.PipelineRef | Should -Be 'main'
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('trusted-user')
+        It 'uses the latest command from a currently-trusted maintainer' {
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review -b feature/old -p ios' -CreatedAt '2026-05-31T09:00:00Z' -Login 'maintainer'
+                New-TestComment -Id 2 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T09:10:00Z' -Login 'maintainer'
+            )
 
-        $options.Found | Should -BeTrue
-        $options.Platform | Should -Be 'ios'
-        $options.PipelineRef | Should -Be 'trusted'
-        $options.AuthorLogin | Should -Be 'trusted-user'
-    }
+            $options = Get-LatestReviewCommandOptions -Comments $comments
 
-    It 'still requires per-comment author_association even for previously-allowed logins' {
-        $comments = @(
-            New-TestComment -Id 1 -Body '/review -b feature/old -p ios' -CreatedAt '2026-05-31T09:00:00Z' -Login 'former-collaborator' -AuthorAssociation 'COLLABORATOR'
-            New-TestComment -Id 2 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T09:10:00Z' -Login 'former-collaborator' -AuthorAssociation 'NONE'
-        )
+            $options.Found | Should -BeTrue
+            $options.Platform | Should -Be 'windows'
+            $options.PipelineRef | Should -Be 'feature/new'
+            $options.CommentId | Should -Be 2
+            $options.AuthorLogin | Should -Be 'maintainer'
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('former-collaborator')
+        It 'ignores all commands from a login that currently lacks write access' {
+            $comments = @(
+                New-TestComment -Id 5 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T10:00:00Z' -Login 'former-collaborator'
+            )
 
-        $options.Found | Should -BeTrue
-        $options.Platform | Should -Be 'ios'
-        $options.PipelineRef | Should -Be 'feature/old'
-        $options.CommentId | Should -Be 1
-    }
+            $options = Get-LatestReviewCommandOptions -Comments $comments
 
-    It 'rejects every comment when previously-allowed login has lost access on all later comments' {
-        $comments = @(
-            New-TestComment -Id 5 -Body '/review -b feature/new -p windows' -CreatedAt '2026-05-31T10:00:00Z' -Login 'former-collaborator' -AuthorAssociation 'NONE'
-        )
+            $options.Found | Should -BeFalse
+            $options.PipelineRef | Should -Be 'main'
+        }
 
-        $options = Get-LatestReviewCommandOptions -Comments $comments -AllowedAuthorLogins @('former-collaborator')
+        It 'honors a command by collaborator permission even when author_association is NONE' {
+            # The exact production failure: a maintainer's /review -b read as
+            # author_association=CONTRIBUTOR under the bot token. Permission wins.
+            $comments = @(
+                New-TestComment -Id 1 -Body '/review -b feature/enhanced-reviewer -p android' -CreatedAt '2026-05-31T09:00:00Z' -Login 'maintainer' -AuthorAssociation 'NONE'
+            )
 
-        $options.Found | Should -BeFalse
-        $options.PipelineRef | Should -Be 'main'
+            $options = Get-LatestReviewCommandOptions -Comments $comments
+
+            $options.Found | Should -BeTrue
+            $options.Platform | Should -Be 'android'
+            $options.PipelineRef | Should -Be 'feature/enhanced-reviewer'
+        }
     }
 
     It 'rejects commands when no AI Summary exists' {
