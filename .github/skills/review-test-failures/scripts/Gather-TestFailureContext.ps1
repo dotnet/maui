@@ -193,15 +193,29 @@ function Get-AzDoTestRuns {
     $continuation = $null
     $truncated = $false
     $page = 0
+    # Scope by buildUri, NOT buildIds: the _apis/test/runs 'List' endpoint SILENTLY IGNORES a
+    # buildIds filter and returns project-wide runs from the beginning of time (verified against a
+    # real maui build -- buildIds=<mauiBuild> returned 2022-era runs from UNRELATED repos, e.g.
+    # Roslyn/runtime crossgen tests with build.id 602). buildUri=vstfs:///Build/Build/<id> is honored
+    # server-side and returns only this build's runs. Feeding the wrong runs here is a false-green
+    # vector: phantom runs report no failures, so their failedTests sum to 0 and could falsely confirm
+    # a clean device-test build (deviceTestFailedConfirmedZero) over the REAL build that actually failed.
+    $buildUri = "vstfs:///Build/Build/$BuildId"
     do {
         $page++
-        $url = "$BaseUrl/_apis/test/runs?buildIds=$BuildId&`$top=100&api-version=7.1"
+        $url = "$BaseUrl/_apis/test/runs?buildUri=$([uri]::EscapeDataString($buildUri))&`$top=100&api-version=7.1"
         if ($continuation) { $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))" }
         $headers = @{ Accept = "application/json" }
         if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) { $headers.Authorization = "Bearer $env:AZDO_TOKEN" }
         $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -ErrorAction Stop
         $body = if ([string]::IsNullOrWhiteSpace([string]$resp.Content)) { $null } else { [string]$resp.Content | ConvertFrom-Json }
-        foreach ($r in (ConvertTo-Array $body.value)) { $runs.Add($r) }
+        foreach ($r in (ConvertTo-Array $body.value)) {
+            # Defense in depth: drop any run that carries an explicit, MISMATCHED build id. The list view
+            # usually leaves run.build null (those pass through); only a populated wrong id is dropped, so
+            # a stray cross-build run can never re-enter even if the server filter ever regresses.
+            if ($r.build -and $r.build.id -and ([string]$r.build.id -ne [string]$BuildId)) { continue }
+            $runs.Add($r)
+        }
         $continuation = Get-HeaderValue -Headers $resp.Headers -Name 'x-ms-continuationtoken'
         if ([string]::IsNullOrWhiteSpace($continuation)) { $continuation = $null }
         if ($page -ge 50) { $truncated = ($null -ne $continuation); break }
@@ -2176,8 +2190,13 @@ foreach ($ic in $interestingChecks) {
     $isPending = if ($st) { $st -ne "COMPLETED" } else { [string]$ic.state -in @("PENDING", "EXPECTED") }
     if ($isPending) { $pendingChecks.Add($ic) } else { $failingChecks.Add($ic) }
 }
-$pendingChecks = @($pendingChecks)
-$failingChecks = @($failingChecks)
+# Materialize via .ToArray() (a direct CLR call), NOT @($list). The @() array-subexpression
+# operator routes a List[object] through PowerShell's PSToObjectArrayBinder/MaybeDebase dynamic
+# binder, which throws ArgumentException ("Argument types do not match" from Expression.Condition)
+# for certain element shapes (observed on real PR check data). .ToArray() bypasses the binder and
+# yields the same object[]. Do not "simplify" these back to @().
+$pendingChecks = $pendingChecks.ToArray()
+$failingChecks = $failingChecks.ToArray()
 
 # Aborted/incomplete failing checks: a CheckRun whose conclusion did not run to a clean,
 # inspectable result -- CANCELLED, TIMED_OUT, STARTUP_FAILURE, STALE, ACTION_REQUIRED. These are
@@ -2282,7 +2301,7 @@ $unattributedFailureNames = @($unattributedList | ForEach-Object { [string]$_.te
 $baselineInconclusiveRows = @($baselineSummaryArray | Where-Object {
     $_.note -and ([string]$_.note -match "(?i)inconclusive|incomplete|could not be read|cannot be confirmed|not be confirmed")
 }).Count
-$unexplainedLegs = @($allUnexplainedLegs)
+$unexplainedLegs = $allUnexplainedLegs.ToArray()  # .ToArray() not @(): see binder note above
 $unexplainedLegNames = @($unexplainedLegs | ForEach-Object { [string]$_.recordName } | Select-Object -Unique)
 
 # Earned-green guard (closes the false-green hole at the 'else' branch below).
