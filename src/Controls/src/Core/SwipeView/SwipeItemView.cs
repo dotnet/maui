@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
@@ -13,16 +14,21 @@ namespace Microsoft.Maui.Controls
 #if ANDROID || IOS || MACCATALYST || TIZEN
 	[ElementHandler(typeof(SwipeItemViewHandler))]
 #endif
-	public partial class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView
+	public partial class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView, ICommandElement
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(SwipeItemView), null,
-			propertyChanging: (bo, o, n) => ((SwipeItemView)bo).OnCommandChanging(),
-			propertyChanged: (bo, o, n) => ((SwipeItemView)bo).OnCommandChanged());
+			propertyChanging: CommandElement.OnCommandChanging,
+			propertyChanged: CommandElement.OnCommandChanged);
 
 		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SwipeItemView), null,
-			propertyChanged: (bo, o, n) => ((SwipeItemView)bo).OnCommandParameterChanged());
+			propertyChanged: CommandElement.OnCommandParameterChanged);
+
+		static SwipeItemView()
+		{
+			CommandProperty.DependsOn(CommandParameterProperty);
+		}
 
 		/// <summary>
 		/// Gets or sets the command invoked when this swipe item is activated. This is a bindable property.
@@ -56,35 +62,12 @@ namespace Microsoft.Maui.Controls
 			Invoked?.Invoke(this, EventArgs.Empty);
 		}
 
-		void OnCommandChanged()
-		{
-			IsEnabled = Command?.CanExecute(CommandParameter) ?? true;
+		protected override bool IsEnabledCore =>
+			base.IsEnabledCore && CommandElement.GetCanExecute(this, CommandProperty);
 
-			if (Command == null)
-				return;
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
+			RefreshIsEnabledProperty();
 
-			Command.CanExecuteChanged += OnCommandCanExecuteChanged;
-		}
-
-		void OnCommandChanging()
-		{
-			if (Command == null)
-				return;
-
-			Command.CanExecuteChanged -= OnCommandCanExecuteChanged;
-		}
-
-		void OnCommandParameterChanged()
-		{
-			if (Command == null)
-				return;
-
-			IsEnabled = Command.CanExecute(CommandParameter);
-		}
-
-		void OnCommandCanExecuteChanged(object sender, EventArgs eventArgs)
-		{
-			IsEnabled = Command.CanExecute(CommandParameter);
-		}
+		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
 	}
 }

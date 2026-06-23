@@ -20,14 +20,16 @@ The attribute is declared with `Inherited = false`, so each view type must expli
 
 ### Guidance for library authors
 
-Third-party libraries should prefer `[ElementHandler(typeof(THandler))]` for concrete controls when the handler type can be selected statically and the handler has a public parameterless constructor:
+`ElementHandlerAttribute` is currently an internal framework optimization used by .NET MAUI controls. Third-party libraries should continue to register handlers with `ConfigureMauiHandlers(... AddHandler ...)`:
 
 ```csharp
-[ElementHandler(typeof(MyControlHandler))]
-public class MyControl : View { ... }
+builder.ConfigureMauiHandlers(handlers =>
+{
+	handlers.AddHandler<MyControl, MyControlHandler>();
+});
 ```
 
-Use a custom `ElementHandlerAttribute` subclass only when handler selection needs additional logic. The Android Material UI controls are the intended pattern: their nested attributes override `GetHandlerType()` and return either the Material 3 handler or the default handler based on `RuntimeFeature.IsMaterial3Enabled`, so the inactive handler implementation does not need to be rooted unconditionally.
+If an attribute-based API is made public for third-party libraries, prefer `[ElementHandler(typeof(THandler))]` for concrete controls when the handler type can be selected statically and the handler has a public parameterless constructor. Use a custom `ElementHandlerAttribute` subclass only when handler selection needs additional logic. The Android Material UI controls are the intended pattern: their nested attributes override `GetHandlerType()` and return either the Material 3 handler or the default handler based on `RuntimeFeature.IsMaterial3Enabled`, so the inactive handler implementation does not need to be rooted unconditionally.
 
 Continue to use `ConfigureMauiHandlers(... AddHandler ...)` when an application needs to override an existing handler, when registering handlers for interfaces, or when a handler must be constructed through DI because it requires constructor parameters.
 
@@ -52,13 +54,13 @@ Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerT
 4. **`IContentView` fallback** — returns `ContentViewHandler` for any `IContentView` implementation
 5. **`GetHandlerType` returns `null`** / **`GetHandler` throws `HandlerNotFoundException`** — if none of the above matched
 
-`GetHandler(Type)` is the primary API for creating a handler instance. `GetHandlerType(Type)` returns the handler `Type` without instantiating it and is used by code paths that need to compare handler types or create handlers through DI fallback.
+`GetHandler(Type)` is the primary API for creating a handler instance. `GetHandlerType(Type)` returns the handler `Type` without instantiating it and is used by code paths that need to compare handler types or create handlers through DI fallback. If a DI registration was made with an implementation factory instead of an implementation type, `GetHandlerType(Type)` returns `null` because there is no registered handler type to report; it does not fall through to an inherited `[ElementHandler]` default for that view.
 
 ### Handler Instantiation
 
 How a handler instance is created depends on how it was resolved:
 
-- **DI-registered handlers** (steps 1 & 2): Instantiated through `MauiFactory.GetService()`, which uses `Activator.CreateInstance` on the registered `ImplementationType`, or invokes the `ImplementationFactory` delegate if one was provided.
+- **DI-registered handlers** (steps 1 & 2): Instantiated through `MauiFactory.GetService()`, which uses `Activator.CreateInstance` on the registered `ImplementationType`, or invokes the `ImplementationFactory` delegate if one was provided. `GetHandlerType(Type)` can only report DI registrations that provide an `ImplementationType`.
 - **`[ElementHandler]` attribute** (step 3): Instantiated directly via `Activator.CreateInstance` — no DI involvement.
 - **Fallback in `ElementExtensions.ToHandler()`**: When `Activator.CreateInstance` fails with a `MissingMethodException` (e.g., the handler requires constructor parameters), `ActivatorUtilities.CreateInstance` is used instead, which supports constructor injection from the DI container.
 
@@ -72,6 +74,8 @@ How a handler instance is created depends on how it was resolved:
 Controls-specific mapper remaps are independent of handler resolution. `ElementHandler.SetVirtualView()` calls the internal Controls remap hook on the virtual view before mapper updates, so remaps run regardless of whether the handler came from exact DI registration, assignable DI registration, `[ElementHandler]`, or the `IContentView` fallback.
 
 Each remappable Controls type owns its own one-time gate and calls `base.RemapForControls()` before applying its mapper changes. Non-mapper command dependency setup, such as `CommandProperty.DependsOn(...)`, remains in the relevant control type initialization so binding behavior is available before a handler is attached.
+
+Because these remaps now run lazily on the first handler attach, startup code that customizes the same built-in mapper keys before any instance is attached can still be replaced by the first Controls remap. Custom mapper keys and new mappings are unaffected. If an app or library needs to customize a built-in key that Controls remaps with `ReplaceMapping`, apply that customization after the first attach for that control type or reapply it after the Controls remap has run.
 
 ## Types used in the resolution of Handlers to Views
 

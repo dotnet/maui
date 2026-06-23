@@ -322,6 +322,40 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void HostBuilderCannotResolveHandlerTypeForAttributedServiceRegisteredWithFactory()
+		{
+			var registeredHandler = new AlternateAttributedViewHandlerStub();
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<AttributedViewStub>(_ => registeredHandler))
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+			var handlerType = mauiHandlersFactory.GetHandlerType(typeof(AttributedViewStub));
+
+			Assert.Same(registeredHandler, handler);
+			Assert.Null(handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderCannotResolveHandlerTypeForAttributedAssignableServiceRegisteredWithFactory()
+		{
+			var registeredHandler = new AlternateAttributedViewHandlerStub();
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<IViewStub>(_ => registeredHandler))
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(typeof(AttributedViewStub));
+			var handlerType = mauiHandlersFactory.GetHandlerType(typeof(AttributedViewStub));
+
+			Assert.Same(registeredHandler, handler);
+			Assert.Null(handlerType);
+		}
+
+		[Fact]
 		public void HostBuilderPrefersRegisteredBaseHandlerOverBaseElementHandlerAttribute()
 		{
 			var mauiApp = MauiApp.CreateBuilder()

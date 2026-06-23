@@ -61,15 +61,15 @@ namespace Microsoft.Maui.Hosting.Internal
 		public Type? GetHandlerType(Type iview)
 		{
 			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
-			if (TryGetRegisteredHandlerType(iview, out Type? type))
+			if (InternalCollection.TryGetService(iview, out _))
 			{
-				return type;
+				return TryGetRegisteredHandlerType(iview, out Type? type) ? type : null;
 			}
 
 			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
-				&& TryGetRegisteredHandlerType(serviceType, out type))
+				&& InternalCollection.TryGetService(serviceType, out _))
 			{
-				return type;
+				return TryGetRegisteredHandlerType(serviceType, out Type? type) ? type : null;
 			}
 
 			// Keep GetHandlerType in the same order as GetHandler so injection fallback paths see
