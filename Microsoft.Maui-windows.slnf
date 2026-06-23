@@ -29,6 +29,7 @@
       "src\\Controls\\src\\SourceGen\\Controls.SourceGen.csproj",
       "src\\Controls\\src\\Xaml.Design\\Controls.Xaml.Design.csproj",
       "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
+      "src\\Core\\src\\HybridWebViewSourceGen\\Core.HybridWebViewSourceGen.csproj",
       "src\\Controls\\tests\\Core.Design.UnitTests\\Controls.Core.Design.UnitTests.csproj",
       "src\\Controls\\tests\\Core.UnitTests\\Controls.Core.UnitTests.csproj",
       "src\\Controls\\tests\\CustomAttributes\\Controls.CustomAttributes.csproj",

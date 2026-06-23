@@ -1,1 +1,44 @@
 #nullable enable
+Microsoft.Maui.Graphics.Color.Color(Microsoft.Maui.Graphics.Color! original) -> void
+override Microsoft.Maui.Graphics.Color.Equals(object? obj) -> bool
+static Microsoft.Maui.Graphics.Color.operator !=(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
+static Microsoft.Maui.Graphics.Color.operator ==(Microsoft.Maui.Graphics.Color? left, Microsoft.Maui.Graphics.Color? right) -> bool
+virtual Microsoft.Maui.Graphics.Color.<Clone>$() -> Microsoft.Maui.Graphics.Color!
+virtual Microsoft.Maui.Graphics.Color.EqualityContract.get -> System.Type!
+virtual Microsoft.Maui.Graphics.Color.PrintMembers(System.Text.StringBuilder! builder) -> bool
+virtual Microsoft.Maui.Graphics.Color.Equals(Microsoft.Maui.Graphics.Color? other) -> bool
+Microsoft.Maui.Graphics.Color.AddLuminosity(float delta) -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.ToArgbHex(bool includeAlpha = false) -> string!
+Microsoft.Maui.Graphics.Color.ToRgbaHex(bool includeAlpha = false) -> string!
+Microsoft.Maui.Graphics.Color.WithLuminosity(float luminosity) -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.WithSaturation(float saturation) -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.GetComplementary() -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.ToHex() -> string!
+Microsoft.Maui.Graphics.Color.ToHex(bool includeAlpha) -> string!
+Microsoft.Maui.Graphics.Color.WithHue(float hue) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromArgb(string! colorAsHex) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromHsla(double h, double s, double l, double a = 1) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromHsla(float h, float s, float l, float a = 1) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromHsv(float h, float s, float v) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromHsv(int h, int s, int v) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromHsva(float h, float s, float v, float a) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromHsva(int h, int s, int v, int a) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromInt(int argb) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgb(byte red, byte green, byte blue) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgb(double red, double green, double blue) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgb(float red, float green, float blue) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgb(int red, int green, int blue) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgba(byte red, byte green, byte blue, byte alpha) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgba(double r, double g, double b, double a) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgba(float r, float g, float b, float a) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgba(int red, int green, int blue, int alpha) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromRgba(string! colorAsHex) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.FromUint(uint argb) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.Parse(string! value) -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Graphics.Color.TryParse(string! value, out Microsoft.Maui.Graphics.Color! color) -> bool
+static Microsoft.Maui.Graphics.Color.implicit operator Microsoft.Maui.Graphics.Color!(System.Numerics.Vector4 color) -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.AsPaint() -> Microsoft.Maui.Graphics.Paint!
+Microsoft.Maui.Graphics.Color.MultiplyAlpha(float multiplyBy) -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Graphics.Color.WithAlpha(float alpha) -> Microsoft.Maui.Graphics.Color!
+override Microsoft.Maui.Graphics.Color.ToString() -> string!
+static Microsoft.Maui.Graphics.Color.FromHex(string! colorAsArgbHex) -> Microsoft.Maui.Graphics.Color!

@@ -20,6 +20,9 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 	{
 		if (!((ElementNode)parentNode).IsResourceDictionary(Context))
 			return;
+		// Skip lazy resources - they're handled separately in SetPropertiesVisitor
+		if (((ElementNode)parentNode).IsLazyResource(parentNode.Parent, Context))
+			return;
 
 		node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 	}
@@ -30,6 +33,36 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
+		// Handle lazy resources - emit AddFactory call
+		if (node.IsLazyResource(parentNode, Context))
+		{
+			// Find the ResourceDictionary to add to
+			ILocalValue? rdVar = null;
+			
+			if (parentNode is ElementNode parentElement && Context.Variables.TryGetValue(parentElement, out var pVar))
+			{
+				var rdType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+				if (pVar.Type.InheritsFrom(rdType, Context))
+				{
+					rdVar = pVar;
+				}
+			}
+			else if (parentNode is ListNode listNode && listNode.Parent is ElementNode grandParentElement && Context.Variables.TryGetValue(grandParentElement, out var gpVar))
+			{
+				var rdType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+				if (gpVar.Type.InheritsFrom(rdType, Context))
+				{
+					rdVar = gpVar;
+				}
+			}
+			
+			if (rdVar != null)
+			{
+				SetPropertyHelpers.AddLazyResourceToResourceDictionary(Writer, rdVar, node, Context);
+			}
+			return;
+		}
+
 		//Set ResourcesDictionaries to their parents
 		if (IsResourceDictionary(node) && node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
@@ -64,6 +97,9 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
 	{
 		if (node is not ElementNode enode)
 			return false;
+		// Skip lazy resources - they're handled separately
+		if (enode.IsLazyResource(parentNode, Context))
+			return true;
 		if (parentNode is ElementNode node1
 			&& node1.IsResourceDictionary(Context)
 			&& !node1.Properties.ContainsKey(XmlName.xKey))
