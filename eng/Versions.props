@@ -167,10 +167,10 @@
     <!-- Additional packages for cgmanifest.json -->
     <SyncfusionMauiToolkitPackageVersion>1.0.4</SyncfusionMauiToolkitPackageVersion>
     <MicrosoftDataSqliteCorePackageVersion>8.0.8</MicrosoftDataSqliteCorePackageVersion>
-    <SQLitePCLRawBundleGreenPackageVersion>2.1.10</SQLitePCLRawBundleGreenPackageVersion>
+    <SQLitePCLRawBundleESqlite3PackageVersion>3.0.3</SQLitePCLRawBundleESqlite3PackageVersion>
     <CommunityToolkitMauiPackageVersion>11.1.1</CommunityToolkitMauiPackageVersion>
     <CommunityToolkitMauiPreviousPackageVersion>9.1.0</CommunityToolkitMauiPreviousPackageVersion>
-    <CommunityToolkitMvvmPackageVersion>8.3.2</CommunityToolkitMvvmPackageVersion>
+    <CommunityToolkitMvvmPackageVersion>8.4.2</CommunityToolkitMvvmPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->
