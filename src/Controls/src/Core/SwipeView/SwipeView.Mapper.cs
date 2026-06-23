@@ -16,10 +16,22 @@ namespace Microsoft.Maui.Controls
 			if (swipeView.Content is not null)
 			{
 				var contentBackgroundIsNull = Brush.IsNullOrEmpty(swipeView.Content.Background);
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — SwipeView backward compatibility
+				var contentBackgroundColorIsNull = swipeView.Content.BackgroundColor == null;
+#pragma warning restore MAUI0001, CS0618
 
 				if (contentBackgroundIsNull && !Brush.IsNullOrEmpty(swipeView.Background))
 				{
-					swipeView.Content.Background = swipeView.Background;
+					if (!Brush.IsNullOrEmpty(swipeView.Background))
+					{
+						swipeView.Content.Background = swipeView.Background;
+					}
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — SwipeView backward compatibility
+					else if (swipeView.BackgroundColor != null)
+					{
+						swipeView.Content.BackgroundColor = swipeView.BackgroundColor;
+					}
+#pragma warning restore MAUI0001, CS0618
 				}
 			}
 		}

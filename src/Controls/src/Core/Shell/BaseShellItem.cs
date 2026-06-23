@@ -494,15 +494,19 @@ namespace Microsoft.Maui.Controls
 				{
 					selectedState.Setters.Add(new Setter
 					{
-						Property = VisualElement.BackgroundProperty,
-						Value = new AppThemeBinding() { Light = new SolidColorBrush(Colors.Black.MultiplyAlpha(0.1f)), Dark = new SolidColorBrush(Colors.White.MultiplyAlpha(0.1f)) }
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — Shell visual state setters backward compatibility
+						Property = VisualElement.BackgroundColorProperty,
+#pragma warning restore MAUI0001, CS0618
+						Value = new AppThemeBinding() { Light = Colors.Black.MultiplyAlpha(0.1f), Dark = Colors.White.MultiplyAlpha(0.1f) }
 					});
 				}
 
 				normalState.Setters.Add(new Setter
 				{
-					Property = VisualElement.BackgroundProperty,
-					Value = new SolidColorBrush(Colors.Transparent)
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — Shell visual state setters backward compatibility
+					Property = VisualElement.BackgroundColorProperty,
+#pragma warning restore MAUI0001, CS0618
+					Value = Colors.Transparent
 				});
 
 				commonGroup.States.Add(selectedState);

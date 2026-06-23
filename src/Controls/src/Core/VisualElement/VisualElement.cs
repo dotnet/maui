@@ -284,20 +284,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 #if NET5_0_OR_GREATER
-		[Obsolete("BackgroundColorProperty is obsolete. Use BackgroundProperty instead.",
+		[Obsolete("BackgroundColorProperty is obsolete and will be removed in .NET 12. Use BackgroundProperty instead.",
 			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
 			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
 #else
-		[Obsolete("BackgroundColorProperty is obsolete. Use BackgroundProperty instead.")]
+		[Obsolete("BackgroundColorProperty is obsolete and will be removed in .NET 12. Use BackgroundProperty instead.")]
 #endif
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), propertyChanged: (bindable, oldvalue, newvalue) =>
-			{
-				if(bindable is VisualElement ve)
-				{
-					ve.Background = newvalue is Color color ? new SolidColorBrush(color) : null;
-				}
-			});
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
 
 		/// <summary>Bindable property for <see cref="Background"/>.</summary>
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
@@ -571,13 +565,16 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>Use <see cref="Background"/> instead. This property will be removed in .NET 12.</remarks>
 #if NET5_0_OR_GREATER
-		[Obsolete("BackgroundColor is obsolete. Use Background instead.",
+		[Obsolete("BackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.",
 			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
 			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
 #else
-		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
+		[Obsolete("BackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.")]
 #endif
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Color BackgroundColor
+		{
+			get { return (Color)GetValue(BackgroundColorProperty); }
 			set { SetValue(BackgroundColorProperty, value); }
 		}
 
@@ -2041,6 +2038,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!Brush.IsNullOrEmpty(Background))
 					return Background;
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — fallback for IView.Background backward compatibility
+				if (BackgroundColor.IsNotDefault())
+					return new SolidColorBrush(BackgroundColor);
+#pragma warning restore MAUI0001, CS0618
 
 				return null;
 			}
