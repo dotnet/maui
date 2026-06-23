@@ -5,8 +5,6 @@ description: |
   maui-pr-uitests). Files tracking issues for recurring failures so the team
   can triage.
 
-environment: gh-aw-agents
-
 permissions:
   contents: read
   issues: read
@@ -43,7 +41,7 @@ safe-outputs:
     report-as-issue: false
 
 timeout-minutes: 60
-max-ai-credits: -1
+max-effective-tokens: -1
 
 network:
   allowed:

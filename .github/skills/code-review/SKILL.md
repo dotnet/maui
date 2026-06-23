@@ -191,13 +191,13 @@ Classify based on the stdout row content (`pass`/`fail`/`skipping`/`pending`) **
 | Platform-specific handler/UI plumbing | Max **medium** |
 | Shared infrastructure, startup path, global static state | Max **low** |
 
-**Then cap by evidence.** The cap and the action required are separate columns — a cap alone is not a verdict, and the action does not change the cap:
+**Then cap by evidence:**
 
-| Evidence | Confidence Cap | Required Action |
-|----------|----------------|-----------------|
-| CI red or pending | Max **low** | Invoke `azdo-build-investigator` skill to classify failures. Per Rule #6, do not post `LGTM` unless failures are confirmed PR-unrelated. |
-| No relevant tests run (UITests skip PR builds) | Max **low** | Note the coverage gap in the CI Status section. |
-| Prior ❌ Error findings unresolved | n/a — overrides cap | Per Rule #5, verdict is **NEEDS_CHANGES** regardless of own assessment. |
+| Evidence | Confidence Cap |
+|----------|---------------|
+| CI red or pending | Max **low** — invoke `azdo-build-investigator` skill for CI analysis. Combined with Rule #6: LGTM is not permitted unless red failures are confirmed PR-unrelated. |
+| No relevant tests run (UITests skip PR builds) | Max **low** |
+| Prior ❌ Error findings unresolved | **NEEDS_CHANGES** (no LGTM) |
 
 #### Deliver Verdict
 
