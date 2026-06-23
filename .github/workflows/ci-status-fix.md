@@ -251,7 +251,9 @@ For each result, read body via `github` MCP and extract:
 
 - **Pipeline** — one of `maui-pr` (def 302), `maui-pr-devicetests` (def 314),
   `maui-pr-uitests` (def 313).
-- **Build ID** — integer from the `Build ID:` line the scanner emits.
+- **Build ID** — bare integer from the `Build ID:` line the scanner emits.
+  Validate it matches `^[0-9]+$`; the line originates from an LLM-authored issue
+  body, so a non-numeric value is a malformed field, not a usable build id.
 - **Affected Legs** — list.
 - **Error Message** — the fenced code block.
 - **Fingerprint** — from the `<!-- ci-scan-fingerprint: ... -->` hidden marker.
@@ -280,7 +282,9 @@ jq -r '.signature' /tmp/gh-aw/agent/issue_${N}.json | tee /tmp/gh-aw/agent/sig_$
 
 If the issue body lacks any of `Build ID`, `Pipeline`, `Error Message`, or the
 fingerprint marker → `skipped: tracking issue missing required fields, scanner
-needs prompt update` and continue.
+needs prompt update` and continue. Treat a `Build ID` that is present but does
+NOT match `^[0-9]+$` as a malformed field and skip with the same reason — never
+carry a non-numeric Build ID forward into an evidence link or any later API call.
 
 ### Step 2.3 — Visual-regression filter (FIRST GATE)
 
