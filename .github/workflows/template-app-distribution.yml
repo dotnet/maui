@@ -246,7 +246,7 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-path
 
       - name: Install MAUI workload
-        run: dotnet workload install ${{ matrix.workload }}
+        run: dotnet workload install ${{ matrix.workload }} --skip-manifest-update
 
       - name: Pack local templates
         id: pack
@@ -473,7 +473,7 @@ jobs:
           working-directory: trusted/.github/scripts/template-app-distribution/fastlane
 
       - name: Install MAUI workload
-        run: dotnet workload install ${{ matrix.workload }}
+        run: dotnet workload install ${{ matrix.workload }} --skip-manifest-update
 
       - name: Set app version and release notes
         shell: pwsh
