@@ -273,9 +273,9 @@ public class TabbedPageManager
 	protected virtual void SetTabIconImageSource(Page page, TabLayout.Tab tab, Drawable icon)
 	{
 		var tabIndex = Element.Children.IndexOf(page);
-		var tabs = ((ITabbedView)Element).Tabs;
+		var tabs = _adapter?.Tabs;
 
-		if (tabIndex >= 0 && tabIndex < tabs.Count)
+		if (tabs is not null && tabIndex >= 0 && tabIndex < tabs.Count)
 		{
 			_tabbedViewManager.SetTabIconImageSource(tabs[tabIndex], tab, icon);
 		}

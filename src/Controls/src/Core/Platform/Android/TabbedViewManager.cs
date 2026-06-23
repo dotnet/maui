@@ -555,7 +555,7 @@ internal class TabbedViewManager
     }
 
     /// <summary>
-    /// Triggers a full refresh of tab items from the <see cref="ITabbedView.Tabs"/> collection.
+    /// Triggers a full refresh of tab items from the <see cref="ITabbedViewSource.Tabs"/> collection.
     /// Use only for structural changes (add/remove tabs). For individual property changes,
     /// use <see cref="UpdateTabTitle"/>, <see cref="UpdateTabIcon"/>, or <see cref="UpdateTabEnabled"/>.
     /// </summary>
