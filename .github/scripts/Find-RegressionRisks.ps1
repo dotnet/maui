@@ -732,14 +732,14 @@ if ($OutputDir) {
     [void]$md.AppendLine()
     switch ($result) {
         'REVERT' {
-            [void]$md.AppendLine("● **Revert risks detected** — this PR removes $($reverts.Count) line(s) previously added by labeled bug-fix PRs.")
+            [void]$md.AppendLine("✗ **Revert risks detected** — this PR removes $($reverts.Count) line(s) previously added by labeled bug-fix PRs.")
             [void]$md.AppendLine()
             [void]$md.AppendLine("| File | Fix PR | Fixed issue(s) | Risk | Reverted line |")
             [void]$md.AppendLine("|---|---|---|---|---|")
             foreach ($r in $reverts) {
                 $sample = @($r.RevertedLines) | Select-Object -First 1 | ForEach-Object { $_.Text.Trim() }
                 $sampleEsc = ($sample -replace '\|', '\|')
-                [void]$md.AppendLine("| ``$($r.File)`` | #$($r.RecentPR) | $($r.FixedIssues) | ● REVERT | ``$sampleEsc`` |")
+                [void]$md.AppendLine("| ``$($r.File)`` | #$($r.RecentPR) | $($r.FixedIssues) | ✗ REVERT | ``$sampleEsc`` |")
             }
             $allIssues = @($reverts | ForEach-Object { $_.FixedIssues -split ',\s*' } |
                 Where-Object { $_ } | Select-Object -Unique | Sort-Object)
@@ -767,7 +767,7 @@ if ($OutputDir) {
             }
         }
         'OVERLAP' {
-            [void]$md.AppendLine("● **Overlaps with prior bug-fix PRs** — same files modified, but no exact line revert detected.")
+            [void]$md.AppendLine("⚠ **Overlaps with prior bug-fix PRs** — same files modified, but no exact line revert detected.")
             [void]$md.AppendLine()
             [void]$md.AppendLine("| File | Fix PR | Fixed issue(s) |")
             [void]$md.AppendLine("|---|---|---|")

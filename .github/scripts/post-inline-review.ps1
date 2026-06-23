@@ -165,7 +165,7 @@ foreach ($f in $findings) {
     }
 
     $rawBody = if ($f.body) { [string]$f.body } elseif ($f.message) { [string]$f.message } elseif ($f.content) { [string]$f.content } else { "(no description)" }
-    $aiMarker = "> 🔍 **AI-Generated Review** (multi-model: GPT-5.5, Claude Opus 4.8, Claude Opus 4.6, Gemini 3.1 Pro)`n`n"
+    $aiMarker = "> 🔍 **AI-Generated Review** (multi-model)`n`n"
     
     $comment = @{
         path = $p
