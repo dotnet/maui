@@ -203,6 +203,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		// Regression test for the sticky Focused visual state: when a focused control is disabled,
+		// the separate FocusStates group must move to Unfocused instead of remaining on Focused.
+		// Before the fix the Unfocused transition only ran while the control was still enabled, so a
+		// focused control that became disabled kept its Focused visuals (e.g. a focus border).
+		public void DisablingFocusedControlMovesFocusGroupToUnfocused()
+		{
+			var label = new Label();
+			VisualStateManager.SetVisualStateGroups(label, CreateTestStateGroupsWithFocusGroup());
+
+			var groups = VisualStateManager.GetVisualStateGroups(label);
+			var commonStates = groups[0];
+			var focusStates = groups[1];
+
+			Assert.Equal(NormalStateName, commonStates.CurrentState?.Name);
+
+			// Focus the control: CommonStates stays Normal, FocusStates goes to Focused.
+			label.SetValue(VisualElement.IsFocusedPropertyKey, true);
+			Assert.Equal(NormalStateName, commonStates.CurrentState?.Name);
+			Assert.Equal(FocusedStateName, focusStates.CurrentState?.Name);
+
+			// Disable the focused control: CommonStates goes to Disabled and, crucially, the
+			// FocusStates group is moved to Unfocused rather than remaining stuck on Focused.
+			label.IsEnabled = false;
+			Assert.Equal(DisabledStateName, commonStates.CurrentState?.Name);
+			Assert.Equal(UnfocusedStateName, focusStates.CurrentState?.Name);
+
+			// Re-enabling restores focus, since the control is still focused.
+			label.IsEnabled = true;
+			Assert.Equal(NormalStateName, commonStates.CurrentState?.Name);
+			Assert.Equal(FocusedStateName, focusStates.CurrentState?.Name);
+		}
+
+		[Fact]
 		public void VisualElementGoesToCorrectStateWhenAvailable()
 		{
 			var label = new Label();
