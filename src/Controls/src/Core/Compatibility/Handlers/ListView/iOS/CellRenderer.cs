@@ -135,6 +135,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 			{
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — ListView cell background backward compatibility
 				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
 				{
 					uiBgColor = Microsoft.Maui.Platform.ColorExtensions.GroupedBackground;
@@ -144,6 +145,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (cell.RealParent is VisualElement element && element.Background is SolidColorBrush solidBrush && solidBrush.Color != null)
 						uiBgColor = solidBrush.Color.ToPlatform();
 				}
+#pragma warning restore MAUI0001, CS0618
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 

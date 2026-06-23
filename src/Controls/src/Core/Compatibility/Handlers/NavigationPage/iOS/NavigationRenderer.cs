@@ -554,7 +554,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateBarTextColor();
 				SetStatusBarStyle();
 			}
-			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+			else if (e.PropertyName ==
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — Compatibility renderer property change listener
+			VisualElement.BackgroundColorProperty.PropertyName)
+#pragma warning restore MAUI0001, CS0618
 			{
 				UpdateBackground();
 			}
@@ -801,7 +804,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateBackground()
 		{
-			View.UpdateBackground(Element.Background);
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — Compatibility renderer backward compatibility
+			var color = Element.BackgroundColor == null ? Maui.Platform.ColorExtensions.BackgroundColor : Element.BackgroundColor.ToPlatform();
+#pragma warning restore MAUI0001, CS0618
+			View.BackgroundColor = color;
 		}
 
 		void OnBarBackgroundChanged(object sender, EventArgs e)

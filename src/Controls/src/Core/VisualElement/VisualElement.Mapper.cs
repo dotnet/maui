@@ -35,6 +35,9 @@ namespace Microsoft.Maui.Controls
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
 #endif
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor mapper registration — kept for backward compatibility with existing XAML and bindings
+			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(BackgroundColor), MapBackgroundColor);
+#pragma warning restore MAUI0001, CS0618
 			viewMapper.ReplaceMapping<IView, IViewHandler>(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
 			viewMapper.ReplaceMapping<IView, IViewHandler>(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
@@ -47,7 +50,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Updates the handler when <see cref="VisualElement.BackgroundColor"/> changes by re-applying <see cref="VisualElement.Background"/>.</summary>
 #if NET5_0_OR_GREATER
-		[Obsolete("MapBackgroundColor is obsolete and will be removed in .NET 12. BackgroundColor changes are handled via the MAUI0003 diagnostic. Use Background instead.",
+		[Obsolete("MapBackgroundColor is obsolete and will be removed in .NET 12. BackgroundColor changes are handled via the MAUI0001 diagnostic. Use Background instead.",
 			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
 			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
 #else
