@@ -809,4 +809,65 @@ public partial class OperatorAliasPage : ContentPage
 		Assert.Contains(" <= ", output, StringComparison.Ordinal);
 		Assert.Contains(" >= ", output, StringComparison.Ordinal);
 	}
+
+	// https://github.com/dotnet/maui/issues/35900
+	[Theory]
+	[InlineData("<Label TextColor=\"{IsVip ? Colors.Goldenrod : Colors.Gray}\" />")]
+	[InlineData("<Label Text=\"{$'Now: {DateTime.Now:t}'}\" />")]
+	[InlineData("<Label Text=\"{$'Max = {Math.Max(Price, Quantity):F2}'}\" />")]
+	[InlineData("<Label Text=\"{$'{Name} - {DateTime.Now:d}'}\" />")]
+	public void StaticTypeReferenceInExpression_DoesNotGenerateInvalidHandlers(string labelXaml)
+	{
+		var xaml =
+$"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.StaticRefPage"
+             x:DataType="local:StaticRefViewModel">
+    {labelXaml}
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+global using System;
+global using Microsoft.Maui.Graphics;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class StaticRefViewModel : INotifyPropertyChanged
+{
+	public bool IsVip { get; set; }
+	public string Name { get; set; } = string.Empty;
+	public double Price { get; set; }
+	public double Quantity { get; set; }
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class StaticRefPage : ContentPage
+{
+	public StaticRefPage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		// The generated code must not contain handler tuples rooted at static type
+		// names (Colors, DateTime, Math), which previously produced
+		// `static __source => __source.Colors` / `__source.DateTime` / `__source.Math`
+		// and broke compilation with CS1061.
+		Assert.NotNull(output);
+		Assert.DoesNotContain("__source.Colors", output!, StringComparison.Ordinal);
+		Assert.DoesNotContain("__source.DateTime", output!, StringComparison.Ordinal);
+		Assert.DoesNotContain("__source.Math", output!, StringComparison.Ordinal);
+
+		// And the compilation must succeed (no compiler errors leaked through).
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+	}
 }

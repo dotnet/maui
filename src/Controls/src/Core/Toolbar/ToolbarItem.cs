@@ -110,7 +110,7 @@ public class ToolbarItem : MenuItem
 	/// This is a bindable property.
 	/// </summary>
 	/// <remarks>
-	/// This property is only effective when <see cref="BadgeText"/> is set to a non-empty value.
+	/// This property is only effective when <see cref="BadgeText"/> is not <see langword="null"/>.
 	/// </remarks>
 	public Color BadgeColor
 	{
