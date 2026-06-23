@@ -33,6 +33,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			[nameof(IView.AutomationId)] = MapAutomationId,
 			[nameof(IView.Background)] = MapBackground,
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — Compatibility renderer kept for backward compatibility
+			[nameof(VisualElement.BackgroundColor)] = MapBackgroundColor,
+#pragma warning restore MAUI0001, CS0618
 			[AutomationProperties.IsInAccessibleTreeProperty.PropertyName] = MapAutomationPropertiesIsInAccessibleTree,
 #if WINDOWS
 #pragma warning disable CS0618 // Type or member is obsolete

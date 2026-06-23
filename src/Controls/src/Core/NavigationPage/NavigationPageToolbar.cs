@@ -272,6 +272,11 @@ namespace Microsoft.Maui.Controls
 #if WINDOWS
 			if (Brush.IsNullOrEmpty(BarBackground))
 			{
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor — NavigationPage BarBackground fallback backward compatibility
+				var backgroundColor = navigationPage.CurrentPage.BackgroundColor ??
+					navigationPage.BackgroundColor;
+#pragma warning restore MAUI0001, CS0618
+
 				BarBackground = navigationPage.CurrentPage.Background ??
 					navigationPage.Background;
 			}

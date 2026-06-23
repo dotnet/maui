@@ -818,6 +818,10 @@ namespace Microsoft.Maui.Controls
 					return Background;
 				if (!ImageSource.IsNullOrEmpty(BackgroundImageSource))
 					return new ImageSourcePaint(BackgroundImageSource);
+#pragma warning disable MAUI0001, CS0618 // BackgroundColor fallback for IView.Background backward compatibility
+				if (BackgroundColor.IsNotDefault())
+					return new SolidColorBrush(BackgroundColor);
+#pragma warning restore MAUI0001, CS0618
 
 				return null;
 			}
