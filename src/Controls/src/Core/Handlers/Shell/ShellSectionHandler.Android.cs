@@ -786,7 +786,7 @@ namespace Microsoft.Maui.Controls.Handlers
     internal class ViewPagerPageChangeCallback : ViewPager2.OnPageChangeCallback
     {
         readonly ShellSectionHandler _handler;
-
+        bool _selecting; // Matches legacy ShellSectionRenderer._selecting — prevents re-entrant OnPageSelected during cancel revert
         public ViewPagerPageChangeCallback(ShellSectionHandler handler)
         {
             _handler = handler;
@@ -795,6 +795,11 @@ namespace Microsoft.Maui.Controls.Handlers
         public override void OnPageSelected(int position)
         {
             base.OnPageSelected(position);
+
+            if (_selecting)
+            {
+                return;
+            }
 
             // Close any active action modes (e.g., ListView context menus) from the previous page.
             // OffscreenPageLimit keeps all fragment views attached, so OnDetachedFromWindow never
@@ -846,15 +851,32 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 if (!accepted)
                 {
-                    // Navigation was cancelled — revert ViewPager2 to the current position
+                    // Navigation was cancelled — revert ViewPager2 and TabLayout.
+                    // Matches legacy ShellSectionRenderer._selecting pattern: guard flag
+                    // prevents re-entrant OnPageSelected during the deferred revert.
                     if (virtualView.CurrentItem is not null)
                     {
                         var currentPosition = visibleItems.IndexOf(virtualView.CurrentItem);
+
                         if (currentPosition >= 0)
                         {
-                            _handler.PlatformView?.Post(() =>
+                            _selecting = true;
+
+                            _handler.ViewPager?.Post(() =>
                             {
                                 _handler.ViewPager?.SetCurrentItem(currentPosition, false);
+
+                                // Revert TabLayout indicator and text color state.
+                                // SetScrollPosition forces a full visual state reset
+                                // (including tab text colors that get stuck during swipe).
+                                var tabLayout = _handler.ContentTabLayout;
+                                if (tabLayout is not null && currentPosition < tabLayout.TabCount)
+                                {
+                                    tabLayout.SetScrollPosition(currentPosition, 0f, true);
+                                    tabLayout.SelectTab(tabLayout.GetTabAt(currentPosition));
+                                }
+
+                                _selecting = false;
                             });
                         }
                     }

@@ -235,6 +235,20 @@ internal class TabbedViewManager
             Element.TabsChanged -= OnTabsCollectionChanged;
             RemoveTabs();
 
+            // Detach TabLayoutMediator and remove tab listener during full cleanup only.
+            // This prevents stale callbacks after the handler is disconnected.
+            // Must NOT be in RemoveTabs() because that's also called during runtime
+            // tab hide/show (e.g., navigation push hides top tabs).
+            _tabLayoutMediator?.Detach();
+            _tabLayoutMediator = null;
+
+            if (_tabLayout is not null)
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                _tabLayout.RemoveOnTabSelectedListener(_listeners);
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
             if (_managesViewPager)
             {
                 _viewPager.UnregisterOnPageChangeCallback(_listeners);
@@ -307,18 +321,6 @@ internal class TabbedViewManager
     {
         _pendingFragment?.Dispose();
         _pendingFragment = null;
-
-        // Detach TabLayoutMediator and remove tab listener to prevent callbacks
-        // from firing after the manager/handler is disconnected.
-        _tabLayoutMediator?.Detach();
-        _tabLayoutMediator = null;
-
-        if (_tabLayout is not null)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            _tabLayout.RemoveOnTabSelectedListener(_listeners);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
 
         if (_tabLayoutFragment is not null)
         {
