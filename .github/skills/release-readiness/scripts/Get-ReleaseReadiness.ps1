@@ -3675,13 +3675,7 @@ function Add-SrNightlyFeedFreshness {
         if ($null -eq $fresh) { $fresh = @{ unknown = $true } }
 
         $buildType = [string](Get-NightlyFeedProp $fresh 'buildType')
-        # Label honestly: 'inflight' → ci.inflight; a definitive band fallback → the band;
-        # anything else (unknown / transient inflight failure) → ci.inflight, the stream we
-        # were measuring — never imply the band carries the signal when freshness is unknown.
-        $typeNote = if ($buildType -eq 'inflight') { 'ci.inflight' }
-                    elseif ($buildType -eq 'band') { "``$band``" }
-                    else { 'ci.inflight' }
-        $laneLabel = "[``$feed``]($feedUrl) · $typeNote"
+        $laneLabel = Format-NightlyFeedLaneLabel -Feed $feed -FeedUrl $feedUrl -BuildType $buildType -BandNote "``$band``"
         $fresh['laneLabel'] = $laneLabel
         $fresh['feedUrl'] = $feedUrl
         $fresh['versionPrefix'] = $bandPrefix

@@ -5,7 +5,7 @@
     Nightly-feed freshness helpers shared by the SR and Preview release-readiness engines.
 
 .DESCRIPTION
-    Two functions:
+    Headline functions:
 
       Get-NightlyFeedFreshness  — queries an Azure Artifacts NuGet feed (e.g. dotnet10,
                                   dotnet11) for the newest published build of a package
@@ -13,6 +13,10 @@
                                   and returns its version + publish date. Network call is
                                   FAIL-OPEN: any error returns $null so a transient feed
                                   outage never breaks tracker generation.
+
+      Format-NightlyFeedLaneLabel — PURE builder for the "[`feed`](url) · <typeNote>" lane
+                                  label, centralizing the honest-labeling rule shared by both
+                                  engines so the SR and Preview lanes can never drift.
 
       Format-NightlyFeedBanner  — PURE, deterministic renderer that turns a freshness
                                   record into a one-line markdown banner (✅ fresh /
@@ -287,6 +291,45 @@ function Get-NightlyFeedTier {
     if ($age -ge $StaleDays) { return 'stale' }
     if ($age -ge $AgingDays) { return 'aging' }
     return 'ok'
+}
+
+function Format-NightlyFeedLaneLabel {
+    <#
+    .SYNOPSIS
+        Build the "[`<feed>`](<url>) · <typeNote>" lane label shown in the banner, applying the
+        honest-labeling rule shared by the SR and Preview engines. PURE: no network, no clock.
+    .DESCRIPTION
+        Centralizes the build-type → label mapping so the two engines can never drift (the
+        preview lane silently lost the band branch once; this is the single source of truth):
+
+          - 'inflight'    → 'ci.inflight'  (the primary dogfood stream we measure)
+          - 'band'        → $BandNote       (a definitive band fallback — caller-formatted, since
+                                             SR shows just the band while preview appends the
+                                             preview iteration)
+          - anything else → 'ci.inflight'   (unknown / transient inflight-query failure: name the
+                                             stream we were MEASURING, never imply the band carries
+                                             the signal when freshness is unknown)
+    .PARAMETER Feed
+        The feed short name (e.g. 'dotnet10'), rendered as a code-fenced link label.
+    .PARAMETER FeedUrl
+        The feed's Azure Artifacts URL.
+    .PARAMETER BuildType
+        The resolved build type: 'inflight', 'band', or '' / unknown.
+    .PARAMETER BandNote
+        The already-formatted markdown to display when $BuildType is 'band'. The engines differ
+        here (SR shows just the band, e.g. '`10.0.80`'; preview appends the iteration, e.g.
+        '`11.0.0-preview.6` (preview.6)'), so the caller supplies it pre-formatted.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Feed,
+        [Parameter(Mandatory)][string]$FeedUrl,
+        [string]$BuildType,
+        [string]$BandNote
+    )
+    $typeNote = if ($BuildType -eq 'inflight') { 'ci.inflight' }
+                elseif ($BuildType -eq 'band') { $BandNote }
+                else { 'ci.inflight' }
+    "[``$Feed``]($FeedUrl) · $typeNote"
 }
 
 function Format-NightlyFeedBanner {

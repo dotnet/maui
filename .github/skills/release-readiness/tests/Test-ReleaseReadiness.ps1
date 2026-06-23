@@ -3649,6 +3649,27 @@ Assert-Eq -Label "tier: age 6 (< stale 7) → aging"      -Expected 'aging'    -
 Assert-Eq -Label "tier: age 7 (= stale) → stale"        -Expected 'stale'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 7) } -Now $tierNow)
 Assert-Eq -Label "tier: age 15 → stale"                 -Expected 'stale'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 15) } -Now $tierNow)
 
+# ───── Format-NightlyFeedLaneLabel: honest-labeling rule (shared by both engines) ─────
+# Direct guard for the rule that drifted once (the preview lane silently lost the band
+# branch). Both engines now call this single helper, so these asserts cover both lanes.
+Write-Host "`n[Unit] Format-NightlyFeedLaneLabel (honest labeling)" -ForegroundColor Cyan
+$llFeed = 'dotnet10'; $llUrl = 'https://dev.azure.com/x'
+Assert-Eq -Label "lane: inflight → ci.inflight" `
+    -Expected '[`dotnet10`](https://dev.azure.com/x) · ci.inflight' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed $llFeed -FeedUrl $llUrl -BuildType 'inflight' -BandNote '`10.0.80`')
+Assert-Eq -Label "lane: band (SR shape) → band note" `
+    -Expected '[`dotnet10`](https://dev.azure.com/x) · `10.0.80`' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed $llFeed -FeedUrl $llUrl -BuildType 'band' -BandNote '`10.0.80`')
+Assert-Eq -Label "lane: band (preview shape) → band note w/ iteration" `
+    -Expected '[`dotnet11`](https://dev.azure.com/x) · `11.0.0-preview.6` (preview.6)' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed 'dotnet11' -FeedUrl $llUrl -BuildType 'band' -BandNote '`11.0.0-preview.6` (preview.6)')
+Assert-Eq -Label "lane: unknown buildType → ci.inflight (never the band)" `
+    -Expected '[`dotnet10`](https://dev.azure.com/x) · ci.inflight' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed $llFeed -FeedUrl $llUrl -BuildType '' -BandNote '`10.0.80`')
+Assert-Eq -Label "lane: other buildType → ci.inflight (honest fallback)" `
+    -Expected '[`dotnet10`](https://dev.azure.com/x) · ci.inflight' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed $llFeed -FeedUrl $llUrl -BuildType 'mystery' -BandNote '`10.0.80`')
+
 # ───── Get-ReportSemanticHash folds in nightly-feed banner state ─────
 # Regression guard for the idempotency bug: a quiet SR tracker whose ONLY change is the
 # nightly feed going stale must still refresh (the banner is the point of the feature),
