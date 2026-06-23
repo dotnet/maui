@@ -253,7 +253,11 @@ can never be more favorable than what coverage allows. A green verdict
 (`Ready to merge` / `No failures found`) is forbidden whenever a check is still pending, a
 failing check could not be inspected, **or a failed build leg produced no extractable
 failure** (`gate.unexplainedFailedLegs > 0` — the backstop that stops a crossgen/NativeAOT
-build break from being silently counted as zero failures). It is likewise **capped at
+build break from being silently counted as zero failures). The same green is also forbidden
+whenever an **accessible** failing check produced **no** extractable failure **and no**
+unexplained-leg record (`gate.unaccountedFailingChecks > 0` — the earned-green guard: a red
+check whose log threw, had no log id, or fell past the per-build cap still pulls the ceiling
+down to `Needs human investigation` instead of defaulting to green). It is likewise **capped at
 `Not ready`** whenever a leg is red on the PR but green on the same leg of the most recent
 base build (`gate.legsRegressedVsBase > 0` — the computed job-level regression). The
 gatherer also extracts build-job errors (not just xUnit `[FAIL]` lines) via

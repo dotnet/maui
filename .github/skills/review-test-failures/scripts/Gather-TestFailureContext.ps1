@@ -1526,12 +1526,44 @@ $baselineInconclusiveRows = @($baselineSummaryArray | Where-Object {
 $unexplainedLegs = @($allUnexplainedLegs)
 $unexplainedLegNames = @($unexplainedLegs | ForEach-Object { [string]$_.recordName } | Select-Object -Unique)
 
+# Earned-green guard (closes the false-green hole at the 'else' branch below).
+# The unexplained-leg backstop only fires when a failed Task's log was READ and yielded no
+# failure (L1154, inside the try). It does NOT fire when the log read threw (the catch records
+# an excerpt error but no leg), when the failed record had no log id, or when the break fell
+# past the per-build failed-record cap. In any of those cases an accessible failing check can
+# reach the gate having contributed ZERO extracted failures AND zero unexplained legs -- the
+# crossgen/R2R 'Failed to load assembly' class, or any build/infra break whose log is
+# unreadable. The 'else' would then hand it 'Ready to merge' (a false green on a red check).
+# Account for it at build granularity: a build contributes evidence if it produced any raw
+# failure (log OR test-API, explained or not) or any unexplained-leg record. An accessible
+# build that backs a currently-failing check yet contributed nothing forces human investigation.
+$contributingBuildIds = @{}
+foreach ($f in $allFailuresArray) {
+    $bid = Get-ObjectValue -Object $f -Names @("buildId")
+    if ($null -ne $bid -and -not [string]::IsNullOrWhiteSpace([string]$bid)) { $contributingBuildIds[[string]$bid] = $true }
+}
+foreach ($u in $allUnexplainedLegs) {
+    if ($null -ne $u.buildId -and -not [string]::IsNullOrWhiteSpace([string]$u.buildId)) { $contributingBuildIds[[string]$u.buildId] = $true }
+}
+$failingCheckNameSet = @{}
+foreach ($c in $failingChecks) { $failingCheckNameSet[[string]$c.name] = $true }
+$unaccountedFailingChecks = New-Object System.Collections.Generic.List[string]
+foreach ($b in $buildArray) {
+    if (-not $b.accessible) { continue }
+    if ($contributingBuildIds.ContainsKey([string]$b.id)) { continue }
+    foreach ($cn in @($b.checkNames)) {
+        if ($failingCheckNameSet.ContainsKey([string]$cn) -and ($unaccountedFailingChecks -notcontains [string]$cn)) {
+            $unaccountedFailingChecks.Add([string]$cn)
+        }
+    }
+}
+
 $ceilingReasons = New-Object System.Collections.Generic.List[string]
 if ($inaccessibleFailingChecks.Count -gt 0) {
     $verdictCeiling = "Insufficient data"
     $ceilingReasons.Add("$($inaccessibleFailingChecks.Count) failing check(s) could not be inspected (AzDO build/logs inaccessible): $((@($inaccessibleFailingChecks) | Select-Object -First 8) -join ', ').")
 }
-elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0) {
+elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0 -or $unaccountedFailingChecks.Count -gt 0) {
     $verdictCeiling = "Needs human investigation"
     if ($pendingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($pendingChecks.Count) interesting check(s) are still pending/in-progress; the CI outcome is not final: $((@($pendingChecks | ForEach-Object { $_.name }) | Select-Object -First 8) -join ', ').")
@@ -1541,6 +1573,9 @@ elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $u
     }
     if ($unexplainedLegs.Count -gt 0) {
         $ceilingReasons.Add("$($unexplainedLegs.Count) failed build leg(s) produced no extractable failure (a build break with no test name -- crossgen/NativeAOT/linker -- or an unreadable log); open each leg's log before trusting any verdict: $((@($unexplainedLegNames) | Select-Object -First 8) -join ', ').")
+    }
+    if ($unaccountedFailingChecks.Count -gt 0) {
+        $ceilingReasons.Add("$($unaccountedFailingChecks.Count) failing check(s) are backed by an accessible build that produced NO extractable failure and NO unexplained-leg record (a build/infra break whose log was unreadable, had no log id, or fell past the per-build cap); a 'Ready to merge' verdict is forbidden until a human reads them: $((@($unaccountedFailingChecks) | Select-Object -First 8) -join ', ').")
     }
 }
 elseif ($failingChecks.Count -eq 0 -and $dedupedFailures.Count -eq 0) {
@@ -1577,6 +1612,8 @@ $gate = [ordered]@{
     baselineInconclusiveRows = $baselineInconclusiveRows
     unexplainedFailedLegs = $unexplainedLegs.Count
     unexplainedFailedLegNames = $unexplainedLegNames
+    unaccountedFailingChecks = $unaccountedFailingChecks.Count
+    unaccountedFailingCheckNames = $unaccountedFailingChecks.ToArray()
     legsRegressedVsBase = $legsRegressedVsBase
     legsRegressedVsBaseNames = $legsRegressedVsBaseNames
     verdictCeiling = $verdictCeiling

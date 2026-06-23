@@ -51,6 +51,12 @@ Key fields to use:
     `unexplainedFailedLegs` (failed build legs that produced no extractable failure —
     a build break with no test name, or an unreadable log; **any value > 0 caps the
     ceiling at `Needs human investigation`**).
+  - `gate.unaccountedFailingChecks` (+ `unaccountedFailingCheckNames[]`) — failing checks
+    backed by an **accessible** build that produced **no** extractable failure **and no**
+    unexplained-leg record (the build's log threw, had no log id, or fell past the
+    per-build failed-record cap). This is the earned-green guard: a red check we could
+    reach but pulled zero reason from must not be read as green. **Any value > 0 caps the
+    ceiling at `Needs human investigation`**.
   - `gate.legsRegressedVsBase` (+ `legsRegressedVsBaseNames[]`) — distinct failures that
     are **red on the PR but GREEN on the same leg of the most recent completed base
     build** (a deterministic, computed job-level regression). **Any value > 0 caps the
@@ -176,7 +182,9 @@ more favorable. If `gate.ceilingReasons` is non-empty, surface those reasons in 
 and reflect them in the recommended action. This is what makes a green verdict trustworthy:
 it is impossible to emit `Ready to merge` / `No failures found` while a check is still
 pending, a failing check could not be inspected, a failed build leg produced no
-extractable failure (`gate.unexplainedFailedLegs > 0`), or a leg is red on the PR but
+extractable failure (`gate.unexplainedFailedLegs > 0`), an accessible failing check
+yielded no extractable failure and no unexplained-leg record
+(`gate.unaccountedFailingChecks > 0`), or a leg is red on the PR but
 green on base (`gate.legsRegressedVsBase > 0` → ceiling capped at `Not ready`).
 
 Do not declare `Ready to merge` while required checks are still pending (the ceiling
@@ -219,7 +227,7 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |
