@@ -43,7 +43,7 @@ Key fields to use:
 - `gate` — **deterministic merge-readiness gate** computed in the gatherer (not LLM
   judgment). Use it as a hard ceiling, never override it upward:
   - `gate.verdictCeiling` — the most favorable overall verdict the evidence permits
-    (`Insufficient data` / `Needs human investigation` / `No failures found` /
+    (`Insufficient data` / `Needs human investigation` / `Not ready` / `No failures found` /
     `Ready to merge`). Your overall verdict MUST NOT be more favorable than this.
   - `gate.ceilingReasons[]` — exact reasons (with check names) that set the ceiling.
   - Coverage counts: `totalChecks`, `passingOrNeutralChecks`, `failingChecks`,
@@ -62,8 +62,16 @@ Key fields to use:
     build** (a deterministic, computed job-level regression). **Any value > 0 caps the
     ceiling at `Not ready`** — a `Ready to merge` / `No failures found` verdict is then
     forbidden. This is the comparison that catches build-job breaks (crossgen/R2R,
-    NativeAOT) the test-level baseline cannot. Device-test legs are excluded from this
-    count (XHarness exit-0 blind spot) — they are surfaced but never hard-capped.
+    NativeAOT) the test-level baseline cannot. A device-test BUILD break
+    (`source = azdo-build-error`) IS counted here because it is deterministic; only device-test
+    TEST results are excluded (XHarness exit-0 blind spot) — they are surfaced but never hard-capped.
+  - `gate.unattributedFailures` (+ `unattributedFailureNames[]`) — distinct failures the
+    deterministic prior could attribute **neither** way: not a clean regression vs base, not
+    pre-existing on base, not a known issue (`deterministicAttribution = indeterminate`).
+    Causes: the base leg outcome was ambiguous (a duplicate/retried leaf name →
+    `inconclusive-on-base`), the base build was missing/unreadable, or a device-test TEST
+    result outside the build-error class. They are neither provably PR-caused nor dismissible
+    as pre-existing/known, so **any value > 0 caps the ceiling at `Needs human investigation`**.
   - Evidence counts: `failuresAlsoOnBaseline`, `failuresMatchingKnownIssue`,
     `failuresRetriedStillFailing`, `baselineInconclusiveRows`.
 - `failures.unique[]` — distinct PR failures (deduped by test name + OS platform). This
@@ -184,8 +192,10 @@ it is impossible to emit `Ready to merge` / `No failures found` while a check is
 pending, a failing check could not be inspected, a failed build leg produced no
 extractable failure (`gate.unexplainedFailedLegs > 0`), an accessible failing check
 yielded no extractable failure and no unexplained-leg record
-(`gate.unaccountedFailingChecks > 0`), or a leg is red on the PR but
-green on base (`gate.legsRegressedVsBase > 0` → ceiling capped at `Not ready`).
+(`gate.unaccountedFailingChecks > 0`), a failure could not be attributed deterministically
+(`gate.unattributedFailures > 0` → ceiling capped at `Needs human investigation`), or a
+leg is red on the PR but green on base (`gate.legsRegressedVsBase > 0` → ceiling capped at
+`Not ready`).
 
 Do not declare `Ready to merge` while required checks are still pending (the ceiling
 already enforces this).
@@ -227,7 +237,7 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |

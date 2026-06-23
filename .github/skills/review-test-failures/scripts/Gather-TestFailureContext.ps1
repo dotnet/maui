@@ -947,6 +947,7 @@ $checks = @(ConvertTo-Array $pr.statusCheckRollup | ForEach-Object {
         name = $check.name
         status = $check.status
         conclusion = $check.conclusion
+        state = $check.state
         detailsUrl = $check.detailsUrl
         workflowName = $check.workflowName
         startedAt = $check.startedAt
@@ -970,8 +971,10 @@ if ($CheckName) {
 $interestingChecks = @($checks | Where-Object {
     $conclusion = [string]($_.conclusion)
     $status = [string]($_.status)
+    $state = [string]($_.state)
     ($conclusion -and $conclusion -notin @("SUCCESS", "SKIPPED", "NEUTRAL")) -or
-    ($status -and $status -notin @("COMPLETED", "SUCCESS"))
+    ($status -and $status -notin @("COMPLETED", "SUCCESS")) -or
+    ($state -and $state -notin @("SUCCESS", "NEUTRAL"))
 })
 
 $buildRefsById = [ordered]@{}
@@ -1128,6 +1131,13 @@ foreach ($buildRef in $buildRefsById.Values) {
     }
 
     $logsToRead = @($failedRecords | Where-Object { $_.result -eq "failed" -and $_.log -and $_.log.id } | Select-Object -First 12)
+    # Track which failed Task records we actually inspected (read a log AND either extracted
+    # a failure or recorded an unexplained leg). Failed Task legs NOT in this set after the
+    # loop -- no log id, beyond the 12-read cap, or a read that threw -- are uninspected and
+    # must still be surfaced to the gate (see the post-loop sweep below). Otherwise a build
+    # break past the cap stays invisible while another explained leg keeps the build
+    # "accounted", yielding a false green.
+    $resolvedFailedRecordIds = @{}
     foreach ($record in $logsToRead) {
         $logId = [int]$record.log.id
         try {
@@ -1177,6 +1187,11 @@ foreach ($buildRef in $buildRefsById.Values) {
             if ($build.definition.name -eq "maui-pr-devicetests") {
                 $buildSummary.helix.jobIds = @($buildSummary.helix.jobIds + (Get-HelixJobIdsFromText -Text $logText) | Select-Object -Unique)
             }
+
+            # The leg's log was read and processed above (yielding an extracted failure
+            # and/or an unexplained-leg record). Mark it resolved so the post-loop sweep
+            # does not re-flag it as uninspected.
+            $resolvedFailedRecordIds[[string]$record.id] = $true
         }
         catch {
             $buildSummary.logExcerpts += @([ordered]@{
@@ -1185,6 +1200,24 @@ foreach ($buildRef in $buildRefsById.Values) {
                 error = $_.Exception.Message
             })
         }
+    }
+
+    # Post-loop sweep: any failed Task leg we did NOT inspect -- it had no log id, fell
+    # beyond the 12-read cap, or its read threw into the catch above -- produced no
+    # extractable failure AND no unexplained-leg record, so it is currently invisible to the
+    # gate. Because another explained leg in the same build keeps that build "accounted", an
+    # uninspected build break could otherwise slip through as a false green. Record each as
+    # an unexplained leg (reusing the existing ceiling cap) so the verdict cannot be green.
+    foreach ($fr in $failedRecords) {
+        if ([string]$fr.result -ne 'failed') { continue }
+        if ([string]$fr.type -ne 'Task') { continue }
+        if ($resolvedFailedRecordIds.ContainsKey([string]$fr.id)) { continue }
+        $allUnexplainedLegs.Add([ordered]@{
+            buildId = $buildRef.buildId
+            recordName = [string]$fr.name
+            logId = $(if ($fr.log -and $fr.log.id) { [int]$fr.log.id } else { $null })
+            uninspected = $true
+        })
     }
 
     if ($build.definition.name -eq "maui-pr-devicetests") {
@@ -1444,14 +1477,28 @@ foreach ($failure in $dedupedFailures) {
             continue
         }
         $baseRec = $baseInfo.records[$norm]
-        if ($baseRec.hasFailed) {
+        if ($baseRec.hasFailed -and $baseRec.hasSucceeded) {
+            # The same normalized leg name both FAILED and SUCCEEDED on base -- duplicate
+            # records share a leaf name across stages/jobs, or the leg was retried. The base
+            # outcome for THIS leg is ambiguous, so assert neither pre-existing nor regressed
+            # and let the failure fall through to 'indeterminate' (the gate then refuses a
+            # green verdict on it via unattributedFailures). This prevents both a false
+            # pre-existing subtraction (false green) and a false regression (false red).
+            if (-not $legBaselineResult) { $legBaselineResult = 'inconclusive-on-base' }
+        }
+        elseif ($baseRec.hasFailed) {
             # Same leg already failed on base -> pre-existing, regardless of any green attempt.
             $legAlsoFails = $true
             $legBaselineResult = 'failed-on-base'
         }
         elseif ($baseRec.hasSucceeded) {
             $legBaselineResult = 'succeeded-on-base'
-            if (-not $baseInfo.isDeviceTests) {
+            # Device-test TEST results suffer the XHarness exit-0 blind spot, so a test
+            # regression vs base is not trustworthy. A device-test BUILD break
+            # (crossgen/NativeAOT/linker/MSBuild) is deterministic -- the leg either compiled
+            # or it didn't -- so it IS a real regression even on a device-test pipeline.
+            $legSource = [string](Get-ObjectValue -Object $failure -Names @("source"))
+            if ((-not $baseInfo.isDeviceTests) -or ($legSource -eq 'azdo-build-error')) {
                 $legRegressed = $true
             }
         }
@@ -1485,8 +1532,21 @@ $baselineMatchCount = @($dedupedFailures | Where-Object { $_.alsoFailsOnBaseline
 # "guaranteed" part: a green ('Ready to merge'/'No failures found') is forbidden in code
 # whenever a check is still pending or a failing check could not be inspected, so a false
 # green is impossible regardless of how the classifier reasons.
-$pendingChecks = @($interestingChecks | Where-Object { [string]$_.status -ne "COMPLETED" })
-$failingChecks = @($interestingChecks | Where-Object { [string]$_.status -eq "COMPLETED" })
+# CheckRun results report via status/conclusion; classic StatusContext results report via
+# `state` (status/conclusion are null). Route both shapes: a CheckRun is failing once
+# COMPLETED (it is only here if interesting) and pending until then; a StatusContext is
+# failing on FAILURE/ERROR and pending on PENDING/EXPECTED. Without the state arm a red
+# StatusContext (e.g. an AzDO-posted commit status) would be invisible to the gate -- a false green.
+$pendingChecks = @($interestingChecks | Where-Object {
+    $st = [string]$_.status
+    if ($st) { $st -ne "COMPLETED" }
+    else { [string]$_.state -in @("PENDING", "EXPECTED") }
+})
+$failingChecks = @($interestingChecks | Where-Object {
+    $st = [string]$_.status
+    if ($st) { $st -eq "COMPLETED" }
+    else { [string]$_.state -in @("FAILURE", "ERROR") }
+})
 
 $accessibleCheckNames = @{}
 $inaccessibleCheckNames = @{}
@@ -1520,6 +1580,16 @@ $failuresRetried = @($dedupedFailures | Where-Object { $_.retriedStillFailing })
 $legsRegressedList = @($dedupedFailures | Where-Object { [string]$_.deterministicAttribution -eq 'regressed-vs-base' })
 $legsRegressedVsBase = $legsRegressedList.Count
 $legsRegressedVsBaseNames = @($legsRegressedList | ForEach-Object { [string]$_.testName } | Select-Object -Unique)
+# Failures the deterministic prior could attribute NEITHER way: not a clean regression vs
+# base, not pre-existing on base, not a known issue ('indeterminate'). Causes: the base leg
+# outcome was ambiguous (a duplicate/retried leaf name -> 'inconclusive-on-base'), the base
+# build was missing or unreadable, or a device-test TEST result outside the deterministic
+# build-error class. We cannot prove these are PR-caused, but we equally cannot dismiss them
+# as pre-existing/known -- so a green verdict is forbidden and they cap the ceiling at
+# 'Needs human investigation' (softer than a proven regression's 'Not ready').
+$unattributedList = @($dedupedFailures | Where-Object { [string]$_.deterministicAttribution -eq 'indeterminate' })
+$unattributedFailures = $unattributedList.Count
+$unattributedFailureNames = @($unattributedList | ForEach-Object { [string]$_.testName } | Select-Object -Unique)
 $baselineInconclusiveRows = @($baselineSummaryArray | Where-Object {
     $_.note -and ([string]$_.note -match "(?i)inconclusive|incomplete|could not be read|cannot be confirmed|not be confirmed")
 }).Count
@@ -1563,7 +1633,7 @@ if ($inaccessibleFailingChecks.Count -gt 0) {
     $verdictCeiling = "Insufficient data"
     $ceilingReasons.Add("$($inaccessibleFailingChecks.Count) failing check(s) could not be inspected (AzDO build/logs inaccessible): $((@($inaccessibleFailingChecks) | Select-Object -First 8) -join ', ').")
 }
-elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0 -or $unaccountedFailingChecks.Count -gt 0) {
+elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0 -or $unaccountedFailingChecks.Count -gt 0 -or $unattributedFailures -gt 0) {
     $verdictCeiling = "Needs human investigation"
     if ($pendingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($pendingChecks.Count) interesting check(s) are still pending/in-progress; the CI outcome is not final: $((@($pendingChecks | ForEach-Object { $_.name }) | Select-Object -First 8) -join ', ').")
@@ -1576,6 +1646,9 @@ elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $u
     }
     if ($unaccountedFailingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($unaccountedFailingChecks.Count) failing check(s) are backed by an accessible build that produced NO extractable failure and NO unexplained-leg record (a build/infra break whose log was unreadable, had no log id, or fell past the per-build cap); a 'Ready to merge' verdict is forbidden until a human reads them: $((@($unaccountedFailingChecks) | Select-Object -First 8) -join ', ').")
+    }
+    if ($unattributedFailures -gt 0) {
+        $ceilingReasons.Add("$unattributedFailures failure(s) could not be attributed deterministically (base outcome ambiguous, base build missing/unreadable, or a device-test result outside the build-error class); they are neither provably PR-caused nor dismissible as pre-existing/known, so a 'Ready to merge' verdict is forbidden until a human classifies them: $((@($unattributedFailureNames) | Select-Object -First 8) -join ', ').")
     }
 }
 elseif ($failingChecks.Count -eq 0 -and $dedupedFailures.Count -eq 0) {
@@ -1616,6 +1689,8 @@ $gate = [ordered]@{
     unaccountedFailingCheckNames = $unaccountedFailingChecks.ToArray()
     legsRegressedVsBase = $legsRegressedVsBase
     legsRegressedVsBaseNames = $legsRegressedVsBaseNames
+    unattributedFailures = $unattributedFailures
+    unattributedFailureNames = $unattributedFailureNames
     verdictCeiling = $verdictCeiling
     ceilingReasons = $ceilingReasons.ToArray()
     pendingCheckNames = @($pendingChecks | ForEach-Object { [string]$_.name })

@@ -5,6 +5,7 @@ deduplication, baseline comparison, and merge-readiness criteria.
 Consumed by (keep these as references, do NOT re-copy the tables):
 - .github/skills/azdo-build-investigator/SKILL.md
 - .github/skills/review-test-failures/SKILL.md
+- .github/skills/review-test-failures/scripts/Gather-TestFailureContext.ps1 (the deterministic gatherer)
 - .github/workflows/ci-status-main.md
 - .github/workflows/ci-status-net11.md
 - .github/workflows/copilot-review-tests.md (via the review-test-failures skill)
@@ -257,9 +258,14 @@ build break from being silently counted as zero failures). The same green is als
 whenever an **accessible** failing check produced **no** extractable failure **and no**
 unexplained-leg record (`gate.unaccountedFailingChecks > 0` — the earned-green guard: a red
 check whose log threw, had no log id, or fell past the per-build cap still pulls the ceiling
-down to `Needs human investigation` instead of defaulting to green). It is likewise **capped at
-`Not ready`** whenever a leg is red on the PR but green on the same leg of the most recent
-base build (`gate.legsRegressedVsBase > 0` — the computed job-level regression). The
+down to `Needs human investigation` instead of defaulting to green), or when a failure can be
+attributed **neither** way — not a clean regression vs base, not pre-existing on base, not a
+known issue (`gate.unattributedFailures > 0`; e.g. the base leg outcome was ambiguous, the
+base build was missing/unreadable, or a device-test result fell outside the deterministic
+build-error class). It is likewise **capped at `Not ready`** whenever a leg is red on the PR
+but green on the same leg of the most recent base build (`gate.legsRegressedVsBase > 0` — the
+computed job-level regression; a device-test BUILD break counts here, only device-test TEST
+results are excluded). The
 gatherer also extracts build-job errors (not just xUnit `[FAIL]` lines) via
 `Get-BuildErrorsFromLog`, so crossgen/R2R/linker breaks flow into dedup, the (computed)
 baseline diff, and the gate. The interactive investigator should apply the same discipline

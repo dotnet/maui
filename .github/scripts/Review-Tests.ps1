@@ -237,6 +237,7 @@ function New-TestFailureReviewBody {
     $failureCount = 0
     $baselineMatchCount = 0
     $regressedVsBase = 0
+    $unattributedFailures = 0
     $platforms = @()
     if (Test-Path $ContextJsonPath) {
         try {
@@ -244,6 +245,7 @@ function New-TestFailureReviewBody {
             $failureCount = @($context.failures.unique).Count
             $baselineMatchCount = [int]$context.failures.baselineMatchCount
             $regressedVsBase = [int]$context.gate.legsRegressedVsBase
+            $unattributedFailures = [int]$context.gate.unattributedFailures
             $platforms = @($context.failures.unique | ForEach-Object { $_.platform } | Where-Object { $_ -and $_ -ne "unknown" } | Select-Object -Unique)
         }
         catch {
@@ -259,6 +261,11 @@ function New-TestFailureReviewBody {
     # any leg regressed -- it is the strongest PR-caused signal and caps the verdict ceiling.
     if ($regressedVsBase -gt 0) {
         $badgeLines += New-Badge -Label "Regressed" -Message "$regressedVsBase vs base" -Color "d1242f" -Alt "Regressed $regressedVsBase vs base"
+    }
+    # Surface failures the deterministic prior could not attribute either way -- they cap the
+    # ceiling at "Needs human investigation" (neither dismissible nor provably PR-caused).
+    if ($unattributedFailures -gt 0) {
+        $badgeLines += New-Badge -Label "Unattributed" -Message "$unattributedFailures" -Color "bf8700" -Alt "Unattributed $unattributedFailures"
     }
     foreach ($platform in $platforms) {
         $badgeLines += New-Badge -Label "Platform" -Message $platform -Color "0969da" -Alt "Platform $platform"
