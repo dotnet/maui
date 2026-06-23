@@ -13,7 +13,13 @@ namespace Microsoft.Maui.Controls
 		int CornerRadius { get; }
 
 		/// <inheritdoc cref="VisualElement.BackgroundColor"/>
-		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
+#if NET5_0_OR_GREATER
+		[Obsolete("BackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.",
+			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
+			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
+#else
+		[Obsolete("BackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.")]
+#endif
 		Color BackgroundColor { get; }
 
 		Brush Background { get; }
@@ -24,7 +30,13 @@ namespace Microsoft.Maui.Controls
 		bool IsCornerRadiusSet();
 
 		/// <summary>Returns whether <see cref="BackgroundColor"/> has been explicitly set. Use <see cref="IsBackgroundSet"/> instead.</summary>
-		[Obsolete("IsBackgroundColorSet is obsolete. Use IsBackgroundSet instead.")]
+#if NET5_0_OR_GREATER
+		[Obsolete("IsBackgroundColorSet is obsolete and will be removed in .NET 12. Use IsBackgroundSet instead.",
+			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
+			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
+#else
+		[Obsolete("IsBackgroundColorSet is obsolete and will be removed in .NET 12. Use IsBackgroundSet instead.")]
+#endif
 		bool IsBackgroundColorSet();
 
 		bool IsBackgroundSet();
