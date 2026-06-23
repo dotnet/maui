@@ -94,7 +94,22 @@ if (-not $projectFile) {
 }
 
 $content = Get-Content $projectFile.FullName -Raw
-$content = $content -replace "<TargetFrameworks>[^<]+</TargetFrameworks>", "<TargetFrameworks>$TargetFramework</TargetFrameworks>"
+$targetFrameworksMatches = @([regex]::Matches($content, "<TargetFrameworks(?:\s+Condition=""[^""]*"")?>[^<]+</TargetFrameworks>"))
+if ($targetFrameworksMatches.Count -eq 0) {
+    throw "Could not find TargetFrameworks in '$($projectFile.FullName)'."
+}
+
+for ($i = $targetFrameworksMatches.Count - 1; $i -ge 0; $i--) {
+    $match = $targetFrameworksMatches[$i]
+    $replacement = if ($i -eq 0) {
+        "<TargetFrameworks>$TargetFramework</TargetFrameworks>"
+    } else {
+        ""
+    }
+
+    $content = $content.Remove($match.Index, $match.Length).Insert($match.Index, $replacement)
+}
+
 $content = $content -replace "<ApplicationTitle>[^<]+</ApplicationTitle>", "<ApplicationTitle>$(ConvertTo-XmlEscaped $DisplayName)</ApplicationTitle>"
 $content = $content -replace "<ApplicationId>[^<]+</ApplicationId>", "<ApplicationId>$(ConvertTo-XmlEscaped $ApplicationId)</ApplicationId>"
 $content = $content -replace "<ApplicationDisplayVersion>[^<]+</ApplicationDisplayVersion>", "<ApplicationDisplayVersion>$(ConvertTo-XmlEscaped $AppDisplayVersion)</ApplicationDisplayVersion>"
