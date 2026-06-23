@@ -1,0 +1,79 @@
+require "fileutils"
+require "tmpdir"
+
+def required_option(options, key)
+  value = options[key].to_s
+  UI.user_error!("Missing required option: #{key}") if value.empty?
+  value
+end
+
+def optional_option(options, key)
+  value = options[key].to_s
+  value.empty? ? nil : value
+end
+
+def release_notes
+  value = ENV["TEMPLATE_APP_RELEASE_NOTES"].to_s
+  value.empty? ? nil : value
+end
+
+default_platform(:ios)
+
+platform :android do
+  desc "Upload a generated MAUI template app bundle to a Google Play testing track"
+  lane :template_app_play do |options|
+    changelog = release_notes
+    metadata_path = nil
+
+    unless changelog.nil?
+      metadata_path = File.join(Dir.mktmpdir("template-app-play-metadata"), "android")
+      changelog_dir = File.join(metadata_path, "en-US", "changelogs")
+      FileUtils.mkdir_p(changelog_dir)
+      File.write(File.join(changelog_dir, "default.txt"), changelog)
+    end
+
+    upload_to_play_store(
+      package_name: required_option(options, :package_name),
+      aab: required_option(options, :aab),
+      track: required_option(options, :track),
+      json_key: required_option(options, :json_key),
+      release_status: "completed",
+      version_name: optional_option(options, :version_name),
+      metadata_path: metadata_path,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: changelog.nil?,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end
+
+platform :ios do
+  desc "Upload a generated MAUI template IPA to TestFlight"
+  lane :template_app_testflight do |options|
+    groups = optional_option(options, :groups).to_s.split(",").map(&:strip).reject(&:empty?)
+    changelog = release_notes
+    api_key = app_store_connect_api_key(
+      key_id: required_option(options, :api_key_id),
+      issuer_id: required_option(options, :issuer_id),
+      key_filepath: required_option(options, :api_private_key_path)
+    )
+
+    upload_options = {
+      ipa: required_option(options, :ipa),
+      app_identifier: required_option(options, :app_identifier),
+      api_key: api_key,
+      uses_non_exempt_encryption: false,
+      skip_waiting_for_build_processing: groups.empty? && changelog.nil?
+    }
+
+    upload_options[:changelog] = changelog unless changelog.nil?
+
+    unless groups.empty?
+      upload_options[:groups] = groups
+      upload_options[:distribute_external] = true
+    end
+
+    upload_to_testflight(upload_options)
+  end
+end

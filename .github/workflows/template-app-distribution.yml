@@ -1,0 +1,474 @@
+# Required protected environment: template-app-distribution
+#
+# Required secrets for publishing:
+# - TEMPLATE_APP_ANDROID_KEYSTORE_BASE64
+# - TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD
+# - TEMPLATE_APP_ANDROID_KEY_ALIAS
+# - TEMPLATE_APP_ANDROID_KEY_PASSWORD
+# - TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
+# - TEMPLATE_APP_IOS_CERTIFICATE_BASE64
+# - TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD
+# - TEMPLATE_APP_IOS_KEYCHAIN_PASSWORD
+# - TEMPLATE_APP_IOS_CODESIGN_KEY
+# - TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64
+# - TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64
+# - TEMPLATE_APPSTORE_CONNECT_ISSUER_ID
+# - TEMPLATE_APPSTORE_CONNECT_KEY_ID
+# - TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY (raw .p8 content or base64)
+#
+# Optional variables/secrets:
+# - TEMPLATE_APP_VARIANTS_JSON (variable): adds or overrides variant definitions.
+# - TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON (secret): maps variant names to base64 provisioning profiles.
+# - TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID / TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID (variables)
+# - TEMPLATE_APP_BLANK_IOS_BUNDLE_ID / TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID (variables)
+# Store uploads use fastlane lanes from .github/scripts/template-app-distribution/fastlane.
+
+name: Template App Distribution
+
+run-name: Template app distribution (${{ inputs.source_ref }}, publish=${{ inputs.publish }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Branch, tag, or full commit SHA to use for template source.
+        required: true
+        default: main
+        type: string
+      dotnet_sdk:
+        description: Exact .NET SDK version, or global-json to read tools.dotnet/sdk.version from the selected source ref.
+        required: true
+        default: global-json
+        type: string
+      variants:
+        description: Comma-separated variants to build, or all.
+        required: true
+        default: all
+        type: string
+      platforms:
+        description: Comma-separated platforms to build, or all. Known values are android, ios.
+        required: true
+        default: all
+        type: string
+      publish:
+        description: Publish to Google Play/TestFlight. If false, only build and upload GitHub artifacts.
+        required: true
+        default: true
+        type: boolean
+      app_display_version:
+        description: Store-facing display version applied to generated apps.
+        required: true
+        default: "1.0"
+        type: string
+      play_track:
+        description: Google Play track for Android publishing.
+        required: true
+        default: internal
+        type: string
+      testflight_groups:
+        description: Optional comma-separated TestFlight beta group names to receive the build after processing.
+        required: false
+        default: ""
+        type: string
+      release_notes:
+        description: Optional release notes appended to the generated source SHA note.
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.source_ref }}-${{ inputs.publish }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  prepare:
+    name: Prepare matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      dotnet_sdk: ${{ steps.sdk.outputs.dotnet_sdk }}
+      dotnet_tfm: ${{ steps.sdk.outputs.dotnet_tfm }}
+      source_sha: ${{ steps.source.outputs.source_sha }}
+      trusted: ${{ steps.source.outputs.trusted }}
+    steps:
+      - name: Checkout workflow scripts
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          path: trusted
+          persist-credentials: false
+
+      - name: Checkout template source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve source ref trust
+        id: source
+        shell: pwsh
+        run: |
+          $publish = [System.Boolean]::Parse('${{ inputs.publish }}')
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Resolve-SourceRef.ps1" `
+            -RepositoryPath "${{ github.workspace }}/source" `
+            -SourceRef "${{ inputs.source_ref }}" `
+            -WorkflowRef "${{ github.ref }}" `
+            -DefaultBranch "${{ github.event.repository.default_branch }}" `
+            -Publish $publish
+
+      - name: Resolve .NET SDK
+        id: sdk
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Resolve-DotNetSdk.ps1" `
+            -RepositoryPath "${{ github.workspace }}/source" `
+            -DotNetSdk "${{ inputs.dotnet_sdk }}"
+
+      - name: Prepare build matrix
+        id: matrix
+        shell: pwsh
+        env:
+          TEMPLATE_APP_VARIANTS_JSON: ${{ vars.TEMPLATE_APP_VARIANTS_JSON }}
+          TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID: ${{ vars.TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID }}
+          TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID }}
+          TEMPLATE_APP_BLANK_IOS_BUNDLE_ID: ${{ vars.TEMPLATE_APP_BLANK_IOS_BUNDLE_ID }}
+          TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID: ${{ vars.TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID }}
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Prepare-Matrix.ps1" `
+            -Variants "${{ inputs.variants }}" `
+            -Platforms "${{ inputs.platforms }}" `
+            -DotNetTfm "${{ steps.sdk.outputs.dotnet_tfm }}"
+
+  dry-run-build:
+    name: Dry-run ${{ matrix.variant }} ${{ matrix.platform }}
+    if: ${{ inputs.publish == false }}
+    needs: prepare
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout workflow scripts
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          path: trusted
+          persist-credentials: false
+
+      - name: Checkout template source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+          path: source
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ needs.prepare.outputs.dotnet_sdk }}
+
+      - name: Setup Java
+        if: ${{ matrix.platform == 'android' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: "17"
+
+      - name: Setup Xcode
+        if: ${{ matrix.platform == 'ios' }}
+        shell: bash
+        run: |
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$LATEST_XCODE" ]; then
+            echo "Selecting Xcode: $LATEST_XCODE"
+            sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+          fi
+          xcodebuild -version
+
+      - name: Install MAUI workload
+        run: dotnet workload install ${{ matrix.workload }}
+
+      - name: Set app version
+        shell: pwsh
+        run: |
+          $buildNumber = ([int]'${{ github.run_number }}' * 100) + [int]'${{ github.run_attempt }}'
+          "APP_BUILD_NUMBER=$buildNumber" >> $env:GITHUB_ENV
+          "APP_DISPLAY_VERSION=${{ inputs.app_display_version }}" >> $env:GITHUB_ENV
+
+      - name: Pack local templates
+        id: pack
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Pack-Templates.ps1" `
+            -RepositoryPath "${{ github.workspace }}/source" `
+            -PackageVersion "99.0.0-templateapp.${{ github.run_id }}.${{ github.run_attempt }}" `
+            -OutputPath "${{ runner.temp }}/template-packages/${{ matrix.variant }}-${{ matrix.platform }}" `
+            -DotNetCliHome "${{ runner.temp }}/dotnet-cli-home/${{ matrix.variant }}-${{ matrix.platform }}" `
+            -NuGetPackages "${{ runner.temp }}/nuget-packages/${{ matrix.variant }}-${{ matrix.platform }}"
+
+      - name: Create generated app
+        id: app
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/New-TemplateApp.ps1" `
+            -TemplatePackagePath "${{ steps.pack.outputs.template_package_path }}" `
+            -BuildRoot "${{ runner.temp }}/template-app-build" `
+            -Variant "${{ matrix.variant }}-${{ matrix.platform }}" `
+            -ProjectName "${{ matrix.projectName }}" `
+            -Template "${{ matrix.template }}" `
+            -TemplateArgsJson '${{ matrix.templateArgsJson }}' `
+            -DotNetTfm "${{ needs.prepare.outputs.dotnet_tfm }}" `
+            -TargetFramework "${{ matrix.targetFramework }}" `
+            -ApplicationId "${{ matrix.applicationId }}" `
+            -DisplayName "${{ matrix.displayName }}" `
+            -DotNetSdk "${{ needs.prepare.outputs.dotnet_sdk }}" `
+            -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
+            -AppBuildNumber "$env:APP_BUILD_NUMBER"
+
+      - name: Build generated app
+        id: build
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Build-TemplateApp.ps1" `
+            -ProjectPath "${{ steps.app.outputs.project_path }}" `
+            -Platform "${{ matrix.platform }}" `
+            -TargetFramework "${{ matrix.targetFramework }}" `
+            -RuntimeIdentifier "${{ matrix.runtimeIdentifier }}" `
+            -OutputPath "${{ runner.temp }}/template-app-output/${{ matrix.variant }}-${{ matrix.platform }}" `
+            -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
+            -AppBuildNumber "$env:APP_BUILD_NUMBER"
+
+      - name: Upload dry-run artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.platform }}-${{ needs.prepare.outputs.source_sha }}
+          path: |
+            ${{ steps.build.outputs.package_path }}
+            ${{ steps.build.outputs.binlog_path }}
+          retention-days: 14
+
+  publish:
+    name: Publish ${{ matrix.variant }} ${{ matrix.platform }}
+    if: ${{ inputs.publish }}
+    needs: prepare
+    runs-on: ${{ matrix.runner }}
+    environment: template-app-distribution
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout workflow scripts
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          path: trusted
+          persist-credentials: false
+
+      - name: Checkout template source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+          path: source
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ needs.prepare.outputs.dotnet_sdk }}
+
+      - name: Setup Java
+        if: ${{ matrix.platform == 'android' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: "17"
+
+      - name: Setup Xcode
+        if: ${{ matrix.platform == 'ios' }}
+        shell: bash
+        run: |
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$LATEST_XCODE" ]; then
+            echo "Selecting Xcode: $LATEST_XCODE"
+            sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+          fi
+          xcodebuild -version
+
+      - name: Setup Ruby and fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: trusted/.github/scripts/template-app-distribution/fastlane
+
+      - name: Install MAUI workload
+        run: dotnet workload install ${{ matrix.workload }}
+
+      - name: Set app version and release notes
+        shell: pwsh
+        env:
+          INPUT_RELEASE_NOTES: ${{ inputs.release_notes }}
+        run: |
+          $buildNumber = ([int]'${{ github.run_number }}' * 100) + [int]'${{ github.run_attempt }}'
+          "APP_BUILD_NUMBER=$buildNumber" >> $env:GITHUB_ENV
+          "APP_DISPLAY_VERSION=${{ inputs.app_display_version }}" >> $env:GITHUB_ENV
+
+          $notes = "MAUI template app build from ${{ needs.prepare.outputs.source_sha }}."
+          if (-not [string]::IsNullOrWhiteSpace($env:INPUT_RELEASE_NOTES)) {
+            $notes = "$notes`n$env:INPUT_RELEASE_NOTES"
+          }
+
+          $delimiter = [guid]::NewGuid().ToString("N")
+          "TEMPLATE_APP_RELEASE_NOTES<<$delimiter" >> $env:GITHUB_ENV
+          $notes >> $env:GITHUB_ENV
+          "$delimiter" >> $env:GITHUB_ENV
+
+      - name: Pack local templates
+        id: pack
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Pack-Templates.ps1" `
+            -RepositoryPath "${{ github.workspace }}/source" `
+            -PackageVersion "99.0.0-templateapp.${{ github.run_id }}.${{ github.run_attempt }}" `
+            -OutputPath "${{ runner.temp }}/template-packages/${{ matrix.variant }}-${{ matrix.platform }}" `
+            -DotNetCliHome "${{ runner.temp }}/dotnet-cli-home/${{ matrix.variant }}-${{ matrix.platform }}" `
+            -NuGetPackages "${{ runner.temp }}/nuget-packages/${{ matrix.variant }}-${{ matrix.platform }}"
+
+      - name: Create generated app
+        id: app
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/New-TemplateApp.ps1" `
+            -TemplatePackagePath "${{ steps.pack.outputs.template_package_path }}" `
+            -BuildRoot "${{ runner.temp }}/template-app-build" `
+            -Variant "${{ matrix.variant }}-${{ matrix.platform }}" `
+            -ProjectName "${{ matrix.projectName }}" `
+            -Template "${{ matrix.template }}" `
+            -TemplateArgsJson '${{ matrix.templateArgsJson }}' `
+            -DotNetTfm "${{ needs.prepare.outputs.dotnet_tfm }}" `
+            -TargetFramework "${{ matrix.targetFramework }}" `
+            -ApplicationId "${{ matrix.applicationId }}" `
+            -DisplayName "${{ matrix.displayName }}" `
+            -DotNetSdk "${{ needs.prepare.outputs.dotnet_sdk }}" `
+            -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
+            -AppBuildNumber "$env:APP_BUILD_NUMBER"
+
+      - name: Install Apple signing assets
+        if: ${{ matrix.platform == 'ios' }}
+        shell: pwsh
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD }}
+          IOS_KEYCHAIN_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_KEYCHAIN_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64 || matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64 || '' }}
+          IOS_PROVISIONING_PROFILES_JSON: ${{ secrets.TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON }}
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Install-AppleSigningAssets.ps1" `
+            -Variant "${{ matrix.variant }}"
+
+      - name: Build generated app
+        id: build
+        shell: pwsh
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.TEMPLATE_APP_ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.TEMPLATE_APP_ANDROID_KEY_PASSWORD }}
+          IOS_CODESIGN_KEY: ${{ secrets.TEMPLATE_APP_IOS_CODESIGN_KEY }}
+        run: |
+          & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Build-TemplateApp.ps1" `
+            -ProjectPath "${{ steps.app.outputs.project_path }}" `
+            -Platform "${{ matrix.platform }}" `
+            -TargetFramework "${{ matrix.targetFramework }}" `
+            -RuntimeIdentifier "${{ matrix.runtimeIdentifier }}" `
+            -OutputPath "${{ runner.temp }}/template-app-output/${{ matrix.variant }}-${{ matrix.platform }}" `
+            -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
+            -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -Publish
+
+      - name: Upload artifact copy
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-app-publish-${{ matrix.variant }}-${{ matrix.platform }}-${{ needs.prepare.outputs.source_sha }}
+          path: |
+            ${{ steps.build.outputs.package_path }}
+            ${{ steps.build.outputs.binlog_path }}
+          retention-days: 14
+
+      - name: Write Google Play credentials
+        if: ${{ matrix.platform == 'android' }}
+        shell: pwsh
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON)) {
+            throw "TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required for Android publishing."
+          }
+
+          $jsonPath = Join-Path $env:RUNNER_TEMP "google-play-service-account.json"
+          $value = $env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON.Trim()
+          if ($value.StartsWith("{")) {
+            Set-Content -Path $jsonPath -Value $env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON -NoNewline
+          } else {
+            [System.IO.File]::WriteAllBytes($jsonPath, [Convert]::FromBase64String($value))
+          }
+
+          "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH=$jsonPath" >> $env:GITHUB_ENV
+
+      - name: Publish Android to Google Play with fastlane
+        if: ${{ matrix.platform == 'android' }}
+        shell: pwsh
+        working-directory: trusted/.github/scripts/template-app-distribution/fastlane
+        run: |
+          & bundle exec fastlane android template_app_play `
+            "package_name:${{ matrix.androidApplicationId }}" `
+            "aab:${{ steps.build.outputs.package_path }}" `
+            "track:${{ inputs.play_track }}" `
+            "json_key:$env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH" `
+            "version_name:$env:APP_DISPLAY_VERSION"
+
+      - name: Write App Store Connect API key
+        if: ${{ matrix.platform == 'ios' }}
+        shell: pwsh
+        env:
+          APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:APPSTORE_CONNECT_PRIVATE_KEY)) {
+            throw "TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY is required for iOS publishing."
+          }
+
+          $keyPath = Join-Path $env:RUNNER_TEMP "appstore-connect-key.p8"
+          $value = $env:APPSTORE_CONNECT_PRIVATE_KEY.Trim()
+          if ($value.StartsWith("-----BEGIN")) {
+            Set-Content -Path $keyPath -Value $env:APPSTORE_CONNECT_PRIVATE_KEY -NoNewline
+          } else {
+            [System.IO.File]::WriteAllBytes($keyPath, [Convert]::FromBase64String($value))
+          }
+
+          "APPSTORE_CONNECT_PRIVATE_KEY_PATH=$keyPath" >> $env:GITHUB_ENV
+
+      - name: Publish iOS to TestFlight with fastlane
+        if: ${{ matrix.platform == 'ios' }}
+        shell: pwsh
+        working-directory: trusted/.github/scripts/template-app-distribution/fastlane
+        env:
+          APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
+          APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
+        run: |
+          & bundle exec fastlane ios template_app_testflight `
+            "ipa:${{ steps.build.outputs.package_path }}" `
+            "app_identifier:${{ matrix.iosBundleId }}" `
+            "issuer_id:$env:APPSTORE_CONNECT_ISSUER_ID" `
+            "api_key_id:$env:APPSTORE_CONNECT_KEY_ID" `
+            "api_private_key_path:$env:APPSTORE_CONNECT_PRIVATE_KEY_PATH" `
+            "groups:${{ inputs.testflight_groups }}"
