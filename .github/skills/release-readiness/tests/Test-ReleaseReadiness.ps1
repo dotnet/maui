@@ -1847,6 +1847,40 @@ $ofRow = @($mdOpenFix -split "`r?`n" | Where-Object { $_ -match '🔵 OPEN — a
 Assert-Eq -Label "Open-Fix-PRs table: regression-issue cell glued + pipe-escaped, status column intact" -Expected $true `
     -Actual ($ofRow.Count -eq 1 -and $ofRow[0] -match 'Glitch \\\| bug here')
 
+# (4b) Closed no-fix-yet renders under Tier 3 (not silently dropped).
+# no-fix-yet splits by issue state to mirror the verdict tiering: OPEN ones block
+# (Tier 1), CLOSED-but-unresolved ones are informational (Tier 3). Pre-fix, closed
+# no-fix-yet were counted in the Summary yet rendered in NO tier — the live symptom on
+# tracker #35876: "no-fix-yet: 6" in the summary with 0 shown in any tier. This test is
+# DISCRIMINATING: the CLOSED-in-Tier-3 assertion is false pre-fix (entry dropped) and the
+# CLOSED-not-in-Tier-1 assertion guards against regressing it back into the blocking tier.
+$mdDataNfy = @{} + $mdData
+$mdDataNfy['regressions'] = @(
+    @{ issue = 96201; title = 'Open regression, no fix PR'; state = 'OPEN'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Investigate' }
+    @{ issue = 96202; title = 'Closed regression, no fix PR found'; state = 'CLOSED'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Verify resolved' }
+)
+$mdDataNfy['summary'] = @{ 'no-fix-yet' = 2 }
+$mdNfy = Format-MarkdownReport -Data $mdDataNfy -RepoUrl 'https://github.com/dotnet/maui' `
+                               -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "no-fix-yet split: Tier 3 section is present (closed entry surfaced it)" -Expected $true `
+    -Actual ($mdNfy -match '🟢 Tier 3')
+# Carve the body into tier regions by header position so the top blocking-summary table
+# (which sits BEFORE Tier 1) cannot leak into the Tier-1 region assertions.
+$nfyLines = @($mdNfy -split "`r?`n")
+$idxT1 = ($nfyLines | Select-String -Pattern '🔴 Tier 1' | Select-Object -First 1).LineNumber - 1
+$idxT2 = ($nfyLines | Select-String -Pattern '🟡 Tier 2' | Select-Object -First 1).LineNumber - 1
+$idxT3 = ($nfyLines | Select-String -Pattern '🟢 Tier 3' | Select-Object -First 1).LineNumber - 1
+$tier1Block = ($nfyLines[$idxT1..($idxT2 - 1)] -join "`n")
+$tier3Block = ($nfyLines[$idxT3..($nfyLines.Count - 1)] -join "`n")
+Assert-Eq -Label "OPEN no-fix-yet (#96201) renders in Tier 1" -Expected $true `
+    -Actual ($tier1Block -match '#96201')
+Assert-Eq -Label "CLOSED no-fix-yet (#96202) does NOT render in Tier 1" -Expected $false `
+    -Actual ($tier1Block -match '#96202')
+Assert-Eq -Label "CLOSED no-fix-yet (#96202) renders in Tier 3 (not dropped)" -Expected $true `
+    -Actual ($tier3Block -match '#96202')
+
 # (5) Marker-forgery via a TABLE cell: a Tier-1 title embedding the begin-marker between
 #     newlines must NOT forge a second anchored marker line.
 $mdDataForgeTbl = @{} + $mdData

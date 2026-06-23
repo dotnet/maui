@@ -3511,16 +3511,23 @@ function Format-MarkdownReport {
         $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
         $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
                           'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
-        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'out-of-scope-future-sr') | Sort-Object
+        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
 
         $emitTier = {
-            param([string]$Header, [string[]]$Classes, [string]$EmptyLine)
+            param([string]$Header, [string[]]$Classes, [string]$EmptyLine, [string]$NoFixYetState)
             $any = $false
             foreach ($cls in $Classes) {
                 $items = @($regs | Where-Object { $_.classification -eq $cls })
-                # In Tier 1 we suppress no-fix-yet entries whose issue is CLOSED
+                # no-fix-yet splits by issue state to mirror the verdict tiering
+                # (the Get-VerdictTier downgrade): OPEN ones block (Tier 1), CLOSED-but-
+                # unresolved ones are informational (Tier 3). Without this split the closed
+                # entries are counted in the Summary yet rendered in no tier at all.
                 if ($cls -eq 'no-fix-yet') {
-                    $items = @($items | Where-Object { $_.state -eq 'OPEN' })
+                    if ($NoFixYetState -eq 'OPEN') {
+                        $items = @($items | Where-Object { $_.state -eq 'OPEN' })
+                    } elseif ($NoFixYetState -eq 'CLOSED') {
+                        $items = @($items | Where-Object { $_.state -ne 'OPEN' })
+                    }
                 }
                 if ($items.Count -eq 0) { continue }
                 if (-not $any) {
@@ -3551,9 +3558,9 @@ function Format-MarkdownReport {
             }
         }
 
-        & $emitTier '🔴 Tier 1 — Blocking' $tier1Classes '_No blocking regressions._'
-        & $emitTier '🟡 Tier 2 — Risk / Review' $tier2Classes '_No risk-tier regressions._'
-        & $emitTier '🟢 Tier 3 — Informational' $tier3Classes $null
+        & $emitTier '🔴 Tier 1 — Blocking' $tier1Classes '_No blocking regressions._' 'OPEN'
+        & $emitTier '🟡 Tier 2 — Risk / Review' $tier2Classes '_No risk-tier regressions._' $null
+        & $emitTier '🟢 Tier 3 — Informational' $tier3Classes $null 'CLOSED'
     }
 
     $body = $sb.ToString()
