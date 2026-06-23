@@ -981,6 +981,10 @@ namespace Microsoft.Maui.Controls.Handlers
         public void Dispose()
         {
             Destroyed?.Invoke(this, EventArgs.Empty);
+
+            // Disconnect the handler to unsubscribe from required events and clean up resources.
+            ((IElementHandler)_handler).DisconnectHandler();
+
             _wrapperFragment?.Dispose();
             _wrapperFragment = null;
         }

@@ -403,7 +403,7 @@ namespace Microsoft.Maui.Controls.Handlers
         /// </summary>
         protected virtual BottomSheetDialog CreateMoreBottomSheet(
             Action<int, BottomSheetDialog> selectCallback,
-            List<(string title, ImageSource icon, bool tabEnabled)> items)
+            List<(string title, ImageSource? icon, bool tabEnabled)> items)
         {
             return BottomNavigationViewUtils.CreateMoreBottomSheet(
                 selectCallback,
@@ -1191,6 +1191,10 @@ namespace Microsoft.Maui.Controls.Handlers
         public void Dispose()
         {
             Destroyed?.Invoke(this, EventArgs.Empty);
+
+            // Disconnect the handler to unsubscribe from events and clean up resources.
+            ((IElementHandler)_handler).DisconnectHandler();
+
             _wrapperFragment?.Dispose();
             _wrapperFragment = null;
         }

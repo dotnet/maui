@@ -94,11 +94,12 @@ namespace Microsoft.Maui.Platform
         public bool IsFlyoutOpen => _flyoutView != null && _flyoutView.Parent == this && IsDrawerOpen(_flyoutView);
 
         /// <summary>
-        /// Gets or sets the flyout width. -1 for default width.
+        /// Gets or sets the flyout width in pixels. Pass MatchParent (-1) for full-width drawers.
+        /// Shell converts its -1 (unset) to DefaultFlyoutWidth before setting this property.
         /// </summary>
         public double FlyoutWidth
         {
-            get => _flyoutWidth == -1 ? _defaultFlyoutWidth : _flyoutWidth;
+            get => _flyoutWidth;
             set
             {
                 _flyoutWidth = value;
@@ -287,13 +288,18 @@ namespace Microsoft.Maui.Platform
         }
 
         /// <summary>
-        /// Gets the left padding needed for content when flyout is locked open (padding mode).
+        /// Gets the start padding needed for content when flyout is locked open (padding mode).
         /// </summary>
         public int GetLockedContentPadding()
         {
-            return _currentBehavior == FlyoutBehavior.Locked && _layoutMode == FlyoutLayoutMode.Padding
-                ? (int)FlyoutWidth
-                : 0;
+            if (_currentBehavior != FlyoutBehavior.Locked || _layoutMode != FlyoutLayoutMode.Padding)
+            {
+                return 0;
+            }
+
+            // Use default width if FlyoutWidth is unset (-1/MatchParent)
+            var width = _flyoutWidth <= 0 ? _defaultFlyoutWidth : _flyoutWidth;
+            return (int)width;
         }
 
         /// <summary>
