@@ -256,8 +256,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		static bool ShouldApplyCellReConfiguration()
 		{
-			return OperatingSystem.IsIOSVersionAtLeast(15)
-				|| OperatingSystem.IsMacCatalystVersionAtLeast(15);
+			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
 
 		private void MovedToWindow(object sender, EventArgs e)
