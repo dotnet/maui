@@ -173,12 +173,25 @@ jobs:
         if: ${{ matrix.platform == 'ios' }}
         shell: bash
         run: |
-          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
-          if [ -n "$LATEST_XCODE" ]; then
-            echo "Selecting Xcode: $LATEST_XCODE"
-            sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+          SELECTED_XCODE=""
+          while IFS= read -r xcode; do
+            if compgen -G "$xcode/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk" > /dev/null &&
+               compgen -G "$xcode/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.sdk" > /dev/null; then
+              SELECTED_XCODE="$xcode"
+              break
+            fi
+          done < <(find /Applications -maxdepth 1 -name 'Xcode*.app' -type d | sort -r)
+
+          if [ -z "$SELECTED_XCODE" ]; then
+            echo "::error::No installed Xcode with both macOS and iPhoneOS SDKs was found."
+            exit 1
           fi
+
+          echo "Selecting Xcode: $SELECTED_XCODE"
+          sudo xcode-select -s "$SELECTED_XCODE/Contents/Developer"
           xcodebuild -version
+          xcrun --sdk macosx --show-sdk-path
+          xcrun --sdk iphoneos --show-sdk-path
 
       - name: Install MAUI workload
         run: dotnet workload install ${{ matrix.workload }}
@@ -328,12 +341,25 @@ jobs:
         if: ${{ matrix.platform == 'ios' }}
         shell: bash
         run: |
-          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
-          if [ -n "$LATEST_XCODE" ]; then
-            echo "Selecting Xcode: $LATEST_XCODE"
-            sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+          SELECTED_XCODE=""
+          while IFS= read -r xcode; do
+            if compgen -G "$xcode/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk" > /dev/null &&
+               compgen -G "$xcode/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.sdk" > /dev/null; then
+              SELECTED_XCODE="$xcode"
+              break
+            fi
+          done < <(find /Applications -maxdepth 1 -name 'Xcode*.app' -type d | sort -r)
+
+          if [ -z "$SELECTED_XCODE" ]; then
+            echo "::error::No installed Xcode with both macOS and iPhoneOS SDKs was found."
+            exit 1
           fi
+
+          echo "Selecting Xcode: $SELECTED_XCODE"
+          sudo xcode-select -s "$SELECTED_XCODE/Contents/Developer"
           xcodebuild -version
+          xcrun --sdk macosx --show-sdk-path
+          xcrun --sdk iphoneos --show-sdk-path
 
       - name: Setup Ruby and fastlane
         uses: ruby/setup-ruby@v1
