@@ -41,7 +41,15 @@ param(
     [int]$PRNumber,
 
     [Parameter(Mandatory = $false)]
-    [switch]$DryRun
+    [switch]$DryRun,
+
+    # Trusted gate verdict supplied by the pipeline (Gate task output variable),
+    # NOT read from the agent-writable PRAgent worktree. Used to veto an APPROVE
+    # review over a FAILED gate. Empty/omitted (local/manual runs that never post
+    # APPROVE) is treated as the non-blocking 'SKIPPED' sentinel.
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
+    [string]$TrustedGateResult = ''
 )
 
 $ErrorActionPreference = "Stop"
@@ -415,16 +423,18 @@ function Test-HasNonPRWinner {
 }
 
 function Test-RunValidationFailed {
-    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+    param(
+        [Parameter(Mandatory = $true)][string]$PRAgentDir,
+        [Parameter(Mandatory = $true)][string]$TrustedGateResult
+    )
 
-    # Gate: key off the trusted gate-result.txt, which Review-PR.ps1 always overwrites with the
-    # real $gateResult. Do NOT parse gate/content.md — it is not always cleaned before the gate
-    # runs, so a PR could commit a forged "Gate Result: PASSED" content.md to bypass the veto.
-    $gateResultFile = Join-Path $PRAgentDir 'gate/gate-result.txt'
-    if (Test-Path -LiteralPath $gateResultFile) {
-        $gateResult = (Get-Content -Raw -LiteralPath $gateResultFile -Encoding UTF8).Trim()
-        if ($gateResult -match '(?im)^FAILED$') { return $true }
-    }
+    # Gate: key off the TRUSTED gate verdict passed in by the pipeline (derived from the
+    # Gate task's process exit code / its freshly-written staging file, captured BEFORE the
+    # untrusted CopilotReview phase runs and frozen as an Azure output variable). Do NOT read
+    # gate/gate-result.txt or gate/content.md from $PRAgentDir — both live in the agent-writable
+    # worktree/artifact, so a prompt-injected review agent could overwrite a real FAILED gate
+    # with "PASSED" before this trusted posting step and bypass the APPROVE veto.
+    if ($TrustedGateResult -match '(?im)^\s*FAILED\s*$') { return $true }
 
     # UI tests: the pipeline render writes "❌ **Deep UI tests** — N passed, M failed …" with no
     # "Result:" line, so detect the failure icon on a bold test header or a non-zero "N failed"
@@ -447,14 +457,23 @@ function Get-AIReviewEventForRun {
         [string]$ReportContent,
 
         [Parameter(Mandatory = $true)]
-        [string]$PRAgentDir
+        [string]$PRAgentDir,
+
+        [string]$TrustedGateResult
     )
+
+    # Fail closed: the APPROVE veto must never run against an absent gate signal. Callers must
+    # pass the trusted pipeline-supplied verdict explicitly (local/manual callers pass a
+    # non-blocking sentinel such as 'SKIPPED').
+    if ([string]::IsNullOrWhiteSpace($TrustedGateResult)) {
+        throw "TrustedGateResult is required: the APPROVE veto must key off the trusted pipeline gate verdict, not the agent-writable worktree."
+    }
 
     $reviewEvent = Get-AIReviewEvent -ReportContent $ReportContent
 
     # Validation veto: never post an APPROVE review over a failed gate / device-test validation,
     # even when the report body recommends APPROVE (the report can be stale vs. current-run results).
-    if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir)) {
+    if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir -TrustedGateResult $TrustedGateResult)) {
         return 'REQUEST_CHANGES'
     }
 
@@ -565,8 +584,12 @@ if (-not $gateSection -and $phaseSections.Count -eq 0) {
     throw "No gate or phase content found. Ensure at least one of gate/content.md or {phase}/content.md exists in $PRAgentDir."
 }
 
-$reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report'] -PRAgentDir $PRAgentDir
-Write-Host "  🧾 PR review event: $reviewEvent" -ForegroundColor Cyan
+# The trusted gate verdict comes from the pipeline (Gate task output variable). For
+# local/manual invocations that never post APPROVE, fall back to the non-blocking 'SKIPPED'
+# sentinel so the veto is a no-op rather than reading any agent-writable worktree file.
+$effectiveGateResult = if ([string]::IsNullOrWhiteSpace($TrustedGateResult)) { 'SKIPPED' } else { $TrustedGateResult }
+$reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report'] -PRAgentDir $PRAgentDir -TrustedGateResult $effectiveGateResult
+Write-Host "  🧾 PR review event: $reviewEvent (trusted gate: $effectiveGateResult)" -ForegroundColor Cyan
 
 # ============================================================================
 # FETCH PR METADATA (commit + author)

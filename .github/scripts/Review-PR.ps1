@@ -72,7 +72,14 @@ param(
     [string]$LogFile,
 
     [Parameter(Mandatory = $false)]
-    [string]$TokenUsageOutputDir
+    [string]$TokenUsageOutputDir,
+
+    # Trusted gate verdict supplied by the pipeline Gate task (output variable), captured
+    # before the untrusted CopilotReview phase runs. Passed to post-ai-summary-comment.ps1 so
+    # the APPROVE veto never trusts the agent-writable gate-result.txt in the worktree/artifact.
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
+    [string]$TrustedGateResult = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -1920,9 +1927,11 @@ $gateVerdictDir = if ($TrustedScriptsDir) {
     $d
 }
 $gateResult | Set-Content (Join-Path $gateVerdictDir "gate-result.txt") -Encoding UTF8
-# Also persist into PRAgent/gate (always overwritten = trusted), which ships in the CopilotLogs
-# artifact — the UpdateAISummaryComment APPROVE-veto reads the result from there in CI (the
-# $gateVerdictDir copy above can land at the staging root, which the artifact does not include).
+# Also persist into PRAgent/gate, which ships in the CopilotLogs artifact. This copy is used
+# only for DISPLAY (the gate label and the rendered gate section) — it is NOT trusted for the
+# APPROVE veto. The veto keys off the trusted Gate-task output variable (RunGate.gateResult),
+# captured from the staging-root copy above before the untrusted CopilotReview phase runs, so a
+# later overwrite of this artifact copy cannot bypass the veto.
 $gateResult | Set-Content (Join-Path $gateOutputDir "gate-result.txt") -Encoding UTF8
 Write-Host "  📄 Gate result persisted: $gateResult" -ForegroundColor Gray
 
@@ -2324,6 +2333,16 @@ if ($Phase -eq 'Post') {
     }
 }
 
+# The APPROVE veto must key off a TRUSTED gate verdict, not the file restored above (that file
+# lives in the agent-writable worktree and could be overwritten by the CopilotReview phase). In
+# CI the pipeline passes -TrustedGateResult (Gate task output variable, frozen pre-agent); use it
+# when present, otherwise fall back to the locally-restored value for non-CI runs.
+$trustedGateResultForPost = if (-not [string]::IsNullOrWhiteSpace($TrustedGateResult)) {
+    $TrustedGateResult
+} else {
+    $gateResult
+}
+
 # ─── Gate posting (moved here so only the Post task needs GH_TOKEN) ──────
 $postGateScript = Join-Path $ScriptsDir "post-gate-comment.ps1"
 if (Test-Path $postGateScript) {
@@ -2396,9 +2415,9 @@ if (Test-Path $reviewScript) {
     try {
         Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
         if ($DryRun) {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber -DryRun
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -DryRun
         } else {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost
         }
         # Capture review ID from script output (format: AI_SUMMARY_REVIEW_ID=<id>)
         $idLine = $reviewOutput | Where-Object { $_ -match '^AI_SUMMARY_REVIEW_ID=' } | Select-Object -Last 1

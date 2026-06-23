@@ -806,6 +806,27 @@ stages:
                 echo "##vso[task.logissue type=warning]Gate phase exited with code $GATE_EXIT"
                 echo "##vso[task.setvariable variable=GateFailed]true"
               fi
+
+              # Publish the TRUSTED gate verdict for the cross-stage APPROVE veto. The Gate phase
+              # (trusted, runs BEFORE the untrusted CopilotReview phase in Task 3) wrote the verdict
+              # to the staging-root gate-result.txt; read it here in this pipeline-controlled wrapper
+              # and freeze it as an output variable. Once emitted, the value lives in the pipeline
+              # variable store — PR-controlled agent code in Task 3 cannot mutate it, unlike the
+              # gate-result.txt copy that ships inside the agent-writable PRAgent artifact.
+              GATE_VERDICT_FILE="$(Build.ArtifactStagingDirectory)/gate-result.txt"
+              GATE_VERDICT="INCONCLUSIVE"
+              if [ -f "$GATE_VERDICT_FILE" ]; then
+                RAW_VERDICT=$(tr -d '\r\n' < "$GATE_VERDICT_FILE" | tr '[:lower:]' '[:upper:]')
+                case "$RAW_VERDICT" in
+                  PASSED|SKIPPED|INCONCLUSIVE|FAILED) GATE_VERDICT="$RAW_VERDICT" ;;
+                  *) GATE_VERDICT="INCONCLUSIVE" ;;
+                esac
+              fi
+              # The process exit code is authoritative for FAILED (only a genuine FAILED gate exits
+              # non-zero — PASSED/SKIPPED/INCONCLUSIVE all exit 0), so it overrides the file read.
+              if [ $GATE_EXIT -ne 0 ]; then GATE_VERDICT="FAILED"; fi
+              echo "Trusted gate verdict: $GATE_VERDICT"
+              echo "##vso[task.setvariable variable=gateResult;isOutput=true]$GATE_VERDICT"
             name: RunGate
             displayName: 'Task 2: Gate (test verification)'
             env:
@@ -860,6 +881,7 @@ stages:
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Post \
                 -TrustedScriptsDir "$TRUSTED" \
+                -TrustedGateResult "$(RunGate.gateResult)" \
                 -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
                 -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
               POST_EXIT=$?
@@ -1582,6 +1604,9 @@ stages:
         # inside the steps.
         variables:
           aiSummaryReviewId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId'] ]
+          # Trusted gate verdict from the Gate task (frozen pre-agent). Passed to the post script
+          # so the APPROVE veto does not trust the agent-writable gate-result.txt in the artifact.
+          trustedGateResult: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.gateResult'] ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -1889,11 +1914,15 @@ stages:
                   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetDir) | Out-Null
                   Copy-Item -Path $prAgentDir.FullName -Destination $targetDir -Recurse -Force
 
-                  # Post the full review
+                  # Post the full review. Pass the trusted gate verdict (Gate task output var)
+                  # so the APPROVE veto keys off it, not the agent-writable gate-result.txt. An
+                  # empty value (ReviewPR crashed before the gate) is the non-blocking sentinel.
                   $postScript = ".github/scripts/post-ai-summary-comment.ps1"
                   if (Test-Path $postScript) {
                     Write-Host "Posting full AI summary review with deep results..."
-                    $output = & $postScript -PRNumber $prNumber
+                    $trustedGate = "$(trustedGateResult)"
+                    Write-Host "Trusted gate verdict for veto: '$trustedGate'"
+                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate
                     $output | ForEach-Object { Write-Host $_ }
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }

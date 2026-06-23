@@ -177,7 +177,7 @@ Describe 'Get-AIReviewEventForRun' {
             summary = 'Candidate fixes the issue more directly.'
         } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
 
-        Get-AIReviewEventForRun -ReportContent 'Report still in progress.' -PRAgentDir $script:testDir |
+        Get-AIReviewEventForRun -ReportContent 'Report still in progress.' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
             Should -Be 'REQUEST_CHANGES'
     }
 
@@ -188,37 +188,45 @@ Describe 'Get-AIReviewEventForRun' {
             candidateDiff = 'diff --git a/file.cs b/file.cs'
         } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
 
-        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
             Should -Be 'APPROVE'
     }
 
-    It 'vetoes APPROVE to REQUEST_CHANGES when the trusted gate-result is FAILED' {
+    It 'vetoes APPROVE to REQUEST_CHANGES when the trusted gate verdict is FAILED' {
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'FAILED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'trusts the supplied FAILED verdict even when a forged gate-result.txt says PASSED' {
+        # Security: the veto must IGNORE the agent-writable worktree file. A prompt-injected
+        # review agent that overwrites gate-result.txt with PASSED after a real FAILED gate must
+        # not be able to bypass the veto — the trusted pipeline verdict wins.
+        $gateDir = Join-Path $script:testDir 'gate'
+        New-Item -ItemType Directory -Path $gateDir -Force | Out-Null
+        'PASSED' | Set-Content (Join-Path $gateDir 'gate-result.txt') -Encoding UTF8
+        'Gate Result: ✅ PASSED' | Set-Content (Join-Path $gateDir 'content.md') -Encoding UTF8
+
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'FAILED' |
+            Should -Be 'REQUEST_CHANGES'
+    }
+
+    It 'keeps APPROVE when the trusted verdict is PASSED even if a forged gate-result.txt says FAILED' {
         $gateDir = Join-Path $script:testDir 'gate'
         New-Item -ItemType Directory -Path $gateDir -Force | Out-Null
         'FAILED' | Set-Content (Join-Path $gateDir 'gate-result.txt') -Encoding UTF8
 
-        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
-            Should -Be 'REQUEST_CHANGES'
-    }
-
-    It 'keeps APPROVE when the trusted gate-result is PASSED (ignores a forged content.md)' {
-        $gateDir = Join-Path $script:testDir 'gate'
-        New-Item -ItemType Directory -Path $gateDir -Force | Out-Null
-        'PASSED' | Set-Content (Join-Path $gateDir 'gate-result.txt') -Encoding UTF8
-        # A forged content.md claiming PASSED must be irrelevant — the veto keys off gate-result.txt.
-        'Gate Result: ✅ PASSED' | Set-Content (Join-Path $gateDir 'content.md') -Encoding UTF8
-
-        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
             Should -Be 'APPROVE'
     }
 
-    It 'keeps APPROVE when the gate is INCONCLUSIVE (build/env error must not block)' {
-        $gateDir = Join-Path $script:testDir 'gate'
-        New-Item -ItemType Directory -Path $gateDir -Force | Out-Null
-        'INCONCLUSIVE' | Set-Content (Join-Path $gateDir 'gate-result.txt') -Encoding UTF8
-
-        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+    It 'keeps APPROVE when the trusted gate verdict is INCONCLUSIVE (build/env error must not block)' {
+        Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'INCONCLUSIVE' |
             Should -Be 'APPROVE'
+    }
+
+    It 'throws when the trusted gate verdict is not supplied (fail closed)' {
+        { Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir } |
+            Should -Throw '*TrustedGateResult is required*'
     }
 
     It 'vetoes APPROVE when deep UI tests report failures (real render format)' {
@@ -227,7 +235,7 @@ Describe 'Get-AIReviewEventForRun' {
         '❌ **Deep UI tests** — 12 passed, 3 failed across 4 categories on platform-pool agent (replaces in-process counts above).' |
             Set-Content (Join-Path $uiDir 'content.md') -Encoding UTF8
 
-        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
             Should -Be 'REQUEST_CHANGES'
     }
 
@@ -237,23 +245,23 @@ Describe 'Get-AIReviewEventForRun' {
         '✅ **Deep UI tests** — 50 passed; 2 setup categories (1 marked failed by TRX) across 4 categories on platform-pool agent.' |
             Set-Content (Join-Path $uiDir 'content.md') -Encoding UTF8
 
-        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir |
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
             Should -Be 'APPROVE'
     }
 
     It 'does not force changes for missing, malformed, or PR-fix winner files' {
-        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir |
+        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
             Should -Be 'COMMENT'
 
         'not json' | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
-        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir |
+        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
             Should -Be 'COMMENT'
 
         @{
             winner = 'pr'
             isPRFix = $true
         } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
-        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir |
+        Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
             Should -Be 'COMMENT'
     }
 }
