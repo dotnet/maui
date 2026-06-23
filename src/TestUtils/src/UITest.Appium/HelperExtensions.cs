@@ -2698,16 +2698,6 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
-		/// </summary>
-		/// <param name="app">The IApp instance.</param>
-		/// <param name="tabName">The name of the tab to wait for.</param>
-		/// <remarks>
-		/// For Android apps, the tab name is converted to uppercase before searching.
-		/// </remarks>
-
-
-		/// <summary>
 		/// Moves the mouse cursor to the specified element.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>

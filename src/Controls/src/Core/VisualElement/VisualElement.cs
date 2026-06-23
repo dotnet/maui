@@ -1731,6 +1731,14 @@ namespace Microsoft.Maui.Controls
 		// element is actually leaving a focused visual state.
 		bool IsInFocusedVisualState()
 		{
+			// Guard the hot path: ChangeVisualState runs on every focus, enabled and pointer
+			// transition. HasVisualStateGroups short-circuits without materializing the default
+			// VisualStateGroupList for controls that never declared any VSM groups.
+			if (!this.HasVisualStateGroups())
+			{
+				return false;
+			}
+
 			var groups = VisualStateManager.GetVisualStateGroups(this);
 			if (groups is null)
 			{

@@ -10,7 +10,7 @@ using UITest.Core;
 
 namespace UITest.Appium
 {
-	public partial class AppiumMouseActions : ICommandExecutionGroup
+	public class AppiumMouseActions : ICommandExecutionGroup
 	{
 		const string ClickCommand = "click";
 		const string ClickCoordinatesCommand = "clickCoordinates";
@@ -218,17 +218,6 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
-		{
-			if (parameters.TryGetValue("x", out var x) &&
-				parameters.TryGetValue("y", out var y))
-			{
-				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
-			}
-
-			return CommandResponse.FailedEmptyResponse;
-		}
-
 		CommandResponse MoveCursor(IDictionary<string, object> parameters)
 		{
 			var element = GetAppiumElement(parameters["element"]);
@@ -273,6 +262,11 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 			}
 
+			// The coordinates are boxed as floats by the caller, so convert them safely
+			// (an unboxing cast such as (int)x would throw InvalidCastException).
+			var endX = Convert.ToInt32(x);
+			var endY = Convert.ToInt32(y);
+
 			// Mouse actions are not supported on Windows
 			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
 			{
@@ -280,8 +274,8 @@ namespace UITest.Appium
 				{
 					{ "startX", 0 },
 					{ "startY", 0 },
-					{ "endX", x },
-					{ "endY", y },
+					{ "endX", endX },
+					{ "endY", endY },
 				});
 			}
 			else
@@ -289,7 +283,7 @@ namespace UITest.Appium
 				var touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 
 				var sequence = new ActionSequence(touchDevice, 0);
-				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
+				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(5)));
 
 				_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
 			}
@@ -360,10 +354,10 @@ namespace UITest.Appium
 			return Math.Max(1, scaleFactor);
 		}
 
-		[LibraryImport("user32.dll")]
-		private static partial IntPtr GetForegroundWindow();
+		[DllImport("user32.dll")]
+		private static extern IntPtr GetForegroundWindow();
 
-		[LibraryImport("user32.dll")]
-		private static partial uint GetDpiForWindow(IntPtr hWnd);
+		[DllImport("user32.dll")]
+		private static extern uint GetDpiForWindow(IntPtr hWnd);
 	}
 }

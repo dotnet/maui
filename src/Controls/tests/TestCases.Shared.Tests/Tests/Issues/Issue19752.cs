@@ -30,7 +30,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	void ResetCursorPosition()
 	{
 		// Move cursor to top-left corner, away from buttons
-		App.MoveToCoordinates(10, 10);
+		App.MoveCursorCoordinates(10, 10);
 	}
 
 	[Test]
