@@ -193,6 +193,60 @@ Describe 'Resolve-RerunEligibility' {
         }
     }
 
+    Context 'Test-ReviewOptionLoginTrusted (collaborator-permission lookup)' {
+        BeforeEach {
+            Clear-ReviewOptionPermissionCache
+            Mock Start-Sleep {}
+        }
+
+        It 'trusts write/maintain/admin permission' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 0; Permission = 'write'; StdErr = '' } }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' | Should -BeTrue
+        }
+
+        It 'does not trust read or none permission' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 0; Permission = 'read'; StdErr = '' } }
+            Test-ReviewOptionLoginTrusted -Login 'reader' | Should -BeFalse
+        }
+
+        It 'rejects an invalid (non-user) login without calling the API' {
+            Mock Get-CollaboratorPermissionResult { throw 'API should not be called for an invalid login' }
+            Test-ReviewOptionLoginTrusted -Login 'dotnet-maestro[bot]' | Should -BeFalse
+            Test-ReviewOptionLoginTrusted -Login '' | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 0
+        }
+
+        It 'treats a definitive HTTP 404 as untrusted and caches it (one API call)' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Not Found (HTTP 404)' } }
+            Test-ReviewOptionLoginTrusted -Login 'outsider' | Should -BeFalse
+            Test-ReviewOptionLoginTrusted -Login 'outsider' | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 1
+        }
+
+        It 'retries a transient error and does not cache the undecided result' {
+            Mock Get-CollaboratorPermissionResult { [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Server Error (HTTP 503)' } }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 3
+            # Not cached: a later lookup tries again rather than staying downgraded.
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeFalse
+            Should -Invoke Get-CollaboratorPermissionResult -Times 6
+        }
+
+        It 'recovers when a transient error clears on a later attempt' {
+            $script:permAttempt = 0
+            Mock Get-CollaboratorPermissionResult {
+                $script:permAttempt++
+                if ($script:permAttempt -eq 1) {
+                    [pscustomobject]@{ ExitCode = 1; Permission = ''; StdErr = 'gh: Server Error (HTTP 503)' }
+                } else {
+                    [pscustomobject]@{ ExitCode = 0; Permission = 'admin'; StdErr = '' }
+                }
+            }
+            Test-ReviewOptionLoginTrusted -Login 'maintainer' -MaxAttempts 3 | Should -BeTrue
+            Should -Invoke Get-CollaboratorPermissionResult -Times 2
+        }
+    }
+
     It 'rejects commands when no AI Summary exists' {
         $comments = @(
             New-TestComment -Id 10 -Body '/review rerun' -CreatedAt '2026-05-31T10:00:00Z'

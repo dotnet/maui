@@ -150,6 +150,32 @@ function Clear-ReviewOptionPermissionCache {
     $script:ReviewOptionPermissionCache = @{}
 }
 
+function Get-CollaboratorPermissionResult {
+    # Thin, mockable wrapper around the gh permission lookup. Returns the exit
+    # code, the trimmed permission string, and stderr so the caller can tell a
+    # definitive 404 (not a collaborator) from a transient failure.
+    param(
+        [string]$Login,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
+    )
+
+    $stdErrFile = New-TemporaryFile
+    try {
+        $permission = [string](gh api "repos/$Owner/$Repo/collaborators/$Login/permission" --jq '.permission' 2>$stdErrFile)
+        $exitCode = $LASTEXITCODE
+        $stdErr = [string](Get-Content -Raw -LiteralPath $stdErrFile -ErrorAction SilentlyContinue)
+    } finally {
+        Remove-Item -LiteralPath $stdErrFile -Force -ErrorAction SilentlyContinue
+    }
+
+    return [pscustomobject]@{
+        ExitCode   = $exitCode
+        Permission = $permission.Trim()
+        StdErr     = $stdErr
+    }
+}
+
 function Test-ReviewOptionLoginTrusted {
     <#
     .SYNOPSIS
@@ -165,14 +191,27 @@ function Test-ReviewOptionLoginTrusted {
         back to the 'main' pipeline branch. The collaborators/<user>/permission
         endpoint only needs metadata:read, is what /review itself calls, and
         reflects the user's CURRENT access rather than a per-comment snapshot.
+
+        A definitive HTTP 404 (not a collaborator) is cached as untrusted. A
+        transient failure (5xx / rate-limit / network) is retried and NEVER
+        cached, so a momentary blip cannot silently downgrade a maintainer's
+        custom branch to 'main' — the exact symptom this trust model fixes.
     #>
     param(
         [string]$Login,
         [string]$Owner = 'dotnet',
-        [string]$Repo = 'maui'
+        [string]$Repo = 'maui',
+        [int]$MaxAttempts = 3
     )
 
     if ([string]::IsNullOrWhiteSpace($Login)) {
+        return $false
+    }
+
+    # GitHub user logins are alphanumerics and single hyphens only. Anything else
+    # (e.g. an app/bot login like 'name[bot]') cannot be a maintainer setting
+    # /review options, and rejecting it here also hardens the API path below.
+    if ($Login -notmatch '^[A-Za-z0-9][A-Za-z0-9-]*$') {
         return $false
     }
 
@@ -181,16 +220,32 @@ function Test-ReviewOptionLoginTrusted {
         return $script:ReviewOptionPermissionCache[$key]
     }
 
-    $permission = ''
-    try {
-        $permission = [string](gh api "repos/$Owner/$Repo/collaborators/$Login/permission" --jq '.permission' 2>$null)
-    } catch {
-        $permission = ''
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $result = Get-CollaboratorPermissionResult -Login $Login -Owner $Owner -Repo $Repo
+
+        if ($result.ExitCode -eq 0) {
+            $trusted = $result.Permission -in @('admin', 'maintain', 'write')
+            $script:ReviewOptionPermissionCache[$key] = $trusted
+            return $trusted
+        }
+
+        if ($result.StdErr -match '(?i)\bHTTP\s+(404|410)\b') {
+            # Definitive: the login is not (or no longer) a collaborator.
+            $script:ReviewOptionPermissionCache[$key] = $false
+            return $false
+        }
+
+        $detail = (([string]$result.StdErr) -replace '[\r\n]+', ' ').Trim()
+        Write-Host "::warning::collaborator-permission lookup for '$Login' failed (attempt $attempt/$MaxAttempts): $detail"
+        if ($attempt -lt $MaxAttempts) {
+            Start-Sleep -Seconds ([Math]::Min(5, $attempt * 2))
+        }
     }
-    # A non-collaborator yields HTTP 404 (empty permission here); treat as untrusted.
-    $trusted = $permission.Trim() -in @('admin', 'maintain', 'write')
-    $script:ReviewOptionPermissionCache[$key] = $trusted
-    return $trusted
+
+    # Persistent transient failure: untrusted for THIS lookup but NOT cached, so a
+    # later lookup in the same run can still recover instead of being downgraded.
+    Write-Host "::warning::Could not determine collaborator permission for '$Login' after $MaxAttempts attempts; treating its /review options as untrusted for now."
+    return $false
 }
 
 function Get-LatestReviewCommandOptions {

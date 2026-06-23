@@ -119,6 +119,13 @@ safe-outputs:
           run: |
             .github/scripts/Invoke-RerunReviewTrigger.ps1 -DefaultPipelineRef 'main'
         - name: Dispatch review-trigger.yml for validated decisions
+          # Runs even when the Validate step exits non-zero (it does so to flag a
+          # PR whose decision failed validation, e.g. a stale head SHA). The valid
+          # actions are already in actions.json and MUST still be dispatched — a
+          # single bad decision must not discard the whole batch. No-ops when
+          # actions.json is absent and still fails via core.setFailed on a real
+          # dispatch error.
+          if: ${{ !cancelled() }}
           # The `gh` CLI returns a spurious HTTP 404 for repos/.../pulls/N in this
           # gh-aw safe-output job context, so all GitHub writes go through octokit
           # here. We dispatch the same review-trigger.yml workflow a maintainer
@@ -246,9 +253,27 @@ successful trigger and is not re-picked by a later scan. Duplicates are
 prevented by scanner serialization, candidate-set head-SHA revalidation,
 `review-trigger.yml`'s per-PR concurrency group, and the persistent in-progress
 lock — without a global concurrency group that could cancel unrelated maintainer
-`/review` requests. (There is no separate scanner rate limit: the queue-label
-lifecycle plus the per-PR lock bound the trigger rate the same way a maintainer
-`/review` is bounded.)
+`/review` requests.
+
+### Rerun volume (no separate scanner rate limit — by design)
+
+An earlier version of this safe-output job enforced a per-PR cap (3 rerun
+triggers / 24h with a 60-minute cooldown). That cap was **intentionally removed**
+so the scanner path behaves exactly like a maintainer `/review`, which has no
+such limit. Volume is instead bounded structurally:
+
+1. A PR only becomes a candidate when `Resolve-RerunEligibility.ps1` finds
+   genuinely *new* author activity (a new commit or a new non-command comment)
+   since the last AI Summary / rerun checkpoint — the same deterministic gate the
+   `/review rerun` command uses. The identical PR state cannot be re-queued.
+2. Re-entry is not autonomous: a human (or the PR author's new push) must produce
+   that new activity and `/review rerun` must re-apply the queue label each cycle.
+3. The per-PR in-progress lock prevents overlapping reviews of the same PR.
+
+This is an accepted, documented cost trade-off: it matches manual `/review`
+exactly. If a hard ceiling is ever needed, the `s/agent-review-in-progress`
+label history is still available to the github-script step and a lightweight
+per-PR throttle can be reintroduced there.
 
 The deterministic scanner found these candidates:
 
