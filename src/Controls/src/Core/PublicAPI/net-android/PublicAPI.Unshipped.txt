@@ -121,10 +121,6 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
-~virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellFlyoutContentRenderer() -> Microsoft.Maui.Controls.Platform.Compatibility.IShellFlyoutContentRenderer
-~virtual Microsoft.Maui.Controls.Handlers.ShellHandler.CreateShellItemRenderer(Microsoft.Maui.Controls.ShellItem shellItem) -> Microsoft.Maui.Controls.Platform.Compatibility.IShellItemRenderer
-~virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.HookChildEvents(Microsoft.Maui.Controls.ShellSection shellSection) -> void
-~virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.UnhookChildEvents(Microsoft.Maui.Controls.ShellSection shellSection) -> void
 Microsoft.Maui.Controls.Handlers.ShellHandler
 Microsoft.Maui.Controls.Handlers.ShellHandler.ShellHandler() -> void
 Microsoft.Maui.Controls.Handlers.ShellItemHandler

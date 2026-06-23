@@ -139,24 +139,6 @@ steps:
   artifact: ui-tests-samples-material3_failed_$(System.JobAttempt)
 
 - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), failed())
-  artifact: ui-tests-samples-material3-coreclr_failed_$(System.JobAttempt)
-
-# Shell renderer failure artifacts (handlers disabled)
-- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellRenderer }}', 'true'), failed())
-  artifact: ui-tests-samples-shell_failed_$(System.JobAttempt)
-
-- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'false'), eq('${{ parameters.useAndroidShellRenderer }}', 'true'), failed())
-  artifact: ui-tests-samples-shell-coreclr_failed_$(System.JobAttempt)
-
-# Material3 only failure artifacts
-- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-  condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'CoreCLR'), eq('${{ parameters.useMaterial3 }}', 'true'), eq('${{ parameters.useAndroidShellHandlers }}', 'false'), failed())
-  artifact: ui-tests-samples-material3_failed_$(System.JobAttempt)
-
-- publish: $(System.DefaultWorkingDirectory)/artifacts/bin
   condition: and(eq('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.useWindowsCV1 }}', 'false'), failed())
   artifact: ui-tests-samples-windows_failed_$(System.JobAttempt)
 
