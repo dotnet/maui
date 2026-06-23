@@ -2,7 +2,10 @@
 #if !NETSTANDARD
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
+using System.Threading;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 // Single assembly-level MetadataUpdateHandler for all XAML page types in user assemblies.
 // The .NET hot-reload infrastructure passes the list of updated types to UpdateApplication();
@@ -62,10 +65,14 @@ public static class XamlIncrementalHotReloadHandler
 		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
 			return;
 
-		// M9: Batch dispatch — collect ALL (instance, method, type) tuples across every updated
+		var fromVersion = HotReloadDiagnostics.CurrentVersion;
+		var toVersion = HotReloadDiagnostics.IncrementVersion();
+		var typesArray = (IReadOnlyList<Type>)updatedTypes;
+
+		HotReloadDiagnostics.OnUpdateRequested(typesArray);
+
+		// Batch dispatch — collect ALL (instance, method, type) tuples across every updated
 		// type, then issue a single MainThread.BeginInvokeOnMainThread that iterates them.
-		// One UI-thread hop instead of N hops per type change reduces dispatch overhead and
-		// keeps property mutations contiguous (avoids interleaving with unrelated UI work).
 		var dispatchBatch = new List<(object Instance, MethodInfo Method, Type Type)>();
 
 		foreach (var type in updatedTypes)
@@ -82,9 +89,6 @@ public static class XamlIncrementalHotReloadHandler
 			if (ucMethod is null)
 				continue;
 
-			// M10: Use XamlComponentRegistry's authoritative instance index instead of
-			// maintaining a parallel weak-reference list inside the handler. Avoids the
-			// "register here / register there" double-bookkeeping that risked drift.
 			var instances = XamlComponentRegistry.GetInstances(type);
 			if (instances.Count == 0)
 				continue;
@@ -98,11 +102,15 @@ public static class XamlIncrementalHotReloadHandler
 
 		global::Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
 		{
+			var sw = Stopwatch.StartNew();
+			int instanceCount = 0;
+
 			foreach (var (capturedInstance, capturedMethod, capturedType) in dispatchBatch)
 			{
 				try
 				{
 					capturedMethod.Invoke(capturedInstance, null);
+					instanceCount++;
 				}
 #pragma warning disable CA1031
 				catch (Exception ex)
@@ -110,9 +118,13 @@ public static class XamlIncrementalHotReloadHandler
 					var inner = ex.InnerException ?? ex;
 					System.Diagnostics.Debug.WriteLine(
 						$"[XIHR] UpdateComponent failed for {capturedType.Name}: {inner.Message}");
+					HotReloadDiagnostics.OnUpdateFailed(capturedType, capturedInstance, inner);
 				}
 #pragma warning restore CA1031
 			}
+
+			sw.Stop();
+			HotReloadDiagnostics.OnUpdateApplied(typesArray, instanceCount, fromVersion, toVersion, sw.Elapsed);
 		});
 	}
 }
