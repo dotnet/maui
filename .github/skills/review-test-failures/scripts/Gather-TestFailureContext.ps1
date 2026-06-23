@@ -160,6 +160,56 @@ function Invoke-JsonUrl {
     return $content | ConvertFrom-Json
 }
 
+function Get-HeaderValue {
+    # Read a header value (case-insensitive) from an Invoke-WebRequest response Headers collection,
+    # which across PowerShell versions is a Dictionary[string,string] or Dictionary[string,string[]]
+    # (BasicParsing). Returns the first value, or '' when the header is absent. Used to detect the AzDO
+    # paging continuation token, whose presence means the returned result set was truncated.
+    param($Headers, [string]$Name)
+    if ($null -eq $Headers) { return '' }
+    foreach ($k in $Headers.Keys) {
+        if ([string]$k -ieq $Name) {
+            $v = $Headers[$k]
+            if ($v -is [string]) { return $v }
+            $arr = @($v)
+            if ($arr.Count -gt 0 -and $null -ne $arr[0]) { return [string]$arr[0] }
+            return ''
+        }
+    }
+    return ''
+}
+
+function Get-AzDoTestRuns {
+    # Page through _apis/test/runs following the x-ms-continuationtoken response header until exhausted.
+    # The endpoint returns only ONE page (~100 runs) per call; the previous single-call implementation
+    # summed failedTests over JUST the first page, so a failing device-test run in the tail (page 2+)
+    # falsely confirmed Failed==0 -> a green device-test check trusted (round-7 Opus F1 / GPT F1). A
+    # device build that retried publishes a NEW run per attempt, so a >1-page run count is realistic.
+    # Returns the COMPLETE run set plus a 'truncated' flag (true only if paging was abandoned at the page
+    # guard with a token still pending) so the caller can REFUSE positive confirmation on an incomplete set.
+    param([string]$BaseUrl, [string]$BuildId)
+
+    $runs = New-Object System.Collections.Generic.List[object]
+    $continuation = $null
+    $truncated = $false
+    $page = 0
+    do {
+        $page++
+        $url = "$BaseUrl/_apis/test/runs?buildIds=$BuildId&`$top=100&api-version=7.1"
+        if ($continuation) { $url += "&continuationToken=$([uri]::EscapeDataString([string]$continuation))" }
+        $headers = @{ Accept = "application/json" }
+        if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) { $headers.Authorization = "Bearer $env:AZDO_TOKEN" }
+        $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -ErrorAction Stop
+        $body = if ([string]::IsNullOrWhiteSpace([string]$resp.Content)) { $null } else { [string]$resp.Content | ConvertFrom-Json }
+        foreach ($r in (ConvertTo-Array $body.value)) { $runs.Add($r) }
+        $continuation = Get-HeaderValue -Headers $resp.Headers -Name 'x-ms-continuationtoken'
+        if ([string]::IsNullOrWhiteSpace($continuation)) { $continuation = $null }
+        if ($page -ge 50) { $truncated = ($null -ne $continuation); break }
+    } while ($continuation)
+
+    return [ordered]@{ runs = $runs.ToArray(); truncated = $truncated }
+}
+
 function Invoke-TextUrl {
     param(
         [Parameter(Mandatory = $true)]
@@ -487,9 +537,25 @@ function Get-ErrorFingerprint {
     $t = [regex]::Replace($t, ':\d+:\d+', '')                                     # :line:col
     $t = [regex]::Replace($t, '\b0x[0-9a-fA-F]+\b', '<hex>')
     $t = [regex]::Replace($t, '\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b', '<guid>')
-    $t = [regex]::Replace($t, '\d+', '#')                                         # remaining counts
+    # Collapse STANDALONE numeric counts (e.g. '3 errors', a bare line count) but NOT digits embedded
+    # in an identifier or quoted symbol (Handler1 vs Handler2, MethodB2). Round-6 collapsed EVERY digit,
+    # so two DIFFERENT coded breaks that differ only by a trailing identifier digit fingerprinted
+    # identically and a PR-new break could be laundered as a base break of the same code (round-7
+    # GPT F3 / Gemini F2). Identical symbols still fingerprint identically, so a genuinely pre-existing
+    # break still matches the baseline; only DIFFERENT symbols now stay distinct (NHI, never a dismissal).
+    $t = [regex]::Replace($t, '(?<![A-Za-z])\d+(?![A-Za-z])', '#')
     $t = ($t -replace '\s+', ' ').Trim().ToLowerInvariant()
-    if ($t.Length -gt 120) { $t = $t.Substring(0, 120) }
+    # Do NOT hard-truncate. A long message whose ONLY differentiator (e.g. the offending member name on
+    # a deeply-nested generic type) lives past the cut-off would collapse two distinct breaks into one
+    # fingerprint and launder a PR-new break as pre-existing (round-7 Gemini F2). Keep a readable prefix
+    # for keys/debugging but APPEND a short hash of the FULL normalized text so the tail always
+    # contributes to identity. Identical input -> identical hash, so legitimate base matches are kept;
+    # a differing tail -> a differing hash -> a conflict (NHI). Hashing only ADDS distinctness.
+    if ($t.Length -gt 120) {
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($t)
+        $hash = ([System.BitConverter]::ToString([System.Security.Cryptography.SHA1]::HashData($bytes)) -replace '-', '').Substring(0, 12).ToLowerInvariant()
+        $t = $t.Substring(0, 120) + '#' + $hash
+    }
     return $t
 }
 
@@ -545,13 +611,25 @@ function Get-FailureReasonSignature {
     $exMatches = [regex]::Matches($text, '(?<ex>(?:[A-Za-z_][A-Za-z0-9_]*\.)*[A-Za-z_][A-Za-z0-9_]*Exception)\b')
     if ($exMatches.Count -gt 0) {
         $wrapperPattern = '(?i)(?:^|\.)(?:Aggregate|TargetInvocation|TypeInitialization)Exception$'
-        $nonWrapper = $null
+        # Collect ALL distinct non-wrapper exception types, not just the first. A single message can
+        # carry MULTIPLE inner exceptions (e.g. an AggregateException wrapping a base-branch
+        # TimeoutException AND a PR-introduced NullReferenceException). Taking only the FIRST non-wrapper
+        # would pick TimeoutException, match the base reason, and launder the PR regression past the veto
+        # (round-7 Gemini F3). Sort for order-independence so the SAME inner set always yields the SAME
+        # token: a genuinely pre-existing multi-inner failure still matches the baseline, while a
+        # DIFFERING inner set conflicts (NHI). Only ADDS distinctness in the dismissing direction.
+        $nonWrappers = New-Object System.Collections.Generic.List[string]
+        $seenEx = New-Object System.Collections.Generic.HashSet[string]
         foreach ($m in $exMatches) {
-            $name = $m.Groups['ex'].Value
-            if ($name -notmatch $wrapperPattern) { $nonWrapper = $name; break }
+            $name = $m.Groups['ex'].Value.ToLowerInvariant()
+            if (($name -notmatch $wrapperPattern) -and $seenEx.Add($name)) { $nonWrappers.Add($name) }
         }
-        $chosen = if ($nonWrapper) { $nonWrapper } else { $exMatches[0].Groups['ex'].Value }
-        return "exception:$($chosen.ToLowerInvariant())"
+        if ($nonWrappers.Count -gt 0) {
+            $sorted = @($nonWrappers | Sort-Object)
+            return "exception:$([string]::Join('|', $sorted))"
+        }
+        # Only wrapper exceptions present: fall back to the first (never worse than before).
+        return "exception:$($exMatches[0].Groups['ex'].Value.ToLowerInvariant())"
     }
 
     # 2) An MSBuild/compiler/toolchain coded error (error CS0246:, error MSB3073:, IL2026 ...).
@@ -1533,6 +1611,7 @@ foreach ($buildRef in $buildRefsById.Values) {
         $buildSummary.helix.checked = $true
         $anyHelixFail = $false
         $anyHelixCount = $false
+        $anyHelixReadError = $false
         foreach ($jobId in $buildSummary.helix.jobIds) {
             try {
                 $summary = Invoke-JsonUrl -Url "https://helix.dot.net/api/2019-06-17/jobs/$jobId/aggregated"
@@ -1550,6 +1629,7 @@ foreach ($buildRef in $buildRefsById.Values) {
                         platform = Get-PlatformFromText -Text "$($build.definition.name) $jobId"
                         source = "helix-aggregated"
                         buildId = $buildRef.buildId
+                        buildDefinition = $build.definition.name
                         helixJobId = $jobId
                         message = "Helix aggregated reported $($counts.totalFail) failed device-test work item(s) for job $jobId even though XHarness exited 0 (the AzDO job can read green). See https://helix.dot.net/api/2019-06-17/jobs/$jobId/aggregated"
                     }
@@ -1565,21 +1645,40 @@ foreach ($buildRef in $buildRefsById.Values) {
             }
             catch {
                 $buildSummary.helix.error = $_.Exception.Message
+                # Opus F2: a thrown read (transient 500/404/expired blob) leaves THIS job's Failed count
+                # unobserved. The job may have carried the real hidden failures, so an unread job must
+                # never be silently excused -- a partial Helix read can no longer positively confirm zero.
+                $anyHelixReadError = $true
             }
         }
-        # Positive Failed==0 confirmation: at least one Helix job reported a fail count and NONE
-        # were > 0. Only this lets a GREEN device-test check stay green (see the device-test
-        # unverified cap below). No fail count seen anywhere = NOT confirmed (cannot trust green).
-        if ($anyHelixCount -and -not $anyHelixFail) {
+        # Positive Failed==0 confirmation: at least one Helix job reported a fail count, NONE were > 0,
+        # AND every discovered job was read without error. Only this lets a GREEN device-test check stay
+        # green (see the device-test unverified cap below). No fail count seen anywhere, OR any job whose
+        # aggregate read threw = NOT confirmed (cannot trust green over an unobserved job; Opus F2).
+        if ($anyHelixCount -and -not $anyHelixFail -and -not $anyHelixReadError) {
             $buildSummary.deviceTestFailedConfirmedZero = $true
         }
     }
 
     if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
         try {
-            $runsUrl = "$baseUrl/_apis/test/runs?buildIds=$($buildRef.buildId)&api-version=7.1"
-            $testRuns = Invoke-JsonUrl -Url $runsUrl -AllowAuth
-            $allRuns = @(ConvertTo-Array $testRuns.value)
+            # Page through ALL test runs. The endpoint returns only one ~100-run page per call; summing
+            # failedTests over JUST the first page falsely confirmed Failed==0 when a failing run sat in
+            # the tail (round-7 Opus F1 / GPT F1). Get-AzDoTestRuns follows the continuation token to
+            # completion and reports whether the set was truncated.
+            $runsPaged = Get-AzDoTestRuns -BaseUrl $baseUrl -BuildId $buildRef.buildId
+            $allRuns = @($runsPaged.runs)
+            # If paging was abandoned with a continuation token still pending, the run set is INCOMPLETE.
+            # Record an unexplained leg so the verdict caps to NHI and a truncated set never reads clean.
+            if ($runsPaged.truncated) {
+                $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $buildRef.buildId
+                    recordName = "test-run pagination truncated (continuation token still pending after page guard)"
+                    logId = $null
+                    uninspected = $true
+                    runOverflow = $true
+                })
+            }
             $candidateRunsAll = @($allRuns | Where-Object {
                 ($_.failedTests -gt 0) -or
                 ($_.totalTests -gt 0 -and $_.passedTests -lt $_.totalTests)
@@ -1597,13 +1696,13 @@ foreach ($buildRef in $buildRefsById.Values) {
                     runOverflow = $true
                 })
             }
-            # F1: positive device-test Failed==0 confirmation from the authenticated test-API (used
-            # when a token is available, e.g. local runs). If runs exist with real tests and NONE
-            # report a failed test, the green device-test check is trustworthy.
+            # F1: positive device-test Failed==0 confirmation from the authenticated test-API (used when
+            # a token is available). Requires a COMPLETE run set: a truncated page set can never
+            # positively confirm clean (a failing run may sit in the unread tail; Opus F1).
             if ($build.definition.name -eq "maui-pr-devicetests") {
                 $runsWithTests = @($allRuns | Where-Object { [int]$_.totalTests -gt 0 })
                 $totalFailedAcrossRuns = (@($allRuns | ForEach-Object { [int]$_.failedTests }) | Measure-Object -Sum).Sum
-                if ($runsWithTests.Count -gt 0 -and [int]$totalFailedAcrossRuns -eq 0) {
+                if ($runsWithTests.Count -gt 0 -and [int]$totalFailedAcrossRuns -eq 0 -and -not $runsPaged.truncated) {
                     $buildSummary.deviceTestFailedConfirmedZero = $true
                 }
             }
@@ -1619,6 +1718,7 @@ foreach ($buildRef in $buildRefsById.Values) {
                             platform = Get-PlatformFromText -Text "$($run.name) $($result.automatedTestName)"
                             source = "azdo-test-results"
                             buildId = $buildRef.buildId
+                            buildDefinition = $build.definition.name
                             runId = $run.id
                             runName = $run.name
                             outcome = $result.outcome
@@ -1891,20 +1991,27 @@ foreach ($failure in $dedupedFailures) {
         # rather than silently dismissing it. Only fires when both sides have a non-empty fingerprint
         # set and they do not overlap, so it cannot flag on missing data.
         elseif (-not $failure['baselineReasonConflict'] -and (@($failure.sources) -notcontains 'azdo-build-error')) {
+            $prFps = New-Object System.Collections.Generic.List[string]
+            foreach ($pm in @($failure.messages)) {
+                $pfp = Get-ErrorFingerprint -Text ([string]$pm)
+                if (-not [string]::IsNullOrWhiteSpace($pfp)) { [void]$prFps.Add($pfp) }
+            }
             $baseFps = $baselineFingerprintByKey[$fkey]
-            if ($baseFps -and $baseFps.Count -gt 0) {
-                $prFps = New-Object System.Collections.Generic.List[string]
-                foreach ($pm in @($failure.messages)) {
-                    $pfp = Get-ErrorFingerprint -Text ([string]$pm)
-                    if (-not [string]::IsNullOrWhiteSpace($pfp)) { [void]$prFps.Add($pfp) }
+            if ($prFps.Count -gt 0 -and $baseFps -and $baseFps.Count -gt 0) {
+                $fpOverlap = $false
+                foreach ($pfp in $prFps) {
+                    if ($baseFps.Contains($pfp)) { $fpOverlap = $true; break }
                 }
-                if ($prFps.Count -gt 0) {
-                    $fpOverlap = $false
-                    foreach ($pfp in $prFps) {
-                        if ($baseFps.Contains($pfp)) { $fpOverlap = $true; break }
-                    }
-                    if (-not $fpOverlap) { $failure['baselineReasonConflict'] = $true }
-                }
+                if (-not $fpOverlap) { $failure['baselineReasonConflict'] = $true }
+            }
+            elseif ((-not $prReason) -and $prFps.Count -eq 0) {
+                # Opus F3: a dismissible TEST failure with NO reason token AND NO message text (some
+                # device/UI runs publish a failed result with an empty errorMessage) offers ZERO
+                # corroboration that it is the SAME failure as the name-matched base failure. A bare
+                # testName|platform match is not enough to launder it as pre-existing -> flag a conflict
+                # so attribution downgrades to indeterminate (NHI), symmetric to how build errors fold a
+                # fingerprint into their key. Fires only when the PR side has neither reason nor message.
+                $failure['baselineReasonConflict'] = $true
             }
         }
     }

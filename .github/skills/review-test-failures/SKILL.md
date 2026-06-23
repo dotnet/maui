@@ -78,8 +78,11 @@ Key fields to use:
     positively confirmed. XHarness exits 0 even when device tests fail, so a green device-test
     check is **not** evidence of a clean run. The gatherer force-inspects every device-test
     build and only clears it when a fail count was positively observed and was all-zero (Helix
-    aggregated, or the authenticated test-API when a token is present). When no such
-    confirmation is available — the common case in the gh-aw runner, which has no AzDO token —
+    aggregated, or the authenticated test-API when a token is present) **over a COMPLETE,
+    error-free read** — the Helix path requires every discovered job's aggregate to be read
+    without a thrown error, and the test-API path pages through **all** test runs and refuses
+    confirmation if the run set was truncated (a failing run could sit in the unread tail).
+    When no such confirmation is available — the common case in the gh-aw runner, which has no AzDO token —
     the green device-test check is unverified and **caps the ceiling at `Needs human
     investigation`**. A **SKIPPED** device-test check does not cap (tests did not run); a
     **RED** one is handled as an ordinary failing check.
@@ -148,10 +151,18 @@ Key fields to use:
     PR-caused break could be laundered as `pre-existing-on-base`. When set, the dismissal is
     **refused** and the attribution is forced to `indeterminate`. It fires when both
     reasons are known and differ (**wrapper exceptions like `AggregateException` are unwrapped
-    to the inner cause** so they cannot collapse two distinct reasons into one), and — for
+    to the inner cause** — and when a wrapper carries **multiple** inner exceptions they are
+    collapsed into a sorted compound token, so a PR-introduced inner cannot hide behind a
+    base-matching first inner), and — for
     test failures where neither side yields a known reason — as a fallback when the PR's
-    **normalized message fingerprint is absent from base** for that test. Both paths fire only
-    on data present on both sides, so a noisy or absent message never inflates false reds.
+    **normalized message fingerprint is absent from base** for that test (the fingerprint
+    preserves identifier-internal digits and hashes any long tail, so two distinct breaks that
+    differ only by an identifier digit or a far-out-of-line suffix stay distinct). These paths
+    fire only on data present on both sides; the one exception is a dismissible **test** failure
+    that exposes **no reason token and no message text at all** (e.g. a device/UI result with an
+    empty `errorMessage`) — that offers zero corroboration that it is the same failure as the
+    name-matched base failure, so it is also forced to `indeterminate` rather than laundered as
+    pre-existing. A noisy or partially-present message still never inflates false reds.
   - `scopeGuardTripped` (`true` when a `pre-existing-on-base` or `known-issue` dismissal was
     **refused** because the PR actually **edits the test file** behind the failure). When the
     PR touches the very test that is failing, a base or known-issue text match is no longer

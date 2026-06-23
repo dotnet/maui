@@ -101,7 +101,12 @@ device-test check untrustworthy, the gatherer **force-inspects every device-test
 (green or not) and only treats a green `maui-pr-devicetests` check as clean when it can
 **positively confirm `Failed == 0`** — either a Helix aggregated read where a fail count
 was observed and all were zero, or the authenticated test-API (when a token is present).
-When no positive confirmation is available — the common case in the gh-aw runner, which
+That confirmation requires a **complete, error-free read**: every discovered Helix job's
+aggregate must be read without a thrown error (a job whose read fails may have carried the
+hidden failures), and the test-API path **pages through every test run** via the
+`x-ms-continuationtoken` header and refuses to confirm when the run set was truncated (a
+retried device build publishes a new run per attempt, so a failing run can sit in an unread
+page tail). When no positive confirmation is available — the common case in the gh-aw runner, which
 has **no AzDO token**, and where the anonymous AzDO test-results API redirects to sign-in —
 the green device-test check is counted as `gate.deviceTestUnverified` and **hard-caps the
 verdict ceiling at `Needs human investigation`**. A green device-test check is never a
@@ -249,10 +254,17 @@ on appearance alone:
    `NullReferenceException` vs a base-branch `TimeoutException` in the same test), the
    dismissal is **refused** and the failure is forced to `indeterminate`, because the
    name-based dedup key is message-blind for test failures. The reason comparison **unwraps
-   wrapper exceptions** (`AggregateException`/`TargetInvocationException`) to the inner cause,
-   and — when neither side yields a known reason — falls back to a **normalized message
-   fingerprint** (PR text structurally absent from base ⇒ conflict). Both fire only on data
-   present on both sides, so a noisy/absent message never inflates false reds.
+   wrapper exceptions** (`AggregateException`/`TargetInvocationException`) to the inner cause —
+   and when a wrapper carries **multiple** inner exceptions, collapses them into a **sorted
+   compound token** so a PR-introduced inner cannot hide behind a base-matching first inner —
+   and, when neither side yields a known reason, falls back to a **normalized message
+   fingerprint** (PR text structurally absent from base ⇒ conflict; the fingerprint preserves
+   identifier-internal digits and hashes any tail past 120 chars, so two breaks differing only
+   by an identifier digit or a far-out suffix stay distinct). These fire only on data
+   present on both sides — with one deliberate exception: a dismissible **test** failure with
+   **no reason token and no message at all** (empty `errorMessage`) gives zero corroboration
+   that it is the same failure as the name match, so it too is forced to `indeterminate`. A
+   noisy/partially-present message still never inflates false reds.
 2. **Job-level baseline match** — for a build break with no test name (crossgen/NativeAOT/
    linker/MSBuild), the same **leg** is also red on the most recent base build. Conversely,
    a leg that is **red on the PR but green on base is PROOF the break is PR-caused** — this
