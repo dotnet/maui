@@ -39,6 +39,15 @@ public class Issue34931MainPage : ContentPage
 			TextColor = Colors.Black
 		};
 
+		var changeColorButton = new Button
+		{
+			AutomationId = "ChangeColorButton",
+			HorizontalOptions = LayoutOptions.Fill,
+			Text = "Change Theme Color"
+		};
+
+		changeColorButton.Clicked += OnChangeColorClicked;
+
 		Content = new ScrollView
 		{
 			Content = new VerticalStackLayout
@@ -61,18 +70,11 @@ public class Issue34931MainPage : ContentPage
 						HorizontalOptions = LayoutOptions.Center,
 						HorizontalTextAlignment = TextAlignment.Center,
 					},
-					new Button
-					{
-						AutomationId = "ChangeColorButton",
-						HorizontalOptions = LayoutOptions.Fill,
-						Text = "Change Theme Color"
-					}.Assign(out var changeColorButton),
+					changeColorButton,
 					_currentColorLabel,
 				}
 			}
 		};
-
-		changeColorButton.Clicked += OnChangeColorClicked;
 	}
 
 		void OnChangeColorClicked(object sender, EventArgs e)
