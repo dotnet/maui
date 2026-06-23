@@ -10,7 +10,11 @@
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' ">SourceGen</_MauiXamlInflator>
 
+    <!-- XAML Incremental Hot Reload: on by default, set to 'false' to disable -->
+    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == ''">true</EnableMauiIncrementalHotReload>
+
     <!-- XAML Hot Reload mode for IDE communication (Legacy or SourceGen) -->
+    <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == '' and '$(EnableMauiIncrementalHotReload)' == 'true'">SourceGen</MauiXamlHotReload>
     <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == ''">Legacy</MauiXamlHotReload>
 
     <EnableMauiXamlDiagnostics Condition=" '$(EnableMauiXamlDiagnostics)' == '' ">$(EnableMauiDiagnostics)</EnableMauiXamlDiagnostics>

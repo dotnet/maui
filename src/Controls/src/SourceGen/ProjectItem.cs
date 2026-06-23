@@ -61,7 +61,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 				return true;
 			if (Options.IsFalse("build_property.EnableMauiIncrementalHotReload"))
 				return false;
-			return false; // default off until feature complete
+			return true; // on by default
 		}
 	}
 
