@@ -84,17 +84,27 @@ Key fields to use:
     job-level baseline diff** for this failure's leg: `succeeded-on-base` +
     `legRegressedVsBase = true` means the SAME leg passed on base and is now red on the
     PR (strongest PR-caused signal); `failed-on-base` + `legAlsoFailsOnBase = true` means
-    the leg was already red on base (pre-existing); `absent-on-base` means the leg name
-    did not exist on the base build (indeterminate — do not treat as a regression),
+    the same **leg** was already red on base — but note this is only **leg-level**
+    corroboration, NOT proof that *this specific test* is pre-existing (the leg can fail
+    on base at a **different** test), so on its own it does **not** dismiss the failure;
+    `absent-on-base` means the leg name did not exist on the base build (indeterminate —
+    do not treat as a regression),
   - `deterministicAttribution` — a **computed prior** you MUST start from, one of
     `regressed-vs-base` (treat as **Likely PR-caused** unless you can cite why the base
     comparison is invalid, e.g. a known-flaky base leg), `pre-existing-on-base` (treat as
-    **Likely unrelated** — already red on base), `known-issue`, or `indeterminate` (use
-    the rest of the evidence). You may override `regressed-vs-base`/`pre-existing-on-base`
-    only with an explicit, cited reason,
+    **Likely unrelated** — the **exact** test+platform is also red on base, the only
+    signal strong enough to dismiss), `known-issue` (a known-issue text match that was
+    **corroborated by an actual base read** of the leg — dismissable), or `indeterminate`
+    (everything else: a leg-only base match, an **uncorroborated** known-issue text match,
+    an ambiguous/missing base, or a genuinely unknown failure — NOT dismissable, caps the
+    ceiling at `Needs human investigation`). You may override
+    `regressed-vs-base`/`pre-existing-on-base` only with an explicit, cited reason,
   - `matchesKnownIssue` (`{number,title,url}` when the failure message matches an open
-    `Known Build Error` issue; `null` otherwise) — deterministic "documented flake /
-    unrelated" evidence you can cite by issue number,
+    `Known Build Error` issue; `null` otherwise) — a documented-flake **hint**. A text
+    match alone is NOT enough to dismiss a red check (a broad matcher can shadow a real PR
+    break): it only becomes the dismissable `deterministicAttribution = known-issue` when
+    the same leg was actually compared on base. Cite the issue number, but defer to the
+    computed attribution,
   - `retriedStillFailing` (`true` when CI retried the leg and it **still failed** — this
     is evidence the failure is **persistent**, NOT a one-off flake).
 - `failures.baseline[]` — distinct failures extracted from the base-branch build(s).
@@ -128,7 +138,7 @@ Classify each distinct failure as exactly one of:
 | Verdict | Use when |
 | --- | --- |
 | `Likely PR-caused` | The failure directly references changed files, changed tests, changed APIs, affected platform code, or a newly added/modified test; or it only appears in a path/platform this PR changes and does **not** match a baseline failure or a known issue. **A `deterministicAttribution = regressed-vs-base` failure** (its leg is red on the PR but GREEN on the same leg of the most recent base build) is **computed, decisive** PR-caused evidence — default to this verdict unless you can cite why the base comparison is invalid (e.g. a known-flaky base leg). A `retriedStillFailing = true` failure in the PR's area is **stronger** PR-caused evidence (CI retried it and it still failed — it is not a one-off flake). |
-| `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, the same test+platform also fails on the baseline (`alsoFailsOnBaseline = true`), the same **leg** was already red on base (`legAlsoFailsOnBase = true` / `deterministicAttribution = pre-existing-on-base`), or the failure matches an open known issue (`matchesKnownIssue` is set — cite the issue number/link). |
+| `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, or the **exact same test+platform also fails on the baseline** (`alsoFailsOnBaseline = true` / `deterministicAttribution = pre-existing-on-base` — the only base signal strong enough to dismiss on its own). A **corroborated** known issue (`deterministicAttribution = known-issue`) is also unrelated — cite the issue number/link. **Caution:** `legAlsoFailsOnBase = true` *alone* (the leg was red on base but this exact test was not matched), or a `matchesKnownIssue` hit whose `deterministicAttribution` is **`indeterminate`** (text match not corroborated by a base read), is **NOT** sufficient to dismiss — those are `Needs human investigation`, not `Likely unrelated`. |
 | `Needs human investigation` | Evidence is mixed: the failure overlaps the PR area or platform but no direct causal link is clear, or the data suggests multiple plausible causes. |
 | `Insufficient data` | Build records, test results, or logs are missing/inaccessible/expired, or there is not enough evidence to make a responsible claim. |
 

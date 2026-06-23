@@ -944,11 +944,15 @@ $changedTestFiles = @($changedFiles | Where-Object { $_ -match '(?i)(tests?/|Tes
 $checks = @(ConvertTo-Array $pr.statusCheckRollup | ForEach-Object {
     $check = $_
     [ordered]@{
-        name = $check.name
+        # A CheckRun carries name/detailsUrl; a classic StatusContext carries context/targetUrl
+        # instead (name/detailsUrl are null). Fall back so a red StatusContext is both named and
+        # build-resolvable (Get-AzDoBuildRefsFromUrl runs on detailsUrl) -- otherwise a failing
+        # StatusContext lands in unmappedFailingChecks with a blank name (false-red + unreadable).
+        name = if ($check.name) { $check.name } else { $check.context }
         status = $check.status
         conclusion = $check.conclusion
         state = $check.state
-        detailsUrl = $check.detailsUrl
+        detailsUrl = if ($check.detailsUrl) { $check.detailsUrl } else { $check.targetUrl }
         workflowName = $check.workflowName
         startedAt = $check.startedAt
         completedAt = $check.completedAt
@@ -1045,6 +1049,7 @@ foreach ($buildRef in $buildRefsById.Values) {
         checkNames = @($buildRef.checkNames)
         sourceUrl = $buildRef.sourceUrl
         accessible = $false
+        timelineReadable = $false
         error = $null
         metadata = $null
         failedRecords = @()
@@ -1088,6 +1093,7 @@ foreach ($buildRef in $buildRefsById.Values) {
     $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $buildRef.org -Project $buildRef.project -RelativePath "_apis/build/builds/$($buildRef.buildId)/timeline?api-version=7.1"
     $failedRecords = @()
     if (-not $timelineResult.error -and $timelineResult.value) {
+        $buildSummary.timelineReadable = $true
         $records = @(ConvertTo-Array $timelineResult.value.records)
         $failedRecords = @($records | Where-Object {
             $_.result -eq "failed" -or
@@ -1217,6 +1223,29 @@ foreach ($buildRef in $buildRefsById.Values) {
             recordName = [string]$fr.name
             logId = $(if ($fr.log -and $fr.log.id) { [int]$fr.log.id } else { $null })
             uninspected = $true
+        })
+    }
+
+    # F3: also surface a failed NON-Task leg (Stage/Job/Phase) that is a LEAF of the failed
+    # sub-tree -- i.e. it has no failed child of any type. Such a leg failed before any Task
+    # emitted result=failed (agent lost, timeout, cancellation, infra abort), so the Task-only
+    # sweep above never sees it; if a sibling leg keeps the build "accounted" it would slip
+    # through as a false green. A failed non-Task record that DOES have a failed child is already
+    # covered by that child (the child is swept/explained), so skip it to avoid false-red noise.
+    $failedParentIds = @{}
+    foreach ($fr in $failedRecords) {
+        if ([string]$fr.result -eq 'failed' -and $fr.parentId) { $failedParentIds[[string]$fr.parentId] = $true }
+    }
+    foreach ($fr in $failedRecords) {
+        if ([string]$fr.result -ne 'failed') { continue }
+        if ([string]$fr.type -eq 'Task') { continue }
+        if ($failedParentIds.ContainsKey([string]$fr.id)) { continue }
+        $allUnexplainedLegs.Add([ordered]@{
+            buildId = $buildRef.buildId
+            recordName = [string]$fr.name
+            logId = $(if ($fr.log -and $fr.log.id) { [int]$fr.log.id } else { $null })
+            uninspected = $true
+            nonTaskLeg = $true
         })
     }
 
@@ -1497,7 +1526,7 @@ foreach ($failure in $dedupedFailures) {
             # regression vs base is not trustworthy. A device-test BUILD break
             # (crossgen/NativeAOT/linker/MSBuild) is deterministic -- the leg either compiled
             # or it didn't -- so it IS a real regression even on a device-test pipeline.
-            $legSource = [string](Get-ObjectValue -Object $failure -Names @("source"))
+            $legSource = [string](Get-ObjectValue -Object $occ -Names @("source"))
             if ((-not $baseInfo.isDeviceTests) -or ($legSource -eq 'azdo-build-error')) {
                 $legRegressed = $true
             }
@@ -1507,20 +1536,37 @@ foreach ($failure in $dedupedFailures) {
     $failure['legRegressedVsBase'] = [bool]$legRegressed
     $failure['legAlsoFailsOnBase'] = [bool]$legAlsoFails
 
-    # Deterministic attribution prior the classifier MUST start from. It may only override
-    # 'regressed-vs-base' or 'pre-existing-on-base' with an explicitly cited reason (e.g. a
-    # known-flaky base leg). Precedence: a clean regression vs base outranks everything; a
-    # pre-existing (base also red) failure outranks a known-issue/indeterminate label.
+    # Deterministic attribution prior the classifier MUST start from. Conservative precedence
+    # built to never DISMISS a real PR break: only an EXACT test+platform match on base
+    # ('alsoFailsOnBaseline') is strong enough to call a red check pre-existing; a leg-level base
+    # failure ('legAlsoFailsOnBase') or a known-issue TEXT match alone is too weak to dismiss
+    # (the leg can fail on base at a DIFFERENT test, and a broad known-issue matcher can shadow a
+    # genuine break), so each falls to 'indeterminate' unless corroborated. A clean, unconflicted
+    # regression vs base outranks all (-> hard 'Not ready'). The classifier may override the two
+    # strong labels only with an explicitly cited reason.
     if ($failure['legRegressedVsBase'] -and -not $failure['alsoFailsOnBaseline'] -and -not $failure['legAlsoFailsOnBase']) {
+        # Green on base, red on PR, with no conflicting base-failure signal -> PR-introduced.
         $failure['deterministicAttribution'] = 'regressed-vs-base'
     }
-    elseif ($failure['alsoFailsOnBaseline'] -or $failure['legAlsoFailsOnBase']) {
+    elseif ($failure['legRegressedVsBase']) {
+        # A regression signal that CONFLICTS with a base-failure signal (the same test/leg also
+        # shows red on base). Neither provably PR-caused nor safely dismissable -> defer to a human.
+        $failure['deterministicAttribution'] = 'indeterminate'
+    }
+    elseif ($failure['alsoFailsOnBaseline']) {
+        # The exact same test+platform also fails on the base branch -> trustworthy pre-existing.
         $failure['deterministicAttribution'] = 'pre-existing-on-base'
     }
-    elseif ($failure['matchesKnownIssue']) {
+    elseif ($failure['matchesKnownIssue'] -and ([string]$failure['legBaselineResult'] -notin @('', 'absent-on-base', 'inconclusive-on-base'))) {
+        # Known-issue text match CORROBORATED by an actual base comparison of this leg (we read
+        # the base build and the leg's outcome there is known) -> dismissible as a known flake.
         $failure['deterministicAttribution'] = 'known-issue'
     }
     else {
+        # Not safely dismissable: a leg that failed on base but whose THIS test failure did not
+        # exact-match base ('legAlsoFailsOnBase'-only), a known-issue text match with NO base
+        # comparison to corroborate it (closes the over-broad-matcher false green), or a genuinely
+        # unknown failure -> indeterminate (caps the ceiling at 'Needs human investigation').
         $failure['deterministicAttribution'] = 'indeterminate'
     }
 }
@@ -1532,21 +1578,22 @@ $baselineMatchCount = @($dedupedFailures | Where-Object { $_.alsoFailsOnBaseline
 # "guaranteed" part: a green ('Ready to merge'/'No failures found') is forbidden in code
 # whenever a check is still pending or a failing check could not be inspected, so a false
 # green is impossible regardless of how the classifier reasons.
-# CheckRun results report via status/conclusion; classic StatusContext results report via
-# `state` (status/conclusion are null). Route both shapes: a CheckRun is failing once
-# COMPLETED (it is only here if interesting) and pending until then; a StatusContext is
-# failing on FAILURE/ERROR and pending on PENDING/EXPECTED. Without the state arm a red
-# StatusContext (e.g. an AzDO-posted commit status) would be invisible to the gate -- a false green.
-$pendingChecks = @($interestingChecks | Where-Object {
-    $st = [string]$_.status
-    if ($st) { $st -ne "COMPLETED" }
-    else { [string]$_.state -in @("PENDING", "EXPECTED") }
-})
-$failingChecks = @($interestingChecks | Where-Object {
-    $st = [string]$_.status
-    if ($st) { $st -eq "COMPLETED" }
-    else { [string]$_.state -in @("FAILURE", "ERROR") }
-})
+# Bucket every interesting check into exactly one of pending|failing. 'failing' is the
+# catch-all: any interesting (non-success) check that is not provably pending is treated as
+# failing, so a check with an unrecognized status/state shape can never escape BOTH buckets
+# and slip through as a false green. CheckRun results report via status (pending until
+# COMPLETED); classic StatusContext results report via `state` (status/conclusion null) -- a red
+# StatusContext (e.g. an AzDO-posted commit status) is failing on FAILURE/ERROR and pending on
+# PENDING/EXPECTED, and any other state falls to the failing catch-all.
+$pendingChecks = New-Object System.Collections.Generic.List[object]
+$failingChecks = New-Object System.Collections.Generic.List[object]
+foreach ($ic in $interestingChecks) {
+    $st = [string]$ic.status
+    $isPending = if ($st) { $st -ne "COMPLETED" } else { [string]$ic.state -in @("PENDING", "EXPECTED") }
+    if ($isPending) { $pendingChecks.Add($ic) } else { $failingChecks.Add($ic) }
+}
+$pendingChecks = @($pendingChecks)
+$failingChecks = @($failingChecks)
 
 $accessibleCheckNames = @{}
 $inaccessibleCheckNames = @{}
@@ -1620,7 +1667,14 @@ foreach ($c in $failingChecks) { $failingCheckNameSet[[string]$c.name] = $true }
 $unaccountedFailingChecks = New-Object System.Collections.Generic.List[string]
 foreach ($b in $buildArray) {
     if (-not $b.accessible) { continue }
-    if ($contributingBuildIds.ContainsKey([string]$b.id)) { continue }
+    # Only treat a contributing build as "accounted" when its TIMELINE was actually readable.
+    # accessible=true means the build METADATA loaded; the timeline fetch is independent and can
+    # fail/expire. A build whose timeline was unreadable has zero failed legs and zero swept
+    # records, yet a sibling source (the authenticated test-API path) can still stamp it
+    # 'contributing'. Without this gate that test-API contribution would mask the unread
+    # timeline's failing legs and hand the build a green pass -- a false green.
+    $tlReadable = [bool](Get-ObjectValue -Object $b -Names @("timelineReadable") -Default $false)
+    if ($tlReadable -and $contributingBuildIds.ContainsKey([string]$b.id)) { continue }
     foreach ($cn in @($b.checkNames)) {
         if ($failingCheckNameSet.ContainsKey([string]$cn) -and ($unaccountedFailingChecks -notcontains [string]$cn)) {
             $unaccountedFailingChecks.Add([string]$cn)
@@ -1659,11 +1713,13 @@ else {
 }
 # A leg that is red on the PR but GREEN on the most recent completed base build is a
 # deterministic regression -- a green verdict is then forbidden in code, no matter how the
-# classifier reasons. Cap the ceiling at 'Not ready' (a real, PR-introduced failure exists)
-# while still letting the classifier go MORE conservative to 'Needs human investigation'.
-# Device-test legs are excluded upstream (XHarness exit-0 blind spot), so this fires only on
-# trustworthy maui-pr build results -- exactly the crossgen/R2R class of break.
-if ($legsRegressedVsBase -gt 0 -and $verdictCeiling -in @('No failures found', 'Ready to merge')) {
+# classifier reasons. Set the ceiling to 'Not ready' (a real, PR-introduced failure exists).
+# This ALSO fires from 'Needs human investigation': a PROVEN regression is a more specific,
+# actionable signal than a vague "go investigate", and 'Not ready' is still non-green, so
+# promoting NHI -> Not ready never enables a false green (the other NHI reasons remain in
+# ceilingReasons for the human). Device-test legs are excluded upstream (XHarness exit-0 blind
+# spot), so this fires only on trustworthy maui-pr build results -- exactly the crossgen/R2R class.
+if ($legsRegressedVsBase -gt 0 -and $verdictCeiling -in @('No failures found', 'Ready to merge', 'Needs human investigation')) {
     $verdictCeiling = "Not ready"
     $ceilingReasons.Add("$legsRegressedVsBase leg/failure(s) are red on the PR but GREEN on the most recent completed base build (deterministic regression vs base): $((@($legsRegressedVsBaseNames) | Select-Object -First 8) -join ', '). A 'Ready to merge'/'No failures found' verdict is forbidden; the PR is at best 'Not ready'.")
 }

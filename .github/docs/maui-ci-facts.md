@@ -236,9 +236,18 @@ on appearance alone:
    is the strongest signal and a test-only diff cannot produce it. The automated lane now
    **computes this in `Gather-TestFailureContext.ps1`** (per-failure `legBaselineResult` /
    `legRegressedVsBase` / `legAlsoFailsOnBase` and a `deterministicAttribution` prior); the
-   interactive investigator does the same comparison by hand from the timelines.
+   interactive investigator does the same comparison by hand from the timelines. **Note the
+   asymmetry:** a leg being red on base (`legAlsoFailsOnBase`) is only **leg-level**
+   evidence — the leg can fail on base at a *different* test, so it does **not** on its own
+   prove *this* test is pre-existing. Only an **exact test+platform** base match
+   (`alsoFailsOnBaseline`, item 1) is strong enough to dismiss; a leg-only match is treated
+   as **indeterminate** (`Needs human investigation`), never dismissed.
 3. **Known-issue match** — the failure message matches an open `Known Build Error` issue
-   (the dotnet Build Analysis registry). Cite the issue number/link.
+   (the dotnet Build Analysis registry). Cite the issue number/link — but treat it as a
+   **hint, not a dismissal**: a text match alone can shadow a real PR break with a broad
+   matcher. The automated lane only dismisses a known-issue match (`deterministicAttribution
+   = known-issue`) when the same leg was actually **compared on base**; an uncorroborated
+   text match stays `indeterminate` (`Needs human investigation`).
 4. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
    attempt (the recovered leg does not surface as a failure at all). A leg that was retried
    and **still failed** (`retriedStillFailing = true`) is the opposite — **persistent**,
@@ -265,7 +274,10 @@ base build was missing/unreadable, or a device-test result fell outside the dete
 build-error class). It is likewise **capped at `Not ready`** whenever a leg is red on the PR
 but green on the same leg of the most recent base build (`gate.legsRegressedVsBase > 0` — the
 computed job-level regression; a device-test BUILD break counts here, only device-test TEST
-results are excluded). The
+results are excluded). A proven regression sets the ceiling to `Not ready` even when softer
+`Needs human investigation` reasons are also present — a definitive PR-introduced break is a
+more actionable headline than "go investigate", and `Not ready` is still non-green so this
+never enables a false green (the NHI reasons remain listed in `ceilingReasons`). The
 gatherer also extracts build-job errors (not just xUnit `[FAIL]` lines) via
 `Get-BuildErrorsFromLog`, so crossgen/R2R/linker breaks flow into dedup, the (computed)
 baseline diff, and the gate. The interactive investigator should apply the same discipline
