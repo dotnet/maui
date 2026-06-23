@@ -19,11 +19,6 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(Activity platformView)
 		{
 			base.ConnectHandler(platformView);
-			if (OperatingSystem.IsAndroidVersionAtLeast(30))
-			{
-				//Edge to Edge enabled for Android API 30+
-				PlatformView.Window.ConfigureTranslucentSystemBars(PlatformView);
-			}
 			UpdateVirtualViewFrame(platformView);
 		}
 
