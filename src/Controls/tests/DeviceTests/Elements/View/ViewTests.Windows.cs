@@ -87,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
           "services off a scope that is actively being torn down (#34272).");
 
         ((IViewHandler)handler).DisconnectHandler();
-      });
+      };
     }
 
 		class SpyServiceScope : IServiceScope
