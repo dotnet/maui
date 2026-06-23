@@ -1336,22 +1336,4 @@ namespace Microsoft.Maui.Controls.Handlers
             return renderer;
         }
     }
-
-    /// <summary>
-    /// Helper class to implement NavigationBarView.IOnItemSelectedListener
-    /// </summary>
-    internal class GenericNavigationItemSelectedListener : Java.Lang.Object, NavigationBarView.IOnItemSelectedListener
-    {
-        readonly Func<IMenuItem, bool> _callback;
-
-        public GenericNavigationItemSelectedListener(Func<IMenuItem, bool> callback)
-        {
-            _callback = callback ?? throw new ArgumentNullException(nameof(callback));
-        }
-
-        public bool OnNavigationItemSelected(IMenuItem item)
-        {
-            return _callback(item);
-        }
-    }
 }

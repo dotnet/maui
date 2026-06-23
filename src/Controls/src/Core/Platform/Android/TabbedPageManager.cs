@@ -328,10 +328,6 @@ public class TabbedPageManager
 		{
 			Element.CurrentPage = Element.Children[selectedIndex];
 		}
-
-		dialog.Dismiss();
-		dialog.DismissEvent -= OnMoreSheetDismissed;
-		dialog.Dispose();
 	}
 
 	protected virtual void UpdateStyleForTabItem()

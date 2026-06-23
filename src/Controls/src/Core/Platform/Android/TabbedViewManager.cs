@@ -543,9 +543,17 @@ internal class TabbedViewManager
     {
         if (IsBottomTabPlacement)
         {
-            if (_bottomNavigationView is not null && index >= 0 && _bottomNavigationView.SelectedItemId != index)
+            if (_bottomNavigationView is not null && index >= 0)
             {
-                _bottomNavigationView.SelectedItemId = index;
+                // Use SetChecked (not SelectedItemId) to update the visual highlight
+                // without triggering OnNavigationItemSelected. This matches the legacy
+                // ShellItemRenderer pattern.
+                var menu = _bottomNavigationView.Menu;
+                if (menu is not null && menu.Size() > 0)
+                {
+                    var clampedIndex = Math.Min(index, menu.Size() - 1);
+                    menu.GetItem(clampedIndex)?.SetChecked(true);
+                }
             }
         }
         else if (_tabLayout is not null && index >= 0 && index < _tabLayout.TabCount)
@@ -1374,7 +1382,12 @@ internal class TabbedViewManager
 
             if (IsBottomTabPlacement)
             {
-                _bottomNavigationView.SelectedItemId = position;
+                var menu = _bottomNavigationView.Menu;
+                if (menu.Size() > 0)
+                {
+                    int targetIndex = Math.Min(position, menu.Size() - 1);
+                    menu.GetItem(targetIndex)?.SetChecked(true);
+                }
             }
 
             _manager._previousTabIndex = position;
