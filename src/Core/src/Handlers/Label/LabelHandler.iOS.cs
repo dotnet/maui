@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Primitives.Dimension;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
@@ -8,6 +9,21 @@ namespace Microsoft.Maui.Handlers
 	public partial class LabelHandler : ViewHandler<ILabel, MauiLabel>
 	{
 		protected override MauiLabel CreatePlatformView() => new MauiLabel();
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (VirtualView is not null && IsExplicitSet(VirtualView.Width))
+			{
+				widthConstraint = Math.Min(widthConstraint, VirtualView.Width);
+				PlatformView.PreferredMaxLayoutWidth = (nfloat)VirtualView.Width;
+			}
+			else
+			{
+				PlatformView.PreferredMaxLayoutWidth = 0;
+			}
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
 
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||

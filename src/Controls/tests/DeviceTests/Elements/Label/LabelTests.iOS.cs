@@ -126,7 +126,7 @@ namespace Microsoft.Maui.DeviceTests
 				new object[] { label1, 5d, 1.5d, TextDecorations.Underline },
 				new object[] { label2, 5d, 1.5d, TextDecorations.Strikethrough },
 				new object[] { label3, 0d, 0d, TextDecorations.None },
-				new object[] { label4, 0d, 0d, TextDecorations.None }
+				new object[] { label4, 5d, 1.5d, TextDecorations.Underline }
 			};
 		}
 

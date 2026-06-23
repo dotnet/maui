@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+  <string name="indicator_item_accessible_description">Item %1$d of %2$d</string>
+  <string name="indicator_item_accessible_description_selected">Item %1$d of %2$d, selected</string>
+</resources>

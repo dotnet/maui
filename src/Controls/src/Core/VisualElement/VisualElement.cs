@@ -39,6 +39,12 @@ namespace Microsoft.Maui.Controls
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
+		/// <summary>
+		/// Gets the explicit value of <see cref="IsEnabled"/> set directly on this element,
+		/// before coercion by <see cref="IsEnabledCore"/> which factors in parent state.
+		/// </summary>
+		internal bool IsExplicitlyEnabled => _isEnabledExplicit;
+
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
 			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
@@ -2235,13 +2241,10 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				SetInheritedBindingContext(shadow, BindingContext);
+				shadow.Parent = this;
 				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
 				_shadowProxy ??= new();
 				_shadowProxy.Subscribe(shadow, _shadowChanged);
-
-				OnParentResourcesChanged(this.GetMergedResources());
-				((IElementDefinition)this).AddResourcesChangedListener(shadow.OnParentResourcesChanged);
 			}
 		}
 
@@ -2251,10 +2254,13 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				((IElementDefinition)this).RemoveResourcesChangedListener(shadow.OnParentResourcesChanged);
-
 				SetInheritedBindingContext(shadow, null);
 				_shadowProxy?.Unsubscribe();
+
+				if (shadow.Parent == this)
+				{
+					shadow.Parent = null;
+				}
 			}
 		}
 
@@ -2412,8 +2418,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
-			// This VE gets connected to the xplat Window before wiring up any events
-			if (!_watchingPlatformLoaded && newWindow is null)
+			// This VE gets connected to the xplat Window before wiring up any events.
+			// Exception: if a handler with a MauiContext is present (e.g., added to a native view via
+			// ToPlatform), we still wire up so the Loaded/Unloaded events can fire correctly.
+			if (!_watchingPlatformLoaded && newWindow is null && Handler?.MauiContext is null)
 				return;
 
 			if (_unloaded is null && _loaded is null)

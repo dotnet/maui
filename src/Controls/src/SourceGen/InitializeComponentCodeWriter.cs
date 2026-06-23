@@ -163,22 +163,8 @@ $$"""
 		}
 	}
 
-	/// <summary>
-	/// Removes x:Code elements from the node tree. The x:Code pipeline has already
-	/// extracted their content, so IC visitors should not see them.
-	/// </summary>
-	static void StripXCodeElements(RootNode rootnode)
-	{
-		for (int i = rootnode.CollectionItems.Count - 1; i >= 0; i--)
-		{
-			if (GeneratorHelpers.IsXCodeElement(rootnode.CollectionItems[i]))
-				rootnode.CollectionItems.RemoveAt(i);
-		}
-	}
-
 	static void Visit(RootNode rootnode, SourceGenContext visitorContext, bool useDesignProperties = false)
 	{
-		StripXCodeElements(rootnode);
 		rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
 		rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
 		rootnode.Accept(new PruneIgnoredNodesVisitor(useDesignProperties), null);
