@@ -23,8 +23,11 @@ namespace Microsoft.Maui.Controls
 			public const string PointerOver = "PointerOver";
 		}
 
-		// TODO: .NET 10 - make public
-		internal class FocusStates
+		/// <summary>
+		/// Defines the names of the focus-related visual states (<see cref="Focused"/> and
+		/// <see cref="Unfocused"/>) that the framework applies to focusable controls.
+		/// </summary>
+		public class FocusStates
 		{
 			public const string Focused = "Focused";
 			public const string Unfocused = "Unfocused";
