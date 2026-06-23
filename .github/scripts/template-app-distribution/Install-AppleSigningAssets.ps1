@@ -66,7 +66,10 @@ Write-Base64File (Assert-EnvironmentValue "IOS_CERTIFICATE_BASE64") $certificate
 Write-Base64File (Get-VariantProvisioningProfile $Variant) $profilePath
 
 $certificatePassword = Assert-EnvironmentValue "IOS_CERTIFICATE_PASSWORD"
-$keychainPassword = Assert-EnvironmentValue "IOS_KEYCHAIN_PASSWORD"
+$keychainPassword = [Environment]::GetEnvironmentVariable("IOS_KEYCHAIN_PASSWORD")
+if ([string]::IsNullOrWhiteSpace($keychainPassword)) {
+    $keychainPassword = [guid]::NewGuid().ToString("N")
+}
 
 & security create-keychain -p $keychainPassword $keychainPath
 & security set-keychain-settings -lut 21600 $keychainPath
@@ -76,6 +79,25 @@ $existingKeychains = & security list-keychains -d user | ForEach-Object { $_.Tri
 & security list-keychains -d user -s $keychainPath @existingKeychains
 & security import $certificatePath -k $keychainPath -P $certificatePassword -T /usr/bin/codesign -T /usr/bin/security
 & security set-key-partition-list -S apple-tool:,apple: -s -k $keychainPassword $keychainPath
+
+$identities = @()
+foreach ($line in (& security find-identity -v -p codesigning $keychainPath)) {
+    if ($line -match '"(.+)"') {
+        $identities += $Matches[1]
+    }
+}
+
+$codesignIdentity = $identities |
+    Where-Object { $_ -match "Apple Distribution|iPhone Distribution" } |
+    Select-Object -First 1
+
+if ([string]::IsNullOrWhiteSpace($codesignIdentity)) {
+    $codesignIdentity = $identities | Select-Object -First 1
+}
+
+if ([string]::IsNullOrWhiteSpace($codesignIdentity)) {
+    throw "No code signing identity was found in the imported certificate."
+}
 
 & security cms -D -i $profilePath | Out-File -FilePath $profilePlistPath -Encoding utf8
 $profileUuid = (& /usr/libexec/PlistBuddy -c "Print :UUID" $profilePlistPath).Trim()
@@ -90,13 +112,16 @@ New-Item -ItemType Directory -Path $profilesDirectory -Force | Out-Null
 Copy-Item -Path $profilePath -Destination (Join-Path $profilesDirectory "$profileUuid.mobileprovision") -Force
 
 Write-Host "Installed provisioning profile '$profileName' ($profileUuid)"
+Write-Host "Using code signing identity '$codesignIdentity'"
 
 if ($env:GITHUB_ENV) {
+    "IOS_CODESIGN_KEY=$codesignIdentity" >> $env:GITHUB_ENV
     "IOS_CODESIGN_PROVISION=$profileName" >> $env:GITHUB_ENV
     "IOS_KEYCHAIN_PATH=$keychainPath" >> $env:GITHUB_ENV
 }
 
 if ($env:GITHUB_OUTPUT) {
+    "codesign_key=$codesignIdentity" >> $env:GITHUB_OUTPUT
     "codesign_provision=$profileName" >> $env:GITHUB_OUTPUT
     "keychain_path=$keychainPath" >> $env:GITHUB_OUTPUT
 }

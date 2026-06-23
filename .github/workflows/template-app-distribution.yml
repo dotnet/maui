@@ -8,8 +8,6 @@
 # - TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
 # - TEMPLATE_APP_IOS_CERTIFICATE_BASE64
 # - TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD
-# - TEMPLATE_APP_IOS_KEYCHAIN_PASSWORD
-# - TEMPLATE_APP_IOS_CODESIGN_KEY
 # - TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64
 # - TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64
 # - TEMPLATE_APPSTORE_CONNECT_ISSUER_ID
@@ -17,10 +15,13 @@
 # - TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY (raw .p8 content or base64)
 #
 # Optional variables/secrets:
+# - TEMPLATE_APP_IDENTIFIER_PREFIX (variable): defaults to com.<repository-owner>.maui.template.
 # - TEMPLATE_APP_VARIANTS_JSON (variable): adds or overrides variant definitions.
 # - TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON (secret): maps variant names to base64 provisioning profiles.
 # - TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID / TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID (variables)
 # - TEMPLATE_APP_BLANK_IOS_BUNDLE_ID / TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID (variables)
+# - TEMPLATE_APP_PLAY_TRACK (variable): defaults to internal.
+# - TEMPLATE_APP_TESTFLIGHT_GROUPS (variable): defaults to no explicit group distribution.
 # Store uploads use fastlane lanes from .github/scripts/template-app-distribution/fastlane.
 
 name: Template App Distribution
@@ -35,46 +36,11 @@ on:
         required: true
         default: main
         type: string
-      dotnet_sdk:
-        description: Exact .NET SDK version, or global-json to read tools.dotnet/sdk.version from the selected source ref.
-        required: true
-        default: global-json
-        type: string
-      variants:
-        description: Comma-separated variants to build, or all.
-        required: true
-        default: all
-        type: string
-      platforms:
-        description: Comma-separated platforms to build, or all. Known values are android, ios.
-        required: true
-        default: all
-        type: string
       publish:
         description: Publish to Google Play/TestFlight. If false, only build and upload GitHub artifacts.
         required: true
-        default: true
+        default: false
         type: boolean
-      app_display_version:
-        description: Store-facing display version applied to generated apps.
-        required: true
-        default: "1.0"
-        type: string
-      play_track:
-        description: Google Play track for Android publishing.
-        required: true
-        default: internal
-        type: string
-      testflight_groups:
-        description: Optional comma-separated TestFlight beta group names to receive the build after processing.
-        required: false
-        default: ""
-        type: string
-      release_notes:
-        description: Optional release notes appended to the generated source SHA note.
-        required: false
-        default: ""
-        type: string
 
 permissions:
   contents: read
@@ -97,6 +63,8 @@ jobs:
       dotnet_tfm: ${{ steps.sdk.outputs.dotnet_tfm }}
       source_sha: ${{ steps.source.outputs.source_sha }}
       trusted: ${{ steps.source.outputs.trusted }}
+      app_display_version: ${{ steps.version.outputs.app_display_version }}
+      app_build_number: ${{ steps.version.outputs.app_build_number }}
     steps:
       - name: Checkout workflow scripts
         uses: actions/checkout@v4
@@ -131,12 +99,27 @@ jobs:
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Resolve-DotNetSdk.ps1" `
             -RepositoryPath "${{ github.workspace }}/source" `
-            -DotNetSdk "${{ inputs.dotnet_sdk }}"
+            -DotNetSdk "global-json"
+
+      - name: Resolve app version
+        id: version
+        shell: pwsh
+        run: |
+          $epoch = [DateTimeOffset]::Parse("2020-01-01T00:00:00Z")
+          $now = [DateTimeOffset]::UtcNow
+          $buildNumber = [int][Math]::Floor(($now - $epoch).TotalSeconds)
+          $displayVersion = "${{ steps.sdk.outputs.dotnet_tfm }}" -replace '^net', ''
+
+          "App display version: $displayVersion"
+          "App build number: $buildNumber"
+          "app_display_version=$displayVersion" >> $env:GITHUB_OUTPUT
+          "app_build_number=$buildNumber" >> $env:GITHUB_OUTPUT
 
       - name: Prepare build matrix
         id: matrix
         shell: pwsh
         env:
+          TEMPLATE_APP_IDENTIFIER_PREFIX: ${{ vars.TEMPLATE_APP_IDENTIFIER_PREFIX }}
           TEMPLATE_APP_VARIANTS_JSON: ${{ vars.TEMPLATE_APP_VARIANTS_JSON }}
           TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID: ${{ vars.TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID }}
           TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID }}
@@ -144,8 +127,8 @@ jobs:
           TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID: ${{ vars.TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Prepare-Matrix.ps1" `
-            -Variants "${{ inputs.variants }}" `
-            -Platforms "${{ inputs.platforms }}" `
+            -Variants "all" `
+            -Platforms "all" `
             -DotNetTfm "${{ steps.sdk.outputs.dotnet_tfm }}"
 
   dry-run-build:
@@ -153,6 +136,9 @@ jobs:
     if: ${{ inputs.publish == false }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
+    env:
+      APP_DISPLAY_VERSION: ${{ needs.prepare.outputs.app_display_version }}
+      APP_BUILD_NUMBER: ${{ needs.prepare.outputs.app_build_number }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
@@ -196,13 +182,6 @@ jobs:
 
       - name: Install MAUI workload
         run: dotnet workload install ${{ matrix.workload }}
-
-      - name: Set app version
-        shell: pwsh
-        run: |
-          $buildNumber = ([int]'${{ github.run_number }}' * 100) + [int]'${{ github.run_attempt }}'
-          "APP_BUILD_NUMBER=$buildNumber" >> $env:GITHUB_ENV
-          "APP_DISPLAY_VERSION=${{ inputs.app_display_version }}" >> $env:GITHUB_ENV
 
       - name: Pack local templates
         id: pack
@@ -262,6 +241,11 @@ jobs:
     needs: prepare
     runs-on: ${{ matrix.runner }}
     environment: template-app-distribution
+    env:
+      APP_DISPLAY_VERSION: ${{ needs.prepare.outputs.app_display_version }}
+      APP_BUILD_NUMBER: ${{ needs.prepare.outputs.app_build_number }}
+      TEMPLATE_APP_PLAY_TRACK: ${{ vars.TEMPLATE_APP_PLAY_TRACK || 'internal' }}
+      TEMPLATE_APP_TESTFLIGHT_GROUPS: ${{ vars.TEMPLATE_APP_TESTFLIGHT_GROUPS }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
@@ -315,17 +299,8 @@ jobs:
 
       - name: Set app version and release notes
         shell: pwsh
-        env:
-          INPUT_RELEASE_NOTES: ${{ inputs.release_notes }}
         run: |
-          $buildNumber = ([int]'${{ github.run_number }}' * 100) + [int]'${{ github.run_attempt }}'
-          "APP_BUILD_NUMBER=$buildNumber" >> $env:GITHUB_ENV
-          "APP_DISPLAY_VERSION=${{ inputs.app_display_version }}" >> $env:GITHUB_ENV
-
-          $notes = "MAUI template app build from ${{ needs.prepare.outputs.source_sha }}."
-          if (-not [string]::IsNullOrWhiteSpace($env:INPUT_RELEASE_NOTES)) {
-            $notes = "$notes`n$env:INPUT_RELEASE_NOTES"
-          }
+          $notes = "MAUI template app build from ${{ inputs.source_ref }} (${{ needs.prepare.outputs.source_sha }}).`n.NET SDK ${{ needs.prepare.outputs.dotnet_sdk }}, app version $env:APP_DISPLAY_VERSION, build $env:APP_BUILD_NUMBER."
 
           $delimiter = [guid]::NewGuid().ToString("N")
           "TEMPLATE_APP_RELEASE_NOTES<<$delimiter" >> $env:GITHUB_ENV
@@ -368,7 +343,6 @@ jobs:
         env:
           IOS_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD }}
-          IOS_KEYCHAIN_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_KEYCHAIN_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64 || matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64 || '' }}
           IOS_PROVISIONING_PROFILES_JSON: ${{ secrets.TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON }}
         run: |
@@ -383,7 +357,6 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.TEMPLATE_APP_ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.TEMPLATE_APP_ANDROID_KEY_PASSWORD }}
-          IOS_CODESIGN_KEY: ${{ secrets.TEMPLATE_APP_IOS_CODESIGN_KEY }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Build-TemplateApp.ps1" `
             -ProjectPath "${{ steps.app.outputs.project_path }}" `
@@ -433,7 +406,7 @@ jobs:
           & bundle exec fastlane android template_app_play `
             "package_name:${{ matrix.androidApplicationId }}" `
             "aab:${{ steps.build.outputs.package_path }}" `
-            "track:${{ inputs.play_track }}" `
+            "track:$env:TEMPLATE_APP_PLAY_TRACK" `
             "json_key:$env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH" `
             "version_name:$env:APP_DISPLAY_VERSION"
 
@@ -471,4 +444,4 @@ jobs:
             "issuer_id:$env:APPSTORE_CONNECT_ISSUER_ID" `
             "api_key_id:$env:APPSTORE_CONNECT_KEY_ID" `
             "api_private_key_path:$env:APPSTORE_CONNECT_PRIVATE_KEY_PATH" `
-            "groups:${{ inputs.testflight_groups }}"
+            "groups:$env:TEMPLATE_APP_TESTFLIGHT_GROUPS"

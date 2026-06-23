@@ -26,6 +26,25 @@ function Get-EnvironmentOrDefault([string]$Name, [string]$DefaultValue) {
     return $value
 }
 
+function Get-DefaultIdentifierPrefix {
+    $prefix = [Environment]::GetEnvironmentVariable("TEMPLATE_APP_IDENTIFIER_PREFIX")
+    if (-not [string]::IsNullOrWhiteSpace($prefix)) {
+        return $prefix.Trim().TrimEnd(".").ToLowerInvariant()
+    }
+
+    $owner = [Environment]::GetEnvironmentVariable("GITHUB_REPOSITORY_OWNER")
+    if ([string]::IsNullOrWhiteSpace($owner)) {
+        $owner = "maui"
+    }
+
+    $ownerSegment = $owner.ToLowerInvariant() -replace "[^a-z0-9]+", ""
+    if ([string]::IsNullOrWhiteSpace($ownerSegment)) {
+        $ownerSegment = "maui"
+    }
+
+    return "com.$ownerSegment.maui.template"
+}
+
 function ConvertTo-StringArray($Value) {
     if ($null -eq $Value) {
         return @()
@@ -48,22 +67,24 @@ function Merge-VariantDefinition($Definitions, [string]$Name, $Definition) {
     }
 }
 
+$identifierPrefix = Get-DefaultIdentifierPrefix
+
 $variantDefinitions = [ordered]@{
     blank = [ordered]@{
         displayName = "MAUI Template"
         projectName = "MauiTemplateBlank"
         template = "maui"
         templateArgs = @()
-        androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID" "com.microsoft.maui.template.blank"
-        iosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_IOS_BUNDLE_ID" "com.microsoft.maui.template.blank"
+        androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID" "$identifierPrefix.blank"
+        iosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_IOS_BUNDLE_ID" "$identifierPrefix.blank"
     }
     sample = [ordered]@{
         displayName = "MAUI Template Sample"
         projectName = "MauiTemplateSample"
         template = "maui"
         templateArgs = @("--sample-content")
-        androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID" "com.microsoft.maui.template.sample"
-        iosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID" "com.microsoft.maui.template.sample"
+        androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID" "$identifierPrefix.sample"
+        iosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID" "$identifierPrefix.sample"
     }
 }
 
