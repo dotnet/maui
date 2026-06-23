@@ -80,17 +80,19 @@ safe-outputs:
       runs-on: ubuntu-latest
       output: "Rerun scanner decisions processed."
       permissions:
+        # actions:write is required to dispatch the review-trigger.yml workflow.
+        # No id-token here: OIDC + the AzDO trigger now live entirely in
+        # review-trigger.yml (the same workflow a maintainer `/review` runs).
         contents: read
         issues: write
         pull-requests: write
-        id-token: write
+        actions: write
       env:
         GH_TOKEN: ${{ github.token }}
         DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == true }}
         REPO_OWNER: ${{ github.repository_owner }}
         REPO_NAME: maui
-        AZDO_TRIGGER_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
-        AZDO_TRIGGER_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+        RERUN_ACTIONS_PATH: ${{ runner.temp }}/rerun-actions.json
       inputs:
         # A custom safe-output job is capped at one invocation per run by gh-aw,
         # which previously dropped every decision after the first and limited the
@@ -110,20 +112,104 @@ safe-outputs:
           with:
             name: rerun-candidates
             path: ${{ runner.temp }}/rerun-candidates
-        - name: Process rerun scanner decisions
+        - name: Validate rerun scanner decisions
           shell: pwsh
           env:
             RERUN_CANDIDATES_PATH: ${{ runner.temp }}/rerun-candidates/candidates.json
           run: |
-            $scriptArgs = @(
-              '-Owner', $env:REPO_OWNER,
-              '-Repo', $env:REPO_NAME,
-              '-DefaultPipelineRef', 'main'
-            )
-            if ($env:DRY_RUN -eq 'true') {
-              $scriptArgs += '-DryRun'
-            }
-            .github/scripts/Invoke-RerunReviewTrigger.ps1 @scriptArgs
+            .github/scripts/Invoke-RerunReviewTrigger.ps1 -DefaultPipelineRef 'main'
+        - name: Dispatch review-trigger.yml for validated decisions
+          # The `gh` CLI returns a spurious HTTP 404 for repos/.../pulls/N in this
+          # gh-aw safe-output job context, so all GitHub writes go through octokit
+          # here. We dispatch the same review-trigger.yml workflow a maintainer
+          # `/review` runs; it owns PR validation, the s/agent-review-in-progress
+          # lock, platform inference, OIDC, and the AzDO pipeline trigger.
+          uses: actions/github-script@v8
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            script: |
+              const fs = require('fs');
+              const readyLabel = 's/agent-ready-for-rerun';
+              const dryRun = process.env.DRY_RUN === 'true';
+              const actionsPath = process.env.RERUN_ACTIONS_PATH;
+              const { owner, repo } = context.repo;
+
+              if (!actionsPath || !fs.existsSync(actionsPath)) {
+                core.info('No rerun actions file found; nothing to dispatch.');
+                return;
+              }
+
+              let actions;
+              try {
+                actions = JSON.parse(fs.readFileSync(actionsPath, 'utf8') || '[]');
+              } catch (e) {
+                core.setFailed(`Failed to parse rerun actions file: ${e.message}`);
+                return;
+              }
+              if (!Array.isArray(actions)) { actions = actions ? [actions] : []; }
+
+              let hadFailure = false;
+
+              async function react(commentId, content) {
+                if (!commentId || commentId <= 0) { return; }
+                if (dryRun) { core.info(`[dry-run] Would react '${content}' to comment ${commentId}`); return; }
+                try {
+                  await github.rest.reactions.createForIssueComment({ owner, repo, comment_id: commentId, content });
+                  core.info(`Reacted '${content}' to comment ${commentId}`);
+                } catch (e) {
+                  core.warning(`Failed to react '${content}' to comment ${commentId}: ${e.message}`);
+                }
+              }
+
+              async function removeReadyLabel(prNumber) {
+                if (dryRun) { core.info(`[dry-run] Would remove ${readyLabel} from PR #${prNumber}`); return; }
+                try {
+                  await github.rest.issues.removeLabel({ owner, repo, issue_number: prNumber, name: readyLabel });
+                  core.info(`Removed ${readyLabel} from PR #${prNumber}`);
+                } catch (e) {
+                  if (e.status === 404) { core.info(`${readyLabel} already absent on PR #${prNumber}`); }
+                  else { core.warning(`Failed to remove ${readyLabel} from PR #${prNumber}: ${e.message}`); }
+                }
+              }
+
+              for (const a of actions) {
+                const prNumber = a.prNumber;
+                try {
+                  if (a.decision === 'trigger') {
+                    if (dryRun) {
+                      core.info(`[dry-run] Would dispatch review-trigger.yml for PR #${prNumber} (platform=${a.platform}, pipeline_ref=${a.pipelineRef})`);
+                    } else {
+                      await github.rest.actions.createWorkflowDispatch({
+                        owner, repo,
+                        workflow_id: 'review-trigger.yml',
+                        ref: 'main',
+                        inputs: {
+                          pr_number: String(prNumber),
+                          platform: a.platform || '',
+                          pipeline_ref: a.pipelineRef || 'main',
+                        },
+                      });
+                      core.info(`Dispatched review-trigger.yml for PR #${prNumber} (platform=${a.platform}, pipeline_ref=${a.pipelineRef})`);
+                    }
+                    // review-trigger.yml owns the s/agent-review-in-progress lock and
+                    // removes s/agent-ready-for-rerun when it locks+triggers — same as
+                    // a maintainer /review — so the scanner does not remove it here.
+                    await react(a.rerunCommentId, '+1');
+                  } else {
+                    // skip: the scanner consumes the queue label itself; review-trigger.yml
+                    // is not involved.
+                    await react(a.rerunCommentId, '-1');
+                    await removeReadyLabel(prNumber);
+                  }
+                } catch (e) {
+                  core.error(`Failed to process PR #${prNumber}: ${e.message}`);
+                  hadFailure = true;
+                }
+              }
+
+              if (hadFailure) {
+                core.setFailed('One or more rerun decisions failed to dispatch.');
+              }
 
 ---
 
@@ -134,33 +220,35 @@ You are scanning queued .NET MAUI PRs that already have the label `s/agent-ready
 ## Concurrency, locking, and duplicate prevention
 
 The workflow-level concurrency group serializes scanner runs, including scheduled
-and manual dispatches. The deterministic `/review` and `/review rerun` workflow
-paths also share a per-PR concurrency group so manual commands for the same PR do
-not race each other. Before applying any side effects, the
-`trigger_rerun_review` safe-output job revalidates that the PR is open, the head
-SHA still matches `expected_head_sha`, and `s/agent-ready-for-rerun` is still
-present. It also refuses to trigger if a fresh `s/agent-review-in-progress` lock
-is already present. When it does trigger, it applies
-`s/agent-review-in-progress` before starting the async AzDO review pipeline; the
-AzDO pipeline removes that lock in its final cleanup stage. If the lock is older
-than the conservative stale window, the safe-output job treats it as abandoned
-and clears it before continuing. After either `trigger` or `skip`, the
-safe-output job removes the queue label so the same queued request is not picked
-up by a later scanner run.
+and manual dispatches. Before applying any side effects, the
+`trigger_rerun_review` safe-output job validates every decision against the
+deterministic candidate set (`candidates.json`): the PR must be a recorded
+candidate and its `expected_head_sha` must match the candidate `headSha`
+(anti-stale / anti-hallucination). It performs NO live PR reads itself — the
+`gh` CLI returns a spurious HTTP 404 for `repos/.../pulls/N` in this gh-aw
+safe-output job context, so all GitHub writes go through octokit.
 
-The safe-output job also enforces deterministic abuse limits before any AzDO
-trigger: at most 3 rerun-triggered reviews per PR in 24 hours, with a 60-minute
-cooldown between review starts. These limits are based on the
-`s/agent-review-in-progress` label history and apply even when the AI chooses
-`trigger`.
+For a validated `trigger`, the safe-output job dispatches the **same
+`review-trigger.yml` workflow that a maintainer `/review` comment runs** (via
+`workflow_dispatch`). That workflow owns everything downstream: it re-validates
+that the PR is open, applies the `s/agent-review-in-progress` lock (clearing a
+stale one), removes `s/agent-ready-for-rerun`, infers the platform, performs the
+OIDC exchange, and triggers the AzDO `maui-copilot` pipeline (which removes the
+lock in its final cleanup stage). `review-trigger.yml` also has a per-PR
+concurrency group and refuses to start when the in-progress lock is already
+present, so a dispatched rerun can never double-trigger a review that is already
+running. For a `skip`, the safe-output job reacts `-1` and removes the queue
+label itself.
 
-GitHub label application is idempotent rather than atomic, and the gh-aw
-safe-output job processes all selected PRs in one job, so there is no safe
-per-candidate GitHub Actions concurrency key to share with the manual workflow.
-The scanner therefore relies on scanner serialization, immediate head/label
-revalidation, and the persistent in-progress label to prevent duplicates without
-using a global concurrency group that could cancel unrelated maintainer
-`/review` requests.
+Because `review-trigger.yml` consumes `s/agent-ready-for-rerun` when it
+locks+triggers, a queued PR is removed from the candidate set after its first
+successful trigger and is not re-picked by a later scan. Duplicates are
+prevented by scanner serialization, candidate-set head-SHA revalidation,
+`review-trigger.yml`'s per-PR concurrency group, and the persistent in-progress
+lock — without a global concurrency group that could cancel unrelated maintainer
+`/review` requests. (There is no separate scanner rate limit: the queue-label
+lifecycle plus the per-PR lock bound the trigger rate the same way a maintainer
+`/review` is bounded.)
 
 The deterministic scanner found these candidates:
 
@@ -190,4 +278,4 @@ Each object in the `decisions` array must use:
 
 Example: `decisions = "[{\"pr_number\":\"123\",\"decision\":\"trigger\",\"rerun_comment_id\":\"456\",\"expected_head_sha\":\"abc123\",\"platform\":\"android\",\"pipeline_ref\":\"main\",\"reason\":\"New commit addresses review feedback.\"}]"`
 
-Do not call any other write tool. Do not create comments, labels, issues, or pull requests directly. The safe-output job will handle reactions, label removal, and AzDO triggering deterministically.
+Do not call any other write tool. Do not create comments, labels, issues, or pull requests directly. The safe-output job will handle reactions, queue-label removal, and dispatching `review-trigger.yml` deterministically.
