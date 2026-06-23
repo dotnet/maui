@@ -1502,6 +1502,61 @@ $dataReorder['srContents'] = @{ sourcePrs = @(35003, 35001, 35002) }   # reorder
 $hashReorder = Get-ReportSemanticHash -Data $dataReorder -Verdict $verdictA
 Assert-Eq -Label "Hash invariant to source-PR order" -Expected $hashA -Actual $hashReorder
 
+# no-fix-yet state flip → DIFFERENT hash (its rendered tier moves OPEN:Tier1 -> CLOSED:Tier3,
+# so the tracker MUST refresh even when the verdict symbol is pinned by another blocker).
+$dataNfyOpen = @{
+    metadata = @{ srHeadSha = 'aaaaaaaa1111'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = 'in-sr-active'; state = 'OPEN' }
+        @{ issue = 35009; classification = 'no-fix-yet';   state = 'OPEN' }   # blocker holds verdict 🔴
+    )
+    openSrPrs = @( @{ number = 35100 } )
+}
+$dataNfyClosed = @{
+    metadata = @{ srHeadSha = 'aaaaaaaa1111'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = 'in-sr-active'; state = 'OPEN' }
+        @{ issue = 35009; classification = 'no-fix-yet';   state = 'CLOSED' }   # closed → moves to Tier 3
+    )
+    openSrPrs = @( @{ number = 35100 } )
+}
+# Verdict symbol held constant across both (simulates a second blocker keeping the report 🔴).
+$hNfyOpen   = Get-ReportSemanticHash -Data $dataNfyOpen   -Verdict $verdictRed
+$hNfyClosed = Get-ReportSemanticHash -Data $dataNfyClosed -Verdict $verdictRed
+Assert-Eq -Label "Hash changes when no-fix-yet state flips (Tier1->Tier3) under a held verdict" `
+    -Expected $false -Actual ($hNfyOpen -eq $hNfyClosed)
+
+# Unrelated classification state flip → SAME hash (no watcher spam: in-sr-active is always Tier 3,
+# so its OPEN/CLOSED transition changes nothing visible and must NOT churn the hash).
+$dataInSrOpen = @{
+    metadata = @{ srHeadSha = 'aaaaaaaa1111'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = 'in-sr-active'; state = 'OPEN' }
+        @{ issue = 35009; classification = 'no-fix-yet';   state = 'OPEN' }
+    )
+    openSrPrs = @( @{ number = 35100 } )
+}
+$dataInSrClosed = @{
+    metadata = @{ srHeadSha = 'aaaaaaaa1111'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = 'in-sr-active'; state = 'CLOSED' }   # only this differs
+        @{ issue = 35009; classification = 'no-fix-yet';   state = 'OPEN' }
+    )
+    openSrPrs = @( @{ number = 35100 } )
+}
+$hInSrOpen   = Get-ReportSemanticHash -Data $dataInSrOpen   -Verdict $verdictRed
+$hInSrClosed = Get-ReportSemanticHash -Data $dataInSrClosed -Verdict $verdictRed
+Assert-Eq -Label "Hash invariant to non-no-fix-yet state flip (in-sr-active stays Tier 3)" `
+    -Expected $hInSrOpen -Actual $hInSrClosed
+
 # Cross-process stability (regression guard for the unordered-hashtable shuffle).
 # .NET Core randomizes String.GetHashCode() per process, so a plain [hashtable]
 # would serialize its keys in a DIFFERENT order each process -> a DIFFERENT hash,

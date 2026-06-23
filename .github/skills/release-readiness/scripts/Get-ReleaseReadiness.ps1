@@ -3000,7 +3000,22 @@ function Get-ReportSemanticHash {
                 } else { '' }
         regressions = if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
                           @($Data['regressions'] | Sort-Object issue | ForEach-Object {
-                              "$($_.issue):$($_.classification)"
+                              # `no-fix-yet` is the ONLY classification whose rendered tier
+                              # depends on issue state (OPEN -> Tier 1, CLOSED -> Tier 3; see
+                              # Format-MarkdownReport's $emitTier). Fold the state-derived tier
+                              # bit into the hash for THAT class only, so a no-fix-yet issue
+                              # closing (which moves its row T1 -> T3) flips the hash and
+                              # refreshes the tracker — even when another blocker keeps the
+                              # verdict symbol unchanged. Every other classification stays
+                              # state-insensitive, so unrelated state transitions (e.g. a
+                              # Tier-3 in-sr-active issue closing) do NOT churn the hash or
+                              # spam issue watchers — preserving the conservative design above.
+                              if ($_.classification -eq 'no-fix-yet') {
+                                  $nfyTier = if ($_.state -eq 'OPEN') { 't1' } else { 't3' }
+                                  "$($_.issue):$($_.classification):$nfyTier"
+                              } else {
+                                  "$($_.issue):$($_.classification)"
+                              }
                           }) -join '|'
                       } else { '' }
         openSrPrs = if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs']) {
