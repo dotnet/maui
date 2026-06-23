@@ -143,54 +143,6 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
-      - name: Validate publishing configuration
-        shell: pwsh
-        env:
-          PLATFORM: ${{ matrix.platform }}
-          VARIANT: ${{ matrix.variant }}
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.TEMPLATE_APP_ANDROID_KEY_ALIAS }}
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          IOS_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_BASE64 }}
-          IOS_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD }}
-          IOS_PROVISIONING_PROFILE_BASE64: ${{ matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64 || matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64 || '' }}
-          IOS_PROVISIONING_PROFILES_JSON: ${{ secrets.TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON }}
-          APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
-          APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
-          APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY }}
-        run: |
-          $missing = [System.Collections.Generic.List[string]]::new()
-
-          function Test-RequiredEnvironment([string]$Name, [string]$SecretName) {
-            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($Name))) {
-              $missing.Add($SecretName)
-            }
-          }
-
-          if ($env:PLATFORM -eq "android") {
-            Test-RequiredEnvironment "ANDROID_KEYSTORE_BASE64" "TEMPLATE_APP_ANDROID_KEYSTORE_BASE64"
-            Test-RequiredEnvironment "ANDROID_KEYSTORE_PASSWORD" "TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD"
-            Test-RequiredEnvironment "ANDROID_KEY_ALIAS" "TEMPLATE_APP_ANDROID_KEY_ALIAS"
-            Test-RequiredEnvironment "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" "TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
-          } elseif ($env:PLATFORM -eq "ios") {
-            Test-RequiredEnvironment "IOS_CERTIFICATE_BASE64" "TEMPLATE_APP_IOS_CERTIFICATE_BASE64"
-            Test-RequiredEnvironment "IOS_CERTIFICATE_PASSWORD" "TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD"
-            if ([string]::IsNullOrWhiteSpace($env:IOS_PROVISIONING_PROFILE_BASE64) -and [string]::IsNullOrWhiteSpace($env:IOS_PROVISIONING_PROFILES_JSON)) {
-              $variantSecretName = $env:VARIANT.ToUpperInvariant()
-              $missing.Add("TEMPLATE_APP_${variantSecretName}_IOS_PROVISIONING_PROFILE_BASE64 or TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON")
-            }
-            Test-RequiredEnvironment "APPSTORE_CONNECT_ISSUER_ID" "TEMPLATE_APPSTORE_CONNECT_ISSUER_ID"
-            Test-RequiredEnvironment "APPSTORE_CONNECT_KEY_ID" "TEMPLATE_APPSTORE_CONNECT_KEY_ID"
-            Test-RequiredEnvironment "APPSTORE_CONNECT_PRIVATE_KEY" "TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY"
-          }
-
-          if ($missing.Count -gt 0) {
-            $message = "Publishing '$env:VARIANT' for '$env:PLATFORM' is missing required environment secrets: $($missing -join ', '). Configure these in the protected 'template-app-distribution' environment, or rerun with publish=false for a dry-run build."
-            Write-Error $message
-            exit 1
-          }
-
       - name: Checkout workflow scripts
         uses: actions/checkout@v4
         with:
@@ -298,6 +250,54 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
+      - name: Validate publishing configuration
+        shell: pwsh
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          VARIANT: ${{ matrix.variant }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.TEMPLATE_APP_ANDROID_KEY_ALIAS }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          IOS_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64 || matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64 || '' }}
+          IOS_PROVISIONING_PROFILES_JSON: ${{ secrets.TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON }}
+          APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
+          APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
+          APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          $missing = [System.Collections.Generic.List[string]]::new()
+
+          function Test-RequiredEnvironment([string]$Name, [string]$SecretName) {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($Name))) {
+              $missing.Add($SecretName)
+            }
+          }
+
+          if ($env:PLATFORM -eq "android") {
+            Test-RequiredEnvironment "ANDROID_KEYSTORE_BASE64" "TEMPLATE_APP_ANDROID_KEYSTORE_BASE64"
+            Test-RequiredEnvironment "ANDROID_KEYSTORE_PASSWORD" "TEMPLATE_APP_ANDROID_KEYSTORE_PASSWORD"
+            Test-RequiredEnvironment "ANDROID_KEY_ALIAS" "TEMPLATE_APP_ANDROID_KEY_ALIAS"
+            Test-RequiredEnvironment "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" "TEMPLATE_APP_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
+          } elseif ($env:PLATFORM -eq "ios") {
+            Test-RequiredEnvironment "IOS_CERTIFICATE_BASE64" "TEMPLATE_APP_IOS_CERTIFICATE_BASE64"
+            Test-RequiredEnvironment "IOS_CERTIFICATE_PASSWORD" "TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD"
+            if ([string]::IsNullOrWhiteSpace($env:IOS_PROVISIONING_PROFILE_BASE64) -and [string]::IsNullOrWhiteSpace($env:IOS_PROVISIONING_PROFILES_JSON)) {
+              $variantSecretName = $env:VARIANT.ToUpperInvariant()
+              $missing.Add("TEMPLATE_APP_${variantSecretName}_IOS_PROVISIONING_PROFILE_BASE64 or TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON")
+            }
+            Test-RequiredEnvironment "APPSTORE_CONNECT_ISSUER_ID" "TEMPLATE_APPSTORE_CONNECT_ISSUER_ID"
+            Test-RequiredEnvironment "APPSTORE_CONNECT_KEY_ID" "TEMPLATE_APPSTORE_CONNECT_KEY_ID"
+            Test-RequiredEnvironment "APPSTORE_CONNECT_PRIVATE_KEY" "TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY"
+          }
+
+          if ($missing.Count -gt 0) {
+            $message = "Publishing '$env:VARIANT' for '$env:PLATFORM' is missing required environment secrets: $($missing -join ', '). Configure these in the protected 'template-app-distribution' environment, or rerun with publish=false for a dry-run build."
+            Write-Error $message
+            exit 1
+          }
+
       - name: Checkout workflow scripts
         uses: actions/checkout@v4
         with:
