@@ -10,6 +10,7 @@ using Xunit;
 namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
+	[Collection("Global Dispatcher State")]
 	public class MainThreadBridgeTests : IDisposable
 	{
 		public MainThreadBridgeTests()
