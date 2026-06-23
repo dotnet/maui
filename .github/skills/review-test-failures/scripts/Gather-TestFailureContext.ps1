@@ -1208,14 +1208,17 @@ foreach ($buildRef in $buildRefsById.Values) {
         }
     }
 
-    # Post-loop sweep: any failed Task leg we did NOT inspect -- it had no log id, fell
-    # beyond the 12-read cap, or its read threw into the catch above -- produced no
-    # extractable failure AND no unexplained-leg record, so it is currently invisible to the
-    # gate. Because another explained leg in the same build keeps that build "accounted", an
-    # uninspected build break could otherwise slip through as a false green. Record each as
+    # Post-loop sweep: any $failedRecords leg we did NOT inspect/resolve produced no extractable
+    # failure AND no unexplained-leg record, so it is currently invisible to the gate. Because
+    # another explained leg in the same build keeps that build "accounted", an uninspected break
+    # could otherwise slip through as a false green. $failedRecords admits a record two ways
+    # (see the timeline filter above): result == 'failed', OR it carries a type=error issue (a
+    # canceled/abandoned/timed-out/succeededWithIssues leg that still logged an error). The
+    # log-read loop only reads result=='failed' legs, so the error-issue-only legs are NEVER read
+    # and arrive here unresolved -- sweep them too. We must NOT re-narrow to result=='failed' (the
+    # bug that let a PR-induced hang/timeout on a canceled job escape both sweeps). Record each as
     # an unexplained leg (reusing the existing ceiling cap) so the verdict cannot be green.
     foreach ($fr in $failedRecords) {
-        if ([string]$fr.result -ne 'failed') { continue }
         if ([string]$fr.type -ne 'Task') { continue }
         if ($resolvedFailedRecordIds.ContainsKey([string]$fr.id)) { continue }
         $allUnexplainedLegs.Add([ordered]@{
@@ -1226,20 +1229,23 @@ foreach ($buildRef in $buildRefsById.Values) {
         })
     }
 
-    # F3: also surface a failed NON-Task leg (Stage/Job/Phase) that is a LEAF of the failed
-    # sub-tree -- i.e. it has no failed child of any type. Such a leg failed before any Task
-    # emitted result=failed (agent lost, timeout, cancellation, infra abort), so the Task-only
-    # sweep above never sees it; if a sibling leg keeps the build "accounted" it would slip
-    # through as a false green. A failed non-Task record that DOES have a failed child is already
-    # covered by that child (the child is swept/explained), so skip it to avoid false-red noise.
-    $failedParentIds = @{}
+    # F3: also surface a bad NON-Task leg (Stage/Job/Phase) that is a LEAF of the bad sub-tree --
+    # i.e. it has no bad child of any type. Such a leg went bad before any child Task surfaced
+    # (agent lost, timeout, cancellation, infra abort), so the Task sweep above never sees it; if a
+    # sibling leg keeps the build "accounted" it would slip through as a false green. "Bad" mirrors
+    # the $failedRecords admission (result=='failed' OR carries a type=error issue) -- a genuinely
+    # canceled Stage/Job is exactly what this is meant to catch (the prior result=='failed'-only
+    # guard contradicted that intent and let cancellations through). A bad non-Task record that DOES
+    # have a bad child is already covered by that child (swept/explained), so skip it to avoid
+    # false-red noise. Benign cascade-cancels carry no error issue, so they are not in
+    # $failedRecords at all and never reach this sweep.
+    $badChildParentIds = @{}
     foreach ($fr in $failedRecords) {
-        if ([string]$fr.result -eq 'failed' -and $fr.parentId) { $failedParentIds[[string]$fr.parentId] = $true }
+        if ($fr.parentId) { $badChildParentIds[[string]$fr.parentId] = $true }
     }
     foreach ($fr in $failedRecords) {
-        if ([string]$fr.result -ne 'failed') { continue }
         if ([string]$fr.type -eq 'Task') { continue }
-        if ($failedParentIds.ContainsKey([string]$fr.id)) { continue }
+        if ($badChildParentIds.ContainsKey([string]$fr.id)) { continue }
         $allUnexplainedLegs.Add([ordered]@{
             buildId = $buildRef.buildId
             recordName = [string]$fr.name
@@ -1557,15 +1563,21 @@ foreach ($failure in $dedupedFailures) {
         # The exact same test+platform also fails on the base branch -> trustworthy pre-existing.
         $failure['deterministicAttribution'] = 'pre-existing-on-base'
     }
-    elseif ($failure['matchesKnownIssue'] -and ([string]$failure['legBaselineResult'] -notin @('', 'absent-on-base', 'inconclusive-on-base'))) {
-        # Known-issue text match CORROBORATED by an actual base comparison of this leg (we read
-        # the base build and the leg's outcome there is known) -> dismissible as a known flake.
+    elseif ($failure['matchesKnownIssue'] -and ([string]$failure['legBaselineResult'] -eq 'failed-on-base')) {
+        # Known-issue text match CORROBORATED by the leg actually being RED on base ('failed-on-base').
+        # A 'succeeded-on-base' read is the OPPOSITE of corroboration -- it means the leg PASSED on
+        # base. For non-device failures that path is already caught as 'regressed-vs-base' above; the
+        # ONLY way to reach here with 'succeeded-on-base' is a device-test TEST failure whose
+        # regression signal was suppressed (XHarness exit-0 blind spot, see the leg-diff above).
+        # Dismissing that as a known issue on a mere text match would launder a suppressed regression
+        # into a false green, so only 'failed-on-base' corroborates; everything else falls through.
         $failure['deterministicAttribution'] = 'known-issue'
     }
     else {
         # Not safely dismissable: a leg that failed on base but whose THIS test failure did not
-        # exact-match base ('legAlsoFailsOnBase'-only), a known-issue text match with NO base
-        # comparison to corroborate it (closes the over-broad-matcher false green), or a genuinely
+        # exact-match base ('legAlsoFailsOnBase'-only), a known-issue text match NOT corroborated by
+        # the leg being red on base (no base read, or a 'succeeded-on-base' device-test leg whose
+        # regression was suppressed -- closes the over-broad-matcher false green), or a genuinely
         # unknown failure -> indeterminate (caps the ceiling at 'Needs human investigation').
         $failure['deterministicAttribution'] = 'indeterminate'
     }
@@ -1594,6 +1606,24 @@ foreach ($ic in $interestingChecks) {
 }
 $pendingChecks = @($pendingChecks)
 $failingChecks = @($failingChecks)
+
+# Aborted/incomplete failing checks: a CheckRun whose conclusion did not run to a clean,
+# inspectable result -- CANCELLED, TIMED_OUT, STARTUP_FAILURE, STALE, ACTION_REQUIRED. These are
+# red checks whose AzDO timeline legs may be canceled WITHOUT a type=error issue (so they never
+# enter $failedRecords and never become unexplained legs) -- e.g. a PR-induced hang that got a job
+# canceled, or a leg the infra timed out. If a dismissible sibling failure on the SAME build
+# "earns" the accounted status (its build id is in $contributingBuildIds), such a check would
+# otherwise sail past the unaccounted guard and reach the green 'else' branch. Surface them as a
+# first-class NHI cap that is independent of timeline-leg extraction: a check that did not finish
+# cleanly can never read green, no matter what a sibling leg contributed. (These conclusions are
+# already in $failingChecks via the catch-all bucket, so this adds no NEW red except in exactly the
+# accounted-sibling case -- the reported false green.)
+$abortedFailingChecks = New-Object System.Collections.Generic.List[string]
+foreach ($c in $failingChecks) {
+    if ([string]$c.conclusion -in @('CANCELLED', 'TIMED_OUT', 'STARTUP_FAILURE', 'STALE', 'ACTION_REQUIRED')) {
+        if ($abortedFailingChecks -notcontains [string]$c.name) { $abortedFailingChecks.Add([string]$c.name) }
+    }
+}
 
 $accessibleCheckNames = @{}
 $inaccessibleCheckNames = @{}
@@ -1687,7 +1717,7 @@ if ($inaccessibleFailingChecks.Count -gt 0) {
     $verdictCeiling = "Insufficient data"
     $ceilingReasons.Add("$($inaccessibleFailingChecks.Count) failing check(s) could not be inspected (AzDO build/logs inaccessible): $((@($inaccessibleFailingChecks) | Select-Object -First 8) -join ', ').")
 }
-elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0 -or $unaccountedFailingChecks.Count -gt 0 -or $unattributedFailures -gt 0) {
+elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0 -or $unaccountedFailingChecks.Count -gt 0 -or $unattributedFailures -gt 0 -or $abortedFailingChecks.Count -gt 0) {
     $verdictCeiling = "Needs human investigation"
     if ($pendingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($pendingChecks.Count) interesting check(s) are still pending/in-progress; the CI outcome is not final: $((@($pendingChecks | ForEach-Object { $_.name }) | Select-Object -First 8) -join ', ').")
@@ -1703,6 +1733,9 @@ elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $u
     }
     if ($unattributedFailures -gt 0) {
         $ceilingReasons.Add("$unattributedFailures failure(s) could not be attributed deterministically (base outcome ambiguous, base build missing/unreadable, or a device-test result outside the build-error class); they are neither provably PR-caused nor dismissible as pre-existing/known, so a 'Ready to merge' verdict is forbidden until a human classifies them: $((@($unattributedFailureNames) | Select-Object -First 8) -join ', ').")
+    }
+    if ($abortedFailingChecks.Count -gt 0) {
+        $ceilingReasons.Add("$($abortedFailingChecks.Count) failing check(s) did not finish cleanly (cancelled/timed-out/startup-failure/stale/action-required); the result is not a trustworthy pass and the aborted legs may carry no extractable failure, so a 'Ready to merge' verdict is forbidden until a human reads them: $((@($abortedFailingChecks) | Select-Object -First 8) -join ', ').")
     }
 }
 elseif ($failingChecks.Count -eq 0 -and $dedupedFailures.Count -eq 0) {
@@ -1743,6 +1776,8 @@ $gate = [ordered]@{
     unexplainedFailedLegNames = $unexplainedLegNames
     unaccountedFailingChecks = $unaccountedFailingChecks.Count
     unaccountedFailingCheckNames = $unaccountedFailingChecks.ToArray()
+    abortedFailingChecks = $abortedFailingChecks.Count
+    abortedFailingCheckNames = $abortedFailingChecks.ToArray()
     legsRegressedVsBase = $legsRegressedVsBase
     legsRegressedVsBaseNames = $legsRegressedVsBaseNames
     unattributedFailures = $unattributedFailures

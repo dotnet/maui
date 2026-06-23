@@ -57,6 +57,14 @@ Key fields to use:
     per-build failed-record cap). This is the earned-green guard: a red check we could
     reach but pulled zero reason from must not be read as green. **Any value > 0 caps the
     ceiling at `Needs human investigation`**.
+  - `gate.abortedFailingChecks` (+ `abortedFailingCheckNames[]`) — failing checks whose
+    GitHub conclusion did **not** finish cleanly: `CANCELLED`, `TIMED_OUT`,
+    `STARTUP_FAILURE`, `STALE`, or `ACTION_REQUIRED`. A cancelled/timed-out check is red but
+    its aborted AzDO legs can carry **no** `error` issue (so they never become unexplained
+    legs) — e.g. a PR-induced hang that got a job cancelled. Without this guard, a
+    dismissible sibling failure on the same build could "earn" the build green and mask the
+    abort. An aborted check is never a trustworthy pass, so **any value > 0 caps the ceiling
+    at `Needs human investigation`**.
   - `gate.legsRegressedVsBase` (+ `legsRegressedVsBaseNames[]`) — distinct failures that
     are **red on the PR but GREEN on the same leg of the most recent completed base
     build** (a deterministic, computed job-level regression). **Any value > 0 caps the
@@ -93,9 +101,11 @@ Key fields to use:
     `regressed-vs-base` (treat as **Likely PR-caused** unless you can cite why the base
     comparison is invalid, e.g. a known-flaky base leg), `pre-existing-on-base` (treat as
     **Likely unrelated** — the **exact** test+platform is also red on base, the only
-    signal strong enough to dismiss), `known-issue` (a known-issue text match that was
-    **corroborated by an actual base read** of the leg — dismissable), or `indeterminate`
-    (everything else: a leg-only base match, an **uncorroborated** known-issue text match,
+    signal strong enough to dismiss), `known-issue` (a known-issue text match
+    **corroborated by the leg itself being RED on base**, i.e. `legBaselineResult =
+    failed-on-base` — dismissable), or `indeterminate`
+    (everything else: a leg-only base match, an **uncorroborated** known-issue text match
+    (no base read, or a `succeeded-on-base` device-test leg whose regression was suppressed),
     an ambiguous/missing base, or a genuinely unknown failure — NOT dismissable, caps the
     ceiling at `Needs human investigation`). You may override
     `regressed-vs-base`/`pre-existing-on-base` only with an explicit, cited reason,
@@ -202,7 +212,9 @@ it is impossible to emit `Ready to merge` / `No failures found` while a check is
 pending, a failing check could not be inspected, a failed build leg produced no
 extractable failure (`gate.unexplainedFailedLegs > 0`), an accessible failing check
 yielded no extractable failure and no unexplained-leg record
-(`gate.unaccountedFailingChecks > 0`), a failure could not be attributed deterministically
+(`gate.unaccountedFailingChecks > 0`), a failing check did not finish cleanly
+(`gate.abortedFailingChecks > 0` — cancelled/timed-out/startup-failure/stale → ceiling
+capped at `Needs human investigation`), a failure could not be attributed deterministically
 (`gate.unattributedFailures > 0` → ceiling capped at `Needs human investigation`), or a
 leg is red on the PR but green on base (`gate.legsRegressedVsBase > 0` → ceiling capped at
 `Not ready`).
@@ -247,7 +259,7 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [abortedFailingChecks] aborted failing checks · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |

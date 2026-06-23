@@ -246,8 +246,10 @@ on appearance alone:
    (the dotnet Build Analysis registry). Cite the issue number/link — but treat it as a
    **hint, not a dismissal**: a text match alone can shadow a real PR break with a broad
    matcher. The automated lane only dismisses a known-issue match (`deterministicAttribution
-   = known-issue`) when the same leg was actually **compared on base**; an uncorroborated
-   text match stays `indeterminate` (`Needs human investigation`).
+   = known-issue`) when the same leg was itself **red on base** (`legBaselineResult =
+   failed-on-base`); a `succeeded-on-base` read is the opposite of corroboration (for a
+   device-test leg it means a *suppressed* regression, not a known flake), and an
+   uncorroborated text match stays `indeterminate` (`Needs human investigation`).
 4. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
    attempt (the recovered leg does not surface as a failure at all). A leg that was retried
    and **still failed** (`retriedStillFailing = true`) is the opposite — **persistent**,
@@ -267,7 +269,12 @@ build break from being silently counted as zero failures). The same green is als
 whenever an **accessible** failing check produced **no** extractable failure **and no**
 unexplained-leg record (`gate.unaccountedFailingChecks > 0` — the earned-green guard: a red
 check whose log threw, had no log id, or fell past the per-build cap still pulls the ceiling
-down to `Needs human investigation` instead of defaulting to green), or when a failure can be
+down to `Needs human investigation` instead of defaulting to green), whenever a failing check
+**did not finish cleanly** (`gate.abortedFailingChecks > 0` — a `CANCELLED`/`TIMED_OUT`/
+`STARTUP_FAILURE`/`STALE`/`ACTION_REQUIRED` conclusion, whose aborted legs can carry no
+`error` issue and so never become unexplained legs; a PR-induced hang that got a job
+cancelled must not be masked green by a dismissible sibling on the same build), or when a
+failure can be
 attributed **neither** way — not a clean regression vs base, not pre-existing on base, not a
 known issue (`gate.unattributedFailures > 0`; e.g. the base leg outcome was ambiguous, the
 base build was missing/unreadable, or a device-test result fell outside the deterministic
