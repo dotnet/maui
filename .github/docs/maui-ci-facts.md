@@ -96,6 +96,18 @@ for `maui-pr-devicetests` when a job is green but device-test failures are suspe
 (or the PR carries `s/agent-gate-failed`). If Helix aggregate data is absent, state
 that device-test hidden failures could not be verified — do not assume green = clean.
 
+**Deterministic enforcement in `/review tests`.** Because XHarness exit-0 makes a green
+device-test check untrustworthy, the gatherer **force-inspects every device-test build**
+(green or not) and only treats a green `maui-pr-devicetests` check as clean when it can
+**positively confirm `Failed == 0`** — either a Helix aggregated read where a fail count
+was observed and all were zero, or the authenticated test-API (when a token is present).
+When no positive confirmation is available — the common case in the gh-aw runner, which
+has **no AzDO token**, and where the anonymous AzDO test-results API redirects to sign-in —
+the green device-test check is counted as `gate.deviceTestUnverified` and **hard-caps the
+verdict ceiling at `Needs human investigation`**. A green device-test check is never a
+false green. (SKIPPED device-test checks did not run, so they do not cap; RED ones are
+ordinary failing checks.)
+
 ### Container artifact binlogs
 
 MAUI build artifacts are **Container** type, not `PipelineArtifact`:
@@ -273,12 +285,23 @@ down to `Needs human investigation` instead of defaulting to green), whenever a 
 **did not finish cleanly** (`gate.abortedFailingChecks > 0` — a `CANCELLED`/`TIMED_OUT`/
 `STARTUP_FAILURE`/`STALE`/`ACTION_REQUIRED` conclusion, whose aborted legs can carry no
 `error` issue and so never become unexplained legs; a PR-induced hang that got a job
-cancelled must not be masked green by a dismissible sibling on the same build), or when a
-failure can be
+cancelled must not be masked green by a dismissible sibling on the same build), whenever a
+backing **build's own result is `canceled`** regardless of the GitHub check conclusion
+(`gate.canceledBuildChecks > 0` — broader than the conclusion-based aborted guard: a build
+canceled mid-flight after a leg already posted `FAILURE`/`SUCCESS` slips past that guard, so
+it is capped on the build metadata directly), whenever a **green device-test check could not
+be confirmed `Failed == 0`** (`gate.deviceTestUnverified > 0` — XHarness exits 0 even when
+device tests fail, so a green `maui-pr-devicetests` check is trusted only when a fail count
+was positively observed all-zero; absent that, it caps to `Needs human investigation`), or
+when a failure can be
 attributed **neither** way — not a clean regression vs base, not pre-existing on base, not a
 known issue (`gate.unattributedFailures > 0`; e.g. the base leg outcome was ambiguous, the
 base build was missing/unreadable, or a device-test result fell outside the deterministic
-build-error class). It is likewise **capped at `Not ready`** whenever a leg is red on the PR
+build-error class). A `pre-existing-on-base` or corroborated `known-issue` dismissal is also
+**refused** (downgraded to `indeterminate`) when the PR actually edits the failing test file
+(`scopeGuardTripped` — the PR may have changed the test so it now fails for a new reason that
+merely coincides with the base/known text). It is likewise **capped at `Not ready`** whenever
+a leg is red on the PR
 but green on the same leg of the most recent base build (`gate.legsRegressedVsBase > 0` — the
 computed job-level regression; a device-test BUILD break counts here, only device-test TEST
 results are excluded). A proven regression sets the ceiling to `Not ready` even when softer

@@ -65,6 +65,24 @@ Key fields to use:
     dismissible sibling failure on the same build could "earn" the build green and mask the
     abort. An aborted check is never a trustworthy pass, so **any value > 0 caps the ceiling
     at `Needs human investigation`**.
+  - `gate.canceledBuildChecks` (+ `canceledBuildCheckNames[]`) — checks backed by an AzDO
+    build whose **own metadata result is `canceled`**, regardless of how the GitHub check
+    conclusion reads. This is broader than `abortedFailingChecks` (which keys only on the
+    GitHub conclusion): a build can be canceled mid-flight while a leg had already posted
+    `FAILURE` or even `SUCCESS`, so the canceled build slips past the conclusion-based guard.
+    A canceled build's legs frequently carry no `error` issue, so a dismissible sibling can
+    falsely "account" for it. A canceled build is never a trustworthy pass, so **any value >
+    0 caps the ceiling at `Needs human investigation`**.
+  - `gate.deviceTestUnverified` (+ `deviceTestUnverifiedNames[]`) — device-test checks
+    (`maui-pr-devicetests`) that read **GREEN** but whose `Failed == 0` could **not** be
+    positively confirmed. XHarness exits 0 even when device tests fail, so a green device-test
+    check is **not** evidence of a clean run. The gatherer force-inspects every device-test
+    build and only clears it when a fail count was positively observed and was all-zero (Helix
+    aggregated, or the authenticated test-API when a token is present). When no such
+    confirmation is available — the common case in the gh-aw runner, which has no AzDO token —
+    the green device-test check is unverified and **caps the ceiling at `Needs human
+    investigation`**. A **SKIPPED** device-test check does not cap (tests did not run); a
+    **RED** one is handled as an ordinary failing check.
   - `gate.legsRegressedVsBase` (+ `legsRegressedVsBaseNames[]`) — distinct failures that
     are **red on the PR but GREEN on the same leg of the most recent completed base
     build** (a deterministic, computed job-level regression). **Any value > 0 caps the
@@ -117,6 +135,13 @@ Key fields to use:
     computed attribution,
   - `retriedStillFailing` (`true` when CI retried the leg and it **still failed** — this
     is evidence the failure is **persistent**, NOT a one-off flake).
+  - `scopeGuardTripped` (`true` when a `pre-existing-on-base` or `known-issue` dismissal was
+    **refused** because the PR actually **edits the test file** behind the failure). When the
+    PR touches the very test that is failing, a base or known-issue text match is no longer
+    safe grounds to dismiss it — the PR may have changed the test so it now fails for a **new**
+    reason that merely coincides with the base/known text. The attribution is forced to
+    `indeterminate` (which caps the ceiling at `Needs human investigation`) instead of being
+    laundered green.
 - `failures.baseline[]` — distinct failures extracted from the base-branch build(s).
 - `failures.baselineMatchCount` — how many distinct PR failures also fail on the base.
 - `knownIssues` — `{queried, matcherCount, error}`. If `queried` is `false` (gh failed),
@@ -214,7 +239,11 @@ extractable failure (`gate.unexplainedFailedLegs > 0`), an accessible failing ch
 yielded no extractable failure and no unexplained-leg record
 (`gate.unaccountedFailingChecks > 0`), a failing check did not finish cleanly
 (`gate.abortedFailingChecks > 0` — cancelled/timed-out/startup-failure/stale → ceiling
-capped at `Needs human investigation`), a failure could not be attributed deterministically
+capped at `Needs human investigation`), a build's own result is `canceled`
+(`gate.canceledBuildChecks > 0` → ceiling capped at `Needs human investigation`), a green
+device-test check could not be confirmed `Failed == 0` (`gate.deviceTestUnverified > 0` →
+ceiling capped at `Needs human investigation`, because XHarness exits 0 even when device
+tests fail), a failure could not be attributed deterministically
 (`gate.unattributedFailures > 0` → ceiling capped at `Needs human investigation`), or a
 leg is red on the PR but green on base (`gate.legsRegressedVsBase > 0` → ceiling capped at
 `Not ready`).
@@ -259,7 +288,7 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [abortedFailingChecks] aborted failing checks · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [abortedFailingChecks] aborted failing checks · [canceledBuildChecks] canceled-build checks · [deviceTestUnverified] device-test unverified · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |

@@ -428,7 +428,7 @@ function Get-TestFailuresFromLog {
 
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         $line = $Lines[$i]
-        $match = [regex]::Match($line, '\bFailed\s+(?<name>[A-Za-z0-9_.$<>+-]+)\s+\[')
+        $match = [regex]::Match($line, '\bFailed\s+(?<name>.+?)\s+\[')
         if (-not $match.Success) {
             continue
         }
@@ -466,6 +466,99 @@ function Get-TestFailuresFromLog {
     }
 
     return $failures.ToArray()
+}
+
+function Get-ErrorFingerprint {
+    # Normalizes a build-error line into a stable fingerprint so the SAME logical break matches
+    # across the PR and base builds (keeping a genuine pre-existing break dismissible) while two
+    # DIFFERENT breaks that happen to share an error code (e.g. two distinct CS0246s) stay
+    # distinct (so a PR-new break can never be laundered as pre-existing by colliding on the bare
+    # code). Strips volatile tokens (paths, line:col, hex, GUIDs, counts) but preserves the quoted
+    # symbol / message text that distinguishes one break from another.
+    param([string]$Text)
+
+    if ([string]::IsNullOrWhiteSpace($Text)) { return '' }
+    $t = [string]$Text
+    # Drop everything up to and including the 'error <CODE>:' / 'error :' marker so a leading file
+    # path or line:col prefix never enters the fingerprint.
+    $t = [regex]::Replace($t, '^.*?error[^:]*:\s*', '', 'IgnoreCase')
+    $t = [regex]::Replace($t, '[A-Za-z]:\\[^\s:]+|/[^\s:]+/[^\s:]+', '<path>')   # win + unix paths
+    $t = [regex]::Replace($t, '\(\d+,\d+\)', '')                                  # (line,col)
+    $t = [regex]::Replace($t, ':\d+:\d+', '')                                     # :line:col
+    $t = [regex]::Replace($t, '\b0x[0-9a-fA-F]+\b', '<hex>')
+    $t = [regex]::Replace($t, '\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b', '<guid>')
+    $t = [regex]::Replace($t, '\d+', '#')                                         # remaining counts
+    $t = ($t -replace '\s+', ' ').Trim().ToLowerInvariant()
+    if ($t.Length -gt 120) { $t = $t.Substring(0, 120) }
+    return $t
+}
+
+function Get-FailCountsFromObject {
+    # Shape-robust scan of an arbitrary parsed JSON object (the Helix aggregated endpoint has no
+    # stable schema we can pin) for any NUMERIC property whose name contains 'fail' (Failed,
+    # FailCount, Fail, ...). Returns whether any such count was seen and their sum, so a device-test
+    # job that reports Failed>0 can cap the verdict without hard-coding the response shape. Bools
+    # (e.g. failFast) are ignored -- only real numeric counts.
+    param($Object)
+
+    $result = [ordered]@{ sawCount = $false; totalFail = 0 }
+    if ($null -eq $Object) { return $result }
+    $stack = New-Object System.Collections.Stack
+    $stack.Push($Object)
+    $guard = 0
+    while ($stack.Count -gt 0 -and $guard -lt 5000) {
+        $guard++
+        $cur = $stack.Pop()
+        if ($null -eq $cur) { continue }
+        if ($cur -is [string] -or $cur -is [bool] -or $cur.GetType().IsPrimitive) { continue }
+        if ($cur -is [System.Collections.IDictionary]) {
+            foreach ($k in $cur.Keys) {
+                $v = $cur[$k]
+                if (([string]$k -match '(?i)fail') -and ($v -is [int] -or $v -is [long] -or $v -is [double] -or $v -is [decimal])) {
+                    $result.sawCount = $true; $result.totalFail += [double]$v
+                }
+                elseif ($null -ne $v -and -not ($v -is [string]) -and -not ($v -is [bool]) -and -not ($v.GetType().IsPrimitive)) {
+                    $stack.Push($v)
+                }
+            }
+            continue
+        }
+        if ($cur -is [System.Collections.IEnumerable]) {
+            foreach ($item in $cur) { $stack.Push($item) }
+            continue
+        }
+        foreach ($prop in $cur.PSObject.Properties) {
+            $name = [string]$prop.Name
+            $val = $prop.Value
+            if (($name -match '(?i)fail') -and ($val -is [int] -or $val -is [long] -or $val -is [double] -or $val -is [decimal])) {
+                $result.sawCount = $true; $result.totalFail += [double]$val
+            }
+            elseif ($null -ne $val -and -not ($val -is [string]) -and -not ($val -is [bool]) -and -not ($val.GetType().IsPrimitive)) {
+                $stack.Push($val)
+            }
+        }
+    }
+    return $result
+}
+
+function Test-FailureInChangedScope {
+    # True when the failing test's type/name matches a TEST FILE the PR actually changed. This is
+    # the precise "the PR edits this exact test" signal used to REFUSE a pre-existing/known-issue
+    # dismissal: if the PR touches the very test that is failing, a base/known text match is no
+    # longer trustworthy grounds to call the failure unrelated (the PR may have changed the test so
+    # it now fails for a NEW reason that coincidentally matches base or a known-issue matcher), so
+    # the failure is downgraded to indeterminate (NHI) instead of being dismissed.
+    param($Failure, [string[]]$ChangedTestFiles)
+
+    $name = [string](Get-ObjectValue -Object $Failure -Names @("testName", "name") -Default "")
+    if ([string]::IsNullOrWhiteSpace($name)) { return $false }
+    foreach ($f in @($ChangedTestFiles)) {
+        $leaf = [System.IO.Path]::GetFileNameWithoutExtension([string]$f)
+        if ([string]::IsNullOrWhiteSpace($leaf)) { continue }
+        $leaf = ($leaf -replace '\.(android|ios|maccatalyst|windows|tizen)$', '')
+        if ($leaf.Length -ge 4 -and $name -match [regex]::Escape($leaf)) { return $true }
+    }
+    return $false
 }
 
 function Get-BuildErrorsFromLog {
@@ -518,10 +611,17 @@ function Get-BuildErrorsFromLog {
             continue
         }
 
-        if ($seen.Contains($signature)) {
+        # F2: a message fingerprint distinguishes two DIFFERENT breaks that share an error code so a
+        # PR-new break cannot collide with a base break of the same code and be laundered as
+        # pre-existing. It feeds the dedup/baseline key (Get-DeduplicatedFailures) WITHOUT polluting
+        # the human-readable testName, and also keys the within-leg dedup so two distinct breaks of
+        # the same code in one leg both surface.
+        $fingerprint = Get-ErrorFingerprint -Text $line
+        $seenKey = "$signature|$fingerprint"
+        if ($seen.Contains($seenKey)) {
             continue
         }
-        $seen[$signature] = $true
+        $seen[$seenKey] = $true
 
         $message = ([string]$line).Trim()
         $platform = Get-PlatformFromText -Text "$RecordName $message"
@@ -531,6 +631,7 @@ function Get-BuildErrorsFromLog {
             source = "azdo-build-error"
             logId = $LogId
             recordName = $RecordName
+            errorFingerprint = $fingerprint
             message = $message
             excerpt = @($message)
         })
@@ -591,7 +692,11 @@ function Get-DeduplicatedFailures {
     foreach ($failure in $Failures) {
         $testName = [string](Get-ObjectValue -Object $failure -Names @("testName", "name") -Default "unknown")
         $platform = [string](Get-ObjectValue -Object $failure -Names @("platform") -Default "unknown")
-        $key = "$($platform.ToLowerInvariant())|$($testName.ToLowerInvariant())"
+        # F2: fold the build-error fingerprint into the dedup/baseline key. For test failures it is
+        # empty (key unchanged, backward-compatible); for build errors it keeps two distinct breaks
+        # of the same error code from collapsing into one bucket and being dismissed as pre-existing.
+        $fingerprint = [string](Get-ObjectValue -Object $failure -Names @("errorFingerprint") -Default "")
+        $key = "$($platform.ToLowerInvariant())|$($testName.ToLowerInvariant())|$($fingerprint.ToLowerInvariant())"
 
         if (-not $groups.Contains($key)) {
             $groups[$key] = [ordered]@{
@@ -995,6 +1100,29 @@ foreach ($check in $interestingChecks) {
     }
 }
 
+# F1: device tests exit 0 even when tests fail (XHarness blind spot, see maui-ci-facts.md). The
+# interesting-check filter above drops every GREEN check, so a green maui-pr-devicetests check is
+# never inspected and its hidden device-test failures stay invisible -- a structural false-green
+# surface. Force-inspect the build behind EVERY device-test check (green or not) so the
+# timeline/Helix/test-API paths can either surface hidden failures or POSITIVELY confirm Failed==0.
+# Track the device-test check names so a green check we could not confirm clean caps the verdict to
+# NHI later (the device-test unverified cap).
+$deviceTestChecks = @($checks | Where-Object { [string]$_.name -match '(?i)device\s*-?\s*test' })
+$deviceTestCheckNames = @($deviceTestChecks | ForEach-Object { [string]$_.name } | Select-Object -Unique)
+foreach ($check in $deviceTestChecks) {
+    foreach ($ref in (Get-AzDoBuildRefsFromUrl -Url $check.detailsUrl -CheckName $check.name)) {
+        $key = Get-AzDoBuildRefKey -BuildRef $ref
+        if (-not $buildRefsById.Contains($key)) {
+            $ref.deviceTestProbe = $true
+            $buildRefsById[$key] = $ref
+        }
+        else {
+            $existing = @($buildRefsById[$key].checkNames)
+            $buildRefsById[$key].checkNames = @($existing + $check.name | Select-Object -Unique)
+        }
+    }
+}
+
 $manualBuildRefs = New-Object System.Collections.Generic.List[object]
 foreach ($rawBuildId in $BuildId) {
     if ([string]::IsNullOrWhiteSpace($rawBuildId)) {
@@ -1156,6 +1284,20 @@ foreach ($buildRef in $buildRefsById.Values) {
             }
 
             $failures = @(Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)
+            # F5 safety net: a parameterized or odd-shaped xUnit failure name can still escape the
+            # structured extractor's regex. If the log carries MORE loose 'Failed <name> [..]'
+            # markers than we parsed, surface the shortfall as an unexplained leg so the gate caps
+            # the verdict rather than silently dropping the unparsed failure(s).
+            $looseFailMarkers = @($lines | Where-Object { $_ -match '\bFailed\s+\S.*\[[^\]]*\]' }).Count
+            if ($looseFailMarkers -gt $failures.Count) {
+                $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $buildRef.buildId
+                    recordName = [string]$record.name
+                    logId = $logId
+                    unparsedFailures = ($looseFailMarkers - $failures.Count)
+                    note = 'loose xUnit Failed markers exceeded parsed failures'
+                })
+            }
             # A failed build leg whose break is not an xUnit '[FAIL]' line (crossgen/R2R,
             # NativeAOT, MSBuild error, linker) yields no test-shaped failure. Extract the
             # build error so the break still enters dedup, the baseline diff, and the gate
@@ -1236,32 +1378,65 @@ foreach ($buildRef in $buildRefsById.Values) {
     # the $failedRecords admission (result=='failed' OR carries a type=error issue) -- a genuinely
     # canceled Stage/Job is exactly what this is meant to catch (the prior result=='failed'-only
     # guard contradicted that intent and let cancellations through). A bad non-Task record that DOES
-    # have a bad child is already covered by that child (swept/explained), so skip it to avoid
-    # false-red noise. Benign cascade-cancels carry no error issue, so they are not in
-    # $failedRecords at all and never reach this sweep.
+    # have a bad child is normally covered by that child (swept/explained), so skip it to avoid
+    # false-red noise -- EXCEPT (F4) when the parent itself carries its OWN infra-error issue
+    # (agent loss / "stopped hearing from agent" / "ran longer than" / timeout / cancellation). That
+    # is a real parent-level break (the job machine died), distinct from a mere roll-up of the
+    # child, and the child's extracted failure does NOT account for it -- so it must still cap the
+    # verdict. Benign cascade-cancels carry no error issue, so they are not in $failedRecords at all
+    # and never reach this sweep.
     $badChildParentIds = @{}
     foreach ($fr in $failedRecords) {
         if ($fr.parentId) { $badChildParentIds[[string]$fr.parentId] = $true }
     }
+    $infraOwnErrorPattern = '(?i)stopped hearing from|lost communication|agent (was )?lost|agent.*disconnect|ran longer than|exceeded.*(time|timeout)|timed out|was canceled|was cancelled|cancellation|rebooted|no output has been received|did not finish'
     foreach ($fr in $failedRecords) {
         if ([string]$fr.type -eq 'Task') { continue }
-        if ($badChildParentIds.ContainsKey([string]$fr.id)) { continue }
+        $hasBadChild = $badChildParentIds.ContainsKey([string]$fr.id)
+        $ownIssueText = (@(ConvertTo-Array $fr.issues | Where-Object { $_.type -eq 'error' } | ForEach-Object { [string]$_.message }) -join ' ')
+        $hasOwnInfraError = ($ownIssueText -match $infraOwnErrorPattern)
+        if ($hasBadChild -and -not $hasOwnInfraError) { continue }
         $allUnexplainedLegs.Add([ordered]@{
             buildId = $buildRef.buildId
             recordName = [string]$fr.name
             logId = $(if ($fr.log -and $fr.log.id) { [int]$fr.log.id } else { $null })
             uninspected = $true
             nonTaskLeg = $true
+            ownInfraError = [bool]$hasOwnInfraError
         })
     }
 
     if ($build.definition.name -eq "maui-pr-devicetests") {
         $buildSummary.helix.checked = $true
+        $anyHelixFail = $false
+        $anyHelixCount = $false
         foreach ($jobId in $buildSummary.helix.jobIds) {
             try {
                 $summary = Invoke-JsonUrl -Url "https://helix.dot.net/api/2019-06-17/jobs/$jobId/aggregated"
+                $counts = Get-FailCountsFromObject -Object $summary
+                if ($counts.sawCount) { $anyHelixCount = $true }
+                if ($counts.totalFail -gt 0) {
+                    $anyHelixFail = $true
+                    # F1: a Helix aggregate that reports Failed>0 is a REAL hidden device-test
+                    # failure even though XHarness exited 0 and the AzDO job reads green. Emit it as
+                    # a structured failure so it enters dedup/attribution and caps the verdict. It is
+                    # a device-test TEST result (XHarness exit-0 blind spot), so it lands as
+                    # 'indeterminate' -> NHI, never a hard regression.
+                    $hidden = [ordered]@{
+                        testName = "device-test hidden failure ($jobId)"
+                        platform = Get-PlatformFromText -Text "$($build.definition.name) $jobId"
+                        source = "helix-aggregated"
+                        buildId = $buildRef.buildId
+                        helixJobId = $jobId
+                        message = "Helix aggregated reported $($counts.totalFail) failed device-test work item(s) for job $jobId even though XHarness exited 0 (the AzDO job can read green). See https://helix.dot.net/api/2019-06-17/jobs/$jobId/aggregated"
+                    }
+                    $buildSummary.testResults += @($hidden)
+                    $allLogFailures.Add($hidden)
+                }
                 $buildSummary.helix.summaries += @([ordered]@{
                     jobId = $jobId
+                    failed = $counts.totalFail
+                    sawFailCount = $counts.sawCount
                     summary = $summary
                 })
             }
@@ -1269,16 +1444,46 @@ foreach ($buildRef in $buildRefsById.Values) {
                 $buildSummary.helix.error = $_.Exception.Message
             }
         }
+        # Positive Failed==0 confirmation: at least one Helix job reported a fail count and NONE
+        # were > 0. Only this lets a GREEN device-test check stay green (see the device-test
+        # unverified cap below). No fail count seen anywhere = NOT confirmed (cannot trust green).
+        if ($anyHelixCount -and -not $anyHelixFail) {
+            $buildSummary.deviceTestFailedConfirmedZero = $true
+        }
     }
 
     if (-not [string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
         try {
             $runsUrl = "$baseUrl/_apis/test/runs?buildIds=$($buildRef.buildId)&api-version=7.1"
             $testRuns = Invoke-JsonUrl -Url $runsUrl -AllowAuth
-            $candidateRuns = @(ConvertTo-Array $testRuns.value | Where-Object {
+            $allRuns = @(ConvertTo-Array $testRuns.value)
+            $candidateRunsAll = @($allRuns | Where-Object {
                 ($_.failedTests -gt 0) -or
                 ($_.totalTests -gt 0 -and $_.passedTests -lt $_.totalTests)
-            } | Select-Object -First 60)
+            })
+            $candidateRuns = @($candidateRunsAll | Select-Object -First 60)
+            # F6: the -First 60 cap can silently drop failing runs on an accounted build. If more
+            # candidate runs exist than we will read, surface the overflow as an unexplained leg so
+            # the gate caps the verdict instead of trusting the truncated set.
+            if ($candidateRunsAll.Count -gt $candidateRuns.Count) {
+                $allUnexplainedLegs.Add([ordered]@{
+                    buildId = $buildRef.buildId
+                    recordName = "test-run overflow ($($candidateRunsAll.Count) failing runs, only $($candidateRuns.Count) inspected)"
+                    logId = $null
+                    uninspected = $true
+                    runOverflow = $true
+                })
+            }
+            # F1: positive device-test Failed==0 confirmation from the authenticated test-API (used
+            # when a token is available, e.g. local runs). If runs exist with real tests and NONE
+            # report a failed test, the green device-test check is trustworthy.
+            if ($build.definition.name -eq "maui-pr-devicetests") {
+                $runsWithTests = @($allRuns | Where-Object { [int]$_.totalTests -gt 0 })
+                $totalFailedAcrossRuns = (@($allRuns | ForEach-Object { [int]$_.failedTests }) | Measure-Object -Sum).Sum
+                if ($runsWithTests.Count -gt 0 -and [int]$totalFailedAcrossRuns -eq 0) {
+                    $buildSummary.deviceTestFailedConfirmedZero = $true
+                }
+            }
 
             foreach ($run in $candidateRuns) {
                 try {
@@ -1307,6 +1512,16 @@ foreach ($buildRef in $buildRefsById.Values) {
                         runId = $run.id
                         runName = $run.name
                         error = $_.Exception.Message
+                    })
+                    # F7: a swallowed per-run results exception loses that run's failures on an
+                    # otherwise-accounted build -> a sibling source would mask it as green. Cap the
+                    # verdict by recording the unreadable run as an unexplained leg.
+                    $allUnexplainedLegs.Add([ordered]@{
+                        buildId = $buildRef.buildId
+                        recordName = "test-run $($run.id) results unreadable: $([string]$run.name)"
+                        logId = $null
+                        uninspected = $true
+                        runResultsError = $true
                     })
                 }
             }
@@ -1560,8 +1775,18 @@ foreach ($failure in $dedupedFailures) {
         $failure['deterministicAttribution'] = 'indeterminate'
     }
     elseif ($failure['alsoFailsOnBaseline']) {
-        # The exact same test+platform also fails on the base branch -> trustworthy pre-existing.
-        $failure['deterministicAttribution'] = 'pre-existing-on-base'
+        # The exact same test+platform also fails on the base branch -> normally trustworthy
+        # pre-existing. F3 scope guard: if the PR actually EDITS the test file behind this failure,
+        # a base name-match is no longer safe grounds to dismiss it -- the PR may have changed the
+        # test so it now fails for a NEW reason that merely shares the name on base. Downgrade to
+        # indeterminate (NHI) in that case.
+        if (Test-FailureInChangedScope -Failure $failure -ChangedTestFiles $changedTestFiles) {
+            $failure['deterministicAttribution'] = 'indeterminate'
+            $failure['scopeGuardTripped'] = $true
+        }
+        else {
+            $failure['deterministicAttribution'] = 'pre-existing-on-base'
+        }
     }
     elseif ($failure['matchesKnownIssue'] -and ([string]$failure['legBaselineResult'] -eq 'failed-on-base')) {
         # Known-issue text match CORROBORATED by the leg actually being RED on base ('failed-on-base').
@@ -1571,7 +1796,16 @@ foreach ($failure in $dedupedFailures) {
         # regression signal was suppressed (XHarness exit-0 blind spot, see the leg-diff above).
         # Dismissing that as a known issue on a mere text match would launder a suppressed regression
         # into a false green, so only 'failed-on-base' corroborates; everything else falls through.
-        $failure['deterministicAttribution'] = 'known-issue'
+        # F9 scope guard: even a corroborated known-issue match is NOT dismissed when the PR edits the
+        # failing test file -- the PR may have introduced a new break that coincidentally matches the
+        # known-issue text. Downgrade to indeterminate (NHI) in that case.
+        if (Test-FailureInChangedScope -Failure $failure -ChangedTestFiles $changedTestFiles) {
+            $failure['deterministicAttribution'] = 'indeterminate'
+            $failure['scopeGuardTripped'] = $true
+        }
+        else {
+            $failure['deterministicAttribution'] = 'known-issue'
+        }
     }
     else {
         # Not safely dismissable: a leg that failed on base but whose THIS test failure did not
@@ -1622,6 +1856,46 @@ $abortedFailingChecks = New-Object System.Collections.Generic.List[string]
 foreach ($c in $failingChecks) {
     if ([string]$c.conclusion -in @('CANCELLED', 'TIMED_OUT', 'STARTUP_FAILURE', 'STALE', 'ACTION_REQUIRED')) {
         if ($abortedFailingChecks -notcontains [string]$c.name) { $abortedFailingChecks.Add([string]$c.name) }
+    }
+}
+
+# F8: an AzDO build whose own metadata result is 'canceled' is an aborted build. Its GitHub check
+# may read FAILURE or even SUCCESS (so $abortedFailingChecks, which keys only on the GitHub check
+# conclusion, misses it), while the canceled timeline legs frequently carry NO type=error issue --
+# so they never become $failedRecords / unexplained legs, and a dismissible sibling failure on the
+# same build can "earn" accounted status and sail the canceled build into a green verdict. Cap on
+# the build result directly: a canceled build never reads green, no matter what a sibling leg
+# contributed.
+$canceledBuildChecks = New-Object System.Collections.Generic.List[string]
+foreach ($b in $buildArray) {
+    if (-not $b.accessible -or -not $b.metadata) { continue }
+    if ([string]$b.metadata.result -in @('canceled', 'cancelled')) {
+        foreach ($cn in @($b.checkNames)) {
+            if ($canceledBuildChecks -notcontains [string]$cn) { $canceledBuildChecks.Add([string]$cn) }
+        }
+    }
+}
+
+# F1: a device-test check that READS GREEN cannot be trusted unless Failed==0 was POSITIVELY
+# confirmed (Helix aggregated all-zero, or the authenticated test-API). XHarness exits 0 even when
+# device tests fail, so a green maui-pr-devicetests check is NOT evidence of a clean run. Without a
+# positive confirmation, cap the verdict to NHI -- never a false green. A SKIPPED device-test check
+# means device tests did not run on this PR (nothing to verify, no cap); a RED device-test check is
+# already handled as a failing check.
+$deviceTestUnverified = New-Object System.Collections.Generic.List[string]
+foreach ($check in $deviceTestChecks) {
+    $concl = [string]$check.conclusion
+    $state = [string]$check.state
+    if ($concl -eq 'SKIPPED') { continue }
+    $isGreen = ($concl -in @('SUCCESS', 'NEUTRAL')) -or ((-not $concl) -and ($state -in @('SUCCESS', 'NEUTRAL')))
+    if (-not $isGreen) { continue }
+    $confirmed = $false
+    foreach ($b in $buildArray) {
+        if (@($b.checkNames) -notcontains [string]$check.name) { continue }
+        if (Get-ObjectValue -Object $b -Names @("deviceTestFailedConfirmedZero") -Default $false) { $confirmed = $true }
+    }
+    if (-not $confirmed -and ($deviceTestUnverified -notcontains [string]$check.name)) {
+        $deviceTestUnverified.Add([string]$check.name)
     }
 }
 
@@ -1717,7 +1991,7 @@ if ($inaccessibleFailingChecks.Count -gt 0) {
     $verdictCeiling = "Insufficient data"
     $ceilingReasons.Add("$($inaccessibleFailingChecks.Count) failing check(s) could not be inspected (AzDO build/logs inaccessible): $((@($inaccessibleFailingChecks) | Select-Object -First 8) -join ', ').")
 }
-elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0 -or $unaccountedFailingChecks.Count -gt 0 -or $unattributedFailures -gt 0 -or $abortedFailingChecks.Count -gt 0) {
+elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $unexplainedLegs.Count -gt 0 -or $unaccountedFailingChecks.Count -gt 0 -or $unattributedFailures -gt 0 -or $abortedFailingChecks.Count -gt 0 -or $canceledBuildChecks.Count -gt 0 -or $deviceTestUnverified.Count -gt 0) {
     $verdictCeiling = "Needs human investigation"
     if ($pendingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($pendingChecks.Count) interesting check(s) are still pending/in-progress; the CI outcome is not final: $((@($pendingChecks | ForEach-Object { $_.name }) | Select-Object -First 8) -join ', ').")
@@ -1736,6 +2010,12 @@ elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0 -or $u
     }
     if ($abortedFailingChecks.Count -gt 0) {
         $ceilingReasons.Add("$($abortedFailingChecks.Count) failing check(s) did not finish cleanly (cancelled/timed-out/startup-failure/stale/action-required); the result is not a trustworthy pass and the aborted legs may carry no extractable failure, so a 'Ready to merge' verdict is forbidden until a human reads them: $((@($abortedFailingChecks) | Select-Object -First 8) -join ', ').")
+    }
+    if ($canceledBuildChecks.Count -gt 0) {
+        $ceilingReasons.Add("$($canceledBuildChecks.Count) check(s) are backed by an AzDO build whose own result is 'canceled'; a canceled build's legs frequently carry no extractable failure and a dismissible sibling can falsely 'account' for it, so a 'Ready to merge' verdict is forbidden until a human reads them: $((@($canceledBuildChecks) | Select-Object -First 8) -join ', ').")
+    }
+    if ($deviceTestUnverified.Count -gt 0) {
+        $ceilingReasons.Add("$($deviceTestUnverified.Count) device-test check(s) read GREEN but Failed==0 could NOT be positively confirmed (XHarness exits 0 even when device tests fail; no Helix aggregated all-zero and no authenticated test-API confirmation was available); a green device-test check is not trustworthy evidence of a clean run, so a 'Ready to merge' verdict is forbidden until a human confirms the device-test results: $((@($deviceTestUnverified) | Select-Object -First 8) -join ', ').")
     }
 }
 elseif ($failingChecks.Count -eq 0 -and $dedupedFailures.Count -eq 0) {
@@ -1778,6 +2058,10 @@ $gate = [ordered]@{
     unaccountedFailingCheckNames = $unaccountedFailingChecks.ToArray()
     abortedFailingChecks = $abortedFailingChecks.Count
     abortedFailingCheckNames = $abortedFailingChecks.ToArray()
+    canceledBuildChecks = $canceledBuildChecks.Count
+    canceledBuildCheckNames = $canceledBuildChecks.ToArray()
+    deviceTestUnverified = $deviceTestUnverified.Count
+    deviceTestUnverifiedNames = $deviceTestUnverified.ToArray()
     legsRegressedVsBase = $legsRegressedVsBase
     legsRegressedVsBaseNames = $legsRegressedVsBaseNames
     unattributedFailures = $unattributedFailures
