@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Platform
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
 		Java.Lang.IRunnable? _setAppBarLiftTargetRunnable;
-		Android.Views.LayoutDirection _prevLayoutDirection = Android.Views.LayoutDirection.Ltr;
 		ALayoutDirection _prevLayoutDirection = ALayoutDirection.Ltr;
 		bool _checkedForRtlScroll;
 
