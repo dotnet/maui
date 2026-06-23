@@ -105,23 +105,15 @@ namespace Microsoft.Maui.Controls.Platform
 			return new GesturePlatformManager(handler);
 		}
 
-		// Resolves the optional gesture factory without assuming the service provider honors the
-		// IServiceProvider contract for unregistered services. Real MAUI providers return null, but a
-		// strict third-party backend container (or test double) may throw instead; in that case the
-		// factory is simply treated as not registered.
+		// Resolves the optional gesture factory. Uses the non-generic GetService with a cast
+		// to return null on both unregistered services and type mismatches, without swallowing
+		// genuine construction failures from the factory itself.
 		static IGesturePlatformManagerFactory? GetOptionalGesturePlatformManagerFactory(IServiceProvider? services)
 		{
 			if (services is null)
 				return null;
 
-			try
-			{
-				return services.GetService<IGesturePlatformManagerFactory>();
-			}
-			catch (Exception)
-			{
-				return null;
-			}
+			return services.GetService(typeof(IGesturePlatformManagerFactory)) as IGesturePlatformManagerFactory;
 		}
 	}
 }
