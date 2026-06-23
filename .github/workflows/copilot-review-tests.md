@@ -218,7 +218,7 @@ Invoke the **review-test-failures** skill: read and follow `.github/skills/revie
 
 That skill also references the canonical `.github/docs/maui-ci-facts.md`. The end goal is one **overall merge-readiness verdict** (Ready to merge / Not ready / Needs human investigation / Insufficient data / No failures found), informed by a **baseline comparison** against the most recent base-branch build. Use the gathered `failures.baseline`, `failures.baselineMatchCount`, `alsoFailsOnBaseline`, and `baselineSummary` fields — do not treat a failure as pre-existing without that evidence.
 
-The gathered `context.json`/`context.md` also carry a deterministic **merge-readiness gate** (`gate.verdictCeiling`, `gate.ceilingReasons`, coverage counts) plus per-failure `matchesKnownIssue` and `retriedStillFailing` evidence. Build-job breaks with no test name (crossgen/ReadyToRun, NativeAOT/ILC, linker, MSBuild `error`) are extracted as distinct failures too (`source = azdo-build-error`), and any failed build leg that yields **no** extractable failure is counted in `gate.unexplainedFailedLegs`. Your overall verdict **MUST NOT be more favorable than `gate.verdictCeiling`** — a green verdict is impossible while a check is pending, a failing check could not be inspected, or `gate.unexplainedFailedLegs > 0`. Surface the coverage ledger and ceiling in the report so the verdict is provably sound.
+The gathered `context.json`/`context.md` also carry a deterministic **merge-readiness gate** (`gate.verdictCeiling`, `gate.ceilingReasons`, coverage counts) plus per-failure `matchesKnownIssue`, `retriedStillFailing`, and the computed **job-level baseline diff** (`legBaselineResult` / `legRegressedVsBase` / `legAlsoFailsOnBase` and a `deterministicAttribution` prior) evidence. Build-job breaks with no test name (crossgen/ReadyToRun, NativeAOT/ILC, linker, MSBuild `error`) are extracted as distinct failures too (`source = azdo-build-error`), and any failed build leg that yields **no** extractable failure is counted in `gate.unexplainedFailedLegs`. A leg that is red on the PR but green on the same leg of the most recent base build is a computed regression in `gate.legsRegressedVsBase`. Your overall verdict **MUST NOT be more favorable than `gate.verdictCeiling`** — a green verdict is impossible while a check is pending, a failing check could not be inspected, or `gate.unexplainedFailedLegs > 0`, and the ceiling is capped at `Not ready` whenever `gate.legsRegressedVsBase > 0`. Treat a `deterministicAttribution = regressed-vs-base` failure as Likely PR-caused unless you can cite why the base comparison is invalid. Surface the coverage ledger and ceiling in the report so the verdict is provably sound.
 
 ## Target
 
@@ -296,11 +296,11 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs. Deterministic ceiling: [gate.verdictCeiling][ — reason from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |
-| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no] | [specific evidence — cite a known-issue link when matchesKnownIssue is set, note "retried still failing" when true, link build/test IDs] |
+| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — "regressed" when legRegressedVsBase, "also-red" when legAlsoFailsOnBase, else alsoFailsOnBaseline] | [specific evidence — lead with deterministicAttribution when regressed-vs-base/pre-existing-on-base, cite a known-issue link when matchesKnownIssue is set, note "retried still failing" when true, link build/test IDs] |
 
 ### Recommended action
 
@@ -316,7 +316,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 </details>
 ```
 
-The `Overall` badge and `**Overall verdict:**` line carry the merge-readiness verdict. The per-failure table carries the per-failure verdicts plus an `On base?` column (yes when `alsoFailsOnBaseline` is true). The `**Coverage:**` line reports the deterministic gate counts and `gate.verdictCeiling`; the overall verdict must never be more favorable than that ceiling. Overall badge colors: `1a7f37` for `Ready to merge` and `No failures found`, `d1242f` for `Not ready`, `bf8700` for `Needs human investigation`, `6e7781` for `Insufficient data`.
+The `Overall` badge and `**Overall verdict:**` line carry the merge-readiness verdict. The per-failure table carries the per-failure verdicts plus an `On base?` column (driven by the computed job-level diff: "regressed" when `legRegressedVsBase`, "also-red" when `legAlsoFailsOnBase`, otherwise yes/no from `alsoFailsOnBaseline`). The `**Coverage:**` line reports the deterministic gate counts and `gate.verdictCeiling`; the overall verdict must never be more favorable than that ceiling. Overall badge colors: `1a7f37` for `Ready to merge` and `No failures found`, `d1242f` for `Not ready`, `bf8700` for `Needs human investigation`, `6e7781` for `Insufficient data`.
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
 

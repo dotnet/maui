@@ -692,6 +692,47 @@ function Get-RecentBaseBuilds {
     })
 }
 
+function Get-TimelineRecordResultMap {
+    # Builds a deterministic map of leg/record name -> pass/fail outcome for ONE build's
+    # timeline. Used for the job-level baseline diff: a build leg that is red on the PR but
+    # GREEN on the most recent base build is the strongest possible PR-caused signal, and
+    # unlike a test-name match it works for build-job breaks (crossgen/NativeAOT/linker)
+    # that carry no test name. Fully mechanical -- no LLM judgment.
+    param(
+        [string]$Org,
+        [string]$Project,
+        [int]$BuildId
+    )
+
+    $map = @{}
+    $result = [ordered]@{ accessible = $false; records = $map }
+
+    $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1"
+    if ($timelineResult.error -or -not $timelineResult.value) {
+        return $result
+    }
+    $result.accessible = $true
+
+    foreach ($record in @(ConvertTo-Array $timelineResult.value.records)) {
+        $name = [string]$record.name
+        if ([string]::IsNullOrWhiteSpace($name)) {
+            continue
+        }
+        $norm = ($name -replace '\s+', ' ').Trim().ToLowerInvariant()
+        if (-not $map.ContainsKey($norm)) {
+            $map[$norm] = [ordered]@{ name = $name; hasFailed = $false; hasSucceeded = $false }
+        }
+        switch ([string]$record.result) {
+            'failed' { $map[$norm].hasFailed = $true }
+            'partiallySucceeded' { $map[$norm].hasFailed = $true }
+            'succeeded' { $map[$norm].hasSucceeded = $true }
+            'succeededWithIssues' { $map[$norm].hasSucceeded = $true }
+        }
+    }
+
+    return $result
+}
+
 function Get-KnownBuildIssues {
     # Loads the repo's open "Known Build Error" issues (the dotnet Build Analysis
     # known-issues registry). Each such issue body carries one or more ```json blocks
@@ -1232,6 +1273,13 @@ $dedupedFailures = @(Get-DeduplicatedFailures -Failures $allFailuresArray)
 $baselineRaw = New-Object System.Collections.Generic.List[object]
 $baselineSummary = New-Object System.Collections.Generic.List[object]
 $baselineInspected = @{}
+# Deterministic job-level baseline diff state. $prBuildToBaseMap maps each inspected PR
+# build id -> the most recent completed base build's per-leg pass/fail map, so each PR
+# failed leg can be compared to the SAME leg on base in code (no LLM judgment).
+# $baseRecordMapCache memoizes the base timeline fetch so PR builds that share a base
+# build (e.g. retried runs of one pipeline) don't re-fetch it.
+$prBuildToBaseMap = @{}
+$baseRecordMapCache = @{}
 
 if ($BaselineBuildsPerDefinition -gt 0) {
     foreach ($build in $buildArray) {
@@ -1250,6 +1298,29 @@ if ($BaselineBuildsPerDefinition -gt 0) {
         # base is currently healthy and matching failures are not pre-existing — even if
         # an older build in the lookback window was red (it was since fixed).
         $mostRecent = $completed[0]
+
+        # --- Deterministic job-level baseline diff (fetch base leg map) ---
+        # Fetch the most recent completed base build's per-leg pass/fail map ONCE so each PR
+        # failed leg can later be compared to the SAME leg on base. This runs BEFORE the
+        # succeeded-base early-return below precisely because the strongest regression signal
+        # (leg red on PR, GREEN on a fully-succeeded base) lives in that branch. Unlike a
+        # test-name match this also catches build-job breaks (crossgen/NativeAOT/linker) that
+        # carry no test name -- the class of break that previously slipped through.
+        $isDeviceTestsDef = $defName -like '*devicetest*'
+        $baseMapKey = "$($build.org)|$($build.project)|$($mostRecent.id)"
+        if (-not $baseRecordMapCache.ContainsKey($baseMapKey)) {
+            $baseRecordMapCache[$baseMapKey] = Get-TimelineRecordResultMap -Org $build.org -Project $build.project -BuildId ([int]$mostRecent.id)
+        }
+        $baseMap = $baseRecordMapCache[$baseMapKey]
+        if ($baseMap.accessible) {
+            $prBuildToBaseMap[[string]$build.id] = [ordered]@{
+                baseBuildId = [int]$mostRecent.id
+                baseBuildResult = [string]$mostRecent.result
+                isDeviceTests = $isDeviceTestsDef
+                records = $baseMap.records
+            }
+        }
+
         if ($mostRecent.result -eq 'succeeded') {
             # Dedup on the inspected base build (mirrors the not-succeeded branch below) so
             # multiple PR builds of the same pipeline definition (e.g. retried runs) don't
@@ -1348,6 +1419,63 @@ foreach ($failure in $dedupedFailures) {
     # unrelated" evidence the classifier can cite by issue number.
     $matchText = (@([string]$failure.testName) + @($failure.messages)) -join "`n"
     $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText
+
+    # Deterministic job-level baseline diff: compare each occurrence's failing leg to the
+    # SAME leg on the most recent completed base build. base green + PR red = regressed
+    # (PR-caused); base also red = pre-existing. Device-test legs are surfaced via
+    # legBaselineResult but never set legRegressedVsBase (XHarness exit-0 blind spot), so
+    # the hard ceiling cap only fires on trustworthy maui-pr build results.
+    $legBaselineResult = $null
+    $legRegressed = $false
+    $legAlsoFails = $false
+    foreach ($occ in @($failure.occurrences)) {
+        $occBuildId = [string](Get-ObjectValue -Object $occ -Names @("buildId"))
+        $occRecord = [string](Get-ObjectValue -Object $occ -Names @("recordName"))
+        if ([string]::IsNullOrWhiteSpace($occBuildId) -or [string]::IsNullOrWhiteSpace($occRecord)) {
+            continue
+        }
+        if (-not $prBuildToBaseMap.ContainsKey($occBuildId)) {
+            continue
+        }
+        $baseInfo = $prBuildToBaseMap[$occBuildId]
+        $norm = ($occRecord -replace '\s+', ' ').Trim().ToLowerInvariant()
+        if (-not $baseInfo.records.ContainsKey($norm)) {
+            if (-not $legBaselineResult) { $legBaselineResult = 'absent-on-base' }
+            continue
+        }
+        $baseRec = $baseInfo.records[$norm]
+        if ($baseRec.hasFailed) {
+            # Same leg already failed on base -> pre-existing, regardless of any green attempt.
+            $legAlsoFails = $true
+            $legBaselineResult = 'failed-on-base'
+        }
+        elseif ($baseRec.hasSucceeded) {
+            $legBaselineResult = 'succeeded-on-base'
+            if (-not $baseInfo.isDeviceTests) {
+                $legRegressed = $true
+            }
+        }
+    }
+    $failure['legBaselineResult'] = $legBaselineResult
+    $failure['legRegressedVsBase'] = [bool]$legRegressed
+    $failure['legAlsoFailsOnBase'] = [bool]$legAlsoFails
+
+    # Deterministic attribution prior the classifier MUST start from. It may only override
+    # 'regressed-vs-base' or 'pre-existing-on-base' with an explicitly cited reason (e.g. a
+    # known-flaky base leg). Precedence: a clean regression vs base outranks everything; a
+    # pre-existing (base also red) failure outranks a known-issue/indeterminate label.
+    if ($failure['legRegressedVsBase'] -and -not $failure['alsoFailsOnBaseline'] -and -not $failure['legAlsoFailsOnBase']) {
+        $failure['deterministicAttribution'] = 'regressed-vs-base'
+    }
+    elseif ($failure['alsoFailsOnBaseline'] -or $failure['legAlsoFailsOnBase']) {
+        $failure['deterministicAttribution'] = 'pre-existing-on-base'
+    }
+    elseif ($failure['matchesKnownIssue']) {
+        $failure['deterministicAttribution'] = 'known-issue'
+    }
+    else {
+        $failure['deterministicAttribution'] = 'indeterminate'
+    }
 }
 $baselineSummaryArray = $baselineSummary.ToArray()
 $baselineMatchCount = @($dedupedFailures | Where-Object { $_.alsoFailsOnBaseline }).Count
@@ -1387,6 +1515,11 @@ foreach ($c in $failingChecks) {
 $failuresOnBaseline = @($dedupedFailures | Where-Object { $_.alsoFailsOnBaseline }).Count
 $failuresKnownIssue = @($dedupedFailures | Where-Object { $_.matchesKnownIssue }).Count
 $failuresRetried = @($dedupedFailures | Where-Object { $_.retriedStillFailing }).Count
+# Deterministic regressions: red on the PR, GREEN on the most recent completed base build,
+# and NOT pre-existing on base (the 'regressed-vs-base' attribution already enforces both).
+$legsRegressedList = @($dedupedFailures | Where-Object { [string]$_.deterministicAttribution -eq 'regressed-vs-base' })
+$legsRegressedVsBase = $legsRegressedList.Count
+$legsRegressedVsBaseNames = @($legsRegressedList | ForEach-Object { [string]$_.testName } | Select-Object -Unique)
 $baselineInconclusiveRows = @($baselineSummaryArray | Where-Object {
     $_.note -and ([string]$_.note -match "(?i)inconclusive|incomplete|could not be read|cannot be confirmed|not be confirmed")
 }).Count
@@ -1416,6 +1549,16 @@ elseif ($failingChecks.Count -eq 0 -and $dedupedFailures.Count -eq 0) {
 else {
     $verdictCeiling = "Ready to merge"
 }
+# A leg that is red on the PR but GREEN on the most recent completed base build is a
+# deterministic regression -- a green verdict is then forbidden in code, no matter how the
+# classifier reasons. Cap the ceiling at 'Not ready' (a real, PR-introduced failure exists)
+# while still letting the classifier go MORE conservative to 'Needs human investigation'.
+# Device-test legs are excluded upstream (XHarness exit-0 blind spot), so this fires only on
+# trustworthy maui-pr build results -- exactly the crossgen/R2R class of break.
+if ($legsRegressedVsBase -gt 0 -and $verdictCeiling -in @('No failures found', 'Ready to merge')) {
+    $verdictCeiling = "Not ready"
+    $ceilingReasons.Add("$legsRegressedVsBase leg/failure(s) are red on the PR but GREEN on the most recent completed base build (deterministic regression vs base): $((@($legsRegressedVsBaseNames) | Select-Object -First 8) -join ', '). A 'Ready to merge'/'No failures found' verdict is forbidden; the PR is at best 'Not ready'.")
+}
 if ($baselineInconclusiveRows -gt 0 -and $verdictCeiling -eq "Ready to merge") {
     $ceilingReasons.Add("$baselineInconclusiveRows baseline row(s) are inconclusive; do not subtract unmatched failures as pre-existing on baseline grounds alone.")
 }
@@ -1434,6 +1577,8 @@ $gate = [ordered]@{
     baselineInconclusiveRows = $baselineInconclusiveRows
     unexplainedFailedLegs = $unexplainedLegs.Count
     unexplainedFailedLegNames = $unexplainedLegNames
+    legsRegressedVsBase = $legsRegressedVsBase
+    legsRegressedVsBaseNames = $legsRegressedVsBaseNames
     verdictCeiling = $verdictCeiling
     ceilingReasons = $ceilingReasons.ToArray()
     pendingCheckNames = @($pendingChecks | ForEach-Object { [string]$_.name })
@@ -1522,6 +1667,7 @@ $md.Add("- Coverage ledger: $($gate.totalChecks) checks total · $($gate.passing
 $md.Add("- Failing checks without inspectable evidence: $($gate.inaccessibleFailingChecks) inaccessible · $($gate.unmappedFailingChecks) unmapped")
 $md.Add("- Distinct failures: $($gate.distinctFailures) ($($gate.failuresAlsoOnBaseline) also on base · $($gate.failuresMatchingKnownIssue) known-issue · $($gate.failuresRetriedStillFailing) retried-still-failing)")
 $md.Add("- Failed build legs with no extractable failure (unexplained): $($gate.unexplainedFailedLegs)")
+$md.Add("- Legs red on PR but GREEN on base (deterministic regression vs base): $($gate.legsRegressedVsBase)")
 $md.Add("- Known-issue matchers loaded: $($gate.knownIssueMatchersLoaded)")
 if (@($gate.ceilingReasons).Count -gt 0) {
     $md.Add("- Ceiling reasons:")
@@ -1626,8 +1772,8 @@ if ($dedupedFailures.Count -eq 0) {
     $md.Add("No distinct test failures were extracted from accessible AzDO logs or test results.")
 }
 else {
-    $md.Add("| Test | Platform | Occurrences | Also on base | Retried still failing | Known issue | Messages |")
-    $md.Add("| --- | --- | ---: | :---: | :---: | --- | --- |")
+    $md.Add("| Test | Platform | Occurrences | Also on base | Vs base leg | Attribution (det.) | Retried still failing | Known issue | Messages |")
+    $md.Add("| --- | --- | ---: | :---: | :---: | :---: | :---: | --- | --- |")
     foreach ($failure in $dedupedFailures) {
         $messages = @($failure.messages | Select-Object -First 2 | ForEach-Object {
             ([string]$_) -replace "`r?`n", "<br>" -replace '\|', '\|'
@@ -1635,7 +1781,9 @@ else {
         $baseFlag = if ($failure.alsoFailsOnBaseline) { "yes" } else { "no" }
         $retryFlag = if ($failure.retriedStillFailing) { "yes" } else { "no" }
         $knownIssueCell = if ($failure.matchesKnownIssue) { "[#$($failure.matchesKnownIssue.number)]($($failure.matchesKnownIssue.url))" } else { "no" }
-        $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $retryFlag | $knownIssueCell | $messages |")
+        $legCell = if ($failure.legRegressedVsBase) { "REGRESSED" } elseif ($failure.legAlsoFailsOnBase) { "also-red" } elseif ($failure.legBaselineResult) { [string]$failure.legBaselineResult } else { "-" }
+        $attrCell = if ($failure.deterministicAttribution) { [string]$failure.deterministicAttribution } else { "indeterminate" }
+        $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $legCell | $attrCell | $retryFlag | $knownIssueCell | $messages |")
     }
 }
 

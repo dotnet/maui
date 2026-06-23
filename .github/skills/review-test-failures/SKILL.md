@@ -51,6 +51,13 @@ Key fields to use:
     `unexplainedFailedLegs` (failed build legs that produced no extractable failure —
     a build break with no test name, or an unreadable log; **any value > 0 caps the
     ceiling at `Needs human investigation`**).
+  - `gate.legsRegressedVsBase` (+ `legsRegressedVsBaseNames[]`) — distinct failures that
+    are **red on the PR but GREEN on the same leg of the most recent completed base
+    build** (a deterministic, computed job-level regression). **Any value > 0 caps the
+    ceiling at `Not ready`** — a `Ready to merge` / `No failures found` verdict is then
+    forbidden. This is the comparison that catches build-job breaks (crossgen/R2R,
+    NativeAOT) the test-level baseline cannot. Device-test legs are excluded from this
+    count (XHarness exit-0 blind spot) — they are surfaced but never hard-capped.
   - Evidence counts: `failuresAlsoOnBaseline`, `failuresMatchingKnownIssue`,
     `failuresRetriedStillFailing`, `baselineInconclusiveRows`.
 - `failures.unique[]` — distinct PR failures (deduped by test name + OS platform). This
@@ -59,6 +66,18 @@ Key fields to use:
   `source` of `azdo-build-error` — they are real failures, not noise. Each carries:
   - `alsoFailsOnBaseline` (`true` when the same test+platform also fails on the most
     recent base-branch build),
+  - `legBaselineResult` / `legRegressedVsBase` / `legAlsoFailsOnBase` — the **computed
+    job-level baseline diff** for this failure's leg: `succeeded-on-base` +
+    `legRegressedVsBase = true` means the SAME leg passed on base and is now red on the
+    PR (strongest PR-caused signal); `failed-on-base` + `legAlsoFailsOnBase = true` means
+    the leg was already red on base (pre-existing); `absent-on-base` means the leg name
+    did not exist on the base build (indeterminate — do not treat as a regression),
+  - `deterministicAttribution` — a **computed prior** you MUST start from, one of
+    `regressed-vs-base` (treat as **Likely PR-caused** unless you can cite why the base
+    comparison is invalid, e.g. a known-flaky base leg), `pre-existing-on-base` (treat as
+    **Likely unrelated** — already red on base), `known-issue`, or `indeterminate` (use
+    the rest of the evidence). You may override `regressed-vs-base`/`pre-existing-on-base`
+    only with an explicit, cited reason,
   - `matchesKnownIssue` (`{number,title,url}` when the failure message matches an open
     `Known Build Error` issue; `null` otherwise) — deterministic "documented flake /
     unrelated" evidence you can cite by issue number,
@@ -94,8 +113,8 @@ Classify each distinct failure as exactly one of:
 
 | Verdict | Use when |
 | --- | --- |
-| `Likely PR-caused` | The failure directly references changed files, changed tests, changed APIs, affected platform code, or a newly added/modified test; or it only appears in a path/platform this PR changes and does **not** match a baseline failure or a known issue. A `retriedStillFailing = true` failure in the PR's area is **stronger** PR-caused evidence (CI retried it and it still failed — it is not a one-off flake). |
-| `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, the same test+platform also fails on the baseline (`alsoFailsOnBaseline = true`), or the failure matches an open known issue (`matchesKnownIssue` is set — cite the issue number/link). |
+| `Likely PR-caused` | The failure directly references changed files, changed tests, changed APIs, affected platform code, or a newly added/modified test; or it only appears in a path/platform this PR changes and does **not** match a baseline failure or a known issue. **A `deterministicAttribution = regressed-vs-base` failure** (its leg is red on the PR but GREEN on the same leg of the most recent base build) is **computed, decisive** PR-caused evidence — default to this verdict unless you can cite why the base comparison is invalid (e.g. a known-flaky base leg). A `retriedStillFailing = true` failure in the PR's area is **stronger** PR-caused evidence (CI retried it and it still failed — it is not a one-off flake). |
+| `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, the same test+platform also fails on the baseline (`alsoFailsOnBaseline = true`), the same **leg** was already red on base (`legAlsoFailsOnBase = true` / `deterministicAttribution = pre-existing-on-base`), or the failure matches an open known issue (`matchesKnownIssue` is set — cite the issue number/link). |
 | `Needs human investigation` | Evidence is mixed: the failure overlaps the PR area or platform but no direct causal link is clear, or the data suggests multiple plausible causes. |
 | `Insufficient data` | Build records, test results, or logs are missing/inaccessible/expired, or there is not enough evidence to make a responsible claim. |
 
@@ -108,6 +127,13 @@ retried it and it failed again, so it is persistent until proven otherwise.
 
 Use the gathered baseline data to subtract pre-existing failures:
 
+- **Job-level diff (computed).** The gatherer compares each failure's failing **leg** to
+  the SAME leg on the most recent completed base build and stamps `legBaselineResult` /
+  `legRegressedVsBase` / `legAlsoFailsOnBase` plus a `deterministicAttribution` prior. A
+  `legRegressedVsBase = true` (red on PR, green on base) is the strongest possible
+  PR-caused signal and is the **only** comparison that catches build-job breaks
+  (crossgen/R2R, NativeAOT) — they have no test name, so the test-level match below can
+  never see them. Trust this computed prior; do not re-derive the leg comparison by hand.
 - A distinct PR failure with `alsoFailsOnBaseline = true` is **already red on the base
   branch** for the same pipeline — classify it `Likely unrelated` and call it
   pre-existing, **unless** this PR changes that test, its snapshot/baseline, or the
@@ -137,7 +163,8 @@ After classifying each failure, synthesize exactly one overall verdict — one o
 
 **Deterministic verdict ceiling (hard rule).** The gatherer computes `gate.verdictCeiling`
 from coverage facts the model cannot see around (pending checks, inaccessible/unmapped
-failing checks, and failed build legs with no extractable failure). Your overall verdict
+failing checks, failed build legs with no extractable failure, and **legs that regressed
+vs base**). Your overall verdict
 **MUST NOT be more favorable** than
 `gate.verdictCeiling`, using this favorability order (most → least favorable):
 
@@ -148,8 +175,9 @@ per-failure analysis shows a real PR-caused break → report `Not ready`). You m
 more favorable. If `gate.ceilingReasons` is non-empty, surface those reasons in the report
 and reflect them in the recommended action. This is what makes a green verdict trustworthy:
 it is impossible to emit `Ready to merge` / `No failures found` while a check is still
-pending, a failing check could not be inspected, or a failed build leg produced no
-extractable failure (`gate.unexplainedFailedLegs > 0`).
+pending, a failing check could not be inspected, a failed build leg produced no
+extractable failure (`gate.unexplainedFailedLegs > 0`), or a leg is red on the PR but
+green on base (`gate.legsRegressedVsBase > 0` → ceiling capped at `Not ready`).
 
 Do not declare `Ready to merge` while required checks are still pending (the ceiling
 already enforces this).
@@ -191,11 +219,11 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |
-| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no] | [specific evidence — cite a known-issue link when `matchesKnownIssue` is set, note `retried still failing` when true, link build/test IDs] |
+| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — use the leg diff: `regressed` when `legRegressedVsBase`, `also-red` when `legAlsoFailsOnBase`, else the test-level `alsoFailsOnBaseline`] | [specific evidence — lead with `deterministicAttribution` when it is `regressed-vs-base`/`pre-existing-on-base`, cite a known-issue link when `matchesKnownIssue` is set, note `retried still failing` when true, link build/test IDs] |
 
 ### Recommended action
 

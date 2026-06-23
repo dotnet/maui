@@ -232,7 +232,10 @@ on appearance alone:
 2. **Job-level baseline match** — for a build break with no test name (crossgen/NativeAOT/
    linker/MSBuild), the same **leg** is also red on the most recent base build. Conversely,
    a leg that is **red on the PR but green on base is PROOF the break is PR-caused** — this
-   is the strongest signal and a test-only diff cannot produce it.
+   is the strongest signal and a test-only diff cannot produce it. The automated lane now
+   **computes this in `Gather-TestFailureContext.ps1`** (per-failure `legBaselineResult` /
+   `legRegressedVsBase` / `legAlsoFailsOnBase` and a `deterministicAttribution` prior); the
+   interactive investigator does the same comparison by hand from the timelines.
 3. **Known-issue match** — the failure message matches an open `Known Build Error` issue
    (the dotnet Build Analysis registry). Cite the issue number/link.
 4. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
@@ -250,10 +253,13 @@ can never be more favorable than what coverage allows. A green verdict
 (`Ready to merge` / `No failures found`) is forbidden whenever a check is still pending, a
 failing check could not be inspected, **or a failed build leg produced no extractable
 failure** (`gate.unexplainedFailedLegs > 0` — the backstop that stops a crossgen/NativeAOT
-build break from being silently counted as zero failures). The gatherer also extracts
-build-job errors (not just xUnit `[FAIL]` lines) via `Get-BuildErrorsFromLog`, so crossgen/
-R2R/linker breaks flow into dedup, the baseline diff, and the gate. The interactive
-investigator should apply the same discipline by hand.
+build break from being silently counted as zero failures). It is likewise **capped at
+`Not ready`** whenever a leg is red on the PR but green on the same leg of the most recent
+base build (`gate.legsRegressedVsBase > 0` — the computed job-level regression). The
+gatherer also extracts build-job errors (not just xUnit `[FAIL]` lines) via
+`Get-BuildErrorsFromLog`, so crossgen/R2R/linker breaks flow into dedup, the (computed)
+baseline diff, and the gate. The interactive investigator should apply the same discipline
+by hand.
 
 ## Escalation
 
