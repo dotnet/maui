@@ -2814,6 +2814,55 @@ function ConvertTo-LinkedPr {
     return "[#$PrNumber]($RepoUrl/pull/$PrNumber)"
 }
 
+function Format-MarkdownTableCell {
+    <#
+    .SYNOPSIS
+        Sanitize an arbitrary (often upstream-controlled) string for safe use inside a
+        single Markdown table cell. Also used for the candidate-PR bulleted list, where
+        the newline collapse matters and `\|` renders as `|`.
+    .DESCRIPTION
+        Three hazards are neutralized so a hostile/malformed issue or PR title cannot
+        corrupt the rendered body:
+          1. Embedded CR/LF runs are collapsed to a single space, so the value cannot
+             split the row across physical lines (observed live: ci-scan issue #35957,
+             whose title contained a literal newline).
+          2. Each pipe is escaped to `\|`, AND any run of backslashes immediately
+             preceding that pipe is doubled FIRST. This ordering is load-bearing:
+             GitHub-issue/PR titles may legally contain a literal `\|` (backslash
+             immediately followed by a pipe). Escaping only the pipe would turn that
+             into `\\|`, which GFM renders as a literal `\` followed by an ACTIVE
+             column delimiter `|` (the classic "escape-the-escaper" table breakout).
+             Doubling the preceding backslash run first makes `\|` -> `\\\|`, which
+             renders as a literal `\|` and cannot open a new column. The doubling is
+             SCOPED to pipe-adjacent backslash runs (via the `(\\*)\|` match) rather
+             than every backslash in the string, so a title's OTHER backslash escapes
+             are preserved verbatim — e.g. an author-escaped `\[link\](url)` or `\*not
+             emphasis\*` is NOT de-escaped into active Markdown. Titles with no pipe-
+             adjacent backslash (the common case) are unaffected: `a | b` -> `a \| b`.
+          3. `<` / `>` are escaped to `&lt;` / `&gt;`, so a title cannot inject raw HTML
+             (e.g. an `<!-- ... -->` comment) into the body. This matches the Preview
+             engine's Format-MarkdownCell, has zero visual cost (`&lt;T&gt;` renders as
+             `<T>`, preserving titles like `List<T>`), and is defense-in-depth: even
+             though SR is structurally hash-freeze-immune (it emits its own semantic hash
+             at the TOP of the body, so an injected lower `<!-- ...hash... -->` can never
+             win the workflow's `head -n1` extraction) and its human-notes markers are
+             matched FULL-LINE-ANCHORED (a forged marker only fires if it lands alone on a
+             physical line, which hazard 1 already prevents), escaping `<>` keeps SR and
+             Preview consistent and removes any reliance on those backend invariants.
+        Every SR markdown cell that embeds upstream-controlled text routes through this
+        single helper: the ci-scan rows, the Open-PRs / regression / Blocking / Cleanup /
+        ship-readiness-checks / Open-Fix-PRs tables, and the candidate-PR list.
+    #>
+    param([string]$Value)
+    if ([string]::IsNullOrEmpty($Value)) { return '' }
+    $v = $Value -replace '[\r\n]+', ' '
+    # Escape each pipe AND double only the backslash run immediately before it, so a
+    # pre-existing `\|` cannot survive as `\\|` (literal `\` + active delimiter). Non-
+    # pipe backslash escapes elsewhere in the title are left intact.
+    $v = [regex]::Replace($v, '(\\*)\|', { param($m) ($m.Groups[1].Value * 2) + '\|' })
+    return ($v -replace '<', '&lt;' -replace '>', '&gt;').Trim()
+}
+
 function Format-CiScanIssueRows {
     <#
     .SYNOPSIS
@@ -2842,7 +2891,10 @@ function Format-CiScanIssueRows {
             }
         }
         $issLink = "[#$($iss.number)]($RepoUrl/issues/$($iss.number))"
-        $title = ($iss.title -replace '\|', '\|').Trim()
+        # Sanitize the upstream ci-scan title for a single Markdown table cell:
+        # collapse embedded CR/LF (observed: #35957) and escape pipes. See
+        # Format-MarkdownTableCell for the full rationale (and why SR omits `<>`).
+        $title = Format-MarkdownTableCell $iss.title
         [void]$sb.AppendLine("| $marker$issLink | $title | $ageDisplay |")
     }
     if ($Issues.Count -gt $MaxRows) {
@@ -3105,9 +3157,9 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
         foreach ($b in $blockingItems) {
-            $area = ($b.area -replace '\|', '\|').Trim()
-            $details = ($b.details -replace '\|', '\|').Trim()
-            $action = ($b.action -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $b.area
+            $details = Format-MarkdownTableCell $b.details
+            $action = Format-MarkdownTableCell $b.action
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3142,9 +3194,9 @@ function Format-MarkdownReport {
         [void]$sb.AppendLine('| Area | Details | Next action |')
         [void]$sb.AppendLine('|---|---|---|')
         foreach ($c in $cleanupItems) {
-            $area = ($c.area -replace '\|', '\|').Trim()
-            $details = ($c.details -replace '\|', '\|').Trim()
-            $action = ($c.action -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $c.area
+            $details = Format-MarkdownTableCell $c.details
+            $action = Format-MarkdownTableCell $c.action
             [void]$sb.AppendLine("| $area | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3245,11 +3297,11 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine('| Fix PR | Base | Regression issue | Status | Next action |')
             [void]$sb.AppendLine('|---|---|---|---|---|')
             foreach ($row in $openFixRows) {
-                $prCell    = ($row.prCell     -replace '\|', '\|').Trim()
-                $baseCell  = ($row.baseCell   -replace '\|', '\|').Trim()
-                $issCell   = ($row.issCell    -replace '\|', '\|').Trim()
-                $statCell  = ($row.statusCell -replace '\|', '\|').Trim()
-                $actCell   = ($row.actionCell -replace '\|', '\|').Trim()
+                $prCell    = Format-MarkdownTableCell $row.prCell
+                $baseCell  = Format-MarkdownTableCell $row.baseCell
+                $issCell   = Format-MarkdownTableCell $row.issCell
+                $statCell  = Format-MarkdownTableCell $row.statusCell
+                $actCell   = Format-MarkdownTableCell $row.actionCell
                 [void]$sb.AppendLine("| $prCell | $baseCell | $issCell | $statCell | $actCell |")
             }
             [void]$sb.AppendLine()
@@ -3270,9 +3322,9 @@ function Format-MarkdownReport {
                 'CLEANUP' { '🧹 CLEANUP' }
                 default   { "⚪ $($sc.Status)" }
             }
-            $area = ($sc.Area -replace '\|', '\|').Trim()
-            $details = ($sc.Details -replace '\|', '\|').Trim()
-            $action = ($sc.NextAction -replace '\|', '\|').Trim()
+            $area = Format-MarkdownTableCell $sc.Area
+            $details = Format-MarkdownTableCell $sc.Details
+            $action = Format-MarkdownTableCell $sc.NextAction
             [void]$sb.AppendLine("| $area | $statusEmoji | $details | $action |")
         }
         [void]$sb.AppendLine()
@@ -3368,6 +3420,12 @@ function Format-MarkdownReport {
                 foreach ($cp in $candidatePrs) {
                     $cpLink = ConvertTo-LinkedPr -PrNumber $cp.number -RepoUrl $RepoUrl
                     $cpTitle = if ($cp.title.Length -gt 80) { $cp.title.Substring(0, 80) + '...' } else { $cp.title }
+                    # Collapse newlines (and escape pipes) even though this is a list, not a
+                    # table: an upstream title with an embedded newline could otherwise push
+                    # injected content (e.g. a forged `<!-- release-readiness:human-notes -->`
+                    # marker) onto its own physical line. Markdown renders `\|` as `|` in a
+                    # list, so escaping is harmless here.
+                    $cpTitle = Format-MarkdownTableCell $cpTitle
                     [void]$sb.AppendLine("- $cpLink — $cpTitle (by $(Format-GitHubHandle $cp.author.login), updated $($cp.updatedAt))")
                 }
                 [void]$sb.AppendLine()
@@ -3381,6 +3439,7 @@ function Format-MarkdownReport {
             [void]$sb.AppendLine('|---|---|---|---|---|---|')
             foreach ($pr in $Data['openSrPrs']) {
                 $title = if ($pr.title.Length -gt 60) { $pr.title.Substring(0, 60) + '...' } else { $pr.title }
+                $title = Format-MarkdownTableCell $title
                 $draft = if ($pr.isDraft) { '✏️' } else { '' }
                 $rev = if ($pr.reviewDecision) { $pr.reviewDecision } else { '—' }
                 $prLink = ConvertTo-LinkedPr -PrNumber $pr.number -RepoUrl $RepoUrl
@@ -3392,7 +3451,10 @@ function Format-MarkdownReport {
 
     # === Regressions section — organized into tiers ===
     if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
-        $regs = $Data['regressions']
+        # Force array context: regression results are hashtables, and when exactly one
+        # candidate exists PowerShell unwraps the single-element array to that lone hashtable,
+        # so $regs.Count would otherwise return the hashtable's key count instead of 1.
+        $regs = @($Data['regressions'])
         $summary = if ($Data.ContainsKey('summary')) { $Data['summary'] } else { @{} }
 
         [void]$sb.AppendLine("## Regression Candidates — $($regs.Count) issues scanned")
@@ -3434,6 +3496,7 @@ function Format-MarkdownReport {
                 # Stable sort: by issue number ascending
                 foreach ($it in ($items | Sort-Object issue)) {
                     $title = if ($it.title.Length -gt 50) { $it.title.Substring(0, 50) + '...' } else { $it.title }
+                    $title = Format-MarkdownTableCell $title
                     $prList = @($it.candidateFixPrs | ForEach-Object { ConvertTo-LinkedPr -PrNumber $_.number -RepoUrl $RepoUrl }) -join ', '
                     if (-not $prList) { $prList = '—' }
                     $issueLink = if ($RepoUrl) { "[#$($it.issue)]($RepoUrl/issues/$($it.issue))" } else { "#$($it.issue)" }

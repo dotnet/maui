@@ -1647,6 +1647,46 @@ Assert-Eq -Label "Truncated body retains exactly one notes:end marker"   -Expect
 Assert-Eq -Label "Truncated body retains the semantic-hash marker" -Expected $true `
     -Actual ($mdCapped -match '<!-- release-readiness-hash: sha=[0-9a-f]{64} -->')
 
+# ───── Regression header count = candidate count, not hashtable key count ─────
+# Get-RegressionCandidates returns its $results accumulator; when exactly ONE candidate
+# matches, PowerShell unwraps the single-element array on return, so $Data['regressions']
+# arrives as a LONE hashtable (not a 1-element array). The header rendered
+#   $regs = $Data['regressions']; "... $($regs.Count) issues scanned"
+# and .Count on a scalar hashtable returns its KEY count — the exact live symptom on
+# tracker #35867: "Regression Candidates — 13 issues scanned" with a single candidate.
+# This test is DISCRIMINATING: it assigns the regression result as a SCALAR hashtable to
+# reproduce that unwrap (NOT '@(...)', which would mask the bug); pre-fix the header prints
+# the key count, post-fix it prints 1.
+Write-Host "`n[Unit] Regression header count = candidate count, not hashtable keys" -ForegroundColor Cyan
+
+# Production-shaped regression hashtable (13 keys, mirroring Get-RegressionCandidates output).
+$singleReg = @{
+    issue = 96100; title = 'Lone regression'; state = 'OPEN'; classification = 'no-fix-yet'
+    candidateFixPrs = @(); recommendedAction = 'Investigate'; createdAt = '2026-06-01T00:00:00Z'
+    confidence = 'high'; milestone = '10.0-sr9'; closedAt = $null; evidence = @()
+    labels = @(); stateReason = $null
+}
+$mdDataOneReg = @{} + $mdData
+$mdDataOneReg['regressions'] = $singleReg          # scalar hashtable → mimics the N=1 return-unwrap
+$mdDataOneReg['summary'] = @{ 'no-fix-yet' = 1 }
+# Lock the reproduction precondition: the value must be a scalar hashtable, NOT a list —
+# otherwise the bug can't manifest and a future edit could silently neuter this test.
+Assert-Eq -Label "Repro precondition: regressions arrives as a scalar hashtable with >1 key" -Expected $true `
+    -Actual ($mdDataOneReg['regressions'] -is [hashtable] `
+             -and -not ($mdDataOneReg['regressions'] -is [System.Collections.IList]) `
+             -and $mdDataOneReg['regressions'].Keys.Count -gt 1)
+$mdOneReg = Format-MarkdownReport -Data $mdDataOneReg -RepoUrl 'https://github.com/dotnet/maui' `
+                                  -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+$oneRegHeader = @($mdOneReg -split "`r?`n" | Where-Object { $_ -match 'Regression Candidates —' })
+Assert-Eq -Label "Single-candidate header reports '1 issues scanned' (not the hashtable key count)" -Expected $true `
+    -Actual ($oneRegHeader.Count -eq 1 -and $oneRegHeader[0] -match 'Regression Candidates — 1 issues scanned')
+
+# Guard the N≥2 path stays correct (array preserved → .Count = element count).
+$mdTwoReg = Format-MarkdownReport -Data (@{} + $mdData) -RepoUrl 'https://github.com/dotnet/maui' `
+                                  -TrackerKey 'net10-sr9' -MaxBodyBytes 60000
+Assert-Eq -Label "Two-candidate header reports '2 issues scanned'" -Expected $true `
+    -Actual ($mdTwoReg -match 'Regression Candidates — 2 issues scanned')
+
 # ───── UTF-8 boundary repair: truncation must never split a multibyte char ─────
 # Regression for the boundary-repair fix. A naive "trim trailing continuation
 # bytes" cut leaves an orphan multibyte LEAD byte (and even strips a COMPLETE
@@ -1739,6 +1779,130 @@ Assert-Eq -Label "Hostile PR title: @another/user defanged to `another/user`" -E
     -Actual ($mdWithAt -match '`another/user`')
 Assert-Eq -Label "Author column also defanged (no bare @jfversluis)" -Expected $true `
     -Actual ($mdWithAt -match '`jfversluis`')
+
+# ───── Sibling SR title cells must be sanitized too (Format-MarkdownTableCell) ─────
+# Beyond the ci-scan rows, two other SR tables embed upstream titles into pipe-delimited
+# rows: the "Open PRs Targeting <srBranch>" table and the regression classification
+# table. A literal '|' (common in titles) or an embedded newline in those titles must NOT
+# corrupt the row. Each integration test below is DISCRIMINATING on the pre-fix code:
+# the trailing-column match fails when an embedded newline splits the row, and the
+# escaped-pipe match fails when the pipe is left raw.
+Write-Host "`n[Unit] Sibling SR table cells sanitized (Open-PRs + regression tables)" -ForegroundColor Cyan
+
+# (1) Open PRs Targeting <srBranch> table (shipped mode renders the full table).
+$mdDataPipePr = @{} + $mdData
+$mdDataPipePr['metadata'] = @{} + $mdData.metadata
+$mdDataPipePr['metadata']['mode'] = 'shipped'
+$mdDataPipePr['openSrPrs'] = @(
+    @{ number = 96001; title = "Fix A | B`nand C"; author = @{ login = 'alice' };
+       isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-01T00:00:00Z' }
+)
+$mdPipePr = Format-MarkdownReport -Data $mdDataPipePr -RepoUrl 'https://github.com/dotnet/maui' `
+                                  -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$prRowLines = @($mdPipePr -split "`r?`n" | Where-Object { $_ -match '#96001' })
+Assert-Eq -Label "Open-PRs table: piped/newline PR title stays on one physical row" -Expected 1 `
+    -Actual $prRowLines.Count
+Assert-Eq -Label "Open-PRs table: pipe escaped AND trailing columns intact on the row" -Expected $true `
+    -Actual ($prRowLines.Count -eq 1 -and $prRowLines[0] -match 'Fix A \\\| B' -and $prRowLines[0] -match 'APPROVED')
+
+# (2) Regression classification table (needs-human-review is a Tier-2 class that renders).
+$mdDataPipeIss = @{} + $mdData
+$mdDataPipeIss['regressions'] = @(
+    @{ issue = 96002; title = "Crash | NRE`nin layout"; state = 'OPEN'; classification = 'needs-human-review';
+       candidateFixPrs = @(); recommendedAction = 'Investigate' }
+)
+$mdDataPipeIss['summary'] = @{ 'needs-human-review' = 1 }
+$mdPipeIss = Format-MarkdownReport -Data $mdDataPipeIss -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$issRowLines = @($mdPipeIss -split "`r?`n" | Where-Object { $_ -match '#96002' })
+Assert-Eq -Label "Regression table: piped/newline issue title stays on one physical row" -Expected 1 `
+    -Actual $issRowLines.Count
+Assert-Eq -Label "Regression table: pipe escaped AND trailing action column intact on the row" -Expected $true `
+    -Actual ($issRowLines.Count -eq 1 -and $issRowLines[0] -match 'Crash \\\| NRE' -and $issRowLines[0] -match 'Investigate')
+
+# ───── Blocking summary + Open-Fix-PRs cells sanitized; human-notes marker-forgery defense ─────
+# The remaining SR tables that embed upstream titles — the 🔴 Blocking summary
+# (Tier-1 regressions + BLOCKED ship-checks) and the 📥 Open Fix PRs Inbound table —
+# plus the candidate-PR bulleted list now route every upstream cell through
+# Format-MarkdownTableCell. Each assertion below is DISCRIMINATING on pre-fix code:
+# an embedded newline splits the row (orphaning the title tail onto its own line),
+# and the escaped-pipe match fails when the pipe is left raw.
+#
+# The marker-forgery assertions are the security centerpiece: the production workflow
+# preserves Release-Captain notes by splicing on FULL-LINE-ANCHORED markers
+# (^\s*<!-- release-readiness:human-notes:begin -->\s*$). A hostile title containing
+# `...\n<!-- ...:begin -->\n...` would, pre-fix, isolate that marker on its own physical
+# line and forge a second notes region — letting an attacker's PR/issue title corrupt the
+# notes-preservation step. Collapsing newlines defeats this (the marker can no longer land
+# alone on a line), and escaping `<>` to entities is belt-and-suspenders (the injected
+# `<!--` renders as `&lt;!--`, so it never matches the anchored marker regex at all). We
+# assert exactly ONE anchored begin-marker survives (the real one the renderer emits) even
+# when an upstream title embeds the marker.
+Write-Host "`n[Unit] Blocking/Open-Fix cells sanitized + human-notes marker-forgery defense" -ForegroundColor Cyan
+
+# (3) Blocking summary table (Tier-1 regression: no-fix-yet + OPEN renders here AND in the tier table).
+$mdDataBlock = @{} + $mdData
+$mdDataBlock['regressions'] = @(
+    @{ issue = 96003; title = "Hang | freeze`nat startup"; state = 'OPEN'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Fix before ship' }
+)
+$mdDataBlock['summary'] = @{ 'no-fix-yet' = 1 }
+$mdBlock = Format-MarkdownReport -Data $mdDataBlock -RepoUrl 'https://github.com/dotnet/maui' `
+                                 -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$blockOrphans = @($mdBlock -split "`r?`n" | Where-Object { $_ -match '^\s*at startup' })
+Assert-Eq -Label "Blocking table: embedded newline does NOT orphan the title tail onto its own line" -Expected 0 `
+    -Actual $blockOrphans.Count
+Assert-Eq -Label "Blocking table: title rendered glued + pipe-escaped on one row" -Expected $true `
+    -Actual ($mdBlock -match 'Hang \\\| freeze at startup')
+
+# (4) Open Fix PRs Inbound table (open-on-main regression with an OPEN candidate fix PR).
+$mdDataOpenFix = @{} + $mdData
+$mdDataOpenFix['regressions'] = @(
+    @{ issue = 96004; title = "Glitch | bug`nhere"; state = 'OPEN'; classification = 'open-on-main';
+       candidateFixPrs = @( @{ number = 96104; state = 'OPEN'; baseRef = 'main' } ); recommendedAction = 'Watch' }
+)
+$mdDataOpenFix['summary'] = @{ 'open-on-main' = 1 }
+$mdOpenFix = Format-MarkdownReport -Data $mdDataOpenFix -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$ofOrphans = @($mdOpenFix -split "`r?`n" | Where-Object { $_ -match '^\s*here' })
+Assert-Eq -Label "Open-Fix-PRs table: embedded newline does NOT orphan the title tail onto its own line" -Expected 0 `
+    -Actual $ofOrphans.Count
+$ofRow = @($mdOpenFix -split "`r?`n" | Where-Object { $_ -match '🔵 OPEN — awaiting main merge' })
+Assert-Eq -Label "Open-Fix-PRs table: regression-issue cell glued + pipe-escaped, status column intact" -Expected $true `
+    -Actual ($ofRow.Count -eq 1 -and $ofRow[0] -match 'Glitch \\\| bug here')
+
+# (5) Marker-forgery via a TABLE cell: a Tier-1 title embedding the begin-marker between
+#     newlines must NOT forge a second anchored marker line.
+$mdDataForgeTbl = @{} + $mdData
+$mdDataForgeTbl['regressions'] = @(
+    @{ issue = 96006; title = "Spoof`n<!-- release-readiness:human-notes:begin -->`ntail"; state = 'OPEN';
+       classification = 'no-fix-yet'; candidateFixPrs = @(); recommendedAction = 'Investigate' }
+)
+$mdDataForgeTbl['summary'] = @{ 'no-fix-yet' = 1 }
+$mdForgeTbl = Format-MarkdownReport -Data $mdDataForgeTbl -RepoUrl 'https://github.com/dotnet/maui' `
+                                    -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$forgeTblMarkers = @($mdForgeTbl -split "`r?`n" | Where-Object { $_ -match '^\s*<!-- release-readiness:human-notes:begin -->\s*$' })
+Assert-Eq -Label "Marker-forgery (table cell): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
+    -Actual $forgeTblMarkers.Count
+
+# (6) Marker-forgery via the candidate-PR LIST (the bulleted site, not a table). The title
+#     must match \bcandidate\b to be selected, and embeds the marker between newlines.
+$mdDataForgeList = @{} + $mdData
+$mdDataForgeList['metadata'] = @{} + $mdData.metadata
+$mdDataForgeList['metadata']['mode'] = 'candidate'
+$mdDataForgeList['metadata']['priorSrBranch'] = 'release/10.0.1xx-sr7'
+$mdDataForgeList['metadata']['srBranch'] = 'main'
+$mdDataForgeList['openSrPrs'] = @(
+    @{ number = 96005; title = "Candidate`n<!-- release-readiness:human-notes:begin -->`ntail";
+       author = @{ login = 'mallory' }; isDraft = $false; reviewDecision = 'APPROVED'; updatedAt = '2026-06-01T00:00:00Z' }
+)
+$mdForgeList = Format-MarkdownReport -Data $mdDataForgeList -RepoUrl 'https://github.com/dotnet/maui' `
+                                     -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+$forgeListMarkers = @($mdForgeList -split "`r?`n" | Where-Object { $_ -match '^\s*<!-- release-readiness:human-notes:begin -->\s*$' })
+Assert-Eq -Label "Marker-forgery (candidate list): exactly ONE anchored begin-marker survives (the legit one)" -Expected 1 `
+    -Actual $forgeListMarkers.Count
+Assert-Eq -Label "Candidate list: hostile title collapsed onto the bullet line (no isolated tail)" -Expected 0 `
+    -Actual (@($mdForgeList -split "`r?`n" | Where-Object { $_ -match '^\s*tail\b' }).Count)
 
 # ───── Candidate-mode open-PR collapse: avoid noisy main-PR dump ─────
 Write-Host "`n[Unit] Candidate-mode open-PR collapse (link to candidate PR only)" -ForegroundColor Cyan
@@ -1838,8 +2002,8 @@ Assert-Eq -Label "BLOCKED ship check: blocking summary header reflects count" -E
     -Actual ($mdBlocked -match '🔴 Blocking — \d+ item')
 Assert-Eq -Label "BLOCKED ship check: blocking summary mentions versions.props area" -Expected $true `
     -Actual ($mdBlocked -match '🛠️ versions.props PatchVersion')
-Assert-Eq -Label "BLOCKED ship check: blocking summary contains the next-action text" -Expected $true `
-    -Actual ($mdBlocked -match 'Bump <PatchVersion>')
+Assert-Eq -Label "BLOCKED ship check: blocking summary contains the next-action text (angle brackets entity-escaped so GitHub actually displays them)" -Expected $true `
+    -Actual ($mdBlocked -match 'Bump &lt;PatchVersion&gt;')
 Assert-Eq -Label "BLOCKED ship check: full Ship-readiness checks table emitted" -Expected $true `
     -Actual ($mdBlocked -match 'Ship-readiness checks')
 Assert-Eq -Label "BLOCKED ship check: table shows READY entry for bug template (transparency)" -Expected $true `
@@ -1863,6 +2027,27 @@ $mdReady = Format-MarkdownReport -Data $mdDataReady -RepoUrl 'https://github.com
                                  -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
 Assert-Eq -Label "All ship checks READY (no Tier 1 regressions): '🟢 No blocking items'" -Expected $true `
     -Actual ($mdReady -match '🟢 No blocking items')
+
+# Ship-readiness checks TABLE: a WATCH check (renders only in the table, not the blocking
+# summary) whose Details carry a literal pipe + embedded newline must stay on one row,
+# pipe-escaped — proving the table's Details/NextAction cells route through the sanitizer.
+$mdDataWatchCell = @{} + $mdData
+$mdDataWatchCell['shipChecks'] = @(
+    [PSCustomObject]@{
+        Area       = 'Maestro channel'
+        Status     = 'WATCH'
+        Details    = "Default channel A | B`nnot yet mapped"
+        NextAction = 'Verify mapping'
+    }
+)
+$mdWatchCell = Format-MarkdownReport -Data $mdDataWatchCell -RepoUrl 'https://github.com/dotnet/maui' `
+                                     -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+$watchOrphans = @($mdWatchCell -split "`r?`n" | Where-Object { $_ -match '^\s*not yet mapped' })
+Assert-Eq -Label "Ship-checks table: embedded newline in Details does NOT orphan a line" -Expected 0 `
+    -Actual $watchOrphans.Count
+$watchRow = @($mdWatchCell -split "`r?`n" | Where-Object { $_ -match '🟡 WATCH' })
+Assert-Eq -Label "Ship-checks table: Details glued + pipe-escaped, NextAction column intact" -Expected $true `
+    -Actual ($watchRow.Count -eq 1 -and $watchRow[0] -match 'Default channel A \\\| B not yet mapped' -and $watchRow[0] -match 'Verify mapping')
 
 # Hash includes shipChecks state (changing a ship check status flips the hash)
 $h1 = if ($mdReady -match '<!-- release-readiness-hash: sha=([0-9a-f]{64}) -->') { $Matches[1] } else { $null }
@@ -2262,6 +2447,54 @@ Assert-Eq -Label "Age column shows 'Nd ago' for older issues" -Expected $true `
     -Actual ($rows -match '\d+d ago')
 Assert-Eq -Label "Format-CiScanIssueRows returns null for empty input" -Expected $true `
     -Actual ($null -eq (Format-CiScanIssueRows -Issues @() -RepoUrl 'https://github.com/dotnet/maui'))
+
+# Regression: a malformed upstream ci-scan title containing a literal newline
+# (observed live: #35957) must NOT split the markdown table row across physical
+# lines. The title cell is collapsed to a single line so the rendered table stays
+# intact. On the pre-fix code the embedded LF pushed the title tail + age cell onto
+# a second line that no longer contained the issue link.
+#
+# Discrimination note: the FIRST assertion below ("issue row is a single physical
+# line") is a coarse sanity check and is NON-discriminating — it also passes on the
+# pre-fix code, because the split row still leaves '#35957' on exactly one physical
+# line (the title tail + age spill onto a SEPARATE line with no issue link). The
+# SECOND assertion ("title tail + age stay on that row") is the real regression
+# guard: it fails pre-fix and passes post-fix. Do not weaken or remove it assuming
+# the first assertion already covers row integrity.
+$nlIssue = @([PSCustomObject]@{ number = 35957; url = 'https://github.com/dotnet/maui/issues/35957';
+    title = "Recurring long title (maui-pr-uitest`n[Content truncated due to length]";
+    createdAt = $nowUtc.AddDays(-3).ToString('o') })
+$nlRows = Format-CiScanIssueRows -Issues $nlIssue -RepoUrl 'https://github.com/dotnet/maui'
+$nlRowLines = @($nlRows -split "`r?`n" | Where-Object { $_ -match '#35957' })
+Assert-Eq -Label "Newline ci-scan title: issue row is a single physical line (coarse sanity; non-discriminating)" -Expected 1 `
+    -Actual $nlRowLines.Count
+Assert-Eq -Label "Newline ci-scan title: title tail + age stay on that row (discriminating regression guard)" -Expected $true `
+    -Actual ($nlRowLines.Count -eq 1 -and $nlRowLines[0] -match 'truncated due to length.*ago \|')
+
+# ───── Format-MarkdownTableCell: shared SR table-cell sanitizer ─────
+# This helper backs every SR title cell (ci-scan rows, Open-PRs table, regression
+# classification table). It must collapse CR/LF (row-split safety) AND escape pipes
+# (column-injection safety), null-safely, while deliberately NOT escaping `<`/`>`
+# (the SR engine emits its own hash at the top of the body, so it has no Preview-style
+# HTML-comment hash-freeze vector — escaping `<>` here would only reduce fidelity).
+Write-Host "`n[Unit] Format-MarkdownTableCell (shared SR table-cell sanitizer)" -ForegroundColor Cyan
+Assert-Eq -Label "Format-MarkdownTableCell: pipe escaped"             -Expected 'a \| b'  -Actual (Format-MarkdownTableCell 'a | b')
+Assert-Eq -Label "Format-MarkdownTableCell: LF collapsed to space"    -Expected 'a b'     -Actual (Format-MarkdownTableCell "a`nb")
+Assert-Eq -Label "Format-MarkdownTableCell: CRLF run collapsed"       -Expected 'a b'     -Actual (Format-MarkdownTableCell "a`r`n`r`nb")
+Assert-Eq -Label "Format-MarkdownTableCell: newline + pipe together"  -Expected 'a \| b'  -Actual (Format-MarkdownTableCell "a`n| b")
+Assert-Eq -Label "Format-MarkdownTableCell: no CR/LF survives"        -Expected $false    -Actual ((Format-MarkdownTableCell "x`ny") -match "`r|`n")
+Assert-Eq -Label "Format-MarkdownTableCell: null → empty string"      -Expected ''        -Actual (Format-MarkdownTableCell $null)
+Assert-Eq -Label "Format-MarkdownTableCell: empty → empty string"     -Expected ''        -Actual (Format-MarkdownTableCell '')
+Assert-Eq -Label "Format-MarkdownTableCell: surrounding whitespace trimmed" -Expected 'a b' -Actual (Format-MarkdownTableCell "  a`nb  ")
+Assert-Eq -Label "Format-MarkdownTableCell: angle brackets escaped to entities (SR↔Preview parity)" -Expected 'List&lt;T&gt;' -Actual (Format-MarkdownTableCell 'List<T>')
+# Backslash-first ordering closes the "escape-the-escaper" table breakout: a title that
+# already contains a literal `\|` must NOT collapse to `\\|` (literal `\` + ACTIVE pipe).
+# Pre-fix (pipe-only escape) returns 'A \\| B' and these go red.
+Assert-Eq -Label "Format-MarkdownTableCell: literal backslash-pipe does NOT break out (doubled backslash)" -Expected 'A \\\| B' -Actual (Format-MarkdownTableCell 'A \| B')
+Assert-Eq -Label "Format-MarkdownTableCell: pre-existing NON-pipe backslash preserved (doubling is scoped to pipe-adjacent runs)" -Expected 'C:\dir' -Actual (Format-MarkdownTableCell 'C:\dir')
+Assert-Eq -Label "Format-MarkdownTableCell: author-escaped non-pipe Markdown NOT de-escaped" -Expected '\[link\](url)' -Actual (Format-MarkdownTableCell '\[link\](url)')
+# Injected HTML comment opener is rendered inert (cannot start an `<!-- ... -->` region).
+Assert-Eq -Label "Format-MarkdownTableCell: HTML-comment opener neutralized"  -Expected 'Crash &lt;!--' -Actual (Format-MarkdownTableCell 'Crash <!--')
 
 # Truncation behavior: > MaxRows
 $manyIssues = 1..20 | ForEach-Object {
@@ -3177,6 +3410,22 @@ $explicitNullThrew = $false
 try { $null = Get-CategorizedPullRequests -TargetPRs $null -InflightPRs @($null, $maestroPrMock) }
 catch { $explicitNullThrew = $true }
 Assert-Eq -Label "explicit null target + @(null, maestro) inflight → no throw" -Expected $false -Actual $explicitNullThrew
+
+Write-Host "`n[Unit] Format-MarkdownCell collapses embedded newlines (table-row safety)" -ForegroundColor Cyan
+# A malformed upstream title with a literal CR/LF (observed live: ci-scan issue
+# #35957) must be collapsed to a single line so it cannot split the markdown table
+# row in the rendered Preview tracker body. The existing pipe / angle-bracket
+# escaping contract must remain intact.
+Assert-Eq -Label "Format-MarkdownCell: LF collapsed to single space"        -Expected 'a b'           -Actual (Format-MarkdownCell "a`nb")
+Assert-Eq -Label "Format-MarkdownCell: CRLF run collapsed to single space"  -Expected 'a b'           -Actual (Format-MarkdownCell "a`r`n`r`nb")
+Assert-Eq -Label "Format-MarkdownCell: no CR/LF survives in the cell"       -Expected $false          -Actual ((Format-MarkdownCell "x`ny") -match "`r|`n")
+Assert-Eq -Label "Format-MarkdownCell: pipe still escaped"                  -Expected 'a \| b'        -Actual (Format-MarkdownCell 'a | b')
+Assert-Eq -Label "Format-MarkdownCell: angle brackets still escaped"        -Expected 'List&lt;T&gt;' -Actual (Format-MarkdownCell 'List<T>')
+# Backslash-first ordering: a literal `\|` in a title must not collapse to `\\|`
+# (literal `\` + ACTIVE pipe = table breakout). Pre-fix returns 'A \\| B' → red.
+Assert-Eq -Label "Format-MarkdownCell: literal backslash-pipe does NOT break out (doubled backslash)" -Expected 'A \\\| B' -Actual (Format-MarkdownCell 'A \| B')
+Assert-Eq -Label "Format-MarkdownCell: pre-existing NON-pipe backslash preserved (doubling is scoped to pipe-adjacent runs)" -Expected 'C:\dir'       -Actual (Format-MarkdownCell 'C:\dir')
+Assert-Eq -Label "Format-MarkdownCell: author-escaped non-pipe Markdown NOT de-escaped" -Expected '\[link\](url)' -Actual (Format-MarkdownCell '\[link\](url)')
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })
