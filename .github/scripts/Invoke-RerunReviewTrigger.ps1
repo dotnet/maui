@@ -20,13 +20,56 @@ $MaxReviewTriggersPerWindow = 3
 
 . "$PSScriptRoot/shared/Update-AgentLabels.ps1"
 
+function Expand-RerunDecisionItems {
+    param([object[]]$Items)
+
+    # A custom safe-output job is capped at one invocation per run, so the agent
+    # now batches every candidate's decision into a single item's `decisions`
+    # field (a JSON array, or array of objects). Expand that into one object per
+    # decision. Items that already carry scalar decision fields (legacy shape or
+    # a single decision) are passed through unchanged for back-compatibility.
+    $expanded = [System.Collections.Generic.List[object]]::new()
+    foreach ($item in $Items) {
+        $rawDecisions = $item.PSObject.Properties['decisions']
+        if (-not $rawDecisions -or $null -eq $rawDecisions.Value) {
+            if ($item.PSObject.Properties['pr_number']) {
+                $expanded.Add($item)
+            }
+            continue
+        }
+
+        $value = $rawDecisions.Value
+        $parsed = $null
+        if ($value -is [string]) {
+            if ([string]::IsNullOrWhiteSpace($value)) { continue }
+            try {
+                $parsed = $value | ConvertFrom-Json
+            } catch {
+                Write-Host "::warning::Skipping unparseable decisions payload: $($_.Exception.Message)"
+                continue
+            }
+        } else {
+            $parsed = $value
+        }
+
+        foreach ($decision in @($parsed)) {
+            if ($null -ne $decision) {
+                $expanded.Add($decision)
+            }
+        }
+    }
+
+    return $expanded.ToArray()
+}
+
 function Get-AgentItems {
     if (-not $env:GH_AW_AGENT_OUTPUT -or -not (Test-Path $env:GH_AW_AGENT_OUTPUT)) {
         throw "GH_AW_AGENT_OUTPUT is missing or does not exist."
     }
 
     $payload = Get-Content -Raw -LiteralPath $env:GH_AW_AGENT_OUTPUT | ConvertFrom-Json
-    return @($payload.items | Where-Object { $_.type -eq 'trigger_rerun_review' })
+    $triggerItems = @($payload.items | Where-Object { $_.type -eq 'trigger_rerun_review' })
+    return Expand-RerunDecisionItems -Items $triggerItems
 }
 
 function Get-CandidateItems {
@@ -75,7 +118,13 @@ function Test-GhApiPrNotFound {
         return $false
     }
 
-    return $Output -match '(?i)\bHTTP\s+(404|410)\b' -or $Output -match '(?i)\b(Not Found|Gone)\b'
+    # Only treat an explicit HTTP 404/410 status as "deleted". gh emits a
+    # structured error such as "gh: Not Found (HTTP 404)" for a genuinely
+    # missing resource. The bare words "Not Found"/"Gone" are intentionally NOT
+    # matched on their own: auth failures, proxy/firewall errors, and rate-limit
+    # bodies can contain that text and previously caused open PRs to be falsely
+    # classified as deleted, silently skipping every rerun dispatch.
+    return $Output -match '(?i)\bHTTP\s+(404|410)\b'
 }
 
 function ConvertTo-TrimmedString {
@@ -86,6 +135,30 @@ function ConvertTo-TrimmedString {
     }
 
     return ([string]$Value).Trim()
+}
+
+function Get-PullRequestApiResult {
+    param(
+        [Parameter(Mandatory = $true)][string]$Owner,
+        [Parameter(Mandatory = $true)][string]$Repo,
+        [Parameter(Mandatory = $true)][int]$PRNumber
+    )
+
+    $stdErrFile = New-TemporaryFile
+    try {
+        $output = @(& gh api "repos/$Owner/$Repo/pulls/$PRNumber" 2> $stdErrFile)
+        $exitCode = $LASTEXITCODE
+        $json = ConvertTo-TrimmedString ($output | Out-String)
+        $stdErr = ConvertTo-TrimmedString (Get-Content -Raw -LiteralPath $stdErrFile -ErrorAction SilentlyContinue)
+    } finally {
+        Remove-Item -LiteralPath $stdErrFile -Force -ErrorAction SilentlyContinue
+    }
+
+    return [pscustomobject]@{
+        ExitCode = $exitCode
+        Json     = $json
+        StdErr   = $stdErr
+    }
 }
 
 function Add-CommentReaction {
@@ -332,25 +405,36 @@ foreach ($item in $items) {
         }
 
         Write-Host "Processing PR #$prNumber decision=$decision reason=$(ConvertTo-SafeLogValue $reason)"
-        $prStdErrFile = New-TemporaryFile
-        try {
-            $prOutput = @(& gh api "repos/$Owner/$Repo/pulls/$prNumber" 2> $prStdErrFile)
-            $prExitCode = $LASTEXITCODE
-            $prJson = ConvertTo-TrimmedString ($prOutput | Out-String)
-            $prStdErr = ConvertTo-TrimmedString (Get-Content -Raw -LiteralPath $prStdErrFile -ErrorAction SilentlyContinue)
-        } finally {
-            Remove-Item -LiteralPath $prStdErrFile -Force -ErrorAction SilentlyContinue
-        }
-        if ($prExitCode -ne 0) {
-            $prError = if ([string]::IsNullOrWhiteSpace($prStdErr)) { $prJson } else { $prStdErr }
+        $prFetch = Get-PullRequestApiResult -Owner $Owner -Repo $Repo -PRNumber $prNumber
+        if ($prFetch.ExitCode -ne 0) {
+            $prError = if ([string]::IsNullOrWhiteSpace($prFetch.StdErr)) { $prFetch.Json } else { $prFetch.StdErr }
+            # Always surface the raw gh error so misclassified failures are
+            # debuggable instead of being swallowed by the not-found guard.
+            Write-Host "  ⚠️  gh api for PR #$prNumber failed (exit $($prFetch.ExitCode)): $(ConvertTo-SafeLogValue $prError)"
             if (Test-GhApiPrNotFound -Output $prError) {
-                $global:LASTEXITCODE = 0
-                Write-Host "  ⏭️ PR #$prNumber no longer exists; skipping stale decision"
-                continue
+                # Confirm with a second authenticated probe before treating the
+                # PR as deleted. A single transient/auth/proxy 404 must not
+                # silently cancel a real rerun dispatch.
+                $confirm = Get-PullRequestApiResult -Owner $Owner -Repo $Repo -PRNumber $prNumber
+                $confirmError = if ([string]::IsNullOrWhiteSpace($confirm.StdErr)) { $confirm.Json } else { $confirm.StdErr }
+                if ($confirm.ExitCode -ne 0 -and (Test-GhApiPrNotFound -Output $confirmError)) {
+                    $global:LASTEXITCODE = 0
+                    Write-Host "  ⏭️ PR #$prNumber no longer exists (confirmed HTTP 404/410); skipping stale decision"
+                    continue
+                }
+                if ($confirm.ExitCode -eq 0) {
+                    # First 404 was transient; recheck recovered. Reuse the successful result.
+                    $global:LASTEXITCODE = 0
+                    $prFetch = $confirm
+                    Write-Host "  ✓ PR #$prNumber recheck succeeded (transient 404 recovered)"
+                } else {
+                    throw "PR #$prNumber returned a not-found error that did not reproduce on re-check; refusing to silently skip. First: $(ConvertTo-SafeLogValue $prError); Recheck: $(ConvertTo-SafeLogValue $confirmError)"
+                }
+            } else {
+                throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prError)"
             }
-
-            throw "Failed to load PR #$prNumber via gh api: $(ConvertTo-SafeLogValue $prError)"
         }
+        $prJson = $prFetch.Json
         if ([string]::IsNullOrWhiteSpace($prJson)) {
             throw "Failed to load PR #$prNumber via gh api: empty response."
         }
