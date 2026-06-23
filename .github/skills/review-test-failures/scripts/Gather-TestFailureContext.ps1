@@ -506,6 +506,19 @@ function Get-BuildErrorSignature {
     if ($coded.Success) { return $coded.Groups['code'].Value }
     if ($Line -match '(?i)Failed to load assembly') { return 'Failed to load assembly' }
     if (($Line -match '(?i)crossgen|ReadyToRun|ILCompiler|\bILC\b') -and ($Line -match '(?i)\berror\b')) { return 'CrossGen/R2R' }
+    # High-confidence FATAL, non-coded breaks. These are NOT the generic test-runner rollup
+    # ('Bash exited with code 1', 'process failed with exit code 1') -- they are independent
+    # crashes/infra breaks that can occur ALONGSIDE a (dismissable) test failure in the same leg.
+    # Giving them a signature routes them through the always-extract + baseline-matched path, so a
+    # PR-introduced crash masked by a pre-existing flaky test in the same leg can no longer escape
+    # the gate (Gemini/GPT/opus round-6 F-A), while a genuinely pre-existing crash still matches the
+    # baseline and is correctly dismissed (no false red). Exit code 1/0 is deliberately excluded --
+    # that is the ordinary "a test failed so the shell returned non-zero" rollup.
+    if ($Line -match '(?i)\b(?:failed with exit code|exited with code)\s*''?\s*(?:13[2-9]|14[0-3]|159)\b') { return 'native-crash' }
+    if ($Line -match '(?i)segmentation fault|\bSIGSEGV\b|\bSIGABRT\b|core dumped|killed by signal') { return 'native-crash' }
+    if ($Line -match '(?i)unhandled exception[.:]') { return 'unhandled-exception' }
+    if ($Line -match '(?i)no space left on device') { return 'no-space-left' }
+    if ($Line -match '(?i)test host process (?:crashed|exited|terminated)|active test run was aborted|testhost process .* crashed') { return 'test-host-crash' }
     return $null
 }
 
@@ -523,9 +536,23 @@ function Get-FailureReasonSignature {
     if ([string]::IsNullOrWhiteSpace($text)) { return '' }
 
     # 1) Most stable discriminator: a CLR exception type name. Distinguishes NRE vs Timeout vs
-    #    InvalidOperation etc. regardless of the volatile message tail.
-    $ex = [regex]::Match($text, '(?<ex>(?:[A-Za-z_][A-Za-z0-9_]*\.)*[A-Za-z_][A-Za-z0-9_]*Exception)\b')
-    if ($ex.Success) { return "exception:$($ex.Groups['ex'].Value.ToLowerInvariant())" }
+    #    InvalidOperation etc. regardless of the volatile message tail. Wrapper exceptions
+    #    (AggregateException / TargetInvocationException / TypeInitializationException) are skipped:
+    #    they wrap an arbitrary inner cause, so picking them would collapse a PR-introduced
+    #    NullReferenceException and a base-branch TimeoutException to the SAME wrapper token and
+    #    silently launder the regression past the reason-conflict veto (round-6 Gemini F2). Prefer
+    #    the first NON-wrapper exception; only fall back to a wrapper when that is all there is.
+    $exMatches = [regex]::Matches($text, '(?<ex>(?:[A-Za-z_][A-Za-z0-9_]*\.)*[A-Za-z_][A-Za-z0-9_]*Exception)\b')
+    if ($exMatches.Count -gt 0) {
+        $wrapperPattern = '(?i)(?:^|\.)(?:Aggregate|TargetInvocation|TypeInitialization)Exception$'
+        $nonWrapper = $null
+        foreach ($m in $exMatches) {
+            $name = $m.Groups['ex'].Value
+            if ($name -notmatch $wrapperPattern) { $nonWrapper = $name; break }
+        }
+        $chosen = if ($nonWrapper) { $nonWrapper } else { $exMatches[0].Groups['ex'].Value }
+        return "exception:$($chosen.ToLowerInvariant())"
+    }
 
     # 2) An MSBuild/compiler/toolchain coded error (error CS0246:, error MSB3073:, IL2026 ...).
     $coded = [regex]::Match($text, 'error\s+(?<code>[A-Z]{2,}[0-9]{3,})\s*:')
@@ -768,12 +795,20 @@ function Get-DeduplicatedFailures {
         $sources = @($group["sources"].ToArray() | Select-Object -Unique)
         $messages = @($group["messages"].ToArray() | Select-Object -Unique | Select-Object -First 5)
         $occurrences = @($group["occurrences"].ToArray())
+        # Collect the distinct pipeline definitions this failure was actually observed in (from each
+        # occurrence's buildDefinition tag). Used to SCOPE baseline matching by pipeline so a PR
+        # failure in pipeline A cannot be dismissed by a same-key base failure that only ever
+        # occurred in pipeline B (round-6 GPT F1 cross-pipeline laundering). Occurrences without a
+        # tag (e.g. device-test/helix aggregate failures) contribute nothing here, which keeps the
+        # definition-blind fallback intact for them.
+        $buildDefs = @($occurrences | ForEach-Object { Get-ObjectValue -Object $_ -Names @("buildDefinition") } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
 
         $result.Add([ordered]@{
             key = $group["key"]
             testName = $group["testName"]
             platform = $group["platform"]
             sources = $sources
+            buildDefinitions = $buildDefs
             occurrenceCount = $occurrences.Count
             messages = $messages
             occurrences = $occurrences
@@ -1773,6 +1808,18 @@ $baselineKeys = @{}
 # reason signature so attribution can detect when a PR failure name-matches a base failure but fails
 # for a DIFFERENT reason (the message-blind test key would otherwise launder it as pre-existing).
 $baselineReasonByKey = @{}
+# GPT F1 support: index, per key, the set of pipeline DEFINITIONS the base failure was actually seen
+# in. Baseline failures from every PR build are merged into one flat list, so without this a PR
+# failure in pipeline A could be dismissed by a same-key base failure that only ever occurred in
+# pipeline B (cross-pipeline laundering). Matching is scoped to a shared definition when BOTH sides
+# carry a tag; when either side is untagged (e.g. device-test/helix aggregates) it falls back to the
+# original definition-blind match so no legitimate dismissal is lost.
+$baselineDefsByKey = @{}
+# GPT F2 support: index, per key, the set of normalized MESSAGE fingerprints seen on base. Used as a
+# fallback discriminator for TEST failures when neither side yields a positive reason signature -- a
+# same-test red-on-both match whose normalized message text is absent from base is then treated as a
+# reason conflict (NHI) instead of being silently dismissed.
+$baselineFingerprintByKey = @{}
 foreach ($baseFailure in $baselineDeduped) {
     $bk = [string]$baseFailure.key
     $baselineKeys[$bk] = $true
@@ -1783,9 +1830,45 @@ foreach ($baseFailure in $baselineDeduped) {
         }
         [void]$baselineReasonByKey[$bk].Add($bReason)
     }
+    foreach ($bd in @($baseFailure.buildDefinitions)) {
+        if (-not [string]::IsNullOrWhiteSpace($bd)) {
+            if (-not $baselineDefsByKey.ContainsKey($bk)) {
+                $baselineDefsByKey[$bk] = New-Object System.Collections.Generic.HashSet[string]
+            }
+            [void]$baselineDefsByKey[$bk].Add([string]$bd)
+        }
+    }
+    foreach ($bm in @($baseFailure.messages)) {
+        $bfp = Get-ErrorFingerprint -Text ([string]$bm)
+        if (-not [string]::IsNullOrWhiteSpace($bfp)) {
+            if (-not $baselineFingerprintByKey.ContainsKey($bk)) {
+                $baselineFingerprintByKey[$bk] = New-Object System.Collections.Generic.HashSet[string]
+            }
+            [void]$baselineFingerprintByKey[$bk].Add($bfp)
+        }
+    }
 }
 foreach ($failure in $dedupedFailures) {
-    $failure['alsoFailsOnBaseline'] = [bool]$baselineKeys.ContainsKey([string]$failure.key)
+    $fkey = [string]$failure.key
+    $nameMatch = [bool]$baselineKeys.ContainsKey($fkey)
+
+    # GPT F1: scope the baseline match to a shared pipeline definition. Only tightens the match when
+    # BOTH the PR failure and the base failure for this key carry a definition tag; otherwise it
+    # preserves the original definition-blind behaviour. This can only ever REMOVE a dismissal (turn
+    # a green into an NHI), never add one -- so it cannot introduce a false green.
+    $alsoBase = $nameMatch
+    if ($nameMatch) {
+        $prDefs = @($failure.buildDefinitions)
+        $baseDefs = $baselineDefsByKey[$fkey]
+        if ($prDefs.Count -gt 0 -and $baseDefs -and $baseDefs.Count -gt 0) {
+            $sharedDef = $false
+            foreach ($pd in $prDefs) {
+                if ($baseDefs.Contains([string]$pd)) { $sharedDef = $true; break }
+            }
+            $alsoBase = $sharedDef
+        }
+    }
+    $failure['alsoFailsOnBaseline'] = [bool]$alsoBase
 
     # Gemini F1: the dedup/baseline key is name-based for TEST failures (errorFingerprint is empty by
     # design so grouping + the leg diff keep working), so a PR-introduced failure in a test can
@@ -1796,9 +1879,33 @@ foreach ($failure in $dedupedFailures) {
     $failure['baselineReasonConflict'] = $false
     if ($failure['alsoFailsOnBaseline']) {
         $prReason = Get-FailureReasonSignature -Messages $failure.messages
-        $baseReasons = $baselineReasonByKey[[string]$failure.key]
+        $baseReasons = $baselineReasonByKey[$fkey]
         if ($prReason -and $baseReasons -and $baseReasons.Count -gt 0 -and (-not $baseReasons.Contains($prReason))) {
             $failure['baselineReasonConflict'] = $true
+        }
+        # GPT F2: when the reason signature cannot positively corroborate the match (either side has
+        # no recognizable reason token) the name-only key would still dismiss the failure. For TEST
+        # failures (build errors already fold their fingerprint into the key, so a key match there
+        # implies same break) fall back to a normalized message-fingerprint comparison: if the PR's
+        # message text is structurally ABSENT from base for this key, treat it as a conflict (NHI)
+        # rather than silently dismissing it. Only fires when both sides have a non-empty fingerprint
+        # set and they do not overlap, so it cannot flag on missing data.
+        elseif (-not $failure['baselineReasonConflict'] -and (@($failure.sources) -notcontains 'azdo-build-error')) {
+            $baseFps = $baselineFingerprintByKey[$fkey]
+            if ($baseFps -and $baseFps.Count -gt 0) {
+                $prFps = New-Object System.Collections.Generic.List[string]
+                foreach ($pm in @($failure.messages)) {
+                    $pfp = Get-ErrorFingerprint -Text ([string]$pm)
+                    if (-not [string]::IsNullOrWhiteSpace($pfp)) { [void]$prFps.Add($pfp) }
+                }
+                if ($prFps.Count -gt 0) {
+                    $fpOverlap = $false
+                    foreach ($pfp in $prFps) {
+                        if ($baseFps.Contains($pfp)) { $fpOverlap = $true; break }
+                    }
+                    if (-not $fpOverlap) { $failure['baselineReasonConflict'] = $true }
+                }
+            }
         }
     }
 
@@ -1899,8 +2006,11 @@ foreach ($failure in $dedupedFailures) {
         #     two fail for DIFFERENT, individually-known reasons (e.g. a PR-introduced
         #     NullReferenceException vs a base-branch TimeoutException). The name-based dedup key is
         #     message-blind for test failures, so without this it would launder the PR break as
-        #     pre-existing. 'baselineReasonConflict' fires only when BOTH reasons are known and differ,
-        #     so a noisy/absent message never inflates false reds. Downgrade to indeterminate (NHI).
+        #     pre-existing. 'baselineReasonConflict' fires when BOTH reasons are known and differ; and
+        #     (GPT F2 fallback) for TEST failures where neither side yields a known reason token, it
+        #     fires when the PR message's normalized fingerprint is structurally ABSENT from base for
+        #     this key. Both only fire on present-on-both-sides data, so a noisy/absent message never
+        #     inflates false reds. Downgrade to indeterminate (NHI).
         if (Test-FailureInChangedScope -Failure $failure -ChangedTestFiles $changedTestFiles) {
             $failure['deterministicAttribution'] = 'indeterminate'
             $failure['scopeGuardTripped'] = $true

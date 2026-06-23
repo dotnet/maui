@@ -101,11 +101,14 @@ Key fields to use:
   - Evidence counts: `failuresAlsoOnBaseline`, `failuresMatchingKnownIssue`,
     `failuresRetriedStillFailing`, `baselineInconclusiveRows`.
 - `failures.unique[]` — distinct PR failures (deduped by test name + OS platform). This
-  includes **build-job breaks** (crossgen/R2R, NativeAOT/ILC, linker, MSBuild `error`),
+  includes **build-job breaks** (crossgen/R2R, NativeAOT/ILC, linker, MSBuild `error`, and
+  **fatal non-coded breaks** — native crash/segfault/OOM, test-host crash, unhandled
+  exception),
   which carry a synthetic name like `Build macOS (Debug) - Failed to load assembly` and a
   `source` of `azdo-build-error` — they are real failures, not noise. Each carries:
   - `alsoFailsOnBaseline` (`true` when the same test+platform also fails on the most
-    recent base-branch build),
+    recent base-branch build — scoped to the **same pipeline definition**, so a failure in
+    one pipeline is never dismissed by a same-named failure that only occurred in another),
   - `legBaselineResult` / `legRegressedVsBase` / `legAlsoFailsOnBase` — the **computed
     job-level baseline diff** for this failure's leg: `succeeded-on-base` +
     `legRegressedVsBase = true` means the SAME leg passed on base and is now red on the
@@ -139,12 +142,16 @@ Key fields to use:
   - `retriedStillFailing` (`true` when CI retried the leg and it **still failed** — this
     is evidence the failure is **persistent**, NOT a one-off flake).
   - `baselineReasonConflict` (`true` when this failure **exact-matches** a base failure by
-    name+platform but the two fail for **different, individually-known reasons** — e.g. a
+    name+platform but the two fail for **different reasons** — e.g. a
     PR-introduced `NullReferenceException` vs a base-branch `TimeoutException` in the same
     test). The name-based dedup key is message-blind for test failures, so without this a
     PR-caused break could be laundered as `pre-existing-on-base`. When set, the dismissal is
-    **refused** and the attribution is forced to `indeterminate`. It fires **only** when both
-    reasons are known and differ, so a noisy or absent message never inflates false reds.
+    **refused** and the attribution is forced to `indeterminate`. It fires when both
+    reasons are known and differ (**wrapper exceptions like `AggregateException` are unwrapped
+    to the inner cause** so they cannot collapse two distinct reasons into one), and — for
+    test failures where neither side yields a known reason — as a fallback when the PR's
+    **normalized message fingerprint is absent from base** for that test. Both paths fire only
+    on data present on both sides, so a noisy or absent message never inflates false reds.
   - `scopeGuardTripped` (`true` when a `pre-existing-on-base` or `known-issue` dismissal was
     **refused** because the PR actually **edits the test file** behind the failure). When the
     PR touches the very test that is failing, a base or known-issue text match is no longer

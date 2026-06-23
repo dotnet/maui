@@ -241,12 +241,18 @@ A failure may be called **not PR-specific** only with one of these concrete proo
 on appearance alone:
 
 1. **Baseline match** — the same `test+platform` also fails on the most recent base-branch
-   build (`alsoFailsOnBaseline = true`). Pre-existing, not introduced by the PR. **One veto:**
-   if the PR failure exact-matches a base failure by name but the two fail for *different,
-   individually-known reasons* (`baselineReasonConflict = true` — e.g. a PR-introduced
+   build (`alsoFailsOnBaseline = true`), **scoped to the same pipeline definition** (a
+   failure in one pipeline is never dismissed by a same-named base failure that only occurred
+   in a *different* pipeline). Pre-existing, not introduced by the PR. **One veto:**
+   if the PR failure exact-matches a base failure by name but the two fail for *different
+   reasons* (`baselineReasonConflict = true` — e.g. a PR-introduced
    `NullReferenceException` vs a base-branch `TimeoutException` in the same test), the
    dismissal is **refused** and the failure is forced to `indeterminate`, because the
-   name-based dedup key is message-blind for test failures.
+   name-based dedup key is message-blind for test failures. The reason comparison **unwraps
+   wrapper exceptions** (`AggregateException`/`TargetInvocationException`) to the inner cause,
+   and — when neither side yields a known reason — falls back to a **normalized message
+   fingerprint** (PR text structurally absent from base ⇒ conflict). Both fire only on data
+   present on both sides, so a noisy/absent message never inflates false reds.
 2. **Job-level baseline match** — for a build break with no test name (crossgen/NativeAOT/
    linker/MSBuild), the same **leg** is also red on the most recent base build. Conversely,
    a leg that is **red on the PR but green on base is PROOF the break is PR-caused** — this
@@ -317,9 +323,12 @@ results are excluded). A proven regression sets the ceiling to `Not ready` even 
 more actionable headline than "go investigate", and `Not ready` is still non-green so this
 never enables a false green (the NHI reasons remain listed in `ceilingReasons`). The
 gatherer also extracts build-job errors (not just xUnit `[FAIL]` lines) via
-`Get-BuildErrorsFromLog`, so crossgen/R2R/linker breaks flow into dedup, the (computed)
+`Get-BuildErrorsFromLog`, so crossgen/R2R/linker breaks **and fatal non-coded breaks**
+(native crash/segfault/OOM, test-host crash, unhandled exception — not the ordinary
+`exit code 1` test-runner rollup) flow into dedup, the (computed)
 baseline diff, and the gate — and it does so **even on a leg that also has a test failure**
-(a pre-existing flaky test must not hide a *new* `error CS####` build break in the same leg),
+(a pre-existing flaky test must not hide a *new* `error CS####` build break or a new native
+crash in the same leg),
 suppressing only the generic `##[error]` rollup line when a real test failure is already
 present. It also inspects **`partiallySucceeded`** timeline records on both the PR and base
 side (not just `failed`), symmetric with the leg-result map, so a PR-caused break in a
