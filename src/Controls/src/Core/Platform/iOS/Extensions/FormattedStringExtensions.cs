@@ -21,16 +21,31 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static NSAttributedString? ToNSAttributedString(this Label label)
-			=> ToNSAttributedString(
+		{
+			// Resolve effective alignment accounting for FlowDirection (RTL flips Start↔End)
+			var alignment = label.HorizontalTextAlignment;
+			var effectiveFlowDirection = ((IVisualElementController)label).EffectiveFlowDirection;
+			if (effectiveFlowDirection.IsRightToLeft())
+			{
+				alignment = alignment switch
+				{
+					TextAlignment.Start => TextAlignment.End,
+					TextAlignment.End => TextAlignment.Start,
+					_ => alignment
+				};
+			}
+
+			return ToNSAttributedString(
 				label.FormattedText,
 				label.RequireFontManager(),
 				label.LineHeight,
-				label.HorizontalTextAlignment,
+				alignment,
 				label.ToFont(),
 				label.TextColor,
 				label.TextTransform,
 				label.LineBreakMode,
 				label.CharacterSpacing);
+		}
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
