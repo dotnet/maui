@@ -94,6 +94,11 @@ Use the gathered baseline data to subtract pre-existing failures:
   Helix device tests fail. For those rows, follow the row's `baselineSummary.note` and
   treat the baseline as inconclusive (cross-check the Helix aggregated endpoint per
   `.github/docs/maui-ci-facts.md`) instead of concluding PR-caused from the green result.
+- A `baselineSummary` row whose **`note` flags the baseline as inconclusive or
+  incomplete** (base build logs were expired/inaccessible, or only some failed logs were
+  inspected) is **not** a clean zero-failure baseline even when `baselineFailureCount`
+  is 0. Do not treat matching PR failures as PR-caused on the strength of such a row —
+  defer to other evidence or fold it into an `Insufficient data` verdict.
 - If `baselineSummary` is empty or the base build was inaccessible, say baseline
   comparison was unavailable; do not assume a failure is pre-existing without evidence.
 

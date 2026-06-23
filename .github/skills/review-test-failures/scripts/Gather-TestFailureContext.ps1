@@ -623,12 +623,14 @@ function Get-BuildLogTestFailures {
         result = $null
         status = $null
         failures = @()
+        totalFailedRecords = 0
+        inspectedLogCount = 0
         error = $null
     }
 
     $buildResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId`?api-version=7.1"
     if ($buildResult.error -or -not $buildResult.value) {
-        $result.error = $buildResult.error
+        $result.error = if ($buildResult.error) { $buildResult.error } else { "Build $BuildId metadata was not accessible." }
         return $result
     }
 
@@ -641,13 +643,21 @@ function Get-BuildLogTestFailures {
 
     $timelineResult = Invoke-AzDoJsonWithProjectFallback -Org $Org -Project $Project -RelativePath "_apis/build/builds/$BuildId/timeline?api-version=7.1"
     if ($timelineResult.error -or -not $timelineResult.value) {
+        # Record the failure so the caller can distinguish "couldn't read the baseline"
+        # from "the baseline had zero failures". Otherwise an inaccessible timeline looks
+        # like a clean baseline and pre-existing failures get misattributed to the PR.
+        $result.error = if ($timelineResult.error) { $timelineResult.error } else { "Timeline for build $BuildId was not accessible (logs may be expired)." }
         return $result
     }
 
     $records = @(ConvertTo-Array $timelineResult.value.records)
-    $failedRecords = @($records | Where-Object { $_.result -eq "failed" -and $_.log -and $_.log.id } | Select-Object -First $MaxLogs)
+    $allFailedRecords = @($records | Where-Object { $_.result -eq "failed" -and $_.log -and $_.log.id })
+    $result.totalFailedRecords = $allFailedRecords.Count
+    $failedRecords = @($allFailedRecords | Select-Object -First $MaxLogs)
+    $result.inspectedLogCount = $failedRecords.Count
 
     $failures = New-Object System.Collections.Generic.List[object]
+    $logReadFailures = 0
     foreach ($record in $failedRecords) {
         $logId = [int]$record.log.id
         try {
@@ -661,11 +671,16 @@ function Get-BuildLogTestFailures {
             }
         }
         catch {
-            # Ignore unreadable baseline logs; baseline is best-effort enrichment.
+            # A baseline log read failed (e.g. expired/inaccessible). Count it so the
+            # caller can surface the gap instead of reporting a falsely clean baseline.
+            $logReadFailures++
         }
     }
 
     $result.failures = $failures.ToArray()
+    if ($logReadFailures -gt 0) {
+        $result.error = "$logReadFailures of $($failedRecords.Count) baseline build log(s) could not be read (expired or inaccessible); baseline failure list is incomplete."
+    }
     return $result
 }
 
@@ -1052,12 +1067,29 @@ if ($BaselineBuildsPerDefinition -gt 0) {
             foreach ($failure in @($extract.failures)) {
                 $baselineRaw.Add($failure)
             }
+            $baseFailureCount = @($extract.failures).Count
+            # Build an honest note so an unreadable, truncated, or empty-but-not-clean
+            # baseline is never reported as a confident zero-failure baseline.
+            $noteParts = New-Object System.Collections.Generic.List[string]
+            if ($extract.error) {
+                $noteParts.Add("Baseline inconclusive: $($extract.error)")
+            }
+            elseif ($baseFailureCount -eq 0) {
+                # A base build that did not fully succeed yet yielded zero extractable test
+                # failures is NOT a clean baseline (logs may be expired or the failure was
+                # non-test). Flag it so pre-existing failures are not misread as PR-caused
+                # (maui-ci-facts.md: "if baseline data is missing ... say so").
+                $noteParts.Add("Base build result was '$($base.result)' but no test failures could be extracted from its logs; treat baseline as inconclusive, not clean.")
+            }
+            if ($extract.totalFailedRecords -gt $extract.inspectedLogCount) {
+                $noteParts.Add("Only the first $($extract.inspectedLogCount) of $($extract.totalFailedRecords) failed build log(s) were inspected; baseline failure list may be incomplete.")
+            }
             $baselineSummary.Add([ordered]@{
                 definitionName = $defName
                 inspectedBuildId = $base.id
                 baseBuildResult = $base.result
-                baselineFailureCount = @($extract.failures).Count
-                note = $extract.error
+                baselineFailureCount = $baseFailureCount
+                note = if ($noteParts.Count -gt 0) { $noteParts -join " " } else { $null }
             })
         }
     }
