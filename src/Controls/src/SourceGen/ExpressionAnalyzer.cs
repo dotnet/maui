@@ -326,18 +326,34 @@ internal static class ExpressionAnalyzer
 		var handlers = ExtractHandlers(transformedExpression, sourceParameterName);
 
 		// Filter handlers to only include:
-		// 1. Top-level handlers (parent == __source) where property exists on DataType
-		// 2. Nested handlers (parent != __source) - always keep since they're on intermediate objects
-		// This excludes things like ToString() and __capture_X at the root level
-		// Also exclude handlers whose parent is a capture variable (__capture_*) - those are local, not bindings
+		// 1. Top-level handlers (parent == __source) where property exists on DataType.
+		// 2. Nested handlers (parent != __source) whose chain root identifier is a member of DataType.
+		//    Chains rooted at a static type (e.g. Colors.Goldenrod, DateTime.Now, Math.Max(...))
+		//    or at a local capture (__capture_*) must NOT produce INPC subscriptions — those names
+		//    do not exist on the DataType and would emit invalid getter lambdas like
+		//    `static __source => __source.Colors`.
 		if (dataType != null)
 		{
-			handlers = handlers.Where(h => 
-				h.PropertyName == "." || 
-				(h.ParentExpression != sourceParameterName &&  // Keep nested handlers...
-				 !h.ParentExpression.Contains("__capture_")) ||  // ...unless parent is a capture variable
-				HasProperty(dataType, h.PropertyName)  // Top-level must exist on DataType
-			).ToList();
+			var sourcePrefix = sourceParameterName + ".";
+			handlers = handlers.Where(h =>
+			{
+				if (h.PropertyName == ".")
+					return true;
+
+				if (h.ParentExpression == sourceParameterName)
+					return HasProperty(dataType, h.PropertyName);
+
+				if (h.ParentExpression.Contains("__capture_"))
+					return false;
+
+				if (!h.ParentExpression.StartsWith(sourcePrefix, StringComparison.Ordinal))
+					return true;
+
+				var afterSource = h.ParentExpression.Substring(sourcePrefix.Length);
+				var dotIdx = afterSource.IndexOf('.');
+				var rootIdent = dotIdx >= 0 ? afterSource.Substring(0, dotIdx) : afterSource;
+				return HasProperty(dataType, rootIdent);
+			}).ToList();
 		}
 
 		// Transform the expression to prefix root identifiers that are on DataType with __source.

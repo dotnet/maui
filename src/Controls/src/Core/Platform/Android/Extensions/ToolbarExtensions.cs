@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				try
 				{
-					BadgeUtils.AttachBadgeDrawable(badge, anchorView, null);
+					BadgeUtils.AttachBadgeDrawable(badge, toolbar, menuItemId);
 				}
 				catch (Java.Lang.Exception)
 				{
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					try
 					{
-						BadgeUtils.DetachBadgeDrawable(existingBadge, anchorView);
+						BadgeUtils.DetachBadgeDrawable(existingBadge, toolbar, menuItemId);
 					}
 					catch (Java.Lang.Exception)
 					{
@@ -532,7 +532,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			SetSemanticProperties(item, toolbar.FindViewById(menuitem.ItemId));
 
-			if (item.Order != ToolbarItemOrder.Secondary && !string.IsNullOrEmpty(item.BadgeText))
+			if (item.Order != ToolbarItemOrder.Secondary && item.BadgeText is not null)
 				UpdateToolbarItemBadge(toolbar, menuitem, item);
 		}
 
