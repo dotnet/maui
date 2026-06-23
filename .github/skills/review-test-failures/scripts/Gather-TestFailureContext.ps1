@@ -604,6 +604,99 @@ function Get-RecentBaseBuilds {
     })
 }
 
+function Get-KnownBuildIssues {
+    # Loads the repo's open "Known Build Error" issues (the dotnet Build Analysis
+    # known-issues registry). Each such issue body carries one or more ```json blocks
+    # with an ErrorMessage (substring) and/or ErrorPattern (regex) field. We compile
+    # those into matchers so a PR failure whose message matches a documented known
+    # issue can be stamped as a known flake instead of being read as PR-caused.
+    param([string]$Repository)
+
+    $patterns = New-Object System.Collections.Generic.List[object]
+    try {
+        $raw = Invoke-GhJson -Arguments @("issue", "list", "-R", $Repository, "--label", "Known Build Error", "--state", "open", "--json", "number,title,url,body", "--limit", "100")
+    }
+    catch {
+        return [ordered]@{ patterns = @(); error = "Could not query 'Known Build Error' issues: $($_.Exception.Message)" }
+    }
+
+    foreach ($issue in (ConvertTo-Array $raw)) {
+        $body = [string]$issue.body
+        foreach ($block in [regex]::Matches($body, '(?s)```json\s*(?<json>\{.*?\})\s*```')) {
+            $obj = $null
+            try { $obj = $block.Groups["json"].Value | ConvertFrom-Json }
+            catch { continue }
+
+            $pattern = $null
+            $isRegex = $false
+            if (($obj.PSObject.Properties.Name -contains "ErrorPattern") -and $obj.ErrorPattern) {
+                $pattern = [string]$obj.ErrorPattern
+                $isRegex = $true
+            }
+            elseif (($obj.PSObject.Properties.Name -contains "ErrorMessage") -and $obj.ErrorMessage) {
+                $pattern = [string]$obj.ErrorMessage
+                $isRegex = $false
+            }
+            if ([string]::IsNullOrWhiteSpace($pattern)) {
+                continue
+            }
+            # Validate a declared regex; fall back to substring matching if it is invalid
+            # so a malformed known-issue body can never crash the gatherer.
+            if ($isRegex) {
+                try { [System.Text.RegularExpressions.Regex]::IsMatch("", $pattern) | Out-Null }
+                catch { $isRegex = $false }
+            }
+
+            $patterns.Add([ordered]@{
+                number = $issue.number
+                title = $issue.title
+                url = $issue.url
+                pattern = $pattern
+                isRegex = $isRegex
+            })
+        }
+    }
+
+    return [ordered]@{ patterns = $patterns.ToArray(); error = $null }
+}
+
+function Test-KnownIssueMatch {
+    # Returns the first known-issue {number,title,url} whose pattern matches $Text,
+    # or $null. Regex matches use a short timeout to defang a pathological pattern.
+    param(
+        [object[]]$Patterns,
+        [string]$Text
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Text) -or -not $Patterns) {
+        return $null
+    }
+    if ($Text.Length -gt 20000) {
+        $Text = $Text.Substring(0, 20000)
+    }
+
+    foreach ($p in $Patterns) {
+        $hit = $false
+        if ($p.isRegex) {
+            try {
+                $hit = [System.Text.RegularExpressions.Regex]::IsMatch(
+                    $Text, [string]$p.pattern,
+                    [System.Text.RegularExpressions.RegexOptions]::IgnoreCase,
+                    [TimeSpan]::FromMilliseconds(250))
+            }
+            catch { $hit = $false }
+        }
+        else {
+            $hit = $Text.IndexOf([string]$p.pattern, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+        }
+        if ($hit) {
+            return [ordered]@{ number = $p.number; title = $p.title; url = $p.url }
+        }
+    }
+
+    return $null
+}
+
 function Get-BuildLogTestFailures {
     # Extracts distinct test failures from a single AzDO build's failed timeline
     # records, reusing the same log parsing as the PR-side extraction. Used to
@@ -723,6 +816,15 @@ $checks = @(ConvertTo-Array $pr.statusCheckRollup | ForEach-Object {
         completedAt = $check.completedAt
     }
 })
+
+Write-Host "Loading known-issue registry ('Known Build Error' issues)..."
+$knownIssues = Get-KnownBuildIssues -Repository $Repository
+if ($knownIssues.error) {
+    Write-Host "  $($knownIssues.error)"
+}
+else {
+    Write-Host "  Loaded $(@($knownIssues.patterns).Count) known-issue matcher(s)."
+}
 
 if ($CheckName) {
     $checks = @($checks | Where-Object { $_.name -like "*$CheckName*" })
@@ -855,6 +957,8 @@ foreach ($buildRef in $buildRefsById.Values) {
                 name = $_.name
                 result = $_.result
                 state = $_.state
+                attempt = [int]$_.attempt
+                previousAttemptCount = @(ConvertTo-Array $_.previousAttempts).Count
                 logId = $_.log.id
                 issues = @(ConvertTo-Array $_.issues | ForEach-Object {
                     [ordered]@{
@@ -894,9 +998,16 @@ foreach ($buildRef in $buildRefsById.Values) {
             }
 
             $failures = @(Get-TestFailuresFromLog -Lines $lines -LogId $logId -RecordName $record.name)
+            # A record that carries previous attempts was retried by CI and is STILL
+            # failing on its latest attempt. That is evidence the failure is persistent
+            # (PR-caused or a hard infra break), NOT a one-off flake — surface it so the
+            # classifier does not call a retried-still-failing test "flaky".
+            $recordRetriedStillFailing = (@(ConvertTo-Array $record.previousAttempts).Count -gt 0)
             foreach ($failure in $failures) {
                 $failure.buildId = $buildRef.buildId
                 $failure.buildDefinition = $build.definition.name
+                $failure.attempt = [int]$record.attempt
+                $failure.retriedStillFailing = $recordRetriedStillFailing
                 $allLogFailures.Add($failure)
             }
 
@@ -1102,9 +1213,108 @@ foreach ($baseFailure in $baselineDeduped) {
 }
 foreach ($failure in $dedupedFailures) {
     $failure['alsoFailsOnBaseline'] = [bool]$baselineKeys.ContainsKey([string]$failure.key)
+
+    # Persistent-failure signal: any occurrence was retried by CI and still failed.
+    $retried = $false
+    foreach ($occ in @($failure.occurrences)) {
+        if (Get-ObjectValue -Object $occ -Names @("retriedStillFailing") -Default $false) {
+            $retried = $true
+            break
+        }
+    }
+    $failure['retriedStillFailing'] = [bool]$retried
+
+    # Known-issue cross-reference: match the test name + failure messages against the
+    # repo's open "Known Build Error" registry. A hit is strong "documented flake /
+    # unrelated" evidence the classifier can cite by issue number.
+    $matchText = (@([string]$failure.testName) + @($failure.messages)) -join "`n"
+    $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText
 }
 $baselineSummaryArray = $baselineSummary.ToArray()
 $baselineMatchCount = @($dedupedFailures | Where-Object { $_.alsoFailsOnBaseline }).Count
+
+# --- Deterministic merge-readiness gate ---
+# Compute hard coverage facts the LLM verdict cannot be more favorable than. This is the
+# "guaranteed" part: a green ('Ready to merge'/'No failures found') is forbidden in code
+# whenever a check is still pending or a failing check could not be inspected, so a false
+# green is impossible regardless of how the classifier reasons.
+$pendingChecks = @($interestingChecks | Where-Object { [string]$_.status -ne "COMPLETED" })
+$failingChecks = @($interestingChecks | Where-Object { [string]$_.status -eq "COMPLETED" })
+
+$accessibleCheckNames = @{}
+$inaccessibleCheckNames = @{}
+foreach ($b in $buildArray) {
+    foreach ($cn in @($b.checkNames)) {
+        if ($b.accessible) { $accessibleCheckNames[[string]$cn] = $true }
+        else { $inaccessibleCheckNames[[string]$cn] = $true }
+    }
+}
+
+$inaccessibleFailingChecks = New-Object System.Collections.Generic.List[string]
+$unmappedFailingChecks = New-Object System.Collections.Generic.List[string]
+foreach ($c in $failingChecks) {
+    $name = [string]$c.name
+    if ($accessibleCheckNames.ContainsKey($name)) {
+        continue  # covered: at least one accessible AzDO build backs this check
+    }
+    elseif ($inaccessibleCheckNames.ContainsKey($name)) {
+        $inaccessibleFailingChecks.Add($name)
+    }
+    else {
+        $unmappedFailingChecks.Add($name)  # red check with no resolvable AzDO build evidence
+    }
+}
+
+$failuresOnBaseline = @($dedupedFailures | Where-Object { $_.alsoFailsOnBaseline }).Count
+$failuresKnownIssue = @($dedupedFailures | Where-Object { $_.matchesKnownIssue }).Count
+$failuresRetried = @($dedupedFailures | Where-Object { $_.retriedStillFailing }).Count
+$baselineInconclusiveRows = @($baselineSummaryArray | Where-Object {
+    $_.note -and ([string]$_.note -match "(?i)inconclusive|incomplete|could not be read|cannot be confirmed|not be confirmed")
+}).Count
+
+$ceilingReasons = New-Object System.Collections.Generic.List[string]
+if ($inaccessibleFailingChecks.Count -gt 0) {
+    $verdictCeiling = "Insufficient data"
+    $ceilingReasons.Add("$($inaccessibleFailingChecks.Count) failing check(s) could not be inspected (AzDO build/logs inaccessible): $((@($inaccessibleFailingChecks) | Select-Object -First 8) -join ', ').")
+}
+elseif ($pendingChecks.Count -gt 0 -or $unmappedFailingChecks.Count -gt 0) {
+    $verdictCeiling = "Needs human investigation"
+    if ($pendingChecks.Count -gt 0) {
+        $ceilingReasons.Add("$($pendingChecks.Count) interesting check(s) are still pending/in-progress; the CI outcome is not final: $((@($pendingChecks | ForEach-Object { $_.name }) | Select-Object -First 8) -join ', ').")
+    }
+    if ($unmappedFailingChecks.Count -gt 0) {
+        $ceilingReasons.Add("$($unmappedFailingChecks.Count) failing check(s) have no inspectable AzDO build evidence; read their details URL before trusting any verdict: $((@($unmappedFailingChecks) | Select-Object -First 8) -join ', ').")
+    }
+}
+elseif ($failingChecks.Count -eq 0 -and $dedupedFailures.Count -eq 0) {
+    $verdictCeiling = "No failures found"
+}
+else {
+    $verdictCeiling = "Ready to merge"
+}
+if ($baselineInconclusiveRows -gt 0 -and $verdictCeiling -eq "Ready to merge") {
+    $ceilingReasons.Add("$baselineInconclusiveRows baseline row(s) are inconclusive; do not subtract unmatched failures as pre-existing on baseline grounds alone.")
+}
+
+$gate = [ordered]@{
+    totalChecks = $checks.Count
+    passingOrNeutralChecks = ($checks.Count - $interestingChecks.Count)
+    failingChecks = $failingChecks.Count
+    pendingChecks = $pendingChecks.Count
+    inaccessibleFailingChecks = $inaccessibleFailingChecks.Count
+    unmappedFailingChecks = $unmappedFailingChecks.Count
+    distinctFailures = $dedupedFailures.Count
+    failuresAlsoOnBaseline = $failuresOnBaseline
+    failuresMatchingKnownIssue = $failuresKnownIssue
+    failuresRetriedStillFailing = $failuresRetried
+    baselineInconclusiveRows = $baselineInconclusiveRows
+    verdictCeiling = $verdictCeiling
+    ceilingReasons = $ceilingReasons.ToArray()
+    pendingCheckNames = @($pendingChecks | ForEach-Object { [string]$_.name })
+    inaccessibleFailingCheckNames = $inaccessibleFailingChecks.ToArray()
+    unmappedFailingCheckNames = $unmappedFailingChecks.ToArray()
+    knownIssueMatchersLoaded = @($knownIssues.patterns).Count
+}
 
 $limitations = New-Object System.Collections.Generic.List[string]
 if ([string]::IsNullOrWhiteSpace($env:AZDO_TOKEN)) {
@@ -1115,6 +1325,9 @@ elseif ($script:AzDoAuthSource -eq "Azure CLI") {
 }
 if ($buildRefsById.Count -eq 0) {
     $limitations.Add("No AzDO build IDs were discovered from failing GitHub checks and none were supplied manually.")
+}
+if ($knownIssues.error) {
+    $limitations.Add($knownIssues.error + " Known-issue cross-referencing was skipped; do not treat the absence of a known-issue match as evidence a failure is PR-caused.")
 }
 
 $context = [ordered]@{
@@ -1150,6 +1363,12 @@ $context = [ordered]@{
         all = $checks
         interesting = $interestingChecks
     }
+    gate = $gate
+    knownIssues = [ordered]@{
+        queried = ($null -eq $knownIssues.error)
+        matcherCount = @($knownIssues.patterns).Count
+        error = $knownIssues.error
+    }
     buildRefs = @($buildRefsById.Values)
     builds = $buildArray
     failures = [ordered]@{
@@ -1169,6 +1388,20 @@ $md = New-Object System.Collections.Generic.List[string]
 $md.Add("# Test Failure Context for PR #$PrNumber")
 $md.Add("")
 $md.Add("Generated: $($context.generatedAtUtc)")
+$md.Add("")
+$md.Add("## Merge-readiness gate (deterministic)")
+$md.Add("")
+$md.Add("- **Verdict ceiling (hard cap): $($gate.verdictCeiling)** — the posted overall verdict MUST NOT be more favorable than this. It may be more conservative.")
+$md.Add("- Coverage ledger: $($gate.totalChecks) checks total · $($gate.passingOrNeutralChecks) passing/neutral/skipped · $($gate.failingChecks) failing · $($gate.pendingChecks) pending")
+$md.Add("- Failing checks without inspectable evidence: $($gate.inaccessibleFailingChecks) inaccessible · $($gate.unmappedFailingChecks) unmapped")
+$md.Add("- Distinct failures: $($gate.distinctFailures) ($($gate.failuresAlsoOnBaseline) also on base · $($gate.failuresMatchingKnownIssue) known-issue · $($gate.failuresRetriedStillFailing) retried-still-failing)")
+$md.Add("- Known-issue matchers loaded: $($gate.knownIssueMatchersLoaded)")
+if (@($gate.ceilingReasons).Count -gt 0) {
+    $md.Add("- Ceiling reasons:")
+    foreach ($reason in @($gate.ceilingReasons)) {
+        $md.Add("  - $reason")
+    }
+}
 $md.Add("")
 $md.Add("## AzDO access")
 $md.Add("")
@@ -1266,14 +1499,16 @@ if ($dedupedFailures.Count -eq 0) {
     $md.Add("No distinct test failures were extracted from accessible AzDO logs or test results.")
 }
 else {
-    $md.Add("| Test | Platform | Occurrences | Also on base | Messages |")
-    $md.Add("| --- | --- | ---: | :---: | --- |")
+    $md.Add("| Test | Platform | Occurrences | Also on base | Retried still failing | Known issue | Messages |")
+    $md.Add("| --- | --- | ---: | :---: | :---: | --- | --- |")
     foreach ($failure in $dedupedFailures) {
         $messages = @($failure.messages | Select-Object -First 2 | ForEach-Object {
             ([string]$_) -replace "`r?`n", "<br>" -replace '\|', '\|'
         }) -join "<br>"
         $baseFlag = if ($failure.alsoFailsOnBaseline) { "yes" } else { "no" }
-        $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $messages |")
+        $retryFlag = if ($failure.retriedStillFailing) { "yes" } else { "no" }
+        $knownIssueCell = if ($failure.matchesKnownIssue) { "[#$($failure.matchesKnownIssue.number)]($($failure.matchesKnownIssue.url))" } else { "no" }
+        $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $retryFlag | $knownIssueCell | $messages |")
     }
 }
 

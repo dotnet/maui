@@ -40,11 +40,29 @@ Expected context files:
 
 Key fields to use:
 
+- `gate` — **deterministic merge-readiness gate** computed in the gatherer (not LLM
+  judgment). Use it as a hard ceiling, never override it upward:
+  - `gate.verdictCeiling` — the most favorable overall verdict the evidence permits
+    (`Insufficient data` / `Needs human investigation` / `No failures found` /
+    `Ready to merge`). Your overall verdict MUST NOT be more favorable than this.
+  - `gate.ceilingReasons[]` — exact reasons (with check names) that set the ceiling.
+  - Coverage counts: `totalChecks`, `passingOrNeutralChecks`, `failingChecks`,
+    `pendingChecks`, `inaccessibleFailingChecks`, `unmappedFailingChecks`.
+  - Evidence counts: `failuresAlsoOnBaseline`, `failuresMatchingKnownIssue`,
+    `failuresRetriedStillFailing`, `baselineInconclusiveRows`.
 - `failures.unique[]` — distinct PR failures (deduped by test name + OS platform). Each
-  carries `alsoFailsOnBaseline` (`true` when the same test+platform also fails on the
-  most recent base-branch build).
+  carries:
+  - `alsoFailsOnBaseline` (`true` when the same test+platform also fails on the most
+    recent base-branch build),
+  - `matchesKnownIssue` (`{number,title,url}` when the failure message matches an open
+    `Known Build Error` issue; `null` otherwise) — deterministic "documented flake /
+    unrelated" evidence you can cite by issue number,
+  - `retriedStillFailing` (`true` when CI retried the leg and it **still failed** — this
+    is evidence the failure is **persistent**, NOT a one-off flake).
 - `failures.baseline[]` — distinct failures extracted from the base-branch build(s).
 - `failures.baselineMatchCount` — how many distinct PR failures also fail on the base.
+- `knownIssues` — `{queried, matcherCount, error}`. If `queried` is `false` (gh failed),
+  the absence of a `matchesKnownIssue` hit proves nothing — say so.
 - `baselineSummary[]` — which base build was inspected per pipeline definition, its
   result, and how many baseline failures were found (a succeeded base build is noted as
   strong evidence that matching failures are not pre-existing).
@@ -71,13 +89,15 @@ Classify each distinct failure as exactly one of:
 
 | Verdict | Use when |
 | --- | --- |
-| `Likely PR-caused` | The failure directly references changed files, changed tests, changed APIs, affected platform code, or a newly added/modified test; or it only appears in a path/platform this PR changes and does **not** match a baseline failure. |
-| `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, or the same test+platform also fails on the baseline (`alsoFailsOnBaseline = true`). |
+| `Likely PR-caused` | The failure directly references changed files, changed tests, changed APIs, affected platform code, or a newly added/modified test; or it only appears in a path/platform this PR changes and does **not** match a baseline failure or a known issue. A `retriedStillFailing = true` failure in the PR's area is **stronger** PR-caused evidence (CI retried it and it still failed — it is not a one-off flake). |
+| `Likely unrelated` | Evidence points to infrastructure, missing baselines, known flaky tests, unrelated platforms/areas, base/main failures, the same test+platform also fails on the baseline (`alsoFailsOnBaseline = true`), or the failure matches an open known issue (`matchesKnownIssue` is set — cite the issue number/link). |
 | `Needs human investigation` | Evidence is mixed: the failure overlaps the PR area or platform but no direct causal link is clear, or the data suggests multiple plausible causes. |
 | `Insufficient data` | Build records, test results, or logs are missing/inaccessible/expired, or there is not enough evidence to make a responsible claim. |
 
 Be conservative. Do not mark a failure unrelated just because it "looks flaky"; cite
-concrete evidence (a baseline match, an infra message, or a known-issue link).
+concrete evidence (a baseline match, a known-issue link, or an infra message). In
+particular, **do not call a `retriedStillFailing = true` failure flaky** — CI already
+retried it and it failed again, so it is persistent until proven otherwise.
 
 ## Baseline comparison
 
@@ -110,7 +130,22 @@ After classifying each failure, synthesize exactly one overall verdict — one o
 `.github/docs/maui-ci-facts.md`. Those criteria are canonical; do not restate them here
 (this duplication is exactly what this skill is designed to avoid).
 
-Do not declare `Ready to merge` while required checks are still pending.
+**Deterministic verdict ceiling (hard rule).** The gatherer computes `gate.verdictCeiling`
+from coverage facts the model cannot see around (pending checks, inaccessible/unmapped
+failing checks). Your overall verdict **MUST NOT be more favorable** than
+`gate.verdictCeiling`, using this favorability order (most → least favorable):
+
+`No failures found` ≥ `Ready to merge` ≥ `Not ready` ≥ `Needs human investigation` ≥ `Insufficient data`
+
+You may always go **more conservative** (e.g. the ceiling is `Ready to merge` but your
+per-failure analysis shows a real PR-caused break → report `Not ready`). You may never go
+more favorable. If `gate.ceilingReasons` is non-empty, surface those reasons in the report
+and reflect them in the recommended action. This is what makes a green verdict trustworthy:
+it is impossible to emit `Ready to merge` / `No failures found` while a check is still
+pending or a failing check could not be inspected.
+
+Do not declare `Ready to merge` while required checks are still pending (the ceiling
+already enforces this).
 
 ## Evidence to inspect
 
@@ -149,9 +184,11 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
+
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |
-| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no] | [specific evidence with links when available] |
+| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no] | [specific evidence — cite a known-issue link when `matchesKnownIssue` is set, note `retried still failing` when true, link build/test IDs] |
 
 ### Recommended action
 
@@ -170,6 +207,9 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 Rules:
 
 - Keep the visible summary short and decisive.
+- The overall verdict **must respect `gate.verdictCeiling`** (never more favorable); the
+  `**Coverage:**` line must report the deterministic counts and ceiling so a reader can
+  see the verdict is sound. When `gate.ceilingReasons` is non-empty, name the reason.
 - The `Overall` badge and `**Overall verdict:**` line carry the merge-readiness verdict;
   the per-failure table carries the per-failure verdicts plus an `On base?` column.
 - Include explicit limitations when data is unavailable (including unavailable baseline).

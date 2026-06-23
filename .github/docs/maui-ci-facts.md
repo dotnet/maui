@@ -182,6 +182,29 @@ Be conservative: do not declare `Ready to merge` while required checks are still
 pending, and do not mark a failure unrelated just because it "looks flaky" — cite
 concrete evidence (baseline match, infra message, known-issue link).
 
+### Flaky vs PR-specific: the deterministic proofs
+
+A failure may be called **not PR-specific** only with one of these concrete proofs — never
+on appearance alone:
+
+1. **Baseline match** — the same `test+platform` also fails on the most recent base-branch
+   build (`alsoFailsOnBaseline = true`). Pre-existing, not introduced by the PR.
+2. **Known-issue match** — the failure message matches an open `Known Build Error` issue
+   (the dotnet Build Analysis registry). Cite the issue number/link.
+3. **Retry recovery** — the failing leg was retried by CI and **passed** on a later
+   attempt (the recovered leg does not surface as a failure at all). A leg that was retried
+   and **still failed** (`retriedStillFailing = true`) is the opposite — **persistent**,
+   so do not call it flaky.
+
+If none of these hold, a failure on a path/platform the PR changes leans PR-caused.
+
+The automated `/review tests` lane additionally computes a **deterministic verdict
+ceiling** in `Gather-TestFailureContext.ps1` (`gate.verdictCeiling`): the overall verdict
+can never be more favorable than what coverage allows. A green verdict
+(`Ready to merge` / `No failures found`) is forbidden whenever a check is still pending or
+a failing check could not be inspected, so a green is always trustworthy. The interactive
+investigator should apply the same discipline by hand.
+
 ## Escalation
 
 For deep Helix log analysis (recurring failures, machine-specific issues, comparing

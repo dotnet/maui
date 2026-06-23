@@ -218,6 +218,8 @@ Invoke the **review-test-failures** skill: read and follow `.github/skills/revie
 
 That skill also references the canonical `.github/docs/maui-ci-facts.md`. The end goal is one **overall merge-readiness verdict** (Ready to merge / Not ready / Needs human investigation / Insufficient data / No failures found), informed by a **baseline comparison** against the most recent base-branch build. Use the gathered `failures.baseline`, `failures.baselineMatchCount`, `alsoFailsOnBaseline`, and `baselineSummary` fields — do not treat a failure as pre-existing without that evidence.
 
+The gathered `context.json`/`context.md` also carry a deterministic **merge-readiness gate** (`gate.verdictCeiling`, `gate.ceilingReasons`, coverage counts) plus per-failure `matchesKnownIssue` and `retriedStillFailing` evidence. Your overall verdict **MUST NOT be more favorable than `gate.verdictCeiling`** — a green verdict is impossible while a check is pending or a failing check could not be inspected. Surface the coverage ledger and ceiling in the report so the verdict is provably sound.
+
 ## Target
 
 - **Repository**: `${{ github.repository }}`
@@ -294,9 +296,11 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped. Deterministic ceiling: [gate.verdictCeiling][ — reason from gate.ceilingReasons when present].
+
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |
-| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no] | [specific evidence with links when available] |
+| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no] | [specific evidence — cite a known-issue link when matchesKnownIssue is set, note "retried still failing" when true, link build/test IDs] |
 
 ### Recommended action
 
@@ -312,7 +316,7 @@ If dry-run mode is not active, call `add_comment` exactly once with `item_number
 </details>
 ```
 
-The `Overall` badge and `**Overall verdict:**` line carry the merge-readiness verdict. The per-failure table carries the per-failure verdicts plus an `On base?` column (yes when `alsoFailsOnBaseline` is true). Overall badge colors: `1a7f37` for `Ready to merge` and `No failures found`, `d1242f` for `Not ready`, `bf8700` for `Needs human investigation`, `6e7781` for `Insufficient data`.
+The `Overall` badge and `**Overall verdict:**` line carry the merge-readiness verdict. The per-failure table carries the per-failure verdicts plus an `On base?` column (yes when `alsoFailsOnBaseline` is true). The `**Coverage:**` line reports the deterministic gate counts and `gate.verdictCeiling`; the overall verdict must never be more favorable than that ceiling. Overall badge colors: `1a7f37` for `Ready to merge` and `No failures found`, `d1242f` for `Not ready`, `bf8700` for `Needs human investigation`, `6e7781` for `Insufficient data`.
 
 Do not apply labels, trigger reruns, approve the PR, request changes, or modify code.
 
