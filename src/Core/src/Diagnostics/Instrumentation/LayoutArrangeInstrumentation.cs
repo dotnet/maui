@@ -5,59 +5,21 @@ namespace Microsoft.Maui.Diagnostics;
 /// <summary>
 /// Instrumentation for the layout arrange phase of a view.
 /// </summary>
-readonly struct LayoutArrangeInstrumentation : System.IDisposable
+readonly struct LayoutArrangeInstrumentation(IView view) : IDiagnosticInstrumentation
 {
-	readonly IView _view;
-	readonly IDiagnosticsManager _diagnostics;
-	readonly LayoutDiagnosticMetrics? _metrics;
-	readonly Activity? _activity;
-	readonly bool _metricsDurationStarted;
-	readonly long _metricsStartTimestamp;
-
-	public LayoutArrangeInstrumentation(IView view, IDiagnosticsManager diagnostics, LayoutDiagnosticMetrics? metrics)
-	{
-		_view = view;
-		_diagnostics = diagnostics;
-		_metrics = metrics;
-
-		if (diagnostics.HasActivityListeners)
-		{
-			diagnostics.GetTags(view, out var tagList);
-			_activity = diagnostics.ActivitySource.StartActivity(
-				ActivityKind.Internal,
-				name: $"Arrange {view.GetType().Name}",
-				tags: tagList);
-		}
-		else
-		{
-			_activity = null;
-		}
-
-		_metricsDurationStarted = metrics?.IsArrangeDurationEnabled == true;
-		_metricsStartTimestamp = _metricsDurationStarted
-			? Stopwatch.GetTimestamp()
-			: 0;
-	}
+	readonly Activity? _activity = view.StartDiagnosticActivity("Arrange");
 
 	/// <summary>
 	/// Disposes the instrumentation and stops the diagnostic activity.
 	/// </summary>
-	public void Dispose()
-	{
-		var metrics = _metrics;
-		var recordDuration = _metricsDurationStarted && metrics?.IsArrangeDurationEnabled == true;
-		var duration = recordDuration
-			? LayoutDiagnosticMetrics.GetElapsedNanoseconds(_metricsStartTimestamp)
-			: 0;
+	public void Dispose() =>
+		view.StopDiagnostics(_activity, this);
 
-		_activity?.Stop();
-
-		if (metrics?.IsArrangeEnabled == true)
-		{
-			_diagnostics.GetTags(_view, out var tagList);
-			metrics.RecordArrange(duration, recordDuration, in tagList);
-		}
-
-		_activity?.Dispose();
-	}
+	/// <summary>
+	/// Records the stopping of the instrumentation and publishes various metrics.
+	/// </summary>
+	/// <param name="diagnostics">The <see cref="IDiagnosticsManager"/> instance.</param>
+	/// <param name="tagList">The tags associated with the instrumentation.</param>
+	public void Stopped(IDiagnosticsManager diagnostics, in TagList tagList) =>
+		diagnostics.GetMetrics<LayoutDiagnosticMetrics>()?.RecordArrange(_activity?.Duration, in tagList);
 }
