@@ -320,11 +320,9 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		for (int i = 0; i < e.NewItems.Count; i++)
 		{
 			oldItems.Add(Items[replaceIndex + i]);
-			var item = e.NewItems[i];
-			if (item is null)
-				continue;
-
-			var newItem = CreateItemContext(e.NewItems[i]!);
+			// Always create a new context even for null new items — skipping the slot update
+			// would leave the stale old ItemTemplateContext2 in the flat list (desync).
+			var newItem = CreateItemContext(e.NewItems[i]);
 			newItems.Add(newItem);
 			Items[replaceIndex + i] = newItem;
 		}

@@ -277,7 +277,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			if (itemContainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
 				var actualItem = visualElement.BindingContext;
-				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
+				// Guard against false positives for null items: object.Equals(null, null) = true would
+				// mark every null-item container as Selected whenever SelectedItem is null (no selection).
+				bool isSelected = actualItem is not null &&
+					(object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem));
 				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
 
 				// When the item template defines a "Selected" visual state, MAUI
