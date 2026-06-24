@@ -202,6 +202,7 @@ Each candidate fix PR is classified with confidence + evidence:
 | `merged-non-main-only` | Fix merged but only to `inflight/current` (or similar), not `main` |
 | `open-on-main` | Fix PR is OPEN against main, not yet merged |
 | `no-fix-yet` | No fix PR cross-referenced from the regression issue |
+| `closed-fix-unlinked` | Issue is CLOSED and a closing comment **explicitly names** a fix PR (fix/resolve/close language) that is MERGED and present on the release branch, but the PR↔issue link was never recorded (no closing keyword / cross-reference). A bare mention of a PR (e.g. naming the *cause* PR for context) does **not** qualify. Non-blocking; action is to add a closing reference for traceability |
 | `needs-human-review` | Evidence is contradictory or weak |
 
 ## CI Status Categories

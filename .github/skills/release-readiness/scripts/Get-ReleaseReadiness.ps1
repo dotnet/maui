@@ -1794,6 +1794,55 @@ function Get-IssueTimelinePrs {
     return @($prs | Sort-Object -Unique)
 }
 
+function Get-IssueCommentPrs {
+    <#
+    .SYNOPSIS
+        Extract PR numbers referenced in an issue's COMMENT BODIES (as opposed
+        to the structured timeline). Recovers fix linkage that lives ONLY in
+        human prose.
+
+    .DESCRIPTION
+        Common QA close pattern in this repo: a maintainer closes a regression
+        with a comment like "This issue was fixed by PR #35028" but the fix PR
+        never used a closing keyword (`Fixes #NNNNN`) and GitHub therefore
+        recorded NO `cross-referenced` event on the ISSUE timeline. `Get-IssueTimelinePrs`
+        sees nothing, the classifier finds zero candidates, and the issue is
+        mislabelled `no-fix-yet` even though the fix shipped. This helper reads
+        the comment bodies so that linkage can be recovered.
+
+        Returns @( @{ number = <int>; evidence = 'fix-phrase' | 'mention' } ).
+        `evidence` is 'fix-phrase' when the comment pairs the PR reference with
+        fix/resolve/close language (higher confidence), else 'mention'.
+
+        IMPORTANT: this only surfaces CANDIDATES. Callers MUST still verify each
+        PR actually MERGED and that its commit is on the target branch
+        (`Test-CommitOnBranch`) before trusting it as a real fix — a bare prose
+        mention ("duplicate of #X", "see #Y") is not proof of anything.
+    #>
+    param($Repo, $IssueNumber)
+    $raw = Invoke-Gh @('api', "repos/$Repo/issues/$IssueNumber/comments", '--paginate')
+    if (-not $raw) { return @() }
+    $comments = $raw | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if (-not $comments) { return @() }
+
+    # strongest evidence seen per PR number ('fix-phrase' beats 'mention')
+    $byNum = @{}
+    foreach ($c in $comments) {
+        $body = Get-AzdoProp $c 'body'
+        if (-not $body) { continue }
+        $refs = [regex]::Matches($body, '(?:pull/|#)(\d+)')
+        foreach ($m in $refs) {
+            $num = [int]$m.Groups[1].Value
+            # Does THIS comment pair the reference with fix/resolve/close language
+            # within a short window (tolerates the long ".../pull/" URL prefix)?
+            $isFix = $body -match "(?i)(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
+            $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
+            if (-not $byNum.ContainsKey($num) -or $ev -eq 'fix-phrase') { $byNum[$num] = $ev }
+        }
+    }
+    return @($byNum.GetEnumerator() | ForEach-Object { @{ number = [int]$_.Key; evidence = $_.Value } })
+}
+
 function Get-PrEvidenceType {
     param($PrBody, $IssueNumber)
     if (-not $PrBody) { return 'none' }
@@ -1851,6 +1900,29 @@ function Test-CommitOnBranch {
     if (-not $Sha) { return $false }
     Invoke-Git "merge-base --is-ancestor $Sha $BranchRef" | Out-Null
     return ($LASTEXITCODE -eq 0)
+}
+
+function Test-PrNumberOnBranch {
+    <#
+    .SYNOPSIS
+        Returns $true when $BranchRef has a commit whose message contains the
+        literal `(#<PrNumber>)` token GitHub stamps onto squash/merge subjects.
+
+    .DESCRIPTION
+        Robust companion to Test-CommitOnBranch for the cross-branch flow.
+        A PR's own `mergeCommit.oid` is the SHA on the branch it merged INTO
+        (e.g. inflight/candidate). When that change later reaches the SR branch
+        via a branch-merge or cherry-pick it gets a DIFFERENT SHA, so a bare
+        `merge-base --is-ancestor <prMergeSha> <srBranch>` returns false even
+        though the fix IS present. The `(#<num>)` subject token survives all
+        three flows (squash, branch-merge, cherry-pick -x), so matching on it
+        recovers presence that SHA-ancestry misses. `--fixed-strings` keeps the
+        closing paren literal, preventing `(#3502)` from matching `(#35028)`.
+    #>
+    param([int]$PrNumber, [string]$BranchRef)
+    if (-not $PrNumber) { return $false }
+    $hit = Invoke-Git "log $BranchRef --fixed-strings --grep=(#$PrNumber) --format=%H -1"
+    return [bool]$hit
 }
 
 function Get-BackportPrsForSr {
@@ -1999,6 +2071,68 @@ function Classify-RegressionCandidate {
                 recommendedAction = "Inspect the revert chain manually: original fix → revert → (possible) revert-of-revert. Look for the actual fix PR in `gh pr list --search 'fixes #$($Issue.number)'` excluding revert titles."
             }
         }
+
+        # ── FALLBACK: closed issue whose fix lives ONLY in comment prose ──
+        # No timeline-cross-referenced candidate survived the evidence filter,
+        # but the issue is CLOSED. Maintainers routinely close a regression with
+        # a plain-text comment ("fixed by PR #35028") that GitHub never turns
+        # into a structured link. Recover the cited PR and — ONLY when it
+        # actually MERGED and its commit is verifiably on THIS SR branch —
+        # classify 'closed-fix-unlinked': the fix is present (no ship risk), but
+        # the issue<->PR link is missing and should be added for traceability.
+        #
+        # Two gates make prose evidence safe, and BOTH are required:
+        #   1. fix-phrase ONLY — the comment must pair the PR with fix/resolve/
+        #      close language ("was fixed by PR #X"). A BARE mention is rejected
+        #      because regression issues routinely name the CAUSE PR for context
+        #      ("Before PR #32080 ... After PR #32080 the behavior changed"), and
+        #      the cause naturally lives on the branch — it is not a fix.
+        #   2. merged AND on the SR branch — a cited PR that never merged, or
+        #      merged elsewhere, is not proof the fix shipped here.
+        $issueState = Get-AzdoProp $Issue 'state'
+        if ($issueState -eq 'CLOSED') {
+            $commentPrs = Get-IssueCommentPrs -Repo $Ctx.repo -IssueNumber $Issue.number
+            $verifiedFixes = @()
+            foreach ($cp in $commentPrs) {
+                # Gate 1: require explicit fix language. Bare mentions (the cause-PR
+                # blame pattern) are NOT fixes and must not reclassify the issue.
+                if ($cp.evidence -ne 'fix-phrase') { continue }
+                if ($cp.number -eq $Issue.number) { continue }   # self-reference
+                $info = Get-PrInfo -Repo $Ctx.repo -PrNumber $cp.number
+                if (-not $info) { continue }
+                if ($info.state -ne 'MERGED') { continue }
+                # Skip agent/skill/workflow PRs that only mention the issue for context.
+                if (Test-PrIsToolingOnly -Files $info.files) { continue }
+                $mergeSha = if ($info.mergeCommit) { $info.mergeCommit.oid } else { $null }
+                # Gate 2: presence on the SR branch via EITHER signal — direct SHA
+                # ancestry (fix merged straight to SR) OR the `(#<num>)` subject
+                # token (fix flowed in from inflight/main under a different SHA —
+                # the common case).
+                $onSr = (Test-CommitOnBranch -Sha $mergeSha -BranchRef "origin/$($Ctx.srBranch)") `
+                        -or (Test-PrNumberOnBranch -PrNumber ([int]$info.number) -BranchRef "origin/$($Ctx.srBranch)")
+                if (-not $onSr) { continue }
+                $verifiedFixes += @{
+                    number = [int]$info.number
+                    title = $info.title
+                    state = $info.state
+                    mergeSha = $mergeSha
+                    evidenceType = "comment-$($cp.evidence)"
+                }
+            }
+            if ($verifiedFixes.Count -gt 0) {
+                $prList = (@($verifiedFixes | ForEach-Object { "#$($_.number)" }) | Sort-Object -Unique) -join ', '
+                return @{
+                    classification = 'closed-fix-unlinked'
+                    confidence = 'high'
+                    evidence = @("Issue is CLOSED and fix PR $prList is MERGED and present on $($Ctx.srBranch), but was never linked to the issue (no closing keyword, no timeline cross-reference). Linkage recovered from a closing comment that explicitly names the fix.")
+                    candidateFixPrs = @($verifiedFixes | ForEach-Object {
+                        @{ number = $_.number; title = $_.title; state = $_.state; evidenceType = $_.evidenceType }
+                    })
+                    recommendedAction = "No ship risk — fix is already in the SR. Add a closing reference for traceability (e.g. ``Fixes #$($Issue.number)`` in $prList, or link via the issue's Development panel) so future runs classify it automatically."
+                }
+            }
+        }
+
         return @{
             classification = 'no-fix-yet'
             confidence = 'high'
@@ -2662,6 +2796,7 @@ function Get-VerdictTier {
         'needs-human-review'          { 2; break }
         'in-sr-active'                { 3; break }
         'closed-as-duplicate'         { 3; break }
+        'closed-fix-unlinked'         { 3; break }
         'out-of-scope-future-sr'      { 3; break }
         default                       { 2 }   # unknown → treat as risk
     }
@@ -3529,7 +3664,7 @@ function Format-MarkdownReport {
         $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
         $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
                           'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
-        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
+        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'closed-fix-unlinked', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
 
         $emitTier = {
             param([string]$Header, [string[]]$Classes, [string]$EmptyLine, [string]$NoFixYetState)

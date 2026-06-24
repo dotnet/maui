@@ -1286,6 +1286,124 @@ $cls2 = Classify-RegressionCandidate `
 Assert-Eq -Label "Partial SrContents (no commits/fixedIssues) does not throw" `
     -Expected 'no-fix-yet' -Actual $cls2.classification
 
+# ───── Classify-RegressionCandidate (closed-fix-unlinked: fix cited only in a comment) ─────
+# Real-world case driving this class: SR8 tracker #35876 flagged six CLOSED issues
+# (#35252/#35253/#35254/#35255/#35291/#35409) as `no-fix-yet`/"Investigate" even
+# though five of them were closed with a maintainer comment naming a MERGED fix PR
+# that is already on release/10.0.1xx-sr8. The fix never used a closing keyword and
+# GitHub recorded no timeline cross-reference, so Get-IssueTimelinePrs found nothing.
+# The fallback recovers the cited PR from the comment, verifies it MERGED and sits on
+# the SR branch, and reclassifies to the non-blocking `closed-fix-unlinked` (a missing
+# link, not a missing fix).
+Write-Host "`n[Unit] Classify-RegressionCandidate (closed-fix-unlinked)" -ForegroundColor Cyan
+
+# Mock the comment-PR recovery + the fix PR (#35028, merged into inflight/candidate
+# and present on SR8) + branch membership for origin/release/10.0.1xx-sr8.
+function Get-IssueCommentPrs {
+    param($Repo, $IssueNumber)
+    return @(@{ number = 35028; evidence = 'fix-phrase' })
+}
+function Get-PrInfo {
+    param($Repo, $PrNumber)
+    return [pscustomobject]@{
+        number      = $PrNumber
+        title       = 'Fix unstable CollectionView CI repro tests'
+        state       = 'MERGED'
+        baseRefName = 'inflight/candidate'
+        mergedAt    = '2026-06-01T00:00:00Z'
+        closedAt    = '2026-06-01T00:00:00Z'
+        body        = 'Fixes #35104'   # links a DIFFERENT issue — never these five
+        mergeCommit = [pscustomobject]@{ oid = 'c1d6d72768c0ffee' }
+        files       = @([pscustomobject]@{ path = 'src/Controls/tests/TestCases.HostApp/Issue35253.xaml.cs'; additions = 4; deletions = 0 })
+    }
+}
+# Faithful to the real cross-branch flow: the fix squash-merged into the
+# inflight/candidate side under SHA `c1d6...`, then flowed to SR8 under a
+# DIFFERENT SHA. So direct SHA-ancestry of the PR's mergeCommit is FALSE; the
+# `(#35028)` subject token is what proves presence on SR8.
+function Test-CommitOnBranch {
+    param([string]$Sha, [string]$BranchRef)
+    return $false
+}
+function Test-PrNumberOnBranch {
+    param([int]$PrNumber, [string]$BranchRef)
+    return ($PrNumber -eq 35028 -and $BranchRef -eq 'origin/release/10.0.1xx-sr8')
+}
+
+$clsUnlinked = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35254; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+
+Assert-Eq -Label "Closed issue + comment-cited merged PR on SR → closed-fix-unlinked (not no-fix-yet)" `
+    -Expected 'closed-fix-unlinked' -Actual $clsUnlinked.classification
+Assert-Eq -Label "closed-fix-unlinked → high confidence (fix-phrase required)" `
+    -Expected 'high' -Actual $clsUnlinked.confidence
+Assert-Eq -Label "closed-fix-unlinked → candidateFixPrs surfaces the cited PR (#35028)" `
+    -Expected 35028 -Actual ([int]$clsUnlinked.candidateFixPrs[0].number)
+Assert-Eq -Label "closed-fix-unlinked recovered via (#num) subject token when SHA-ancestry is false" `
+    -Expected $true -Actual (($clsUnlinked.evidence -join "`n") -match 'present on release/10\.0\.1xx-sr8')
+Assert-Eq -Label "closed-fix-unlinked → action is to add a closing reference (no ship risk)" `
+    -Expected $true -Actual ($clsUnlinked.recommendedAction -match 'closing reference')
+Assert-Eq -Label "closed-fix-unlinked is Tier 3 (non-blocking)" `
+    -Expected 3 -Actual (Get-VerdictTier -Classification 'closed-fix-unlinked')
+
+# Guard A — bare 'mention' (no fix verb) must STAY no-fix-yet. Regression issues
+# routinely name the CAUSE PR for context ("Before PR #X ... After PR #X"); the
+# cause naturally sits on the branch, so the branch gate alone can't distinguish
+# a fix from blame. The fix-phrase requirement is what rejects this. This is the
+# #35291 false-positive guard: its comment blames #32080 (merged, on SR8) but
+# names no fix → it must not reclassify.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 32080; evidence = 'mention' }) }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $true }   # cause PR IS on branch
+$clsMention = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35291; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Bare mention of a merged on-branch CAUSE PR → stays no-fix-yet (#35291 guard)" `
+    -Expected 'no-fix-yet' -Actual $clsMention.classification
+
+# Guard B — #35291 was closed as by-design (real bug spun to #35310); its comments
+# name NO fix PR. Must STAY no-fix-yet, not get a phantom reclassification.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @() }
+$clsByDesign = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 35291; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Closed issue with NO comment-cited PR → stays no-fix-yet (#35291)" `
+    -Expected 'no-fix-yet' -Actual $clsByDesign.classification
+
+# Guard C — cited PR uses fix-phrase and is merged, but is NOT on the SR branch
+# (neither SHA-ancestry nor `(#num)` subject token) → the branch gate rejects it,
+# so it stays no-fix-yet (prevents a false 'fix is present' on a fix that landed
+# on a different branch only).
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 99001; evidence = 'fix-phrase' }) }
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $false }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $false }
+$clsNotOnSr = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 99100; state = 'CLOSED' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "Comment-cited PR NOT on SR branch → stays no-fix-yet (branch gate)" `
+    -Expected 'no-fix-yet' -Actual $clsNotOnSr.classification
+
+# Guard D — OPEN issue is never de-noised: a genuinely-open regression must keep
+# blocking even if a comment happens to name a merged on-branch fix PR.
+function Get-IssueCommentPrs { param($Repo, $IssueNumber) return @(@{ number = 35028; evidence = 'fix-phrase' }) }
+function Test-CommitOnBranch { param([string]$Sha, [string]$BranchRef) return $true }
+function Test-PrNumberOnBranch { param([int]$PrNumber, [string]$BranchRef) return $true }
+$clsOpen = Classify-RegressionCandidate `
+    -Issue ([pscustomobject]@{ number = 99200; state = 'OPEN' }) `
+    -CandidatePrs @() `
+    -Ctx @{ repo = 'dotnet/maui'; srBranch = 'release/10.0.1xx-sr8'; mainBranch = 'main' } `
+    -SrContents @{ sourcePrs = @(); reverts = @() }
+Assert-Eq -Label "OPEN issue is never reclassified to closed-fix-unlinked" `
+    -Expected 'no-fix-yet' -Actual $clsOpen.classification
+
 # ───── Get-VerdictTier (deterministic tier table) ─────
 Write-Host "`n[Unit] Get-VerdictTier (deterministic tier table)" -ForegroundColor Cyan
 
@@ -1300,6 +1418,7 @@ foreach ($case in @(
     @{ Cls = 'needs-human-review';         Tier = 2 }
     @{ Cls = 'in-sr-active';               Tier = 3 }
     @{ Cls = 'closed-as-duplicate';        Tier = 3 }
+    @{ Cls = 'closed-fix-unlinked';        Tier = 3 }
     @{ Cls = 'out-of-scope-future-sr';     Tier = 3 }
     @{ Cls = 'something-unknown';          Tier = 2 }   # safe-default: risk
 )) {
@@ -1975,6 +2094,28 @@ Assert-Eq -Label "CLOSED no-fix-yet (#96202) does NOT render in Tier 1" -Expecte
     -Actual ($tier1Block -match '#96202')
 Assert-Eq -Label "CLOSED no-fix-yet (#96202) renders in Tier 3 (not dropped)" -Expected $true `
     -Actual ($tier3Block -match '#96202')
+
+# (4c) closed-fix-unlinked renders in Tier 3 with its candidate PR + traceability action,
+# and is NEVER counted as a blocker (the whole point: de-noise the false no-fix-yet alarm).
+$mdDataCfu = @{} + $mdData
+$mdDataCfu['regressions'] = @(
+    @{ issue = 96254; title = 'Closed CV repro, fix only in a comment'; state = 'CLOSED';
+       classification = 'closed-fix-unlinked';
+       candidateFixPrs = @(@{ number = 95028; title = 'Fix repro'; state = 'MERGED'; evidenceType = 'comment-fix-phrase' });
+       recommendedAction = 'No ship risk — fix is already in the SR. Add a closing reference for traceability.' }
+)
+$mdDataCfu['summary'] = @{ 'closed-fix-unlinked' = 1 }
+$mdCfu = Format-MarkdownReport -Data $mdDataCfu -RepoUrl 'https://github.com/dotnet/maui' `
+                               -TrackerKey 'net10-sr8' -MaxBodyBytes 60000
+$cfuLines = @($mdCfu -split "`r?`n")
+$idxCfuT3 = ($cfuLines | Select-String -Pattern '🟢 Tier 3' | Select-Object -First 1).LineNumber - 1
+$cfuTier3Block = ($cfuLines[$idxCfuT3..($cfuLines.Count - 1)] -join "`n")
+Assert-Eq -Label "closed-fix-unlinked renders in Tier 3 (#96254)" -Expected $true `
+    -Actual ($cfuTier3Block -match '#96254')
+Assert-Eq -Label "closed-fix-unlinked Tier-3 row links the recovered fix PR (#95028)" -Expected $true `
+    -Actual ($cfuTier3Block -match '#95028')
+Assert-Eq -Label "closed-fix-unlinked does NOT appear in a 🔴 Blocking section" -Expected $false `
+    -Actual ($mdCfu -match '🔴 Blocking')
 
 # (5) Marker-forgery via a TABLE cell: a Tier-1 title embedding the begin-marker between
 #     newlines must NOT forge a second anchored marker line.
