@@ -14,6 +14,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		List<SelectableViewHolder> _currentViewHolders = new List<SelectableViewHolder>();
 		HashSet<object> _selectedSet = new HashSet<object>();
+		// Adapter position of the null data item that is currently selected, or -1 if none.
+		// Needed because SelectedItem==null is ambiguous ("nothing selected" vs "null item selected").
+		int _selectedNullPosition = -1;
 
 		protected internal SelectableItemsViewAdapter(TItemsView selectableItemsView,
 			Func<View, Context, ItemContentView> createView = null) : base(selectableItemsView, createView)
@@ -89,6 +92,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			switch (selectableItemsView.SelectionMode)
 			{
 				case SelectionMode.None:
+					_selectedNullPosition = -1;
 					ClearPlatformSelection();
 					return;
 
@@ -97,13 +101,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					if (selectedItem == null)
 					{
 						ClearPlatformSelection();
+						// Restore the null-item selection if one was explicitly selected.
+						// _selectedNullPosition is set before UpdateMauiSelection is called,
+						// so it's already valid here even though SelectedItem is null.
+						if (_selectedNullPosition >= 0)
+						{
+							var nullHolder = _currentViewHolders.Find(h => h.BindingAdapterPosition == _selectedNullPosition);
+							if (nullHolder != null)
+								nullHolder.IsSelected = true;
+						}
 						return;
 					}
-
+					_selectedNullPosition = -1;
 					_selectedSet.Add(selectedItem);
 					break;
 
 				case SelectionMode.Multiple:
+					_selectedNullPosition = -1;
 					var selectedItems = selectableItemsView.SelectedItems;
 					if (selectedItems == null || selectedItems.Count == 0)
 					{
@@ -124,7 +138,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (holder.BindingAdapterPosition >= 0)
 				{
 					var item = ItemsSource.GetItem(holder.BindingAdapterPosition);
-					bool shouldBeSelected = _selectedSet.Contains(item);
+					// Guard: null data items must never match _selectedSet even if null was
+					// inadvertently added (e.g., via multi-select). If null were matched,
+					// every null-bound ViewHolder would appear selected (false positive)
+					// because HashSet.Contains(null) returns true for all of them.
+					bool shouldBeSelected = item is not null && _selectedSet.Contains(item);
 
 					if (holder.IsSelected != shouldBeSelected)
 					{
@@ -177,6 +195,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool PositionIsSelected(int position)
 		{
+			// A null item is selected at a specific position tracked separately.
+			if (position == _selectedNullPosition)
+				return true;
+
 			var selectedPositions = GetSelectedPositions();
 			foreach (var selectedPosition in selectedPositions)
 			{
@@ -192,16 +214,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void SelectableClicked(object sender, int adapterPosition)
 		{
 			if (adapterPosition >= 0 && adapterPosition < ItemsSource?.Count)
-    		{
-        		UpdateMauiSelection(adapterPosition);
-        		// Unconditionally sync visual state for Single mode.
-        		// Handles value-equal items where PropertyChanged is suppressed.
-        		if (ItemsView.SelectedItem is not null && ItemsView.SelectionMode == SelectionMode.Single && sender is SelectableViewHolder clickedHolder)
-        		{
-            		ClearPlatformSelection();
-            		clickedHolder.IsSelected = true;
-        		}
-    		}
+			{
+				var clickedItem = ItemsSource.GetItem(adapterPosition);
+
+				// Set _selectedNullPosition BEFORE UpdateMauiSelection so that the synchronous
+				// MarkPlatformSelection call (fired by SelectedItemPropertyChanged) can restore
+				// the null-item selection highlight immediately after ClearPlatformSelection.
+				if (clickedItem is null && ItemsView.SelectionMode == SelectionMode.Single)
+					_selectedNullPosition = adapterPosition;
+				else
+					_selectedNullPosition = -1;
+
+				UpdateMauiSelection(adapterPosition);
+				// Unconditionally sync visual state for Single mode.
+				// Handles value-equal items where PropertyChanged is suppressed,
+				// and null data items whose selection cannot be inferred from SelectedItem alone.
+				if (ItemsView.SelectionMode == SelectionMode.Single && sender is SelectableViewHolder clickedHolder)
+				{
+					// If the clicked item was non-null but SelectedItem is now null, the user
+					// deselected via AllowDeselection. Don't re-apply the visual selection.
+					bool isDeselect = clickedItem is not null && ItemsView.SelectedItem is null;
+					if (!isDeselect)
+					{
+						ClearPlatformSelection();
+						clickedHolder.IsSelected = true;
+					}
+				}
+			}
 		}
 
 		void UpdateMauiSelection(int adapterPosition)
