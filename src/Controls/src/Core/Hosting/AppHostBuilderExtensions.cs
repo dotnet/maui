@@ -127,7 +127,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-        handlersCollection.AddHandler<Entry, EntryHandler>();
+		handlersCollection.AddHandler<Entry, EntryHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
@@ -212,13 +212,17 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 
-#if ANDROID || IOS || MACCATALYST
+#if IOS || MACCATALYST
 		handlersCollection.AddHandler<Shell, ShellRenderer>();
 #elif WINDOWS
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
+#elif ANDROID
+		handlersCollection.AddHandler<Shell, ShellHandler>();
+		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
+		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #elif TIZEN
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
