@@ -37,7 +37,7 @@ platform :android do
       aab: required_option(options, :aab),
       track: required_option(options, :track),
       json_key: required_option(options, :json_key),
-      release_status: "completed",
+      release_status: optional_option(options, :release_status) || "completed",
       version_name: optional_option(options, :version_name),
       metadata_path: metadata_path,
       skip_upload_metadata: true,

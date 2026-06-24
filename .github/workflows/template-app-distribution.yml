@@ -22,6 +22,7 @@
 # - TEMPLATE_APP_BLANK_IOS_BUNDLE_ID / TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID (variables)
 # - TEMPLATE_APP_ANDROID_KEYSTORE_TYPE (variable): optional keystore type, for example pkcs12.
 # - TEMPLATE_APP_PLAY_TRACK (variable): defaults to internal.
+# - TEMPLATE_APP_PLAY_RELEASE_STATUS (variable): defaults to completed; use draft for first uploads to draft Play apps.
 # - TEMPLATE_APP_TESTFLIGHT_GROUPS (variable): defaults to no explicit group distribution.
 # Store uploads use fastlane lanes from .github/scripts/template-app-distribution/fastlane.
 
@@ -317,6 +318,7 @@ jobs:
       APP_DISPLAY_VERSION: ${{ needs.prepare.outputs.app_display_version }}
       APP_BUILD_NUMBER: ${{ needs.prepare.outputs.app_build_number }}
       TEMPLATE_APP_PLAY_TRACK: ${{ vars.TEMPLATE_APP_PLAY_TRACK || 'internal' }}
+      TEMPLATE_APP_PLAY_RELEASE_STATUS: ${{ vars.TEMPLATE_APP_PLAY_RELEASE_STATUS || 'completed' }}
       TEMPLATE_APP_TESTFLIGHT_GROUPS: ${{ vars.TEMPLATE_APP_TESTFLIGHT_GROUPS }}
     strategy:
       fail-fast: false
@@ -600,6 +602,7 @@ jobs:
             "aab:${{ steps.build.outputs.package_path }}" `
             "track:$env:TEMPLATE_APP_PLAY_TRACK" `
             "json_key:$env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH" `
+            "release_status:$env:TEMPLATE_APP_PLAY_RELEASE_STATUS" `
             "version_name:$env:APP_DISPLAY_VERSION"
 
       - name: Write App Store Connect API key
