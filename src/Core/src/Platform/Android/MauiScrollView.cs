@@ -25,11 +25,9 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
-		IViewParent? _drawerLayoutParent;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
-		internal IViewParent? DrawerLayoutParent => _drawerLayoutParent;
 
 		internal bool ShouldSkipOnTouch;
 		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
@@ -63,7 +61,6 @@ namespace Microsoft.Maui.Platform
 		public override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-			_drawerLayoutParent = ScrollViewExtensions.FindDrawerLayoutAncestor(Parent);
 			_isInsetListenerSet = MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(this, _context);
 		}
 
@@ -73,7 +70,6 @@ namespace Microsoft.Maui.Platform
 			if (_isInsetListenerSet)
 				MauiWindowInsetListenerExtensions.RemoveMauiWindowInsetListener(this, _context);
 
-			_drawerLayoutParent = null;
 			_isInsetListenerSet = false;
 			_didSafeAreaEdgeConfigurationChange = true;
 		}
@@ -237,8 +233,7 @@ namespace Microsoft.Maui.Platform
 
 			// Request parent to not intercept touch events while we're scrolling
 			// This allows ScrollView to work properly inside containers like DrawerLayout (Shell Flyout)
-			if (_drawerLayoutParent != null)
-				ScrollViewExtensions.HandleTouchEvent(ev, _drawerLayoutParent);
+			ScrollViewExtensions.HandleTouchEvent(ev, Parent);
 
 			// The nested ScrollViews will allow us to scroll EITHER vertically OR horizontally in a single gesture.
 			// This will allow us to also scroll diagonally.
@@ -491,8 +486,7 @@ namespace Microsoft.Maui.Platform
 
 			// Request parent to not intercept touch events while we're scrolling
 			// This allows ScrollView to work properly inside containers like DrawerLayout (Shell Flyout)
-			if (_parentScrollView.DrawerLayoutParent != null)
-				ScrollViewExtensions.HandleTouchEvent(ev, _parentScrollView.DrawerLayoutParent);
+			ScrollViewExtensions.HandleTouchEvent(ev, Parent);
 
 			// If the touch is caught by the horizontal scrollview, forward it to the parent 
 			_parentScrollView.ShouldSkipOnTouch = true;
