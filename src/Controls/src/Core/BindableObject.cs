@@ -173,6 +173,7 @@ namespace Microsoft.Maui.Controls
 			return context == null ? property.DefaultValue : context.Values.GetValue();
 		}
 
+		// Used by Visual Studio Live Property Explorer via reflection; do not remove without coordinating with VS.
 		internal LocalValueEnumerator GetLocalValueEnumerator() => new LocalValueEnumerator(this);
 
 		internal sealed class LocalValueEnumerator : IEnumerator<LocalValueEntry>
