@@ -1502,6 +1502,61 @@ $dataReorder['srContents'] = @{ sourcePrs = @(35003, 35001, 35002) }   # reorder
 $hashReorder = Get-ReportSemanticHash -Data $dataReorder -Verdict $verdictA
 Assert-Eq -Label "Hash invariant to source-PR order" -Expected $hashA -Actual $hashReorder
 
+# no-fix-yet state flip → DIFFERENT hash (its rendered tier moves OPEN:Tier1 -> CLOSED:Tier3,
+# so the tracker MUST refresh even when the verdict symbol is pinned by another blocker).
+$dataNfyOpen = @{
+    metadata = @{ srHeadSha = 'aaaaaaaa1111'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = 'in-sr-active'; state = 'OPEN' }
+        @{ issue = 35009; classification = 'no-fix-yet';   state = 'OPEN' }   # blocker holds verdict 🔴
+    )
+    openSrPrs = @( @{ number = 35100 } )
+}
+$dataNfyClosed = @{
+    metadata = @{ srHeadSha = 'aaaaaaaa1111'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = 'in-sr-active'; state = 'OPEN' }
+        @{ issue = 35009; classification = 'no-fix-yet';   state = 'CLOSED' }   # closed → moves to Tier 3
+    )
+    openSrPrs = @( @{ number = 35100 } )
+}
+# Verdict symbol held constant across both (simulates a second blocker keeping the report 🔴).
+$hNfyOpen   = Get-ReportSemanticHash -Data $dataNfyOpen   -Verdict $verdictRed
+$hNfyClosed = Get-ReportSemanticHash -Data $dataNfyClosed -Verdict $verdictRed
+Assert-Eq -Label "Hash changes when no-fix-yet state flips (Tier1->Tier3) under a held verdict" `
+    -Expected $false -Actual ($hNfyOpen -eq $hNfyClosed)
+
+# Unrelated classification state flip → SAME hash (no watcher spam: in-sr-active is always Tier 3,
+# so its OPEN/CLOSED transition changes nothing visible and must NOT churn the hash).
+$dataInSrOpen = @{
+    metadata = @{ srHeadSha = 'aaaaaaaa1111'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = 'in-sr-active'; state = 'OPEN' }
+        @{ issue = 35009; classification = 'no-fix-yet';   state = 'OPEN' }
+    )
+    openSrPrs = @( @{ number = 35100 } )
+}
+$dataInSrClosed = @{
+    metadata = @{ srHeadSha = 'aaaaaaaa1111'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci = @{ overall = 'green' }
+    srContents = @{ sourcePrs = @(35001, 35002, 35003) }
+    regressions = @(
+        @{ issue = 35001; classification = 'in-sr-active'; state = 'CLOSED' }   # only this differs
+        @{ issue = 35009; classification = 'no-fix-yet';   state = 'OPEN' }
+    )
+    openSrPrs = @( @{ number = 35100 } )
+}
+$hInSrOpen   = Get-ReportSemanticHash -Data $dataInSrOpen   -Verdict $verdictRed
+$hInSrClosed = Get-ReportSemanticHash -Data $dataInSrClosed -Verdict $verdictRed
+Assert-Eq -Label "Hash invariant to non-no-fix-yet state flip (in-sr-active stays Tier 3)" `
+    -Expected $hInSrOpen -Actual $hInSrClosed
+
 # Cross-process stability (regression guard for the unordered-hashtable shuffle).
 # .NET Core randomizes String.GetHashCode() per process, so a plain [hashtable]
 # would serialize its keys in a DIFFERENT order each process -> a DIFFERENT hash,
@@ -1616,6 +1671,22 @@ Assert-Eq -Label "Body has human-notes:begin marker" -Expected $true `
     -Actual ($md -match '<!-- release-readiness:human-notes:begin -->')
 Assert-Eq -Label "Body has human-notes:end marker" -Expected $true `
     -Actual ($md -match '<!-- release-readiness:human-notes:end -->')
+
+# Nightly-feed banner wiring: when Invoke-Main has populated $Data['nightlyFeedBanner'],
+# Format-MarkdownReport must render it just below the **Generated** line; when the key is
+# absent (phase-scoped runs / helper unloaded) nothing leaks into the body.
+Assert-Eq -Label "No nightly banner when key absent" -Expected $true `
+    -Actual ($md -notmatch 'Nightly dogfood feed')
+$mdDataBanner = $mdData.Clone()
+$mdDataBanner['nightlyFeedBanner'] = '> ❌ **Nightly dogfood feed is STALE — 9 days** (test lane).'
+$mdBan = Format-MarkdownReport -Data $mdDataBanner -RepoUrl 'https://github.com/dotnet/maui' `
+                               -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "Banner rendered when key present" -Expected $true `
+    -Actual ($mdBan -match 'Nightly dogfood feed is STALE — 9 days')
+$genIdx = $mdBan.IndexOf('**Generated**')
+$banIdx = $mdBan.IndexOf('Nightly dogfood feed is STALE')
+Assert-Eq -Label "Banner appears after the **Generated** line" -Expected $true `
+    -Actual ($genIdx -ge 0 -and $banIdx -gt $genIdx)
 
 # Without TrackerKey: no tracker marker, no visible Tracker line
 $mdNoTracker = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
@@ -1870,6 +1941,40 @@ Assert-Eq -Label "Open-Fix-PRs table: embedded newline does NOT orphan the title
 $ofRow = @($mdOpenFix -split "`r?`n" | Where-Object { $_ -match '🔵 OPEN — awaiting main merge' })
 Assert-Eq -Label "Open-Fix-PRs table: regression-issue cell glued + pipe-escaped, status column intact" -Expected $true `
     -Actual ($ofRow.Count -eq 1 -and $ofRow[0] -match 'Glitch \\\| bug here')
+
+# (4b) Closed no-fix-yet renders under Tier 3 (not silently dropped).
+# no-fix-yet splits by issue state to mirror the verdict tiering: OPEN ones block
+# (Tier 1), CLOSED-but-unresolved ones are informational (Tier 3). Pre-fix, closed
+# no-fix-yet were counted in the Summary yet rendered in NO tier — the live symptom on
+# tracker #35876: "no-fix-yet: 6" in the summary with 0 shown in any tier. This test is
+# DISCRIMINATING: the CLOSED-in-Tier-3 assertion is false pre-fix (entry dropped) and the
+# CLOSED-not-in-Tier-1 assertion guards against regressing it back into the blocking tier.
+$mdDataNfy = @{} + $mdData
+$mdDataNfy['regressions'] = @(
+    @{ issue = 96201; title = 'Open regression, no fix PR'; state = 'OPEN'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Investigate' }
+    @{ issue = 96202; title = 'Closed regression, no fix PR found'; state = 'CLOSED'; classification = 'no-fix-yet';
+       candidateFixPrs = @(); recommendedAction = 'Verify resolved' }
+)
+$mdDataNfy['summary'] = @{ 'no-fix-yet' = 2 }
+$mdNfy = Format-MarkdownReport -Data $mdDataNfy -RepoUrl 'https://github.com/dotnet/maui' `
+                               -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label "no-fix-yet split: Tier 3 section is present (closed entry surfaced it)" -Expected $true `
+    -Actual ($mdNfy -match '🟢 Tier 3')
+# Carve the body into tier regions by header position so the top blocking-summary table
+# (which sits BEFORE Tier 1) cannot leak into the Tier-1 region assertions.
+$nfyLines = @($mdNfy -split "`r?`n")
+$idxT1 = ($nfyLines | Select-String -Pattern '🔴 Tier 1' | Select-Object -First 1).LineNumber - 1
+$idxT2 = ($nfyLines | Select-String -Pattern '🟡 Tier 2' | Select-Object -First 1).LineNumber - 1
+$idxT3 = ($nfyLines | Select-String -Pattern '🟢 Tier 3' | Select-Object -First 1).LineNumber - 1
+$tier1Block = ($nfyLines[$idxT1..($idxT2 - 1)] -join "`n")
+$tier3Block = ($nfyLines[$idxT3..($nfyLines.Count - 1)] -join "`n")
+Assert-Eq -Label "OPEN no-fix-yet (#96201) renders in Tier 1" -Expected $true `
+    -Actual ($tier1Block -match '#96201')
+Assert-Eq -Label "CLOSED no-fix-yet (#96202) does NOT render in Tier 1" -Expected $false `
+    -Actual ($tier1Block -match '#96202')
+Assert-Eq -Label "CLOSED no-fix-yet (#96202) renders in Tier 3 (not dropped)" -Expected $true `
+    -Actual ($tier3Block -match '#96202')
 
 # (5) Marker-forgery via a TABLE cell: a Tier-1 title embedding the begin-marker between
 #     newlines must NOT forge a second anchored marker line.
@@ -3426,6 +3531,360 @@ Assert-Eq -Label "Format-MarkdownCell: angle brackets still escaped"        -Exp
 Assert-Eq -Label "Format-MarkdownCell: literal backslash-pipe does NOT break out (doubled backslash)" -Expected 'A \\\| B' -Actual (Format-MarkdownCell 'A \| B')
 Assert-Eq -Label "Format-MarkdownCell: pre-existing NON-pipe backslash preserved (doubling is scoped to pipe-adjacent runs)" -Expected 'C:\dir'       -Actual (Format-MarkdownCell 'C:\dir')
 Assert-Eq -Label "Format-MarkdownCell: author-escaped non-pipe Markdown NOT de-escaped" -Expected '\[link\](url)' -Actual (Format-MarkdownCell '\[link\](url)')
+
+# ─────────── Nightly-feed freshness helpers (NightlyFeed.ps1 — offline) ───────────
+# The shared helper backs the "nightly dogfood feed is stale" banner at the top of every
+# tracker. Format-NightlyFeedBanner is PURE (caller passes -Now), so it is fully tested
+# offline with fixtures; Get-NightlyFeedFreshness is tested with an injected -Fetcher so no
+# network is touched. Both are dot-sourced directly here (independent of engine load order).
+Write-Host "`n[Unit] Nightly-feed banner (Format-NightlyFeedBanner — pure renderer)" -ForegroundColor Cyan
+$nfHelperPath = Join-Path $PSScriptRoot '..' 'scripts' 'NightlyFeed.ps1'
+. $nfHelperPath
+
+$nfLane = '[`dotnet10`](https://dev.azure.com/x) · `10.0.90` (main)'
+function New-NfFresh { param($Ver, [datetime]$Pub) @{ laneLabel = $nfLane; version = $Ver; published = $Pub; matched = $true } }
+$nfNow = [datetime]::new(2026, 6, 22, 12, 0, 0, [System.DateTimeKind]::Utc)
+
+# $null freshness → empty string (caller opted out of rendering).
+Assert-Eq -Label "banner: null freshness → empty string" -Expected '' -Actual (Format-NightlyFeedBanner -Freshness $null -Now $nfNow)
+
+# unknown (feed query failed) → muted note, NOT a blockquote alarm.
+$bUnknown = Format-NightlyFeedBanner -Freshness @{ laneLabel = $nfLane; unknown = $true } -Now $nfNow
+Assert-Eq -Label "banner: unknown → muted 'could not be determined' note" -Expected $true  -Actual ($bUnknown -match 'could not be determined')
+Assert-Eq -Label "banner: unknown → not a ❌/⚠️ alarm"                      -Expected $false -Actual ($bUnknown -match '❌|⚠️')
+
+# matched=$false (queried, no build in band) → muted note.
+$bNoMatch = Format-NightlyFeedBanner -Freshness @{ laneLabel = $nfLane; matched = $false } -Now $nfNow
+Assert-Eq -Label "banner: no-match → muted 'no recent matching build' note" -Expected $true -Actual ($bNoMatch -match 'no recent matching build')
+
+# ✅ fresh tier (age < AgingDays=3): today / yesterday / N-days-ago wording.
+$bToday = Format-NightlyFeedBanner -Freshness (New-NfFresh '10.0.90-ci.main.2' ([datetime]::new(2026,6,22,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: fresh today → ✅ + 'today'"          -Expected $true -Actual ($bToday -match '✅' -and $bToday -match 'today')
+Assert-Eq -Label "banner: fresh → renders the build version"  -Expected $true -Actual ($bToday -match '10\.0\.90-ci\.main\.2')
+Assert-Eq -Label "banner: fresh → renders the lane label"     -Expected $true -Actual ($bToday -match 'dotnet10')
+$bYday = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,21,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: 1 day → ✅ + 'yesterday'"            -Expected $true -Actual ($bYday -match '✅' -and $bYday -match 'yesterday')
+$b2d = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,20,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: 2 days (below aging) → ✅ + '2 days ago'" -Expected $true -Actual ($b2d -match '✅' -and $b2d -match '2 days ago')
+
+# ⚠️ aging tier (AgingDays=3 .. StaleDays-1) — includes the publish date (determinism check).
+$bAging = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,18,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: 4 days → ⚠️ aging"                  -Expected $true -Actual ($bAging -match '⚠️' -and $bAging -match '4 days old')
+Assert-Eq -Label "banner: aging → deterministic publish date" -Expected $true -Actual ($bAging -match '2026-06-18')
+
+# ❌ stale tier (>= StaleDays=7).
+$bStale = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,10,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow
+Assert-Eq -Label "banner: 12 days → ❌ STALE"                 -Expected $true -Actual ($bStale -match '❌' -and $bStale -match 'STALE — 12 days')
+
+# Future publish (clock skew) clamps to age 0 — must not throw or emit a negative age.
+$bFuture = $null; $nfFutureThrew = $false
+try { $bFuture = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,24,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow } catch { $nfFutureThrew = $true }
+Assert-Eq -Label "banner: future publish → no throw"          -Expected $false -Actual $nfFutureThrew
+Assert-Eq -Label "banner: future publish → clamped to 'today'" -Expected $true  -Actual ($bFuture -match '✅' -and $bFuture -match 'today')
+
+# Caller-tunable thresholds: a 4-day-old build is ⚠️ by default but ✅ under a wider window.
+$bWide = Format-NightlyFeedBanner -Freshness (New-NfFresh 'v' ([datetime]::new(2026,6,18,0,0,0,[System.DateTimeKind]::Utc))) -Now $nfNow -AgingDays 10 -StaleDays 20
+Assert-Eq -Label "banner: custom AgingDays=10 → 4d build is ✅ fresh" -Expected $true -Actual ($bWide -match '✅')
+
+Write-Host "`n[Unit] Nightly-feed freshness query (Get-NightlyFeedFreshness — mocked fetcher)" -ForegroundColor Cyan
+# Self-contained fetcher: emulates the Azure Artifacts service index + a SemVer2
+# registration page with inline catalog leaves. Mixes bands + intentionally non-date-sorted
+# versions so the date-not-version selection and the prefix filter are both exercised.
+$nfMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @(
+            [pscustomobject]@{ '@type' = 'SearchQueryService';          '@id' = 'https://example/search' },
+            [pscustomobject]@{ '@type' = 'RegistrationsBaseUrl/3.6.0';  '@id' = 'https://reg.example/3.6.0/' }
+        ) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        $mk = { param($v, $p) [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version = $v; published = $p } } }
+        return [pscustomobject]@{ items = @(
+            [pscustomobject]@{ items = @(
+                (& $mk '10.0.90-ci.main.1'    '2026-06-20T03:00:00Z'),
+                (& $mk '10.0.90-ci.main.2'    '2026-06-22T03:00:00Z'),
+                (& $mk '10.0.90-ci.main.10'   '2026-06-01T03:00:00Z'),
+                (& $mk '10.0.80-ci.inflight.5' '2026-06-25T03:00:00Z')
+            ) }
+        ) }
+    }
+    throw "unexpected url $Url"
+}
+
+$r90 = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.90-' -Fetcher $nfMock
+Assert-Eq -Label "feed: band 90 → matched"                          -Expected $true              -Actual $r90.matched
+Assert-Eq -Label "feed: band 90 → newest by DATE not version (.2)"  -Expected '10.0.90-ci.main.2' -Actual $r90.version
+Assert-Eq -Label "feed: band 90 → published date surfaced"          -Expected '2026-06-22'        -Actual ($r90.published.ToString('yyyy-MM-dd'))
+Assert-Eq -Label "feed: prefix excludes the newer .80 inflight band" -Expected $false             -Actual ($r90.version -match '10\.0\.80')
+
+$r80 = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.80-' -Fetcher $nfMock
+Assert-Eq -Label "feed: band 80 → isolates the inflight build"      -Expected '10.0.80-ci.inflight.5' -Actual $r80.version
+
+$rNo = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.70-' -Fetcher $nfMock
+Assert-Eq -Label "feed: band with no build → matched is false" -Expected $false -Actual $rNo.matched
+
+# Fail-open: any fetcher error → $null (transient outage never breaks tracker generation).
+$rThrow = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.90-' -Fetcher { param($Url) throw 'boom' }
+Assert-Eq -Label "feed: fetcher throws → null (fail-open)" -Expected $true -Actual ($null -eq $rThrow)
+
+# Fail-open holds even under an ambient $WarningPreference='Stop': the diagnostic Write-Warning
+# in the catch must not turn into a terminating error that escapes the helper. The catch uses
+# -WarningAction Continue so the "never throws" contract survives a Stop preference.
+$rStopWarn = $null
+$nfStopThrew = $false
+$nfPrevWarnPref = $WarningPreference
+try {
+    $WarningPreference = 'Stop'
+    $rStopWarn = Get-NightlyFeedFreshness -Feed 'dotnet10' -VersionPrefixRegex '^10\.0\.90-' -Fetcher { param($Url) throw 'boom' }
+} catch {
+    $nfStopThrew = $true
+} finally {
+    $WarningPreference = $nfPrevWarnPref
+}
+Assert-Eq -Label "feed: fetcher throws under WarningPreference=Stop → still null, no throw (fail-open)" -Expected $true -Actual (($null -eq $rStopWarn) -and (-not $nfStopThrew))
+
+# Paged registration: a page that carries only an @id (no inline items) is followed.
+$nfPaged = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type' = 'RegistrationsBaseUrl/3.6.0'; '@id' = 'https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        return [pscustomobject]@{ items = @([pscustomobject]@{ '@id' = 'https://reg.example/page1.json' }) }
+    }
+    if ($Url -match '/page1\.json$') {
+        return [pscustomobject]@{ items = @([pscustomobject]@{ catalogEntry = [pscustomobject]@{ version = '11.0.0-preview.6.123'; published = '2026-06-21T00:00:00Z' } }) }
+    }
+    throw "unexpected url $Url"
+}
+$rPaged = Get-NightlyFeedFreshness -Feed 'dotnet11' -VersionPrefixRegex '^11\.0\.0-preview\.6\.' -Fetcher $nfPaged
+Assert-Eq -Label "feed: paged @id leaf is followed"                 -Expected '11.0.0-preview.6.123' -Actual $rPaged.version
+
+Write-Host "`n[Unit] Nightly-feed dogfood resolution (Resolve-NightlyDogfoodFreshness — inflight-primary)" -ForegroundColor Cyan
+
+# (a) Feed WITH an inflight stream: resolver must pick the ci.inflight build even when a
+# *fresher* ci.main build exists in the lane band — ci.main is deliberately NOT the dogfood
+# signal (it publishes daily and would mask an inflight stall).
+$nfInflightMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type'='RegistrationsBaseUrl/3.6.0'; '@id'='https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        $mk = { param($v,$p) [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version=$v; published=$p } } }
+        return [pscustomobject]@{ items = @([pscustomobject]@{ items = @(
+            (& $mk '10.0.80-ci.inflight.5' '2026-06-07T03:00:00Z'),   # dogfood signal (older)
+            (& $mk '10.0.90-ci.main.99'    '2026-06-22T03:00:00Z')    # fresher, but NOT dogfood
+        ) }) }
+    }
+    throw "unexpected url $Url"
+}
+$rInf = Resolve-NightlyDogfoodFreshness -Feed 'dotnet10' -BandPrefixRegex '^10\.0\.90-' -Fetcher $nfInflightMock
+Assert-Eq -Label "resolve: inflight present → buildType inflight"        -Expected 'inflight'              -Actual $rInf.buildType
+Assert-Eq -Label "resolve: inflight preferred over fresher ci.main"      -Expected '10.0.80-ci.inflight.5' -Actual $rInf.version
+
+# (b) Feed with NO inflight builds (preview feed): fall back to the lane preview band.
+$nfPreviewMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type'='RegistrationsBaseUrl/3.6.0'; '@id'='https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        return [pscustomobject]@{ items = @([pscustomobject]@{ items = @(
+            [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version='11.0.0-preview.6.123'; published='2026-06-22T00:00:00Z' } }
+        ) }) }
+    }
+    throw "unexpected url $Url"
+}
+$rPrev = Resolve-NightlyDogfoodFreshness -Feed 'dotnet11' -BandPrefixRegex '^11\.0\.0-preview\.6\.' -Fetcher $nfPreviewMock
+Assert-Eq -Label "resolve: no inflight → falls back to band"             -Expected 'band'                  -Actual $rPrev.buildType
+Assert-Eq -Label "resolve: band fallback returns preview build"          -Expected '11.0.0-preview.6.123'  -Actual $rPrev.version
+
+# (c) No inflight AND band also absent → matched=$false (muted "no matching build" note).
+$rNone = Resolve-NightlyDogfoodFreshness -Feed 'dotnet11' -BandPrefixRegex '^11\.0\.0-preview\.9\.' -Fetcher $nfPreviewMock
+Assert-Eq -Label "resolve: no inflight + no band → matched false"        -Expected $false                 -Actual $rNone.matched
+Assert-Eq -Label "resolve: no inflight + no band → buildType band"       -Expected 'band'                 -Actual $rNone.buildType
+
+# (d) SAFETY: a *transient* inflight-query failure must NOT fall through to the fresh band
+# (that would paint a stalled inflight feed green). It must degrade to unknown instead.
+$nfOrigDef = (Get-Item function:Get-NightlyFeedFreshness).ScriptBlock
+function Get-NightlyFeedFreshness {
+    param([Parameter(Mandatory)][string]$Feed,[string]$Package='Microsoft.Maui.Controls',[string]$VersionPrefixRegex,[int]$TimeoutSec=20,[scriptblock]$Fetcher)
+    if ($VersionPrefixRegex -match 'inflight') { return $null }   # simulate transient inflight outage
+    return @{ feed=$Feed; package=$Package; version='10.0.90-ci.main.fresh'; published=[datetime]::new(2026,6,22,0,0,0,[System.DateTimeKind]::Utc); matched=$true }
+}
+try {
+    $rSafety = Resolve-NightlyDogfoodFreshness -Feed 'dotnet10' -BandPrefixRegex '^10\.0\.90-'
+    Assert-Eq -Label "resolve: transient inflight error → unknown (not false-green band)" -Expected $true -Actual ([bool](Get-NightlyFeedProp $rSafety 'unknown'))
+    Assert-Eq -Label "resolve: transient inflight error → does NOT surface ci.main band"  -Expected $true -Actual ([string]::IsNullOrEmpty([string](Get-NightlyFeedProp $rSafety 'version')))
+} finally {
+    Set-Item function:Get-NightlyFeedFreshness $nfOrigDef   # restore real helper
+}
+
+# (e) FALSE-GREEN GUARD: feed has NO inflight builds and the newest band build is a fresh
+# ci.main build. An SR lane's band prefix (^10\.0\.90-) matches ci.main too, so without the
+# exclusion the resolver would surface that fresh ci.main build and paint a stalled inflight
+# feed green. It must instead report matched=$false (muted "no matching build").
+$nfCiMainOnlyMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type'='RegistrationsBaseUrl/3.6.0'; '@id'='https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        $mk = { param($v,$p) [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version=$v; published=$p } } }
+        return [pscustomobject]@{ items = @([pscustomobject]@{ items = @(
+            (& $mk '10.0.90-ci.main.123' '2026-06-22T03:00:00Z')   # fresh, but ci.main — NOT a dogfood signal
+        ) }) }
+    }
+    throw "unexpected url $Url"
+}
+$rCiMain = Resolve-NightlyDogfoodFreshness -Feed 'dotnet10' -BandPrefixRegex '^10\.0\.90-' -Fetcher $nfCiMainOnlyMock
+Assert-Eq -Label "resolve: band fallback ci.main-only → matched false (no false-green)"   -Expected $false -Actual ([bool](Get-NightlyFeedProp $rCiMain 'matched'))
+Assert-Eq -Label "resolve: band fallback ci.main-only → no version surfaced"              -Expected $true  -Actual ([string]::IsNullOrEmpty([string](Get-NightlyFeedProp $rCiMain 'version')))
+
+# (f) The exclusion must NOT over-filter: a non-ci.main band build (rc/servicing/rtm) is a
+# legitimate fallback signal and must still surface.
+$nfRcMock = {
+    param($Url)
+    if ($Url -match '_packaging/.+/nuget/v3/index\.json$') {
+        return [pscustomobject]@{ resources = @([pscustomobject]@{ '@type'='RegistrationsBaseUrl/3.6.0'; '@id'='https://reg.example/3.6.0/' }) }
+    }
+    if ($Url -match '/3\.6\.0/.+/index\.json$') {
+        $mk = { param($v,$p) [pscustomobject]@{ catalogEntry = [pscustomobject]@{ version=$v; published=$p } } }
+        return [pscustomobject]@{ items = @([pscustomobject]@{ items = @(
+            (& $mk '10.0.90-rc.1.456' '2026-06-22T03:00:00Z')
+        ) }) }
+    }
+    throw "unexpected url $Url"
+}
+$rRc = Resolve-NightlyDogfoodFreshness -Feed 'dotnet10' -BandPrefixRegex '^10\.0\.90-' -Fetcher $nfRcMock
+Assert-Eq -Label "resolve: band fallback non-ci.main build still surfaces"                -Expected '10.0.90-rc.1.456' -Actual $rRc.version
+Assert-Eq -Label "resolve: band fallback non-ci.main → buildType band"                    -Expected 'band'             -Actual $rRc.buildType
+
+# ───── Get-NightlyFeedTier (banner-state bucketing for the idempotency hash) ─────
+Write-Host "`n[Unit] Get-NightlyFeedTier (stable banner-state bucket)" -ForegroundColor Cyan
+$tierNow = [datetime]::new(2026, 6, 22, 0, 0, 0, [System.DateTimeKind]::Utc)
+function New-NfPub([int]$daysAgo) { return $tierNow.AddDays(-$daysAgo) }
+Assert-Eq -Label "tier: null record → none"             -Expected 'none'     -Actual (Get-NightlyFeedTier -Freshness $null -Now $tierNow)
+Assert-Eq -Label "tier: unknown record → unknown"       -Expected 'unknown'  -Actual (Get-NightlyFeedTier -Freshness @{ unknown = $true } -Now $tierNow)
+Assert-Eq -Label "tier: matched=false → no-match"       -Expected 'no-match' -Actual (Get-NightlyFeedTier -Freshness @{ matched = $false } -Now $tierNow)
+Assert-Eq -Label "tier: empty version → none"           -Expected 'none'     -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = ''; published = (New-NfPub 0) } -Now $tierNow)
+Assert-Eq -Label "tier: null published → none"          -Expected 'none'     -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = $null } -Now $tierNow)
+Assert-Eq -Label "tier: age 0 → ok"                     -Expected 'ok'       -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 0) } -Now $tierNow)
+Assert-Eq -Label "tier: age 2 (< aging 3) → ok"         -Expected 'ok'       -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 2) } -Now $tierNow)
+Assert-Eq -Label "tier: age 3 (= aging) → aging"        -Expected 'aging'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 3) } -Now $tierNow)
+Assert-Eq -Label "tier: age 6 (< stale 7) → aging"      -Expected 'aging'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 6) } -Now $tierNow)
+Assert-Eq -Label "tier: age 7 (= stale) → stale"        -Expected 'stale'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 7) } -Now $tierNow)
+Assert-Eq -Label "tier: age 15 → stale"                 -Expected 'stale'    -Actual (Get-NightlyFeedTier -Freshness @{ matched = $true; version = 'x'; published = (New-NfPub 15) } -Now $tierNow)
+
+# ───── Format-NightlyFeedLaneLabel: honest-labeling rule (shared by both engines) ─────
+# Direct guard for the rule that drifted once (the preview lane silently lost the band
+# branch). Both engines now call this single helper, so these asserts cover both lanes.
+Write-Host "`n[Unit] Format-NightlyFeedLaneLabel (honest labeling)" -ForegroundColor Cyan
+$llFeed = 'dotnet10'; $llUrl = 'https://dev.azure.com/x'
+Assert-Eq -Label "lane: inflight → ci.inflight" `
+    -Expected '[`dotnet10`](https://dev.azure.com/x) · ci.inflight' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed $llFeed -FeedUrl $llUrl -BuildType 'inflight' -BandNote '`10.0.80`')
+Assert-Eq -Label "lane: band (SR shape) → band note" `
+    -Expected '[`dotnet10`](https://dev.azure.com/x) · `10.0.80`' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed $llFeed -FeedUrl $llUrl -BuildType 'band' -BandNote '`10.0.80`')
+Assert-Eq -Label "lane: band (preview shape) → band note w/ iteration" `
+    -Expected '[`dotnet11`](https://dev.azure.com/x) · `11.0.0-preview.6` (preview.6)' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed 'dotnet11' -FeedUrl $llUrl -BuildType 'band' -BandNote '`11.0.0-preview.6` (preview.6)')
+Assert-Eq -Label "lane: unknown buildType → ci.inflight (never the band)" `
+    -Expected '[`dotnet10`](https://dev.azure.com/x) · ci.inflight' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed $llFeed -FeedUrl $llUrl -BuildType '' -BandNote '`10.0.80`')
+Assert-Eq -Label "lane: other buildType → ci.inflight (honest fallback)" `
+    -Expected '[`dotnet10`](https://dev.azure.com/x) · ci.inflight' `
+    -Actual (Format-NightlyFeedLaneLabel -Feed $llFeed -FeedUrl $llUrl -BuildType 'mystery' -BandNote '`10.0.80`')
+
+# ───── Get-ReportSemanticHash folds in nightly-feed banner state ─────
+# Regression guard for the idempotency bug: a quiet SR tracker whose ONLY change is the
+# nightly feed going stale must still refresh (the banner is the point of the feature),
+# while a daily day-count tick within the SAME tier must NOT churn the issue.
+Write-Host "`n[Unit] Get-ReportSemanticHash × nightly-feed banner state" -ForegroundColor Cyan
+$nfV = @{ symbol = '🟡' }
+$nfBase = {
+    @{
+        metadata   = @{ srHeadSha = 'cafe12345678' }
+        ci         = @{ overall = 'green' }
+        srContents = @{ sourcePrs = @(35001, 35002) }
+        regressions = @()
+        openSrPrs   = @()
+        shipChecks  = @()
+    }
+}
+# Published dates are real-now-relative because the hash computes the tier with [datetime]::UtcNow.
+$nfNow = [datetime]::UtcNow
+$dNoFeed = & $nfBase
+$dOk = & $nfBase;     $dOk['nightlyFeed']     = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfNow }
+$dStale = & $nfBase;  $dStale['nightlyFeed']  = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfNow.AddDays(-20) }
+$dStale2 = & $nfBase; $dStale2['nightlyFeed'] = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfNow.AddDays(-9) }   # still stale, different day count, SAME version
+$dNewBuild = & $nfBase; $dNewBuild['nightlyFeed'] = @{ matched = $true; version = '10.0.90-ci.inflight.2'; published = $nfNow }            # fresh build → ok tier, NEW version
+$dUnknown = & $nfBase; $dUnknown['nightlyFeed'] = @{ unknown = $true }
+
+$hNoFeed = Get-ReportSemanticHash -Data $dNoFeed -Verdict $nfV
+$hOk     = Get-ReportSemanticHash -Data $dOk -Verdict $nfV
+$hStale  = Get-ReportSemanticHash -Data $dStale -Verdict $nfV
+$hStale2 = Get-ReportSemanticHash -Data $dStale2 -Verdict $nfV
+$hNew    = Get-ReportSemanticHash -Data $dNewBuild -Verdict $nfV
+$hUnk    = Get-ReportSemanticHash -Data $dUnknown -Verdict $nfV
+
+Assert-Eq -Label "hash: feed ok vs stale → DIFFERENT (banner refreshes on stall)" -Expected $false -Actual ($hOk -eq $hStale)
+Assert-Eq -Label "hash: stale day-count drift, same tier+version → SAME (no daily spam)" -Expected $true -Actual ($hStale -eq $hStale2)
+Assert-Eq -Label "hash: new build (version change), same ok tier → DIFFERENT" -Expected $false -Actual ($hOk -eq $hNew)
+Assert-Eq -Label "hash: feed present vs absent → DIFFERENT" -Expected $false -Actual ($hOk -eq $hNoFeed)
+Assert-Eq -Label "hash: unknown tier vs ok → DIFFERENT" -Expected $false -Actual ($hOk -eq $hUnk)
+Assert-Eq -Label "hash: nightly-feed fold is deterministic" -Expected $hStale -Actual (Get-ReportSemanticHash -Data $dStale -Verdict $nfV)
+
+# Split-clock guard: the hash must derive the tier from the render-time instant stored in
+# $Data['nightlyFeedNow'] (the same instant the banner used), NOT a fresh wall-clock sample.
+# Two records with IDENTICAL feed data but different stored "now" (one age→ok, one age→stale)
+# must therefore hash DIFFERENTLY. Pre-fix the hash sampled [datetime]::UtcNow and ignored the
+# stored now, so both collapsed to the same tier+hash and the banner could freeze across a
+# boundary. (Regression guard for the banner/hash boundary-straddle bug.)
+$nfSplitPub = [datetime]::new(2026, 6, 1, 0, 0, 0, [System.DateTimeKind]::Utc)
+$dNowOk = & $nfBase
+$dNowOk['nightlyFeed']    = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfSplitPub }
+$dNowOk['nightlyFeedNow'] = $nfSplitPub.AddDays(1)    # age 1 → ok
+$dNowStale = & $nfBase
+$dNowStale['nightlyFeed']    = @{ matched = $true; version = '10.0.90-ci.inflight.1'; published = $nfSplitPub }
+$dNowStale['nightlyFeedNow'] = $nfSplitPub.AddDays(10)  # age 10 → stale (SAME data, different stored now)
+$hNowOk    = Get-ReportSemanticHash -Data $dNowOk -Verdict $nfV
+$hNowStale = Get-ReportSemanticHash -Data $dNowStale -Verdict $nfV
+Assert-Eq -Label "hash: honors stored nightlyFeedNow (ok@T1 vs stale@T2 → DIFFERENT)" -Expected $false -Actual ($hNowOk -eq $hNowStale)
+Assert-Eq -Label "hash: stored-now tier resolves to ok at T1" -Expected 'ok' -Actual (Get-NightlyFeedTier -Freshness $dNowOk['nightlyFeed'] -Now $dNowOk['nightlyFeedNow'])
+Assert-Eq -Label "hash: stored-now tier resolves to stale at T2" -Expected 'stale' -Actual (Get-NightlyFeedTier -Freshness $dNowStale['nightlyFeed'] -Now $dNowStale['nightlyFeedNow'])
+
+# ───── Engine-level fail-open under WarningPreference=Stop ─────
+# The helper's inner catch is hardened, but the SR engine's OUTER catch in
+# Add-SrNightlyFeedFreshness wraps non-helper work (band resolution, formatting) that can
+# also throw. Under an ambient $WarningPreference='Stop', a bare Write-Warning in that catch
+# would be promoted to a terminating error that escapes and crashes the unattended job — the
+# same contract the helper fix protects, one frame up. Drive a throw from inside the try and
+# assert the engine swallows it. (Regression guard; fails on pre-fix bare Write-Warning.)
+Write-Host "`n[Unit] Engine-level nightly-feed fail-open (WarningPreference=Stop)" -ForegroundColor Cyan
+$nfEngThrew      = $false
+$nfEngPrevWarn   = $WarningPreference
+$nfEngOrigVps    = (Get-Item function:Get-VersionsPropsState).ScriptBlock
+$nfEngOrigResolve = (Get-Item function:Resolve-NightlyDogfoodFreshness).ScriptBlock
+$nfEngOrigLoaded = $Script:NightlyFeedHelperLoaded
+try {
+    $Script:NightlyFeedHelperLoaded = $true
+    function Get-VersionsPropsState { param($Ref) @{ Major = 10; Patch = 0 } }
+    function Resolve-NightlyDogfoodFreshness { throw 'simulated band-resolution failure' }
+    $WarningPreference = 'Stop'
+    Add-SrNightlyFeedFreshness -Data @{ metadata = @{ srRef = 'release/10.0.1xx-sr1' } }
+} catch {
+    $nfEngThrew = $true
+} finally {
+    $WarningPreference = $nfEngPrevWarn
+    Set-Item function:Get-VersionsPropsState $nfEngOrigVps
+    Set-Item function:Resolve-NightlyDogfoodFreshness $nfEngOrigResolve
+    $Script:NightlyFeedHelperLoaded = $nfEngOrigLoaded
+}
+Assert-Eq -Label "engine: Add-SrNightlyFeedFreshness catch survives WarningPreference=Stop (fail-open)" -Expected $true -Actual (-not $nfEngThrew)
 
 Write-Host "`n────────────────────────────────────────" -ForegroundColor Cyan
 Write-Host "Passed: $script:passed   Failed: $script:failed" -ForegroundColor $(if ($script:failed -eq 0) { 'Green' } else { 'Red' })

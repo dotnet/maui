@@ -159,6 +159,18 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+# Shared nightly-feed freshness helpers (Get-NightlyFeedFreshness / Format-NightlyFeedBanner).
+# Defensive load: the banner is auxiliary signal, not part of the verdict, so a missing
+# helper must degrade to "no banner" rather than crash the unattended nightly tracker job.
+$Script:NightlyFeedHelperLoaded = $false
+$nightlyFeedHelperPath = Join-Path $PSScriptRoot 'NightlyFeed.ps1'
+if (Test-Path $nightlyFeedHelperPath) {
+    . $nightlyFeedHelperPath
+    $Script:NightlyFeedHelperLoaded = $true
+} else {
+    Write-Warning "NightlyFeed.ps1 helper not found at $nightlyFeedHelperPath — nightly-feed banner disabled." -WarningAction Continue
+}
+
 # DETERMINISTIC RULE — SR branches in dotnet/maui ALWAYS cut from `main`.
 # Refuse to operate on any `inflight/*` or `staging/*` ref — those are
 # integration branches, not SR sources. This guard exists because conflating
@@ -2988,7 +3000,22 @@ function Get-ReportSemanticHash {
                 } else { '' }
         regressions = if ($Data.ContainsKey('regressions') -and $Data['regressions']) {
                           @($Data['regressions'] | Sort-Object issue | ForEach-Object {
-                              "$($_.issue):$($_.classification)"
+                              # `no-fix-yet` is the ONLY classification whose rendered tier
+                              # depends on issue state (OPEN -> Tier 1, CLOSED -> Tier 3; see
+                              # Format-MarkdownReport's $emitTier). Fold the state-derived tier
+                              # bit into the hash for THAT class only, so a no-fix-yet issue
+                              # closing (which moves its row T1 -> T3) flips the hash and
+                              # refreshes the tracker — even when another blocker keeps the
+                              # verdict symbol unchanged. Every other classification stays
+                              # state-insensitive, so unrelated state transitions (e.g. a
+                              # Tier-3 in-sr-active issue closing) do NOT churn the hash or
+                              # spam issue watchers — preserving the conservative design above.
+                              if ($_.classification -eq 'no-fix-yet') {
+                                  $nfyTier = if ($_.state -eq 'OPEN') { 't1' } else { 't3' }
+                                  "$($_.issue):$($_.classification):$nfyTier"
+                              } else {
+                                  "$($_.issue):$($_.classification)"
+                              }
                           }) -join '|'
                       } else { '' }
         openSrPrs = if ($Data.ContainsKey('openSrPrs') -and $Data['openSrPrs']) {
@@ -2999,6 +3026,27 @@ function Get-ReportSemanticHash {
                              "$($_.Area):$($_.Status)"
                          }) -join '|'
                      } else { '' }
+        # Nightly dogfood feed banner state. Folded in so a feed going stale (or a
+        # fresh build landing) refreshes the tracker even on an otherwise-quiet branch
+        # — the banner is the whole point of the feature and must not be frozen out by
+        # the idempotent no-op. We hash the non-drifting tier + resolved version (NOT the
+        # "N days" count) so threshold crossings and new builds flip the hash but a daily
+        # day-count tick within the same tier does not (no watcher spam). Fail-open: if the
+        # NightlyFeed helper isn't loaded, contributes '' (hash behaves as before).
+        nightlyFeed = if ($Data.ContainsKey('nightlyFeed') -and $Data['nightlyFeed'] -and
+                          (Get-Command Get-NightlyFeedTier -ErrorAction SilentlyContinue)) {
+                          $nf = $Data['nightlyFeed']
+                          # Reuse the SAME instant the banner was rendered with (stored by
+                          # Add-SrNightlyFeedFreshness) so the hashed tier can never disagree with
+                          # the displayed banner tier and freeze a stale banner via the no-op gate.
+                          # Fall back to UtcNow when unset (e.g. unit tests that inject nightlyFeed directly).
+                          $nfNow = if ($Data.ContainsKey('nightlyFeedNow') -and $Data['nightlyFeedNow']) {
+                                       [datetime]$Data['nightlyFeedNow']
+                                   } else { [datetime]::UtcNow }
+                          $tier = Get-NightlyFeedTier -Freshness $nf -Now $nfNow
+                          $ver = [string](Get-NightlyFeedProp $nf 'version')
+                          if ($ver) { "$tier|$ver" } else { $tier }
+                      } else { '' }
     }
 
     $json = $semantic | ConvertTo-Json -Depth 5 -Compress
@@ -3065,6 +3113,15 @@ function Format-MarkdownReport {
     $shaLinked = ConvertTo-LinkedSha -Sha $ctx.srHeadSha -RepoUrl $RepoUrl
     [void]$sb.AppendLine("**HEAD**: $shaLinked — $($ctx.srHeadSubject)")
     [void]$sb.AppendLine("**Generated**: $($ctx.fetchedAt)")
+    # Nightly dogfood feed freshness — surfaces when the feed testers point at has gone
+    # stale (no new build), so a captain sees at a glance whether dogfood feedback is being
+    # collected against current bits. The banner string is rendered upstream in Invoke-Main
+    # (where "now" is natural), keeping this renderer clock-free and deterministic. Absent in
+    # phase-scoped runs / when the helper isn't loaded → nothing is appended.
+    if ($Data.ContainsKey('nightlyFeedBanner') -and $Data['nightlyFeedBanner']) {
+        [void]$sb.AppendLine()
+        [void]$sb.AppendLine($Data['nightlyFeedBanner'])
+    }
     # Expected ship date — cadence depends on PatchVersion:
     #   - x0 patches (80, 90…) + previews → 2nd Tuesday of the month
     #   - hotfix patches (81, 82…)        → ASAP, no cadence
@@ -3472,16 +3529,23 @@ function Format-MarkdownReport {
         $tier1Classes = @('in-sr-reverted', 'no-fix-yet') | Sort-Object
         $tier2Classes = @('rejected-from-sr', 'backport-in-progress', 'merged-on-main-no-backport',
                           'merged-non-main-only', 'open-on-main', 'needs-human-review') | Sort-Object
-        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'out-of-scope-future-sr') | Sort-Object
+        $tier3Classes = @('in-sr-active', 'closed-as-duplicate', 'no-fix-yet', 'out-of-scope-future-sr') | Sort-Object
 
         $emitTier = {
-            param([string]$Header, [string[]]$Classes, [string]$EmptyLine)
+            param([string]$Header, [string[]]$Classes, [string]$EmptyLine, [string]$NoFixYetState)
             $any = $false
             foreach ($cls in $Classes) {
                 $items = @($regs | Where-Object { $_.classification -eq $cls })
-                # In Tier 1 we suppress no-fix-yet entries whose issue is CLOSED
+                # no-fix-yet splits by issue state to mirror the verdict tiering
+                # (the Get-VerdictTier downgrade): OPEN ones block (Tier 1), CLOSED-but-
+                # unresolved ones are informational (Tier 3). Without this split the closed
+                # entries are counted in the Summary yet rendered in no tier at all.
                 if ($cls -eq 'no-fix-yet') {
-                    $items = @($items | Where-Object { $_.state -eq 'OPEN' })
+                    if ($NoFixYetState -eq 'OPEN') {
+                        $items = @($items | Where-Object { $_.state -eq 'OPEN' })
+                    } elseif ($NoFixYetState -eq 'CLOSED') {
+                        $items = @($items | Where-Object { $_.state -ne 'OPEN' })
+                    }
                 }
                 if ($items.Count -eq 0) { continue }
                 if (-not $any) {
@@ -3512,9 +3576,9 @@ function Format-MarkdownReport {
             }
         }
 
-        & $emitTier '🔴 Tier 1 — Blocking' $tier1Classes '_No blocking regressions._'
-        & $emitTier '🟡 Tier 2 — Risk / Review' $tier2Classes '_No risk-tier regressions._'
-        & $emitTier '🟢 Tier 3 — Informational' $tier3Classes $null
+        & $emitTier '🔴 Tier 1 — Blocking' $tier1Classes '_No blocking regressions._' 'OPEN'
+        & $emitTier '🟡 Tier 2 — Risk / Review' $tier2Classes '_No risk-tier regressions._' $null
+        & $emitTier '🟢 Tier 3 — Informational' $tier3Classes $null 'CLOSED'
     }
 
     $body = $sb.ToString()
@@ -3593,6 +3657,70 @@ function Format-MarkdownReport {
 
 # region ────────────────────── 8. ORCHESTRATOR ────────────────────────────
 
+function Add-SrNightlyFeedFreshness {
+    <#
+    .SYNOPSIS
+        Maps this SR lane to its nightly Azure Artifacts dogfood feed + version band,
+        queries the freshest matching build, and stores both the structured result
+        ($Data['nightlyFeed']) and a pre-rendered banner string ($Data['nightlyFeedBanner']).
+    .DESCRIPTION
+        Lane → feed/band mapping (verified against the live feeds):
+          - feed    = dotnet<Major>            (e.g. dotnet10, dotnet11)
+          - signal  = the inflight/current dogfood stream (ci.inflight builds) on that feed —
+                      the "shipping next" bits dogfooders validate against. Resolved feed-wide
+                      (not band-pinned) so it auto-follows when inflight/current advances bands
+                      (e.g. 10.0.80 → 10.0.90). Ordinary main CI (ci.main) is deliberately NOT
+                      tracked: it publishes daily and would paint an inflight stall green.
+          - band    = <Major>.0.<Patch>        (PatchVersion from eng/Versions.props at srRef)
+                      used only as a FALLBACK when the feed has no inflight builds at all
+                      (e.g. a preview feed not yet in the inflight phase).
+        Fail-open throughout: any gap (helper not loaded, version unreadable, network error)
+        degrades to "no banner"/"unknown" rather than disturbing the verdict.
+    #>
+    param([hashtable]$Data)
+
+    if (-not $Script:NightlyFeedHelperLoaded) { return }
+    if (-not (Get-Command Resolve-NightlyDogfoodFreshness -ErrorAction SilentlyContinue)) { return }
+    if (-not (Get-Command Format-NightlyFeedBanner -ErrorAction SilentlyContinue)) { return }
+
+    try {
+        $ctx = $Data.metadata
+        $surveyRef = $ctx.srRef
+        $vp = Get-VersionsPropsState -Ref $surveyRef
+        if (-not $vp) { return }   # can't map a band → skip silently (no banner)
+
+        $major = [int]$vp.Major
+        $patch = [int]$vp.Patch
+        $band = "$major.0.$patch"
+        $feed = "dotnet$major"
+        $feedUrl = "https://dev.azure.com/dnceng/public/_artifacts/feed/$feed"
+        $bandPrefix = '^' + [regex]::Escape($band) + '-'
+
+        $fresh = Resolve-NightlyDogfoodFreshness -Feed $feed -BandPrefixRegex $bandPrefix
+        if ($null -eq $fresh) { $fresh = @{ unknown = $true } }
+
+        $buildType = [string](Get-NightlyFeedProp $fresh 'buildType')
+        $laneLabel = Format-NightlyFeedLaneLabel -Feed $feed -FeedUrl $feedUrl -BuildType $buildType -BandNote "``$band``"
+        $fresh['laneLabel'] = $laneLabel
+        $fresh['feedUrl'] = $feedUrl
+        $fresh['versionPrefix'] = $bandPrefix
+
+        # Capture ONE timestamp and reuse it for both the banner render and the semantic-hash
+        # tier (Get-ReportSemanticHash reads $Data['nightlyFeedNow']) so the two can never
+        # sample different sides of a tier boundary within a single run.
+        $nfNow = [DateTime]::UtcNow
+        $Data['nightlyFeed'] = $fresh
+        $Data['nightlyFeedNow'] = $nfNow
+        $banner = Format-NightlyFeedBanner -Freshness $fresh -Now $nfNow
+        if ($banner) { $Data['nightlyFeedBanner'] = $banner }
+    } catch {
+        # -WarningAction Continue: keep this fail-open even under an ambient
+        # $WarningPreference='Stop', where a bare Write-Warning would be promoted to a
+        # terminating error inside the catch and escape, crashing the unattended job.
+        Write-Warning "Nightly-feed freshness check failed (non-fatal): $($_.Exception.Message)" -WarningAction Continue
+    }
+}
+
 function Invoke-Main {
     $excludes = $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     $ctx = Resolve-Context -SrBranch $SrBranch -Repo $Repo -MainBranch $MainBranch `
@@ -3625,6 +3753,13 @@ function Invoke-Main {
     $data = @{
         metadata = $ctx
         warnings = @()
+    }
+
+    # Nightly dogfood feed freshness (full runs only). Maps this SR lane to its Azure
+    # Artifacts feed + version band and records how fresh the newest matching build is, so
+    # the tracker can flag when dogfooders are testing stale bits. Fail-open inside.
+    if ($Phase -eq 'all') {
+        Add-SrNightlyFeedFreshness -Data $data
     }
 
     if ($Phase -in 'all', 'commits', 'regressions') {
