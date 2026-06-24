@@ -10,6 +10,23 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// <summary>
 	/// Provides a XAML markup extension that returns different values depending on the platform the app is running on.
 	/// </summary>
+	/// <remarks>
+	/// The value is resolved by matching <see cref="Microsoft.Maui.Devices.DeviceInfo.Platform"/> (a string)
+	/// against the per-platform values, so a custom backend whose platform string matches one of the named
+	/// properties below (for example <c>GTK</c>) resolves correctly at both runtime and compile time.
+	/// <para>
+	/// Because a XAML markup extension maps each named argument to a CLR property, the inline
+	/// <c>{OnPlatform iOS=…, Android=…}</c> form can only express the platforms exposed as properties here.
+	/// To target an <em>arbitrary</em> custom platform (e.g. a backend reporting
+	/// <c>DevicePlatform.Create("Web")</c>), use the element form, which accepts any platform string:
+	/// <code>
+	/// &lt;OnPlatform x:TypeArguments="x:String"&gt;
+	///     &lt;On Platform="Web" Value="…" /&gt;
+	///     &lt;On Platform="iOS, Android" Value="…" /&gt;
+	/// &lt;/OnPlatform&gt;
+	/// </code>
+	/// </para>
+	/// </remarks>
 	[ContentProperty(nameof(Default))]
 	[RequireService(
 		[typeof(IProvideValueTarget),
