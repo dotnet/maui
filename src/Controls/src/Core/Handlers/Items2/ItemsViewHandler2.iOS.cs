@@ -242,13 +242,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
 				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
 			{
+				// Controller.IsEmpty is true when there are no items AND no EmptyView is being shown.
+				// In that case the CV should collapse to zero — no expansive fallback needed.
+				if (Controller.IsEmpty)
+				{
+					if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
+					{
+						contentSize.Height = 0;
+					}
+					return contentSize;
+				}
+
 				var collectionView = Controller.CollectionView;
+
+				// Detect a post-mount zero-frame: the CV is attached to a window but its
+				// frame in the scroll direction is still 0.
+				// UICollectionViewCompositionalLayout measures items relative to the collection view's bounds,
+				// so a 0-height bounds → ContentSize stays 0 → circular. Force a layout pass with
+				// real constraints so the layout can produce the correct content size.
+				bool frameIsZeroInScrollDirection =
+					(scrollDirection == UICollectionViewScrollDirection.Vertical && collectionView.Frame.Height == 0) ||
+					(scrollDirection == UICollectionViewScrollDirection.Horizontal && collectionView.Frame.Width == 0);
 
 				// When the CollectionView has not yet been added to a window (pre-mount measurement),
 				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
 				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
 				// so the layout can compute actual content size from its items.
-				if (collectionView.Window == null)
+				if (collectionView.Window == null || frameIsZeroInScrollDirection)
 				{
 					// Local helper to clamp layout constraints to finite, non-negative nfloat values.
 					nfloat ClampConstraint(double constraint, nfloat fallback)

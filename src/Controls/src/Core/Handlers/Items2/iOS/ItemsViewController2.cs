@@ -484,6 +484,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
+		// True when the CV has no items AND no EmptyView is showing.
+		// Exposed so the handler can avoid the expansive-size fallback without
+		// reaching into _emptyViewDisplayed or ItemsSource directly.
+		internal bool IsEmpty => !_emptyViewDisplayed && (ItemsSource?.ItemCount == 0);
+
 		internal UICollectionViewScrollDirection GetScrollDirection()
 		{
 			return ScrollDirection;
