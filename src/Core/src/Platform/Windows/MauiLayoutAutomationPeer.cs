@@ -34,9 +34,17 @@ namespace Microsoft.Maui.Platform
 
 		protected override string GetLocalizedControlTypeCore()
 		{
-			return HasAccessibilitySemantics()
-				? base.GetLocalizedControlTypeCore() ?? string.Empty
-				: string.Empty;
+			if (HasAccessibilitySemantics())
+			{
+				return base.GetLocalizedControlTypeCore() ?? string.Empty;
+			}
+
+			// AutomationId-only layouts report as Custom control type. The UIA spec requires
+			// that Custom elements provide a non-empty LocalizedControlType string representing
+			// the role of the element. Return the cross-platform layout type name in lowercase
+			// (e.g. "grid", "verticallayout") to satisfy the spec while keeping screen-reader
+			// behavior unchanged — Narrator only announces the Name (Description), not this string.
+			return GetClassNameCore().ToLowerInvariant();
 		}
 
 		// Layouts are never keyboard-focusable — they are structural containers, not interactive elements.
@@ -65,14 +73,19 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			var accessibilityView = panel.ReadLocalValue(AutomationProperties.AccessibilityViewProperty);
-
-			// Explicit opt-out wins over any AutomationId or semantic opt-in signal.
-			if (accessibilityView is AccessibilityView.Raw)
+			// Use GetValue for Raw opt-out to honor AccessibilityView=Raw from ANY source
+			// (local, WinUI Style, or template) — ensures styled opt-outs are respected.
+			var effectiveView = (AccessibilityView)panel.GetValue(AutomationProperties.AccessibilityViewProperty);
+			if (effectiveView == AccessibilityView.Raw)
 			{
 				return false;
 			}
-			else if (accessibilityView is AccessibilityView.Control or AccessibilityView.Content)
+
+			// Use ReadLocalValue for opt-in — only a locally-set Content/Control value
+			// (set by MAUI's mapper) should opt the layout in; Style-applied Content is not
+			// an intentional MAUI opt-in signal.
+			var accessibilityView = panel.ReadLocalValue(AutomationProperties.AccessibilityViewProperty);
+			if (accessibilityView is AccessibilityView.Control or AccessibilityView.Content)
 			{
 				return true;
 			}
@@ -117,13 +130,17 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
-			var accessibilityView = panel.ReadLocalValue(AutomationProperties.AccessibilityViewProperty);
-
-			if (accessibilityView is AccessibilityView.Raw)
+			// Use GetValue for Raw opt-out to honor Style/template-applied values.
+			var effectiveView = (AccessibilityView)panel.GetValue(AutomationProperties.AccessibilityViewProperty);
+			if (effectiveView == AccessibilityView.Raw)
 			{
 				return false;
 			}
-			else if (accessibilityView is AccessibilityView.Control or AccessibilityView.Content)
+
+			// Use ReadLocalValue for opt-in — only locally-set Content/Control (by MAUI's mapper)
+			// signals intentional accessibility semantics.
+			var accessibilityView = panel.ReadLocalValue(AutomationProperties.AccessibilityViewProperty);
+			if (accessibilityView is AccessibilityView.Control or AccessibilityView.Content)
 			{
 				return true;
 			}

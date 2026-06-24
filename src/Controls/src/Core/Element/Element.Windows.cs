@@ -29,7 +29,13 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				platformView.ClearValue(NativeAutomationProperties.AccessibilityViewProperty);
+				// Only clear if this mapper itself previously set the value (Content or Raw).
+				// Preserve any AccessibilityView set externally by platform code or a custom handler.
+				var current = platformView.ReadLocalValue(NativeAutomationProperties.AccessibilityViewProperty);
+				if (current is AccessibilityView.Content or AccessibilityView.Raw)
+				{
+					platformView.ClearValue(NativeAutomationProperties.AccessibilityViewProperty);
+				}
 			}
 		}
 

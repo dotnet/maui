@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "LayoutPanel AutomationPeer default control type is Custom")]
+		[Fact(DisplayName = "LayoutPanel AutomationPeer default control type is Custom with lowercase class name as localized type")]
 		public async Task LayoutPanelAutomationPeerDefaultControlTypeIsCustom()
 		{
 			SetupLayoutBuilder();
@@ -69,7 +69,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var peer = FrameworkElementAutomationPeer.CreatePeerForElement(handler.PlatformView);
 				Assert.Equal(AutomationControlType.Custom, peer.GetAutomationControlType());
-				Assert.Equal(string.Empty, peer.GetLocalizedControlType());
+				// UIA spec requires Custom elements to have a non-empty LocalizedControlType.
+				// For anonymous layouts, we return the lowercase cross-platform type name.
+				Assert.Equal("grid", peer.GetLocalizedControlType());
 			});
 		}
 
@@ -167,7 +169,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(peer.IsControlElement());
 				Assert.False(peer.IsContentElement());
 				Assert.Equal(AutomationControlType.Custom, peer.GetAutomationControlType());
-				Assert.Equal(string.Empty, peer.GetLocalizedControlType());
+				// UIA spec requires Custom elements to have a non-empty LocalizedControlType.
+				Assert.Equal("grid", peer.GetLocalizedControlType());
 			});
 		}
 
