@@ -1,7 +1,11 @@
 #nullable enable
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
+Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
+Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor -> Microsoft.Maui.Graphics.Color
 *REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor -> Microsoft.Maui.Graphics.Color
+*REMOVED*~static readonly Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor -> Microsoft.Maui.Graphics.Color
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 Microsoft.Maui.Controls.BoxView.~BoxView() -> void
@@ -92,11 +96,13 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnTouchEvent(Android.Views.MotionEvent e) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
+~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler2 handler, Microsoft.Maui.Controls.Editor editor) -> void
 ~static Microsoft.Maui.Controls.Entry.MapImeOptions(Microsoft.Maui.Handlers.EntryHandler2 handler, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.Entry.MapText(Microsoft.Maui.Handlers.EntryHandler2 handler, Microsoft.Maui.Controls.Entry entry) -> void
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultForegroundColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultTitleColor.get -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.DefaultUnselectedColor.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
 ~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler2 handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
@@ -114,3 +120,4 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
+override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
