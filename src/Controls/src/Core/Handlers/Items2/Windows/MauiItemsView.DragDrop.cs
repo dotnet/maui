@@ -323,7 +323,7 @@ internal partial class MauiItemsView
 			// item's new position, hide it immediately. This is what makes the
 			// "empty source slot" follow the dragged item without us having to
 			// chase a moving _sourceContainer reference through dispatcher races.
-			if (_draggedItem is not null && IsContainerBoundToDraggedItem(itemContainer))
+			if (_draggedSourceIndex >= 0 && IsContainerBoundToDraggedItem(itemContainer))
 			{
 				itemContainer.Opacity = 0;
 				itemContainer.IsHitTestVisible = false;
@@ -332,7 +332,7 @@ internal partial class MauiItemsView
 			else
 			{
 				// Apply dim if a drag is in progress and this is not the source.
-				itemContainer.Opacity = _draggedItem is not null ? DragDimOpacity : 1;
+				itemContainer.Opacity = _draggedSourceIndex >= 0 ? DragDimOpacity : 1;
 				itemContainer.IsHitTestVisible = true;
 			}
 		}
@@ -409,21 +409,31 @@ internal partial class MauiItemsView
 	{
 		var itemContainer = (ItemContainer)sender;
 
+		// Check whether this container is bound to a source slot at all.
+		// A container that has an ElementWrapper with a View IS bound — the item
+		// itself may be null (valid null data row), so we must not treat null as
+		// "no binding". We store the result so the null-item path shares the same
+		// cancel logic as the "container not yet set up" path.
+		bool hasBinding = itemContainer.Child is ElementWrapper _ew && _ew.VirtualView is View;
+
 		// Use the container's currently bound item first. The Tag/index can become
 		// stale after a reorder because the element is reused without being recreated.
 		object? item = GetContainerItem(itemContainer);
 
 		// Fallback: look up by index from the source (works for IList and IEnumerable).
-		if (item is null && itemContainer.Tag is int index && index >= 0)
+		// Only run when there is no ElementWrapper binding (container not yet set up),
+		// NOT when item is null — a null BindingContext is a valid null data row.
+		if (!hasBinding && itemContainer.Tag is int index && index >= 0)
 		{
 			var sourceList = GetSourceList();
 			if (sourceList is not null && index < sourceList.Count)
 			{
 				item = GetItemAtIndex(index, sourceList);
+				hasBinding = true;
 			}
 		}
 
-		if (item is null)
+		if (!hasBinding)
 		{
 			args.Cancel = true;
 			return;
@@ -539,10 +549,12 @@ internal partial class MauiItemsView
 
 	bool IsContainerBoundToDraggedItem(ItemContainer container)
 	{
-		return _draggedItem is not null && IsContainerBoundToItem(container, _draggedItem);
+		// Use _draggedSourceIndex as the "drag active" sentinel so that a null
+		// _draggedItem (valid null data row) does not short-circuit the check.
+		return _draggedSourceIndex >= 0 && IsContainerBoundToItem(container, _draggedItem);
 	}
 
-	static bool IsContainerBoundToItem(ItemContainer container, object item)
+	static bool IsContainerBoundToItem(ItemContainer container, object? item)
 	{
 		if (container.Child is not ElementWrapper wrapper || wrapper.VirtualView is not View view)
 		{
@@ -550,6 +562,13 @@ internal partial class MauiItemsView
 		}
 
 		var bound = view.BindingContext;
+		// Allow null-bound containers to match a null dragged item.
+		// ReferenceEquals(null, null) == true, Equals(null, null) == true.
+		if (bound is null && item is null)
+		{
+			return true;
+		}
+
 		if (bound is null)
 		{
 			return false;
@@ -619,7 +638,9 @@ internal partial class MauiItemsView
 
 	void ScrollViewer_Drop(object sender, UI.Xaml.DragEventArgs e)
 	{
-		if (!_canReorderItems || _draggedItem is null || _insertionIndex < 0 || _mauiVirtualView is null)
+		// _draggedSourceIndex < 0 means no active drag. _draggedItem may be null for
+		// null data rows, so we cannot use _draggedItem is null as the guard here.
+		if (!_canReorderItems || _draggedSourceIndex < 0 || _insertionIndex < 0 || _mauiVirtualView is null)
 		{
 			CleanupDragState();
 			return;
@@ -701,7 +722,8 @@ internal partial class MauiItemsView
 
 	bool PerformReorder(IList itemsList)
 	{
-		if (_draggedItem is null)
+		// _draggedSourceIndex < 0 means no active drag; _draggedItem may be null for null data rows.
+		if (_draggedSourceIndex < 0)
 		{
 			return false;
 		}
@@ -799,7 +821,8 @@ internal partial class MauiItemsView
 	/// </summary>
 	bool PerformGroupedReorder(IList groupsList)
 	{
-		if (_draggedItem is null || _mauiVirtualView is not GroupableItemsView groupableView)
+		// _draggedSourceIndex < 0 means no active drag; _draggedItem may be null for null data rows.
+		if (_draggedSourceIndex < 0 || _mauiVirtualView is not GroupableItemsView groupableView)
 		{
 			return false;
 		}
@@ -1179,18 +1202,23 @@ internal partial class MauiItemsView
 		// index and avoids the ambiguity where group headers and footers share the
 		// same underlying Item (the group object). Validate the tag by checking that
 		// the item at that index still matches the container's current item.
+		// The containerItem is not null guard was intentionally removed: null-item
+		// containers (valid null data rows) need tag validation too, and
+		// Equals(null, null) correctly returns true for them.
 		if (container.Tag is int tagIndex && sourceList is not null &&
 			tagIndex >= 0 && tagIndex < sourceList.Count)
 		{
 			var tagItem = GetItemAtIndex(tagIndex, sourceList);
-			if (containerItem is not null && Equals(tagItem, containerItem))
+			if (Equals(tagItem, containerItem))
 			{
 				return tagIndex;
 			}
 		}
 
 		// Tag is stale — fall back to a linear search.
-		if (sourceList is not null && containerItem is not null)
+		// The containerItem is not null guard was removed: null-item containers
+		// need linear search fallback just like any other item.
+		if (sourceList is not null)
 		{
 			var liveIndex = IndexOfItem(containerItem, sourceList);
 			if (liveIndex >= 0)
@@ -1256,6 +1284,8 @@ internal partial class MauiItemsView
 			return;
 		}
 
+		var repeater = ItemsRepeaterControl;
+
 		// Derive each container's Tag from its item's actual position in the source.
 		// A positional loop (containers[i].Tag = i) is wrong when ItemsRepeater
 		// virtualizes: FindAllContainers skips unrealized slots, so containers[i]
@@ -1269,6 +1299,20 @@ internal partial class MauiItemsView
 				if (actualIndex >= 0)
 				{
 					container.Tag = actualIndex;
+				}
+			}
+			else
+			{
+				// For null-item containers, IndexOfItem returns the first null which
+				// may be a different row. Use the ItemsRepeater's authoritative element
+				// index instead — it is always accurate after a layout pass.
+				if (repeater is not null && container is ItemContainer ic)
+				{
+					int repeaterIndex = repeater.GetElementIndex(ic);
+					if (repeaterIndex >= 0)
+					{
+						container.Tag = repeaterIndex;
+					}
 				}
 			}
 		}
@@ -1664,7 +1708,9 @@ internal partial class MauiItemsView
 	/// </summary>
 	void DimNonSourceContainers()
 	{
-		if (_draggedItem is null)
+		// _draggedSourceIndex < 0 means no drag is in progress.
+		// _draggedItem may be null for null data rows, so we cannot use that as the guard.
+		if (_draggedSourceIndex < 0)
 		{
 			return;
 		}
