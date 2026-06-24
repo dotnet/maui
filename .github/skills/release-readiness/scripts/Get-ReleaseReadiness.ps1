@@ -133,6 +133,14 @@ param(
     # from main today. Requires -SrBranch to be the prior SR (used as the
     # exclude baseline). Treats origin/main as the "SR-to-be".
     [switch]$Candidate,
+    # Display-only: mark the survey as a SHIPPED SR (its stable tag already
+    # exists). Behaves exactly like in-flight for all survey/verdict logic
+    # (surveys the SR branch directly) — it ONLY relabels the rendered report
+    # header `mode=shipped` so a post-ship tracker doesn't misreport as
+    # in-flight. Set by the workflow for the most-recently-shipped SR, whose
+    # tracker keeps refreshing until a human closes it. Mutually exclusive with
+    # -Candidate.
+    [switch]$Shipped,
     # When set in -Candidate mode, model the dotnet/maui workflow where, after
     # cutting SRn+1 from main, the prior SR (-SrBranch) is merged in. The
     # candidate's "what's shipping" set = main-since-priorSR ∪ priorSR-only commits.
@@ -1280,10 +1288,14 @@ function Get-CandidatePrChecks {
 function Resolve-Context {
     param([string]$SrBranch, [string]$Repo, [string]$MainBranch,
           [string[]]$ExcludeBranches, [switch]$NoFetch, [switch]$Candidate,
-          [switch]$InheritFromPriorSr)
+          [switch]$InheritFromPriorSr, [switch]$Shipped)
 
     if ($InheritFromPriorSr -and -not $Candidate) {
         throw "-InheritFromPriorSr is only valid with -Candidate (it models the SR cut-then-merge workflow)."
+    }
+
+    if ($Shipped -and $Candidate) {
+        throw "-Shipped and -Candidate are mutually exclusive: -Shipped surveys an existing (already-tagged) SR branch; -Candidate pre-flights main as the next SR."
     }
 
     # HARD VALIDATION — refuse inflight/staging refs as SR sources.
@@ -1332,6 +1344,13 @@ function Resolve-Context {
         # Exclude prior SR from main, so we see only "new since last SR" commits
         $effectiveExcludes = @($priorSrRef)
         Write-Host "Candidate mode: surveying $effectiveSrRef vs prior SR $priorSrRef" -ForegroundColor Cyan
+    }
+    elseif ($Shipped) {
+        # Display-only relabel. The survey is identical to in-flight (the SR
+        # branch surveyed directly); only the rendered header reads 'shipped'
+        # so the post-ship tracker doesn't misreport as in-flight.
+        $mode = 'shipped'
+        Write-Host "Shipped mode: surveying already-tagged SR branch $effectiveSrRef (display-only relabel)" -ForegroundColor Cyan
     }
 
     if ($Candidate -and $InheritFromPriorSr) {
@@ -3860,7 +3879,7 @@ function Invoke-Main {
     $excludes = $ExcludeBranches -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     $ctx = Resolve-Context -SrBranch $SrBranch -Repo $Repo -MainBranch $MainBranch `
                            -ExcludeBranches $excludes -NoFetch:$NoFetch -Candidate:$Candidate `
-                           -InheritFromPriorSr:$InheritFromPriorSr
+                           -InheritFromPriorSr:$InheritFromPriorSr -Shipped:$Shipped
 
     # Resolve regression labels
     $labelMode = 'explicit'
