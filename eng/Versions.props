@@ -221,8 +221,7 @@
     <MonoVersionBand>$(DotNetVersionBand)</MonoVersionBand>
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
-    <!-- TODO: revert to $(DotNetVersionBand) once preview.6 workload manifests are published for Android -->
-    <DotNetAndroidManifestVersionBand>11.0.100-preview.5</DotNetAndroidManifestVersionBand>
+    <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet110_265PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
