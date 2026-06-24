@@ -1,9 +1,12 @@
-#nullable enable
+﻿#nullable enable
 *REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 *REMOVED*~static Microsoft.Maui.Controls.VisualStateManager.GetVisualStateGroups(Microsoft.Maui.Controls.VisualElement visualElement) -> System.Collections.Generic.IList<Microsoft.Maui.Controls.VisualStateGroup>
 Microsoft.Maui.Controls.AppThemeBinding
 Microsoft.Maui.Controls.AppThemeBinding.AppThemeBinding() -> void
 Microsoft.Maui.Controls.BoxView.~BoxView() -> void
+Microsoft.Maui.Controls.HybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.Controls.HybridWebView.Invoker.set -> void
+Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
 Microsoft.Maui.Controls.ImageSource.InvalidateStyle() -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer
 Microsoft.Maui.Controls.LongPressGestureRecognizer.AllowableMovement.get -> double
@@ -113,3 +116,4 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default, Microsoft.Maui.LineBreakMode defaultLineBreakMode = Microsoft.Maui.LineBreakMode.WordWrap) -> Foundation.NSAttributedString!
 *REMOVED*static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.Span! span, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
 static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.Span! span, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default, Microsoft.Maui.LineBreakMode defaultLineBreakMode = Microsoft.Maui.LineBreakMode.WordWrap) -> Foundation.NSAttributedString!
+override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
