@@ -84,7 +84,7 @@ if (-not [string]::IsNullOrWhiteSpace($TemplateArgsJson)) {
     $templateArgs = @(ConvertFrom-Json $TemplateArgsJson | ForEach-Object { [string]$_ })
 }
 
-$dotnetNewArgs = @("new", $Template, "-n", $ProjectName, "-o", $projectDir, "--framework", $DotNetTfm) + $templateArgs
+$dotnetNewArgs = @("new", $Template, "-n", $ProjectName, "-o", $projectDir, "--framework", $DotNetTfm, "--no-restore") + $templateArgs
 Write-Host "Creating project: dotnet $($dotnetNewArgs -join ' ')"
 & dotnet @dotnetNewArgs
 

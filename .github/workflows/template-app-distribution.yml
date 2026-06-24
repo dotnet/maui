@@ -74,14 +74,14 @@ jobs:
       app_build_number: ${{ steps.version.outputs.app_build_number }}
     steps:
       - name: Checkout workflow scripts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
           path: trusted
           persist-credentials: false
 
       - name: Checkout template source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.source_ref }}
           path: source
@@ -155,27 +155,27 @@ jobs:
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
       - name: Checkout workflow scripts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
           path: trusted
           persist-credentials: false
 
       - name: Checkout template source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.source_ref }}
           path: source
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ needs.prepare.outputs.dotnet_sdk }}
 
       - name: Setup Java
         if: ${{ matrix.platform == 'android' }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: microsoft
           java-version: "17"
@@ -309,7 +309,7 @@ jobs:
             -AppBuildNumber "$env:APP_BUILD_NUMBER"
 
       - name: Upload dry-run artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.platform }}-${{ needs.prepare.outputs.source_sha }}
           path: |
@@ -398,27 +398,27 @@ jobs:
           }
 
       - name: Checkout workflow scripts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
           path: trusted
           persist-credentials: false
 
       - name: Checkout template source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.source_ref }}
           path: source
           persist-credentials: false
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ needs.prepare.outputs.dotnet_sdk }}
 
       - name: Setup Java
         if: ${{ matrix.platform == 'android' }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: microsoft
           java-version: "17"
@@ -593,7 +593,7 @@ jobs:
 
       - name: Upload artifact copy
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: template-app-publish-${{ matrix.variant }}-${{ matrix.platform }}-${{ needs.prepare.outputs.source_sha }}
           path: |

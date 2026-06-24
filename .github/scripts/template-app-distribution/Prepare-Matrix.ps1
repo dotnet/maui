@@ -113,13 +113,13 @@ $platformDefinitions = [ordered]@{
         runtimeIdentifier = "android-arm64"
     }
     ios = [ordered]@{
-        runner = "macos-latest"
+        runner = "macos-15"
         workload = "maui-ios"
         targetFramework = "$DotNetTfm-ios"
         runtimeIdentifier = "ios-arm64"
     }
     maccatalyst = [ordered]@{
-        runner = "macos-latest"
+        runner = "macos-15"
         workload = "maui-maccatalyst"
         targetFramework = "$DotNetTfm-maccatalyst"
         runtimeIdentifier = ""
