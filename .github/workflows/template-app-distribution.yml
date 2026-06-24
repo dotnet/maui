@@ -18,9 +18,13 @@
 # - TEMPLATE_APP_IDENTIFIER_PREFIX (variable): defaults to com.<repository-owner>.maui.template.
 # - TEMPLATE_APP_VARIANTS_JSON (variable): adds or overrides variant definitions.
 # - TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON (secret): maps variant names to base64 provisioning profiles.
+# - TEMPLATE_APP_MACCATALYST_PROVISIONING_PROFILES_JSON (secret): maps variant names to base64 Mac App Store provisioning profiles.
 # - TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID / TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID (variables)
 # - TEMPLATE_APP_BLANK_IOS_BUNDLE_ID / TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID (variables)
+# - TEMPLATE_APP_BLANK_MACCATALYST_BUNDLE_ID / TEMPLATE_APP_SAMPLE_MACCATALYST_BUNDLE_ID (variables)
 # - TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID / TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID (variables)
+# - TEMPLATE_APP_BLANK_MACCATALYST_PROVISIONING_PROFILE_BASE64 / TEMPLATE_APP_SAMPLE_MACCATALYST_PROVISIONING_PROFILE_BASE64 (secrets)
+# - TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_BASE64 / TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_PASSWORD (secrets)
 # - TEMPLATE_APP_ANDROID_KEYSTORE_TYPE (variable): optional keystore type, for example pkcs12.
 # - TEMPLATE_APP_PLAY_TRACK (variable): defaults to internal.
 # - TEMPLATE_APP_PLAY_RELEASE_STATUS (variable): defaults to completed; use draft for first uploads to draft Play apps.
@@ -128,6 +132,8 @@ jobs:
           TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID }}
           TEMPLATE_APP_BLANK_IOS_BUNDLE_ID: ${{ vars.TEMPLATE_APP_BLANK_IOS_BUNDLE_ID }}
           TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID: ${{ vars.TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID }}
+          TEMPLATE_APP_BLANK_MACCATALYST_BUNDLE_ID: ${{ vars.TEMPLATE_APP_BLANK_MACCATALYST_BUNDLE_ID }}
+          TEMPLATE_APP_SAMPLE_MACCATALYST_BUNDLE_ID: ${{ vars.TEMPLATE_APP_SAMPLE_MACCATALYST_BUNDLE_ID }}
           TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID }}
           TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID }}
         run: |
@@ -175,7 +181,7 @@ jobs:
           java-version: "17"
 
       - name: Setup Xcode
-        if: ${{ matrix.platform == 'ios' }}
+        if: ${{ matrix.platform == 'ios' || matrix.platform == 'maccatalyst' }}
         shell: bash
         run: |
           XCODE_INFO=$(python3 - <<'PY'
@@ -253,7 +259,7 @@ jobs:
       - name: Install MAUI workload
         shell: pwsh
         run: |
-          if ("${{ matrix.platform }}" -eq "ios") {
+          if ("${{ matrix.platform }}" -eq "ios" -or "${{ matrix.platform }}" -eq "maccatalyst") {
             dotnet workload install ${{ matrix.workload }} --skip-manifest-update
           } else {
             dotnet workload install ${{ matrix.workload }}
@@ -339,10 +345,14 @@ jobs:
           IOS_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64 || matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64 || '' }}
+          MACCATALYST_PROVISIONING_PROFILE_BASE64: ${{ matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_MACCATALYST_PROVISIONING_PROFILE_BASE64 || matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_MACCATALYST_PROVISIONING_PROFILE_BASE64 || '' }}
           IOS_PROVISIONING_PROFILES_JSON: ${{ secrets.TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON }}
+          MACCATALYST_PROVISIONING_PROFILES_JSON: ${{ secrets.TEMPLATE_APP_MACCATALYST_PROVISIONING_PROFILES_JSON }}
           APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
           APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
           APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY }}
+          MAC_INSTALLER_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_BASE64 }}
+          MAC_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_PASSWORD }}
         run: |
           $missing = [System.Collections.Generic.List[string]]::new()
 
@@ -364,6 +374,18 @@ jobs:
               $variantSecretName = $env:VARIANT.ToUpperInvariant()
               $missing.Add("TEMPLATE_APP_${variantSecretName}_IOS_PROVISIONING_PROFILE_BASE64 or TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON")
             }
+            Test-RequiredEnvironment "APPSTORE_CONNECT_ISSUER_ID" "TEMPLATE_APPSTORE_CONNECT_ISSUER_ID"
+            Test-RequiredEnvironment "APPSTORE_CONNECT_KEY_ID" "TEMPLATE_APPSTORE_CONNECT_KEY_ID"
+            Test-RequiredEnvironment "APPSTORE_CONNECT_PRIVATE_KEY" "TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY"
+          } elseif ($env:PLATFORM -eq "maccatalyst") {
+            Test-RequiredEnvironment "IOS_CERTIFICATE_BASE64" "TEMPLATE_APP_IOS_CERTIFICATE_BASE64"
+            Test-RequiredEnvironment "IOS_CERTIFICATE_PASSWORD" "TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD"
+            if ([string]::IsNullOrWhiteSpace($env:MACCATALYST_PROVISIONING_PROFILE_BASE64) -and [string]::IsNullOrWhiteSpace($env:MACCATALYST_PROVISIONING_PROFILES_JSON)) {
+              $variantSecretName = $env:VARIANT.ToUpperInvariant()
+              $missing.Add("TEMPLATE_APP_${variantSecretName}_MACCATALYST_PROVISIONING_PROFILE_BASE64 or TEMPLATE_APP_MACCATALYST_PROVISIONING_PROFILES_JSON")
+            }
+            Test-RequiredEnvironment "MAC_INSTALLER_CERTIFICATE_BASE64" "TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_BASE64"
+            Test-RequiredEnvironment "MAC_INSTALLER_CERTIFICATE_PASSWORD" "TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_PASSWORD"
             Test-RequiredEnvironment "APPSTORE_CONNECT_ISSUER_ID" "TEMPLATE_APPSTORE_CONNECT_ISSUER_ID"
             Test-RequiredEnvironment "APPSTORE_CONNECT_KEY_ID" "TEMPLATE_APPSTORE_CONNECT_KEY_ID"
             Test-RequiredEnvironment "APPSTORE_CONNECT_PRIVATE_KEY" "TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY"
@@ -402,7 +424,7 @@ jobs:
           java-version: "17"
 
       - name: Setup Xcode
-        if: ${{ matrix.platform == 'ios' }}
+        if: ${{ matrix.platform == 'ios' || matrix.platform == 'maccatalyst' }}
         shell: bash
         run: |
           XCODE_INFO=$(python3 - <<'PY'
@@ -478,7 +500,7 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-path
 
       - name: Setup Ruby and fastlane
-        if: ${{ matrix.platform == 'android' || matrix.platform == 'ios' }}
+        if: ${{ matrix.platform == 'android' || matrix.platform == 'ios' || matrix.platform == 'maccatalyst' }}
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
@@ -488,7 +510,7 @@ jobs:
       - name: Install MAUI workload
         shell: pwsh
         run: |
-          if ("${{ matrix.platform }}" -eq "ios") {
+          if ("${{ matrix.platform }}" -eq "ios" -or "${{ matrix.platform }}" -eq "maccatalyst") {
             dotnet workload install ${{ matrix.workload }} --skip-manifest-update
           } else {
             dotnet workload install ${{ matrix.workload }}
@@ -535,16 +557,19 @@ jobs:
             -AppBuildNumber "$env:APP_BUILD_NUMBER"
 
       - name: Install Apple signing assets
-        if: ${{ matrix.platform == 'ios' }}
+        if: ${{ matrix.platform == 'ios' || matrix.platform == 'maccatalyst' }}
         shell: pwsh
         env:
           IOS_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_BASE64 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_IOS_CERTIFICATE_PASSWORD }}
-          IOS_PROVISIONING_PROFILE_BASE64: ${{ matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64 || matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64 || '' }}
-          IOS_PROVISIONING_PROFILES_JSON: ${{ secrets.TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON }}
+          APPLE_PROVISIONING_PROFILE_BASE64: ${{ matrix.platform == 'ios' && matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_IOS_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'ios' && matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_IOS_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'maccatalyst' && matrix.variant == 'blank' && secrets.TEMPLATE_APP_BLANK_MACCATALYST_PROVISIONING_PROFILE_BASE64 || matrix.platform == 'maccatalyst' && matrix.variant == 'sample' && secrets.TEMPLATE_APP_SAMPLE_MACCATALYST_PROVISIONING_PROFILE_BASE64 || '' }}
+          APPLE_PROVISIONING_PROFILES_JSON: ${{ matrix.platform == 'ios' && secrets.TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON || matrix.platform == 'maccatalyst' && secrets.TEMPLATE_APP_MACCATALYST_PROVISIONING_PROFILES_JSON || '' }}
+          MAC_INSTALLER_CERTIFICATE_BASE64: ${{ secrets.TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_BASE64 }}
+          MAC_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.TEMPLATE_APP_MAC_INSTALLER_CERTIFICATE_PASSWORD }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Install-AppleSigningAssets.ps1" `
-            -Variant "${{ matrix.variant }}"
+            -Variant "${{ matrix.variant }}" `
+            -Platform "${{ matrix.platform }}"
 
       - name: Build generated app
         id: build
@@ -610,7 +635,7 @@ jobs:
             "version_name:$env:APP_DISPLAY_VERSION"
 
       - name: Write App Store Connect API key
-        if: ${{ matrix.platform == 'ios' }}
+        if: ${{ matrix.platform == 'ios' || matrix.platform == 'maccatalyst' }}
         shell: pwsh
         env:
           APPSTORE_CONNECT_PRIVATE_KEY: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_PRIVATE_KEY }}
@@ -640,6 +665,23 @@ jobs:
           & bundle exec fastlane ios template_app_testflight `
             "ipa:${{ steps.build.outputs.package_path }}" `
             "app_identifier:${{ matrix.iosBundleId }}" `
+            "issuer_id:$env:APPSTORE_CONNECT_ISSUER_ID" `
+            "api_key_id:$env:APPSTORE_CONNECT_KEY_ID" `
+            "api_private_key_path:$env:APPSTORE_CONNECT_PRIVATE_KEY_PATH" `
+            "groups:$env:TEMPLATE_APP_TESTFLIGHT_GROUPS"
+
+      - name: Publish Mac Catalyst to TestFlight with fastlane
+        if: ${{ matrix.platform == 'maccatalyst' }}
+        shell: pwsh
+        working-directory: trusted/.github/scripts/template-app-distribution/fastlane
+        env:
+          APPSTORE_CONNECT_ISSUER_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_ISSUER_ID }}
+          APPSTORE_CONNECT_KEY_ID: ${{ secrets.TEMPLATE_APPSTORE_CONNECT_KEY_ID }}
+        run: |
+          & bundle exec fastlane ios template_app_testflight `
+            "pkg:${{ steps.build.outputs.package_path }}" `
+            "app_identifier:${{ matrix.maccatalystBundleId }}" `
+            "app_platform:mac" `
             "issuer_id:$env:APPSTORE_CONNECT_ISSUER_ID" `
             "api_key_id:$env:APPSTORE_CONNECT_KEY_ID" `
             "api_private_key_path:$env:APPSTORE_CONNECT_PRIVATE_KEY_PATH" `

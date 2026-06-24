@@ -2,7 +2,10 @@
 
 param(
     [Parameter(Mandatory)]
-    [string]$Variant
+    [string]$Variant,
+
+    [ValidateSet("ios", "maccatalyst")]
+    [string]$Platform = "ios"
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,6 +33,18 @@ function Get-SecretText([string]$Value) {
 }
 
 function Get-VariantProvisioningProfile([string]$VariantName) {
+    if (-not [string]::IsNullOrWhiteSpace($env:APPLE_PROVISIONING_PROFILES_JSON)) {
+        $profiles = Get-SecretText $env:APPLE_PROVISIONING_PROFILES_JSON | ConvertFrom-Json
+        $property = $profiles.PSObject.Properties | Where-Object { $_.Name -eq $VariantName } | Select-Object -First 1
+        if ($property -and -not [string]::IsNullOrWhiteSpace([string]$property.Value)) {
+            return [string]$property.Value
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($env:APPLE_PROVISIONING_PROFILE_BASE64)) {
+        return $env:APPLE_PROVISIONING_PROFILE_BASE64
+    }
+
     if (-not [string]::IsNullOrWhiteSpace($env:IOS_PROVISIONING_PROFILES_JSON)) {
         $profiles = Get-SecretText $env:IOS_PROVISIONING_PROFILES_JSON | ConvertFrom-Json
         $property = $profiles.PSObject.Properties | Where-Object { $_.Name -eq $VariantName } | Select-Object -First 1
@@ -42,7 +57,7 @@ function Get-VariantProvisioningProfile([string]$VariantName) {
         return $env:IOS_PROVISIONING_PROFILE_BASE64
     }
 
-    throw "No iOS provisioning profile was provided for variant '$VariantName'. Set IOS_PROVISIONING_PROFILES_JSON or IOS_PROVISIONING_PROFILE_BASE64."
+    throw "No Apple provisioning profile was provided for variant '$VariantName' on '$Platform'. Set APPLE_PROVISIONING_PROFILES_JSON or APPLE_PROVISIONING_PROFILE_BASE64."
 }
 
 function Write-Base64File([string]$Base64Value, [string]$Path) {
@@ -78,14 +93,34 @@ if ([string]::IsNullOrWhiteSpace($keychainPassword)) {
 $existingKeychains = & security list-keychains -d user | ForEach-Object { $_.Trim().Trim('"') }
 & security list-keychains -d user -s $keychainPath @existingKeychains
 & security import $certificatePath -k $keychainPath -P $certificatePassword -T /usr/bin/codesign -T /usr/bin/security
+
+if ($Platform -eq "maccatalyst" -and -not [string]::IsNullOrWhiteSpace($env:MAC_INSTALLER_CERTIFICATE_BASE64)) {
+    $installerCertificatePath = Join-Path $tempDirectory "mac-installer-certificate.p12"
+    Write-Base64File $env:MAC_INSTALLER_CERTIFICATE_BASE64 $installerCertificatePath
+    $installerCertificatePassword = if ([string]::IsNullOrWhiteSpace($env:MAC_INSTALLER_CERTIFICATE_PASSWORD)) {
+        $certificatePassword
+    } else {
+        $env:MAC_INSTALLER_CERTIFICATE_PASSWORD
+    }
+
+    & security import $installerCertificatePath -k $keychainPath -P $installerCertificatePassword -T /usr/bin/productbuild -T /usr/bin/security
+}
+
 & security set-key-partition-list -S apple-tool:,apple: -s -k $keychainPassword $keychainPath
 
-$identities = @()
-foreach ($line in (& security find-identity -v -p codesigning $keychainPath)) {
-    if ($line -match '"(.+)"') {
-        $identities += $Matches[1]
+function Get-SecurityIdentities([string[]]$Arguments) {
+    $result = @()
+    foreach ($line in (& security find-identity @Arguments $keychainPath)) {
+        if ($line -match '"(.+)"') {
+            $result += $Matches[1]
+        }
     }
+
+    return $result
 }
+
+$identities = Get-SecurityIdentities @("-v", "-p", "codesigning")
+$allIdentities = Get-SecurityIdentities @("-v")
 
 $codesignIdentity = $identities |
     Where-Object { $_ -match "Apple Distribution|iPhone Distribution" } |
@@ -97,6 +132,23 @@ if ([string]::IsNullOrWhiteSpace($codesignIdentity)) {
 
 if ([string]::IsNullOrWhiteSpace($codesignIdentity)) {
     throw "No code signing identity was found in the imported certificate."
+}
+
+$packageSigningIdentity = $null
+if ($Platform -eq "maccatalyst") {
+    $packageSigningIdentity = $allIdentities |
+        Where-Object { $_ -match "3rd Party Mac Developer Installer|Mac Installer Distribution" } |
+        Select-Object -First 1
+
+    if ([string]::IsNullOrWhiteSpace($packageSigningIdentity)) {
+        throw "No Mac installer package signing identity was found. Import a p12 containing a '3rd Party Mac Developer Installer' identity with MAC_INSTALLER_CERTIFICATE_BASE64."
+    }
+}
+
+foreach ($line in (& security find-identity -v -p codesigning $keychainPath)) {
+    if ($line -match '"(.+)"') {
+        Write-Host "Code signing identity: $($Matches[1])"
+    }
 }
 
 & security cms -D -i $profilePath | Out-File -FilePath $profilePlistPath -Encoding utf8
@@ -113,15 +165,26 @@ Copy-Item -Path $profilePath -Destination (Join-Path $profilesDirectory "$profil
 
 Write-Host "Installed provisioning profile '$profileName' ($profileUuid)"
 Write-Host "Using code signing identity '$codesignIdentity'"
+if ($Platform -eq "maccatalyst") {
+    Write-Host "Using package signing identity '$packageSigningIdentity'"
+}
 
 if ($env:GITHUB_ENV) {
     "IOS_CODESIGN_KEY=$codesignIdentity" >> $env:GITHUB_ENV
     "IOS_CODESIGN_PROVISION=$profileName" >> $env:GITHUB_ENV
+    "APPLE_CODESIGN_KEY=$codesignIdentity" >> $env:GITHUB_ENV
+    "APPLE_CODESIGN_PROVISION=$profileName" >> $env:GITHUB_ENV
+    if ($Platform -eq "maccatalyst") {
+        "APPLE_PACKAGE_SIGNING_KEY=$packageSigningIdentity" >> $env:GITHUB_ENV
+    }
     "IOS_KEYCHAIN_PATH=$keychainPath" >> $env:GITHUB_ENV
 }
 
 if ($env:GITHUB_OUTPUT) {
     "codesign_key=$codesignIdentity" >> $env:GITHUB_OUTPUT
     "codesign_provision=$profileName" >> $env:GITHUB_OUTPUT
+    if ($Platform -eq "maccatalyst") {
+        "package_signing_key=$packageSigningIdentity" >> $env:GITHUB_OUTPUT
+    }
     "keychain_path=$keychainPath" >> $env:GITHUB_OUTPUT
 }

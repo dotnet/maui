@@ -49,7 +49,7 @@ platform :android do
 end
 
 platform :ios do
-  desc "Upload a generated MAUI template IPA to TestFlight"
+  desc "Upload a generated MAUI template IPA or Mac Catalyst PKG to TestFlight"
   lane :template_app_testflight do |options|
     groups = optional_option(options, :groups).to_s.split(",").map(&:strip).reject(&:empty?)
     changelog = release_notes
@@ -60,12 +60,19 @@ platform :ios do
     )
 
     upload_options = {
-      ipa: required_option(options, :ipa),
       app_identifier: required_option(options, :app_identifier),
       api_key: api_key,
       uses_non_exempt_encryption: false,
       skip_waiting_for_build_processing: groups.empty? && changelog.nil?
     }
+
+    pkg = optional_option(options, :pkg)
+    if pkg.nil?
+      upload_options[:ipa] = required_option(options, :ipa)
+    else
+      upload_options[:pkg] = pkg
+      upload_options[:app_platform] = optional_option(options, :app_platform) || "mac"
+    end
 
     upload_options[:changelog] = changelog unless changelog.nil?
 

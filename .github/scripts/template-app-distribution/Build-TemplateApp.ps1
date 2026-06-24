@@ -5,13 +5,14 @@ param(
     [string]$ProjectPath,
 
     [Parameter(Mandatory)]
-    [ValidateSet("android", "ios", "windows")]
+    [ValidateSet("android", "ios", "maccatalyst", "windows")]
     [string]$Platform,
 
     [Parameter(Mandatory)]
     [string]$TargetFramework,
 
     [Parameter(Mandatory)]
+    [AllowEmptyString()]
     [string]$RuntimeIdentifier,
 
     [Parameter(Mandatory)]
@@ -156,6 +157,68 @@ switch ($Platform) {
             }
         } else {
             $appBundle = Get-NewestBuildOutput $ProjectPath "*.app" -Directory
+            if ($appBundle) {
+                $zipPath = Join-Path $OutputPath "$($appBundle.Name).zip"
+                Compress-Archive -Path $appBundle.FullName -DestinationPath $zipPath -Force
+                $package = Get-Item $zipPath
+            }
+        }
+    }
+
+    "maccatalyst" {
+        $arguments = @(
+            "publish", $projectFile.FullName,
+            "-f", $TargetFramework,
+            "-c", $Configuration,
+            "-p:MtouchLink=SdkOnly",
+            "-p:ApplicationDisplayVersion=$AppDisplayVersion",
+            "-p:ApplicationVersion=$AppBuildNumber",
+            "-p:ValidateXcodeVersion=false",
+            "/bl:$binlogPath"
+        )
+
+        if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
+            $arguments += @("-r", $RuntimeIdentifier)
+        }
+
+        if ($Publish) {
+            $codesignKey = Assert-EnvironmentValue "APPLE_CODESIGN_KEY"
+            $codesignProvision = Assert-EnvironmentValue "APPLE_CODESIGN_PROVISION"
+            $packageSigningKey = Assert-EnvironmentValue "APPLE_PACKAGE_SIGNING_KEY"
+            $arguments += @(
+                "-p:CreatePackage=true",
+                "-p:EnableCodeSigning=true",
+                "-p:EnablePackageSigning=true",
+                "-p:CodesignKey=$codesignKey",
+                "-p:CodesignProvision=$codesignProvision",
+                "-p:CodesignEntitlements=Platforms/MacCatalyst/Entitlements.plist",
+                "-p:PackageSigningKey=$packageSigningKey",
+                "-o", $OutputPath
+            )
+        } else {
+            $arguments += @(
+                "-p:CreatePackage=false",
+                "-p:_RequireCodeSigning=false",
+                "-p:EnableCodeSigning=false",
+                "-p:CodesignKey=-",
+                "-o", $OutputPath
+            )
+        }
+
+        Write-Host "Building Mac Catalyst package for $($projectFile.FullName)"
+        & dotnet @arguments
+
+        if ($Publish) {
+            $package = Get-NewestBuildOutput $ProjectPath "*.pkg"
+            if (-not $package) {
+                $package = Get-NewestBuildOutput $OutputPath "*.pkg"
+            }
+        } else {
+            $appBundle = Get-NewestBuildOutput $OutputPath "*.app" -Directory
+            if (-not $appBundle) {
+                $appBundle = Get-NewestBuildOutput $ProjectPath "*.app" -Directory
+            }
+
             if ($appBundle) {
                 $zipPath = Join-Path $OutputPath "$($appBundle.Name).zip"
                 Compress-Archive -Path $appBundle.FullName -DestinationPath $zipPath -Force

@@ -68,6 +68,12 @@ function Merge-VariantDefinition($Definitions, [string]$Name, $Definition) {
 }
 
 $identifierPrefix = Get-DefaultIdentifierPrefix
+$blankDefaultIdentifier = "$identifierPrefix.blank"
+$blankIosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_IOS_BUNDLE_ID" $blankDefaultIdentifier
+$blankMacCatalystBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_MACCATALYST_BUNDLE_ID" $blankIosBundleId
+$sampleDefaultIdentifier = "$identifierPrefix.sample"
+$sampleIosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID" $sampleDefaultIdentifier
+$sampleMacCatalystBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_MACCATALYST_BUNDLE_ID" $sampleIosBundleId
 
 $variantDefinitions = [ordered]@{
     blank = [ordered]@{
@@ -75,18 +81,20 @@ $variantDefinitions = [ordered]@{
         projectName = "MauiTemplateBlank"
         template = "maui"
         templateArgs = @()
-        androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID" "$identifierPrefix.blank"
-        iosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_IOS_BUNDLE_ID" "$identifierPrefix.blank"
-        windowsApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID" "$identifierPrefix.blank"
+        androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID" $blankDefaultIdentifier
+        iosBundleId = $blankIosBundleId
+        maccatalystBundleId = $blankMacCatalystBundleId
+        windowsApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID" $blankDefaultIdentifier
     }
     sample = [ordered]@{
         displayName = "MAUI Template Sample"
         projectName = "MauiTemplateSample"
         template = "maui"
         templateArgs = @("--sample-content")
-        androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID" "$identifierPrefix.sample"
-        iosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID" "$identifierPrefix.sample"
-        windowsApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID" "$identifierPrefix.sample"
+        androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID" $sampleDefaultIdentifier
+        iosBundleId = $sampleIosBundleId
+        maccatalystBundleId = $sampleMacCatalystBundleId
+        windowsApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID" $sampleDefaultIdentifier
     }
 }
 
@@ -109,6 +117,12 @@ $platformDefinitions = [ordered]@{
         workload = "maui-ios"
         targetFramework = "$DotNetTfm-ios"
         runtimeIdentifier = "ios-arm64"
+    }
+    maccatalyst = [ordered]@{
+        runner = "macos-latest"
+        workload = "maui-maccatalyst"
+        targetFramework = "$DotNetTfm-maccatalyst"
+        runtimeIdentifier = ""
     }
     windows = [ordered]@{
         runner = "windows-latest"
@@ -147,6 +161,13 @@ foreach ($variantName in $selectedVariants) {
         $platform = $platformDefinitions[$platformName]
         $applicationId = switch ($platformName) {
             "ios" { $variant.iosBundleId }
+            "maccatalyst" {
+                if ([string]::IsNullOrWhiteSpace($variant.maccatalystBundleId)) {
+                    $variant.iosBundleId
+                } else {
+                    $variant.maccatalystBundleId
+                }
+            }
             "windows" {
                 if ([string]::IsNullOrWhiteSpace($variant.windowsApplicationId)) {
                     $variant.androidApplicationId
@@ -162,6 +183,11 @@ foreach ($variantName in $selectedVariants) {
         }
 
         $templateArgs = @(ConvertTo-StringArray $variant.templateArgs)
+        $maccatalystBundleId = if ([string]::IsNullOrWhiteSpace($variant.maccatalystBundleId)) {
+            $variant.iosBundleId
+        } else {
+            $variant.maccatalystBundleId
+        }
         $windowsApplicationId = if ([string]::IsNullOrWhiteSpace($variant.windowsApplicationId)) {
             $variant.androidApplicationId
         } else {
@@ -187,6 +213,7 @@ foreach ($variantName in $selectedVariants) {
             applicationId = [string]$applicationId
             androidApplicationId = [string]$variant.androidApplicationId
             iosBundleId = [string]$variant.iosBundleId
+            maccatalystBundleId = [string]$maccatalystBundleId
             windowsApplicationId = [string]$windowsApplicationId
         }
     }
