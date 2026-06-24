@@ -620,7 +620,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					NavigationItem.LeftBarButtonItem =
 						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
-						
+
 					// For iOS 26+, explicitly set the tint color on the bar button item
 					// because the navigation bar's tint color is not automatically inherited
 					if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
@@ -1361,6 +1361,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var currentFrame = ViewController.View.Frame;
+
+			// Skip frame adjustment for transparent Shell nav bar where Y=0 is intentional (content extends behind bar).
+			if (navBar.Translucent && currentFrame.Y == 0)
+				return;
+
 			var navBarBottom = navBar.Frame.Bottom;
 
 			if (currentFrame.Y == 0 && navBarBottom > 0 &&
