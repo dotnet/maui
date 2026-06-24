@@ -108,6 +108,95 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Border ContentPanel IsTabStop is false when Border is disabled")]
+		public async Task ContentPanelIsTabStopFalseWhenBorderIsDisabled()
+		{
+			SetupBuilder();
+
+			var border = new Border()
+			{
+				Content = new Label
+				{
+					Text = "Disabled Border"
+				},
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100,
+				IsEnabled = false
+			};
+
+			border.GestureRecognizers.Add(new TapGestureRecognizer());
+
+			await AttachAndRun(border, handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+				Assert.False(contentPanel.IsTabStop);
+			});
+		}
+
+		[Fact(DisplayName = "Border ContentPanel IsTabStop resets to false when TapGestureRecognizer is removed at runtime")]
+		public async Task ContentPanelIsTabStopResetsOnRuntimeRecognizerRemoval()
+		{
+			SetupBuilder();
+
+			var tapRecognizer = new TapGestureRecognizer();
+			var border = new Border()
+			{
+				Content = new Label
+				{
+					Text = "Border"
+				},
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100
+			};
+
+			border.GestureRecognizers.Add(tapRecognizer);
+
+			await AttachAndRun(border, async handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+				Assert.True(contentPanel.IsTabStop);
+
+				await InvokeOnMainThreadAsync(() => border.GestureRecognizers.Remove(tapRecognizer));
+
+				Assert.False(contentPanel.IsTabStop);
+			});
+		}
+
+		[Fact(DisplayName = "Border ContentPanel IsTabStop updates when TapGestureRecognizer Buttons changes at runtime")]
+		public async Task ContentPanelIsTabStopUpdatesOnRecognizerButtonsChange()
+		{
+			SetupBuilder();
+
+			var tapRecognizer = new TapGestureRecognizer { Buttons = ButtonsMask.Primary };
+			var border = new Border()
+			{
+				Content = new Label { Text = "Border" },
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100
+			};
+
+			border.GestureRecognizers.Add(tapRecognizer);
+
+			await AttachAndRun(border, async handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+
+				// Primary single-tap → should be keyboard-focusable
+				Assert.True(contentPanel.IsTabStop);
+
+				// Change to Secondary-only → no longer keyboard-actionable
+				await InvokeOnMainThreadAsync(() => tapRecognizer.Buttons = ButtonsMask.Secondary);
+				Assert.False(contentPanel.IsTabStop);
+
+				// Restore to Primary → keyboard-focusable again
+				await InvokeOnMainThreadAsync(() => tapRecognizer.Buttons = ButtonsMask.Primary);
+				Assert.True(contentPanel.IsTabStop);
+			});
+		}
+
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
 

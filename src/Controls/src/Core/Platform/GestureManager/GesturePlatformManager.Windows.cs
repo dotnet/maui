@@ -116,7 +116,10 @@ namespace Microsoft.Maui.Controls.Platform
 						_control.DoubleTapped -= HandleDoubleTapped;
 					}
 
-					// Ensure KeyDown handler on the old ContentPanel (Border) is detached before reassigning _control.
+					// Needed for handler re-use or hot-reload: if _control is reassigned while a KeyDown
+					// subscription is live, detach it from the old ContentPanel before the swap.
+					// During Dispose this is a no-op because ClearContainerEventHandlers() already
+					// cleared ContentPanelKeyDownSubscribed before Control is set to null.
 					UpdateContentPanelIsTapStop(false);
 				}
 
@@ -302,12 +305,20 @@ namespace Microsoft.Maui.Controls.Platform
 					gestureRecognizersBefore.CollectionChanged -= _collectionChangedHandler;
 				}
 
+				// Unsubscribe from the old element before swapping, to avoid stale callbacks.
+				_element?.PropertyChanged -= HandleElementPropertyChanged;
+
 				_element = value;
 
 				if (_element is View && ElementGestureRecognizers is { } gestureRecognizersAfter)
 				{
 					gestureRecognizersAfter.CollectionChanged += _collectionChangedHandler;
 				}
+
+				// Subscribe to IsEnabled changes so Border keyboard focus state stays in sync
+				// when IsEnabled is toggled at runtime (ContentPanel is a Panel, not a Control,
+				// so MapIsEnabled does not propagate IsEnabled to it automatically).
+				_element?.PropertyChanged += HandleElementPropertyChanged;
 			}
 		}
 
@@ -403,6 +414,10 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
 					}
+					foreach (var tapGesture in gestureRecognizers.GetGesturesFor<TapGestureRecognizer>())
+					{
+						tapGesture.PropertyChanged -= HandleTapGestureRecognizerPropertyChanged;
+					}
 				}
 			}
 
@@ -416,16 +431,19 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_control is ContentPanel contentPanel && contentPanel.CrossPlatformLayout is IBorderView)
 			{
+				// A disabled Border must not be keyboard-focusable even if it has a TapGestureRecognizer.
+				// ContentPanel derives from Panel, so MapIsEnabled does not propagate IsEnabled to it.
+				bool shouldEnable = canAllowTabStop && (Element is not View v || v.IsEnabled);
 				bool isSubscribed = (_subscriptionFlags & SubscriptionFlags.ContentPanelKeyDownSubscribed) != 0;
 
-				if (canAllowTabStop && !isSubscribed)
+				if (shouldEnable && !isSubscribed)
 				{
 					contentPanel.IsTabStop = true;
 					contentPanel.UseSystemFocusVisuals = true;
 					contentPanel.KeyDown += ContentPanelOnKeyDown;
 					_subscriptionFlags |= SubscriptionFlags.ContentPanelKeyDownSubscribed;
 				}
-				else if (!canAllowTabStop && isSubscribed)
+				else if (!shouldEnable && isSubscribed)
 				{
 					contentPanel.IsTabStop = false;
 					contentPanel.UseSystemFocusVisuals = false;
@@ -1069,6 +1087,13 @@ namespace Microsoft.Maui.Controls.Platform
 				g.NumberOfTapsRequired == 1 &&
 				(g.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
 
+			// Subscribe to property changes on all tap recognizers so IsTabStop stays in sync
+			// when Buttons or NumberOfTapsRequired change at runtime without a collection change.
+			foreach (var tapGesture in gestures.GetGesturesFor<TapGestureRecognizer>())
+			{
+				tapGesture.PropertyChanged += HandleTapGestureRecognizerPropertyChanged;
+			}
+
 			if (hasSelfSingleTap
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
@@ -1203,6 +1228,27 @@ namespace Microsoft.Maui.Controls.Platform
 				e.PropertyName == DropGestureRecognizer.AllowDropProperty.PropertyName)
 			{
 				UpdateDragAndDropGestureRecognizers();
+			}
+		}
+
+		void HandleElementPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName
+				&& _control is ContentPanel { CrossPlatformLayout: IBorderView })
+			{
+				// ContentPanel derives from Panel, so MapIsEnabled does not propagate to it.
+				// Recompute keyboard focus state when IsEnabled changes at runtime.
+				UpdatingGestureRecognizers();
+			}
+		}
+
+		void HandleTapGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName is nameof(TapGestureRecognizer.NumberOfTapsRequired) or nameof(TapGestureRecognizer.Buttons)
+				&& _control is ContentPanel { CrossPlatformLayout: IBorderView })
+			{
+				// Recompute keyboard focus state when tap recognizer properties change at runtime.
+				UpdatingGestureRecognizers();
 			}
 		}
 
