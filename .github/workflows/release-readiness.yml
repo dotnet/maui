@@ -184,6 +184,12 @@ jobs:
               fi
               SR_ARG="$PRIOR_SR"
               CANDIDATE_ARG=(-Candidate)
+            elif [ "$MODE" = "shipped" ]; then
+              # Already-tagged SR: survey the branch directly (same as in-flight),
+              # but pass -Shipped so the rendered header reads mode=shipped rather
+              # than misreporting the post-ship tracker as in-flight.
+              SR_ARG="$BRANCH_NAME"
+              CANDIDATE_ARG=(-Shipped)
             else
               SR_ARG="$BRANCH_NAME"
             fi
@@ -242,6 +248,7 @@ jobs:
           MILESTONE_NAME:     ${{ matrix.milestoneName }}
           BODY_FILE:          ${{ steps.report.outputs.body-file }}
           RECENT_COMMIT_COUNT: ${{ matrix.recentCommitCount }}
+          MODE:               ${{ matrix.mode }}
         shell: bash
         run: |
           set -euo pipefail
@@ -257,6 +264,17 @@ jobs:
             --json number,title,createdAt \
             --limit 50 \
             --jq '. // [] | sort_by(.createdAt) | .[].number')
+
+          # Shipped trackers are REFRESH-ONLY. The most-recently-shipped SR keeps
+          # surfacing post-ship follow-up (adding the build to the GitHub issue
+          # version dropdown, release notes, milestone close-out) while its tracker
+          # issue stays OPEN, but we never (re)create it. Once a human closes the
+          # tracker, it stays closed — "update until closed manually" without
+          # resurrecting a closed issue on the next scheduled run.
+          if [ "$MODE" = "shipped" ] && [ -z "$EXISTING" ]; then
+            echo "Shipped tracker ${TRACKER_KEY}: no open issue (closed or never created) — refresh-only, nothing to do."
+            exit 0
+          fi
 
           # Activity gate: when there is no recent activity AND no open tracker issue,
           # skip new-issue creation. (If an existing issue is open, we still refresh it.)

@@ -429,6 +429,42 @@ if (-not (Test-Path $detectScriptPath)) {
     Assert-Eq -Label "no shipped tags (highest 0): patch 11 idle -> NOT stale" `
               -Expected $false -Actual (Test-IsStaleSrBranch -BranchPatch 11 -HighestShippedPatch 0 -RecentActivityCount 0)
 
+    # ─────────── New-Tracker title + mode contract ───────────
+    # The issue title encodes the tracker's lifecycle mode. Marker matching is by
+    # canonicalKey (not title), so title text is safe to vary, but downstream the
+    # 'shipped' title signals the refresh-until-closed lifecycle. Pin all three.
+    Write-Host "`n[Unit] New-Tracker title + mode" -ForegroundColor Cyan
+    $tkInflight = New-Tracker -Major 10 -SrNumber 8 -Mode 'in-flight' `
+        -BranchName 'release/10.0.1xx-sr8' -SurveyRef 'release/10.0.1xx-sr8' -PriorSrBranch $null `
+        -PriorShippedPatch 71 -PriorShippedTag '10.0.71' -ExpectedPatch 80 -ExpectedTag '10.0.80' `
+        -HasRecentActivityCount 3
+    Assert-Eq -Label "in-flight mode preserved" -Expected 'in-flight' -Actual $tkInflight.mode
+    Assert-Eq -Label "in-flight title = branch form" `
+              -Expected '[Release Readiness] .NET 10 SR8 — release/10.0.1xx-sr8' -Actual $tkInflight.issueTitle
+
+    $tkCandidate = New-Tracker -Major 10 -SrNumber 9 -Mode 'candidate' `
+        -BranchName $null -SurveyRef 'main' -PriorSrBranch 'release/10.0.1xx-sr8' `
+        -PriorShippedPatch 80 -PriorShippedTag '10.0.80' -ExpectedPatch 90 -ExpectedTag '10.0.90' `
+        -HasRecentActivityCount 12
+    Assert-Eq -Label "candidate mode preserved" -Expected 'candidate' -Actual $tkCandidate.mode
+    Assert-Eq -Label "candidate title = candidate-from form" `
+              -Expected '[Release Readiness] .NET 10 SR9 — candidate from main' -Actual $tkCandidate.issueTitle
+    Assert-Eq -Label "candidate canonicalKey is title-independent" -Expected 'net10-sr9' -Actual $tkCandidate.canonicalKey
+
+    $tkShipped = New-Tracker -Major 10 -SrNumber 8 -Mode 'shipped' `
+        -BranchName 'release/10.0.1xx-sr8' -SurveyRef 'release/10.0.1xx-sr8' -PriorSrBranch $null `
+        -PriorShippedPatch 80 -PriorShippedTag '10.0.80' -ExpectedPatch 80 -ExpectedTag '10.0.80' `
+        -HasRecentActivityCount 1
+    Assert-Eq -Label "shipped mode preserved" -Expected 'shipped' -Actual $tkShipped.mode
+    Assert-Eq -Label "shipped title = shipped form (signals refresh-until-closed)" `
+              -Expected '[Release Readiness] .NET 10 SR8 — shipped (release/10.0.1xx-sr8)' -Actual $tkShipped.issueTitle
+    Assert-Eq -Label "shipped surveys its own branch (not a candidate ref)" `
+              -Expected 'release/10.0.1xx-sr8' -Actual $tkShipped.surveyRef
+    Assert-Eq -Label "shipped canonicalKey matches in-flight (stable join key across lifecycle)" `
+              -Expected 'net10-sr8' -Actual $tkShipped.canonicalKey
+    Assert-Eq -Label "shipped branchExists = true (the SR branch is real)" `
+              -Expected $true -Actual $tkShipped.branchExists
+
     # ─────────── Preview-tag regex contract ───────────
     Write-Host "`n[Unit] Preview tag regex (<major>.0.0-preview.<N>.<date>[.<build>])" -ForegroundColor Cyan
     $previewTagCases = @(
@@ -624,12 +660,13 @@ if (-not (Test-Path $detectScriptPath)) {
 if (-not $SkipE2E) {
     Write-Host "`n[E2E] Detection against live repo" -ForegroundColor Cyan
     Write-Host "  Under the tag-existence rule + Lane 1 staleness guard we expect TWO trackers:" -ForegroundColor DarkGray
-    Write-Host "    - SR8 (patch=80, no tag 10.0.80)        - in-flight, active" -ForegroundColor DarkGray
+    Write-Host "    - SR8 (patch=80, tag 10.0.80 exists)    - shipped, refresh-until-closed (highest shipped SR)" -ForegroundColor DarkGray
     Write-Host "    - SR9 (candidate off main)              - active" -ForegroundColor DarkGray
-    Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark 71):" -ForegroundColor DarkGray
+    Write-Host "    DROPPED by the staleness guard (idle + below the shipped watermark 80):" -ForegroundColor DarkGray
     Write-Host "    - SR2 (patch=21, no tag 10.0.21)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
     Write-Host "    - SR3 (patch=33, no tag 10.0.33)        - tag-absent but stale -> no matrix job" -ForegroundColor DarkGray
-    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); no longer produces a tracker." -ForegroundColor DarkGray
+    Write-Host "    NOTE: SR7 shipped 2026-06-05 (tag 10.0.71); NOT the highest shipped SR -> retired (no tracker)." -ForegroundColor DarkGray
+    Write-Host "    NOTE: SR8 shipped 2026-06-22 (tag 10.0.80); as the HIGHEST shipped SR it emits a 'shipped' tracker that refreshes until a human closes it." -ForegroundColor DarkGray
 
     $detectOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -642,10 +679,10 @@ if (-not $SkipE2E) {
 
             Assert-Eq -Label "majorVersion is 10"             -Expected 10 -Actual $detected.majorVersion
             Assert-Eq -Label "mainBranch is 'main'"            -Expected 'main' -Actual $detected.mainBranch
-            Assert-Eq -Label "highestShippedTag is '10.0.71'"  -Expected '10.0.71' -Actual $detected.highestShippedTag
+            Assert-Eq -Label "highestShippedTag is '10.0.80'"  -Expected '10.0.80' -Actual $detected.highestShippedTag
             Assert-Eq -Label "highestShippedPreviewTag carries net10's last preview" `
                       -Expected '10.0.0-preview.7.25406.3' -Actual $detected.highestShippedPreviewTag
-            Assert-Eq -Label "tracker count is 2 (SR8+SR9 — SR7 shipped; SR2/SR3 dropped as stale)" `
+            Assert-Eq -Label "tracker count is 2 (SR8 shipped+refresh, SR9 candidate; SR7 retired; SR2/SR3 stale-dropped)" `
                       -Expected 2 -Actual $detected.trackers.Count
             # All trackers in single-major net10 mode must be SR-flavored. (Net10's
             # previews 1–7 all shipped + no in-flight preview branch -> no preview tracker.)
@@ -670,13 +707,19 @@ if (-not $SkipE2E) {
             Assert-Eq -Label "SR7 tracker absent (shipped)" `
                       -Expected $false -Actual ($bySr.ContainsKey(7))
 
-            # SR8 (in-flight, ACTIVE)
+            # SR8 (SHIPPED — highest shipped SR (tag 10.0.80) -> emits a
+            # 'shipped' tracker that refreshes until a human closes it).
             if ($bySr.ContainsKey(8)) {
                 $sr8 = $bySr[8]
-                Assert-Eq -Label "SR8 mode = in-flight"         -Expected 'in-flight' -Actual $sr8.mode
+                Assert-Eq -Label "SR8 mode = shipped"           -Expected 'shipped' -Actual $sr8.mode
                 Assert-Eq -Label "SR8 canonicalKey"             -Expected 'net10-sr8' -Actual $sr8.canonicalKey
                 Assert-Eq -Label "SR8 branchName"               -Expected 'release/10.0.1xx-sr8' -Actual $sr8.branchName
                 Assert-Eq -Label "SR8 branchExists = true"      -Expected $true -Actual $sr8.branchExists
+                Assert-Eq -Label "SR8 surveyRef = its own branch (shipped surveys the SR branch)" `
+                          -Expected 'release/10.0.1xx-sr8' -Actual $sr8.surveyRef
+                Assert-Eq -Label "SR8 issue title = shipped format" `
+                          -Expected '[Release Readiness] .NET 10 SR8 — shipped (release/10.0.1xx-sr8)' `
+                          -Actual $sr8.issueTitle
                 Assert-Eq -Label "SR8 expectedTag = 10.0.80"    -Expected '10.0.80' -Actual $sr8.expectedTag
                 # hasRecentActivity is a 7-day-window signal (git log --since=7.days
                 # against the live branch), so its VALUE is wall-clock dependent and
@@ -722,8 +765,9 @@ if (-not $SkipE2E) {
             # for "active": an active SR can legitimately sit idle for >7 days near
             # the tail of a cycle and report hasRecentActivity=$false. So assert the
             # flag is a real [bool] — never a hardcoded, date-dependent $true. SR7
-            # shipped 2026-06-05 and is no longer in the tracker set; only SR8 + SR9
-            # are active.
+            # shipped 2026-06-05 and (no longer the highest shipped SR) is retired;
+            # SR8 (shipped, highest -> refresh-until-closed) + SR9 (candidate) are
+            # the tracked set.
             foreach ($srNum in @(8, 9)) {
                 if ($bySr.ContainsKey($srNum)) {
                     Assert-Eq -Label "SR$srNum hasRecentActivity is a [bool] (active SR; value date-dependent)" `
@@ -744,16 +788,18 @@ if (-not $SkipE2E) {
     # ──────────── E2E: -AllActiveMajors multi-major envelope ────────────
     # In the unified post-consolidation shape, one invocation must surface every
     # active major (main's + any net<N>.0 ≥ main). Expected current state:
-    #   - net10 -> 2 SR trackers (SR8, SR9), no preview tracker
-    #     (SR7 shipped 2026-06-05; SR2/SR3 dropped by the Lane 1 staleness guard;
+    #   - net10 -> 2 SR trackers (SR8 shipped+refresh, SR9 candidate), no preview tracker
+    #     (SR7 shipped 2026-06-05 and is no longer the highest shipped SR -> retired;
+    #      SR8 shipped 2026-06-22 as the HIGHEST shipped SR -> 'shipped' tracker that
+    #      refreshes until closed; SR2/SR3 dropped by the Lane 1 staleness guard;
     #      every net10 preview branch already shipped + net10.0 isn't in preview cycle)
     #   - net11 -> 0 SR trackers (pre-GA: no `11.0.0` tag), 1 preview tracker
-    #     (preview6 candidate from net11.0)
+    #     (preview6 in-flight: release/11.0.1xx-preview6 was cut, tag not yet published)
     Write-Host "`n[E2E] Detection with -AllActiveMajors" -ForegroundColor Cyan
     Write-Host "  Expected:" -ForegroundColor DarkGray
     Write-Host "    - majors[].length = 2 (net10 + net11)" -ForegroundColor DarkGray
-    Write-Host "    - net10 trackers: 2 SR (sr8/sr9), 0 preview (SR7 shipped 2026-06-05; SR2/SR3 stale-dropped)" -ForegroundColor DarkGray
-    Write-Host "    - net11 trackers: 0 SR (pre-GA), 1 preview (preview6 candidate from net11.0)" -ForegroundColor DarkGray
+    Write-Host "    - net10 trackers: 2 SR (sr8 shipped/sr9 candidate), 0 preview (SR7 retired; SR2/SR3 stale-dropped)" -ForegroundColor DarkGray
+    Write-Host "    - net11 trackers: 0 SR (pre-GA), 1 preview (preview6 in-flight from release/11.0.1xx-preview6)" -ForegroundColor DarkGray
 
     $multiOut = Join-Path ([System.IO.Path]::GetTempPath()) "rr-detect-allmajors-$(Get-Date -Format 'HHmmss').json"
     try {
@@ -776,8 +822,8 @@ if (-not $SkipE2E) {
             if ($byMajor.ContainsKey(10)) {
                 $net10 = $byMajor[10]
                 Assert-Eq -Label "net10 mainBranch is 'main'"               -Expected 'main' -Actual $net10.mainBranch
-                Assert-Eq -Label "net10 highestShippedTag is '10.0.71'"      -Expected '10.0.71' -Actual $net10.highestShippedTag
-                Assert-Eq -Label "net10 tracker count is 2 (no preview lane, SR7 shipped, SR2/SR3 stale-dropped)" -Expected 2 -Actual $net10.trackers.Count
+                Assert-Eq -Label "net10 highestShippedTag is '10.0.80'"      -Expected '10.0.80' -Actual $net10.highestShippedTag
+                Assert-Eq -Label "net10 tracker count is 2 (no preview lane; SR8 shipped+refresh, SR9 candidate; SR7 retired, SR2/SR3 stale-dropped)" -Expected 2 -Actual $net10.trackers.Count
                 $srCount = @($net10.trackers | Where-Object branchType -eq 'sr').Count
                 $previewCount = @($net10.trackers | Where-Object branchType -eq 'preview').Count
                 Assert-Eq -Label "net10 has 2 SR trackers"      -Expected 2 -Actual $srCount
@@ -801,18 +847,18 @@ if (-not $SkipE2E) {
 
                 $preview6 = $previewTrackers[0]
                 Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
-                Assert-Eq -Label "preview6 mode = candidate"          -Expected 'candidate'           -Actual $preview6.mode
-                Assert-Eq -Label "preview6 surveyRef = net11.0"       -Expected 'net11.0'             -Actual $preview6.surveyRef
+                Assert-Eq -Label "preview6 mode = in-flight (branch cut, tag not yet published)" -Expected 'in-flight' -Actual $preview6.mode
+                Assert-Eq -Label "preview6 surveyRef = its own branch" -Expected 'release/11.0.1xx-preview6' -Actual $preview6.surveyRef
                 Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
                 Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
                 Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
                 Assert-Eq -Label "preview6 issue title format"        `
-                          -Expected '[Release Readiness] .NET 11.0 preview6 — candidate from net11.0' `
+                          -Expected '[Release Readiness] .NET 11.0 preview6 — release/11.0.1xx-preview6' `
                           -Actual $preview6.issueTitle
-                Assert-Eq -Label "preview6 branchName = canonical proposed slug" `
+                Assert-Eq -Label "preview6 branchName = canonical slug" `
                           -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
-                Assert-Eq -Label "preview6 branchExists = false (no branch yet)" `
-                          -Expected $false -Actual $preview6.branchExists
+                Assert-Eq -Label "preview6 branchExists = true (branch cut)" `
+                          -Expected $true -Actual $preview6.branchExists
                 # hasRecentActivity is a 7-day-window signal, not a marker of an
                 # "active preview cycle" — net11.0 can idle >7 days and report $false.
                 # Assert the flag's TYPE, not its date-dependent value.
@@ -1817,6 +1863,36 @@ Assert-Eq -Label "Without -TrackerKey: no visible Tracker line" -Expected $false
 # Hash marker still present (it's not gated by TrackerKey)
 Assert-Eq -Label "Without -TrackerKey: hash marker still present" -Expected $true `
     -Actual ($mdNoTracker -match '<!-- release-readiness-hash:')
+
+# ───── Body header `mode=` label: in-flight (default) / shipped / candidate ─────
+# The rendered Tracker line and H1 must reflect metadata.mode so a post-ship
+# tracker reads `mode=shipped` instead of misreporting as in-flight. Clone the
+# metadata hashtable (shallow .Clone() shares it) so we don't pollute later tests.
+Assert-Eq -Label 'Default render: Tracker line reads mode=in-flight' -Expected $true `
+    -Actual ($md -match '\*\*Tracker:\*\* `net10-sr7` · mode=`in-flight`')
+Assert-Eq -Label 'Default render: H1 is plain (not CANDIDATE)' -Expected $true `
+    -Actual ($md -match '# Release Readiness — release/10\.0\.1xx-sr7')
+
+$mdDataShipped = $mdData.Clone()
+$mdDataShipped.metadata = $mdData.metadata.Clone()
+$mdDataShipped.metadata.mode = 'shipped'
+$mdShipped = Format-MarkdownReport -Data $mdDataShipped -RepoUrl 'https://github.com/dotnet/maui' `
+                                   -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label 'Shipped render: Tracker line reads mode=shipped' -Expected $true `
+    -Actual ($mdShipped -match '\*\*Tracker:\*\* `net10-sr7` · mode=`shipped`')
+Assert-Eq -Label 'Shipped render: H1 stays plain branch survey (not CANDIDATE)' -Expected $true `
+    -Actual ($mdShipped -match '# Release Readiness — release/10\.0\.1xx-sr7' -and $mdShipped -notmatch '# Release Readiness — CANDIDATE')
+
+$mdDataCand = $mdData.Clone()
+$mdDataCand.metadata = $mdData.metadata.Clone()
+$mdDataCand.metadata.mode = 'candidate'
+$mdDataCand.metadata.priorSrBranch = 'release/10.0.1xx-sr6'
+$mdCand = Format-MarkdownReport -Data $mdDataCand -RepoUrl 'https://github.com/dotnet/maui' `
+                                -TrackerKey 'net10-sr7' -MaxBodyBytes 60000
+Assert-Eq -Label 'Candidate render: H1 shows CANDIDATE pre-flight' -Expected $true `
+    -Actual ($mdCand -match '# Release Readiness — CANDIDATE for next SR')
+Assert-Eq -Label 'Candidate render: Tracker line reads mode=candidate' -Expected $true `
+    -Actual ($mdCand -match 'mode=`candidate`')
 
 # Body cap: with very low cap, must truncate
 $mdCapped = Format-MarkdownReport -Data $mdData -RepoUrl 'https://github.com/dotnet/maui' `
