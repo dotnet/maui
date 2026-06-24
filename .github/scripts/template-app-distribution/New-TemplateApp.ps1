@@ -114,6 +114,19 @@ $content = $content -replace "<ApplicationTitle>[^<]+</ApplicationTitle>", "<App
 $content = $content -replace "<ApplicationId>[^<]+</ApplicationId>", "<ApplicationId>$(ConvertTo-XmlEscaped $ApplicationId)</ApplicationId>"
 $content = $content -replace "<ApplicationDisplayVersion>[^<]+</ApplicationDisplayVersion>", "<ApplicationDisplayVersion>$(ConvertTo-XmlEscaped $AppDisplayVersion)</ApplicationDisplayVersion>"
 $content = $content -replace "<ApplicationVersion>[^<]+</ApplicationVersion>", "<ApplicationVersion>$(ConvertTo-XmlEscaped $AppBuildNumber)</ApplicationVersion>"
+
+if ($TargetFramework.Contains("-windows", [System.StringComparison]::OrdinalIgnoreCase) -and
+    $content -notmatch "RuntimeIdentifierOverride") {
+    $runtimeIdentifierOverridePropertyGroup = @"
+
+	<PropertyGroup Condition="`$([MSBuild]::GetTargetPlatformIdentifier('`$(TargetFramework)')) == 'windows' and '`$(RuntimeIdentifierOverride)' != ''">
+		<RuntimeIdentifier>`$(RuntimeIdentifierOverride)</RuntimeIdentifier>
+	</PropertyGroup>
+"@
+
+    $content = $content -replace "</Project>\s*$", "$runtimeIdentifierOverridePropertyGroup`r`n</Project>"
+}
+
 Set-Content -Path $projectFile.FullName -Value $content -Encoding utf8
 
 @{

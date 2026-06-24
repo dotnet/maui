@@ -77,6 +77,7 @@ $variantDefinitions = [ordered]@{
         templateArgs = @()
         androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID" "$identifierPrefix.blank"
         iosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_IOS_BUNDLE_ID" "$identifierPrefix.blank"
+        windowsApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID" "$identifierPrefix.blank"
     }
     sample = [ordered]@{
         displayName = "MAUI Template Sample"
@@ -85,6 +86,7 @@ $variantDefinitions = [ordered]@{
         templateArgs = @("--sample-content")
         androidApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID" "$identifierPrefix.sample"
         iosBundleId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID" "$identifierPrefix.sample"
+        windowsApplicationId = Get-EnvironmentOrDefault "TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID" "$identifierPrefix.sample"
     }
 }
 
@@ -107,6 +109,12 @@ $platformDefinitions = [ordered]@{
         workload = "maui-ios"
         targetFramework = "$DotNetTfm-ios"
         runtimeIdentifier = "ios-arm64"
+    }
+    windows = [ordered]@{
+        runner = "windows-latest"
+        workload = "maui-windows"
+        targetFramework = "$DotNetTfm-windows10.0.19041.0"
+        runtimeIdentifier = "win-x64"
     }
 }
 
@@ -137,13 +145,28 @@ foreach ($variantName in $selectedVariants) {
         }
 
         $platform = $platformDefinitions[$platformName]
-        $applicationId = if ($platformName -eq "ios") { $variant.iosBundleId } else { $variant.androidApplicationId }
+        $applicationId = switch ($platformName) {
+            "ios" { $variant.iosBundleId }
+            "windows" {
+                if ([string]::IsNullOrWhiteSpace($variant.windowsApplicationId)) {
+                    $variant.androidApplicationId
+                } else {
+                    $variant.windowsApplicationId
+                }
+            }
+            default { $variant.androidApplicationId }
+        }
 
         if ([string]::IsNullOrWhiteSpace($applicationId)) {
             throw "Variant '$variantName' does not define an application identifier for '$platformName'."
         }
 
         $templateArgs = @(ConvertTo-StringArray $variant.templateArgs)
+        $windowsApplicationId = if ([string]::IsNullOrWhiteSpace($variant.windowsApplicationId)) {
+            $variant.androidApplicationId
+        } else {
+            $variant.windowsApplicationId
+        }
         $templateArgsJson = if ($templateArgs.Count -eq 0) {
             "[]"
         } else {
@@ -164,6 +187,7 @@ foreach ($variantName in $selectedVariants) {
             applicationId = [string]$applicationId
             androidApplicationId = [string]$variant.androidApplicationId
             iosBundleId = [string]$variant.iosBundleId
+            windowsApplicationId = [string]$windowsApplicationId
         }
     }
 }

@@ -5,7 +5,7 @@ param(
     [string]$ProjectPath,
 
     [Parameter(Mandatory)]
-    [ValidateSet("android", "ios")]
+    [ValidateSet("android", "ios", "windows")]
     [string]$Platform,
 
     [Parameter(Mandatory)]
@@ -162,6 +162,37 @@ switch ($Platform) {
                 $package = Get-Item $zipPath
             }
         }
+    }
+
+    "windows" {
+        $publishOutputPath = Join-Path $OutputPath "publish"
+        Remove-Item -Path $publishOutputPath -Recurse -Force -ErrorAction SilentlyContinue
+        New-Item -ItemType Directory -Path $publishOutputPath -Force | Out-Null
+
+        $arguments = @(
+            "publish", $projectFile.FullName,
+            "-f", $TargetFramework,
+            "-c", $Configuration,
+            "-p:RuntimeIdentifierOverride=$RuntimeIdentifier",
+            "-p:WindowsPackageType=None",
+            "-p:WindowsAppSDKSelfContained=true",
+            "-p:ApplicationDisplayVersion=$AppDisplayVersion",
+            "-p:ApplicationVersion=$AppBuildNumber",
+            "-o", $publishOutputPath,
+            "/bl:$binlogPath"
+        )
+
+        Write-Host "Building Windows unpackaged app for $($projectFile.FullName)"
+        & dotnet @arguments
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Windows unpackaged publish failed with exit code $LASTEXITCODE."
+        }
+
+        $zipPath = Join-Path $OutputPath "$($projectFile.BaseName)-windows-unpackaged.zip"
+        Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
+        Compress-Archive -Path (Join-Path $publishOutputPath "*") -DestinationPath $zipPath -Force
+        $package = Get-Item $zipPath
     }
 }
 

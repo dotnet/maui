@@ -20,6 +20,7 @@
 # - TEMPLATE_APP_IOS_PROVISIONING_PROFILES_JSON (secret): maps variant names to base64 provisioning profiles.
 # - TEMPLATE_APP_BLANK_ANDROID_APPLICATION_ID / TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID (variables)
 # - TEMPLATE_APP_BLANK_IOS_BUNDLE_ID / TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID (variables)
+# - TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID / TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID (variables)
 # - TEMPLATE_APP_ANDROID_KEYSTORE_TYPE (variable): optional keystore type, for example pkcs12.
 # - TEMPLATE_APP_PLAY_TRACK (variable): defaults to internal.
 # - TEMPLATE_APP_PLAY_RELEASE_STATUS (variable): defaults to completed; use draft for first uploads to draft Play apps.
@@ -127,6 +128,8 @@ jobs:
           TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_ANDROID_APPLICATION_ID }}
           TEMPLATE_APP_BLANK_IOS_BUNDLE_ID: ${{ vars.TEMPLATE_APP_BLANK_IOS_BUNDLE_ID }}
           TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID: ${{ vars.TEMPLATE_APP_SAMPLE_IOS_BUNDLE_ID }}
+          TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_BLANK_WINDOWS_APPLICATION_ID }}
+          TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID: ${{ vars.TEMPLATE_APP_SAMPLE_WINDOWS_APPLICATION_ID }}
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Prepare-Matrix.ps1" `
             -Variants "all" `
@@ -248,13 +251,13 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-path
 
       - name: Install MAUI workload
-        shell: bash
+        shell: pwsh
         run: |
-          if [ "${{ matrix.platform }}" = "ios" ]; then
+          if ("${{ matrix.platform }}" -eq "ios") {
             dotnet workload install ${{ matrix.workload }} --skip-manifest-update
-          else
+          } else {
             dotnet workload install ${{ matrix.workload }}
-          fi
+          }
 
       - name: Pack local templates
         id: pack
@@ -475,6 +478,7 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-path
 
       - name: Setup Ruby and fastlane
+        if: ${{ matrix.platform == 'android' || matrix.platform == 'ios' }}
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
@@ -482,13 +486,13 @@ jobs:
           working-directory: trusted/.github/scripts/template-app-distribution/fastlane
 
       - name: Install MAUI workload
-        shell: bash
+        shell: pwsh
         run: |
-          if [ "${{ matrix.platform }}" = "ios" ]; then
+          if ("${{ matrix.platform }}" -eq "ios") {
             dotnet workload install ${{ matrix.workload }} --skip-manifest-update
-          else
+          } else {
             dotnet workload install ${{ matrix.workload }}
-          fi
+          }
 
       - name: Set app version and release notes
         shell: pwsh
