@@ -276,11 +276,18 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		{
 			if (itemContainer?.Child is ElementWrapper wrapper && wrapper.VirtualView is VisualElement visualElement)
 			{
-				var actualItem = visualElement.BindingContext;
-				// Guard against false positives for null items: object.Equals(null, null) = true would
-				// mark every null-item container as Selected whenever SelectedItem is null (no selection).
-				bool isSelected = actualItem is not null &&
-					(object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem));
+				// Use the WinUI platform container's own IsSelected as the source of truth.
+				//
+				// Why not compare against ItemsView.SelectedItem:
+				//   MAUI's SelectedItem is null for both "nothing selected" and "null data item
+				//   selected", so object.Equals(null, null) = true would mark every null-bound
+				//   container as Selected when nothing is actually selected (false positives).
+				//   ItemContainer.IsSelected is set by WinUI per-container — it is true only for
+				//   the container the user actually tapped, even when its data item is null.
+				//   This matches how CV1 iOS/Android derive selection state from the native
+				//   platform (UICollectionView.Selected / RecyclerView activation), and lets
+				//   null items be selected and highlighted correctly.
+				bool isSelected = itemContainer.IsSelected;
 				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
 
 				// When the item template defines a "Selected" visual state, MAUI
