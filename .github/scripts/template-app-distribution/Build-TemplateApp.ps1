@@ -89,6 +89,7 @@ switch ($Platform) {
             }
 
             $keyAlias = Assert-EnvironmentValue "ANDROID_KEY_ALIAS"
+            $keystoreType = [Environment]::GetEnvironmentVariable("ANDROID_KEYSTORE_TYPE")
 
             $arguments += @(
                 "-p:AndroidKeyStore=true",
@@ -97,6 +98,10 @@ switch ($Platform) {
                 "-p:AndroidSigningStorePass=env:ANDROID_SIGNING_STORE_PASS",
                 "-p:AndroidSigningKeyPass=env:ANDROID_SIGNING_KEY_PASS"
             )
+
+            if (-not [string]::IsNullOrWhiteSpace($keystoreType)) {
+                $arguments += "-p:AndroidSigningStoreType=$keystoreType"
+            }
         } else {
             $arguments += "-p:AndroidKeyStore=false"
         }
