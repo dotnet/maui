@@ -12,6 +12,18 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly MauiTextViewEventProxy _proxy = new();
 
+		// Height from MAUI's last PlatformArrange call. Native layout containers can assign
+		// a transient placeholder height directly to a view's Bounds via UIKit, bypassing
+		// MAUI's arrange pipeline. This field is zero until MAUI explicitly arranges the view,
+		// making it a reliable guard for the scrollability cap in GetDesiredSize.
+		double _lastArrangedHeight;
+
+		public override void PlatformArrange(Rect rect)
+		{
+			_lastArrangedHeight = rect.Height;
+			base.PlatformArrange(rect);
+		}
+
 		protected override MauiTextView CreatePlatformView()
 		{
 			var platformEditor = new MauiTextView();
@@ -80,16 +92,18 @@ namespace Microsoft.Maui.Handlers
 
 				if (double.IsInfinity(heightConstraint))
 				{
-					var currentHeight = (double)PlatformView.Bounds.Height;
+					// Prefer _lastArrangedHeight over PlatformView.Bounds.Height. Native containers
+					// can set Bounds directly via UIKit outside MAUI's pipeline, making Bounds.Height
+					// unreliable. _lastArrangedHeight is zero until MAUI explicitly arranges the view,
+					// so the cap is skipped for transient placeholder frames and applied only once
+					// MAUI has given the view a real frame.
+					var currentHeight = _lastArrangedHeight;
 
-					// When content overflows the current frame and auto-growth is disabled,
-					// use Bounds.Height as the constraint to preserve scrollability after rotation.
-					// Editors with AutoSize=TextChanges (AllowAutoGrowth=true) are exempt.
 					if (!PlatformView.AllowAutoGrowth
 						&& currentHeight > 0
 						&& PlatformView.ContentSize.Height > currentHeight)
 					{
-						heightConstraint = currentHeight; // real bound — cap will apply
+						heightConstraint = currentHeight; // real MAUI-arranged bound — cap will apply
 					}
 					else
 					{
