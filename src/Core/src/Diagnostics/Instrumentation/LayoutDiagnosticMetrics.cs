@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
@@ -28,18 +29,6 @@ internal class LayoutDiagnosticMetrics : IDiagnosticMetrics
 	/// </summary>
 	internal Histogram<int>? ArrangeHistogram { get; private set; }
 
-	internal bool IsMeasureEnabled =>
-		MeasureCounter?.Enabled == true ||
-		MeasureHistogram?.Enabled == true;
-
-	internal bool IsMeasureDurationEnabled => MeasureHistogram?.Enabled == true;
-
-	internal bool IsArrangeEnabled =>
-		ArrangeCounter?.Enabled == true ||
-		ArrangeHistogram?.Enabled == true;
-
-	internal bool IsArrangeDurationEnabled => ArrangeHistogram?.Enabled == true;
-
 	/// <inheritdoc/>
 	public void Create(Meter meter)
 	{
@@ -53,52 +42,38 @@ internal class LayoutDiagnosticMetrics : IDiagnosticMetrics
 	/// <summary>
 	/// Records a measure operation with an optional duration and associated tags.
 	/// </summary>
-	/// <param name="duration">The duration of the measure operation in nanoseconds.</param>
-	/// <param name="recordDuration">Whether a duration should be recorded.</param>
+	/// <param name="duration">The duration of the measure operation.</param>
 	/// <param name="tagList">The tags associated with the measure operation.</param>
-	public void RecordMeasure(int duration, bool recordDuration, in TagList tagList)
+	public void RecordMeasure(TimeSpan? duration, in TagList tagList)
 	{
-		if (MeasureCounter?.Enabled == true)
-		{
-			MeasureCounter.Add(1, tagList);
-		}
+		MeasureCounter?.Add(1, tagList);
 
-		if (recordDuration && MeasureHistogram?.Enabled == true)
+		if (duration is not null)
 		{
-			MeasureHistogram.Record(duration, tagList);
+#if NET9_0_OR_GREATER
+			MeasureHistogram?.Record((int)duration.Value.TotalNanoseconds, tagList);
+#else
+			MeasureHistogram?.Record((int)(duration.Value.TotalMilliseconds * 1_000_000), tagList);
+#endif
 		}
 	}
 
 	/// <summary>
 	/// Records an arrange operation with an optional duration and associated tags.
 	/// </summary>
-	/// <param name="duration">The duration of the arrange operation in nanoseconds.</param>
-	/// <param name="recordDuration">Whether a duration should be recorded.</param>
+	/// <param name="duration">The duration of the arrange operation.</param>
 	/// <param name="tagList">The tags associated with the arrange operation.</param>
-	public void RecordArrange(int duration, bool recordDuration, in TagList tagList)
+	public void RecordArrange(TimeSpan? duration, in TagList tagList)
 	{
-		if (ArrangeCounter?.Enabled == true)
-		{
-			ArrangeCounter.Add(1, tagList);
-		}
+		ArrangeCounter?.Add(1, tagList);
 
-		if (recordDuration && ArrangeHistogram?.Enabled == true)
+		if (duration is not null)
 		{
-			ArrangeHistogram.Record(duration, tagList);
+#if NET9_0_OR_GREATER
+			ArrangeHistogram?.Record((int)duration.Value.TotalNanoseconds, tagList);
+#else
+			ArrangeHistogram?.Record((int)(duration.Value.TotalMilliseconds * 1_000_000), tagList);
+#endif
 		}
-	}
-
-	internal static int GetElapsedNanoseconds(long startTimestamp)
-	{
-		var elapsedTimestamp = Stopwatch.GetTimestamp() - startTimestamp;
-		if (elapsedTimestamp <= 0)
-		{
-			return 0;
-		}
-
-		var elapsedNanoseconds = elapsedTimestamp * (1_000_000_000.0 / Stopwatch.Frequency);
-		return elapsedNanoseconds >= int.MaxValue
-			? int.MaxValue
-			: (int)elapsedNanoseconds;
 	}
 }

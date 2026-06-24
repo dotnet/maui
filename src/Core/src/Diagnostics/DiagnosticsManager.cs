@@ -35,8 +35,6 @@ internal class DiagnosticsManager : IDiagnosticsManager
 
 	public ActivitySource ActivitySource { get; }
 
-	public bool HasActivityListeners => ActivitySource.HasListeners();
-
 	public Meter? Meter { get; }
 
 	public void GetTags(object source, out TagList tagList)
