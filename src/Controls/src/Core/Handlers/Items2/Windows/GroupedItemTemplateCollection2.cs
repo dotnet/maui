@@ -48,7 +48,7 @@ internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplat
 		}
 	}
 
-	ItemTemplateContext2 CreateItemContext(object item) =>
+	ItemTemplateContext2 CreateItemContext(object? item) =>
 		new(_itemTemplate, item, _container, mauiContext: _mauiContext);
 
 	ItemTemplateContext2? CreateHeaderContext(object group) =>

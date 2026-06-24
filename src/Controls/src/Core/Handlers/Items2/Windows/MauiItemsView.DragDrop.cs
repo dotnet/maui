@@ -1237,7 +1237,7 @@ internal partial class MauiItemsView
 		return allContainers.IndexOf(container);
 	}
 
-	int IndexOfItem(object item, IList itemsList)
+	int IndexOfItem(object? item, IList itemsList)
 	{
 		// First pass: reference equality — correctly distinguishes two items that are
 		// value-equal but distinct objects (e.g., duplicate records in the list).
