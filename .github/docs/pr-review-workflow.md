@@ -244,7 +244,7 @@ The full `/review` and `/review rerun` pipeline posts an `AI Summary` comment. I
 - fix/candidate analysis;
 - final recommendation.
 
-The latest session is expanded by default. Older sessions are minimized and hidden as outdated.
+The review sessions are collapsed by default — expand the **Review Sessions** section to read them. Within it, the latest session appears first; older sessions are minimized and hidden as outdated.
 
 ### Test Failure Review
 
@@ -295,7 +295,7 @@ Important safeguards:
 | `/review` used the wrong platform | Platform labels were missing or ambiguous. | Re-run with an explicit platform, for example `/review ios`. |
 | `/review tests` says `Insufficient data` | Build/log/Helix evidence was inaccessible or incomplete. | Re-run later, provide a build ID, or run locally with Azure CLI/AzDO auth. |
 | The AI Summary looks stale | New commits or comments landed after the last review. | Run `/review rerun`. |
-| There are multiple old sessions | Older review sessions are minimized and hidden as outdated; only the latest session is kept. | Read the expanded latest session — it reflects the current HEAD commit. |
+| There are multiple old sessions | Older review sessions are minimized and hidden as outdated; only the latest session is kept. | Expand the **Review Sessions** section and read the latest session — it reflects the current HEAD commit. |
 | `/review rerun` didn't trigger | Only PR author activity (commits or non-command comments) satisfies eligibility. Reviewer comments don't trigger reruns. | Wait for author activity or use `/review` to force a new review. |
 | Command comment is still visible | The commenter may lack authorization, or the command was malformed. | Check actor permissions and command syntax. Authorized commands are minimized after processing. |
 
