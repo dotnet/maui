@@ -312,7 +312,7 @@ jobs:
           retention-days: 14
 
   publish:
-    name: Publish ${{ matrix.variant }} ${{ matrix.platform }}
+    name: Publish/build template apps
     if: ${{ inputs.publish }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
