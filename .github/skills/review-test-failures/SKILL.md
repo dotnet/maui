@@ -148,6 +148,21 @@ Key fields to use:
     the **exact same test+platform also failed on the base build** (leg-level corroboration
     is too coarse and no longer dismisses). Cite the issue number, but defer to the
     computed attribution,
+  - `matchesCiScan` (`{number,title,url,class,branch,occurrences,matchKind}` when this
+    failure is documented in the repo's open `[ci-scan]` registry for the PR's **base branch
+    family**; `null` otherwise) — the `[ci-scan]` issues are the MAUI **CI Failure Scanner**
+    (an agentic `ci-status-*` workflow) tracking `recurring` flakes, `regression`s, and
+    `build break`s on the `main` / `net11.0` base branches across **many** builds — i.e.
+    multi-build base-branch history, strictly broader than the single most-recent base build
+    the leg diff can see. It is used in **one direction only**: when the leg diff computed a
+    single-base `regressed-vs-base` and ci-scan documents that exact test (`matchKind=test`)
+    or its whole leg (`matchKind=leg`, only for OneTimeSetUp/mass/env/build-break **leg-wide**
+    issues) as failing on the base branch, the regression is **demoted to `indeterminate`**
+    (NHI) and `ciScanDemoted=true` is set. This is a **false-RED reduction only** — a ci-scan
+    hit can **NEVER** turn a red check green (it is an LLM-generated, possibly-stale hint, so
+    it is never a dismissal-to-green signal; it only moves an over-confident `Not ready` down
+    to `Needs human investigation`). Branch family must match (a `main` PR is never demoted by
+    a `net11.0` ci-scan issue). Surface the linked issue + occurrence count for the human,
   - `retriedStillFailing` (`true` when CI retried the leg and it **still failed** — this
     is evidence the failure is **persistent**, NOT a one-off flake).
   - `baselineReasonConflict` (`true` when this failure **exact-matches** a base failure by
@@ -322,11 +337,11 @@ top-level `<details>` block. The `Overall` badge shows the **merge-readiness** v
 
 [One or two sentences summarizing the strongest evidence, including how many failures are pre-existing on the base branch.]
 
-**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [abortedFailingChecks] aborted failing checks · [canceledBuildChecks] canceled-build checks · [deviceTestUnverified] device-test unverified · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
+**Coverage:** [gate.totalChecks] checks · [passingOrNeutralChecks] passing · [failingChecks] failing · [pendingChecks] pending · [inaccessibleFailingChecks] inaccessible · [unmappedFailingChecks] unmapped · [unexplainedFailedLegs] unexplained build legs · [unaccountedFailingChecks] unaccounted failing checks · [abortedFailingChecks] aborted failing checks · [canceledBuildChecks] canceled-build checks · [deviceTestUnverified] device-test unverified · [unattributedFailures] unattributed · [legsRegressedVsBase] regressed-vs-base[ · [gate.ciScanDemotions] demoted by ci-scan when > 0]. Deterministic ceiling: [gate.verdictCeiling][ — reason(s) from gate.ceilingReasons when present].
 
 | Failure | Verdict | On base? | Evidence |
 | --- | --- | --- | --- |
-| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — use the leg diff: `regressed` when `legRegressedVsBase`, `also-red` when `legAlsoFailsOnBase`, else the test-level `alsoFailsOnBaseline`] | [specific evidence — lead with `deterministicAttribution` when it is `regressed-vs-base`/`pre-existing-on-base`, cite a known-issue link when `matchesKnownIssue` is set, note `retried still failing` when true, link build/test IDs] |
+| [check/test/build] | [Likely PR-caused | Likely unrelated | Needs human investigation | Insufficient data] | [yes/no — use the leg diff: `regressed` when `legRegressedVsBase`, `also-red` when `legAlsoFailsOnBase`, else the test-level `alsoFailsOnBaseline`] | [specific evidence — lead with `deterministicAttribution` when it is `regressed-vs-base`/`pre-existing-on-base`, cite a known-issue link when `matchesKnownIssue` is set, cite the `[ci-scan]` issue + occurrence count when `matchesCiScan` is set (and note it as `Needs human investigation` when `ciScanDemoted` — a single-base regression contradicted by multi-build base-branch history), note `retried still failing` when true, link build/test IDs] |
 
 ### Recommended action
 

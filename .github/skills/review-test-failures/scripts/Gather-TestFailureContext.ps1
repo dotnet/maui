@@ -1101,6 +1101,175 @@ function Test-KnownIssueMatch {
     return $null
 }
 
+function Get-BranchFamily {
+    # Normalizes a branch name to a coarse "family" token so a PR's base branch can be
+    # compared to a ci-scan issue's tracked branch without exact-string fragility. The
+    # ci-scan registry tags issues 'main' or 'net11.0'; PR base refs can be 'main',
+    # 'net11.0', or a 'release/11.0.1xx-*' style ref. We only need same-family matching.
+    param([string]$Branch)
+    if ([string]::IsNullOrWhiteSpace($Branch)) { return '' }
+    $b = $Branch.ToLowerInvariant()
+    if ($b -match 'net11|11\.0|release/11') { return 'net11' }
+    if ($b -match 'net10|10\.0|release/10') { return 'net10' }
+    if ($b -eq 'main' -or $b -match '/main$' -or $b -match '^main$') { return 'main' }
+    return $b
+}
+
+function Get-CiScanIssues {
+    # Loads the repo's open '[ci-scan]' issues -- the MAUI-specific CI Failure Scanner
+    # registry (an agentic 'ci-status-*' workflow) that tracks RECURRING flakes,
+    # REGRESSIONS, and BUILD BREAKS on the main / net11.0 base branches across MANY builds.
+    # Unlike the single-base-build leg diff (which sees only the ONE most recent base build),
+    # this is multi-build, branch-scoped base-branch history. We parse each issue into a
+    # matcher (branch family + class + the set of test-name tokens it documents + affected
+    # leg tokens + occurrence text) so a PR failure that matches a documented base-branch
+    # failure can be DEMOTED off a single-base 'regressed-vs-base' claim to 'indeterminate'
+    # (NHI). This is a false-RED reduction only: a ci-scan match can never turn a red check
+    # green (it is an LLM-generated hint, never a dismissal-to-green signal).
+    param([string]$Repository)
+
+    $matchers = New-Object System.Collections.Generic.List[object]
+    try {
+        $raw = Invoke-GhJson -Arguments @("issue", "list", "-R", $Repository, "--label", "ci-scan", "--state", "open", "--json", "number,title,url,body", "--limit", "100")
+    }
+    catch {
+        return [ordered]@{ matchers = @(); error = "Could not query 'ci-scan' issues: $($_.Exception.Message)" }
+    }
+
+    # Common English / CI words that look like identifiers but are NOT test names. Test names
+    # are PascalCase identifiers (>=6 chars, contain an uppercase letter); this stop-set plus
+    # the casing filter keeps the token set precise so a demote keys on a real test name.
+    $stop = @('failure','failures','timeout','timeoutexception','nullreferenceexception','exception',
+              'recurring','regression','android','windows','maccatalyst','catalyst','simulator','helix',
+              'appium','controls','collectionview','carouselview','listview','webview','hybridwebview',
+              'memoryleak','message','results','assert','classicassert','console','provision','download',
+              'instability','external','service','deterministic')
+    $stopSet = @{}; foreach ($w in $stop) { $stopSet[$w.ToLowerInvariant()] = $true }
+
+    foreach ($issue in (ConvertTo-Array $raw)) {
+        $title = [string]$issue.title
+        $body = [string]$issue.body
+
+        $class = 'other'
+        if ($title -match '(?i)\bRegression\b') { $class = 'regression' }
+        elseif ($title -match '(?i)Build break') { $class = 'build-break' }
+        elseif ($title -match '(?i)Recurring') { $class = 'recurring' }
+
+        $branch = ''
+        $bm = [regex]::Match($body, '(?im)^\s*[-*]?\s*\*\*Branch\*\*:\s*(?<b>[^\r\n]+)')
+        if ($bm.Success) { $branch = $bm.Groups['b'].Value.Trim() }
+        $branchFamily = Get-BranchFamily -Branch $branch
+
+        $occurrences = ''
+        $om = [regex]::Match($body, '(?im)^\s*[-*]?\s*\*\*Occurrences\*\*:\s*(?<o>[^\r\n]+)')
+        if ($om.Success) { $occurrences = $om.Groups['o'].Value.Trim() }
+
+        # Test-name token set: collect PascalCase identifiers from the title and from the
+        # 'Failed <Name>' lines and 'Microsoft.Maui...Tests.<...>.<Name>(' stack frames in the
+        # Error Message block. Many issues document several tests at once, so this is a SET.
+        $tokens = @{}
+        $addToken = {
+            param($t)
+            if ([string]::IsNullOrWhiteSpace($t)) { return }
+            $t = $t.Trim()
+            if ($t.Length -lt 6) { return }
+            if ($t -cnotmatch '[A-Z]') { return }            # require an uppercase letter (PascalCase)
+            if ($stopSet.ContainsKey($t.ToLowerInvariant())) { return }
+            $tokens[$t.ToLowerInvariant()] = $t
+        }
+        foreach ($m in [regex]::Matches($title, '\b([A-Za-z_][A-Za-z0-9_]{5,})\b')) { & $addToken $m.Groups[1].Value }
+        foreach ($m in [regex]::Matches($body, '(?im)\bFailed\s+(?<n>[A-Za-z_][A-Za-z0-9_]{5,})')) { & $addToken $m.Groups['n'].Value }
+        foreach ($m in [regex]::Matches($body, '(?i)Microsoft\.Maui[A-Za-z0-9_.]*\.(?<n>[A-Za-z_][A-Za-z0-9_]{5,})\s*\(')) { & $addToken $m.Groups['n'].Value }
+
+        # Affected-leg tokens: backticked job names in the '## Affected Legs' section, normalized.
+        $legTokens = New-Object System.Collections.Generic.List[string]
+        $legSection = ''
+        $lm = [regex]::Match($body, '(?is)##\s*Affected Legs(?<s>.*?)(\r?\n##\s|\z)')
+        if ($lm.Success) { $legSection = $lm.Groups['s'].Value }
+        foreach ($m in [regex]::Matches($legSection, '`(?<leg>[^`]+)`')) {
+            $leg = ($m.Groups['leg'].Value -replace '\s+', ' ').Trim().ToLowerInvariant()
+            if ($leg.Length -ge 8) { $legTokens.Add($leg) }
+        }
+
+        # Leg-scoped vs test-scoped. A LEG-kind match (matching a failure to this issue by its
+        # affected leg rather than by an exact test name) is only meaningful when the issue
+        # documents a WHOLE-LEG instability -- a OneTimeSetUp/fixture timeout, an env/"mass"
+        # failure, or a build break (no specific test named). A SINGLE-test issue (e.g.
+        # "SoftInputExtensionsPageTest fails ...") merely happens to list the leg it ran in; using
+        # that leg to match every OTHER test on the same leg is over-broad (it would demote
+        # unrelated regressions on a busy leg). So leg-kind matching is gated on $legScoped:
+        # true when no specific test is named OR the title/body signals a leg-wide failure.
+        $legWideText = "$title`n$body"
+        $legScoped = ($tokens.Count -eq 0) -or ($legWideText -match '(?i)\bmass\b|env instability|onetimesetup|timed out waiting for|all subsequent|entire (stage|leg|build)|whole leg|fixture|build break')
+
+        $matchers.Add([ordered]@{
+            number = $issue.number
+            title = $title
+            url = $issue.url
+            class = $class
+            branch = $branch
+            branchFamily = $branchFamily
+            occurrences = $occurrences
+            testTokens = $tokens
+            legTokens = $legTokens.ToArray()
+            legScoped = [bool]$legScoped
+        })
+    }
+
+    return [ordered]@{ matchers = $matchers.ToArray(); error = $null }
+}
+
+function Test-CiScanMatch {
+    # Returns the first ci-scan matcher {number,title,url,class,branch,occurrences,matchKind}
+    # that documents this failure on the SAME branch family, or $null. A match is established
+    # by EITHER the failure's leaf test-name token (precise; matchKind='test') OR a strong
+    # affected-leg name overlap (matchKind='leg', for 'mass failure' env-instability issues
+    # that may not name individual tests). Branch family must match (a missing issue branch is
+    # treated as a wildcard). Both match kinds are safe to act on because the only action taken
+    # is a DEMOTE to NHI (false-RED reduction) -- never a dismissal-to-green.
+    param(
+        [object[]]$Matchers,
+        [string]$TestName,
+        [string[]]$LegNames,
+        [string]$BranchFamily
+    )
+    if (-not $Matchers) { return $null }
+
+    # Reduce the failure's test name to its leaf identifier (last dotted segment).
+    $leaf = [string]$TestName
+    if ($leaf.Contains('.')) { $leaf = $leaf.Substring($leaf.LastIndexOf('.') + 1) }
+    $leaf = ($leaf -replace '\(.*$', '').Trim().ToLowerInvariant()
+
+    $normLegs = @($LegNames | Where-Object { $_ } | ForEach-Object { ($_ -replace '\s+', ' ').Trim().ToLowerInvariant() })
+
+    foreach ($mch in $Matchers) {
+        # Branch gate: only dismiss/demote against history from the SAME base branch family.
+        if (-not [string]::IsNullOrWhiteSpace($mch.branchFamily) -and -not [string]::IsNullOrWhiteSpace($BranchFamily)) {
+            if ($mch.branchFamily -ne $BranchFamily) { continue }
+        }
+
+        # (a) Exact leaf test-name token match.
+        if (-not [string]::IsNullOrWhiteSpace($leaf) -and $mch.testTokens.ContainsKey($leaf)) {
+            return [ordered]@{ number = $mch.number; title = $mch.title; url = $mch.url; class = $mch.class; branch = $mch.branch; occurrences = $mch.occurrences; matchKind = 'test' }
+        }
+
+        # (b) Strong affected-leg overlap -- but ONLY for leg-scoped issues (whole-leg
+        # instability / build break). A single-test issue's incidental leg must not match
+        # unrelated tests on that same leg.
+        if ($mch.legScoped) {
+            foreach ($legTok in @($mch.legTokens)) {
+                foreach ($fl in $normLegs) {
+                    if ($fl.Contains($legTok) -or $legTok.Contains($fl)) {
+                        return [ordered]@{ number = $mch.number; title = $mch.title; url = $mch.url; class = $mch.class; branch = $mch.branch; occurrences = $mch.occurrences; matchKind = 'leg' }
+                    }
+                }
+            }
+        }
+    }
+
+    return $null
+}
+
 function Get-BuildLogTestFailures {
     # Extracts distinct test failures from a single AzDO build's failed timeline
     # records, reusing the same log parsing as the PR-side extraction. Used to
@@ -1252,6 +1421,20 @@ if ($knownIssues.error) {
 }
 else {
     Write-Host "  Loaded $(@($knownIssues.patterns).Count) known-issue matcher(s)."
+}
+
+# ci-scan registry: MAUI's multi-build base-branch failure history (recurring flakes,
+# regressions, build breaks on main / net11.0), scoped to the PR's base branch family. Used
+# ONLY to demote a single-base 'regressed-vs-base' claim to NHI when the same failure is
+# documented on the base branch -- a false-RED reduction, never a dismissal-to-green.
+$prBaseBranchFamily = Get-BranchFamily -Branch ([string]$pr.baseRefName)
+Write-Host "Loading ci-scan registry ('ci-scan' issues) for branch family '$prBaseBranchFamily'..."
+$ciScanIssues = Get-CiScanIssues -Repository $Repository
+if ($ciScanIssues.error) {
+    Write-Host "  $($ciScanIssues.error)"
+}
+else {
+    Write-Host "  Loaded $(@($ciScanIssues.matchers).Count) ci-scan matcher(s)."
 }
 
 if ($CheckName) {
@@ -2046,6 +2229,15 @@ foreach ($failure in $dedupedFailures) {
     $matchText = (@([string]$failure.testName) + @($failure.messages)) -join "`n"
     $failure['matchesKnownIssue'] = Test-KnownIssueMatch -Patterns $knownIssues.patterns -Text $matchText
 
+    # ci-scan cross-reference: does this failure's exact test (or its failing leg) appear in the
+    # multi-build base-branch failure registry for THIS PR's base branch family? A hit means the
+    # failure is documented to occur on the base branch independent of this PR (recurring flake,
+    # known regression, or env instability across many builds) -- stronger and broader than the
+    # single most-recent base build the leg diff can see. Surfaced for the human on every failure;
+    # used below ONLY to demote a single-base 'regressed-vs-base' to NHI (never to dismiss-to-green).
+    $ciScanLegNames = @(@($failure.occurrences) | ForEach-Object { [string](Get-ObjectValue -Object $_ -Names @("recordName")) } | Where-Object { $_ })
+    $failure['matchesCiScan'] = Test-CiScanMatch -Matchers $ciScanIssues.matchers -TestName ([string]$failure.testName) -LegNames $ciScanLegNames -BranchFamily $prBaseBranchFamily
+
     # Deterministic job-level baseline diff: compare each occurrence's failing leg to the
     # SAME leg on the most recent completed base build. base green + PR red = regressed
     # (PR-caused); base also red = pre-existing. Device-test legs are surfaced via
@@ -2133,7 +2325,21 @@ foreach ($failure in $dedupedFailures) {
     # explicitly cited reason.
     if ($failure['legRegressedVsBase'] -and -not $failure['alsoFailsOnBaseline'] -and -not $failure['legAlsoFailsOnBase']) {
         # Green on base, red on PR, with no conflicting base-failure signal -> PR-introduced.
-        $failure['deterministicAttribution'] = 'regressed-vs-base'
+        if ($failure['matchesCiScan']) {
+            # ...UNLESS the ci-scan registry documents this exact test (or its failing leg) as a
+            # recurring/regressed/unstable failure on this base branch across MANY builds. The leg
+            # diff only saw the ONE most recent base build, which happened to be green; ci-scan's
+            # multi-build history shows the failure occurs on the base branch independent of this PR.
+            # DEMOTE the single-base regression claim to 'indeterminate' (NHI). This is a false-RED
+            # reduction ONLY: the failure still forbids a green verdict (it caps the ceiling at NHI),
+            # so a ci-scan hit -- an LLM-generated, possibly-stale hint -- can NEVER turn a red check
+            # green here; it can only move an over-confident 'Not ready' down to 'needs a human'.
+            $failure['deterministicAttribution'] = 'indeterminate'
+            $failure['ciScanDemoted'] = $true
+        }
+        else {
+            $failure['deterministicAttribution'] = 'regressed-vs-base'
+        }
     }
     elseif ($failure['legRegressedVsBase']) {
         # A regression signal that CONFLICTS with a base-failure signal (the same test/leg also
@@ -2305,6 +2511,8 @@ foreach ($c in $failingChecks) {
 
 $failuresOnBaseline = @($dedupedFailures | Where-Object { $_.alsoFailsOnBaseline }).Count
 $failuresKnownIssue = @($dedupedFailures | Where-Object { $_.matchesKnownIssue }).Count
+$failuresCiScan = @($dedupedFailures | Where-Object { $_.matchesCiScan }).Count
+$ciScanDemotions = @($dedupedFailures | Where-Object { $_.ciScanDemoted }).Count
 $failuresRetried = @($dedupedFailures | Where-Object { $_.retriedStillFailing }).Count
 # Deterministic regressions: red on the PR, GREEN on the most recent completed base build,
 # and NOT pre-existing on base (the 'regressed-vs-base' attribution already enforces both).
@@ -2452,6 +2660,9 @@ $gate = [ordered]@{
     inaccessibleFailingCheckNames = $inaccessibleFailingChecks.ToArray()
     unmappedFailingCheckNames = $unmappedFailingChecks.ToArray()
     knownIssueMatchersLoaded = @($knownIssues.patterns).Count
+    ciScanMatchersLoaded = @($ciScanIssues.matchers).Count
+    failuresMatchingCiScan = $failuresCiScan
+    ciScanDemotions = $ciScanDemotions
 }
 
 $limitations = New-Object System.Collections.Generic.List[string]
@@ -2466,6 +2677,9 @@ if ($buildRefsById.Count -eq 0) {
 }
 if ($knownIssues.error) {
     $limitations.Add($knownIssues.error + " Known-issue cross-referencing was skipped; do not treat the absence of a known-issue match as evidence a failure is PR-caused.")
+}
+if ($ciScanIssues.error) {
+    $limitations.Add($ciScanIssues.error + " ci-scan multi-build base-branch cross-referencing was skipped; a single-base 'regressed-vs-base' could not be demoted by branch history, so treat such regressions as possibly-flaky pending a human check.")
 }
 
 $context = [ordered]@{
@@ -2507,6 +2721,13 @@ $context = [ordered]@{
         matcherCount = @($knownIssues.patterns).Count
         error = $knownIssues.error
     }
+    ciScan = [ordered]@{
+        queried = ($null -eq $ciScanIssues.error)
+        matcherCount = @($ciScanIssues.matchers).Count
+        branchFamily = $prBaseBranchFamily
+        demotions = $ciScanDemotions
+        error = $ciScanIssues.error
+    }
     buildRefs = @($buildRefsById.Values)
     builds = $buildArray
     failures = [ordered]@{
@@ -2536,6 +2757,7 @@ $md.Add("- Distinct failures: $($gate.distinctFailures) ($($gate.failuresAlsoOnB
 $md.Add("- Failed build legs with no extractable failure (unexplained): $($gate.unexplainedFailedLegs)")
 $md.Add("- Legs red on PR but GREEN on base (deterministic regression vs base): $($gate.legsRegressedVsBase)")
 $md.Add("- Known-issue matchers loaded: $($gate.knownIssueMatchersLoaded)")
+$md.Add("- ci-scan matchers loaded (base-branch history, family '$prBaseBranchFamily'): $($gate.ciScanMatchersLoaded) · failures matching ci-scan: $($gate.failuresMatchingCiScan) · regressions demoted to NHI by ci-scan: $($gate.ciScanDemotions)")
 if (@($gate.ceilingReasons).Count -gt 0) {
     $md.Add("- Ceiling reasons:")
     foreach ($reason in @($gate.ceilingReasons)) {
@@ -2639,8 +2861,8 @@ if ($dedupedFailures.Count -eq 0) {
     $md.Add("No distinct test failures were extracted from accessible AzDO logs or test results.")
 }
 else {
-    $md.Add("| Test | Platform | Occurrences | Also on base | Vs base leg | Attribution (det.) | Retried still failing | Known issue | Messages |")
-    $md.Add("| --- | --- | ---: | :---: | :---: | :---: | :---: | --- | --- |")
+    $md.Add("| Test | Platform | Occurrences | Also on base | Vs base leg | Attribution (det.) | Retried still failing | Known issue | ci-scan (base history) | Messages |")
+    $md.Add("| --- | --- | ---: | :---: | :---: | :---: | :---: | --- | --- | --- |")
     foreach ($failure in $dedupedFailures) {
         $messages = @($failure.messages | Select-Object -First 2 | ForEach-Object {
             ([string]$_) -replace "`r?`n", "<br>" -replace '\|', '\|'
@@ -2648,9 +2870,13 @@ else {
         $baseFlag = if ($failure.alsoFailsOnBaseline) { "yes" } else { "no" }
         $retryFlag = if ($failure.retriedStillFailing) { "yes" } else { "no" }
         $knownIssueCell = if ($failure.matchesKnownIssue) { "[#$($failure.matchesKnownIssue.number)]($($failure.matchesKnownIssue.url))" } else { "no" }
+        $ciScanCell = if ($failure.matchesCiScan) {
+            $tag = if ($failure.ciScanDemoted) { " ⤵︎demoted" } else { "" }
+            "[#$($failure.matchesCiScan.number)]($($failure.matchesCiScan.url)) ($($failure.matchesCiScan.class)/$($failure.matchesCiScan.matchKind))$tag"
+        } else { "no" }
         $legCell = if ($failure.legRegressedVsBase) { "REGRESSED" } elseif ($failure.legAlsoFailsOnBase) { "also-red" } elseif ($failure.legBaselineResult) { [string]$failure.legBaselineResult } else { "-" }
         $attrCell = if ($failure.deterministicAttribution) { [string]$failure.deterministicAttribution } else { "indeterminate" }
-        $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $legCell | $attrCell | $retryFlag | $knownIssueCell | $messages |")
+        $md.Add("| $($failure.testName) | $($failure.platform) | $($failure.occurrenceCount) | $baseFlag | $legCell | $attrCell | $retryFlag | $knownIssueCell | $ciScanCell | $messages |")
     }
 }
 
