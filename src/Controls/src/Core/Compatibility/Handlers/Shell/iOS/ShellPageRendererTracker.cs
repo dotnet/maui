@@ -948,6 +948,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateAutomationId();
 			}
+			else if (e.PropertyName == SearchHandler.QueryIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.QueryIcon, UISearchBarIcon.Search);
+			}
+			else if (e.PropertyName == SearchHandler.ClearIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearIcon, UISearchBarIcon.Clear);
+			}
+			else if (e.PropertyName == SearchHandler.ClearPlaceholderIconProperty.PropertyName)
+			{
+				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearPlaceholderIcon, UISearchBarIcon.Bookmark);
+			}
 		}
 
 		void UpdateAutomationId()
@@ -1179,8 +1191,57 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
 					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
+
+					// iOS caches the clear button image once it has been shown. After the button
+					// has appeared (user typed text), SetImageforSearchBarIcon alone won't refresh
+					// it. Directly update the button subview so dynamic changes are reflected.
+					if (icon is UISearchBarIcon.Clear)
+					{
+						UpdateClearButtonImage(searchBar, newResult);
+					}
 				}
 			});
+		}
+
+		// Directly updates the clear button (X) inside UISearchBar's UITextField subview.
+		// This is required because iOS does not re-apply SetImageforSearchBarIcon to a
+		// clear button that is already visible on screen.
+		//
+		// NOTE: "searchField" and "clearButton" are private UIKit KVC keys. Apple does not
+		// expose these as public API. They have been stable across iOS versions and are a
+		// well-established pattern in Xamarin/MAUI, but could break in a future OS release.
+		static void UpdateClearButtonImage(UISearchBar searchBar, UIImage? image)
+		{
+			if (searchBar.ValueForKey(new NSString("searchField")) is UITextField textField &&
+				textField.ValueForKey(new NSString("clearButton")) is UIButton clearButton)
+			{
+				clearButton.SetImage(image, UIControlState.Normal);
+				clearButton.SetImage(image, UIControlState.Highlighted);
+			}
+		}
+
+		void UpdateSearchBarIcon(UISearchBar searchBar, ImageSource? source, UISearchBarIcon icon)
+		{
+			if (source is not null)
+			{
+				SetSearchBarIcon(searchBar, source, icon);
+			}
+			else
+			{
+				// Reset to default system icon by clearing the custom image
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Normal);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Highlighted);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Selected);
+
+				if (icon is UISearchBarIcon.Clear)
+				{
+					// UIKit caches the clear button image once it is on-screen, so
+					// SetImageforSearchBarIcon(null, ...) alone will not update the visible
+					// button. Restore the system default SF Symbol so the button shows the
+					// standard 'X' instead of becoming imageless.
+					UpdateClearButtonImage(searchBar, UIImage.GetSystemImage("multiply.circle.fill"));
+				}
+			}
 		}
 
 		void OnPageLoaded(object? sender, EventArgs e)
