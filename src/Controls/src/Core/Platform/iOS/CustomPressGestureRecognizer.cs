@@ -33,7 +33,7 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 	/// </summary>
 	public UIEvent CurrentEvent => _currentEvent;
 
-	[Register("__UIGestureRecognizer")]
+	[Register("Microsoft_Maui_Controls_Platform_iOS_CustomPressGestureRecognizer_Callback")]
 	class Callback : Token
 	{
 		Action<UIGestureRecognizer> action;
