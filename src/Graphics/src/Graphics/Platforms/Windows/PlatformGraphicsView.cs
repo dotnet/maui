@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 #if NETFX_CORE
 using Windows.UI.Xaml;
@@ -107,6 +108,19 @@ namespace Microsoft.Maui.Graphics.Platform
 			try
 			{
 				_canvas.Session = args.DrawingSession;
+				_canvas.CanvasSize = new global::Windows.Foundation.Size(_dirty.Width, _dirty.Height);
+
+				// Apply adjusted scale via PlatformCanvas (not DrawingSession.Transform directly)
+				// so the scale is tracked in CurrentState.Matrix, allowing any transforms applied
+				// by the drawable to chain correctly on top of it. This maps the rounded logical
+				// dimensions back to exact physical dimensions, filling the view edge-to-edge
+				// without sub-pixel gaps. Uses epsilon to skip near-identity scales from
+				// double-to-float precision loss.
+				const float scaleEpsilon = 0.0001f;
+				if (MathF.Abs(adjustedScaleX - 1f) > scaleEpsilon || MathF.Abs(adjustedScaleY - 1f) > scaleEpsilon)
+				{
+					_canvas.Scale(adjustedScaleX, adjustedScaleY);
+				}
 
 				if (FlowDirection == FlowDirection.RightToLeft)
 				{
