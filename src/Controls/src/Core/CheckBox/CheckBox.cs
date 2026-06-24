@@ -160,9 +160,9 @@ namespace Microsoft.Maui.Controls
 		Color IBorderElement.BorderColorDefaultValue => Colors.Transparent;
 		double IBorderElement.BorderWidthDefaultValue => 0;
 		bool IBorderElement.IsCornerRadiusSet() => false;
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — IBorderElement interface implementation
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — IBorderElement interface implementation
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
 		bool IBorderElement.IsBorderColorSet() => false;
 		bool IBorderElement.IsBorderWidthSet() => false;

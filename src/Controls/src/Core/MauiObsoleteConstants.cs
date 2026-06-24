@@ -12,6 +12,6 @@ namespace Microsoft.Maui.Controls
 		/// Use <see cref="VisualElement.Background"/> instead.
 		/// This API will be removed in .NET 12.
 		/// </summary>
-		public const string BackgroundColorObsolete = "MAUI0001";
+		public const string BackgroundColorObsolete = "MAUI0003";
 	}
 }
