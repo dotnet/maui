@@ -118,6 +118,21 @@ namespace Microsoft.Maui.Controls.Platform
 					var windowManager = modalContext.GetNavigationRootManager();
 					if (windowManager is not null)
 					{
+						// The NavigationRootManager constructor unconditionally reserves 32px for the
+						// title bar based on ExtendsContentIntoTitleBar (true by default). In full-screen
+						// mode there are no OS window controls to avoid, so suppress this reservation.
+						// This also clears the InputNonClientPointerSource passthrough regions, fixing
+						// the unclickable top area that would otherwise remain in full-screen mode.
+						var platformWindow = WindowMauiContext.GetPlatformWindow();
+						if (platformWindow is not null)
+						{
+							var presenter = platformWindow.GetAppWindow()?.Presenter;
+							if (presenter?.Kind == UI.Windowing.AppWindowPresenterKind.FullScreen)
+							{
+								windowManager.SetTitleBarVisibility(false);
+							}
+						}
+
 						// Set the titlebar on the new navigation root
 						if (previousPage is not null &&
 							previousPage.GetParentWindow() is Window window &&
