@@ -1075,6 +1075,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchBar.OnEditingStopped += OnSearchBarEditingStopped;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
+			searchBar.Text = SearchHandler.Query;
 			UpdateSearchIsEnabled(_searchController);
 			searchBar.SearchButtonClicked += SearchButtonClicked;
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
@@ -1182,9 +1183,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (result != null)
 				{
 					var newResult = result.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
-					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Normal);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Highlighted);
+					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Selected);
 				}
 			});
 		}
@@ -1352,7 +1353,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
+				{
+					// Explicitly null out the native TitleView to break the UIKit reference chain
+					// that prevents the page from being garbage collected when x:Name is used
+					// together with Shell.TitleView. The NameScope attached to the TitleView
+					// children holds a reference back to the page (via the registered x:Name),
+					// so clearing this native reference is necessary to allow GC.
+					NavigationItem.TitleView = null;
 					tvc.Disconnect();
+				}
 
 				_keyboardWillHideObserver?.Dispose();
 				_keyboardWillHideObserver = null;

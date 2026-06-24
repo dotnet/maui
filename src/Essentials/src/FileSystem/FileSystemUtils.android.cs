@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Provider;
 using Android.Webkit;
@@ -60,7 +61,11 @@ namespace Microsoft.Maui.Storage
 
 			// try resolve using the content provider
 			var absolute = ResolvePhysicalPath(uri, requireExtendedAccess);
-			if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute))
+			// On API 28 and below, ResolvePhysicalPath may return a raw filesystem path that passes
+			// File.Exists() but lacks read permission, causing UnauthorizedAccessException.
+			// IsFileReadable uses Java.IO.File.canRead() to verify actual read access before using the path.
+			// On API 29+, ResolvePhysicalPath typically returns null for content URIs, so the fallback path is used instead.
+			if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute) && IsFileReadable(absolute))
 				return absolute;
 
 			// fall back to just copying it
@@ -69,6 +74,23 @@ namespace Microsoft.Maui.Storage
 				return cached;
 
 			throw new FileNotFoundException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
+		}
+
+		internal static bool IsFileReadable(string path)
+		{
+			using var file = new Java.IO.File(path);
+			return file.IsFile && file.CanRead();
+		}
+
+		public static Task<string> EnsurePhysicalPathAsync(AndroidUri uri, bool requireExtendedAccess = true)
+		{
+			// file:// URIs do not need provider queries or stream copies.
+			if (string.Equals(uri.Scheme, UriSchemeFile, StringComparison.OrdinalIgnoreCase))
+			{
+				return Task.FromResult(uri.Path);
+			}
+
+			return Task.Run(() => EnsurePhysicalPath(uri, requireExtendedAccess));
 		}
 
 		static string ResolvePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
@@ -214,10 +236,9 @@ namespace Microsoft.Maui.Storage
 				return null;
 
 			// resolve or generate a valid destination path
-			var filename = GetColumnValue(uri, MediaStore.IMediaColumns.DisplayName) ?? Guid.NewGuid().ToString("N");
-
-			if (!Path.HasExtension(filename) && !string.IsNullOrEmpty(extension))
-				filename = Path.ChangeExtension(filename, extension);
+			var filename = EnsureFileName(
+				GetColumnValue(uri, MediaStore.IMediaColumns.DisplayName),
+				extension);
 
 			// create a temporary file
 			var hasPermission = Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.WriteExternalStorage);

@@ -331,9 +331,15 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
+11. **dependency-flow** (`.github/skills/dependency-flow/SKILL.md`)
+    - **Purpose**: MAUI-specific dependency flow rules, channel conventions, and feed lookup workflows
+    - **Trigger phrases**: "feeds for .NET MAUI X.Y.Z", "where is MAUI build", "promote build to public feed", "what channels is MAUI on", "subscription health for MAUI"
+    - **Wraps**: `maestro-cli` skill (from `dotnet-dnceng@dotnet-arcade-skills` plugin) and maestro MCP tools
+    - **Note**: Provides MAUI-specific guardrails on top of core Maestro/darc operations — channel naming, safety deny-list, input validation, and prompt injection defense
+
 #### Internal Skills (Used by Agents)
 
-11. **try-fix** (`.github/skills/try-fix/SKILL.md`)
+12. **try-fix** (`.github/skills/try-fix/SKILL.md`)
    - **Purpose**: Proposes ONE independent fix approach, applies it, tests, records result with failure analysis, then reverts
    - **Used by**: pr agent Phase 3 (Fix phase) - rarely invoked directly by users
    - **Behavior**: Reads prior attempts to learn from failures. Max 5 attempts per session.

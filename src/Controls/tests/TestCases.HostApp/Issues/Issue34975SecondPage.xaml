@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue34975SecondPage"
+             x:Name="issue34975SecondPage">
+
+    <Shell.TitleView>
+        <Label Text="Test Title View"/>
+    </Shell.TitleView>
+
+    <VerticalStackLayout Padding="30,0" Spacing="25" VerticalOptions="Center">
+        <Label Text="Second Page — use the native back button to navigate back."
+               AutomationId="SecondPageLabel"
+               HorizontalOptions="Center"/>
+    </VerticalStackLayout>
+</ContentPage>
