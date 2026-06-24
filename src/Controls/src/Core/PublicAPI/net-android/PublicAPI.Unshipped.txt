@@ -120,7 +120,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ToolbarItem.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionBadge(Microsoft.Maui.Controls.ShellSection shellSection, int index) -> void
-override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> boolMicrosoft.Maui.Controls.VisualStateManager.FocusStates
+Microsoft.Maui.Controls.VisualStateManager.FocusStates
 Microsoft.Maui.Controls.VisualStateManager.FocusStates.FocusStates() -> void
 ~const Microsoft.Maui.Controls.VisualStateManager.FocusStates.Focused = "Focused" -> string
 ~const Microsoft.Maui.Controls.VisualStateManager.FocusStates.Unfocused = "Unfocused" -> string
