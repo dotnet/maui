@@ -120,7 +120,13 @@ Key fields to use:
     corroboration, NOT proof that *this specific test* is pre-existing (the leg can fail
     on base at a **different** test), so on its own it does **not** dismiss the failure;
     `absent-on-base` means the leg name did not exist on the base build (indeterminate —
-    do not treat as a regression),
+    do not treat as a regression); `inconclusive-on-base` means the leg both failed and
+    passed on base (flaky on base / retried) — also indeterminate, never a regression. The
+    computed `regressed-vs-base` set is pre-filtered to stay trustworthy: a
+    provisioning/infrastructure failure (Android SDK `Failed to find package`, avdmanager,
+    disk-full — environmental and nondeterministic) and any failure that was flaky on base
+    in **another** leg are both held to `legRegressedVsBase = false` so they fall to
+    `indeterminate` rather than masquerading as a deterministic regression,
   - `deterministicAttribution` — a **computed prior** you MUST start from, one of
     `regressed-vs-base` (treat as **Likely PR-caused** unless you can cite why the base
     comparison is invalid, e.g. a known-flaky base leg), `pre-existing-on-base` (treat as

@@ -2054,6 +2054,15 @@ foreach ($failure in $dedupedFailures) {
     $legBaselineResult = $null
     $legRegressed = $false
     $legAlsoFails = $false
+    $legInconclusive = $false
+    # Provisioning/infrastructure failures (Android SDK package fetch, emulator/avdmanager
+    # setup, disk exhaustion) are ENVIRONMENTAL and nondeterministic -- the same flake lands on
+    # different legs run-to-run. They must never establish a *deterministic* regression vs base:
+    # a green base leg only means the flake did not happen to hit that leg on that run, not that
+    # the PR caused it. Such a failure is held to never-regressed below (it still blocks a green
+    # verdict via the indeterminate/NHI path; this only prevents a false 'regressed-vs-base').
+    $infraText = (@([string]$failure.testName) + @($failure.messages)) -join "`n"
+    $isInfraProvisioning = $infraText -match '(?i)Failed to find package|avdmanager exited with an error|SdkToolFailedExitException|dotnet android sdk install|No space left on device'
     foreach ($occ in @($failure.occurrences)) {
         $occBuildId = [string](Get-ObjectValue -Object $occ -Names @("buildId"))
         $occRecord = [string](Get-ObjectValue -Object $occ -Names @("recordName"))
@@ -2078,6 +2087,7 @@ foreach ($failure in $dedupedFailures) {
             # green verdict on it via unattributedFailures). This prevents both a false
             # pre-existing subtraction (false green) and a false regression (false red).
             if (-not $legBaselineResult) { $legBaselineResult = 'inconclusive-on-base' }
+            $legInconclusive = $true
         }
         elseif ($baseRec.hasFailed) {
             # Same leg already failed on base -> pre-existing, regardless of any green attempt.
@@ -2091,10 +2101,23 @@ foreach ($failure in $dedupedFailures) {
             # (crossgen/NativeAOT/linker/MSBuild) is deterministic -- the leg either compiled
             # or it didn't -- so it IS a real regression even on a device-test pipeline.
             $legSource = [string](Get-ObjectValue -Object $occ -Names @("source"))
-            if ((-not $baseInfo.isDeviceTests) -or ($legSource -eq 'azdo-build-error')) {
+            if (((-not $baseInfo.isDeviceTests) -or ($legSource -eq 'azdo-build-error')) -and (-not $isInfraProvisioning)) {
                 $legRegressed = $true
             }
         }
+    }
+    # Cross-leg conflict veto: a failure that regressed cleanly in ONE leg (green on base) but
+    # was flaky on base in ANOTHER leg (inconclusive-on-base: failed an attempt, passed on
+    # retry) is NOT a trustworthy deterministic regression. The same failure text landing on a
+    # leg that is demonstrably flaky on base means the PR-red occurrence is most likely that
+    # same nondeterministic flake sprayed onto a different leg -- not a PR break. Suppress the
+    # clean-regression claim and defer to a human (-> indeterminate / NHI). This never yields a
+    # false green (the failure still forbids 'Ready to merge' via the indeterminate path); it
+    # only stops over-claiming "regressed vs base" on flaky/environmental failures (e.g. an
+    # Android 'platform-tools' provisioning flake that sprays across several legs at once).
+    if ($legInconclusive -and $legRegressed) {
+        $legRegressed = $false
+        $legBaselineResult = 'inconclusive-on-base'
     }
     $failure['legBaselineResult'] = $legBaselineResult
     $failure['legRegressedVsBase'] = [bool]$legRegressed
