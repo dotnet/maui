@@ -494,18 +494,18 @@ namespace Microsoft.Maui.Controls
 				{
 					selectedState.Setters.Add(new Setter
 					{
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — Shell visual state setters backward compatibility
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — Shell visual state setters backward compatibility
 						Property = VisualElement.BackgroundColorProperty,
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 						Value = new AppThemeBinding() { Light = Colors.Black.MultiplyAlpha(0.1f), Dark = Colors.White.MultiplyAlpha(0.1f) }
 					});
 				}
 
 				normalState.Setters.Add(new Setter
 				{
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — Shell visual state setters backward compatibility
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — Shell visual state setters backward compatibility
 					Property = VisualElement.BackgroundColorProperty,
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 					Value = Colors.Transparent
 				});
 

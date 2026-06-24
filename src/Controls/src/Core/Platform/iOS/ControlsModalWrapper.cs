@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Controls.Platform
 					if (result == UIKit.UIModalPresentationStyle.FullScreen)
 					{
 						var modalPage = (Page)_modal.VirtualView;
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — modal overlay transparency check backward compatibility
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — modal overlay transparency check backward compatibility
 						Color modalBkgndColor = modalPage.BackgroundColor;
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 						Brush modalBackground = modalPage.Background;
 
 						bool shouldUseOverFullScreen = !Brush.IsNullOrEmpty(modalBackground) && Brush.HasTransparency(modalBackground);
@@ -208,9 +208,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — modal page property change listener backward compatibility
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — modal page property change listener backward compatibility
 			if (e.PropertyName == Page.BackgroundColorProperty.PropertyName)
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 				UpdateBackgroundColor();
 		}
 
@@ -221,10 +221,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — modal view background backward compatibility
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — modal view background backward compatibility
 				Color modalBkgndColor = Page.BackgroundColor;
 				View!.BackgroundColor = modalBkgndColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 			}
 			else
 			{

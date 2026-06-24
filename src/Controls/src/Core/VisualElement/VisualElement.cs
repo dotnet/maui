@@ -2038,10 +2038,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (!Brush.IsNullOrEmpty(Background))
 					return Background;
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — fallback for IView.Background backward compatibility
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — fallback for IView.Background backward compatibility
 				if (BackgroundColor.IsNotDefault())
 					return new SolidColorBrush(BackgroundColor);
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 
 				return null;
 			}
