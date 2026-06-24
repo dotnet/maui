@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SourceGen-only: AncestorType as a bare string (ValueNode form).
+     XamlC does not support this syntax (XC0009), so this file is .sgen.xaml
+     to limit compilation to SourceGen only.
+     This covers Concern 2 from review #4492884861: TryGetRelativeSourceAncestorType
+     previously only handled the {x:Type ...} ElementNode form. The string form
+     silently fell back to a runtime Binding. After the fix it produces a TypedBinding. -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui34056StringAncestorType"
+             x:DataType="local:Maui34056PageViewModel">
+    <CollectionView x:Name="StringAncestorTypeCollectionView"
+                    ItemsSource="{Binding Items}">
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="local:Maui34056ItemViewModel">
+                <Button Text="{Binding ItemName}"
+                        Command="{Binding x:DataType='local:Maui34056PageViewModel', Source={RelativeSource AncestorType='local:Maui34056PageViewModel'}, Path=TestCommand}" />
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>

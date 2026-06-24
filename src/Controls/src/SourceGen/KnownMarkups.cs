@@ -189,13 +189,17 @@ internal class KnownMarkups
 			}
 			else if (ancestorTypeNode is ValueNode vnType)
 			{
-				// Try to parse as a type name directly (without x:Type)
+				// Try to parse as a type name directly (without x:Type).
+				// Cache the resolved symbol in context.Types keyed by the ValueNode so that
+				// TryGetRelativeSourceAncestorType can look it up without re-resolving.
 				var typeName = vnType.Value as string;
 				if (!IsNullOrEmpty(typeName))
 				{
 					XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName!, markupNode.NamespaceResolver, markupNode as IXmlLineInfo);
 					xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var resolvedType);
 					ancestorTypeSymbol = resolvedType;
+					if (resolvedType is not null)
+						context.Types[vnType] = resolvedType;
 				}
 			}
 		}
@@ -361,18 +365,15 @@ internal class KnownMarkups
 			// 3. x:Reference: resolve the referenced element's type and compile against it.
 			//
 			// 4. No explicit source: use x:DataType if available to produce a compiled TypedBinding.
-			bool isAncestorTypeSource = false;
-			ITypeSymbol? xRefSourceType = null;
-			if (TryGetRelativeSourceAncestorType(markupNode, context, out var ancestorTypeSymbol, out bool hasAncestorType)
-				&& ancestorTypeSymbol is not null)
-			{
-				dataTypeSymbol = ancestorTypeSymbol;
-			}
-
 			// isAncestorTypeSource is true whenever AncestorType was present, regardless of whether
 			// the type resolved successfully. This prevents a BindingPropertyNotFound diagnostic from
 			// firing on a path that was never compiled before — even when resolution fails.
-			isAncestorTypeSource = hasAncestorType;
+			TryGetRelativeSourceAncestorType(markupNode, context, out var ancestorTypeSymbol, out bool isAncestorTypeSource);
+			ITypeSymbol? xRefSourceType = null;
+			if (ancestorTypeSymbol is not null)
+			{
+				dataTypeSymbol = ancestorTypeSymbol;
+			}
 
 			if (!isAncestorTypeSource && !HasRelativeSourceBinding(markupNode))
 			{
@@ -779,26 +780,11 @@ internal class KnownMarkups
 			}
 
 			// AncestorType may also be a bare string (ValueNode), e.g. AncestorType="local:MyViewModel".
-			// ProvideValueForRelativeSourceExtension resolves this inline but doesn't store it in
-			// context.Types, so resolve it here using the RelativeSource node's NamespaceResolver.
+			// ProvideValueForRelativeSourceExtension resolves this form and caches the result in
+			// context.Types, so reuse that cached value here to avoid duplicating resolution logic.
 			if (ancestorTypeNode is ValueNode vnType)
 			{
-				var typeName = vnType.Value as string;
-				if (IsNullOrEmpty(typeName))
-					return false;
-
-				try
-				{
-					XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName!, relativeSourceNode.NamespaceResolver, relativeSourceNode as IXmlLineInfo);
-					xmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out INamedTypeSymbol? resolvedType);
-					ancestorType = resolvedType;
-				}
-				catch (XamlParseException)
-				{
-					// Malformed type expression or unknown prefix — silently fall back to runtime Binding.
-					return false;
-				}
-
+				context.Types.TryGetValue(vnType, out ancestorType);
 				return ancestorType is not null;
 			}
 

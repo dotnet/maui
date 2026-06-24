@@ -5,7 +5,8 @@
              x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui34056"
              x:DataType="local:Maui34056PageViewModel">
     <VerticalStackLayout>
-        <!-- Scenario 1: RelativeSource AncestorType inside DataTemplate with x:DataType (issue fix) -->
+        <!-- Scenario 1: RelativeSource AncestorType inside DataTemplate with x:DataType (issue fix).
+             Mirrors the exact user reproduction case (inline x:DataType matches AncestorType). -->
         <CollectionView x:Name="TestCollectionView"
                         ItemsSource="{Binding Items}">
             <CollectionView.ItemTemplate>
@@ -26,6 +27,21 @@
                 <DataTemplate x:DataType="local:Maui34056ItemViewModel">
                     <Label x:Name="SelfBindingLabel"
                            Text="{Binding Path=ItemName, Source={RelativeSource Self}}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <!-- Scenario 3: RelativeSource AncestorType without inline x:DataType (regression guard).
+             The ambient DataTemplate x:DataType is Maui34056ItemViewModel, which has no TestCommand.
+             If SourceGen regressed and used ambient x:DataType instead of AncestorType as the source,
+             it would produce a different TypedBinding or fall back to runtime Binding, and the
+             TypedBinding<Maui34056PageViewModel, ICommand> assertion would fail, catching the regression. -->
+        <CollectionView x:Name="AncestorTypeNoInlineDataTypeCollectionView"
+                        ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui34056ItemViewModel">
+                    <Button x:Name="AncestorTypeNoInlineDataTypeButton"
+                            Text="{Binding ItemName}"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:Maui34056PageViewModel}}, Path=TestCommand}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

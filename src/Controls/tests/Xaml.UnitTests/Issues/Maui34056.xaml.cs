@@ -64,6 +64,44 @@ public partial class Maui34056 : ContentPage
 
         [Theory]
         [XamlInflatorData]
+        internal void RelativeSourceAncestorTypeWithoutInlineXDataTypeGeneratesCompiledBinding(XamlInflator inflator)
+        {
+            // Regression guard for SourceGen: the ambient DataTemplate x:DataType is
+            // Maui34056ItemViewModel (no TestCommand). If SourceGen regressed and used ambient
+            // x:DataType instead of AncestorType as the source, the TypedBinding assertion would
+            // fail, catching the regression.
+            // XamlC pre-existing behavior: does not compile AncestorType bindings without an
+            // explicit inline x:DataType — falls back to runtime Binding. This is separate from
+            // the SourceGen fix and not addressed by this PR.
+            var page = new Maui34056(inflator);
+
+            var template = ((CollectionView)page.AncestorTypeNoInlineDataTypeCollectionView).ItemTemplate;
+            var content = template.CreateContent() as Button;
+            Assert.NotNull(content);
+
+            var bindingContext = content.GetContext(Button.CommandProperty);
+            Assert.NotNull(bindingContext);
+            var binding = bindingContext.Bindings.GetValue();
+
+            if (inflator is XamlInflator.Runtime or XamlInflator.XamlC)
+            {
+                // Runtime: no compile-time type info.
+                // XamlC: pre-existing behavior — does not compile AncestorType without inline x:DataType.
+                Assert.IsType<Binding>(binding);
+            }
+            else
+            {
+                // SourceGen: compiles to TypedBinding using AncestorType as the source.
+                var typedBinding = Assert.IsType<TypedBinding<Maui34056PageViewModel, ICommand>>(binding);
+
+                var relativeSource = Assert.IsType<RelativeBindingSource>(typedBinding.Source);
+                Assert.Equal(RelativeBindingSourceMode.FindAncestorBindingContext, relativeSource.Mode);
+                Assert.Equal(typeof(Maui34056PageViewModel), relativeSource.AncestorType);
+            }
+        }
+
+        [Theory]
+        [XamlInflatorData]
         internal void RelativeSourceSelfInDataTemplateWithXDataTypeUsesStringBinding(XamlInflator inflator)
         {
             // Verifies SourceGen does not use the DataTemplate's x:DataType as the source type for
