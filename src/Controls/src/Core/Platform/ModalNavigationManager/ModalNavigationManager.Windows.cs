@@ -87,9 +87,9 @@ namespace Microsoft.Maui.Controls.Platform
 					RemovePage(previousPage, popping);
 				}
 			else if (
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — modal page background fallback backward compatibility
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — modal page background fallback backward compatibility
 					newPage.BackgroundColor.IsDefault() && newPage.Background.IsEmpty)
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 				{
 					RemovePage(previousPage, popping);
 				}

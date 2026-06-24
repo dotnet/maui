@@ -149,9 +149,9 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-#pragma warning disable MAUI0001, CS0618 // BackgroundColor — BoxView property change tracking
+#pragma warning disable MAUI0003, CS0618 // BackgroundColor — BoxView property change tracking
 			if (propertyName == BackgroundColorProperty.PropertyName ||
-#pragma warning restore MAUI0001, CS0618
+#pragma warning restore MAUI0003, CS0618
 				propertyName == ColorProperty.PropertyName ||
 				propertyName == FillProperty.PropertyName ||
 				propertyName == IsVisibleProperty.PropertyName ||

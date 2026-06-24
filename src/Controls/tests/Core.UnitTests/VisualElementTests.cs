@@ -411,9 +411,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var element = new Label();
 			element.Background = new SolidColorBrush(Colors.Green);
 
-#pragma warning disable MAUI0001 // BackgroundColor — testing IView.Background priority
+#pragma warning disable MAUI0003 // BackgroundColor — testing IView.Background priority
 			element.BackgroundColor = Colors.Red;
-#pragma warning restore MAUI0001
+#pragma warning restore MAUI0003
 
 			// Background brush takes precedence over BackgroundColor in IView.Background.
 			// Brush→Paint implicit operator converts SolidColorBrush → SolidPaint.
