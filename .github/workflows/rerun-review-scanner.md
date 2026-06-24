@@ -203,10 +203,31 @@ safe-outputs:
                     // a maintainer /review — so the scanner does not remove it here.
                     await react(a.rerunCommentId, '+1');
                   } else {
-                    // skip: the scanner consumes the queue label itself; review-trigger.yml
-                    // is not involved.
-                    await react(a.rerunCommentId, '-1');
-                    await removeReadyLabel(prNumber);
+                    // skip: the scanner consumes the queue label itself (review-trigger.yml
+                    // is not involved). The candidate head SHA is a SCAN-TIME snapshot, so
+                    // guard against a TOCTOU race: only react/remove when the PR's LIVE head
+                    // still matches it. If the head advanced (a new push or fresh
+                    // `/review rerun` since the scan), the agent's skip is stale — leave the
+                    // queue label so the next scan re-evaluates the new head instead of
+                    // silently dropping the request, and don't 👎 the superseded comment.
+                    // octokit is used here (the gh CLI 404s in this job), so the live read works.
+                    let liveHeadSha = null;
+                    let headReadFailed = false;
+                    try {
+                      const livePr = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+                      liveHeadSha = livePr.data.head.sha;
+                    } catch (e) {
+                      headReadFailed = true;
+                      core.warning(`Skip: could not read live head for PR #${prNumber} (${e.message}); leaving ${readyLabel} in place for the next scan.`);
+                    }
+                    if (headReadFailed) {
+                      // Conservative: never remove the label when we can't confirm the head.
+                    } else if (a.headSha && liveHeadSha !== a.headSha) {
+                      core.info(`Skip: PR #${prNumber} head advanced ${a.headSha} -> ${liveHeadSha} since the scan; leaving ${readyLabel} for re-evaluation.`);
+                    } else {
+                      await react(a.rerunCommentId, '-1');
+                      await removeReadyLabel(prNumber);
+                    }
                   }
                 } catch (e) {
                   core.error(`Failed to process PR #${prNumber}: ${e.message}`);
