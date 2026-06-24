@@ -17,11 +17,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : IEntryHandler
 	{
-		private static readonly IPropertyMapper<IEntry, IEntryHandler> EntryPriorityMapper = new PropertyMapper<IEntry, IEntryHandler>()
-		{
-			[nameof(IEntry.MaxLength)] = MapMaxLength,
-		};
-
 		private static readonly IPropertyMapper<IEntry, IEntryHandler> TextMapper = new PropertyMapper<IEntry, IEntryHandler>
 		{
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
