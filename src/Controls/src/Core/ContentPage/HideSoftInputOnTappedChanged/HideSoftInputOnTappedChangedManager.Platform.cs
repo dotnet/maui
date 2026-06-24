@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 	{
 		IDisposable? _watchingForTaps;
 		WeakReference<IView>? _focusedView;
+		WeakReference<ContentPage>? _focusedViewEnclosingPage;
 
 		static ContentPage? GetEnclosingPage(IView? view)
 		{
@@ -27,10 +28,18 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				var page = GetEnclosingPage(FocusedView);
+				// Walk the live tree first. If FocusedView has been detached from the
+				// logical tree its Parent chain returns null, so fall back to the page
+				// that was cached when the view became focused. This preserves the
+				// original behavior where the feature remains enabled until the view
+				// explicitly loses focus.
+				var page = GetEnclosingPage(FocusedView) ?? FocusedEnclosingPage;
 				return page is not null && page.HideSoftInputOnTapped && page.HasNavigatedTo;
 			}
 		}
+
+		ContentPage? FocusedEnclosingPage =>
+			_focusedViewEnclosingPage?.TryGetTarget(out var p) == true ? p : null;
 
 		internal void UpdatePage(ContentPage page)
 		{
@@ -48,12 +57,20 @@ namespace Microsoft.Maui.Controls
 			{
 				DisconnectFromPlatform();
 				_focusedView = new WeakReference<IView>(_view);
+				// Cache the enclosing page now, while the view is still in the logical
+				// tree, so that FeatureEnabled can fall back to it if the view is later
+				// detached before a focus-lost event fires.
+				var enclosingPage = GetEnclosingPage(_view);
+				_focusedViewEnclosingPage = enclosingPage is not null
+					? new WeakReference<ContentPage>(enclosingPage)
+					: null;
 			}
 			// If currently tracked view became unfocused then disconnect from it
 			else if (_view == FocusedView)
 			{
 				DisconnectFromPlatform();
 				_focusedView = null;
+				_focusedViewEnclosingPage = null;
 			}
 
 			if (!FeatureEnabled)

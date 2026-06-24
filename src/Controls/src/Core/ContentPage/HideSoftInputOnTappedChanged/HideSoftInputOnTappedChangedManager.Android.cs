@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			var page = GetEnclosingPage(FocusedView);
+			var page = GetEnclosingPage(FocusedView) ?? FocusedEnclosingPage;
 			if (page is null ||
 				!page.HasNavigatedTo ||
 				!page.HideSoftInputOnTapped ||
