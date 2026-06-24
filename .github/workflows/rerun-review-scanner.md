@@ -201,7 +201,11 @@ safe-outputs:
                     // review-trigger.yml owns the s/agent-review-in-progress lock and
                     // removes s/agent-ready-for-rerun when it locks+triggers — same as
                     // a maintainer /review — so the scanner does not remove it here.
-                    await react(a.rerunCommentId, '+1');
+                    // Use 🚀 (not 👍): this acknowledges the dispatch was *queued*, not that an
+                    // AzDO run is confirmed/complete — review-trigger.yml owns the final outcome,
+                    // and the s/agent-ready-for-rerun label persists so the next scan self-heals
+                    // if the downstream dispatch no-ops.
+                    await react(a.rerunCommentId, 'rocket');
                   } else {
                     // skip: the scanner consumes the queue label itself (review-trigger.yml
                     // is not involved). The candidate head SHA is a SCAN-TIME snapshot, so
