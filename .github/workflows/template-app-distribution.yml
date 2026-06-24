@@ -134,7 +134,7 @@ jobs:
             -DotNetTfm "${{ steps.sdk.outputs.dotnet_tfm }}"
 
   dry-run-build:
-    name: Dry-run ${{ matrix.variant }} ${{ matrix.platform }}
+    name: Dry-run builds
     if: ${{ inputs.publish == false }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
