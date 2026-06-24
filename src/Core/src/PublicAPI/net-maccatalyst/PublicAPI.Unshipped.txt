@@ -17,3 +17,10 @@ static Microsoft.Maui.Handlers.EditorHandler.MapBackground(Microsoft.Maui.Handle
 static Microsoft.Maui.Handlers.EntryHandler.MapBackground(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.RadioButtonHandler.MapBackground(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.IRadioButton! radioButton) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.ITab
+Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.ITab.IsEnabled.get -> bool
+Microsoft.Maui.ITab.Title.get -> string!
+Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
