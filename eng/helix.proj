@@ -18,6 +18,19 @@
      <HelixTargetQueues Condition="'$(HelixInternal)' == 'True'">Windows.10.Amd64;osx.15.arm64</HelixTargetQueues>
   </PropertyGroup>
 
+  <!--
+    XAML Incremental Hot Reload E2E tests (SourceGen.UnitTests) apply real metadata deltas via
+    MetadataUpdater.ApplyUpdate. On CoreCLR that requires modifiable assemblies to be enabled at
+    process launch, which only happens when DOTNET_MODIFIABLE_ASSEMBLIES=debug is set in the
+    environment (VS sets it automatically when debugging; Helix does not). Without it
+    MetadataUpdater.IsSupported is false and those tests fail. Export it before each Helix work
+    item, using the shell-appropriate syntax for the target queue.
+  -->
+  <ItemGroup>
+    <HelixPreCommand Condition="'$(IsPosixShell)' == 'true'" Include="export DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
+    <HelixPreCommand Condition="'$(IsPosixShell)' != 'true'" Include="set DOTNET_MODIFIABLE_ASSEMBLIES=debug" />
+  </ItemGroup>
+
   <!-- Local build outside of Azure Pipeline -->
   <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
     <HelixTargetQueues Condition="'$(HelixTargetQueues)' == ''">
