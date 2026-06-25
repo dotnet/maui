@@ -51,6 +51,12 @@ function Test-SafePublishSourceRef([string]$Value) {
     return -not ($ref.Contains("..") -or $ref.Contains("//") -or $ref.Contains("@{") -or $ref.EndsWith("/") -or $ref.EndsWith("."))
 }
 
+function Test-TrustedBranchName([string]$BranchName, [string]$DefaultBranchName) {
+    return $BranchName -eq $DefaultBranchName -or
+        $BranchName -match "^net\d+\.0$" -or
+        $BranchName -match "^release/.+"
+}
+
 Push-Location $RepositoryPath
 try {
     $sourceSha = (Invoke-Git -Arguments @("rev-parse", "HEAD")).Trim()
@@ -62,14 +68,17 @@ try {
 
     $trustedBranches = @(
         Invoke-Git -Arguments @("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin") |
-            Where-Object { $_ -eq "origin/$DefaultBranch" -or $_ -match "^origin/net\d+\.0$" }
+            Where-Object {
+                $branchName = $_ -replace "^origin/", ""
+                Test-TrustedBranchName $branchName $DefaultBranch
+            }
     )
 
     $isTrusted = $false
     $trustedReason = ""
 
     $sourceBranchName = $normalizedSourceRef -replace "^refs/heads/", "" -replace "^origin/", ""
-    if ($sourceBranchName -eq $DefaultBranch -or $sourceBranchName -match "^net\d+\.0$") {
+    if (Test-TrustedBranchName $sourceBranchName $DefaultBranch) {
         $branchRef = "origin/$sourceBranchName"
         if (Test-GitSuccess -Arguments @("rev-parse", "--verify", $branchRef)) {
             $branchSha = (Invoke-Git -Arguments @("rev-parse", $branchRef)).Trim()
