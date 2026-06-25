@@ -28,14 +28,17 @@ parameters:
 - name: runAsPublic
   type: boolean
   default: true
+- name: is1ESPipeline
+  type: boolean
+  default: false
 
 stages:
 - stage: Pack
   displayName: Pack .NET MAUI
   dependsOn: []
   jobs:
-  # macOS job - different publish methods for public vs internal
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+  # macOS job
+  - template: ${{ iif(eq(parameters.is1ESPipeline, 'true'), '/eng/common/templates-official/jobs/jobs.yml@self', '/eng/common/templates/jobs/jobs.yml') }}
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.macPool }}
@@ -48,14 +51,6 @@ stages:
       publishAssetsImmediately: false
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      # templateContext.outputs for internal/1ES pipelines
-      ${{ if ne(parameters.runAsPublic, true) }}:
-        templateContext:
-          outputs:
-          - output: pipelineArtifact
-            artifact: MacNativeArtifacts
-            path: $(Agent.TempDirectory)/native-binaries
-            condition: always()
 
       workspace:
         clean: all
@@ -85,19 +80,22 @@ stages:
               */$(_BuildConfig)/*/*.resources.zip
             TargetFolder: '$(Agent.TempDirectory)/native-binaries'
 
-        # publish: step for public pipelines only
-        - ${{ if eq(parameters.runAsPublic, true) }}:
-          - publish: $(Agent.TempDirectory)/native-binaries
-            displayName: Publish Mac Native Artifacts
-            artifact: MacNativeArtifacts
-            condition: always()
+        # Publish Mac Native Artifacts using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/native-binaries
+              artifactName: MacNativeArtifacts
+              displayName: Publish Mac Native Artifacts
+              condition: always()
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-  # Windows job with its own templateContext.outputs
-  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
+  # Windows job
+  - template: ${{ iif(eq(parameters.is1ESPipeline, 'true'), '/eng/common/templates-official/jobs/jobs.yml@self', '/eng/common/templates/jobs/jobs.yml') }}
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ parameters.pool }}
@@ -111,14 +109,6 @@ stages:
       publishAssetsImmediately: true
       enablePublishBuildArtifacts: true
       enablePublishTestResults: false
-      templateContext:
-        outputs:
-        - output: pipelineArtifact
-          artifact: APIScanFiles
-          path: $(Agent.TempDirectory)/APIScanFiles
-        - output: pipelineArtifact
-          artifact: Metadata
-          path: $(Agent.TempDirectory)/metadata
 
       workspace:
         clean: all
@@ -176,6 +166,24 @@ stages:
             Contents: |
               **/*.json
             TargetFolder: '$(Agent.TempDirectory)\metadata'
+
+        # Publish APIScanFiles using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/APIScanFiles
+              artifactName: APIScanFiles
+              displayName: Publish APIScanFiles
+
+        # Publish Metadata using arcade step template
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: ${{ parameters.is1ESPipeline }}
+            args:
+              targetPath: $(Agent.TempDirectory)/metadata
+              artifactName: Metadata
+              displayName: Publish Metadata
 
         - ${{ each step in parameters.postSteps }}:
           - ${{ each pair in step }}:

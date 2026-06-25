@@ -25,7 +25,7 @@
             
             <!-- Error Message (if error) -->
             <Label 
-                IsVisible="{Binding HasError}"
+                IsVisible="{Binding IsErrorState}"
                 Text="{Binding ErrorMessage}" 
                 TextColor="Red" 
                 FontSize="20" 
@@ -34,8 +34,8 @@
 
             <!-- General Message (if not error) -->
             <Label 
-                IsVisible="{Binding HasError, Converter={StaticResource InvertedBoolConverter}}"
-                Text="{Binding Message}" 
+                IsVisible="{Binding IsNotErrorState}"
+                Text="{Binding Status3}" 
                 FontSize="20" 
                 HorizontalTextAlignment="Center" 
                 LineBreakMode="WordWrap" />

@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <value>The string "Checked".</value>
 		public const string CheckedVisualState = "Checked";
-		
+
 		/// <summary>
 		/// The visual state name for when the radio button is unchecked.
 		/// </summary>
@@ -38,13 +39,13 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <value>The string "Root".</value>
 		public const string TemplateRootName = "Root";
-		
+
 		/// <summary>
 		/// The name of the checked indicator element in the control template.
 		/// </summary>
 		/// <value>The string "CheckedIndicator".</value>
 		public const string CheckedIndicator = "CheckedIndicator";
-		
+
 		/// <summary>
 		/// The name of the unchecked button element in the control template.
 		/// </summary>
@@ -371,6 +372,19 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == BorderColorProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeColor));
+			}
+			else if (propertyName == BorderWidthProperty.PropertyName)
+			{
+				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
+			}
+		}
+
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(BorderElement.CornerRadiusProperty);
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
@@ -512,6 +526,8 @@ namespace Microsoft.Maui.Controls
 			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, source: RelativeBindingSource.TemplatedParent, converter: new CornerRadiusToShape());
 			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColor, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.BackgroundProperty, static (RadioButton rb) => rb.Background, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			var grid = new Grid
 			{
@@ -611,7 +627,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			contentPresenter.SetBinding(MarginProperty, static (RadioButton radio) => radio.Padding, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
-			contentPresenter.SetBinding(BackgroundColorProperty, static (RadioButton radio) => radio.BackgroundColor, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			grid.Add(normalEllipse);
 			grid.Add(checkMark);
@@ -625,12 +640,21 @@ namespace Microsoft.Maui.Controls
 			nameScope.RegisterName(UncheckedButton, normalEllipse);
 			nameScope.RegisterName(CheckedIndicator, checkMark);
 			nameScope.RegisterName("ContentPresenter", contentPresenter);
+			nameScope.RegisterName("Grid", grid);
 
 			VisualStateGroupList visualStateGroups = new VisualStateGroupList();
 
 			var common = new VisualStateGroup() { Name = "Common" };
 			common.States.Add(new VisualState() { Name = VisualStateManager.CommonStates.Normal });
-			common.States.Add(new VisualState() { Name = VisualStateManager.CommonStates.Disabled });
+			VisualState disabledVisualState = new VisualState() { Name = VisualStateManager.CommonStates.Disabled };
+            disabledVisualState.Setters.Add(
+                new Setter()
+                {
+                    Property = Grid.OpacityProperty,
+                    TargetName = "Grid",
+                    Value = 0.4f
+                });
+            common.States.Add(disabledVisualState);
 
 			visualStateGroups.Add(common);
 
@@ -686,12 +710,15 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <returns>The string representation of the content, or the result of <c>ToString()</c> if content is not a string.</returns>
 		/// <remarks>
-		/// If <see cref="Content"/> is a <see cref="View"/>, a warning is logged and the <c>ToString()</c> representation is used instead.
+		/// If <see cref="Content"/> is a <see cref="View"/> and no <see cref="ControlTemplate"/> is set, a warning is logged 
+		/// and the <c>ToString()</c> representation is used instead. When a ControlTemplate is applied, View content is supported.
 		/// </remarks>
 		public string ContentAsString()
 		{
 			var content = Content;
-			if (content is View)
+			// Only log warning if Content is a View AND no ControlTemplate is set
+			// When ControlTemplate is set, View content IS supported (per documentation)
+			if (content is View && ResolveControlTemplate() == null)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<RadioButton>()?.LogWarning("Warning - {RuntimePlatform} does not support View as the {PropertyName} property of RadioButton; the return value of the ToString() method will be displayed instead.", DeviceInfo.Platform, ContentProperty.PropertyName);
 			}
@@ -702,7 +729,7 @@ namespace Microsoft.Maui.Controls
 		Font ITextStyle.Font => this.ToFont();
 
 #if ANDROID
-		object IContentView.Content 
+		object IContentView.Content
 		{
 			get
 			{
@@ -740,7 +767,7 @@ namespace Microsoft.Maui.Controls
 
 			if (ControlTemplate != null)
 			{
-				string contentAsString = ContentAsString();
+				string contentAsString = GetSemanticDescriptionFromContent();
 
 				if (!string.IsNullOrWhiteSpace(contentAsString) && string.IsNullOrWhiteSpace(semantics?.Description))
 				{
@@ -750,6 +777,71 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return semantics;
+		}
+
+		string GetSemanticDescriptionFromContent()
+		{
+			if (Content is string contentText)
+			{
+				return contentText;
+			}
+
+			if (Content is IView contentView)
+			{
+				// Don't fall back to ContentAsString() for view-based content — it calls ToString()
+				// on the view and returns a type name rather than meaningful text.
+				TryGetSemanticDescription(contentView, out var semanticDescription);
+				return semanticDescription;
+			}
+
+			if (Value is string valueText && !string.IsNullOrWhiteSpace(valueText))
+			{
+				return valueText;
+			}
+
+			return ContentAsString();
+		}
+
+		static bool TryGetSemanticDescription(IView view, out string semanticDescription)
+		{
+			semanticDescription = null;
+
+			if (view is null)
+			{
+				return false;
+			}
+
+			if (!string.IsNullOrWhiteSpace(view.Semantics?.Description))
+			{
+				semanticDescription = view.Semantics.Description;
+				return true;
+			}
+
+			if (view is IText text && !string.IsNullOrWhiteSpace(text.Text))
+			{
+				semanticDescription = text.Text;
+				return true;
+			}
+
+			if (view is IContentView contentView && contentView.PresentedContent is IView presentedContent && TryGetSemanticDescription(presentedContent, out semanticDescription))
+			{
+				return true;
+			}
+
+			if (view is Microsoft.Maui.ILayout layout)
+			{
+				for (int index = 0; index < layout.Count; index++)
+				{
+					var child = layout[index];
+
+					if (TryGetSemanticDescription(child, out semanticDescription))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
 		}
 
 		class CornerRadiusToShape : IValueConverter

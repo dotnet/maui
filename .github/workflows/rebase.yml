@@ -1,37 +1,64 @@
-name: Automatic Rebase
+name: Rebase
 
 on:
   issue_comment:
     types: [created]
 
 permissions:
-  pull-requests: write
   contents: write
+  pull-requests: write
+
+concurrency:
+  group: rebase-${{ github.event.issue.number }}
+  cancel-in-progress: false
 
 jobs:
   rebase:
-    name: Rebase
+    name: Rebase PR branch onto its base
     runs-on: ubuntu-latest
     if: >-
       github.repository_owner == 'dotnet' &&
-      github.event.issue.pull_request != '' && 
-      (
-        startsWith(github.event.comment.body, '/rebase') || 
-        startsWith(github.event.comment.body, '/autosquash')
-      )
+      github.event.issue.pull_request &&
+      github.event.issue.state == 'open' &&
+      github.event.comment.body == '/rebase'
     steps:
-      - name: Checkout the latest code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
-      - name: Automatic Rebase
-        uses: cirrus-actions/rebase@1.7
-        with:
-          autosquash: >-
-            ${{ 
-              startsWith(github.event.comment.body, '/autosquash') ||
-              startsWith(github.event.comment.body, '/rebase-autosquash')
-            }}
+      - name: Verify commenter has write access
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+        run: |
+          level=$(gh api "repos/$REPO/collaborators/$COMMENTER/permission" --jq .permission || echo "none")
+          echo "Permission level: $level"
+          if [[ ! "$level" =~ ^(admin|write|maintain)$ ]]; then
+            echo "::error::User $COMMENTER does not have write access."
+            exit 1
+          fi
+
+      - name: Acknowledge request
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api -X POST "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=eyes
+
+      - name: Rebase pull request branch
+        id: rebase
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh pr update-branch "$PR_NUMBER" --rebase --repo "$REPO"
+
+      - name: Report failure
+        if: failure() && steps.rebase.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "$REPO" \
+            --body "Unable to rebase this branch automatically. It may have conflicts with its base branch, or the PR author has not allowed maintainer edits. Please rebase manually."

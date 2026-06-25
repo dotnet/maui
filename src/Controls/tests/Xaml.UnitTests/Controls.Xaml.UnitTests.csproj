@@ -21,13 +21,6 @@
     <EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />

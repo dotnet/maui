@@ -81,6 +81,15 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			output?.WriteLine($"Launching AVD: {Name}...");
 			var emulatorOutput = ToolRunner.Run(EmulatorTool, launchArgs, out _, timeoutInSeconds: 15, output: output);
 			File.WriteAllText(logFile, emulatorOutput);
+
+			if (emulatorOutput.Contains("failed to initialize HVF", StringComparison.OrdinalIgnoreCase))
+			{
+				output?.WriteLine("ERROR: Apple Hypervisor Framework (HVF) is not available on this agent.");
+				output?.WriteLine("The Android emulator requires HVF for ARM64 hardware acceleration.");
+				output?.WriteLine("This agent's VM image likely lacks the com.apple.security.hypervisor entitlement.");
+				output?.WriteLine("Consider using an agent image with HVF support (e.g., ACES_arm64_Sequoia_Xcode instead of ACES_VM_SharedPool_Tahoe).");
+			}
+
 			return Adb.WaitForEmulator(timeToWaitInSeconds, Id, output: output);
 		}
 

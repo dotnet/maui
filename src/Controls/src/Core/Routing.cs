@@ -249,6 +249,49 @@ namespace Microsoft.Maui.Controls
 			obj.SetValue(RouteProperty, value);
 		}
 
+		internal static void ValidateForDuplicates(Element element, string route)
+		{
+			// If setting the same route to the same element, no need to validate
+			var currentRoute = GetRoute(element);
+			if (currentRoute == route)
+			{
+				return;
+			}
+
+			// Only validate user-defined routes
+			if (string.IsNullOrEmpty(route) || !IsUserDefined(route))
+			{
+				return;
+			}
+
+			// Check for duplicate routes among siblings (elements with the same parent)
+			var parent = element.Parent;
+			if (parent == null)
+			{
+				return;
+			}
+
+			foreach (var child in parent.LogicalChildrenInternal)
+			{
+				if (child == element)
+					continue;
+
+				var siblingRoute = GetRoute(child);
+				if (siblingRoute == route)
+				{
+					throw new ArgumentException(
+						$"Duplicated Route: \"{route}\" is already registered to another element of type {child.GetType().Name}. " +
+						$"Routes must be unique among siblings to avoid navigation conflicts.",
+						nameof(route));
+				}
+			}
+		}
+
+		internal static void RemoveElementRoute(Element element)
+		{
+			// No longer needed with sibling-based validation, but keep for API compatibility
+		}
+
 		static void ValidateRoute(string route, RouteFactory routeFactory)
 		{
 			if (string.IsNullOrWhiteSpace(route))

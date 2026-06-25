@@ -65,6 +65,8 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive, CFSClean, CFSClean2
     pool: ${{ parameters.WindowsPool }}
     sdl:
       binskim:
@@ -86,6 +88,7 @@ extends:
         macPool: ${{ parameters.MacOSPool }}
         enableSourceIndex: false
         runAsPublic: false
+        is1ESPipeline: true
         enableMicrobuild: true
         publishAssets: true
         sourceIndexParams:
@@ -102,7 +105,7 @@ extends:
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
             skipProvisioning: true
-            skipXcode: true
+            skipXcode: false
             base64Encode: true
             outputVariableName: dotnetbuilds-internal-container-read-token-base64
 

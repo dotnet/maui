@@ -1,0 +1,90 @@
+name: Lock CI scanner issues
+
+# Scanner-created issues use GITHUB_TOKEN, which does not trigger follow-up
+# issues events. The scheduled sweep is the locking mechanism, so new scanner
+# issues may remain unlocked for up to 6 hours.
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to lock if it has a CI scanner label"
+        required: true
+        type: number
+
+permissions:
+  issues: write
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'dotnet' }}
+    steps:
+      - name: Lock scanner issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          set -euo pipefail
+
+          lock_issue() {
+            local issue_number="$1"
+            local issue_json labels scanner_label title_prefix
+
+            if ! issue_json="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${issue_number}")"; then
+              echo "::warning::Failed to fetch issue #${issue_number}."
+              return 1
+            fi
+
+            if [ "$(jq -r 'has("pull_request")' <<< "${issue_json}")" = "true" ]; then
+              echo "Skipping #${issue_number}; it is a pull request."
+              return 0
+            fi
+
+            labels="$(jq -r '.labels[].name' <<< "${issue_json}")"
+            scanner_label=""
+            for label in ci-scan ci-scan-net11; do
+              if printf '%s\n' "${labels}" | grep -Fxq "${label}"; then
+                title_prefix="[${label}] "
+                if jq -e --arg prefix "${title_prefix}" '(.title // "") | startswith($prefix)' <<< "${issue_json}" >/dev/null; then
+                  scanner_label="${label}"
+                  break
+                fi
+              fi
+            done
+
+            if [ -z "${scanner_label}" ]; then
+              echo "Skipping #${issue_number}; no CI scanner label matches the issue title prefix."
+              return 0
+            fi
+
+            if ! jq -e '(.body // "") | contains("ci-scan-fingerprint:")' <<< "${issue_json}" >/dev/null; then
+              echo "Skipping #${issue_number}; no ci-scan-fingerprint marker."
+              return 0
+            fi
+
+            if [ "$(jq -r '.locked' <<< "${issue_json}")" = "true" ]; then
+              echo "Issue #${issue_number} is already locked."
+              return 0
+            fi
+
+            if ! gh issue lock "${issue_number}" --repo "${GITHUB_REPOSITORY}"; then
+              echo "::warning::Failed to lock issue #${issue_number}."
+              return 1
+            fi
+            echo "Locked ${scanner_label} issue #${issue_number}."
+          }
+
+          if [ -n "${ISSUE_NUMBER}" ]; then
+            lock_issue "${ISSUE_NUMBER}" || echo "::warning::Failed to process #${ISSUE_NUMBER}; continuing."
+            exit 0
+          fi
+
+          {
+            gh issue list --repo "${GITHUB_REPOSITORY}" --state open --label ci-scan --search '-is:locked' --limit 100 --json number --jq '.[].number'
+            gh issue list --repo "${GITHUB_REPOSITORY}" --state open --label ci-scan-net11 --search '-is:locked' --limit 100 --json number --jq '.[].number'
+          } | sort -n -u | while read -r issue_number; do
+            [ -n "${issue_number}" ] || continue
+            lock_issue "${issue_number}" || echo "::warning::Failed to process #${issue_number}; continuing."
+          done

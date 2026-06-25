@@ -19,6 +19,7 @@
     <Compile Include="ConstraintDesignTypeConverterTests.cs" />
     <Compile Include="CornerRadiusDesignTypeConverterTests.cs" />
     <Compile Include="DesignTypeConverterTests.cs" />
+    <Compile Include="FontSizeDesignTypeConverterTests.cs" />
     <Compile Include="GridLengthCollectionDesignTypeConverterTests.cs" />
     <Compile Include="GridLengthDesignTypeConverterTests.cs" />
     <Compile Include="ImageSourceDesignTypeConverterTests.cs" />

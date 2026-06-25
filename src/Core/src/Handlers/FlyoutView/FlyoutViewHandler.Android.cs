@@ -75,9 +75,10 @@ namespace Microsoft.Maui.Handlers
 			// This allows the old detail view to be garbage collected.
 			// Note: ScopedFragment.OnDestroy() also disconnects, but fragment destruction
 			// may be delayed, so we disconnect proactively here.
-			if (_detailViewFragment?.DetailView?.Handler is IPlatformViewHandler oldPvh)
+			if (_detailViewFragment?.DetailView is IView previousDetail &&
+				previousDetail != VirtualView.Detail)
 			{
-				oldPvh.DisconnectHandler();
+				previousDetail.Handler?.DisconnectHandler();
 			}
 			// Clear our reference to the old fragment to help with GC
 			var oldFragment = _detailViewFragment;
@@ -279,6 +280,13 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(DrawerLayout);
+
+			// Apply drawer lock mode during layout so IsGestureEnabled is respected
+			// even before the detail platform view is ready
+			DrawerLayout.SetDrawerLockMode(
+				VirtualView.FlyoutBehavior == FlyoutBehavior.Flyout && VirtualView.IsGestureEnabled
+					? DrawerLayout.LockModeUnlocked
+					: DrawerLayout.LockModeLockedClosed);
 		}
 
 		void UpdateIsPresented()

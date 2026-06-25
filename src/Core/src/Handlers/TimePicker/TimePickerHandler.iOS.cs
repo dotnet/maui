@@ -62,6 +62,16 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextAlignment(timePicker);
 		}
 
+		// Make it public in .NET 11 and remove the concrete TimePickerHandler overload.
+		internal static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			if (handler.PlatformView is not null)
+			{
+				handler.PlatformView.UpdateFlowDirection(timePicker);
+				handler.PlatformView.UpdateTextAlignment(timePicker);
+			}
+		}
+
 		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateIsOpen(timePicker);
@@ -108,13 +118,27 @@ namespace Microsoft.Maui.Handlers
 			void OnStarted(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is not null)
+				{
 					VirtualView.IsFocused = VirtualView.IsOpen = true;
+					// Notify VoiceOver that the time picker popup has appeared
+					if (sender is MauiTimePicker platformView && platformView.Picker is not null)
+					{
+						platformView.PostAccessibilityFocusNotification(platformView.Picker);
+					}
+				}
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
 			{
 				if (VirtualView is not null)
+				{
 					VirtualView.IsFocused = VirtualView.IsOpen = false;
+					// Restore VoiceOver focus to the time picker field when the popup closes
+					if (sender is MauiTimePicker platformView)
+					{
+						platformView.PostAccessibilityFocusNotification();
+					}
+				}
 			}
 
 			void OnValueChanged(object? sender, EventArgs e)

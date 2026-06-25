@@ -6,6 +6,7 @@
     <RootNamespace>Microsoft.Maui.Essentials.AI.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <MauiTestProject>true</MauiTestProject>
+    <NoWarn>$(NoWarn);MAUIAI0001</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -27,7 +28,6 @@
     <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\StreamingJsonDeserializer.cs" Link="Services\StreamingJsonDeserializer.cs" />
     <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\BufferedChatClient.cs" Link="Services\BufferedChatClient.cs" />
     <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\Services\JsonMerger.cs" Link="Services\JsonMerger.cs" />
-    <Compile Include="..\..\..\AI\samples\Essentials.AI.Sample\AI\NonFunctionInvokingChatClient.cs" Link="AI\NonFunctionInvokingChatClient.cs" />
   </ItemGroup>
 
   <ItemGroup>

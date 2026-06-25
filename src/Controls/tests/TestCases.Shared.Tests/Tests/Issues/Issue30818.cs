@@ -17,6 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ToolbarItem)]
 		public void ToolbarItemColorWithCustomBarTextColorShouldWork()
 		{
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33970
+			}
 			App.WaitForElement("SetResetButton");
 			VerifyScreenshot();
 
