@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers
         internal BottomNavigationView? _bottomNavigationView;
         internal TabbedViewManager? _tabbedViewManager;
         ShellItemTabbedViewAdapter? _shellItemAdapter;
-        ShellSectionFragmentAdapter? _adapter;
+        internal ShellSectionFragmentAdapter? _adapter;
         ShellItemPageChangeCallback? _pageChangeCallback;
         IShellContext? _shellContext;
         Fragment? _parentFragment; // The wrapper fragment that hosts this handler

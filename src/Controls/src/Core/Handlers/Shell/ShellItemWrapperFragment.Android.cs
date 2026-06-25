@@ -108,6 +108,23 @@ namespace Microsoft.Maui.Controls.Handlers
             }
         }
 
+        public override void OnDestroyView()
+        {
+            // Null out view references so we don't hold on to detached views
+            // when the fragment is placed on the back stack (view destroyed, fragment alive).
+            // Also null _adapter so SetupViewPagerAdapter re-creates it and assigns it
+            // to the new ViewPager2 on the next OnViewCreated (adapter reset path).
+            if (_handler is not null)
+            {
+                _handler._viewPager = null;
+                _handler._adapter = null;
+            }
+
+            _rootLayout = null;
+
+            base.OnDestroyView();
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
