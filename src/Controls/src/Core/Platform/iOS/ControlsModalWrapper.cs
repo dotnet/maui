@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.BackgroundProperty.PropertyName)
-				UpdateBackgroundColor();
+				UpdateBackground();
 		}
 
 		void UpdateBackground()
