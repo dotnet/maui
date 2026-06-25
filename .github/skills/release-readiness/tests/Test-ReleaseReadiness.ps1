@@ -846,19 +846,38 @@ if (-not $SkipE2E) {
                 Assert-Eq -Label "net11 has 0 SR trackers (pre-GA -> Lane 2 skipped)" -Expected 0 -Actual $srTrackers.Count
 
                 $preview6 = $previewTrackers[0]
+                # Lifecycle-INVARIANT fields (don't drift candidate<->in-flight): identity,
+                # tag prefix, preview number, milestone, and the canonical proposed branch slug.
                 Assert-Eq -Label "preview6 canonicalKey"              -Expected 'net11-preview6'       -Actual $preview6.canonicalKey
-                Assert-Eq -Label "preview6 mode = in-flight (branch cut, tag not yet published)" -Expected 'in-flight' -Actual $preview6.mode
-                Assert-Eq -Label "preview6 surveyRef = its own branch" -Expected 'release/11.0.1xx-preview6' -Actual $preview6.surveyRef
                 Assert-Eq -Label "preview6 expectedTagPrefix"         -Expected '11.0.0-preview.6.'   -Actual $preview6.expectedTagPrefix
                 Assert-Eq -Label "preview6 previewNumber = 6"         -Expected 6                      -Actual $preview6.previewNumber
                 Assert-Eq -Label "preview6 milestone name"            -Expected '.NET 11.0-preview6'  -Actual $preview6.milestoneName
-                Assert-Eq -Label "preview6 issue title format"        `
-                          -Expected '[Release Readiness] .NET 11.0 preview6 — release/11.0.1xx-preview6' `
-                          -Actual $preview6.issueTitle
                 Assert-Eq -Label "preview6 branchName = canonical slug" `
                           -Expected 'release/11.0.1xx-preview6' -Actual $preview6.branchName
-                Assert-Eq -Label "preview6 branchExists = true (branch cut)" `
-                          -Expected $true -Actual $preview6.branchExists
+                # preview6 transitions candidate (no branch) -> in-flight (branch cut) over its
+                # cycle. Don't hard-code EITHER state: read the detector's own branchExists and
+                # assert mode/surveyRef/issueTitle are CONSISTENT with it. This stays green across
+                # the candidate->in-flight cut instead of drifting the day the branch lands — same
+                # invariant-over-snapshot philosophy as the hasRecentActivity asserts below.
+                Assert-Eq -Label "preview6 branchExists is a [bool] (lifecycle pivot)" `
+                          -Expected $true -Actual ($preview6.branchExists -is [bool])
+                if ($preview6.branchExists) {
+                    # Branch has been cut -> in-flight: the tracker surveys the branch itself.
+                    Assert-Eq -Label "preview6 mode = in-flight (branch exists)" -Expected 'in-flight' -Actual $preview6.mode
+                    Assert-Eq -Label "preview6 surveyRef = branchName (branch exists)" `
+                              -Expected $preview6.branchName -Actual $preview6.surveyRef
+                    Assert-Eq -Label "preview6 issue title = in-flight form" `
+                              -Expected "[Release Readiness] .NET 11.0 preview6 — $($preview6.branchName)" `
+                              -Actual $preview6.issueTitle
+                } else {
+                    # No branch yet -> candidate: the tracker surveys the major's dev branch.
+                    Assert-Eq -Label "preview6 mode = candidate (no branch yet)" -Expected 'candidate' -Actual $preview6.mode
+                    Assert-Eq -Label "preview6 surveyRef = mainBranch (no branch yet)" `
+                              -Expected $net11.mainBranch -Actual $preview6.surveyRef
+                    Assert-Eq -Label "preview6 issue title = candidate form" `
+                              -Expected "[Release Readiness] .NET 11.0 preview6 — candidate from $($net11.mainBranch)" `
+                              -Actual $preview6.issueTitle
+                }
                 # hasRecentActivity is a 7-day-window signal, not a marker of an
                 # "active preview cycle" — net11.0 can idle >7 days and report $false.
                 # Assert the flag's TYPE, not its date-dependent value.
@@ -1331,6 +1350,45 @@ $cls2 = Classify-RegressionCandidate `
     -SrContents @{ sourcePrs = @(); reverts = @() }
 Assert-Eq -Label "Partial SrContents (no commits/fixedIssues) does not throw" `
     -Expected 'no-fix-yet' -Actual $cls2.classification
+
+# ───── Get-IssueCommentPrs (negation guard on fix-phrase scoring) ─────
+# A maintainer comment that NEGATES a fix ("not fixed by #X", "won't fix #Y") must
+# NOT be scored as high-confidence 'fix-phrase' — otherwise the closed-fix-unlinked
+# fallback would treat a "still broken" comment as proof of a fix. Exercises the REAL
+# Get-IssueCommentPrs (mocking only its gh call) so the regex itself is under test.
+Write-Host "`n[Unit] Get-IssueCommentPrs (negated fix phrases score as 'mention')" -ForegroundColor Cyan
+
+$origInvokeGh = ${function:Invoke-Gh}
+$script:mockCommentsJson = @'
+[
+  { "body": "Duplicate report — not fixed by #35028, still reproduces on SR8." },
+  { "body": "This is actually fixed by #40001 in the nightly build." },
+  { "body": "won't fix #50002 — working as intended." },
+  { "body": "see #60003 for related context" },
+  { "body": "not fixed by #70004 yet" },
+  { "body": "update: now fixed by #70004" }
+]
+'@
+function Invoke-Gh { param([string[]]$GhArgs, [switch]$Quiet) return $script:mockCommentsJson }
+try {
+    $scored = Get-IssueCommentPrs -Repo 'dotnet/maui' -IssueNumber 99999
+    $byNum = @{}; foreach ($s in $scored) { $byNum[[int]$s.number] = $s.evidence }
+
+    Assert-Eq -Label "negated 'not fixed by #35028' -> mention (not fix-phrase)" `
+        -Expected 'mention' -Actual $byNum[35028]
+    Assert-Eq -Label "plain 'fixed by #40001' -> fix-phrase" `
+        -Expected 'fix-phrase' -Actual $byNum[40001]
+    Assert-Eq -Label "negated 'won't fix #50002' -> mention" `
+        -Expected 'mention' -Actual $byNum[50002]
+    Assert-Eq -Label "bare 'see #60003' (no fix word) -> mention" `
+        -Expected 'mention' -Actual $byNum[60003]
+    # Strongest-evidence-wins still holds: #70004 is negated in one comment but
+    # confirmed in another -> the non-negated fix phrase upgrades it to fix-phrase.
+    Assert-Eq -Label "#70004 negated once + confirmed once -> fix-phrase wins" `
+        -Expected 'fix-phrase' -Actual $byNum[70004]
+} finally {
+    ${function:Invoke-Gh} = $origInvokeGh
+}
 
 # ───── Classify-RegressionCandidate (closed-fix-unlinked: fix cited only in a comment) ─────
 # Real-world case driving this class: SR8 tracker #35876 flagged six CLOSED issues

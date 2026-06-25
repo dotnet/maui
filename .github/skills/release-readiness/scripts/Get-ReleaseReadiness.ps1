@@ -1854,7 +1854,12 @@ function Get-IssueCommentPrs {
             $num = [int]$m.Groups[1].Value
             # Does THIS comment pair the reference with fix/resolve/close language
             # within a short window (tolerates the long ".../pull/" URL prefix)?
-            $isFix = $body -match "(?i)(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
+            # The negative lookbehind drops NEGATED fix phrases ("not fixed by #X",
+            # "won't fix #Y", "isn't resolved by #Z") so they score as a bare
+            # 'mention', not high-confidence 'fix-phrase'. Because -match backtracks,
+            # a separate non-negated fix phrase for the same PR still matches; only a
+            # SOLELY-negated reference is demoted.
+            $isFix = $body -match "(?i)(?<!\b(?:not|never|no|cannot|can't|cant|isn't|isnt|wasn't|wasnt|aren't|arent|weren't|werent|won't|wont|don't|dont|doesn't|doesnt|didn't|didnt)\s{0,3})(?:fix(?:e[ds])?|resolv(?:e[ds]|ing)?|close[ds]?)\b[\s\S]{0,60}?(?:pull/|#)$num\b"
             $ev = if ($isFix) { 'fix-phrase' } else { 'mention' }
             if (-not $byNum.ContainsKey($num) -or $ev -eq 'fix-phrase') { $byNum[$num] = $ev }
         }
