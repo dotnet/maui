@@ -183,7 +183,7 @@ public class WebViewFeatureTests : _GalleryUITest
 		App.Tap(AddTestCookieButton);
 		TapApplyAndWaitForMainPage();
 		var cookiesStatusText = App.FindElement(CookieStatusMainLabel).GetText();
-		Assert.That(cookiesStatusText, Does.Contain("Domain: example.com").And.Contain("Count: 1").And.Contain("DotNetMAUICookie = My cookie"));
+		Assert.That(cookiesStatusText, Does.Contain("Domain: github.com").And.Contain("Count: 1").And.Contain("DotNetMAUICookie = My cookie"));
 	}
 
 	[Test]
