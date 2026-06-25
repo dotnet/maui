@@ -3152,6 +3152,19 @@ function Get-ReportSemanticHash {
     # process against one computed now). Insertion order keeps the hash stable.
     $semantic = [ordered]@{
         verdict = $Verdict.symbol
+        # Tracker lifecycle mode (candidate / in-flight / shipped). Folded in so a
+        # lifecycle TRANSITION always flips the hash and refreshes the tracker —
+        # even when every other hashed field is byte-for-byte identical across the
+        # flip. This matters most at in-flight -> shipped: `-Shipped` is a pure
+        # display relabel that surveys the SAME SR branch as in-flight, so srHead,
+        # ci, srPrs, regressions, shipChecks and nightlyFeed can all be unchanged
+        # at the moment the stable tag publishes. Without `mode` here, hash(shipped)
+        # == hash(in-flight), the workflow's idempotent no-op skips `gh issue edit`,
+        # and the tracker never visually flips to "shipped" (the whole point of the
+        # shipped lifecycle). `mode` is constant within a mode, so it adds NO daily
+        # churn — only the one-time transition refreshes. Default 'in-flight' when
+        # absent, matching Format-MarkdownReport's $mode default.
+        mode = if ($Data.metadata -and $Data.metadata.ContainsKey('mode') -and $Data.metadata['mode']) { $Data.metadata['mode'] } else { 'in-flight' }
         srHead = $Data.metadata.srHeadSha
         ciOverall = if ($Data.ContainsKey('ci') -and $Data['ci']) { $Data['ci'].overall } else { $null }
         srPrs = if ($Data.ContainsKey('srContents') -and $Data['srContents']) {

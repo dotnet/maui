@@ -1767,6 +1767,55 @@ Assert-Eq -Label "Hash changes when verdict.symbol changes" -Expected $false -Ac
 $hashAgain = Get-ReportSemanticHash -Data $dataA -Verdict $verdictA
 Assert-Eq -Label "Hash is deterministic across runs" -Expected $hashA -Actual $hashAgain
 
+# Lifecycle mode flip → DIFFERENT hash, even with byte-identical content.
+# This guards the in-flight -> shipped transition: `-Shipped` surveys the SAME
+# SR branch, so without folding `mode` into the hash the shipped run would
+# collide with the last in-flight run and the workflow's no-op would skip the
+# `gh issue edit`, freezing the tracker as "in-flight" and never flipping it to
+# "shipped." Identical $Data except metadata.mode.
+$dataInflight = @{
+    metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z'; mode = 'in-flight' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$dataShipped = @{
+    metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z'; mode = 'shipped' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$hInflight = Get-ReportSemanticHash -Data $dataInflight -Verdict $verdictA
+$hShipped  = Get-ReportSemanticHash -Data $dataShipped  -Verdict $verdictA
+Assert-Eq -Label "hash: in-flight vs shipped (identical content) → DIFFERENT (tracker flips to shipped)" `
+    -Expected $false -Actual ($hInflight -eq $hShipped)
+# Candidate is likewise distinct, and the fold is deterministic within a mode.
+$dataCandidate = @{
+    metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z'; mode = 'candidate' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$hCandidate = Get-ReportSemanticHash -Data $dataCandidate -Verdict $verdictA
+Assert-Eq -Label "hash: candidate vs in-flight (identical content) → DIFFERENT" `
+    -Expected $false -Actual ($hCandidate -eq $hInflight)
+Assert-Eq -Label "hash: mode fold is deterministic (shipped recomputed → SAME)" `
+    -Expected $hShipped -Actual (Get-ReportSemanticHash -Data $dataShipped -Verdict $verdictA)
+# Absent mode defaults to 'in-flight' → SAME as an explicit 'in-flight'.
+$dataNoMode = @{
+    metadata    = @{ srHeadSha = 'cccccccc3333'; fetchedAt = '2025-01-01T00:00:00Z' }
+    ci          = @{ overall = 'green' }
+    srContents  = @{ sourcePrs = @(35001, 35002) }
+    regressions = @( @{ issue = 35001; classification = 'in-sr-active' } )
+    openSrPrs   = @( @{ number = 35100 } )
+}
+$hNoMode = Get-ReportSemanticHash -Data $dataNoMode -Verdict $verdictA
+Assert-Eq -Label "hash: absent mode defaults to in-flight → SAME as explicit in-flight" `
+    -Expected $hInflight -Actual $hNoMode
+
 # Order independence: source PRs in different order → SAME hash
 $dataReorder = $dataA.Clone()
 $dataReorder['srContents'] = @{ sourcePrs = @(35003, 35001, 35002) }   # reordered
