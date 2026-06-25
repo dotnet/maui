@@ -59,7 +59,6 @@ When `UseMaui` != 'true', the project:
     - `Controls.Xaml.csproj`
     - `Controls.Core.csproj`
     - `Microsoft.AspNetCore.Components.WebView.Maui.csproj`
-    - `Compatibility.csproj` (if enabled)
     - `Controls.Maps.csproj`
     - `Graphics.csproj`
 - Imports `Maui.InTree.props` for additional build configuration
@@ -158,12 +157,11 @@ We will only be testing with the latest nightly build MAUI controls package. Add
 ```
 
 ### Project Configuration for Nightly Builds
-Navigate to the Microsoft.Maui.Controls package on the nightly feed (or use tools like NuGet Package Explorer or browse the feed's index) to find the latest version (e.g., 8.0.0-nightly.8832+sha.feb791fc7-azdo.8163102). Open the .csproj for the project being tested and replace the package versions for Microsoft.Maui.Controls and Microsoft.Maui.Controls.Compatibility:
+Navigate to the Microsoft.Maui.Controls package on the nightly feed (or use tools like NuGet Package Explorer or browse the feed's index) to find the latest version (e.g., 8.0.0-nightly.8832+sha.feb791fc7-azdo.8163102). Open the .csproj for the project being tested and replace the package version for Microsoft.Maui.Controls:
 
 ```xml
 <ItemGroup Condition="$(MajorFrameworkVersion) >= 8.0">
     <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0-nightly.8832+sha.feb791fc7-azdo.8163102" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.0-nightly.8832+sha.feb791fc7-azdo.8163102" />
 </ItemGroup>
 ```
 
@@ -202,7 +200,6 @@ When `UseMaui` == 'true', the project:
 - Uses `PackageReference` instead of `ProjectReference`
 - References these NuGet packages:
     - `Microsoft.Maui.Controls.Maps`
-    - `Microsoft.Maui.Controls.Compatibility`
 - Uses the version specified in `$(MauiVersion)` property
 - Core MAUI dependencies are resolved via the SDK or NuGet, depending on the context
 
@@ -259,7 +256,6 @@ Find-Package Microsoft.Maui.Controls -AllVersions -IncludePrerelease
 <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
   <!-- Used ONLY in NuGet Package Mode -->
   <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
-  <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 </ItemGroup>
 ```
 
