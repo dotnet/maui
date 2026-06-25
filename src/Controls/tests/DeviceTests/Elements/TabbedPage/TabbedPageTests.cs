@@ -444,6 +444,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS
 			, Skip = "FIXME: fails on Windows"
+#elif ANDROID //For more information, see: https://github.com/dotnet/maui/issues/35985
+			, Skip = "FIXME: fails on Android"
 #endif
 		)]
 		public async Task DoesNotLeak()

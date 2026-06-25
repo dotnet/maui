@@ -243,7 +243,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Stepper))]
 #endif
 	[InlineData(typeof(SwipeView))]
+#if TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Switch))]
+#endif
 	[InlineData(typeof(TimePicker))]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TableView))]
