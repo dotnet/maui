@@ -1546,6 +1546,29 @@ stages:
                   Write-Host "Moving snapshot-diffs from $snapDiffSrc -> $snapDiffDest"
                   Move-Item -Path $snapDiffSrc -Destination $snapDiffDest -Force -ErrorAction SilentlyContinue
                 }
+
+                # Ship the UI-test failure diagnostics (screenshots + page source +
+                # appium/device logs) that BuildAndRunHostApp.ps1 writes to
+                # CustomAgentLogsTmp/UITests. Without these, a OneTimeSetUp /
+                # navigation failure (e.g. the "Go To Test button" timeout that
+                # currently fails the whole deep run) is a black box — the artifact
+                # otherwise ships only the TRX. Capturing the app's actual
+                # on-screen state at failure is what lets us root-cause why the
+                # deep-stage app doesn't render the gallery.
+                $uiDiagSrc = Join-Path (Get-Location).Path "CustomAgentLogsTmp/UITests"
+                if (Test-Path $uiDiagSrc) {
+                  $uiDiagDest = Join-Path $catDir "ui-diagnostics"
+                  New-Item -ItemType Directory -Force -Path $uiDiagDest | Out-Null
+                  Get-ChildItem -Path $uiDiagSrc -Recurse -File -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Extension -in '.png', '.xml' -or $_.Name -in 'appium.log', 'android-device.log', 'test-output.log' } |
+                    ForEach-Object { Copy-Item $_.FullName $uiDiagDest -Force -ErrorAction SilentlyContinue }
+                  $diagCount = @(Get-ChildItem -Path $uiDiagDest -File -ErrorAction SilentlyContinue).Count
+                  Write-Host "Captured $diagCount UI-test diagnostic file(s) (screenshots/page-source/logs) into $uiDiagDest"
+                  # Clear per-test screenshots/page-source so the next category's
+                  # diagnostics don't accumulate into this one.
+                  Get-ChildItem -Path $uiDiagSrc -Recurse -File -Include '*.png', '*.xml' -ErrorAction SilentlyContinue |
+                    Remove-Item -Force -ErrorAction SilentlyContinue
+                }
               }
 
               if ($skippedCats.Count -gt 0) {
