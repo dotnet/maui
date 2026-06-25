@@ -305,9 +305,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 
-#pragma warning disable MAUI0003, CS0618 // BackgroundColor — modal page background refresh backward compatibility
-				if (e.IsOneOf(Page.BackgroundColorProperty, Page.BackgroundProperty))
-#pragma warning restore MAUI0003, CS0618
+				if (e.IsOneOf(Page.BackgroundProperty))
 				{
 					UpdateBackground();
 				}
