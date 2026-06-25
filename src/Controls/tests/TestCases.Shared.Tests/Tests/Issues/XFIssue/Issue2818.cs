@@ -34,8 +34,8 @@ public class Issue2818 : _IssuesUITest
 		Assert.That(positionStart, Is.Not.EqualTo(secondPosition));
 	}
 
-	[Test]  
-	public async Task RootViewSizeDoesntChangeAfterBackground()
+	[Test]
+	public void RootViewSizeDoesntChangeAfterBackground()
 	{
 		var idiom = App.WaitForElement("Idiom");
 		App.SetOrientationLandscape();
@@ -46,24 +46,28 @@ public class Issue2818 : _IssuesUITest
 		App.Tap("ShowLeftToRight");
 		App.WaitForElement("OpenRootView");
 		App.Tap("OpenRootView");
-		var windowSize = App.WaitForElement("RootLayout");
+
+		// Capture the expected size as values (not an element reference) before backgrounding.
+		// The pre-background element reference goes stale across the background/foreground cycle,
+		// so snapshot the width/height now and compare the restored layout against these values.
+		var expectedRect = App.WaitForElement("RootLayout").GetRect();
+
 		App.BackgroundApp();
 		App.WaitForNoElement("RootLayout");
 		App.ForegroundApp();
-		var newWindowSize = App.WaitForElement("RootLayout");
 
-		// Poll until the width stabilizes. After foregrounding, some platforms (esp. Android/iOS)
-		// may momentarily report an intermediate layout size while the window / flyout re-applies
-		// RTL + orientation constraints. This loop prevents test flakiness by waiting for the
-		// final (restored) size instead of asserting too early
-		int retries = 50;
-		while (newWindowSize.GetRect().Width != windowSize.GetRect().Width && retries-- > 0)
+		// After foregrounding, the RootLayout view is rebuilt and may momentarily report an
+		// intermediate layout size while the window / flyout re-applies RTL + orientation
+		// constraints. Re-resolve the element on each attempt (instead of holding a single,
+		// possibly-intermediate reference) and wait for the restored size to match the size
+		// captured before backgrounding. Assertions stay exact-equality, so a genuine size
+		// change still fails the test rather than being masked.
+		App.RetryAssert(() =>
 		{
-			await Task.Delay(100);
-		}
-
-		Assert.That(newWindowSize.GetRect().Width, Is.EqualTo(windowSize.GetRect().Width));
-		Assert.That(newWindowSize.GetRect().Height, Is.EqualTo(windowSize.GetRect().Height));
+			var restoredRect = App.WaitForElement("RootLayout").GetRect();
+			Assert.That(restoredRect.Width, Is.EqualTo(expectedRect.Width));
+			Assert.That(restoredRect.Height, Is.EqualTo(expectedRect.Height));
+		}, timeout: TimeSpan.FromSeconds(5));
 	}
 
 	[TearDown]
