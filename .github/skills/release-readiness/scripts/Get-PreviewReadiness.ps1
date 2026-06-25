@@ -1217,9 +1217,9 @@ if ($p1Issues.Count -gt 0) {
 }
 
 if ($mergeUpPRs.Count -gt 0) {
-    $checks += New-Check -Area "Merge-up PRs (main → $SurveyRef)" -Status "BLOCKED" -Details "$($mergeUpPRs.Count) open merge-up PR(s). See 🔴 High-priority items at top. Stuck merge-up PRs block daily flow and accumulate conflicts." -NextAction "Resolve and merge each before shipping."
+    $checks += New-Check -Area "Merge-up PRs ($mainBranch → $SurveyRef)" -Status "BLOCKED" -Details "$($mergeUpPRs.Count) open merge-up PR(s). See 🔴 High-priority items at top. Stuck merge-up PRs block daily flow and accumulate conflicts." -NextAction "Resolve and merge each before shipping."
 } else {
-    $checks += New-Check -Area "Merge-up PRs (main → $SurveyRef)" -Status "READY" -Details "No open merge-up PRs from ``main`` → ``$SurveyRef``." -NextAction "Continue monitoring."
+    $checks += New-Check -Area "Merge-up PRs ($mainBranch → $SurveyRef)" -Status "READY" -Details "No open merge-up PRs from ``$mainBranch`` → ``$SurveyRef``." -NextAction "Continue monitoring."
 }
 
 if ($kbeIssues.Count -gt 0) {
@@ -1423,10 +1423,10 @@ if ($nightlyFeedBanner) {
 #      de-prioritized) before shipping.
 #   3. Maestro dependency-flow PRs — open Maestro PRs against the survey ref.
 #      A stuck Maestro PR blocks all upstream dependency flow into this branch.
-#   4. Merge-up PRs (main → survey ref) — daily-flow sync PRs whose head ref
+#   4. Merge-up PRs (upstream → survey ref) — daily-flow sync PRs whose head ref
 #      matches `merge/...-to-...` or title starts with "[automated] Merge branch".
 #      A stuck merge-up PR accumulates conflicts and starves the release branch
-#      of new fixes from main.
+#      of new fixes from upstream (main on the SR lane, net11.0 on the preview lane).
 # Each item is itemized (one row per issue/PR) so the captain can see exactly
 # what's outstanding without drilling into the per-category PR tables below.
 $highPriorityRows = New-Object System.Collections.Generic.List[hashtable]
@@ -1473,7 +1473,7 @@ foreach ($pr in $mergeUpPRs) {
 if ($highPriorityRows.Count -gt 0) {
     [void]$md.AppendLine("## 🔴 High-priority items — $($highPriorityRows.Count) item(s)")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_P/0 issues, P/0 PRs, Maestro PRs, and ``main`` → ``$SurveyRef`` merge-up PRs. Resolve these before treating the release as ready._")
+    [void]$md.AppendLine("_P/0 issues, P/0 PRs, Maestro PRs, and ``$mainBranch`` → ``$SurveyRef`` merge-up PRs. Resolve these before treating the release as ready._")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("| Kind | Item | Title | Context | Next action |")
     [void]$md.AppendLine("|------|------|-------|---------|-------------|")
@@ -1493,7 +1493,7 @@ $highPriorityCheckAreas = @(
     'P/0 priority blockers',
     'P/0 release-branch PRs',
     'Maestro PRs',
-    "Merge-up PRs (main → $SurveyRef)"
+    "Merge-up PRs ($mainBranch → $SurveyRef)"
 )
 $blockingChecks = @($checks | Where-Object {
     $_.Status -eq 'BLOCKED' -and -not ($highPriorityCheckAreas -contains $_.Area)
