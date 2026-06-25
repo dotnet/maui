@@ -29,22 +29,44 @@ public static class HotReloadDiagnostics
 	public static event EventHandler<HotReloadErrorEventArgs>? UpdateFailed;
 
 	/// <summary>Gets the current global version counter (monotonically increasing).</summary>
-	public static int CurrentVersion => _version;
+	public static int CurrentVersion => Volatile.Read(ref _version);
 
 	internal static int IncrementVersion() => Interlocked.Increment(ref _version);
 
 	internal static void OnUpdateRequested(IReadOnlyList<Type> updatedTypes)
 	{
-		UpdateRequested?.Invoke(null, new HotReloadRequestedEventArgs(updatedTypes, DateTimeOffset.Now));
+		Raise(UpdateRequested, new HotReloadRequestedEventArgs(updatedTypes, DateTimeOffset.Now));
 	}
 
 	internal static void OnUpdateApplied(IReadOnlyList<Type> updatedTypes, int instanceCount, int fromVersion, int toVersion, TimeSpan duration)
 	{
-		UpdateApplied?.Invoke(null, new HotReloadAppliedEventArgs(updatedTypes, instanceCount, fromVersion, toVersion, duration, DateTimeOffset.Now));
+		Raise(UpdateApplied, new HotReloadAppliedEventArgs(updatedTypes, instanceCount, fromVersion, toVersion, duration, DateTimeOffset.Now));
 	}
 
 	internal static void OnUpdateFailed(Type updatedType, object instance, Exception exception)
 	{
-		UpdateFailed?.Invoke(null, new HotReloadErrorEventArgs(updatedType, instance, exception, DateTimeOffset.Now));
+		Raise(UpdateFailed, new HotReloadErrorEventArgs(updatedType, instance, exception, DateTimeOffset.Now));
+	}
+
+	// Diagnostics are observational only: a throwing or slow subscriber must never abort the
+	// in-progress hot-reload batch. Invoke each handler in isolation and swallow exceptions.
+	static void Raise<TArgs>(EventHandler<TArgs>? handler, TArgs args) where TArgs : EventArgs
+	{
+		if (handler is null)
+			return;
+
+		foreach (var d in handler.GetInvocationList())
+		{
+			try
+			{
+				((EventHandler<TArgs>)d).Invoke(null, args);
+			}
+#pragma warning disable CA1031
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"[XIHR] HotReloadDiagnostics subscriber threw: {ex.Message}");
+			}
+#pragma warning restore CA1031
+		}
 	}
 }

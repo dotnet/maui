@@ -10,8 +10,12 @@
     <_MauiXamlInflator Condition="' $(MauiXamlInflator)' != '' ">$(MauiXamlInflator)</_MauiXamlInflator>
     <_MauiXamlInflator Condition=" '$(MauiXamlInflator)' == '' ">SourceGen</_MauiXamlInflator>
 
-    <!-- XAML Incremental Hot Reload: on by default, set to 'false' to disable -->
-    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == ''">true</EnableMauiIncrementalHotReload>
+    <!-- XAML Incremental Hot Reload: on by default for Debug builds only (hot reload is a
+         dev-time feature; enabling it in Release/AOT would emit per-page registry calls and
+         keep the runtime feature switch on, defeating trimming). Explicitly resolves to
+         true/false so the value always flows to the source generator and runtime config. -->
+    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == '' and '$(Configuration)' == 'Debug'">true</EnableMauiIncrementalHotReload>
+    <EnableMauiIncrementalHotReload Condition="'$(EnableMauiIncrementalHotReload)' == ''">false</EnableMauiIncrementalHotReload>
 
     <!-- XAML Hot Reload mode for IDE communication (Legacy or SourceGen) -->
     <MauiXamlHotReload Condition="'$(MauiXamlHotReload)' == '' and '$(EnableMauiIncrementalHotReload)' == 'true'">SourceGen</MauiXamlHotReload>
@@ -89,11 +93,6 @@
 		<PropertyGroup>
 			<_MauiXamlHotReloadUpper>$([System.String]::Copy('$(MauiXamlHotReload)').Trim().ToUpperInvariant())</_MauiXamlHotReloadUpper>
 		</PropertyGroup>
-
-		<Warning
-			Code="MAUI1002"
-			Text="MauiXamlHotReload is set to 'SourceGen'. Source generator-based XAML Hot Reload is experimental and not yet fully implemented. Use at your own risk."
-			Condition="'$(_MauiXamlHotReloadUpper)' == 'SOURCEGEN'" />
 
 		<Warning
 			Code="MAUI1003"
