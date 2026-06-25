@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 
-				if (e.IsOneOf(Page.BackgroundProperty))
+				if (e.PropertyName == Page.BackgroundProperty.PropertyName)
 				{
 					UpdateBackground();
 				}

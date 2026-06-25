@@ -149,8 +149,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == BackgroundProperty.PropertyName ||
-				propertyName == ColorProperty.PropertyName ||
+			if (propertyName == ColorProperty.PropertyName ||
 				propertyName == FillProperty.PropertyName ||
 				propertyName == IsVisibleProperty.PropertyName ||
 				propertyName == BackgroundProperty.PropertyName ||
