@@ -254,6 +254,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_subscribedItemsLayout is not null)
 			{
+				// Reinitialize the cache if it was cleared by DisconnectHandler
+				_layoutPropertyCache ??= new Dictionary<string, object>();
 				_subscribedItemsLayout.PropertyChanged += OnItemsLayoutPropertyChanged;
 			}
 		}
