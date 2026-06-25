@@ -76,6 +76,15 @@ namespace Microsoft.Maui.Controls
 				{
 					previousDetail.SendNavigatedFrom(
 						new NavigatedFromEventArgs(destinationPage: value, NavigationType.Replace));
+
+					if (previousDetail.IsLoaded)
+					{
+						previousDetail.OnUnloaded(previousDetail.DisconnectHandlers);
+					}
+					else
+					{
+						previousDetail.DisconnectHandlers();
+					}
 				}
 
 				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.Replace));
@@ -351,6 +360,12 @@ namespace Microsoft.Maui.Controls
 		void OnMainDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
 			Handler?.UpdateValue(nameof(FlyoutBehavior));
+
+#if ANDROID || WINDOWS
+			// Trigger toolbar re-evaluation on orientation change. iOS handles this natively
+			// via PhoneFlyoutPageRenderer.ViewWillTransitionToSize().
+			OnPropertyChanged(nameof(FlyoutLayoutBehavior));
+#endif
 		}
 
 		IView IFlyoutView.Flyout => this.Flyout;
