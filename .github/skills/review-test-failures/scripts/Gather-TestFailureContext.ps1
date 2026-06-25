@@ -555,9 +555,15 @@ function Get-ErrorFingerprint {
     # in an identifier or quoted symbol (Handler1 vs Handler2, MethodB2). Round-6 collapsed EVERY digit,
     # so two DIFFERENT coded breaks that differ only by a trailing identifier digit fingerprinted
     # identically and a PR-new break could be laundered as a base break of the same code (round-7
-    # GPT F3 / Gemini F2). Identical symbols still fingerprint identically, so a genuinely pre-existing
-    # break still matches the baseline; only DIFFERENT symbols now stay distinct (NHI, never a dismissal).
-    $t = [regex]::Replace($t, '(?<![A-Za-z])\d+(?![A-Za-z])', '#')
+    # GPT F3 / Gemini F2). Round-7 excluded only LETTER-adjacent digits, so digits adjacent to an
+    # underscore (Handler_1 vs Handler_2) or a backtick (generic arity Foo`1 vs Foo`2) still collapsed
+    # and two distinct same-code breaks could still collide -> a PR-new break laundered as pre-existing
+    # (round-10 GPT F1 / Gemini F1). Exclude the FULL identifier-character set ([A-Za-z0-9_`]) on both
+    # sides so ONLY a digit run delimited by non-identifier chars (a real standalone count) collapses.
+    # Identical symbols still fingerprint identically, so a genuinely pre-existing break still matches
+    # the baseline; only DIFFERENT symbols now stay distinct (NHI, never a dismissal). Widening the
+    # exclusion can only ADD distinctness -> it can only turn a dismissal into NHI, never the reverse.
+    $t = [regex]::Replace($t, '(?<![A-Za-z0-9_`])\d+(?![A-Za-z0-9_`])', '#')
     $t = ($t -replace '\s+', ' ').Trim().ToLowerInvariant()
     # Do NOT hard-truncate. A long message whose ONLY differentiator (e.g. the offending member name on
     # a deeply-nested generic type) lives past the cut-off would collapse two distinct breaks into one
@@ -670,7 +676,7 @@ function Get-FailCountsFromObject {
     # (e.g. failFast) are ignored -- only real numeric counts.
     param($Object)
 
-    $result = [ordered]@{ sawCount = $false; totalFail = 0 }
+    $result = [ordered]@{ sawCount = $false; totalFail = 0; truncated = $false }
     if ($null -eq $Object) { return $result }
     $stack = New-Object System.Collections.Stack
     $stack.Push($Object)
@@ -707,6 +713,11 @@ function Get-FailCountsFromObject {
             }
         }
     }
+    # Opus R10 #3: if the scan hit the node-visit guard with work still queued, a *fail* count past
+    # the cutoff was never observed -> sawCount/totalFail are INCOMPLETE. Report truncation so the
+    # caller refuses positive Failed==0 confirmation (symmetric to the read-error/paging guards),
+    # never confirming a green device-test check from an under-counted aggregate.
+    if ($stack.Count -gt 0) { $result.truncated = $true }
     return $result
 }
 
@@ -1809,11 +1820,18 @@ foreach ($buildRef in $buildRefsById.Values) {
         $anyHelixFail = $false
         $anyHelixCount = $false
         $anyHelixReadError = $false
+        $anyHelixUnverified = $false
         foreach ($jobId in $buildSummary.helix.jobIds) {
             try {
                 $summary = Invoke-JsonUrl -Url "https://helix.dot.net/api/2019-06-17/jobs/$jobId/aggregated"
                 $counts = Get-FailCountsFromObject -Object $summary
                 if ($counts.sawCount) { $anyHelixCount = $true }
+                # Gemini R10 F2 / Opus R10 #3: a job that returned NO fail count (a countless/empty
+                # aggregate shape, e.g. an infra-aborted or still-initializing job) or whose scan
+                # TRUNCATED leaves THIS job's failures unobserved. A sibling job's clean count must not
+                # confirm clean over it -> veto positive confirmation (over-block to NHI), never a
+                # false green.
+                if ((-not $counts.sawCount) -or $counts.truncated) { $anyHelixUnverified = $true }
                 if ($counts.totalFail -gt 0) {
                     $anyHelixFail = $true
                     # F1: a Helix aggregate that reports Failed>0 is a REAL hidden device-test
@@ -1849,10 +1867,12 @@ foreach ($buildRef in $buildRefsById.Values) {
             }
         }
         # Positive Failed==0 confirmation: at least one Helix job reported a fail count, NONE were > 0,
-        # AND every discovered job was read without error. Only this lets a GREEN device-test check stay
-        # green (see the device-test unverified cap below). No fail count seen anywhere, OR any job whose
-        # aggregate read threw = NOT confirmed (cannot trust green over an unobserved job; Opus F2).
-        if ($anyHelixCount -and -not $anyHelixFail -and -not $anyHelixReadError) {
+        # every discovered job was read without error, AND no job was left unverified (countless or
+        # truncated aggregate). Only this lets a GREEN device-test check stay green (see the device-test
+        # unverified cap below). No fail count seen anywhere, any job whose aggregate read threw (Opus
+        # F2), or any job that returned no count / a truncated scan (round-10 Gemini F2 / Opus #3) =
+        # NOT confirmed (cannot trust green over an unobserved job).
+        if ($anyHelixCount -and -not $anyHelixFail -and -not $anyHelixReadError -and -not $anyHelixUnverified) {
             $buildSummary.deviceTestFailedConfirmedZero = $true
         }
     }
@@ -1899,7 +1919,20 @@ foreach ($buildRef in $buildRefsById.Values) {
             if ($build.definition.name -eq "maui-pr-devicetests") {
                 $runsWithTests = @($allRuns | Where-Object { [int]$_.totalTests -gt 0 })
                 $totalFailedAcrossRuns = (@($allRuns | ForEach-Object { [int]$_.failedTests }) | Measure-Object -Sum).Sum
-                if ($runsWithTests.Count -gt 0 -and [int]$totalFailedAcrossRuns -eq 0 -and -not $runsPaged.truncated) {
+                # Round-10 (GPT #2 / Gemini F3 / Opus #4, 3/3): failedTests==0 alone does NOT prove a
+                # clean run. A run that did not COMPLETE its full test set -- incompleteTests>0,
+                # unanalyzedTests>0, or a run state other than 'Completed' (Aborted/NeedsInvestigation/
+                # InProgress) -- contributes failedTests=0 yet may hide a device failure that never
+                # produced a 'Failed' outcome (it was aborted/inconclusive). Such a run must NOT confirm
+                # clean. notApplicable / [Ignore]d tests are deliberately NOT part of this veto, so a
+                # normal build with ignored tests still confirms (no over-block on the common case).
+                # Any incompleteness caps the verdict to NHI (deviceTestUnverified), never a false green.
+                $incompleteRuns = @($allRuns | Where-Object {
+                    ([int]$_.incompleteTests -gt 0) -or
+                    ([int]$_.unanalyzedTests -gt 0) -or
+                    ((-not [string]::IsNullOrWhiteSpace([string]$_.state)) -and ([string]$_.state -ne 'Completed'))
+                })
+                if ($runsWithTests.Count -gt 0 -and [int]$totalFailedAcrossRuns -eq 0 -and -not $runsPaged.truncated -and $incompleteRuns.Count -eq 0) {
                     $buildSummary.deviceTestFailedConfirmedZero = $true
                 }
             }
@@ -2068,8 +2101,16 @@ if ($BaselineBuildsPerDefinition -gt 0) {
 
             Write-Host "Inspecting baseline build $($base.id) for $defName..."
             $extract = Get-BuildLogTestFailures -Org $build.org -Project $build.project -BuildId ([int]$base.id)
+            # Opus R10 #1: ONLY the most-recent completed base build is authoritative for the DISMISSAL
+            # decision (matching the doc and the leg-map, which both use $mostRecent). An OLDER
+            # not-succeeded build in the lookback window may carry a failure that was since FIXED and is
+            # absent on the tip; folding its failures into the dismissal key set could launder a
+            # PR-reintroduced break as 'pre-existing' (a false green) when BaselineBuildsPerDefinition>1.
+            # Older builds still contribute their advisory NOTE below, just not dismissal keys. No-op at
+            # the shipped default (=1), where the only selected build IS $mostRecent.
+            $isMostRecentBase = ([string]$base.id -eq [string]$mostRecent.id)
             foreach ($failure in @($extract.failures)) {
-                $baselineRaw.Add($failure)
+                if ($isMostRecentBase) { $baselineRaw.Add($failure) }
             }
             $baseFailureCount = @($extract.failures).Count
             # Build an honest note so an unreadable, truncated, or empty-but-not-clean

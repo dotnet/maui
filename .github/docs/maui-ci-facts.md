@@ -153,7 +153,11 @@ pipeline is almost certainly **not** caused by the PR.
   failures from the **most recent base-branch build of the same pipeline definition**.
 - If the same `(test, platform)` key fails on the baseline build, treat it as
   **pre-existing / likely unrelated** and subtract it from PR-caused — unless this PR
-  directly changes that test, its snapshot/baseline, or the platform code it exercises.
+  directly changes that test. (The deterministic scope guard in the gatherer name-matches
+  the failing test against PR-edited **test files** only; it does **not** automatically
+  detect snapshot/baseline-image or platform-source edits. When this PR touches the
+  snapshot/baseline or the platform code a still-red test exercises, do **not** subtract it
+  — the same-reason match is not proof it is pre-existing.)
 - Base-build *result* alone is weaker evidence than a per-test match: a red base build
   tells you the branch is unhealthy; a matching red **test** tells you this specific
   failure is not yours.
