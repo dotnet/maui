@@ -156,7 +156,7 @@ jobs:
             -DotNetTfm "${{ steps.sdk.outputs.dotnet_tfm }}"
 
   dry-run-build:
-    name: ${{ inputs.publish == false && format('Dry-run builds ({0}, {1})', matrix.variant, matrix.artifactPlatform) || 'Dry-run builds' }}
+    name: Dry-run builds
     if: ${{ inputs.publish == false }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
@@ -338,7 +338,7 @@ jobs:
           retention-days: 14
 
   publish:
-    name: ${{ inputs.publish && format('Publish/build template apps ({0}, {1})', matrix.variant, matrix.artifactPlatform) || 'Publish/build template apps' }}
+    name: Publish/build template apps
     if: ${{ inputs.publish }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
