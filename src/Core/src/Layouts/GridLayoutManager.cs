@@ -949,7 +949,7 @@ namespace Microsoft.Maui.Layouts
 					}
 
 					var totalPixels = portionsTotal * density;
-					var pixelAllocations = DensityValue.DistributePixels(totalPixels, density, portions);
+					var pixelAllocations = DensityValue.DistributePixels(totalPixels, portions);
 
 					for (int i = 0; i < numStarDefs; i++)
 					{
@@ -1007,7 +1007,7 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var proportionalTotalPixels = proportionalPortionsTotal * density;
-				var proportionalPixelAllocations = DensityValue.DistributePixels(proportionalTotalPixels, density, proportionalPortions);
+				var proportionalPixelAllocations = DensityValue.DistributePixels(proportionalTotalPixels, proportionalPortions);
 
 				for (int i = 0; i < numPropStarDefs; i++)
 				{

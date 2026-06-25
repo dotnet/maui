@@ -16,7 +16,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
             var totalPixels = totalDp * density; // 770.175px
             var portions = new double[] { 1.0, 1.0, 1.0 }; // Equal star sizing
 
-            var result = DensityValue.DistributePixels(totalPixels, density, portions);
+            var result = DensityValue.DistributePixels(totalPixels, portions);
 
             // Expected with right-to-left distribution: [256, 257, 257] = 770px
             Assert.Equal(3, result.Length);
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
             var totalPixels = totalDp * density; // 870.0px
             var portions = new double[] { 1.0, 1.0, 1.0 };
 
-            var result = DensityValue.DistributePixels(totalPixels, density, portions);
+            var result = DensityValue.DistributePixels(totalPixels, portions);
 
             // Perfect division case
             Assert.Equal(3, result.Length);
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
             var totalPixels = totalDp * density; // 787.5px
             var portions = new double[] { 1.0, 1.0, 1.0, 1.0 };
 
-            var result = DensityValue.DistributePixels(totalPixels, density, portions);
+            var result = DensityValue.DistributePixels(totalPixels, portions);
 
             // Expected with right-to-left distribution: [196, 197, 197, 197] = 787px
             Assert.Equal(4, result.Length);
@@ -81,10 +81,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
         {
             // Test weighted star sizing: 2*, 1*, 2* across 500 pixels
             var totalPixels = 500.0;
-            var density = 2.0;
             var portions = new double[] { 2.0, 1.0, 2.0 }; // 2*, 1*, 2*
 
-            var result = DensityValue.DistributePixels(totalPixels, density, portions);
+            var result = DensityValue.DistributePixels(totalPixels, portions);
 
             // Total weight = 5, so distribution should be:
             // First: 500 * (2/5) = 200 pixels
@@ -104,10 +103,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
         {
             // Test weighted star sizing with rounding: 3*, 2*, 3* across 333 pixels
             var totalPixels = 333.0;
-            var density = 1.5;
             var portions = new double[] { 3.0, 2.0, 3.0 }; // 3*, 2*, 3*
 
-            var result = DensityValue.DistributePixels(totalPixels, density, portions);
+            var result = DensityValue.DistributePixels(totalPixels, portions);
 
             // Total weight = 8, with right-to-left distribution:
             // portions[0]=3: floor(333 * 3/8) = floor(124.875) = 124
@@ -126,12 +124,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
         }
 
         [Theory]
-        [InlineData(100.0, 1.0, new double[] { 1, 1, 1, 1 }, 25)] // Perfect division
-        [InlineData(101.0, 1.0, new double[] { 1, 1, 1, 1 }, 25)] // 1 pixel remainder 
-        [InlineData(103.0, 1.0, new double[] { 1, 1, 1, 1 }, 25)] // 3 pixel remainder
-        public void DensityValue_RemainderPixels_Distribution(double totalPixels, double density, double[] portions, int expectedBase)
+        [InlineData(100.0, new double[] { 1, 1, 1, 1 }, 25)] // Perfect division
+        [InlineData(101.0, new double[] { 1, 1, 1, 1 }, 25)] // 1 pixel remainder 
+        [InlineData(103.0, new double[] { 1, 1, 1, 1 }, 25)] // 3 pixel remainder
+        public void DensityValue_RemainderPixels_Distribution(double totalPixels, double[] portions, int expectedBase)
         {
-            var result = DensityValue.DistributePixels(totalPixels, density, portions);
+            var result = DensityValue.DistributePixels(totalPixels, portions);
 
             // With right-to-left distribution, we expect different behavior:
             if (totalPixels == 103.0)

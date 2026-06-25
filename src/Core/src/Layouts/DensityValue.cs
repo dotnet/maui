@@ -194,10 +194,9 @@ namespace Microsoft.Maui.Layouts
         /// This implements Android's approach of assigning remainder pixels to the last element.
         /// </summary>
         /// <param name="totalPixels">The total pixels to distribute.</param>
-        /// <param name="density">The display density.</param>
         /// <param name="portions">The relative portions for each element.</param>
         /// <returns>An array of pixel values that sum exactly to totalPixels.</returns>
-        public static int[] DistributePixels(double totalPixels, double density, double[] portions)
+        public static int[] DistributePixels(double totalPixels, double[] portions)
         {
             if (portions.Length == 0)
                 return Array.Empty<int>();
