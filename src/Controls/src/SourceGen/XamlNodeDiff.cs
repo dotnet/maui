@@ -186,7 +186,7 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListC
 		{
 			var nd = NodeChanges[i];
 			var target = string.IsNullOrEmpty(nd.NodeId) ? "root" : nd.NodeId;
-			sb.AppendLine();
+			sb.Append('\n');
 			sb.Append("  [").Append(target).Append("] ");
 			for (int j = 0; j < nd.PropertyChanges.Count; j++)
 			{
@@ -205,7 +205,7 @@ class XamlTreeDiff(IReadOnlyList<NodeDiff> nodeChanges, IReadOnlyList<ChildListC
 		{
 			var c = ChildListChanges[i];
 			var parent = string.IsNullOrEmpty(c.ParentNodeId) ? "root" : c.ParentNodeId;
-			sb.AppendLine();
+			sb.Append('\n');
 			sb.Append("  children [").Append(parent).Append("] ");
 			for (int j = 0; j < c.NewChildren.Count; j++)
 			{
