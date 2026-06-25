@@ -34,17 +34,31 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		static void OnTransformGroupChanged(BindableObject bindable, object oldValue, object newValue)
 		{
+			var transformGroup = (TransformGroup)bindable;
+
 			if (oldValue != null)
 			{
-				(oldValue as TransformCollection).CollectionChanged -= (bindable as TransformGroup).OnChildrenCollectionChanged;
+				var oldCollection = (TransformCollection)oldValue;
+				oldCollection.CollectionChanged -= transformGroup.OnChildrenCollectionChanged;
+
+				foreach (INotifyPropertyChanged item in oldCollection)
+				{
+					item.PropertyChanged -= transformGroup.OnTransformPropertyChanged;
+				}
 			}
 
 			if (newValue != null)
 			{
-				(newValue as TransformCollection).CollectionChanged += (bindable as TransformGroup).OnChildrenCollectionChanged;
+				var newCollection = (TransformCollection)newValue;
+				newCollection.CollectionChanged += transformGroup.OnChildrenCollectionChanged;
+
+				foreach (INotifyPropertyChanged item in newCollection)
+				{
+					item.PropertyChanged += transformGroup.OnTransformPropertyChanged;
+				}
 			}
 
-			(bindable as TransformGroup).UpdateTransformMatrix();
+			transformGroup.UpdateTransformMatrix();
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
