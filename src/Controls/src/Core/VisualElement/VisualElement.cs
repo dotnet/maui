@@ -291,7 +291,13 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("BackgroundColorProperty is obsolete. Use BackgroundProperty instead.")]
 #endif
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
+		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), propertyChanged: (bindable, oldvalue, newvalue) =>
+			{
+				if(bindable is VisualElement ve)
+				{
+					ve.Background = newvalue is Color color ? new SolidColorBrush(color) : null;
+				}
+			});
 
 		/// <summary>Bindable property for <see cref="Background"/>.</summary>
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
