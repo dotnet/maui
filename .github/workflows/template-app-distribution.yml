@@ -681,7 +681,7 @@ jobs:
           & bundle exec fastlane ios template_app_testflight `
             "pkg:${{ steps.build.outputs.package_path }}" `
             "app_identifier:${{ matrix.maccatalystBundleId }}" `
-            "app_platform:mac" `
+            "app_platform:osx" `
             "issuer_id:$env:APPSTORE_CONNECT_ISSUER_ID" `
             "api_key_id:$env:APPSTORE_CONNECT_KEY_ID" `
             "api_private_key_path:$env:APPSTORE_CONNECT_PRIVATE_KEY_PATH" `

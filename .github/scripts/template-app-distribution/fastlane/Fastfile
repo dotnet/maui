@@ -71,7 +71,7 @@ platform :ios do
       upload_options[:ipa] = required_option(options, :ipa)
     else
       upload_options[:pkg] = pkg
-      upload_options[:app_platform] = optional_option(options, :app_platform) || "mac"
+      upload_options[:app_platform] = optional_option(options, :app_platform) || "osx"
     end
 
     upload_options[:changelog] = changelog unless changelog.nil?
