@@ -10,6 +10,12 @@ on:
   # shipped in this tag. The pattern matches MAJOR.MINOR.PATCH (digits only)
   # and is anchored to the full ref, so preview tags like
   # 11.0.0-preview.5.26304.4 are deliberately excluded.
+  #
+  # NOTE: a tag pushed using the default GITHUB_TOKEN does NOT trigger this
+  # workflow — GitHub suppresses workflow runs for events raised by the default
+  # token to avoid loops. Release tags must therefore be pushed by a human or by
+  # automation using a PAT / GitHub App token, otherwise this trigger will
+  # silently never fire (today SR tags are pushed by a maintainer, so it does).
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
