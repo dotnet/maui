@@ -186,6 +186,8 @@ steps:
 - task: PublishBuildArtifacts@1
   condition: always()
   displayName: publish artifacts
+  inputs:
+    artifactName: drop-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)
 
 # Enable Notification Center re-enabled only for catalyst
 - ${{ if eq(parameters.platform, 'catalyst')}}:
