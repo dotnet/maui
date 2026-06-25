@@ -3,7 +3,10 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
-    <IsPackable Condition="$(TargetFramework.Contains('netstandard'))">false</IsPackable>
+    <!-- Don't ship .NET Standard packages by default, EXCEPT when a project explicitly opts in via
+         <IsPackable>true</IsPackable> (e.g. the workload manifest and SDK packs, which are netstandard-only
+         but must ship). The '$(IsPackable)' == '' guard preserves that explicit opt-in. -->
+    <IsPackable Condition="$(TargetFramework.Contains('netstandard')) and '$(IsPackable)' == ''">false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
