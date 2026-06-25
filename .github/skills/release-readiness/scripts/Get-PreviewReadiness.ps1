@@ -156,6 +156,14 @@ if ([string]::IsNullOrWhiteSpace($SurveyRef)) {
     $SurveyRef = if ($Mode -eq 'candidate') { $mainBranch } else { $Branch }
 }
 
+# Human-readable label for the daily-flow merge-up CHAIN that feeds the survey
+# ref. The preview lane is a two-hop chain: main → net<N>.0 → previewN. An
+# in-flight preview surveys previewN, so BOTH hops feed it (main → net<N>.0 →
+# previewN). A candidate's survey ref IS net<N>.0, so the chain it sees is the
+# single main → net<N>.0 hop. Used for the merge-up check Area, the high-priority
+# blurb, and the carve-out list (which must stay string-equal to the check Area).
+$mergeUpChainLabel = if ($Mode -eq 'candidate') { "main → $SurveyRef" } else { "main → $mainBranch → $SurveyRef" }
+
 # Canonical tracker key. Default matches Find-Trackers' New-PreviewTracker.
 if ([string]::IsNullOrWhiteSpace($TrackerKey)) {
     $TrackerKey = "net$majorVersion-preview$previewNumber"
@@ -798,20 +806,33 @@ function Get-CategorizedPullRequests {
     $maestroPRs = @($allReleasePRs | Where-Object { $_.author -and $_.author.login -match "dotnet-maestro" -and ($p0PrNumbers -notcontains $_.number) })
 
     # Non-P/0, non-Maestro humans, split by scope.
-    $targetHumanPRsRaw = @($TargetPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") -and ($p0PrNumbers -notcontains $_.number) })
-    $inflightHumanPRs = @($InflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
+    $targetHumanPRsRaw   = @($TargetPRs   | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") -and ($p0PrNumbers -notcontains $_.number) })
+    $inflightHumanPRsRaw = @($InflightPRs | Where-Object { -not ($_.author -and $_.author.login -match "dotnet-maestro") })
 
-    # 3. Merge-up: non-P/0, non-Maestro target PRs. MAUI convention:
-    #   - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
-    #   - title like "[automated] Merge branch 'main' => 'net11.0'"
-    $mergeUpPRs = @($targetHumanPRsRaw | Where-Object {
+    # 3. Merge-up: non-P/0, non-Maestro PRs from BOTH hops of the daily-flow chain
+    #    that feeds the survey ref. The preview lane chains main → net<N>.0 →
+    #    previewN, so a stuck merge-up at EITHER hop starves the release of
+    #    upstream fixes:
+    #      - net<N>.0 → previewN  (base = survey ref)      — from target PRs
+    #      - main → net<N>.0      (base = inflight branch)  — from inflight PRs
+    #    Both are hoisted to high priority rather than the second hop being buried
+    #    as generic inflight-queue noise (the #36085 scenario). In candidate mode
+    #    the inflight set is empty, so only the single base=net<N>.0 hop is seen —
+    #    no double counting across modes.
+    #    MAUI convention:
+    #      - head ref like `merge/main-to-net11.0` or `merge/preview4-to-net11.0`
+    #      - title like "[automated] Merge branch 'main' => 'net11.0'"
+    $allHumanPRs = @($targetHumanPRsRaw) + @($inflightHumanPRsRaw)
+    $mergeUpPRs = @($allHumanPRs | Where-Object {
         ($_.headRefName -and $_.headRefName -match '^merge/.+-to-') -or
         ($_.title -and $_.title -match '^\[automated\] Merge branch')
     })
     $mergeUpPrNumbers = @($mergeUpPRs | ForEach-Object { $_.number })
 
-    # 4. Generic-human (target) = the remainder, counted/listed once.
-    $targetHumanPRs = @($targetHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
+    # 4. Generic-human (target) and inflight-human = the remainders, with merge-up
+    #    PRs removed from BOTH so a hoisted merge-up is never also listed below.
+    $targetHumanPRs   = @($targetHumanPRsRaw   | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
+    $inflightHumanPRs = @($inflightHumanPRsRaw | Where-Object { $mergeUpPrNumbers -notcontains $_.number })
 
     return [PSCustomObject]@{
         P0Prs            = $p0Prs
@@ -1217,9 +1238,9 @@ if ($p1Issues.Count -gt 0) {
 }
 
 if ($mergeUpPRs.Count -gt 0) {
-    $checks += New-Check -Area "Merge-up PRs ($mainBranch → $SurveyRef)" -Status "BLOCKED" -Details "$($mergeUpPRs.Count) open merge-up PR(s). See 🔴 High-priority items at top. Stuck merge-up PRs block daily flow and accumulate conflicts." -NextAction "Resolve and merge each before shipping."
+    $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status "BLOCKED" -Details "$($mergeUpPRs.Count) open merge-up PR(s) in the ``$mergeUpChainLabel`` daily-flow chain. See 🔴 High-priority items at top. A stuck merge-up at any hop accumulates conflicts and starves the release of upstream fixes." -NextAction "Resolve and merge each before shipping."
 } else {
-    $checks += New-Check -Area "Merge-up PRs ($mainBranch → $SurveyRef)" -Status "READY" -Details "No open merge-up PRs from ``$mainBranch`` → ``$SurveyRef``." -NextAction "Continue monitoring."
+    $checks += New-Check -Area "Merge-up PRs ($mergeUpChainLabel)" -Status "READY" -Details "No open merge-up PRs in the ``$mergeUpChainLabel`` daily-flow chain." -NextAction "Continue monitoring."
 }
 
 if ($kbeIssues.Count -gt 0) {
@@ -1461,8 +1482,19 @@ foreach ($pr in $maestroPRs) {
 }
 foreach ($pr in $mergeUpPRs) {
     $action = Get-PRAction -PR $pr
+    # Name the specific hop from the PR's base: a survey-ref-based merge-up is the
+    # net<N>.0 → previewN hop; an inflight-based one (base = net<N>.0) is the
+    # main → net<N>.0 hop. In candidate mode the survey ref IS net<N>.0, so a
+    # base=net<N>.0 PR is the main → net<N>.0 hop (guarded by the candidate check).
+    $leg = if ($Mode -ne 'candidate' -and $pr.baseRefName -eq $SurveyRef) {
+        "$mainBranch → $SurveyRef"
+    } elseif ($pr.baseRefName -eq $mainBranch) {
+        "main → $mainBranch"
+    } else {
+        "merge-up"
+    }
     [void]$highPriorityRows.Add(@{
-        kind = "🔀 Merge-up PR (main → $SurveyRef)"
+        kind = "🔀 Merge-up PR ($leg)"
         link = "[#$($pr.number)]($($pr.url))"
         title = $pr.title
         actor = "base ``$($pr.baseRefName)``, $($action.Age)d old"
@@ -1473,7 +1505,7 @@ foreach ($pr in $mergeUpPRs) {
 if ($highPriorityRows.Count -gt 0) {
     [void]$md.AppendLine("## 🔴 High-priority items — $($highPriorityRows.Count) item(s)")
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_P/0 issues, P/0 PRs, Maestro PRs, and ``$mainBranch`` → ``$SurveyRef`` merge-up PRs. Resolve these before treating the release as ready._")
+    [void]$md.AppendLine("_P/0 issues, P/0 PRs, Maestro PRs, and merge-up PRs in the ``$mergeUpChainLabel`` daily-flow chain. Resolve these before treating the release as ready._")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("| Kind | Item | Title | Context | Next action |")
     [void]$md.AppendLine("|------|------|-------|---------|-------------|")
@@ -1493,7 +1525,7 @@ $highPriorityCheckAreas = @(
     'P/0 priority blockers',
     'P/0 release-branch PRs',
     'Maestro PRs',
-    "Merge-up PRs ($mainBranch → $SurveyRef)"
+    "Merge-up PRs ($mergeUpChainLabel)"
 )
 $blockingChecks = @($checks | Where-Object {
     $_.Status -eq 'BLOCKED' -and -not ($highPriorityCheckAreas -contains $_.Area)

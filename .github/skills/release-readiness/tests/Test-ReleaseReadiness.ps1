@@ -3746,6 +3746,21 @@ Assert-Eq -Label "precedence: generic human keeps #5"                      -Expe
 Assert-Eq -Label "precedence: inflight-human = the inflight p/0 human (#8)" -Expected $true -Actual ($bInflight -contains 8)
 Assert-Eq -Label "precedence: inflight-human excludes inflight Maestro (#7)" -Expected $false -Actual ($bInflight -contains 7)
 
+# Inflight merge-up hoist (#36085 scenario): a main → net<N>.0 automated merge PR
+# (base = inflight branch) must be carved into the merge-up bucket — hoisted to
+# high priority — and REMOVED from the inflight-human queue, not buried as generic
+# inflight noise. The preview lane chains main → net<N>.0 → previewN, so a stuck
+# main → net<N>.0 merge starves the preview branch of upstream fixes and belongs
+# in the daily-flow merge-up chain alongside the net<N>.0 → previewN hop.
+$prInflightMergeUp = [PSCustomObject]@{ number = 9; author = $humanLogin; labels = $plainLbl; headRefName = 'merge/main-to-net11.0'; title = "[automated] Merge branch 'main' => 'net11.0'" }
+$bucketsIM   = Get-CategorizedPullRequests -TargetPRs $targetSet -InflightPRs @($prInflightMaestro, $prInflightP0, $prInflightMergeUp)
+$imMergeUp   = @($bucketsIM.MergeUpPRs       | ForEach-Object { $_.number })
+$imInflight  = @($bucketsIM.InflightHumanPRs | ForEach-Object { $_.number })
+Assert-Eq -Label "inflight merge-up: hoisted into merge-up bucket (#9)"                 -Expected $true  -Actual ($imMergeUp -contains 9)
+Assert-Eq -Label "inflight merge-up: both hops in merge-up bucket (#6 target + #9 inflight)" -Expected 2 -Actual $bucketsIM.MergeUpPRs.Count
+Assert-Eq -Label "inflight merge-up: removed from inflight-human queue (#9)"            -Expected $false -Actual ($imInflight -contains 9)
+Assert-Eq -Label "inflight merge-up: inflight-human still keeps the plain p/0 human (#8)" -Expected $true -Actual ($imInflight -contains 8)
+
 # Empty-input safety: no PRs at all yields five empty buckets, no throw.
 $emptyBuckets = Get-CategorizedPullRequests -TargetPRs @() -InflightPRs @()
 Assert-Eq -Label "precedence: empty input → 0 p/0"      -Expected 0 -Actual $emptyBuckets.P0Prs.Count
