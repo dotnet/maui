@@ -520,11 +520,32 @@ if (-not [string]::IsNullOrWhiteSpace($AiCategories)) {
 # FINAL DECISION
 # ============================================================================
 
+# Runtime-affecting dependency / SDK version bumps (e.g. Windows App SDK in
+# eng/Versions.props, or darc-managed versions in eng/Version.Details.xml) don't
+# touch any specific control, but they CAN cause broad rendering/runtime
+# regressions across the whole app. Rather than skipping UI tests entirely
+# ("No UI-relevant changes"), run a small, fixed, representative smoke set so the
+# bump is actually validated — without falling back to ALL (which the deep stage
+# skips as it can't finish in the time budget). Tunable: keep this set small and
+# fast (core control + text + layout rendering).
+$dependencyInfraFiles = @('eng/Versions.props', 'eng/Version.Details.xml')
+$dependencyInfraChanged = @($allChangedFiles | Where-Object {
+    $f = $_.Replace('\', '/')
+    $dependencyInfraFiles -contains $f
+}).Count -gt 0
+$smokeCategories = @('Button', 'Label', 'Layout')
+
 if ($addedCategories.Count -eq 0) {
     if ($touchesControls) {
         # Changed files under src/Controls/ but couldn't map to specific categories — run all
         Write-Host "Changed files touch Controls/Core/Essentials but no specific categories identified. Running all." -ForegroundColor Yellow
         Write-CategoryListOutput ''
+        return
+    } elseif ($dependencyInfraChanged) {
+        # Dependency/SDK version bump with no specific control mapped — run a
+        # representative UI smoke set so the bump is validated.
+        Write-Host "Dependency/SDK version file(s) changed (no specific control mapped) — running a representative UI smoke set ($([string]::Join(', ', $smokeCategories))) to validate the bump." -ForegroundColor Yellow
+        Write-CategoryListOutput ([string]::Join(',', $smokeCategories))
         return
     } else {
         # No UI-relevant changes at all
