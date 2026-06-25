@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 				if (s_locale == null || s_currentCulture == null || s_locale != NSLocale.CurrentLocale)
 				{
 					s_locale = NSLocale.CurrentLocale;
-					string countryCode = s_locale.CountryCode;
+					string? countryCode = s_locale.CountryCode;
 					var cultureInfo = CultureInfo.GetCultures(CultureTypes.AllCultures)
 						.Where(c => c.Name.EndsWith("-" + countryCode)).FirstOrDefault();
 

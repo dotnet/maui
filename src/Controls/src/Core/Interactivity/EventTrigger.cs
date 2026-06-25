@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception)
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<EventTrigger>()?.LogWarning("Cannot attach EventTrigger to {Type}.{Event}. Check if the handler exists and if the signature is right.", bindable.GetType(), Event);
+				MauiLogger<EventTrigger>.Log(LogLevel.Warning, $"Cannot attach EventTrigger to {bindable.GetType()}.{Event}. Check if the handler exists and if the signature is right.");
 			}
 			if (_eventinfo != null && _handlerdelegate != null)
 				_eventinfo.AddEventHandler(bindable, _handlerdelegate);

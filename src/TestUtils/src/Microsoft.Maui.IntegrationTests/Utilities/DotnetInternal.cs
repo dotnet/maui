@@ -42,6 +42,12 @@ namespace Microsoft.Maui.IntegrationTests
 				var binlogName = $"{binlogPrefix}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
 			}
+			else if (!Path.IsPathRooted(binlogPath))
+			{
+				// Resolve relative binlog paths to the project directory so they are
+				// picked up by CopyLogsToPublishDirectory (which searches TestDirectory).
+				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogPath);
+			}
 			buildArgs += $" -bl:\"{binlogPath}\"";
 
 			return (buildArgs, binlogPath);
