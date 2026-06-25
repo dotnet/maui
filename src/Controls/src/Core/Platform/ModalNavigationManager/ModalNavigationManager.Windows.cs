@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Windowing;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -13,10 +14,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool _firstActivated;
 
+		// Tracks the AppWindow subscription used to update the top modal's title bar
+		// when the user enters or exits full-screen while a modal is visible.
+		AppWindow? _appWindowForPresenterChanges;
+
 		partial void InitializePlatform()
 		{
 			_window.Created += (_, _) => SyncModalStackWhenPlatformIsReady();
-			_window.Destroying += (_, _) => _firstActivated = false;
+			_window.Destroying += (_, _) =>
+			{
+				_firstActivated = false;
+				UnsubscribeFromPresenterChanges();
+			};
 			_window.Activated += OnWindowActivated;
 		}
 
@@ -123,14 +132,9 @@ namespace Microsoft.Maui.Controls.Platform
 						// mode there are no OS window controls to avoid, so suppress this reservation.
 						// This also clears the InputNonClientPointerSource passthrough regions, fixing
 						// the unclickable top area that would otherwise remain in full-screen mode.
-						var platformWindow = WindowMauiContext.GetPlatformWindow();
-						if (platformWindow is not null)
+						if (IsWindowFullScreen())
 						{
-							var presenter = platformWindow.GetAppWindow()?.Presenter;
-							if (presenter?.Kind == UI.Windowing.AppWindowPresenterKind.FullScreen)
-							{
-								windowManager.SetTitleBarVisibility(false);
-							}
+							windowManager.SetTitleBarVisibility(false);
 						}
 
 						// Set the titlebar on the new navigation root
@@ -145,11 +149,24 @@ namespace Microsoft.Maui.Controls.Platform
 						_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
 						windowManager.Connect(platform);
 						Container.AddPage(windowManager.RootView);
+
+						// Subscribe once (when first modal is pushed) so that full-screen
+						// entry/exit while the modal is shown updates the modal's title bar.
+						if (_platformModalPages.Count == 1)
+						{
+							SubscribeToPresenterChanges();
+						}
 					}
 				}
 				// popping modal
 				else
 				{
+					// Unsubscribe from presenter changes once the last modal is popped.
+					if (_platformModalPages.Count == 0)
+					{
+						UnsubscribeFromPresenterChanges();
+					}
+
 					var context = newPage.FindMauiContext();
 					var windowManager = context?.GetNavigationRootManager() ??
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
@@ -183,6 +200,71 @@ namespace Microsoft.Maui.Controls.Platform
 					"Changing the current page is only allowed if it's being called from the same UI thread." +
 					"Please ensure that the new page is in the same UI thread as the current page.", error);
 			}
+		}
+
+		// Returns true when the window is currently in full-screen presentation mode.
+		bool IsWindowFullScreen()
+		{
+			var platformWindow = WindowMauiContext?.GetPlatformWindow();
+			if (platformWindow is null)
+			{
+				return false;
+			}
+
+			return platformWindow.GetAppWindow()?.Presenter?.Kind == AppWindowPresenterKind.FullScreen;
+		}
+
+		// Subscribes to AppWindow.Changed (once) when the first modal is pushed so that
+		// entering or exiting full-screen while a modal is visible is handled correctly.
+		void SubscribeToPresenterChanges()
+		{
+			if (_appWindowForPresenterChanges is not null)
+			{
+				return;
+			}
+
+			var platformWindow = WindowMauiContext?.GetPlatformWindow();
+			if (platformWindow is null)
+			{
+				return;
+			}
+
+			var appWindow = platformWindow.GetAppWindow();
+			if (appWindow is null)
+			{
+				return;
+			}
+
+			_appWindowForPresenterChanges = appWindow;
+			_appWindowForPresenterChanges.Changed += OnAppWindowPresenterChanged;
+		}
+
+		// Removes the AppWindow.Changed subscription when the last modal is popped or
+		// the window is being destroyed.
+		void UnsubscribeFromPresenterChanges()
+		{
+			if (_appWindowForPresenterChanges is null)
+			{
+				return;
+			}
+
+			_appWindowForPresenterChanges.Changed -= OnAppWindowPresenterChanged;
+			_appWindowForPresenterChanges = null;
+		}
+
+		// Fires whenever the window's AppWindow.Presenter changes (e.g., windowed ↔ full-screen).
+		// Updates the top-most modal's NavigationRootManager so its title bar height and margins
+		// match the new presenter mode.
+		void OnAppWindowPresenterChanged(AppWindow sender, AppWindowChangedEventArgs args)
+		{
+			if (!args.DidPresenterChange || _platformModalPages.Count == 0)
+			{
+				return;
+			}
+
+			var topModal = _platformModalPages[_platformModalPages.Count - 1];
+			var rootManager = topModal.FindMauiContext()?.GetNavigationRootManager();
+			rootManager?.SetTitleBarVisibility(sender.Presenter?.Kind != AppWindowPresenterKind.FullScreen);
 		}
 	}
 }
