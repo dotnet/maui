@@ -1591,6 +1591,74 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 	}
 
 	[Fact]
+	public void MultipleMarkupExtensionChanges_UCCompilesWithoutDuplicateLocals()
+	{
+		// Regression: when two property changes in one UpdateComponent() each expand a markup
+		// extension, the IC pipeline emits the same locals (e.g. `staticResourceExtension`,
+		// `xamlServiceProvider`). Without per-expansion block scoping these collide in the
+		// flattened UC method body → CS0128 "a local variable is already defined in this scope".
+		XamlHotReloadState.Reset();
+
+		const string stubs = """
+			namespace TestApp
+			{
+				public class MainViewModel { }
+			}
+			""";
+
+		const string xamlV1 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="ColorA">#FF0000</Color>
+			        <Color x:Key="ColorB">#00FF00</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label x:Name="L1" TextColor="{StaticResource ColorA}" BackgroundColor="{StaticResource ColorA}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV2 = """
+			<?xml version="1.0" encoding="utf-8" ?>
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             xmlns:local="clr-namespace:TestApp"
+			             x:Class="TestApp.MainPage">
+			    <ContentPage.Resources>
+			        <Color x:Key="ColorA">#FF0000</Color>
+			        <Color x:Key="ColorB">#00FF00</Color>
+			    </ContentPage.Resources>
+			    <VerticalStackLayout>
+			        <Label x:Name="L1" TextColor="{StaticResource ColorB}" BackgroundColor="{StaticResource ColorB}" />
+			    </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		var (_, run2) = TwoRunsWithSource(xamlV1, xamlV2, stubs);
+		var uc = FindUCSource(run2, "uc.xsg");
+		Assert.NotNull(uc);
+
+		// Compile all V2 generated sources together and assert the UC has no compile errors.
+		var compilation = CreateCompilation()
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(stubs, path: "Stubs.cs"));
+		foreach (var gen in run2.Results)
+			foreach (var src in gen.GeneratedSources)
+				compilation = compilation.AddSyntaxTrees(
+					CSharpSyntaxTree.ParseText(src.SourceText.ToString(), path: src.HintName));
+
+		var errors = compilation.GetDiagnostics()
+			.Where(d => d.Severity == DiagnosticSeverity.Error
+				&& d.Location.SourceTree?.FilePath?.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase) == true)
+			.ToArray();
+
+		Assert.DoesNotContain(errors, e => e.Id == "CS0128");
+		Assert.Empty(errors);
+	}
+
+	[Fact]
 	public void StyleChange_UCGeneratesPatch()
 	{
 		// Changing an inline Style's Setters should produce a UC patch.

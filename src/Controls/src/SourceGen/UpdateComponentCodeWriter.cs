@@ -1414,11 +1414,18 @@ static class UpdateComponentCodeWriter
 			return false;
 		}
 
-		// Flush captured code to the UC codeWriter
+		// Flush captured code to the UC codeWriter, wrapped in its own block scope so the
+		// locals the IC pipeline emits (e.g. `staticResourceExtension`, `xamlServiceProvider`)
+		// don't collide when several property changes in the same UpdateComponent() each expand
+		// a markup extension. In InitializeComponent every markup gets its own scoped block; the
+		// flattened UC method body would otherwise re-declare the same locals → CS0128.
 		captureWriter.Flush();
 		var capturedCode = captureStringWriter.ToString();
 		if (string.IsNullOrWhiteSpace(capturedCode))
 			return false;
+
+		codeWriter.WriteLine("{");
+		codeWriter.Indent++;
 
 		foreach (var line in capturedCode.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None))
 		{
@@ -1427,7 +1434,7 @@ static class UpdateComponentCodeWriter
 		}
 
 		// Flush any local methods (e.g., compiled binding helpers like CreateTypedBindingFrom_*)
-		// These are emitted as static local functions inside the UC method body.
+		// into the same block so they're scoped alongside the captured code that calls them.
 		foreach (var localMethod in ctx.LocalMethods)
 		{
 			codeWriter.WriteLine();
@@ -1439,6 +1446,9 @@ static class UpdateComponentCodeWriter
 					codeWriter.WriteLine(mline);
 			}
 		}
+
+		codeWriter.Indent--;
+		codeWriter.WriteLine("}");
 
 		return true;
 	}
