@@ -7,7 +7,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Controls.Platform
 {

@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (serviceType == typeof(IAnimationManager))
 					return _animationManager;
 
-				// Optional services are probed via GetService<T>() and are expected to
+				// Optional services are probed via GetService(typeof(...)) and are expected to
 				// return null when not registered (per the IServiceProvider contract).
 				if (serviceType == typeof(IGesturePlatformManagerFactory))
 					return null;
