@@ -161,7 +161,14 @@ if ([string]::IsNullOrWhiteSpace($profileUuid) -or [string]::IsNullOrWhiteSpace(
 
 $profilesDirectory = Join-Path $HOME "Library/MobileDevice/Provisioning Profiles"
 New-Item -ItemType Directory -Path $profilesDirectory -Force | Out-Null
-Copy-Item -Path $profilePath -Destination (Join-Path $profilesDirectory "$profileUuid.mobileprovision") -Force
+$installedProfileExtension = if ($Platform -eq "maccatalyst") { ".provisionprofile" } else { ".mobileprovision" }
+Copy-Item -Path $profilePath -Destination (Join-Path $profilesDirectory "$profileUuid$installedProfileExtension") -Force
+
+$codesignProvision = if ($Platform -eq "maccatalyst") {
+    $profileUuid
+} else {
+    $profileName
+}
 
 Write-Host "Installed provisioning profile '$profileName' ($profileUuid)"
 Write-Host "Using code signing identity '$codesignIdentity'"
@@ -171,9 +178,9 @@ if ($Platform -eq "maccatalyst") {
 
 if ($env:GITHUB_ENV) {
     "IOS_CODESIGN_KEY=$codesignIdentity" >> $env:GITHUB_ENV
-    "IOS_CODESIGN_PROVISION=$profileName" >> $env:GITHUB_ENV
+    "IOS_CODESIGN_PROVISION=$codesignProvision" >> $env:GITHUB_ENV
     "APPLE_CODESIGN_KEY=$codesignIdentity" >> $env:GITHUB_ENV
-    "APPLE_CODESIGN_PROVISION=$profileName" >> $env:GITHUB_ENV
+    "APPLE_CODESIGN_PROVISION=$codesignProvision" >> $env:GITHUB_ENV
     if ($Platform -eq "maccatalyst") {
         "APPLE_PACKAGE_SIGNING_KEY=$packageSigningIdentity" >> $env:GITHUB_ENV
     }
@@ -182,7 +189,7 @@ if ($env:GITHUB_ENV) {
 
 if ($env:GITHUB_OUTPUT) {
     "codesign_key=$codesignIdentity" >> $env:GITHUB_OUTPUT
-    "codesign_provision=$profileName" >> $env:GITHUB_OUTPUT
+    "codesign_provision=$codesignProvision" >> $env:GITHUB_OUTPUT
     if ($Platform -eq "maccatalyst") {
         "package_signing_key=$packageSigningIdentity" >> $env:GITHUB_OUTPUT
     }
