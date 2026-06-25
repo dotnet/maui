@@ -263,13 +263,49 @@ if ($Platform -eq "android") {
         Write-Warn "Settings service may not be ready — tests might fail"
     }
 
-    # Do NOT force-stop or restart the app here. Appium's UiAutomator2
-    # driver handles app lifecycle via appPackage/appActivity capabilities.
-    # Manual restart causes double-stop issues and the app ends up in a
-    # bad state. Just dismiss any system dialogs and let Appium handle it.
+    # Warm up the emulator / SystemUI right before launching the app for tests.
+    # On the deep-UI-test (platform-pool) stage the emulator may have sat idle
+    # for ~15-20 min during workload install + the app build, after which SystemUI
+    # can ANR — the app then launches but its first page never renders, so Appium's
+    # OneTimeSetUp times out ("Timed out waiting for Go To Test button"). This
+    # mirrors the gate's "Warm Up Android Emulator" step but runs at the precise
+    # moment (right before dotnet test), independent of how long the build took.
+    # We only touch SystemUI / the launcher here — never the HostApp itself
+    # (Appium's UiAutomator2 driver owns the HostApp lifecycle).
+    Write-Info "Warming up emulator/SystemUI before test..."
+    $bootChk = & adb -s $DeviceUdid shell getprop sys.boot_completed 2>$null
+    if ("$bootChk".Trim() -ne "1") {
+        Write-Warn "Device not responding before test — restarting adb server..."
+        & adb kill-server 2>$null; Start-Sleep -Seconds 2
+        & adb start-server 2>$null; Start-Sleep -Seconds 2
+        & timeout 90 adb -s $DeviceUdid wait-for-device 2>$null
+    }
+    # Wake + dismiss any system dialogs (run twice for reliability).
+    foreach ($pass in 1..2) {
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+        Start-Sleep -Seconds 1
+    }
+    # If a SystemUI ANR ("isn't responding") dialog is up, force it away. HOME only
+    # backgrounds the launcher (the HostApp isn't running yet), so this is safe.
+    $winState = & adb -s $DeviceUdid shell dumpsys window 2>$null
+    if ("$winState" -match "Application Not Responding|ANR ") {
+        Write-Warn "ANR dialog detected before test — dismissing (HOME + close dialogs)"
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+        Start-Sleep -Seconds 2
+        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
+    }
+    # Exercise the system briefly to confirm SystemUI is responsive, then clean up
+    # (force-stop targets the Settings app, never the HostApp).
+    & adb -s $DeviceUdid shell am start -a android.settings.SETTINGS 2>$null
+    Start-Sleep -Seconds 2
+    & adb -s $DeviceUdid shell am force-stop com.android.settings 2>$null
     & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
-    & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
-    Start-Sleep -Seconds 1
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
+    & adb -s $DeviceUdid logcat -c 2>$null
+    Write-Success "Emulator warmed up and responsive"
 }
 
 # Capture test start time for iOS logs
