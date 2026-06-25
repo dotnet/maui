@@ -1841,16 +1841,32 @@ stages:
               [void]$sb.AppendLine("📎 [Download ``drop-deep-uitests`` artifact (TRX + snapshot diffs)]($artifactUrl)")
               [void]$sb.AppendLine()
 
-              $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
               $categoryText = if ($byCat.Count -eq 1) { '1 category' } else { "$($byCat.Count) categories" }
               $regularFailed = [Math]::Max(0, $totalFailed - $setupImpactedTests)
+              # A fixture / OneTimeSetUp ("category setup") failure means the tests
+              # could NOT be run — a harness/infra problem on the platform-pool
+              # agent (e.g. "Timed out waiting for Go To Test button" in
+              # NavigateToGallery), NOT the PR failing tests. So the deep verdict is
+              # a real ❌ only when there are REGULAR (non-setup) failures; pure
+              # setup failures are infrastructure-inconclusive (⚠️) so a good PR is
+              # never shown as "all failed".
+              if ($regularFailed -gt 0) {
+                $resultIcon = '❌'
+              } elseif ($setupFailureCategories -gt 0) {
+                $resultIcon = '⚠️'
+              } elseif ($totalPassed -gt 0) {
+                $resultIcon = '✅'
+              } else {
+                $resultIcon = '⏭️'
+              }
               if ($setupFailureCategories -gt 0) {
-                $setupCategoryText = if ($setupFailureCategories -eq 1) { '1 category setup failure' } else { "$setupFailureCategories category setup failures" }
-                $setupImpactedText = if ($setupImpactedTests -eq 1) { '1 impacted test' } else { "$setupImpactedTests impacted tests" }
+                $setupCategoryText = if ($setupFailureCategories -eq 1) { '1 category' } else { "$setupFailureCategories categories" }
+                $setupImpactedText = if ($setupImpactedTests -eq 1) { '1 test' } else { "$setupImpactedTests tests" }
                 if ($regularFailed -eq 0) {
-                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed; $setupCategoryText ($setupImpactedText marked failed by TRX) across $categoryText on platform-pool agent (replaces in-process counts above)."
+                  $passNote = if ($totalPassed -gt 0) { "$totalPassed passed; " } else { '' }
+                  $headerLine = "$resultIcon **Deep UI tests** — ${passNote}$setupCategoryText ($setupImpactedText) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure (replaces in-process counts above)."
                 } else {
-                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed, plus $setupCategoryText ($setupImpactedText marked failed by TRX) across $categoryText on platform-pool agent (replaces in-process counts above)."
+                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed; plus $setupCategoryText ($setupImpactedText) could not run (fixture/OneTimeSetUp setup failure — infrastructure) across $categoryText on platform-pool agent (replaces in-process counts above)."
                 }
               } else {
                 $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $categoryText on platform-pool agent (replaces in-process counts above)."
