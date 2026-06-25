@@ -14,10 +14,6 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- WindowsAppSDK 2.x transitive AI/ML packages (e.g. Microsoft.Windows.AI.MachineLearning) can
-         resolve to an approximate version on some feeds; suppress NU1603 so TreatWarningsAsErrors
-         does not fail restore. -->
-    <NoWarn>$(NoWarn);NU1603</NoWarn>
     <!-- Detailed trimmer warnings, if present -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <DebugType>portable</DebugType>
