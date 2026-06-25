@@ -1,5 +1,8 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -127,6 +130,18 @@ namespace Microsoft.Maui.Controls
 				if (e.PropertyName == Page.TitleProperty.PropertyName)
 					Handler?.UpdateValue(TabbedPage.ItemsSourceProperty.PropertyName);
 			}
+		}
+
+		/// <summary>
+		/// Adapts a <see cref="Page"/> to the <see cref="ITab"/> interface for ITabbedView consumption.
+		/// </summary>
+		internal sealed class PageTabAdapter : ITab
+		{
+			public PageTabAdapter(Page page) => Page = page;
+			internal Page Page { get; }
+			public string Title => Page.Title;
+			public IImageSource Icon => Page.IconImageSource;
+			public bool IsEnabled => Page.IsEnabled;
 		}
 	}
 }
