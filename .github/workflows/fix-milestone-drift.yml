@@ -5,6 +5,15 @@ on:
     types: [closed]
     branches: [main, net*.0, inflight/*, release/*]
 
+  # When a stable release tag is pushed (e.g. 10.0.80), audit the entire tag
+  # cohort and fix any milestone drift, closing issues fixed by PRs that
+  # shipped in this tag. The pattern matches MAJOR.MINOR.PATCH (digits only)
+  # and is anchored to the full ref, so preview tags like
+  # 11.0.0-preview.5.26304.4 are deliberately excluded.
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
   workflow_dispatch:
     inputs:
       pr_number:
@@ -38,8 +47,9 @@ permissions:
 
 jobs:
   manage-milestones:
-    # For PR merges: only run when actually merged (not just closed)
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    # For PR merges: only run when actually merged (not just closed).
+    # Tag pushes and manual dispatches always run.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout with full history
@@ -57,11 +67,23 @@ jobs:
           INPUT_CREATE_ISSUE: ${{ inputs.create_issue }}
           INPUT_CLOSE_FIXED_ISSUES: ${{ inputs.close_fixed_issues }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PUSH_TAG: ${{ github.ref_name }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           ARGS=()
 
-          if [ "$EVENT_NAME" = "pull_request_target" ]; then
+          if [ "$EVENT_NAME" = "push" ]; then
+            # Release tag pushed: audit the whole tag cohort, fix milestone
+            # drift, and close issues fixed by PRs that shipped in this tag.
+            # Defense-in-depth: the `on.push.tags` filter already restricts to
+            # MAJOR.MINOR.PATCH, but re-validate here so an unexpected ref can
+            # never be passed through to the script's tag-mode.
+            if [[ ! "$PUSH_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::push tag '$PUSH_TAG' is not a stable release tag (expected MAJOR.MINOR.PATCH)"
+              exit 1
+            fi
+            ARGS+=('-Tag' "$PUSH_TAG" '-Apply' '-CloseFixedIssues')
+          elif [ "$EVENT_NAME" = "pull_request_target" ]; then
             # Auto-trigger: set milestone on the merged PR
             ARGS+=('-PrNumber' "$INPUT_PR_NUMBER" '-Apply')
             # GitHub only auto-closes "fixes #N" issues for PRs merged to the
