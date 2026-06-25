@@ -349,9 +349,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdatePresented(((FlyoutPage)Element).IsPresented, true);
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.IsGestureEnabledProperty.PropertyName)
 				UpdatePanGesture();
-#pragma warning disable MAUI0003, CS0618 // BackgroundColor — Compatibility renderer property change listener
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
-#pragma warning restore MAUI0003, CS0618
+			else if (e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == Page.BackgroundImageSourceProperty.PropertyName)
 				UpdateBackground();
@@ -548,12 +546,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						View.UpdateBackground(Element.Background);
 					else
 					{
-#pragma warning disable MAUI0003, CS0618 // BackgroundColor — Compatibility renderer backward compatibility
-						if (Element.BackgroundColor == null)
-							View.BackgroundColor = UIColor.White;
-						else
-							View.BackgroundColor = Element.BackgroundColor.ToPlatform();
-#pragma warning restore MAUI0003, CS0618
+						View.BackgroundColor = UIColor.White;
 					}
 				}
 			});

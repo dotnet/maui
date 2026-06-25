@@ -333,12 +333,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView == null)
 				return;
 
-			var backgroundColor = color ??
-#pragma warning disable MAUI0003, CS0618 // BackgroundColor — CollectionView backward compatibility
-			ItemsView.BackgroundColor;
-#pragma warning restore MAUI0003, CS0618
-
-			if (backgroundColor == null)
+			if (color == null)
 				return;
 
 			SetBackgroundColor(color.ToPlatform());
