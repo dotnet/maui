@@ -65,5 +65,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Shapes
 					$"TransformGroup #{i} should be collected. Shared transform is retaining it.");
 			}
 		}
+
+		[Fact]
+		public async Task ClearingChildrenUnsubscribesAllTransforms()
+		{
+			var sharedTransform = new ScaleTransform { ScaleX = 1.0, ScaleY = 1.0 };
+			WeakReference weakGroup;
+
+			{
+				var group = new TransformGroup();
+				group.Children.Add(sharedTransform);
+				group.Children.Clear();
+				weakGroup = new WeakReference(group);
+			}
+
+			Assert.False(await weakGroup.WaitForCollect(),
+				"TransformGroup should be collected after Children.Clear(). " +
+				"Shared child transform is keeping it alive via stale PropertyChanged subscription.");
+		}
 	}
 }
