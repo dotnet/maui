@@ -34,7 +34,7 @@ public class Issue4720 : TestNavigationPage
 #pragma warning disable CS0618 // Type or member is obsolete
 			_webView = new Microsoft.Maui.Controls.WebView()
 			{
-				Source = new UrlWebViewSource { Url = "https://www.microsoft.com/" },
+				Source = new UrlWebViewSource { Url = "https://www.example.com/" },
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				BackgroundColor = Colors.Red
