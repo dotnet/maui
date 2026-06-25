@@ -1719,7 +1719,7 @@ stages:
 
               # Render the new STEP 3 section.
               $totalPassed = 0; $totalFailed = 0
-              $setupFailureCategories = 0; $setupImpactedTests = 0; $emptyCategories = 0
+              $setupFailureCategories = 0; $setupImpactedTests = 0; $emptyCategories = 0; $appCrashCategories = 0
               $sb = [System.Text.StringBuilder]::new()
               [void]$sb.AppendLine()
               [void]$sb.AppendLine("### 🧪 UI Test Execution Results (deep, platform pool)")
@@ -1736,14 +1736,17 @@ stages:
                 $tPass  = [int]$b.Passed
                 $tFail  = [int]$b.Failed
                 $isSetupFailure = ($b.ContainsKey('SetupFailure') -and [bool]$b.SetupFailure)
+                $isAppCrash = ($b.ContainsKey('SetupFailureIsAppCrash') -and [bool]$b.SetupFailureIsAppCrash)
                 if ($isSetupFailure) {
                   $setupFailureCategories++
                   $setupImpactedTests += [int]$b.SetupFailureCount
+                  if ($isAppCrash) { $appCrashCategories++ }
                 }
                 if ($tCount -eq 0) {
                   $emptyCategories++
                 }
                 $col = if ($tCount -eq 0) { '0 tests' }
+                       elseif ($isSetupFailure -and $isAppCrash) { "$tPass/$tCount (app crashed; $tFail couldn't complete)" }
                        elseif ($isSetupFailure) { "$tPass/$tCount (setup failed; $tFail marked failed)" }
                        elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
                        else { "$tPass/$tCount ✓" }
@@ -1765,6 +1768,7 @@ stages:
                     Message        = $b.SetupFailureMessage -as [string]
                     Stack          = $b.SetupFailureStack -as [string]
                     SignatureCount = [int]$b.SetupFailureSignatureCount
+                    IsAppCrash     = $isAppCrash
                   }
                   continue
                 }
@@ -1792,10 +1796,17 @@ stages:
                   $info = $perCategorySetupFailures[$cat]
                   $setupCount = [int]$info.Count
                   $setupTestText = if ($setupCount -eq 1) { '1 test' } else { "$setupCount tests" }
-                  [void]$sb.AppendLine("<details><summary>⚠️ <code>$cat</code> — fixture setup failed for $setupTestText</summary>")
-                  [void]$sb.AppendLine("<br/>")
-                  [void]$sb.AppendLine()
-                  [void]$sb.AppendLine("NUnit reported a `OneTimeSetUp`/fixture setup failure before test bodies ran; the TRX marked each affected test failed.")
+                  if ($info.IsAppCrash) {
+                    [void]$sb.AppendLine("<details><summary>⚠️ <code>$cat</code> — app crashed mid-run; $setupTestText could not complete</summary>")
+                    [void]$sb.AppendLine("<br/>")
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("The HostApp crashed during this category (a test failed in TearDown with ``investigate as possible crash``); every following ``OneTimeSetUp`` then timed out waiting for the test gallery to reappear. **This can be an emulator/infrastructure flake OR a regression introduced by this PR** — review the screenshots and ``logcat`` in the ``ui-diagnostics`` folder of the artifact before concluding.")
+                  } else {
+                    [void]$sb.AppendLine("<details><summary>⚠️ <code>$cat</code> — fixture setup failed for $setupTestText</summary>")
+                    [void]$sb.AppendLine("<br/>")
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("NUnit reported a `OneTimeSetUp`/fixture setup failure before test bodies ran; the TRX marked each affected test failed.")
+                  }
                   if ([int]$info.SignatureCount -gt 1) {
                     [void]$sb.AppendLine()
                     [void]$sb.AppendLine("_Multiple setup failure signatures were present; showing the first one. See the TRX artifact for all details._")
@@ -1885,8 +1896,18 @@ stages:
               if ($setupFailureCategories -gt 0) {
                 $setupCategoryText = if ($setupFailureCategories -eq 1) { '1 category' } else { "$setupFailureCategories categories" }
                 $setupImpactedText = if ($setupImpactedTests -eq 1) { '1 test' } else { "$setupImpactedTests tests" }
-                if ($regularFailed -eq 0) {
-                  $passNote = if ($totalPassed -gt 0) { "$totalPassed passed; " } else { '' }
+                $passNote = if ($totalPassed -gt 0) { "$totalPassed passed; " } else { '' }
+                if ($appCrashCategories -gt 0) {
+                  # The app crashed mid-run. This is genuinely ambiguous between
+                  # an emulator/infra flake and a regression introduced by the
+                  # PR, so NEVER claim "not a PR test failure" here — point the
+                  # reviewer at the diagnostics instead.
+                  if ($regularFailed -eq 0) {
+                    $headerLine = "$resultIcon **Deep UI tests** — ${passNote}the HostApp crashed mid-run, so $setupImpactedText could not complete. An app crash can be an infrastructure flake OR a regression introduced by this PR — review the screenshots + logcat in the ``drop-deep-uitests`` artifact before concluding."
+                  } else {
+                    $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed; plus the HostApp crashed mid-run ($setupImpactedText could not complete — infra flake or possible PR regression; see screenshots + logcat in the artifact)."
+                  }
+                } elseif ($regularFailed -eq 0) {
                   $headerLine = "$resultIcon **Deep UI tests** — ${passNote}$setupCategoryText ($setupImpactedText) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure (replaces in-process counts above)."
                 } else {
                   $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed; plus $setupCategoryText ($setupImpactedText) could not run (fixture/OneTimeSetUp setup failure — infrastructure) across $categoryText on platform-pool agent (replaces in-process counts above)."
