@@ -65,11 +65,13 @@ public static class XamlIncrementalHotReloadHandler
 		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
 			return;
 
-		var fromVersion = HotReloadDiagnostics.CurrentVersion;
-		var toVersion = HotReloadDiagnostics.IncrementVersion();
 		var typesArray = (IReadOnlyList<Type>)updatedTypes;
 
 		HotReloadDiagnostics.OnUpdateRequested(typesArray);
+
+		// Start timing at the moment the request is received so Duration includes batch
+		// building and main-thread dispatch latency, not just the UI-thread invoke loop.
+		var sw = Stopwatch.StartNew();
 
 		// Batch dispatch — collect ALL (instance, method, type) tuples across every updated
 		// type, then issue a single MainThread.BeginInvokeOnMainThread that iterates them.
@@ -100,9 +102,15 @@ public static class XamlIncrementalHotReloadHandler
 		if (dispatchBatch.Count == 0)
 			return;
 
+		// Allocate the version range atomically once we know work will happen: toVersion is the
+		// new generation, fromVersion the one before it. Reserving the number only for non-empty
+		// batches keeps the diagnostic version stream gap-free (every increment has a paired
+		// UpdateApplied).
+		var toVersion = HotReloadDiagnostics.IncrementVersion();
+		var fromVersion = toVersion - 1;
+
 		global::Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
 		{
-			var sw = Stopwatch.StartNew();
 			int instanceCount = 0;
 
 			foreach (var (capturedInstance, capturedMethod, capturedType) in dispatchBatch)

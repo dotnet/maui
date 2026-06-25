@@ -61,7 +61,7 @@ record ProjectItem(AdditionalText AdditionalText, AnalyzerConfigOptions Options)
 				return true;
 			if (Options.IsFalse("build_property.EnableMauiIncrementalHotReload"))
 				return false;
-			return true; // on by default
+			return false; // safe default; the MAUI SDK targets always pass an explicit value (Debug=true, otherwise false)
 		}
 	}
 

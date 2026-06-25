@@ -183,7 +183,7 @@ public static class SourceGeneratorDriver
 					"build_property.Configuration" => "Debug",
 #endif
 					"build_property.EnableMauiXamlDiagnostics" => "true",
-					"build_property.EnableMauiIncrementalHotReload" => _additionalFile.EnableIncrementalHotReload ? "true" : null,
+					"build_property.EnableMauiIncrementalHotReload" => _additionalFile.EnableIncrementalHotReload ? "true" : "false",
 					"build_property.MauiXamlLineInfo" => _additionalFile.LineInfo != "default" ?  _additionalFile.LineInfo : null,
 					"build_property.MauiXamlNoWarn" => _additionalFile.NoWarn,
 					"build_property.EnablePreviewFeatures" => _additionalFile.EnablePreviewFeatures ? "true" : null,

@@ -2298,7 +2298,7 @@ Assert.Contains("__version = 1", uc, StringComparison.Ordinal);
 				"build_property.targetFramework" => _file.TargetFramework,
 				"build_property.Configuration" => "Debug",
 				"build_property.EnableMauiXamlDiagnostics" => "true",
-				"build_property.EnableMauiIncrementalHotReload" => _file.EnableIncrementalHotReload ? "true" : null,
+				"build_property.EnableMauiIncrementalHotReload" => _file.EnableIncrementalHotReload ? "true" : "false",
 				_ => null
 			};
 			return value is not null;
