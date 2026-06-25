@@ -406,16 +406,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void BackgroundTakesPrecedenceOverBackgroundColorInIViewBackground()
+		public void BackgroundIsReturnedFromIViewBackground()
 		{
 			var element = new Label();
 			element.Background = new SolidColorBrush(Colors.Green);
 
-#pragma warning disable MAUI0003 // BackgroundColor — testing IView.Background priority
-			element.BackgroundColor = Colors.Red;
-#pragma warning restore MAUI0003
-
-			// Background brush takes precedence over BackgroundColor in IView.Background.
+			// Background brush is returned via IView.Background.
 			// Brush→Paint implicit operator converts SolidColorBrush → SolidPaint.
 			IView view = element;
 			var result = Assert.IsType<SolidPaint>(view.Background);
