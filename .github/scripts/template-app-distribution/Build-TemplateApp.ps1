@@ -185,10 +185,12 @@ switch ($Platform) {
             $codesignKey = Assert-EnvironmentValue "APPLE_CODESIGN_KEY"
             $codesignProvision = Assert-EnvironmentValue "APPLE_CODESIGN_PROVISION"
             $packageSigningKey = Assert-EnvironmentValue "APPLE_PACKAGE_SIGNING_KEY"
+            # App Store profiles include get-task-allow=false; the SDK validator still warns on that key for Mac Catalyst.
             $arguments += @(
                 "-p:CreatePackage=true",
                 "-p:EnableCodeSigning=true",
                 "-p:EnablePackageSigning=true",
+                "-p:ValidateEntitlements=disable",
                 "-p:CodesignKey=$codesignKey",
                 "-p:CodesignProvision=$codesignProvision",
                 "-p:CodesignEntitlements=Platforms/MacCatalyst/Entitlements.plist",

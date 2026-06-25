@@ -107,24 +107,28 @@ if (-not [string]::IsNullOrWhiteSpace($env:TEMPLATE_APP_VARIANTS_JSON)) {
 
 $platformDefinitions = [ordered]@{
     android = [ordered]@{
+        artifactPlatform = "android"
         runner = "ubuntu-latest"
         workload = "maui-android"
         targetFramework = "$DotNetTfm-android"
         runtimeIdentifier = "android-arm64"
     }
     ios = [ordered]@{
+        artifactPlatform = "ios"
         runner = "macos-15"
         workload = "maui-ios"
         targetFramework = "$DotNetTfm-ios"
         runtimeIdentifier = "ios-arm64"
     }
     maccatalyst = [ordered]@{
+        artifactPlatform = "macos"
         runner = "macos-15"
         workload = "maui-maccatalyst"
         targetFramework = "$DotNetTfm-maccatalyst"
         runtimeIdentifier = ""
     }
     windows = [ordered]@{
+        artifactPlatform = "windows"
         runner = "windows-latest"
         workload = "maui-windows"
         targetFramework = "$DotNetTfm-windows10.0.19041.0"
@@ -202,6 +206,7 @@ foreach ($variantName in $selectedVariants) {
         $matrix.include += [ordered]@{
             variant = $variantName
             platform = $platformName
+            artifactPlatform = $platform.artifactPlatform
             runner = $platform.runner
             workload = $platform.workload
             targetFramework = $platform.targetFramework

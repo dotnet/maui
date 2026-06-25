@@ -73,6 +73,12 @@ jobs:
       app_display_version: ${{ steps.version.outputs.app_display_version }}
       app_build_number: ${{ steps.version.outputs.app_build_number }}
     steps:
+      - name: Configure Git defaults
+        shell: pwsh
+        run: |
+          git config --global init.defaultBranch main
+          git config --global advice.defaultBranchName false
+
       - name: Checkout workflow scripts
         uses: actions/checkout@v7
         with:
@@ -154,6 +160,12 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
+      - name: Configure Git defaults
+        shell: pwsh
+        run: |
+          git config --global init.defaultBranch main
+          git config --global advice.defaultBranchName false
+
       - name: Checkout workflow scripts
         uses: actions/checkout@v7
         with:
@@ -220,7 +232,7 @@ jobs:
           )
 
           if [ -z "$XCODE_INFO" ]; then
-            echo "::error::No installed Xcode with both macOS and iPhoneOS SDKs was found."
+            echo "No installed Xcode with both macOS and iPhoneOS SDKs was found."
             exit 1
           fi
 
@@ -311,7 +323,7 @@ jobs:
       - name: Upload dry-run artifact
         uses: actions/upload-artifact@v7
         with:
-          name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.platform }}-${{ needs.prepare.outputs.source_sha }}
+          name: template-app-dryrun-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
           path: |
             ${{ steps.build.outputs.package_path }}
             ${{ steps.build.outputs.binlog_path }}
@@ -333,6 +345,12 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
+      - name: Configure Git defaults
+        shell: pwsh
+        run: |
+          git config --global init.defaultBranch main
+          git config --global advice.defaultBranchName false
+
       - name: Validate publishing configuration
         shell: pwsh
         env:
@@ -463,7 +481,7 @@ jobs:
           )
 
           if [ -z "$XCODE_INFO" ]; then
-            echo "::error::No installed Xcode with both macOS and iPhoneOS SDKs was found."
+            echo "No installed Xcode with both macOS and iPhoneOS SDKs was found."
             exit 1
           fi
 
@@ -595,7 +613,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: template-app-publish-${{ matrix.variant }}-${{ matrix.platform }}-${{ needs.prepare.outputs.source_sha }}
+          name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
           path: |
             ${{ steps.build.outputs.package_path }}
             ${{ steps.build.outputs.binlog_path }}
