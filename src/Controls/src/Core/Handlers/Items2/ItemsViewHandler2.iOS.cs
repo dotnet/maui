@@ -246,10 +246,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// In that case the CV should collapse to zero — no expansive fallback needed.
 				if (Controller.IsEmpty)
 				{
-					if (scrollDirection == UICollectionViewScrollDirection.Horizontal)
-					{
-						contentSize.Height = 0;
-					}
 					return contentSize;
 				}
 
