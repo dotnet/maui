@@ -147,6 +147,36 @@ function Get-AIReviewEvent {
     return 'COMMENT'
 }
 
+function Add-MissingUITestResultsNote {
+    # The UI Tests section starts as a bare "Detected UI test categories: X" placeholder written
+    # during pre-flight; the RunDeepUITests stage is supposed to append real results. When the
+    # platform-pool run produces nothing (most often because the PR build failed or the deep
+    # stage was skipped), that placeholder is posted as-is — an empty, confusing section. Append
+    # a short explanation so the empty section explains itself. No-op for content that already
+    # has results, or for the "no categories"/"full matrix" placeholders.
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content)
+
+    if ([string]::IsNullOrWhiteSpace($Content)) { return $Content }
+    if ($Content -notmatch '(?im)Detected UI test categories') { return $Content }
+    # Already has deep/in-process results — leave it alone.
+    if ($Content -match '(?im)DEEP_UITESTS_BEGIN' -or
+        $Content -match '(?im)Deep UI tests' -or
+        $Content -match '(?im)UI Test Execution Results' -or
+        $Content -match '(?im)\b\d+\s+passed\b') {
+        return $Content
+    }
+
+    $note = @'
+
+> [!WARNING]
+> **No UI test results were produced for the detected categories.** The platform-pool run
+> returned no results — most often because the PR build failed (see the **Gate** section) or
+> the deep UI test stage was skipped. Fix the build/gate issues and comment `/review rerun`
+> to get UI test results.
+'@
+    return ($Content.TrimEnd() + [Environment]::NewLine + $note)
+}
+
 function ConvertTo-TitleCase {
     param([string]$Value)
 
@@ -553,6 +583,11 @@ foreach ($key in $phases.Keys) {
                 continue
             }
 
+            # For uitests, annotate the "detected categories but no results" placeholder so an
+            # empty section explains itself instead of showing only the detected categories.
+            if ($key -eq "uitests") {
+                $content = Add-MissingUITestResultsNote -Content $content
+            }
             $phaseContentByKey[$key] = $content
             Write-Host "  ✅ $key ($((Get-Item $filePath).Length) bytes)" -ForegroundColor Green
             # For uitests, make title dynamic: "UI Tests — Cat1, Cat2"

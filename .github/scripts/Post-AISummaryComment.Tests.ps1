@@ -24,6 +24,7 @@ BeforeAll {
         'Test-RunValidationFailed',
         'Test-HasNonPRWinner',
         'Get-AIReviewEventForRun',
+        'Add-MissingUITestResultsNote',
         'New-FutureActionSection'
     )) {
         $function = $ast.Find({
@@ -107,6 +108,39 @@ Describe 'Test-PhaseContentIsNoOp' {
             -PhaseKey 'pr-finalize' `
             -Content '**Assessment:** ✏️ Recommend updating — the current title and description accurately describe the PR shape, but the winning fix differs.' |
             Should -BeFalse
+    }
+}
+
+Describe 'Add-MissingUITestResultsNote' {
+    It 'annotates a bare "detected categories" placeholder with no results' {
+        $result = Add-MissingUITestResultsNote -Content '**Detected UI test categories:** `Picker,ViewBaseTests`'
+        $result | Should -Match 'No UI test results were produced'
+        $result | Should -Match '/review rerun'
+        # Original content is preserved.
+        $result | Should -Match 'Detected UI test categories'
+    }
+
+    It 'does NOT annotate when deep results are present' {
+        $content = "**Detected UI test categories:** ``Picker``" + [Environment]::NewLine +
+            '✅ **Deep UI tests** — 12 passed, 0 failed across 1 category on platform-pool agent.'
+        Add-MissingUITestResultsNote -Content $content | Should -Be $content
+    }
+
+    It 'does NOT annotate when an execution-results count is present' {
+        $content = "**Detected UI test categories:** ``Picker``" + [Environment]::NewLine + '5 passed, 1 failed'
+        Add-MissingUITestResultsNote -Content $content | Should -Be $content
+    }
+
+    It 'does NOT annotate the no-categories / full-matrix placeholders' {
+        $noCats = 'No UI test categories needed for this PR (no UI-relevant changes).'
+        Add-MissingUITestResultsNote -Content $noCats | Should -Be $noCats
+
+        $fullMatrix = 'Full UI test matrix will run (no specific categories detected from PR changes).'
+        Add-MissingUITestResultsNote -Content $fullMatrix | Should -Be $fullMatrix
+    }
+
+    It 'is a no-op for empty content' {
+        Add-MissingUITestResultsNote -Content '' | Should -Be ''
     }
 }
 
