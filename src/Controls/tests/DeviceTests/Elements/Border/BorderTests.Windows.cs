@@ -197,6 +197,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Border ContentPanel IsTabStop updates when IsEnabled toggles at runtime")]
+		public async Task ContentPanelIsTabStopUpdatesOnRuntimeIsEnabledToggle()
+		{
+			SetupBuilder();
+
+			var border = new Border()
+			{
+				Content = new Label { Text = "Border" },
+				StrokeShape = new Rectangle(),
+				WidthRequest = 300,
+				HeightRequest = 100,
+				IsEnabled = true
+			};
+
+			border.GestureRecognizers.Add(new TapGestureRecognizer());
+
+			await AttachAndRun(border, async handler =>
+			{
+				var contentPanel = GetNativeBorder(handler as BorderHandler);
+
+				// Enabled + has recognizer → should be keyboard-focusable
+				Assert.True(contentPanel.IsTabStop);
+
+				// Disable at runtime → must leave the tab order
+				await InvokeOnMainThreadAsync(() => border.IsEnabled = false);
+				Assert.False(contentPanel.IsTabStop);
+
+				// Re-enable at runtime → must re-enter the tab order
+				await InvokeOnMainThreadAsync(() => border.IsEnabled = true);
+				Assert.True(contentPanel.IsTabStop);
+			});
+		}
+
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
 

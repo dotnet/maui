@@ -21,6 +21,10 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IPlatformViewHandler _handler;
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 		readonly List<uint> _fingers = new List<uint>();
+		// Tracks tap recognizers that currently have HandleTapGestureRecognizerPropertyChanged subscribed.
+		// Using an explicit set ensures removed recognizers are unsubscribed even after they leave GestureRecognizers,
+		// preventing stale PropertyChanged subscriptions from keeping this manager alive (memory leak fix).
+		readonly HashSet<TapGestureRecognizer> _subscribedTapRecognizers = new();
 		FrameworkElement? _container;
 		FrameworkElement? _control;
 		VisualElement? _element;
@@ -414,10 +418,11 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
 					}
-					foreach (var tapGesture in gestureRecognizers.GetGesturesFor<TapGestureRecognizer>())
+					foreach (var tapGesture in _subscribedTapRecognizers)
 					{
 						tapGesture.PropertyChanged -= HandleTapGestureRecognizerPropertyChanged;
 					}
+					_subscribedTapRecognizers.Clear();
 				}
 			}
 
@@ -1087,11 +1092,21 @@ namespace Microsoft.Maui.Controls.Platform
 				g.NumberOfTapsRequired == 1 &&
 				(g.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary);
 
-			// Subscribe to property changes on all tap recognizers so IsTabStop stays in sync
+			// Unsubscribe all previously tracked tap recognizers before re-subscribing.
+			// This ensures removed recognizers (no longer in GestureRecognizers) are detached —
+			// they would be missed if we only iterated the current collection here.
+			foreach (var oldTapGesture in _subscribedTapRecognizers)
+			{
+				oldTapGesture.PropertyChanged -= HandleTapGestureRecognizerPropertyChanged;
+			}
+			_subscribedTapRecognizers.Clear();
+
+			// Subscribe to property changes on all current tap recognizers so IsTabStop stays in sync
 			// when Buttons or NumberOfTapsRequired change at runtime without a collection change.
 			foreach (var tapGesture in gestures.GetGesturesFor<TapGestureRecognizer>())
 			{
 				tapGesture.PropertyChanged += HandleTapGestureRecognizerPropertyChanged;
+				_subscribedTapRecognizers.Add(tapGesture);
 			}
 
 			if (hasSelfSingleTap
