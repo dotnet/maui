@@ -327,9 +327,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
-#pragma warning disable MAUI0003, CS0618 // BackgroundColor — IBorderElement interface implementation
-		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
-#pragma warning restore MAUI0003, CS0618
+		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundProperty);
 		bool IBorderElement.IsBackgroundSet() => IsSet(BackgroundProperty);
 		bool IBorderElement.IsBorderColorSet() => IsSet(BorderColorProperty);
 		bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
