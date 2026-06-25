@@ -14,11 +14,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc cref="VisualElement.BackgroundColor"/>
 #if NET5_0_OR_GREATER
-		[Obsolete("BackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.",
+		[Obsolete("BackgroundColor is obsolete. Use Background instead.",
 			DiagnosticId = MauiObsoleteConstants.BackgroundColorObsolete,
 			UrlFormat = "https://aka.ms/maui-obsolete-backgroundcolor")]
 #else
-		[Obsolete("BackgroundColor is obsolete and will be removed in .NET 12. Use Background instead.")]
+		[Obsolete("BackgroundColor is obsolete. Use Background instead.")]
 #endif
 		Color BackgroundColor { get; }
 

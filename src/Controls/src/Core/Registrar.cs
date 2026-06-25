@@ -370,9 +370,7 @@ namespace Microsoft.Maui.Controls.Internals
 			// but this caused problem for trimming, so instead of scanning for the global assemblies, the attributes were moved here
 			// with the least amount of changes to the existing code.
 			StylePropertyAttribute[] styleAttributes = [
-#pragma warning disable MAUI0003, CS0618 // BackgroundColor — CSS background-color must still map for backward compatibility
-				new StylePropertyAttribute("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty)),
-#pragma warning restore MAUI0003, CS0618
+				new StylePropertyAttribute("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundProperty)),
 				new StylePropertyAttribute("background", typeof(VisualElement), nameof(VisualElement.BackgroundProperty)),
 				new StylePropertyAttribute("background-image", typeof(Page), nameof(Page.BackgroundImageSourceProperty)),
 				new StylePropertyAttribute("border-color", typeof(IBorderElement), nameof(BorderElement.BorderColorProperty)),

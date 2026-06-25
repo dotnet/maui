@@ -306,10 +306,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					for (var setterIndex = 0; setterIndex < state.Setters.Count; setterIndex++)
 					{
 						var setter = state.Setters[setterIndex];
-#pragma warning disable MAUI0003, CS0618 // BackgroundColor — VSM setter detection backward compatibility
-						if (setter.Property.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
-#pragma warning restore MAUI0003, CS0618
-							setter.Property.PropertyName == VisualElement.BackgroundProperty.PropertyName)
+					if (setter.Property.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 						{
 							return true;
 						}
