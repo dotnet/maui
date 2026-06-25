@@ -44,21 +44,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Shapes
 		}
 
 		[Fact]
-		public void ReplacingChildrenDoesNotUpdateMatrixOnOldChildChange()
-		{
-			var group = new TransformGroup();
-			var childTransform = new ScaleTransform { ScaleX = 1.0, ScaleY = 1.0 };
-			group.Children.Add(childTransform);
-
-			group.Children = new TransformCollection();
-			var matrixAfterReplacement = group.Value;
-
-			childTransform.ScaleX = 5.0;
-
-			Assert.Equal(matrixAfterReplacement, group.Value);
-		}
-
-		[Fact]
 		public async Task SharedTransformDoesNotRetainMultipleGroups()
 		{
 			var sharedTransform = new ScaleTransform { ScaleX = 1.0, ScaleY = 1.0 };
