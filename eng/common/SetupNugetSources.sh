@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 # This script adds internal feeds required to build commits that depend on internal package sources. For instance,
-# dotnet6-internal would be added automatically if dotnet6 was found in the nuget.config file. Similarly,
-# dotnet-eng-internal and dotnet-tools-internal are added if dotnet-eng and dotnet-tools are present.
-# In addition, this script also enables disabled internal Maestro (darc-int*) feeds.
+# dotnet6-internal would be added automatically if dotnet6 was found in the nuget.config file. In addition also enables
+# disabled internal Maestro (darc-int*) feeds.
 # 
 # Optionally, this script also adds a credential entry for each of the internal feeds if supplied.
 #
@@ -40,6 +39,11 @@ while [[ -h "$source" ]]; do
   [[ $source != /* ]] && source="$scriptroot/$source"
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
+
+# This script only consumes helper functions from tools.sh to configure NuGet feeds.
+# Skip importing configure-toolset.sh so that repo-specific toolset setup (e.g. acquiring
+# a bootstrap SDK) is not triggered as a side effect of feed configuration.
+disable_configure_toolset_import=1
 
 . "$scriptroot/tools.sh"
 
@@ -173,18 +177,6 @@ for DotNetVersion in ${DotNetVersions[@]} ; do
         AddOrEnablePackageSource "$FeedPrefix-internal-transport" "https://pkgs.dev.azure.com/dnceng/internal/_packaging/$FeedPrefix-internal-transport/nuget/$FeedSuffix"
     fi
 done
-
-# Check for dotnet-eng and add dotnet-eng-internal if present
-grep -i "<add key=\"dotnet-eng\"" $ConfigFile > /dev/null
-if [ "$?" == "0" ]; then
-    AddOrEnablePackageSource "dotnet-eng-internal" "https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-eng-internal/nuget/$FeedSuffix"
-fi
-
-# Check for dotnet-tools and add dotnet-tools-internal if present
-grep -i "<add key=\"dotnet-tools\"" $ConfigFile > /dev/null
-if [ "$?" == "0" ]; then
-    AddOrEnablePackageSource "dotnet-tools-internal" "https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/$FeedSuffix"
-fi
 
 # I want things split line by line
 PrevIFS=$IFS
