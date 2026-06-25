@@ -1519,22 +1519,40 @@ Write-Log "BaseBranch: $BaseBranchName"
 Write-Log "MergeBase: $MergeBase"
 Write-Log ""
 
-# Verify fix files exist
-Write-Log "Verifying fix files exist..."
+# Verify each fix file is usable. A PR can MODIFY, ADD, or DELETE a fix file:
+#   - modified → exists on disk (HEAD) and at merge-base
+#   - added    → exists on disk (HEAD), not at merge-base  → NewFiles (not reverted)
+#   - deleted  → does NOT exist on disk (HEAD), exists at merge-base
+# A PR-deleted file legitimately does not exist in the with-fix worktree, so a
+# plain Test-Path is NOT a valid existence gate — it wrongly aborted (→ infra
+# failure / INCONCLUSIVE, tests never run) PRs that delete a file as part of
+# their fix. Only a file present in NEITHER the worktree NOR the merge-base is
+# a genuine error.
+Write-Log "Verifying fix files are present (on disk or at merge-base)..."
+$missingFixFiles = @()
 foreach ($file in $FixFiles) {
     $fullPath = Join-Path $RepoRoot $file
-    if (-not (Test-Path $fullPath)) {
-        Write-Log "ERROR: Fix file not found: $file"
-        exit 1
+    if (Test-Path $fullPath) {
+        Write-Log "  ✓ $file exists"
+    } elseif (git ls-tree -r $MergeBase --name-only -- $file 2>$null) {
+        Write-Log "  ○ $file (deleted by PR — exists at merge-base, will be restored to form the baseline)"
+    } else {
+        Write-Log "ERROR: Fix file not found on disk or at merge-base: $file"
+        $missingFixFiles += $file
     }
-    Write-Log "  ✓ $file exists"
+}
+if ($missingFixFiles.Count -gt 0) {
+    Write-Log "ERROR: $($missingFixFiles.Count) fix file(s) exist in neither the worktree nor the merge-base ($($MergeBase.Substring(0, 8))) — cannot verify."
+    exit 1
 }
 
-# Determine which files exist at the merge-base (can be reverted)
+# Determine which files exist at the merge-base (can be reverted) and which of
+# those the PR DELETED (absent at HEAD) so STEP 3 restores them correctly.
 Write-Log ""
 Write-Log "Checking which fix files exist at merge-base ($($MergeBase.Substring(0, 8)))..."
 $RevertableFiles = @()
 $NewFiles = @()
+$DeletedByPrFiles = @()
 
 foreach ($file in $FixFiles) {
     # Check if file exists at merge-base commit
@@ -1542,7 +1560,13 @@ foreach ($file in $FixFiles) {
 
     if ($existsInBase) {
         $RevertableFiles += $file
-        Write-Log "  ✓ $file (exists at merge-base - will revert)"
+        $existsAtHead = git ls-tree -r HEAD --name-only -- $file 2>$null
+        if ($existsAtHead) {
+            Write-Log "  ✓ $file (exists at merge-base - will revert)"
+        } else {
+            $DeletedByPrFiles += $file
+            Write-Log "  ✓ $file (deleted by PR - restore from merge-base for baseline, re-delete with fix)"
+        }
     } else {
         $NewFiles += $file
         Write-Log "  ○ $file (new file - skipping revert)"
@@ -1682,12 +1706,23 @@ Write-Log "STEP 3: Restoring fix files from HEAD"
 Write-Log "=========================================="
 
 foreach ($file in $RevertableFiles) {
-    Write-Log "  Restoring: $file"
-    $gitOutput = git checkout HEAD -- $file 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Log "  ERROR: Failed to restore $file from HEAD"
-        Write-Log "  Git output: $gitOutput"
-        exit 1
+    if ($DeletedByPrFiles -contains $file) {
+        # The PR deleted this file; its with-fix state is "absent". STEP 1
+        # restored it from the merge-base for the baseline run, so re-delete it
+        # (worktree + index) to match HEAD — `git checkout HEAD -- $file` would
+        # fail here because HEAD has no copy of a PR-deleted file.
+        Write-Log "  Re-removing (deleted by PR): $file"
+        git rm -f --ignore-unmatch -- $file 2>&1 | Out-Null
+        $wtPath = Join-Path $RepoRoot $file
+        if (Test-Path $wtPath) { Remove-Item -LiteralPath $wtPath -Force -ErrorAction SilentlyContinue }
+    } else {
+        Write-Log "  Restoring: $file"
+        $gitOutput = git checkout HEAD -- $file 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log "  ERROR: Failed to restore $file from HEAD"
+            Write-Log "  Git output: $gitOutput"
+            exit 1
+        }
     }
 }
 
