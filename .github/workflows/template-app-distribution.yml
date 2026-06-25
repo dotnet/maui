@@ -29,6 +29,7 @@
 # - TEMPLATE_APP_PLAY_TRACK (variable): defaults to internal.
 # - TEMPLATE_APP_PLAY_RELEASE_STATUS (variable): defaults to completed; use draft for first uploads to draft Play apps.
 # - TEMPLATE_APP_TESTFLIGHT_GROUPS (variable): defaults to no explicit group distribution.
+# - TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW (variable): set to true to reject a prior waiting Beta App Review build and submit the latest one.
 # Store uploads use fastlane lanes from .github/scripts/template-app-distribution/fastlane.
 
 name: Template App Distribution
@@ -59,6 +60,7 @@ concurrency:
 env:
   DOTNET_NOLOGO: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  FASTLANE_OPT_OUT_USAGE: "1"
 
 jobs:
   prepare:
@@ -97,13 +99,18 @@ jobs:
       - name: Resolve source ref trust
         id: source
         shell: pwsh
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+          WORKFLOW_REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          PUBLISH: ${{ inputs.publish }}
         run: |
-          $publish = [System.Boolean]::Parse('${{ inputs.publish }}')
+          $publish = [System.Boolean]::Parse($env:PUBLISH)
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Resolve-SourceRef.ps1" `
             -RepositoryPath "${{ github.workspace }}/source" `
-            -SourceRef "${{ inputs.source_ref }}" `
-            -WorkflowRef "${{ github.ref }}" `
-            -DefaultBranch "${{ github.event.repository.default_branch }}" `
+            -SourceRef "$env:SOURCE_REF" `
+            -WorkflowRef "$env:WORKFLOW_REF" `
+            -DefaultBranch "$env:DEFAULT_BRANCH" `
             -Publish $publish
 
       - name: Resolve .NET SDK
@@ -149,7 +156,7 @@ jobs:
             -DotNetTfm "${{ steps.sdk.outputs.dotnet_tfm }}"
 
   dry-run-build:
-    name: Dry-run builds
+    name: Dry-run builds (${{ matrix.variant }}, ${{ matrix.artifactPlatform }})
     if: ${{ inputs.publish == false }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
@@ -176,7 +183,7 @@ jobs:
       - name: Checkout template source
         uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.source_ref }}
+          ref: ${{ needs.prepare.outputs.source_sha }}
           path: source
           persist-credentials: false
 
@@ -318,7 +325,8 @@ jobs:
             -RuntimeIdentifier "${{ matrix.runtimeIdentifier }}" `
             -OutputPath "${{ runner.temp }}/template-app-output/${{ matrix.variant }}-${{ matrix.platform }}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
-            -AppBuildNumber "$env:APP_BUILD_NUMBER"
+            -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -CreateBinlog
 
       - name: Upload dry-run artifact
         uses: actions/upload-artifact@v7
@@ -330,7 +338,7 @@ jobs:
           retention-days: 14
 
   publish:
-    name: Publish/build template apps
+    name: Publish/build template apps (${{ matrix.variant }}, ${{ matrix.artifactPlatform }})
     if: ${{ inputs.publish }}
     needs: prepare
     runs-on: ${{ matrix.runner }}
@@ -341,6 +349,7 @@ jobs:
       TEMPLATE_APP_PLAY_TRACK: ${{ vars.TEMPLATE_APP_PLAY_TRACK || 'internal' }}
       TEMPLATE_APP_PLAY_RELEASE_STATUS: ${{ vars.TEMPLATE_APP_PLAY_RELEASE_STATUS || 'completed' }}
       TEMPLATE_APP_TESTFLIGHT_GROUPS: ${{ vars.TEMPLATE_APP_TESTFLIGHT_GROUPS }}
+      TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW: ${{ vars.TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW || 'false' }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
@@ -425,7 +434,7 @@ jobs:
       - name: Checkout template source
         uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.source_ref }}
+          ref: ${{ needs.prepare.outputs.source_sha }}
           path: source
           persist-credentials: false
 
@@ -536,8 +545,12 @@ jobs:
 
       - name: Set app version and release notes
         shell: pwsh
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+          DOTNET_SDK: ${{ needs.prepare.outputs.dotnet_sdk }}
         run: |
-          $notes = "MAUI template app build from ${{ inputs.source_ref }} (${{ needs.prepare.outputs.source_sha }}).`n.NET SDK ${{ needs.prepare.outputs.dotnet_sdk }}, app version $env:APP_DISPLAY_VERSION, build $env:APP_BUILD_NUMBER."
+          $notes = "MAUI template app build from $env:SOURCE_REF ($env:SOURCE_SHA).`n.NET SDK $env:DOTNET_SDK, app version $env:APP_DISPLAY_VERSION, build $env:APP_BUILD_NUMBER."
 
           $delimiter = [guid]::NewGuid().ToString("N")
           "TEMPLATE_APP_RELEASE_NOTES<<$delimiter" >> $env:GITHUB_ENV
@@ -614,9 +627,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}
-          path: |
-            ${{ steps.build.outputs.package_path }}
-            ${{ steps.build.outputs.binlog_path }}
+          path: ${{ steps.build.outputs.package_path }}
           retention-days: 14
 
       - name: Write Google Play credentials

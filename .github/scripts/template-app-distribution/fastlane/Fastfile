@@ -17,6 +17,10 @@ def release_notes
   value.empty? ? nil : value
 end
 
+def truthy_environment?(key)
+  ["1", "true", "yes"].include?(ENV[key].to_s.downcase)
+end
+
 default_platform(:ios)
 
 platform :android do
@@ -79,6 +83,8 @@ platform :ios do
     unless groups.empty?
       upload_options[:groups] = groups
       upload_options[:distribute_external] = true
+      upload_options[:notify_external_testers] = true
+      upload_options[:reject_build_waiting_for_review] = true if truthy_environment?("TEMPLATE_APP_REPLACE_WAITING_TESTFLIGHT_REVIEW")
     end
 
     upload_to_testflight(upload_options)

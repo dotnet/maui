@@ -33,10 +33,33 @@ function Test-GitSuccess([string[]]$Arguments) {
     return $LASTEXITCODE -eq 0
 }
 
+function Test-SafePublishSourceRef([string]$Value) {
+    $ref = $Value.Trim()
+
+    if ($ref -match "^[0-9a-fA-F]{40}$") {
+        return $true
+    }
+
+    if ($ref.StartsWith("refs/") -and $ref -notmatch "^refs/(heads|tags)/") {
+        return $false
+    }
+
+    if ($ref -notmatch "^(refs/(heads|tags)/)?[A-Za-z0-9][A-Za-z0-9._/-]*$") {
+        return $false
+    }
+
+    return -not ($ref.Contains("..") -or $ref.Contains("//") -or $ref.Contains("@{") -or $ref.EndsWith("/") -or $ref.EndsWith("."))
+}
+
 Push-Location $RepositoryPath
 try {
     $sourceSha = (Invoke-Git -Arguments @("rev-parse", "HEAD")).Trim()
     $normalizedSourceRef = $SourceRef.Trim()
+
+    if ($Publish -and -not (Test-SafePublishSourceRef $normalizedSourceRef)) {
+        throw "Publishing source_ref '$SourceRef' contains characters or ref syntax that are not allowed for protected publishing. Use a trusted branch name, tag name, or full commit SHA."
+    }
+
     $trustedBranches = @(
         Invoke-Git -Arguments @("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin") |
             Where-Object { $_ -eq "origin/$DefaultBranch" -or $_ -match "^origin/net\d+\.0$" }
@@ -47,16 +70,22 @@ try {
 
     $sourceBranchName = $normalizedSourceRef -replace "^refs/heads/", "" -replace "^origin/", ""
     if ($sourceBranchName -eq $DefaultBranch -or $sourceBranchName -match "^net\d+\.0$") {
-        $isTrusted = $true
-        $trustedReason = "trusted branch '$sourceBranchName'"
+        $branchRef = "origin/$sourceBranchName"
+        if (Test-GitSuccess -Arguments @("rev-parse", "--verify", $branchRef)) {
+            $branchSha = (Invoke-Git -Arguments @("rev-parse", $branchRef)).Trim()
+            if ($branchSha -eq $sourceSha) {
+                $isTrusted = $true
+                $trustedReason = "trusted branch '$sourceBranchName'"
+            }
+        }
     }
 
+    $sourceTagName = $null
     if (-not $isTrusted -and ($normalizedSourceRef -match "^refs/tags/.+" -or (Test-GitSuccess -Arguments @("rev-parse", "--verify", "refs/tags/$normalizedSourceRef")))) {
         $tagName = $normalizedSourceRef -replace "^refs/tags/", ""
         $tagSha = (Invoke-Git -Arguments @("rev-list", "-n", "1", "refs/tags/$tagName")).Trim()
         if ($tagSha -eq $sourceSha) {
-            $isTrusted = $true
-            $trustedReason = "tag '$tagName'"
+            $sourceTagName = $tagName
         }
     }
 
@@ -64,7 +93,7 @@ try {
         foreach ($branch in $trustedBranches) {
             if (Test-GitSuccess -Arguments @("merge-base", "--is-ancestor", $sourceSha, $branch)) {
                 $isTrusted = $true
-                $trustedReason = "commit reachable from '$branch'"
+                $trustedReason = if ($sourceTagName) { "tag '$sourceTagName' reachable from '$branch'" } else { "commit reachable from '$branch'" }
                 break
             }
         }

@@ -47,6 +47,25 @@ function ConvertTo-XmlEscaped([string]$Value) {
     return [System.Security.SecurityElement]::Escape($Value)
 }
 
+function Set-PlistBooleanFalse([string]$Path, [string]$Key) {
+    if (-not (Test-Path $Path)) {
+        return
+    }
+
+    $plistContent = Get-Content $Path -Raw
+    $escapedKey = [regex]::Escape($Key)
+    $booleanKeyPattern = "(?s)(<key>$escapedKey</key>\s*)<(true|false)\s*/>"
+    if ($plistContent -match $booleanKeyPattern) {
+        $plistContent = [regex]::Replace($plistContent, $booleanKeyPattern, '$1<false/>', 1)
+        Set-Content -Path $Path -Value $plistContent -Encoding utf8
+        return
+    }
+
+    $entry = "`t<key>$Key</key>`r`n`t<false/>`r`n"
+    $plistContent = $plistContent -replace "(?m)^</dict>", "$entry</dict>"
+    Set-Content -Path $Path -Value $plistContent -Encoding utf8
+}
+
 if (-not (Test-Path $TemplatePackagePath)) {
     throw "Template package was not found at '$TemplatePackagePath'."
 }
@@ -128,6 +147,12 @@ if ($TargetFramework.Contains("-windows", [System.StringComparison]::OrdinalIgno
 }
 
 Set-Content -Path $projectFile.FullName -Value $content -Encoding utf8
+
+if ($TargetFramework.Contains("-ios", [System.StringComparison]::OrdinalIgnoreCase)) {
+    Set-PlistBooleanFalse (Join-Path $projectDir "Platforms/iOS/Info.plist") "ITSAppUsesNonExemptEncryption"
+} elseif ($TargetFramework.Contains("-maccatalyst", [System.StringComparison]::OrdinalIgnoreCase)) {
+    Set-PlistBooleanFalse (Join-Path $projectDir "Platforms/MacCatalyst/Info.plist") "ITSAppUsesNonExemptEncryption"
+}
 
 @{
     sdk = @{

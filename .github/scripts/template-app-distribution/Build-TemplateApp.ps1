@@ -26,7 +26,9 @@ param(
 
     [string]$Configuration = "Release",
 
-    [switch]$Publish
+    [switch]$Publish,
+
+    [switch]$CreateBinlog
 )
 
 $ErrorActionPreference = "Stop"
@@ -53,13 +55,21 @@ function Get-NewestBuildOutput([string]$Root, [string]$Filter, [switch]$Director
         Select-Object -First 1
 }
 
+function Invoke-DotNetPublish([string[]]$Arguments, [string]$Description) {
+    & dotnet @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Description failed with exit code $LASTEXITCODE."
+    }
+}
+
 $projectFile = Get-ChildItem -Path $ProjectPath -Filter "*.csproj" -Recurse | Select-Object -First 1
 if (-not $projectFile) {
     throw "No project file was found in '$ProjectPath'."
 }
 
 New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
-$binlogPath = Join-Path $OutputPath "build.binlog"
+$binlogPath = if ($CreateBinlog) { Join-Path $OutputPath "build.binlog" } else { $null }
+$binlogArguments = if ($CreateBinlog) { @("/bl:$binlogPath") } else { @() }
 
 switch ($Platform) {
     "android" {
@@ -70,9 +80,8 @@ switch ($Platform) {
             "-p:AndroidPackageFormat=aab",
             "-p:ApplicationDisplayVersion=$AppDisplayVersion",
             "-p:ApplicationVersion=$AppBuildNumber",
-            "-o", $OutputPath,
-            "/bl:$binlogPath"
-        )
+            "-o", $OutputPath
+        ) + $binlogArguments
 
         if ($Publish) {
             $keystorePath = $env:ANDROID_KEYSTORE_PATH
@@ -108,7 +117,7 @@ switch ($Platform) {
         }
 
         Write-Host "Building Android package for $($projectFile.FullName)"
-        & dotnet @arguments
+        Invoke-DotNetPublish $arguments "Android publish"
 
         $package = Get-NewestBuildOutput $ProjectPath "*.aab"
         if (-not $package) {
@@ -124,9 +133,8 @@ switch ($Platform) {
             "-r", $RuntimeIdentifier,
             "-p:ApplicationDisplayVersion=$AppDisplayVersion",
             "-p:ApplicationVersion=$AppBuildNumber",
-            "-p:ValidateXcodeVersion=false",
-            "/bl:$binlogPath"
-        )
+            "-p:ValidateXcodeVersion=false"
+        ) + $binlogArguments
 
         if ($Publish) {
             $codesignKey = Assert-EnvironmentValue "IOS_CODESIGN_KEY"
@@ -148,7 +156,7 @@ switch ($Platform) {
         }
 
         Write-Host "Building iOS package for $($projectFile.FullName)"
-        & dotnet @arguments
+        Invoke-DotNetPublish $arguments "iOS publish"
 
         if ($Publish) {
             $package = Get-NewestBuildOutput $ProjectPath "*.ipa"
@@ -173,9 +181,8 @@ switch ($Platform) {
             "-p:MtouchLink=SdkOnly",
             "-p:ApplicationDisplayVersion=$AppDisplayVersion",
             "-p:ApplicationVersion=$AppBuildNumber",
-            "-p:ValidateXcodeVersion=false",
-            "/bl:$binlogPath"
-        )
+            "-p:ValidateXcodeVersion=false"
+        ) + $binlogArguments
 
         if (-not [string]::IsNullOrWhiteSpace($RuntimeIdentifier)) {
             $arguments += @("-r", $RuntimeIdentifier)
@@ -208,7 +215,7 @@ switch ($Platform) {
         }
 
         Write-Host "Building Mac Catalyst package for $($projectFile.FullName)"
-        & dotnet @arguments
+        Invoke-DotNetPublish $arguments "Mac Catalyst publish"
 
         if ($Publish) {
             $package = Get-NewestBuildOutput $ProjectPath "*.pkg"
@@ -243,16 +250,11 @@ switch ($Platform) {
             "-p:WindowsAppSDKSelfContained=true",
             "-p:ApplicationDisplayVersion=$AppDisplayVersion",
             "-p:ApplicationVersion=$AppBuildNumber",
-            "-o", $publishOutputPath,
-            "/bl:$binlogPath"
-        )
+            "-o", $publishOutputPath
+        ) + $binlogArguments
 
         Write-Host "Building Windows unpackaged app for $($projectFile.FullName)"
-        & dotnet @arguments
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "Windows unpackaged publish failed with exit code $LASTEXITCODE."
-        }
+        Invoke-DotNetPublish $arguments "Windows unpackaged publish"
 
         $zipPath = Join-Path $OutputPath "$($projectFile.BaseName)-windows-unpackaged.zip"
         Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
@@ -266,9 +268,13 @@ if (-not $package) {
 }
 
 Write-Host "Package artifact: $($package.FullName)"
-Write-Host "Build binlog: $binlogPath"
+if ($CreateBinlog) {
+    Write-Host "Build binlog: $binlogPath"
+}
 
 if ($env:GITHUB_OUTPUT) {
     "package_path=$($package.FullName)" >> $env:GITHUB_OUTPUT
-    "binlog_path=$binlogPath" >> $env:GITHUB_OUTPUT
+    if ($CreateBinlog) {
+        "binlog_path=$binlogPath" >> $env:GITHUB_OUTPUT
+    }
 }
