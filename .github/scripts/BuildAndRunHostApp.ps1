@@ -346,6 +346,27 @@ if ($Platform -eq "catalyst") {
     $env:MAUI_LOG_FILE = $deviceLogFile
 }
 
+# For Windows, point the test at the actual built HostApp .exe. UITest.cs
+# (TestDevice.Windows) otherwise computes the app path RELATIVE to the test
+# assembly ("../../../Controls.TestCases.HostApp/..."), which does NOT resolve to
+# the repo's `artifacts/bin` output layout — so WinAppDriver fails OneTimeSetUp
+# with "The system cannot find the file specified" and 0 tests run. Setting
+# WINDOWS_APP_PATH (honored first by UITest.cs) to the known build output fixes it.
+if ($Platform -eq "windows") {
+    $hostAppBin = Join-Path $RepoRoot "artifacts/bin/Controls.TestCases.HostApp/Debug/$TargetFramework"
+    $winAppExe = $null
+    if (Test-Path $hostAppBin) {
+        $winAppExe = Get-ChildItem -Path $hostAppBin -Filter "Controls.TestCases.HostApp.exe" -Recurse -ErrorAction SilentlyContinue |
+            Select-Object -First 1 -ExpandProperty FullName
+    }
+    if ($winAppExe) {
+        $env:WINDOWS_APP_PATH = $winAppExe
+        Write-Success "Set WINDOWS_APP_PATH=$winAppExe"
+    } else {
+        Write-Warn "Windows HostApp .exe not found under $hostAppBin — test will fall back to relative-path resolution (may fail to launch)"
+    }
+}
+
 $filterDisplay = if ($effectiveFilter) { "--filter `"$effectiveFilter`"" } else { "(no filter — all tests)" }
 Write-Info "Executing: dotnet test $filterDisplay"
 Write-Host ""
