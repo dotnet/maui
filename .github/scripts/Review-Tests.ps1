@@ -244,7 +244,7 @@ function New-TestFailureReviewBody {
 
     $badgeLines = @()
     $badgeLines += New-Badge -Label "Overall" -Message $verdict -Color $verdictColor -Alt "Overall $verdict"
-    $badgeLines += New-Badge -Label "Failures" -Message "$failureCount" -Color "8250df" -Alt "Failures $failureCount"
+    $badgeLines += New-Badge -Label "Failures" -Message "$failureCount" -Color "bf8700" -Alt "Failures $failureCount"
     foreach ($platform in $platforms) {
         $badgeLines += New-Badge -Label "Platform" -Message $platform -Color "0969da" -Alt "Platform $platform"
     }

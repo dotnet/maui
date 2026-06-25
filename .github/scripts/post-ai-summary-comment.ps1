@@ -267,7 +267,7 @@ function New-StatusChipRow {
     $gateColor = switch ($GateStatus) {
         'Passed'       { '1a7f37' }   # green
         'Partial'      { 'bf8700' }   # amber — mixed/inconclusive
-        'Inconclusive' { '8957e5' }   # purple — could not build/run (infra), not a real fail
+        'Inconclusive' { '0e7490' }   # teal — could not build/run (infra), not a real fail (avoid purple ~ GitHub "merged")
         'No Tests'     { '57606a' }   # neutral gray — nothing to verify
         'Failed'       { 'd1242f' }   # red
         default        { 'd1242f' }
@@ -278,7 +278,7 @@ function New-StatusChipRow {
         'Low' { 'd1242f' }
         default { '57606a' }
     }
-    $platformColor = if ($Platform -eq 'Unknown') { '57606a' } else { '8250df' }
+    $platformColor = if ($Platform -eq 'Unknown') { '57606a' } else { '1f6feb' }  # blue (avoid purple ~ GitHub "merged")
 
     $chips = @(
         (New-StatusChip -Label 'Gate' -Value $GateStatus -Color $gateColor),
