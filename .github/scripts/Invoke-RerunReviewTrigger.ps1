@@ -13,8 +13,9 @@
     side effects via the GitHub REST API (octokit):
 
       * trigger -> dispatch the `review-trigger.yml` workflow (the exact same
-        workflow a maintainer `/review` comment runs), then react `+1` to the
-        rerun comment. `review-trigger.yml` owns PR validation, the
+        workflow a maintainer `/review` comment runs), then react `rocket` (🚀)
+        to the rerun comment to acknowledge the dispatch was queued.
+        `review-trigger.yml` owns PR validation, the
         `s/agent-review-in-progress` lock, platform inference, OIDC, and the AzDO
         pipeline trigger.
       * skip    -> react `-1` to the rerun comment and remove the queue label.
