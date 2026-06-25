@@ -174,7 +174,7 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
    - Dispatches to `Get-ReleaseReadiness.ps1` (SR) or `Get-PreviewReadiness.ps1` (Preview) based on `branchType`.
    - Looks for an open tracker issue by the canonical marker `<!-- release-readiness-tracker: <key> -->`.
      - **Refresh path**: reuse the oldest open tracker issue (edit title + body); close any duplicates.
-     - **Create path**: open a new issue with `report` / `s/triaged` / `area-release-readiness` labels.
+     - **Create path**: open a new issue with `report` / `s/triaged` / `area-infrastructure` labels (each attached best-effort — a label missing from the repo is skipped with a warning rather than failing the create).
    - **Activity gate**: skip new-issue creation when `recentCommitCount == 0` AND no open tracker issue exists. (Existing open issues are still refreshed.)
 3. **`validate`** — PR-trigger path. Runs the test suite + smoke-runs all three scripts. **Does not create or modify issues.**
 

@@ -444,10 +444,19 @@ jobs:
               --repo "${{ github.repository }}"
               --title "$ISSUE_TITLE"
               --body-file "$BODY_FILE"
-              --label "report"
-              --label "s/triaged"
-              --label "area-release-readiness"
             )
+            # Best-effort label attach — never fail the job for a label that does
+            # not exist in this repo. `gh issue create` hard-fails (422) on an
+            # unknown label, so attaching one that was renamed/removed would abort
+            # every auto-create. Probe each label and skip (with a warning) any
+            # that is missing, exactly like the milestone handling below.
+            for lbl in "report" "s/triaged" "area-infrastructure"; do
+              if gh api "repos/${{ github.repository }}/labels/${lbl//\//%2F}" --jq '.name' >/dev/null 2>&1; then
+                CREATE_ARGS+=(--label "$lbl")
+              else
+                echo "::warning::Label '$lbl' not found; creating issue without it."
+              fi
+            done
             # Best-effort milestone attach — never fail the job for a missing milestone.
             if [ -n "$MILESTONE_NAME" ]; then
               if gh api "repos/${{ github.repository }}/milestones?state=open&per_page=100" \
