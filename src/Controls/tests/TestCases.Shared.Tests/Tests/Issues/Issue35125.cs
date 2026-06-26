@@ -14,7 +14,7 @@ public class Issue35125 : _IssuesUITest
 	public override string Issue => "Shell top-tab unselected text should remain visible in Material 3 light theme";
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[Category(UITestCategories.Material3)]
 	public void TopTabUnselectedTextVisibleWhenSwitchingTabs()
 	{
 		App.WaitForElement("TAB TWO");
