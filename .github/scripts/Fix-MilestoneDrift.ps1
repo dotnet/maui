@@ -13,7 +13,9 @@
     1. Single PR:   -PrNumber 33818 [-Tag 10.0.50]
     2. Single tag:  -Tag 10.0.50 [-PreviousTag 10.0.41]
 
-    Safety: PRs merged before 2026-01-01 are always skipped.
+    Safety: PRs merged before a cutoff date are always skipped. The cutoff
+    defaults to 2026-01-01 (when this automation went live) and is configurable
+    via -MergedAfter, so an older release can be processed deliberately.
 
 .PARAMETER PrNumber
     Analyze and fix a single PR (and its linked issues).
@@ -29,6 +31,15 @@
 
 .PARAMETER Output
     Output JSON file path.
+
+.PARAMETER MergedAfter
+    Cutoff date: PRs merged strictly before this date are skipped (never
+    milestoned or closed). Defaults to 2026-01-01 (when this automation went
+    live) so the bulk -Apply / -CloseFixedIssues path can't reach back and
+    rewrite milestones for PRs that predate it. Override to deliberately process
+    an older release — e.g. -MergedAfter '2025-01-01' to close linked issues for
+    a historical SR. Accepts any parseable date (e.g. '2025-01-01' or
+    '2025-06-01T00:00:00Z'); no-timezone values are treated as UTC.
 
 .PARAMETER Apply
     Actually apply milestone fixes. Without this flag, only a dry-run report is produced.
@@ -46,6 +57,8 @@
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -RepoPath ~/Projects/maui -Verbose
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -Apply
     ./Fix-MilestoneDrift.ps1 -Tag 10.0.50 -RepoPath ~/Projects/maui
+    # Process a historical SR (closing linked issues) by lowering the cutoff:
+    ./Fix-MilestoneDrift.ps1 -Tag 9.0.90 -MergedAfter '2024-01-01' -Apply -CloseFixedIssues
 #>
 
 [CmdletBinding()]
@@ -55,13 +68,33 @@ param(
     [string]$PreviousTag,
     [string]$RepoPath = ".",
     [string]$Output,
+    [string]$MergedAfter,
     [switch]$Apply,
     [switch]$CreateIssue,
     [switch]$CloseFixedIssues
 )
 
-# Safety: never process PRs merged before 2026
-$script:MergedAfterCutoff = [datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc)
+# Resolve the "merged after" safety cutoff. PRs merged strictly before this
+# date are always skipped, so the bulk -Apply / -CloseFixedIssues path can never
+# reach back and rewrite milestones for PRs that predate this automation.
+# Defaults to 2026-01-01 (go-live); override via -MergedAfter to deliberately
+# process an older release. Pure + side-effect-free so it can be unit tested.
+function Resolve-MergedAfterCutoff {
+    param([string]$Value)
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return [datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc)
+    }
+    try {
+        return [datetime]::Parse(
+            $Value,
+            [System.Globalization.CultureInfo]::InvariantCulture,
+            [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal)
+    } catch {
+        throw "Invalid -MergedAfter value '$Value'. Expected a date such as '2025-01-01' or '2025-06-01T00:00:00Z'."
+    }
+}
+
+$script:MergedAfterCutoff = Resolve-MergedAfterCutoff $MergedAfter
 
 # Only enable StrictMode during normal execution — not when dot-sourced for testing,
 # since StrictMode leaks into the caller scope and can break Pester or other scripts.

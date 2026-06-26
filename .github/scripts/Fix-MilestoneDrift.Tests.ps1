@@ -82,6 +82,117 @@ BeforeAll {
     . "$PSScriptRoot/Fix-MilestoneDrift.ps1"
 }
 
+Describe 'Resolve-MergedAfterCutoff' {
+    It 'defaults to 2026-01-01 UTC when value is "<Value>"' -ForEach @(
+        @{ Value = $null }
+        @{ Value = '' }
+        @{ Value = '   ' }
+    ) {
+        $result = Resolve-MergedAfterCutoff $Value
+        $result | Should -Be ([datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc))
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+    }
+
+    It 'parses a date-only value "<Value>" as UTC midnight' -ForEach @(
+        @{ Value = '2025-01-01'; Year = 2025; Month = 1;  Day = 1 }
+        @{ Value = '2024-06-15'; Year = 2024; Month = 6;  Day = 15 }
+        @{ Value = '2020-12-31'; Year = 2020; Month = 12; Day = 31 }
+    ) {
+        $result = Resolve-MergedAfterCutoff $Value
+        $result.Year  | Should -Be $Year
+        $result.Month | Should -Be $Month
+        $result.Day   | Should -Be $Day
+        $result.Hour  | Should -Be 0
+        $result.Kind  | Should -Be ([System.DateTimeKind]::Utc)
+    }
+
+    It 'parses an ISO-8601 value with explicit UTC offset' {
+        $result = Resolve-MergedAfterCutoff '2025-06-01T12:30:00Z'
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result | Should -Be ([datetime]::new(2025, 6, 1, 12, 30, 0, [System.DateTimeKind]::Utc))
+    }
+
+    It 'normalizes a non-UTC offset to UTC' {
+        # 2025-06-01T00:00:00+05:00 == 2025-05-31T19:00:00Z
+        $result = Resolve-MergedAfterCutoff '2025-06-01T00:00:00+05:00'
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result | Should -Be ([datetime]::new(2025, 5, 31, 19, 0, 0, [System.DateTimeKind]::Utc))
+    }
+
+    It 'throws a clear error for unparseable value "<Value>"' -ForEach @(
+        @{ Value = 'garbage' }
+        @{ Value = 'not-a-date' }
+        @{ Value = '2025-13-99' }
+        @{ Value = '13/13/2025' }
+    ) {
+        { Resolve-MergedAfterCutoff $Value } | Should -Throw "*Invalid -MergedAfter value*"
+    }
+}
+
+Describe 'Get-PrInfo — merged-after cutoff enforcement' {
+    BeforeAll {
+        # Build a GitHub-pulls-API-shaped object (ConvertFrom-Json style) for the mock.
+        function New-FakePr {
+            param([string]$MergedAt, [int]$Number = 42)
+            [pscustomobject]@{
+                title            = "PR $Number"
+                html_url         = "https://github.com/dotnet/maui/pull/$Number"
+                body             = ''
+                merged_at        = $MergedAt
+                milestone        = $null
+                base             = [pscustomobject]@{ ref = 'net11.0' }
+                merge_commit_sha = 'deadbeef'
+            }
+        }
+    }
+
+    AfterAll {
+        # Restore the default cutoff so later Describes are unaffected.
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''
+    }
+
+    It 'skips a PR merged before the cutoff (returns $null)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2025-05-01T00:00:00Z' -Number 100 }
+        Get-PrInfo 100 | Should -BeNullOrEmpty
+    }
+
+    It 'includes a PR merged on/after the cutoff (returns the object)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-03-01T00:00:00Z' -Number 101 }
+        $pr = Get-PrInfo 101
+        $pr | Should -Not -BeNullOrEmpty
+        $pr.Number | Should -Be 101
+    }
+
+    It 'includes a PR merged exactly at the cutoff boundary (strict less-than)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01T00:00:00Z
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-01-01T00:00:00Z' -Number 102 }
+        Get-PrInfo 102 | Should -Not -BeNullOrEmpty
+    }
+
+    It 'a lowered cutoff lets an older PR through (the configurable use case)' {
+        # Same 2025 PR that the default cutoff skips is now processed.
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff '2024-01-01'
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2025-05-01T00:00:00Z' -Number 103 }
+        $pr = Get-PrInfo 103
+        $pr | Should -Not -BeNullOrEmpty
+        $pr.Number | Should -Be 103
+    }
+
+    It 'a raised cutoff skips a PR that the default would include' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff '2026-06-01'
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-03-01T00:00:00Z' -Number 104 }
+        Get-PrInfo 104 | Should -BeNullOrEmpty
+    }
+
+    It 'never skips an unmerged PR (no merged_at) regardless of cutoff' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''
+        Mock Invoke-GhApi { New-FakePr -MergedAt $null -Number 105 }
+        Get-PrInfo 105 | Should -Not -BeNullOrEmpty
+    }
+}
+
 Describe 'ConvertTo-Milestone' {
     It 'maps GA tag "<Tag>" to "<Expected>"' -ForEach @(
         @{ Tag = '10.0.0';  Expected = '.NET 10.0 GA' }
