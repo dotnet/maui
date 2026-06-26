@@ -15,8 +15,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
-			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null,
-				propertyChanged: OnTransformGroupChanged);
+			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null, propertyChanged: OnChildrenChanged);
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TransformGroup"/> class.
@@ -35,37 +34,54 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (TransformCollection)GetValue(ChildrenProperty); }
 		}
 
-		static void OnTransformGroupChanged(BindableObject bindable, object oldValue, object newValue)
+		static void OnChildrenChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var transformGroup = (TransformGroup)bindable;
+			transformGroup.UpdateChildren(
+			 oldValue as TransformCollection,
+			 newValue as TransformCollection);
+		}
 
-			if (oldValue != null)
+		void UpdateChildren(TransformCollection oldCollection, TransformCollection newCollection)
+		{
+			DetachCollection(oldCollection);
+			AttachCollection(newCollection);
+
+			UpdateTransformMatrix();
+		}
+
+		void AttachCollection(TransformCollection collection)
+		{
+			if (collection is null)
 			{
-				var oldCollection = (TransformCollection)oldValue;
-				oldCollection.CollectionChanged -= transformGroup.OnChildrenCollectionChanged;
+				return;
 			}
 
-			transformGroup.UnsubscribeFromAllTransformPropertyChanged();
+			collection.CollectionChanged += OnChildrenCollectionChanged;
 
-			if (newValue != null)
+			foreach (var transform in collection)
 			{
-				var newCollection = (TransformCollection)newValue;
-				newCollection.CollectionChanged += transformGroup.OnChildrenCollectionChanged;
+				SubscribeToTransformPropertyChanged(transform);
+			}
+		}
 
-				foreach (INotifyPropertyChanged item in newCollection)
-				{
-					transformGroup.SubscribeToTransformPropertyChanged(item);
-				}
+		void DetachCollection(TransformCollection collection)
+		{
+			if (collection is null)
+			{
+				return;
 			}
 
-			transformGroup.UpdateTransformMatrix();
+			collection.CollectionChanged -= OnChildrenCollectionChanged;
+
+			ClearAllTransformSubscriptions();
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
 			if (args.Action == NotifyCollectionChangedAction.Reset)
 			{
-				UnsubscribeFromAllTransformPropertyChanged();
+				ClearAllTransformSubscriptions();
 
 				if (sender is TransformCollection collection)
 				{
@@ -126,7 +142,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			_subscribedTransforms.Remove(item);
 		}
 
-		void UnsubscribeFromAllTransformPropertyChanged()
+		// Unsubscribes all tracked transforms from PropertyChanged and clears the dictionary.
+		void ClearAllTransformSubscriptions()
 		{
 			foreach (var item in _subscribedTransforms)
 			{
