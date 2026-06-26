@@ -33,7 +33,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
+			[Controls.VisualElement.IsEnabledProperty.PropertyName] = MapIsEnabled
 		};
 
 		UICollectionViewLayout _layout;
@@ -127,6 +128,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				itemsLayout.ItemsUpdatingScrollMode = itemsView.ItemsUpdatingScrollMode;
 			}
+		}
+
+		internal static void MapIsEnabled(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.Controller?.CollectionView?.UpdateIsEnabled(itemsView);
 		}
 
 		//TODO: this is being called 2 times on startup, one from OnCreatePlatformView and otehr from the mapper for the layout
