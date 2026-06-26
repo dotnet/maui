@@ -58,81 +58,128 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdateChildren(GeometryCollection oldCollection, GeometryCollection newCollection)
 		{
-			oldCollection?.CollectionChanged -= OnChildrenCollectionChanged;
+			DetachCollection(oldCollection);
+			AttachCollection(newCollection);
 
-			UnsubscribeFromAllChildrenPropertyChanged();
+			Invalidate();
+		}
 
-			if (newCollection == null)
+		void AttachCollection(GeometryCollection collection)
+		{
+			if (collection == null)
 				return;
 
-			newCollection.CollectionChanged += OnChildrenCollectionChanged;
+			collection.CollectionChanged += OnChildrenCollectionChanged;
 
-			foreach (var newChildren in newCollection)
+			foreach (var geometry in collection)
 			{
-				SubscribeToChildrenPropertyChanged(newChildren);
+				SubscribeToGeometry(geometry);
+			}
+		}
+
+		void DetachCollection(GeometryCollection collection)
+		{
+			if (collection == null)
+				return;
+
+			collection.CollectionChanged -= OnChildrenCollectionChanged;
+
+			foreach (var geometry in collection)
+			{
+				UnsubscribeFromGeometry(geometry);
 			}
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.Action == NotifyCollectionChangedAction.Reset)
+			switch (e.Action)
 			{
-				UnsubscribeFromAllChildrenPropertyChanged();
-
-				if (sender is GeometryCollection geometryCollection)
-				{
-					foreach (var geometry in geometryCollection)
+				case NotifyCollectionChangedAction.Add:
+					if (e.NewItems != null)
 					{
-						SubscribeToChildrenPropertyChanged(geometry);
+						foreach (Geometry geometry in e.NewItems)
+						{
+							SubscribeToGeometry(geometry);
+						}
 					}
-				}
+					break;
 
-				Invalidate();
-				return;
-			}
+				case NotifyCollectionChangedAction.Remove:
+					if (e.OldItems != null)
+					{
+						foreach (Geometry geometry in e.OldItems)
+						{
+							UnsubscribeFromGeometry(geometry);
+						}
+					}
+					break;
 
-			if (e.OldItems != null)
-			{
-				foreach (var oldItem in e.OldItems)
-				{
-					if (!(oldItem is Geometry oldGeometry))
-						continue;
+				case NotifyCollectionChangedAction.Replace:
+					if (e.OldItems != null)
+					{
+						foreach (Geometry geometry in e.OldItems)
+						{
+							UnsubscribeFromGeometry(geometry);
+						}
+					}
 
-					UnsubscribeFromChildrenPropertyChanged(oldGeometry);
-				}
-			}
+					if (e.NewItems != null)
+					{
+						foreach (Geometry geometry in e.NewItems)
+						{
+							SubscribeToGeometry(geometry);
+						}
+					}
+					break;
 
-			if (e.NewItems != null)
-			{
-				foreach (var newItem in e.NewItems)
-				{
-					if (!(newItem is Geometry newGeometry))
-						continue;
+				case NotifyCollectionChangedAction.Move:
+					// No subscription changes required.
+					break;
 
-					SubscribeToChildrenPropertyChanged(newGeometry);
-				}
+				case NotifyCollectionChangedAction.Reset:
+					ResubscribeCollection(sender as GeometryCollection);
+					break;
 			}
 
 			Invalidate();
 		}
 
-		void SubscribeToChildrenPropertyChanged(Geometry geometry)
+		void ResubscribeCollection(GeometryCollection collection)
 		{
+			UnsubscribeFromAllChildren();
+
+			if (collection == null)
+				return;
+
+			foreach (var geometry in collection)
+			{
+				SubscribeToGeometry(geometry);
+			}
+		}
+
+		void SubscribeToGeometry(Geometry geometry)
+		{
+			if (geometry == null)
+				return;
+
 			if (!_subscribedChildren.Add(geometry))
 				return;
 
 			geometry.PropertyChanged += OnChildrenPropertyChanged;
 		}
 
-		void UnsubscribeFromChildrenPropertyChanged(Geometry geometry)
+		void UnsubscribeFromGeometry(Geometry geometry)
 		{
+			if (geometry == null)
+				return;
+
 			if (!_subscribedChildren.Remove(geometry))
 				return;
 
 			geometry.PropertyChanged -= OnChildrenPropertyChanged;
 		}
 
-		void UnsubscribeFromAllChildrenPropertyChanged()
+		void UnsubscribeFromAllChildren()
 		{
 			foreach (var geometry in _subscribedChildren)
 			{
