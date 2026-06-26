@@ -1047,29 +1047,6 @@ namespace Microsoft.Maui.Controls
 
 			if (shellSection.Parent?.Parent is Shell parentShell && shellSection.IsVisibleSection)
 			{
-				var navigationManager = parentShell.NavigationManager;
-
-				var sectionStack = shellSection.Stack;
-				var modalStack = shellSection.Navigation.ModalStack;
-
-				var proposedState = ShellNavigationManager.GetNavigationState(
-					parentShell.CurrentItem,
-					shellSection,
-					(ShellContent)newValue,
-					sectionStack,
-					modalStack);
-
-				var navArgs = new ShellNavigatingEventArgs(
-					parentShell.CurrentState,
-					proposedState,
-					ShellNavigationSource.ShellContentChanged,
-					true);
-
-				navigationManager.HandleNavigating(navArgs);
-
-				if (navArgs.Cancelled)
-					return;
-
 				if (oldValue is ShellContent oldShellItem)
 					oldShellItem.SendDisappearing();
 
