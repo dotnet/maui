@@ -1,6 +1,28 @@
 #nullable enable
+Microsoft.Maui.ApplicationModel.IPermissions
+Microsoft.Maui.ApplicationModel.IPermissions.CheckStatusAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>!
+Microsoft.Maui.ApplicationModel.IPermissions.RequestAsync<TPermission>() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>!
+Microsoft.Maui.ApplicationModel.IPermissions.ShouldShowRationale<TPermission>() -> bool
+static Microsoft.Maui.ApplicationModel.Permissions.Current.get -> Microsoft.Maui.ApplicationModel.IPermissions!
+Microsoft.Maui.Media.RecoveredMediaPickerResult
+Microsoft.Maui.Media.RecoveredMediaPickerResult.Files.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Storage.FileResult!>!
+Microsoft.Maui.Media.RecoveredMediaPickerResult.Id.get -> string!
+Microsoft.Maui.Media.RecoveredMediaPickerResult.Kind.get -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
+Microsoft.Maui.Media.RecoveredMediaPickerResultKind
+Microsoft.Maui.Media.RecoveredMediaPickerResultKind.CapturePhoto = 0 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
+Microsoft.Maui.Media.RecoveredMediaPickerResultKind.CaptureVideo = 1 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
+Microsoft.Maui.Media.RecoveredMediaPickerResultKind.PickPhoto = 2 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
+Microsoft.Maui.Media.RecoveredMediaPickerResultKind.PickPhotos = 3 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
+Microsoft.Maui.Media.RecoveredMediaPickerResultKind.PickVideo = 4 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
+Microsoft.Maui.Media.RecoveredMediaPickerResultKind.PickVideos = 5 -> Microsoft.Maui.Media.RecoveredMediaPickerResultKind
 *REMOVED*Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+static Microsoft.Maui.Media.MediaPicker.ClearRecoveredMediaPickerResultAsync(string! id) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Media.MediaPicker.DiscardPendingMediaPickerOperationAsync() -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Media.MediaPicker.GetRecoveredMediaPickerResultsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Media.RecoveredMediaPickerResult!>!>!
+static Microsoft.Maui.Media.MediaPicker.WaitForRecoveredMediaPickerResultsAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Media.RecoveredMediaPickerResult!>!>!
 *REMOVED*static Microsoft.Maui.Storage.FilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult?>!>!
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumDistance.get -> double
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumDistance.set -> void
 Microsoft.Maui.Devices.Sensors.LocationTypeConverter
 Microsoft.Maui.Devices.Sensors.LocationTypeConverter.LocationTypeConverter() -> void
 Microsoft.Maui.Storage.IFilePicker.PickMultipleAsync(Microsoft.Maui.Storage.PickOptions? options = null) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Maui.Storage.FileResult!>?>!

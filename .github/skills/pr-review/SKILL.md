@@ -50,9 +50,9 @@ Phase 2 uses these 4 AI models (run SEQUENTIALLY — they modify the same files)
 | Order | Model |
 |-------|-------|
 | 1 | `claude-opus-4.6` |
-| 2 | `claude-sonnet-4.6` |
+| 2 | `claude-opus-4.7` |
 | 3 | `gpt-5.3-codex` |
-| 4 | `gemini-3-pro-preview` |
+| 4 | `gpt-5.5` |
 
 **🚨 MANDATORY: Use `mode: "sync"` for ALL try-fix task invocations.** Never use `mode: "background"`. Background mode causes the orchestrator to move on before the attempt finishes, which means `try-fix/content.md` is never written and try-fix results are lost from the PR comment. Each try-fix task MUST complete and return its result before you proceed to the next attempt or to the Phase 3 completion checklist.
 
@@ -110,11 +110,11 @@ The purpose is NOT to re-test the PR's fix, but to:
 
 - [ ] Attempt 1 launched with claude-opus-4.6
 - [ ] `try-fix/content.md` updated with attempt 1 result
-- [ ] Attempt 2 launched with claude-sonnet-4.6
+- [ ] Attempt 2 launched with claude-opus-4.7
 - [ ] `try-fix/content.md` updated with attempt 2 result
 - [ ] Attempt 3 launched with gpt-5.3-codex
 - [ ] `try-fix/content.md` updated with attempt 3 result
-- [ ] Attempt 4 launched with gemini-3-pro-preview
+- [ ] Attempt 4 launched with gpt-5.5
 - [ ] `try-fix/content.md` updated with attempt 4 result
 - [ ] Cross-pollination round completed (all models queried)
 - [ ] Best fix selected with comparison table
