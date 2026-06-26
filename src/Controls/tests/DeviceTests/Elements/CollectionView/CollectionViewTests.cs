@@ -104,7 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
 
-#if TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST // For more information, see: https://github.com/dotnet/maui/issues/35985
+#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact]
 		public async Task ItemsSourceDoesNotLeak()
 		{

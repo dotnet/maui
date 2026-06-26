@@ -768,7 +768,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		Assert.Equal(4, references.Count);
 		await AssertionExtensions.WaitForGC(references[2], references[3]);
 	}
-#if TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
+#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[Fact("Window Does Not Leak")]
 	public async Task WindowDoesNotLeak()
 	{

@@ -110,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS // For more information, see: https://github.com/dotnet/maui/issues/35985
+#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS // For more information, see: https://github.com/dotnet/maui/issues/35985
 		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
 		// It calls CreateHandlerAndAddToWindow(), a valid test case.
 		[Fact(DisplayName = "ScrollView Does Not Leak"
