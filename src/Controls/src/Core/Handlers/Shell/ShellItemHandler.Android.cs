@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Controls.Handlers
         internal BottomNavigationView? _bottomNavigationView;
         internal TabbedViewManager? _tabbedViewManager;
         internal ShellSectionFragmentAdapter? _adapter;
-        ShellItemTabbedViewAdapter? _shellItemAdapter;
-        ShellItemPageChangeCallback? _pageChangeCallback;
+        internal ShellItemTabbedViewAdapter? _shellItemAdapter;
+        internal ShellItemPageChangeCallback? _pageChangeCallback;
         IShellContext? _shellContext;
         Fragment? _parentFragment; // The wrapper fragment that hosts this handler
         IShellBottomNavViewAppearanceTracker? _appearanceTracker;
-        Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
+        internal Shell? _registeredShell; // Cached at AddAppearanceObserver time for reliable RemoveAppearanceObserver
         ShellSection? _shellSection;
         Page? _displayedPage;
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers
         internal Toolbar? _shellToolbar; // Virtual Toolbar view
         internal AToolbar? _toolbar; // Native platform toolbar
         internal IShellToolbarTracker? _toolbarTracker;
-        IShellToolbarAppearanceTracker? _toolbarAppearanceTracker;
+        internal IShellToolbarAppearanceTracker? _toolbarAppearanceTracker;
         internal AppBarLayout? _appBarLayout;
 
         /// <summary>
