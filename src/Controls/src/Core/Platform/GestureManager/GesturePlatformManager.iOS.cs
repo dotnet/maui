@@ -17,7 +17,7 @@ using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IDisposable
+	class GesturePlatformManager : IGesturePlatformManager
 	{
 		static readonly UIGesturesProbe _alwaysRecognizeSimultaneously = (g, o) => true;
 
