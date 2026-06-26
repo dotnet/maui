@@ -34,7 +34,7 @@ public class Issue34318 : Shell
 
 		var section = new ShellSection();
 
-		var pageA = new Issue34318_PageA(this, labelA);
+		var pageA = new Issue34318_PageA(labelA);
 
 		var contentA = new ShellContent
 		{
@@ -85,7 +85,7 @@ public class Issue34318 : Shell
 
 	public class Issue34318_PageA : ContentPage
 	{
-		public Issue34318_PageA(Shell shell, Label label)
+		public Issue34318_PageA(Label label)
 		{
 			Title = "PageA";
 
