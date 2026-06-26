@@ -36,6 +36,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 {
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
+	// Prevents MapSelectedItem from calling UpdatePlatformSelection when
+	// UpdateVirtualSingleSelection is writing SelectedItem in response to a
+	// platform tap — otherwise the null-item WinUI selection gets undone.
+	bool _ignoreVirtualSelectionChange;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
@@ -75,6 +79,13 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 	public static void MapSelectedItem(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		// When UpdateVirtualSingleSelection sets SelectedItem in response to a platform
+		// tap, skip the round-trip back to UpdatePlatformSelection. Without this guard,
+		// tapping a null item causes: WinUI selects null → SelectedItem = null →
+		// MapSelectedItem → UpdatePlatformSelection → DeselectAll (undoes the selection).
+		if (handler._ignoreVirtualSelectionChange)
+			return;
+
 		handler.UpdatePlatformSelection();
 	}
 
@@ -316,10 +327,13 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			? itemPair.Item
 			: PlatformView.SelectedItem;
 
+		// Use flag instead of detach/re-attach so that MapSelectedItem is suppressed
+		// while SelectedItem is set. Both fire synchronously; the flag is reset after.
+		_ignoreVirtualSelectionChange = true;
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 		ItemsView.SelectedItem = selectedItem;
-
 		ItemsView.SelectionChanged += VirtualSelectionChanged;
+		_ignoreVirtualSelectionChange = false;
 	}
 
 	void UpdateVirtualMultipleSelection()
@@ -434,18 +448,17 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		switch (PlatformView.SelectionMode)
 		{
 			case ItemsViewSelectionMode.Single:
-				// FindItemIndexInSource uses object.Equals so it matches null items correctly.
-				// When SelectedItem is null and a null entry exists in the source, Select(index)
-				// is called. When SelectedItem is null and no null entry exists (i.e. selection
-				// was programmatically cleared), selectedIndex is -1 and DeselectAll() is called.
-				var selectedIndex = FindItemIndexInSource(itemList, ItemsView.SelectedItem);
-				if (selectedIndex >= 0)
+				if (ItemsView.SelectedItem is null)
 				{
-					PlatformView.Select(selectedIndex);
+					PlatformView.DeselectAll();
 				}
 				else
 				{
-					PlatformView.DeselectAll();
+					var selectedIndex = FindItemIndexInSource(itemList, ItemsView.SelectedItem);
+					if (selectedIndex >= 0)
+					{
+						PlatformView.Select(selectedIndex);
+					}
 				}
 
 				break;
