@@ -22,6 +22,7 @@ public class Issue30248 : _IssuesUITest
 		{
 			App.EnterFullScreen();
 			App.WaitForElement("TitleBarAlignmentLabel");
+			App.Tap("EmptyButton");
 			VerifyScreenshot(includeTitleBar: true);
 		}
 		finally

@@ -43,6 +43,12 @@ public class Issue30248 : ContentPage
 						FontSize = 32,
 						HorizontalOptions = LayoutOptions.Center
 					},
+					new Button
+					{
+						Text = "Empty Button",
+						AutomationId = "EmptyButton",
+						HorizontalOptions = LayoutOptions.Center
+					}
 				}
 		};
 	}
