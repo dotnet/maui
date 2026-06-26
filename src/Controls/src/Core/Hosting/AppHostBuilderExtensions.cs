@@ -81,6 +81,13 @@ public static partial class AppHostBuilderExtensions
 #elif TIZEN
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
+#elif !ANDROID
+		// Non-platform host target (net/netstandard). Android registers these inside the
+		// #if ANDROID block below; every other platform is handled above. Without this
+		// fallback the plain net/netstandard TFM would register no CollectionView/CarouselView
+		// handler, causing HandlerNotFound in design-time/unit-test scenarios.
+		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #endif
 #if ANDROID
 		if (RuntimeFeature.IsMaterial3Enabled)

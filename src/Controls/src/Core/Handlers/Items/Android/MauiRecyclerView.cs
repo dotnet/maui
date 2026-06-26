@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (_emptyViewAdapter == null)
 				{
-					_emptyViewAdapter = CreateEmptyViewAdapter();
+					_emptyViewAdapter = new EmptyViewAdapter(ItemsView);
 				}
 
 				if (ItemsView is StructuredItemsView structuredItemsView)
@@ -312,13 +312,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener() => new(ItemsView, ItemsViewAdapter);
-
-		// Factory for the adapter used while the EmptyView is showing. Subclasses
-		// backed by a LayoutManager with strict child requirements (e.g. Material's
-		// CarouselLayoutManager, which requires every direct RecyclerView child to
-		// be a MaskableFrameLayout) can override this to return a wrapping adapter
-		// so the empty view satisfies the layout manager's contract.
-		protected virtual EmptyViewAdapter CreateEmptyViewAdapter() => new EmptyViewAdapter(ItemsView);
 
 		protected virtual void UpdateSnapBehavior()
 		{

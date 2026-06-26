@@ -32,7 +32,7 @@ public partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselView>
         // a non-zero measured first child to build its KeylineState from.
         return new CarouselViewAdapter2(
             VirtualView,
-            context => new Items.SizedItemContentView(Context, GetItemWidth, GetItemHeight),
+            context => new Items.SizedItemContentView(context, GetItemWidth, GetItemHeight),
             IsHorizontal);
     }
 
@@ -166,10 +166,11 @@ public partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselView>
                 return width;
             }
 
-            var ctx = Context;
-            double leftPx = ctx?.ToPixels(VirtualView.PeekAreaInsets.Left) ?? 0;
-            double rightPx = ctx?.ToPixels(VirtualView.PeekAreaInsets.Right) ?? 0;
-            itemWidth = (int)(width - leftPx - rightPx);
+            // PeekAreaInsets is intentionally not honoured here: this handler is locked to
+            // FullScreenCarouselStrategy, which masks every item to fill the viewport (see
+            // MapPeekAreaInsets). Subtracting the insets would only shrink the inner content
+            // inside a still-full-width slot, never producing a peek. Use the full width.
+            itemWidth = (int)width;
         }
 
         return itemWidth;
@@ -187,10 +188,11 @@ public partial class CarouselViewHandler2 : Items.ItemsViewHandler<CarouselView>
                 return height;
             }
 
-            var ctx = Context;
-            double topPx = ctx?.ToPixels(VirtualView.PeekAreaInsets.Top) ?? 0;
-            double bottomPx = ctx?.ToPixels(VirtualView.PeekAreaInsets.Bottom) ?? 0;
-            itemHeight = (int)(height - topPx - bottomPx);
+            // PeekAreaInsets is intentionally not honoured here: this handler is locked to
+            // FullScreenCarouselStrategy, which masks every item to fill the viewport (see
+            // MapPeekAreaInsets). Subtracting the insets would only shrink the inner content
+            // inside a still-full-height slot, never producing a peek. Use the full height.
+            itemHeight = (int)height;
         }
 
         return itemHeight;

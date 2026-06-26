@@ -12,9 +12,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <see cref="CarouselLayoutManager"/> (with <see cref="FullScreenCarouselStrategy"/>) instead of
 /// <see cref="LinearLayoutManager"/>.
 ///
-/// All MAUI CarouselView API surface (Position, CurrentItem, IsSwipeEnabled, IsBounceEnabled,
-/// PeekAreaInsets, ItemsLayout) is preserved by inheriting the existing scroll and visual-state
-/// machinery from <see cref="Items.MauiCarouselRecyclerView"/>.
+/// Most MAUI CarouselView API surface (Position, CurrentItem, IsSwipeEnabled, IsBounceEnabled,
+/// ItemsLayout) is preserved by inheriting the existing scroll machinery from
+/// <see cref="Items.MauiCarouselRecyclerView"/>.
+///
+/// <para>
+/// <b>Per-item visual states are not supported on this handler.</b> The inherited visual-state
+/// machinery only runs for a <see cref="LinearLayoutManager"/> with ItemContentView children, so it
+/// does not drive the CurrentItem/PreviousItem/NextItem/DefaultItem states (or
+/// <see cref="CarouselView.VisibleViews"/>) under Material's <see cref="CarouselLayoutManager"/>. A
+/// Material-specific override was intentionally omitted: the documented visual-state scenarios
+/// (PreviousItem/NextItem/DefaultItem opacity) are only observable when adjacent items are partially
+/// shown via <see cref="CarouselView.PeekAreaInsets"/>, but peek is not supported under
+/// <see cref="FullScreenCarouselStrategy"/> — every item is masked to the full viewport and snaps one
+/// per page, so only the current item is ever on screen. Revisit if a non-full-screen strategy with
+/// peek support is added.
+/// </para>
 ///
 /// <para>
 /// <b>Looping is not supported on this handler.</b> Material's <see cref="CarouselLayoutManager"/>
@@ -180,9 +193,6 @@ public class MauiCarouselRecyclerView2 :
 
     protected override Items.RecyclerViewScrollListener<CarouselView, Items.IItemsViewSource> CreateScrollListener()
         => new CarouselViewOnScrollListener2(Carousel, ItemsViewAdapter, () => _carouselSnapHelper);
-
-    protected override Items.EmptyViewAdapter CreateEmptyViewAdapter()
-        => new Items.EmptyViewAdapter(ItemsView);
 
     protected override void Dispose(bool disposing)
     {

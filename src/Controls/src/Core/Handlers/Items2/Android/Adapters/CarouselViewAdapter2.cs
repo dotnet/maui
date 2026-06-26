@@ -97,6 +97,12 @@ public class CarouselViewAdapter2
     /// sampled before the RecyclerView is laid out would be 0 — Math.Max(1, 0) then yields
     /// 1px items, which combined with looping (LoopScale ≈ 16384 items) causes an infinite
     /// measure / GC loop and a stuck UI.
+    ///
+    /// The carousel/cross axis is baked in at holder-creation time, so a runtime orientation
+    /// change only swaps the layout manager and recycled holders keep their original axis sizing.
+    /// This is fine because the handler is locked to FullScreenCarouselStrategy: items fill the
+    /// viewport on both axes, so WRAP_CONTENT and MATCH_PARENT measure identically. Revisit holder
+    /// recreation if a non-full-screen strategy is ever wired up via CreateCarouselStrategy.
     /// </remarks>
     static MaskableFrameLayout CreateMaskableFrameLayout(Context context, bool horizontal)
     {
