@@ -51,14 +51,14 @@ public partial class WebViewOptionsPage : ContentPage
 	{
 		_viewModel.Source = new UrlWebViewSource
 		{
-			Url = "https://www.example.com?p=1"
+			Url = "https://www.example.com"
 		};
 	}
 	private void OnGithubUrlClicked(object sender, EventArgs e)
 	{
 		_viewModel.Source = new UrlWebViewSource
 		{
-			Url = "https://www.example.com?p=2"
+			Url = "https://www.example.com"
 		};
 	}
 	private void LoadMultiplePages_Clicked(object sender, EventArgs e)
