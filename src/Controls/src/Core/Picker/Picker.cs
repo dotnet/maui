@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
@@ -457,7 +456,8 @@ namespace Microsoft.Maui.Controls
 
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			ClampSelectedIndex(SelectedIndex);
+			var index = SelectedItem is null ? SelectedIndex : ItemsSource.IndexOf(SelectedItem);
+			ClampSelectedIndex(index);
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)

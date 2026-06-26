@@ -902,7 +902,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		// https://github.com/dotnet/maui/issues/33307
 		[Fact]
-		public void PickerRetainsSelectionAfterInsertReorderingItemsSource()
+		public void PickerRetainsSelectionWhenItemsAreInsertedBeforeAndAfterSelection()
 		{
 			// Arrange
 			var items = new ObservableCollection<string> { "X", "Y", "Z" };
@@ -930,7 +930,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, picker.SelectedIndex);
 		}
 
-
 		// https://github.com/dotnet/maui/issues/33307
 		[Fact]
 		public void PickerRetainsSelectionWhenDuplicateSelectedItemIsRemoved()
@@ -953,6 +952,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Assert: Selection should remain because another equal item still exists
 			Assert.Equal("B", picker.SelectedItem);
 			Assert.Equal(1, picker.SelectedIndex);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerRetainsSelectionWhenSelectedItemIsMoved()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "A", "B", "C" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "B"
+			};
+
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Move the selected item
+			items.Move(1, 2);
+
+			// Assert: SelectedItem should still be "B", index updated
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
 		}
 	}
 }
