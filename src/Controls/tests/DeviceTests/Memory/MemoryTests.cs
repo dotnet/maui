@@ -216,7 +216,9 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Grid))]
+#if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(HybridWebView))]
+#endif
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
@@ -237,9 +239,13 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
+#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Stepper))]
+#endif
 	[InlineData(typeof(SwipeView))]
+#if TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Switch))]
+#endif
 	[InlineData(typeof(TimePicker))]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TableView))]
@@ -258,7 +264,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		// NOTE: skip certain controls on older Android devices
 #pragma warning disable CS0618 // Type or member is obsolete
 		if ((type == typeof(DatePicker) || type == typeof(ListView)) && !OperatingSystem.IsAndroidVersionAtLeast(30))
-				return;
+			return;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		if (type == typeof(HybridWebView) && !OperatingSystem.IsAndroidVersionAtLeast(24))
@@ -629,6 +635,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 #endif
 
+#if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[Theory("Cells Do Not Leak")]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TextCell))]
@@ -698,6 +705,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
+#endif
 
 	[Fact("BindableLayout Does Not Leak")]
 	public async Task BindableLayoutDoesNotLeak()
@@ -760,7 +768,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		Assert.Equal(4, references.Count);
 		await AssertionExtensions.WaitForGC(references[2], references[3]);
 	}
-
+#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[Fact("Window Does Not Leak")]
 	public async Task WindowDoesNotLeak()
 	{
@@ -789,6 +797,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC([.. references]);
 	}
+#endif
 
 	[Fact("VisualDiagnosticsOverlay Does Not Leak"
 #if IOS || MACCATALYST

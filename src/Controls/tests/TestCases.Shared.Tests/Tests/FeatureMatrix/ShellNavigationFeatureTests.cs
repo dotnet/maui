@@ -849,7 +849,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Multi-page GoToAsync with prefixed params: intermediate page receives its own params,
 	// last page receives unprefixed params. Overlapping "name" key is scoped correctly.
-	[Test, Order(148)]
+	[Test, Order(48)]
 	public void PassData_MultiPageNavigation_IntermediateAndLastPageReceiveCorrectParams()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -876,8 +876,9 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 		Assert.That(App.FindElement("QueryIntermediateReceivedNameLabel").GetText(), Is.EqualTo("ForIntermediate"));
 		// Intermediate page should NOT have received "location" (unprefixed, meant for last page only)
 		Assert.That(App.FindElement("QueryIntermediateReceivedLocationLabel").GetText(), Is.EqualTo("(none)"));
-		// IQA should have been called exactly once
-		Assert.That(App.FindElement("QueryIntermediateCallCountLabel").GetText(), Is.EqualTo("1"));
+		// IQA fires once on forward push and again on pop-back (stored params re-applied) —
+		// same contract verified for the detail page in PassData_Dictionary_PersistsWhenNavigatingToIntermediatePageAndBack.
+		Assert.That(App.FindElement("QueryIntermediateCallCountLabel").GetText(), Is.EqualTo("2"));
 
 		// cleanup
 		App.Tap("QueryIntermediateGoBackButton");
@@ -888,7 +889,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 	// Verifies that overlapping param names are correctly scoped: intermediate gets
 	// "name=ForIntermediate" while detail gets "name=DetailValue" — they don't cross-contaminate.
-	[Test, Order(149)]
+	[Test, Order(49)]
 	public void PassData_MultiPageNavigation_OverlappingParamNamesAreScopedCorrectly()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -920,7 +921,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	// ── BackButtonBehavior Properties ─────────────────────────────────────────
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/1625
 	// BackButtonBehavior.Text replaces the back button label with a custom string.
-	[Test, Order(48)]
+	[Test, Order(50)]
 	public void BackButtonBehavior_TextOverride_CustomTextShownOnBackButton()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -936,7 +937,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 #endif
 
 	// BackButtonBehavior.CommandParameter passes the correct value to the back command.
-	[Test, Order(49)]
+	[Test, Order(51)]
 	public void BackButtonBehavior_CommandParameter_CommandFiresWithCorrectParameter()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -952,7 +953,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	}
 
 	// BackButtonBehavior.IsEnabled=false keeps the back button visible but ignores taps.
-	[Test, Order(50)]
+	[Test, Order(52)]
 	public void BackButtonBehavior_IsEnabled_False_BackButtonDoesNotNavigate()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -974,7 +975,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 	}
 
 	// BackButtonBehavior.IsVisible=false hides the back button; programmatic navigation still works.
-	[Test, Order(51)]
+	[Test, Order(53)]
 	public void BackButtonBehavior_IsVisible_False_ProgrammaticNavStillWorks()
 	{
 		App.WaitForElement("MainPageIdentityLabel");
@@ -986,7 +987,7 @@ public class ShellNavigationFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/1625
 	// BackButtonBehavior.IconOverride replaces the default back arrow with a custom icon.
-	[Test, Order(52)]
+	[Test, Order(54)]
 	public void BackButtonBehavior_IconOverride_CustomIconShownOnBackButton()
 	{
 		App.WaitForElement("Detail1GoBackButton");

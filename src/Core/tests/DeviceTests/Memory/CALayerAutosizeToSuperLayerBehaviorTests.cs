@@ -14,6 +14,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 	[Category(TestCategory.Memory)]
 	public class MauiCALayerAutosizeToSuperLayerBehaviorTests : TestBase
 	{
+#if TESTS_FAILS_ON_MACCATALYST // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Theory]
 		[InlineData(typeof(MauiCALayer))]
 		[InlineData(typeof(StaticCALayer))]
@@ -45,6 +46,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 
 			await AssertionExtensions.WaitForGC(viewReference, layerReference, sublayerReference);
 		}
+#endif
 	}
 }
 

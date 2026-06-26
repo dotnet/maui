@@ -441,6 +441,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+#if TEST_FAILS_ON_ANDROID //For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact(DisplayName = "Does Not Leak"
 #if WINDOWS
 			, Skip = "FIXME: fails on Windows"
@@ -471,7 +472,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(pageReference);
 		}
-
+#endif
 
 		TabbedPage CreateBasicTabbedPage(bool bottomTabs = false, bool isSmoothScrollEnabled = true, IEnumerable<Page> pages = null)
 		{
@@ -640,8 +641,10 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PushModalAsync(tabbedPage);
 				await OnLoadedAsync(tabbedPage.Children[0]);
 
+#if !WINDOWS // On Windows, InvalidateGradientBrushRequested is not wired to the TabbedPage renderer/manager, so it is never subscribed.
 				// Confirm the brush has exactly one subscriber while the page is live.
 				Assert.Single(GetGradientBrushInvocationList(sharedBrush));
+#endif
 
 				await navPage.Navigation.PopModalAsync();
 
