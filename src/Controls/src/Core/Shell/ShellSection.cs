@@ -1019,7 +1019,11 @@ namespace Microsoft.Maui.Controls
 		{
 			var shellSection = (ShellSection)bindable;
 
-			if (newValue is ShellContent newContent &&
+			var isFromHandler =
+				shellSection.GetContext(CurrentItemProperty)?.Values.GetSpecificity() == SetterSpecificity.FromHandler;
+
+			if (!isFromHandler &&
+				newValue is ShellContent newContent &&
 				shellSection.Parent?.Parent is Shell parentShell &&
 				shellSection.IsVisibleSection)
 			{
