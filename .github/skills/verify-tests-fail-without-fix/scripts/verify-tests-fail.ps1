@@ -1842,12 +1842,16 @@ Write-Host ""
 
 $verificationPassed = $failedWithoutFix -and $passedWithFix
 
-# A test that hit a BUILD or ENVIRONMENT error never actually ran, so the gate could not
-# verify anything. Treat that as INCONCLUSIVE (exit 3) rather than a real FAILED — build/
-# infra flakes must not masquerade as a broken fix (which would wrongly veto approval,
-# apply s/agent-gate-failed, and cap confidence). Only a clean ran-and-failed result is a
-# true gate FAILED.
-$gateInfraError = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError -or $_.BuildError }).Count -gt 0
+# A test that hit an ENVIRONMENT error, or a BASELINE (without-fix) BUILD error, never
+# established whether the bug reproduces, so the gate could not verify anything — treat that
+# as INCONCLUSIVE (exit 3) so build/infra flakes don't masquerade as a broken fix.
+#
+# A with-fix-ONLY build error is different: the baseline compiles but the PR's own fix does
+# NOT, which is a definitive FAILED (exit 1), not infra noise — so it must not be downgraded.
+$baselineBuildError = (@($withoutFixResults) | Where-Object { $_.BuildError }).Count -gt 0
+$withFixBuildError  = (@($withFixResults)    | Where-Object { $_.BuildError }).Count -gt 0
+$anyEnvError        = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError }).Count -gt 0
+$gateInfraError     = $anyEnvError -or $baselineBuildError
 
 Write-Log ""
 Write-Log "Summary:"
@@ -1903,6 +1907,10 @@ if ($verificationPassed) {
     if (-not $passedWithFix) {
         Write-Host "║  Tests FAILED with fix (should pass)                      ║" -ForegroundColor Red
         Write-Host "║  - Fix doesn't resolve the issue or test is broken        ║" -ForegroundColor Red
+    }
+    if ($withFixBuildError -and -not $baselineBuildError) {
+        Write-Host "║  - Fix does NOT compile (baseline builds fine) — this is  ║" -ForegroundColor Red
+        Write-Host "║    a definitive failure, not a build/infra flake.         ║" -ForegroundColor Red
     }
     Write-Host "║                                                           ║" -ForegroundColor Red
     Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red

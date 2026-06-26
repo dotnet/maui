@@ -482,6 +482,27 @@ function Test-RunValidationFailed {
     return $false
 }
 
+function Test-DeepUITestsHadNoSignal {
+    # True when the deep-UI run produced NO positive signal — every category hit a
+    # OneTimeSetUp/fixture-setup failure (HostApp crash / platform-pool infra) and nothing
+    # passed or regularly failed. The pipeline renders this as ⚠️ "… could not run:
+    # OneTimeSetUp/fixture setup failure …" with no "N passed" — so it escapes both the ❌ and
+    # "N failed" veto. An APPROVE over such a run is too generous (zero deep-UI tests actually
+    # completed); callers soften APPROVE→COMMENT (not REQUEST_CHANGES — a crash may be a flake).
+    param([Parameter(Mandatory = $true)][string]$PRAgentDir)
+
+    $uiFile = Join-Path $PRAgentDir 'uitests/content.md'
+    if (-not (Test-Path -LiteralPath $uiFile)) { return $false }
+    $uiContent = Get-Content -Raw -LiteralPath $uiFile -Encoding UTF8
+    if ([string]::IsNullOrWhiteSpace($uiContent)) { return $false }
+
+    # Require an all-setup-failure header AND no completed-test signal at all (no "N passed",
+    # no non-zero "N failed"). Any pass or regular failure means the run produced a signal.
+    return ($uiContent -match '(?im)could not run:\s*OneTimeSetUp/fixture setup failure' -and
+            $uiContent -notmatch '(?im)\b\d+\s+passed\b' -and
+            $uiContent -notmatch '(?im)\b[1-9]\d*\s+failed\b')
+}
+
 function Get-AIReviewEventForRun {
     param(
         [string]$ReportContent,
@@ -505,6 +526,13 @@ function Get-AIReviewEventForRun {
     # even when the report body recommends APPROVE (the report can be stale vs. current-run results).
     if ($reviewEvent -eq 'APPROVE' -and (Test-RunValidationFailed -PRAgentDir $PRAgentDir -TrustedGateResult $TrustedGateResult)) {
         return 'REQUEST_CHANGES'
+    }
+
+    # Soften (not veto) a positive APPROVE when the deep-UI run produced no passing signal at
+    # all — every category crashed / hit a setup failure. COMMENT is neutral; the crash may be
+    # an infra flake rather than a PR regression, so REQUEST_CHANGES would be too harsh.
+    if ($reviewEvent -eq 'APPROVE' -and (Test-DeepUITestsHadNoSignal -PRAgentDir $PRAgentDir)) {
+        return 'COMMENT'
     }
 
     if ((Test-HasNonPRWinner -PRAgentDir $PRAgentDir) -and $reviewEvent -eq 'COMMENT') {

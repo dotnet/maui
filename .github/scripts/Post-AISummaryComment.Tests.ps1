@@ -24,6 +24,7 @@ BeforeAll {
         'Test-RunValidationFailed',
         'Test-HasNonPRWinner',
         'Get-AIReviewEventForRun',
+        'Test-DeepUITestsHadNoSignal',
         'Add-MissingUITestResultsNote',
         'New-FutureActionSection'
     )) {
@@ -258,6 +259,15 @@ Describe 'Get-AIReviewEventForRun' {
             Should -Be 'APPROVE'
     }
 
+    It 'softens APPROVE to COMMENT when the deep-UI run had no passing signal (all setup-failed)' {
+        $uiDir = Join-Path $script:testDir 'uitests'
+        New-Item -ItemType Directory -Path $uiDir -Force | Out-Null
+        '⚠️ **Deep UI tests** — 2 categories (8 tests) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure.' |
+            Set-Content (Join-Path $uiDir 'content.md') -Encoding UTF8
+        Get-AIReviewEventForRun -ReportContent 'Final Recommendation: APPROVE' -PRAgentDir $script:testDir -TrustedGateResult 'PASSED' |
+            Should -Be 'COMMENT'
+    }
+
     It 'throws when the trusted gate verdict is not supplied (fail closed)' {
         { Get-AIReviewEventForRun -ReportContent '## ✅ Final Recommendation: APPROVE' -PRAgentDir $script:testDir } |
             Should -Throw '*TrustedGateResult is required*'
@@ -297,6 +307,36 @@ Describe 'Get-AIReviewEventForRun' {
         } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
         Get-AIReviewEventForRun -ReportContent '' -PRAgentDir $script:testDir -TrustedGateResult 'SKIPPED' |
             Should -Be 'COMMENT'
+    }
+}
+
+Describe 'Test-DeepUITestsHadNoSignal' {
+    BeforeEach {
+        $script:dsDir = Join-Path ([System.IO.Path]::GetTempPath()) "ds-tests-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path (Join-Path $script:dsDir 'uitests') -Force | Out-Null
+    }
+    AfterEach { Remove-Item -LiteralPath $script:dsDir -Recurse -Force -ErrorAction SilentlyContinue }
+
+    It 'is true for an all-setup-failure run with no passing signal' {
+        '⚠️ **Deep UI tests** — 2 categories (8 tests) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure (replaces in-process counts above).' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeTrue
+    }
+
+    It 'is false when some tests passed alongside the setup failures' {
+        '⚠️ **Deep UI tests** — 5 passed; 1 category (3 tests) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure.' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeFalse
+    }
+
+    It 'is false for a normal passing run' {
+        '✅ **Deep UI tests** — 50 passed, 0 failed across 4 categories on platform-pool agent.' |
+            Set-Content (Join-Path $script:dsDir 'uitests/content.md') -Encoding UTF8
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeFalse
+    }
+
+    It 'is false when there is no uitests content' {
+        Test-DeepUITestsHadNoSignal -PRAgentDir $script:dsDir | Should -BeFalse
     }
 }
 

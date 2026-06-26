@@ -278,7 +278,13 @@ if ($Platform -eq "android") {
         Write-Warn "Device not responding before test — restarting adb server..."
         & adb kill-server 2>$null; Start-Sleep -Seconds 2
         & adb start-server 2>$null; Start-Sleep -Seconds 2
-        & timeout 90 adb -s $DeviceUdid wait-for-device 2>$null
+        # Bound `adb wait-for-device` to 90s portably — the external `timeout` binary differs on
+        # Windows (interactive countdown) and may be absent, so use the .NET process timeout.
+        $waitProc = Start-Process -FilePath 'adb' -ArgumentList @('-s', $DeviceUdid, 'wait-for-device') -PassThru -NoNewWindow
+        if (-not $waitProc.WaitForExit(90000)) {
+            Write-Warn "adb wait-for-device timed out after 90s — killing"
+            try { $waitProc.Kill() } catch { <# best effort #> }
+        }
     }
     # Wake + dismiss any system dialogs (run twice for reliability).
     foreach ($pass in 1..2) {

@@ -386,10 +386,19 @@ namespace UITest.Appium
 					psi.ArgumentList.Add(a);
 
 				using var process = Process.Start(psi);
-				if (process is not null && !process.WaitForExit(15000))
+				if (process is not null)
 				{
-					Debug.WriteLine($">>>>> RunAdb timed out: adb {string.Join(' ', args)}");
-					try { process.Kill(); } catch { /* best effort */ }
+					// Drain stdout/stderr so a chatty command (e.g. `adb shell monkey`) can't fill
+					// the pipe buffer and deadlock WaitForExit. The output is unused, so discard it.
+					process.OutputDataReceived += static (_, _) => { };
+					process.ErrorDataReceived += static (_, _) => { };
+					process.BeginOutputReadLine();
+					process.BeginErrorReadLine();
+					if (!process.WaitForExit(15000))
+					{
+						Debug.WriteLine($">>>>> RunAdb timed out: adb {string.Join(' ', args)}");
+						try { process.Kill(); } catch { /* best effort */ }
+					}
 				}
 			}
 			catch (Exception ex)
