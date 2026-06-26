@@ -387,10 +387,12 @@ namespace Microsoft.Maui.Controls
 		{
 			int insertIndex = e.NewStartingIndex < 0 ? Items.Count : e.NewStartingIndex;
 			int index = insertIndex;
+
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
 
-			index = GetSelectedIndexForCollectionMutation();
+			index = GetSelectedIndex();
+
 			if (insertIndex <= index)
 			{
 				ClampSelectedIndex(index);
@@ -413,18 +415,23 @@ namespace Microsoft.Maui.Controls
 				index = Items.Count - 1;
 			}
 
+			bool selectedItemWasRemoved = SelectedItem is not null && e.OldItems.Contains(SelectedItem);
+
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
 
-			index = GetSelectedIndexForCollectionMutation();
-
-			if (index == -1)
+			if (selectedItemWasRemoved)
 			{
-				ClampSelectedIndex(-1);
+				ClampSelectedIndex(ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1);
 			}
-			else if (removeStart <= index)
+			else
 			{
-				ClampSelectedIndex(index);
+				index = GetSelectedIndex();
+
+				if (removeStart <= index)
+				{
+					ClampSelectedIndex(index);
+				}
 			}
 		}
 
@@ -436,14 +443,6 @@ namespace Microsoft.Maui.Controls
 			int newIndex = ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1;
 
 			return newIndex >= 0 ? newIndex : SelectedIndex;
-		}
-
-		int GetSelectedIndexForCollectionMutation()
-		{
-			if (SelectedItem is null)
-				return SelectedIndex;
-
-			return ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1;
 		}
 
 		void ResetItems()
@@ -458,7 +457,7 @@ namespace Microsoft.Maui.Controls
 
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			ClampSelectedIndex(GetSelectedIndexForCollectionMutation());
+			ClampSelectedIndex(SelectedIndex);
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
