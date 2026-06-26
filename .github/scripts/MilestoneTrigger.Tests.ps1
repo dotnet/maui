@@ -146,9 +146,9 @@ BeforeAll {
 
 Describe 'GH glob -> regex translator (fidelity of the simulation)' {
     It "translates '<Glob>' to '<Expected>'" -ForEach @(
-        @{ Glob = '1[01].[0-9]+.[0-9]+';            Expected = '^1[01]\.[0-9]+\.[0-9]+$' }
-        @{ Glob = '1[01].[0-9]+.[0-9]+-preview.*';  Expected = '^1[01]\.[0-9]+\.[0-9]+-preview\.[^/]*$' }
-        @{ Glob = '1[01].[0-9]+.[0-9]+-rc.*';       Expected = '^1[01]\.[0-9]+\.[0-9]+-rc\.[^/]*$' }
+        @{ Glob = '1[01].0.[0-9]+';            Expected = '^1[01]\.0\.[0-9]+$' }
+        @{ Glob = '1[01].0.[0-9]+-preview.*';  Expected = '^1[01]\.0\.[0-9]+-preview\.[^/]*$' }
+        @{ Glob = '1[01].0.[0-9]+-rc.*';       Expected = '^1[01]\.0\.[0-9]+-rc\.[^/]*$' }
         @{ Glob = '10.0.[0-9]+';                    Expected = '^10\.0\.[0-9]+$' }
         @{ Glob = 'v*';                             Expected = '^v[^/]*$' }
         @{ Glob = '**';                             Expected = '^.*$' }
@@ -164,15 +164,15 @@ Describe 'on.push.tags globs are the expected major-pinned set' {
     }
 
     It 'includes the stable major-pinned pattern' {
-        $script:PushTagGlobs | Should -Contain '1[01].[0-9]+.[0-9]+'
+        $script:PushTagGlobs | Should -Contain '1[01].0.[0-9]+'
     }
 
     It 'includes the preview major-pinned pattern' {
-        $script:PushTagGlobs | Should -Contain '1[01].[0-9]+.[0-9]+-preview.*'
+        $script:PushTagGlobs | Should -Contain '1[01].0.[0-9]+-preview.*'
     }
 
     It 'includes the rc major-pinned pattern' {
-        $script:PushTagGlobs | Should -Contain '1[01].[0-9]+.[0-9]+-rc.*'
+        $script:PushTagGlobs | Should -Contain '1[01].0.[0-9]+-rc.*'
     }
 
     It 'every parsed glob compiles to a usable regex' {
@@ -232,6 +232,19 @@ Describe 'Glob layer — tags that should NOT trigger the workflow' {
         @{ Tag = '1.2.3' }
         @{ Tag = '1.0.0' }
         @{ Tag = '100.0.0' }                      # '1' '0' then expects '.', sees '0' -> no match
+    ) {
+        Test-GlobTriggers $Tag | Should -BeFalse
+    }
+
+    It 'does not trigger for non-zero minor <Tag> (script only handles MAJOR.0.PATCH)' -ForEach @(
+        @{ Tag = '10.1.0' }
+        @{ Tag = '10.1.5' }
+        @{ Tag = '10.2.40' }
+        @{ Tag = '11.1.0' }
+        @{ Tag = '11.2.3' }
+        @{ Tag = '10.10.0' }
+        @{ Tag = '11.1.0-preview.1.26107' }
+        @{ Tag = '10.3.0-rc.1.25424.2' }
     ) {
         Test-GlobTriggers $Tag | Should -BeFalse
     }
