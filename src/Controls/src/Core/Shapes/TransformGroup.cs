@@ -74,24 +74,23 @@ namespace Microsoft.Maui.Controls.Shapes
 						SubscribeToTransformPropertyChanged(item);
 					}
 				}
-
-				UpdateTransformMatrix();
-				return;
 			}
-
-			if (args.OldItems is not null)
+			else
 			{
-				foreach (INotifyPropertyChanged item in args.OldItems)
+				if (args.OldItems is not null)
 				{
-					UnsubscribeFromTransformPropertyChanged(item);
+					foreach (INotifyPropertyChanged item in args.OldItems)
+					{
+						UnsubscribeFromTransformPropertyChanged(item);
+					}
 				}
-			}
 
-			if (args.NewItems is not null)
-			{
-				foreach (INotifyPropertyChanged item in args.NewItems)
+				if (args.NewItems is not null)
 				{
-					SubscribeToTransformPropertyChanged(item);
+					foreach (INotifyPropertyChanged item in args.NewItems)
+					{
+						SubscribeToTransformPropertyChanged(item);
+					}
 				}
 			}
 
