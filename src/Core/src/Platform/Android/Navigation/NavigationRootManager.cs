@@ -153,7 +153,20 @@ namespace Microsoft.Maui.Platform
 			_pendingFragment?.Dispose();
 			_pendingFragment = null;
 			if (_rootView is ContainerView containerView)
+			{
+				// Clearing CurrentView below synchronously detaches the DrawerLayout that hosts
+				// navigationlayout_content. Flush pending fragment transactions first so a queued
+				// FlyoutView detail Replace doesn't run against a missing container and crash.
+				var fragmentManager = _mauiContext?.GetFragmentManager();
+				if (fragmentManager is not null &&
+					!fragmentManager.IsDestroyed(_mauiContext?.Context) &&
+					!fragmentManager.IsStateSaved)
+				{
+					fragmentManager.ExecutePendingTransactionsEx();
+				}
+
 				containerView.CurrentView = null;
+			}
 
 			DrawerLayout = null;
 			_rootView = null;
