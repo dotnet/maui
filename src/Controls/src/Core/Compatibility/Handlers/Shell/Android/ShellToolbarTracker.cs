@@ -307,6 +307,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.Is(Shell.ForegroundColorProperty))
 			{
 				UpdateLeftBarButtonItem();
+				UpdateToolbarItemsTintColors();
 			}
 		}
 
@@ -339,6 +340,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
 			{
 				UpdateLeftBarButtonItem();
+				UpdateToolbarItemsTintColors();
 			}
 		}
 
@@ -669,13 +671,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_toolbar.Handler?.UpdateValue(nameof(Toolbar.TitleView));
 		}
 
+		Color GetSearchHandlerTintColor(Page page)
+		{
+			var foregroundColor = page is not null ? Shell.GetForegroundColor(page) : null;
+			return TintColor ?? foregroundColor ?? Shell.GetForegroundColor(_shell);
+		}
+
 		private void UpdateToolbarItemsTintColors(AToolbar toolbar)
 		{
 			var menu = toolbar.Menu;
 			if (menu.FindItem(_placeholderMenuItemId) is IMenuItem item)
 			{
 				using (var icon = item.Icon)
-					icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+					icon.SetColorFilter(GetSearchHandlerTintColor(Page).ToPlatform(Colors.White), FilterMode.SrcAtop);
 			}
 		}
 
@@ -719,7 +727,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					item.SetEnabled(SearchHandler.IsSearchEnabled);
 					item.SetIcon(Resource.Drawable.abc_ic_search_api_material);
 					using (var icon = item.Icon)
-						icon.SetColorFilter(TintColor.ToPlatform(Colors.White), FilterMode.SrcAtop);
+						icon.SetColorFilter(GetSearchHandlerTintColor(page).ToPlatform(Colors.White), FilterMode.SrcAtop);
 					item.SetShowAsAction(ShowAsAction.IfRoom | ShowAsAction.CollapseActionView);
 
 					if (_searchView.View.Parent is not null)
@@ -794,7 +802,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// we want the newly added button which will need layout
 					if (child.IsLayoutRequested)
 					{
-						button.SetColorFilter(TintColor.ToPlatform(Colors.White), PorterDuff.Mode.SrcAtop);
+						button.SetColorFilter(GetSearchHandlerTintColor(Page).ToPlatform(Colors.White), PorterDuff.Mode.SrcAtop);
 					}
 
 					button.Dispose();
