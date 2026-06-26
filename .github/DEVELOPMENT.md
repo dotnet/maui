@@ -47,7 +47,7 @@ As a general rule:
 
 Use ‘main’ for bug fixes that don’t require API changes. For new features and changes to public APIs, you must use the branch of the next .NET version.
 
-- [net10.0](https://github.com/dotnet/maui/tree/net10.0)
+- [net11.0](https://github.com/dotnet/maui/tree/net11.0)
 
 ## Sample projects
 

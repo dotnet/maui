@@ -457,9 +457,12 @@ stages:
               - job: winui_ui_tests_${{ project.name }}
                 strategy:
                   matrix:
+                    # WebView is excluded on Windows: Appium driver cannot attach to WebView2
+                    # (appium/appium#22217 / dotnet/maui#35334). Remove this filter once fixed.
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+                      ${{ if ne(categoryGroup, 'WebView') }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all

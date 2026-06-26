@@ -240,6 +240,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (oldPage is not null)
 			{
+				// The _tracker.Page assignment now occurs before the navigation animation,
+				// so oldPage.Disappearing is unsubscribed below before it fires — leaving
+				// _isVisiblePage stuck as true. Calling SetDisappeared() here resets it so
+				// SetAppeared() runs its full body for the incoming page. Skipped during
+				// Dispose (newPage is null) since _context is already cleared and cleanup
+				// is handled there. No-op in normal flows.
+				if (newPage is not null)
+					SetDisappeared();
+
 				oldPage.Appearing -= PageAppearing;
 				oldPage.Disappearing -= PageDisappearing;
 				oldPage.PropertyChanged -= OnPagePropertyChanged;
@@ -1028,6 +1037,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchBar.OnEditingStopped += OnSearchBarEditingStopped;
 
 			searchBar.Placeholder = SearchHandler.Placeholder;
+			searchBar.Text = SearchHandler.Query;
 			UpdateSearchIsEnabled(_searchController);
 			searchBar.SearchButtonClicked += SearchButtonClicked;
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
@@ -1305,7 +1315,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)
+				{
+					// Explicitly null out the native TitleView to break the UIKit reference chain
+					// that prevents the page from being garbage collected when x:Name is used
+					// together with Shell.TitleView. The NameScope attached to the TitleView
+					// children holds a reference back to the page (via the registered x:Name),
+					// so clearing this native reference is necessary to allow GC.
+					NavigationItem.TitleView = null;
 					tvc.Disconnect();
+				}
 
 				_keyboardWillHideObserver?.Dispose();
 				_keyboardWillHideObserver = null;

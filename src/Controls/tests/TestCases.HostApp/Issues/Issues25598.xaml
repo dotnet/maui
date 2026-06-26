@@ -35,6 +35,7 @@
                 ItemsSource="{Binding Items}"
                 ItemsUpdatingScrollMode="KeepScrollOffset"
                 VerticalOptions="EndAndExpand"
+                HorizontalScrollBarVisibility="Never"
                 VerticalScrollBarVisibility="Default">
                 <CarouselView.ItemTemplate>
                     <DataTemplate>
@@ -87,6 +88,7 @@
                 ItemsSource="{Binding Items}"
                 ItemsUpdatingScrollMode="KeepScrollOffset"
                 VerticalOptions="EndAndExpand"
+                HorizontalScrollBarVisibility="Never"
                 VerticalScrollBarVisibility="Default">
                 <CarouselView.ItemTemplate>
                     <DataTemplate>
