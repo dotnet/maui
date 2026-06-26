@@ -38,10 +38,11 @@ Ensures PR title and description accurately reflect the implementation, and perf
 | Analyze and report findings | ✅ **YES** | This is the skill's purpose |
 
 **Correct workflow:**
-1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
-2. **Human-controlled follow-up**: PR finalization is not part of the automated `Review-PR.ps1` flow. Only post or use the summary when a user explicitly asks for PR finalization.
+1. **This skill**: Analyze the PR and produce the recommended title/description.
+2. **Pipeline mode (`/review`)**: In `Review-PR.ps1` (STEP 5c) the skill writes `finalize/title.txt`, `finalize/body.md`, and `finalize/apply.json`. The **Post phase** applies them via `gh pr edit` (title/body only) — the agent itself still never posts a comment, approves, or requests changes.
+3. **Standalone mode (human-invoked)**: Produce findings (e.g. `pr-finalize-summary.md`); a human decides what to apply.
 
-**Only humans control when comments are posted.** Your job is to analyze and present findings.
+**The agent never posts comments or approves/requests changes.** It analyzes and writes output; deterministic scripts (pipeline) or a human apply the result.
 
 ---
 
@@ -366,9 +367,9 @@ gh pr diff XXXXX -- path/to/file.cs
 
 **Workflow:**
 1. **This skill**: Analyze PR, produce findings and write to `pr-finalize-summary.md`
-2. **Human-controlled follow-up**: PR finalization is not part of the automated `Review-PR.ps1` flow. Only post or use the summary when a user explicitly asks for PR finalization.
+2. **Apply step**: In the `/review` pipeline, only Phase 1 (title/description) is applied — via `gh pr edit` in the Post phase. Phase 2 (this code review) is analysis-only and is **not** posted by the finalize step; the pipeline performs its own expert code review separately.
 
-The user controls when comments are posted. Your job is to analyze and present findings.
+The agent never posts comments or approves/requests changes. Your job is to analyze and present findings.
 
 ---
 

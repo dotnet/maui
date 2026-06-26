@@ -37,7 +37,7 @@
 
 > 🚨 **DO NOT post comments.** This phase only produces output files.
 >
-> 🚨 **DO NOT run pr-finalize.** That is a separate skill invoked only when the user explicitly requests it.
+> 🚨 **DO NOT run pr-finalize in this phase.** PR title/description finalization runs as its own dedicated step (STEP 5c) in `Review-PR.ps1`. This report phase must not edit the PR title/body.
 
 ---
 

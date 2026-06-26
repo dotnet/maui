@@ -12,8 +12,8 @@ It is intended for Microsoft maintainers and community contributors who want to 
 
 | Command | Who can run it | What it does | Output |
 | --- | --- | --- | --- |
-| `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
-| `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
+| `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Finalizes the PR title/description and updates the PR with an `AI Summary` comment. |
+| `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Finalizes the PR title/description and updates the PR with an `AI Summary` comment. |
 | `/review rerun` | Repository users with write, maintain, or admin access; or non-first-time PR authors on their own PR | Requests a fresh full review after comments, commits, or CI context changed. Applies the `s/agent-ready-for-rerun` label; the hourly scanner then triggers the review pipeline. | Adds or replaces a review session in the `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Adds or updates a `Test Failure Review` comment. |
 
@@ -100,8 +100,9 @@ The PR review script is `.github/scripts/Review-PR.ps1`. It orchestrates the cor
 3. regression cross-reference;
 4. gate verification;
 5. candidate review and fix exploration;
-6. AI summary posting;
-7. review labels.
+6. PR finalize — updates the PR title/description so they accurately describe the change (this becomes the squash-merge commit message); applied via `gh pr edit`, no comment;
+7. AI summary posting;
+8. review labels.
 
 The generated PR comment is a single session-based `AI Summary` comment. New runs replace the review and hide older sessions, keyed by the reviewed commit.
 

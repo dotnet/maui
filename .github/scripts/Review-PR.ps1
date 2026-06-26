@@ -1557,6 +1557,68 @@ if (Test-Path $inlineFindings) {
 # Restore review branch — the Copilot agent may have switched branches (e.g. via gh pr checkout)
 git checkout $reviewBranch 2>$null | Out-Null
 
+# ── STEP 5c: Finalize — accurate PR title + description (Copilot call 3) ──
+# Produces the title/description that will become the squash-merge commit
+# message. The agent ONLY writes files; the Post phase applies them via
+# `gh pr edit` (title/body — never a comment, never approve/request-changes).
+$finalizeDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/finalize"
+New-Item -ItemType Directory -Force -Path $finalizeDir | Out-Null
+
+$step5cPrompt = @"
+Finalize the **title and description** of PR #$PRNumber so they accurately describe the change and make a high-quality squash-merge commit message. This is Phase 1 of the ``pr-finalize`` skill ONLY — do NOT perform code review (Phase 2); expert code review already ran in the previous steps.
+
+Follow ``.github/skills/pr-finalize/SKILL.md`` (Phase 1: Title & Description):
+- **Preserve quality.** Evaluate the existing title/description FIRST. If they are already accurate, well-structured, and complete, keep them and only add missing required elements. Do NOT replace a good author-written description with a generic template.
+- **Title formula:** ``[Platform] Component: What changed`` — searchable and informative (the title becomes the commit headline). No noise prefixes like ``[PR agent]``.
+- **Description** must include the base template sections (``### Description of Change`` and ``### Issues Fixed`` with ``Fixes #<issue>`` when an issue exists) and should add agent-friendly detail when warranted: root cause, fix approach, any model/philosophy change, key types, a "What NOT to do" section (from failed try-fix approaches), and edge cases.
+
+Read context already produced by earlier steps before composing:
+- ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md`` (issue + PR understanding)
+- ``gh pr view $PRNumber --json title,body,commits`` and ``gh pr diff $PRNumber`` for the actual change.
+
+**Required NOTE block — must be the VERY FIRST lines of the description, verbatim:**
+``````markdown
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+``````
+
+## Output — write these files ONLY (do NOT post comments or run gh pr edit/gh pr review)
+1. ``$finalizeDir/title.txt`` — the FINAL recommended title on a single line.
+2. ``$finalizeDir/body.md`` — the FINAL full PR description (NOTE block first, then the template sections, then any agent-friendly detail). This is the complete body that will REPLACE the current one when applied.
+3. ``$finalizeDir/apply.json`` — exactly this schema:
+``````json
+{
+  "applyTitle": true,
+  "applyBody": true,
+  "reason": "1-2 sentence rationale"
+}
+``````
+Set ``applyTitle``/``applyBody`` to ``false`` when the current title/body are already correct and complete (NOTE block present, accurate, well-structured) so the pipeline does NOT churn them. Set ``true`` only when your version is a genuine improvement or restores a missing required element (e.g., the NOTE block or the issue link).
+
+🚨 You MUST NOT post comments or run ``gh pr edit``, ``gh pr comment``, ``gh pr review``, ``--approve``, or ``--request-changes``. The review pipeline applies your ``title.txt``/``body.md`` deterministically based on ``apply.json``. Your only job is to WRITE the three files.
+"@
+
+Invoke-CopilotStep -StepName "STEP 5c: FINALIZE (title + description)" -Prompt $step5cPrompt | Out-Null
+
+# Restore review branch — the agent may have switched branches reading the PR
+git checkout $reviewBranch 2>$null | Out-Null
+
+# Diagnostic: check what STEP 5c produced
+Write-Host ""
+Write-Host "  📊 STEP 5c output check:" -ForegroundColor Cyan
+$finalizeApplyCheck = Join-Path $finalizeDir "apply.json"
+if (Test-Path $finalizeApplyCheck) {
+    try {
+        $fa = Get-Content -Raw $finalizeApplyCheck | ConvertFrom-Json -ErrorAction Stop
+        Write-Host "    ✅ apply.json: applyTitle=$($fa.applyTitle) applyBody=$($fa.applyBody)" -ForegroundColor Green
+    } catch {
+        Write-Host "    ⚠️ apply.json present but unparseable" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "    ⚠️ finalize/apply.json not found (finalize may not have run)" -ForegroundColor Yellow
+}
+
 # ─── Tier 3 refresh: feed AI categories back into category detection ───
 # Step 2 ran detection without the AI tier (-AiCategories was empty).
 # Pre-flight (Step 5) wrote `ai-categories.md`; re-run detection now so the
@@ -1666,6 +1728,65 @@ if (-not $DryRun) {
     }
 } else {
     Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 5.5: Apply PR Finalize (edit title + description — NO comment)
+#  Reads finalize/{title.txt,body.md,apply.json} produced by STEP 5c and
+#  applies them to the PR via `gh pr edit`. The title/description become the
+#  squash-merge commit message. This is the ONLY place finalize is applied,
+#  and it never posts a comment, approves, or requests changes.
+# ═════════════════════════════════════════════════════════════════════════════
+$finalizeDir       = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/finalize"
+$finalizeApplyFile = Join-Path $finalizeDir "apply.json"
+$finalizeTitleFile = Join-Path $finalizeDir "title.txt"
+$finalizeBodyFile  = Join-Path $finalizeDir "body.md"
+
+Write-Host ""
+Write-Host "  🏁 PR Finalize (title/description)..." -ForegroundColor Cyan
+if (Test-Path $finalizeApplyFile) {
+    try {
+        $applyData = Get-Content -Raw $finalizeApplyFile | ConvertFrom-Json -ErrorAction Stop
+        $applyTitle = [bool]$applyData.applyTitle
+        $applyBody  = [bool]$applyData.applyBody
+        $finalizeReason = if ($applyData.reason) { $applyData.reason } else { "(no reason given)" }
+        Write-Host "     applyTitle=$applyTitle applyBody=$applyBody — $finalizeReason" -ForegroundColor Gray
+
+        $editArgs = @()
+        if ($applyTitle -and (Test-Path $finalizeTitleFile)) {
+            # Title must be a single line — take the first non-empty line.
+            $newTitle = (Get-Content $finalizeTitleFile | Where-Object { $_.Trim() -ne '' } | Select-Object -First 1)
+            if ($newTitle) { $newTitle = $newTitle.Trim() }
+            if (-not [string]::IsNullOrWhiteSpace($newTitle)) {
+                $editArgs += @('--title', $newTitle)
+            }
+        }
+        if ($applyBody -and (Test-Path $finalizeBodyFile)) {
+            $bodyContent = (Get-Content -Raw $finalizeBodyFile)
+            if (-not [string]::IsNullOrWhiteSpace($bodyContent)) {
+                $editArgs += @('--body-file', $finalizeBodyFile)
+            }
+        }
+
+        if ($editArgs.Count -gt 0) {
+            if ($DryRun) {
+                Write-Host "  [DRY RUN] Would run: gh pr edit $PRNumber --repo dotnet/maui $($editArgs -join ' ')" -ForegroundColor Magenta
+            } else {
+                gh pr edit $PRNumber --repo dotnet/maui @editArgs 2>&1 | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "  ✅ PR title/description finalized" -ForegroundColor Green
+                } else {
+                    Write-Host "  ⚠️ Failed to apply finalize edits (non-fatal)" -ForegroundColor Yellow
+                }
+            }
+        } else {
+            Write-Host "  ⏭️ Finalize: nothing to apply (title/description already good)" -ForegroundColor Gray
+        }
+    } catch {
+        Write-Host "  ⚠️ Failed to apply PR finalize (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⏭️ Finalize: no finalize/apply.json produced — skipping" -ForegroundColor Gray
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
