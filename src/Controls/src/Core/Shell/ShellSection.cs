@@ -208,8 +208,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellContent), typeof(ShellSection), null, BindingMode.TwoWay,
-				propertyChanged: OnCurrentItemChanged,
-				propertyChanging: OnCurrentItemChanging);
+				propertyChanged: OnCurrentItemChanged);
 
 		/// <summary>Bindable property for <see cref="Items"/>.</summary>
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
@@ -1016,17 +1015,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static void OnCurrentItemChanging(BindableObject bindable, object oldValue, object newValue)
+		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shellSection = (ShellSection)bindable;
 
-			if (newValue is not ShellContent newContent)
-				return;
-
-			if (shellSection.Parent?.Parent is Shell parentShell && shellSection.IsVisibleSection)
+			if (newValue is ShellContent newContent &&
+				shellSection.Parent?.Parent is Shell parentShell &&
+				shellSection.IsVisibleSection)
 			{
-				// canCancel: false because propertyChanging cannot veto a property commit.
-				// Mirrors Shell.OnCurrentItemChanging which uses the same pattern.
 				parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
 					ShellNavigationSource.ShellContentChanged,
 					parentShell.CurrentItem,
@@ -1036,31 +1032,17 @@ namespace Microsoft.Maui.Controls
 					canCancel: false,
 					isAnimated: true);
 			}
-		}
 
-		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var shellSection = (ShellSection)bindable;
+			if (oldValue is ShellContent oldShellItem)
+				oldShellItem.SendDisappearing();
 
 			if (newValue == null)
 				return;
 
-			if (shellSection.Parent?.Parent is Shell parentShell && shellSection.IsVisibleSection)
-			{
-				if (oldValue is ShellContent oldShellItem)
-					oldShellItem.SendDisappearing();
+			shellSection.PresentedPageAppearing();
 
-				shellSection.PresentedPageAppearing();
-
-				((IShellController)parentShell).UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
-			}
-			else
-			{
-				if (oldValue is ShellContent oldShellItem)
-					oldShellItem.SendDisappearing();
-
-				shellSection.PresentedPageAppearing();
-			}
+			if (shellSection.Parent?.Parent is IShellController shell && shellSection.IsVisibleSection)
+				shell.UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
 
 			shellSection.SendStructureChanged();
 
