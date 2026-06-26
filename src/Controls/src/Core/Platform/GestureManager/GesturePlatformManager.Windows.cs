@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Input;
 using Windows.Storage.Streams;
 using Windows.System;
+using Windows.UI.Core;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -480,6 +481,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Space)
 			{
+				// Suppress modifier chords (Ctrl+Enter, Shift+Space, Alt+Space, etc.).
+				// Alt+Space is the Windows system menu accelerator — consuming it would break OS behavior.
+				// Standard WinUI controls (e.g. Button) do not activate on modifier+key chords.
+				// Pattern follows MauiPasswordTextBox.cs which uses the same API for Ctrl detection.
+				if (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down) ||
+					InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ||
+					InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down))
+				{
+					return;
+				}
+
 				if (Element is View view)
 				{
 					if (!view.IsEnabled)
