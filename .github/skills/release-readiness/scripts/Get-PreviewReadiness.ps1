@@ -573,6 +573,37 @@ function Get-CiScanIssues {
     }
 }
 
+function Test-IssueHasForeignMajor {
+    <#
+    .SYNOPSIS
+        Returns $true if the text explicitly names a .NET major version that
+        differs from $Major (e.g. a `regressed-in-10-*` label or a `.NET 10`
+        milestone when surveying major 11).
+    .NOTES
+        The bare "previewN" phrase is major-ambiguous — every major has a
+        previewN. Regression labels encode the major (`regressed-in-10-preview7`
+        is a .NET 10 label), so without this guard a .NET 10 preview7 issue
+        leaks onto the .NET 11 preview7 tracker. This detector lets the
+        relevance check reject a previewN match when a *different* major is
+        explicitly named. Majors are bounded to a sane 6..99 range so build
+        numbers and other large integers can never register as a major.
+    #>
+    param(
+        [string]$Haystack,
+        [int]$Major
+    )
+
+    foreach ($m in [regex]::Matches($Haystack, "(?i)(?:net\s*|regressed-in-)(\d+)|(\d+)\.0(?:\.|\b)")) {
+        $raw = if ($m.Groups[1].Success) { $m.Groups[1].Value } else { $m.Groups[2].Value }
+        $val = 0
+        if ([int]::TryParse($raw, [ref]$val) -and $val -ge 6 -and $val -le 99 -and $val -ne $Major) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Test-IssueReleaseRelevant {
     <#
     .SYNOPSIS
@@ -581,7 +612,10 @@ function Test-IssueReleaseRelevant {
         labels.
     .NOTES
         Uses a wide net on purpose — false negatives are worse than false
-        positives for release-readiness triage.
+        positives for release-readiness triage. The one exception is a
+        *cross-major* collision: the bare "previewN" phrase matches every
+        major's previewN, so it is only honored when the issue carries no
+        contradicting foreign-major signal (see Test-IssueHasForeignMajor).
     #>
     param(
         $Issue,
@@ -599,7 +633,12 @@ function Test-IssueReleaseRelevant {
     }
 
     if ($haystack -match "(?i)preview\s*$Preview|preview$Preview") {
-        return $true
+        # "previewN" alone is major-ambiguous; reject it when the issue
+        # explicitly names a different major (e.g. regressed-in-10-preview7
+        # surveyed against major 11).
+        if (-not (Test-IssueHasForeignMajor -Haystack $haystack -Major $Major)) {
+            return $true
+        }
     }
 
     return $false

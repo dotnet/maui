@@ -3516,6 +3516,65 @@ try { $null = Get-CategorizedPullRequests -TargetPRs $null -InflightPRs @($null,
 catch { $explicitNullThrew = $true }
 Assert-Eq -Label "explicit null target + @(null, maestro) inflight → no throw" -Expected $false -Actual $explicitNullThrew
 
+# ───── Test-IssueReleaseRelevant: cross-major preview-number leak guard ─────
+Write-Host "`n[Unit] Test-IssueReleaseRelevant — cross-major preview-number leak" -ForegroundColor Cyan
+# Regression: the bare "previewN" phrase matches every major's previewN. A
+# `.NET 10` p/0 issue labelled `regressed-in-10-preview7` (e.g. #31960) was
+# leaking onto the .NET 11 preview7 tracker because "preview7" matched without
+# any major anchoring. The fix rejects a previewN match when the issue carries a
+# contradicting foreign-major signal (see Test-IssueHasForeignMajor), while
+# preserving the wide net for genuinely major-less "previewN" mentions.
+function New-RelevanceIssue {
+    param([string]$Title, [string]$Milestone, [string[]]$Labels)
+    [PSCustomObject]@{
+        title     = $Title
+        milestone = if ($Milestone) { [PSCustomObject]@{ title = $Milestone } } else { $null }
+        labels    = @($Labels | ForEach-Object { [PSCustomObject]@{ name = $_ } })
+    }
+}
+
+# The exact #31960 shape: .NET 10 p/0 regression with a preview7 label.
+$issue31960 = New-RelevanceIssue -Title 'Crash on startup' -Milestone '.NET 10 SR12' -Labels @('p/0', 'regressed-in-10-preview7')
+Assert-Eq -Label "#31960 (regressed-in-10-preview7) NOT relevant for M11/P7" `
+    -Expected $false -Actual (Test-IssueReleaseRelevant -Issue $issue31960 -Major 11 -Preview 7)
+Assert-Eq -Label "#31960 IS relevant for its own major M10/P7" `
+    -Expected $true  -Actual (Test-IssueReleaseRelevant -Issue $issue31960 -Major 10 -Preview 7)
+
+# Genuine .NET 11 preview7 issues stay relevant (caught by the major signal first).
+$net11Label = New-RelevanceIssue -Title 'Layout bug' -Milestone '.NET 11.0' -Labels @('regressed-in-11.0.0-preview7')
+Assert-Eq -Label "regressed-in-11.0.0-preview7 relevant for M11/P7" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $net11Label -Major 11 -Preview 7)
+$net11Milestone = New-RelevanceIssue -Title 'Nav glitch' -Milestone '.NET 11.0-preview7' -Labels @('p/1')
+Assert-Eq -Label ".NET 11.0-preview7 milestone relevant for M11/P7" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $net11Milestone -Major 11 -Preview 7)
+
+# Wide net preserved: a bare "preview7" mention with NO major signal stays relevant.
+$bareMention = New-RelevanceIssue -Title 'Broken since preview7' -Milestone $null -Labels @('p/1')
+Assert-Eq -Label "bare 'preview7' (no major) still relevant for M11/P7" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $bareMention -Major 11 -Preview 7)
+
+# A build-number that contains the preview digits must not register as a major.
+$buildNumIssue = New-RelevanceIssue -Title 'fails on 11.0.0-preview.7.26324.11' -Milestone $null -Labels @()
+Assert-Eq -Label "build number does not poison foreign-major scan (M11/P7)" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $buildNumIssue -Major 11 -Preview 7)
+
+# Cross-major leak guard also holds for preview6.
+$net10Preview6 = New-RelevanceIssue -Title 'Z' -Milestone '.NET 10' -Labels @('regressed-in-10-preview6')
+Assert-Eq -Label "regressed-in-10-preview6 NOT relevant for M11/P6" `
+    -Expected $false -Actual (Test-IssueReleaseRelevant -Issue $net10Preview6 -Major 11 -Preview 6)
+
+# Direct unit coverage of the foreign-major detector.
+Assert-Eq -Label "foreign-major: 'regressed-in-10-*' is foreign to major 11" `
+    -Expected $true  -Actual (Test-IssueHasForeignMajor -Haystack 'regressed-in-10-preview7 p/0' -Major 11)
+Assert-Eq -Label "foreign-major: '.NET 10 SR12' is foreign to major 11" `
+    -Expected $true  -Actual (Test-IssueHasForeignMajor -Haystack 'Crash .NET 10 SR12' -Major 11)
+Assert-Eq -Label "foreign-major: same-major '11.0.0' is NOT foreign to major 11" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'regressed-in-11.0.0-preview7' -Major 11)
+Assert-Eq -Label "foreign-major: build number 26324 is NOT a major" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack 'preview.7.26324.11 only' -Major 11)
+Assert-Eq -Label "foreign-major: empty haystack → false" `
+    -Expected $false -Actual (Test-IssueHasForeignMajor -Haystack '' -Major 11)
+
 Write-Host "`n[Unit] Format-MarkdownCell collapses embedded newlines (table-row safety)" -ForegroundColor Cyan
 # A malformed upstream title with a literal CR/LF (observed live: ci-scan issue
 # #35957) must be collapsed to a single line so it cannot split the markdown table
