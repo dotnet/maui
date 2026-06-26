@@ -336,6 +336,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			AddItemDecoration(_itemDecoration);
 		}
 
+		internal void UpdateLoop()
+		{
+			if (Carousel is null)
+			{
+				return;
+			}
+
+			// Preserve both the Position and the CurrentItem because UpdateAdapter() resets
+			// CarouselView.Position to 0 and CarouselView.CurrentItem to null on rebuild.
+			int currentPosition = Carousel.Position;
+			object currentItem = Carousel.CurrentItem;
+
+			UpdateAdapter();
+
+			// Restore the logical position and current item so bindings/MVVM observers
+			// see the same state after the loop change.
+			if (ItemsViewAdapter?.ItemsSource is not null && ItemsViewAdapter.ItemsSource.Count > 0)
+			{
+				if (currentPosition >= 0 && currentPosition < ItemsViewAdapter.ItemsSource.Count)
+				{
+					Carousel.SetValueFromRenderer(CarouselView.PositionProperty, currentPosition);
+
+					var restoredItem = currentItem ?? ItemsViewAdapter.ItemsSource.GetItem(currentPosition);
+					Carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, restoredItem);
+				}
+			}
+
+			// In Windows, the scrollbar is hidden when Loop is enabled.
+			// For platform consistency, apply the same behavior on Android.
+			UpdateScrollBarVisibility(Carousel);
+			if (Carousel.Loop)
+			{
+				var itemCount = ItemsViewAdapter.ItemsSource.Count;
+				int loopedPosition = LoopedPosition(itemCount) + currentPosition;
+				ScrollToPosition(loopedPosition);
+			}
+			else	
+			{
+				ScrollToPosition(currentPosition);
+			}
+		}
+
 		void UpdateInitialPosition()
 		{
 			//if we don't have any items don't update position
@@ -394,6 +436,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				UpdateInitialPosition();
 
 			_isVisible = ItemsView.IsVisible;
+		}
+
+		void UpdateScrollBarVisibility(CarouselView carouselView)
+		{
+			if (carouselView.Loop)
+			{
+				HorizontalScrollBarEnabled = false;
+				VerticalScrollBarEnabled = false;
+			}
+			else
+			{
+				UpdateHorizontalScrollBarVisibility();
+				UpdateVerticalScrollBarVisibility();
+			}
 		}
 
 		void UpdateVisualStates()
@@ -622,6 +678,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
 			_carouselViewLayoutListener = null;
+		}
+
+		// https://github.com/dotnet/maui/issues/13323
+		// CarouselView is a full-page pager; child-initiated rectangle scroll requests
+		// (e.g. EditText cursor positioning) must not scroll the carousel.
+		public override bool RequestChildRectangleOnScreen(
+			global::Android.Views.View child,
+			global::Android.Graphics.Rect rect,
+			bool immediate)
+		{
+			return false;
+		}
+
+		// https://github.com/dotnet/maui/issues/13323
+		// base.RequestChildFocus preserves normal focus propagation, but it may
+		// start a focus-driven scroll from an otherwise idle CarouselView.
+		public override void RequestChildFocus(
+			global::Android.Views.View child,
+			global::Android.Views.View focused)
+		{
+			var wasIdleBeforeFocus = ScrollState == RecyclerView.ScrollStateIdle;
+
+			base.RequestChildFocus(child, focused);
+
+			if (wasIdleBeforeFocus && ScrollState != RecyclerView.ScrollStateIdle)
+			{
+				StopScroll();
+			}
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

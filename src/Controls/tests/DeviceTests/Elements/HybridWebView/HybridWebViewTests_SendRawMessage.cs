@@ -43,7 +43,7 @@ public partial class HybridWebViewTests_SendRawMessage : HybridWebViewTestsBase
 	// Regression: ensure raw messages containing characters that cannot appear in HTTP header
 	// values (CR/LF/NUL) and characters that vary in header byte-set handling (non-ASCII unicode,
 	// the '%' encoding sentinel) survive the Android fetch transport. The JS side URL-encodes
-	// raw messages and HybridWebViewHelper.ProcessRawMessage decodes them.
+	// raw messages and HybridWebViewHandler.MessageReceived decodes them.
 	[Theory]
 	[InlineData("with\nnewline")]
 	[InlineData("with\r\ncarriage")]

@@ -199,7 +199,7 @@ interface DotNetInvokeResult {
     function sendRawMessage(message: string) {
         // URL-encode the payload so it survives transports that restrict the byte set
         // (the Android fetch X-Maui-Request-Body header rejects CR/LF/NUL). Decoded
-        // on the .NET side in HybridWebViewHelper.ProcessRawMessage.
+        // on the .NET side in HybridWebViewHandler.MessageReceived.
         sendMessageToDotNet('__RawMessage', encodeURIComponent(message));
     }
 

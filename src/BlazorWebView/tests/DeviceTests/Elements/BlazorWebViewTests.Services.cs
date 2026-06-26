@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.MauiBlazorWebView.DeviceTests.Components;
 using WebViewAppShared;
 using Xunit;
@@ -118,5 +119,56 @@ public partial class BlazorWebViewTests
 				await jsInterop.UpdateControlDiv("this will fail!");
 			});
 		});
+	}
+
+	[Fact]
+	public void UsePlatformHandlerGenericReplacesDefaultBlazorWebViewHandler()
+	{
+		// Verifies that the public UsePlatformHandler<THandler>() extension on IMauiBlazorWebViewBuilder
+		// actually replaces the default BlazorWebViewHandler registered by AddMauiBlazorWebView()
+		// for the IBlazorWebView service type. The two HostBuilderHandlerTests in Core verify the
+		// underlying ConfigureMauiHandlers replacement mechanism with stub types; this test exercises
+		// the new public API surface end-to-end with the real BlazorWebView/IBlazorWebView types.
+		var builder = MauiApp.CreateBuilder();
+		builder.Services.AddMauiBlazorWebView()
+			.UsePlatformHandler<CustomBlazorWebViewHandlerStub>();
+		using var app = builder.Build();
+
+		var handlersFactory = app.Services.GetRequiredService<IMauiHandlersFactory>();
+		Assert.Equal(typeof(CustomBlazorWebViewHandlerStub), handlersFactory.GetHandlerType(typeof(BlazorWebView)));
+	}
+
+	[Fact]
+	public void UsePlatformHandlerFactoryReplacesDefaultBlazorWebViewHandler()
+	{
+		// Companion to UsePlatformHandlerGenericReplacesDefaultBlazorWebViewHandler — verifies the
+		// factory overload (Func<IServiceProvider, IViewHandler>) also replaces the default handler.
+		// The factory overload registers a different ServiceDescriptor shape (ImplementationFactory
+		// rather than ImplementationType), so GetHandlerType returns null here; we resolve through
+		// GetHandler instead and assert the produced instance type.
+		var builder = MauiApp.CreateBuilder();
+		var factoryWasCalled = false;
+		builder.Services.AddMauiBlazorWebView()
+			.UsePlatformHandler(_ =>
+			{
+				factoryWasCalled = true;
+				return new CustomBlazorWebViewHandlerStub();
+			});
+		using var app = builder.Build();
+
+		var handlersFactory = app.Services.GetRequiredService<IMauiHandlersFactory>();
+		var handler = handlersFactory.GetHandler(typeof(BlazorWebView));
+
+		Assert.True(factoryWasCalled, "Factory delegate should have been invoked when the handler was resolved.");
+		Assert.IsType<CustomBlazorWebViewHandlerStub>(handler);
+	}
+
+	private class CustomBlazorWebViewHandlerStub : BlazorWebViewHandler
+	{
+		// Marker subclass used only to prove that UsePlatformHandler replaced the default
+		// BlazorWebViewHandler registration. Inheriting from BlazorWebViewHandler keeps the
+		// IViewHandler contract honored on every device-test target framework without forcing
+		// us to reimplement the full handler surface.
+		public CustomBlazorWebViewHandlerStub() { }
 	}
 }

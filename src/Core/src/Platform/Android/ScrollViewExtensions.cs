@@ -42,5 +42,17 @@ namespace Microsoft.Maui.Platform
 				scrollView.SetContent(nativeContent);
 			}
 		}
+
+		internal static void HandleTouchEvent(MotionEvent ev, IViewParent? parent)
+		{
+			if (ev.Action == MotionEventActions.Down)
+			{
+				parent?.RequestDisallowInterceptTouchEvent(true);
+			}
+			else if (ev.Action == MotionEventActions.Up || ev.Action == MotionEventActions.Cancel)
+			{
+				parent?.RequestDisallowInterceptTouchEvent(false);
+			}
+		}
 	}
 }

@@ -70,11 +70,38 @@ namespace Microsoft.Maui.Handlers
 
 				if (double.IsInfinity(heightConstraint))
 				{
-					heightConstraint = sizeThatFits.Height;
+					var currentHeight = (double)PlatformView.Bounds.Height;
+
+					// NOTE: Bounds and ContentSize reflect the pre-rotation frame at this point.
+					// The check is intentionally based on the previous layout state to detect
+					// scrollable Editors that should not grow after cache invalidation (#35114).
+					// When content overflows the frame and auto-growth is off, cap the height
+					// to the current frame height to preserve scrollability after rotation (#35114).
+					// Skip when AllowAutoGrowth is set (AutoSize=TextChanges) — Editor should grow freely.
+					if (!PlatformView.AllowAutoGrowth
+						&& currentHeight > 0
+						&& PlatformView.ContentSize.Height > currentHeight)
+					{
+						heightConstraint = currentHeight;
+					}
+					else
+					{
+						heightConstraint = sizeThatFits.Height;
+					}
 				}
 			}
 
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
+			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			// Cap applies even for finite constraints: UITextView.SizeThatFits (UIScrollView subclass)
+			// ignores the height argument and always returns full content height.
+			// Capping here ensures GetDesiredSize honours the caller's constraint.
+			if (result.Height > heightConstraint)
+			{
+				return new Size(result.Width, heightConstraint);
+			}
+
+			return result;
 		}
 
 		public static void MapText(IEditorHandler handler, IEditor editor)

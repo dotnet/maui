@@ -19,10 +19,10 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for attached property <c>HasNavigationBar</c>.</summary>
 		public static readonly BindableProperty HasNavigationBarProperty =
-			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
+			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for attached property <c>HasBackButton</c>.</summary>
-		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
+		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="BarBackgroundColor"/>.</summary>
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (page == null)
 				throw new ArgumentNullException(nameof(page));
-			page.SetValue(HasBackButtonProperty, value);
+			page.SetValue(HasBackButtonProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets a value that indicates whether or not this <see cref="Microsoft.Maui.Controls.NavigationPage"/> element has a navigation bar.</summary>
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The value to set.</param>
 		public static void SetHasNavigationBar(BindableObject page, bool value)
 		{
-			page.SetValue(HasNavigationBarProperty, value);
+			page.SetValue(HasNavigationBarProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <param name="bindable">The bindable parameter.</param>
@@ -415,9 +415,12 @@ namespace Microsoft.Maui.Controls
 			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
 		}
 
-		void SendNavigating(NavigationType navigationType, Page navigatingFrom = null)
+		void SendNavigating(NavigationType navigationType, Page navigatingFrom, Page destinationPage)
 		{
-			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+			var fromPage = navigatingFrom ?? CurrentPage;
+			var toPage = destinationPage;
+
+			fromPage?.SendNavigatingFrom(new NavigatingFromEventArgs(toPage, navigationType));
 		}
 
 
@@ -547,6 +550,9 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is Page newPage && ((NavigationPage)bindable).HasAppeared)
 				newPage.SendAppearing();
+
+			// Refresh Enabled on the predictive back callback when the active page changes.
+			(((NavigationPage)bindable).Window as Window)?.NotifyNavigationStateChanged();
 		}
 
 		internal IToolbar FindMyToolbar()
@@ -817,7 +823,9 @@ namespace Microsoft.Maui.Controls
 						//// the current navigation stack
 						//if (Owner._waitingCount == 0)
 						//	Owner.UpdateToolbar();
-
+						// InsertPageBefore changes the stack depth without triggering SendNavigated,
+						// so refresh the predictive back callback here.
+						(Owner.Window as Window)?.NotifyNavigationStateChanged();
 					}).FireAndForget();
 			}
 
@@ -834,7 +842,7 @@ namespace Microsoft.Maui.Controls
 				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
-						Owner.SendNavigating(NavigationType.Pop, currentPage);
+						Owner.SendNavigating(NavigationType.Pop, currentPage, newCurrentPage);
 						Owner.FireDisappearing(currentPage);
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
@@ -868,7 +876,7 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
-						Owner.SendNavigating(NavigationType.PopToRoot, previousPage);
+						Owner.SendNavigating(NavigationType.PopToRoot, previousPage, newPage);
 						Owner.FireDisappearing(previousPage);
 						var lastIndex = NavigationStack.Count - 1;
 						while (lastIndex > 0)
@@ -905,7 +913,7 @@ namespace Microsoft.Maui.Controls
 						Owner.NavigationType = navigationType;
 						// Move the SendNavigating here so that it's fired prior to the stack being modified
 						// This ensures consistent event ordering across all platforms (iOS, Catalyst, Android, Windows)
-						Owner.SendNavigating(navigationType, previousPage);
+						Owner.SendNavigating(navigationType, previousPage, root);
 						Owner.PushPage(root);
 					},
 					() =>
@@ -961,7 +969,9 @@ namespace Microsoft.Maui.Controls
 						//// the current navigation stack
 						//if (Owner._waitingCount == 0)
 						//	Owner.UpdateToolbar();
-
+						// RemovePage changes the stack depth without triggering SendNavigated,
+						// so refresh the predictive back callback here.
+						(Owner.Window as Window)?.NotifyNavigationStateChanged();
 					}).FireAndForget();
 			}
 		}

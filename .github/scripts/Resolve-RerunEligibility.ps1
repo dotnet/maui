@@ -6,8 +6,8 @@
 .DESCRIPTION
     This script is intentionally deterministic: it never uses AI and never
     inspects untrusted text semantically. A rerun is eligible only when there is
-    new PR activity after the previous AI Summary or previous /review rerun:
-    a new non-command comment, or a new commit.
+    new PR-author activity after the previous AI Summary or previous /review rerun:
+    a new non-command PR-author comment, or a new commit.
 #>
 
 param(
@@ -27,8 +27,11 @@ $ErrorActionPreference = 'Stop'
 $AISummaryMarker = '<!-- AI Summary -->'
 $ReadyForRerunLabel = 's/agent-ready-for-rerun'
 $ReviewInProgressLabel = 's/agent-review-in-progress'
-$ReadyForRerunLabelDescription = 'AI review has new PR activity and is ready for rerun'
+$ReadyForRerunLabelDescription = 'AI review has a new PR-author comment or commit and is ready for rerun'
 $ReadyForRerunLabelColor = '5319E7'
+$AISummaryAuthorLogins = @(
+    'MauiBot'
+)
 
 function ConvertTo-DateTimeOffset {
     param([Parameter(Mandatory = $true)]$Value)
@@ -46,6 +49,17 @@ function Test-RerunCommand {
     param([string]$Body)
 
     return ([string]$Body).Trim() -match '(?i)^/review\s+rerun\s*$'
+}
+
+function Test-AISummaryCommentAuthor {
+    param([object]$Comment)
+
+    $login = if ($Comment.user) { [string]$Comment.user.login } else { '' }
+    if ([string]::IsNullOrWhiteSpace($login)) {
+        return $false
+    }
+
+    return @($AISummaryAuthorLogins | Where-Object { $_ -ieq $login }).Count -gt 0
 }
 
 function Normalize-ReviewPipelineRef {
@@ -128,43 +142,125 @@ function ConvertFrom-ReviewCommand {
     }
 }
 
-function Test-ReviewCommandOptionsAllowed {
+# Per-run cache so a PR with many comments from the same author triggers at most
+# one collaborator-permission API call per distinct login.
+$script:ReviewOptionPermissionCache = @{}
+
+function Clear-ReviewOptionPermissionCache {
+    $script:ReviewOptionPermissionCache = @{}
+}
+
+function Get-CollaboratorPermissionResult {
+    # Thin, mockable wrapper around the gh permission lookup. Returns the exit
+    # code, the trimmed permission string, and stderr so the caller can tell a
+    # definitive 404 (not a collaborator) from a transient failure.
     param(
-        $Comment,
-        [AllowNull()][string[]]$AllowedAuthorLogins = $null
+        [string]$Login,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
     )
 
-    # The comment's own author_association is always required to be in the trusted set,
-    # so that a login which was trusted on an earlier comment cannot carry that trust
-    # forward to a later comment posted after access changed.
-    $association = if ($Comment.author_association) { [string]$Comment.author_association } else { '' }
-    if ($association -notin @('OWNER', 'MEMBER', 'COLLABORATOR')) {
+    $stdErrFile = New-TemporaryFile
+    try {
+        $permission = [string](gh api "repos/$Owner/$Repo/collaborators/$Login/permission" --jq '.permission' 2>$stdErrFile)
+        $exitCode = $LASTEXITCODE
+        $stdErr = [string](Get-Content -Raw -LiteralPath $stdErrFile -ErrorAction SilentlyContinue)
+    } finally {
+        Remove-Item -LiteralPath $stdErrFile -Force -ErrorAction SilentlyContinue
+    }
+
+    return [pscustomobject]@{
+        ExitCode   = $exitCode
+        Permission = $permission.Trim()
+        StdErr     = $stdErr
+    }
+}
+
+function Test-ReviewOptionLoginTrusted {
+    <#
+    .SYNOPSIS
+        Returns $true when the login currently has write/maintain/admin
+        collaborator permission — the SAME signal review-trigger.yml uses to
+        authorize a maintainer's /review command.
+
+    .DESCRIPTION
+        We deliberately do NOT use the comment's author_association. With the
+        Actions GITHUB_TOKEN that field reads as CONTRIBUTOR (not MEMBER) for
+        maintainers whose org membership is private, which caused /review
+        -b <branch> -p <platform> options to be silently dropped so reruns fell
+        back to the 'main' pipeline branch. The collaborators/<user>/permission
+        endpoint only needs metadata:read, is what /review itself calls, and
+        reflects the user's CURRENT access rather than a per-comment snapshot.
+
+        A definitive HTTP 404 (not a collaborator) is cached as untrusted. A
+        transient failure (5xx / rate-limit / network) is retried and NEVER
+        cached, so a momentary blip cannot silently downgrade a maintainer's
+        custom branch to 'main' — the exact symptom this trust model fixes.
+    #>
+    param(
+        [string]$Login,
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui',
+        [int]$MaxAttempts = 3
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Login)) {
         return $false
     }
 
-    if ($null -ne $AllowedAuthorLogins) {
-        if (-not $Comment.user -or [string]::IsNullOrWhiteSpace($Comment.user.login)) {
+    # GitHub user logins are alphanumerics and single hyphens only. Anything else
+    # (e.g. an app/bot login like 'name[bot]') cannot be a maintainer setting
+    # /review options, and rejecting it here also hardens the API path below.
+    if ($Login -notmatch '^[A-Za-z0-9][A-Za-z0-9-]*$') {
+        return $false
+    }
+
+    $key = $Login.ToLowerInvariant()
+    if ($script:ReviewOptionPermissionCache.ContainsKey($key)) {
+        return $script:ReviewOptionPermissionCache[$key]
+    }
+
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $result = Get-CollaboratorPermissionResult -Login $Login -Owner $Owner -Repo $Repo
+
+        if ($result.ExitCode -eq 0) {
+            $trusted = $result.Permission -in @('admin', 'maintain', 'write')
+            $script:ReviewOptionPermissionCache[$key] = $trusted
+            return $trusted
+        }
+
+        if ($result.StdErr -match '(?i)\bHTTP\s+(404|410)\b') {
+            # Definitive: the login is not (or no longer) a collaborator.
+            $script:ReviewOptionPermissionCache[$key] = $false
             return $false
         }
 
-        $login = ([string]$Comment.user.login).ToLowerInvariant()
-        $allowed = @($AllowedAuthorLogins | ForEach-Object { ([string]$_).ToLowerInvariant() })
-        return $allowed -contains $login
+        $detail = (([string]$result.StdErr) -replace '[\r\n]+', ' ').Trim()
+        Write-Host "::warning::collaborator-permission lookup for '$Login' failed (attempt $attempt/$MaxAttempts): $detail"
+        if ($attempt -lt $MaxAttempts) {
+            Start-Sleep -Seconds ([Math]::Min(5, $attempt * 2))
+        }
     }
 
-    return $true
+    # Persistent transient failure: untrusted for THIS lookup but NOT cached, so a
+    # later lookup in the same run can still recover instead of being downgraded.
+    Write-Host "::warning::Could not determine collaborator permission for '$Login' after $MaxAttempts attempts; treating its /review options as untrusted for now."
+    return $false
 }
 
 function Get-LatestReviewCommandOptions {
     param(
         [object[]]$Comments,
-        [AllowNull()][string[]]$AllowedAuthorLogins = $null
+        [string]$Owner = 'dotnet',
+        [string]$Repo = 'maui'
     )
 
     $reviewCommands = @($Comments | Where-Object {
         $_.kind -eq 'issue-comment' -and
-        (Test-ReviewCommandOptionsAllowed -Comment $_ -AllowedAuthorLogins $AllowedAuthorLogins) -and
-        (ConvertFrom-ReviewCommand $_.body)
+        $_.user -and
+        -not [string]::IsNullOrWhiteSpace($_.user.login) -and
+        (ConvertFrom-ReviewCommand $_.body) -and
+        (Test-ReviewOptionLoginTrusted -Login ([string]$_.user.login) -Owner $Owner -Repo $Repo)
     } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true })
 
     if ($reviewCommands.Count -eq 0) {
@@ -210,7 +306,7 @@ function Get-LatestAISummaryComment {
         Where-Object {
             $_.body -and
             ([string]$_.body).Contains($AISummaryMarker) -and
-            ($_.user -and $_.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$')
+            (Test-AISummaryCommentAuthor $_)
         } |
         Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $true }, @{ Expression = { [Int64]$_.id }; Descending = $true } |
         Select-Object -First 1)
@@ -262,13 +358,40 @@ function Get-LatestReviewedSha {
     return $matches[0].Groups[1].Value.ToLowerInvariant()
 }
 
+function Normalize-GitHubActorLogin {
+    param([string]$Login)
+
+    if ([string]::IsNullOrWhiteSpace($Login)) {
+        return ''
+    }
+
+    $trimmed = $Login.Trim()
+    if ($trimmed -match '^app/([^/\s]+)$') {
+        return "$($Matches[1])[bot]"
+    }
+
+    return $trimmed
+}
+
 function Test-CommentIsEvidence {
     param(
         [Parameter(Mandatory = $true)]$Comment,
-        [Parameter(Mandatory = $true)][Int64]$CurrentCommentId
+        [Parameter(Mandatory = $true)][Int64]$CurrentCommentId,
+        [string]$PRAuthorLogin
     )
 
     if ([Int64]$Comment.id -eq $CurrentCommentId) {
+        return $false
+    }
+    if ([string]::IsNullOrWhiteSpace($PRAuthorLogin)) {
+        return $false
+    }
+    if (-not $Comment.user -or [string]::IsNullOrWhiteSpace([string]$Comment.user.login)) {
+        return $false
+    }
+    $normalizedAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    $normalizedCommentLogin = Normalize-GitHubActorLogin ([string]$Comment.user.login)
+    if (-not $normalizedCommentLogin.Equals($normalizedAuthorLogin, [StringComparison]::OrdinalIgnoreCase)) {
         return $false
     }
     if (Test-RerunCommand $Comment.body) {
@@ -277,7 +400,7 @@ function Test-CommentIsEvidence {
     if ($Comment.user -and $Comment.user.type -eq 'Bot') {
         return $false
     }
-    if ($Comment.user -and $Comment.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$') {
+    if (Test-AISummaryCommentAuthor $Comment) {
         return $false
     }
 
@@ -288,11 +411,12 @@ function Test-HasEvidenceCommentAfter {
     param(
         [object[]]$Comments,
         [Parameter(Mandatory = $true)][datetimeoffset]$Checkpoint,
-        [Parameter(Mandatory = $true)][Int64]$CurrentCommentId
+        [Parameter(Mandatory = $true)][Int64]$CurrentCommentId,
+        [string]$PRAuthorLogin
     )
 
     return [bool]@($Comments | Where-Object {
-        (Test-CommentIsEvidence -Comment $_ -CurrentCommentId $CurrentCommentId) -and
+        (Test-CommentIsEvidence -Comment $_ -CurrentCommentId $CurrentCommentId -PRAuthorLogin $PRAuthorLogin) -and
         (Get-ObjectDate $_ 'created_at') -gt $Checkpoint
     } | Select-Object -First 1)
 }
@@ -387,12 +511,14 @@ function New-RerunContextMarkdown {
         [object[]]$Comments,
         [object[]]$Commits,
         [string]$CurrentHeadSha,
+        [string]$PRAuthorLogin,
         [object[]]$CurrentLabels = @()
     )
 
     $latestSummary = Get-LatestAISummaryComment -Comments $Comments
     $latestRerun = Get-LatestRerunComment -Comments $Comments
     $checkpointRerun = if ($latestRerun) { Get-LatestRerunCommentBefore -Comments $Comments -CurrentCommentId ([Int64]$latestRerun.id) } else { $null }
+    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
     $readyLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReadyForRerunLabel }).Count -gt 0
     $inProgressLabelPresent = @($CurrentLabels | Where-Object { $_ -eq $ReviewInProgressLabel }).Count -gt 0
 
@@ -412,7 +538,7 @@ function New-RerunContextMarkdown {
     $evidenceComments = @()
     if ($checkpoint) {
         $evidenceComments = @($Comments | Where-Object {
-            (Test-CommentIsEvidence -Comment $_ -CurrentCommentId 0) -and
+            (Test-CommentIsEvidence -Comment $_ -CurrentCommentId 0 -PRAuthorLogin $normalizedPRAuthorLogin) -and
             (Get-ObjectDate $_ 'created_at') -gt $checkpoint
         } | Sort-Object @{ Expression = { Get-ObjectDate $_ 'created_at' }; Descending = $false }, @{ Expression = { [Int64]$_.id }; Descending = $false })
     }
@@ -451,6 +577,7 @@ function New-RerunContextMarkdown {
     } else {
         $lines.Add('- Activity checkpoint: none')
     }
+    $lines.Add("- PR author: $(if ([string]::IsNullOrWhiteSpace($normalizedPRAuthorLogin)) { 'unknown' } else { $normalizedPRAuthorLogin })")
     $lines.Add("- Latest reviewed SHA: $(if ($latestReviewedSha) { $latestReviewedSha } else { 'unknown' })")
     $lines.Add("- Current head SHA: $(if ($CurrentHeadSha) { $CurrentHeadSha } else { 'unknown' })")
     $lines.Add("- Current head differs from latest reviewed SHA: $($headDiffers.ToString().ToLowerInvariant())")
@@ -459,7 +586,7 @@ function New-RerunContextMarkdown {
     $lines.Add('')
     $lines.Add('## New activity since checkpoint')
     $lines.Add('')
-    $lines.Add("- New non-command comments: $($evidenceComments.Count)")
+    $lines.Add("- New non-command author comments: $($evidenceComments.Count)")
     $lines.Add("- New commits: $($newCommits.Count)")
     $lines.Add('')
 
@@ -505,6 +632,7 @@ function Resolve-RerunEligibility {
         [object[]]$Commits,
         [Parameter(Mandatory = $true)][Int64]$CurrentCommentId,
         [string]$CurrentHeadSha,
+        [string]$PRAuthorLogin,
         [object[]]$CurrentLabels = @()
     )
 
@@ -517,7 +645,7 @@ function Resolve-RerunEligibility {
         return [pscustomobject]@{ Eligible = $false; Reason = 'not-rerun-command'; Label = $ReadyForRerunLabel }
     }
 
-    if ($current.user -and ($current.user.type -eq 'Bot' -or $current.user.login -match '(?i)^(maui-bot|github-actions)(\[bot\])?$')) {
+    if ($current.user -and ($current.user.type -eq 'Bot' -or (Test-AISummaryCommentAuthor $current))) {
         return [pscustomobject]@{ Eligible = $false; Reason = 'bot-comment'; Label = $ReadyForRerunLabel }
     }
 
@@ -551,8 +679,9 @@ function Resolve-RerunEligibility {
         return [pscustomobject]@{ Eligible = $true; Reason = 'new-head-commit'; Label = $ReadyForRerunLabel }
     }
 
-    if (Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $checkpoint -CurrentCommentId $CurrentCommentId) {
-        $reason = if ($checkpointReason -eq 'previous-rerun') { 'new-comment-after-previous-rerun' } else { 'new-comment-after-ai-summary' }
+    $normalizedPRAuthorLogin = Normalize-GitHubActorLogin $PRAuthorLogin
+    if (Test-HasEvidenceCommentAfter -Comments $Comments -Checkpoint $checkpoint -CurrentCommentId $CurrentCommentId -PRAuthorLogin $normalizedPRAuthorLogin) {
+        $reason = if ($checkpointReason -eq 'previous-rerun') { 'new-author-comment-after-previous-rerun' } else { 'new-author-comment-after-ai-summary' }
         return [pscustomobject]@{ Eligible = $true; Reason = $reason; Label = $ReadyForRerunLabel }
     }
 
@@ -589,6 +718,7 @@ if ($ContextOutputPath) {
         -Comments $comments `
         -Commits $commits `
         -CurrentHeadSha $pr.head.sha `
+        -PRAuthorLogin $pr.user.login `
         -CurrentLabels $labels
     $contextDir = Split-Path -Parent $ContextOutputPath
     if ($contextDir) {
@@ -613,6 +743,7 @@ $result = Resolve-RerunEligibility `
     -Commits $commits `
     -CurrentCommentId $CurrentCommentId `
     -CurrentHeadSha $pr.head.sha `
+    -PRAuthorLogin $pr.user.login `
     -CurrentLabels $labels
 
 Write-Host "Rerun eligibility: $($result.Eligible) ($($result.Reason))"

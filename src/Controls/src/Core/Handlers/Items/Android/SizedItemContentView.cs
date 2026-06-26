@@ -51,4 +51,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		static double NormalizeDimension(double value) => value == int.MaxValue ? double.PositiveInfinity : value;
 	}
+
+	internal class EmptyViewContentView : SizedItemContentView, IMauiRecyclerViewEmptyView
+	{
+		public EmptyViewContentView(Context context, Func<double> width, Func<double> height)
+			: base(context, width, height)
+		{
+		}
+	}
 }
