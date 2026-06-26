@@ -21,6 +21,13 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 	public int ScrollYInt => (int)Math.Round(ScrollY);
 	private View _content;
 	private ScrollOrientation _orientation = ScrollOrientation.Vertical;
+	private string _scrollToRequestedText = "Not Raised";
+	private double _requestedScrollX;
+	private double _requestedScrollY;
+	private ScrollToPosition _requestedPosition;
+	private bool _requestedAnimate;
+	private ScrollToMode _mode;
+	private string _requestedElementTypeName;
 
 	public ScrollViewViewModel()
 	{
@@ -129,6 +136,56 @@ public class ScrollViewViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
+	public string ScrollToRequestedText
+	{
+		get => _scrollToRequestedText;
+		set { if (_scrollToRequestedText != value) { _scrollToRequestedText = value; OnPropertyChanged(); } }
+	}
+
+	public double RequestedScrollX
+	{
+		get => _requestedScrollX;
+		set { if (_requestedScrollX != value) { _requestedScrollX = value; OnPropertyChanged(); } }
+	}
+
+	public double RequestedScrollY
+	{
+		get => _requestedScrollY;
+		set { if (_requestedScrollY != value) { _requestedScrollY = value; OnPropertyChanged(); } }
+	}
+
+	public ScrollToPosition RequestedPosition
+	{
+		get => _requestedPosition;
+		set { if (_requestedPosition != value) { _requestedPosition = value; OnPropertyChanged(); } }
+	}
+
+	public bool RequestedAnimate
+	{
+		get => _requestedAnimate;
+		set { if (_requestedAnimate != value) { _requestedAnimate = value; OnPropertyChanged(); } }
+	}
+
+	public ScrollToMode Mode
+	{
+		get => _mode;
+		set { if (_mode != value) { _mode = value; OnPropertyChanged(); } }
+	}
+
+	public string RequestedElementTypeName
+	{
+		get => _requestedElementTypeName;
+		set
+		{
+			if (_requestedElementTypeName != value)
+			{
+				_requestedElementTypeName = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	private ScrollToPosition _selectedScrollToPosition = ScrollToPosition.MakeVisible;
 	public ScrollToPosition SelectedScrollToPosition
 	{

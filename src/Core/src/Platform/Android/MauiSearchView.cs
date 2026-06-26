@@ -1,5 +1,6 @@
 ﻿using Android.Content;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using Java.IO;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -21,6 +22,17 @@ namespace Microsoft.Maui.Platform
 			MaxWidth = int.MaxValue;
 
 			_queryEditor = this.GetFirstChildOfType<EditText>();
+
+			// Disable Android's built-in instance state saving on the internal EditText
+			// to prevent query text from being incorrectly restored across multiple
+			// SearchView instances during navigation. The EditText shares a fixed
+			// resource ID (search_src_text) across all SearchViews, causing state
+			// to bleed between instances.
+			if (_queryEditor is not null)
+			{
+				_queryEditor.SaveEnabled = false;
+				_queryEditor.EnsureNoFullscreenFlag();
+			}
 
 			if (_queryEditor?.LayoutParameters is LinearLayout.LayoutParams layoutParams)
 			{

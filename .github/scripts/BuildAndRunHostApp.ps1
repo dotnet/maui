@@ -53,7 +53,7 @@ param(
     [ValidateSet("android", "ios", "catalyst", "maccatalyst", "windows")]
     [string]$Platform,
 
-    [Parameter(Mandatory = $true, ParameterSetName = "TestFilter")]
+    [Parameter(Mandatory = $false, ParameterSetName = "TestFilter")]
     [string]$TestFilter,
 
     [Parameter(Mandatory = $true, ParameterSetName = "Category")]
@@ -219,13 +219,20 @@ Write-Success "Test project: $TestProject"
 
 #region Run Tests
 
-# Determine the filter to use
+# Determine the filter to use.
+# NOTE: The CI pipeline `maui-pr-uitests` (definition 313) uses `TestCategory=`
+# (see eng/pipelines/common/ui-tests-steps.yml lines 116-164). NUnit accepts
+# both `Category=` and `TestCategory=` but Cake's RunTestWithLocalDotNet uses
+# `TestCategory=` so we mirror that here for byte-for-byte parity with CI.
 if ($Category) {
-    $effectiveFilter = "Category=$Category"
+    $effectiveFilter = "TestCategory=$Category"
     Write-Step "Running UI tests with category: $Category"
-} else {
+} elseif ($TestFilter) {
     $effectiveFilter = $TestFilter
     Write-Step "Running UI tests with filter: $TestFilter"
+} else {
+    $effectiveFilter = $null
+    Write-Step "Running ALL UI tests (no filter)"
 }
 
 # Clear device logs before test
@@ -233,27 +240,30 @@ if ($Platform -eq "android") {
     Write-Info "Clearing Android logcat buffer before test..."
     & adb -s $DeviceUdid logcat -c
 
-    # Dismiss any ANR dialogs that may have appeared during build/deploy.
-    # The emulator can sit idle during long builds, causing SystemUI ANR.
-    Write-Info "Dismissing any system dialogs before test..."
-    & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
-    & adb -s $DeviceUdid shell input keyevent KEYCODE_ENTER 2>$null
-    & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
-    Start-Sleep -Seconds 1
-    & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
-    & adb -s $DeviceUdid shell input keyevent KEYCODE_MENU 2>$null
-    Start-Sleep -Seconds 1
-
-    # Check for lingering ANR dialogs via window dump
-    $windowDump = & adb -s $DeviceUdid shell dumpsys window 2>$null | Select-String "Application Not Responding|ANR"
-    if ($windowDump) {
-        Write-Warn "ANR dialog detected — force-dismissing..."
-        & adb -s $DeviceUdid shell input keyevent KEYCODE_HOME 2>$null
-        Start-Sleep -Seconds 2
-        & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
-        & adb -s $DeviceUdid shell input keyevent KEYCODE_BACK 2>$null
-        Start-Sleep -Seconds 1
+    # Wait for Android settings service to be available.
+    Write-Info "Waiting for Android settings service..."
+    $settingsReady = $false
+    for ($i = 0; $i -lt 30; $i++) {
+        $settingsCheck = & adb -s $DeviceUdid shell settings get global device_name 2>&1
+        if ($settingsCheck -and $settingsCheck -notmatch "Can't find service|error") {
+            $settingsReady = $true
+            Write-Success "Settings service ready (device_name=$settingsCheck)"
+            break
+        }
+        Write-Info "  Settings service not ready yet (attempt $($i+1)/30)..."
+        Start-Sleep -Seconds 5
     }
+    if (-not $settingsReady) {
+        Write-Warn "Settings service may not be ready — tests might fail"
+    }
+
+    # Do NOT force-stop or restart the app here. Appium's UiAutomator2
+    # driver handles app lifecycle via appPackage/appActivity capabilities.
+    # Manual restart causes double-stop issues and the app ends up in a
+    # bad state. Just dismiss any system dialogs and let Appium handle it.
+    & adb -s $DeviceUdid shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>$null
+    & adb -s $DeviceUdid shell input keyevent KEYCODE_WAKEUP 2>$null
+    Start-Sleep -Seconds 1
 }
 
 # Capture test start time for iOS logs
@@ -294,7 +304,8 @@ if ($Platform -eq "catalyst") {
     $env:MAUI_LOG_FILE = $deviceLogFile
 }
 
-Write-Info "Executing: dotnet test --filter `"$effectiveFilter`""
+$filterDisplay = if ($effectiveFilter) { "--filter `"$effectiveFilter`"" } else { "(no filter — all tests)" }
+Write-Info "Executing: dotnet test $filterDisplay"
 Write-Host ""
 
 # Set environment variables for the test
@@ -306,9 +317,47 @@ $appiumLogFile = Join-Path $HostAppLogsDir "appium.log"
 $env:APPIUM_LOG_FILE = $appiumLogFile
 Write-Info "Set APPIUM_LOG_FILE: $appiumLogFile (screenshots will be saved here)"
 
+# ── TRX setup (mirrors CI: eng/cake/dotnet.cake `RunTestWithLocalDotNet`) ──
+# CI writes one trx per test run via:
+#   --logger "trx;LogFileName=<sanitized-name>.trx"
+#   --logger "console;verbosity=normal"
+#   --results-directory <test-results-dir>
+#   /p:VStestUseMSBuildOutput=false
+# We reproduce that here so STEP 3's renderer can parse authoritative
+# pass/fail counts from the TRX (instead of scraping console output, which is
+# fragile when many tests run and lines get interleaved or wrapped).
+$trxResultsDir = Join-Path $HostAppLogsDir "TestResults"
+if (-not (Test-Path $trxResultsDir)) {
+    New-Item -ItemType Directory -Path $trxResultsDir -Force | Out-Null
+}
+# Sanitize the trx file name. NUnit/MSTest reject some characters. We keep
+# alpha-numeric, dash, underscore and dot — same set Cake's
+# SanitizeTestResultsFilename uses.
+$trxBaseName = if ($Category) { "$Category-$Platform" }
+               elseif ($TestFilter) { ($TestFilter -replace '[^A-Za-z0-9._-]', '_') }
+               else { "ALL-$Platform" }
+$trxBaseName = $trxBaseName -replace '[^A-Za-z0-9._-]', '_'
+$trxFileName = "$trxBaseName.trx"
+$trxFilePath = Join-Path $trxResultsDir $trxFileName
+# Pre-clean stale TRX so we never read a previous run's results
+if (Test-Path $trxFilePath) { Remove-Item $trxFilePath -Force -ErrorAction SilentlyContinue }
+
+Write-Info "TRX file will be written to: $trxFilePath"
+
 try {
-    # Run dotnet test and capture output
-    $testOutput = & dotnet test $TestProject --filter $effectiveFilter --logger "console;verbosity=detailed" 2>&1
+    # Run dotnet test using the SAME loggers and arguments CI uses in
+    # `RunTestWithLocalDotNet` (eng/cake/dotnet.cake line 943-981).
+    $trxRunStart = Get-Date
+    $testArgs = @($TestProject,
+        "--logger", "trx;LogFileName=$trxFileName",
+        "--logger", "console;verbosity=normal",
+        "--results-directory", $trxResultsDir,
+        "/p:VStestUseMSBuildOutput=false")
+    if ($effectiveFilter) {
+        $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
+    }
+    Write-Info "Actual dotnet test args: $($testArgs -join ' ')"
+    $testOutput = & dotnet test @testArgs 2>&1
     
     # Save test output to file
     $testOutput | Out-File -FilePath $testOutputFile -Encoding UTF8
@@ -316,9 +365,141 @@ try {
     # Output test results to the output stream so callers can capture them
     # (Write-Host goes to the Information stream which is not captured by 2>&1)
     $testOutput | ForEach-Object { Write-Output $_ }
-    
+
+    # Surface the TRX path on a marker line so callers (Invoke-UITestWithRetry
+    # and Review-PR.ps1) can locate the authoritative results file regardless
+    # of where the working directory was when this script ran.
+    if (Test-Path $trxFilePath) {
+        Write-Output ">>> TRX_RESULT_FILE: $trxFilePath"
+    } else {
+        # dotnet test may have written the TRX with a slightly different name
+        # (e.g. LogFileName argument stripped on Windows, or it injected a
+        # timestamp). Fall back to scanning the results dir for any .trx
+        # written AFTER this run started — never pick up a stale TRX from a
+        # previous category that shares the same results directory.
+        $latestTrx = Get-ChildItem -Path $trxResultsDir -Filter "*.trx" -ErrorAction SilentlyContinue |
+                     Where-Object { $_.LastWriteTime -ge $trxRunStart } |
+                     Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        if ($latestTrx) {
+            Write-Output ">>> TRX_RESULT_FILE: $($latestTrx.FullName)"
+        }
+    }
+
     $testExitCode = $LASTEXITCODE
     
+    # ── Per-test retry for flaky failures (Android emulator instability) ──
+    # Parse the TRX for failed tests and re-run them once. This catches
+    # emulator-induced timeouts and transient ADB failures that aren't
+    # real test bugs. Only retry on Android where flake rate is ~5%.
+    if ($testExitCode -ne 0 -and $Platform -eq 'android' -and (Test-Path $trxFilePath)) {
+        . "$PSScriptRoot/shared/Get-TrxResults.ps1"
+        $firstRun = Get-TrxResults -TrxPath $trxFilePath
+        if ($firstRun -and [int]$firstRun.Failed -gt 0 -and [int]$firstRun.Passed -gt 0) {
+            $failedNames = @($firstRun.Results | Where-Object { $_.status -eq 'Failed' } | ForEach-Object { $_.name })
+            Write-Host ""
+            Write-Warn "🔄 Retrying $($failedNames.Count) failed test(s) on Android..."
+            
+            # Build a FullyQualifiedName filter for just the failed tests.
+            # Strip parameter signatures (e.g. TestMethod(arg: "val")) because
+            # VSTest filter grammar treats ( ) | & ! as operators. Using the
+            # bare method name with ~ (contains) is safe and sufficient.
+            $safeNames = @($failedNames | ForEach-Object { $_ -replace '\(.*$', '' } | Select-Object -Unique)
+            $retryFilter = ($safeNames | ForEach-Object { "FullyQualifiedName~$_" }) -join ' | '
+            $retryTrx = Join-Path $trxResultsDir "retry-$trxBaseName.trx"
+            Remove-Item $retryTrx -Force -ErrorAction SilentlyContinue
+            
+            $retryArgs = @($TestProject, "--filter", $retryFilter,
+                "--logger", "trx;LogFileName=retry-$trxFileName",
+                "--logger", "console;verbosity=normal",
+                "--results-directory", $trxResultsDir,
+                "/p:VStestUseMSBuildOutput=false", "--no-build")
+            Write-Info "Retry args: dotnet test --filter '$retryFilter' --no-build"
+            $retryOutput = & dotnet test @retryArgs 2>&1
+            $retryOutput | ForEach-Object { Write-Output $_ }
+            $retryExitCode = $LASTEXITCODE
+            
+            # Parse retry TRX and count how many passed on retry
+            $retryTrxPath = Join-Path $trxResultsDir "retry-$trxFileName"
+            if (Test-Path $retryTrxPath) {
+                $retryResults = Get-TrxResults -TrxPath $retryTrxPath
+                if ($retryResults) {
+                    $retryPassed = @($retryResults.Results | Where-Object { $_.status -eq 'Passed' }).Count
+                    $retryFailed = @($retryResults.Results | Where-Object { $_.status -eq 'Failed' }).Count
+                    Write-Host "  Retry results: $retryPassed passed, $retryFailed failed (of $($failedNames.Count) retried)" -ForegroundColor Cyan
+                    
+                    if ($retryFailed -eq 0) {
+                        Write-Success "All $retryPassed flaky test(s) passed on retry!"
+                        $testExitCode = 0
+                    } else {
+                        Write-Warn "$retryFailed test(s) still failing after retry (real failures)"
+                    }
+                    # Merge retry results into the original TRX: replace only the
+                    # retried test entries in the original with their retry outcomes,
+                    # preserving all tests that passed on the first run. This avoids
+                    # the prior bug where Copy-Item overwrote the full TRX with the
+                    # retry-only TRX, losing the first-run passing tests entirely.
+                    try {
+                        [xml]$origXml = Get-Content -Path $trxFilePath -Raw -Encoding UTF8
+                        [xml]$retryXml = Get-Content -Path $retryTrxPath -Raw -Encoding UTF8
+                        $nsUri = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
+                        $nsMgr = New-Object System.Xml.XmlNamespaceManager($origXml.NameTable)
+                        $nsMgr.AddNamespace('t', $nsUri)
+                        $retryNsMgr = New-Object System.Xml.XmlNamespaceManager($retryXml.NameTable)
+                        $retryNsMgr.AddNamespace('t', $nsUri)
+
+                        # Build a lookup of retry results by testName
+                        $retryByName = @{}
+                        foreach ($rr in $retryXml.SelectNodes('//t:UnitTestResult', $retryNsMgr)) {
+                            $retryByName[$rr.GetAttribute('testName')] = $rr
+                        }
+
+                        # Only replace entries that were in the original failed set.
+                        # The retry filter uses substring matching (~) so the retry TRX
+                        # may contain tests that passed on the first run (e.g. other
+                        # parameterizations of the same method). We must NOT overwrite
+                        # those — only replace originally-failed entries.
+                        $failedNameSet = New-Object 'System.Collections.Generic.HashSet[string]'
+                        foreach ($fn in $failedNames) { [void]$failedNameSet.Add($fn) }
+
+                        foreach ($origResult in $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)) {
+                            $tName = $origResult.GetAttribute('testName')
+                            if ($failedNameSet.Contains($tName) -and $retryByName.ContainsKey($tName)) {
+                                $imported = $origXml.ImportNode($retryByName[$tName], $true)
+                                $origResult.ParentNode.ReplaceChild($imported, $origResult) | Out-Null
+                            }
+                        }
+
+                        # Update counters to reflect merged results. Count outcomes
+                        # using the same logic as Get-TrxResults: Passed stays Passed,
+                        # NotExecuted/Inconclusive are Skipped, everything else is Failed.
+                        $allResults = $origXml.SelectNodes('//t:UnitTestResult', $nsMgr)
+                        $mergedTotal = $allResults.Count
+                        $mergedPassed = @($allResults | Where-Object { $_.GetAttribute('outcome') -eq 'Passed' }).Count
+                        $skippedOutcomes = @('NotExecuted', 'Inconclusive')
+                        $mergedSkipped = @($allResults | Where-Object { $_.GetAttribute('outcome') -in $skippedOutcomes }).Count
+                        $mergedFailed = $mergedTotal - $mergedPassed - $mergedSkipped
+                        $mergedExecuted = $mergedPassed + $mergedFailed
+                        $counters = $origXml.SelectSingleNode('//t:ResultSummary/t:Counters', $nsMgr)
+                        if ($counters) {
+                            $counters.SetAttribute('total', $mergedTotal)
+                            $counters.SetAttribute('executed', $mergedExecuted)
+                            $counters.SetAttribute('passed', $mergedPassed)
+                            $counters.SetAttribute('failed', $mergedFailed)
+                        }
+
+                        $origXml.Save($trxFilePath)
+                        Write-Info "Merged retry results into original TRX ($mergedTotal total, $mergedPassed passed, $mergedFailed failed)"
+                    } catch {
+                        Write-Warn "Failed to merge TRX — falling back to retry-only TRX: $_"
+                        Copy-Item $retryTrxPath $trxFilePath -Force
+                    }
+                    # Remove the retry TRX to prevent double-counting by downstream aggregators
+                    Remove-Item $retryTrxPath -Force -ErrorAction SilentlyContinue
+                }
+            }
+        }
+    }
+
     Write-Host ""
     Write-Info "Test output saved to: $testOutputFile"
     
@@ -491,7 +672,7 @@ Write-Host @"
 ╠═══════════════════════════════════════════════════════════╣
 ║  Platform:     $($Platform.ToUpper().PadRight(10))                             ║
 ║  Device:       $($DeviceUdid.Substring(0, [Math]::Min(40, $DeviceUdid.Length)).PadRight(40))      ║
-║  Test Filter:  $($effectiveFilter.Substring(0, [Math]::Min(40, $effectiveFilter.Length)).PadRight(40))      ║
+║  Test Filter:  $($(if ($effectiveFilter) { $effectiveFilter.Substring(0, [Math]::Min(40, $effectiveFilter.Length)) } else { '(all tests)' }).PadRight(40))      ║
 ║  Result:       SUCCESS ✅                                 ║
 ║  Logs:         $HostAppLogsDir
 ╚═══════════════════════════════════════════════════════════╝

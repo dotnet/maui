@@ -286,7 +286,23 @@ namespace Microsoft.Maui.Platform
 				int start = GetSelectionStart(editText, entry);
 				int end = GetSelectionEnd(editText, entry, start);
 
-				editText.SetSelection(start, end);
+				if (editText.IsFocused)
+				{
+					editText.Post(() =>
+					{
+						if (editText.IsAlive())
+						{
+							var length = editText.Length();
+							var clampedStart = Math.Min(start, length);
+							var clampedEnd = Math.Min(end, length);
+							editText.SetSelection(clampedStart, clampedEnd);
+						}
+					});
+				}
+				else
+				{
+					editText.SetSelection(start, end);
+				}
 			}
 		}
 
@@ -316,9 +332,15 @@ namespace Microsoft.Maui.Platform
 			int end = Math.Max(start, Math.Min(editText.Length(), start + selectionLength));
 			int newSelectionLength = Math.Max(0, end - start);
 
-			// If 'start > editText.SelectionEnd', it indicates a reverse selection (right-to-left selection),
-			// where the user selected text starting from the right and moving to the left.
-			if (start > editText.SelectionEnd && selectionLength > 0)
+			// When the native EditText has a right-to-left selection (anchor > extent) that
+			// exactly matches our start position and requested length, preserve the native
+			// selection end to maintain the selection direction. We verify the native state
+			// matches to avoid using stale values (e.g., during initial focus when
+			// SelectionEnd is 0 and SelectionStart hasn't been updated yet).
+			if (selectionLength > 0 &&
+				start > editText.SelectionEnd &&
+				editText.SelectionStart == start &&
+				(start - editText.SelectionEnd) == selectionLength)
 			{
 				end = editText.SelectionEnd;
 				newSelectionLength = selectionLength;
@@ -487,6 +509,23 @@ namespace Microsoft.Maui.Platform
 
 				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
+		}
+
+		/// <summary>
+		/// Ensures <see cref="ImeFlags.NoFullscreen"/> is set on the EditText's ImeOptions,
+		/// preventing the IME from entering full-screen extract mode in landscape orientation.
+		/// </summary>
+		/// <remarks>
+		/// Call this helper after any assignment to <c>editText.ImeOptions</c> inside the
+		/// SearchBar platform code (MauiSearchView and SearchViewExtensions), or the
+		/// NoFullscreen flag will be lost and the landscape IME regression (#14708) will
+		/// silently re-appear. ImeOptions is typed as <see cref="ImeAction"/> in the Android
+		/// binding, but it holds combined ImeAction + ImeFlags bits; NoFullscreen is an
+		/// ImeFlags value (0x02000000).
+		/// </remarks>
+		internal static void EnsureNoFullscreenFlag(this EditText editText)
+		{
+			editText.ImeOptions = (ImeAction)((int)editText.ImeOptions | (int)ImeFlags.NoFullscreen);
 		}
 	}
 }

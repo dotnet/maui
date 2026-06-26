@@ -60,6 +60,10 @@ public class PlatformDrawableStyle {
             return null;
         }
 
+        if (width == 0 && height == 0) {
+            return null;
+        }
+
         if (width != this.shaderWidth || height != this.shaderHeight) {
             this.shaderWidth = width;
             this.shaderHeight = height;
