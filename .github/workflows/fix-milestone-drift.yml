@@ -7,9 +7,13 @@ on:
 
   # When a stable release tag is pushed (e.g. 10.0.80), audit the entire tag
   # cohort and fix any milestone drift, closing issues fixed by PRs that
-  # shipped in this tag. The pattern matches MAJOR.MINOR.PATCH (digits only)
-  # and is anchored to the full ref, so preview tags like
-  # 11.0.0-preview.5.26304.4 are deliberately excluded.
+  # shipped in this tag. The pattern matches MAJOR.MINOR.PATCH where MAJOR is
+  # pinned to a currently-supported major (10 or 11) to bound the blast radius —
+  # a stray tag like 1.2.3 or 7.0.0 must NOT fire the bulk -Apply path. Because
+  # GitHub Actions filter patterns must match the whole ref, preview/rc tags
+  # like 11.0.0-preview.5.26304.4 or 10.0.0-rc.1.25424.2 are deliberately
+  # excluded (the trailing -preview/-rc suffix breaks the full-ref match).
+  # NOTE: bump this glob (and the bash guard below) when a new major ships.
   #
   # NOTE: a tag pushed using the default GITHUB_TOKEN does NOT trigger this
   # workflow — GitHub suppresses workflow runs for events raised by the default
@@ -18,7 +22,7 @@ on:
   # silently never fire (today SR tags are pushed by a maintainer, so it does).
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+      - '1[01].[0-9]+.[0-9]+'
 
   workflow_dispatch:
     inputs:
