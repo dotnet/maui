@@ -751,19 +751,6 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-	    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
-	    /// </summary>
-
-		internal void OnOrientationChanged()
-		{
-			// Reset the previous layout direction to force re-evaluation of RTL layout
-			if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
-			{
-				_previousEffectiveUserInterfaceLayoutDirection = null;
-			}
-		}
-
-		/// <summary>
 		/// Checks if the current measure is valid for the given constraints.
 		/// This helps avoid unnecessary re-measurements when the constraints haven't changed.
 		/// </summary>
