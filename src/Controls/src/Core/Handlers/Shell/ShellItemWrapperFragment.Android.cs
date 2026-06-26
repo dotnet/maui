@@ -156,6 +156,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
                 _handler._toolbar = null;
 
+                // Null _appBarLayout — set in SetupToolbar() from OnViewCreated, nulled in
+                // DisconnectHandler (line 872). Leaving it non-null holds a detached view reference.
+                _handler._appBarLayout = null;
+
                 // Unregister page-change callback before nulling _viewPager.
                 // SetupViewPagerAdapter guards on `if (_pageChangeCallback is null)` —
                 // if not nulled here, the new ViewPager2 never receives the callback
