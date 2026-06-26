@@ -37,10 +37,6 @@ on:
         description: 'Release tag to audit (e.g., "10.0.50")'
         required: false
         type: string
-      merged_after:
-        description: 'Cutoff date — skip PRs merged before this (e.g. "2025-01-01"). Default 2026-01-01. Lower it to process a historical SR.'
-        required: false
-        type: string
       apply:
         description: 'Apply milestone changes (default: dry-run only)'
         required: false
@@ -80,7 +76,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
           INPUT_TAG: ${{ inputs.tag }}
-          INPUT_MERGED_AFTER: ${{ inputs.merged_after }}
           INPUT_APPLY: ${{ inputs.apply }}
           INPUT_CREATE_ISSUE: ${{ inputs.create_issue }}
           INPUT_CLOSE_FIXED_ISSUES: ${{ inputs.close_fixed_issues }}
@@ -131,10 +126,6 @@ jobs:
 
             if [ -n "$INPUT_TAG" ]; then
               ARGS+=('-Tag' "$INPUT_TAG")
-            fi
-
-            if [ -n "$INPUT_MERGED_AFTER" ]; then
-              ARGS+=('-MergedAfter' "$INPUT_MERGED_AFTER")
             fi
 
             if [ "$INPUT_APPLY" = "true" ]; then
