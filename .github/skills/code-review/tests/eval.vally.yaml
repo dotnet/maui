@@ -1,0 +1,282 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# code-review regression corpus — Vally migration
+#
+# Replaces the regression scenarios from the legacy `eval.yaml` (which were
+# brittle: each scenario AND-gated ~5 opaque regexes; a correct finding
+# phrased differently failed the whole scenario).
+#
+# Construct-validity inversion vs the legacy harness:
+#   The legacy LLM eval did `export GITHUB_TOKEN="$COPILOT_TOKEN"` and
+#   prompted the agent to "Code review PR #31567 in dotnet/maui" — a
+#   MERGED PR. With a live token the agent could walk merged-PR → linked
+#   regression issue → fix and "pass" by reciting the documented fix
+#   instead of reasoning about the diff cold. This corpus replaces the
+#   open-book test with a frozen, hermetic one:
+#     - environment.git: { type: worktree, ref: <merge SHA> } pins a
+#       worktree to the regression-introducing commit. No live PR fetch.
+#     - The CI job exposes NO GitHub token to the eval step (see the
+#       spike spec's hermeticity negative control for the proof — a
+#       stimulus that intentionally FAILS unless the agent has a token).
+#     - Prompts direct the agent to review the diff that the pinned
+#       commit introduces (`git diff <ref>^ <ref>` inside the worktree),
+#       never to fetch a PR from the API.
+#
+# Brittleness reduction:
+#   Each scenario has exactly ONE structural-floor regex
+#   ('(❌|⚠️|NEEDS_CHANGES|NEEDS_DISCUSSION)' — silent LGTM is the failure
+#   mode under test). All other semantics — confidence calibration, file/
+#   symbol identification, mechanism description, blast-radius / failure-
+#   mode reasoning — are scored by an LLM-judge `prompt` grader against
+#   the rubric. No regex AND-gate of "confidence value + diff symbol +
+#   regression vocabulary + finding marker + section heading."
+#
+# Run policy:
+#   runs: 5 on regression scenarios (these are high-variance — agent may
+#   spend the budget differently across runs and miss the regression on
+#   1–2 of 5). The CI workflow reports per-scenario CV; below ~0.35 is
+#   acceptable.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: code-review-regressions
+description: >-
+  Regression-detection corpus for the code-review skill. Each stimulus
+  presents the diff of a PR that was later confirmed to have introduced
+  a real, p/0-class regression in a shipping MAUI release. The eval asserts
+  the reviewer would have surfaced the regression risk had they reviewed
+  the PR pre-merge.
+version: "1.0.0"
+# Vally's `type: regression` means "compare this run against a baseline
+# run" (regression-of-the-eval). Our use of "regression corpus" means
+# "detect product regressions in the diff under review" — that's a
+# capability assertion. Keep the file name + description as
+# "regressions" but type as capability per Vally semantics.
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 10m
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+  executor: copilot-sdk
+
+stimuli:
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 1 — gradient alpha forced opaque (PR #31567 → issue #35280)
+  #
+  # Regression PR:  dotnet/maui#31567 "Android drawable perf"
+  #   merge commit: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd
+  #   parent:       dd4c32265045850645fc8ddbc2239a6d08e41c6c
+  # Regression issue: dotnet/maui#35280
+  #   "[Regression] LinearGradientBrush broken on Android in 10.0.60"
+  #   labels: p/0 · i/regression · s/verified · regressed-in-10.0.60
+  #
+  # Smoking gun (verified in the live diff at
+  # src/Core/src/Graphics/MauiDrawable.Android.cs):
+  #   The PR replaced solid-alpha tracking
+  #     linearGradientPaint.GradientStops.All(s => s.Color.Alpha == 1)
+  #   with a hardcoded alpha argument at four sites:
+  #     - SetLinearGradientBackground:  GetGradientData(1.0f)
+  #     - SetRadialGradientBackground:  GetGradientData(1.0f)
+  #     - SetLinearGradientBorder:      GetGradientData(1.0f)
+  #     - SetRadialGradientBorder:      GetGradientData(1.0f)
+  #   forcing every gradient stop opaque so a Transparent GradientStop
+  #   renders solid. Shadow paths correctly thread `shadowOpacity` —
+  #   the asymmetry between the two paths IS the regression.
+  # User-visible failure: every LinearGradientBrush / RadialGradientBrush
+  #   with a Transparent or partially-transparent GradientStop renders
+  #   as a solid block on Android 10.0.60.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: gradient-alpha-forced-opaque
+    tags:
+      regression_pr: "31567"
+      regression_issue: "35280"
+      regression_file: src/Core/src/Graphics/MauiDrawable.Android.cs
+    prompt: >-
+      You are reviewing a single commit pre-merge. The repository is
+      already checked out as a worktree pinned to the commit under review.
+
+      Hypothesis to verify or refute: the new gradient code paths in this
+      commit preserve per-stop alpha when a developer uses a Transparent
+      or partially-transparent GradientStop in LinearGradientBrush or
+      RadialGradientBrush backgrounds and borders on Android.
+
+      Do not fetch any pull request, issue, or external page — use ONLY
+      the local worktree and `git diff HEAD^ HEAD` to inspect what
+      changed. Read full source files for changed paths, not just diff
+      hunks. Then deliver a code review using the skill's standard
+      output format (Independent Assessment → Findings → Blast Radius →
+      Verdict + Confidence). Mark each finding with a severity emoji
+      (❌ Error, ⚠️ Warning, or 💡 Info). End with a Verdict line:
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+    environment:
+      git:
+        type: worktree
+        ref: 48c7d8711d6d6befd0297336c6fb8958cfcfc3bd
+        source: .
+    graders:
+      # ── Structural floor (only one hard regex per scenario) ──────────
+      # Silent LGTM is the failure mode under test. Any of these tokens
+      # proves the reviewer at least flagged SOMETHING; the rubric then
+      # decides whether the finding was the right one.
+      - type: output-matches
+        config:
+          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      # ── LLM judge for everything semantic ─────────────────────────────
+      # Grades against the stimulus rubric below — symbol-level evidence,
+      # mechanism description, blast-radius reasoning, confidence
+      # calibration. No regex policing of phrasing.
+      - type: prompt
+        name: regression-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent inspects src/Core/src/Graphics/MauiDrawable.Android.cs
+        in the worktree's HEAD commit and identifies the four new
+        GetGradientData(1.0f) call sites — SetLinearGradientBackground,
+        SetRadialGradientBackground, SetLinearGradientBorder, and
+        SetRadialGradientBorder — by name or near-equivalent reference.
+      - >-
+        The agent recognizes that hardcoding the alpha argument to 1.0f
+        forces gradient stops opaque on the non-shadow paths, while the
+        shadow paths correctly pass through the variable shadowOpacity.
+        The asymmetry between paths IS the regression. Equivalent
+        phrasings — "forces alpha to 1", "drops per-stop transparency",
+        "ignores stop.Color.Alpha", "alpha is clamped to maximum" — all
+        count as correct identification of the mechanism.
+      - >-
+        The agent flags this as a regression risk (❌ Error or ⚠️
+        Warning) for any control using LinearGradientBrush or
+        RadialGradientBrush with a Transparent or partially-transparent
+        GradientStop. The verdict is NEEDS_CHANGES or NEEDS_DISCUSSION,
+        not LGTM.
+      - >-
+        The Blast Radius Assessment correctly identifies this as platform
+        infrastructure affecting every gradient brush in the app — not
+        opt-in feature code. The reviewer recognizes the change runs for
+        all instances, not just when a new feature is used.
+      - >-
+        Confidence is calibrated to medium or lower per the SKILL.md
+        Step 6 Blast Radius table (platform-specific handler/UI plumbing
+        caps at medium; with a confirmed regression finding low is also
+        appropriate). The structured `**Confidence:**` field is present
+        and consistent with this calibration.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Scenario 2 — native iOS collection enumerated without null check
+  # (PR #29101 → issue #34910)
+  #
+  # Regression PR:  dotnet/maui#29101
+  #   "Add Circle, Polygon, and Polyline click events for Map control"
+  #   merge commit: dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9
+  #   parent:       1ff02fa3f3397ff32fcce0cc0ad34397cd7eee3f
+  # Regression issue: dotnet/maui#34910
+  #   "Null Reference exception is thrown when click on map in iOS and Mac"
+  #   labels: i/regression · s/verified
+  #
+  # Smoking gun (verified in the live diff at
+  # src/Core/maps/src/Platform/iOS/MauiMKMapView.cs):
+  #     foreach (var overlay in mauiMkMapView.Overlays)
+  #   inside the new OnMapClicked handler, with no null guard. On iOS,
+  #   MKMapView.Overlays returns null (not an empty array) when no
+  #   overlays exist, so every map tap on a Map without overlays raises
+  #   a NullReferenceException.
+  # User-visible failure: tapping a Map with no overlays crashed the app
+  #   on iOS and Mac Catalyst.
+  # ───────────────────────────────────────────────────────────────────────
+  - name: native-collection-null-overlays
+    tags:
+      regression_pr: "29101"
+      regression_issue: "34910"
+      regression_file: src/Core/maps/src/Platform/iOS/MauiMKMapView.cs
+    prompt: >-
+      You are reviewing a single commit pre-merge. The repository is
+      already checked out as a worktree pinned to the commit under review.
+
+      Hypothesis to verify or refute: tapping the Map control will not
+      crash the app on iOS or Mac Catalyst after this commit lands when
+      no overlays have been added.
+
+      Do not fetch any pull request, issue, or external page — use ONLY
+      the local worktree and `git diff HEAD^ HEAD` to inspect what
+      changed. Read full source files for changed paths, not just diff
+      hunks. Then deliver a code review using the skill's standard
+      output format (Independent Assessment → Findings → Failure-Mode
+      Probing → Verdict + Confidence). Mark each finding with a severity
+      emoji (❌ Error, ⚠️ Warning, or 💡 Info). End with a Verdict line:
+      NEEDS_CHANGES, NEEDS_DISCUSSION, or LGTM.
+    environment:
+      git:
+        type: worktree
+        ref: dcd44b30fb4a95319b1a33cce1ab1ffd7b3a16d9
+        source: .
+    graders:
+      # ── Structural floor (only one hard regex per scenario) ──────────
+      - type: output-matches
+        config:
+          pattern: '(❌|⚠️|🔴|NEEDS_CHANGES|NEEDS_DISCUSSION)'
+      - type: prompt
+        name: regression-judge
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent inspects src/Core/maps/src/Platform/iOS/MauiMKMapView.cs
+        in the worktree's HEAD commit and identifies the new
+        `foreach (var overlay in mauiMkMapView.Overlays)` enumeration in
+        the OnMapClicked tap handler — by name, by line reference, or by
+        near-equivalent quote of the code.
+      - >-
+        The agent recognizes that MKMapView.Overlays is a native iOS API
+        that returns null (not an empty array) when no overlays exist,
+        making the unchecked enumeration a NullReferenceException risk
+        on every map tap. Equivalent phrasings — "needs a null check",
+        "Overlays can be null", "native API may return null", "foreach
+        over null collection throws" — all count as correct identification
+        of the failure mode.
+      - >-
+        The agent flags this as a regression risk (❌ Error or ⚠️
+        Warning) for users who add a Map without any overlays — a basic,
+        default-state user gesture. The verdict is NEEDS_CHANGES or
+        NEEDS_DISCUSSION, not LGTM.
+      - >-
+        The Failure-Mode Probing section explicitly probes the null-
+        PlatformView / null-native-object scenario per SKILL.md Step 6
+        ("What happens with null Parent, Handler, BindingContext, or
+        PlatformView?"). The reviewer does NOT softball with rhetorical
+        questions — they actually verify what happens when the
+        collection is null.
+      - >-
+        Confidence is calibrated to medium or lower for this platform-
+        handler change. The structured `**Confidence:**` field is
+        present and consistent with the Step 6 Blast Radius table.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - code-review
+
+scoring:
+  # NOTE: @microsoft/vally@0.6.0 does NOT consume `scoring.weights` — the
+  # scorer ignores it (verified in dist/scoring/scorer.js +
+  # dist/pipeline/grading.js). Only `scoring.threshold` is active. A trial's
+  # score is the UNWEIGHTED mean of its graders' [0,1] scores; the stimulus
+  # score is the mean across runs; the skill passes when that mean >=
+  # threshold. The `prompt` grader contributes ONE holistic score (its rubric
+  # criteria are aggregated by the judge into a single overall_score, then
+  # normalized) — rubric criteria are not individually AND-gated, which is
+  # exactly the de-brittling we want.
+  #
+  # We keep exactly two graders per stimulus (one structural floor +
+  # one LLM judge) so the judge carries ~50% of every score. With
+  # threshold 0.6 and a scale_1_5 judge (normalized = (raw-1)/4):
+  #   - correct review:  (floor 1.0 + judge ~0.75) / 2 = ~0.875  -> PASS
+  #   - silent LGTM:     (floor 0.0 + judge ~0.25) / 2 = ~0.125  -> FAIL
+  # which is the falsifiability property (acceptance criterion #4) the
+  # corpus exists to guarantee.
+  threshold: 0.6

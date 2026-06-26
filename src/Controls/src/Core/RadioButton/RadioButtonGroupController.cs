@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls
 		string _groupName;
 		private object _selectedValue;
 
+		internal Element Layout => _layout;
+
 		public string GroupName { get => _groupName; set => SetGroupName(value); }
 		public object SelectedValue { get => _selectedValue; set => SetSelectedValue(value); }
 
@@ -103,7 +105,10 @@ namespace Microsoft.Maui.Controls
 				_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
 			}
 
-			if (object.Equals(radioButton.Value, this.SelectedValue))
+			// Only auto-check if SelectedValue is explicitly set (non-null).
+			// When SelectedValue is null (no selection), adding a RadioButton whose Value is also
+			// null must not cause it to be auto-checked (fixes issue #34759).
+			if (this.SelectedValue is not null && object.Equals(radioButton.Value, this.SelectedValue))
 			{
 				radioButton.SetValue(RadioButton.IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
 			}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Gms.Common.Apis;
@@ -32,10 +33,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		MapSpan? _lastMoveToRegion;
 		List<Marker>? _markers;
 		IList? _pins;
-		IList? _elements;
 		List<APolyline>? _polylines;
 		List<APolygon>? _polygons;
 		List<ACircle>? _circles;
+		Dictionary<string, IMapElement>? _trackedMapElements;
 
 		public GoogleMap? Map { get; private set; }
 
@@ -56,6 +57,8 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override void DisconnectHandler(MapView platformView)
 		{
+			DisconnectPins();
+
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
 
@@ -67,6 +70,19 @@ namespace Microsoft.Maui.Maps.Handlers
 				Map.MapClick -= OnMapClick;
 			}
 
+			if (_trackedMapElements != null)
+			{
+				foreach (var element in _trackedMapElements.Values)
+					element.MapElementId = null;
+
+				_trackedMapElements = null;
+			}
+
+			_polylines = null;
+			_polygons = null;
+			_circles = null;
+			Map = null;
+			_init = true;
 			_mapReady = null;
 		}
 
@@ -260,10 +276,14 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
+				mapHandler.DisconnectPins();
+
 				if (mapHandler._markers != null)
 				{
 					for (int i = 0; i < mapHandler._markers.Count; i++)
+					{
 						mapHandler._markers[i].Remove();
+					}
 
 					mapHandler._markers = null;
 				}
@@ -274,8 +294,24 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapElements(IMapHandler handler, IMap map)
 		{
-			(handler as MapHandler)?.ClearMapElements();
-			(handler as MapHandler)?.AddMapElements((IList)map.Elements);
+			if (handler is MapHandler mapHandler)
+			{
+				if (mapHandler.Map != null)
+				{
+					mapHandler.PlatformView?.Post(() =>
+					{
+						var currentView = ((IElementHandler)mapHandler).VirtualView as IMap;
+						if (mapHandler.Map == null || currentView == null || !ReferenceEquals(currentView, map))
+							return;
+
+						mapHandler.SyncMapElements((IList)currentView.Elements);
+					});
+				}
+				else
+				{
+					mapHandler.SyncMapElements((IList)map.Elements);
+				}
+			}
 		}
 
 		internal void OnMapReady(GoogleMap map)
@@ -337,8 +373,10 @@ namespace Microsoft.Maui.Maps.Handlers
 				MoveToRegion(_lastMoveToRegion, false);
 				if (_pins != null)
 					AddPins(_pins);
-				if (_elements != null)
-					AddMapElements(_elements);
+				if (VirtualView?.Elements is IList elements && elements.Count > 0)
+				{
+					SyncMapElements(elements);
+				}
 				_init = false;
 			}
 
@@ -419,8 +457,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			if (Map == null || MauiContext == null)
 				return;
 
-			if (_markers == null)
-				_markers = new List<Marker>();
+			_markers ??= new List<Marker>();
 
 			foreach (var p in pins)
 			{
@@ -430,18 +467,77 @@ namespace Microsoft.Maui.Maps.Handlers
 				var pinHandler = pin.ToHandler(MauiContext);
 				if (pinHandler is IMapPinHandler iMapPinHandler)
 				{
-					marker = Map.AddMarker(iMapPinHandler.PlatformView);
-					if (marker == null)
-					{
-						throw new System.Exception("Map.AddMarker returned null");
-					}
+					marker = Map.AddMarker(iMapPinHandler.PlatformView) ?? throw new System.Exception("Map.AddMarker returned null");
 					// associate pin with marker for later lookup in event handlers
 					pin.MarkerId = marker.Id;
 					_markers.Add(marker!);
 				}
 
+				if (pin is INotifyPropertyChanged observable)
+				{
+					observable.PropertyChanged += PinOnPropertyChanged;
+				}
 			}
 			_pins = null;
+		}
+
+		void PinOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (sender is not IMapPin pin || _markers == null)
+			{
+				return;
+			}
+
+			Marker? marker = null;
+			if (pin.MarkerId is string markerId)
+			{
+				for (int i = 0; i < _markers.Count; i++)
+				{
+					if (_markers[i].Id == markerId)
+					{
+						marker = _markers[i];
+						break;
+					}
+				}
+			}
+
+			if (marker is null)
+			{
+				return;
+			}
+
+			switch (e.PropertyName)
+			{
+				case nameof(IMapPin.Location):
+					if (pin.Location != null)
+					{
+						marker.Position = new LatLng(pin.Location.Latitude, pin.Location.Longitude);
+					}
+
+					break;
+				case nameof(IMapPin.Label):
+					marker.Title = pin.Label;
+					break;
+				case nameof(IMapPin.Address):
+					marker.Snippet = pin.Address;
+					break;
+			}
+		}
+
+		void DisconnectPins()
+		{
+			if (VirtualView == null)
+				return;
+
+			for (int i = 0; i < VirtualView.Pins.Count; i++)
+			{
+				var pin = VirtualView.Pins[i];
+				if (pin is INotifyPropertyChanged observable)
+				{
+					observable.PropertyChanged -= PinOnPropertyChanged;
+				}
+				pin?.Handler?.DisconnectHandler();
+			}
 		}
 
 		protected IMapPin? GetPinForMarker(Marker marker)
@@ -464,42 +560,98 @@ namespace Microsoft.Maui.Maps.Handlers
 			return targetPin;
 		}
 
-		void ClearMapElements()
+		void SyncMapElements(IList mapElements)
 		{
+			if (Map == null || MauiContext == null)
+				return;
+
+			// Build a set of element IDs from the new collection
+			var newElementIds = new HashSet<string>();
+			foreach (var element in mapElements)
+			{
+				if (element is IMapElement mapElement && mapElement.MapElementId is string id)
+				{
+					newElementIds.Add(id);
+				}
+			}
+
+			// Remove elements that are no longer in the collection
 			if (_polylines != null)
 			{
-				for (int i = 0; i < _polylines.Count; i++)
-					_polylines[i].Remove();
-
-				_polylines = null;
+				for (int i = _polylines.Count - 1; i >= 0; i--)
+				{
+					var polyline = _polylines[i];
+					if (polyline.Id is not null && !newElementIds.Contains(polyline.Id))
+					{
+						ClearTrackedMapElementId(polyline.Id);
+						polyline.Remove();
+						_polylines.RemoveAt(i);
+					}
+				}
+				if (_polylines.Count == 0)
+					_polylines = null;
 			}
 
 			if (_polygons != null)
 			{
-				for (int i = 0; i < _polygons.Count; i++)
-					_polygons[i].Remove();
-
-				_polygons = null;
+				for (int i = _polygons.Count - 1; i >= 0; i--)
+				{
+					var polygon = _polygons[i];
+					if (polygon.Id is not null && !newElementIds.Contains(polygon.Id))
+					{
+						ClearTrackedMapElementId(polygon.Id);
+						polygon.Remove();
+						_polygons.RemoveAt(i);
+					}
+				}
+				if (_polygons.Count == 0)
+					_polygons = null;
 			}
 
 			if (_circles != null)
 			{
-				for (int i = 0; i < _circles.Count; i++)
-					_circles[i].Remove();
-
-				_circles = null;
+				for (int i = _circles.Count - 1; i >= 0; i--)
+				{
+					var circle = _circles[i];
+					if (circle.Id is not null && !newElementIds.Contains(circle.Id))
+					{
+						ClearTrackedMapElementId(circle.Id);
+						circle.Remove();
+						_circles.RemoveAt(i);
+					}
+				}
+				if (_circles.Count == 0)
+					_circles = null;
 			}
-		}
 
-		void AddMapElements(IList mapElements)
-		{
-			_elements = mapElements;
+			// Build a set of existing element IDs
+			var existingIds = new HashSet<string>();
+			if (_polylines != null)
+			{
+				foreach (var p in _polylines)
+					existingIds.Add(p.Id);
+			}
+			if (_polygons != null)
+			{
+				foreach (var p in _polygons)
+					existingIds.Add(p.Id);
+			}
+			if (_circles != null)
+			{
+				foreach (var c in _circles)
+					existingIds.Add(c.Id);
+			}
 
-			if (Map == null || MauiContext == null)
-				return;
-
+			// Add only new elements
 			foreach (var element in mapElements)
 			{
+				if (element is IMapElement mapElement)
+				{
+					// Skip if already exists
+					if (mapElement.MapElementId is string id && existingIds.Contains(id))
+						continue;
+				}
+
 				if (element is IGeoPathMapElement geoPath)
 				{
 					if (element is IFilledMapElement)
@@ -511,12 +663,11 @@ namespace Microsoft.Maui.Maps.Handlers
 						AddPolyline(geoPath);
 					}
 				}
-				if (element is ICircleMapElement circle)
+				else if (element is ICircleMapElement circle)
 				{
 					AddCircle(circle);
 				}
 			}
-			_elements = null;
 		}
 
 		void AddPolyline(IGeoPathMapElement polyline)
@@ -534,6 +685,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				var nativePolyline = map.AddPolyline(options);
 
 				polyline.MapElementId = nativePolyline.Id;
+				TrackMapElement(nativePolyline.Id, polyline);
 
 				_polylines.Add(nativePolyline);
 			}
@@ -556,6 +708,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			var nativePolygon = map.AddPolygon(options);
 
 			polygon.MapElementId = nativePolygon.Id;
+			TrackMapElement(nativePolygon.Id, polygon);
 
 			_polygons.Add(nativePolygon);
 		}
@@ -577,8 +730,23 @@ namespace Microsoft.Maui.Maps.Handlers
 			var nativeCircle = map.AddCircle(options);
 
 			circle.MapElementId = nativeCircle.Id;
+			TrackMapElement(nativeCircle.Id, circle);
 
 			_circles.Add(nativeCircle);
+		}
+
+		void TrackMapElement(string nativeId, IMapElement element)
+		{
+			_trackedMapElements ??= new Dictionary<string, IMapElement>();
+			_trackedMapElements[nativeId] = element;
+		}
+
+		void ClearTrackedMapElementId(string nativeId)
+		{
+			if (_trackedMapElements != null && _trackedMapElements.Remove(nativeId, out var element))
+			{
+				element.MapElementId = null;
+			}
 		}
 	}
 

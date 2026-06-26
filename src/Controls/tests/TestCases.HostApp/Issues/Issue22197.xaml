@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+	x:Class="Maui.Controls.Sample.Issues.Issue22197">
+	<VerticalStackLayout>
+		<Label
+			TextType="Html"
+			FontSize="15"
+			TextDecorations="Underline"
+			CharacterSpacing="5"
+			Text="Etiam sodales sollicitudin diam, vel tincidunt libero eleifend id. Vestibulum vehicula congue velit, id egestas nulla pellentesque at."
+			LineHeight="2">
+		</Label>
+		<Label
+			AutomationId="label"
+			Text="HTML Text type"/>
+		<Label
+			TextDecorations="Underline"
+			FontSize="15"
+			CharacterSpacing="5"
+			LineHeight="2"
+			Text="Etiam sodales sollicitudin diam, vel tincidunt libero eleifend id. Vestibulum vehicula congue velit, id egestas nulla pellentesque at."/>
+		<Label Text="Plain Text type"/>
+	</VerticalStackLayout>
+</ContentPage>

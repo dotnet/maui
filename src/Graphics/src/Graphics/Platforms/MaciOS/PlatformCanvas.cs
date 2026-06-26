@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private IPattern _fillPattern;
 		private CGRect _fillPatternRect;
 
-		private IImage _fillImage;
+		IImage _fillImage;
 
 		private RectF _gradientRectangle = RectF.Zero;
 		private Paint _paint;
@@ -635,9 +635,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		private void DrawImageCallback(CGContext context)
+		private void DrawImageCallback(CGContext context, IImage fillImage)
 		{
-			var platformWrapper = _fillImage.ToPlatformImage() as PlatformImage;
+			var platformWrapper = fillImage?.ToPlatformImage() as PlatformImage;
 			var platformImage = platformWrapper?.PlatformRepresentation;
 			if (platformImage != null)
 			{
@@ -651,11 +651,7 @@ namespace Microsoft.Maui.Graphics.Platform
 #else
 				var cgImage = platformImage.CGImage;
 #endif
-				context.TranslateCTM(0, rect.Height);
-				context.ScaleCTM(1, -1);
 				context.DrawImage(rect, cgImage);
-				context.ScaleCTM(1, -1);
-				context.TranslateCTM(0, -rect.Height);
 			}
 		}
 
@@ -712,6 +708,10 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void FillWithPattern(nfloat x, nfloat y, Action drawingAction)
 		{
 			_context.SaveState();
+
+			// Reset the pattern phase so the pattern starts at the correct origin.
+			_context.SetPatternPhase(CGSize.Empty);
+
 			var colorspace = CGColorSpace.CreatePattern(null);
 			_context.SetFillColorSpace(colorspace);
 
@@ -745,6 +745,12 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void FillWithImage(nfloat x, nfloat y, Action drawingAction)
 		{
 			_context.SaveState();
+
+			// The view's PatternPhase is pre-set by PlatformGraphicsView,
+			// which shifts the image tile and causes it to split across the fill rect.
+			// Reset it here to the fill rect origin so the image starts at the right place.
+			_context.SetPatternPhase(CGSize.Empty);
+
 			var baseColorspace = _getColorspace?.Invoke();
 			var colorspace = CGColorSpace.CreatePattern(baseColorspace);
 			_context.SetFillColorSpace(colorspace);
@@ -759,7 +765,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			transform.Multiply(currentTransform);
 			transform.Multiply(new CGAffineTransform(1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f));
 
-			var pattern = new CGPattern(_fillPatternRect, transform, _fillImage.Width, _fillImage.Height, CGPatternTiling.NoDistortion, true, DrawImageCallback);
+			var imageToDraw = _fillImage;
+			var pattern = new CGPattern(_fillPatternRect, transform, _fillImage.Width, _fillImage.Height, CGPatternTiling.NoDistortion, true, (handle) => DrawImageCallback(handle, imageToDraw));
 			_context.SetFillPattern(pattern, new nfloat[] { 1 });
 			drawingAction();
 
@@ -884,8 +891,21 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void PlatformDrawPath(PathF path)
 		{
 			var platformPath = GetPlatformPath(path);
-			_context.AddPath(platformPath);
-			_context.DrawPath(CGPathDrawingMode.Stroke);
+
+			if (_gradient != null)
+			{
+				FillWithGradient(() =>
+				{
+					_context.AddPath(platformPath);
+					_context.ReplacePathWithStrokedPath();
+					return true;
+				});
+			}
+			else
+			{
+				_context.AddPath(platformPath);
+				_context.DrawPath(CGPathDrawingMode.Stroke);
+			}
 		}
 
 		public override void ClipPath(PathF path, WindingMode windingMode = WindingMode.NonZero)
