@@ -5,15 +5,16 @@ on:
     types: [closed]
     branches: [main, net*.0, inflight/*, release/*]
 
-  # When a stable release tag is pushed (e.g. 10.0.80), audit the entire tag
-  # cohort and fix any milestone drift, closing issues fixed by PRs that
-  # shipped in this tag. The pattern matches MAJOR.MINOR.PATCH where MAJOR is
-  # pinned to a currently-supported major (10 or 11) to bound the blast radius —
-  # a stray tag like 1.2.3 or 7.0.0 must NOT fire the bulk -Apply path. Because
-  # GitHub Actions filter patterns must match the whole ref, preview/rc tags
-  # like 11.0.0-preview.5.26304.4 or 10.0.0-rc.1.25424.2 are deliberately
-  # excluded (the trailing -preview/-rc suffix breaks the full-ref match).
-  # NOTE: bump this glob (and the bash guard below) when a new major ships.
+  # When a release tag is pushed, audit the entire tag cohort and fix any
+  # milestone drift, closing issues fixed by PRs that shipped in this tag.
+  # Stable (10.0.80), preview (11.0.0-preview.5.26304.4) and rc
+  # (10.0.0-rc.1.25424.2) tags are all included. MAJOR is pinned to a
+  # currently-supported major (10 or 11) to bound the blast radius — a stray
+  # tag like 1.2.3, 7.0.0 or 9.0.100-preview.1.9973 must NOT fire the bulk
+  # -Apply path. GitHub Actions filter patterns match the whole ref, so each
+  # shape needs its own line: the bare pattern matches stable tags, and the
+  # -preview.* / -rc.* patterns match the prerelease suffixes.
+  # NOTE: bump these globs (and the bash guard below) when a new major ships.
   #
   # NOTE: a tag pushed using the default GITHUB_TOKEN does NOT trigger this
   # workflow — GitHub suppresses workflow runs for events raised by the default
@@ -22,7 +23,9 @@ on:
   # silently never fire (today SR tags are pushed by a maintainer, so it does).
   push:
     tags:
-      - '1[01].[0-9]+.[0-9]+'
+      - '1[01].[0-9]+.[0-9]+'             # stable SR / GA: 10.0.80, 11.0.0
+      - '1[01].[0-9]+.[0-9]+-preview.*'   # preview: 11.0.0-preview.5.26304.4
+      - '1[01].[0-9]+.[0-9]+-rc.*'        # rc: 10.0.0-rc.1.25424.2
 
   workflow_dispatch:
     inputs:
@@ -85,11 +88,15 @@ jobs:
           if [ "$EVENT_NAME" = "push" ]; then
             # Release tag pushed: audit the whole tag cohort, fix milestone
             # drift, and close issues fixed by PRs that shipped in this tag.
-            # Defense-in-depth: the `on.push.tags` filter already restricts to
-            # MAJOR.MINOR.PATCH, but re-validate here so an unexpected ref can
-            # never be passed through to the script's tag-mode.
-            if [[ ! "$PUSH_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "::error::push tag '$PUSH_TAG' is not a stable release tag (expected MAJOR.MINOR.PATCH)"
+            # Defense-in-depth: the `on.push.tags` filter already restricts which
+            # tags reach this job (major-pinned), but re-validate the shape here
+            # so an unexpected ref can never be passed through to the script's
+            # tag-mode. This guard is intentionally major-agnostic — it only
+            # checks the tag shape (stable MAJOR.MINOR.PATCH, or a -preview.N /
+            # -rc.N prerelease with a numeric build tail). The major gate lives
+            # in the glob above; this guard is the anti-injection backstop.
+            if [[ ! "$PUSH_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(preview|rc)\.[0-9]+(\.[0-9]+)*)?$ ]]; then
+              echo "::error::push tag '$PUSH_TAG' is not a release tag (expected MAJOR.MINOR.PATCH, optionally -preview.N or -rc.N)"
               exit 1
             fi
             ARGS+=('-Tag' "$PUSH_TAG" '-Apply' '-CloseFixedIssues')
